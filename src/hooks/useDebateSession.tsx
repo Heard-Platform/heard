@@ -47,6 +47,7 @@ export function useDebateSession() {
   const [user, setUser] = useState<UserSession | null>(null);
   const [room, setRoom] = useState<DebateRoom | null>(null);
   const [statements, setStatements] = useState<Statement[]>([]);
+  const [activeRooms, setActiveRooms] = useState<DebateRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastAchievement, setLastAchievement] = useState<Achievement | null>(null);
@@ -243,11 +244,26 @@ export function useDebateSession() {
     return false;
   }, [user, room]);
 
+  // Get active rooms
+  const getActiveRooms = useCallback(async () => {
+    try {
+      const response = await api.getActiveRooms();
+      if (response.success && response.data) {
+        setActiveRooms(response.data.rooms || []);
+        return response.data.rooms || [];
+      }
+    } catch (err) {
+      console.error('Failed to fetch active rooms:', err);
+    }
+    return [];
+  }, []);
+
   // Reset session
   const resetSession = useCallback(() => {
     setUser(null);
     setRoom(null);
     setStatements([]);
+    setActiveRooms([]);
     setError(null);
     setLastAchievement(null);
     clearRoomId();
@@ -294,12 +310,14 @@ export function useDebateSession() {
     user,
     room,
     statements,
+    activeRooms,
     loading,
     error,
     lastAchievement,
     initializeUser,
     createRoom,
     joinRoom,
+    getActiveRooms,
     submitStatement,
     voteOnStatement,
     updateRoomPhase,

@@ -10,6 +10,7 @@ import { RoundIndicator } from './components/RoundIndicator';
 import { RealTimeResults } from './components/RealTimeResults';
 import { FinalResults } from './components/FinalResults';
 import { NicknameSetup } from './components/NicknameSetup';
+import { ActiveRoomsList } from './components/ActiveRoomsList';
 import { Card } from './components/ui/card';
 import { Badge } from './components/ui/badge';
 import { useDebateSession } from './hooks/useDebateSession';
@@ -53,11 +54,14 @@ export default function App() {
     user,
     room,
     statements,
+    activeRooms,
     loading,
     error,
     lastAchievement,
     initializeUser,
     createRoom,
+    joinRoom,
+    getActiveRooms,
     submitStatement,
     voteOnStatement,
     updateRoomPhase,
@@ -80,6 +84,16 @@ export default function App() {
     if (roomData) {
       setAppState('in-game');
       setTimerActive(false); // Start in lobby phase
+    }
+  };
+
+  // Handle joining existing room
+  const handleJoinRoom = async (roomId: string) => {
+    const roomData = await joinRoom(roomId);
+    if (roomData) {
+      setAppState('in-game');
+      // Set timer based on current phase
+      setTimerActive(!['lobby', 'voting', 'results'].includes(roomData.phase));
     }
   };
 
@@ -140,6 +154,13 @@ export default function App() {
       await updateRoomPhase('results');
     }
   };
+
+  // Load active rooms when entering lobby
+  useEffect(() => {
+    if (appState === 'lobby' && user) {
+      getActiveRooms();
+    }
+  }, [appState, user, getActiveRooms]);
 
   // Determine current state
   useEffect(() => {
@@ -216,28 +237,37 @@ export default function App() {
             </ul>
           </Card>
 
-          <div className="space-y-4">
-            <h3>🏛️ Create New Debate Room</h3>
-            <div className="flex gap-2">
-              <select 
-                className="flex-1 p-2 border rounded-md"
-                value={newRoomTopic}
-                onChange={(e) => setNewRoomTopic(e.target.value)}
-              >
-                <option value="">Choose a topic...</option>
-                {debateTopics.map((topic) => (
-                  <option key={topic} value={topic}>{topic}</option>
-                ))}
-              </select>
-              <Button 
-                onClick={handleCreateRoom}
-                disabled={!newRoomTopic}
-                className="shrink-0"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Create Room
-              </Button>
-            </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card className="p-6">
+              <h3 className="mb-4">🏛️ Create New Debate Room</h3>
+              <div className="space-y-3">
+                <select 
+                  className="w-full p-2 border rounded-md"
+                  value={newRoomTopic}
+                  onChange={(e) => setNewRoomTopic(e.target.value)}
+                >
+                  <option value="">Choose a topic...</option>
+                  {debateTopics.map((topic) => (
+                    <option key={topic} value={topic}>{topic}</option>
+                  ))}
+                </select>
+                <Button 
+                  onClick={handleCreateRoom}
+                  disabled={!newRoomTopic}
+                  className="w-full"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create New Room
+                </Button>
+              </div>
+            </Card>
+
+            <ActiveRoomsList
+              rooms={activeRooms}
+              onJoinRoom={handleJoinRoom}
+              onRefresh={getActiveRooms}
+              loading={loading}
+            />
           </div>
 
           <div className="flex gap-3">
