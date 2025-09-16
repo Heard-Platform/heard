@@ -368,6 +368,7 @@ export default function App() {
               duration={room.phase === 'initial' ? 120 : 90} // 2 minutes for initial, 1.5 for others
               onTimeUp={nextPhase}
               isActive={timerActive}
+              phaseStartTime={room.phaseStartTime}
             />
           )}
 

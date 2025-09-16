@@ -100,7 +100,11 @@ export function ActiveRoomsList({
           <h3>🔥 Active Debate Rooms</h3>
           <motion.div
             animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            transition={{
+              duration: 1,
+              repeat: Infinity,
+              ease: "linear",
+            }}
             className="w-4 h-4"
           >
             <RefreshCw className="w-4 h-4 text-muted-foreground" />

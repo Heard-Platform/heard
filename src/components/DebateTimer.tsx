@@ -5,27 +5,41 @@ interface DebateTimerProps {
   duration: number;
   onTimeUp: () => void;
   isActive: boolean;
+  phaseStartTime?: number; // Server timestamp when phase started
 }
 
-export function DebateTimer({ duration, onTimeUp, isActive }: DebateTimerProps) {
+export function DebateTimer({ duration, onTimeUp, isActive, phaseStartTime }: DebateTimerProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
 
   useEffect(() => {
     if (!isActive) return;
     
-    setTimeLeft(duration);
+    const calculateTimeLeft = () => {
+      if (phaseStartTime) {
+        // Calculate based on server timestamp
+        const elapsed = Math.floor((Date.now() - phaseStartTime) / 1000);
+        const remaining = Math.max(0, duration - elapsed);
+        return remaining;
+      } else {
+        // Fallback to local countdown if no server timestamp
+        return duration;
+      }
+    };
+
+    // Set initial time left
+    setTimeLeft(calculateTimeLeft());
+    
     const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          onTimeUp();
-          return 0;
-        }
-        return prev - 1;
-      });
+      const remaining = calculateTimeLeft();
+      setTimeLeft(remaining);
+      
+      if (remaining <= 0) {
+        onTimeUp();
+      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [duration, onTimeUp, isActive]);
+  }, [duration, onTimeUp, isActive, phaseStartTime]);
 
   const progress = (timeLeft / duration) * 100;
   const isUrgent = timeLeft <= 10;
