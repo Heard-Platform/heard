@@ -73,17 +73,24 @@ export function GameScreen({
     onScheduleFuture()
   }, [onScheduleFuture])
 
-  // Show Final Results screen
   if (room.phase === "results") {
     return (
-      <FinalResults
-        statements={statements}
-        score={user?.score || 0}
-        roundNumber={room.roundNumber}
-        onNewDiscussion={handleNewDiscussion}
-        onScheduleFuture={handleScheduleFuture}
-        onNextRound={onNextPhase}
-      />
+      <>
+        <FinalResults
+          statements={statements}
+          score={user?.score || 0}
+          roundNumber={room.roundNumber}
+          onNewDiscussion={handleNewDiscussion}
+          onScheduleFuture={handleScheduleFuture}
+          onNextRound={onNextPhase}
+        />
+        {lastAchievement && (
+          <AchievementNotification
+            achievement={lastAchievement}
+            onClose={() => {}}
+          />
+        )}
+      </>
     )
   }
 
