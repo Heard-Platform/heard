@@ -24,10 +24,7 @@ interface Achievement {
   type: "score" | "bridge" | "crux" | "plurality" | "streak"
 }
 
-type AppState = "nickname-setup" | "lobby" | "room-creation" | "in-game"
-
 export default function App() {
-  const [appState, setAppState] = useState<AppState>("nickname-setup")
   const [timerActive, setTimerActive] = useState(false)
 
   const {
@@ -51,17 +48,13 @@ export default function App() {
 
   // Handle nickname setup completion
   const handleNicknameComplete = async (nickname: string) => {
-    const userData = await initializeUser(nickname)
-    if (userData) {
-      setAppState("lobby")
-    }
+    await initializeUser(nickname)
   }
 
   // Handle room creation
   const handleCreateRoom = async (topic: string) => {
     const roomData = await createRoom(topic)
     if (roomData) {
-      setAppState("in-game")
       setTimerActive(false) // Start in lobby phase
     }
   }
@@ -70,7 +63,6 @@ export default function App() {
   const handleJoinRoom = async (roomId: string) => {
     const roomData = await joinRoom(roomId)
     if (roomData) {
-      setAppState("in-game")
       // Set timer based on current phase
       setTimerActive(!["lobby", "voting", "results"].includes(roomData.phase))
     }
@@ -137,7 +129,6 @@ export default function App() {
 
   const handleLeaveRoom = () => {
     leaveRoom()
-    setAppState("lobby")
     setTimerActive(false)
   }
 
@@ -148,28 +139,17 @@ export default function App() {
     }
   }
 
-  // Load active rooms when entering lobby
+  // Load active rooms when in lobby (user but no room)
   useEffect(() => {
-    if (appState === "lobby" && user) {
+    if (user && !room) {
       getActiveRooms()
     }
-  }, [appState, user, getActiveRooms])
+  }, [user, room, getActiveRooms])
 
-  // Determine current state
-  useEffect(() => {
-    if (!user && appState !== "nickname-setup") {
-      setAppState("nickname-setup")
-    } else if (
-      user &&
-      !room &&
-      appState !== "lobby" &&
-      appState !== "room-creation"
-    ) {
-      setAppState("lobby")
-    } else if (user && room && appState !== "in-game") {
-      setAppState("in-game")
-    }
-  }, [user, room, appState])
+  // Derived state - single source of truth
+  const showNicknameSetup = !user
+  const showLobby = user && !room
+  const showGame = user && room
 
   if (loading) {
     return (
@@ -184,7 +164,7 @@ export default function App() {
   }
 
   // Nickname Setup
-  if (appState === "nickname-setup") {
+  if (showNicknameSetup) {
     return (
       <NicknameSetup
         onComplete={handleNicknameComplete}
@@ -195,7 +175,7 @@ export default function App() {
   }
 
   // Lobby - Room Selection/Creation
-  if (appState === "lobby") {
+  if (showLobby) {
     return (
       <LobbyScreen
         user={user}
@@ -211,7 +191,7 @@ export default function App() {
   }
 
   // In-Game Experience
-  if (appState === "in-game" && room) {
+  if (showGame) {
     return (
       <GameScreen
         user={user}
