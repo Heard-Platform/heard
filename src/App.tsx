@@ -146,6 +146,16 @@ export default function App() {
     }
   }, [user, room, getActiveRooms])
 
+  // Sync timerActive with room phase changes (for real-time multiplayer)
+  useEffect(() => {
+    if (room) {
+      const shouldBeActive = !["lobby", "voting", "results"].includes(
+        room.phase
+      )
+      setTimerActive(shouldBeActive)
+    }
+  }, [room?.phase])
+
   // Derived state - single source of truth
   const showNicknameSetup = !user
   const showLobby = user && !room
