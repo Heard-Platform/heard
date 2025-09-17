@@ -127,3 +127,13 @@ export const WithAchievement = {
     },
   },
 };
+
+export const LobbySinglePlayer = {
+  args: {
+    user: mockUser,
+    room: { ...baseRoom, phase: 'lobby', participants: ['Alice'] },
+    statements: [],
+    timerActive: false,
+    lastAchievement: null,
+  },
+};

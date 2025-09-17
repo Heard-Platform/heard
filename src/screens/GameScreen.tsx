@@ -166,9 +166,16 @@ export function GameScreen({
               <Card className="p-6 text-center">
                 <h3 className="mb-2">Debate Room</h3>
                 <p className="text-muted-foreground mb-4">
-                  Waiting for players to join...
+                  {room.participants.length < 2
+                    ? "Need at least 2 players to start..."
+                    : "Ready to debate!"}
                 </p>
-                <Button onClick={onStartDebate}>Start Debate! 🔥</Button>
+                <Button
+                  onClick={onStartDebate}
+                  disabled={room.participants.length < 2}
+                >
+                  Start Debate! 🔥
+                </Button>
               </Card>
             )}
 
