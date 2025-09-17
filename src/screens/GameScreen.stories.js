@@ -1,5 +1,30 @@
+
 import { fn } from 'storybook/test';
 import { GameScreen } from '../screens/GameScreen';
+
+const mockStatements = [
+  {
+    id: '1',
+    text: 'Fox can KO at 60% with up-smash. That is wild.',
+    author: 'Alice',
+    votes: 5,
+    type: 'crux',
+  },
+  {
+    id: '2',
+    text: 'His shine comes out frame 1. No other character has that!',
+    author: 'Bob',
+    votes: 3,
+    type: 'crux',
+  },
+  {
+    id: '3',
+    text: 'Fox is only OP if you have good tech skill. Most players just SD.',
+    author: 'Carol',
+    votes: 2,
+    type: 'bridge',
+  },
+];
 
 const mockUser = {
   score: 120,
@@ -9,40 +34,15 @@ const mockUser = {
   streak: 2,
 };
 
-const mockRoom = {
+const baseRoom = {
   id: 'room1',
   topic: 'Fox is overpowered in Super Smash Bros.',
-  phase: 'crux',
   roundNumber: 2,
-  phaseStartTime: Date.now() - 45000, // 45 seconds ago
+  phaseStartTime: Date.now() - 45000,
   participants: ['Alice', 'Bob', 'Carol'],
   isActive: true,
   createdAt: Date.now() - 60000,
 };
-
-const mockStatements = [
-  {
-    id: 's1',
-    text: 'Fox can KO at 60% with up-smash. That is wild.',
-    author: 'Alice',
-    votes: 5,
-    type: 'crux',
-  },
-  {
-    id: 's2',
-    text: 'His shine comes out frame 1. No other character has that!',
-    author: 'Bob',
-    votes: 3,
-    type: 'crux',
-  },
-  {
-    id: 's3',
-    text: 'Fox is only OP if you have good tech skill. Most players just SD.',
-    author: 'Carol',
-    votes: 2,
-    type: 'bridge',
-  },
-];
 
 export default {
   title: 'Screens/GameScreen',
@@ -50,15 +50,9 @@ export default {
   parameters: {
     layout: 'centered',
   },
-};
-
-export const MidRound = {
+  tags: ['autodocs'],
+  argTypes: {},
   args: {
-    user: mockUser,
-    room: mockRoom,
-    statements: mockStatements,
-    timerActive: true,
-    lastAchievement: null,
     onSubmitStatement: fn(),
     onVote: fn(),
     onNextPhase: fn(),
@@ -66,5 +60,70 @@ export const MidRound = {
     onLeaveRoom: fn(),
     onNewDiscussion: fn(),
     onScheduleFuture: fn(),
+  },
+};
+
+export const Lobby = {
+  args: {
+    user: mockUser,
+    room: { ...baseRoom, phase: 'lobby' },
+    statements: [],
+    timerActive: false,
+    lastAchievement: null,
+  },
+};
+
+export const InitialRound = {
+  args: {
+    user: mockUser,
+    room: { ...baseRoom, phase: 'initial' },
+    statements: mockStatements,
+    timerActive: true,
+    lastAchievement: null,
+  },
+};
+
+export const MidRound = {
+  args: {
+    user: mockUser,
+    room: { ...baseRoom, phase: 'crux' },
+    statements: mockStatements,
+    timerActive: true,
+    lastAchievement: null,
+  },
+};
+
+export const VotingPhase = {
+  args: {
+    user: mockUser,
+    room: { ...baseRoom, phase: 'voting' },
+    statements: mockStatements,
+    timerActive: false,
+    lastAchievement: null,
+  },
+};
+
+export const ResultsPhase = {
+  args: {
+    user: mockUser,
+    room: { ...baseRoom, phase: 'results' },
+    statements: mockStatements,
+    timerActive: false,
+    lastAchievement: null,
+  },
+};
+
+export const WithAchievement = {
+  args: {
+    user: mockUser,
+    room: { ...baseRoom, phase: 'results' },
+    statements: mockStatements,
+    timerActive: false,
+    lastAchievement: {
+      type: 'streak',
+      title: 'Hot Streak!',
+      description: 'You won 3 rounds in a row!',
+      icon: 'flame',
+    },
   },
 };
