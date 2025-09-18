@@ -232,6 +232,7 @@ export function GameScreen({
                     onVote={handleVote}
                     onFlag={() => console.log("Flag statement:", statement.id)}
                     canVote={room.phase === "voting"}
+                    currentUserId={user?.id}
                   />
                 ))}
               </AnimatePresence>

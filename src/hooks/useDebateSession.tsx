@@ -47,7 +47,7 @@ interface Statement {
   isSpicy?: boolean
   roomId: string
   timestamp: number
-  voters: string[]
+  voters: { [userId: string]: "up" | "down" }
 }
 
 interface Achievement {
@@ -254,7 +254,9 @@ export function useDebateSession() {
           // Update statement in local state
           setStatements((prev) =>
             prev.map((stmt) =>
-              stmt.id === statementId ? { ...response.data.statement } : stmt
+              stmt.id === statementId
+                ? { ...stmt, ...response.data.statement }
+                : stmt
             )
           )
 

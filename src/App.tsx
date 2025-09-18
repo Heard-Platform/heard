@@ -14,7 +14,7 @@ interface Statement {
   isSpicy?: boolean
   roomId: string
   timestamp: number
-  voters: string[]
+  voters: { [userId: string]: "up" | "down" }
 }
 
 interface Achievement {
