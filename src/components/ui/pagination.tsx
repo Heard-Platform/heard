@@ -8,10 +8,7 @@ import {
 import { cn } from "./utils";
 import { Button, buttonVariants } from "./button";
 
-function Pagination({
-  className,
-  ...props
-}: React.ComponentProps<"nav">) {
+function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
       role="navigation"
@@ -61,7 +58,7 @@ function PaginationLink({
           variant: isActive ? "outline" : "ghost",
           size,
         }),
-        className
+        className,
       )}
       {...props}
     />
@@ -110,10 +107,7 @@ function PaginationEllipsis({
     <span
       aria-hidden
       data-slot="pagination-ellipsis"
-      className={cn(
-        "flex size-9 items-center justify-center",
-        className
-      )}
+      className={cn("flex size-9 items-center justify-center", className)}
       {...props}
     >
       <MoreHorizontalIcon className="size-4" />

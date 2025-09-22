@@ -72,7 +72,9 @@ export function StatementCard({
           <span className="text-sm text-muted-foreground">
             @{statement.author}
           </span>
-          {statement.isSpicy && <span className="text-sm">🌶️</span>}
+          {statement.isSpicy && (
+            <span className="text-sm">🌶️</span>
+          )}
           {getTypeIcon() && (
             <span className="text-sm">{getTypeIcon()}</span>
           )}
@@ -102,7 +104,9 @@ export function StatementCard({
           </Button>
           <Button
             size="sm"
-            variant={userVote === "down" ? "destructive" : "outline"}
+            variant={
+              userVote === "down" ? "destructive" : "outline"
+            }
             onClick={() => onVote(statement.id, "down")}
             disabled={!canVote}
           >

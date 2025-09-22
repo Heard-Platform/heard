@@ -8,6 +8,7 @@ import {
   BarChart3,
   Eye,
 } from "lucide-react";
+import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";

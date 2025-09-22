@@ -75,9 +75,7 @@ export default function App() {
     if (roomData) {
       // Set timer based on current phase and subPhase
       setTimerActive(
-        roomData.phase !== "lobby" &&
-          roomData.phase !== "results" &&
-          roomData.subPhase === "posting"
+        roomData.phase !== "lobby" && roomData.phase !== "results"
       );
     }
   };
@@ -126,7 +124,7 @@ export default function App() {
     if (currentSubPhaseIndex < subPhases.length - 1) {
       const nextSubPhase = subPhases[currentSubPhaseIndex + 1];
       await updateRoomPhase(room.phase, nextSubPhase);
-      setTimerActive(nextSubPhase === "posting");
+      setTimerActive(true); // All sub-phases have timers
     }
     // Move to next phase
     else if (currentPhaseIndex < phases.length - 1) {
@@ -151,7 +149,10 @@ export default function App() {
     // In a real app, this would create a new discussion thread
     console.log("Creating new discussion based on:", statement.text);
     alert(
-      `Starting new discussion: "${statement.text.substring(0, 50)}..."`
+      `Starting new discussion: "${statement.text.substring(
+        0,
+        50
+      )}..."`
     );
   }, []);
 
@@ -183,11 +184,9 @@ export default function App() {
   // Sync timerActive with room phase changes (for real-time multiplayer)
   useEffect(() => {
     if (room) {
-      // Only activate timer for posting sub-phases
+      // Activate timer for all sub-phases except lobby and results
       const shouldBeActive =
-        room.phase !== "lobby" &&
-        room.phase !== "results" &&
-        room.subPhase === "posting";
+        room.phase !== "lobby" && room.phase !== "results";
       setTimerActive(shouldBeActive);
     }
   }, [room?.phase, room?.subPhase]);

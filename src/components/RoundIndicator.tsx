@@ -1,13 +1,12 @@
 import { motion } from "motion/react";
-import { Users, Target, Zap, MessageCircle } from "lucide-react";
+import {
+  Users,
+  Target,
+  Zap,
+  MessageCircle,
+} from "lucide-react";
 
-type Phase =
-  | "lobby"
-  | "initial"
-  | "bridge"
-  | "crux"
-  | "plurality"
-  | "results";
+type Phase = "lobby" | "initial" | "bridge" | "crux" | "plurality" | "results";
 type SubPhase = "posting" | "voting" | "review";
 
 interface RoundIndicatorProps {
@@ -167,7 +166,9 @@ export function RoundIndicator({
         <h2 className="text-2xl font-semibold text-primary">
           {roundInfo.title}
         </h2>
-        <p className="text-muted-foreground">{roundInfo.subtitle}</p>
+        <p className="text-muted-foreground">
+          {roundInfo.subtitle}
+        </p>
         <div className="text-sm text-muted-foreground">
           Round {roundNumber}
         </div>
@@ -178,7 +179,9 @@ export function RoundIndicator({
           const Icon = round.icon;
           const isActive = round.key === currentRound;
           const isCompleted =
-            rounds.findIndex((r) => r.key === currentRound) > index;
+            rounds.findIndex(
+              (r) => r.key === currentRound,
+            ) > index;
 
           return (
             <motion.div

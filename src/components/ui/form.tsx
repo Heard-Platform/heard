@@ -26,7 +26,7 @@ type FormFieldContextValue<
 };
 
 const FormFieldContext = React.createContext<FormFieldContextValue>(
-  {} as FormFieldContextValue
+  {} as FormFieldContextValue,
 );
 
 const FormField = <
@@ -70,13 +70,10 @@ type FormItemContextValue = {
 };
 
 const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue
+  {} as FormItemContextValue,
 );
 
-function FormItem({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function FormItem({ className, ...props }: React.ComponentProps<"div">) {
   const id = React.useId();
 
   return (
@@ -107,9 +104,7 @@ function FormLabel({
   );
 }
 
-function FormControl({
-  ...props
-}: React.ComponentProps<typeof Slot>) {
+function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
   const { error, formItemId, formDescriptionId, formMessageId } =
     useFormField();
 
@@ -128,10 +123,7 @@ function FormControl({
   );
 }
 
-function FormDescription({
-  className,
-  ...props
-}: React.ComponentProps<"p">) {
+function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
   const { formDescriptionId } = useFormField();
 
   return (
@@ -144,10 +136,7 @@ function FormDescription({
   );
 }
 
-function FormMessage({
-  className,
-  ...props
-}: React.ComponentProps<"p">) {
+function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
   const { error, formMessageId } = useFormField();
   const body = error ? String(error?.message ?? "") : props.children;
 

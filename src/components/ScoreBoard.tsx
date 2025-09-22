@@ -1,5 +1,5 @@
-import { motion } from "motion/react";
-import { Trophy, Zap, Users, Target } from "lucide-react";
+import { motion } from 'motion/react';
+import { Trophy, Zap, Users, Target } from 'lucide-react';
 
 interface ScoreBoardProps {
   score: number;
@@ -9,15 +9,9 @@ interface ScoreBoardProps {
   streak: number;
 }
 
-export function ScoreBoard({
-  score,
-  bridgePoints,
-  cruxPoints,
-  pluralityPoints,
-  streak,
-}: ScoreBoardProps) {
+export function ScoreBoard({ score, bridgePoints, cruxPoints, pluralityPoints, streak }: ScoreBoardProps) {
   return (
-    <motion.div
+    <motion.div 
       className="bg-card border rounded-lg p-4 space-y-3"
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
@@ -28,7 +22,7 @@ export function ScoreBoard({
           <Trophy className="w-5 h-5 text-yellow-500" />
           Total Score
         </h3>
-        <motion.span
+        <motion.span 
           className="text-2xl font-mono text-primary"
           key={score}
           initial={{ scale: 1.2 }}
@@ -38,7 +32,7 @@ export function ScoreBoard({
           {score.toLocaleString()}
         </motion.span>
       </div>
-
+      
       <div className="grid grid-cols-2 gap-2 text-sm">
         <div className="flex items-center gap-1">
           <Users className="w-4 h-4 text-blue-500" />

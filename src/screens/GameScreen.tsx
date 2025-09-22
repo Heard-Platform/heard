@@ -179,7 +179,7 @@ export function GameScreen({
         {/* Timer */}
         {timerActive && (
           <DebateTimer
-            duration={room.phase === "initial" ? 120 : 90} // 2 minutes for initial, 1.5 for others
+            duration={90} // 90 seconds for all phases and sub-phases
             onTimeUp={onNextPhase}
             isActive={timerActive}
             phaseStartTime={room.phaseStartTime}

@@ -168,7 +168,9 @@ export function ActiveRoomsList({
                     </p>
                     <Badge
                       variant="outline"
-                      className={`shrink-0 text-xs ${phaseColors[room.phase]}`}
+                      className={`shrink-0 text-xs ${
+                        phaseColors[room.phase]
+                      }`}
                     >
                       {phaseDisplayNames[room.phase]}
                     </Badge>

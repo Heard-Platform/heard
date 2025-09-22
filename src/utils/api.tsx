@@ -11,17 +11,20 @@ interface ApiResponse<T> {
 class ApiClient {
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${publicAnonKey}`,
-          ...options.headers,
+      const response = await fetch(
+        `${API_BASE_URL}${endpoint}`,
+        {
+          ...options,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${publicAnonKey}`,
+            ...options.headers,
+          },
         },
-      });
+      );
 
       const data = await response.json();
 
@@ -39,7 +42,9 @@ class ApiClient {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "Network error",
+          error instanceof Error
+            ? error.message
+            : "Network error",
       };
     }
   }
@@ -79,7 +84,7 @@ class ApiClient {
     roomId: string,
     phase: string,
     userId: string,
-    subPhase?: string
+    subPhase?: string,
   ) {
     return this.request(`/room/${roomId}/phase`, {
       method: "POST",
@@ -96,7 +101,7 @@ class ApiClient {
     roomId: string,
     text: string,
     type: string | undefined,
-    userId: string
+    userId: string,
   ) {
     return this.request(`/room/${roomId}/statement`, {
       method: "POST",
@@ -107,7 +112,7 @@ class ApiClient {
   async voteOnStatement(
     statementId: string,
     voteType: "up" | "down",
-    userId: string
+    userId: string,
   ) {
     return this.request(`/statement/${statementId}/vote`, {
       method: "POST",

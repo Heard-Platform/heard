@@ -188,16 +188,16 @@ export function FinalResults({
                 breathingPhase === "inhale"
                   ? 1.3
                   : breathingPhase === "hold"
-                    ? 1.3
-                    : 1,
+                  ? 1.3
+                  : 1,
             }}
             transition={{
               duration:
                 breathingPhase === "inhale"
                   ? 4
                   : breathingPhase === "exhale"
-                    ? 6
-                    : 2,
+                  ? 6
+                  : 2,
               ease: "easeInOut",
             }}
           >

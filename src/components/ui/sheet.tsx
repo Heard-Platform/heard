@@ -6,18 +6,14 @@ import { XIcon } from "lucide-react@0.487.0";
 
 import { cn } from "./utils";
 
-function Sheet({
-  ...props
-}: React.ComponentProps<typeof SheetPrimitive.Root>) {
+function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
 
 function SheetTrigger({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
-  return (
-    <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />
-  );
+  return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 }
 
 function SheetClose({
@@ -29,9 +25,7 @@ function SheetClose({
 function SheetPortal({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
-  return (
-    <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
-  );
+  return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />;
 }
 
 function SheetOverlay({
@@ -43,7 +37,7 @@ function SheetOverlay({
       data-slot="sheet-overlay"
       className={cn(
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
-        className
+        className,
       )}
       {...props}
     />
@@ -73,7 +67,7 @@ function SheetContent({
             "data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b",
           side === "bottom" &&
             "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t",
-          className
+          className,
         )}
         {...props}
       >
@@ -87,10 +81,7 @@ function SheetContent({
   );
 }
 
-function SheetHeader({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="sheet-header"
@@ -100,10 +91,7 @@ function SheetHeader({
   );
 }
 
-function SheetFooter({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="sheet-footer"
