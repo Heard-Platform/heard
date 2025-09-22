@@ -1,21 +1,21 @@
-import { motion } from "motion/react"
-import { ThumbsUp, ThumbsDown, MessageCircle, Flag } from "lucide-react"
-import { Button } from "./ui/button"
+import { motion } from "motion/react";
+import { ThumbsUp, ThumbsDown, MessageCircle, Flag } from "lucide-react";
+import { Button } from "./ui/button";
 
 interface StatementCardProps {
   statement: {
-    id: string
-    text: string
-    author: string
-    votes: number
-    type?: "bridge" | "crux" | "plurality"
-    isSpicy?: boolean
-    voters?: { [userId: string]: "up" | "down" }
-  }
-  onVote: (id: string, type: "up" | "down") => void
-  onFlag: (id: string) => void
-  canVote: boolean
-  currentUserId?: string
+    id: string;
+    text: string;
+    author: string;
+    votes: number;
+    type?: "bridge" | "crux" | "plurality";
+    isSpicy?: boolean;
+    voters?: { [userId: string]: "up" | "down" };
+  };
+  onVote: (id: string, type: "up" | "down") => void;
+  onFlag: (id: string) => void;
+  canVote: boolean;
+  currentUserId?: string;
 }
 
 export function StatementCard({
@@ -25,32 +25,32 @@ export function StatementCard({
   canVote,
   currentUserId,
 }: StatementCardProps) {
-  const userVote = currentUserId ? statement.voters?.[currentUserId] : null
+  const userVote = currentUserId ? statement.voters?.[currentUserId] : null;
   const getTypeColor = () => {
     switch (statement.type) {
       case "bridge":
-        return "border-blue-500 bg-blue-50"
+        return "border-blue-500 bg-blue-50";
       case "crux":
-        return "border-red-500 bg-red-50"
+        return "border-red-500 bg-red-50";
       case "plurality":
-        return "border-purple-500 bg-purple-50"
+        return "border-purple-500 bg-purple-50";
       default:
-        return "border-border bg-card"
+        return "border-border bg-card";
     }
-  }
+  };
 
   const getTypeIcon = () => {
     switch (statement.type) {
       case "bridge":
-        return "🌉"
+        return "🌉";
       case "crux":
-        return "⚡"
+        return "⚡";
       case "plurality":
-        return "💎"
+        return "💎";
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <motion.div
@@ -62,9 +62,7 @@ export function StatementCard({
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            @{statement.author}
-          </span>
+          <span className="text-sm text-muted-foreground">@{statement.author}</span>
           {statement.isSpicy && <span className="text-sm">🌶️</span>}
           {getTypeIcon() && <span className="text-sm">{getTypeIcon()}</span>}
         </div>
@@ -87,9 +85,7 @@ export function StatementCard({
             className="flex items-center gap-1"
           >
             <ThumbsUp className="w-4 h-4" />
-            <span className="text-sm">
-              {statement.votes > 0 ? statement.votes : ""}
-            </span>
+            <span className="text-sm">{statement.votes > 0 ? statement.votes : ""}</span>
           </Button>
           <Button
             size="sm"
@@ -116,5 +112,5 @@ export function StatementCard({
         </div>
       </div>
     </motion.div>
-  )
+  );
 }

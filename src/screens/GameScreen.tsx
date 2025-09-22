@@ -1,34 +1,31 @@
-import { useCallback } from "react"
-import { motion, AnimatePresence } from "motion/react"
-import { Button } from "../components/ui/button"
-import { Card } from "../components/ui/card"
-import { DebateTimer } from "../components/DebateTimer"
-import { ScoreBoard } from "../components/ScoreBoard"
-import { StatementCard } from "../components/StatementCard"
-import { StatementSubmission } from "../components/StatementSubmission"
-import { AchievementNotification } from "../components/AchievementNotification"
-import { RoundIndicator } from "../components/RoundIndicator"
-import { RealTimeResults } from "../components/RealTimeResults"
-import { FinalResults } from "../components/FinalResults"
-import { Users, RefreshCw, Zap } from "lucide-react"
+import { useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
+import { DebateTimer } from "../components/DebateTimer";
+import { ScoreBoard } from "../components/ScoreBoard";
+import { StatementCard } from "../components/StatementCard";
+import { StatementSubmission } from "../components/StatementSubmission";
+import { AchievementNotification } from "../components/AchievementNotification";
+import { RoundIndicator } from "../components/RoundIndicator";
+import { RealTimeResults } from "../components/RealTimeResults";
+import { FinalResults } from "../components/FinalResults";
+import { Users, RefreshCw, Zap } from "lucide-react";
 
 interface GameScreenProps {
-  user: any
-  room: any
-  statements: any[]
-  timerActive: boolean
-  lastAchievement: any
-  onSubmitStatement: (
-    text: string,
-    type?: "bridge" | "crux" | "plurality"
-  ) => Promise<void>
-  onVote: (id: string, voteType: "up" | "down") => Promise<void>
-  onNextPhase: () => Promise<void>
-  onStartDebate: () => Promise<void>
-  onLeaveRoom: () => void
-  onNewDiscussion: (statement: any) => void
-  onScheduleFuture: () => void
-  onSkipPhase?: () => Promise<void>
+  user: any;
+  room: any;
+  statements: any[];
+  timerActive: boolean;
+  lastAchievement: any;
+  onSubmitStatement: (text: string, type?: "bridge" | "crux" | "plurality") => Promise<void>;
+  onVote: (id: string, voteType: "up" | "down") => Promise<void>;
+  onNextPhase: () => Promise<void>;
+  onStartDebate: () => Promise<void>;
+  onLeaveRoom: () => void;
+  onNewDiscussion: (statement: any) => void;
+  onScheduleFuture: () => void;
+  onSkipPhase?: () => Promise<void>;
 }
 
 export function GameScreen({
@@ -46,34 +43,32 @@ export function GameScreen({
   onScheduleFuture,
   onSkipPhase,
 }: GameScreenProps) {
-  const isSubmissionPhase = ["initial", "bridge", "crux", "plurality"].includes(
-    room.phase
-  )
+  const isSubmissionPhase = ["initial", "bridge", "crux", "plurality"].includes(room.phase);
 
   const handleStatementSubmit = useCallback(
     async (text: string, type?: "bridge" | "crux" | "plurality") => {
-      await onSubmitStatement(text, type)
+      await onSubmitStatement(text, type);
     },
     [onSubmitStatement]
-  )
+  );
 
   const handleVote = useCallback(
     async (id: string, voteType: "up" | "down") => {
-      await onVote(id, voteType)
+      await onVote(id, voteType);
     },
     [onVote]
-  )
+  );
 
   const handleNewDiscussion = useCallback(
     (statement: any) => {
-      onNewDiscussion(statement)
+      onNewDiscussion(statement);
     },
     [onNewDiscussion]
-  )
+  );
 
   const handleScheduleFuture = useCallback(() => {
-    onScheduleFuture()
-  }, [onScheduleFuture])
+    onScheduleFuture();
+  }, [onScheduleFuture]);
 
   if (room.phase === "results") {
     return (
@@ -87,13 +82,10 @@ export function GameScreen({
           onNextRound={onNextPhase}
         />
         {lastAchievement && (
-          <AchievementNotification
-            achievement={lastAchievement}
-            onClose={() => {}}
-          />
+          <AchievementNotification achievement={lastAchievement} onClose={() => {}} />
         )}
       </>
-    )
+    );
   }
 
   return (
@@ -102,26 +94,21 @@ export function GameScreen({
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div className="flex items-center gap-3">
-            <motion.h1
-              className="text-3xl font-bold text-primary"
-              whileHover={{ scale: 1.05 }}
-            >
+            <motion.h1 className="text-3xl font-bold text-primary" whileHover={{ scale: 1.05 }}>
               HEARD
             </motion.h1>
             {/* Dev Only: Skip Phase Button */}
-            {onSkipPhase &&
-              room.phase !== "results" &&
-              room.phase !== "lobby" && (
-                <Button
-                  onClick={onSkipPhase}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100"
-                >
-                  <Zap className="w-3 h-3 mr-1" />
-                  DEV: Next Phase
-                </Button>
-              )}
+            {onSkipPhase && room.phase !== "results" && room.phase !== "lobby" && (
+              <Button
+                onClick={onSkipPhase}
+                variant="outline"
+                size="sm"
+                className="text-xs bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100"
+              >
+                <Zap className="w-3 h-3 mr-1" />
+                DEV: Next Phase
+              </Button>
+            )}
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             {user && (
@@ -162,10 +149,7 @@ export function GameScreen({
         </Card>
 
         {/* Round Indicator */}
-        <RoundIndicator
-          currentRound={room.phase}
-          roundNumber={room.roundNumber}
-        />
+        <RoundIndicator currentRound={room.phase} roundNumber={room.roundNumber} />
 
         {/* Timer */}
         {timerActive && (
@@ -188,10 +172,7 @@ export function GameScreen({
                     ? "Need at least 2 players to start..."
                     : "Ready to debate!"}
                 </p>
-                <Button
-                  onClick={onStartDebate}
-                  disabled={room.participants.length < 2}
-                >
+                <Button onClick={onStartDebate} disabled={room.participants.length < 2}>
                   Start Debate! 🔥
                 </Button>
               </Card>
@@ -221,13 +202,9 @@ export function GameScreen({
             )}
 
             {/* Real-time Results - Show during active phases */}
-            {(statements.length > 0 || room.phase === "voting") &&
-              room.phase !== "results" && (
-                <RealTimeResults
-                  statements={statements}
-                  currentRound={room.phase}
-                />
-              )}
+            {(statements.length > 0 || room.phase === "voting") && room.phase !== "results" && (
+              <RealTimeResults statements={statements} currentRound={room.phase} />
+            )}
           </div>
 
           {/* Statements Feed */}
@@ -235,9 +212,7 @@ export function GameScreen({
             <h3 className="flex items-center gap-2">
               Statements ({statements.length})
               {room.phase === "voting" && (
-                <span className="text-sm text-muted-foreground">
-                  - Vote now!
-                </span>
+                <span className="text-sm text-muted-foreground">- Vote now!</span>
               )}
             </h3>
 
@@ -266,11 +241,8 @@ export function GameScreen({
       </div>
 
       {lastAchievement && (
-        <AchievementNotification
-          achievement={lastAchievement}
-          onClose={() => {}}
-        />
+        <AchievementNotification achievement={lastAchievement} onClose={() => {}} />
       )}
     </div>
-  )
+  );
 }
