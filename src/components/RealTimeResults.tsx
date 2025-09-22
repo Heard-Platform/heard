@@ -1,6 +1,13 @@
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { TrendingUp, Users, Target, Zap, BarChart3, Eye } from "lucide-react";
+import {
+  TrendingUp,
+  Users,
+  Target,
+  Zap,
+  BarChart3,
+  Eye,
+} from "lucide-react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -105,8 +112,10 @@ export function RealTimeResults({
         ...cluster,
         avgVotes:
           cluster.statements.length > 0
-            ? cluster.statements.reduce((sum, s) => sum + s.votes, 0) /
-              cluster.statements.length
+            ? cluster.statements.reduce(
+                (sum, s) => sum + s.votes,
+                0
+              ) / cluster.statements.length
             : 0,
         size: cluster.statements.length,
       }))
@@ -229,7 +238,10 @@ export function RealTimeResults({
               {analysis.consensus.length > 0 ? (
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {analysis.consensus.slice(0, 3).map((statement) => (
-                    <StatementMini key={statement.id} statement={statement} />
+                    <StatementMini
+                      key={statement.id}
+                      statement={statement}
+                    />
                   ))}
                 </div>
               ) : (
@@ -246,9 +258,14 @@ export function RealTimeResults({
               </h4>
               {analysis.controversial.length > 0 && (
                 <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {analysis.controversial.slice(0, 2).map((statement) => (
-                    <StatementMini key={statement.id} statement={statement} />
-                  ))}
+                  {analysis.controversial
+                    .slice(0, 2)
+                    .map((statement) => (
+                      <StatementMini
+                        key={statement.id}
+                        statement={statement}
+                      />
+                    ))}
                 </div>
               )}
             </div>
@@ -256,27 +273,35 @@ export function RealTimeResults({
         </TabsContent>
 
         <TabsContent value="categories" className="space-y-4">
-          {Object.entries(analysis.byType).map(([type, typeStatements]) => {
-            if (typeStatements.length === 0) return null;
-            const info = getTypeInfo(type);
-            const Icon = info.icon;
+          {Object.entries(analysis.byType).map(
+            ([type, typeStatements]) => {
+              if (typeStatements.length === 0) return null;
+              const info = getTypeInfo(type);
+              const Icon = info.icon;
 
-            return (
-              <div key={type} className={`p-3 rounded-lg ${info.bg}`}>
-                <h4
-                  className={`text-sm mb-2 flex items-center gap-2 ${info.color}`}
+              return (
+                <div
+                  key={type}
+                  className={`p-3 rounded-lg ${info.bg}`}
                 >
-                  <Icon className="w-4 h-4" />
-                  {info.label} ({typeStatements.length})
-                </h4>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {typeStatements.slice(0, 2).map((statement) => (
-                    <StatementMini key={statement.id} statement={statement} />
-                  ))}
+                  <h4
+                    className={`text-sm mb-2 flex items-center gap-2 ${info.color}`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {info.label} ({typeStatements.length})
+                  </h4>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {typeStatements.slice(0, 2).map((statement) => (
+                      <StatementMini
+                        key={statement.id}
+                        statement={statement}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            }
+          )}
         </TabsContent>
 
         <TabsContent value="clusters" className="space-y-4">
@@ -286,13 +311,16 @@ export function RealTimeResults({
                 <h4 className="text-sm">{cluster.theme}</h4>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span>{cluster.size} statements</span>
-                  <span>Avg: {cluster.avgVotes.toFixed(1)} votes</span>
+                  <span>
+                    Avg: {cluster.avgVotes.toFixed(1)} votes
+                  </span>
                 </div>
               </div>
               <Progress
                 value={
                   (cluster.avgVotes /
-                    Math.max(...statements.map((s) => s.votes)) || 1) * 100
+                    Math.max(...statements.map((s) => s.votes)) ||
+                    1) * 100
                 }
                 className="mb-2"
               />
@@ -336,7 +364,9 @@ export function RealTimeResults({
               <div className="text-2xl font-mono text-blue-600">
                 {analysis.byType.bridge.length}
               </div>
-              <div className="text-xs text-muted-foreground">Bridges found</div>
+              <div className="text-xs text-muted-foreground">
+                Bridges found
+              </div>
             </div>
             <div className="text-center p-4 border rounded-lg">
               <div className="text-2xl font-mono text-red-600">
@@ -358,7 +388,9 @@ export function RealTimeResults({
                 <Badge variant="outline" className="text-xs">
                   #{index + 1}
                 </Badge>
-                <div className="flex-1 text-xs truncate">{statement.text}</div>
+                <div className="flex-1 text-xs truncate">
+                  {statement.text}
+                </div>
                 <Badge className="text-xs">{statement.votes}</Badge>
               </div>
             ))}

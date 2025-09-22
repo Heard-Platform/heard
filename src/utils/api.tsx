@@ -38,7 +38,8 @@ class ApiClient {
       console.error("API Request failed:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Network error",
+        error:
+          error instanceof Error ? error.message : "Network error",
       };
     }
   }

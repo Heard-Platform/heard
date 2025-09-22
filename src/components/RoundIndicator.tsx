@@ -1,7 +1,13 @@
 import { motion } from "motion/react";
 import { Users, Target, Zap, MessageCircle } from "lucide-react";
 
-type Phase = "lobby" | "initial" | "bridge" | "crux" | "plurality" | "results";
+type Phase =
+  | "lobby"
+  | "initial"
+  | "bridge"
+  | "crux"
+  | "plurality"
+  | "results";
 type SubPhase = "posting" | "voting" | "review";
 
 interface RoundIndicatorProps {
@@ -162,7 +168,9 @@ export function RoundIndicator({
           {roundInfo.title}
         </h2>
         <p className="text-muted-foreground">{roundInfo.subtitle}</p>
-        <div className="text-sm text-muted-foreground">Round {roundNumber}</div>
+        <div className="text-sm text-muted-foreground">
+          Round {roundNumber}
+        </div>
       </motion.div>
 
       <div className="flex justify-center items-center gap-2 max-w-md mx-auto">
@@ -179,8 +187,8 @@ export function RoundIndicator({
                 isActive
                   ? `bg-${round.color}-100 border-2 border-${round.color}-500`
                   : isCompleted
-                  ? "bg-green-100 border-2 border-green-500"
-                  : "bg-muted border-2 border-transparent"
+                    ? "bg-green-100 border-2 border-green-500"
+                    : "bg-muted border-2 border-transparent"
               }`}
               initial={{ scale: 0.8 }}
               animate={{ scale: isActive ? 1.1 : 1 }}
@@ -191,8 +199,8 @@ export function RoundIndicator({
                   isActive
                     ? `text-${round.color}-600`
                     : isCompleted
-                    ? "text-green-600"
-                    : "text-muted-foreground"
+                      ? "text-green-600"
+                      : "text-muted-foreground"
                 }`}
               />
               <span
@@ -200,8 +208,8 @@ export function RoundIndicator({
                   isActive
                     ? `text-${round.color}-700`
                     : isCompleted
-                    ? "text-green-700"
-                    : "text-muted-foreground"
+                      ? "text-green-700"
+                      : "text-muted-foreground"
                 }`}
               >
                 {round.label}

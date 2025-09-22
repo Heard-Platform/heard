@@ -22,7 +22,9 @@ export function DebateTimer({
     const calculateTimeLeft = () => {
       if (phaseStartTime) {
         // Calculate based on server timestamp
-        const elapsed = Math.floor((Date.now() - phaseStartTime) / 1000);
+        const elapsed = Math.floor(
+          (Date.now() - phaseStartTime) / 1000
+        );
         const remaining = Math.max(0, duration - elapsed);
         return remaining;
       } else {

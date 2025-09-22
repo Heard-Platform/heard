@@ -134,7 +134,11 @@ export function GameScreen({
               />
             )}
             <div className="flex gap-2">
-              <Button onClick={onLeaveRoom} variant="outline" size="sm">
+              <Button
+                onClick={onLeaveRoom}
+                variant="outline"
+                size="sm"
+              >
                 <RefreshCw className="w-4 h-4 mr-1" />
                 Leave Room
               </Button>
@@ -147,9 +151,13 @@ export function GameScreen({
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-center">
-                <span className="text-muted-foreground">Debate Topic:</span>
+                <span className="text-muted-foreground">
+                  Debate Topic:
+                </span>
                 <br />
-                <span className="font-medium text-lg">{room.topic}</span>
+                <span className="font-medium text-lg">
+                  {room.topic}
+                </span>
               </h3>
             </div>
             <div className="text-right">
@@ -215,7 +223,8 @@ export function GameScreen({
               <Card className="p-6 text-center">
                 <h3 className="mb-2">Voting Phase</h3>
                 <p className="text-muted-foreground mb-4">
-                  Vote on the latest statements from the {room.phase} round
+                  Vote on the latest statements from the {room.phase}{" "}
+                  round
                 </p>
                 <Button onClick={onNextPhase}>Done Voting</Button>
               </Card>
@@ -225,20 +234,24 @@ export function GameScreen({
               <Card className="p-6 text-center">
                 <h3 className="mb-2">Review Phase</h3>
                 <p className="text-muted-foreground mb-4">
-                  Take a breath! Review how the {room.phase} round is shaping up
+                  Take a breath! Review how the {room.phase} round is
+                  shaping up
                 </p>
-                <Button onClick={onNextPhase}>Continue to Next Phase</Button>
+                <Button onClick={onNextPhase}>
+                  Continue to Next Phase
+                </Button>
               </Card>
             )}
 
             {/* Real-time Results - Show during voting and review phases */}
-            {statements.length > 0 && (isVotingPhase || isReviewPhase) && (
-              <RealTimeResults
-                statements={statements}
-                currentPhase={room.phase}
-                currentSubPhase={room.subPhase}
-              />
-            )}
+            {statements.length > 0 &&
+              (isVotingPhase || isReviewPhase) && (
+                <RealTimeResults
+                  statements={statements}
+                  currentPhase={room.phase}
+                  currentSubPhase={room.subPhase}
+                />
+              )}
           </div>
 
           {/* Statements Feed */}
@@ -259,7 +272,9 @@ export function GameScreen({
                     key={statement.id}
                     statement={statement}
                     onVote={handleVote}
-                    onFlag={() => console.log("Flag statement:", statement.id)}
+                    onFlag={() =>
+                      console.log("Flag statement:", statement.id)
+                    }
                     canVote={isVotingPhase}
                     currentUserId={user?.id}
                   />
@@ -268,7 +283,10 @@ export function GameScreen({
 
               {statements.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>No statements yet. Be the first to share your take!</p>
+                  <p>
+                    No statements yet. Be the first to share your
+                    take!
+                  </p>
                 </div>
               )}
             </div>

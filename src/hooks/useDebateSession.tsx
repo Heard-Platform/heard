@@ -20,7 +20,13 @@ interface UserSession {
   lastActive: number;
 }
 
-type Phase = "lobby" | "initial" | "bridge" | "crux" | "plurality" | "results";
+type Phase =
+  | "lobby"
+  | "initial"
+  | "bridge"
+  | "crux"
+  | "plurality"
+  | "results";
 type SubPhase = "posting" | "voting" | "review";
 
 interface DebateRoom {
@@ -61,9 +67,8 @@ export function useDebateSession() {
   const [activeRooms, setActiveRooms] = useState<DebateRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastAchievement, setLastAchievement] = useState<Achievement | null>(
-    null
-  );
+  const [lastAchievement, setLastAchievement] =
+    useState<Achievement | null>(null);
 
   // Initialize user session
   const initializeUser = useCallback(async (nickname?: string) => {
@@ -96,7 +101,8 @@ export function useDebateSession() {
         return userData;
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
       setError(errorMsg);
       console.error("Failed to initialize user:", errorMsg);
     }
@@ -120,7 +126,8 @@ export function useDebateSession() {
           throw new Error(response.error || "Failed to create room");
         }
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Unknown error";
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
         setError(errorMsg);
         console.error("Failed to create room:", errorMsg);
       }
@@ -145,7 +152,8 @@ export function useDebateSession() {
           throw new Error(response.error || "Failed to join room");
         }
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Unknown error";
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
         setError(errorMsg);
         console.error("Failed to join room:", errorMsg);
       }
@@ -199,7 +207,8 @@ export function useDebateSession() {
                       : prev.cruxPoints,
                   pluralityPoints:
                     type === "plurality"
-                      ? prev.pluralityPoints + response.data.pointsEarned
+                      ? prev.pluralityPoints +
+                        response.data.pointsEarned
                       : prev.pluralityPoints,
                   streak: prev.streak + 1,
                 }
@@ -216,10 +225,13 @@ export function useDebateSession() {
           await refreshRoom();
           return true;
         } else {
-          throw new Error(response.error || "Failed to submit statement");
+          throw new Error(
+            response.error || "Failed to submit statement"
+          );
         }
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Unknown error";
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
         setError(errorMsg);
         console.error("Failed to submit statement:", errorMsg);
       }
@@ -270,7 +282,8 @@ export function useDebateSession() {
           throw new Error(response.error || "Failed to vote");
         }
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Unknown error";
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
         setError(errorMsg);
         console.error("Failed to vote:", errorMsg);
       }
@@ -299,7 +312,8 @@ export function useDebateSession() {
           throw new Error(response.error || "Failed to update phase");
         }
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Unknown error";
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
         setError(errorMsg);
         console.error("Failed to update phase:", errorMsg);
       }
@@ -342,10 +356,13 @@ export function useDebateSession() {
         await getActiveRooms();
         return response.data;
       } else {
-        throw new Error(response.error || "Failed to create seed data");
+        throw new Error(
+          response.error || "Failed to create seed data"
+        );
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
       setError(errorMsg);
       console.error("Failed to create seed data:", errorMsg);
     }

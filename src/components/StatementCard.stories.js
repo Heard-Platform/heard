@@ -1,8 +1,6 @@
 import { StatementCard } from "./StatementCard";
 import { api } from "../utils/api";
 
-
-
 export default {
   title: "Components/StatementCard",
   component: StatementCard,

@@ -4,10 +4,19 @@ import { Send, Lightbulb, Zap, Target } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 
-type Phase = "lobby" | "initial" | "bridge" | "crux" | "plurality" | "results";
+type Phase =
+  | "lobby"
+  | "initial"
+  | "bridge"
+  | "crux"
+  | "plurality"
+  | "results";
 
 interface StatementSubmissionProps {
-  onSubmit: (statement: string, type?: "bridge" | "crux" | "plurality") => void;
+  onSubmit: (
+    statement: string,
+    type?: "bridge" | "crux" | "plurality"
+  ) => void;
   currentRound: Phase;
   isActive: boolean;
   placeholder?: string;
@@ -36,7 +45,8 @@ export function StatementSubmission({
     if (currentRound === "bridge") {
       return {
         title: "Find Bridges 🌉",
-        description: "Submit ideas that could bridge different perspectives",
+        description:
+          "Submit ideas that could bridge different perspectives",
         color: "text-blue-600",
         bgColor: "bg-blue-50",
       };
@@ -86,17 +96,25 @@ export function StatementSubmission({
       transition={{ duration: 0.3 }}
     >
       <div className="mb-4">
-        <h3 className={`${roundInfo.color} mb-1`}>{roundInfo.title}</h3>
-        <p className="text-sm text-muted-foreground">{roundInfo.description}</p>
+        <h3 className={`${roundInfo.color} mb-1`}>
+          {roundInfo.title}
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          {roundInfo.description}
+        </p>
       </div>
 
       {currentRound !== "initial" && (
         <div className="flex gap-2 mb-4">
           <Button
             size="sm"
-            variant={selectedType === "bridge" ? "default" : "outline"}
+            variant={
+              selectedType === "bridge" ? "default" : "outline"
+            }
             onClick={() =>
-              setSelectedType(selectedType === "bridge" ? null : "bridge")
+              setSelectedType(
+                selectedType === "bridge" ? null : "bridge"
+              )
             }
             className="flex items-center gap-1"
           >
@@ -114,9 +132,13 @@ export function StatementSubmission({
           </Button>
           <Button
             size="sm"
-            variant={selectedType === "plurality" ? "default" : "outline"}
+            variant={
+              selectedType === "plurality" ? "default" : "outline"
+            }
             onClick={() =>
-              setSelectedType(selectedType === "plurality" ? null : "plurality")
+              setSelectedType(
+                selectedType === "plurality" ? null : "plurality"
+              )
             }
             className="flex items-center gap-1"
           >

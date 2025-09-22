@@ -1,5 +1,10 @@
 import { motion } from "motion/react";
-import { ThumbsUp, ThumbsDown, MessageCircle, Flag } from "lucide-react";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  MessageCircle,
+  Flag,
+} from "lucide-react";
 import { Button } from "./ui/button";
 
 interface StatementCardProps {
@@ -25,7 +30,9 @@ export function StatementCard({
   canVote,
   currentUserId,
 }: StatementCardProps) {
-  const userVote = currentUserId ? statement.voters?.[currentUserId] : null;
+  const userVote = currentUserId
+    ? statement.voters?.[currentUserId]
+    : null;
   const getTypeColor = () => {
     switch (statement.type) {
       case "bridge":
@@ -66,7 +73,9 @@ export function StatementCard({
             @{statement.author}
           </span>
           {statement.isSpicy && <span className="text-sm">🌶️</span>}
-          {getTypeIcon() && <span className="text-sm">{getTypeIcon()}</span>}
+          {getTypeIcon() && (
+            <span className="text-sm">{getTypeIcon()}</span>
+          )}
         </div>
         {statement.type && (
           <span className="text-xs px-2 py-1 rounded-full bg-primary text-primary-foreground">

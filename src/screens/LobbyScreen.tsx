@@ -76,8 +76,11 @@ export function LobbyScreen({
         {user && (
           <Card className="p-4 bg-green-50 border-green-200">
             <p className="text-green-800">
-              Welcome back, <span className="font-medium">{user.nickname}</span>
-              !<span className="ml-2 text-sm">Score: {user.score}</span>
+              Welcome back,{" "}
+              <span className="font-medium">{user.nickname}</span>!
+              <span className="ml-2 text-sm">
+                Score: {user.score}
+              </span>
             </p>
           </Card>
         )}
@@ -88,15 +91,16 @@ export function LobbyScreen({
             <li>• Submit statements on the debate topic</li>
             <li>• Vote on other players' contributions</li>
             <li>
-              • Find <Badge variant="outline">🌉 Bridges</Badge> between
-              different views
+              • Find <Badge variant="outline">🌉 Bridges</Badge>{" "}
+              between different views
             </li>
             <li>
-              • Identify <Badge variant="outline">⚡ Cruxes</Badge> at the heart
-              of disagreements
+              • Identify <Badge variant="outline">⚡ Cruxes</Badge> at
+              the heart of disagreements
             </li>
             <li>
-              • Discover <Badge variant="outline">💎 Pluralities</Badge> -
+              • Discover{" "}
+              <Badge variant="outline">💎 Pluralities</Badge> -
               underrepresented perspectives
             </li>
             <li>• Earn points and build streaks!</li>

@@ -35,7 +35,11 @@ interface FinalResultsProps {
   onNextRound: () => void;
 }
 
-type ActivityType = "overview" | "breathing" | "nature" | "cute-animals";
+type ActivityType =
+  | "overview"
+  | "breathing"
+  | "nature"
+  | "cute-animals";
 
 export function FinalResults({
   statements,
@@ -53,7 +57,9 @@ export function FinalResults({
   const [breathingCycle, setBreathingCycle] = useState(0);
 
   // Get top statements by category
-  const getTopStatements = (type?: "bridge" | "crux" | "plurality") => {
+  const getTopStatements = (
+    type?: "bridge" | "crux" | "plurality"
+  ) => {
     return statements
       .filter((s) => (type ? s.type === type : !s.type))
       .sort((a, b) => b.votes - a.votes)
@@ -105,7 +111,10 @@ export function FinalResults({
     breathingSequence();
   };
 
-  const renderStatementCard = (statement: Statement, rank: number) => (
+  const renderStatementCard = (
+    statement: Statement,
+    rank: number
+  ) => (
     <motion.div
       key={statement.id}
       initial={{ opacity: 0, y: 20 }}
@@ -179,16 +188,16 @@ export function FinalResults({
                 breathingPhase === "inhale"
                   ? 1.3
                   : breathingPhase === "hold"
-                  ? 1.3
-                  : 1,
+                    ? 1.3
+                    : 1,
             }}
             transition={{
               duration:
                 breathingPhase === "inhale"
                   ? 4
                   : breathingPhase === "exhale"
-                  ? 6
-                  : 2,
+                    ? 6
+                    : 2,
               ease: "easeInOut",
             }}
           >
@@ -207,7 +216,8 @@ export function FinalResults({
             <p>
               {breathingPhase === "inhale" &&
                 "Slowly inhale through your nose..."}
-              {breathingPhase === "hold" && "Hold your breath gently..."}
+              {breathingPhase === "hold" &&
+                "Hold your breath gently..."}
               {breathingPhase === "exhale" &&
                 "Slowly exhale through your mouth..."}
               {breathingPhase === "rest" && "Rest and feel calm..."}
@@ -350,7 +360,9 @@ export function FinalResults({
           </div>
           <p className="text-muted-foreground">
             You earned{" "}
-            <span className="font-medium text-primary">{score} points</span>{" "}
+            <span className="font-medium text-primary">
+              {score} points
+            </span>{" "}
             this round
           </p>
         </motion.div>
@@ -367,7 +379,9 @@ export function FinalResults({
               <div className="space-y-3">
                 <h3 className="flex items-center gap-2">
                   <span>🌉 Best Bridges</span>
-                  <Badge variant="secondary">Consensus Building</Badge>
+                  <Badge variant="secondary">
+                    Consensus Building
+                  </Badge>
                 </h3>
                 <div className="space-y-2">
                   {topBridges.map((statement, index) =>
@@ -412,7 +426,9 @@ export function FinalResults({
               <div className="space-y-3">
                 <h3 className="flex items-center gap-2">
                   <span>🗣️ Most Popular</span>
-                  <Badge variant="secondary">Community Favorites</Badge>
+                  <Badge variant="secondary">
+                    Community Favorites
+                  </Badge>
                 </h3>
                 <div className="space-y-2">
                   {topGeneral.map((statement, index) =>

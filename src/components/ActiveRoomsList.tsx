@@ -146,7 +146,9 @@ export function ActiveRoomsList({
         <div className="text-center py-8 text-muted-foreground">
           <div className="mb-2">🤔</div>
           <p className="text-sm">No active rooms right now.</p>
-          <p className="text-xs mt-1">Be the first to start a debate!</p>
+          <p className="text-xs mt-1">
+            Be the first to start a debate!
+          </p>
         </div>
       ) : (
         <div className="space-y-3 max-h-80 overflow-y-auto">

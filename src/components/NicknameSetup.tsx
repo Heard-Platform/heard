@@ -22,7 +22,9 @@ export function NicknameSetup({
 
   const handleNicknameChange = (value: string) => {
     // Allow letters, numbers, spaces, and common symbols
-    const sanitized = value.replace(/[^a-zA-Z0-9\s\-_.]/g, "").substring(0, 20);
+    const sanitized = value
+      .replace(/[^a-zA-Z0-9\s\-_.]/g, "")
+      .substring(0, 20);
     setNickname(sanitized);
     setIsValid(sanitized.trim().length >= 2);
   };
@@ -64,7 +66,8 @@ export function NicknameSetup({
 
             <h1 className="text-2xl font-bold">Welcome to HEARD!</h1>
             <p className="text-muted-foreground">
-              Choose a nickname to start arguing (and secretly saving democracy)
+              Choose a nickname to start arguing (and secretly saving
+              democracy)
             </p>
           </div>
 
@@ -81,7 +84,8 @@ export function NicknameSetup({
                 disabled={loading}
               />
               <p className="text-xs text-muted-foreground">
-                2-20 characters • Letters, numbers, and basic symbols only
+                2-20 characters • Letters, numbers, and basic symbols
+                only
               </p>
             </div>
 

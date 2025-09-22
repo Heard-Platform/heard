@@ -5,7 +5,13 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { GameScreen } from "./screens/GameScreen";
 import { useDebateSession } from "./hooks/useDebateSession";
 
-type Phase = "lobby" | "initial" | "bridge" | "crux" | "plurality" | "results";
+type Phase =
+  | "lobby"
+  | "initial"
+  | "bridge"
+  | "crux"
+  | "plurality"
+  | "results";
 type SubPhase = "posting" | "voting" | "review";
 
 interface Statement {
@@ -96,7 +102,12 @@ export default function App() {
   const nextPhase = useCallback(async () => {
     if (!room) return;
 
-    const phases: Phase[] = ["initial", "bridge", "crux", "plurality"];
+    const phases: Phase[] = [
+      "initial",
+      "bridge",
+      "crux",
+      "plurality",
+    ];
     const subPhases: SubPhase[] = ["posting", "voting", "review"];
 
     const currentPhaseIndex = phases.indexOf(room.phase);
@@ -139,7 +150,9 @@ export default function App() {
   const handleNewDiscussion = useCallback((statement: Statement) => {
     // In a real app, this would create a new discussion thread
     console.log("Creating new discussion based on:", statement.text);
-    alert(`Starting new discussion: "${statement.text.substring(0, 50)}..."`);
+    alert(
+      `Starting new discussion: "${statement.text.substring(0, 50)}..."`
+    );
   }, []);
 
   const handleScheduleFuture = useCallback(() => {

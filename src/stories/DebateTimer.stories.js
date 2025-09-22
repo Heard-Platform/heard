@@ -1,17 +1,17 @@
-import { fn } from 'storybook/test';
-import { DebateTimer } from '../components/DebateTimer';
+import { fn } from "storybook/test";
+import { DebateTimer } from "../components/DebateTimer";
 
 export default {
-  title: 'Components/DebateTimer',
+  title: "Components/DebateTimer",
   component: DebateTimer,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   argTypes: {
-    duration: { control: 'number' },
-    isActive: { control: 'boolean' },
-    onTimeUp: { action: 'timeUp' },
+    duration: { control: "number" },
+    isActive: { control: "boolean" },
+    onTimeUp: { action: "timeUp" },
   },
   args: { onTimeUp: fn() },
 };

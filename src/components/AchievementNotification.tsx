@@ -70,7 +70,9 @@ export function AchievementNotification({
           animate={{ y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <div className={`p-2 rounded-full ${getBgColor()}`}>{getIcon()}</div>
+          <div className={`p-2 rounded-full ${getBgColor()}`}>
+            {getIcon()}
+          </div>
 
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
@@ -84,7 +86,9 @@ export function AchievementNotification({
                 transition={{ delay: 0.3, type: "spring" }}
               >
                 <Star className="w-4 h-4 fill-current" />
-                <span className="text-sm font-mono">+{achievement.points}</span>
+                <span className="text-sm font-mono">
+                  +{achievement.points}
+                </span>
               </motion.div>
             </div>
             <p className="text-sm text-muted-foreground">

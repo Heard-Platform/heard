@@ -13,7 +13,13 @@ interface Statement {
   voters: { [userId: string]: "up" | "down" }; // Track each user's vote type
 }
 
-type Phase = "lobby" | "initial" | "bridge" | "crux" | "plurality" | "results";
+type Phase =
+  | "lobby"
+  | "initial"
+  | "bridge"
+  | "crux"
+  | "plurality"
+  | "results";
 type SubPhase = "posting" | "voting" | "review";
 
 interface DebateRoom {
@@ -43,9 +49,12 @@ interface UserSession {
 const app = new Hono();
 
 // Utility functions
-const generateId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
+const generateId = () =>
+  Math.random().toString(36).substring(2) + Date.now().toString(36);
 
-const getUserSession = async (userId: string): Promise<UserSession | null> => {
+const getUserSession = async (
+  userId: string
+): Promise<UserSession | null> => {
   const session = await kv.get(`user:${userId}`);
   return session ? JSON.parse(session) : null;
 };
@@ -54,7 +63,9 @@ const saveUserSession = async (session: UserSession) => {
   await kv.set(`user:${session.id}`, JSON.stringify(session));
 };
 
-const getDebateRoom = async (roomId: string): Promise<DebateRoom | null> => {
+const getDebateRoom = async (
+  roomId: string
+): Promise<DebateRoom | null> => {
   const room = await kv.get(`room:${roomId}`);
   return room ? JSON.parse(room) : null;
 };
@@ -69,13 +80,20 @@ const saveDebateRoom = async (room: DebateRoom) => {
   }
 };
 
-const getStatements = async (roomId: string): Promise<Statement[]> => {
+const getStatements = async (
+  roomId: string
+): Promise<Statement[]> => {
   const statements = await kv.getByPrefix(`statement:${roomId}:`);
-  return statements.map((s) => JSON.parse(s)).sort((a, b) => b.timestamp - a.timestamp);
+  return statements
+    .map((s) => JSON.parse(s))
+    .sort((a, b) => b.timestamp - a.timestamp);
 };
 
 const saveStatement = async (statement: Statement) => {
-  await kv.set(`statement:${statement.roomId}:${statement.id}`, JSON.stringify(statement));
+  await kv.set(
+    `statement:${statement.roomId}:${statement.id}`,
+    JSON.stringify(statement)
+  );
 };
 
 // Create or join user session
@@ -84,7 +102,10 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
     const { nickname } = await c.req.json();
 
     if (!nickname || nickname.length < 2 || nickname.length > 20) {
-      return c.json({ error: "Nickname must be 2-20 characters" }, 400);
+      return c.json(
+        { error: "Nickname must be 2-20 characters" },
+        400
+      );
     }
 
     const userId = generateId();
@@ -134,7 +155,10 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
     const { topic, userId } = await c.req.json();
 
     if (!topic || topic.length < 10) {
-      return c.json({ error: "Topic must be at least 10 characters" }, 400);
+      return c.json(
+        { error: "Topic must be at least 10 characters" },
+        400
+      );
     }
 
     const user = await getUserSession(userId);
@@ -228,147 +252,159 @@ app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
 });
 
 // Submit statement
-app.post("/make-server-f1a393b4/room/:roomId/statement", async (c) => {
-  try {
-    const roomId = c.req.param("roomId");
-    const { text, type, userId } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/room/:roomId/statement",
+  async (c) => {
+    try {
+      const roomId = c.req.param("roomId");
+      const { text, type, userId } = await c.req.json();
 
-    if (!text || text.length < 5 || text.length > 500) {
-      return c.json({ error: "Statement must be 5-500 characters" }, 400);
+      if (!text || text.length < 5 || text.length > 500) {
+        return c.json(
+          { error: "Statement must be 5-500 characters" },
+          400
+        );
+      }
+
+      const room = await getDebateRoom(roomId);
+      if (!room || !room.isActive) {
+        return c.json({ error: "Room not found or inactive" }, 404);
+      }
+
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User session not found" }, 404);
+      }
+
+      if (!room.participants.includes(userId)) {
+        return c.json({ error: "User not in this room" }, 403);
+      }
+
+      const statement: Statement = {
+        id: generateId(),
+        text: text.trim(),
+        author: user.nickname,
+        votes: 0,
+        type: type || undefined,
+        isSpicy: text.includes("🌶️") || text.length > 200,
+        roomId,
+        timestamp: Date.now(),
+        voters: {},
+      };
+
+      await saveStatement(statement);
+
+      // Award points to user
+      const basePoints = 50;
+      const spicyBonus = statement.isSpicy ? 25 : 0;
+      const typeBonus = type ? 50 : 0;
+      const totalPoints = basePoints + spicyBonus + typeBonus;
+
+      user.score += totalPoints;
+      user.streak += 1;
+
+      if (type === "bridge") user.bridgePoints += totalPoints;
+      else if (type === "crux") user.cruxPoints += totalPoints;
+      else if (type === "plurality")
+        user.pluralityPoints += totalPoints;
+
+      await saveUserSession(user);
+
+      return c.json({
+        statement,
+        pointsEarned: totalPoints,
+        achievement: {
+          title: type
+            ? `${
+                type.charAt(0).toUpperCase() + type.slice(1)
+              } Submitted!`
+            : "Statement Posted!",
+          description: `+${totalPoints} points`,
+          points: totalPoints,
+          type: type || "score",
+        },
+      });
+    } catch (error) {
+      console.error("Error submitting statement:", error);
+      return c.json({ error: "Failed to submit statement" }, 500);
     }
-
-    const room = await getDebateRoom(roomId);
-    if (!room || !room.isActive) {
-      return c.json({ error: "Room not found or inactive" }, 404);
-    }
-
-    const user = await getUserSession(userId);
-    if (!user) {
-      return c.json({ error: "User session not found" }, 404);
-    }
-
-    if (!room.participants.includes(userId)) {
-      return c.json({ error: "User not in this room" }, 403);
-    }
-
-    const statement: Statement = {
-      id: generateId(),
-      text: text.trim(),
-      author: user.nickname,
-      votes: 0,
-      type: type || undefined,
-      isSpicy: text.includes("🌶️") || text.length > 200,
-      roomId,
-      timestamp: Date.now(),
-      voters: {},
-    };
-
-    await saveStatement(statement);
-
-    // Award points to user
-    const basePoints = 50;
-    const spicyBonus = statement.isSpicy ? 25 : 0;
-    const typeBonus = type ? 50 : 0;
-    const totalPoints = basePoints + spicyBonus + typeBonus;
-
-    user.score += totalPoints;
-    user.streak += 1;
-
-    if (type === "bridge") user.bridgePoints += totalPoints;
-    else if (type === "crux") user.cruxPoints += totalPoints;
-    else if (type === "plurality") user.pluralityPoints += totalPoints;
-
-    await saveUserSession(user);
-
-    return c.json({
-      statement,
-      pointsEarned: totalPoints,
-      achievement: {
-        title: type
-          ? `${type.charAt(0).toUpperCase() + type.slice(1)} Submitted!`
-          : "Statement Posted!",
-        description: `+${totalPoints} points`,
-        points: totalPoints,
-        type: type || "score",
-      },
-    });
-  } catch (error) {
-    console.error("Error submitting statement:", error);
-    return c.json({ error: "Failed to submit statement" }, 500);
   }
-});
+);
 
 // Vote on statement
-app.post("/make-server-f1a393b4/statement/:statementId/vote", async (c) => {
-  try {
-    const statementId = c.req.param("statementId");
-    const { voteType, userId } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/statement/:statementId/vote",
+  async (c) => {
+    try {
+      const statementId = c.req.param("statementId");
+      const { voteType, userId } = await c.req.json();
 
-    if (!["up", "down"].includes(voteType)) {
-      return c.json({ error: "Invalid vote type" }, 400);
-    }
-
-    const user = await getUserSession(userId);
-    if (!user) {
-      return c.json({ error: "User session not found" }, 404);
-    }
-
-    // Find the statement (need to search by prefix since we don't know the room)
-    const allStatements = await kv.getByPrefix("statement:");
-    const statementData = allStatements.find((s) => {
-      const parsed = JSON.parse(s);
-      return parsed.id === statementId;
-    });
-
-    if (!statementData) {
-      return c.json({ error: "Statement not found" }, 404);
-    }
-
-    const statement: Statement = JSON.parse(statementData);
-
-    const currentVote = statement.voters[userId];
-    let pointsEarned = 0;
-
-    // Handle different voting scenarios
-    if (currentVote === voteType) {
-      // Same vote type - undo vote
-      delete statement.voters[userId];
-      statement.votes += voteType === "up" ? -1 : 1; // Reverse the vote
-      // No points change for undoing
-    } else if (currentVote && currentVote !== voteType) {
-      // Different vote type - change vote
-      statement.voters[userId] = voteType;
-      statement.votes += voteType === "up" ? 2 : -2; // Change from -1 to +1 or vice versa
-      if (voteType === "up") {
-        pointsEarned = 10; // Award points for upvoting
+      if (!["up", "down"].includes(voteType)) {
+        return c.json({ error: "Invalid vote type" }, 400);
       }
-    } else {
-      // First time voting
-      statement.voters[userId] = voteType;
-      statement.votes += voteType === "up" ? 1 : -1;
-      if (voteType === "up") {
-        pointsEarned = 10; // Award points for upvoting
+
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User session not found" }, 404);
       }
+
+      // Find the statement (need to search by prefix since we don't know the room)
+      const allStatements = await kv.getByPrefix("statement:");
+      const statementData = allStatements.find((s) => {
+        const parsed = JSON.parse(s);
+        return parsed.id === statementId;
+      });
+
+      if (!statementData) {
+        return c.json({ error: "Statement not found" }, 404);
+      }
+
+      const statement: Statement = JSON.parse(statementData);
+
+      const currentVote = statement.voters[userId];
+      let pointsEarned = 0;
+
+      // Handle different voting scenarios
+      if (currentVote === voteType) {
+        // Same vote type - undo vote
+        delete statement.voters[userId];
+        statement.votes += voteType === "up" ? -1 : 1; // Reverse the vote
+        // No points change for undoing
+      } else if (currentVote && currentVote !== voteType) {
+        // Different vote type - change vote
+        statement.voters[userId] = voteType;
+        statement.votes += voteType === "up" ? 2 : -2; // Change from -1 to +1 or vice versa
+        if (voteType === "up") {
+          pointsEarned = 10; // Award points for upvoting
+        }
+      } else {
+        // First time voting
+        statement.voters[userId] = voteType;
+        statement.votes += voteType === "up" ? 1 : -1;
+        if (voteType === "up") {
+          pointsEarned = 10; // Award points for upvoting
+        }
+      }
+
+      await saveStatement(statement);
+
+      // Update user points
+      if (pointsEarned > 0) {
+        user.score += pointsEarned;
+        await saveUserSession(user);
+      }
+
+      return c.json({
+        statement,
+        pointsEarned,
+        userVote: statement.voters[userId] || null,
+      });
+    } catch (error) {
+      console.error("Error voting on statement:", error);
+      return c.json({ error: "Failed to vote on statement" }, 500);
     }
-
-    await saveStatement(statement);
-
-    // Update user points
-    if (pointsEarned > 0) {
-      user.score += pointsEarned;
-      await saveUserSession(user);
-    }
-
-    return c.json({
-      statement,
-      pointsEarned,
-      userVote: statement.voters[userId] || null,
-    });
-  } catch (error) {
-    console.error("Error voting on statement:", error);
-    return c.json({ error: "Failed to vote on statement" }, 500);
   }
-});
+);
 
 // Update room phase
 app.post("/make-server-f1a393b4/room/:roomId/phase", async (c) => {
@@ -376,8 +412,19 @@ app.post("/make-server-f1a393b4/room/:roomId/phase", async (c) => {
     const roomId = c.req.param("roomId");
     const { phase, subPhase, userId } = await c.req.json();
 
-    const validPhases: Phase[] = ["lobby", "initial", "bridge", "crux", "plurality", "results"];
-    const validSubPhases: SubPhase[] = ["posting", "voting", "review"];
+    const validPhases: Phase[] = [
+      "lobby",
+      "initial",
+      "bridge",
+      "crux",
+      "plurality",
+      "results",
+    ];
+    const validSubPhases: SubPhase[] = [
+      "posting",
+      "voting",
+      "review",
+    ];
 
     if (!validPhases.includes(phase)) {
       return c.json({ error: "Invalid phase" }, 400);
@@ -448,7 +495,12 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
       subPhase: "voting", // Start in voting sub-phase
       roundNumber: 1,
       phaseStartTime: Date.now(),
-      participants: [userId, "test_user_1", "test_user_2", "test_user_3"],
+      participants: [
+        userId,
+        "test_user_1",
+        "test_user_2",
+        "test_user_3",
+      ],
       isActive: true,
       createdAt: Date.now(),
     };
@@ -607,7 +659,8 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
     return c.json({
       room: debateRoom,
       statements: statements.length,
-      message: "Seed data created successfully! You can now join the test room.",
+      message:
+        "Seed data created successfully! You can now join the test room.",
     });
   } catch (error) {
     console.error("Error creating seed data:", error);
