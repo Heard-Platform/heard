@@ -1,29 +1,30 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'motion/react'
-import { Button } from '../components/ui/button'
-import { Card } from '../components/ui/card'
-import { Badge } from '../components/ui/badge'
-import { ActiveRoomsList } from '../components/ActiveRoomsList'
-import { Plus } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { motion } from "motion/react";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { ActiveRoomsList } from "../components/ActiveRoomsList";
+import { Plus, Database } from "lucide-react";
 
 interface LobbyScreenProps {
-  user: any
-  activeRooms: any[]
-  loading: boolean
-  error: string | null
-  onCreateRoom: (topic: string) => Promise<void>
-  onJoinRoom: (roomId: string) => Promise<void>
-  onRefreshRooms: () => Promise<any[]>
-  onJumpToFinalResults?: () => Promise<void>
+  user: any;
+  activeRooms: any[];
+  loading: boolean;
+  error: string | null;
+  onCreateRoom: (topic: string) => Promise<void>;
+  onJoinRoom: (roomId: string) => Promise<void>;
+  onRefreshRooms: () => Promise<any[]>;
+  onJumpToFinalResults?: () => Promise<void>;
+  onCreateSeedData?: () => Promise<any>;
 }
 
 const debateTopics = [
   "Social media does more harm than good for society",
   "Remote work is better than in-person work",
-  "AI will solve more problems than it creates", 
+  "AI will solve more problems than it creates",
   "Democracy is the best form of government",
-  "Economic growth should be prioritized over environmental protection"
-]
+  "Economic growth should be prioritized over environmental protection",
+];
 
 export function LobbyScreen({
   user,
@@ -33,14 +34,26 @@ export function LobbyScreen({
   onCreateRoom,
   onJoinRoom,
   onRefreshRooms,
-  onJumpToFinalResults
+  onJumpToFinalResults,
+  onCreateSeedData,
 }: LobbyScreenProps) {
-  const [newRoomTopic, setNewRoomTopic] = useState('')
+  const [newRoomTopic, setNewRoomTopic] = useState("");
 
   const handleCreateRoom = async () => {
-    if (!newRoomTopic.trim()) return
-    await onCreateRoom(newRoomTopic.trim())
-  }
+    if (!newRoomTopic.trim()) return;
+    await onCreateRoom(newRoomTopic.trim());
+  };
+
+  const handleCreateSeedData = async () => {
+    if (onCreateSeedData) {
+      const result = await onCreateSeedData();
+      if (result) {
+        alert(
+          `✅ ${result.message}\n\nCreated:\n• 1 test room with 4 players\n• ${result.statements} diverse statements\n• Various votes and types\n\nCheck the "Join Existing Room" section!`
+        );
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
@@ -49,7 +62,7 @@ export function LobbyScreen({
         animate={{ scale: 1, opacity: 1 }}
         className="text-center space-y-6 max-w-2xl w-full"
       >
-        <motion.h1 
+        <motion.h1
           className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
@@ -63,7 +76,7 @@ export function LobbyScreen({
         {user && (
           <Card className="p-4 bg-green-50 border-green-200">
             <p className="text-green-800">
-              Welcome back, <span className="font-medium">{user.nickname}</span>! 
+              Welcome back, <span className="font-medium">{user.nickname}</span>!
               <span className="ml-2 text-sm">Score: {user.score}</span>
             </p>
           </Card>
@@ -74,9 +87,16 @@ export function LobbyScreen({
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li>• Submit statements on the debate topic</li>
             <li>• Vote on other players' contributions</li>
-            <li>• Find <Badge variant="outline">🌉 Bridges</Badge> between different views</li>
-            <li>• Identify <Badge variant="outline">⚡ Cruxes</Badge> at the heart of disagreements</li>
-            <li>• Discover <Badge variant="outline">💎 Pluralities</Badge> - underrepresented perspectives</li>
+            <li>
+              • Find <Badge variant="outline">🌉 Bridges</Badge> between different views
+            </li>
+            <li>
+              • Identify <Badge variant="outline">⚡ Cruxes</Badge> at the heart of disagreements
+            </li>
+            <li>
+              • Discover <Badge variant="outline">💎 Pluralities</Badge> - underrepresented
+              perspectives
+            </li>
             <li>• Earn points and build streaks!</li>
           </ul>
         </Card>
@@ -85,21 +105,19 @@ export function LobbyScreen({
           <Card className="p-6">
             <h3 className="mb-4">🏛️ Create New Debate Room</h3>
             <div className="space-y-3">
-              <select 
+              <select
                 className="w-full p-2 border rounded-md"
                 value={newRoomTopic}
                 onChange={(e) => setNewRoomTopic(e.target.value)}
               >
                 <option value="">Choose a topic...</option>
                 {debateTopics.map((topic) => (
-                  <option key={topic} value={topic}>{topic}</option>
+                  <option key={topic} value={topic}>
+                    {topic}
+                  </option>
                 ))}
               </select>
-              <Button 
-                onClick={handleCreateRoom}
-                disabled={!newRoomTopic}
-                className="w-full"
-              >
+              <Button onClick={handleCreateRoom} disabled={!newRoomTopic} className="w-full">
                 <Plus className="w-4 h-4 mr-2" />
                 Create New Room
               </Button>
@@ -114,7 +132,7 @@ export function LobbyScreen({
           />
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3 justify-center">
           {/* Development only - remove in production */}
           {onJumpToFinalResults && (
             <Button
@@ -126,6 +144,17 @@ export function LobbyScreen({
               🚧 DEV: Jump to Final Results
             </Button>
           )}
+          {onCreateSeedData && (
+            <Button
+              onClick={handleCreateSeedData}
+              variant="outline"
+              size="sm"
+              className="text-xs bg-green-50 border-green-200 text-green-800 hover:bg-green-100"
+            >
+              <Database className="w-3 h-3 mr-1" />
+              🧪 DEV: Create Test Data
+            </Button>
+          )}
         </div>
 
         {error && (
@@ -135,5 +164,5 @@ export function LobbyScreen({
         )}
       </motion.div>
     </div>
-  )
+  );
 }

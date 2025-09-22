@@ -417,4 +417,182 @@ app.get("/make-server-f1a393b4/rooms/active", async (c) => {
   }
 });
 
+// Create seed data for testing
+app.post("/make-server-f1a393b4/seed/create", async (c) => {
+  try {
+    const { userId } = await c.req.json();
+
+    const user = await getUserSession(userId);
+    if (!user) {
+      return c.json({ error: "User session not found" }, 404);
+    }
+
+    // Create a test room
+    const roomId = generateId();
+    const debateRoom: DebateRoom = {
+      id: roomId,
+      topic:
+        "Metro escalator walking: should you always stand right, or is it okay to walk on the left side?",
+      phase: "voting", // Start in voting phase for immediate testing
+      roundNumber: 1,
+      phaseStartTime: Date.now(),
+      participants: [userId, "test_user_1", "test_user_2", "test_user_3"],
+      isActive: true,
+      createdAt: Date.now(),
+    };
+
+    await saveDebateRoom(debateRoom);
+
+    // Create fake users
+    const fakeUsers = [
+      {
+        id: "test_user_1",
+        nickname: "MetroCommuter",
+        score: 450,
+        bridgePoints: 150,
+        cruxPoints: 200,
+        pluralityPoints: 100,
+        streak: 3,
+        currentRoomId: roomId,
+        lastActive: Date.now(),
+      },
+      {
+        id: "test_user_2",
+        nickname: "RushHourWarrior",
+        score: 380,
+        bridgePoints: 80,
+        cruxPoints: 250,
+        pluralityPoints: 50,
+        streak: 5,
+        currentRoomId: roomId,
+        lastActive: Date.now(),
+      },
+      {
+        id: "test_user_3",
+        nickname: "EscalatorEtiquette",
+        score: 520,
+        bridgePoints: 300,
+        cruxPoints: 120,
+        pluralityPoints: 100,
+        streak: 2,
+        currentRoomId: roomId,
+        lastActive: Date.now(),
+      },
+    ];
+
+    // Save fake users
+    for (const fakeUser of fakeUsers) {
+      await saveUserSession(fakeUser);
+    }
+
+    // Create diverse statements with different types and votes
+    const statements: Statement[] = [
+      {
+        id: generateId(),
+        text: "Stand right, walk left - it's literally posted everywhere and keeps traffic flowing smoothly for everyone",
+        author: "MetroCommuter",
+        votes: 8,
+        type: "bridge",
+        isSpicy: false,
+        roomId,
+        timestamp: Date.now() - 900000, // 15 min ago
+        voters: { [userId]: "up", test_user_2: "up", test_user_3: "up" },
+      },
+      {
+        id: generateId(),
+        text: "The real issue is whether escalators are transportation or moving sidewalks - affects the whole etiquette 🌶️",
+        author: "RushHourWarrior",
+        votes: -2,
+        type: "crux",
+        isSpicy: true,
+        roomId,
+        timestamp: Date.now() - 800000, // 13 min ago
+        voters: { test_user_1: "down", test_user_3: "down" },
+      },
+      {
+        id: generateId(),
+        text: "What about people with mobility issues who need to hold the handrail on both sides?",
+        author: "EscalatorEtiquette",
+        votes: 5,
+        type: "plurality",
+        isSpicy: false,
+        roomId,
+        timestamp: Date.now() - 700000, // 11 min ago
+        voters: { [userId]: "up", test_user_1: "up" },
+      },
+      {
+        id: generateId(),
+        text: "Some escalators are too narrow for two people anyway - the rule doesn't always work",
+        author: user.nickname,
+        votes: 3,
+        isSpicy: false,
+        roomId,
+        timestamp: Date.now() - 600000, // 10 min ago
+        voters: { test_user_1: "up", test_user_3: "up" },
+      },
+      {
+        id: generateId(),
+        text: "If you're not walking just take the elevator!! Escalators are for MOVING PEOPLE 🌶️",
+        author: "RushHourWarrior",
+        votes: 1,
+        isSpicy: true,
+        roomId,
+        timestamp: Date.now() - 500000, // 8 min ago
+        voters: { test_user_2: "up" },
+      },
+      {
+        id: generateId(),
+        text: "Maybe we need better signage or even separate escalators for walkers vs standers?",
+        author: "EscalatorEtiquette",
+        votes: 6,
+        type: "bridge",
+        isSpicy: false,
+        roomId,
+        timestamp: Date.now() - 400000, // 6 min ago
+        voters: { [userId]: "up", test_user_1: "up", test_user_2: "up" },
+      },
+      {
+        id: generateId(),
+        text: "This is about respecting shared public space vs individual convenience - basic civics!",
+        author: "MetroCommuter",
+        votes: 4,
+        type: "crux",
+        isSpicy: false,
+        roomId,
+        timestamp: Date.now() - 300000, // 5 min ago
+        voters: { test_user_1: "up", test_user_3: "up" },
+      },
+      {
+        id: generateId(),
+        text: "Tourist season changes everything - they don't know the rules and clog up the system",
+        author: "EscalatorEtiquette",
+        votes: 2,
+        type: "plurality",
+        isSpicy: false,
+        roomId,
+        timestamp: Date.now() - 200000, // 3 min ago
+        voters: { [userId]: "up" },
+      },
+    ];
+
+    // Save all statements
+    for (const statement of statements) {
+      await saveStatement(statement);
+    }
+
+    // Update user's current room
+    user.currentRoomId = roomId;
+    await saveUserSession(user);
+
+    return c.json({
+      room: debateRoom,
+      statements: statements.length,
+      message: "Seed data created successfully! You can now join the test room.",
+    });
+  } catch (error) {
+    console.error("Error creating seed data:", error);
+    return c.json({ error: "Failed to create seed data" }, 500);
+  }
+});
+
 export { app as debateApi };

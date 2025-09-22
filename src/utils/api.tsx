@@ -96,6 +96,14 @@ class ApiClient {
       body: JSON.stringify({ voteType, userId }),
     });
   }
+
+  // Development helpers
+  async createSeedData(userId: string) {
+    return this.request("/seed/create", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
 }
 
 export const api = new ApiClient();
