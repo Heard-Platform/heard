@@ -5,6 +5,9 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { GameScreen } from "./screens/GameScreen";
 import { useDebateSession } from "./hooks/useDebateSession";
 
+type Phase = "lobby" | "initial" | "bridge" | "crux" | "plurality" | "results";
+type SubPhase = "posting" | "voting" | "review";
+
 interface Statement {
   id: string;
   text: string;
@@ -64,8 +67,12 @@ export default function App() {
   const handleJoinRoom = async (roomId: string) => {
     const roomData = await joinRoom(roomId);
     if (roomData) {
-      // Set timer based on current phase
-      setTimerActive(!["lobby", "voting", "results"].includes(roomData.phase));
+      // Set timer based on current phase and subPhase
+      setTimerActive(
+        roomData.phase !== "lobby" &&
+          roomData.phase !== "results" &&
+          roomData.subPhase === "posting"
+      );
     }
   };
 
@@ -89,23 +96,43 @@ export default function App() {
   const nextPhase = useCallback(async () => {
     if (!room) return;
 
-    const phases = ["initial", "bridge", "crux", "plurality", "voting", "results"];
-    const currentIndex = phases.indexOf(room.phase);
+    const phases: Phase[] = ["initial", "bridge", "crux", "plurality"];
+    const subPhases: SubPhase[] = ["posting", "voting", "review"];
 
-    if (currentIndex < phases.length - 1) {
-      const nextPhase = phases[currentIndex + 1];
-      await updateRoomPhase(nextPhase);
-      setTimerActive(nextPhase !== "voting" && nextPhase !== "results");
-    } else {
-      // Start new round - go back to initial
-      await updateRoomPhase("initial");
+    const currentPhaseIndex = phases.indexOf(room.phase);
+    const currentSubPhaseIndex = room.subPhase
+      ? subPhases.indexOf(room.subPhase)
+      : 0;
+
+    // If we're in results, start a new round
+    if (room.phase === "results") {
+      await updateRoomPhase("initial", "posting");
       setTimerActive(true);
+      return;
+    }
+
+    // Move to next sub-phase within current phase
+    if (currentSubPhaseIndex < subPhases.length - 1) {
+      const nextSubPhase = subPhases[currentSubPhaseIndex + 1];
+      await updateRoomPhase(room.phase, nextSubPhase);
+      setTimerActive(nextSubPhase === "posting");
+    }
+    // Move to next phase
+    else if (currentPhaseIndex < phases.length - 1) {
+      const nextPhase = phases[currentPhaseIndex + 1];
+      await updateRoomPhase(nextPhase, "posting");
+      setTimerActive(true);
+    }
+    // Go to results
+    else {
+      await updateRoomPhase("results");
+      setTimerActive(false);
     }
   }, [room, updateRoomPhase]);
 
   const startDebate = async () => {
     if (!room) return;
-    await updateRoomPhase("initial");
+    await updateRoomPhase("initial", "posting");
     setTimerActive(true);
   };
 
@@ -116,7 +143,9 @@ export default function App() {
   }, []);
 
   const handleScheduleFuture = useCallback(() => {
-    alert("Feature coming soon! We'll notify you about upcoming scheduled debates.");
+    alert(
+      "Feature coming soon! We'll notify you about upcoming scheduled debates."
+    );
   }, []);
 
   const handleLeaveRoom = () => {
@@ -141,10 +170,14 @@ export default function App() {
   // Sync timerActive with room phase changes (for real-time multiplayer)
   useEffect(() => {
     if (room) {
-      const shouldBeActive = !["lobby", "voting", "results"].includes(room.phase);
+      // Only activate timer for posting sub-phases
+      const shouldBeActive =
+        room.phase !== "lobby" &&
+        room.phase !== "results" &&
+        room.subPhase === "posting";
       setTimerActive(shouldBeActive);
     }
-  }, [room?.phase]);
+  }, [room?.phase, room?.subPhase]);
 
   // Derived state - single source of truth
   const showNicknameSetup = !user;
@@ -156,7 +189,11 @@ export default function App() {
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "linear",
+          }}
           className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full"
         />
       </div>
@@ -165,7 +202,13 @@ export default function App() {
 
   // Nickname Setup
   if (showNicknameSetup) {
-    return <NicknameSetup onComplete={handleNicknameComplete} loading={loading} error={error} />;
+    return (
+      <NicknameSetup
+        onComplete={handleNicknameComplete}
+        loading={loading}
+        error={error}
+      />
+    );
   }
 
   // Lobby - Room Selection/Creation

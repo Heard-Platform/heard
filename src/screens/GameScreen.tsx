@@ -18,7 +18,10 @@ interface GameScreenProps {
   statements: any[];
   timerActive: boolean;
   lastAchievement: any;
-  onSubmitStatement: (text: string, type?: "bridge" | "crux" | "plurality") => Promise<void>;
+  onSubmitStatement: (
+    text: string,
+    type?: "bridge" | "crux" | "plurality"
+  ) => Promise<void>;
   onVote: (id: string, voteType: "up" | "down") => Promise<void>;
   onNextPhase: () => Promise<void>;
   onStartDebate: () => Promise<void>;
@@ -43,7 +46,9 @@ export function GameScreen({
   onScheduleFuture,
   onSkipPhase,
 }: GameScreenProps) {
-  const isSubmissionPhase = ["initial", "bridge", "crux", "plurality"].includes(room.phase);
+  const isSubmissionPhase = room.subPhase === "posting";
+  const isVotingPhase = room.subPhase === "voting";
+  const isReviewPhase = room.subPhase === "review";
 
   const handleStatementSubmit = useCallback(
     async (text: string, type?: "bridge" | "crux" | "plurality") => {
@@ -82,7 +87,10 @@ export function GameScreen({
           onNextRound={onNextPhase}
         />
         {lastAchievement && (
-          <AchievementNotification achievement={lastAchievement} onClose={() => {}} />
+          <AchievementNotification
+            achievement={lastAchievement}
+            onClose={() => {}}
+          />
         )}
       </>
     );
@@ -94,21 +102,26 @@ export function GameScreen({
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div className="flex items-center gap-3">
-            <motion.h1 className="text-3xl font-bold text-primary" whileHover={{ scale: 1.05 }}>
+            <motion.h1
+              className="text-3xl font-bold text-primary"
+              whileHover={{ scale: 1.05 }}
+            >
               HEARD
             </motion.h1>
             {/* Dev Only: Skip Phase Button */}
-            {onSkipPhase && room.phase !== "results" && room.phase !== "lobby" && (
-              <Button
-                onClick={onSkipPhase}
-                variant="outline"
-                size="sm"
-                className="text-xs bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100"
-              >
-                <Zap className="w-3 h-3 mr-1" />
-                DEV: Next Phase
-              </Button>
-            )}
+            {onSkipPhase &&
+              room.phase !== "results" &&
+              room.phase !== "lobby" && (
+                <Button
+                  onClick={onSkipPhase}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100"
+                >
+                  <Zap className="w-3 h-3 mr-1" />
+                  DEV: Next Phase
+                </Button>
+              )}
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             {user && (
@@ -149,7 +162,11 @@ export function GameScreen({
         </Card>
 
         {/* Round Indicator */}
-        <RoundIndicator currentRound={room.phase} roundNumber={room.roundNumber} />
+        <RoundIndicator
+          currentRound={room.phase}
+          currentSubPhase={room.subPhase}
+          roundNumber={room.roundNumber}
+        />
 
         {/* Timer */}
         {timerActive && (
@@ -172,7 +189,10 @@ export function GameScreen({
                     ? "Need at least 2 players to start..."
                     : "Ready to debate!"}
                 </p>
-                <Button onClick={onStartDebate} disabled={room.participants.length < 2}>
+                <Button
+                  onClick={onStartDebate}
+                  disabled={room.participants.length < 2}
+                >
                   Start Debate! 🔥
                 </Button>
               </Card>
@@ -191,19 +211,33 @@ export function GameScreen({
               />
             )}
 
-            {room.phase === "voting" && (
+            {isVotingPhase && (
               <Card className="p-6 text-center">
                 <h3 className="mb-2">Voting Phase</h3>
                 <p className="text-muted-foreground mb-4">
-                  Review all statements and vote on the best contributions
+                  Vote on the latest statements from the {room.phase} round
                 </p>
-                <Button onClick={onNextPhase}>Finish Voting</Button>
+                <Button onClick={onNextPhase}>Done Voting</Button>
               </Card>
             )}
 
-            {/* Real-time Results - Show during active phases */}
-            {(statements.length > 0 || room.phase === "voting") && room.phase !== "results" && (
-              <RealTimeResults statements={statements} currentRound={room.phase} />
+            {isReviewPhase && (
+              <Card className="p-6 text-center">
+                <h3 className="mb-2">Review Phase</h3>
+                <p className="text-muted-foreground mb-4">
+                  Take a breath! Review how the {room.phase} round is shaping up
+                </p>
+                <Button onClick={onNextPhase}>Continue to Next Phase</Button>
+              </Card>
+            )}
+
+            {/* Real-time Results - Show during voting and review phases */}
+            {statements.length > 0 && (isVotingPhase || isReviewPhase) && (
+              <RealTimeResults
+                statements={statements}
+                currentPhase={room.phase}
+                currentSubPhase={room.subPhase}
+              />
             )}
           </div>
 
@@ -211,8 +245,10 @@ export function GameScreen({
           <div className="lg:col-span-2 space-y-4">
             <h3 className="flex items-center gap-2">
               Statements ({statements.length})
-              {room.phase === "voting" && (
-                <span className="text-sm text-muted-foreground">- Vote now!</span>
+              {isVotingPhase && (
+                <span className="text-sm text-muted-foreground">
+                  - Vote now!
+                </span>
               )}
             </h3>
 
@@ -224,7 +260,7 @@ export function GameScreen({
                     statement={statement}
                     onVote={handleVote}
                     onFlag={() => console.log("Flag statement:", statement.id)}
-                    canVote={room.phase === "voting"}
+                    canVote={isVotingPhase}
                     currentUserId={user?.id}
                   />
                 ))}
@@ -241,7 +277,10 @@ export function GameScreen({
       </div>
 
       {lastAchievement && (
-        <AchievementNotification achievement={lastAchievement} onClose={() => {}} />
+        <AchievementNotification
+          achievement={lastAchievement}
+          onClose={() => {}}
+        />
       )}
     </div>
   );

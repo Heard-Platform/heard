@@ -8,7 +8,14 @@ import { Users, Clock, RefreshCw, LogIn } from "lucide-react";
 interface DebateRoom {
   id: string;
   topic: string;
-  phase: "lobby" | "initial" | "bridge" | "crux" | "plurality" | "voting" | "results";
+  phase:
+    | "lobby"
+    | "initial"
+    | "bridge"
+    | "crux"
+    | "plurality"
+    | "voting"
+    | "results";
   roundNumber: number;
   phaseStartTime: number;
   participants: string[];
@@ -81,7 +88,8 @@ export function ActiveRoomsList({
   // Filter out rooms that are too old or in results phase, then sort by most recent
   const availableRooms = rooms
     .filter((room) => {
-      const hoursSinceCreated = (Date.now() - room.createdAt) / (1000 * 60 * 60);
+      const hoursSinceCreated =
+        (Date.now() - room.createdAt) / (1000 * 60 * 60);
       return room.isActive && hoursSinceCreated < 2; // Only show rooms from last 2 hours
     })
     .sort((a, b) => b.createdAt - a.createdAt); // Most recent first
@@ -153,7 +161,9 @@ export function ActiveRoomsList({
               >
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium leading-tight line-clamp-2">{room.topic}</p>
+                    <p className="text-sm font-medium leading-tight line-clamp-2">
+                      {room.topic}
+                    </p>
                     <Badge
                       variant="outline"
                       className={`shrink-0 text-xs ${phaseColors[room.phase]}`}
@@ -173,7 +183,10 @@ export function ActiveRoomsList({
                         <span>{formatTimeAgo(room.createdAt)}</span>
                       </div>
                       {room.roundNumber > 1 && (
-                        <Badge variant="secondary" className="text-xs px-1 py-0">
+                        <Badge
+                          variant="secondary"
+                          className="text-xs px-1 py-0"
+                        >
                           Round {room.roundNumber}
                         </Badge>
                       )}

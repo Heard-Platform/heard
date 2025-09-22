@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { motion } from 'motion/react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Card } from './ui/card';
-import { Label } from './ui/label';
-import { UserPlus, Sparkles } from 'lucide-react';
+import { useState } from "react";
+import { motion } from "motion/react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Card } from "./ui/card";
+import { Label } from "./ui/label";
+import { UserPlus, Sparkles } from "lucide-react";
 
 interface NicknameSetupProps {
   onComplete: (nickname: string) => void;
@@ -12,13 +12,17 @@ interface NicknameSetupProps {
   error?: string;
 }
 
-export function NicknameSetup({ onComplete, loading = false, error }: NicknameSetupProps) {
-  const [nickname, setNickname] = useState('');
+export function NicknameSetup({
+  onComplete,
+  loading = false,
+  error,
+}: NicknameSetupProps) {
+  const [nickname, setNickname] = useState("");
   const [isValid, setIsValid] = useState(false);
 
   const handleNicknameChange = (value: string) => {
     // Allow letters, numbers, spaces, and common symbols
-    const sanitized = value.replace(/[^a-zA-Z0-9\s\-_.]/g, '').substring(0, 20);
+    const sanitized = value.replace(/[^a-zA-Z0-9\s\-_.]/g, "").substring(0, 20);
     setNickname(sanitized);
     setIsValid(sanitized.trim().length >= 2);
   };
@@ -31,8 +35,14 @@ export function NicknameSetup({ onComplete, loading = false, error }: NicknameSe
   };
 
   const suggestions = [
-    'DebateMaster', 'BridgeBuilder', 'CruxHunter', 'VoiceOfReason', 
-    'SpicyTaker', 'Synthesizer', 'TruthSeeker', 'Diplomat'
+    "DebateMaster",
+    "BridgeBuilder",
+    "CruxHunter",
+    "VoiceOfReason",
+    "SpicyTaker",
+    "Synthesizer",
+    "TruthSeeker",
+    "Diplomat",
   ];
 
   return (
@@ -51,7 +61,7 @@ export function NicknameSetup({ onComplete, loading = false, error }: NicknameSe
             >
               <UserPlus className="w-8 h-8 text-white" />
             </motion.div>
-            
+
             <h1 className="text-2xl font-bold">Welcome to HEARD!</h1>
             <p className="text-muted-foreground">
               Choose a nickname to start arguing (and secretly saving democracy)
@@ -67,7 +77,7 @@ export function NicknameSetup({ onComplete, loading = false, error }: NicknameSe
                 value={nickname}
                 onChange={(e) => handleNicknameChange(e.target.value)}
                 placeholder="Enter a nickname..."
-                className={isValid ? 'border-green-300' : ''}
+                className={isValid ? "border-green-300" : ""}
                 disabled={loading}
               />
               <p className="text-xs text-muted-foreground">
@@ -85,16 +95,20 @@ export function NicknameSetup({ onComplete, loading = false, error }: NicknameSe
               </motion.div>
             )}
 
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <Button
+              type="submit"
+              className="w-full"
               disabled={!isValid || loading}
             >
               {loading ? (
                 <>
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                     className="w-4 h-4 mr-2"
                   >
                     <Sparkles className="w-4 h-4" />

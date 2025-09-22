@@ -13,10 +13,14 @@ interface Statement {
   voters: { [userId: string]: "up" | "down" }; // Track each user's vote type
 }
 
+type Phase = "lobby" | "initial" | "bridge" | "crux" | "plurality" | "results";
+type SubPhase = "posting" | "voting" | "review";
+
 interface DebateRoom {
   id: string;
   topic: string;
-  phase: "lobby" | "initial" | "bridge" | "crux" | "plurality" | "voting" | "results";
+  phase: Phase;
+  subPhase?: SubPhase;
   roundNumber: number;
   phaseStartTime: number;
   participants: string[];
@@ -370,11 +374,17 @@ app.post("/make-server-f1a393b4/statement/:statementId/vote", async (c) => {
 app.post("/make-server-f1a393b4/room/:roomId/phase", async (c) => {
   try {
     const roomId = c.req.param("roomId");
-    const { phase, userId } = await c.req.json();
+    const { phase, subPhase, userId } = await c.req.json();
 
-    const validPhases = ["lobby", "initial", "bridge", "crux", "plurality", "voting", "results"];
+    const validPhases: Phase[] = ["lobby", "initial", "bridge", "crux", "plurality", "results"];
+    const validSubPhases: SubPhase[] = ["posting", "voting", "review"];
+
     if (!validPhases.includes(phase)) {
       return c.json({ error: "Invalid phase" }, 400);
+    }
+
+    if (subPhase && !validSubPhases.includes(subPhase)) {
+      return c.json({ error: "Invalid subPhase" }, 400);
     }
 
     const room = await getDebateRoom(roomId);
@@ -388,6 +398,7 @@ app.post("/make-server-f1a393b4/room/:roomId/phase", async (c) => {
     }
 
     room.phase = phase;
+    room.subPhase = subPhase;
     room.phaseStartTime = Date.now();
 
     // If moving to results, increment round number
@@ -433,7 +444,8 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
       id: roomId,
       topic:
         "Metro escalator walking: should you always stand right, or is it okay to walk on the left side?",
-      phase: "voting", // Start in voting phase for immediate testing
+      phase: "initial", // Start in initial phase for immediate testing
+      subPhase: "voting", // Start in voting sub-phase
       roundNumber: 1,
       phaseStartTime: Date.now(),
       participants: [userId, "test_user_1", "test_user_2", "test_user_3"],
@@ -496,7 +508,11 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
         isSpicy: false,
         roomId,
         timestamp: Date.now() - 900000, // 15 min ago
-        voters: { [userId]: "up", test_user_2: "up", test_user_3: "up" },
+        voters: {
+          [userId]: "up",
+          test_user_2: "up",
+          test_user_3: "up",
+        },
       },
       {
         id: generateId(),
@@ -549,7 +565,11 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
         isSpicy: false,
         roomId,
         timestamp: Date.now() - 400000, // 6 min ago
-        voters: { [userId]: "up", test_user_1: "up", test_user_2: "up" },
+        voters: {
+          [userId]: "up",
+          test_user_1: "up",
+          test_user_2: "up",
+        },
       },
       {
         id: generateId(),

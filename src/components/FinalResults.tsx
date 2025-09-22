@@ -1,28 +1,28 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
-import { Badge } from './ui/badge';
-import { Separator } from './ui/separator';
-import { ImageWithFallback } from './figma/ImageWithFallback';
-import { 
-  Trophy, 
-  MessageSquarePlus, 
-  Calendar, 
-  Heart, 
-  Sparkles, 
+import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Button } from "./ui/button";
+import { Card } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { Separator } from "./ui/separator";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
+import {
+  Trophy,
+  MessageSquarePlus,
+  Calendar,
+  Heart,
+  Sparkles,
   ChevronLeft,
   Timer,
   Flower2,
-  Cat
-} from 'lucide-react';
+  Cat,
+} from "lucide-react";
 
 interface Statement {
   id: string;
   text: string;
   author: string;
   votes: number;
-  type?: 'bridge' | 'crux' | 'plurality';
+  type?: "bridge" | "crux" | "plurality";
   isSpicy?: boolean;
 }
 
@@ -35,54 +35,57 @@ interface FinalResultsProps {
   onNextRound: () => void;
 }
 
-type ActivityType = 'overview' | 'breathing' | 'nature' | 'cute-animals';
+type ActivityType = "overview" | "breathing" | "nature" | "cute-animals";
 
-export function FinalResults({ 
-  statements, 
-  score, 
-  roundNumber, 
-  onNewDiscussion, 
-  onScheduleFuture, 
-  onNextRound 
+export function FinalResults({
+  statements,
+  score,
+  roundNumber,
+  onNewDiscussion,
+  onScheduleFuture,
+  onNextRound,
 }: FinalResultsProps) {
-  const [currentActivity, setCurrentActivity] = useState<ActivityType>('overview');
-  const [breathingPhase, setBreathingPhase] = useState<'inhale' | 'hold' | 'exhale' | 'rest'>('inhale');
+  const [currentActivity, setCurrentActivity] =
+    useState<ActivityType>("overview");
+  const [breathingPhase, setBreathingPhase] = useState<
+    "inhale" | "hold" | "exhale" | "rest"
+  >("inhale");
   const [breathingCycle, setBreathingCycle] = useState(0);
 
   // Get top statements by category
-  const getTopStatements = (type?: 'bridge' | 'crux' | 'plurality') => {
+  const getTopStatements = (type?: "bridge" | "crux" | "plurality") => {
     return statements
-      .filter(s => type ? s.type === type : !s.type)
+      .filter((s) => (type ? s.type === type : !s.type))
       .sort((a, b) => b.votes - a.votes)
       .slice(0, 3);
   };
 
-  const topBridges = getTopStatements('bridge');
-  const topCruxes = getTopStatements('crux');
-  const topPluralities = getTopStatements('plurality');
+  const topBridges = getTopStatements("bridge");
+  const topCruxes = getTopStatements("crux");
+  const topPluralities = getTopStatements("plurality");
   const topGeneral = getTopStatements();
 
   const startBreathingExercise = () => {
-    setCurrentActivity('breathing');
+    setCurrentActivity("breathing");
     setBreathingCycle(0);
-    
+
     const breathingSequence = () => {
       const phases = [
-        { phase: 'inhale' as const, duration: 4000 },
-        { phase: 'hold' as const, duration: 2000 },
-        { phase: 'exhale' as const, duration: 6000 },
-        { phase: 'rest' as const, duration: 2000 }
+        { phase: "inhale" as const, duration: 4000 },
+        { phase: "hold" as const, duration: 2000 },
+        { phase: "exhale" as const, duration: 6000 },
+        { phase: "rest" as const, duration: 2000 },
       ];
-      
+
       let currentPhaseIndex = 0;
       let cycles = 0;
-      
+
       const nextPhase = () => {
         if (cycles >= 3) return; // 3 cycles total
-        
+
         const currentPhaseData = phases[currentPhaseIndex];
         setBreathingPhase(currentPhaseData.phase);
-        
+
         setTimeout(() => {
           currentPhaseIndex++;
           if (currentPhaseIndex >= phases.length) {
@@ -95,10 +98,10 @@ export function FinalResults({
           }
         }, currentPhaseData.duration);
       };
-      
+
       nextPhase();
     };
-    
+
     breathingSequence();
   };
 
@@ -116,16 +119,20 @@ export function FinalResults({
               <span className="text-lg">#{rank + 1}</span>
               {statement.type && (
                 <Badge variant="secondary">
-                  {statement.type === 'bridge' && '🌉 Bridge'}
-                  {statement.type === 'crux' && '⚡ Crux'}
-                  {statement.type === 'plurality' && '💎 Plurality'}
+                  {statement.type === "bridge" && "🌉 Bridge"}
+                  {statement.type === "crux" && "⚡ Crux"}
+                  {statement.type === "plurality" && "💎 Plurality"}
                 </Badge>
               )}
-              {statement.isSpicy && <Badge variant="destructive">🌶️ Spicy</Badge>}
+              {statement.isSpicy && (
+                <Badge variant="destructive">🌶️ Spicy</Badge>
+              )}
               <Badge variant="outline">{statement.votes} votes</Badge>
             </div>
             <p className="text-sm mb-2">{statement.text}</p>
-            <p className="text-xs text-muted-foreground">by {statement.author}</p>
+            <p className="text-xs text-muted-foreground">
+              by {statement.author}
+            </p>
           </div>
           <Button
             size="sm"
@@ -141,10 +148,10 @@ export function FinalResults({
     </motion.div>
   );
 
-  if (currentActivity === 'breathing') {
+  if (currentActivity === "breathing") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
-        <motion.div 
+        <motion.div
           className="text-center space-y-8 max-w-md"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -152,13 +159,13 @@ export function FinalResults({
           <div className="space-y-4">
             <Button
               variant="ghost"
-              onClick={() => setCurrentActivity('overview')}
+              onClick={() => setCurrentActivity("overview")}
               className="self-start"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
               Back
             </Button>
-            
+
             <h2>Breathing Exercise</h2>
             <p className="text-muted-foreground">
               Cycle {breathingCycle + 1} of 3
@@ -168,30 +175,42 @@ export function FinalResults({
           <motion.div
             className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center"
             animate={{
-              scale: breathingPhase === 'inhale' ? 1.3 : breathingPhase === 'hold' ? 1.3 : 1,
+              scale:
+                breathingPhase === "inhale"
+                  ? 1.3
+                  : breathingPhase === "hold"
+                  ? 1.3
+                  : 1,
             }}
-            transition={{ 
-              duration: breathingPhase === 'inhale' ? 4 : breathingPhase === 'exhale' ? 6 : 2,
-              ease: "easeInOut"
+            transition={{
+              duration:
+                breathingPhase === "inhale"
+                  ? 4
+                  : breathingPhase === "exhale"
+                  ? 6
+                  : 2,
+              ease: "easeInOut",
             }}
           >
             <div className="text-white text-center">
               <Timer className="w-8 h-8 mx-auto mb-2" />
               <p className="text-sm font-medium">
-                {breathingPhase === 'inhale' && 'Breathe In'}
-                {breathingPhase === 'hold' && 'Hold'}
-                {breathingPhase === 'exhale' && 'Breathe Out'}
-                {breathingPhase === 'rest' && 'Rest'}
+                {breathingPhase === "inhale" && "Breathe In"}
+                {breathingPhase === "hold" && "Hold"}
+                {breathingPhase === "exhale" && "Breathe Out"}
+                {breathingPhase === "rest" && "Rest"}
               </p>
             </div>
           </motion.div>
 
           <div className="space-y-2">
             <p>
-              {breathingPhase === 'inhale' && 'Slowly inhale through your nose...'}
-              {breathingPhase === 'hold' && 'Hold your breath gently...'}
-              {breathingPhase === 'exhale' && 'Slowly exhale through your mouth...'}
-              {breathingPhase === 'rest' && 'Rest and feel calm...'}
+              {breathingPhase === "inhale" &&
+                "Slowly inhale through your nose..."}
+              {breathingPhase === "hold" && "Hold your breath gently..."}
+              {breathingPhase === "exhale" &&
+                "Slowly exhale through your mouth..."}
+              {breathingPhase === "rest" && "Rest and feel calm..."}
             </p>
           </div>
 
@@ -201,8 +220,10 @@ export function FinalResults({
               animate={{ opacity: 1 }}
               className="space-y-4"
             >
-              <p className="text-green-600 font-medium">✨ Great job! You're all set.</p>
-              <Button onClick={() => setCurrentActivity('overview')}>
+              <p className="text-green-600 font-medium">
+                ✨ Great job! You're all set.
+              </p>
+              <Button onClick={() => setCurrentActivity("overview")}>
                 Return to Results
               </Button>
             </motion.div>
@@ -212,23 +233,23 @@ export function FinalResults({
     );
   }
 
-  if (currentActivity === 'nature') {
+  if (currentActivity === "nature") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-        <motion.div 
+        <motion.div
           className="text-center space-y-6 max-w-2xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
           <Button
             variant="ghost"
-            onClick={() => setCurrentActivity('overview')}
+            onClick={() => setCurrentActivity("overview")}
             className="self-start"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back
           </Button>
-          
+
           <div className="space-y-4">
             <Flower2 className="w-12 h-12 mx-auto text-green-600" />
             <h2>Nature Break</h2>
@@ -251,7 +272,10 @@ export function FinalResults({
             <p>☀️ Breathe in the fresh perspective</p>
           </div>
 
-          <Button onClick={() => setCurrentActivity('overview')} className="mt-6">
+          <Button
+            onClick={() => setCurrentActivity("overview")}
+            className="mt-6"
+          >
             Feeling Refreshed
           </Button>
         </motion.div>
@@ -259,23 +283,23 @@ export function FinalResults({
     );
   }
 
-  if (currentActivity === 'cute-animals') {
+  if (currentActivity === "cute-animals") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 to-orange-50 flex items-center justify-center p-4">
-        <motion.div 
+        <motion.div
           className="text-center space-y-6 max-w-2xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
           <Button
             variant="ghost"
-            onClick={() => setCurrentActivity('overview')}
+            onClick={() => setCurrentActivity("overview")}
             className="self-start"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back
           </Button>
-          
+
           <div className="space-y-4">
             <Cat className="w-12 h-12 mx-auto text-orange-600" />
             <h2>Cuteness Overload</h2>
@@ -298,7 +322,10 @@ export function FinalResults({
             <p>✨ Reset your emotional state</p>
           </div>
 
-          <Button onClick={() => setCurrentActivity('overview')} className="mt-6">
+          <Button
+            onClick={() => setCurrentActivity("overview")}
+            className="mt-6"
+          >
             <Heart className="w-4 h-4 mr-1" />
             Feeling Better
           </Button>
@@ -311,7 +338,7 @@ export function FinalResults({
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <motion.div 
+        <motion.div
           className="text-center space-y-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -322,7 +349,9 @@ export function FinalResults({
             <Trophy className="w-8 h-8 text-yellow-500" />
           </div>
           <p className="text-muted-foreground">
-            You earned <span className="font-medium text-primary">{score} points</span> this round
+            You earned{" "}
+            <span className="font-medium text-primary">{score} points</span>{" "}
+            this round
           </p>
         </motion.div>
 
@@ -331,7 +360,7 @@ export function FinalResults({
         {/* Top Statements */}
         <div className="space-y-6">
           <h2 className="text-center">🏆 Top Statements</h2>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Bridges */}
             {topBridges.length > 0 && (
@@ -341,7 +370,9 @@ export function FinalResults({
                   <Badge variant="secondary">Consensus Building</Badge>
                 </h3>
                 <div className="space-y-2">
-                  {topBridges.map((statement, index) => renderStatementCard(statement, index))}
+                  {topBridges.map((statement, index) =>
+                    renderStatementCard(statement, index)
+                  )}
                 </div>
               </div>
             )}
@@ -354,7 +385,9 @@ export function FinalResults({
                   <Badge variant="secondary">Core Issues</Badge>
                 </h3>
                 <div className="space-y-2">
-                  {topCruxes.map((statement, index) => renderStatementCard(statement, index))}
+                  {topCruxes.map((statement, index) =>
+                    renderStatementCard(statement, index)
+                  )}
                 </div>
               </div>
             )}
@@ -367,7 +400,9 @@ export function FinalResults({
                   <Badge variant="secondary">Underrepresented</Badge>
                 </h3>
                 <div className="space-y-2">
-                  {topPluralities.map((statement, index) => renderStatementCard(statement, index))}
+                  {topPluralities.map((statement, index) =>
+                    renderStatementCard(statement, index)
+                  )}
                 </div>
               </div>
             )}
@@ -380,7 +415,9 @@ export function FinalResults({
                   <Badge variant="secondary">Community Favorites</Badge>
                 </h3>
                 <div className="space-y-2">
-                  {topGeneral.map((statement, index) => renderStatementCard(statement, index))}
+                  {topGeneral.map((statement, index) =>
+                    renderStatementCard(statement, index)
+                  )}
                 </div>
               </div>
             )}
@@ -392,7 +429,7 @@ export function FinalResults({
         {/* Action Options */}
         <div className="space-y-6">
           <h2 className="text-center">What's Next?</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Continue Playing */}
             <Card className="p-6 text-center space-y-4 hover:shadow-md transition-shadow">
@@ -421,7 +458,11 @@ export function FinalResults({
                   Get notified about upcoming discussions
                 </p>
               </div>
-              <Button onClick={onScheduleFuture} variant="outline" className="w-full">
+              <Button
+                onClick={onScheduleFuture}
+                variant="outline"
+                className="w-full"
+              >
                 Sign Me Up
               </Button>
             </Card>
@@ -438,26 +479,26 @@ export function FinalResults({
                 </p>
               </div>
               <div className="space-y-2">
-                <Button 
-                  onClick={startBreathingExercise} 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  onClick={startBreathingExercise}
+                  variant="outline"
+                  size="sm"
                   className="w-full"
                 >
                   Guided Breathing
                 </Button>
-                <Button 
-                  onClick={() => setCurrentActivity('nature')} 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  onClick={() => setCurrentActivity("nature")}
+                  variant="outline"
+                  size="sm"
                   className="w-full"
                 >
                   Nature Scenes
                 </Button>
-                <Button 
-                  onClick={() => setCurrentActivity('cute-animals')} 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  onClick={() => setCurrentActivity("cute-animals")}
+                  variant="outline"
+                  size="sm"
                   className="w-full"
                 >
                   Cute Animals

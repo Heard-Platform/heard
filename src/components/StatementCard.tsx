@@ -62,7 +62,9 @@ export function StatementCard({
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">@{statement.author}</span>
+          <span className="text-sm text-muted-foreground">
+            @{statement.author}
+          </span>
           {statement.isSpicy && <span className="text-sm">🌶️</span>}
           {getTypeIcon() && <span className="text-sm">{getTypeIcon()}</span>}
         </div>
@@ -85,7 +87,9 @@ export function StatementCard({
             className="flex items-center gap-1"
           >
             <ThumbsUp className="w-4 h-4" />
-            <span className="text-sm">{statement.votes > 0 ? statement.votes : ""}</span>
+            <span className="text-sm">
+              {statement.votes > 0 ? statement.votes : ""}
+            </span>
           </Button>
           <Button
             size="sm"

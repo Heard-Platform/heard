@@ -9,7 +9,10 @@ interface ApiResponse<T> {
 }
 
 class ApiClient {
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
@@ -71,10 +74,15 @@ class ApiClient {
     return this.request(`/room/${roomId}`);
   }
 
-  async updateRoomPhase(roomId: string, phase: string, userId: string) {
+  async updateRoomPhase(
+    roomId: string,
+    phase: string,
+    userId: string,
+    subPhase?: string
+  ) {
     return this.request(`/room/${roomId}/phase`, {
       method: "POST",
-      body: JSON.stringify({ phase, userId }),
+      body: JSON.stringify({ phase, subPhase, userId }),
     });
   }
 
@@ -83,14 +91,23 @@ class ApiClient {
   }
 
   // Statement management
-  async submitStatement(roomId: string, text: string, type: string | undefined, userId: string) {
+  async submitStatement(
+    roomId: string,
+    text: string,
+    type: string | undefined,
+    userId: string
+  ) {
     return this.request(`/room/${roomId}/statement`, {
       method: "POST",
       body: JSON.stringify({ text, type, userId }),
     });
   }
 
-  async voteOnStatement(statementId: string, voteType: "up" | "down", userId: string) {
+  async voteOnStatement(
+    statementId: string,
+    voteType: "up" | "down",
+    userId: string
+  ) {
     return this.request(`/statement/${statementId}/vote`, {
       method: "POST",
       body: JSON.stringify({ voteType, userId }),

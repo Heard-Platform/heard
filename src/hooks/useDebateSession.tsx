@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { api, getUserId, setUserId, getRoomId, setRoomId, clearRoomId } from "../utils/api";
+import {
+  api,
+  getUserId,
+  setUserId,
+  getRoomId,
+  setRoomId,
+  clearRoomId,
+} from "../utils/api";
 
 interface UserSession {
   id: string;
@@ -13,10 +20,14 @@ interface UserSession {
   lastActive: number;
 }
 
+type Phase = "lobby" | "initial" | "bridge" | "crux" | "plurality" | "results";
+type SubPhase = "posting" | "voting" | "review";
+
 interface DebateRoom {
   id: string;
   topic: string;
-  phase: "lobby" | "initial" | "bridge" | "crux" | "plurality" | "voting" | "results";
+  phase: Phase;
+  subPhase?: SubPhase;
   roundNumber: number;
   phaseStartTime: number;
   participants: string[];
@@ -50,7 +61,9 @@ export function useDebateSession() {
   const [activeRooms, setActiveRooms] = useState<DebateRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastAchievement, setLastAchievement] = useState<Achievement | null>(null);
+  const [lastAchievement, setLastAchievement] = useState<Achievement | null>(
+    null
+  );
 
   // Initialize user session
   const initializeUser = useCallback(async (nickname?: string) => {
@@ -163,7 +176,12 @@ export function useDebateSession() {
 
       try {
         setError(null);
-        const response = await api.submitStatement(room.id, text, type, user.id);
+        const response = await api.submitStatement(
+          room.id,
+          text,
+          type,
+          user.id
+        );
         if (response.success && response.data) {
           // Update user points
           setUser((prev) =>
@@ -218,7 +236,11 @@ export function useDebateSession() {
       try {
         setError(null);
         console.log("Voting on statement:", statementId, voteType);
-        const response = await api.voteOnStatement(statementId, voteType, user.id);
+        const response = await api.voteOnStatement(
+          statementId,
+          voteType,
+          user.id
+        );
         console.log("Vote response:", response);
 
         if (response.success && response.data) {
@@ -237,7 +259,9 @@ export function useDebateSession() {
           // Update statement in local state
           setStatements((prev) =>
             prev.map((stmt) =>
-              stmt.id === statementId ? { ...stmt, ...response.data.statement } : stmt
+              stmt.id === statementId
+                ? { ...stmt, ...response.data.statement }
+                : stmt
             )
           );
 
@@ -257,12 +281,17 @@ export function useDebateSession() {
 
   // Update room phase
   const updateRoomPhase = useCallback(
-    async (phase: string) => {
+    async (phase: Phase, subPhase?: SubPhase) => {
       if (!user || !room) return false;
 
       try {
         setError(null);
-        const response = await api.updateRoomPhase(room.id, phase, user.id);
+        const response = await api.updateRoomPhase(
+          room.id,
+          phase,
+          user.id,
+          subPhase
+        );
         if (response.success && response.data) {
           setRoom(response.data.room);
           return true;
