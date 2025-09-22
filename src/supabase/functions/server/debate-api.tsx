@@ -50,10 +50,11 @@ const app = new Hono();
 
 // Utility functions
 const generateId = () =>
-  Math.random().toString(36).substring(2) + Date.now().toString(36);
+  Math.random().toString(36).substring(2) +
+  Date.now().toString(36);
 
 const getUserSession = async (
-  userId: string
+  userId: string,
 ): Promise<UserSession | null> => {
   const session = await kv.get(`user:${userId}`);
   return session ? JSON.parse(session) : null;
@@ -64,7 +65,7 @@ const saveUserSession = async (session: UserSession) => {
 };
 
 const getDebateRoom = async (
-  roomId: string
+  roomId: string,
 ): Promise<DebateRoom | null> => {
   const room = await kv.get(`room:${roomId}`);
   return room ? JSON.parse(room) : null;
@@ -74,16 +75,21 @@ const saveDebateRoom = async (room: DebateRoom) => {
   await kv.set(`room:${room.id}`, JSON.stringify(room));
   // Also save to active rooms list if active
   if (room.isActive) {
-    await kv.set(`active_room:${room.id}`, JSON.stringify(room));
+    await kv.set(
+      `active_room:${room.id}`,
+      JSON.stringify(room),
+    );
   } else {
     await kv.del(`active_room:${room.id}`);
   }
 };
 
 const getStatements = async (
-  roomId: string
+  roomId: string,
 ): Promise<Statement[]> => {
-  const statements = await kv.getByPrefix(`statement:${roomId}:`);
+  const statements = await kv.getByPrefix(
+    `statement:${roomId}:`,
+  );
   return statements
     .map((s) => JSON.parse(s))
     .sort((a, b) => b.timestamp - a.timestamp);
@@ -92,7 +98,7 @@ const getStatements = async (
 const saveStatement = async (statement: Statement) => {
   await kv.set(
     `statement:${statement.roomId}:${statement.id}`,
-    JSON.stringify(statement)
+    JSON.stringify(statement),
   );
 };
 
@@ -101,10 +107,14 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
   try {
     const { nickname } = await c.req.json();
 
-    if (!nickname || nickname.length < 2 || nickname.length > 20) {
+    if (
+      !nickname ||
+      nickname.length < 2 ||
+      nickname.length > 20
+    ) {
       return c.json(
         { error: "Nickname must be 2-20 characters" },
-        400
+        400,
       );
     }
 
@@ -124,7 +134,10 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
     return c.json({ user: userSession });
   } catch (error) {
     console.error("Error creating user session:", error);
-    return c.json({ error: "Failed to create user session" }, 500);
+    return c.json(
+      { error: "Failed to create user session" },
+      500,
+    );
   }
 });
 
@@ -145,7 +158,10 @@ app.get("/make-server-f1a393b4/user/:userId", async (c) => {
     return c.json({ user });
   } catch (error) {
     console.error("Error fetching user session:", error);
-    return c.json({ error: "Failed to fetch user session" }, 500);
+    return c.json(
+      { error: "Failed to fetch user session" },
+      500,
+    );
   }
 });
 
@@ -157,7 +173,7 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
     if (!topic || topic.length < 10) {
       return c.json(
         { error: "Topic must be at least 10 characters" },
-        400
+        400,
       );
     }
 
@@ -187,46 +203,58 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
     return c.json({ room: debateRoom });
   } catch (error) {
     console.error("Error creating debate room:", error);
-    return c.json({ error: "Failed to create debate room" }, 500);
+    return c.json(
+      { error: "Failed to create debate room" },
+      500,
+    );
   }
 });
 
 // Join debate room
-app.post("/make-server-f1a393b4/room/:roomId/join", async (c) => {
-  try {
-    const roomId = c.req.param("roomId");
-    const { userId } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/room/:roomId/join",
+  async (c) => {
+    try {
+      const roomId = c.req.param("roomId");
+      const { userId } = await c.req.json();
 
-    const room = await getDebateRoom(roomId);
-    if (!room) {
-      return c.json({ error: "Room not found" }, 404);
+      const room = await getDebateRoom(roomId);
+      if (!room) {
+        return c.json({ error: "Room not found" }, 404);
+      }
+
+      if (!room.isActive) {
+        return c.json(
+          { error: "Room is no longer active" },
+          400,
+        );
+      }
+
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User session not found" }, 404);
+      }
+
+      // Add user to participants if not already there
+      if (!room.participants.includes(userId)) {
+        room.participants.push(userId);
+        await saveDebateRoom(room);
+      }
+
+      // Update user's current room
+      user.currentRoomId = roomId;
+      await saveUserSession(user);
+
+      return c.json({ room });
+    } catch (error) {
+      console.error("Error joining debate room:", error);
+      return c.json(
+        { error: "Failed to join debate room" },
+        500,
+      );
     }
-
-    if (!room.isActive) {
-      return c.json({ error: "Room is no longer active" }, 400);
-    }
-
-    const user = await getUserSession(userId);
-    if (!user) {
-      return c.json({ error: "User session not found" }, 404);
-    }
-
-    // Add user to participants if not already there
-    if (!room.participants.includes(userId)) {
-      room.participants.push(userId);
-      await saveDebateRoom(room);
-    }
-
-    // Update user's current room
-    user.currentRoomId = roomId;
-    await saveUserSession(user);
-
-    return c.json({ room });
-  } catch (error) {
-    console.error("Error joining debate room:", error);
-    return c.json({ error: "Failed to join debate room" }, 500);
-  }
-});
+  },
+);
 
 // Get room status
 app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
@@ -247,7 +275,10 @@ app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
     });
   } catch (error) {
     console.error("Error fetching room status:", error);
-    return c.json({ error: "Failed to fetch room status" }, 500);
+    return c.json(
+      { error: "Failed to fetch room status" },
+      500,
+    );
   }
 });
 
@@ -262,13 +293,16 @@ app.post(
       if (!text || text.length < 5 || text.length > 500) {
         return c.json(
           { error: "Statement must be 5-500 characters" },
-          400
+          400,
         );
       }
 
       const room = await getDebateRoom(roomId);
       if (!room || !room.isActive) {
-        return c.json({ error: "Room not found or inactive" }, 404);
+        return c.json(
+          { error: "Room not found or inactive" },
+          404,
+        );
       }
 
       const user = await getUserSession(userId);
@@ -315,9 +349,7 @@ app.post(
         pointsEarned: totalPoints,
         achievement: {
           title: type
-            ? `${
-                type.charAt(0).toUpperCase() + type.slice(1)
-              } Submitted!`
+            ? `${type.charAt(0).toUpperCase() + type.slice(1)} Submitted!`
             : "Statement Posted!",
           description: `+${totalPoints} points`,
           points: totalPoints,
@@ -326,9 +358,12 @@ app.post(
       });
     } catch (error) {
       console.error("Error submitting statement:", error);
-      return c.json({ error: "Failed to submit statement" }, 500);
+      return c.json(
+        { error: "Failed to submit statement" },
+        500,
+      );
     }
-  }
+  },
 );
 
 // Vote on statement
@@ -401,66 +436,75 @@ app.post(
       });
     } catch (error) {
       console.error("Error voting on statement:", error);
-      return c.json({ error: "Failed to vote on statement" }, 500);
+      return c.json(
+        { error: "Failed to vote on statement" },
+        500,
+      );
     }
-  }
+  },
 );
 
 // Update room phase
-app.post("/make-server-f1a393b4/room/:roomId/phase", async (c) => {
-  try {
-    const roomId = c.req.param("roomId");
-    const { phase, subPhase, userId } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/room/:roomId/phase",
+  async (c) => {
+    try {
+      const roomId = c.req.param("roomId");
+      const { phase, subPhase, userId } = await c.req.json();
 
-    const validPhases: Phase[] = [
-      "lobby",
-      "initial",
-      "bridge",
-      "crux",
-      "plurality",
-      "results",
-    ];
-    const validSubPhases: SubPhase[] = [
-      "posting",
-      "voting",
-      "review",
-    ];
+      const validPhases: Phase[] = [
+        "lobby",
+        "initial",
+        "bridge",
+        "crux",
+        "plurality",
+        "results",
+      ];
+      const validSubPhases: SubPhase[] = [
+        "posting",
+        "voting",
+        "review",
+      ];
 
-    if (!validPhases.includes(phase)) {
-      return c.json({ error: "Invalid phase" }, 400);
+      if (!validPhases.includes(phase)) {
+        return c.json({ error: "Invalid phase" }, 400);
+      }
+
+      if (subPhase && !validSubPhases.includes(subPhase)) {
+        return c.json({ error: "Invalid subPhase" }, 400);
+      }
+
+      const room = await getDebateRoom(roomId);
+      if (!room) {
+        return c.json({ error: "Room not found" }, 404);
+      }
+
+      const user = await getUserSession(userId);
+      if (!user || !room.participants.includes(userId)) {
+        return c.json({ error: "Unauthorized" }, 403);
+      }
+
+      room.phase = phase;
+      room.subPhase = subPhase;
+      room.phaseStartTime = Date.now();
+
+      // If moving to results, increment round number
+      if (phase === "results") {
+        room.roundNumber += 1;
+      }
+
+      await saveDebateRoom(room);
+
+      return c.json({ room });
+    } catch (error) {
+      console.error("Error updating room phase:", error);
+      return c.json(
+        { error: "Failed to update room phase" },
+        500,
+      );
     }
-
-    if (subPhase && !validSubPhases.includes(subPhase)) {
-      return c.json({ error: "Invalid subPhase" }, 400);
-    }
-
-    const room = await getDebateRoom(roomId);
-    if (!room) {
-      return c.json({ error: "Room not found" }, 404);
-    }
-
-    const user = await getUserSession(userId);
-    if (!user || !room.participants.includes(userId)) {
-      return c.json({ error: "Unauthorized" }, 403);
-    }
-
-    room.phase = phase;
-    room.subPhase = subPhase;
-    room.phaseStartTime = Date.now();
-
-    // If moving to results, increment round number
-    if (phase === "results") {
-      room.roundNumber += 1;
-    }
-
-    await saveDebateRoom(room);
-
-    return c.json({ room });
-  } catch (error) {
-    console.error("Error updating room phase:", error);
-    return c.json({ error: "Failed to update room phase" }, 500);
-  }
-});
+  },
+);
 
 // Get active rooms
 app.get("/make-server-f1a393b4/rooms/active", async (c) => {
@@ -471,7 +515,10 @@ app.get("/make-server-f1a393b4/rooms/active", async (c) => {
     return c.json({ rooms });
   } catch (error) {
     console.error("Error fetching active rooms:", error);
-    return c.json({ error: "Failed to fetch active rooms" }, 500);
+    return c.json(
+      { error: "Failed to fetch active rooms" },
+      500,
+    );
   }
 });
 

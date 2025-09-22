@@ -58,7 +58,7 @@ export function FinalResults({
 
   // Get top statements by category
   const getTopStatements = (
-    type?: "bridge" | "crux" | "plurality"
+    type?: "bridge" | "crux" | "plurality",
   ) => {
     return statements
       .filter((s) => (type ? s.type === type : !s.type))
@@ -113,7 +113,7 @@ export function FinalResults({
 
   const renderStatementCard = (
     statement: Statement,
-    rank: number
+    rank: number,
   ) => (
     <motion.div
       key={statement.id}
@@ -130,13 +130,16 @@ export function FinalResults({
                 <Badge variant="secondary">
                   {statement.type === "bridge" && "🌉 Bridge"}
                   {statement.type === "crux" && "⚡ Crux"}
-                  {statement.type === "plurality" && "💎 Plurality"}
+                  {statement.type === "plurality" &&
+                    "💎 Plurality"}
                 </Badge>
               )}
               {statement.isSpicy && (
                 <Badge variant="destructive">🌶️ Spicy</Badge>
               )}
-              <Badge variant="outline">{statement.votes} votes</Badge>
+              <Badge variant="outline">
+                {statement.votes} votes
+              </Badge>
             </div>
             <p className="text-sm mb-2">{statement.text}</p>
             <p className="text-xs text-muted-foreground">
@@ -188,16 +191,16 @@ export function FinalResults({
                 breathingPhase === "inhale"
                   ? 1.3
                   : breathingPhase === "hold"
-                  ? 1.3
-                  : 1,
+                    ? 1.3
+                    : 1,
             }}
             transition={{
               duration:
                 breathingPhase === "inhale"
                   ? 4
                   : breathingPhase === "exhale"
-                  ? 6
-                  : 2,
+                    ? 6
+                    : 2,
               ease: "easeInOut",
             }}
           >
@@ -220,7 +223,8 @@ export function FinalResults({
                 "Hold your breath gently..."}
               {breathingPhase === "exhale" &&
                 "Slowly exhale through your mouth..."}
-              {breathingPhase === "rest" && "Rest and feel calm..."}
+              {breathingPhase === "rest" &&
+                "Rest and feel calm..."}
             </p>
           </div>
 
@@ -233,7 +237,9 @@ export function FinalResults({
               <p className="text-green-600 font-medium">
                 ✨ Great job! You're all set.
               </p>
-              <Button onClick={() => setCurrentActivity("overview")}>
+              <Button
+                onClick={() => setCurrentActivity("overview")}
+              >
                 Return to Results
               </Button>
             </motion.div>
@@ -264,7 +270,8 @@ export function FinalResults({
             <Flower2 className="w-12 h-12 mx-auto text-green-600" />
             <h2>Nature Break</h2>
             <p className="text-muted-foreground">
-              Take a moment to appreciate the calm beauty of nature
+              Take a moment to appreciate the calm beauty of
+              nature
             </p>
           </div>
 
@@ -385,7 +392,7 @@ export function FinalResults({
                 </h3>
                 <div className="space-y-2">
                   {topBridges.map((statement, index) =>
-                    renderStatementCard(statement, index)
+                    renderStatementCard(statement, index),
                   )}
                 </div>
               </div>
@@ -400,7 +407,7 @@ export function FinalResults({
                 </h3>
                 <div className="space-y-2">
                   {topCruxes.map((statement, index) =>
-                    renderStatementCard(statement, index)
+                    renderStatementCard(statement, index),
                   )}
                 </div>
               </div>
@@ -411,11 +418,13 @@ export function FinalResults({
               <div className="space-y-3">
                 <h3 className="flex items-center gap-2">
                   <span>💎 Fresh Perspectives</span>
-                  <Badge variant="secondary">Underrepresented</Badge>
+                  <Badge variant="secondary">
+                    Underrepresented
+                  </Badge>
                 </h3>
                 <div className="space-y-2">
                   {topPluralities.map((statement, index) =>
-                    renderStatementCard(statement, index)
+                    renderStatementCard(statement, index),
                   )}
                 </div>
               </div>
@@ -432,7 +441,7 @@ export function FinalResults({
                 </h3>
                 <div className="space-y-2">
                   {topGeneral.map((statement, index) =>
-                    renderStatementCard(statement, index)
+                    renderStatementCard(statement, index),
                   )}
                 </div>
               </div>
@@ -512,7 +521,9 @@ export function FinalResults({
                   Nature Scenes
                 </Button>
                 <Button
-                  onClick={() => setCurrentActivity("cute-animals")}
+                  onClick={() =>
+                    setCurrentActivity("cute-animals")
+                  }
                   variant="outline"
                   size="sm"
                   className="w-full"

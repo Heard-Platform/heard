@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Send, Lightbulb, Zap, Target } from "lucide-react";
+import { Send, Lightbulb, Zap, Target, AlertCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
+import { toast } from "sonner@2.0.3";
 
 type Phase =
   | "lobby"
@@ -15,8 +16,8 @@ type Phase =
 interface StatementSubmissionProps {
   onSubmit: (
     statement: string,
-    type?: "bridge" | "crux" | "plurality"
-  ) => void;
+    type?: "bridge" | "crux" | "plurality",
+  ) => Promise<void>;
   currentRound: Phase;
   isActive: boolean;
   placeholder?: string;
@@ -32,12 +33,55 @@ export function StatementSubmission({
   const [selectedType, setSelectedType] = useState<
     "bridge" | "crux" | "plurality" | null
   >(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
-  const handleSubmit = () => {
-    if (statement.trim()) {
-      onSubmit(statement.trim(), selectedType || undefined);
+  const validateStatement = (text: string): string | null => {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      return "Please enter a statement";
+    }
+    if (trimmed.length < 5) {
+      return "Statement must be at least 5 characters";
+    }
+    if (trimmed.length > 500) {
+      return "Statement must be under 500 characters";
+    }
+    return null;
+  };
+
+  const handleSubmit = async () => {
+    const trimmed = statement.trim();
+    const error = validateStatement(statement);
+    
+    if (error) {
+      setValidationError(error);
+      toast.error(error);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setValidationError(null);
+
+    try {
+      await onSubmit(trimmed, selectedType || undefined);
       setStatement("");
       setSelectedType(null);
+      toast.success("Statement submitted! 🎉");
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Failed to submit statement";
+      setValidationError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Clear validation error when statement changes
+  const handleStatementChange = (text: string) => {
+    setStatement(text);
+    if (validationError) {
+      setValidationError(null);
     }
   };
 
@@ -71,7 +115,8 @@ export function StatementSubmission({
     }
     return {
       title: "Share Your Take 💭",
-      description: "Submit your initial statement on this topic",
+      description:
+        "Submit your initial statement on this topic",
       color: "text-gray-600",
       bgColor: "bg-gray-50",
     };
@@ -113,7 +158,7 @@ export function StatementSubmission({
             }
             onClick={() =>
               setSelectedType(
-                selectedType === "bridge" ? null : "bridge"
+                selectedType === "bridge" ? null : "bridge",
               )
             }
             className="flex items-center gap-1"
@@ -122,9 +167,13 @@ export function StatementSubmission({
           </Button>
           <Button
             size="sm"
-            variant={selectedType === "crux" ? "default" : "outline"}
+            variant={
+              selectedType === "crux" ? "default" : "outline"
+            }
             onClick={() =>
-              setSelectedType(selectedType === "crux" ? null : "crux")
+              setSelectedType(
+                selectedType === "crux" ? null : "crux",
+              )
             }
             className="flex items-center gap-1"
           >
@@ -133,11 +182,15 @@ export function StatementSubmission({
           <Button
             size="sm"
             variant={
-              selectedType === "plurality" ? "default" : "outline"
+              selectedType === "plurality"
+                ? "default"
+                : "outline"
             }
             onClick={() =>
               setSelectedType(
-                selectedType === "plurality" ? null : "plurality"
+                selectedType === "plurality"
+                  ? null
+                  : "plurality",
               )
             }
             className="flex items-center gap-1"
@@ -150,25 +203,53 @@ export function StatementSubmission({
       <div className="space-y-3">
         <Textarea
           value={statement}
-          onChange={(e) => setStatement(e.target.value)}
+          onChange={(e) => handleStatementChange(e.target.value)}
           placeholder={
-            placeholder || "What's your take? Spicy takes welcome! 🌶️"
+            placeholder ||
+            "What's your take? Spicy takes welcome! 🌶️"
           }
-          className="min-h-[100px] resize-none"
-          maxLength={280}
+          className={`min-h-[100px] resize-none ${
+            validationError ? "border-destructive focus:border-destructive" : ""
+          }`}
+          maxLength={500}
         />
 
+        {/* Validation error display */}
+        {validationError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 text-destructive text-sm"
+          >
+            <AlertCircle className="w-4 h-4" />
+            {validationError}
+          </motion.div>
+        )}
+
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            {statement.length}/280 characters
-          </span>
+          <div className="flex flex-col">
+            <span className={`text-sm ${
+              statement.length < 5 
+                ? "text-destructive" 
+                : statement.length > 450 
+                  ? "text-orange-600" 
+                  : "text-muted-foreground"
+            }`}>
+              {statement.length}/500 characters
+            </span>
+            {statement.length > 0 && statement.length < 5 && (
+              <span className="text-xs text-destructive">
+                {5 - statement.length} more characters needed
+              </span>
+            )}
+          </div>
           <Button
             onClick={handleSubmit}
-            disabled={!statement.trim()}
+            disabled={!statement.trim() || isSubmitting || !!validationError}
             className="flex items-center gap-2"
           >
             <Send className="w-4 h-4" />
-            Submit
+            {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
         </div>
       </div>

@@ -23,7 +23,7 @@ export function DebateTimer({
       if (phaseStartTime) {
         // Calculate based on server timestamp
         const elapsed = Math.floor(
-          (Date.now() - phaseStartTime) / 1000
+          (Date.now() - phaseStartTime) / 1000,
         );
         const remaining = Math.max(0, duration - elapsed);
         return remaining;
@@ -72,9 +72,7 @@ export function DebateTimer({
       </div>
       <div className="text-center mt-2">
         <span
-          className={`font-mono ${
-            isUrgent ? "text-destructive" : "text-foreground"
-          }`}
+          className={`font-mono ${isUrgent ? "text-destructive" : "text-foreground"}`}
         >
           {Math.floor(timeLeft / 60)}:
           {(timeLeft % 60).toString().padStart(2, "0")}

@@ -64,28 +64,34 @@ export function NicknameSetup({
               <UserPlus className="w-8 h-8 text-white" />
             </motion.div>
 
-            <h1 className="text-2xl font-bold">Welcome to HEARD!</h1>
+            <h1 className="text-2xl font-bold">
+              Welcome to HEARD!
+            </h1>
             <p className="text-muted-foreground">
-              Choose a nickname to start arguing (and secretly saving
-              democracy)
+              Choose a nickname to start arguing (and secretly
+              saving democracy)
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="nickname">Your Debate Nickname</Label>
+              <Label htmlFor="nickname">
+                Your Debate Nickname
+              </Label>
               <Input
                 id="nickname"
                 type="text"
                 value={nickname}
-                onChange={(e) => handleNicknameChange(e.target.value)}
+                onChange={(e) =>
+                  handleNicknameChange(e.target.value)
+                }
                 placeholder="Enter a nickname..."
                 className={isValid ? "border-green-300" : ""}
                 disabled={loading}
               />
               <p className="text-xs text-muted-foreground">
-                2-20 characters • Letters, numbers, and basic symbols
-                only
+                2-20 characters • Letters, numbers, and basic
+                symbols only
               </p>
             </div>
 
@@ -138,7 +144,9 @@ export function NicknameSetup({
                   key={suggestion}
                   variant="outline"
                   size="sm"
-                  onClick={() => handleNicknameChange(suggestion)}
+                  onClick={() =>
+                    handleNicknameChange(suggestion)
+                  }
                   disabled={loading}
                   className="text-xs"
                 >

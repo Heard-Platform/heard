@@ -15,16 +15,21 @@ import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 const client = () =>
   createClient(
     Deno.env.get("SUPABASE_URL"),
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
   );
 
 // Set stores a key-value pair in the database.
-export const set = async (key: string, value: any): Promise<void> => {
+export const set = async (
+  key: string,
+  value: any,
+): Promise<void> => {
   const supabase = client();
-  const { error } = await supabase.from("kv_store_f1a393b4").upsert({
-    key,
-    value,
-  });
+  const { error } = await supabase
+    .from("kv_store_f1a393b4")
+    .upsert({
+      key,
+      value,
+    });
   if (error) {
     throw new Error(error.message);
   }
@@ -59,7 +64,7 @@ export const del = async (key: string): Promise<void> => {
 // Sets multiple key-value pairs in the database.
 export const mset = async (
   keys: string[],
-  values: any[]
+  values: any[],
 ): Promise<void> => {
   const supabase = client();
   const { error } = await supabase
@@ -96,7 +101,9 @@ export const mdel = async (keys: string[]): Promise<void> => {
 };
 
 // Search for key-value pairs by prefix.
-export const getByPrefix = async (prefix: string): Promise<any[]> => {
+export const getByPrefix = async (
+  prefix: string,
+): Promise<any[]> => {
   const supabase = client();
   const { data, error } = await supabase
     .from("kv_store_f1a393b4")

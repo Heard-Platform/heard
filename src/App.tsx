@@ -4,6 +4,7 @@ import { NicknameSetup } from "./components/NicknameSetup";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { GameScreen } from "./screens/GameScreen";
 import { useDebateSession } from "./hooks/useDebateSession";
+import { Toaster } from "./components/ui/sonner";
 
 type Phase =
   | "lobby"
@@ -75,17 +76,21 @@ export default function App() {
     if (roomData) {
       // Set timer based on current phase and subPhase
       setTimerActive(
-        roomData.phase !== "lobby" && roomData.phase !== "results"
+        roomData.phase !== "lobby" &&
+          roomData.phase !== "results",
       );
     }
   };
 
   // Handle statement submission
   const handleStatementSubmit = useCallback(
-    async (text: string, type?: "bridge" | "crux" | "plurality") => {
+    async (
+      text: string,
+      type?: "bridge" | "crux" | "plurality",
+    ) => {
       await submitStatement(text, type);
     },
-    [submitStatement]
+    [submitStatement],
   );
 
   // Handle voting
@@ -93,7 +98,7 @@ export default function App() {
     async (id: string, voteType: "up" | "down") => {
       await voteOnStatement(id, voteType);
     },
-    [voteOnStatement]
+    [voteOnStatement],
   );
 
   // Handle phase transitions
@@ -106,7 +111,11 @@ export default function App() {
       "crux",
       "plurality",
     ];
-    const subPhases: SubPhase[] = ["posting", "voting", "review"];
+    const subPhases: SubPhase[] = [
+      "posting",
+      "voting",
+      "review",
+    ];
 
     const currentPhaseIndex = phases.indexOf(room.phase);
     const currentSubPhaseIndex = room.subPhase
@@ -145,20 +154,23 @@ export default function App() {
     setTimerActive(true);
   };
 
-  const handleNewDiscussion = useCallback((statement: Statement) => {
-    // In a real app, this would create a new discussion thread
-    console.log("Creating new discussion based on:", statement.text);
-    alert(
-      `Starting new discussion: "${statement.text.substring(
-        0,
-        50
-      )}..."`
-    );
-  }, []);
+  const handleNewDiscussion = useCallback(
+    (statement: Statement) => {
+      // In a real app, this would create a new discussion thread
+      console.log(
+        "Creating new discussion based on:",
+        statement.text,
+      );
+      alert(
+        `Starting new discussion: "${statement.text.substring(0, 50)}..."`,
+      );
+    },
+    [],
+  );
 
   const handleScheduleFuture = useCallback(() => {
     alert(
-      "Feature coming soon! We'll notify you about upcoming scheduled debates."
+      "Feature coming soon! We'll notify you about upcoming scheduled debates.",
     );
   }, []);
 
@@ -215,51 +227,64 @@ export default function App() {
   // Nickname Setup
   if (showNicknameSetup) {
     return (
-      <NicknameSetup
-        onComplete={handleNicknameComplete}
-        loading={loading}
-        error={error}
-      />
+      <>
+        <NicknameSetup
+          onComplete={handleNicknameComplete}
+          loading={loading}
+          error={error}
+        />
+        <Toaster />
+      </>
     );
   }
 
   // Lobby - Room Selection/Creation
   if (showLobby) {
     return (
-      <LobbyScreen
-        user={user}
-        activeRooms={activeRooms}
-        loading={loading}
-        error={error}
-        onCreateRoom={handleCreateRoom}
-        onJoinRoom={handleJoinRoom}
-        onRefreshRooms={getActiveRooms}
-        onJumpToFinalResults={jumpToFinalResults}
-        onCreateSeedData={createSeedData}
-      />
+      <>
+        <LobbyScreen
+          user={user}
+          activeRooms={activeRooms}
+          loading={loading}
+          error={error}
+          onCreateRoom={handleCreateRoom}
+          onJoinRoom={handleJoinRoom}
+          onRefreshRooms={getActiveRooms}
+          onJumpToFinalResults={jumpToFinalResults}
+          onCreateSeedData={createSeedData}
+        />
+        <Toaster />
+      </>
     );
   }
 
   // In-Game Experience
   if (showGame) {
     return (
-      <GameScreen
-        user={user}
-        room={room}
-        statements={statements}
-        timerActive={timerActive}
-        lastAchievement={lastAchievement}
-        onSubmitStatement={handleStatementSubmit}
-        onVote={handleVote}
-        onNextPhase={nextPhase}
-        onStartDebate={startDebate}
-        onLeaveRoom={handleLeaveRoom}
-        onNewDiscussion={handleNewDiscussion}
-        onScheduleFuture={handleScheduleFuture}
-        onSkipPhase={nextPhase}
-      />
+      <>
+        <GameScreen
+          user={user}
+          room={room}
+          statements={statements}
+          timerActive={timerActive}
+          lastAchievement={lastAchievement}
+          onSubmitStatement={handleStatementSubmit}
+          onVote={handleVote}
+          onNextPhase={nextPhase}
+          onStartDebate={startDebate}
+          onLeaveRoom={handleLeaveRoom}
+          onNewDiscussion={handleNewDiscussion}
+          onScheduleFuture={handleScheduleFuture}
+          onSkipPhase={nextPhase}
+        />
+        <Toaster />
+      </>
     );
   }
 
-  return null;
+  return (
+    <>
+      <Toaster />
+    </>
+  );
 }

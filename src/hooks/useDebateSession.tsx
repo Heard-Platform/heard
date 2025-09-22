@@ -64,50 +64,57 @@ export function useDebateSession() {
   const [user, setUser] = useState<UserSession | null>(null);
   const [room, setRoom] = useState<DebateRoom | null>(null);
   const [statements, setStatements] = useState<Statement[]>([]);
-  const [activeRooms, setActiveRooms] = useState<DebateRoom[]>([]);
+  const [activeRooms, setActiveRooms] = useState<DebateRoom[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastAchievement, setLastAchievement] =
     useState<Achievement | null>(null);
 
   // Initialize user session
-  const initializeUser = useCallback(async (nickname?: string) => {
-    try {
-      setError(null);
-      let userId = getUserId();
-      let userData = null;
+  const initializeUser = useCallback(
+    async (nickname?: string) => {
+      try {
+        setError(null);
+        let userId = getUserId();
+        let userData = null;
 
-      if (userId) {
-        // Try to restore existing session
-        const response = await api.getUser(userId);
-        if (response.success && response.data) {
-          userData = response.data.user;
+        if (userId) {
+          // Try to restore existing session
+          const response = await api.getUser(userId);
+          if (response.success && response.data) {
+            userData = response.data.user;
+          }
         }
-      }
 
-      if (!userData && nickname) {
-        // Create new user session
-        const response = await api.createUser(nickname);
-        if (response.success && response.data) {
-          userData = response.data.user;
-          setUserId(userData.id);
-        } else {
-          throw new Error(response.error || "Failed to create user");
+        if (!userData && nickname) {
+          // Create new user session
+          const response = await api.createUser(nickname);
+          if (response.success && response.data) {
+            userData = response.data.user;
+            setUserId(userData.id);
+          } else {
+            throw new Error(
+              response.error || "Failed to create user",
+            );
+          }
         }
-      }
 
-      if (userData) {
-        setUser(userData);
-        return userData;
+        if (userData) {
+          setUser(userData);
+          return userData;
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error("Failed to initialize user:", errorMsg);
       }
-    } catch (err) {
-      const errorMsg =
-        err instanceof Error ? err.message : "Unknown error";
-      setError(errorMsg);
-      console.error("Failed to initialize user:", errorMsg);
-    }
-    return null;
-  }, []);
+      return null;
+    },
+    [],
+  );
 
   // Create or join room
   const createRoom = useCallback(
@@ -123,7 +130,9 @@ export function useDebateSession() {
           setRoomId(roomData.id);
           return roomData;
         } else {
-          throw new Error(response.error || "Failed to create room");
+          throw new Error(
+            response.error || "Failed to create room",
+          );
         }
       } catch (err) {
         const errorMsg =
@@ -133,7 +142,7 @@ export function useDebateSession() {
       }
       return null;
     },
-    [user]
+    [user],
   );
 
   const joinRoom = useCallback(
@@ -149,7 +158,9 @@ export function useDebateSession() {
           setRoomId(roomData.id);
           return roomData;
         } else {
-          throw new Error(response.error || "Failed to join room");
+          throw new Error(
+            response.error || "Failed to join room",
+          );
         }
       } catch (err) {
         const errorMsg =
@@ -159,7 +170,7 @@ export function useDebateSession() {
       }
       return null;
     },
-    [user]
+    [user],
   );
 
   // Refresh room status and statements
@@ -179,7 +190,10 @@ export function useDebateSession() {
 
   // Submit statement
   const submitStatement = useCallback(
-    async (text: string, type?: "bridge" | "crux" | "plurality") => {
+    async (
+      text: string,
+      type?: "bridge" | "crux" | "plurality",
+    ) => {
       if (!user || !room) return false;
 
       try {
@@ -188,7 +202,7 @@ export function useDebateSession() {
           room.id,
           text,
           type,
-          user.id
+          user.id,
         );
         if (response.success && response.data) {
           // Update user points
@@ -196,14 +210,17 @@ export function useDebateSession() {
             prev
               ? {
                   ...prev,
-                  score: prev.score + response.data.pointsEarned,
+                  score:
+                    prev.score + response.data.pointsEarned,
                   bridgePoints:
                     type === "bridge"
-                      ? prev.bridgePoints + response.data.pointsEarned
+                      ? prev.bridgePoints +
+                        response.data.pointsEarned
                       : prev.bridgePoints,
                   cruxPoints:
                     type === "crux"
-                      ? prev.cruxPoints + response.data.pointsEarned
+                      ? prev.cruxPoints +
+                        response.data.pointsEarned
                       : prev.cruxPoints,
                   pluralityPoints:
                     type === "plurality"
@@ -212,7 +229,7 @@ export function useDebateSession() {
                       : prev.pluralityPoints,
                   streak: prev.streak + 1,
                 }
-              : prev
+              : prev,
           );
 
           // Show achievement
@@ -226,7 +243,7 @@ export function useDebateSession() {
           return true;
         } else {
           throw new Error(
-            response.error || "Failed to submit statement"
+            response.error || "Failed to submit statement",
           );
         }
       } catch (err) {
@@ -237,7 +254,7 @@ export function useDebateSession() {
       }
       return false;
     },
-    [user, room, refreshRoom]
+    [user, room, refreshRoom],
   );
 
   // Vote on statement
@@ -247,11 +264,15 @@ export function useDebateSession() {
 
       try {
         setError(null);
-        console.log("Voting on statement:", statementId, voteType);
+        console.log(
+          "Voting on statement:",
+          statementId,
+          voteType,
+        );
         const response = await api.voteOnStatement(
           statementId,
           voteType,
-          user.id
+          user.id,
         );
         console.log("Vote response:", response);
 
@@ -262,9 +283,10 @@ export function useDebateSession() {
               prev
                 ? {
                     ...prev,
-                    score: prev.score + response.data.pointsEarned,
+                    score:
+                      prev.score + response.data.pointsEarned,
                   }
-                : prev
+                : prev,
             );
           }
 
@@ -273,8 +295,8 @@ export function useDebateSession() {
             prev.map((stmt) =>
               stmt.id === statementId
                 ? { ...stmt, ...response.data.statement }
-                : stmt
-            )
+                : stmt,
+            ),
           );
 
           return true;
@@ -289,7 +311,7 @@ export function useDebateSession() {
       }
       return false;
     },
-    [user]
+    [user],
   );
 
   // Update room phase
@@ -303,13 +325,15 @@ export function useDebateSession() {
           room.id,
           phase,
           user.id,
-          subPhase
+          subPhase,
         );
         if (response.success && response.data) {
           setRoom(response.data.room);
           return true;
         } else {
-          throw new Error(response.error || "Failed to update phase");
+          throw new Error(
+            response.error || "Failed to update phase",
+          );
         }
       } catch (err) {
         const errorMsg =
@@ -319,7 +343,7 @@ export function useDebateSession() {
       }
       return false;
     },
-    [user, room]
+    [user, room],
   );
 
   // Get active rooms
@@ -357,7 +381,7 @@ export function useDebateSession() {
         return response.data;
       } else {
         throw new Error(
-          response.error || "Failed to create seed data"
+          response.error || "Failed to create seed data",
         );
       }
     } catch (err) {

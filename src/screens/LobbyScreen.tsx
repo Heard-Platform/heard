@@ -49,7 +49,7 @@ export function LobbyScreen({
       const result = await onCreateSeedData();
       if (result) {
         alert(
-          `✅ ${result.message}\n\nCreated:\n• 1 test room with 4 players\n• ${result.statements} diverse statements\n• Various votes and types\n\nCheck the "Join Existing Room" section!`
+          `✅ ${result.message}\n\nCreated:\n• 1 test room with 4 players\n• ${result.statements} diverse statements\n• Various votes and types\n\nCheck the "Join Existing Room" section!`,
         );
       }
     }
@@ -77,7 +77,10 @@ export function LobbyScreen({
           <Card className="p-4 bg-green-50 border-green-200">
             <p className="text-green-800">
               Welcome back,{" "}
-              <span className="font-medium">{user.nickname}</span>!
+              <span className="font-medium">
+                {user.nickname}
+              </span>
+              !
               <span className="ml-2 text-sm">
                 Score: {user.score}
               </span>
@@ -95,8 +98,9 @@ export function LobbyScreen({
               between different views
             </li>
             <li>
-              • Identify <Badge variant="outline">⚡ Cruxes</Badge> at
-              the heart of disagreements
+              • Identify{" "}
+              <Badge variant="outline">⚡ Cruxes</Badge> at the
+              heart of disagreements
             </li>
             <li>
               • Discover{" "}
@@ -114,7 +118,9 @@ export function LobbyScreen({
               <select
                 className="w-full p-2 border rounded-md"
                 value={newRoomTopic}
-                onChange={(e) => setNewRoomTopic(e.target.value)}
+                onChange={(e) =>
+                  setNewRoomTopic(e.target.value)
+                }
               >
                 <option value="">Choose a topic...</option>
                 {debateTopics.map((topic) => (

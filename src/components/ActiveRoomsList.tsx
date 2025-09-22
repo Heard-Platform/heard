@@ -168,9 +168,7 @@ export function ActiveRoomsList({
                     </p>
                     <Badge
                       variant="outline"
-                      className={`shrink-0 text-xs ${
-                        phaseColors[room.phase]
-                      }`}
+                      className={`shrink-0 text-xs ${phaseColors[room.phase]}`}
                     >
                       {phaseDisplayNames[room.phase]}
                     </Badge>
@@ -184,7 +182,9 @@ export function ActiveRoomsList({
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        <span>{formatTimeAgo(room.createdAt)}</span>
+                        <span>
+                          {formatTimeAgo(room.createdAt)}
+                        </span>
                       </div>
                       {room.roundNumber > 1 && (
                         <Badge
@@ -216,7 +216,8 @@ export function ActiveRoomsList({
       {availableRooms.length > 0 && (
         <div className="mt-4 pt-3 border-t text-xs text-muted-foreground text-center">
           {availableRooms.length} active room
-          {availableRooms.length !== 1 ? "s" : ""} • Auto-refreshing
+          {availableRooms.length !== 1 ? "s" : ""} •
+          Auto-refreshing
         </div>
       )}
     </Card>

@@ -11,7 +11,12 @@ import {
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "./ui/tabs";
 import { Progress } from "./ui/progress";
 
 interface Statement {
@@ -46,7 +51,9 @@ export function RealTimeResults({
 
   const analysis = useMemo(() => {
     // Sort by votes
-    const byVotes = [...statements].sort((a, b) => b.votes - a.votes);
+    const byVotes = [...statements].sort(
+      (a, b) => b.votes - a.votes,
+    );
 
     // Group by type
     const byType = {
@@ -67,7 +74,7 @@ export function RealTimeResults({
     // Calculate consensus (statements with high positive votes)
     const consensus = byVotes.filter((s) => s.votes >= 3);
     const controversial = statements.filter(
-      (s) => s.votes === 0 || (s.votes > 0 && s.votes < 3)
+      (s) => s.votes === 0 || (s.votes > 0 && s.votes < 3),
     );
 
     // Simple clustering by keywords (mock implementation)
@@ -79,7 +86,7 @@ export function RealTimeResults({
           (s) =>
             s.text.toLowerCase().includes("good") ||
             s.text.toLowerCase().includes("positive") ||
-            s.text.toLowerCase().includes("benefit")
+            s.text.toLowerCase().includes("benefit"),
         ),
         avgVotes: 0,
         size: 0,
@@ -91,7 +98,7 @@ export function RealTimeResults({
           (s) =>
             s.text.toLowerCase().includes("bad") ||
             s.text.toLowerCase().includes("negative") ||
-            s.text.toLowerCase().includes("harm")
+            s.text.toLowerCase().includes("harm"),
         ),
         avgVotes: 0,
         size: 0,
@@ -103,7 +110,7 @@ export function RealTimeResults({
           (s) =>
             s.text.toLowerCase().includes("but") ||
             s.text.toLowerCase().includes("however") ||
-            s.text.toLowerCase().includes("both")
+            s.text.toLowerCase().includes("both"),
         ),
         avgVotes: 0,
         size: 0,
@@ -115,7 +122,7 @@ export function RealTimeResults({
           cluster.statements.length > 0
             ? cluster.statements.reduce(
                 (sum, s) => sum + s.votes,
-                0
+                0,
               ) / cluster.statements.length
             : 0,
         size: cluster.statements.length,
@@ -238,12 +245,14 @@ export function RealTimeResults({
               </h4>
               {analysis.consensus.length > 0 ? (
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {analysis.consensus.slice(0, 3).map((statement) => (
-                    <StatementMini
-                      key={statement.id}
-                      statement={statement}
-                    />
-                  ))}
+                  {analysis.consensus
+                    .slice(0, 3)
+                    .map((statement) => (
+                      <StatementMini
+                        key={statement.id}
+                        statement={statement}
+                      />
+                    ))}
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground py-4 text-center">
@@ -255,7 +264,8 @@ export function RealTimeResults({
             <div>
               <h4 className="text-sm mb-2 flex items-center gap-2">
                 <Eye className="w-4 h-4 text-orange-600" />
-                Under Discussion ({analysis.controversial.length})
+                Under Discussion (
+                {analysis.controversial.length})
               </h4>
               {analysis.controversial.length > 0 && (
                 <div className="space-y-2 max-h-32 overflow-y-auto">
@@ -292,22 +302,27 @@ export function RealTimeResults({
                     {info.label} ({typeStatements.length})
                   </h4>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {typeStatements.slice(0, 2).map((statement) => (
-                      <StatementMini
-                        key={statement.id}
-                        statement={statement}
-                      />
-                    ))}
+                    {typeStatements
+                      .slice(0, 2)
+                      .map((statement) => (
+                        <StatementMini
+                          key={statement.id}
+                          statement={statement}
+                        />
+                      ))}
                   </div>
                 </div>
               );
-            }
+            },
           )}
         </TabsContent>
 
         <TabsContent value="clusters" className="space-y-4">
           {analysis.clusters.map((cluster) => (
-            <div key={cluster.id} className="p-3 border rounded-lg">
+            <div
+              key={cluster.id}
+              className="p-3 border rounded-lg"
+            >
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-sm">{cluster.theme}</h4>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -320,19 +335,22 @@ export function RealTimeResults({
               <Progress
                 value={
                   (cluster.avgVotes /
-                    Math.max(...statements.map((s) => s.votes)) ||
-                    1) * 100
+                    Math.max(
+                      ...statements.map((s) => s.votes),
+                    ) || 1) * 100
                 }
                 className="mb-2"
               />
               <div className="space-y-2 max-h-24 overflow-y-auto">
-                {cluster.statements.slice(0, 1).map((statement) => (
-                  <StatementMini
-                    key={statement.id}
-                    statement={statement}
-                    showVotes={false}
-                  />
-                ))}
+                {cluster.statements
+                  .slice(0, 1)
+                  .map((statement) => (
+                    <StatementMini
+                      key={statement.id}
+                      statement={statement}
+                      showVotes={false}
+                    />
+                  ))}
               </div>
             </div>
           ))}
@@ -355,7 +373,10 @@ export function RealTimeResults({
             </div>
             <div className="text-center p-4 border rounded-lg">
               <div className="text-2xl font-mono text-primary">
-                {statements.reduce((sum, s) => sum + s.votes, 0)}
+                {statements.reduce(
+                  (sum, s) => sum + s.votes,
+                  0,
+                )}
               </div>
               <div className="text-xs text-muted-foreground">
                 Total votes cast
@@ -381,20 +402,24 @@ export function RealTimeResults({
 
           <div className="space-y-2">
             <h4 className="text-sm">Top Performers</h4>
-            {analysis.byVotes.slice(0, 3).map((statement, index) => (
-              <div
-                key={statement.id}
-                className="flex items-center gap-3 p-2 border rounded"
-              >
-                <Badge variant="outline" className="text-xs">
-                  #{index + 1}
-                </Badge>
-                <div className="flex-1 text-xs truncate">
-                  {statement.text}
+            {analysis.byVotes
+              .slice(0, 3)
+              .map((statement, index) => (
+                <div
+                  key={statement.id}
+                  className="flex items-center gap-3 p-2 border rounded"
+                >
+                  <Badge variant="outline" className="text-xs">
+                    #{index + 1}
+                  </Badge>
+                  <div className="flex-1 text-xs truncate">
+                    {statement.text}
+                  </div>
+                  <Badge className="text-xs">
+                    {statement.votes}
+                  </Badge>
                 </div>
-                <Badge className="text-xs">{statement.votes}</Badge>
-              </div>
-            ))}
+              ))}
           </div>
         </TabsContent>
       </Tabs>
