@@ -10,7 +10,7 @@ import { AchievementNotification } from "../components/AchievementNotification"
 import { RoundIndicator } from "../components/RoundIndicator"
 import { RealTimeResults } from "../components/RealTimeResults"
 import { FinalResults } from "../components/FinalResults"
-import { Users, RefreshCw } from "lucide-react"
+import { Users, RefreshCw, Zap } from "lucide-react"
 
 interface GameScreenProps {
   user: any
@@ -28,6 +28,7 @@ interface GameScreenProps {
   onLeaveRoom: () => void
   onNewDiscussion: (statement: any) => void
   onScheduleFuture: () => void
+  onSkipPhase?: () => Promise<void>
 }
 
 export function GameScreen({
@@ -43,6 +44,7 @@ export function GameScreen({
   onLeaveRoom,
   onNewDiscussion,
   onScheduleFuture,
+  onSkipPhase,
 }: GameScreenProps) {
   const isSubmissionPhase = ["initial", "bridge", "crux", "plurality"].includes(
     room.phase
@@ -99,12 +101,28 @@ export function GameScreen({
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <motion.h1
-            className="text-3xl font-bold text-primary"
-            whileHover={{ scale: 1.05 }}
-          >
-            HEARD
-          </motion.h1>
+          <div className="flex items-center gap-3">
+            <motion.h1
+              className="text-3xl font-bold text-primary"
+              whileHover={{ scale: 1.05 }}
+            >
+              HEARD
+            </motion.h1>
+            {/* Dev Only: Skip Phase Button */}
+            {onSkipPhase &&
+              room.phase !== "results" &&
+              room.phase !== "lobby" && (
+                <Button
+                  onClick={onSkipPhase}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100"
+                >
+                  <Zap className="w-3 h-3 mr-1" />
+                  DEV: Next Phase
+                </Button>
+              )}
+          </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             {user && (
               <ScoreBoard

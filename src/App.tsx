@@ -216,6 +216,7 @@ export default function App() {
         onLeaveRoom={handleLeaveRoom}
         onNewDiscussion={handleNewDiscussion}
         onScheduleFuture={handleScheduleFuture}
+        onSkipPhase={nextPhase}
       />
     )
   }
