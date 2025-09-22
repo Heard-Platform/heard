@@ -178,13 +178,19 @@ export function useDebateSession() {
     if (!room) return;
 
     try {
+      console.log(`Refreshing room: ${room.id}`);
       const response = await api.getRoomStatus(room.id);
+      console.log("Room refresh response:", response);
       if (response.success && response.data) {
         setRoom(response.data.room);
         setStatements(response.data.statements || []);
+      } else {
+        console.error("Room refresh failed:", response.error);
+        setError(response.error || "Failed to refresh room");
       }
     } catch (err) {
       console.error("Failed to refresh room:", err);
+      setError(err instanceof Error ? err.message : "Unknown error");
     }
   }, [room]);
 
@@ -415,11 +421,14 @@ export function useDebateSession() {
       // Try to restore room if we have a room ID
       const savedRoomId = getRoomId();
       if (savedRoomId) {
+        console.log(`Restoring room: ${savedRoomId}`);
         const response = await api.getRoomStatus(savedRoomId);
+        console.log("Room restore response:", response);
         if (response.success && response.data) {
           setRoom(response.data.room);
           setStatements(response.data.statements || []);
         } else {
+          console.log("Room restore failed, clearing room ID");
           clearRoomId();
         }
       }

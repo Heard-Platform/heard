@@ -56,8 +56,14 @@ const generateId = () =>
 const getUserSession = async (
   userId: string,
 ): Promise<UserSession | null> => {
-  const session = await kv.get(`user:${userId}`);
-  return session ? JSON.parse(session) : null;
+  try {
+    const session = await kv.get(`user:${userId}`);
+    if (!session) return null;
+    return JSON.parse(session);
+  } catch (error) {
+    console.error(`Error parsing user session for ${userId}:`, error);
+    return null;
+  }
 };
 
 const saveUserSession = async (session: UserSession) => {
@@ -67,8 +73,14 @@ const saveUserSession = async (session: UserSession) => {
 const getDebateRoom = async (
   roomId: string,
 ): Promise<DebateRoom | null> => {
-  const room = await kv.get(`room:${roomId}`);
-  return room ? JSON.parse(room) : null;
+  try {
+    const room = await kv.get(`room:${roomId}`);
+    if (!room) return null;
+    return JSON.parse(room);
+  } catch (error) {
+    console.error(`Error parsing room data for ${roomId}:`, error);
+    return null;
+  }
 };
 
 const saveDebateRoom = async (room: DebateRoom) => {
@@ -87,12 +99,25 @@ const saveDebateRoom = async (room: DebateRoom) => {
 const getStatements = async (
   roomId: string,
 ): Promise<Statement[]> => {
-  const statements = await kv.getByPrefix(
-    `statement:${roomId}:`,
-  );
-  return statements
-    .map((s) => JSON.parse(s))
-    .sort((a, b) => b.timestamp - a.timestamp);
+  try {
+    const statements = await kv.getByPrefix(
+      `statement:${roomId}:`,
+    );
+    return statements
+      .map((s) => {
+        try {
+          return JSON.parse(s);
+        } catch (error) {
+          console.error('Error parsing statement:', s, error);
+          return null;
+        }
+      })
+      .filter((s) => s !== null)
+      .sort((a, b) => b.timestamp - a.timestamp);
+  } catch (error) {
+    console.error(`Error fetching statements for room ${roomId}:`, error);
+    return [];
+  }
 };
 
 const saveStatement = async (statement: Statement) => {
@@ -260,23 +285,38 @@ app.post(
 app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
   try {
     const roomId = c.req.param("roomId");
+    console.log(`Fetching room status for: ${roomId}`);
+    
+    if (!roomId) {
+      console.error("No roomId provided");
+      return c.json({ error: "Room ID is required" }, 400);
+    }
+
     const room = await getDebateRoom(roomId);
+    console.log(`Room data retrieved:`, room);
 
     if (!room) {
+      console.log(`Room ${roomId} not found`);
       return c.json({ error: "Room not found" }, 404);
     }
 
     const statements = await getStatements(roomId);
+    console.log(`Found ${statements.length} statements for room ${roomId}`);
 
     return c.json({
       room,
       statements,
-      participantCount: room.participants.length,
+      participantCount: room.participants?.length || 0,
     });
   } catch (error) {
     console.error("Error fetching room status:", error);
+    console.error("Error details:", error.message);
+    console.error("Error stack:", error.stack);
     return c.json(
-      { error: "Failed to fetch room status" },
+      { 
+        error: "Failed to fetch room status",
+        details: error.message 
+      },
       500,
     );
   }
@@ -386,8 +426,13 @@ app.post(
       // Find the statement (need to search by prefix since we don't know the room)
       const allStatements = await kv.getByPrefix("statement:");
       const statementData = allStatements.find((s) => {
-        const parsed = JSON.parse(s);
-        return parsed.id === statementId;
+        try {
+          const parsed = JSON.parse(s);
+          return parsed.id === statementId;
+        } catch (error) {
+          console.error('Error parsing statement during vote search:', s, error);
+          return false;
+        }
       });
 
       if (!statementData) {
@@ -510,7 +555,16 @@ app.post(
 app.get("/make-server-f1a393b4/rooms/active", async (c) => {
   try {
     const activeRooms = await kv.getByPrefix("active_room:");
-    const rooms = activeRooms.map((r) => JSON.parse(r));
+    const rooms = activeRooms
+      .map((r) => {
+        try {
+          return JSON.parse(r);
+        } catch (error) {
+          console.error('Error parsing active room:', r, error);
+          return null;
+        }
+      })
+      .filter((r) => r !== null);
 
     return c.json({ rooms });
   } catch (error) {
