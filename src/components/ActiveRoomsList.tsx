@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
-import { Badge } from './ui/badge';
-import { Users, Clock, RefreshCw, LogIn } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Button } from "./ui/button";
+import { Card } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { Users, Clock, RefreshCw, LogIn } from "lucide-react";
 
 interface DebateRoom {
   id: string;
   topic: string;
-  phase: 'lobby' | 'initial' | 'bridge' | 'crux' | 'plurality' | 'voting' | 'results';
+  phase: "lobby" | "initial" | "bridge" | "crux" | "plurality" | "voting" | "results";
   roundNumber: number;
   phaseStartTime: number;
   participants: string[];
@@ -24,23 +24,23 @@ interface ActiveRoomsListProps {
 }
 
 const phaseDisplayNames = {
-  lobby: '🏛️ Lobby',
-  initial: '💭 Initial Thoughts',
-  bridge: '🌉 Building Bridges',
-  crux: '⚡ Finding Cruxes',
-  plurality: '💎 Exploring Pluralities',
-  voting: '🗳️ Voting',
-  results: '🏆 Results',
+  lobby: "🏛️ Lobby",
+  initial: "💭 Initial Thoughts",
+  bridge: "🌉 Building Bridges",
+  crux: "⚡ Finding Cruxes",
+  plurality: "💎 Exploring Pluralities",
+  voting: "🗳️ Voting",
+  results: "🏆 Results",
 };
 
 const phaseColors = {
-  lobby: 'bg-blue-50 text-blue-700 border-blue-200',
-  initial: 'bg-purple-50 text-purple-700 border-purple-200',
-  bridge: 'bg-green-50 text-green-700 border-green-200',
-  crux: 'bg-orange-50 text-orange-700 border-orange-200',
-  plurality: 'bg-pink-50 text-pink-700 border-pink-200',
-  voting: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  results: 'bg-gray-50 text-gray-700 border-gray-200',
+  lobby: "bg-blue-50 text-blue-700 border-blue-200",
+  initial: "bg-purple-50 text-purple-700 border-purple-200",
+  bridge: "bg-green-50 text-green-700 border-green-200",
+  crux: "bg-orange-50 text-orange-700 border-orange-200",
+  plurality: "bg-pink-50 text-pink-700 border-pink-200",
+  voting: "bg-yellow-50 text-yellow-700 border-yellow-200",
+  results: "bg-gray-50 text-gray-700 border-gray-200",
 };
 
 function formatTimeAgo(timestamp: number): string {
@@ -49,10 +49,10 @@ function formatTimeAgo(timestamp: number): string {
   const minutes = Math.floor(diff / (1000 * 60));
   const hours = Math.floor(diff / (1000 * 60 * 60));
 
-  if (minutes < 1) return 'Just started';
+  if (minutes < 1) return "Just started";
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
-  return 'More than a day ago';
+  return "More than a day ago";
 }
 
 export function ActiveRoomsList({
@@ -96,7 +96,7 @@ export function ActiveRoomsList({
             transition={{
               duration: 1,
               repeat: Infinity,
-              ease: 'linear',
+              ease: "linear",
             }}
             className="w-4 h-4"
           >
@@ -127,7 +127,7 @@ export function ActiveRoomsList({
         >
           <motion.div
             animate={refreshing ? { rotate: 360 } : {}}
-            transition={{ duration: 0.5, ease: 'easeInOut' }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
           >
             <RefreshCw className="w-4 h-4" />
           </motion.div>
@@ -199,7 +199,7 @@ export function ActiveRoomsList({
       {availableRooms.length > 0 && (
         <div className="mt-4 pt-3 border-t text-xs text-muted-foreground text-center">
           {availableRooms.length} active room
-          {availableRooms.length !== 1 ? 's' : ''} • Auto-refreshing
+          {availableRooms.length !== 1 ? "s" : ""} • Auto-refreshing
         </div>
       )}
     </Card>
