@@ -118,7 +118,11 @@ export function StatementCard({
             }
             onClick={() => onVote(statement.id, "disagree")}
             disabled={!canVote}
-            className="flex items-center gap-1 hover:text-red-200"
+            className={`flex items-center gap-1 hover:text-red-200 ${
+              userVote === "disagree" ?
+                "text-white" :
+                "text-red-600"
+            }`}
             title="Disagree"
           >
             <XCircle className="w-4 h-4" />
