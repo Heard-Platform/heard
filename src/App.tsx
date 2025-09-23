@@ -5,12 +5,7 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { GameScreen } from "./screens/GameScreen";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-import type {
-  Phase,
-  SubPhase,
-  Statement,
-  Achievement,
-} from "./types";
+import type { Phase, SubPhase, Statement } from "./types";
 
 export default function App() {
   const [timerActive, setTimerActive] = useState(false);
@@ -54,14 +49,18 @@ export default function App() {
     if (roomData) {
       // Set timer based on current phase and subPhase
       setTimerActive(
-        roomData.phase !== "lobby" && roomData.phase !== "results",
+        roomData.phase !== "lobby" &&
+          roomData.phase !== "results",
       );
     }
   };
 
   // Handle statement submission
   const handleStatementSubmit = useCallback(
-    async (text: string, type?: "bridge" | "crux" | "plurality") => {
+    async (
+      text: string,
+      type?: "bridge" | "crux" | "plurality",
+    ) => {
       await submitStatement(text, type);
     },
     [submitStatement],
@@ -85,7 +84,11 @@ export default function App() {
       "crux",
       "plurality",
     ];
-    const subPhases: SubPhase[] = ["posting", "voting", "review"];
+    const subPhases: SubPhase[] = [
+      "posting",
+      "voting",
+      "review",
+    ];
 
     const currentPhaseIndex = phases.indexOf(room.phase);
     const currentSubPhaseIndex = room.subPhase
@@ -124,16 +127,19 @@ export default function App() {
     setTimerActive(true);
   };
 
-  const handleNewDiscussion = useCallback((statement: Statement) => {
-    // In a real app, this would create a new discussion thread
-    console.log("Creating new discussion based on:", statement.text);
-    alert(
-      `Starting new discussion: "${statement.text.substring(
-        0,
-        50,
-      )}..."`,
-    );
-  }, []);
+  const handleNewDiscussion = useCallback(
+    (statement: Statement) => {
+      // In a real app, this would create a new discussion thread
+      console.log(
+        "Creating new discussion based on:",
+        statement.text,
+      );
+      alert(
+        `Starting new discussion: "${statement.text.substring(0, 50)}..."`,
+      );
+    },
+    [],
+  );
 
   const handleScheduleFuture = useCallback(() => {
     alert(

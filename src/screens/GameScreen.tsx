@@ -11,12 +11,7 @@ import { RoundIndicator } from "../components/RoundIndicator";
 import { RealTimeResults } from "../components/RealTimeResults";
 import { FinalResults } from "../components/FinalResults";
 import { Users, X, Zap } from "lucide-react";
-import type {
-  UserSession,
-  DebateRoom,
-  Statement,
-  Achievement,
-} from "../types";
+import type { UserSession, DebateRoom, Statement, Achievement } from "../types";
 
 interface GameScreenProps {
   user: UserSession;
@@ -60,7 +55,10 @@ export function GameScreen({
   const isReviewPhase = room.subPhase === "review";
 
   const handleStatementSubmit = useCallback(
-    async (text: string, type?: "bridge" | "crux" | "plurality") => {
+    async (
+      text: string,
+      type?: "bridge" | "crux" | "plurality",
+    ) => {
       await onSubmitStatement(text, type);
     },
     [onSubmitStatement],
@@ -223,23 +221,14 @@ export function GameScreen({
               />
             )}
 
-            {isVotingPhase && (
-              <Card className="p-6 text-center">
-                <h3 className="mb-2">Voting Phase</h3>
-                <p className="text-muted-foreground mb-4">
-                  Vote on the latest statements from the {room.phase}{" "}
-                  round
-                </p>
-                <Button onClick={onNextPhase}>Done Voting</Button>
-              </Card>
-            )}
+
 
             {isReviewPhase && (
               <Card className="p-6 text-center">
                 <h3 className="mb-2">Review Phase</h3>
                 <p className="text-muted-foreground mb-4">
-                  Take a breath! Review how the {room.phase} round is
-                  shaping up
+                  Take a breath! Review how the {room.phase}{" "}
+                  round is shaping up
                 </p>
                 <Button onClick={onNextPhase}>
                   Continue to Next Phase
@@ -247,15 +236,13 @@ export function GameScreen({
               </Card>
             )}
 
-            {/* Real-time Results - Show during voting and review phases */}
-            {statements.length > 0 &&
-              (isVotingPhase || isReviewPhase) && (
-                <RealTimeResults
-                  statements={statements}
-                  currentPhase={room.phase}
-                  currentSubPhase={room.subPhase}
-                />
-              )}
+            {statements.length > 0 && isReviewPhase && (
+              <RealTimeResults
+                statements={statements}
+                currentPhase={room.phase}
+                currentSubPhase={room.subPhase}
+              />
+            )}
           </div>
 
           {/* Statements Feed */}
@@ -277,7 +264,10 @@ export function GameScreen({
                     statement={statement}
                     onVote={handleVote}
                     onFlag={() =>
-                      console.log("Flag statement:", statement.id)
+                      console.log(
+                        "Flag statement:",
+                        statement.id,
+                      )
                     }
                     canVote={isVotingPhase}
                     currentUserId={user?.id}
@@ -288,8 +278,8 @@ export function GameScreen({
               {statements.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   <p>
-                    No statements yet. Be the first to share your
-                    take!
+                    No statements yet. Be the first to share
+                    your take!
                   </p>
                 </div>
               )}

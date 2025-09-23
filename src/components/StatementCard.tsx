@@ -11,7 +11,10 @@ import type { Statement } from "../types";
 
 export interface StatementCardProps {
   statement: Statement;
-  onVote: (id: string, type: "agree" | "disagree" | "pass") => void;
+  onVote: (
+    id: string,
+    type: "agree" | "disagree" | "pass",
+  ) => void;
   onFlag: (id: string) => void;
   canVote: boolean;
   currentUserId?: string;
@@ -67,7 +70,9 @@ export function StatementCard({
           <span className="text-sm text-muted-foreground">
             @{statement.author}
           </span>
-          {statement.isSpicy && <span className="text-sm">🌶️</span>}
+          {statement.isSpicy && (
+            <span className="text-sm">🌶️</span>
+          )}
           {getTypeIcon() && (
             <span className="text-sm">{getTypeIcon()}</span>
           )}
@@ -85,7 +90,9 @@ export function StatementCard({
         <div className="flex items-center gap-2">
           <Button
             size="sm"
-            variant={userVote === "agree" ? "default" : "outline"}
+            variant={
+              userVote === "agree" ? "default" : "outline"
+            }
             onClick={() => onVote(statement.id, "agree")}
             disabled={!canVote}
             className={`flex items-center gap-1 ${
@@ -105,7 +112,9 @@ export function StatementCard({
           <Button
             size="sm"
             variant={
-              userVote === "disagree" ? "destructive" : "outline"
+              userVote === "disagree"
+                ? "destructive"
+                : "outline"
             }
             onClick={() => onVote(statement.id, "disagree")}
             disabled={!canVote}
@@ -121,7 +130,9 @@ export function StatementCard({
           </Button>
           <Button
             size="sm"
-            variant={userVote === "pass" ? "secondary" : "outline"}
+            variant={
+              userVote === "pass" ? "secondary" : "outline"
+            }
             onClick={() => onVote(statement.id, "pass")}
             disabled={!canVote}
             className="flex items-center gap-1 text-gray-600 hover:text-gray-700"
