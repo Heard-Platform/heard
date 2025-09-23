@@ -1,5 +1,5 @@
+import { Statement } from "../types";
 import { StatementCard, StatementCardProps } from "./StatementCard";
-import { Statement } from "../App";
 
 export default {
   title: "Components/StatementCard",
@@ -19,7 +19,7 @@ const sampleStatement: Statement = {
   type: "crux",
   roomId: "room-1",
   timestamp: Date.now(),
-  voters: { user1: "agree", user2: "disagree" },
+  voters: { user2: "agree", user3: "disagree" },
 };
 
 const props: StatementCardProps = {

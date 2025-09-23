@@ -27,6 +27,7 @@ export function StatementCard({
   const userVote = currentUserId
     ? statement.voters?.[currentUserId]
     : null;
+  const userHasVoted = !!userVote;
   const getTypeColor = () => {
     switch (statement.type) {
       case "bridge":
@@ -96,7 +97,9 @@ export function StatementCard({
           >
             <CheckCircle className="w-4 h-4" />
             <span className="text-sm">
-              {statement.agrees > 0 ? statement.agrees : ""}
+              {userHasVoted && statement.agrees > 0
+                ? statement.agrees
+                : ""}
             </span>
           </Button>
           <Button
@@ -111,7 +114,9 @@ export function StatementCard({
           >
             <XCircle className="w-4 h-4" />
             <span className="text-sm">
-              {statement.disagrees > 0 ? statement.disagrees : ""}
+              {userHasVoted && statement.disagrees > 0
+                ? statement.disagrees
+                : ""}
             </span>
           </Button>
           <Button
@@ -124,7 +129,9 @@ export function StatementCard({
           >
             <SkipForward className="w-4 h-4" />
             <span className="text-sm">
-              {statement.passes > 0 ? statement.passes : ""}
+              {userHasVoted && statement.passes > 0
+                ? statement.passes
+                : ""}
             </span>
           </Button>
         </div>
