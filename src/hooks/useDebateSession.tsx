@@ -45,12 +45,14 @@ interface Statement {
   id: string;
   text: string;
   author: string;
-  votes: number;
+  agrees: number;
+  disagrees: number;
+  passes: number;
   type?: "bridge" | "crux" | "plurality";
   isSpicy?: boolean;
   roomId: string;
   timestamp: number;
-  voters: { [userId: string]: "up" | "down" };
+  voters: { [userId: string]: "agree" | "disagree" | "pass" };
 }
 
 interface Achievement {
@@ -265,7 +267,7 @@ export function useDebateSession() {
 
   // Vote on statement
   const voteOnStatement = useCallback(
-    async (statementId: string, voteType: "up" | "down") => {
+    async (statementId: string, voteType: "agree" | "disagree" | "pass") => {
       if (!user) return false;
 
       try {
@@ -283,7 +285,7 @@ export function useDebateSession() {
         console.log("Vote response:", response);
 
         if (response.success && response.data) {
-          // Update user points if voting up
+          // Update user points if agreeing
           if (response.data.pointsEarned > 0) {
             setUser((prev) =>
               prev

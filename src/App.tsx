@@ -15,17 +15,18 @@ type Phase =
   | "results";
 type SubPhase = "posting" | "voting" | "review";
 
-interface Statement {
+export interface Statement {
   id: string;
   text: string;
   author: string;
-  upvotes: number;
-  downvotes: number;
+  agrees: number;
+  disagrees: number;
+  passes: number;
   type?: "bridge" | "crux" | "plurality";
   isSpicy?: boolean;
   roomId: string;
   timestamp: number;
-  voters: { [userId: string]: "up" | "down" };
+  voters: { [userId: string]: "agree" | "disagree" | "pass" };
 }
 
 interface Achievement {
@@ -77,18 +78,14 @@ export default function App() {
     if (roomData) {
       // Set timer based on current phase and subPhase
       setTimerActive(
-        roomData.phase !== "lobby" &&
-          roomData.phase !== "results",
+        roomData.phase !== "lobby" && roomData.phase !== "results",
       );
     }
   };
 
   // Handle statement submission
   const handleStatementSubmit = useCallback(
-    async (
-      text: string,
-      type?: "bridge" | "crux" | "plurality",
-    ) => {
+    async (text: string, type?: "bridge" | "crux" | "plurality") => {
       await submitStatement(text, type);
     },
     [submitStatement],
@@ -96,7 +93,7 @@ export default function App() {
 
   // Handle voting
   const handleVote = useCallback(
-    async (id: string, voteType: "up" | "down") => {
+    async (id: string, voteType: "agree" | "disagree" | "pass") => {
       await voteOnStatement(id, voteType);
     },
     [voteOnStatement],
@@ -112,11 +109,7 @@ export default function App() {
       "crux",
       "plurality",
     ];
-    const subPhases: SubPhase[] = [
-      "posting",
-      "voting",
-      "review",
-    ];
+    const subPhases: SubPhase[] = ["posting", "voting", "review"];
 
     const currentPhaseIndex = phases.indexOf(room.phase);
     const currentSubPhaseIndex = room.subPhase
@@ -155,19 +148,16 @@ export default function App() {
     setTimerActive(true);
   };
 
-  const handleNewDiscussion = useCallback(
-    (statement: Statement) => {
-      // In a real app, this would create a new discussion thread
-      console.log(
-        "Creating new discussion based on:",
-        statement.text,
-      );
-      alert(
-        `Starting new discussion: "${statement.text.substring(0, 50)}..."`,
-      );
-    },
-    [],
-  );
+  const handleNewDiscussion = useCallback((statement: Statement) => {
+    // In a real app, this would create a new discussion thread
+    console.log("Creating new discussion based on:", statement.text);
+    alert(
+      `Starting new discussion: "${statement.text.substring(
+        0,
+        50,
+      )}..."`,
+    );
+  }, []);
 
   const handleScheduleFuture = useCallback(() => {
     alert(

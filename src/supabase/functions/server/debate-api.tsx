@@ -5,20 +5,21 @@ interface Statement {
   id: string;
   text: string;
   author: string;
-  upvotes: number; // Will be calculated from Vote records
-  downvotes: number; // Will be calculated from Vote records
+  agrees: number; // Will be calculated from Vote records
+  disagrees: number; // Will be calculated from Vote records
+  passes: number; // Will be calculated from Vote records
   type?: "bridge" | "crux" | "plurality";
   isSpicy?: boolean;
   roomId: string;
   timestamp: number;
-  voters: { [userId: string]: "up" | "down" }; // Will be calculated from Vote records
+  voters: { [userId: string]: "agree" | "disagree" | "pass" }; // Will be calculated from Vote records
 }
 
 interface Vote {
   id: string;
   statementId: string;
   userId: string;
-  voteType: "up" | "down";
+  voteType: "agree" | "disagree" | "pass";
   timestamp: number;
 }
 
@@ -165,23 +166,27 @@ const getVotesForStatements = async (statementIds: string[]): Promise<{ [stateme
   return allVotes;
 };
 
-const calculateVoteStats = (votes: Vote[]): { upvotes: number; downvotes: number; voters: { [userId: string]: "up" | "down" } } => {
-  const voters: { [userId: string]: "up" | "down" } = {};
-  let upCount = 0;
-  let downCount = 0;
+const calculateVoteStats = (votes: Vote[]): { agrees: number; disagrees: number; passes: number; voters: { [userId: string]: "agree" | "disagree" | "pass" } } => {
+  const voters: { [userId: string]: "agree" | "disagree" | "pass" } = {};
+  let agreeCount = 0;
+  let disagreeCount = 0;
+  let passCount = 0;
   
   for (const vote of votes) {
     voters[vote.userId] = vote.voteType;
-    if (vote.voteType === "up") {
-      upCount++;
-    } else if (vote.voteType === "down") {
-      downCount++;
+    if (vote.voteType === "agree") {
+      agreeCount++;
+    } else if (vote.voteType === "disagree") {
+      disagreeCount++;
+    } else if (vote.voteType === "pass") {
+      passCount++;
     }
   }
   
   return {
-    upvotes: upCount,
-    downvotes: downCount,
+    agrees: agreeCount,
+    disagrees: disagreeCount,
+    passes: passCount,
     voters,
   };
 };
@@ -217,8 +222,9 @@ const getStatements = async (
       
       return {
         ...statement,
-        upvotes: voteStats.upvotes,
-        downvotes: voteStats.downvotes,
+        agrees: voteStats.agrees,
+        disagrees: voteStats.disagrees,
+        passes: voteStats.passes,
         voters: voteStats.voters,
       };
     });
@@ -468,8 +474,9 @@ app.post(
         id: generateId(),
         text: text.trim(),
         author: user.nickname,
-        upvotes: 0, // Will be calculated from Vote records
-        downvotes: 0, // Will be calculated from Vote records
+        agrees: 0, // Will be calculated from Vote records
+        disagrees: 0, // Will be calculated from Vote records
+        passes: 0, // Will be calculated from Vote records
         type: type || undefined,
         isSpicy: text.includes("🌶️") || text.length > 200,
         roomId,
@@ -525,7 +532,7 @@ app.post(
       const statementId = c.req.param("statementId");
       const { voteType, userId } = await c.req.json();
 
-      if (!["up", "down"].includes(voteType)) {
+      if (!["agree", "disagree", "pass"].includes(voteType)) {
         return c.json({ error: "Invalid vote type" }, 400);
       }
 
@@ -573,8 +580,8 @@ app.post(
         await saveVote(updatedVote);
         console.log(`Updated vote for user ${userId} on statement ${statementId} to ${voteType}`);
         
-        if (voteType === "up") {
-          pointsEarned = 10; // Award points for upvoting
+        if (voteType === "agree") {
+          pointsEarned = 10; // Award points for agreeing
         }
       } else {
         // First time voting - create new vote record
@@ -588,8 +595,8 @@ app.post(
         await saveVote(newVote);
         console.log(`Created new vote for user ${userId} on statement ${statementId}: ${voteType}`);
         
-        if (voteType === "up") {
-          pointsEarned = 10; // Award points for upvoting
+        if (voteType === "agree") {
+          pointsEarned = 10; // Award points for agreeing
         }
       }
 
@@ -600,12 +607,13 @@ app.post(
       // Update statement with calculated vote data (but don't save it - votes are separate)
       const updatedStatement = {
         ...statement,
-        upvotes: voteStats.upvotes,
-        downvotes: voteStats.downvotes,
+        agrees: voteStats.agrees,
+        disagrees: voteStats.disagrees,
+        passes: voteStats.passes,
         voters: voteStats.voters,
       };
 
-      console.log(`Final vote count for statement ${statementId}: ${voteStats.upvotes} up, ${voteStats.downvotes} down (${updatedVotes.length} total votes)`);
+      console.log(`Final vote count for statement ${statementId}: ${voteStats.agrees} agree, ${voteStats.disagrees} disagree, ${voteStats.passes} pass (${updatedVotes.length} total votes)`);
 
       // Update user points
       if (pointsEarned > 0) {
@@ -796,8 +804,9 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           id: generateId(),
           text: "Stand right, walk left - it's literally posted everywhere and keeps traffic flowing smoothly for everyone",
           author: "MetroCommuter",
-          upvotes: 0, // Will be calculated
-          downvotes: 0, // Will be calculated
+          agrees: 0, // Will be calculated
+          disagrees: 0, // Will be calculated
+          passes: 0, // Will be calculated
           type: "bridge" as const,
           isSpicy: false,
           roomId,
@@ -805,9 +814,9 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           voters: {}, // Will be calculated
         },
         voteData: [
-          { userId, voteType: "up" as const },
-          { userId: "test_user_2", voteType: "up" as const },
-          { userId: "test_user_3", voteType: "up" as const },
+          { userId, voteType: "agree" as const },
+          { userId: "test_user_2", voteType: "agree" as const },
+          { userId: "test_user_3", voteType: "agree" as const },
         ],
       },
       {
@@ -815,8 +824,9 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           id: generateId(),
           text: "The real issue is whether escalators are transportation or moving sidewalks - affects the whole etiquette 🌶️",
           author: "RushHourWarrior",
-          upvotes: 0, // Will be calculated
-          downvotes: 0, // Will be calculated
+          agrees: 0, // Will be calculated
+          disagrees: 0, // Will be calculated
+          passes: 0, // Will be calculated
           type: "crux" as const,
           isSpicy: true,
           roomId,
@@ -824,8 +834,8 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           voters: {}, // Will be calculated
         },
         voteData: [
-          { userId: "test_user_1", voteType: "down" as const },
-          { userId: "test_user_3", voteType: "down" as const },
+          { userId: "test_user_1", voteType: "disagree" as const },
+          { userId: "test_user_3", voteType: "disagree" as const },
         ],
       },
       {
@@ -833,8 +843,9 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           id: generateId(),
           text: "What about people with mobility issues who need to hold the handrail on both sides?",
           author: "EscalatorEtiquette",
-          upvotes: 0, // Will be calculated
-          downvotes: 0, // Will be calculated
+          agrees: 0, // Will be calculated
+          disagrees: 0, // Will be calculated
+          passes: 0, // Will be calculated
           type: "plurality" as const,
           isSpicy: false,
           roomId,
@@ -842,8 +853,8 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           voters: {}, // Will be calculated
         },
         voteData: [
-          { userId, voteType: "up" as const },
-          { userId: "test_user_1", voteType: "up" as const },
+          { userId, voteType: "agree" as const },
+          { userId: "test_user_1", voteType: "agree" as const },
         ],
       },
       {
@@ -851,16 +862,17 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           id: generateId(),
           text: "Some escalators are too narrow for two people anyway - the rule doesn't always work",
           author: user.nickname,
-          upvotes: 0, // Will be calculated
-          downvotes: 0, // Will be calculated
+          agrees: 0, // Will be calculated
+          disagrees: 0, // Will be calculated
+          passes: 0, // Will be calculated
           isSpicy: false,
           roomId,
           timestamp: Date.now() - 600000, // 10 min ago
           voters: {}, // Will be calculated
         },
         voteData: [
-          { userId: "test_user_1", voteType: "up" as const },
-          { userId: "test_user_3", voteType: "up" as const },
+          { userId: "test_user_1", voteType: "agree" as const },
+          { userId: "test_user_3", voteType: "agree" as const },
         ],
       },
       {
@@ -868,15 +880,17 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           id: generateId(),
           text: "If you're not walking just take the elevator!! Escalators are for MOVING PEOPLE 🌶️",
           author: "RushHourWarrior",
-          upvotes: 0, // Will be calculated
-          downvotes: 0, // Will be calculated
+          agrees: 0, // Will be calculated
+          disagrees: 0, // Will be calculated
+          passes: 0, // Will be calculated
           isSpicy: true,
           roomId,
           timestamp: Date.now() - 500000, // 8 min ago
           voters: {}, // Will be calculated
         },
         voteData: [
-          { userId: "test_user_2", voteType: "up" as const },
+          { userId: "test_user_2", voteType: "agree" as const },
+          { userId: "test_user_1", voteType: "pass" as const },
         ],
       },
       {
@@ -884,8 +898,9 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           id: generateId(),
           text: "Maybe we need better signage or even separate escalators for walkers vs standers?",
           author: "EscalatorEtiquette",
-          upvotes: 0, // Will be calculated
-          downvotes: 0, // Will be calculated
+          agrees: 0, // Will be calculated
+          disagrees: 0, // Will be calculated
+          passes: 0, // Will be calculated
           type: "bridge" as const,
           isSpicy: false,
           roomId,
@@ -893,9 +908,9 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           voters: {}, // Will be calculated
         },
         voteData: [
-          { userId, voteType: "up" as const },
-          { userId: "test_user_1", voteType: "up" as const },
-          { userId: "test_user_2", voteType: "up" as const },
+          { userId, voteType: "agree" as const },
+          { userId: "test_user_1", voteType: "agree" as const },
+          { userId: "test_user_2", voteType: "agree" as const },
         ],
       },
       {
@@ -903,8 +918,9 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           id: generateId(),
           text: "This is about respecting shared public space vs individual convenience - basic civics!",
           author: "MetroCommuter",
-          upvotes: 0, // Will be calculated
-          downvotes: 0, // Will be calculated
+          agrees: 0, // Will be calculated
+          disagrees: 0, // Will be calculated
+          passes: 0, // Will be calculated
           type: "crux" as const,
           isSpicy: false,
           roomId,
@@ -912,8 +928,9 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           voters: {}, // Will be calculated
         },
         voteData: [
-          { userId: "test_user_1", voteType: "up" as const },
-          { userId: "test_user_3", voteType: "up" as const },
+          { userId: "test_user_1", voteType: "agree" as const },
+          { userId: "test_user_3", voteType: "disagree" as const },
+          { userId, voteType: "pass" as const },
         ],
       },
       {
@@ -921,8 +938,9 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           id: generateId(),
           text: "Tourist season changes everything - they don't know the rules and clog up the system",
           author: "EscalatorEtiquette",
-          upvotes: 0, // Will be calculated
-          downvotes: 0, // Will be calculated
+          agrees: 0, // Will be calculated
+          disagrees: 0, // Will be calculated
+          passes: 0, // Will be calculated
           type: "plurality" as const,
           isSpicy: false,
           roomId,
@@ -930,7 +948,8 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           voters: {}, // Will be calculated
         },
         voteData: [
-          { userId, voteType: "up" as const },
+          { userId, voteType: "agree" as const },
+          { userId: "test_user_2", voteType: "pass" as const },
         ],
       },
     ];

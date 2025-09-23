@@ -1,24 +1,26 @@
 import { motion } from "motion/react";
 import {
-  ThumbsUp,
-  ThumbsDown,
+  CheckCircle,
+  XCircle,
+  SkipForward,
   MessageCircle,
   Flag,
 } from "lucide-react";
 import { Button } from "./ui/button";
 
-interface StatementCardProps {
+export interface StatementCardProps {
   statement: {
     id: string;
     text: string;
     author: string;
-    upvotes: number;
-    downvotes: number;
+    agrees: number;
+    disagrees: number;
+    passes: number;
     type?: "bridge" | "crux" | "plurality";
     isSpicy?: boolean;
-    voters?: { [userId: string]: "up" | "down" };
+    voters?: { [userId: string]: "agree" | "disagree" | "pass" };
   };
-  onVote: (id: string, type: "up" | "down") => void;
+  onVote: (id: string, type: "agree" | "disagree" | "pass") => void;
   onFlag: (id: string) => void;
   canVote: boolean;
   currentUserId?: string;
@@ -73,9 +75,7 @@ export function StatementCard({
           <span className="text-sm text-muted-foreground">
             @{statement.author}
           </span>
-          {statement.isSpicy && (
-            <span className="text-sm">🌶️</span>
-          )}
+          {statement.isSpicy && <span className="text-sm">🌶️</span>}
           {getTypeIcon() && (
             <span className="text-sm">{getTypeIcon()}</span>
           )}
@@ -93,28 +93,43 @@ export function StatementCard({
         <div className="flex items-center gap-2">
           <Button
             size="sm"
-            variant={userVote === "up" ? "default" : "outline"}
-            onClick={() => onVote(statement.id, "up")}
+            variant={userVote === "agree" ? "default" : "outline"}
+            onClick={() => onVote(statement.id, "agree")}
             disabled={!canVote}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 hover:text-green-700"
+            title="Agree"
           >
-            <ThumbsUp className="w-4 h-4" />
+            <CheckCircle className="w-4 h-4" />
             <span className="text-sm">
-              {statement.upvotes > 0 ? statement.upvotes : ""}
+              {statement.agrees > 0 ? statement.agrees : ""}
             </span>
           </Button>
           <Button
             size="sm"
             variant={
-              userVote === "down" ? "destructive" : "outline"
+              userVote === "disagree" ? "destructive" : "outline"
             }
-            onClick={() => onVote(statement.id, "down")}
+            onClick={() => onVote(statement.id, "disagree")}
             disabled={!canVote}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 hover:text-red-200"
+            title="Disagree"
           >
-            <ThumbsDown className="w-4 h-4" />
+            <XCircle className="w-4 h-4" />
             <span className="text-sm">
-              {statement.downvotes > 0 ? statement.downvotes : ""}
+              {statement.disagrees > 0 ? statement.disagrees : ""}
+            </span>
+          </Button>
+          <Button
+            size="sm"
+            variant={userVote === "pass" ? "secondary" : "outline"}
+            onClick={() => onVote(statement.id, "pass")}
+            disabled={!canVote}
+            className="flex items-center gap-1 text-gray-600 hover:text-gray-700"
+            title="Pass"
+          >
+            <SkipForward className="w-4 h-4" />
+            <span className="text-sm">
+              {statement.passes > 0 ? statement.passes : ""}
             </span>
           </Button>
         </div>
