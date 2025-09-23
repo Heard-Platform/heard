@@ -7,116 +7,63 @@ import {
   setRoomId,
   clearRoomId,
 } from "../utils/api";
-
-interface UserSession {
-  id: string;
-  nickname: string;
-  score: number;
-  bridgePoints: number;
-  cruxPoints: number;
-  pluralityPoints: number;
-  streak: number;
-  currentRoomId?: string;
-  lastActive: number;
-}
-
-type Phase =
-  | "lobby"
-  | "initial"
-  | "bridge"
-  | "crux"
-  | "plurality"
-  | "results";
-type SubPhase = "posting" | "voting" | "review";
-
-interface DebateRoom {
-  id: string;
-  topic: string;
-  phase: Phase;
-  subPhase?: SubPhase;
-  roundNumber: number;
-  phaseStartTime: number;
-  participants: string[];
-  isActive: boolean;
-  createdAt: number;
-}
-
-interface Statement {
-  id: string;
-  text: string;
-  author: string;
-  agrees: number;
-  disagrees: number;
-  passes: number;
-  type?: "bridge" | "crux" | "plurality";
-  isSpicy?: boolean;
-  roomId: string;
-  timestamp: number;
-  voters: { [userId: string]: "agree" | "disagree" | "pass" };
-}
-
-interface Achievement {
-  title: string;
-  description: string;
-  points: number;
-  type: "score" | "bridge" | "crux" | "plurality" | "streak";
-}
+import type {
+  UserSession,
+  Phase,
+  SubPhase,
+  DebateRoom,
+  Statement,
+  Achievement,
+} from "../types";
 
 export function useDebateSession() {
   const [user, setUser] = useState<UserSession | null>(null);
   const [room, setRoom] = useState<DebateRoom | null>(null);
   const [statements, setStatements] = useState<Statement[]>([]);
-  const [activeRooms, setActiveRooms] = useState<DebateRoom[]>(
-    [],
-  );
+  const [activeRooms, setActiveRooms] = useState<DebateRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastAchievement, setLastAchievement] =
     useState<Achievement | null>(null);
 
   // Initialize user session
-  const initializeUser = useCallback(
-    async (nickname?: string) => {
-      try {
-        setError(null);
-        let userId = getUserId();
-        let userData = null;
+  const initializeUser = useCallback(async (nickname?: string) => {
+    try {
+      setError(null);
+      let userId = getUserId();
+      let userData = null;
 
-        if (userId) {
-          // Try to restore existing session
-          const response = await api.getUser(userId);
-          if (response.success && response.data) {
-            userData = response.data.user;
-          }
+      if (userId) {
+        // Try to restore existing session
+        const response = await api.getUser(userId);
+        if (response.success && response.data) {
+          userData = response.data.user;
         }
-
-        if (!userData && nickname) {
-          // Create new user session
-          const response = await api.createUser(nickname);
-          if (response.success && response.data) {
-            userData = response.data.user;
-            setUserId(userData.id);
-          } else {
-            throw new Error(
-              response.error || "Failed to create user",
-            );
-          }
-        }
-
-        if (userData) {
-          setUser(userData);
-          return userData;
-        }
-      } catch (err) {
-        const errorMsg =
-          err instanceof Error ? err.message : "Unknown error";
-        setError(errorMsg);
-        console.error("Failed to initialize user:", errorMsg);
       }
-      return null;
-    },
-    [],
-  );
+
+      if (!userData && nickname) {
+        // Create new user session
+        const response = await api.createUser(nickname);
+        if (response.success && response.data) {
+          userData = response.data.user;
+          setUserId(userData.id);
+        } else {
+          throw new Error(response.error || "Failed to create user");
+        }
+      }
+
+      if (userData) {
+        setUser(userData);
+        return userData;
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to initialize user:", errorMsg);
+    }
+    return null;
+  }, []);
 
   // Create or join room
   const createRoom = useCallback(
@@ -132,9 +79,7 @@ export function useDebateSession() {
           setRoomId(roomData.id);
           return roomData;
         } else {
-          throw new Error(
-            response.error || "Failed to create room",
-          );
+          throw new Error(response.error || "Failed to create room");
         }
       } catch (err) {
         const errorMsg =
@@ -160,9 +105,7 @@ export function useDebateSession() {
           setRoomId(roomData.id);
           return roomData;
         } else {
-          throw new Error(
-            response.error || "Failed to join room",
-          );
+          throw new Error(response.error || "Failed to join room");
         }
       } catch (err) {
         const errorMsg =
@@ -198,10 +141,7 @@ export function useDebateSession() {
 
   // Submit statement
   const submitStatement = useCallback(
-    async (
-      text: string,
-      type?: "bridge" | "crux" | "plurality",
-    ) => {
+    async (text: string, type?: "bridge" | "crux" | "plurality") => {
       if (!user || !room) return false;
 
       try {
@@ -218,17 +158,14 @@ export function useDebateSession() {
             prev
               ? {
                   ...prev,
-                  score:
-                    prev.score + response.data.pointsEarned,
+                  score: prev.score + response.data.pointsEarned,
                   bridgePoints:
                     type === "bridge"
-                      ? prev.bridgePoints +
-                        response.data.pointsEarned
+                      ? prev.bridgePoints + response.data.pointsEarned
                       : prev.bridgePoints,
                   cruxPoints:
                     type === "crux"
-                      ? prev.cruxPoints +
-                        response.data.pointsEarned
+                      ? prev.cruxPoints + response.data.pointsEarned
                       : prev.cruxPoints,
                   pluralityPoints:
                     type === "plurality"
@@ -267,16 +204,15 @@ export function useDebateSession() {
 
   // Vote on statement
   const voteOnStatement = useCallback(
-    async (statementId: string, voteType: "agree" | "disagree" | "pass") => {
+    async (
+      statementId: string,
+      voteType: "agree" | "disagree" | "pass",
+    ) => {
       if (!user) return false;
 
       try {
         setError(null);
-        console.log(
-          "Voting on statement:",
-          statementId,
-          voteType,
-        );
+        console.log("Voting on statement:", statementId, voteType);
         const response = await api.voteOnStatement(
           statementId,
           voteType,
@@ -291,8 +227,7 @@ export function useDebateSession() {
               prev
                 ? {
                     ...prev,
-                    score:
-                      prev.score + response.data.pointsEarned,
+                    score: prev.score + response.data.pointsEarned,
                   }
                 : prev,
             );
@@ -339,9 +274,7 @@ export function useDebateSession() {
           setRoom(response.data.room);
           return true;
         } else {
-          throw new Error(
-            response.error || "Failed to update phase",
-          );
+          throw new Error(response.error || "Failed to update phase");
         }
       } catch (err) {
         const errorMsg =

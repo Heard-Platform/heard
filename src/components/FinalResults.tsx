@@ -16,15 +16,7 @@ import {
   Flower2,
   Cat,
 } from "lucide-react";
-
-interface Statement {
-  id: string;
-  text: string;
-  author: string;
-  votes: number;
-  type?: "bridge" | "crux" | "plurality";
-  isSpicy?: boolean;
-}
+import type { Statement } from "../types";
 
 interface FinalResultsProps {
   statements: Statement[];
@@ -62,7 +54,7 @@ export function FinalResults({
   ) => {
     return statements
       .filter((s) => (type ? s.type === type : !s.type))
-      .sort((a, b) => b.votes - a.votes)
+      .sort((a, b) => (b.agrees - b.disagrees) - (a.agrees - a.disagrees))
       .slice(0, 3);
   };
 
@@ -138,7 +130,7 @@ export function FinalResults({
                 <Badge variant="destructive">🌶️ Spicy</Badge>
               )}
               <Badge variant="outline">
-                {statement.votes} votes
+                {statement.agrees} agrees, {statement.disagrees} disagrees
               </Badge>
             </div>
             <p className="text-sm mb-2">{statement.text}</p>

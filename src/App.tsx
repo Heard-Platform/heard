@@ -5,36 +5,12 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { GameScreen } from "./screens/GameScreen";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-
-type Phase =
-  | "lobby"
-  | "initial"
-  | "bridge"
-  | "crux"
-  | "plurality"
-  | "results";
-type SubPhase = "posting" | "voting" | "review";
-
-export interface Statement {
-  id: string;
-  text: string;
-  author: string;
-  agrees: number;
-  disagrees: number;
-  passes: number;
-  type?: "bridge" | "crux" | "plurality";
-  isSpicy?: boolean;
-  roomId: string;
-  timestamp: number;
-  voters: { [userId: string]: "agree" | "disagree" | "pass" };
-}
-
-interface Achievement {
-  title: string;
-  description: string;
-  points: number;
-  type: "score" | "bridge" | "crux" | "plurality" | "streak";
-}
+import type {
+  Phase,
+  SubPhase,
+  Statement,
+  Achievement,
+} from "./types";
 
 export default function App() {
   const [timerActive, setTimerActive] = useState(false);

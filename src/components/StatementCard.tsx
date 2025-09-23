@@ -7,19 +7,10 @@ import {
   Flag,
 } from "lucide-react";
 import { Button } from "./ui/button";
+import type { Statement } from "../types";
 
 export interface StatementCardProps {
-  statement: {
-    id: string;
-    text: string;
-    author: string;
-    agrees: number;
-    disagrees: number;
-    passes: number;
-    type?: "bridge" | "crux" | "plurality";
-    isSpicy?: boolean;
-    voters?: { [userId: string]: "agree" | "disagree" | "pass" };
-  };
+  statement: Statement;
   onVote: (id: string, type: "agree" | "disagree" | "pass") => void;
   onFlag: (id: string) => void;
   canVote: boolean;
@@ -96,7 +87,11 @@ export function StatementCard({
             variant={userVote === "agree" ? "default" : "outline"}
             onClick={() => onVote(statement.id, "agree")}
             disabled={!canVote}
-            className="flex items-center gap-1 hover:text-green-700"
+            className={`flex items-center gap-1 ${
+              userVote === "agree"
+                ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
+                : "text-green-600 hover:text-green-700 hover:bg-green-50"
+            }`}
             title="Agree"
           >
             <CheckCircle className="w-4 h-4" />
