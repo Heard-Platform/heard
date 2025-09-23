@@ -5,12 +5,21 @@ interface Statement {
   id: string;
   text: string;
   author: string;
-  votes: number;
+  upvotes: number; // Will be calculated from Vote records
+  downvotes: number; // Will be calculated from Vote records
   type?: "bridge" | "crux" | "plurality";
   isSpicy?: boolean;
   roomId: string;
   timestamp: number;
-  voters: { [userId: string]: "up" | "down" }; // Track each user's vote type
+  voters: { [userId: string]: "up" | "down" }; // Will be calculated from Vote records
+}
+
+interface Vote {
+  id: string;
+  statementId: string;
+  userId: string;
+  voteType: "up" | "down";
+  timestamp: number;
 }
 
 type Phase =
@@ -96,6 +105,87 @@ const saveDebateRoom = async (room: DebateRoom) => {
   }
 };
 
+// Vote utility functions
+const saveVote = async (vote: Vote) => {
+  await kv.set(
+    `vote:${vote.statementId}:${vote.userId}`,
+    JSON.stringify(vote),
+  );
+};
+
+const deleteVote = async (statementId: string, userId: string) => {
+  await kv.del(`vote:${statementId}:${userId}`);
+};
+
+const getVotesForStatement = async (statementId: string): Promise<Vote[]> => {
+  try {
+    const votes = await kv.getByPrefix(`vote:${statementId}:`);
+    return votes
+      .map((v) => {
+        try {
+          return JSON.parse(v);
+        } catch (error) {
+          console.error('Error parsing vote:', v, error);
+          return null;
+        }
+      })
+      .filter((v) => v !== null);
+  } catch (error) {
+    console.error(`Error fetching votes for statement ${statementId}:`, error);
+    return [];
+  }
+};
+
+const getVotesForStatements = async (statementIds: string[]): Promise<{ [statementId: string]: Vote[] }> => {
+  const allVotes: { [statementId: string]: Vote[] } = {};
+  
+  // Initialize empty arrays for all statements
+  for (const id of statementIds) {
+    allVotes[id] = [];
+  }
+  
+  try {
+    // Get all votes at once using prefix search
+    const votes = await kv.getByPrefix("vote:");
+    
+    for (const voteData of votes) {
+      try {
+        const vote: Vote = JSON.parse(voteData);
+        if (statementIds.includes(vote.statementId)) {
+          allVotes[vote.statementId].push(vote);
+        }
+      } catch (error) {
+        console.error('Error parsing vote during bulk fetch:', voteData, error);
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching bulk votes:', error);
+  }
+  
+  return allVotes;
+};
+
+const calculateVoteStats = (votes: Vote[]): { upvotes: number; downvotes: number; voters: { [userId: string]: "up" | "down" } } => {
+  const voters: { [userId: string]: "up" | "down" } = {};
+  let upCount = 0;
+  let downCount = 0;
+  
+  for (const vote of votes) {
+    voters[vote.userId] = vote.voteType;
+    if (vote.voteType === "up") {
+      upCount++;
+    } else if (vote.voteType === "down") {
+      downCount++;
+    }
+  }
+  
+  return {
+    upvotes: upCount,
+    downvotes: downCount,
+    voters,
+  };
+};
+
 const getStatements = async (
   roomId: string,
 ): Promise<Statement[]> => {
@@ -103,7 +193,7 @@ const getStatements = async (
     const statements = await kv.getByPrefix(
       `statement:${roomId}:`,
     );
-    return statements
+    const parsedStatements = statements
       .map((s) => {
         try {
           return JSON.parse(s);
@@ -112,8 +202,28 @@ const getStatements = async (
           return null;
         }
       })
-      .filter((s) => s !== null)
-      .sort((a, b) => b.timestamp - a.timestamp);
+      .filter((s) => s !== null);
+
+    // Get all statement IDs
+    const statementIds = parsedStatements.map(s => s.id);
+    
+    // Fetch votes for all statements at once
+    const allVotes = await getVotesForStatements(statementIds);
+    
+    // Update each statement with calculated vote data
+    const statementsWithVotes = parsedStatements.map(statement => {
+      const votes = allVotes[statement.id] || [];
+      const voteStats = calculateVoteStats(votes);
+      
+      return {
+        ...statement,
+        upvotes: voteStats.upvotes,
+        downvotes: voteStats.downvotes,
+        voters: voteStats.voters,
+      };
+    });
+
+    return statementsWithVotes.sort((a, b) => b.timestamp - a.timestamp);
   } catch (error) {
     console.error(`Error fetching statements for room ${roomId}:`, error);
     return [];
@@ -358,12 +468,13 @@ app.post(
         id: generateId(),
         text: text.trim(),
         author: user.nickname,
-        votes: 0,
+        upvotes: 0, // Will be calculated from Vote records
+        downvotes: 0, // Will be calculated from Vote records
         type: type || undefined,
         isSpicy: text.includes("🌶️") || text.length > 200,
         roomId,
         timestamp: Date.now(),
-        voters: {},
+        voters: {}, // Will be calculated from Vote records
       };
 
       await saveStatement(statement);
@@ -423,7 +534,7 @@ app.post(
         return c.json({ error: "User session not found" }, 404);
       }
 
-      // Find the statement (need to search by prefix since we don't know the room)
+      // Check if statement exists
       const allStatements = await kv.getByPrefix("statement:");
       const statementData = allStatements.find((s) => {
         try {
@@ -440,33 +551,61 @@ app.post(
       }
 
       const statement: Statement = JSON.parse(statementData);
+      console.log(`Voting on statement ${statementId} by user ${userId} with vote ${voteType}`);
 
-      const currentVote = statement.voters[userId];
+      // Get current vote if it exists
+      const currentVotes = await getVotesForStatement(statementId);
+      const currentVote = currentVotes.find(v => v.userId === userId);
       let pointsEarned = 0;
 
-      // Handle different voting scenarios
-      if (currentVote === voteType) {
-        // Same vote type - undo vote
-        delete statement.voters[userId];
-        statement.votes += voteType === "up" ? -1 : 1; // Reverse the vote
+      if (currentVote?.voteType === voteType) {
+        // Same vote type - undo vote (delete the vote record)
+        await deleteVote(statementId, userId);
+        console.log(`Removed vote for user ${userId} on statement ${statementId}`);
         // No points change for undoing
-      } else if (currentVote && currentVote !== voteType) {
-        // Different vote type - change vote
-        statement.voters[userId] = voteType;
-        statement.votes += voteType === "up" ? 2 : -2; // Change from -1 to +1 or vice versa
+      } else if (currentVote && currentVote.voteType !== voteType) {
+        // Different vote type - update existing vote
+        const updatedVote: Vote = {
+          ...currentVote,
+          voteType,
+          timestamp: Date.now(),
+        };
+        await saveVote(updatedVote);
+        console.log(`Updated vote for user ${userId} on statement ${statementId} to ${voteType}`);
+        
         if (voteType === "up") {
           pointsEarned = 10; // Award points for upvoting
         }
       } else {
-        // First time voting
-        statement.voters[userId] = voteType;
-        statement.votes += voteType === "up" ? 1 : -1;
+        // First time voting - create new vote record
+        const newVote: Vote = {
+          id: generateId(),
+          statementId,
+          userId,
+          voteType,
+          timestamp: Date.now(),
+        };
+        await saveVote(newVote);
+        console.log(`Created new vote for user ${userId} on statement ${statementId}: ${voteType}`);
+        
         if (voteType === "up") {
           pointsEarned = 10; // Award points for upvoting
         }
       }
 
-      await saveStatement(statement);
+      // Get updated vote data to return
+      const updatedVotes = await getVotesForStatement(statementId);
+      const voteStats = calculateVoteStats(updatedVotes);
+      
+      // Update statement with calculated vote data (but don't save it - votes are separate)
+      const updatedStatement = {
+        ...statement,
+        upvotes: voteStats.upvotes,
+        downvotes: voteStats.downvotes,
+        voters: voteStats.voters,
+      };
+
+      console.log(`Final vote count for statement ${statementId}: ${voteStats.upvotes} up, ${voteStats.downvotes} down (${updatedVotes.length} total votes)`);
 
       // Update user points
       if (pointsEarned > 0) {
@@ -475,9 +614,9 @@ app.post(
       }
 
       return c.json({
-        statement,
+        statement: updatedStatement,
         pointsEarned,
-        userVote: statement.voters[userId] || null,
+        userVote: voteStats.voters[userId] || null,
       });
     } catch (error) {
       console.error("Error voting on statement:", error);
@@ -650,107 +789,167 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
       await saveUserSession(fakeUser);
     }
 
-    // Create diverse statements with different types and votes
-    const statements: Statement[] = [
+    // Create diverse statements with different types
+    const statementData = [
       {
-        id: generateId(),
-        text: "Stand right, walk left - it's literally posted everywhere and keeps traffic flowing smoothly for everyone",
-        author: "MetroCommuter",
-        votes: 8,
-        type: "bridge",
-        isSpicy: false,
-        roomId,
-        timestamp: Date.now() - 900000, // 15 min ago
-        voters: {
-          [userId]: "up",
-          test_user_2: "up",
-          test_user_3: "up",
+        statement: {
+          id: generateId(),
+          text: "Stand right, walk left - it's literally posted everywhere and keeps traffic flowing smoothly for everyone",
+          author: "MetroCommuter",
+          upvotes: 0, // Will be calculated
+          downvotes: 0, // Will be calculated
+          type: "bridge" as const,
+          isSpicy: false,
+          roomId,
+          timestamp: Date.now() - 900000, // 15 min ago
+          voters: {}, // Will be calculated
         },
+        voteData: [
+          { userId, voteType: "up" as const },
+          { userId: "test_user_2", voteType: "up" as const },
+          { userId: "test_user_3", voteType: "up" as const },
+        ],
       },
       {
-        id: generateId(),
-        text: "The real issue is whether escalators are transportation or moving sidewalks - affects the whole etiquette 🌶️",
-        author: "RushHourWarrior",
-        votes: -2,
-        type: "crux",
-        isSpicy: true,
-        roomId,
-        timestamp: Date.now() - 800000, // 13 min ago
-        voters: { test_user_1: "down", test_user_3: "down" },
-      },
-      {
-        id: generateId(),
-        text: "What about people with mobility issues who need to hold the handrail on both sides?",
-        author: "EscalatorEtiquette",
-        votes: 5,
-        type: "plurality",
-        isSpicy: false,
-        roomId,
-        timestamp: Date.now() - 700000, // 11 min ago
-        voters: { [userId]: "up", test_user_1: "up" },
-      },
-      {
-        id: generateId(),
-        text: "Some escalators are too narrow for two people anyway - the rule doesn't always work",
-        author: user.nickname,
-        votes: 3,
-        isSpicy: false,
-        roomId,
-        timestamp: Date.now() - 600000, // 10 min ago
-        voters: { test_user_1: "up", test_user_3: "up" },
-      },
-      {
-        id: generateId(),
-        text: "If you're not walking just take the elevator!! Escalators are for MOVING PEOPLE 🌶️",
-        author: "RushHourWarrior",
-        votes: 1,
-        isSpicy: true,
-        roomId,
-        timestamp: Date.now() - 500000, // 8 min ago
-        voters: { test_user_2: "up" },
-      },
-      {
-        id: generateId(),
-        text: "Maybe we need better signage or even separate escalators for walkers vs standers?",
-        author: "EscalatorEtiquette",
-        votes: 6,
-        type: "bridge",
-        isSpicy: false,
-        roomId,
-        timestamp: Date.now() - 400000, // 6 min ago
-        voters: {
-          [userId]: "up",
-          test_user_1: "up",
-          test_user_2: "up",
+        statement: {
+          id: generateId(),
+          text: "The real issue is whether escalators are transportation or moving sidewalks - affects the whole etiquette 🌶️",
+          author: "RushHourWarrior",
+          upvotes: 0, // Will be calculated
+          downvotes: 0, // Will be calculated
+          type: "crux" as const,
+          isSpicy: true,
+          roomId,
+          timestamp: Date.now() - 800000, // 13 min ago
+          voters: {}, // Will be calculated
         },
+        voteData: [
+          { userId: "test_user_1", voteType: "down" as const },
+          { userId: "test_user_3", voteType: "down" as const },
+        ],
       },
       {
-        id: generateId(),
-        text: "This is about respecting shared public space vs individual convenience - basic civics!",
-        author: "MetroCommuter",
-        votes: 4,
-        type: "crux",
-        isSpicy: false,
-        roomId,
-        timestamp: Date.now() - 300000, // 5 min ago
-        voters: { test_user_1: "up", test_user_3: "up" },
+        statement: {
+          id: generateId(),
+          text: "What about people with mobility issues who need to hold the handrail on both sides?",
+          author: "EscalatorEtiquette",
+          upvotes: 0, // Will be calculated
+          downvotes: 0, // Will be calculated
+          type: "plurality" as const,
+          isSpicy: false,
+          roomId,
+          timestamp: Date.now() - 700000, // 11 min ago
+          voters: {}, // Will be calculated
+        },
+        voteData: [
+          { userId, voteType: "up" as const },
+          { userId: "test_user_1", voteType: "up" as const },
+        ],
       },
       {
-        id: generateId(),
-        text: "Tourist season changes everything - they don't know the rules and clog up the system",
-        author: "EscalatorEtiquette",
-        votes: 2,
-        type: "plurality",
-        isSpicy: false,
-        roomId,
-        timestamp: Date.now() - 200000, // 3 min ago
-        voters: { [userId]: "up" },
+        statement: {
+          id: generateId(),
+          text: "Some escalators are too narrow for two people anyway - the rule doesn't always work",
+          author: user.nickname,
+          upvotes: 0, // Will be calculated
+          downvotes: 0, // Will be calculated
+          isSpicy: false,
+          roomId,
+          timestamp: Date.now() - 600000, // 10 min ago
+          voters: {}, // Will be calculated
+        },
+        voteData: [
+          { userId: "test_user_1", voteType: "up" as const },
+          { userId: "test_user_3", voteType: "up" as const },
+        ],
+      },
+      {
+        statement: {
+          id: generateId(),
+          text: "If you're not walking just take the elevator!! Escalators are for MOVING PEOPLE 🌶️",
+          author: "RushHourWarrior",
+          upvotes: 0, // Will be calculated
+          downvotes: 0, // Will be calculated
+          isSpicy: true,
+          roomId,
+          timestamp: Date.now() - 500000, // 8 min ago
+          voters: {}, // Will be calculated
+        },
+        voteData: [
+          { userId: "test_user_2", voteType: "up" as const },
+        ],
+      },
+      {
+        statement: {
+          id: generateId(),
+          text: "Maybe we need better signage or even separate escalators for walkers vs standers?",
+          author: "EscalatorEtiquette",
+          upvotes: 0, // Will be calculated
+          downvotes: 0, // Will be calculated
+          type: "bridge" as const,
+          isSpicy: false,
+          roomId,
+          timestamp: Date.now() - 400000, // 6 min ago
+          voters: {}, // Will be calculated
+        },
+        voteData: [
+          { userId, voteType: "up" as const },
+          { userId: "test_user_1", voteType: "up" as const },
+          { userId: "test_user_2", voteType: "up" as const },
+        ],
+      },
+      {
+        statement: {
+          id: generateId(),
+          text: "This is about respecting shared public space vs individual convenience - basic civics!",
+          author: "MetroCommuter",
+          upvotes: 0, // Will be calculated
+          downvotes: 0, // Will be calculated
+          type: "crux" as const,
+          isSpicy: false,
+          roomId,
+          timestamp: Date.now() - 300000, // 5 min ago
+          voters: {}, // Will be calculated
+        },
+        voteData: [
+          { userId: "test_user_1", voteType: "up" as const },
+          { userId: "test_user_3", voteType: "up" as const },
+        ],
+      },
+      {
+        statement: {
+          id: generateId(),
+          text: "Tourist season changes everything - they don't know the rules and clog up the system",
+          author: "EscalatorEtiquette",
+          upvotes: 0, // Will be calculated
+          downvotes: 0, // Will be calculated
+          type: "plurality" as const,
+          isSpicy: false,
+          roomId,
+          timestamp: Date.now() - 200000, // 3 min ago
+          voters: {}, // Will be calculated
+        },
+        voteData: [
+          { userId, voteType: "up" as const },
+        ],
       },
     ];
 
-    // Save all statements
-    for (const statement of statements) {
+    // Save all statements and their votes
+    for (const { statement, voteData } of statementData) {
       await saveStatement(statement);
+      
+      // Create vote records for this statement
+      for (const { userId: voterId, voteType } of voteData) {
+        const vote: Vote = {
+          id: generateId(),
+          statementId: statement.id,
+          userId: voterId,
+          voteType,
+          timestamp: statement.timestamp + Math.random() * 10000, // Slightly randomize vote times
+        };
+        await saveVote(vote);
+      }
     }
 
     // Update user's current room
@@ -759,7 +958,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
 
     return c.json({
       room: debateRoom,
-      statements: statements.length,
+      statements: statementData.length,
       message:
         "Seed data created successfully! You can now join the test room.",
     });

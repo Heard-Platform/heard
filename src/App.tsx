@@ -19,7 +19,8 @@ interface Statement {
   id: string;
   text: string;
   author: string;
-  votes: number;
+  upvotes: number;
+  downvotes: number;
   type?: "bridge" | "crux" | "plurality";
   isSpicy?: boolean;
   roomId: string;

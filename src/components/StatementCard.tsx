@@ -12,7 +12,8 @@ interface StatementCardProps {
     id: string;
     text: string;
     author: string;
-    votes: number;
+    upvotes: number;
+    downvotes: number;
     type?: "bridge" | "crux" | "plurality";
     isSpicy?: boolean;
     voters?: { [userId: string]: "up" | "down" };
@@ -99,7 +100,7 @@ export function StatementCard({
           >
             <ThumbsUp className="w-4 h-4" />
             <span className="text-sm">
-              {statement.votes > 0 ? statement.votes : ""}
+              {statement.upvotes > 0 ? statement.upvotes : ""}
             </span>
           </Button>
           <Button
@@ -109,8 +110,12 @@ export function StatementCard({
             }
             onClick={() => onVote(statement.id, "down")}
             disabled={!canVote}
+            className="flex items-center gap-1"
           >
             <ThumbsDown className="w-4 h-4" />
+            <span className="text-sm">
+              {statement.downvotes > 0 ? statement.downvotes : ""}
+            </span>
           </Button>
         </div>
 
