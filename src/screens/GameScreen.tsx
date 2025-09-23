@@ -196,53 +196,9 @@ export function GameScreen({
           />
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Submission Area */}
+        {isReviewPhase ? (
           <div className="space-y-4">
-            {room.phase === "lobby" && (
-              <Card className="p-6 text-center">
-                <h3 className="mb-2">Debate Room</h3>
-                <p className="text-muted-foreground mb-4">
-                  {room.participants.length < 2
-                    ? "Need at least 2 players to start..."
-                    : "Ready to debate!"}
-                </p>
-                <Button
-                  onClick={onStartDebate}
-                  disabled={room.participants.length < 2}
-                >
-                  Start Debate! 🔥
-                </Button>
-              </Card>
-            )}
-
-            {isSubmissionPhase && (
-              <StatementSubmission
-                onSubmit={handleStatementSubmit}
-                currentRound={room.phase}
-                isActive={timerActive}
-                placeholder={
-                  room.phase === "initial"
-                    ? "What's your take? Spicy takes welcome! 🌶️"
-                    : `Submit a ${room.phase}...`
-                }
-              />
-            )}
-
-            {isReviewPhase && (
-              <Card className="p-6 text-center">
-                <h3 className="mb-2">Review Phase</h3>
-                <p className="text-muted-foreground mb-4">
-                  Take a breath! Review how the {room.phase}{" "}
-                  round is shaping up
-                </p>
-                <Button onClick={onNextPhase}>
-                  Continue to Next Phase
-                </Button>
-              </Card>
-            )}
-
-            {statements.length > 0 && isReviewPhase && (
+            {statements.length > 0 && (
               <RealTimeResults
                 statements={statements}
                 currentPhase={room.phase}
@@ -250,48 +206,82 @@ export function GameScreen({
               />
             )}
           </div>
-
-          {/* Statements Feed */}
-          <div className="lg:col-span-2 space-y-4">
-            <h3 className="flex items-center gap-2">
-              Statements ({statements.length})
-              {isVotingPhase && (
-                <span className="text-sm text-muted-foreground">
-                  - Vote now!
-                </span>
-              )}
-            </h3>
-
-            <div className="space-y-3 max-h-[600px] overflow-y-auto">
-              <AnimatePresence>
-                {statements.map((statement) => (
-                  <StatementCard
-                    key={statement.id}
-                    statement={statement}
-                    onVote={handleVote}
-                    onFlag={() =>
-                      console.log(
-                        "Flag statement:",
-                        statement.id,
-                      )
-                    }
-                    canVote={isVotingPhase}
-                    currentUserId={user?.id}
-                  />
-                ))}
-              </AnimatePresence>
-
-              {statements.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>
-                    No statements yet. Be the first to share
-                    your take!
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="space-y-4">
+              {room.phase === "lobby" && (
+                <Card className="p-6 text-center">
+                  <h3 className="mb-2">Debate Room</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {room.participants.length < 2
+                      ? "Need at least 2 players to start..."
+                      : "Ready to debate!"}
                   </p>
-                </div>
+                  <Button
+                    onClick={onStartDebate}
+                    disabled={room.participants.length < 2}
+                  >
+                    Start Debate! 🔥
+                  </Button>
+                </Card>
+              )}
+
+              {isSubmissionPhase && (
+                <StatementSubmission
+                  onSubmit={handleStatementSubmit}
+                  currentRound={room.phase}
+                  isActive={timerActive}
+                  placeholder={
+                    room.phase === "initial"
+                      ? "What's your take? Spicy takes welcome! 🌶️"
+                      : `Submit a ${room.phase}...`
+                  }
+                />
               )}
             </div>
+
+            {/* Statements Feed */}
+            <div className="lg:col-span-2 space-y-4">
+              <h3 className="flex items-center gap-2">
+                Statements ({statements.length})
+                {isVotingPhase && (
+                  <span className="text-sm text-muted-foreground">
+                    - Vote now!
+                  </span>
+                )}
+              </h3>
+
+              <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                <AnimatePresence>
+                  {statements.map((statement) => (
+                    <StatementCard
+                      key={statement.id}
+                      statement={statement}
+                      onVote={handleVote}
+                      onFlag={() =>
+                        console.log(
+                          "Flag statement:",
+                          statement.id,
+                        )
+                      }
+                      canVote={isVotingPhase}
+                      currentUserId={user?.id}
+                    />
+                  ))}
+                </AnimatePresence>
+
+                {statements.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>
+                      No statements yet. Be the first to share
+                      your take!
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {lastAchievement && (

@@ -82,6 +82,16 @@ export const InitialRound = {
   },
 };
 
+export const InitialResultsRound = {
+  args: {
+    user: mockUser,
+    room: { ...baseRoom, phase: "initial", subPhase: "review" },
+    statements: mockStatements,
+    timerActive: false,
+    lastAchievement: null,
+  },
+};
+
 export const MidRound = {
   args: {
     user: mockUser,
