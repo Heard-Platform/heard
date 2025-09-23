@@ -11,7 +11,12 @@ import { RoundIndicator } from "../components/RoundIndicator";
 import { RealTimeResults } from "../components/RealTimeResults";
 import { FinalResults } from "../components/FinalResults";
 import { Users, X, Zap } from "lucide-react";
-import type { UserSession, DebateRoom, Statement, Achievement } from "../types";
+import type {
+  UserSession,
+  DebateRoom,
+  Statement,
+  Achievement,
+} from "../types";
 
 interface GameScreenProps {
   user: UserSession;
@@ -65,7 +70,10 @@ export function GameScreen({
   );
 
   const handleVote = useCallback(
-    async (id: string, voteType: "agree" | "disagree" | "pass") => {
+    async (
+      id: string,
+      voteType: "agree" | "disagree" | "pass",
+    ) => {
       await onVote(id, voteType);
     },
     [onVote],
@@ -220,8 +228,6 @@ export function GameScreen({
                 }
               />
             )}
-
-
 
             {isReviewPhase && (
               <Card className="p-6 text-center">

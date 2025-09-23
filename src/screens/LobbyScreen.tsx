@@ -3,6 +3,8 @@ import { motion } from "motion/react";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 import { ActiveRoomsList } from "../components/ActiveRoomsList";
 import { Plus, Database } from "lucide-react";
 import type { UserSession, DebateRoom } from "../types";
@@ -19,9 +21,9 @@ interface LobbyScreenProps {
   onCreateSeedData?: () => Promise<any>;
 }
 
-const debateTopics = [
+const topicExamples = [
   "Social media does more harm than good for society",
-  "Remote work is better than in-person work",
+  "Remote work is better than in-person work", 
   "AI will solve more problems than it creates",
   "Democracy is the best form of government",
   "Economic growth should be prioritized over environmental protection",
@@ -39,10 +41,20 @@ export function LobbyScreen({
   onCreateSeedData,
 }: LobbyScreenProps) {
   const [newRoomTopic, setNewRoomTopic] = useState("");
+  const [showExamples, setShowExamples] = useState(false);
+
+  const isTopicValid = newRoomTopic.trim().length >= 10;
+  const remainingChars = 10 - newRoomTopic.trim().length;
 
   const handleCreateRoom = async () => {
-    if (!newRoomTopic.trim()) return;
+    if (!isTopicValid) return;
     await onCreateRoom(newRoomTopic.trim());
+    setNewRoomTopic(""); // Clear the input after creating
+  };
+
+  const handleExampleClick = (topic: string) => {
+    setNewRoomTopic(topic);
+    setShowExamples(false);
   };
 
   const handleCreateSeedData = async () => {
@@ -115,24 +127,71 @@ export function LobbyScreen({
         <div className="grid md:grid-cols-2 gap-6">
           <Card className="p-6">
             <h3 className="mb-4">🏛️ Create New Debate Room</h3>
-            <div className="space-y-3">
-              <select
-                className="w-full p-2 border rounded-md"
-                value={newRoomTopic}
-                onChange={(e) =>
-                  setNewRoomTopic(e.target.value)
-                }
-              >
-                <option value="">Choose a topic...</option>
-                {debateTopics.map((topic) => (
-                  <option key={topic} value={topic}>
-                    {topic}
-                  </option>
-                ))}
-              </select>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="topic-input">What should we debate?</Label>
+                <Input
+                  id="topic-input"
+                  type="text"
+                  placeholder="Enter your debate topic (min. 10 characters)..."
+                  maxLength={100}
+                  value={newRoomTopic}
+                  onChange={(e) => setNewRoomTopic(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && isTopicValid) {
+                      handleCreateRoom();
+                    }
+                  }}
+                  className="w-full"
+                />
+                <div className="flex justify-between items-center text-xs">
+                  {newRoomTopic.trim().length > 0 && !isTopicValid && (
+                    <span className="text-orange-600">
+                      Need {remainingChars} more character{remainingChars !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                  {isTopicValid && (
+                    <span className="text-green-600">
+                      ✓ Topic looks good!
+                    </span>
+                  )}
+                  <span className="text-muted-foreground ml-auto">
+                    {newRoomTopic.length}/100
+                  </span>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowExamples(!showExamples)}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {showExamples ? "Hide" : "Show"} example topics
+                </Button>
+                
+                {showExamples && (
+                  <div className="space-y-1">
+                    {topicExamples.map((topic) => (
+                      <Button
+                        key={topic}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleExampleClick(topic)}
+                        className="w-full text-left justify-start text-xs h-auto py-2 text-muted-foreground hover:text-foreground"
+                      >
+                        {topic}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
               <Button
                 onClick={handleCreateRoom}
-                disabled={!newRoomTopic}
+                disabled={!isTopicValid}
                 className="w-full"
               >
                 <Plus className="w-4 h-4 mr-2" />

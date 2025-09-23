@@ -5,7 +5,7 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { GameScreen } from "./screens/GameScreen";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-import type { Phase, SubPhase, Statement } from "./types";
+import type { Phase, SubPhase, Statement, Achievement } from "./types";
 
 export default function App() {
   const [timerActive, setTimerActive] = useState(false);
