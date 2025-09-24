@@ -10,7 +10,7 @@ import { AchievementNotification } from "../components/AchievementNotification";
 import { RoundIndicator } from "../components/RoundIndicator";
 import { RealTimeResults } from "../components/RealTimeResults";
 import { FinalResults } from "../components/FinalResults";
-import { Users, X, Zap } from "lucide-react";
+import { Users, X, Zap, SkipForward } from "lucide-react";
 import type {
   UserSession,
   DebateRoom,
@@ -115,39 +115,31 @@ export function GameScreen({
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <motion.h1
-              className="text-3xl font-bold text-primary"
-              whileHover={{ scale: 1.05 }}
-            >
-              HEARD
-            </motion.h1>
-            {/* Dev Only: Skip Phase Button */}
-            {onSkipPhase &&
-              room.phase !== "results" &&
-              room.phase !== "lobby" && (
-                <Button
-                  onClick={onSkipPhase}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100"
-                >
-                  <Zap className="w-3 h-3 mr-1" />
-                  DEV: Next Phase
-                </Button>
-              )}
-          </div>
-          <div className="flex items-center gap-4">
-            {user && (
-              <ScoreBoard
-                score={user.score}
-                bridgePoints={user.bridgePoints}
-                cruxPoints={user.cruxPoints}
-                pluralityPoints={user.pluralityPoints}
-                streak={user.streak}
-              />
-            )}
+        <div className="space-y-3">
+          {/* Top row: Title, Dev button, and Leave button */}
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <motion.h1
+                className="text-3xl font-bold text-primary"
+                whileHover={{ scale: 1.05 }}
+              >
+                HEARD
+              </motion.h1>
+              {/* Dev Only: Skip Phase Button */}
+              {onSkipPhase &&
+                room.phase !== "results" &&
+                room.phase !== "lobby" && (
+                  <Button
+                    onClick={onSkipPhase}
+                    variant="outline"
+                    size="sm"
+                    className="bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100 p-2"
+                    title="DEV: Next Phase"
+                  >
+                    <SkipForward className="w-4 h-4" />
+                  </Button>
+                )}
+            </div>
             <Button
               onClick={onLeaveRoom}
               variant="outline"
@@ -158,6 +150,19 @@ export function GameScreen({
               <X className="w-4 h-4" />
             </Button>
           </div>
+
+          {/* ScoreBoard row */}
+          {user && (
+            <div className="flex justify-center">
+              <ScoreBoard
+                score={user.score}
+                bridgePoints={user.bridgePoints}
+                cruxPoints={user.cruxPoints}
+                pluralityPoints={user.pluralityPoints}
+                streak={user.streak}
+              />
+            </div>
+          )}
         </div>
 
         {/* Room Info */}
@@ -196,6 +201,7 @@ export function GameScreen({
           />
         )}
 
+        {/* Review Phase - Full Width Results Only */}
         {isReviewPhase ? (
           <div className="space-y-4">
             {statements.length > 0 && (
@@ -207,7 +213,9 @@ export function GameScreen({
             )}
           </div>
         ) : (
+          /* All Other Phases - Normal Grid Layout */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Submission Area */}
             <div className="space-y-4">
               {room.phase === "lobby" && (
                 <Card className="p-6 text-center">
