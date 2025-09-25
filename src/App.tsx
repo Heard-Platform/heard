@@ -57,11 +57,8 @@ export default function App() {
 
   // Handle statement submission
   const handleStatementSubmit = useCallback(
-    async (
-      text: string,
-      type?: "bridge" | "crux" | "plurality",
-    ) => {
-      await submitStatement(text, type);
+    async (text: string) => {
+      await submitStatement(text);
     },
     [submitStatement],
   );
@@ -79,10 +76,9 @@ export default function App() {
     if (!room) return;
 
     const phases: Phase[] = [
-      "initial",
-      "bridge",
-      "crux",
-      "plurality",
+      "phase1",
+      "phase2", 
+      "phase3",
     ];
     const subPhases: SubPhase[] = [
       "posting",
@@ -97,7 +93,7 @@ export default function App() {
 
     // If we're in results, start a new round
     if (room.phase === "results") {
-      await updateRoomPhase("initial", "posting");
+      await updateRoomPhase("phase1", "posting");
       setTimerActive(true);
       return;
     }
@@ -123,7 +119,7 @@ export default function App() {
 
   const startDebate = async () => {
     if (!room) return;
-    await updateRoomPhase("initial", "posting");
+    await updateRoomPhase("phase1", "posting");
     setTimerActive(true);
   };
 

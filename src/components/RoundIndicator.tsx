@@ -6,7 +6,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 
-type Phase = "lobby" | "initial" | "bridge" | "crux" | "plurality" | "results";
+type Phase = "lobby" | "phase1" | "phase2" | "phase3" | "results";
 type SubPhase = "posting" | "voting" | "review";
 
 interface RoundIndicatorProps {
@@ -22,109 +22,83 @@ export function RoundIndicator({
 }: RoundIndicatorProps) {
   const rounds = [
     {
-      key: "initial" as Phase,
-      label: "Initial Takes",
+      key: "phase1" as Phase,
+      label: "Phase 1",
       icon: MessageCircle,
-      color: "gray",
-    },
-    {
-      key: "bridge" as Phase,
-      label: "Bridges",
-      icon: Users,
       color: "blue",
     },
     {
-      key: "crux" as Phase,
-      label: "Cruxes",
-      icon: Target,
-      color: "red",
+      key: "phase2" as Phase,
+      label: "Phase 2",
+      icon: Users,
+      color: "green",
     },
     {
-      key: "plurality" as Phase,
-      label: "Pluralities",
+      key: "phase3" as Phase,
+      label: "Phase 3",
       icon: Zap,
       color: "purple",
     },
   ];
 
   const getCurrentRoundInfo = () => {
-    if (currentRound === "initial") {
+    if (currentRound === "phase1") {
       if (currentSubPhase === "posting")
         return {
-          title: "Initial Takes",
-          subtitle: "Share your perspective",
+          title: "Phase 1 - Share",
+          subtitle: "Drop your takes!",
           emoji: "💭",
         };
       if (currentSubPhase === "voting")
         return {
-          title: "Initial Voting",
-          subtitle: "Vote on initial takes",
+          title: "Phase 1 - Vote",
+          subtitle: "React to statements",
           emoji: "🗳️",
         };
       if (currentSubPhase === "review")
         return {
-          title: "Initial Review",
-          subtitle: "See how it's shaping up",
+          title: "Phase 1 - Review",
+          subtitle: "See what's happening",
           emoji: "📊",
         };
     }
-    if (currentRound === "bridge") {
+    if (currentRound === "phase2") {
       if (currentSubPhase === "posting")
         return {
-          title: "Bridge Building",
-          subtitle: "Find common ground",
-          emoji: "🌉",
+          title: "Phase 2 - Share",
+          subtitle: "Keep the discussion going",
+          emoji: "💬",
         };
       if (currentSubPhase === "voting")
         return {
-          title: "Bridge Voting",
-          subtitle: "Vote on bridges",
+          title: "Phase 2 - Vote",
+          subtitle: "Shape the conversation",
           emoji: "🗳️",
         };
       if (currentSubPhase === "review")
         return {
-          title: "Bridge Review",
-          subtitle: "Review bridge progress",
+          title: "Phase 2 - Review",
+          subtitle: "Track the momentum",
           emoji: "📊",
         };
     }
-    if (currentRound === "crux") {
+    if (currentRound === "phase3") {
       if (currentSubPhase === "posting")
         return {
-          title: "Crux Hunting",
-          subtitle: "Core disagreements",
-          emoji: "⚡",
+          title: "Phase 3 - Share",
+          subtitle: "Final statements",
+          emoji: "🔥",
         };
       if (currentSubPhase === "voting")
         return {
-          title: "Crux Voting",
-          subtitle: "Vote on cruxes",
+          title: "Phase 3 - Vote",
+          subtitle: "Last chance to vote",
           emoji: "🗳️",
         };
       if (currentSubPhase === "review")
         return {
-          title: "Crux Review",
-          subtitle: "Review key disagreements",
-          emoji: "📊",
-        };
-    }
-    if (currentRound === "plurality") {
-      if (currentSubPhase === "posting")
-        return {
-          title: "Plurality Mining",
-          subtitle: "Underrepresented views",
-          emoji: "💎",
-        };
-      if (currentSubPhase === "voting")
-        return {
-          title: "Plurality Voting",
-          subtitle: "Vote on pluralities",
-          emoji: "🗳️",
-        };
-      if (currentSubPhase === "review")
-        return {
-          title: "Plurality Review",
-          subtitle: "Review diverse views",
+          title: "Phase 3 - Review",
+          subtitle: "Wrap it up",
           emoji: "📊",
         };
     }

@@ -1,15 +1,12 @@
 import { motion } from 'motion/react';
-import { Trophy, Zap, Users, Target } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 
 interface ScoreBoardProps {
   score: number;
-  bridgePoints: number;
-  cruxPoints: number;
-  pluralityPoints: number;
   streak: number;
 }
 
-export function ScoreBoard({ score, bridgePoints, cruxPoints, pluralityPoints, streak }: ScoreBoardProps) {
+export function ScoreBoard({ score, streak }: ScoreBoardProps) {
   return (
     <motion.div 
       className="bg-card border rounded-lg px-4 py-2 flex items-center gap-4"
@@ -34,24 +31,10 @@ export function ScoreBoard({ score, bridgePoints, cruxPoints, pluralityPoints, s
       {/* Separator */}
       <div className="w-px h-6 bg-border" />
       
-      {/* Point breakdown - icons only */}
-      <div className="flex items-center gap-3 text-sm">
-        <div className="flex items-center gap-1" title={`Bridges: ${bridgePoints}`}>
-          <Users className="w-4 h-4 text-blue-500" />
-          <span>{bridgePoints}</span>
-        </div>
-        <div className="flex items-center gap-1" title={`Cruxes: ${cruxPoints}`}>
-          <Target className="w-4 h-4 text-red-500" />
-          <span>{cruxPoints}</span>
-        </div>
-        <div className="flex items-center gap-1" title={`Pluralities: ${pluralityPoints}`}>
-          <Zap className="w-4 h-4 text-purple-500" />
-          <span>{pluralityPoints}</span>
-        </div>
-        <div className="flex items-center gap-1" title={`Streak: ${streak}`}>
-          <span>🔥</span>
-          <span>{streak}</span>
-        </div>
+      {/* Streak */}
+      <div className="flex items-center gap-1" title={`Streak: ${streak}`}>
+        <span>🔥</span>
+        <span>{streak}</span>
       </div>
     </motion.div>
   );

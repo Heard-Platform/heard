@@ -8,7 +8,7 @@ interface Statement {
   agrees: number; // Will be calculated from Vote records
   disagrees: number; // Will be calculated from Vote records
   passes: number; // Will be calculated from Vote records
-  type?: "bridge" | "crux" | "plurality";
+  type?: string; // Will be calculated on backend later
   isSpicy?: boolean;
   roomId: string;
   timestamp: number;
@@ -25,10 +25,9 @@ interface Vote {
 
 type Phase =
   | "lobby"
-  | "initial"
-  | "bridge"
-  | "crux"
-  | "plurality"
+  | "phase1"
+  | "phase2"
+  | "phase3"
   | "results";
 type SubPhase = "posting" | "voting" | "review";
 
@@ -48,9 +47,6 @@ interface UserSession {
   id: string;
   nickname: string;
   score: number;
-  bridgePoints: number;
-  cruxPoints: number;
-  pluralityPoints: number;
   streak: number;
   currentRoomId?: string;
   lastActive: number;
@@ -264,9 +260,6 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
       id: userId,
       nickname: nickname.substring(0, 20), // Ensure max length
       score: 0,
-      bridgePoints: 0,
-      cruxPoints: 0,
-      pluralityPoints: 0,
       streak: 0,
       lastActive: Date.now(),
     };
@@ -444,7 +437,7 @@ app.post(
   async (c) => {
     try {
       const roomId = c.req.param("roomId");
-      const { text, type, userId } = await c.req.json();
+      const { text, userId } = await c.req.json();
 
       if (!text || text.length < 5 || text.length > 500) {
         return c.json(
@@ -477,7 +470,7 @@ app.post(
         agrees: 0, // Will be calculated from Vote records
         disagrees: 0, // Will be calculated from Vote records
         passes: 0, // Will be calculated from Vote records
-        type: type || undefined,
+        type: undefined, // Will be calculated on backend later
         isSpicy: text.includes("🌶️") || text.length > 200,
         roomId,
         timestamp: Date.now(),
@@ -489,16 +482,10 @@ app.post(
       // Award points to user
       const basePoints = 50;
       const spicyBonus = statement.isSpicy ? 25 : 0;
-      const typeBonus = type ? 50 : 0;
-      const totalPoints = basePoints + spicyBonus + typeBonus;
+      const totalPoints = basePoints + spicyBonus;
 
       user.score += totalPoints;
       user.streak += 1;
-
-      if (type === "bridge") user.bridgePoints += totalPoints;
-      else if (type === "crux") user.cruxPoints += totalPoints;
-      else if (type === "plurality")
-        user.pluralityPoints += totalPoints;
 
       await saveUserSession(user);
 
@@ -506,12 +493,10 @@ app.post(
         statement,
         pointsEarned: totalPoints,
         achievement: {
-          title: type
-            ? `${type.charAt(0).toUpperCase() + type.slice(1)} Submitted!`
-            : "Statement Posted!",
+          title: "Statement Posted!",
           description: `+${totalPoints} points`,
           points: totalPoints,
-          type: type || "score",
+          type: "score",
         },
       });
     } catch (error) {
@@ -643,13 +628,13 @@ app.post(
     try {
       const roomId = c.req.param("roomId");
       const { phase, subPhase, userId } = await c.req.json();
+      console.log(`Phase update request: roomId=${roomId}, phase=${phase}, subPhase=${subPhase}, userId=${userId}`);
 
-      const validPhases: Phase[] = [
+      const validPhases = [
         "lobby",
-        "initial",
-        "bridge",
-        "crux",
-        "plurality",
+        "phase1",
+        "phase2", 
+        "phase3",
         "results",
       ];
       const validSubPhases: SubPhase[] = [
@@ -659,7 +644,8 @@ app.post(
       ];
 
       if (!validPhases.includes(phase)) {
-        return c.json({ error: "Invalid phase" }, 400);
+        console.log(`Invalid phase received: ${phase}. Valid phases:`, validPhases);
+        return c.json({ error: `Invalid phase: ${phase}. Valid phases: ${validPhases.join(", ")}` }, 400);
       }
 
       if (subPhase && !validSubPhases.includes(subPhase)) {
@@ -676,7 +662,7 @@ app.post(
         return c.json({ error: "Unauthorized" }, 403);
       }
 
-      room.phase = phase;
+      room.phase = phase as Phase;
       room.subPhase = subPhase;
       room.phaseStartTime = Date.now();
 
@@ -739,7 +725,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
       id: roomId,
       topic:
         "Metro escalator walking: should you always stand right, or is it okay to walk on the left side?",
-      phase: "initial", // Start in initial phase for immediate testing
+      phase: "phase1", // Start in phase1 for immediate testing
       subPhase: "voting", // Start in voting sub-phase
       roundNumber: 1,
       phaseStartTime: Date.now(),
@@ -761,9 +747,6 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
         id: "test_user_1",
         nickname: "MetroCommuter",
         score: 450,
-        bridgePoints: 150,
-        cruxPoints: 200,
-        pluralityPoints: 100,
         streak: 3,
         currentRoomId: roomId,
         lastActive: Date.now(),
@@ -772,9 +755,6 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
         id: "test_user_2",
         nickname: "RushHourWarrior",
         score: 380,
-        bridgePoints: 80,
-        cruxPoints: 250,
-        pluralityPoints: 50,
         streak: 5,
         currentRoomId: roomId,
         lastActive: Date.now(),
@@ -783,9 +763,6 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
         id: "test_user_3",
         nickname: "EscalatorEtiquette",
         score: 520,
-        bridgePoints: 300,
-        cruxPoints: 120,
-        pluralityPoints: 100,
         streak: 2,
         currentRoomId: roomId,
         lastActive: Date.now(),
@@ -807,7 +784,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           agrees: 0, // Will be calculated
           disagrees: 0, // Will be calculated
           passes: 0, // Will be calculated
-          type: "bridge" as const,
+          type: undefined,
           isSpicy: false,
           roomId,
           timestamp: Date.now() - 900000, // 15 min ago
@@ -827,7 +804,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           agrees: 0, // Will be calculated
           disagrees: 0, // Will be calculated
           passes: 0, // Will be calculated
-          type: "crux" as const,
+          type: undefined,
           isSpicy: true,
           roomId,
           timestamp: Date.now() - 800000, // 13 min ago
@@ -846,7 +823,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           agrees: 0, // Will be calculated
           disagrees: 0, // Will be calculated
           passes: 0, // Will be calculated
-          type: "plurality" as const,
+          type: undefined,
           isSpicy: false,
           roomId,
           timestamp: Date.now() - 700000, // 11 min ago
@@ -901,7 +878,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           agrees: 0, // Will be calculated
           disagrees: 0, // Will be calculated
           passes: 0, // Will be calculated
-          type: "bridge" as const,
+          type: undefined,
           isSpicy: false,
           roomId,
           timestamp: Date.now() - 400000, // 6 min ago
@@ -921,7 +898,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           agrees: 0, // Will be calculated
           disagrees: 0, // Will be calculated
           passes: 0, // Will be calculated
-          type: "crux" as const,
+          type: undefined,
           isSpicy: false,
           roomId,
           timestamp: Date.now() - 300000, // 5 min ago
@@ -941,7 +918,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           agrees: 0, // Will be calculated
           disagrees: 0, // Will be calculated
           passes: 0, // Will be calculated
-          type: "plurality" as const,
+          type: undefined,
           isSpicy: false,
           roomId,
           timestamp: Date.now() - 200000, // 3 min ago

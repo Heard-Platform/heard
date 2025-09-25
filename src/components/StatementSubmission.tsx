@@ -7,17 +7,13 @@ import { toast } from "sonner@2.0.3";
 
 type Phase =
   | "lobby"
-  | "initial"
-  | "bridge"
-  | "crux"
-  | "plurality"
+  | "phase1"
+  | "phase2"
+  | "phase3"
   | "results";
 
 interface StatementSubmissionProps {
-  onSubmit: (
-    statement: string,
-    type?: "bridge" | "crux" | "plurality",
-  ) => Promise<void>;
+  onSubmit: (statement: string) => Promise<void>;
   currentRound: Phase;
   isActive: boolean;
   placeholder?: string;
@@ -30,9 +26,7 @@ export function StatementSubmission({
   placeholder,
 }: StatementSubmissionProps) {
   const [statement, setStatement] = useState("");
-  const [selectedType, setSelectedType] = useState<
-    "bridge" | "crux" | "plurality" | null
-  >(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -64,9 +58,8 @@ export function StatementSubmission({
     setValidationError(null);
 
     try {
-      await onSubmit(trimmed, selectedType || undefined);
+      await onSubmit(trimmed);
       setStatement("");
-      setSelectedType(null);
       toast.success("Statement submitted! 🎉");
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Failed to submit statement";
@@ -86,29 +79,29 @@ export function StatementSubmission({
   };
 
   const getRoundInfo = () => {
-    if (currentRound === "bridge") {
+    if (currentRound === "phase1") {
       return {
-        title: "Find Bridges 🌉",
+        title: "Phase 1 - Drop Your Take 💭",
         description:
-          "Submit ideas that could bridge different perspectives",
+          "Share what you really think about this topic",
         color: "text-blue-600",
         bgColor: "bg-blue-50",
       };
     }
-    if (currentRound === "crux") {
+    if (currentRound === "phase2") {
       return {
-        title: "Identify Cruxes ⚡",
+        title: "Phase 2 - Keep It Going 💬",
         description:
-          "What are the core disagreements? Get to the heart of the matter",
-        color: "text-red-600",
-        bgColor: "bg-red-50",
+          "Add to the conversation - build on what's been said",
+        color: "text-green-600",
+        bgColor: "bg-green-50",
       };
     }
-    if (currentRound === "plurality") {
+    if (currentRound === "phase3") {
       return {
-        title: "Discover Pluralities 💎",
+        title: "Phase 3 - Final Thoughts 🔥",
         description:
-          "Share underrepresented perspectives and minority viewpoints",
+          "Last chance to make your point - make it count",
         color: "text-purple-600",
         bgColor: "bg-purple-50",
       };
@@ -116,7 +109,7 @@ export function StatementSubmission({
     return {
       title: "Share Your Take 💭",
       description:
-        "Submit your initial statement on this topic",
+        "Submit your statement on this topic",
       color: "text-gray-600",
       bgColor: "bg-gray-50",
     };
@@ -149,56 +142,7 @@ export function StatementSubmission({
         </p>
       </div>
 
-      {currentRound !== "initial" && (
-        <div className="flex gap-2 mb-4">
-          <Button
-            size="sm"
-            variant={
-              selectedType === "bridge" ? "default" : "outline"
-            }
-            onClick={() =>
-              setSelectedType(
-                selectedType === "bridge" ? null : "bridge",
-              )
-            }
-            className="flex items-center gap-1"
-          >
-            🌉 Bridge
-          </Button>
-          <Button
-            size="sm"
-            variant={
-              selectedType === "crux" ? "default" : "outline"
-            }
-            onClick={() =>
-              setSelectedType(
-                selectedType === "crux" ? null : "crux",
-              )
-            }
-            className="flex items-center gap-1"
-          >
-            ⚡ Crux
-          </Button>
-          <Button
-            size="sm"
-            variant={
-              selectedType === "plurality"
-                ? "default"
-                : "outline"
-            }
-            onClick={() =>
-              setSelectedType(
-                selectedType === "plurality"
-                  ? null
-                  : "plurality",
-              )
-            }
-            className="flex items-center gap-1"
-          >
-            💎 Plurality
-          </Button>
-        </div>
-      )}
+
 
       <div className="space-y-3">
         <Textarea

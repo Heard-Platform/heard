@@ -1,9 +1,8 @@
 export type Phase =
   | "lobby"
-  | "initial"
-  | "bridge"
-  | "crux"
-  | "plurality"
+  | "phase1"
+  | "phase2"
+  | "phase3"
   | "results";
 
 export type SubPhase = "posting" | "voting" | "review";
@@ -15,7 +14,7 @@ export interface Statement {
   agrees: number;
   disagrees: number;
   passes: number;
-  type?: "bridge" | "crux" | "plurality";
+  type?: string; // Will be calculated on backend later
   isSpicy?: boolean;
   roomId: string;
   timestamp: number;
@@ -26,16 +25,13 @@ export interface Achievement {
   title: string;
   description: string;
   points: number;
-  type: "score" | "bridge" | "crux" | "plurality" | "streak";
+  type: "score" | "streak";
 }
 
 export interface UserSession {
   id: string;
   nickname: string;
   score: number;
-  bridgePoints: number;
-  cruxPoints: number;
-  pluralityPoints: number;
   streak: number;
   currentRoomId?: string;
   lastActive: number;

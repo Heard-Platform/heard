@@ -152,10 +152,7 @@ export function useDebateSession() {
 
   // Submit statement
   const submitStatement = useCallback(
-    async (
-      text: string,
-      type?: "bridge" | "crux" | "plurality",
-    ) => {
+    async (text: string) => {
       if (!user || !room) return false;
 
       try {
@@ -163,7 +160,6 @@ export function useDebateSession() {
         const response = await api.submitStatement(
           room.id,
           text,
-          type,
           user.id,
         );
         if (response.success && response.data) {
@@ -174,21 +170,6 @@ export function useDebateSession() {
                   ...prev,
                   score:
                     prev.score + response.data.pointsEarned,
-                  bridgePoints:
-                    type === "bridge"
-                      ? prev.bridgePoints +
-                        response.data.pointsEarned
-                      : prev.bridgePoints,
-                  cruxPoints:
-                    type === "crux"
-                      ? prev.cruxPoints +
-                        response.data.pointsEarned
-                      : prev.cruxPoints,
-                  pluralityPoints:
-                    type === "plurality"
-                      ? prev.pluralityPoints +
-                        response.data.pointsEarned
-                      : prev.pluralityPoints,
                   streak: prev.streak + 1,
                 }
               : prev,

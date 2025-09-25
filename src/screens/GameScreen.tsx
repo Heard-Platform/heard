@@ -24,10 +24,7 @@ interface GameScreenProps {
   statements: Statement[];
   timerActive: boolean;
   lastAchievement: Achievement | null;
-  onSubmitStatement: (
-    text: string,
-    type?: "bridge" | "crux" | "plurality",
-  ) => Promise<void>;
+  onSubmitStatement: (text: string) => Promise<void>;
   onVote: (
     id: string,
     voteType: "agree" | "disagree" | "pass",
@@ -60,11 +57,8 @@ export function GameScreen({
   const isReviewPhase = room.subPhase === "review";
 
   const handleStatementSubmit = useCallback(
-    async (
-      text: string,
-      type?: "bridge" | "crux" | "plurality",
-    ) => {
-      await onSubmitStatement(text, type);
+    async (text: string) => {
+      await onSubmitStatement(text);
     },
     [onSubmitStatement],
   );
@@ -156,9 +150,6 @@ export function GameScreen({
             <div className="flex justify-center">
               <ScoreBoard
                 score={user.score}
-                bridgePoints={user.bridgePoints}
-                cruxPoints={user.cruxPoints}
-                pluralityPoints={user.pluralityPoints}
                 streak={user.streak}
               />
             </div>
@@ -239,11 +230,7 @@ export function GameScreen({
                   onSubmit={handleStatementSubmit}
                   currentRound={room.phase}
                   isActive={timerActive}
-                  placeholder={
-                    room.phase === "initial"
-                      ? "What's your take? Spicy takes welcome! 🌶️"
-                      : `Submit a ${room.phase}...`
-                  }
+                  placeholder="What's your take? Spicy takes welcome! 🌶️"
                 />
               )}
             </div>

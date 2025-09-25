@@ -100,12 +100,11 @@ class ApiClient {
   async submitStatement(
     roomId: string,
     text: string,
-    type: string | undefined,
     userId: string,
   ) {
     return this.request(`/room/${roomId}/statement`, {
       method: "POST",
-      body: JSON.stringify({ text, type, userId }),
+      body: JSON.stringify({ text, userId }),
     });
   }
 
