@@ -45,7 +45,7 @@ export function RoundIndicator({
     if (currentRound === "round1") {
       if (currentSubPhase === "posting")
         return {
-          title: "Round 1 - Share",
+          title: "Round 1 - Post",
           subtitle: "Drop your takes!",
           emoji: "💭",
         };
@@ -57,7 +57,7 @@ export function RoundIndicator({
         };
       if (currentSubPhase === "review")
         return {
-          title: "Round 1 - Review",
+          title: "Round 1 - Results",
           subtitle: "See what's happening",
           emoji: "📊",
         };
@@ -65,7 +65,7 @@ export function RoundIndicator({
     if (currentRound === "round2") {
       if (currentSubPhase === "posting")
         return {
-          title: "Round 2 - Share",
+          title: "Round 2 - Post",
           subtitle: "Keep the discussion going",
           emoji: "💬",
         };
@@ -77,7 +77,7 @@ export function RoundIndicator({
         };
       if (currentSubPhase === "review")
         return {
-          title: "Round 2 - Review",
+          title: "Round 2 - Results",
           subtitle: "Track the momentum",
           emoji: "📊",
         };
@@ -85,7 +85,7 @@ export function RoundIndicator({
     if (currentRound === "round3") {
       if (currentSubPhase === "posting")
         return {
-          title: "Round 3 - Share",
+          title: "Round 3 - Post",
           subtitle: "Final statements",
           emoji: "🔥",
         };
@@ -97,7 +97,7 @@ export function RoundIndicator({
         };
       if (currentSubPhase === "review")
         return {
-          title: "Round 3 - Review",
+          title: "Round 3 - Results",
           subtitle: "Wrap it up",
           emoji: "📊",
         };

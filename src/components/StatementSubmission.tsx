@@ -81,7 +81,7 @@ export function StatementSubmission({
   const getRoundInfo = () => {
     if (currentPhase === "round1") {
       return {
-        title: "Round 1 - Drop Your Take 💭",
+        title: "Round 1 - Drop Your Takes 💭",
         description:
           "Share what you really think about this topic",
         color: "text-blue-600",
@@ -90,7 +90,7 @@ export function StatementSubmission({
     }
     if (currentPhase === "round2") {
       return {
-        title: "Round 2 - Keep It Going 💬",
+        title: "Round 2 - Dig Deeper 💬",
         description:
           "Add to the conversation - build on what's been said",
         color: "text-green-600",
