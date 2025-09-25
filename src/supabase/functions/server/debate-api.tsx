@@ -23,7 +23,7 @@ interface Vote {
   timestamp: number;
 }
 
-type Round =
+type Phase =
   | "lobby"
   | "round1"
   | "round2"
@@ -34,7 +34,7 @@ type SubPhase = "posting" | "voting" | "review";
 interface DebateRoom {
   id: string;
   topic: string;
-  round: Round;
+  phase: Phase;
   subPhase?: SubPhase;
   gameNumber: number;
   roundStartTime: number;
@@ -320,7 +320,7 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
     const debateRoom: DebateRoom = {
       id: roomId,
       topic: topic.substring(0, 500), // Limit topic length
-      round: "lobby",
+      phase: "lobby",
       gameNumber: 1,
       roundStartTime: Date.now(),
       participants: [userId],
@@ -627,10 +627,10 @@ app.post(
   async (c) => {
     try {
       const roomId = c.req.param("roomId");
-      const { round, subPhase, userId } = await c.req.json();
-      console.log(`Round update request: roomId=${roomId}, round=${round}, subPhase=${subPhase}, userId=${userId}`);
+      const { phase, subPhase, userId } = await c.req.json();
+      console.log(`Phase update request: roomId=${roomId}, phase=${phase}, subPhase=${subPhase}, userId=${userId}`);
 
-      const validRounds = [
+      const validPhases = [
         "lobby",
         "round1",
         "round2", 
@@ -643,9 +643,9 @@ app.post(
         "review",
       ];
 
-      if (!validRounds.includes(round)) {
-        console.log(`Invalid round received: ${round}. Valid rounds:`, validRounds);
-        return c.json({ error: `Invalid round: ${round}. Valid rounds: ${validRounds.join(", ")}` }, 400);
+      if (!validPhases.includes(phase)) {
+        console.log(`Invalid phase received: ${phase}. Valid phases:`, validPhases);
+        return c.json({ error: `Invalid phase: ${phase}. Valid phases: ${validPhases.join(", ")}` }, 400);
       }
 
       if (subPhase && !validSubPhases.includes(subPhase)) {
@@ -662,12 +662,12 @@ app.post(
         return c.json({ error: "Unauthorized" }, 403);
       }
 
-      room.round = round as Round;
+      room.phase = phase as Phase;
       room.subPhase = subPhase;
       room.roundStartTime = Date.now();
 
       // If moving to results, increment game number
-      if (round === "results") {
+      if (phase === "results") {
         room.gameNumber += 1;
       }
 
@@ -675,9 +675,9 @@ app.post(
 
       return c.json({ room });
     } catch (error) {
-      console.error("Error updating room round:", error);
+      console.error("Error updating room phase:", error);
       return c.json(
-        { error: "Failed to update room round" },
+        { error: "Failed to update room phase" },
         500,
       );
     }
@@ -725,7 +725,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
       id: roomId,
       topic:
         "Metro escalator walking: should you always stand right, or is it okay to walk on the left side?",
-      round: "round1", // Start in round1 for immediate testing
+      phase: "round1", // Start in round1 for immediate testing
       subPhase: "voting", // Start in voting sub-phase
       gameNumber: 1,
       roundStartTime: Date.now(),

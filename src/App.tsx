@@ -5,7 +5,7 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { GameScreen } from "./screens/GameScreen";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-import type { Round, SubPhase, Statement, Achievement } from "./types";
+import type { Phase, SubPhase, Statement, Achievement } from "./types";
 
 export default function App() {
   const [timerActive, setTimerActive] = useState(false);
@@ -47,10 +47,10 @@ export default function App() {
   const handleJoinRoom = async (roomId: string) => {
     const roomData = await joinRoom(roomId);
     if (roomData) {
-      // Set timer based on current round and subPhase
+      // Set timer based on current phase and subPhase
       setTimerActive(
-        roomData.round !== "lobby" &&
-          roomData.round !== "results",
+        roomData.phase !== "lobby" &&
+          roomData.phase !== "results",
       );
     }
   };
@@ -75,7 +75,7 @@ export default function App() {
   const nextRound = useCallback(async () => {
     if (!room) return;
 
-    const rounds: Round[] = [
+    const phases: Phase[] = [
       "round1",
       "round2", 
       "round3",
@@ -86,28 +86,28 @@ export default function App() {
       "review",
     ];
 
-    const currentRoundIndex = rounds.indexOf(room.round);
+    const currentPhaseIndex = phases.indexOf(room.phase);
     const currentSubPhaseIndex = room.subPhase
       ? subPhases.indexOf(room.subPhase)
       : 0;
 
     // If we're in results, start a new game
-    if (room.round === "results") {
+    if (room.phase === "results") {
       await updateRoomPhase("round1", "posting");
       setTimerActive(true);
       return;
     }
 
-    // Move to next sub-phase within current round
+    // Move to next sub-phase within current phase
     if (currentSubPhaseIndex < subPhases.length - 1) {
       const nextSubPhase = subPhases[currentSubPhaseIndex + 1];
-      await updateRoomPhase(room.round, nextSubPhase);
+      await updateRoomPhase(room.phase, nextSubPhase);
       setTimerActive(true); // All sub-phases have timers
     }
-    // Move to next round
-    else if (currentRoundIndex < rounds.length - 1) {
-      const nextRound = rounds[currentRoundIndex + 1];
-      await updateRoomPhase(nextRound, "posting");
+    // Move to next phase
+    else if (currentPhaseIndex < phases.length - 1) {
+      const nextPhase = phases[currentPhaseIndex + 1];
+      await updateRoomPhase(nextPhase, "posting");
       setTimerActive(true);
     }
     // Go to results
@@ -162,15 +162,15 @@ export default function App() {
     }
   }, [user, room, getActiveRooms]);
 
-  // Sync timerActive with room round changes (for real-time multiplayer)
+  // Sync timerActive with room phase changes (for real-time multiplayer)
   useEffect(() => {
     if (room) {
       // Activate timer for all sub-phases except lobby and results
       const shouldBeActive =
-        room.round !== "lobby" && room.round !== "results";
+        room.phase !== "lobby" && room.phase !== "results";
       setTimerActive(shouldBeActive);
     }
-  }, [room?.round, room?.subPhase]);
+  }, [room?.phase, room?.subPhase]);
 
   // Derived state - single source of truth
   const showNicknameSetup = !user;

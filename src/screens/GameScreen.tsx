@@ -84,7 +84,7 @@ export function GameScreen({
     onScheduleFuture();
   }, [onScheduleFuture]);
 
-  if (room.round === "results") {
+  if (room.phase === "results") {
     return (
       <>
         <FinalResults
@@ -121,8 +121,8 @@ export function GameScreen({
               </motion.h1>
               {/* Dev Only: Skip Round Button */}
               {onSkipRound &&
-                room.round !== "results" &&
-                room.round !== "lobby" && (
+                room.phase !== "results" &&
+                room.phase !== "lobby" && (
                   <Button
                     onClick={onSkipRound}
                     variant="outline"
@@ -177,7 +177,7 @@ export function GameScreen({
 
         {/* Round Indicator */}
         <RoundIndicator
-          currentRound={room.round}
+          currentRound={room.phase}
           currentSubPhase={room.subPhase}
           gameNumber={room.gameNumber}
         />
@@ -198,7 +198,7 @@ export function GameScreen({
             {statements.length > 0 && (
               <RealTimeResults
                 statements={statements}
-                currentRound={room.round}
+                currentRound={room.phase}
                 currentSubPhase={room.subPhase}
               />
             )}
@@ -207,7 +207,7 @@ export function GameScreen({
           /* Content Layout - Centered based on phase */
           <div className="space-y-6">
             {/* Lobby Round */}
-            {room.round === "lobby" && (
+            {room.phase === "lobby" && (
               <div className="flex justify-center">
                 <Card className="p-6 text-center max-w-md">
                   <h3 className="mb-2">Debate Room</h3>
@@ -233,7 +233,7 @@ export function GameScreen({
                   <div className="w-full max-w-2xl">
                     <StatementSubmission
                       onSubmit={handleStatementSubmit}
-                      currentRound={room.round}
+                      currentPhase={room.phase}
                       isActive={timerActive}
                       placeholder="What's your take? Spicy takes welcome! 🌶️"
                     />

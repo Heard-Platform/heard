@@ -82,13 +82,13 @@ class ApiClient {
 
   async updateRoomPhase(
     roomId: string,
-    round: string,
+    phase: string,
     userId: string,
     subPhase?: string,
   ) {
     return this.request(`/room/${roomId}/phase`, {
       method: "POST",
-      body: JSON.stringify({ round, subPhase, userId }),
+      body: JSON.stringify({ phase, subPhase, userId }),
     });
   }
 

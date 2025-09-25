@@ -1,4 +1,4 @@
-export type Round =
+export type Phase =
   | "lobby"
   | "round1"
   | "round2"
@@ -40,7 +40,7 @@ export interface UserSession {
 export interface DebateRoom {
   id: string;
   topic: string;
-  round: Round;
+  phase: Phase;
   subPhase?: SubPhase;
   gameNumber: number;
   roundStartTime: number;

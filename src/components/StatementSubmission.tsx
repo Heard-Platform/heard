@@ -14,14 +14,14 @@ type Phase =
 
 interface StatementSubmissionProps {
   onSubmit: (statement: string) => Promise<void>;
-  currentRound: Phase;
+  currentPhase: Phase;
   isActive: boolean;
   placeholder?: string;
 }
 
 export function StatementSubmission({
   onSubmit,
-  currentRound,
+  currentPhase,
   isActive,
   placeholder,
 }: StatementSubmissionProps) {
@@ -79,7 +79,7 @@ export function StatementSubmission({
   };
 
   const getRoundInfo = () => {
-    if (currentRound === "round1") {
+    if (currentPhase === "round1") {
       return {
         title: "Round 1 - Drop Your Take 💭",
         description:
@@ -88,7 +88,7 @@ export function StatementSubmission({
         bgColor: "bg-blue-50",
       };
     }
-    if (currentRound === "round2") {
+    if (currentPhase === "round2") {
       return {
         title: "Round 2 - Keep It Going 💬",
         description:
@@ -97,7 +97,7 @@ export function StatementSubmission({
         bgColor: "bg-green-50",
       };
     }
-    if (currentRound === "round3") {
+    if (currentPhase === "round3") {
       return {
         title: "Round 3 - Final Thoughts 🔥",
         description:
