@@ -204,12 +204,12 @@ export function GameScreen({
             )}
           </div>
         ) : (
-          /* All Other Phases - Normal Grid Layout */
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Submission Area */}
-            <div className="space-y-4">
-              {room.phase === "lobby" && (
-                <Card className="p-6 text-center">
+          /* Content Layout - Centered based on phase */
+          <div className="space-y-6">
+            {/* Lobby Phase */}
+            {room.phase === "lobby" && (
+              <div className="flex justify-center">
+                <Card className="p-6 text-center max-w-md">
                   <h3 className="mb-2">Debate Room</h3>
                   <p className="text-muted-foreground mb-4">
                     {room.participants.length < 2
@@ -223,58 +223,105 @@ export function GameScreen({
                     Start Debate! 🔥
                   </Button>
                 </Card>
-              )}
+              </div>
+            )}
 
-              {isSubmissionPhase && (
-                <StatementSubmission
-                  onSubmit={handleStatementSubmit}
-                  currentRound={room.phase}
-                  isActive={timerActive}
-                  placeholder="What's your take? Spicy takes welcome! 🌶️"
-                />
-              )}
-            </div>
+            {/* Posting Phase - Centered submission box with statements below */}
+            {isSubmissionPhase && (
+              <>
+                <div className="flex justify-center">
+                  <div className="w-full max-w-2xl">
+                    <StatementSubmission
+                      onSubmit={handleStatementSubmit}
+                      currentRound={room.phase}
+                      isActive={timerActive}
+                      placeholder="What's your take? Spicy takes welcome! 🌶️"
+                    />
+                  </div>
+                </div>
+                
+                {/* Statements below submission box */}
+                <div className="space-y-4">
+                  <h3 className="text-center flex items-center justify-center gap-2">
+                    Statements ({statements.length})
+                  </h3>
 
-            {/* Statements Feed */}
-            <div className="lg:col-span-2 space-y-4">
-              <h3 className="flex items-center gap-2">
-                Statements ({statements.length})
-                {isVotingPhase && (
+                  <div className="flex justify-center">
+                    <div className="w-full max-w-2xl space-y-3 max-h-[500px] overflow-y-auto">
+                      <AnimatePresence>
+                        {statements.map((statement) => (
+                          <StatementCard
+                            key={statement.id}
+                            statement={statement}
+                            onVote={handleVote}
+                            onFlag={() =>
+                              console.log(
+                                "Flag statement:",
+                                statement.id,
+                              )
+                            }
+                            canVote={false}
+                            currentUserId={user?.id}
+                          />
+                        ))}
+                      </AnimatePresence>
+
+                      {statements.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <p>
+                            No statements yet. Be the first to share
+                            your take!
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Voting Phase - Centered statements like results */}
+            {isVotingPhase && (
+              <div className="space-y-4">
+                <h3 className="text-center flex items-center justify-center gap-2">
+                  Statements ({statements.length})
                   <span className="text-sm text-muted-foreground">
                     - Vote now!
                   </span>
-                )}
-              </h3>
+                </h3>
 
-              <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                <AnimatePresence>
-                  {statements.map((statement) => (
-                    <StatementCard
-                      key={statement.id}
-                      statement={statement}
-                      onVote={handleVote}
-                      onFlag={() =>
-                        console.log(
-                          "Flag statement:",
-                          statement.id,
-                        )
-                      }
-                      canVote={isVotingPhase}
-                      currentUserId={user?.id}
-                    />
-                  ))}
-                </AnimatePresence>
+                <div className="flex justify-center">
+                  <div className="w-full max-w-2xl space-y-3 max-h-[600px] overflow-y-auto">
+                    <AnimatePresence>
+                      {statements.map((statement) => (
+                        <StatementCard
+                          key={statement.id}
+                          statement={statement}
+                          onVote={handleVote}
+                          onFlag={() =>
+                            console.log(
+                              "Flag statement:",
+                              statement.id,
+                            )
+                          }
+                          canVote={isVotingPhase}
+                          currentUserId={user?.id}
+                        />
+                      ))}
+                    </AnimatePresence>
 
-                {statements.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>
-                      No statements yet. Be the first to share
-                      your take!
-                    </p>
+                    {statements.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p>
+                          No statements yet. Be the first to share
+                          your take!
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
