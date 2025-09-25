@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Send, Lightbulb, Zap, Target, AlertCircle } from "lucide-react";
+import {
+  Send,
+  Lightbulb,
+  Zap,
+  Target,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { toast } from "sonner@2.0.3";
@@ -28,7 +34,9 @@ export function StatementSubmission({
   const [statement, setStatement] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<
+    string | null
+  >(null);
 
   const validateStatement = (text: string): string | null => {
     const trimmed = text.trim();
@@ -47,7 +55,7 @@ export function StatementSubmission({
   const handleSubmit = async () => {
     const trimmed = statement.trim();
     const error = validateStatement(statement);
-    
+
     if (error) {
       setValidationError(error);
       toast.error(error);
@@ -62,7 +70,10 @@ export function StatementSubmission({
       setStatement("");
       toast.success("Statement submitted! 🎉");
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Failed to submit statement";
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Failed to submit statement";
       setValidationError(errorMsg);
       toast.error(errorMsg);
     } finally {
@@ -108,8 +119,7 @@ export function StatementSubmission({
     }
     return {
       title: "Share Your Take 💭",
-      description:
-        "Submit your statement on this topic",
+      description: "Submit your statement on this topic",
       color: "text-gray-600",
       bgColor: "bg-gray-50",
     };
@@ -142,18 +152,20 @@ export function StatementSubmission({
         </p>
       </div>
 
-
-
       <div className="space-y-3">
         <Textarea
           value={statement}
-          onChange={(e) => handleStatementChange(e.target.value)}
+          onChange={(e) =>
+            handleStatementChange(e.target.value)
+          }
           placeholder={
             placeholder ||
             "What's your take? Spicy takes welcome! 🌶️"
           }
           className={`min-h-[100px] resize-none ${
-            validationError ? "border-destructive focus:border-destructive" : ""
+            validationError
+              ? "border-destructive focus:border-destructive"
+              : ""
           }`}
           maxLength={500}
         />
@@ -172,13 +184,15 @@ export function StatementSubmission({
 
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-            <span className={`text-sm ${
-              statement.length < 5 
-                ? "text-destructive" 
-                : statement.length > 450 
-                  ? "text-orange-600" 
-                  : "text-muted-foreground"
-            }`}>
+            <span
+              className={`text-sm ${
+                statement.length < 5
+                  ? "text-destructive"
+                  : statement.length > 450
+                    ? "text-orange-600"
+                    : "text-muted-foreground"
+              }`}
+            >
               {statement.length}/500 characters
             </span>
             {statement.length > 0 && statement.length < 5 && (
@@ -189,7 +203,11 @@ export function StatementSubmission({
           </div>
           <Button
             onClick={handleSubmit}
-            disabled={!statement.trim() || isSubmitting || !!validationError}
+            disabled={
+              !statement.trim() ||
+              isSubmitting ||
+              !!validationError
+            }
             className="flex items-center gap-2"
           >
             <Send className="w-4 h-4" />

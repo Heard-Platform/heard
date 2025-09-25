@@ -6,7 +6,12 @@ import {
   MessageCircle,
 } from "lucide-react";
 
-type Round = "lobby" | "round1" | "round2" | "round3" | "results";
+type Round =
+  | "lobby"
+  | "round1"
+  | "round2"
+  | "round3"
+  | "results";
 type SubPhase = "posting" | "voting" | "review";
 
 interface RoundIndicatorProps {
@@ -153,9 +158,8 @@ export function RoundIndicator({
           const Icon = round.icon;
           const isActive = round.key === currentRound;
           const isCompleted =
-            rounds.findIndex(
-              (r) => r.key === currentRound,
-            ) > index;
+            rounds.findIndex((r) => r.key === currentRound) >
+            index;
 
           return (
             <motion.div
