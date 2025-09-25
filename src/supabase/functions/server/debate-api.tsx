@@ -726,7 +726,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
       topic:
         "Metro escalator walking: should you always stand right, or is it okay to walk on the left side?",
       phase: "round1", // Start in round1 for immediate testing
-      subPhase: "voting", // Start in voting sub-phase
+      subPhase: "posting",
       gameNumber: 1,
       roundStartTime: Date.now(),
       participants: [
