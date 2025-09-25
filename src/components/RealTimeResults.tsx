@@ -18,15 +18,7 @@ import {
   TabsTrigger,
 } from "./ui/tabs";
 import { Progress } from "./ui/progress";
-
-interface Statement {
-  id: string;
-  text: string;
-  author: string;
-  votes: number;
-  type?: "bridge" | "crux" | "plurality";
-  isSpicy?: boolean;
-}
+import type { Statement } from "../types";
 
 interface RealTimeResultsProps {
   statements: Statement[];
@@ -51,31 +43,31 @@ export function RealTimeResults({
   >("consensus");
 
   const analysis = useMemo(() => {
-    // Sort by votes
-    const byVotes = [...statements].sort(
-      (a, b) => b.votes - a.votes,
+    // Sort by agrees
+    const byAgrees = [...statements].sort(
+      (a, b) => b.agrees - a.agrees,
     );
 
     // Group by type
     const byType = {
       bridge: statements
         .filter((s) => s.type === "bridge")
-        .sort((a, b) => b.votes - a.votes),
+        .sort((a, b) => b.agrees - a.agrees),
       crux: statements
         .filter((s) => s.type === "crux")
-        .sort((a, b) => b.votes - a.votes),
+        .sort((a, b) => b.agrees - a.agrees),
       plurality: statements
         .filter((s) => s.type === "plurality")
-        .sort((a, b) => b.votes - a.votes),
+        .sort((a, b) => b.agrees - a.agrees),
       general: statements
         .filter((s) => !s.type)
-        .sort((a, b) => b.votes - a.votes),
+        .sort((a, b) => b.agrees - a.agrees),
     };
 
-    // Calculate consensus (statements with high positive votes)
-    const consensus = byVotes.filter((s) => s.votes >= 3);
+    // Calculate consensus (statements with high agrees)
+    const consensus = byAgrees.filter((s) => s.agrees >= 3);
     const controversial = statements.filter(
-      (s) => s.votes === 0 || (s.votes > 0 && s.votes < 3),
+      (s) => s.agrees === 0 || (s.agrees > 0 && s.agrees < 3),
     );
 
     // Simple clustering by keywords (mock implementation)
@@ -122,7 +114,7 @@ export function RealTimeResults({
         avgVotes:
           cluster.statements.length > 0
             ? cluster.statements.reduce(
-                (sum, s) => sum + s.votes,
+                (sum, s) => sum + s.agrees,
                 0,
               ) / cluster.statements.length
             : 0,
@@ -131,7 +123,7 @@ export function RealTimeResults({
       .filter((cluster) => cluster.size > 0);
 
     return {
-      byVotes,
+      byAgrees,
       byType,
       consensus,
       controversial,
@@ -196,7 +188,7 @@ export function RealTimeResults({
           )}
           {showVotes && (
             <Badge variant="outline" className="text-xs">
-              {statement.votes} votes
+              {statement.agrees} agrees
             </Badge>
           )}
         </div>
@@ -337,8 +329,9 @@ export function RealTimeResults({
                 value={
                   (cluster.avgVotes /
                     Math.max(
-                      ...statements.map((s) => s.votes),
-                    ) || 1) * 100
+                      ...statements.map((s) => s.agrees),
+                      1
+                    )) * 100
                 }
                 className="mb-2"
               />
@@ -366,16 +359,16 @@ export function RealTimeResults({
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center p-4 border rounded-lg">
               <div className="text-2xl font-mono text-primary">
-                {statements.filter((s) => s.votes > 0).length}
+                {statements.filter((s) => s.agrees > 0).length}
               </div>
               <div className="text-xs text-muted-foreground">
-                Statements with votes
+                Statements with agrees
               </div>
             </div>
             <div className="text-center p-4 border rounded-lg">
               <div className="text-2xl font-mono text-primary">
                 {statements.reduce(
-                  (sum, s) => sum + s.votes,
+                  (sum, s) => sum + s.agrees + s.disagrees + s.passes,
                   0,
                 )}
               </div>
@@ -403,7 +396,7 @@ export function RealTimeResults({
 
           <div className="space-y-2">
             <h4 className="text-sm">Top Performers</h4>
-            {analysis.byVotes
+            {analysis.byAgrees
               .slice(0, 3)
               .map((statement, index) => (
                 <div
@@ -417,7 +410,7 @@ export function RealTimeResults({
                     {statement.text}
                   </div>
                   <Badge className="text-xs">
-                    {statement.votes}
+                    {statement.agrees}
                   </Badge>
                 </div>
               ))}
