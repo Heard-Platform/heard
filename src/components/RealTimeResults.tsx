@@ -67,7 +67,7 @@ export function RealTimeResults({
     // Calculate consensus (statements with high agrees)
     const consensus = byAgrees.filter((s) => s.agrees >= 3);
     const controversial = statements.filter(
-      (s) => s.agrees === 0 || (s.agrees > 0 && s.agrees < 3),
+      (s) => s.agrees === 0 || s.disagrees > s.agrees,
     );
 
     // Simple clustering by keywords (mock implementation)
