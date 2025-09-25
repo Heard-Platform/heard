@@ -7,9 +7,9 @@ import { toast } from "sonner@2.0.3";
 
 type Phase =
   | "lobby"
-  | "phase1"
-  | "phase2"
-  | "phase3"
+  | "round1"
+  | "round2"
+  | "round3"
   | "results";
 
 interface StatementSubmissionProps {
@@ -79,27 +79,27 @@ export function StatementSubmission({
   };
 
   const getRoundInfo = () => {
-    if (currentRound === "phase1") {
+    if (currentRound === "round1") {
       return {
-        title: "Phase 1 - Drop Your Take 💭",
+        title: "Round 1 - Drop Your Take 💭",
         description:
           "Share what you really think about this topic",
         color: "text-blue-600",
         bgColor: "bg-blue-50",
       };
     }
-    if (currentRound === "phase2") {
+    if (currentRound === "round2") {
       return {
-        title: "Phase 2 - Keep It Going 💬",
+        title: "Round 2 - Keep It Going 💬",
         description:
           "Add to the conversation - build on what's been said",
         color: "text-green-600",
         bgColor: "bg-green-50",
       };
     }
-    if (currentRound === "phase3") {
+    if (currentRound === "round3") {
       return {
-        title: "Phase 3 - Final Thoughts 🔥",
+        title: "Round 3 - Final Thoughts 🔥",
         description:
           "Last chance to make your point - make it count",
         color: "text-purple-600",

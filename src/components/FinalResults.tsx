@@ -21,10 +21,10 @@ import type { Statement } from "../types";
 interface FinalResultsProps {
   statements: Statement[];
   score: number;
-  roundNumber: number;
+  gameNumber: number;
   onNewDiscussion: (statement: Statement) => void;
   onScheduleFuture: () => void;
-  onNextRound: () => void;
+  onNextGame: () => void;
 }
 
 type ActivityType =
@@ -36,10 +36,10 @@ type ActivityType =
 export function FinalResults({
   statements,
   score,
-  roundNumber,
+  gameNumber,
   onNewDiscussion,
   onScheduleFuture,
-  onNextRound,
+  onNextGame,
 }: FinalResultsProps) {
   const [currentActivity, setCurrentActivity] =
     useState<ActivityType>("overview");
@@ -354,7 +354,7 @@ export function FinalResults({
         >
           <div className="flex items-center justify-center gap-3">
             <Trophy className="w-8 h-8 text-yellow-500" />
-            <h1>Round {roundNumber} Complete!</h1>
+            <h1>Game {gameNumber} Complete!</h1>
             <Trophy className="w-8 h-8 text-yellow-500" />
           </div>
           <p className="text-muted-foreground">
@@ -362,7 +362,7 @@ export function FinalResults({
             <span className="font-medium text-primary">
               {score} points
             </span>{" "}
-            this round
+            this game
           </p>
         </motion.div>
 
@@ -456,11 +456,11 @@ export function FinalResults({
               <div className="space-y-2">
                 <h3>Keep the Energy Going</h3>
                 <p className="text-sm text-muted-foreground">
-                  Start another round with a fresh topic
+                  Start another game with a fresh topic
                 </p>
               </div>
-              <Button onClick={onNextRound} className="w-full">
-                Next Round
+              <Button onClick={onNextGame} className="w-full">
+                Next Game
               </Button>
             </Card>
 

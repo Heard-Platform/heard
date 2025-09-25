@@ -5,7 +5,7 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { GameScreen } from "./screens/GameScreen";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-import type { Phase, SubPhase, Statement, Achievement } from "./types";
+import type { Round, SubPhase, Statement, Achievement } from "./types";
 
 export default function App() {
   const [timerActive, setTimerActive] = useState(false);
@@ -47,10 +47,10 @@ export default function App() {
   const handleJoinRoom = async (roomId: string) => {
     const roomData = await joinRoom(roomId);
     if (roomData) {
-      // Set timer based on current phase and subPhase
+      // Set timer based on current round and subPhase
       setTimerActive(
-        roomData.phase !== "lobby" &&
-          roomData.phase !== "results",
+        roomData.round !== "lobby" &&
+          roomData.round !== "results",
       );
     }
   };
@@ -71,14 +71,14 @@ export default function App() {
     [voteOnStatement],
   );
 
-  // Handle phase transitions
-  const nextPhase = useCallback(async () => {
+  // Handle round transitions
+  const nextRound = useCallback(async () => {
     if (!room) return;
 
-    const phases: Phase[] = [
-      "phase1",
-      "phase2", 
-      "phase3",
+    const rounds: Round[] = [
+      "round1",
+      "round2", 
+      "round3",
     ];
     const subPhases: SubPhase[] = [
       "posting",
@@ -86,40 +86,40 @@ export default function App() {
       "review",
     ];
 
-    const currentPhaseIndex = phases.indexOf(room.phase);
+    const currentRoundIndex = rounds.indexOf(room.round);
     const currentSubPhaseIndex = room.subPhase
       ? subPhases.indexOf(room.subPhase)
       : 0;
 
-    // If we're in results, start a new round
-    if (room.phase === "results") {
-      await updateRoomPhase("phase1", "posting");
+    // If we're in results, start a new game
+    if (room.round === "results") {
+      await updateRoomPhase("round1", "posting");
       setTimerActive(true);
       return;
     }
 
-    // Move to next sub-phase within current phase
+    // Move to next sub-phase within current round
     if (currentSubPhaseIndex < subPhases.length - 1) {
       const nextSubPhase = subPhases[currentSubPhaseIndex + 1];
-      await updateRoomPhase(room.phase, nextSubPhase);
+      await updateRoomPhase(room.round, nextSubPhase);
       setTimerActive(true); // All sub-phases have timers
     }
-    // Move to next phase
-    else if (currentPhaseIndex < phases.length - 1) {
-      const nextPhase = phases[currentPhaseIndex + 1];
-      await updateRoomPhase(nextPhase, "posting");
+    // Move to next round
+    else if (currentRoundIndex < rounds.length - 1) {
+      const nextRound = rounds[currentRoundIndex + 1];
+      await updateRoomPhase(nextRound, "posting");
       setTimerActive(true);
     }
     // Go to results
     else {
-      await updateRoomPhase("results");
+      await updateRoomPhase("results", undefined);
       setTimerActive(false);
     }
   }, [room, updateRoomPhase]);
 
   const startDebate = async () => {
     if (!room) return;
-    await updateRoomPhase("phase1", "posting");
+    await updateRoomPhase("round1", "posting");
     setTimerActive(true);
   };
 
@@ -151,7 +151,7 @@ export default function App() {
   // Development helper function to jump to final results
   const jumpToFinalResults = async () => {
     if (room) {
-      await updateRoomPhase("results");
+      await updateRoomPhase("results", undefined);
     }
   };
 
@@ -162,15 +162,15 @@ export default function App() {
     }
   }, [user, room, getActiveRooms]);
 
-  // Sync timerActive with room phase changes (for real-time multiplayer)
+  // Sync timerActive with room round changes (for real-time multiplayer)
   useEffect(() => {
     if (room) {
       // Activate timer for all sub-phases except lobby and results
       const shouldBeActive =
-        room.phase !== "lobby" && room.phase !== "results";
+        room.round !== "lobby" && room.round !== "results";
       setTimerActive(shouldBeActive);
     }
-  }, [room?.phase, room?.subPhase]);
+  }, [room?.round, room?.subPhase]);
 
   // Derived state - single source of truth
   const showNicknameSetup = !user;
@@ -239,12 +239,12 @@ export default function App() {
           lastAchievement={lastAchievement}
           onSubmitStatement={handleStatementSubmit}
           onVote={handleVote}
-          onNextPhase={nextPhase}
+          onNextRound={nextRound}
           onStartDebate={startDebate}
           onLeaveRoom={handleLeaveRoom}
           onNewDiscussion={handleNewDiscussion}
           onScheduleFuture={handleScheduleFuture}
-          onSkipPhase={nextPhase}
+          onSkipRound={nextRound}
         />
         <Toaster />
       </>

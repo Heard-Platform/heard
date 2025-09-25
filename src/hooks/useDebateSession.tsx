@@ -9,7 +9,7 @@ import {
 } from "../utils/api";
 import type { 
   UserSession, 
-  Phase, 
+  Round, 
   SubPhase, 
   DebateRoom, 
   Statement, 
@@ -259,14 +259,14 @@ export function useDebateSession() {
 
   // Update room phase
   const updateRoomPhase = useCallback(
-    async (phase: Phase, subPhase?: SubPhase) => {
+    async (round: Round, subPhase?: SubPhase) => {
       if (!user || !room) return false;
 
       try {
         setError(null);
         const response = await api.updateRoomPhase(
           room.id,
-          phase,
+          round,
           user.id,
           subPhase,
         );
@@ -275,14 +275,14 @@ export function useDebateSession() {
           return true;
         } else {
           throw new Error(
-            response.error || "Failed to update phase",
+            response.error || "Failed to update round",
           );
         }
       } catch (err) {
         const errorMsg =
           err instanceof Error ? err.message : "Unknown error";
         setError(errorMsg);
-        console.error("Failed to update phase:", errorMsg);
+        console.error("Failed to update round:", errorMsg);
       }
       return false;
     },

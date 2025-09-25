@@ -5,14 +5,14 @@ interface DebateTimerProps {
   duration: number;
   onTimeUp: () => void;
   isActive: boolean;
-  phaseStartTime?: number; // Server timestamp when phase started
+  roundStartTime?: number; // Server timestamp when round started
 }
 
 export function DebateTimer({
   duration,
   onTimeUp,
   isActive,
-  phaseStartTime,
+  roundStartTime,
 }: DebateTimerProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
 
@@ -20,10 +20,10 @@ export function DebateTimer({
     if (!isActive) return;
 
     const calculateTimeLeft = () => {
-      if (phaseStartTime) {
+      if (roundStartTime) {
         // Calculate based on server timestamp
         const elapsed = Math.floor(
-          (Date.now() - phaseStartTime) / 1000,
+          (Date.now() - roundStartTime) / 1000,
         );
         const remaining = Math.max(0, duration - elapsed);
         return remaining;
@@ -46,7 +46,7 @@ export function DebateTimer({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [duration, onTimeUp, isActive, phaseStartTime]);
+  }, [duration, onTimeUp, isActive, roundStartTime]);
 
   const progress = (timeLeft / duration) * 100;
   const isUrgent = timeLeft <= 10;

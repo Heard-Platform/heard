@@ -29,12 +29,12 @@ interface GameScreenProps {
     id: string,
     voteType: "agree" | "disagree" | "pass",
   ) => Promise<void>;
-  onNextPhase: () => Promise<void>;
+  onNextRound: () => Promise<void>;
   onStartDebate: () => Promise<void>;
   onLeaveRoom: () => void;
   onNewDiscussion: (statement: Statement) => void;
   onScheduleFuture: () => void;
-  onSkipPhase?: () => Promise<void>;
+  onSkipRound?: () => Promise<void>;
 }
 
 export function GameScreen({
@@ -45,12 +45,12 @@ export function GameScreen({
   lastAchievement,
   onSubmitStatement,
   onVote,
-  onNextPhase,
+  onNextRound,
   onStartDebate,
   onLeaveRoom,
   onNewDiscussion,
   onScheduleFuture,
-  onSkipPhase,
+  onSkipRound,
 }: GameScreenProps) {
   const isSubmissionPhase = room.subPhase === "posting";
   const isVotingPhase = room.subPhase === "voting";
@@ -84,16 +84,16 @@ export function GameScreen({
     onScheduleFuture();
   }, [onScheduleFuture]);
 
-  if (room.phase === "results") {
+  if (room.round === "results") {
     return (
       <>
         <FinalResults
           statements={statements}
           score={user?.score || 0}
-          roundNumber={room.roundNumber}
+          gameNumber={room.gameNumber}
           onNewDiscussion={handleNewDiscussion}
           onScheduleFuture={handleScheduleFuture}
-          onNextRound={onNextPhase}
+          onNextGame={onNextRound}
         />
         {lastAchievement && (
           <AchievementNotification
@@ -119,16 +119,16 @@ export function GameScreen({
               >
                 HEARD
               </motion.h1>
-              {/* Dev Only: Skip Phase Button */}
-              {onSkipPhase &&
-                room.phase !== "results" &&
-                room.phase !== "lobby" && (
+              {/* Dev Only: Skip Round Button */}
+              {onSkipRound &&
+                room.round !== "results" &&
+                room.round !== "lobby" && (
                   <Button
-                    onClick={onSkipPhase}
+                    onClick={onSkipRound}
                     variant="outline"
                     size="sm"
                     className="bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100 p-2"
-                    title="DEV: Next Phase"
+                    title="DEV: Next Round"
                   >
                     <SkipForward className="w-4 h-4" />
                   </Button>
@@ -177,18 +177,18 @@ export function GameScreen({
 
         {/* Round Indicator */}
         <RoundIndicator
-          currentRound={room.phase}
+          currentRound={room.round}
           currentSubPhase={room.subPhase}
-          roundNumber={room.roundNumber}
+          gameNumber={room.gameNumber}
         />
 
         {/* Timer */}
         {timerActive && (
           <DebateTimer
-            duration={90} // 90 seconds for all phases and sub-phases
-            onTimeUp={onNextPhase}
+            duration={90} // 90 seconds for all rounds and sub-phases
+            onTimeUp={onNextRound}
             isActive={timerActive}
-            phaseStartTime={room.phaseStartTime}
+            roundStartTime={room.roundStartTime}
           />
         )}
 
@@ -198,7 +198,7 @@ export function GameScreen({
             {statements.length > 0 && (
               <RealTimeResults
                 statements={statements}
-                currentPhase={room.phase}
+                currentRound={room.round}
                 currentSubPhase={room.subPhase}
               />
             )}
@@ -206,8 +206,8 @@ export function GameScreen({
         ) : (
           /* Content Layout - Centered based on phase */
           <div className="space-y-6">
-            {/* Lobby Phase */}
-            {room.phase === "lobby" && (
+            {/* Lobby Round */}
+            {room.round === "lobby" && (
               <div className="flex justify-center">
                 <Card className="p-6 text-center max-w-md">
                   <h3 className="mb-2">Debate Room</h3>
@@ -226,14 +226,14 @@ export function GameScreen({
               </div>
             )}
 
-            {/* Posting Phase - Centered submission box with statements below */}
+            {/* Posting Round - Centered submission box with statements below */}
             {isSubmissionPhase && (
               <>
                 <div className="flex justify-center">
                   <div className="w-full max-w-2xl">
                     <StatementSubmission
                       onSubmit={handleStatementSubmit}
-                      currentRound={room.phase}
+                      currentRound={room.round}
                       isActive={timerActive}
                       placeholder="What's your take? Spicy takes welcome! 🌶️"
                     />
@@ -280,7 +280,7 @@ export function GameScreen({
               </>
             )}
 
-            {/* Voting Phase - Centered statements like results */}
+            {/* Voting Round - Centered statements like results */}
             {isVotingPhase && (
               <div className="space-y-4">
                 <h3 className="text-center flex items-center justify-center gap-2">

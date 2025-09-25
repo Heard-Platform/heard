@@ -6,105 +6,105 @@ import {
   MessageCircle,
 } from "lucide-react";
 
-type Phase = "lobby" | "phase1" | "phase2" | "phase3" | "results";
+type Round = "lobby" | "round1" | "round2" | "round3" | "results";
 type SubPhase = "posting" | "voting" | "review";
 
 interface RoundIndicatorProps {
-  currentRound: Phase;
+  currentRound: Round;
   currentSubPhase?: SubPhase;
-  roundNumber: number;
+  gameNumber: number;
 }
 
 export function RoundIndicator({
   currentRound,
   currentSubPhase,
-  roundNumber,
+  gameNumber,
 }: RoundIndicatorProps) {
   const rounds = [
     {
-      key: "phase1" as Phase,
-      label: "Phase 1",
+      key: "round1" as Round,
+      label: "Round 1",
       icon: MessageCircle,
       color: "blue",
     },
     {
-      key: "phase2" as Phase,
-      label: "Phase 2",
+      key: "round2" as Round,
+      label: "Round 2",
       icon: Users,
       color: "green",
     },
     {
-      key: "phase3" as Phase,
-      label: "Phase 3",
+      key: "round3" as Round,
+      label: "Round 3",
       icon: Zap,
       color: "purple",
     },
   ];
 
   const getCurrentRoundInfo = () => {
-    if (currentRound === "phase1") {
+    if (currentRound === "round1") {
       if (currentSubPhase === "posting")
         return {
-          title: "Phase 1 - Share",
+          title: "Round 1 - Share",
           subtitle: "Drop your takes!",
           emoji: "💭",
         };
       if (currentSubPhase === "voting")
         return {
-          title: "Phase 1 - Vote",
+          title: "Round 1 - Vote",
           subtitle: "React to statements",
           emoji: "🗳️",
         };
       if (currentSubPhase === "review")
         return {
-          title: "Phase 1 - Review",
+          title: "Round 1 - Review",
           subtitle: "See what's happening",
           emoji: "📊",
         };
     }
-    if (currentRound === "phase2") {
+    if (currentRound === "round2") {
       if (currentSubPhase === "posting")
         return {
-          title: "Phase 2 - Share",
+          title: "Round 2 - Share",
           subtitle: "Keep the discussion going",
           emoji: "💬",
         };
       if (currentSubPhase === "voting")
         return {
-          title: "Phase 2 - Vote",
+          title: "Round 2 - Vote",
           subtitle: "Shape the conversation",
           emoji: "🗳️",
         };
       if (currentSubPhase === "review")
         return {
-          title: "Phase 2 - Review",
+          title: "Round 2 - Review",
           subtitle: "Track the momentum",
           emoji: "📊",
         };
     }
-    if (currentRound === "phase3") {
+    if (currentRound === "round3") {
       if (currentSubPhase === "posting")
         return {
-          title: "Phase 3 - Share",
+          title: "Round 3 - Share",
           subtitle: "Final statements",
           emoji: "🔥",
         };
       if (currentSubPhase === "voting")
         return {
-          title: "Phase 3 - Vote",
+          title: "Round 3 - Vote",
           subtitle: "Last chance to vote",
           emoji: "🗳️",
         };
       if (currentSubPhase === "review")
         return {
-          title: "Phase 3 - Review",
+          title: "Round 3 - Review",
           subtitle: "Wrap it up",
           emoji: "📊",
         };
     }
     if (currentRound === "results")
       return {
-        title: "Round Complete",
+        title: "Game Complete",
         subtitle: "See the results",
         emoji: "🏆",
       };
@@ -144,7 +144,7 @@ export function RoundIndicator({
           {roundInfo.subtitle}
         </p>
         <div className="text-sm text-muted-foreground">
-          Round {roundNumber}
+          Game {gameNumber}
         </div>
       </motion.div>
 

@@ -31,6 +31,7 @@ interface Statement {
 interface RealTimeResultsProps {
   statements: Statement[];
   currentRound: string;
+  currentSubPhase?: string;
 }
 
 interface ClusterData {

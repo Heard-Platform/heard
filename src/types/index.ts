@@ -1,8 +1,8 @@
-export type Phase =
+export type Round =
   | "lobby"
-  | "phase1"
-  | "phase2"
-  | "phase3"
+  | "round1"
+  | "round2"
+  | "round3"
   | "results";
 
 export type SubPhase = "posting" | "voting" | "review";
@@ -40,10 +40,10 @@ export interface UserSession {
 export interface DebateRoom {
   id: string;
   topic: string;
-  phase: Phase;
+  round: Round;
   subPhase?: SubPhase;
-  roundNumber: number;
-  phaseStartTime: number;
+  gameNumber: number;
+  roundStartTime: number;
   participants: string[];
   isActive: boolean;
   createdAt: number;
