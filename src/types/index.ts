@@ -18,6 +18,7 @@ export interface Statement {
   isSpicy?: boolean;
   roomId: string;
   timestamp: number;
+  round: number; // Round number (1, 2, or 3)
   voters: { [userId: string]: "agree" | "disagree" | "pass" };
 }
 

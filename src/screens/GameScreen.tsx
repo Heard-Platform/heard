@@ -280,48 +280,112 @@ export function GameScreen({
               </>
             )}
 
-            {/* Voting Round - Centered statements like results */}
-            {isVotingPhase && (
-              <div className="space-y-4">
-                <h3 className="text-center flex items-center justify-center gap-2">
-                  Statements ({statements.length})
-                  <span className="text-sm text-muted-foreground">
-                    - Vote now!
-                  </span>
-                </h3>
+            {/* Voting Round - Separated by current vs previous rounds */}
+            {isVotingPhase && (() => {
+              // Convert current phase to round number
+              const getCurrentRound = (phase: string): number => {
+                switch (phase) {
+                  case "round1": return 1;
+                  case "round2": return 2;
+                  case "round3": return 3;
+                  default: return 1;
+                }
+              };
 
-                <div className="flex justify-center">
-                  <div className="w-full max-w-2xl space-y-3 max-h-[600px] overflow-y-auto">
-                    <AnimatePresence>
-                      {statements.map((statement) => (
-                        <StatementCard
-                          key={statement.id}
-                          statement={statement}
-                          onVote={handleVote}
-                          onFlag={() =>
-                            console.log(
-                              "Flag statement:",
-                              statement.id,
-                            )
-                          }
-                          canVote={isVotingPhase}
-                          currentUserId={user?.id}
-                        />
-                      ))}
-                    </AnimatePresence>
+              const currentRound = getCurrentRound(room.phase);
+              const currentRoundStatements = statements.filter(
+                (s) => s.round === currentRound
+              );
+              const previousRoundStatements = statements.filter(
+                (s) => s.round !== currentRound
+              );
 
-                    {statements.length === 0 && (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <p>
-                          No statements yet. Be the first to share
-                          your take!
-                        </p>
+              return (
+                <div className="space-y-6">
+                  {/* Current Round Statements - Priority voting */}
+                  {currentRoundStatements.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-center flex items-center justify-center gap-2">
+                        This Round's Posts ({currentRoundStatements.length})
+                        <span className="text-sm text-muted-foreground">
+                          - Vote now!
+                        </span>
+                      </h3>
+
+                      <div className="flex justify-center">
+                        <div className="w-full max-w-2xl space-y-3 max-h-[400px] overflow-y-auto">
+                          <AnimatePresence>
+                            {currentRoundStatements.map((statement) => (
+                              <StatementCard
+                                key={statement.id}
+                                statement={statement}
+                                onVote={handleVote}
+                                onFlag={() =>
+                                  console.log(
+                                    "Flag statement:",
+                                    statement.id,
+                                  )
+                                }
+                                canVote={isVotingPhase}
+                                currentUserId={user?.id}
+                              />
+                            ))}
+                          </AnimatePresence>
+                        </div>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
+
+                  {/* Previous Round Statements - Secondary */}
+                  {previousRoundStatements.length > 0 && (
+                    <div className="space-y-4">
+                      <div className="flex justify-center">
+                        <div className="w-full max-w-2xl">
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="flex-1 h-px bg-border"></div>
+                            <h4 className="text-sm text-muted-foreground">
+                              Previous Rounds ({previousRoundStatements.length})
+                            </h4>
+                            <div className="flex-1 h-px bg-border"></div>
+                          </div>
+                          
+                          <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                            <AnimatePresence>
+                              {previousRoundStatements
+                                .sort((a, b) => b.timestamp - a.timestamp)
+                                .map((statement) => (
+                                  <StatementCard
+                                    key={statement.id}
+                                    statement={statement}
+                                    onVote={handleVote}
+                                    onFlag={() =>
+                                      console.log(
+                                        "Flag statement:",
+                                        statement.id,
+                                      )
+                                    }
+                                    canVote={isVotingPhase}
+                                    currentUserId={user?.id}
+                                  />
+                                ))}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {statements.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>
+                        No statements yet. Be the first to share
+                        your take!
+                      </p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         )}
       </div>

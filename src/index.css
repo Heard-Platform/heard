@@ -666,6 +666,10 @@
     height: 100%;
   }
 
+  .h-px {
+    height: 1px;
+  }
+
   .max-h-24 {
     max-height: calc(var(--spacing) * 24);
   }
@@ -682,12 +686,16 @@
     max-height: calc(var(--spacing) * 80);
   }
 
-  .max-h-\[500px\] {
-    max-height: 500px;
+  .max-h-\[300px\] {
+    max-height: 300px;
   }
 
-  .max-h-\[600px\] {
-    max-height: 600px;
+  .max-h-\[400px\] {
+    max-height: 400px;
+  }
+
+  .max-h-\[500px\] {
+    max-height: 500px;
   }
 
   .min-h-16 {

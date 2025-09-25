@@ -12,6 +12,7 @@ interface Statement {
   isSpicy?: boolean;
   roomId: string;
   timestamp: number;
+  round: number; // Round number (1, 2, or 3)
   voters: { [userId: string]: "agree" | "disagree" | "pass" }; // Will be calculated from Vote records
 }
 
@@ -463,6 +464,16 @@ app.post(
         return c.json({ error: "User not in this room" }, 403);
       }
 
+      // Convert phase to round number
+      const getRoundNumber = (phase: Phase): number => {
+        switch (phase) {
+          case "round1": return 1;
+          case "round2": return 2;
+          case "round3": return 3;
+          default: return 1; // Fallback to round 1
+        }
+      };
+
       const statement: Statement = {
         id: generateId(),
         text: text.trim(),
@@ -474,6 +485,7 @@ app.post(
         isSpicy: text.includes("🌶️") || text.length > 200,
         roomId,
         timestamp: Date.now(),
+        round: getRoundNumber(room.phase),
         voters: {}, // Will be calculated from Vote records
       };
 
@@ -788,6 +800,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           isSpicy: false,
           roomId,
           timestamp: Date.now() - 900000, // 15 min ago
+          round: 1, // Current round
           voters: {}, // Will be calculated
         },
         voteData: [
@@ -808,6 +821,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           isSpicy: true,
           roomId,
           timestamp: Date.now() - 800000, // 13 min ago
+          round: 2, // Previous round
           voters: {}, // Will be calculated
         },
         voteData: [
@@ -827,6 +841,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           isSpicy: false,
           roomId,
           timestamp: Date.now() - 700000, // 11 min ago
+          round: 2, // Previous round
           voters: {}, // Will be calculated
         },
         voteData: [
@@ -845,6 +860,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           isSpicy: false,
           roomId,
           timestamp: Date.now() - 600000, // 10 min ago
+          round: 1, // Current round
           voters: {}, // Will be calculated
         },
         voteData: [
@@ -863,6 +879,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           isSpicy: true,
           roomId,
           timestamp: Date.now() - 500000, // 8 min ago
+          round: 1, // Current round
           voters: {}, // Will be calculated
         },
         voteData: [
@@ -882,6 +899,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           isSpicy: false,
           roomId,
           timestamp: Date.now() - 400000, // 6 min ago
+          round: 1, // Current round
           voters: {}, // Will be calculated
         },
         voteData: [
@@ -902,6 +920,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           isSpicy: false,
           roomId,
           timestamp: Date.now() - 300000, // 5 min ago
+          round: 3, // Previous round
           voters: {}, // Will be calculated
         },
         voteData: [
@@ -922,6 +941,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           isSpicy: false,
           roomId,
           timestamp: Date.now() - 200000, // 3 min ago
+          round: 2, // Previous round
           voters: {}, // Will be calculated
         },
         voteData: [
