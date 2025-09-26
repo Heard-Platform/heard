@@ -94,6 +94,7 @@ export function GameScreen({
           onNewDiscussion={handleNewDiscussion}
           onScheduleFuture={handleScheduleFuture}
           onNextGame={onNextRound}
+          onBackToLobby={onLeaveRoom}
         />
         {lastAchievement && (
           <AchievementNotification
