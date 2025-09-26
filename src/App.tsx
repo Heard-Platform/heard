@@ -36,8 +36,8 @@ export default function App() {
   };
 
   // Handle room creation
-  const handleCreateRoom = async (topic: string) => {
-    const roomData = await createRoom(topic);
+  const handleCreateRoom = async (topic: string, mode: "realtime" | "host-controlled") => {
+    const roomData = await createRoom(topic, mode);
     if (roomData) {
       setTimerActive(false); // Start in lobby phase
     }

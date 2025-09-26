@@ -38,6 +38,8 @@ export interface UserSession {
   lastActive: number;
 }
 
+export type DebateMode = "realtime" | "host-controlled";
+
 export interface DebateRoom {
   id: string;
   topic: string;
@@ -49,4 +51,5 @@ export interface DebateRoom {
   hostId: string; // ID of the user who created the room
   isActive: boolean;
   createdAt: number;
+  mode: DebateMode; // Controls whether phases advance automatically or by host
 }

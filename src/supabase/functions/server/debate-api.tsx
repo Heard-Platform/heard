@@ -31,6 +31,7 @@ type Phase =
   | "round3"
   | "results";
 type SubPhase = "posting" | "voting" | "review";
+type DebateMode = "realtime" | "host-controlled";
 
 interface DebateRoom {
   id: string;
@@ -43,6 +44,7 @@ interface DebateRoom {
   hostId: string; // ID of the user who created the room
   isActive: boolean;
   createdAt: number;
+  mode: DebateMode; // Controls whether phases advance automatically or by host
 }
 
 interface UserSession {
@@ -304,7 +306,7 @@ app.get("/make-server-f1a393b4/user/:userId", async (c) => {
 // Create debate room
 app.post("/make-server-f1a393b4/room/create", async (c) => {
   try {
-    const { topic, userId } = await c.req.json();
+    const { topic, userId, mode = "realtime" } = await c.req.json();
 
     if (!topic || topic.length < 10) {
       return c.json(
@@ -329,6 +331,7 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
       hostId: userId, // Set the creator as the host
       isActive: true,
       createdAt: Date.now(),
+      mode: mode as DebateMode,
     };
 
     await saveDebateRoom(debateRoom);

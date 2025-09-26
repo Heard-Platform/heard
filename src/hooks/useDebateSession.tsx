@@ -13,7 +13,8 @@ import type {
   SubPhase, 
   DebateRoom, 
   Statement, 
-  Achievement 
+  Achievement,
+  DebateMode 
 } from "../types";
 
 export function useDebateSession() {
@@ -74,12 +75,12 @@ export function useDebateSession() {
 
   // Create or join room
   const createRoom = useCallback(
-    async (topic: string) => {
+    async (topic: string, mode: DebateMode = "realtime") => {
       if (!user) return null;
 
       try {
         setError(null);
-        const response = await api.createRoom(topic, user.id);
+        const response = await api.createRoom(topic, user.id, mode);
         if (response.success && response.data) {
           const roomData = response.data.room;
           setRoom(roomData);

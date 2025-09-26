@@ -5,16 +5,17 @@ import { Card } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { Switch } from "../components/ui/switch";
 import { ActiveRoomsList } from "../components/ActiveRoomsList";
-import { Plus, Database } from "lucide-react";
-import type { UserSession, DebateRoom } from "../types";
+import { Plus, Database, Clock, User } from "lucide-react";
+import type { UserSession, DebateRoom, DebateMode } from "../types";
 
 interface LobbyScreenProps {
   user: UserSession | null;
   activeRooms: DebateRoom[];
   loading: boolean;
   error: string | null;
-  onCreateRoom: (topic: string) => Promise<void>;
+  onCreateRoom: (topic: string, mode: DebateMode) => Promise<void>;
   onJoinRoom: (roomId: string) => Promise<void>;
   onRefreshRooms: () => Promise<DebateRoom[]>;
   onJumpToFinalResults?: () => Promise<void>;
@@ -42,14 +43,16 @@ export function LobbyScreen({
 }: LobbyScreenProps) {
   const [newRoomTopic, setNewRoomTopic] = useState("");
   const [showExamples, setShowExamples] = useState(false);
+  const [debateMode, setDebateMode] = useState<DebateMode>("realtime");
 
   const isTopicValid = newRoomTopic.trim().length >= 10;
   const remainingChars = 10 - newRoomTopic.trim().length;
 
   const handleCreateRoom = async () => {
     if (!isTopicValid) return;
-    await onCreateRoom(newRoomTopic.trim());
+    await onCreateRoom(newRoomTopic.trim(), debateMode);
     setNewRoomTopic(""); // Clear the input after creating
+    setDebateMode("realtime"); // Reset to default
   };
 
   const handleExampleClick = (topic: string) => {
@@ -158,6 +161,36 @@ export function LobbyScreen({
                   <span className="text-muted-foreground ml-auto">
                     {newRoomTopic.length}/100
                   </span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-sm">Debate Style</Label>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    {debateMode === "realtime" ? (
+                      <Clock className="w-4 h-4 text-blue-600" />
+                    ) : (
+                      <User className="w-4 h-4 text-purple-600" />
+                    )}
+                    <div>
+                      <p className="text-sm">
+                        {debateMode === "realtime" ? "Real-time" : "Host-controlled"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {debateMode === "realtime" 
+                          ? "Phases advance automatically with timers"
+                          : "Host manually advances each phase"
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={debateMode === "host-controlled"}
+                    onCheckedChange={(checked) => 
+                      setDebateMode(checked ? "host-controlled" : "realtime")
+                    }
+                  />
                 </div>
               </div>
               
