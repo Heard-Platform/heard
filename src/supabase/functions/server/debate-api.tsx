@@ -40,6 +40,7 @@ interface DebateRoom {
   gameNumber: number;
   roundStartTime: number;
   participants: string[];
+  hostId: string; // ID of the user who created the room
   isActive: boolean;
   createdAt: number;
 }
@@ -325,6 +326,7 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
       gameNumber: 1,
       roundStartTime: Date.now(),
       participants: [userId],
+      hostId: userId, // Set the creator as the host
       isActive: true,
       createdAt: Date.now(),
     };
@@ -674,6 +676,11 @@ app.post(
         return c.json({ error: "Unauthorized" }, 403);
       }
 
+      // Only the host can change phases
+      if (room.hostId !== userId) {
+        return c.json({ error: "Only the room host can control the debate phases" }, 403);
+      }
+
       room.phase = phase as Phase;
       room.subPhase = subPhase;
       room.roundStartTime = Date.now();
@@ -747,6 +754,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
         "test_user_2",
         "test_user_3",
       ],
+      hostId: userId, // Set the user as the host
       isActive: true,
       createdAt: Date.now(),
     };

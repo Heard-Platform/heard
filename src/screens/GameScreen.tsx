@@ -119,10 +119,11 @@ export function GameScreen({
               >
                 HEARD
               </motion.h1>
-              {/* Dev Only: Skip Round Button */}
+              {/* Dev Only: Skip Round Button - Host Only */}
               {onSkipRound &&
                 room.phase !== "results" &&
-                room.phase !== "lobby" && (
+                room.phase !== "lobby" &&
+                room.hostId === user?.id && (
                   <Button
                     onClick={onSkipRound}
                     variant="outline"
@@ -216,12 +217,41 @@ export function GameScreen({
                       ? "Need at least 2 players to start..."
                       : "Ready to debate!"}
                   </p>
-                  <Button
-                    onClick={onStartDebate}
-                    disabled={room.participants.length < 2}
-                  >
-                    Start Debate! 🔥
-                  </Button>
+                  
+                  {/* Show different UI based on whether user is host */}
+                  {room.hostId === user?.id ? (
+                    <Button
+                      onClick={onStartDebate}
+                      disabled={room.participants.length < 2}
+                    >
+                      Start Debate! 🔥
+                    </Button>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="px-4 py-2 bg-muted rounded-md">
+                        <p className="text-sm text-muted-foreground">
+                          Waiting for host to start...
+                        </p>
+                      </div>
+                      <div className="flex justify-center items-center space-x-1">
+                        <motion.div
+                          animate={{ y: [0, -8, 0] }}
+                          transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                          className="w-2 h-2 bg-primary rounded-full"
+                        />
+                        <motion.div
+                          animate={{ y: [0, -8, 0] }}
+                          transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+                          className="w-2 h-2 bg-primary rounded-full"
+                        />
+                        <motion.div
+                          animate={{ y: [0, -8, 0] }}
+                          transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+                          className="w-2 h-2 bg-primary rounded-full"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </Card>
               </div>
             )}

@@ -46,6 +46,7 @@ export interface DebateRoom {
   gameNumber: number;
   roundStartTime: number;
   participants: string[];
+  hostId: string; // ID of the user who created the room
   isActive: boolean;
   createdAt: number;
 }
