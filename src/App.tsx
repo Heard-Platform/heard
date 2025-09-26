@@ -47,10 +47,11 @@ export default function App() {
   const handleJoinRoom = async (roomId: string) => {
     const roomData = await joinRoom(roomId);
     if (roomData) {
-      // Set timer based on current phase and subPhase
+      // Set timer based on current phase, subPhase, and debate mode
       setTimerActive(
+        roomData.mode === "realtime" &&
         roomData.phase !== "lobby" &&
-          roomData.phase !== "results",
+        roomData.phase !== "results",
       );
     }
   };
@@ -94,7 +95,7 @@ export default function App() {
     // If we're in results, start a new game
     if (room.phase === "results") {
       await updateRoomPhase("round1", "posting");
-      setTimerActive(true);
+      setTimerActive(room.mode === "realtime");
       return;
     }
 
@@ -102,13 +103,13 @@ export default function App() {
     if (currentSubPhaseIndex < subPhases.length - 1) {
       const nextSubPhase = subPhases[currentSubPhaseIndex + 1];
       await updateRoomPhase(room.phase, nextSubPhase);
-      setTimerActive(true); // All sub-phases have timers
+      setTimerActive(room.mode === "realtime");
     }
     // Move to next phase
     else if (currentPhaseIndex < phases.length - 1) {
       const nextPhase = phases[currentPhaseIndex + 1];
       await updateRoomPhase(nextPhase, "posting");
-      setTimerActive(true);
+      setTimerActive(room.mode === "realtime");
     }
     // Go to results
     else {
@@ -120,7 +121,7 @@ export default function App() {
   const startDebate = async () => {
     if (!room) return;
     await updateRoomPhase("round1", "posting");
-    setTimerActive(true);
+    setTimerActive(room.mode === "realtime");
   };
 
   const handleNewDiscussion = useCallback(
@@ -165,12 +166,14 @@ export default function App() {
   // Sync timerActive with room phase changes (for real-time multiplayer)
   useEffect(() => {
     if (room) {
-      // Activate timer for all sub-phases except lobby and results
+      // Activate timer for all sub-phases except lobby and results, but only in realtime mode
       const shouldBeActive =
-        room.phase !== "lobby" && room.phase !== "results";
+        room.mode === "realtime" &&
+        room.phase !== "lobby" && 
+        room.phase !== "results";
       setTimerActive(shouldBeActive);
     }
-  }, [room?.phase, room?.subPhase]);
+  }, [room?.phase, room?.subPhase, room?.mode]);
 
   // Derived state - single source of truth
   const showNicknameSetup = !user;

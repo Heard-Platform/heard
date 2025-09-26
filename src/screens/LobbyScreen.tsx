@@ -43,7 +43,7 @@ export function LobbyScreen({
 }: LobbyScreenProps) {
   const [newRoomTopic, setNewRoomTopic] = useState("");
   const [showExamples, setShowExamples] = useState(false);
-  const [debateMode, setDebateMode] = useState<DebateMode>("realtime");
+  const [debateMode, setDebateMode] = useState<DebateMode>("host-controlled");
 
   const isTopicValid = newRoomTopic.trim().length >= 10;
   const remainingChars = 10 - newRoomTopic.trim().length;
@@ -52,7 +52,7 @@ export function LobbyScreen({
     if (!isTopicValid) return;
     await onCreateRoom(newRoomTopic.trim(), debateMode);
     setNewRoomTopic(""); // Clear the input after creating
-    setDebateMode("realtime"); // Reset to default
+    setDebateMode("host-controlled"); // Reset to default
   };
 
   const handleExampleClick = (topic: string) => {
@@ -168,27 +168,18 @@ export function LobbyScreen({
                 <Label className="text-sm">Debate Style</Label>
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center space-x-3">
-                    {debateMode === "realtime" ? (
-                      <Clock className="w-4 h-4 text-blue-600" />
-                    ) : (
-                      <User className="w-4 h-4 text-purple-600" />
-                    )}
+                    <Clock className="w-4 h-4 text-blue-600" />
                     <div>
-                      <p className="text-sm">
-                        {debateMode === "realtime" ? "Real-time" : "Host-controlled"}
-                      </p>
+                      <p className="text-sm">Enable Real-time Mode</p>
                       <p className="text-xs text-muted-foreground">
-                        {debateMode === "realtime" 
-                          ? "Phases advance automatically with timers"
-                          : "Host manually advances each phase"
-                        }
+                        Phases advance automatically with timers
                       </p>
                     </div>
                   </div>
                   <Switch
-                    checked={debateMode === "host-controlled"}
+                    checked={debateMode === "realtime"}
                     onCheckedChange={(checked) => 
-                      setDebateMode(checked ? "host-controlled" : "realtime")
+                      setDebateMode(checked ? "realtime" : "host-controlled")
                     }
                   />
                 </div>

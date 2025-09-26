@@ -3,25 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Users, Clock, RefreshCw, LogIn } from "lucide-react";
-
-interface DebateRoom {
-  id: string;
-  topic: string;
-  phase:
-    | "lobby"
-    | "initial"
-    | "bridge"
-    | "crux"
-    | "plurality"
-    | "voting"
-    | "results";
-  roundNumber: number;
-  phaseStartTime: number;
-  participants: string[];
-  isActive: boolean;
-  createdAt: number;
-}
+import { Users, Clock, RefreshCw, LogIn, Timer, User } from "lucide-react";
+import type { DebateRoom } from "../types";
 
 interface ActiveRoomsListProps {
   rooms: DebateRoom[];
@@ -184,6 +167,16 @@ export function ActiveRoomsList({
                         <Clock className="w-3 h-3" />
                         <span>
                           {formatTimeAgo(room.createdAt)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {(room.mode || "host-controlled") === "realtime" ? (
+                          <Timer className="w-3 h-3" />
+                        ) : (
+                          <User className="w-3 h-3" />
+                        )}
+                        <span>
+                          {(room.mode || "host-controlled") === "realtime" ? "Timed" : "Host-led"}
                         </span>
                       </div>
                       {room.roundNumber > 1 && (

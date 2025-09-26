@@ -62,7 +62,7 @@ class ApiClient {
   }
 
   // Room management
-  async createRoom(topic: string, userId: string, mode = "realtime") {
+  async createRoom(topic: string, userId: string, mode = "host-controlled") {
     return this.request("/room/create", {
       method: "POST",
       body: JSON.stringify({ topic, userId, mode }),

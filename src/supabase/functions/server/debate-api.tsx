@@ -86,7 +86,12 @@ const getDebateRoom = async (
   try {
     const room = await kv.get(`room:${roomId}`);
     if (!room) return null;
-    return JSON.parse(room);
+    const parsedRoom = JSON.parse(room);
+    // Default to host-controlled mode for existing rooms that don't have mode set
+    if (!parsedRoom.mode) {
+      parsedRoom.mode = "host-controlled";
+    }
+    return parsedRoom;
   } catch (error) {
     console.error(`Error parsing room data for ${roomId}:`, error);
     return null;
@@ -306,7 +311,7 @@ app.get("/make-server-f1a393b4/user/:userId", async (c) => {
 // Create debate room
 app.post("/make-server-f1a393b4/room/create", async (c) => {
   try {
-    const { topic, userId, mode = "realtime" } = await c.req.json();
+    const { topic, userId, mode = "host-controlled" } = await c.req.json();
 
     if (!topic || topic.length < 10) {
       return c.json(

@@ -75,7 +75,7 @@ export function useDebateSession() {
 
   // Create or join room
   const createRoom = useCallback(
-    async (topic: string, mode: DebateMode = "realtime") => {
+    async (topic: string, mode: DebateMode = "host-controlled") => {
       if (!user) return null;
 
       try {

@@ -184,8 +184,8 @@ export function GameScreen({
           gameNumber={room.gameNumber}
         />
 
-        {/* Timer */}
-        {timerActive && (
+        {/* Timer for realtime mode */}
+        {timerActive && room.mode === "realtime" && (
           <DebateTimer
             duration={90} // 90 seconds for all rounds and sub-phases
             onTimeUp={onNextRound}
@@ -194,16 +194,54 @@ export function GameScreen({
           />
         )}
 
+        {/* Host controls for host-controlled mode */}
+        {room.mode === "host-controlled" && 
+         room.phase !== "lobby" && 
+         room.phase !== "results" && 
+         room.hostId === user?.id && (
+          <Card className="p-4 bg-blue-50 border-blue-200">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="font-medium text-blue-900">Host Controls</p>
+                <p className="text-sm text-blue-700">
+                  {room.subPhase === "posting" && "Players are submitting statements"}
+                  {room.subPhase === "voting" && "Players are voting on statements"}
+                  {room.subPhase === "review" && "Players are reviewing results"}
+                </p>
+              </div>
+              <Button 
+                onClick={onNextRound}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <SkipForward className="w-4 h-4 mr-2" />
+                Next Phase
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Mode indicator for non-hosts in host-controlled mode */}
+        {room.mode === "host-controlled" && 
+         room.phase !== "lobby" && 
+         room.phase !== "results" && 
+         room.hostId !== user?.id && (
+          <Card className="p-4 bg-purple-50 border-purple-200">
+            <div className="text-center">
+              <p className="text-sm text-purple-700">
+                Host-controlled debate • Waiting for host to advance to next phase
+              </p>
+            </div>
+          </Card>
+        )}
+
         {/* Review Phase - Full Width Results Only */}
         {isReviewPhase ? (
           <div className="space-y-4">
-            {statements.length > 0 && (
-              <RealTimeResults
-                statements={statements}
-                currentRound={room.phase}
-                currentSubPhase={room.subPhase}
-              />
-            )}
+            <RealTimeResults
+              statements={statements}
+              currentRound={room.phase}
+              currentSubPhase={room.subPhase}
+            />
           </div>
         ) : (
           /* Content Layout - Centered based on phase */
@@ -265,7 +303,7 @@ export function GameScreen({
                     <StatementSubmission
                       onSubmit={handleStatementSubmit}
                       currentPhase={room.phase}
-                      isActive={timerActive}
+                      isActive={isSubmissionPhase}
                       placeholder="What's your take? Spicy takes welcome! 🌶️"
                     />
                   </div>

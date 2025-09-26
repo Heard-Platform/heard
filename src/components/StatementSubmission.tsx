@@ -131,7 +131,7 @@ export function StatementSubmission({
     return (
       <div className="text-center p-8 text-muted-foreground">
         <Lightbulb className="w-8 h-8 mx-auto mb-2 opacity-50" />
-        <p>Round ended - time to vote!</p>
+        <p>Submission phase ended - time to vote!</p>
       </div>
     );
   }
