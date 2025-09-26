@@ -55,3 +55,6 @@ Thumbs.db
 
 # Build artifacts
 build/
+
+# Local Netlify folder
+.netlify
