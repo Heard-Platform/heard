@@ -7,7 +7,7 @@ import { Label } from "./ui/label";
 import { UserPlus, Sparkles } from "lucide-react";
 
 interface NicknameSetupProps {
-  onComplete: (nickname: string) => void;
+  onComplete: (nickname: string, email: string) => void;
   loading?: boolean;
   error?: string;
 }
@@ -18,6 +18,7 @@ export function NicknameSetup({
   error,
 }: NicknameSetupProps) {
   const [nickname, setNickname] = useState("");
+  const [email, setEmail] = useState("");
   const [isValid, setIsValid] = useState(false);
 
   const handleNicknameChange = (value: string) => {
@@ -26,13 +27,24 @@ export function NicknameSetup({
       .replace(/[^a-zA-Z0-9\s\-_.]/g, "")
       .substring(0, 20);
     setNickname(sanitized);
-    setIsValid(sanitized.trim().length >= 2);
+    validateForm(sanitized, email);
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    validateForm(nickname, value);
+  };
+
+  const validateForm = (nicknameVal: string, emailVal: string) => {
+    const nicknameValid = nicknameVal.trim().length >= 2;
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal.trim());
+    setIsValid(nicknameValid && emailValid);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isValid && !loading) {
-      onComplete(nickname.trim());
+      onComplete(nickname.trim(), email.trim());
     }
   };
 
@@ -75,6 +87,25 @@ export function NicknameSetup({
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="email">
+                Your Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) =>
+                  handleEmailChange(e.target.value)
+                }
+                placeholder="Enter your email..."
+                disabled={loading}
+              />
+              <p className="text-xs text-muted-foreground">
+                We'll send you a welcome email
+              </p>
+            </div>
+            
+            <div className="space-y-2">
               <Label htmlFor="nickname">
                 Your Debate Nickname
               </Label>
@@ -86,7 +117,6 @@ export function NicknameSetup({
                   handleNicknameChange(e.target.value)
                 }
                 placeholder="Enter a nickname..."
-                className={isValid ? "border-green-300" : ""}
                 disabled={loading}
               />
               <p className="text-xs text-muted-foreground">

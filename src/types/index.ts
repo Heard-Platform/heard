@@ -32,6 +32,7 @@ export interface Achievement {
 export interface UserSession {
   id: string;
   nickname: string;
+  email: string;
   score: number;
   streak: number;
   currentRoomId?: string;

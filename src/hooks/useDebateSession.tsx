@@ -31,7 +31,7 @@ export function useDebateSession() {
 
   // Initialize user session
   const initializeUser = useCallback(
-    async (nickname?: string) => {
+    async (nickname?: string, email?: string) => {
       try {
         setError(null);
         let userId = getUserId();
@@ -45,9 +45,9 @@ export function useDebateSession() {
           }
         }
 
-        if (!userData && nickname) {
+        if (!userData && nickname && email) {
           // Create new user session
-          const response = await api.createUser(nickname);
+          const response = await api.createUser(nickname, email);
           if (response.success && response.data) {
             userData = response.data.user;
             setUserId(userData.id);

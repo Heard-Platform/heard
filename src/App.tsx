@@ -31,8 +31,8 @@ export default function App() {
   } = useDebateSession();
 
   // Handle nickname setup completion
-  const handleNicknameComplete = async (nickname: string) => {
-    await initializeUser(nickname);
+  const handleNicknameComplete = async (nickname: string, email: string) => {
+    await initializeUser(nickname, email);
   };
 
   // Handle room creation

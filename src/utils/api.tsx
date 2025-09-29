@@ -50,10 +50,10 @@ class ApiClient {
   }
 
   // User management
-  async createUser(nickname: string) {
+  async createUser(nickname: string, email: string) {
     return this.request("/user/create", {
       method: "POST",
-      body: JSON.stringify({ nickname }),
+      body: JSON.stringify({ nickname, email }),
     });
   }
 

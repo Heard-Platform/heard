@@ -50,6 +50,7 @@ interface DebateRoom {
 interface UserSession {
   id: string;
   nickname: string;
+  email: string;
   score: number;
   streak: number;
   currentRoomId?: string;
@@ -62,6 +63,71 @@ const app = new Hono();
 const generateId = () =>
   Math.random().toString(36).substring(2) +
   Date.now().toString(36);
+
+// Email sending function
+const sendWelcomeEmail = async (email: string, nickname: string) => {
+  try {
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY not found in environment');
+      return false;
+    }
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Heard <hello@resend.dev>',
+        to: [email],
+        subject: 'Welcome to HEARD! 🎯',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #8B5CF6; margin-bottom: 10px;">Welcome to HEARD!</h1>
+              <p style="color: #666; font-size: 18px;">Ready to argue and save democracy? 🚀</p>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
+              <h2 style="margin: 0 0 15px 0;">Hey ${nickname}! 👋</h2>
+              <p style="margin: 0; line-height: 1.6;">You're all set to jump into fast-paced debates that make arguing fun and educational. Get ready to earn points, build bridges, and maybe change some minds!</p>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+              <h3 style="color: #333; margin-bottom: 15px;">What's Next?</h3>
+              <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🎯 <strong>Join a debate</strong> - Jump into active rooms or create your own</li>
+                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">💬 <strong>Share statements</strong> - Earn points for posting thoughtful arguments</li>
+                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🔥 <strong>Get spicy</strong> - Add 🌶️ to controversial takes for bonus points</li>
+                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🤝 <strong>Build bridges</strong> - Find common ground and level up your score</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+              <p style="margin: 0; color: #666;">Happy debating!</p>
+              <p style="margin: 5px 0 0 0; color: #8B5CF6; font-weight: bold;">The HEARD Team</p>
+            </div>
+          </div>
+        `,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Failed to send welcome email:', response.status, errorData);
+      return false;
+    }
+
+    console.log('Welcome email sent successfully to:', email);
+    return true;
+  } catch (error) {
+    console.error('Error sending welcome email:', error);
+    return false;
+  }
+};
 
 const getUserSession = async (
   userId: string,
@@ -251,7 +317,7 @@ const saveStatement = async (statement: Statement) => {
 // Create or join user session
 app.post("/make-server-f1a393b4/user/create", async (c) => {
   try {
-    const { nickname } = await c.req.json();
+    const { nickname, email } = await c.req.json();
 
     if (
       !nickname ||
@@ -264,16 +330,30 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
       );
     }
 
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return c.json(
+        { error: "Valid email address is required" },
+        400,
+      );
+    }
+
     const userId = generateId();
     const userSession: UserSession = {
       id: userId,
       nickname: nickname.substring(0, 20), // Ensure max length
+      email: email.trim().toLowerCase(),
       score: 0,
       streak: 0,
       lastActive: Date.now(),
     };
 
     await saveUserSession(userSession);
+    
+    // Send welcome email (don't block user creation if email fails)
+    sendWelcomeEmail(userSession.email, userSession.nickname).catch(error => {
+      console.error('Welcome email failed for user:', userId, error);
+    });
+
     return c.json({ user: userSession });
   } catch (error) {
     console.error("Error creating user session:", error);
@@ -774,6 +854,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
       {
         id: "test_user_1",
         nickname: "MetroCommuter",
+        email: "metro@example.com",
         score: 450,
         streak: 3,
         currentRoomId: roomId,
@@ -782,6 +863,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
       {
         id: "test_user_2",
         nickname: "RushHourWarrior",
+        email: "rushhour@example.com",
         score: 380,
         streak: 5,
         currentRoomId: roomId,
@@ -790,6 +872,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
       {
         id: "test_user_3",
         nickname: "EscalatorEtiquette",
+        email: "etiquette@example.com",
         score: 520,
         streak: 2,
         currentRoomId: roomId,
