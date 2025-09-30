@@ -144,6 +144,21 @@ const getUserSession = async (
 
 const saveUserSession = async (session: UserSession) => {
   await kv.set(`user:${session.id}`, JSON.stringify(session));
+  // Also store by email for lookup
+  await kv.set(`user_email:${session.email}`, session.id);
+};
+
+const getUserByEmail = async (email: string): Promise<UserSession | null> => {
+  try {
+    const normalizedEmail = email.trim().toLowerCase();
+    const userId = await kv.get(`user_email:${normalizedEmail}`);
+    if (!userId) return null;
+    
+    return await getUserSession(userId);
+  } catch (error) {
+    console.error(`Error fetching user by email ${email}:`, error);
+    return null;
+  }
 };
 
 const getDebateRoom = async (
@@ -337,11 +352,31 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
       );
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+    
+    // Check if user already exists with this email
+    const existingUser = await getUserByEmail(normalizedEmail);
+    
+    if (existingUser) {
+      console.log(`Existing user found for email ${normalizedEmail}, logging them back in`);
+      
+      // Update their last active time and return existing user
+      existingUser.lastActive = Date.now();
+      await saveUserSession(existingUser);
+      
+      return c.json({ 
+        user: existingUser,
+        isReturningUser: true 
+      });
+    }
+
+    // Create new user if email doesn't exist
+    console.log(`Creating new user for email ${normalizedEmail}`);
     const userId = generateId();
     const userSession: UserSession = {
       id: userId,
       nickname: nickname.substring(0, 20), // Ensure max length
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       score: 0,
       streak: 0,
       lastActive: Date.now(),
@@ -349,12 +384,15 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
 
     await saveUserSession(userSession);
     
-    // Send welcome email (don't block user creation if email fails)
+    // Send welcome email only for new users (don't block user creation if email fails)
     sendWelcomeEmail(userSession.email, userSession.nickname).catch(error => {
       console.error('Welcome email failed for user:', userId, error);
     });
 
-    return c.json({ user: userSession });
+    return c.json({ 
+      user: userSession,
+      isReturningUser: false 
+    });
   } catch (error) {
     console.error("Error creating user session:", error);
     return c.json(
