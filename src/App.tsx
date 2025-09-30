@@ -5,10 +5,13 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { GameScreen } from "./screens/GameScreen";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
+import { parseRoomIdFromUrl, updateUrlForRoom, clearRoomFromUrl } from "./utils/url";
 import type { Phase, SubPhase, Statement, Achievement } from "./types";
 
 export default function App() {
   const [timerActive, setTimerActive] = useState(false);
+  const [targetRoomId, setTargetRoomId] = useState<string | null>(null);
+  const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
 
   const {
     user,
@@ -30,9 +33,31 @@ export default function App() {
     createSeedData,
   } = useDebateSession();
 
+  // Helper function to join room and set timer state consistently
+  const handleJoinRoomWithTimer = useCallback(async (roomId: string) => {
+    const roomData = await joinRoom(roomId);
+    if (roomData) {
+      setTimerActive(
+        roomData.mode === "realtime" &&
+        roomData.phase !== "lobby" &&
+        roomData.phase !== "results",
+      );
+      return roomData;
+    }
+    return null;
+  }, [joinRoom]);
+
   // Handle nickname setup completion
   const handleNicknameComplete = async (nickname: string, email: string) => {
     await initializeUser(nickname, email);
+    
+    // If there's a target room ID, try to join it after user creation
+    if (targetRoomId) {
+      const roomData = await handleJoinRoomWithTimer(targetRoomId);
+      if (roomData) {
+        setTargetRoomId(null); // Clear target after successful join
+      }
+    }
   };
 
   // Handle room creation
@@ -45,15 +70,7 @@ export default function App() {
 
   // Handle joining existing room
   const handleJoinRoom = async (roomId: string) => {
-    const roomData = await joinRoom(roomId);
-    if (roomData) {
-      // Set timer based on current phase, subPhase, and debate mode
-      setTimerActive(
-        roomData.mode === "realtime" &&
-        roomData.phase !== "lobby" &&
-        roomData.phase !== "results",
-      );
-    }
+    await handleJoinRoomWithTimer(roomId);
   };
 
   // Handle statement submission
@@ -147,6 +164,7 @@ export default function App() {
   const handleLeaveRoom = () => {
     leaveRoom();
     setTimerActive(false);
+    clearRoomFromUrl(); // Clear room from URL when leaving
   };
 
   // Development helper function to jump to final results
@@ -156,12 +174,40 @@ export default function App() {
     }
   };
 
-  // Load active rooms when in lobby (user but no room)
+  // Check URL for room ID on initial load
   useEffect(() => {
-    if (user && !room) {
+    if (!hasCheckedUrl) {
+      const roomIdFromUrl = parseRoomIdFromUrl();
+      if (roomIdFromUrl) {
+        setTargetRoomId(roomIdFromUrl);
+      }
+      setHasCheckedUrl(true);
+    }
+  }, [hasCheckedUrl]);
+
+  // Auto-join room if user exists and there's a target room
+  useEffect(() => {
+    if (user && targetRoomId && !room) {
+      const autoJoinRoom = async () => {
+        const roomData = await handleJoinRoomWithTimer(targetRoomId);
+        if (roomData) {
+          setTargetRoomId(null); // Clear target after successful join
+        } else {
+          // If join failed, clear target and redirect to lobby
+          setTargetRoomId(null);
+          clearRoomFromUrl();
+        }
+      };
+      autoJoinRoom();
+    }
+  }, [user, targetRoomId, room, handleJoinRoomWithTimer]);
+
+  // Load active rooms when in lobby (user but no room and no target)
+  useEffect(() => {
+    if (user && !room && !targetRoomId) {
       getActiveRooms();
     }
-  }, [user, room, getActiveRooms]);
+  }, [user, room, targetRoomId, getActiveRooms]);
 
   // Sync timerActive with room phase changes (for real-time multiplayer)
   useEffect(() => {
@@ -172,8 +218,11 @@ export default function App() {
         room.phase !== "lobby" && 
         room.phase !== "results";
       setTimerActive(shouldBeActive);
+      
+      // Update URL to reflect current room
+      updateUrlForRoom(room.id);
     }
-  }, [room?.phase, room?.subPhase, room?.mode]);
+  }, [room?.phase, room?.subPhase, room?.mode, room?.id]);
 
   // Derived state - single source of truth
   const showNicknameSetup = !user;
@@ -204,6 +253,7 @@ export default function App() {
           onComplete={handleNicknameComplete}
           loading={loading}
           error={error}
+          joiningRoom={!!targetRoomId}
         />
         <Toaster />
       </>

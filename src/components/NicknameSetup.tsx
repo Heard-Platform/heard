@@ -10,12 +10,14 @@ interface NicknameSetupProps {
   onComplete: (nickname: string, email: string) => void;
   loading?: boolean;
   error?: string;
+  joiningRoom?: boolean;
 }
 
 export function NicknameSetup({
   onComplete,
   loading = false,
   error,
+  joiningRoom = false,
 }: NicknameSetupProps) {
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
@@ -77,11 +79,13 @@ export function NicknameSetup({
             </motion.div>
 
             <h1 className="text-2xl font-bold">
-              Welcome to HEARD!
+              {joiningRoom ? "Join the Debate!" : "Welcome to HEARD!"}
             </h1>
             <p className="text-muted-foreground">
-              Choose a nickname to start arguing (and secretly
-              saving democracy)
+              {joiningRoom 
+                ? "Enter your details to join this debate and share your thoughts!" 
+                : "Choose a nickname to start arguing (and secretly saving democracy)"
+              }
             </p>
           </div>
 
@@ -158,7 +162,7 @@ export function NicknameSetup({
               ) : (
                 <>
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Start Debating!
+                  {joiningRoom ? "Join Debate!" : "Start Debating!"}
                 </>
               )}
             </Button>

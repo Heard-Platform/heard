@@ -11,6 +11,7 @@ import { RoundIndicator } from "../components/RoundIndicator";
 import { RealTimeResults } from "../components/RealTimeResults";
 import { FinalResults } from "../components/FinalResults";
 import { Users, X, Zap, SkipForward } from "lucide-react";
+import { ShareButton } from "../components/ShareButton";
 import type {
   UserSession,
   DebateRoom,
@@ -111,7 +112,7 @@ export function GameScreen({
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="space-y-3">
-          {/* Top row: Title, Dev button, and Leave button */}
+          {/* Top row: Title, Dev button, Share, and Leave button */}
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <motion.h1
@@ -136,15 +137,18 @@ export function GameScreen({
                   </Button>
                 )}
             </div>
-            <Button
-              onClick={onLeaveRoom}
-              variant="outline"
-              size="sm"
-              className="p-2"
-              title="Leave Room"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <ShareButton roomId={room.id} />
+              <Button
+                onClick={onLeaveRoom}
+                variant="outline"
+                size="sm"
+                className="p-2"
+                title="Leave Room"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
 
           {/* ScoreBoard row */}
