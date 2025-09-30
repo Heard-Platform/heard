@@ -1835,6 +1835,12 @@
   }
 
   @media (hover: hover) {
+    .hover\:text-green-800:hover {
+      color: var(--color-green-800);
+    }
+  }
+
+  @media (hover: hover) {
     .hover\:text-red-200:hover {
       color: var(--color-red-200);
     }

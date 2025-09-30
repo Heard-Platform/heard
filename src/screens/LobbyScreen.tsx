@@ -7,7 +7,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
 import { ActiveRoomsList } from "../components/ActiveRoomsList";
-import { Plus, Database, Clock, User } from "lucide-react";
+import { Plus, Database, Clock, User, LogOut } from "lucide-react";
 import type { UserSession, DebateRoom, DebateMode } from "../types";
 
 interface LobbyScreenProps {
@@ -20,6 +20,7 @@ interface LobbyScreenProps {
   onRefreshRooms: () => Promise<DebateRoom[]>;
   onJumpToFinalResults?: () => Promise<void>;
   onCreateSeedData?: () => Promise<any>;
+  onLogout?: () => void;
 }
 
 const topicExamples = [
@@ -40,6 +41,7 @@ export function LobbyScreen({
   onRefreshRooms,
   onJumpToFinalResults,
   onCreateSeedData,
+  onLogout,
 }: LobbyScreenProps) {
   const [newRoomTopic, setNewRoomTopic] = useState("");
   const [showExamples, setShowExamples] = useState(false);
@@ -91,16 +93,29 @@ export function LobbyScreen({
 
         {user && (
           <Card className="p-4 bg-green-50 border-green-200">
-            <p className="text-green-800">
-              Welcome back,{" "}
-              <span className="font-medium">
-                {user.nickname}
-              </span>
-              !
-              <span className="ml-2 text-sm">
-                Score: {user.score}
-              </span>
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-green-800">
+                Welcome back,{" "}
+                <span className="font-medium">
+                  {user.nickname}
+                </span>
+                !
+                <span className="ml-2 text-sm">
+                  Score: {user.score}
+                </span>
+              </p>
+              {onLogout && (
+                <Button
+                  onClick={onLogout}
+                  variant="ghost"
+                  size="sm"
+                  className="text-green-700 hover:text-green-800 hover:bg-green-100"
+                >
+                  <LogOut className="w-4 h-4 mr-1" />
+                  Logout
+                </Button>
+              )}
+            </div>
           </Card>
         )}
 

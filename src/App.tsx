@@ -167,6 +167,13 @@ export default function App() {
     clearRoomFromUrl(); // Clear room from URL when leaving
   };
 
+  const handleLogout = () => {
+    resetSession();
+    setTimerActive(false);
+    setTargetRoomId(null);
+    clearRoomFromUrl();
+  };
+
   // Development helper function to jump to final results
   const jumpToFinalResults = async () => {
     if (room) {
@@ -274,6 +281,7 @@ export default function App() {
           onRefreshRooms={getActiveRooms}
           onJumpToFinalResults={jumpToFinalResults}
           onCreateSeedData={createSeedData}
+          onLogout={handleLogout}
         />
         <Toaster />
       </>
