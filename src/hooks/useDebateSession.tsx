@@ -7,14 +7,14 @@ import {
   setRoomId,
   clearRoomId,
 } from "../utils/api";
-import type { 
-  UserSession, 
-  Phase, 
-  SubPhase, 
-  DebateRoom, 
-  Statement, 
+import type {
+  UserSession,
+  Phase,
+  SubPhase,
+  DebateRoom,
+  Statement,
   Achievement,
-  DebateMode 
+  DebateMode,
 } from "../types";
 
 export function useDebateSession() {
@@ -47,7 +47,10 @@ export function useDebateSession() {
 
         if (!userData && nickname && email) {
           // Create new user session
-          const response = await api.createUser(nickname, email);
+          const response = await api.createUser(
+            nickname,
+            email,
+          );
           if (response.success && response.data) {
             userData = response.data.user;
             setUserId(userData.id);
@@ -75,12 +78,19 @@ export function useDebateSession() {
 
   // Create or join room
   const createRoom = useCallback(
-    async (topic: string, mode: DebateMode = "host-controlled") => {
+    async (
+      topic: string,
+      mode: DebateMode = "host-controlled",
+    ) => {
       if (!user) return null;
 
       try {
         setError(null);
-        const response = await api.createRoom(topic, user.id, mode);
+        const response = await api.createRoom(
+          topic,
+          user.id,
+          mode,
+        );
         if (response.success && response.data) {
           const roomData = response.data.room;
           setRoom(roomData);
@@ -135,9 +145,7 @@ export function useDebateSession() {
     if (!room) return;
 
     try {
-      console.log(`Refreshing room: ${room.id}`);
       const response = await api.getRoomStatus(room.id);
-      console.log("Room refresh response:", response);
       if (response.success && response.data) {
         setRoom(response.data.room);
         setStatements(response.data.statements || []);
@@ -147,7 +155,9 @@ export function useDebateSession() {
       }
     } catch (err) {
       console.error("Failed to refresh room:", err);
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(
+        err instanceof Error ? err.message : "Unknown error",
+      );
     }
   }, [room]);
 
@@ -203,7 +213,10 @@ export function useDebateSession() {
 
   // Vote on statement
   const voteOnStatement = useCallback(
-    async (statementId: string, voteType: "agree" | "disagree" | "pass") => {
+    async (
+      statementId: string,
+      voteType: "agree" | "disagree" | "pass",
+    ) => {
       if (!user) return false;
 
       try {
