@@ -19,73 +19,52 @@ export function ShareButton({
 }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
+  const copyToClipboard = async (text: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success("Share link copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const handleShare = async () => {
     const shareableLink = createShareableLink(roomId);
-    
-    // Detect if we're on a desktop device (screen width >= 768px)
     const isDesktop = window.innerWidth >= 768;
     
-    // On desktop, always use clipboard first for better UX
     if (isDesktop) {
+      // Desktop: clipboard only, no fallbacks
       try {
-        await navigator.clipboard.writeText(shareableLink);
-        setCopied(true);
-        toast.success("Share link copied to clipboard!");
-        setTimeout(() => setCopied(false), 2000);
-        return;
-      } catch (clipboardError) {
-        console.error("Clipboard failed on desktop:", clipboardError);
-        // Fall through to other methods
+        await copyToClipboard(shareableLink);
+      } catch (error) {
+        console.error("Clipboard failed on desktop:", error);
+        toast.error("Could not copy link. Please manually copy the URL from your browser.");
       }
-    } else {
-      // On mobile, try Web Share API first
-      try {
-        if (navigator.share && navigator.canShare && navigator.canShare({
+      return;
+    }
+    
+    // Mobile: try Web Share API first, then clipboard
+    try {
+      if (navigator.share && navigator.canShare({
+        title: "Join my debate on HEARD!",
+        text: "Join this debate and share your thoughts!",
+        url: shareableLink,
+      })) {
+        await navigator.share({
           title: "Join my debate on HEARD!",
           text: "Join this debate and share your thoughts!",
           url: shareableLink,
-        })) {
-          await navigator.share({
-            title: "Join my debate on HEARD!",
-            text: "Join this debate and share your thoughts!",
-            url: shareableLink,
-          });
-          return;
-        }
-      } catch (shareError) {
-        console.log("Web Share API failed, using clipboard fallback");
+        });
+        return;
       }
+    } catch (shareError) {
+      console.log("Web Share API failed, using clipboard fallback");
     }
     
-    // Fallback to clipboard for both desktop and mobile
+    // Mobile clipboard fallback
     try {
-      await navigator.clipboard.writeText(shareableLink);
-      setCopied(true);
-      toast.success("Share link copied to clipboard!");
-      setTimeout(() => setCopied(false), 2000);
+      await copyToClipboard(shareableLink);
     } catch (clipboardError) {
-      console.error("Error copying to clipboard:", clipboardError);
-      
-      // Final fallback - create a temporary text area for older browsers
-      try {
-        const textArea = document.createElement("textarea");
-        textArea.value = shareableLink;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-999999px";
-        textArea.style.top = "-999999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        
-        setCopied(true);
-        toast.success("Share link copied to clipboard!");
-        setTimeout(() => setCopied(false), 2000);
-      } catch (finalError) {
-        console.error("All copy methods failed:", finalError);
-        toast.error("Could not copy link. Please manually copy the URL from your browser.");
-      }
+      console.error("Clipboard failed on mobile:", clipboardError);
+      toast.error("Could not copy link. Please manually copy the URL from your browser.");
     }
   };
 
