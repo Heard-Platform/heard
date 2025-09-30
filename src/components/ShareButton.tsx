@@ -22,31 +22,46 @@ export function ShareButton({
   const handleShare = async () => {
     const shareableLink = createShareableLink(roomId);
     
-    try {
-      // Try to use the Web Share API first (mobile-friendly)
-      if (navigator.share && navigator.canShare && navigator.canShare({
-        title: "Join my debate on HEARD!",
-        text: "Join this debate and share your thoughts!",
-        url: shareableLink,
-      })) {
-        await navigator.share({
+    // Detect if we're on a desktop device (screen width >= 768px)
+    const isDesktop = window.innerWidth >= 768;
+    
+    // On desktop, always use clipboard first for better UX
+    if (isDesktop) {
+      try {
+        await navigator.clipboard.writeText(shareableLink);
+        setCopied(true);
+        toast.success("Share link copied to clipboard!");
+        setTimeout(() => setCopied(false), 2000);
+        return;
+      } catch (clipboardError) {
+        console.error("Clipboard failed on desktop:", clipboardError);
+        // Fall through to other methods
+      }
+    } else {
+      // On mobile, try Web Share API first
+      try {
+        if (navigator.share && navigator.canShare && navigator.canShare({
           title: "Join my debate on HEARD!",
           text: "Join this debate and share your thoughts!",
           url: shareableLink,
-        });
-        return;
+        })) {
+          await navigator.share({
+            title: "Join my debate on HEARD!",
+            text: "Join this debate and share your thoughts!",
+            url: shareableLink,
+          });
+          return;
+        }
+      } catch (shareError) {
+        console.log("Web Share API failed, using clipboard fallback");
       }
-    } catch (shareError) {
-      // Web Share API failed, fall through to clipboard
-      console.log("Web Share API not available or failed, using clipboard fallback");
     }
     
-    // Fallback to clipboard (always try this if Web Share fails)
+    // Fallback to clipboard for both desktop and mobile
     try {
       await navigator.clipboard.writeText(shareableLink);
       setCopied(true);
       toast.success("Share link copied to clipboard!");
-      
       setTimeout(() => setCopied(false), 2000);
     } catch (clipboardError) {
       console.error("Error copying to clipboard:", clipboardError);
