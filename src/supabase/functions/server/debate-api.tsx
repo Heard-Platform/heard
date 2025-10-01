@@ -160,171 +160,212 @@ const sendPhaseChangeNotifications = async (
   room: DebateRoom,
   newPhase: Phase,
   newSubPhase?: SubPhase,
-  hostId?: string
+  hostId?: string,
 ) => {
   try {
-    console.log(`Preparing notifications for phase change: ${newPhase}${newSubPhase ? `:${newSubPhase}` : ''}`)
-    
+    console.log(
+      `Preparing notifications for phase change: ${newPhase}${newSubPhase ? `:${newSubPhase}` : ""}`,
+    );
+
     // Get all participants except the host
-    const participantIds = room.participants.filter(id => id !== hostId)
-    
+    const participantIds = room.participants.filter(
+      (id) => id !== hostId,
+    );
+
     if (participantIds.length === 0) {
-      console.log('No participants to notify (excluding host)')
-      return
+      console.log("No participants to notify (excluding host)");
+      return;
     }
-    
+
     // Get participant details
-    const participants = []
+    const participants = [];
     for (const participantId of participantIds) {
-      const user = await getUserSession(participantId)
+      const user = await getUserSession(participantId);
       if (user && user.email) {
-        participants.push(user)
+        participants.push(user);
       }
     }
-    
+
     if (participants.length === 0) {
-      console.log('No participants with email addresses found')
-      return
+      console.log("No participants with email addresses found");
+      return;
     }
-    
+
     // Generate notification content based on phase/subphase
-    const notification = getPhaseChangeNotificationContent(room, newPhase, newSubPhase)
-    
+    const notification = getPhaseChangeNotificationContent(
+      room,
+      newPhase,
+      newSubPhase,
+    );
+
     // Send emails to all participants
-    const emailPromises = participants.map(async (participant) => {
-      const success = await sendEmail({
-        to: participant.email,
-        subject: notification.subject,
-        html: getPhaseChangeEmailHtml(participant, room, notification),
-        text: getPhaseChangeEmailText(participant, room, notification),
-      })
-      
-      if (success) {
-        console.log(`Phase change notification sent to ${participant.email}`)
-      } else {
-        console.error(`Failed to send phase change notification to ${participant.email}`)
-      }
-      
-      return success
-    })
-    
-    const results = await Promise.allSettled(emailPromises)
-    const successful = results.filter(r => r.status === 'fulfilled' && r.value === true).length
-    console.log(`Sent ${successful}/${participants.length} phase change notifications`)
-    
+    const emailPromises = participants.map(
+      async (participant) => {
+        const success = await sendEmail({
+          to: participant.email,
+          subject: notification.subject,
+          html: getPhaseChangeEmailHtml(
+            participant,
+            room,
+            notification,
+          ),
+          text: getPhaseChangeEmailText(
+            participant,
+            room,
+            notification,
+          ),
+        });
+
+        if (success) {
+          console.log(
+            `Phase change notification sent to ${participant.email}`,
+          );
+        } else {
+          console.error(
+            `Failed to send phase change notification to ${participant.email}`,
+          );
+        }
+
+        return success;
+      },
+    );
+
+    const results = await Promise.allSettled(emailPromises);
+    const successful = results.filter(
+      (r) => r.status === "fulfilled" && r.value === true,
+    ).length;
+    console.log(
+      `Sent ${successful}/${participants.length} phase change notifications`,
+    );
   } catch (error) {
-    console.error('Error sending phase change notifications:', error)
+    console.error(
+      "Error sending phase change notifications:",
+      error,
+    );
   }
-}
+};
 
 // Generate notification content based on phase/subphase
 const getPhaseChangeNotificationContent = (
   room: DebateRoom,
   phase: Phase,
-  subPhase?: SubPhase
+  subPhase?: SubPhase,
 ) => {
   const phaseNames: Record<Phase, string> = {
-    lobby: 'Lobby',
-    round1: 'Round 1',
-    round2: 'Round 2', 
-    round3: 'Round 3',
-    results: 'Final Results'
-  }
-  
+    lobby: "Lobby",
+    round1: "Round 1",
+    round2: "Round 2",
+    round3: "Round 3",
+    results: "Final Results",
+  };
+
   const subPhaseNames: Record<SubPhase, string> = {
-    posting: 'Statement Posting',
-    voting: 'Voting',
-    review: 'Review'
-  }
-  
-  const phaseName = phaseNames[phase]
-  const subPhaseName = subPhase ? subPhaseNames[subPhase] : null
-  
+    posting: "Statement Posting",
+    voting: "Voting",
+    review: "Review",
+  };
+
+  const phaseName = phaseNames[phase];
+  const subPhaseName = subPhase
+    ? subPhaseNames[subPhase]
+    : null;
+
   // Generate appropriate notification based on phase/subphase
-  if (phase === 'round1' && subPhase === 'posting') {
+  if (phase === "round1" && subPhase === "posting") {
     return {
       subject: `🎯 Debate started: "${room.topic}"`,
-      title: 'The Debate Has Begun!',
-      message: 'Round 1 is now open for statement posting. Share your thoughts and arguments!',
-      action: 'Submit Your Statement',
-      phaseDescription: 'Time to make your opening arguments'
-    }
+      title: "The Debate Has Begun!",
+      message:
+        "Round 1 is now open for statement posting. Share your thoughts and arguments!",
+      action: "Submit Your Statement",
+      phaseDescription: "Time to make your opening arguments",
+    };
   }
-  
-  if (subPhase === 'voting') {
+
+  if (subPhase === "voting") {
     return {
       subject: `📊 Voting time in "${room.topic}"`,
       title: `${phaseName} Voting Phase`,
-      message: 'Statement submission is closed. Now it\'s time to vote on the contributions from this round!',
-      action: 'Cast Your Votes',
-      phaseDescription: 'Review statements and vote on the best arguments'
-    }
+      message:
+        "Statement submission is closed. Now it's time to vote on the contributions from this round!",
+      action: "Cast Your Votes",
+      phaseDescription:
+        "Review statements and vote on the best arguments",
+    };
   }
-  
-  if (subPhase === 'review') {
+
+  if (subPhase === "review") {
     return {
       subject: `📋 Review phase in "${room.topic}"`,
       title: `${phaseName} Review Phase`,
-      message: 'Check out the voting results and see how arguments performed in this round.',
-      action: 'View Results',
-      phaseDescription: 'See which arguments resonated most with participants'
-    }
+      message:
+        "Check out the voting results and see how arguments performed in this round.",
+      action: "View Results",
+      phaseDescription:
+        "See which arguments resonated most with participants",
+    };
   }
-  
-  if (phase === 'round2' && subPhase === 'posting') {
+
+  if (phase === "round2" && subPhase === "posting") {
     return {
       subject: `🔥 Round 2 started in "${room.topic}"`,
-      title: 'Round 2 is Here!',
-      message: 'Time for the next round of statements. Build on what you\'ve learned so far!',
-      action: 'Submit Round 2 Statement',
-      phaseDescription: 'Deepen the discussion with refined arguments'
-    }
+      title: "Round 2 is Here!",
+      message:
+        "Time for the next round of statements. Build on what you've learned so far!",
+      action: "Submit Round 2 Statement",
+      phaseDescription:
+        "Deepen the discussion with refined arguments",
+    };
   }
-  
-  if (phase === 'round3' && subPhase === 'posting') {
+
+  if (phase === "round3" && subPhase === "posting") {
     return {
       subject: `🎯 Final round in "${room.topic}"`,
-      title: 'Final Round - Round 3!',
-      message: 'This is your last chance to make your case. Make it count!',
-      action: 'Submit Final Statement', 
-      phaseDescription: 'Your final opportunity to influence the debate'
-    }
+      title: "Final Round - Round 3!",
+      message:
+        "This is your last chance to make your case. Make it count!",
+      action: "Submit Final Statement",
+      phaseDescription:
+        "Your final opportunity to influence the debate",
+    };
   }
-  
-  if (phase === 'results') {
+
+  if (phase === "results") {
     return {
       subject: `🏆 Results are in for "${room.topic}"`,
-      title: 'Debate Complete!',
-      message: 'The debate has concluded. Check out the final results and see how everyone performed!',
-      action: 'View Final Results',
-      phaseDescription: 'See the complete debate results and participant scores'
-    }
+      title: "Debate Complete!",
+      message:
+        "The debate has concluded. Check out the final results and see how everyone performed!",
+      action: "View Final Results",
+      phaseDescription:
+        "See the complete debate results and participant scores",
+    };
   }
-  
+
   // Fallback for other combinations
   return {
-    subject: `📢 ${phaseName}${subPhaseName ? ` - ${subPhaseName}` : ''} in "${room.topic}"`,
-    title: `${phaseName}${subPhaseName ? ` - ${subPhaseName}` : ''}`,
+    subject: `📢 ${phaseName}${subPhaseName ? ` - ${subPhaseName}` : ""} in "${room.topic}"`,
+    title: `${phaseName}${subPhaseName ? ` - ${subPhaseName}` : ""}`,
     message: `The debate has moved to a new phase. Join now to participate!`,
-    action: 'Join Debate',
-    phaseDescription: 'The debate continues with a new phase'
-  }
-}
+    action: "Join Debate",
+    phaseDescription: "The debate continues with a new phase",
+  };
+};
 
 // Generate HTML email for phase change notifications
 const getPhaseChangeEmailHtml = (
   participant: UserSession,
   room: DebateRoom,
   notification: {
-    subject: string
-    title: string
-    message: string
-    action: string
-    phaseDescription: string
-  }
+    subject: string;
+    title: string;
+    message: string;
+    action: string;
+    phaseDescription: string;
+  },
 ) => {
-  const roomLink = `${Deno.env.get('FRONTEND_URL') || 'https://app.heard-now.com'}/room/${room.id}`
-  
+  const roomLink = `${Deno.env.get("FRONTEND_URL") || "https://app.heard-now.com"}/room/${room.id}`;
+
   return `
     <!DOCTYPE html>
     <html>
@@ -376,23 +417,23 @@ const getPhaseChangeEmailHtml = (
         </div>
       </body>
     </html>
-  `
-}
+  `;
+};
 
-// Generate text email for phase change notifications  
+// Generate text email for phase change notifications
 const getPhaseChangeEmailText = (
   participant: UserSession,
   room: DebateRoom,
   notification: {
-    subject: string
-    title: string
-    message: string
-    action: string
-    phaseDescription: string
-  }
+    subject: string;
+    title: string;
+    message: string;
+    action: string;
+    phaseDescription: string;
+  },
 ) => {
-  const roomLink = `${Deno.env.get('FRONTEND_URL') || 'https://app.heard-now.com'}/room/${room.id}`
-  
+  const roomLink = `${Deno.env.get("FRONTEND_URL") || "https://app.heard-now.com"}/room/${room.id}`;
+
   return `
 HEARD - ${notification.title}
 
@@ -407,7 +448,7 @@ ${notification.phaseDescription}
 ${notification.action}: ${roomLink}
 
 Don't want to miss future updates? HEARD will notify you when each phase begins so you can stay engaged with the debate!
-  `.trim()
+  `.trim();
 };
 
 const getUserSession = async (
@@ -1202,8 +1243,15 @@ app.post(
 
       // Send email notifications for host-controlled rooms only
       if (room.mode === "host-controlled") {
-        console.log(`Sending phase change notifications for host-controlled room ${roomId}`)
-        await sendPhaseChangeNotifications(room, phase, subPhase, userId)
+        console.log(
+          `Sending phase change notifications for host-controlled room ${roomId}`,
+        );
+        await sendPhaseChangeNotifications(
+          room,
+          phase,
+          subPhase,
+          userId,
+        );
       }
 
       return c.json({ room });
