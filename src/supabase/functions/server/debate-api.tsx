@@ -1,3 +1,4 @@
+// @ts-ignore
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 
@@ -152,6 +153,261 @@ const sendWelcomeEmail = async (
     subject: "Welcome to HEARD! 🎯",
     html: welcomeHtml,
   });
+};
+
+// Send phase change notifications to room participants
+const sendPhaseChangeNotifications = async (
+  room: DebateRoom,
+  newPhase: Phase,
+  newSubPhase?: SubPhase,
+  hostId?: string
+) => {
+  try {
+    console.log(`Preparing notifications for phase change: ${newPhase}${newSubPhase ? `:${newSubPhase}` : ''}`)
+    
+    // Get all participants except the host
+    const participantIds = room.participants.filter(id => id !== hostId)
+    
+    if (participantIds.length === 0) {
+      console.log('No participants to notify (excluding host)')
+      return
+    }
+    
+    // Get participant details
+    const participants = []
+    for (const participantId of participantIds) {
+      const user = await getUserSession(participantId)
+      if (user && user.email) {
+        participants.push(user)
+      }
+    }
+    
+    if (participants.length === 0) {
+      console.log('No participants with email addresses found')
+      return
+    }
+    
+    // Generate notification content based on phase/subphase
+    const notification = getPhaseChangeNotificationContent(room, newPhase, newSubPhase)
+    
+    // Send emails to all participants
+    const emailPromises = participants.map(async (participant) => {
+      const success = await sendEmail({
+        to: participant.email,
+        subject: notification.subject,
+        html: getPhaseChangeEmailHtml(participant, room, notification),
+        text: getPhaseChangeEmailText(participant, room, notification),
+      })
+      
+      if (success) {
+        console.log(`Phase change notification sent to ${participant.email}`)
+      } else {
+        console.error(`Failed to send phase change notification to ${participant.email}`)
+      }
+      
+      return success
+    })
+    
+    const results = await Promise.allSettled(emailPromises)
+    const successful = results.filter(r => r.status === 'fulfilled' && r.value === true).length
+    console.log(`Sent ${successful}/${participants.length} phase change notifications`)
+    
+  } catch (error) {
+    console.error('Error sending phase change notifications:', error)
+  }
+}
+
+// Generate notification content based on phase/subphase
+const getPhaseChangeNotificationContent = (
+  room: DebateRoom,
+  phase: Phase,
+  subPhase?: SubPhase
+) => {
+  const phaseNames: Record<Phase, string> = {
+    lobby: 'Lobby',
+    round1: 'Round 1',
+    round2: 'Round 2', 
+    round3: 'Round 3',
+    results: 'Final Results'
+  }
+  
+  const subPhaseNames: Record<SubPhase, string> = {
+    posting: 'Statement Posting',
+    voting: 'Voting',
+    review: 'Review'
+  }
+  
+  const phaseName = phaseNames[phase]
+  const subPhaseName = subPhase ? subPhaseNames[subPhase] : null
+  
+  // Generate appropriate notification based on phase/subphase
+  if (phase === 'round1' && subPhase === 'posting') {
+    return {
+      subject: `🎯 Debate started: "${room.topic}"`,
+      title: 'The Debate Has Begun!',
+      message: 'Round 1 is now open for statement posting. Share your thoughts and arguments!',
+      action: 'Submit Your Statement',
+      phaseDescription: 'Time to make your opening arguments'
+    }
+  }
+  
+  if (subPhase === 'voting') {
+    return {
+      subject: `📊 Voting time in "${room.topic}"`,
+      title: `${phaseName} Voting Phase`,
+      message: 'Statement submission is closed. Now it\'s time to vote on the contributions from this round!',
+      action: 'Cast Your Votes',
+      phaseDescription: 'Review statements and vote on the best arguments'
+    }
+  }
+  
+  if (subPhase === 'review') {
+    return {
+      subject: `📋 Review phase in "${room.topic}"`,
+      title: `${phaseName} Review Phase`,
+      message: 'Check out the voting results and see how arguments performed in this round.',
+      action: 'View Results',
+      phaseDescription: 'See which arguments resonated most with participants'
+    }
+  }
+  
+  if (phase === 'round2' && subPhase === 'posting') {
+    return {
+      subject: `🔥 Round 2 started in "${room.topic}"`,
+      title: 'Round 2 is Here!',
+      message: 'Time for the next round of statements. Build on what you\'ve learned so far!',
+      action: 'Submit Round 2 Statement',
+      phaseDescription: 'Deepen the discussion with refined arguments'
+    }
+  }
+  
+  if (phase === 'round3' && subPhase === 'posting') {
+    return {
+      subject: `🎯 Final round in "${room.topic}"`,
+      title: 'Final Round - Round 3!',
+      message: 'This is your last chance to make your case. Make it count!',
+      action: 'Submit Final Statement', 
+      phaseDescription: 'Your final opportunity to influence the debate'
+    }
+  }
+  
+  if (phase === 'results') {
+    return {
+      subject: `🏆 Results are in for "${room.topic}"`,
+      title: 'Debate Complete!',
+      message: 'The debate has concluded. Check out the final results and see how everyone performed!',
+      action: 'View Final Results',
+      phaseDescription: 'See the complete debate results and participant scores'
+    }
+  }
+  
+  // Fallback for other combinations
+  return {
+    subject: `📢 ${phaseName}${subPhaseName ? ` - ${subPhaseName}` : ''} in "${room.topic}"`,
+    title: `${phaseName}${subPhaseName ? ` - ${subPhaseName}` : ''}`,
+    message: `The debate has moved to a new phase. Join now to participate!`,
+    action: 'Join Debate',
+    phaseDescription: 'The debate continues with a new phase'
+  }
+}
+
+// Generate HTML email for phase change notifications
+const getPhaseChangeEmailHtml = (
+  participant: UserSession,
+  room: DebateRoom,
+  notification: {
+    subject: string
+    title: string
+    message: string
+    action: string
+    phaseDescription: string
+  }
+) => {
+  const roomLink = `${Deno.env.get('FRONTEND_URL') || 'https://app.heard-now.com'}/room/${room.id}`
+  
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${notification.subject}</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 2.5rem; font-weight: bold;">HEARD</h1>
+          <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 1.1rem;">${notification.title}</p>
+        </div>
+        
+        <div style="background: white; padding: 30px; border: 1px solid #e1e5e9; border-radius: 0 0 10px 10px;">
+          <h2 style="color: #667eea; margin-top: 0;">Hey ${participant.nickname}! 👋</h2>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
+            <p style="margin: 0; font-size: 1.1rem; font-weight: 500;">"${room.topic}"</p>
+          </div>
+          
+          <p style="font-size: 1.1rem; margin: 20px 0;">${notification.message}</p>
+          
+          <div style="background: #e8f2ff; padding: 15px; border-radius: 6px; margin: 20px 0;">
+            <p style="margin: 0; color: #0066cc; font-weight: 500;">📍 ${notification.phaseDescription}</p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${roomLink}" 
+               style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                      color: white; 
+                      text-decoration: none; 
+                      padding: 15px 30px; 
+                      border-radius: 25px; 
+                      font-weight: bold; 
+                      font-size: 1.1rem;
+                      display: inline-block;
+                      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+              ${notification.action}
+            </a>
+          </div>
+          
+          <div style="border-top: 1px solid #e9ecef; padding-top: 20px; margin-top: 30px; color: #6c757d; font-size: 0.9rem;">
+            <p style="margin: 10px 0;">Don't want to miss future updates? HEARD will notify you when each phase begins so you can stay engaged with the debate!</p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 20px; color: #adb5bd; font-size: 0.8rem;">
+            <p>Can't click the button? Copy and paste this link: ${roomLink}</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `
+}
+
+// Generate text email for phase change notifications  
+const getPhaseChangeEmailText = (
+  participant: UserSession,
+  room: DebateRoom,
+  notification: {
+    subject: string
+    title: string
+    message: string
+    action: string
+    phaseDescription: string
+  }
+) => {
+  const roomLink = `${Deno.env.get('FRONTEND_URL') || 'https://app.heard-now.com'}/room/${room.id}`
+  
+  return `
+HEARD - ${notification.title}
+
+Hey ${participant.nickname}!
+
+"${room.topic}"
+
+${notification.message}
+
+${notification.phaseDescription}
+
+${notification.action}: ${roomLink}
+
+Don't want to miss future updates? HEARD will notify you when each phase begins so you can stay engaged with the debate!
+  `.trim()
 };
 
 const getUserSession = async (
@@ -944,6 +1200,12 @@ app.post(
 
       await saveDebateRoom(room);
 
+      // Send email notifications for host-controlled rooms only
+      if (room.mode === "host-controlled") {
+        console.log(`Sending phase change notifications for host-controlled room ${roomId}`)
+        await sendPhaseChangeNotifications(room, phase, subPhase, userId)
+      }
+
       return c.json({ room });
     } catch (error) {
       console.error("Error updating room phase:", error);
@@ -1019,7 +1281,7 @@ app.post(
       }
 
       const origin =
-        c.req.header("origin") || "https://heard-debate.com";
+        c.req.header("origin") || "https://app.heard-now.com";
       const inviteLink = `${origin}/room/${roomId}`;
 
       // Create the email content
