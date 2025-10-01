@@ -119,6 +119,14 @@ class ApiClient {
     });
   }
 
+  // Invite management
+  async sendInvites(roomId: string, emails: string[], customMessage?: string) {
+    return this.request(`/room/${roomId}/invite`, {
+      method: "POST",
+      body: JSON.stringify({ emails, customMessage }),
+    });
+  }
+
   // Development helpers
   async createSeedData(userId: string) {
     return this.request("/seed/create", {

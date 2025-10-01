@@ -5,6 +5,7 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Users, Clock, RefreshCw, LogIn, Timer, User } from "lucide-react";
 import { ShareButton } from "./ShareButton";
+import { InviteButton } from "./InviteButton";
 import type { DebateRoom } from "../types";
 
 interface ActiveRoomsListProps {
@@ -192,6 +193,12 @@ export function ActiveRoomsList({
                   <div className="flex items-center gap-2 pt-1">
                     <ShareButton 
                       roomId={room.id} 
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                    />
+                    <InviteButton
+                      roomId={room.id}
+                      roomTopic={room.topic}
                       size="sm"
                       className="flex-1 h-8 text-xs"
                     />

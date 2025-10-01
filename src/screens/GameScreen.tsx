@@ -12,6 +12,7 @@ import { RealTimeResults } from "../components/RealTimeResults";
 import { FinalResults } from "../components/FinalResults";
 import { Users, X, Zap, SkipForward } from "lucide-react";
 import { ShareButton } from "../components/ShareButton";
+import { InviteButton } from "../components/InviteButton";
 import type {
   UserSession,
   DebateRoom,
@@ -139,6 +140,7 @@ export function GameScreen({
             </div>
             <div className="flex items-center gap-2">
               <ShareButton roomId={room.id} />
+              <InviteButton roomId={room.id} roomTopic={room.topic} />
               <Button
                 onClick={onLeaveRoom}
                 variant="outline"

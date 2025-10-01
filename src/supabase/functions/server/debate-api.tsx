@@ -64,69 +64,94 @@ const generateId = () =>
   Math.random().toString(36).substring(2) +
   Date.now().toString(36);
 
-// Email sending function
-const sendWelcomeEmail = async (email: string, nickname: string) => {
+// Reusable email sending function
+const sendEmail = async (params: {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
+}) => {
   try {
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+
     if (!resendApiKey) {
-      console.error('RESEND_API_KEY not found in environment');
+      console.error("RESEND_API_KEY not found in environment");
       return false;
     }
 
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      "https://api.resend.com/emails",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Heard <hello@heard-now.com>",
+          to: [params.to],
+          subject: params.subject,
+          html: params.html,
+          ...(params.text && { text: params.text }),
+        }),
       },
-      body: JSON.stringify({
-        from: 'Heard <hello@resend.dev>',
-        to: [email],
-        subject: 'Welcome to HEARD! 🎯',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #8B5CF6; margin-bottom: 10px;">Welcome to HEARD!</h1>
-              <p style="color: #666; font-size: 18px;">Ready to argue and save democracy? 🚀</p>
-            </div>
-            
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
-              <h2 style="margin: 0 0 15px 0;">Hey ${nickname}! 👋</h2>
-              <p style="margin: 0; line-height: 1.6;">You're all set to jump into fast-paced debates that make arguing fun and educational. Get ready to earn points, build bridges, and maybe change some minds!</p>
-            </div>
-            
-            <div style="margin-bottom: 25px;">
-              <h3 style="color: #333; margin-bottom: 15px;">What's Next?</h3>
-              <ul style="list-style: none; padding: 0;">
-                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🎯 <strong>Join a debate</strong> - Jump into active rooms or create your own</li>
-                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">💬 <strong>Share statements</strong> - Earn points for posting thoughtful arguments</li>
-                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🔥 <strong>Get spicy</strong> - Add 🌶️ to controversial takes for bonus points</li>
-                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🤝 <strong>Build bridges</strong> - Find common ground and level up your score</li>
-              </ul>
-            </div>
-            
-            <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-              <p style="margin: 0; color: #666;">Happy debating!</p>
-              <p style="margin: 5px 0 0 0; color: #8B5CF6; font-weight: bold;">The HEARD Team</p>
-            </div>
-          </div>
-        `,
-      }),
-    });
+    );
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('Failed to send welcome email:', response.status, errorData);
+      const errorText = await response.text();
+      console.error(
+        `Failed to send email to ${params.to}:`,
+        errorText,
+      );
       return false;
     }
 
-    console.log('Welcome email sent successfully to:', email);
     return true;
   } catch (error) {
-    console.error('Error sending welcome email:', error);
+    console.error("Error sending email:", error);
     return false;
   }
+};
+
+// Welcome email using reusable function
+const sendWelcomeEmail = async (
+  email: string,
+  nickname: string,
+) => {
+  const welcomeHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #8B5CF6; margin-bottom: 10px;">Welcome to HEARD!</h1>
+        <p style="color: #666; font-size: 18px;">Ready to argue and save democracy? 🚀</p>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
+        <h2 style="margin: 0 0 15px 0;">Hey ${nickname}! 👋</h2>
+        <p style="margin: 0; line-height: 1.6;">You're all set to jump into fast-paced debates that make arguing fun and educational. Get ready to earn points, build bridges, and maybe change some minds!</p>
+      </div>
+      
+      <div style="margin-bottom: 25px;">
+        <h3 style="color: #333; margin-bottom: 15px;">What's Next?</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🎯 <strong>Join a debate</strong> - Jump into active rooms or create your own</li>
+          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">💬 <strong>Share statements</strong> - Earn points for posting thoughtful arguments</li>
+          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🔥 <strong>Get spicy</strong> - Add 🌶️ to controversial takes for bonus points</li>
+          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🤝 <strong>Build bridges</strong> - Find common ground and level up your score</li>
+        </ul>
+      </div>
+      
+      <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+        <p style="margin: 0; color: #666;">Happy debating!</p>
+        <p style="margin: 5px 0 0 0; color: #8B5CF6; font-weight: bold;">The HEARD Team</p>
+      </div>
+    </div>
+  `;
+
+  return await sendEmail({
+    to: email,
+    subject: "Welcome to HEARD! 🎯",
+    html: welcomeHtml,
+  });
 };
 
 const getUserSession = async (
@@ -137,7 +162,10 @@ const getUserSession = async (
     if (!session) return null;
     return JSON.parse(session);
   } catch (error) {
-    console.error(`Error parsing user session for ${userId}:`, error);
+    console.error(
+      `Error parsing user session for ${userId}:`,
+      error,
+    );
     return null;
   }
 };
@@ -148,15 +176,22 @@ const saveUserSession = async (session: UserSession) => {
   await kv.set(`user_email:${session.email}`, session.id);
 };
 
-const getUserByEmail = async (email: string): Promise<UserSession | null> => {
+const getUserByEmail = async (
+  email: string,
+): Promise<UserSession | null> => {
   try {
     const normalizedEmail = email.trim().toLowerCase();
-    const userId = await kv.get(`user_email:${normalizedEmail}`);
+    const userId = await kv.get(
+      `user_email:${normalizedEmail}`,
+    );
     if (!userId) return null;
-    
+
     return await getUserSession(userId);
   } catch (error) {
-    console.error(`Error fetching user by email ${email}:`, error);
+    console.error(
+      `Error fetching user by email ${email}:`,
+      error,
+    );
     return null;
   }
 };
@@ -174,7 +209,10 @@ const getDebateRoom = async (
     }
     return parsedRoom;
   } catch (error) {
-    console.error(`Error parsing room data for ${roomId}:`, error);
+    console.error(
+      `Error parsing room data for ${roomId}:`,
+      error,
+    );
     return null;
   }
 };
@@ -200,11 +238,16 @@ const saveVote = async (vote: Vote) => {
   );
 };
 
-const deleteVote = async (statementId: string, userId: string) => {
+const deleteVote = async (
+  statementId: string,
+  userId: string,
+) => {
   await kv.del(`vote:${statementId}:${userId}`);
 };
 
-const getVotesForStatement = async (statementId: string): Promise<Vote[]> => {
+const getVotesForStatement = async (
+  statementId: string,
+): Promise<Vote[]> => {
   try {
     const votes = await kv.getByPrefix(`vote:${statementId}:`);
     return votes
@@ -212,29 +255,34 @@ const getVotesForStatement = async (statementId: string): Promise<Vote[]> => {
         try {
           return JSON.parse(v);
         } catch (error) {
-          console.error('Error parsing vote:', v, error);
+          console.error("Error parsing vote:", v, error);
           return null;
         }
       })
       .filter((v) => v !== null);
   } catch (error) {
-    console.error(`Error fetching votes for statement ${statementId}:`, error);
+    console.error(
+      `Error fetching votes for statement ${statementId}:`,
+      error,
+    );
     return [];
   }
 };
 
-const getVotesForStatements = async (statementIds: string[]): Promise<{ [statementId: string]: Vote[] }> => {
+const getVotesForStatements = async (
+  statementIds: string[],
+): Promise<{ [statementId: string]: Vote[] }> => {
   const allVotes: { [statementId: string]: Vote[] } = {};
-  
+
   // Initialize empty arrays for all statements
   for (const id of statementIds) {
     allVotes[id] = [];
   }
-  
+
   try {
     // Get all votes at once using prefix search
     const votes = await kv.getByPrefix("vote:");
-    
+
     for (const voteData of votes) {
       try {
         const vote: Vote = JSON.parse(voteData);
@@ -242,22 +290,35 @@ const getVotesForStatements = async (statementIds: string[]): Promise<{ [stateme
           allVotes[vote.statementId].push(vote);
         }
       } catch (error) {
-        console.error('Error parsing vote during bulk fetch:', voteData, error);
+        console.error(
+          "Error parsing vote during bulk fetch:",
+          voteData,
+          error,
+        );
       }
     }
   } catch (error) {
-    console.error('Error fetching bulk votes:', error);
+    console.error("Error fetching bulk votes:", error);
   }
-  
+
   return allVotes;
 };
 
-const calculateVoteStats = (votes: Vote[]): { agrees: number; disagrees: number; passes: number; voters: { [userId: string]: "agree" | "disagree" | "pass" } } => {
-  const voters: { [userId: string]: "agree" | "disagree" | "pass" } = {};
+const calculateVoteStats = (
+  votes: Vote[],
+): {
+  agrees: number;
+  disagrees: number;
+  passes: number;
+  voters: { [userId: string]: "agree" | "disagree" | "pass" };
+} => {
+  const voters: {
+    [userId: string]: "agree" | "disagree" | "pass";
+  } = {};
   let agreeCount = 0;
   let disagreeCount = 0;
   let passCount = 0;
-  
+
   for (const vote of votes) {
     voters[vote.userId] = vote.voteType;
     if (vote.voteType === "agree") {
@@ -268,7 +329,7 @@ const calculateVoteStats = (votes: Vote[]): { agrees: number; disagrees: number;
       passCount++;
     }
   }
-  
+
   return {
     agrees: agreeCount,
     disagrees: disagreeCount,
@@ -289,35 +350,42 @@ const getStatements = async (
         try {
           return JSON.parse(s);
         } catch (error) {
-          console.error('Error parsing statement:', s, error);
+          console.error("Error parsing statement:", s, error);
           return null;
         }
       })
       .filter((s) => s !== null);
 
     // Get all statement IDs
-    const statementIds = parsedStatements.map(s => s.id);
-    
+    const statementIds = parsedStatements.map((s) => s.id);
+
     // Fetch votes for all statements at once
     const allVotes = await getVotesForStatements(statementIds);
-    
-    // Update each statement with calculated vote data
-    const statementsWithVotes = parsedStatements.map(statement => {
-      const votes = allVotes[statement.id] || [];
-      const voteStats = calculateVoteStats(votes);
-      
-      return {
-        ...statement,
-        agrees: voteStats.agrees,
-        disagrees: voteStats.disagrees,
-        passes: voteStats.passes,
-        voters: voteStats.voters,
-      };
-    });
 
-    return statementsWithVotes.sort((a, b) => b.timestamp - a.timestamp);
+    // Update each statement with calculated vote data
+    const statementsWithVotes = parsedStatements.map(
+      (statement) => {
+        const votes = allVotes[statement.id] || [];
+        const voteStats = calculateVoteStats(votes);
+
+        return {
+          ...statement,
+          agrees: voteStats.agrees,
+          disagrees: voteStats.disagrees,
+          passes: voteStats.passes,
+          voters: voteStats.voters,
+        };
+      },
+    );
+
+    return statementsWithVotes.sort(
+      (a, b) => b.timestamp - a.timestamp,
+    );
   } catch (error) {
-    console.error(`Error fetching statements for room ${roomId}:`, error);
+    console.error(
+      `Error fetching statements for room ${roomId}:`,
+      error,
+    );
     return [];
   }
 };
@@ -353,25 +421,29 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    
+
     // Check if user already exists with this email
     const existingUser = await getUserByEmail(normalizedEmail);
-    
+
     if (existingUser) {
-      console.log(`Existing user found for email ${normalizedEmail}, logging them back in`);
-      
+      console.log(
+        `Existing user found for email ${normalizedEmail}, logging them back in`,
+      );
+
       // Update their last active time and return existing user
       existingUser.lastActive = Date.now();
       await saveUserSession(existingUser);
-      
-      return c.json({ 
+
+      return c.json({
         user: existingUser,
-        isReturningUser: true 
+        isReturningUser: true,
       });
     }
 
     // Create new user if email doesn't exist
-    console.log(`Creating new user for email ${normalizedEmail}`);
+    console.log(
+      `Creating new user for email ${normalizedEmail}`,
+    );
     const userId = generateId();
     const userSession: UserSession = {
       id: userId,
@@ -383,15 +455,22 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
     };
 
     await saveUserSession(userSession);
-    
+
     // Send welcome email only for new users (don't block user creation if email fails)
-    sendWelcomeEmail(userSession.email, userSession.nickname).catch(error => {
-      console.error('Welcome email failed for user:', userId, error);
+    sendWelcomeEmail(
+      userSession.email,
+      userSession.nickname,
+    ).catch((error) => {
+      console.error(
+        "Welcome email failed for user:",
+        userId,
+        error,
+      );
     });
 
-    return c.json({ 
+    return c.json({
       user: userSession,
-      isReturningUser: false 
+      isReturningUser: false,
     });
   } catch (error) {
     console.error("Error creating user session:", error);
@@ -429,7 +508,11 @@ app.get("/make-server-f1a393b4/user/:userId", async (c) => {
 // Create debate room
 app.post("/make-server-f1a393b4/room/create", async (c) => {
   try {
-    const { topic, userId, mode = "host-controlled" } = await c.req.json();
+    const {
+      topic,
+      userId,
+      mode = "host-controlled",
+    } = await c.req.json();
 
     if (!topic || topic.length < 10) {
       return c.json(
@@ -524,7 +607,7 @@ app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
   try {
     const roomId = c.req.param("roomId");
     console.log(`Fetching room status for: ${roomId}`);
-    
+
     if (!roomId) {
       console.error("No roomId provided");
       return c.json({ error: "Room ID is required" }, 400);
@@ -539,7 +622,9 @@ app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
     }
 
     const statements = await getStatements(roomId);
-    console.log(`Found ${statements.length} statements for room ${roomId}`);
+    console.log(
+      `Found ${statements.length} statements for room ${roomId}`,
+    );
 
     return c.json({
       room,
@@ -551,9 +636,9 @@ app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
     console.error("Error details:", error.message);
     console.error("Error stack:", error.stack);
     return c.json(
-      { 
+      {
         error: "Failed to fetch room status",
-        details: error.message 
+        details: error.message,
       },
       500,
     );
@@ -595,10 +680,14 @@ app.post(
       // Convert phase to round number
       const getRoundNumber = (phase: Phase): number => {
         switch (phase) {
-          case "round1": return 1;
-          case "round2": return 2;
-          case "round3": return 3;
-          default: return 1; // Fallback to round 1
+          case "round1":
+            return 1;
+          case "round2":
+            return 2;
+          case "round3":
+            return 3;
+          default:
+            return 1; // Fallback to round 1
         }
       };
 
@@ -673,7 +762,11 @@ app.post(
           const parsed = JSON.parse(s);
           return parsed.id === statementId;
         } catch (error) {
-          console.error('Error parsing statement during vote search:', s, error);
+          console.error(
+            "Error parsing statement during vote search:",
+            s,
+            error,
+          );
           return false;
         }
       });
@@ -683,19 +776,29 @@ app.post(
       }
 
       const statement: Statement = JSON.parse(statementData);
-      console.log(`Voting on statement ${statementId} by user ${userId} with vote ${voteType}`);
+      console.log(
+        `Voting on statement ${statementId} by user ${userId} with vote ${voteType}`,
+      );
 
       // Get current vote if it exists
-      const currentVotes = await getVotesForStatement(statementId);
-      const currentVote = currentVotes.find(v => v.userId === userId);
+      const currentVotes =
+        await getVotesForStatement(statementId);
+      const currentVote = currentVotes.find(
+        (v) => v.userId === userId,
+      );
       let pointsEarned = 0;
 
       if (currentVote?.voteType === voteType) {
         // Same vote type - undo vote (delete the vote record)
         await deleteVote(statementId, userId);
-        console.log(`Removed vote for user ${userId} on statement ${statementId}`);
+        console.log(
+          `Removed vote for user ${userId} on statement ${statementId}`,
+        );
         // No points change for undoing
-      } else if (currentVote && currentVote.voteType !== voteType) {
+      } else if (
+        currentVote &&
+        currentVote.voteType !== voteType
+      ) {
         // Different vote type - update existing vote
         const updatedVote: Vote = {
           ...currentVote,
@@ -703,8 +806,10 @@ app.post(
           timestamp: Date.now(),
         };
         await saveVote(updatedVote);
-        console.log(`Updated vote for user ${userId} on statement ${statementId} to ${voteType}`);
-        
+        console.log(
+          `Updated vote for user ${userId} on statement ${statementId} to ${voteType}`,
+        );
+
         if (voteType === "agree") {
           pointsEarned = 10; // Award points for agreeing
         }
@@ -718,17 +823,20 @@ app.post(
           timestamp: Date.now(),
         };
         await saveVote(newVote);
-        console.log(`Created new vote for user ${userId} on statement ${statementId}: ${voteType}`);
-        
+        console.log(
+          `Created new vote for user ${userId} on statement ${statementId}: ${voteType}`,
+        );
+
         if (voteType === "agree") {
           pointsEarned = 10; // Award points for agreeing
         }
       }
 
       // Get updated vote data to return
-      const updatedVotes = await getVotesForStatement(statementId);
+      const updatedVotes =
+        await getVotesForStatement(statementId);
       const voteStats = calculateVoteStats(updatedVotes);
-      
+
       // Update statement with calculated vote data (but don't save it - votes are separate)
       const updatedStatement = {
         ...statement,
@@ -738,7 +846,9 @@ app.post(
         voters: voteStats.voters,
       };
 
-      console.log(`Final vote count for statement ${statementId}: ${voteStats.agrees} agree, ${voteStats.disagrees} disagree, ${voteStats.passes} pass (${updatedVotes.length} total votes)`);
+      console.log(
+        `Final vote count for statement ${statementId}: ${voteStats.agrees} agree, ${voteStats.disagrees} disagree, ${voteStats.passes} pass (${updatedVotes.length} total votes)`,
+      );
 
       // Update user points
       if (pointsEarned > 0) {
@@ -768,12 +878,14 @@ app.post(
     try {
       const roomId = c.req.param("roomId");
       const { phase, subPhase, userId } = await c.req.json();
-      console.log(`Phase update request: roomId=${roomId}, phase=${phase}, subPhase=${subPhase}, userId=${userId}`);
+      console.log(
+        `Phase update request: roomId=${roomId}, phase=${phase}, subPhase=${subPhase}, userId=${userId}`,
+      );
 
       const validPhases = [
         "lobby",
         "round1",
-        "round2", 
+        "round2",
         "round3",
         "results",
       ];
@@ -784,8 +896,16 @@ app.post(
       ];
 
       if (!validPhases.includes(phase)) {
-        console.log(`Invalid phase received: ${phase}. Valid phases:`, validPhases);
-        return c.json({ error: `Invalid phase: ${phase}. Valid phases: ${validPhases.join(", ")}` }, 400);
+        console.log(
+          `Invalid phase received: ${phase}. Valid phases:`,
+          validPhases,
+        );
+        return c.json(
+          {
+            error: `Invalid phase: ${phase}. Valid phases: ${validPhases.join(", ")}`,
+          },
+          400,
+        );
       }
 
       if (subPhase && !validSubPhases.includes(subPhase)) {
@@ -804,7 +924,13 @@ app.post(
 
       // Only the host can change phases
       if (room.hostId !== userId) {
-        return c.json({ error: "Only the room host can control the debate phases" }, 403);
+        return c.json(
+          {
+            error:
+              "Only the room host can control the debate phases",
+          },
+          403,
+        );
       }
 
       room.phase = phase as Phase;
@@ -838,7 +964,7 @@ app.get("/make-server-f1a393b4/rooms/active", async (c) => {
         try {
           return JSON.parse(r);
         } catch (error) {
-          console.error('Error parsing active room:', r, error);
+          console.error("Error parsing active room:", r, error);
           return null;
         }
       })
@@ -853,6 +979,191 @@ app.get("/make-server-f1a393b4/rooms/active", async (c) => {
     );
   }
 });
+
+// Send email invites to join a room
+app.post(
+  "/make-server-f1a393b4/room/:roomId/invite",
+  async (c) => {
+    try {
+      const { emails, customMessage } = await c.req.json();
+      const roomId = c.req.param("roomId");
+
+      if (
+        !emails ||
+        !Array.isArray(emails) ||
+        emails.length === 0
+      ) {
+        return c.json(
+          { error: "Valid email array is required" },
+          400,
+        );
+      }
+
+      // Get room details
+      const room = await getDebateRoom(roomId);
+      if (!room) {
+        return c.json({ error: "Room not found" }, 404);
+      }
+
+      if (!room.isActive) {
+        return c.json({ error: "Room is not active" }, 400);
+      }
+
+      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+      if (!RESEND_API_KEY) {
+        console.error("RESEND_API_KEY not configured");
+        return c.json(
+          { error: "Email service not configured" },
+          500,
+        );
+      }
+
+      const origin =
+        c.req.header("origin") || "https://heard-debate.com";
+      const inviteLink = `${origin}/room/${roomId}`;
+
+      // Create the email content
+      const getEmailHtml = (email: string) => `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Join a debate on HEARD!</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 2.5rem; font-weight: bold;">HEARD</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 1.1rem;">You're invited to a debate!</p>
+          </div>
+          
+          <div style="background: white; padding: 30px; border: 1px solid #e1e5e9; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #667eea; margin-top: 0;">Join this debate:</h2>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
+              <p style="margin: 0; font-size: 1.1rem; font-weight: 500;">"${room.topic}"</p>
+            </div>
+            
+            ${
+              customMessage
+                ? `
+              <div style="margin: 20px 0;">
+                <h3 style="color: #495057; font-size: 1rem; margin-bottom: 10px;">Personal message:</h3>
+                <p style="font-style: italic; color: #6c757d; background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 0;">"${customMessage}"</p>
+              </div>
+            `
+                : ""
+            }
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${inviteLink}" 
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                        color: white; 
+                        text-decoration: none; 
+                        padding: 15px 30px; 
+                        border-radius: 25px; 
+                        font-weight: bold; 
+                        font-size: 1.1rem;
+                        display: inline-block;
+                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                🎯 Join the Debate
+              </a>
+            </div>
+            
+            <div style="border-top: 1px solid #e9ecef; padding-top: 20px; margin-top: 30px; color: #6c757d; font-size: 0.9rem;">
+              <h3 style="color: #495057; font-size: 1rem;">What is HEARD?</h3>
+              <p style="margin: 10px 0;">HEARD is a gamified debate app that makes arguing fun and educational. You'll:</p>
+              <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Submit statements on the debate topic</li>
+                <li>Vote on other players' contributions</li>
+                <li>Find bridges between different views</li>
+                <li>Earn points and build streaks!</li>
+              </ul>
+              <p style="margin: 10px 0;">No account needed - just click the link above to get started!</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px; color: #adb5bd; font-size: 0.8rem;">
+              <p>Can't click the button? Copy and paste this link: ${inviteLink}</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+      const getEmailText = (email: string) => `
+You're invited to join a debate on HEARD!
+
+Topic: "${room.topic}"
+
+${customMessage ? `Personal message: "${customMessage}"` : ""}
+
+Join the debate: ${inviteLink}
+
+What is HEARD?
+HEARD is a gamified debate app that makes arguing fun and educational. You'll submit statements, vote on contributions, find bridges between views, and earn points!
+
+No account needed - just click the link to get started!
+    `;
+
+      // Send emails using reusable function
+      const emailPromises = emails.map(
+        async (email: string) => {
+          const success = await sendEmail({
+            to: email,
+            subject: `🎯 You're invited to debate: "${room.topic}"`,
+            html: getEmailHtml(email),
+            text: getEmailText(email),
+          });
+
+          if (!success) {
+            throw new Error(`Failed to send email to ${email}`);
+          }
+
+          return { email, success: true };
+        },
+      );
+
+      // Wait for all emails to be sent
+      const results = await Promise.allSettled(emailPromises);
+
+      const successful = results.filter(
+        (result) => result.status === "fulfilled",
+      ).length;
+      const failed = results.filter(
+        (result) => result.status === "rejected",
+      ).length;
+
+      if (failed > 0) {
+        console.error(
+          `Failed to send ${failed} out of ${emails.length} emails`,
+        );
+
+        // If some succeeded and some failed, return partial success
+        if (successful > 0) {
+          return c.json({
+            success: true,
+            message: `Sent ${successful} invites successfully, ${failed} failed`,
+            successful,
+            failed,
+          });
+        } else {
+          // All failed
+          return c.json(
+            { error: "Failed to send any invites" },
+            500,
+          );
+        }
+      }
+
+      return c.json({
+        success: true,
+        message: `Successfully sent invites to ${emails.length} email${emails.length === 1 ? "" : "s"}`,
+        count: emails.length,
+      });
+    } catch (error) {
+      console.error("Error in send invites:", error);
+      return c.json({ error: "Internal server error" }, 500);
+    }
+  },
+);
 
 // Create seed data for testing
 app.post("/make-server-f1a393b4/seed/create", async (c) => {
@@ -962,8 +1273,14 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           voters: {}, // Will be calculated
         },
         voteData: [
-          { userId: "test_user_1", voteType: "disagree" as const },
-          { userId: "test_user_3", voteType: "disagree" as const },
+          {
+            userId: "test_user_1",
+            voteType: "disagree" as const,
+          },
+          {
+            userId: "test_user_3",
+            voteType: "disagree" as const,
+          },
         ],
       },
       {
@@ -1062,7 +1379,10 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
         },
         voteData: [
           { userId: "test_user_1", voteType: "agree" as const },
-          { userId: "test_user_3", voteType: "disagree" as const },
+          {
+            userId: "test_user_3",
+            voteType: "disagree" as const,
+          },
           { userId, voteType: "pass" as const },
         ],
       },
@@ -1091,7 +1411,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
     // Save all statements and their votes
     for (const { statement, voteData } of statementData) {
       await saveStatement(statement);
-      
+
       // Create vote records for this statement
       for (const { userId: voterId, voteType } of voteData) {
         const vote: Vote = {
@@ -1099,7 +1419,8 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
           statementId: statement.id,
           userId: voterId,
           voteType,
-          timestamp: statement.timestamp + Math.random() * 10000, // Slightly randomize vote times
+          timestamp:
+            statement.timestamp + Math.random() * 10000, // Slightly randomize vote times
         };
         await saveVote(vote);
       }
