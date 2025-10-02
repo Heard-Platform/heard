@@ -15,12 +15,14 @@ import type {
   Statement,
   Achievement,
   DebateMode,
+  Rant,
 } from "../types";
 
 export function useDebateSession() {
   const [user, setUser] = useState<UserSession | null>(null);
   const [room, setRoom] = useState<DebateRoom | null>(null);
   const [statements, setStatements] = useState<Statement[]>([]);
+  const [rants, setRants] = useState<Rant[]>([]);
   const [activeRooms, setActiveRooms] = useState<DebateRoom[]>(
     [],
   );
@@ -88,6 +90,7 @@ export function useDebateSession() {
     async (
       topic: string,
       mode: DebateMode = "host-controlled",
+      rantFirst?: boolean,
     ) => {
       if (!user) return null;
 
@@ -97,6 +100,7 @@ export function useDebateSession() {
           topic,
           user.id,
           mode,
+          rantFirst,
         );
         if (response.success && response.data) {
           const roomData = response.data.room;
@@ -156,6 +160,7 @@ export function useDebateSession() {
       if (response.success && response.data) {
         setRoom(response.data.room);
         setStatements(response.data.statements || []);
+        setRants(response.data.rants || []);
       } else {
         console.error("Room refresh failed:", response.error);
         setError(response.error || "Failed to refresh room");
@@ -276,6 +281,38 @@ export function useDebateSession() {
       return false;
     },
     [user],
+  );
+
+  // Submit rant
+  const submitRant = useCallback(
+    async (text: string) => {
+      if (!user || !room) return false;
+
+      try {
+        setError(null);
+        const response = await api.submitRant(
+          room.id,
+          text,
+          user.id,
+        );
+        if (response.success && response.data) {
+          // Refresh room to get updated rants
+          await refreshRoom();
+          return true;
+        } else {
+          throw new Error(
+            response.error || "Failed to submit rant",
+          );
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error("Failed to submit rant:", errorMsg);
+      }
+      return false;
+    },
+    [user, room, refreshRoom],
   );
 
   // Update room phase
@@ -621,6 +658,7 @@ export function useDebateSession() {
     user,
     room,
     statements,
+    rants,
     activeRooms,
     loading,
     error,
@@ -631,6 +669,7 @@ export function useDebateSession() {
     joinRoom,
     getActiveRooms,
     submitStatement,
+    submitRant,
     voteOnStatement,
     updateRoomPhase,
     refreshRoom,

@@ -7,7 +7,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
 import { ActiveRoomsList } from "../components/ActiveRoomsList";
-import { Plus, Database, Clock, User, LogOut } from "lucide-react";
+import { Plus, Database, Clock, User, LogOut, Brain } from "lucide-react";
 import type { UserSession, DebateRoom, DebateMode } from "../types";
 
 interface LobbyScreenProps {
@@ -15,7 +15,7 @@ interface LobbyScreenProps {
   activeRooms: DebateRoom[];
   loading: boolean;
   error: string | null;
-  onCreateRoom: (topic: string, mode: DebateMode) => Promise<void>;
+  onCreateRoom: (topic: string, mode: DebateMode, rantFirst?: boolean) => Promise<void>;
   onJoinRoom: (roomId: string) => Promise<void>;
   onRefreshRooms: () => Promise<DebateRoom[]>;
   onJumpToFinalResults?: () => Promise<void>;
@@ -48,15 +48,17 @@ export function LobbyScreen({
   const [newRoomTopic, setNewRoomTopic] = useState("");
   const [showExamples, setShowExamples] = useState(false);
   const [debateMode, setDebateMode] = useState<DebateMode>("host-controlled");
+  const [rantFirst, setRantFirst] = useState(false);
 
   const isTopicValid = newRoomTopic.trim().length >= 10;
   const remainingChars = 10 - newRoomTopic.trim().length;
 
   const handleCreateRoom = async () => {
     if (!isTopicValid) return;
-    await onCreateRoom(newRoomTopic.trim(), debateMode);
+    await onCreateRoom(newRoomTopic.trim(), debateMode, rantFirst);
     setNewRoomTopic(""); // Clear the input after creating
     setDebateMode("host-controlled"); // Reset to default
+    setRantFirst(false); // Reset to default
   };
 
   const handleExampleClick = (topic: string) => {
@@ -209,6 +211,22 @@ export function LobbyScreen({
                     onCheckedChange={(checked) => 
                       setDebateMode(checked ? "realtime" : "host-controlled")
                     }
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Brain className="w-4 h-4 text-purple-600" />
+                    <div>
+                      <p className="text-sm">AI Rant First</p>
+                      <p className="text-xs text-muted-foreground">
+                        Players write rants, AI compiles initial statements
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={rantFirst}
+                    onCheckedChange={setRantFirst}
                   />
                 </div>
               </div>

@@ -62,10 +62,10 @@ class ApiClient {
   }
 
   // Room management
-  async createRoom(topic: string, userId: string, mode = "host-controlled") {
+  async createRoom(topic: string, userId: string, mode = "host-controlled", rantFirst?: boolean) {
     return this.request("/room/create", {
       method: "POST",
-      body: JSON.stringify({ topic, userId, mode }),
+      body: JSON.stringify({ topic, userId, mode, rantFirst }),
     });
   }
 
@@ -103,6 +103,17 @@ class ApiClient {
     userId: string,
   ) {
     return this.request(`/room/${roomId}/statement`, {
+      method: "POST",
+      body: JSON.stringify({ text, userId }),
+    });
+  }
+
+  async submitRant(
+    roomId: string,
+    text: string,
+    userId: string,
+  ) {
+    return this.request(`/room/${roomId}/rant`, {
       method: "POST",
       body: JSON.stringify({ text, userId }),
     });

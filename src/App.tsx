@@ -17,6 +17,7 @@ export default function App() {
     user,
     room,
     statements,
+    rants,
     activeRooms,
     loading,
     error,
@@ -27,6 +28,7 @@ export default function App() {
     joinRoom,
     getActiveRooms,
     submitStatement,
+    submitRant,
     voteOnStatement,
     updateRoomPhase,
     leaveRoom,
@@ -65,8 +67,8 @@ export default function App() {
   };
 
   // Handle room creation
-  const handleCreateRoom = async (topic: string, mode: "realtime" | "host-controlled") => {
-    const roomData = await createRoom(topic, mode);
+  const handleCreateRoom = async (topic: string, mode: "realtime" | "host-controlled", rantFirst?: boolean) => {
+    const roomData = await createRoom(topic, mode, rantFirst);
     if (roomData) {
       setTimerActive(false); // Start in lobby phase
     }
@@ -83,6 +85,14 @@ export default function App() {
       await submitStatement(text);
     },
     [submitStatement],
+  );
+
+  // Handle rant submission
+  const handleRantSubmit = useCallback(
+    async (text: string) => {
+      await submitRant(text);
+    },
+    [submitRant],
   );
 
   // Handle voting
@@ -301,10 +311,12 @@ export default function App() {
           user={user}
           room={room}
           statements={statements}
+          rants={rants}
           timerActive={timerActive}
           lastAchievement={lastAchievement}
           autoPlayActive={autoPlayActive}
           onSubmitStatement={handleStatementSubmit}
+          onSubmitRant={handleRantSubmit}
           onVote={handleVote}
           onNextRound={nextRound}
           onStartDebate={startDebate}

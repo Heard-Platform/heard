@@ -54,4 +54,13 @@ export interface DebateRoom {
   isActive: boolean;
   createdAt: number;
   mode: DebateMode; // Controls whether phases advance automatically or by host
+  rantFirst?: boolean; // Whether this room starts with AI-compiled rants
+}
+
+export interface Rant {
+  id: string;
+  text: string;
+  author: string;
+  roomId: string;
+  timestamp: number;
 }

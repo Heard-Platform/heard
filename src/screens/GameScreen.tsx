@@ -6,6 +6,7 @@ import { DebateTimer } from "../components/DebateTimer";
 import { ScoreBoard } from "../components/ScoreBoard";
 import { StatementCard } from "../components/StatementCard";
 import { StatementSubmission } from "../components/StatementSubmission";
+import { RantSubmission } from "../components/RantSubmission";
 import { AchievementNotification } from "../components/AchievementNotification";
 import { RoundIndicator } from "../components/RoundIndicator";
 import { RealTimeResults } from "../components/RealTimeResults";
@@ -18,16 +19,19 @@ import type {
   DebateRoom,
   Statement,
   Achievement,
+  Rant,
 } from "../types";
 
 interface GameScreenProps {
   user: UserSession;
   room: DebateRoom;
   statements: Statement[];
+  rants: Rant[];
   timerActive: boolean;
   lastAchievement: Achievement | null;
   autoPlayActive: boolean;
   onSubmitStatement: (text: string) => Promise<void>;
+  onSubmitRant: (text: string) => Promise<void>;
   onVote: (
     id: string,
     voteType: "agree" | "disagree" | "pass",
@@ -46,10 +50,12 @@ export function GameScreen({
   user,
   room,
   statements,
+  rants,
   timerActive,
   lastAchievement,
   autoPlayActive,
   onSubmitStatement,
+  onSubmitRant,
   onVote,
   onNextRound,
   onStartDebate,
@@ -63,6 +69,11 @@ export function GameScreen({
   const isSubmissionPhase = room.subPhase === "posting";
   const isVotingPhase = room.subPhase === "voting";
   const isReviewPhase = room.subPhase === "review";
+  
+  // Rant logic
+  const isRantFirstRoom = room.rantFirst;
+  const userHasSubmittedRant = rants.some(rant => rant.author === user?.nickname);
+  const shouldShowRantSubmission = isRantFirstRoom && !userHasSubmittedRant && (room.phase === "lobby" || room.phase === "round1");
 
   const handleStatementSubmit = useCallback(
     async (text: string) => {
@@ -91,6 +102,13 @@ export function GameScreen({
   const handleScheduleFuture = useCallback(() => {
     onScheduleFuture();
   }, [onScheduleFuture]);
+
+  const handleRantSubmit = useCallback(
+    async (text: string) => {
+      await onSubmitRant(text);
+    },
+    [onSubmitRant],
+  );
 
   if (room.phase === "results") {
     return (
@@ -290,63 +308,116 @@ export function GameScreen({
           <div className="space-y-6">
             {/* Lobby Round */}
             {room.phase === "lobby" && (
-              <div className="flex justify-center">
-                <Card className="p-6 text-center max-w-md">
-                  <h3 className="mb-2">Debate Room</h3>
-                  <p className="text-muted-foreground mb-4">
-                    {room.participants.length < 2
-                      ? "Need at least 2 players to start..."
-                      : "Ready to debate!"}
-                  </p>
-                  
-                  {/* Show different UI based on whether user is host */}
-                  {room.hostId === user?.id ? (
-                    <Button
-                      onClick={onStartDebate}
-                      disabled={room.participants.length < 2}
-                    >
-                      Start Debate! 🔥
-                    </Button>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="px-4 py-2 bg-muted rounded-md">
-                        <p className="text-sm text-muted-foreground">
-                          Waiting for host to start...
-                        </p>
-                      </div>
-                      <div className="flex justify-center items-center space-x-1">
-                        <motion.div
-                          animate={{ y: [0, -8, 0] }}
-                          transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
-                          className="w-2 h-2 bg-primary rounded-full"
-                        />
-                        <motion.div
-                          animate={{ y: [0, -8, 0] }}
-                          transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
-                          className="w-2 h-2 bg-primary rounded-full"
-                        />
-                        <motion.div
-                          animate={{ y: [0, -8, 0] }}
-                          transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
-                          className="w-2 h-2 bg-primary rounded-full"
-                        />
-                      </div>
+              <>
+                {/* For rant-first rooms: ONLY show rant submission if user hasn't submitted yet */}
+                {shouldShowRantSubmission ? (
+                  <div className="flex justify-center">
+                    <div className="w-full max-w-2xl">
+                      <RantSubmission
+                        onSubmit={handleRantSubmit}
+                        placeholder="Share your unfiltered thoughts on this topic. The AI will use everyone's rants to create structured debate points!"
+                      />
                     </div>
-                  )}
-                </Card>
-              </div>
+                  </div>
+                ) : (
+                  /* Normal lobby UI - shown for non-rant-first rooms OR rant-first rooms where user has submitted */
+                  <div className="flex justify-center">
+                    <Card className="p-6 text-center max-w-md">
+                      <h3 className="mb-2">
+                        {isRantFirstRoom ? "AI-Powered Debate Room" : "Debate Room"}
+                      </h3>
+                      
+                      {isRantFirstRoom ? (
+                        <div className="space-y-3">
+                          <p className="text-muted-foreground">
+                            Rant submitted! {rants.length}/{room.participants.length} players have shared their thoughts.
+                          </p>
+                          {rants.length > 0 && (
+                            <div className="text-xs text-purple-600 bg-purple-50 p-2 rounded">
+                              AI will compile all rants into debate statements when the host starts the debate
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground mb-4">
+                          {room.participants.length < 2
+                            ? "Need at least 2 players to start..."
+                            : "Ready to debate!"}
+                        </p>
+                      )}
+                      
+                      {/* Show different UI based on whether user is host */}
+                      {room.hostId === user?.id ? (
+                        <div className="mt-4">
+                          <Button
+                            onClick={onStartDebate}
+                            disabled={room.participants.length < 2}
+                          >
+                            {isRantFirstRoom ? "Compile Rants & Start Debate! 🧠" : "Start Debate! 🔥"}
+                          </Button>
+                          {room.participants.length < 2 && (
+                            <p className="text-xs text-muted-foreground mt-2">
+                              Need at least 2 players to start the debate
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-3 mt-4">
+                          <div className="px-4 py-2 bg-muted rounded-md">
+                            <p className="text-sm text-muted-foreground">
+                              Waiting for host to start...
+                            </p>
+                          </div>
+                          <div className="flex justify-center items-center space-x-1">
+                            <motion.div
+                              animate={{ y: [0, -8, 0] }}
+                              transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                              className="w-2 h-2 bg-primary rounded-full"
+                            />
+                            <motion.div
+                              animate={{ y: [0, -8, 0] }}
+                              transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+                              className="w-2 h-2 bg-primary rounded-full"
+                            />
+                            <motion.div
+                              animate={{ y: [0, -8, 0] }}
+                              transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+                              className="w-2 h-2 bg-primary rounded-full"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Posting Round - Centered submission box with statements below */}
             {isSubmissionPhase && (
               <>
+                {/* Rant submission for late-joining users in rant-first rooms */}
+                {shouldShowRantSubmission && (
+                  <div className="flex justify-center mb-6">
+                    <div className="w-full max-w-2xl">
+                      <RantSubmission
+                        onSubmit={handleRantSubmit}
+                        placeholder="Haven't shared your rant yet? Do it now before making specific statements!"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-center">
                   <div className="w-full max-w-2xl">
                     <StatementSubmission
                       onSubmit={handleStatementSubmit}
                       currentPhase={room.phase}
                       isActive={isSubmissionPhase}
-                      placeholder="What's your take? Spicy takes welcome! 🌶️"
+                      placeholder={isRantFirstRoom 
+                        ? "Make specific points based on the compiled debate statements 🎯" 
+                        : "What's your take? Spicy takes welcome! 🌶️"
+                      }
                     />
                   </div>
                 </div>

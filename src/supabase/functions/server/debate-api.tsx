@@ -46,6 +46,15 @@ interface DebateRoom {
   isActive: boolean;
   createdAt: number;
   mode: DebateMode; // Controls whether phases advance automatically or by host
+  rantFirst?: boolean; // Whether this room starts with AI-compiled rants
+}
+
+interface Rant {
+  id: string;
+  text: string;
+  author: string;
+  roomId: string;
+  timestamp: number;
 }
 
 interface UserSession {
@@ -707,6 +716,37 @@ const saveStatement = async (statement: Statement) => {
   );
 };
 
+// Rant utility functions
+const saveRant = async (rant: Rant) => {
+  await kv.set(
+    `rant:${rant.roomId}:${rant.id}`,
+    JSON.stringify(rant),
+  );
+};
+
+const getRantsForRoom = async (roomId: string): Promise<Rant[]> => {
+  try {
+    const rants = await kv.getByPrefix(`rant:${roomId}:`);
+    return rants
+      .map((r) => {
+        try {
+          return JSON.parse(r);
+        } catch (error) {
+          console.error("Error parsing rant:", r, error);
+          return null;
+        }
+      })
+      .filter((r) => r !== null)
+      .sort((a, b) => a.timestamp - b.timestamp); // Chronological order
+  } catch (error) {
+    console.error(
+      `Error fetching rants for room ${roomId}:`,
+      error,
+    );
+    return [];
+  }
+};
+
 // Create or join user session
 app.post("/make-server-f1a393b4/user/create", async (c) => {
   try {
@@ -827,6 +867,7 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
       topic,
       userId,
       mode = "host-controlled",
+      rantFirst = false,
     } = await c.req.json();
 
     if (!topic || topic.length < 10) {
@@ -853,6 +894,7 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
       isActive: true,
       createdAt: Date.now(),
       mode: mode as DebateMode,
+      rantFirst: rantFirst,
     };
 
     await saveDebateRoom(debateRoom);
@@ -941,9 +983,18 @@ app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
       `Found ${statements.length} statements for room ${roomId}`,
     );
 
+    // Get rants if this is a rant-first room
+    const rants = room.rantFirst ? await getRantsForRoom(roomId) : [];
+    if (room.rantFirst) {
+      console.log(
+        `Found ${rants.length} rants for room ${roomId}`,
+      );
+    }
+
     return c.json({
       room,
       statements,
+      rants,
       participantCount: room.participants?.length || 0,
     });
   } catch (error) {
@@ -1047,6 +1098,81 @@ app.post(
       console.error("Error submitting statement:", error);
       return c.json(
         { error: "Failed to submit statement" },
+        500,
+      );
+    }
+  },
+);
+
+// Submit rant
+app.post(
+  "/make-server-f1a393b4/room/:roomId/rant",
+  async (c) => {
+    try {
+      const roomId = c.req.param("roomId");
+      const { text, userId } = await c.req.json();
+
+      if (!text || text.trim().length < 50) {
+        return c.json(
+          { error: "Rant must be at least 50 characters" },
+          400,
+        );
+      }
+
+      const room = await getDebateRoom(roomId);
+      if (!room) {
+        return c.json({ error: "Room not found" }, 404);
+      }
+
+      if (!room.rantFirst) {
+        return c.json(
+          { error: "This room does not support rants" },
+          400,
+        );
+      }
+
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User session not found" }, 404);
+      }
+
+      // Check if user is in the room
+      if (!room.participants.includes(userId)) {
+        return c.json(
+          { error: "User is not a participant in this room" },
+          403,
+        );
+      }
+
+      // Check if user has already submitted a rant
+      const existingRants = await getRantsForRoom(roomId);
+      const userHasRant = existingRants.some(rant => rant.author === user.nickname);
+      
+      if (userHasRant) {
+        return c.json(
+          { error: "You have already submitted a rant for this debate" },
+          400,
+        );
+      }
+
+      const rant: Rant = {
+        id: generateId(),
+        text: text.trim(),
+        author: user.nickname,
+        roomId,
+        timestamp: Date.now(),
+      };
+
+      await saveRant(rant);
+
+      return c.json({
+        rant,
+        message: "Rant submitted successfully",
+      });
+    } catch (error) {
+      console.error("Error submitting rant:", error);
+      return c.json(
+        { error: "Failed to submit rant" },
         500,
       );
     }
