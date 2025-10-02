@@ -21,6 +21,7 @@ export default function App() {
     loading,
     error,
     lastAchievement,
+    autoPlayActive,
     initializeUser,
     createRoom,
     joinRoom,
@@ -31,6 +32,9 @@ export default function App() {
     leaveRoom,
     resetSession,
     createSeedData,
+    createTestRoom,
+    startAutoPlay,
+    stopAutoPlay,
   } = useDebateSession();
 
   // Helper function to join room and set timer state consistently
@@ -281,6 +285,7 @@ export default function App() {
           onRefreshRooms={getActiveRooms}
           onJumpToFinalResults={jumpToFinalResults}
           onCreateSeedData={createSeedData}
+          onCreateTestRoom={createTestRoom}
           onLogout={handleLogout}
         />
         <Toaster />
@@ -298,6 +303,7 @@ export default function App() {
           statements={statements}
           timerActive={timerActive}
           lastAchievement={lastAchievement}
+          autoPlayActive={autoPlayActive}
           onSubmitStatement={handleStatementSubmit}
           onVote={handleVote}
           onNextRound={nextRound}
@@ -306,6 +312,8 @@ export default function App() {
           onNewDiscussion={handleNewDiscussion}
           onScheduleFuture={handleScheduleFuture}
           onSkipRound={nextRound}
+          onStartAutoPlay={startAutoPlay}
+          onStopAutoPlay={stopAutoPlay}
         />
         <Toaster />
       </>

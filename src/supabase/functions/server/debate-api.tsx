@@ -56,6 +56,7 @@ interface UserSession {
   streak: number;
   currentRoomId?: string;
   lastActive: number;
+  isTestUser?: boolean; // Flag to indicate if this is a test/fake user
 }
 
 const app = new Hono();
@@ -177,12 +178,17 @@ const sendPhaseChangeNotifications = async (
       return;
     }
 
-    // Get participant details
+    // Get participant details (excluding test users)
     const participants = [];
     for (const participantId of participantIds) {
       const user = await getUserSession(participantId);
       if (user && user.email) {
-        participants.push(user);
+        // Skip test users to avoid sending emails to fake addresses
+        if (!user.isTestUser) {
+          participants.push(user);
+        } else {
+          console.log("Skipping phase change email for test user:", user.email);
+        }
       }
     }
 
@@ -457,7 +463,14 @@ const getUserSession = async (
   try {
     const session = await kv.get(`user:${userId}`);
     if (!session) return null;
-    return JSON.parse(session);
+    const userData = JSON.parse(session);
+    
+    // Default isTestUser to false for existing users without this field
+    if (userData.isTestUser === undefined) {
+      userData.isTestUser = false;
+    }
+    
+    return userData;
   } catch (error) {
     console.error(
       `Error parsing user session for ${userId}:`,
@@ -749,21 +762,26 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
       score: 0,
       streak: 0,
       lastActive: Date.now(),
+      isTestUser: false, // Real users are not test users
     };
 
     await saveUserSession(userSession);
 
-    // Send welcome email only for new users (don't block user creation if email fails)
-    sendWelcomeEmail(
-      userSession.email,
-      userSession.nickname,
-    ).catch((error) => {
-      console.error(
-        "Welcome email failed for user:",
-        userId,
-        error,
-      );
-    });
+    // Send welcome email only for real users, not test users (don't block user creation if email fails)
+    if (!userSession.isTestUser) {
+      sendWelcomeEmail(
+        userSession.email,
+        userSession.nickname,
+      ).catch((error) => {
+        console.error(
+          "Welcome email failed for user:",
+          userId,
+          error,
+        );
+      });
+    } else {
+      console.log("Skipping welcome email for test user:", userSession.email);
+    }
 
     return c.json({
       user: userSession,
@@ -1518,6 +1536,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
         streak: 3,
         currentRoomId: roomId,
         lastActive: Date.now(),
+        isTestUser: true,
       },
       {
         id: "test_user_2",
@@ -1527,6 +1546,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
         streak: 5,
         currentRoomId: roomId,
         lastActive: Date.now(),
+        isTestUser: true,
       },
       {
         id: "test_user_3",
@@ -1536,6 +1556,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
         streak: 2,
         currentRoomId: roomId,
         lastActive: Date.now(),
+        isTestUser: true,
       },
     ];
 
@@ -1749,6 +1770,104 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
   } catch (error) {
     console.error("Error creating seed data:", error);
     return c.json({ error: "Failed to create seed data" }, 500);
+  }
+});
+
+// Create test room with Q Street debate topic and players (no posts/votes)
+app.post("/make-server-f1a393b4/test-room/create", async (c) => {
+  try {
+    const { userId } = await c.req.json();
+
+    const user = await getUserSession(userId);
+    if (!user) {
+      return c.json({ error: "User session not found" }, 404);
+    }
+
+    // Create a test room with Q Street farmers market topic
+    const roomId = generateId();
+    const debateRoom: DebateRoom = {
+      id: roomId,
+      topic: "Should Q Street be closed to traffic during the farmers market?",
+      phase: "lobby", // Start in lobby so host can control the start
+      subPhase: undefined,
+      gameNumber: 1,
+      roundStartTime: Date.now(),
+      participants: [
+        userId,
+        "qstreet_user_1",
+        "qstreet_user_2",
+        "qstreet_user_3",
+        "qstreet_user_4",
+      ],
+      hostId: userId, // Set the user as the host
+      isActive: true,
+      createdAt: Date.now(),
+      mode: "host-controlled", // Allow host to control phases
+    };
+
+    await saveDebateRoom(debateRoom);
+
+    // Create fake users with Q Street themed names
+    const fakeUsers = [
+      {
+        id: "qstreet_user_1",
+        nickname: "LocalVendor",
+        email: "vendor@qstreet.example",
+        score: 250,
+        streak: 1,
+        currentRoomId: roomId,
+        lastActive: Date.now(),
+        isTestUser: true,
+      },
+      {
+        id: "qstreet_user_2",
+        nickname: "NeighborhoodResident",
+        email: "resident@qstreet.example",
+        score: 180,
+        streak: 2,
+        currentRoomId: roomId,
+        lastActive: Date.now(),
+        isTestUser: true,
+      },
+      {
+        id: "qstreet_user_3",
+        nickname: "CommutingWorker",
+        email: "commuter@qstreet.example",
+        score: 320,
+        streak: 0,
+        currentRoomId: roomId,
+        lastActive: Date.now(),
+        isTestUser: true,
+      },
+      {
+        id: "qstreet_user_4",
+        nickname: "LocalBusiness",
+        email: "business@qstreet.example",
+        score: 400,
+        streak: 4,
+        currentRoomId: roomId,
+        lastActive: Date.now(),
+        isTestUser: true,
+      },
+    ];
+
+    // Save fake users
+    for (const fakeUser of fakeUsers) {
+      await saveUserSession(fakeUser);
+    }
+
+    // Update user's current room
+    user.currentRoomId = roomId;
+    await saveUserSession(user);
+
+    return c.json({
+      room: debateRoom,
+      players: fakeUsers.length + 1, // +1 for the creating user
+      message: "Test room created successfully! Ready for Q Street farmers market debate.",
+    });
+  } catch (error) {
+    console.error("Error creating test room:", error);
+    return c.json({ error: "Failed to create test room" }, 500);
   }
 });
 

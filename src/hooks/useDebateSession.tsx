@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   api,
   getUserId,
@@ -28,6 +28,13 @@ export function useDebateSession() {
   const [error, setError] = useState<string | null>(null);
   const [lastAchievement, setLastAchievement] =
     useState<Achievement | null>(null);
+  const [autoPlayActive, setAutoPlayActive] = useState(false);
+  const [autoPlayInterval, setAutoPlayInterval] = useState<NodeJS.Timeout | null>(null);
+  const [autoPlayCounts, setAutoPlayCounts] = useState<{
+    posts: { [playerId: string]: number };
+    votes: { [playerId: string]: number };
+  }>({ posts: {}, votes: {} });
+  const autoPlayActiveRef = useRef(false);
 
   // Initialize user session
   const initializeUser = useCallback(
@@ -317,13 +324,24 @@ export function useDebateSession() {
     return [];
   }, []);
 
+  // Auto-play cleanup function - defined early to avoid dependency issues
+  const stopAutoPlay = useCallback(() => {
+    setAutoPlayActive(false);
+    autoPlayActiveRef.current = false;
+    if (autoPlayInterval) {
+      clearTimeout(autoPlayInterval);
+      setAutoPlayInterval(null);
+    }
+  }, [autoPlayInterval]);
+
   // Leave current room but keep user logged in
   const leaveRoom = useCallback(() => {
+    stopAutoPlay(); // Stop auto-play when leaving room
     setRoom(null);
     setStatements([]);
     setLastAchievement(null);
     clearRoomId();
-  }, []);
+  }, [stopAutoPlay]);
 
   // Create seed data for testing
   const createSeedData = useCallback(async () => {
@@ -350,8 +368,206 @@ export function useDebateSession() {
     return null;
   }, [user, getActiveRooms]);
 
+  // Create test room with Q Street debate topic and players (no posts/votes)
+  const createTestRoom = useCallback(async () => {
+    if (!user) return null;
+
+    try {
+      setError(null);
+      const response = await api.createTestRoom(user.id);
+      if (response.success && response.data) {
+        // Refresh active rooms to show the new test room
+        await getActiveRooms();
+        return response.data;
+      } else {
+        throw new Error(
+          response.error || "Failed to create test room",
+        );
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to create test room:", errorMsg);
+    }
+    return null;
+  }, [user, getActiveRooms]);
+
+  // Auto-play statements for testing
+  const qStreetDebateStatements = [
+    "Closing Q Street during farmers market creates a vibrant community space that brings neighbors together",
+    "Traffic diversions hurt local businesses on surrounding streets - we need better solutions", 
+    "The farmers market is a weekly tradition that deserves priority over car convenience",
+    "Emergency vehicles can't access residents quickly when Q Street is blocked",
+    "Local vendors and artisans benefit enormously from the foot traffic when cars are gone",
+    "Elderly residents struggle with longer walking distances when forced to park blocks away",
+    "Air quality improves significantly when we prioritize pedestrians over vehicles",
+    "The current system discriminates against people who work weekends and need car access",
+    "Kids can safely play and families can enjoy the space without worrying about traffic",
+    "Small businesses along Q Street lose customers who can't easily drive and park",
+    "This is about creating a more livable neighborhood that values people over cars",
+    "The parking restrictions place an unfair burden on residents who live on Q Street"
+  ];
+
+  const getRandomStatement = () => {
+    return qStreetDebateStatements[Math.floor(Math.random() * qStreetDebateStatements.length)];
+  };
+
+  const getRandomDelay = () => Math.floor(Math.random() * 5000) + 5000; // 5-10 seconds
+
+  const simulatePlayerActivity = useCallback(async () => {
+    if (!room || !user) return;
+
+    const participants = room.participants.filter(p => p !== user.id);
+    if (participants.length === 0) return;
+
+    // Don't simulate activity during review phase - no user interaction needed
+    if (room.subPhase === "review") return;
+
+    if (room.subPhase === "posting") {
+      // Find players who haven't reached the post limit
+      const availablePlayers = participants.filter(
+        playerId => (autoPlayCounts.posts[playerId] || 0) < 4
+      );
+      
+      if (availablePlayers.length > 0) {
+        const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
+        const statement = getRandomStatement();
+        
+        try {
+          const response = await api.submitStatement(room.id, statement, randomPlayer);
+          if (response.success) {
+            setAutoPlayCounts(prev => ({
+              ...prev,
+              posts: {
+                ...prev.posts,
+                [randomPlayer]: (prev.posts[randomPlayer] || 0) + 1
+              }
+            }));
+            await refreshRoom();
+          }
+        } catch (err) {
+          console.error("Auto-play post failed:", err);
+        }
+      }
+    } else if (room.subPhase === "voting") {
+      // Find players who haven't reached the vote limit and statements to vote on
+      const availablePlayers = participants.filter(
+        playerId => (autoPlayCounts.votes[playerId] || 0) < 4
+      );
+      
+      if (availablePlayers.length > 0 && statements.length > 0) {
+        const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
+        
+        // Find statements this player hasn't voted on yet
+        const unvotedStatements = statements.filter(
+          stmt => !stmt.voters[randomPlayer] && stmt.author !== randomPlayer
+        );
+        
+        if (unvotedStatements.length > 0) {
+          const randomStatement = unvotedStatements[Math.floor(Math.random() * unvotedStatements.length)];
+          const voteTypes: ("agree" | "disagree" | "pass")[] = ["agree", "disagree", "pass"];
+          const randomVote = voteTypes[Math.floor(Math.random() * voteTypes.length)];
+          
+          try {
+            const response = await api.voteOnStatement(randomStatement.id, randomVote, randomPlayer);
+            if (response.success) {
+              setAutoPlayCounts(prev => ({
+                ...prev,
+                votes: {
+                  ...prev.votes,
+                  [randomPlayer]: (prev.votes[randomPlayer] || 0) + 1
+                }
+              }));
+              // Update local statement state
+              setStatements(prev =>
+                prev.map(stmt =>
+                  stmt.id === randomStatement.id
+                    ? { ...stmt, ...response.data.statement }
+                    : stmt
+                )
+              );
+            }
+          } catch (err) {
+            console.error("Auto-play vote failed:", err);
+          }
+        }
+      }
+    }
+  }, [room, user, statements, autoPlayCounts, refreshRoom]);
+
+  const startAutoPlay = useCallback(() => {
+    if (!room || autoPlayActiveRef.current) return;
+
+    // Only start auto-play if we're in a phase that needs activity
+    if (room.subPhase !== "posting" && room.subPhase !== "voting") return;
+
+    setAutoPlayActive(true);
+    autoPlayActiveRef.current = true;
+    setAutoPlayCounts({ posts: {}, votes: {} }); // Reset counts
+
+    // Schedule the first activity
+    const scheduleActivity = () => {
+      // Check if auto-play is still active before scheduling
+      if (!autoPlayActiveRef.current) return;
+      
+      const delay = getRandomDelay();
+      console.log(`Scheduling next auto-play activity in ${delay}ms`);
+      
+      const timeoutId = setTimeout(async () => {
+        // Double-check if auto-play is still active
+        if (!autoPlayActiveRef.current) return;
+        
+        try {
+          await simulatePlayerActivity();
+        } catch (error) {
+          console.error("Auto-play activity failed:", error);
+        }
+        
+        // Schedule next activity if auto-play is still active
+        scheduleActivity();
+      }, delay);
+      
+      setAutoPlayInterval(timeoutId);
+    };
+
+    scheduleActivity();
+  }, [room, simulatePlayerActivity]);
+
+  // Clean up auto-play when room changes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (autoPlayInterval) {
+        clearTimeout(autoPlayInterval);
+      }
+    };
+  }, [autoPlayInterval]);
+
+  // Stop auto-play when room is gone
+  useEffect(() => {
+    if (!room && autoPlayActive) {
+      stopAutoPlay();
+    }
+  }, [room, autoPlayActive, stopAutoPlay]);
+
+  // Sync ref with state
+  useEffect(() => {
+    autoPlayActiveRef.current = autoPlayActive;
+  }, [autoPlayActive]);
+
+  // Stop auto-play when phase changes to review or results
+  useEffect(() => {
+    if (autoPlayActive && room) {
+      // Stop auto-play during review phase or results
+      if (room.subPhase === "review" || room.phase === "results") {
+        stopAutoPlay();
+      }
+    }
+  }, [room?.subPhase, room?.phase, autoPlayActive, stopAutoPlay]);
+
   // Reset session (full logout)
   const resetSession = useCallback(() => {
+    stopAutoPlay(); // Stop auto-play on logout
     setUser(null);
     setRoom(null);
     setStatements([]);
@@ -359,7 +575,7 @@ export function useDebateSession() {
     setError(null);
     setLastAchievement(null);
     clearRoomId();
-  }, []);
+  }, [stopAutoPlay]);
 
   // Initialize on mount
   useEffect(() => {
@@ -409,6 +625,7 @@ export function useDebateSession() {
     loading,
     error,
     lastAchievement,
+    autoPlayActive,
     initializeUser,
     createRoom,
     joinRoom,
@@ -420,5 +637,8 @@ export function useDebateSession() {
     leaveRoom,
     resetSession,
     createSeedData,
+    createTestRoom,
+    startAutoPlay,
+    stopAutoPlay,
   };
 }

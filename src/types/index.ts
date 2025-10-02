@@ -37,6 +37,7 @@ export interface UserSession {
   streak: number;
   currentRoomId?: string;
   lastActive: number;
+  isTestUser?: boolean; // Flag to indicate if this is a test/fake user
 }
 
 export type DebateMode = "realtime" | "host-controlled";

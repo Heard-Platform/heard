@@ -10,7 +10,7 @@ import { AchievementNotification } from "../components/AchievementNotification";
 import { RoundIndicator } from "../components/RoundIndicator";
 import { RealTimeResults } from "../components/RealTimeResults";
 import { FinalResults } from "../components/FinalResults";
-import { Users, X, Zap, SkipForward } from "lucide-react";
+import { Users, X, Zap, SkipForward, Play, Square } from "lucide-react";
 import { ShareButton } from "../components/ShareButton";
 import { InviteButton } from "../components/InviteButton";
 import type {
@@ -26,6 +26,7 @@ interface GameScreenProps {
   statements: Statement[];
   timerActive: boolean;
   lastAchievement: Achievement | null;
+  autoPlayActive: boolean;
   onSubmitStatement: (text: string) => Promise<void>;
   onVote: (
     id: string,
@@ -37,6 +38,8 @@ interface GameScreenProps {
   onNewDiscussion: (statement: Statement) => void;
   onScheduleFuture: () => void;
   onSkipRound?: () => Promise<void>;
+  onStartAutoPlay: () => void;
+  onStopAutoPlay: () => void;
 }
 
 export function GameScreen({
@@ -45,6 +48,7 @@ export function GameScreen({
   statements,
   timerActive,
   lastAchievement,
+  autoPlayActive,
   onSubmitStatement,
   onVote,
   onNextRound,
@@ -53,6 +57,8 @@ export function GameScreen({
   onNewDiscussion,
   onScheduleFuture,
   onSkipRound,
+  onStartAutoPlay,
+  onStopAutoPlay,
 }: GameScreenProps) {
   const isSubmissionPhase = room.subPhase === "posting";
   const isVotingPhase = room.subPhase === "voting";
@@ -135,6 +141,36 @@ export function GameScreen({
                     title="DEV: Next Round"
                   >
                     <SkipForward className="w-4 h-4" />
+                  </Button>
+                )}
+              
+              {/* Dev Only: Auto-Play Button - Host Only */}
+              {room.phase !== "results" &&
+                room.phase !== "lobby" &&
+                room.hostId === user?.id && (
+                  <Button
+                    onClick={autoPlayActive ? onStopAutoPlay : onStartAutoPlay}
+                    variant="outline"
+                    size="sm"
+                    className={`p-2 ${
+                      autoPlayActive 
+                        ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100" 
+                        : room.subPhase === "review"
+                        ? "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100"
+                        : "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                    }`}
+                    title={`DEV: ${autoPlayActive ? "Stop" : "Start"} Auto-Play ${
+                      room.subPhase === "posting" ? "(Posts)" : 
+                      room.subPhase === "voting" ? "(Votes)" : 
+                      room.subPhase === "review" ? "(Paused)" : ""
+                    }`}
+                    disabled={room.subPhase === "review" && !autoPlayActive}
+                  >
+                    {autoPlayActive ? (
+                      <Square className="w-4 h-4" />
+                    ) : (
+                      <Play className="w-4 h-4" />
+                    )}
                   </Button>
                 )}
             </div>

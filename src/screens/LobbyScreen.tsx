@@ -20,6 +20,7 @@ interface LobbyScreenProps {
   onRefreshRooms: () => Promise<DebateRoom[]>;
   onJumpToFinalResults?: () => Promise<void>;
   onCreateSeedData?: () => Promise<any>;
+  onCreateTestRoom?: () => Promise<any>;
   onLogout?: () => void;
 }
 
@@ -41,6 +42,7 @@ export function LobbyScreen({
   onRefreshRooms,
   onJumpToFinalResults,
   onCreateSeedData,
+  onCreateTestRoom,
   onLogout,
 }: LobbyScreenProps) {
   const [newRoomTopic, setNewRoomTopic] = useState("");
@@ -68,6 +70,17 @@ export function LobbyScreen({
       if (result) {
         alert(
           `✅ ${result.message}\n\nCreated:\n• 1 test room with 4 players\n• ${result.statements} diverse statements\n• Various votes and types\n\nCheck the "Join Existing Room" section!`,
+        );
+      }
+    }
+  };
+
+  const handleCreateTestRoom = async () => {
+    if (onCreateTestRoom) {
+      const result = await onCreateTestRoom();
+      if (result) {
+        alert(
+          `✅ ${result.message}\\n\\nCreated:\\n• Q Street farmers market debate room\\n• ${result.players} players ready to participate\\n• No posts or votes yet - clean slate!\\n\\nCheck the \"Join Existing Room\" section!`,
         );
       }
     }
@@ -268,6 +281,17 @@ export function LobbyScreen({
             >
               <Database className="w-3 h-3 mr-1" />
               🧪 DEV: Create Test Data
+            </Button>
+          )}
+          {onCreateTestRoom && (
+            <Button
+              onClick={handleCreateTestRoom}
+              variant="outline"
+              size="sm"
+              className="text-xs bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100"
+            >
+              <Plus className="w-3 h-3 mr-1" />
+              🏛️ DEV: Q Street Test Room
             </Button>
           )}
         </div>
