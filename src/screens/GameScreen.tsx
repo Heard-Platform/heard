@@ -30,6 +30,7 @@ interface GameScreenProps {
   timerActive: boolean;
   lastAchievement: Achievement | null;
   autoPlayActive: boolean;
+  startingDebate: boolean;
   onSubmitStatement: (text: string) => Promise<void>;
   onSubmitRant: (text: string) => Promise<void>;
   onVote: (
@@ -54,6 +55,7 @@ export function GameScreen({
   timerActive,
   lastAchievement,
   autoPlayActive,
+  startingDebate,
   onSubmitStatement,
   onSubmitRant,
   onVote,
@@ -351,13 +353,31 @@ export function GameScreen({
                         <div className="mt-4">
                           <Button
                             onClick={onStartDebate}
-                            disabled={room.participants.length < 2}
+                            disabled={room.participants.length < 2 || startingDebate}
                           >
-                            {isRantFirstRoom ? "Compile Rants & Start Debate! 🧠" : "Start Debate! 🔥"}
+                            {startingDebate ? (
+                              <>
+                                <motion.div
+                                  animate={{ rotate: 360 }}
+                                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                  className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                                />
+                                {isRantFirstRoom ? "Compiling rants with AI..." : "Starting debate..."}
+                              </>
+                            ) : (
+                              <>
+                                {isRantFirstRoom ? "Compile Rants & Start Debate! 🧠" : "Start Debate! 🔥"}
+                              </>
+                            )}
                           </Button>
-                          {room.participants.length < 2 && (
+                          {room.participants.length < 2 && !startingDebate && (
                             <p className="text-xs text-muted-foreground mt-2">
                               Need at least 2 players to start the debate
+                            </p>
+                          )}
+                          {startingDebate && isRantFirstRoom && (
+                            <p className="text-xs text-purple-600 mt-2">
+                              AI is analyzing rants and creating debate statements...
                             </p>
                           )}
                         </div>

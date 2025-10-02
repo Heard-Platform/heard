@@ -21,6 +21,7 @@ interface LobbyScreenProps {
   onJumpToFinalResults?: () => Promise<void>;
   onCreateSeedData?: () => Promise<any>;
   onCreateTestRoom?: () => Promise<any>;
+  onCreateRantTestRoom?: () => Promise<any>;
   onLogout?: () => void;
 }
 
@@ -43,6 +44,7 @@ export function LobbyScreen({
   onJumpToFinalResults,
   onCreateSeedData,
   onCreateTestRoom,
+  onCreateRantTestRoom,
   onLogout,
 }: LobbyScreenProps) {
   const [newRoomTopic, setNewRoomTopic] = useState("");
@@ -83,6 +85,17 @@ export function LobbyScreen({
       if (result) {
         alert(
           `✅ ${result.message}\\n\\nCreated:\\n• Q Street farmers market debate room\\n• ${result.players} players ready to participate\\n• No posts or votes yet - clean slate!\\n\\nCheck the \"Join Existing Room\" section!`,
+        );
+      }
+    }
+  };
+
+  const handleCreateRantTestRoom = async () => {
+    if (onCreateRantTestRoom) {
+      const result = await onCreateRantTestRoom();
+      if (result) {
+        alert(
+          `✅ ${result.message}\\n\\nCreated:\\n• ${result.players} players with diverse viewpoints\\n• ${result.rants} detailed rants ready for AI compilation\\n• Click "Compile Rants & Start Debate!" to test AI!\\n\\nCheck the \"Join Existing Room\" section!`,
         );
       }
     }
@@ -310,6 +323,17 @@ export function LobbyScreen({
             >
               <Plus className="w-3 h-3 mr-1" />
               🏛️ DEV: Q Street Test Room
+            </Button>
+          )}
+          {onCreateRantTestRoom && (
+            <Button
+              onClick={handleCreateRantTestRoom}
+              variant="outline"
+              size="sm"
+              className="text-xs bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100"
+            >
+              <Brain className="w-3 h-3 mr-1" />
+              🧠 DEV: AI Rant Test Room
             </Button>
           )}
         </div>

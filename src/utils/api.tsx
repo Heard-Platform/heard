@@ -152,6 +152,13 @@ class ApiClient {
       body: JSON.stringify({ userId }),
     });
   }
+
+  async createRantTestRoom(userId: string) {
+    return this.request("/rant-test-room/create", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
 }
 
 export const api = new ApiClient();

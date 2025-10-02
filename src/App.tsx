@@ -10,6 +10,7 @@ import type { Phase, SubPhase, Statement, Achievement } from "./types";
 
 export default function App() {
   const [timerActive, setTimerActive] = useState(false);
+  const [startingDebate, setStartingDebate] = useState(false);
   const [targetRoomId, setTargetRoomId] = useState<string | null>(null);
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
 
@@ -35,6 +36,7 @@ export default function App() {
     resetSession,
     createSeedData,
     createTestRoom,
+    createRantTestRoom,
     startAutoPlay,
     stopAutoPlay,
   } = useDebateSession();
@@ -151,8 +153,14 @@ export default function App() {
 
   const startDebate = async () => {
     if (!room) return;
-    await updateRoomPhase("round1", "posting");
-    setTimerActive(room.mode === "realtime");
+    
+    try {
+      setStartingDebate(true);
+      await updateRoomPhase("round1", "posting");
+      setTimerActive(room.mode === "realtime");
+    } finally {
+      setStartingDebate(false);
+    }
   };
 
   const handleNewDiscussion = useCallback(
@@ -296,6 +304,7 @@ export default function App() {
           onJumpToFinalResults={jumpToFinalResults}
           onCreateSeedData={createSeedData}
           onCreateTestRoom={createTestRoom}
+          onCreateRantTestRoom={createRantTestRoom}
           onLogout={handleLogout}
         />
         <Toaster />
@@ -315,6 +324,7 @@ export default function App() {
           timerActive={timerActive}
           lastAchievement={lastAchievement}
           autoPlayActive={autoPlayActive}
+          startingDebate={startingDebate}
           onSubmitStatement={handleStatementSubmit}
           onSubmitRant={handleRantSubmit}
           onVote={handleVote}

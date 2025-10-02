@@ -430,6 +430,31 @@ export function useDebateSession() {
     return null;
   }, [user, getActiveRooms]);
 
+  // Create rant test room with Q Street debate topic and pre-filled rants
+  const createRantTestRoom = useCallback(async () => {
+    if (!user) return null;
+
+    try {
+      setError(null);
+      const response = await api.createRantTestRoom(user.id);
+      if (response.success && response.data) {
+        // Refresh active rooms to show the new test room
+        await getActiveRooms();
+        return response.data;
+      } else {
+        throw new Error(
+          response.error || "Failed to create rant test room",
+        );
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to create rant test room:", errorMsg);
+    }
+    return null;
+  }, [user, getActiveRooms]);
+
   // Auto-play statements for testing
   const qStreetDebateStatements = [
     "Closing Q Street during farmers market creates a vibrant community space that brings neighbors together",
@@ -677,6 +702,7 @@ export function useDebateSession() {
     resetSession,
     createSeedData,
     createTestRoom,
+    createRantTestRoom,
     startAutoPlay,
     stopAutoPlay,
   };
