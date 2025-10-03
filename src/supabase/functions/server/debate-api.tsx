@@ -815,40 +815,59 @@ const compileRantsWithAI = async (
       throw new Error("AI service not configured");
     }
 
-    console.log(`Starting parallel processing of ${rants.length} rants...`);
-    
+    console.log(
+      `Starting parallel processing of ${rants.length} rants...`,
+    );
+
     // Step 1: Process each rant in parallel to generate statements + profile
     const parallelStartTime = Date.now();
     const rantPromises = rants.map(async (rant, index) => {
-      return generateStatementsAndProfile(rant, topic, openaiApiKey, index);
+      return generateStatementsAndProfile(
+        rant,
+        topic,
+        openaiApiKey,
+        index,
+      );
     });
-    
+
     const rantResults = await Promise.all(rantPromises);
     const parallelEndTime = Date.now();
-    
-    console.log(`Parallel processing completed in ${parallelEndTime - parallelStartTime}ms`);
-    
+
+    console.log(
+      `Parallel processing completed in ${parallelEndTime - parallelStartTime}ms`,
+    );
+
     // Step 2: Collect all statements and profiles
     const allStatements: string[] = [];
     const profiles: { [author: string]: string } = {};
-    
-    rantResults.forEach(result => {
+
+    rantResults.forEach((result) => {
       allStatements.push(...result.statements);
       profiles[result.author] = result.profile;
     });
-    
-    console.log(`Generated ${allStatements.length} statements and ${Object.keys(profiles).length} profiles`);
-    
+
+    console.log(
+      `Generated ${allStatements.length} statements and ${Object.keys(profiles).length} profiles`,
+    );
+
     // Step 3: Generate vote predictions using profiles
     const voteStartTime = Date.now();
-    const votePredictions = await generateVotePredictions(allStatements, profiles, topic, openaiApiKey);
+    const votePredictions = await generateVotePredictions(
+      allStatements,
+      profiles,
+      topic,
+      openaiApiKey,
+    );
     const voteEndTime = Date.now();
-    
-    console.log(`Vote prediction completed in ${voteEndTime - voteStartTime}ms`);
-    console.log(`Total AI compilation time: ${voteEndTime - parallelStartTime}ms`);
-    
-    return { statements: allStatements, votePredictions };
 
+    console.log(
+      `Vote prediction completed in ${voteEndTime - voteStartTime}ms`,
+    );
+    console.log(
+      `Total AI compilation time: ${voteEndTime - parallelStartTime}ms`,
+    );
+
+    return { statements: allStatements, votePredictions };
   } catch (error) {
     console.error("Error in parallel AI compilation:", error);
     throw error;
@@ -860,14 +879,14 @@ const generateStatementsAndProfile = async (
   rant: Rant,
   topic: string,
   apiKey: string,
-  index: number
+  index: number,
 ): Promise<{
   statements: string[];
   profile: string;
   author: string;
 }> => {
   const truncatedText = rant.text.substring(0, 400); // Slightly more context for better statements
-  
+
   const prompt = `Topic: "${topic}"
 Author: ${rant.author}
 Rant: ${truncatedText}
@@ -887,31 +906,37 @@ Rules:
 - Statements should be clear, voteable positions (1-2 sentences each)
 - Capture the author's key arguments and concerns
 - Include both strong positions and nuanced views from the rant
-- Profile should summarize their general political/ideological perspective`;
+- Profile should summarize their general political/ideological perspective
+
+Don't include any explanations or extra text, don't prefix statements with anything.`;
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+    const response = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content:
+                "Generate debate statements and user profile. Follow the exact format requested.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          max_tokens: 400,
+          temperature: 0.4,
+        }),
       },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "Generate debate statements and user profile. Follow the exact format requested."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        max_tokens: 400,
-        temperature: 0.4,
-      }),
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
@@ -924,56 +949,69 @@ Rules:
       throw new Error("No content generated");
     }
 
-    const { statements, profile } = parseStatementsAndProfile(content);
-    console.log(`Rant ${index + 1}/${rant.author}: Generated ${statements.length} statements`);
-    
-    return { statements, profile, author: rant.author };
+    const { statements, profile } =
+      parseStatementsAndProfile(content);
+    console.log(
+      `Rant ${index + 1}/${rant.author}: Generated ${statements.length} statements`,
+    );
 
+    return { statements, profile, author: rant.author };
   } catch (error) {
-    console.error(`Error processing rant ${index + 1} (${rant.author}):`, error);
+    console.error(
+      `Error processing rant ${index + 1} (${rant.author}):`,
+      error,
+    );
     // Return fallback to avoid breaking the entire compilation
     return {
-      statements: [`The ${topic} debate raises important questions about community priorities.`],
-      profile: "Moderate perspective with mixed concerns about the issue.",
-      author: rant.author
+      statements: [
+        `The ${topic} debate raises important questions about community priorities.`,
+      ],
+      profile:
+        "Moderate perspective with mixed concerns about the issue.",
+      author: rant.author,
     };
   }
 };
 
 // Parse statements and profile from AI response
-const parseStatementsAndProfile = (content: string): {
+const parseStatementsAndProfile = (
+  content: string,
+): {
   statements: string[];
   profile: string;
 } => {
-  const lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  
+  const lines = content
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
   const statements: string[] = [];
   let profile = "";
   let inStatementsSection = false;
   let inProfileSection = false;
-  
+
   for (const line of lines) {
     if (line === "STATEMENTS") {
       inStatementsSection = true;
       inProfileSection = false;
       continue;
     }
-    
+
     if (line === "PROFILE") {
       inStatementsSection = false;
       inProfileSection = true;
       continue;
     }
-    
+
     if (inStatementsSection) {
       statements.push(line);
     }
-    
+
     if (inProfileSection) {
       profile = profile ? `${profile} ${line}` : line;
     }
   }
-  
+
   return { statements, profile };
 };
 
@@ -982,13 +1020,20 @@ const generateVotePredictions = async (
   statements: string[],
   profiles: { [author: string]: string },
   topic: string,
-  apiKey: string
-): Promise<{ [statementIndex: number]: { [author: string]: "agree" | "disagree" | "pass" } }> => {
-  
+  apiKey: string,
+): Promise<{
+  [statementIndex: number]: {
+    [author: string]: "agree" | "disagree" | "pass";
+  };
+}> => {
   const authors = Object.keys(profiles);
-  const profilesText = authors.map(author => `${author}: ${profiles[author]}`).join('\n');
-  const statementsText = statements.map((stmt, i) => `${i}: ${stmt}`).join('\n');
-  
+  const profilesText = authors
+    .map((author) => `${author}: ${profiles[author]}`)
+    .join("\n");
+  const statementsText = statements
+    .map((stmt, i) => `${i}: ${stmt}`)
+    .join("\n");
+
   const prompt = `Topic: "${topic}"
 
 User Profiles:
@@ -1000,7 +1045,7 @@ ${statementsText}
 Predict how each user would vote on each statement based on their profile.
 
 Format (CSV):
-StatementIndex,${authors.join(',')}
+StatementIndex,${authors.join(",")}
 0,1,-1,0,1
 1,-1,1,1,0
 2,0,0,1,-1
@@ -1009,31 +1054,37 @@ Use: 1=agree, -1=disagree, 0=pass
 Base predictions on how each profile aligns with each statement.`;
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+    const response = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content:
+                "Predict voting patterns based on user profiles. Return only CSV format.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          max_tokens: 800,
+          temperature: 0.2,
+        }),
       },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "Predict voting patterns based on user profiles. Return only CSV format."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        max_tokens: 800,
-        temperature: 0.2,
-      }),
-    });
+    );
 
     if (!response.ok) {
-      throw new Error(`Vote prediction API error: ${response.status}`);
+      throw new Error(
+        `Vote prediction API error: ${response.status}`,
+      );
     }
 
     const data = await response.json();
@@ -1044,7 +1095,6 @@ Base predictions on how each profile aligns with each statement.`;
     }
 
     return parseVotePredictions(content, authors);
-
   } catch (error) {
     console.error("Error generating vote predictions:", error);
     // Return empty predictions to avoid breaking the system
@@ -1053,31 +1103,49 @@ Base predictions on how each profile aligns with each statement.`;
 };
 
 // Parse vote predictions from CSV format
-const parseVotePredictions = (csvContent: string, authors: string[]): {
-  [statementIndex: number]: { [author: string]: "agree" | "disagree" | "pass" };
+const parseVotePredictions = (
+  csvContent: string,
+  authors: string[],
+): {
+  [statementIndex: number]: {
+    [author: string]: "agree" | "disagree" | "pass";
+  };
 } => {
-  const lines = csvContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  const votePredictions: { [statementIndex: number]: { [author: string]: "agree" | "disagree" | "pass" } } = {};
-  
+  const lines = csvContent
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const votePredictions: {
+    [statementIndex: number]: {
+      [author: string]: "agree" | "disagree" | "pass";
+    };
+  } = {};
+
   let headerProcessed = false;
-  
+
   for (const line of lines) {
-    if (!headerProcessed && line.startsWith("StatementIndex,")) {
+    if (
+      !headerProcessed &&
+      line.startsWith("StatementIndex,")
+    ) {
       headerProcessed = true;
       continue;
     }
-    
+
     if (headerProcessed) {
-      const parts = line.split(',');
+      const parts = line.split(",");
       const statementIndex = parseInt(parts[0]);
       const votes = parts.slice(1);
-      
-      if (!isNaN(statementIndex) && votes.length === authors.length) {
+
+      if (
+        !isNaN(statementIndex) &&
+        votes.length === authors.length
+      ) {
         votePredictions[statementIndex] = {};
         for (let i = 0; i < authors.length; i++) {
           const author = authors[i];
           const voteCode = votes[i].trim();
-          
+
           let vote: "agree" | "disagree" | "pass";
           if (voteCode === "1") {
             vote = "agree";
@@ -1088,13 +1156,13 @@ const parseVotePredictions = (csvContent: string, authors: string[]): {
           } else {
             vote = "pass"; // Default for invalid codes
           }
-          
+
           votePredictions[statementIndex][author] = vote;
         }
       }
     }
   }
-  
+
   return votePredictions;
 };
 
