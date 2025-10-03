@@ -631,31 +631,24 @@ const getVotesForStatements = async (
 ): Promise<{ [statementId: string]: Vote[] }> => {
   const allVotes: { [statementId: string]: Vote[] } = {};
 
-  // Initialize empty arrays for all statements
-  for (const id of statementIds) {
-    allVotes[id] = [];
-  }
-
-  try {
-    // Get all votes at once using prefix search
-    const votes = await kv.getByPrefix("vote:");
-
-    for (const voteData of votes) {
-      try {
-        const vote: Vote = JSON.parse(voteData);
-        if (statementIds.includes(vote.statementId)) {
-          allVotes[vote.statementId].push(vote);
-        }
-      } catch (error) {
-        console.error(
-          "Error parsing vote during bulk fetch:",
-          voteData,
-          error,
+  // Fetch votes for each statement individually to avoid hitting 1000-item limits
+  // This is more efficient than fetching all votes and filtering
+  for (const statementId of statementIds) {
+    try {
+      const votes = await getVotesForStatement(statementId);
+      allVotes[statementId] = votes;
+      if (votes.length > 0) {
+        console.log(
+          `Statement ${statementId} has ${votes.length} votes`,
         );
       }
+    } catch (error) {
+      console.error(
+        `Error fetching votes for statement ${statementId}:`,
+        error,
+      );
+      allVotes[statementId] = []; // Ensure we have an empty array
     }
-  } catch (error) {
-    console.error("Error fetching bulk votes:", error);
   }
 
   return allVotes;
