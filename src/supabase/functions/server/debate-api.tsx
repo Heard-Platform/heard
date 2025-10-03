@@ -584,6 +584,14 @@ const saveVote = async (vote: Vote) => {
   );
 };
 
+const bulkSaveVotes = async (votes: Vote[]) => {
+  const items = votes.map(vote => ({
+    key: `vote:${vote.statementId}:${vote.userId}`,
+    value: JSON.stringify(vote),
+  }));
+  await kv.bulkSet(items);
+};
+
 const deleteVote = async (
   statementId: string,
   userId: string,
@@ -741,6 +749,14 @@ const saveStatement = async (statement: Statement) => {
     `statement:${statement.roomId}:${statement.id}`,
     JSON.stringify(statement),
   );
+};
+
+const bulkSaveStatements = async (statements: Statement[]) => {
+  const items = statements.map(statement => ({
+    key: `statement:${statement.roomId}:${statement.id}`,
+    value: JSON.stringify(statement),
+  }));
+  await kv.bulkSet(items);
 };
 
 // Rant utility functions
@@ -1527,6 +1543,7 @@ app.post(
       // Special handling for rant-first rooms: compile rants into statements when starting debate
       if (room.rantFirst && room.phase === "lobby" && phase === "round1") {
         console.log("Starting rant-first debate - compiling rants with AI");
+        const compilationStartTime = Date.now();
         
         try {
           const rants = await getRantsForRoom(roomId);
@@ -1540,31 +1557,37 @@ app.post(
           }
 
           // Generate statements and vote predictions using AI
+          const aiStartTime = Date.now();
           const aiResult = await compileRantsWithAI(rants, room.topic);
-          console.log(`AI generated ${aiResult.statements.length} statements with vote predictions`);
+          const aiEndTime = Date.now();
+          console.log(`AI generated ${aiResult.statements.length} statements with vote predictions in ${aiEndTime - aiStartTime}ms`);
 
-          // Create statement objects and save them
-          const statementPromises = aiResult.statements.map(async (text, index) => {
+          // Prepare all statements and votes for bulk insertion
+          const baseTimestamp = Date.now();
+          const statements: Statement[] = [];
+          const votes: Vote[] = [];
+
+          // Create all statements first
+          for (let index = 0; index < aiResult.statements.length; index++) {
             const statementId = generateId();
             const statement: Statement = {
               id: statementId,
-              text: text,
+              text: aiResult.statements[index],
               author: "AI Compiler", // Special author to indicate AI-generated
               agrees: 0, // Will be calculated from votes
               disagrees: 0, // Will be calculated from votes  
               passes: 0, // Will be calculated from votes
               roomId: roomId,
-              timestamp: Date.now() + index, // Slight offset to maintain order
+              timestamp: baseTimestamp + index, // Slight offset to maintain order
               round: 1, // All AI statements go into round 1
               voters: {}, // Will be calculated from votes
             };
-            
-            await saveStatement(statement);
+            statements.push(statement);
 
-            // Save predicted votes for this statement
+            // Create votes for this statement
             const votePredictionsForStatement = aiResult.votePredictions[index.toString()];
             if (votePredictionsForStatement) {
-              const votePromises = Object.entries(votePredictionsForStatement).map(async ([author, voteType]) => {
+              for (const [author, voteType] of Object.entries(votePredictionsForStatement)) {
                 // Find the user ID for this author
                 const authorUser = await getUserByNickname(author);
                 if (authorUser) {
@@ -1573,20 +1596,27 @@ app.post(
                     statementId: statementId,
                     userId: authorUser.id,
                     voteType: voteType as "agree" | "disagree" | "pass",
-                    timestamp: Date.now() + index + Math.random() * 1000, // Slight randomization
+                    timestamp: baseTimestamp + index + Math.random() * 1000, // Slight randomization
                   };
-                  await saveVote(vote);
-                  console.log(`Saved predicted vote: ${author} (${authorUser.id}) voted ${voteType} on statement ${index}`);
+                  votes.push(vote);
                 }
-              });
-              await Promise.all(votePromises);
+              }
             }
+          }
 
-            return statement;
-          });
+          // Bulk save all statements at once
+          console.log(`Bulk saving ${statements.length} statements...`);
+          await bulkSaveStatements(statements);
 
-          await Promise.all(statementPromises);
-          console.log(`Saved ${aiResult.statements.length} AI-compiled statements and their predicted votes to database`);
+          // Bulk save all votes at once
+          console.log(`Bulk saving ${votes.length} votes...`);
+          await bulkSaveVotes(votes);
+
+          const compilationEndTime = Date.now();
+          const totalTime = compilationEndTime - compilationStartTime;
+          const dbTime = compilationEndTime - aiEndTime;
+          console.log(`Successfully bulk saved ${statements.length} AI-compiled statements and ${votes.length} predicted votes to database`);
+          console.log(`Total compilation time: ${totalTime}ms (AI: ${aiEndTime - aiStartTime}ms, DB: ${dbTime}ms)`);
 
         } catch (error) {
           console.error("Error compiling rants with AI:", error);
