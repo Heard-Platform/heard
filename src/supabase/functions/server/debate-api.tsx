@@ -815,122 +815,287 @@ const compileRantsWithAI = async (
       throw new Error("AI service not configured");
     }
 
-    // Combine all rants into a single text
-    const rantsText = rants
-      .map((rant) => `${rant.author}: ${rant.text}`)
-      .join("\n\n");
+    console.log(`Starting parallel processing of ${rants.length} rants...`);
+    
+    // Step 1: Process each rant in parallel to generate statements + profile
+    const parallelStartTime = Date.now();
+    const rantPromises = rants.map(async (rant, index) => {
+      return generateStatementsAndProfile(rant, topic, openaiApiKey, index);
+    });
+    
+    const rantResults = await Promise.all(rantPromises);
+    const parallelEndTime = Date.now();
+    
+    console.log(`Parallel processing completed in ${parallelEndTime - parallelStartTime}ms`);
+    
+    // Step 2: Collect all statements and profiles
+    const allStatements: string[] = [];
+    const profiles: { [author: string]: string } = {};
+    
+    rantResults.forEach(result => {
+      allStatements.push(...result.statements);
+      profiles[result.author] = result.profile;
+    });
+    
+    console.log(`Generated ${allStatements.length} statements and ${Object.keys(profiles).length} profiles`);
+    
+    // Step 3: Generate vote predictions using profiles
+    const voteStartTime = Date.now();
+    const votePredictions = await generateVotePredictions(allStatements, profiles, topic, openaiApiKey);
+    const voteEndTime = Date.now();
+    
+    console.log(`Vote prediction completed in ${voteEndTime - voteStartTime}ms`);
+    console.log(`Total AI compilation time: ${voteEndTime - parallelStartTime}ms`);
+    
+    return { statements: allStatements, votePredictions };
 
-    const prompt = `You are helping facilitate a structured debate on the topic: "${topic}"
-
-Here are raw, unfiltered thoughts from participants:
-
-${rantsText}
-
-Based on these rants, create 20-30 diverse debate statements that:
-1. Capture the key arguments, concerns, and perspectives from the rants
-2. Are concise and clear (1-2 sentences each)
-3. Cover different viewpoints and nuances
-4. Are suitable for voting (agree/disagree/pass)
-5. Include both strong positions and more nuanced middle-ground perspectives
-6. Maintain the authentic voice and concerns of the participants
-
-Then, for each statement, predict how each participant would vote based on their rant content.
-
-Return your response in this exact JSON format:
-{
-  "statements": [
-    "Statement 1 text here",
-    "Statement 2 text here"
-  ],
-  "votes": {
-    "0": {
-      "${rants[0]?.author}": "agree",
-      "${rants[1]?.author}": "disagree"
-    },
-    "1": {
-      "${rants[0]?.author}": "pass",
-      "${rants[1]?.author}": "agree"
-    }
+  } catch (error) {
+    console.error("Error in parallel AI compilation:", error);
+    throw error;
   }
-}
+};
 
-Where:
-- "statements" is an array of debate statements
-- "votes" has statement indices as keys
-- Each vote object has participant names as keys and "agree"/"disagree"/"pass" as values
-- Base predictions on how each person's rant aligns with each statement
-- Use "pass" when someone would likely be neutral or when their position is unclear`;
+// Generate 3-5 statements + profile for a single rant
+const generateStatementsAndProfile = async (
+  rant: Rant,
+  topic: string,
+  apiKey: string,
+  index: number
+): Promise<{
+  statements: string[];
+  profile: string;
+  author: string;
+}> => {
+  const truncatedText = rant.text.substring(0, 400); // Slightly more context for better statements
+  
+  const prompt = `Topic: "${topic}"
+Author: ${rant.author}
+Rant: ${truncatedText}
 
-    const response = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${openaiApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are a skilled debate facilitator who analyzes participant perspectives and predicts voting behavior. Always respond with valid JSON.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          max_tokens: 3000,
-          temperature: 0.7,
-        }),
+Generate 3-5 debate statements based on this person's rant, plus create a profile.
+
+Format:
+STATEMENTS
+Statement 1 here
+Statement 2 here
+Statement 3 here
+
+PROFILE
+Brief description of this person's political/social leanings based on their rant (1-2 sentences)
+
+Rules:
+- Statements should be clear, voteable positions (1-2 sentences each)
+- Capture the author's key arguments and concerns
+- Include both strong positions and nuanced views from the rant
+- Profile should summarize their general political/ideological perspective`;
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "Generate debate statements and user profile. Follow the exact format requested."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        max_tokens: 400,
+        temperature: 0.4,
+      }),
+    });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error("OpenAI API error:", error);
-      throw new Error(`AI service error: ${response.status}`);
+      throw new Error(`API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const generatedText = data.choices[0]?.message?.content;
+    const content = data.choices[0]?.message?.content;
 
-    if (!generatedText) {
-      throw new Error("No content generated by AI");
+    if (!content) {
+      throw new Error("No content generated");
     }
 
-    // Parse the JSON response
-    let parsedResponse;
-    try {
-      parsedResponse = JSON.parse(generatedText);
-    } catch (parseError) {
-      console.error(
-        "Failed to parse AI response as JSON:",
-        generatedText,
-      );
-      throw new Error("AI returned invalid JSON format");
-    }
+    const { statements, profile } = parseStatementsAndProfile(content);
+    console.log(`Rant ${index + 1}/${rant.author}: Generated ${statements.length} statements`);
+    
+    return { statements, profile, author: rant.author };
 
-    const statements = parsedResponse.statements || [];
-    const votePredictions = parsedResponse.votes || {};
-
-    if (!Array.isArray(statements) || statements.length === 0) {
-      throw new Error("AI did not generate valid statements");
-    }
-
-    console.log(
-      `AI generated ${statements.length} statements and vote predictions for ${rants.length} participants`,
-    );
-    return {
-      statements: statements.slice(0, 30), // Ensure we don't exceed 30 statements
-      votePredictions,
-    };
   } catch (error) {
-    console.error("Error in AI compilation:", error);
-    throw error;
+    console.error(`Error processing rant ${index + 1} (${rant.author}):`, error);
+    // Return fallback to avoid breaking the entire compilation
+    return {
+      statements: [`The ${topic} debate raises important questions about community priorities.`],
+      profile: "Moderate perspective with mixed concerns about the issue.",
+      author: rant.author
+    };
   }
+};
+
+// Parse statements and profile from AI response
+const parseStatementsAndProfile = (content: string): {
+  statements: string[];
+  profile: string;
+} => {
+  const lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  
+  const statements: string[] = [];
+  let profile = "";
+  let inStatementsSection = false;
+  let inProfileSection = false;
+  
+  for (const line of lines) {
+    if (line === "STATEMENTS") {
+      inStatementsSection = true;
+      inProfileSection = false;
+      continue;
+    }
+    
+    if (line === "PROFILE") {
+      inStatementsSection = false;
+      inProfileSection = true;
+      continue;
+    }
+    
+    if (inStatementsSection) {
+      statements.push(line);
+    }
+    
+    if (inProfileSection) {
+      profile = profile ? `${profile} ${line}` : line;
+    }
+  }
+  
+  return { statements, profile };
+};
+
+// Generate vote predictions using all profiles and statements
+const generateVotePredictions = async (
+  statements: string[],
+  profiles: { [author: string]: string },
+  topic: string,
+  apiKey: string
+): Promise<{ [statementIndex: number]: { [author: string]: "agree" | "disagree" | "pass" } }> => {
+  
+  const authors = Object.keys(profiles);
+  const profilesText = authors.map(author => `${author}: ${profiles[author]}`).join('\n');
+  const statementsText = statements.map((stmt, i) => `${i}: ${stmt}`).join('\n');
+  
+  const prompt = `Topic: "${topic}"
+
+User Profiles:
+${profilesText}
+
+Statements:
+${statementsText}
+
+Predict how each user would vote on each statement based on their profile.
+
+Format (CSV):
+StatementIndex,${authors.join(',')}
+0,1,-1,0,1
+1,-1,1,1,0
+2,0,0,1,-1
+
+Use: 1=agree, -1=disagree, 0=pass
+Base predictions on how each profile aligns with each statement.`;
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "Predict voting patterns based on user profiles. Return only CSV format."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        max_tokens: 800,
+        temperature: 0.2,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Vote prediction API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content;
+
+    if (!content) {
+      throw new Error("No vote predictions generated");
+    }
+
+    return parseVotePredictions(content, authors);
+
+  } catch (error) {
+    console.error("Error generating vote predictions:", error);
+    // Return empty predictions to avoid breaking the system
+    return {};
+  }
+};
+
+// Parse vote predictions from CSV format
+const parseVotePredictions = (csvContent: string, authors: string[]): {
+  [statementIndex: number]: { [author: string]: "agree" | "disagree" | "pass" };
+} => {
+  const lines = csvContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const votePredictions: { [statementIndex: number]: { [author: string]: "agree" | "disagree" | "pass" } } = {};
+  
+  let headerProcessed = false;
+  
+  for (const line of lines) {
+    if (!headerProcessed && line.startsWith("StatementIndex,")) {
+      headerProcessed = true;
+      continue;
+    }
+    
+    if (headerProcessed) {
+      const parts = line.split(',');
+      const statementIndex = parseInt(parts[0]);
+      const votes = parts.slice(1);
+      
+      if (!isNaN(statementIndex) && votes.length === authors.length) {
+        votePredictions[statementIndex] = {};
+        for (let i = 0; i < authors.length; i++) {
+          const author = authors[i];
+          const voteCode = votes[i].trim();
+          
+          let vote: "agree" | "disagree" | "pass";
+          if (voteCode === "1") {
+            vote = "agree";
+          } else if (voteCode === "-1") {
+            vote = "disagree";
+          } else if (voteCode === "0") {
+            vote = "pass";
+          } else {
+            vote = "pass"; // Default for invalid codes
+          }
+          
+          votePredictions[statementIndex][author] = vote;
+        }
+      }
+    }
+  }
+  
+  return votePredictions;
 };
 
 // Create or join user session
