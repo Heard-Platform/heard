@@ -377,7 +377,7 @@ export function GameScreen({
                           )}
                           {startingDebate && isRantFirstRoom && (
                             <p className="text-xs text-purple-600 mt-2">
-                              AI is analyzing rants and creating debate statements...
+                              AI is analyzing rants, creating statements, and predicting votes...
                             </p>
                           )}
                         </div>
