@@ -26,7 +26,7 @@ export function RantSubmission({
 
   const handleSubmit = async () => {
     if (!isValid || isSubmitting) return;
-    
+
     try {
       await onSubmit(rantText.trim());
       setRantText("");
@@ -54,7 +54,9 @@ export function RantSubmission({
           <div>
             <h3 className="text-purple-900">Rant submitted!</h3>
             <p className="text-sm text-purple-700 mt-1">
-              Waiting for other players to submit their rants. The AI will compile everyone's thoughts into debate statements.
+              Waiting for other players to submit their rants.
+              Then we'll compile everyone's thoughts into debate
+              statements.
             </p>
           </div>
         </div>
@@ -75,15 +77,21 @@ export function RantSubmission({
               <Brain className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <h3 className="text-purple-900">Share Your Rant</h3>
+              <h3 className="text-purple-900">
+                Share Your Rant
+              </h3>
               <p className="text-sm text-purple-700">
-                Let it all out! AI will compile everyone's thoughts into structured debate points.
+                Let it all out! We'll compile everyone's
+                thoughts into structured debate points.
               </p>
             </div>
           </div>
 
           <div className="space-y-3">
-            <Label htmlFor="rant-input" className="text-purple-900">
+            <Label
+              htmlFor="rant-input"
+              className="text-purple-900"
+            >
               Your unfiltered thoughts:
             </Label>
             <Textarea
@@ -96,11 +104,12 @@ export function RantSubmission({
               maxLength={1000}
               disabled={isSubmitting}
             />
-            
+
             <div className="flex justify-between items-center text-xs">
               {rantText.trim().length > 0 && !isValid && (
                 <span className="text-orange-600">
-                  Need {remainingChars} more character{remainingChars !== 1 ? 's' : ''} (min. 50)
+                  Need {remainingChars} more character
+                  {remainingChars !== 1 ? "s" : ""} (min. 50)
                 </span>
               )}
               {isValid && (
@@ -122,7 +131,11 @@ export function RantSubmission({
                 {isSubmitting ? (
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                     className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
                   />
                 ) : (

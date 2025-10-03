@@ -54,7 +54,7 @@ export interface DebateRoom {
   isActive: boolean;
   createdAt: number;
   mode: DebateMode; // Controls whether phases advance automatically or by host
-  rantFirst?: boolean; // Whether this room starts with AI-compiled rants
+  rantFirst?: boolean; // Whether this room starts with rants
 }
 
 export interface Rant {

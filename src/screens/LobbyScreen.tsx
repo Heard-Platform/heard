@@ -7,15 +7,30 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
 import { ActiveRoomsList } from "../components/ActiveRoomsList";
-import { Plus, Database, Clock, User, LogOut, Brain } from "lucide-react";
-import type { UserSession, DebateRoom, DebateMode } from "../types";
+import {
+  Plus,
+  Database,
+  Clock,
+  User,
+  LogOut,
+  Brain,
+} from "lucide-react";
+import type {
+  UserSession,
+  DebateRoom,
+  DebateMode,
+} from "../types";
 
 interface LobbyScreenProps {
   user: UserSession | null;
   activeRooms: DebateRoom[];
   loading: boolean;
   error: string | null;
-  onCreateRoom: (topic: string, mode: DebateMode, rantFirst?: boolean) => Promise<void>;
+  onCreateRoom: (
+    topic: string,
+    mode: DebateMode,
+    rantFirst?: boolean,
+  ) => Promise<void>;
   onJoinRoom: (roomId: string) => Promise<void>;
   onRefreshRooms: () => Promise<DebateRoom[]>;
   onJumpToFinalResults?: () => Promise<void>;
@@ -27,7 +42,7 @@ interface LobbyScreenProps {
 
 const topicExamples = [
   "Social media does more harm than good for society",
-  "Remote work is better than in-person work", 
+  "Remote work is better than in-person work",
   "AI will solve more problems than it creates",
   "Democracy is the best form of government",
   "Economic growth should be prioritized over environmental protection",
@@ -49,7 +64,9 @@ export function LobbyScreen({
 }: LobbyScreenProps) {
   const [newRoomTopic, setNewRoomTopic] = useState("");
   const [showExamples, setShowExamples] = useState(false);
-  const [debateMode, setDebateMode] = useState<DebateMode>("host-controlled");
+  const [debateMode, setDebateMode] = useState<DebateMode>(
+    "host-controlled",
+  );
   const [rantFirst, setRantFirst] = useState(false);
 
   const isTopicValid = newRoomTopic.trim().length >= 10;
@@ -57,7 +74,11 @@ export function LobbyScreen({
 
   const handleCreateRoom = async () => {
     if (!isTopicValid) return;
-    await onCreateRoom(newRoomTopic.trim(), debateMode, rantFirst);
+    await onCreateRoom(
+      newRoomTopic.trim(),
+      debateMode,
+      rantFirst,
+    );
     setNewRoomTopic(""); // Clear the input after creating
     setDebateMode("host-controlled"); // Reset to default
     setRantFirst(false); // Reset to default
@@ -95,7 +116,7 @@ export function LobbyScreen({
       const result = await onCreateRantTestRoom();
       if (result) {
         alert(
-          `✅ ${result.message}\\n\\nCreated:\\n• ${result.players} players with diverse viewpoints\\n• ${result.rants} detailed rants ready for AI compilation\\n• Click "Compile Rants & Start Debate!" to test AI!\\n\\nCheck the \"Join Existing Room\" section!`,
+          `✅ ${result.message}\\n\\nCreated:\\n• ${result.players} players with diverse viewpoints\\n• ${result.rants} detailed rants ready for compilation\\n• Click "Compile Rants & Start Debate!" to test the system!\\n\\nCheck the \"Join Existing Room\" section!`,
         );
       }
     }
@@ -175,14 +196,18 @@ export function LobbyScreen({
             <h3 className="mb-4">🏛️ Create New Debate Room</h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="topic-input">What should we debate?</Label>
+                <Label htmlFor="topic-input">
+                  What should we debate?
+                </Label>
                 <Input
                   id="topic-input"
                   type="text"
                   placeholder="Enter your debate topic (min. 10 characters)..."
                   maxLength={100}
                   value={newRoomTopic}
-                  onChange={(e) => setNewRoomTopic(e.target.value)}
+                  onChange={(e) =>
+                    setNewRoomTopic(e.target.value)
+                  }
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && isTopicValid) {
                       handleCreateRoom();
@@ -191,11 +216,13 @@ export function LobbyScreen({
                   className="w-full"
                 />
                 <div className="flex justify-between items-center text-xs">
-                  {newRoomTopic.trim().length > 0 && !isTopicValid && (
-                    <span className="text-orange-600">
-                      Need {remainingChars} more character{remainingChars !== 1 ? 's' : ''}
-                    </span>
-                  )}
+                  {newRoomTopic.trim().length > 0 &&
+                    !isTopicValid && (
+                      <span className="text-orange-600">
+                        Need {remainingChars} more character
+                        {remainingChars !== 1 ? "s" : ""}
+                      </span>
+                    )}
                   {isTopicValid && (
                     <span className="text-green-600">
                       ✓ Topic looks good!
@@ -213,7 +240,9 @@ export function LobbyScreen({
                   <div className="flex items-center space-x-3">
                     <Clock className="w-4 h-4 text-blue-600" />
                     <div>
-                      <p className="text-sm">Enable Real-time Mode</p>
+                      <p className="text-sm">
+                        Enable Real-time Mode
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Phases advance automatically with timers
                       </p>
@@ -221,19 +250,24 @@ export function LobbyScreen({
                   </div>
                   <Switch
                     checked={debateMode === "realtime"}
-                    onCheckedChange={(checked) => 
-                      setDebateMode(checked ? "realtime" : "host-controlled")
+                    onCheckedChange={(checked) =>
+                      setDebateMode(
+                        checked
+                          ? "realtime"
+                          : "host-controlled",
+                      )
                     }
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center space-x-3">
                     <Brain className="w-4 h-4 text-purple-600" />
                     <div>
-                      <p className="text-sm">AI Rant First</p>
+                      <p className="text-sm">Rant First Mode</p>
                       <p className="text-xs text-muted-foreground">
-                        Players write rants, AI compiles initial statements
+                        Players write rants, then statements are
+                        auto-generated
                       </p>
                     </div>
                   </div>
@@ -243,7 +277,7 @@ export function LobbyScreen({
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Button
                   type="button"
@@ -252,9 +286,10 @@ export function LobbyScreen({
                   onClick={() => setShowExamples(!showExamples)}
                   className="text-xs text-muted-foreground hover:text-foreground"
                 >
-                  {showExamples ? "Hide" : "Show"} example topics
+                  {showExamples ? "Hide" : "Show"} example
+                  topics
                 </Button>
-                
+
                 {showExamples && (
                   <div className="space-y-1">
                     {topicExamples.map((topic) => (
@@ -262,7 +297,9 @@ export function LobbyScreen({
                         key={topic}
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleExampleClick(topic)}
+                        onClick={() =>
+                          handleExampleClick(topic)
+                        }
                         className="w-full text-left justify-start text-xs h-auto py-2 text-muted-foreground hover:text-foreground"
                       >
                         {topic}
@@ -271,7 +308,7 @@ export function LobbyScreen({
                   </div>
                 )}
               </div>
-              
+
               <Button
                 onClick={handleCreateRoom}
                 disabled={!isTopicValid}
@@ -333,7 +370,7 @@ export function LobbyScreen({
               className="text-xs bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100"
             >
               <Brain className="w-3 h-3 mr-1" />
-              🧠 DEV: AI Rant Test Room
+              🧠 DEV: Rant-First Test Room
             </Button>
           )}
         </div>

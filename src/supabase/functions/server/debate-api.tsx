@@ -46,7 +46,7 @@ interface DebateRoom {
   isActive: boolean;
   createdAt: number;
   mode: DebateMode; // Controls whether phases advance automatically or by host
-  rantFirst?: boolean; // Whether this room starts with AI-compiled rants
+  rantFirst?: boolean; // Whether this room starts with rants
 }
 
 interface Rant {
@@ -196,7 +196,10 @@ const sendPhaseChangeNotifications = async (
         if (!user.isTestUser) {
           participants.push(user);
         } else {
-          console.log("Skipping phase change email for test user:", user.email);
+          console.log(
+            "Skipping phase change email for test user:",
+            user.email,
+          );
         }
       }
     }
@@ -473,12 +476,12 @@ const getUserSession = async (
     const session = await kv.get(`user:${userId}`);
     if (!session) return null;
     const userData = JSON.parse(session);
-    
+
     // Default isTestUser to false for existing users without this field
     if (userData.isTestUser === undefined) {
       userData.isTestUser = false;
     }
-    
+
     return userData;
   } catch (error) {
     console.error(
@@ -585,7 +588,7 @@ const saveVote = async (vote: Vote) => {
 };
 
 const bulkSaveVotes = async (votes: Vote[]) => {
-  const items = votes.map(vote => ({
+  const items = votes.map((vote) => ({
     key: `vote:${vote.statementId}:${vote.userId}`,
     value: JSON.stringify(vote),
   }));
@@ -752,7 +755,7 @@ const saveStatement = async (statement: Statement) => {
 };
 
 const bulkSaveStatements = async (statements: Statement[]) => {
-  const items = statements.map(statement => ({
+  const items = statements.map((statement) => ({
     key: `statement:${statement.roomId}:${statement.id}`,
     value: JSON.stringify(statement),
   }));
@@ -767,7 +770,9 @@ const saveRant = async (rant: Rant) => {
   );
 };
 
-const getRantsForRoom = async (roomId: string): Promise<Rant[]> => {
+const getRantsForRoom = async (
+  roomId: string,
+): Promise<Rant[]> => {
   try {
     const rants = await kv.getByPrefix(`rant:${roomId}:`);
     return rants
@@ -791,22 +796,29 @@ const getRantsForRoom = async (roomId: string): Promise<Rant[]> => {
 };
 
 // AI compilation functionality with vote predictions
-const compileRantsWithAI = async (rants: Rant[], topic: string): Promise<{
+const compileRantsWithAI = async (
+  rants: Rant[],
+  topic: string,
+): Promise<{
   statements: string[];
-  votePredictions: { [statementIndex: number]: { [author: string]: "agree" | "disagree" | "pass" } };
+  votePredictions: {
+    [statementIndex: number]: {
+      [author: string]: "agree" | "disagree" | "pass";
+    };
+  };
 }> => {
   try {
     const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
-    
+
     if (!openaiApiKey) {
       console.error("OPENAI_API_KEY not found in environment");
       throw new Error("AI service not configured");
     }
 
     // Combine all rants into a single text
-    const rantsText = rants.map(rant => 
-      `${rant.author}: ${rant.text}`
-    ).join("\n\n");
+    const rantsText = rants
+      .map((rant) => `${rant.author}: ${rant.text}`)
+      .join("\n\n");
 
     const prompt = `You are helping facilitate a structured debate on the topic: "${topic}"
 
@@ -849,28 +861,32 @@ Where:
 - Base predictions on how each person's rant aligns with each statement
 - Use "pass" when someone would likely be neutral or when their position is unclear`;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${openaiApiKey}`,
-        "Content-Type": "application/json",
+    const response = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${openaiApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a skilled debate facilitator who analyzes participant perspectives and predicts voting behavior. Always respond with valid JSON.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          max_tokens: 3000,
+          temperature: 0.7,
+        }),
       },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: "You are a skilled debate facilitator who analyzes participant perspectives and predicts voting behavior. Always respond with valid JSON."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        max_tokens: 3000,
-        temperature: 0.7,
-      }),
-    });
+    );
 
     if (!response.ok) {
       const error = await response.text();
@@ -880,7 +896,7 @@ Where:
 
     const data = await response.json();
     const generatedText = data.choices[0]?.message?.content;
-    
+
     if (!generatedText) {
       throw new Error("No content generated by AI");
     }
@@ -890,7 +906,10 @@ Where:
     try {
       parsedResponse = JSON.parse(generatedText);
     } catch (parseError) {
-      console.error("Failed to parse AI response as JSON:", generatedText);
+      console.error(
+        "Failed to parse AI response as JSON:",
+        generatedText,
+      );
       throw new Error("AI returned invalid JSON format");
     }
 
@@ -901,12 +920,13 @@ Where:
       throw new Error("AI did not generate valid statements");
     }
 
-    console.log(`AI generated ${statements.length} statements and vote predictions for ${rants.length} participants`);
+    console.log(
+      `AI generated ${statements.length} statements and vote predictions for ${rants.length} participants`,
+    );
     return {
       statements: statements.slice(0, 30), // Ensure we don't exceed 30 statements
-      votePredictions
+      votePredictions,
     };
-
   } catch (error) {
     console.error("Error in AI compilation:", error);
     throw error;
@@ -986,7 +1006,10 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
         );
       });
     } else {
-      console.log("Skipping welcome email for test user:", userSession.email);
+      console.log(
+        "Skipping welcome email for test user:",
+        userSession.email,
+      );
     }
 
     return c.json({
@@ -1150,7 +1173,9 @@ app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
     );
 
     // Get rants if this is a rant-first room
-    const rants = room.rantFirst ? await getRantsForRoom(roomId) : [];
+    const rants = room.rantFirst
+      ? await getRantsForRoom(roomId)
+      : [];
     if (room.rantFirst) {
       console.log(
         `Found ${rants.length} rants for room ${roomId}`,
@@ -1312,11 +1337,16 @@ app.post(
 
       // Check if user has already submitted a rant
       const existingRants = await getRantsForRoom(roomId);
-      const userHasRant = existingRants.some(rant => rant.author === user.nickname);
-      
+      const userHasRant = existingRants.some(
+        (rant) => rant.author === user.nickname,
+      );
+
       if (userHasRant) {
         return c.json(
-          { error: "You have already submitted a rant for this debate" },
+          {
+            error:
+              "You have already submitted a rant for this debate",
+          },
           400,
         );
       }
@@ -1337,10 +1367,7 @@ app.post(
       });
     } catch (error) {
       console.error("Error submitting rant:", error);
-      return c.json(
-        { error: "Failed to submit rant" },
-        500,
-      );
+      return c.json({ error: "Failed to submit rant" }, 500);
     }
   },
 );
@@ -1541,26 +1568,40 @@ app.post(
       }
 
       // Special handling for rant-first rooms: compile rants into statements when starting debate
-      if (room.rantFirst && room.phase === "lobby" && phase === "round1") {
-        console.log("Starting rant-first debate - compiling rants with AI");
+      if (
+        room.rantFirst &&
+        room.phase === "lobby" &&
+        phase === "round1"
+      ) {
+        console.log(
+          "Starting rant-first debate - compiling rants",
+        );
         const compilationStartTime = Date.now();
-        
+
         try {
           const rants = await getRantsForRoom(roomId);
           console.log(`Found ${rants.length} rants to compile`);
 
           if (rants.length === 0) {
             return c.json(
-              { error: "No rants found to compile. Players must submit rants before starting the debate." },
+              {
+                error:
+                  "No rants found to compile. Players must submit rants before starting the debate.",
+              },
               400,
             );
           }
 
           // Generate statements and vote predictions using AI
           const aiStartTime = Date.now();
-          const aiResult = await compileRantsWithAI(rants, room.topic);
+          const aiResult = await compileRantsWithAI(
+            rants,
+            room.topic,
+          );
           const aiEndTime = Date.now();
-          console.log(`AI generated ${aiResult.statements.length} statements with vote predictions in ${aiEndTime - aiStartTime}ms`);
+          console.log(
+            `AI generated ${aiResult.statements.length} statements with vote predictions in ${aiEndTime - aiStartTime}ms`,
+          );
 
           // Prepare all statements and votes for bulk insertion
           const baseTimestamp = Date.now();
@@ -1568,14 +1609,18 @@ app.post(
           const votes: Vote[] = [];
 
           // Create all statements first
-          for (let index = 0; index < aiResult.statements.length; index++) {
+          for (
+            let index = 0;
+            index < aiResult.statements.length;
+            index++
+          ) {
             const statementId = generateId();
             const statement: Statement = {
               id: statementId,
               text: aiResult.statements[index],
-              author: "AI Compiler", // Special author to indicate AI-generated
+              author: "Generated", // Special author to indicate AI-generated
               agrees: 0, // Will be calculated from votes
-              disagrees: 0, // Will be calculated from votes  
+              disagrees: 0, // Will be calculated from votes
               passes: 0, // Will be calculated from votes
               roomId: roomId,
               timestamp: baseTimestamp + index, // Slight offset to maintain order
@@ -1585,18 +1630,28 @@ app.post(
             statements.push(statement);
 
             // Create votes for this statement
-            const votePredictionsForStatement = aiResult.votePredictions[index.toString()];
+            const votePredictionsForStatement =
+              aiResult.votePredictions[index.toString()];
             if (votePredictionsForStatement) {
-              for (const [author, voteType] of Object.entries(votePredictionsForStatement)) {
+              for (const [author, voteType] of Object.entries(
+                votePredictionsForStatement,
+              )) {
                 // Find the user ID for this author
-                const authorUser = await getUserByNickname(author);
+                const authorUser =
+                  await getUserByNickname(author);
                 if (authorUser) {
                   const vote: Vote = {
                     id: generateId(),
                     statementId: statementId,
                     userId: authorUser.id,
-                    voteType: voteType as "agree" | "disagree" | "pass",
-                    timestamp: baseTimestamp + index + Math.random() * 1000, // Slight randomization
+                    voteType: voteType as
+                      | "agree"
+                      | "disagree"
+                      | "pass",
+                    timestamp:
+                      baseTimestamp +
+                      index +
+                      Math.random() * 1000, // Slight randomization
                   };
                   votes.push(vote);
                 }
@@ -1605,7 +1660,9 @@ app.post(
           }
 
           // Bulk save all statements at once
-          console.log(`Bulk saving ${statements.length} statements...`);
+          console.log(
+            `Bulk saving ${statements.length} statements...`,
+          );
           await bulkSaveStatements(statements);
 
           // Bulk save all votes at once
@@ -1613,15 +1670,25 @@ app.post(
           await bulkSaveVotes(votes);
 
           const compilationEndTime = Date.now();
-          const totalTime = compilationEndTime - compilationStartTime;
+          const totalTime =
+            compilationEndTime - compilationStartTime;
           const dbTime = compilationEndTime - aiEndTime;
-          console.log(`Successfully bulk saved ${statements.length} AI-compiled statements and ${votes.length} predicted votes to database`);
-          console.log(`Total compilation time: ${totalTime}ms (AI: ${aiEndTime - aiStartTime}ms, DB: ${dbTime}ms)`);
-
+          console.log(
+            `Successfully bulk saved ${statements.length} AI-compiled statements and ${votes.length} predicted votes to database`,
+          );
+          console.log(
+            `Total compilation time: ${totalTime}ms (AI: ${aiEndTime - aiStartTime}ms, DB: ${dbTime}ms)`,
+          );
         } catch (error) {
-          console.error("Error compiling rants with AI:", error);
+          console.error(
+            "Error compiling rants with AI:",
+            error,
+          );
           return c.json(
-            { error: "Failed to compile rants with AI. Please try again." },
+            {
+              error:
+                "Failed to compile rants. Please try again.",
+            },
             500,
           );
         }
@@ -2153,256 +2220,272 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
 });
 
 // Create test room with Q Street debate topic and players (no posts/votes)
-app.post("/make-server-f1a393b4/test-room/create", async (c) => {
-  try {
-    const { userId } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/test-room/create",
+  async (c) => {
+    try {
+      const { userId } = await c.req.json();
 
-    const user = await getUserSession(userId);
-    if (!user) {
-      return c.json({ error: "User session not found" }, 404);
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User session not found" }, 404);
+      }
+
+      // Create a test room with Q Street farmers market topic
+      const roomId = generateId();
+      const debateRoom: DebateRoom = {
+        id: roomId,
+        topic:
+          "Should Q Street be closed to traffic during the farmers market?",
+        phase: "lobby", // Start in lobby so host can control the start
+        subPhase: undefined,
+        gameNumber: 1,
+        roundStartTime: Date.now(),
+        participants: [
+          userId,
+          "qstreet_user_1",
+          "qstreet_user_2",
+          "qstreet_user_3",
+          "qstreet_user_4",
+        ],
+        hostId: userId, // Set the user as the host
+        isActive: true,
+        createdAt: Date.now(),
+        mode: "host-controlled", // Allow host to control phases
+      };
+
+      await saveDebateRoom(debateRoom);
+
+      // Create fake users with Q Street themed names
+      const fakeUsers = [
+        {
+          id: "qstreet_user_1",
+          nickname: "LocalVendor",
+          email: "vendor@qstreet.example",
+          score: 250,
+          streak: 1,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+        {
+          id: "qstreet_user_2",
+          nickname: "NeighborhoodResident",
+          email: "resident@qstreet.example",
+          score: 180,
+          streak: 2,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+        {
+          id: "qstreet_user_3",
+          nickname: "CommutingWorker",
+          email: "commuter@qstreet.example",
+          score: 320,
+          streak: 0,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+        {
+          id: "qstreet_user_4",
+          nickname: "LocalBusiness",
+          email: "business@qstreet.example",
+          score: 400,
+          streak: 4,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+      ];
+
+      // Save fake users
+      for (const fakeUser of fakeUsers) {
+        await saveUserSession(fakeUser);
+      }
+
+      // Update user's current room
+      user.currentRoomId = roomId;
+      await saveUserSession(user);
+
+      return c.json({
+        room: debateRoom,
+        players: fakeUsers.length + 1, // +1 for the creating user
+        message:
+          "Test room created successfully! Ready for Q Street farmers market debate.",
+      });
+    } catch (error) {
+      console.error("Error creating test room:", error);
+      return c.json(
+        { error: "Failed to create test room" },
+        500,
+      );
     }
-
-    // Create a test room with Q Street farmers market topic
-    const roomId = generateId();
-    const debateRoom: DebateRoom = {
-      id: roomId,
-      topic: "Should Q Street be closed to traffic during the farmers market?",
-      phase: "lobby", // Start in lobby so host can control the start
-      subPhase: undefined,
-      gameNumber: 1,
-      roundStartTime: Date.now(),
-      participants: [
-        userId,
-        "qstreet_user_1",
-        "qstreet_user_2",
-        "qstreet_user_3",
-        "qstreet_user_4",
-      ],
-      hostId: userId, // Set the user as the host
-      isActive: true,
-      createdAt: Date.now(),
-      mode: "host-controlled", // Allow host to control phases
-    };
-
-    await saveDebateRoom(debateRoom);
-
-    // Create fake users with Q Street themed names
-    const fakeUsers = [
-      {
-        id: "qstreet_user_1",
-        nickname: "LocalVendor",
-        email: "vendor@qstreet.example",
-        score: 250,
-        streak: 1,
-        currentRoomId: roomId,
-        lastActive: Date.now(),
-        isTestUser: true,
-      },
-      {
-        id: "qstreet_user_2",
-        nickname: "NeighborhoodResident",
-        email: "resident@qstreet.example",
-        score: 180,
-        streak: 2,
-        currentRoomId: roomId,
-        lastActive: Date.now(),
-        isTestUser: true,
-      },
-      {
-        id: "qstreet_user_3",
-        nickname: "CommutingWorker",
-        email: "commuter@qstreet.example",
-        score: 320,
-        streak: 0,
-        currentRoomId: roomId,
-        lastActive: Date.now(),
-        isTestUser: true,
-      },
-      {
-        id: "qstreet_user_4",
-        nickname: "LocalBusiness",
-        email: "business@qstreet.example",
-        score: 400,
-        streak: 4,
-        currentRoomId: roomId,
-        lastActive: Date.now(),
-        isTestUser: true,
-      },
-    ];
-
-    // Save fake users
-    for (const fakeUser of fakeUsers) {
-      await saveUserSession(fakeUser);
-    }
-
-    // Update user's current room
-    user.currentRoomId = roomId;
-    await saveUserSession(user);
-
-    return c.json({
-      room: debateRoom,
-      players: fakeUsers.length + 1, // +1 for the creating user
-      message: "Test room created successfully! Ready for Q Street farmers market debate.",
-    });
-  } catch (error) {
-    console.error("Error creating test room:", error);
-    return c.json({ error: "Failed to create test room" }, 500);
-  }
-});
+  },
+);
 
 // Create rant test room with Q Street debate topic and pre-filled rants
-app.post("/make-server-f1a393b4/rant-test-room/create", async (c) => {
-  try {
-    const { userId } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/rant-test-room/create",
+  async (c) => {
+    try {
+      const { userId } = await c.req.json();
 
-    const user = await getUserSession(userId);
-    if (!user) {
-      return c.json({ error: "User session not found" }, 404);
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User session not found" }, 404);
+      }
+
+      // Create a rant-first test room with Q Street farmers market topic
+      const roomId = generateId();
+      const debateRoom: DebateRoom = {
+        id: roomId,
+        topic:
+          "Should Q Street be closed to traffic during the farmers market?",
+        phase: "lobby", // Start in lobby so host can test the compilation
+        subPhase: undefined,
+        gameNumber: 1,
+        roundStartTime: Date.now(),
+        participants: [
+          userId,
+          "rant_user_1",
+          "rant_user_2",
+          "rant_user_3",
+          "rant_user_4",
+          "rant_user_5",
+        ],
+        hostId: userId, // Set the user as the host
+        isActive: true,
+        createdAt: Date.now(),
+        mode: "host-controlled", // Allow host to control phases
+        rantFirst: true, // This is a rant-first room
+      };
+
+      await saveDebateRoom(debateRoom);
+
+      // Create fake users with diverse backgrounds
+      const fakeUsers = [
+        {
+          id: "rant_user_1",
+          nickname: "FarmersMarketVendor",
+          email: "vendor@ranttest.example",
+          score: 150,
+          streak: 2,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+        {
+          id: "rant_user_2",
+          nickname: "QStreetResident",
+          email: "resident@ranttest.example",
+          score: 80,
+          streak: 1,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+        {
+          id: "rant_user_3",
+          nickname: "CommunityAdvocate",
+          email: "advocate@ranttest.example",
+          score: 200,
+          streak: 3,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+        {
+          id: "rant_user_4",
+          nickname: "LocalBusiness",
+          email: "business@ranttest.example",
+          score: 120,
+          streak: 0,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+        {
+          id: "rant_user_5",
+          nickname: "UrbanPlanner",
+          email: "planner@ranttest.example",
+          score: 300,
+          streak: 5,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+      ];
+
+      // Save fake users
+      for (const fakeUser of fakeUsers) {
+        await saveUserSession(fakeUser);
+      }
+
+      // Create diverse, realistic rants with different viewpoints
+      const rants = [
+        {
+          id: generateId(),
+          text: "I've been selling at this farmers market for eight years and I can tell you that closing Q Street is absolutely essential for our community. When cars are constantly driving through, families with young children are terrified to browse the stalls. I've seen so many close calls with distracted drivers who don't realize there's a market happening. The foot traffic we get when the street is fully pedestrianized is incredible - people actually stop and talk to vendors instead of rushing past worried about traffic. My sales go up 40% on market days compared to when we tried keeping the street open. This isn't just about money though, it's about creating a space where neighbors can actually connect with each other. The farmers market is one of the few places left where you can have genuine conversations with people from your community. Kids can run around safely, elderly folks can take their time without worrying about getting hit by a car, and everyone can actually enjoy the experience. Yes, it causes some inconvenience for drivers, but surely we can prioritize community gathering spaces over car convenience for a few hours each week. The street closure creates the kind of vibrant public space that makes neighborhoods worth living in.",
+          author: "FarmersMarketVendor",
+          roomId: roomId,
+          timestamp: Date.now() - 600000,
+        },
+        {
+          id: generateId(),
+          text: "This street closure is absolutely ridiculous and shows a complete disregard for the people who actually live on Q Street. I'm elderly and I depend on being able to park close to my apartment - I can't walk three blocks carrying groceries because some vendors want to make money in the street. Every Saturday I'm trapped in my own neighborhood because they block off the main access route. What about people who work weekends and need to get to their jobs? What about emergency vehicles trying to reach residents? I had a medical emergency last month and the ambulance was delayed because they couldn't navigate around the market setup. The city is prioritizing tourists and weekend visitors over the actual residents who live here and pay taxes here year-round. When I moved to this street fifteen years ago, I chose it specifically because of the convenient car access. Now I'm being punished for not being young and healthy enough to walk everywhere. The farmers market could easily happen in the park two blocks over, but instead they've decided to take over our street and make our lives miserable. This is gentrification pure and simple - pushing out longtime residents who don't fit the hip walkable neighborhood image. I'm on a fixed income and can't afford to move, but they're making it impossible for me to live here comfortably.",
+          author: "QStreetResident",
+          roomId: roomId,
+          timestamp: Date.now() - 500000,
+        },
+        {
+          id: generateId(),
+          text: "I'm really torn on this issue because I see valid points on both sides. As someone who's been organizing community events for years, I absolutely love what the farmers market brings to our neighborhood - it's created connections between people who might never have met otherwise. But I also hear the very real concerns from residents, especially elderly folks and people with disabilities who genuinely need car access. Maybe the solution isn't all or nothing? What if we closed just half the street and created dedicated loading zones for residents who need them? Or what if we invested in better shuttle services or mobile vendor carts that could reach people who can't make it to the main market area? I've seen other cities create brilliant compromises that serve everyone. The farmers market vendors deserve a safe, thriving space to sell their goods and connect with customers. But our longtime residents also deserve to feel comfortable and welcome in their own neighborhood. We need to get creative instead of just fighting about it. Could we try different layouts, different times, or different support services? I refuse to believe that supporting local agriculture has to come at the expense of accessibility for residents. Both goals are important and both communities deserve our respect and consideration.",
+          author: "CommunityAdvocate",
+          roomId: roomId,
+          timestamp: Date.now() - 400000,
+        },
+        {
+          id: generateId(),
+          text: "From a business perspective, this street closure is a double-edged sword that's killing me slowly. On one hand, the farmers market brings foot traffic that benefits my restaurant - people grab coffee from us before browsing the stalls, and some market shoppers become regular customers. But on the other hand, the setup and breakdown process is a nightmare for deliveries and staff scheduling. My bread delivery has to come at 5 AM now instead of the normal 8 AM slot, which costs me extra money. Customers who want to grab takeout on Saturday mornings can't find parking and just go somewhere else. My weekend lunch crowd has definitely decreased because people avoid the area entirely rather than deal with the traffic diversions. The market organizers promised that local businesses would benefit, but they didn't think through the operational challenges. I'm not anti-farmers market, but the current system feels like it was designed by people who don't actually run businesses in the area. What about reserved parking for local business customers? What about better signage directing people to alternative routes? What about coordinating delivery schedules with all the affected businesses? Right now it feels like the market just drops in one day a week and expects everyone else to figure it out. I want to support local vendors and I want foot traffic, but I also need to be able to operate my business efficiently.",
+          author: "LocalBusiness",
+          roomId: roomId,
+          timestamp: Date.now() - 300000,
+        },
+        {
+          id: generateId(),
+          text: "Looking at this from an urban planning perspective, the Q Street farmers market represents exactly the kind of public space activation we need more of in our cities. Streets are public infrastructure that should serve multiple purposes beyond just moving cars efficiently. When we prioritize cars above all else, we create dead zones where community life can't flourish. The farmers market transforms Q Street from a traffic corridor into a genuine public square where social capital gets built. This is how we create the kind of walkable, livable neighborhoods that actually improve public health, reduce isolation, and strengthen local economies. Yes, there are legitimate accessibility concerns that need to be addressed, but the solution is better public transit, better pedestrian infrastructure, and more creative accommodation for people with mobility needs - not surrendering our public space back to cars. Cities all over the world are reclaiming street space for markets, festivals, and community gatherings because they've learned that car-centric design makes neighborhoods less safe, less healthy, and less economically vibrant. The short-term inconvenience of traffic diversions is worth the long-term benefits of having a neighborhood where people actually know each other and support local businesses. We should be expanding this model, not retreating from it. What if we had multiple car-free community spaces throughout the week? What if we redesigned our streets to be truly multimodal instead of car-dominant?",
+          author: "UrbanPlanner",
+          roomId: roomId,
+          timestamp: Date.now() - 200000,
+        },
+      ];
+
+      // Save all rants
+      for (const rant of rants) {
+        await saveRant(rant);
+      }
+
+      // Update user's current room
+      user.currentRoomId = roomId;
+      await saveUserSession(user);
+
+      return c.json({
+        room: debateRoom,
+        players: fakeUsers.length + 1, // +1 for the creating user
+        rants: rants.length,
+        message:
+          "Rant test room created successfully! 5 players have already submitted detailed rants ready for compilation.",
+      });
+    } catch (error) {
+      console.error("Error creating rant test room:", error);
+      return c.json(
+        { error: "Failed to create rant test room" },
+        500,
+      );
     }
-
-    // Create a rant-first test room with Q Street farmers market topic
-    const roomId = generateId();
-    const debateRoom: DebateRoom = {
-      id: roomId,
-      topic: "Should Q Street be closed to traffic during the farmers market?",
-      phase: "lobby", // Start in lobby so host can test the compilation
-      subPhase: undefined,
-      gameNumber: 1,
-      roundStartTime: Date.now(),
-      participants: [
-        userId,
-        "rant_user_1",
-        "rant_user_2", 
-        "rant_user_3",
-        "rant_user_4",
-        "rant_user_5",
-      ],
-      hostId: userId, // Set the user as the host
-      isActive: true,
-      createdAt: Date.now(),
-      mode: "host-controlled", // Allow host to control phases
-      rantFirst: true, // This is a rant-first room
-    };
-
-    await saveDebateRoom(debateRoom);
-
-    // Create fake users with diverse backgrounds
-    const fakeUsers = [
-      {
-        id: "rant_user_1",
-        nickname: "FarmersMarketVendor",
-        email: "vendor@ranttest.example",
-        score: 150,
-        streak: 2,
-        currentRoomId: roomId,
-        lastActive: Date.now(),
-        isTestUser: true,
-      },
-      {
-        id: "rant_user_2", 
-        nickname: "QStreetResident",
-        email: "resident@ranttest.example",
-        score: 80,
-        streak: 1,
-        currentRoomId: roomId,
-        lastActive: Date.now(),
-        isTestUser: true,
-      },
-      {
-        id: "rant_user_3",
-        nickname: "CommunityAdvocate", 
-        email: "advocate@ranttest.example",
-        score: 200,
-        streak: 3,
-        currentRoomId: roomId,
-        lastActive: Date.now(),
-        isTestUser: true,
-      },
-      {
-        id: "rant_user_4",
-        nickname: "LocalBusiness",
-        email: "business@ranttest.example", 
-        score: 120,
-        streak: 0,
-        currentRoomId: roomId,
-        lastActive: Date.now(),
-        isTestUser: true,
-      },
-      {
-        id: "rant_user_5",
-        nickname: "UrbanPlanner",
-        email: "planner@ranttest.example",
-        score: 300,
-        streak: 5,
-        currentRoomId: roomId,
-        lastActive: Date.now(),
-        isTestUser: true,
-      },
-    ];
-
-    // Save fake users
-    for (const fakeUser of fakeUsers) {
-      await saveUserSession(fakeUser);
-    }
-
-    // Create diverse, realistic rants with different viewpoints
-    const rants = [
-      {
-        id: generateId(),
-        text: "I've been selling at this farmers market for eight years and I can tell you that closing Q Street is absolutely essential for our community. When cars are constantly driving through, families with young children are terrified to browse the stalls. I've seen so many close calls with distracted drivers who don't realize there's a market happening. The foot traffic we get when the street is fully pedestrianized is incredible - people actually stop and talk to vendors instead of rushing past worried about traffic. My sales go up 40% on market days compared to when we tried keeping the street open. This isn't just about money though, it's about creating a space where neighbors can actually connect with each other. The farmers market is one of the few places left where you can have genuine conversations with people from your community. Kids can run around safely, elderly folks can take their time without worrying about getting hit by a car, and everyone can actually enjoy the experience. Yes, it causes some inconvenience for drivers, but surely we can prioritize community gathering spaces over car convenience for a few hours each week. The street closure creates the kind of vibrant public space that makes neighborhoods worth living in.",
-        author: "FarmersMarketVendor",
-        roomId: roomId,
-        timestamp: Date.now() - 600000,
-      },
-      {
-        id: generateId(),
-        text: "This street closure is absolutely ridiculous and shows a complete disregard for the people who actually live on Q Street. I'm elderly and I depend on being able to park close to my apartment - I can't walk three blocks carrying groceries because some vendors want to make money in the street. Every Saturday I'm trapped in my own neighborhood because they block off the main access route. What about people who work weekends and need to get to their jobs? What about emergency vehicles trying to reach residents? I had a medical emergency last month and the ambulance was delayed because they couldn't navigate around the market setup. The city is prioritizing tourists and weekend visitors over the actual residents who live here and pay taxes here year-round. When I moved to this street fifteen years ago, I chose it specifically because of the convenient car access. Now I'm being punished for not being young and healthy enough to walk everywhere. The farmers market could easily happen in the park two blocks over, but instead they've decided to take over our street and make our lives miserable. This is gentrification pure and simple - pushing out longtime residents who don't fit the hip walkable neighborhood image. I'm on a fixed income and can't afford to move, but they're making it impossible for me to live here comfortably.",
-        author: "QStreetResident",
-        roomId: roomId,
-        timestamp: Date.now() - 500000,
-      },
-      {
-        id: generateId(),
-        text: "I'm really torn on this issue because I see valid points on both sides. As someone who's been organizing community events for years, I absolutely love what the farmers market brings to our neighborhood - it's created connections between people who might never have met otherwise. But I also hear the very real concerns from residents, especially elderly folks and people with disabilities who genuinely need car access. Maybe the solution isn't all or nothing? What if we closed just half the street and created dedicated loading zones for residents who need them? Or what if we invested in better shuttle services or mobile vendor carts that could reach people who can't make it to the main market area? I've seen other cities create brilliant compromises that serve everyone. The farmers market vendors deserve a safe, thriving space to sell their goods and connect with customers. But our longtime residents also deserve to feel comfortable and welcome in their own neighborhood. We need to get creative instead of just fighting about it. Could we try different layouts, different times, or different support services? I refuse to believe that supporting local agriculture has to come at the expense of accessibility for residents. Both goals are important and both communities deserve our respect and consideration.",
-        author: "CommunityAdvocate",
-        roomId: roomId,
-        timestamp: Date.now() - 400000,
-      },
-      {
-        id: generateId(),
-        text: "From a business perspective, this street closure is a double-edged sword that's killing me slowly. On one hand, the farmers market brings foot traffic that benefits my restaurant - people grab coffee from us before browsing the stalls, and some market shoppers become regular customers. But on the other hand, the setup and breakdown process is a nightmare for deliveries and staff scheduling. My bread delivery has to come at 5 AM now instead of the normal 8 AM slot, which costs me extra money. Customers who want to grab takeout on Saturday mornings can't find parking and just go somewhere else. My weekend lunch crowd has definitely decreased because people avoid the area entirely rather than deal with the traffic diversions. The market organizers promised that local businesses would benefit, but they didn't think through the operational challenges. I'm not anti-farmers market, but the current system feels like it was designed by people who don't actually run businesses in the area. What about reserved parking for local business customers? What about better signage directing people to alternative routes? What about coordinating delivery schedules with all the affected businesses? Right now it feels like the market just drops in one day a week and expects everyone else to figure it out. I want to support local vendors and I want foot traffic, but I also need to be able to operate my business efficiently.",
-        author: "LocalBusiness",
-        roomId: roomId,
-        timestamp: Date.now() - 300000,
-      },
-      {
-        id: generateId(),
-        text: "Looking at this from an urban planning perspective, the Q Street farmers market represents exactly the kind of public space activation we need more of in our cities. Streets are public infrastructure that should serve multiple purposes beyond just moving cars efficiently. When we prioritize cars above all else, we create dead zones where community life can't flourish. The farmers market transforms Q Street from a traffic corridor into a genuine public square where social capital gets built. This is how we create the kind of walkable, livable neighborhoods that actually improve public health, reduce isolation, and strengthen local economies. Yes, there are legitimate accessibility concerns that need to be addressed, but the solution is better public transit, better pedestrian infrastructure, and more creative accommodation for people with mobility needs - not surrendering our public space back to cars. Cities all over the world are reclaiming street space for markets, festivals, and community gatherings because they've learned that car-centric design makes neighborhoods less safe, less healthy, and less economically vibrant. The short-term inconvenience of traffic diversions is worth the long-term benefits of having a neighborhood where people actually know each other and support local businesses. We should be expanding this model, not retreating from it. What if we had multiple car-free community spaces throughout the week? What if we redesigned our streets to be truly multimodal instead of car-dominant?",
-        author: "UrbanPlanner",
-        roomId: roomId,
-        timestamp: Date.now() - 200000,
-      },
-    ];
-
-    // Save all rants
-    for (const rant of rants) {
-      await saveRant(rant);
-    }
-
-    // Update user's current room
-    user.currentRoomId = roomId;
-    await saveUserSession(user);
-
-    return c.json({
-      room: debateRoom,
-      players: fakeUsers.length + 1, // +1 for the creating user
-      rants: rants.length,
-      message: "Rant test room created successfully! 5 players have already submitted detailed rants ready for AI compilation.",
-    });
-  } catch (error) {
-    console.error("Error creating rant test room:", error);
-    return c.json({ error: "Failed to create rant test room" }, 500);
-  }
-});
+  },
+);
 
 export { app as debateApi };
