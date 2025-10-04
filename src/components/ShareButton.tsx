@@ -43,20 +43,22 @@ export function ShareButton({
     
     // Mobile: try Web Share API first, then clipboard
     try {
-      if (navigator.share && navigator.canShare({
-        title: "Join my debate on HEARD!",
-        text: "Join this debate and share your thoughts!",
-        url: shareableLink,
-      })) {
-        await navigator.share({
+      if (navigator.share) {
+        // Test if Web Share API supports our data
+        const shareData = {
           title: "Join my debate on HEARD!",
-          text: "Join this debate and share your thoughts!",
+          text: `Join this debate and share your thoughts! ${shareableLink}`, // Include URL in text as fallback
           url: shareableLink,
-        });
-        return;
+        };
+        
+        // Only use canShare if it exists (it's not available on all browsers)
+        if (!navigator.canShare || navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+          return;
+        }
       }
     } catch (shareError) {
-      console.log("Web Share API failed, using clipboard fallback");
+      console.log("Web Share API failed, using clipboard fallback:", shareError);
     }
     
     // Mobile clipboard fallback
