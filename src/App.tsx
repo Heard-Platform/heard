@@ -5,13 +5,24 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { GameScreen } from "./screens/GameScreen";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-import { parseRoomIdFromUrl, updateUrlForRoom, clearRoomFromUrl } from "./utils/url";
-import type { Phase, SubPhase, Statement, Achievement } from "./types";
+import {
+  parseRoomIdFromUrl,
+  updateUrlForRoom,
+  clearRoomFromUrl,
+} from "./utils/url";
+import type {
+  Phase,
+  SubPhase,
+  Statement,
+  Achievement,
+} from "./types";
 
 export default function App() {
   const [timerActive, setTimerActive] = useState(false);
   const [startingDebate, setStartingDebate] = useState(false);
-  const [targetRoomId, setTargetRoomId] = useState<string | null>(null);
+  const [targetRoomId, setTargetRoomId] = useState<
+    string | null
+  >(null);
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
 
   const {
@@ -42,26 +53,33 @@ export default function App() {
   } = useDebateSession();
 
   // Helper function to join room and set timer state consistently
-  const handleJoinRoomWithTimer = useCallback(async (roomId: string) => {
-    const roomData = await joinRoom(roomId);
-    if (roomData) {
-      setTimerActive(
-        roomData.mode === "realtime" &&
-        roomData.phase !== "lobby" &&
-        roomData.phase !== "results",
-      );
-      return roomData;
-    }
-    return null;
-  }, [joinRoom]);
+  const handleJoinRoomWithTimer = useCallback(
+    async (roomId: string) => {
+      const roomData = await joinRoom(roomId);
+      if (roomData) {
+        setTimerActive(
+          roomData.mode === "realtime" &&
+            roomData.phase !== "lobby" &&
+            roomData.phase !== "results",
+        );
+        return roomData;
+      }
+      return null;
+    },
+    [joinRoom],
+  );
 
   // Handle nickname setup completion
-  const handleNicknameComplete = async (nickname: string, email: string) => {
+  const handleNicknameComplete = async (
+    nickname: string,
+    email: string,
+  ) => {
     await initializeUser(nickname, email);
-    
+
     // If there's a target room ID, try to join it after user creation
     if (targetRoomId) {
-      const roomData = await handleJoinRoomWithTimer(targetRoomId);
+      const roomData =
+        await handleJoinRoomWithTimer(targetRoomId);
       if (roomData) {
         setTargetRoomId(null); // Clear target after successful join
       }
@@ -69,7 +87,11 @@ export default function App() {
   };
 
   // Handle room creation
-  const handleCreateRoom = async (topic: string, mode: "realtime" | "host-controlled", rantFirst?: boolean) => {
+  const handleCreateRoom = async (
+    topic: string,
+    mode: "realtime" | "host-controlled",
+    rantFirst?: boolean,
+  ) => {
     const roomData = await createRoom(topic, mode, rantFirst);
     if (roomData) {
       setTimerActive(false); // Start in lobby phase
@@ -99,7 +121,10 @@ export default function App() {
 
   // Handle voting
   const handleVote = useCallback(
-    async (id: string, voteType: "agree" | "disagree" | "pass") => {
+    async (
+      id: string,
+      voteType: "agree" | "disagree" | "pass",
+    ) => {
       await voteOnStatement(id, voteType);
     },
     [voteOnStatement],
@@ -109,11 +134,7 @@ export default function App() {
   const nextRound = useCallback(async () => {
     if (!room) return;
 
-    const phases: Phase[] = [
-      "round1",
-      "round2", 
-      "round3",
-    ];
+    const phases: Phase[] = ["round1", "round2", "round3"];
     const subPhases: SubPhase[] = [
       "posting",
       "voting",
@@ -128,7 +149,9 @@ export default function App() {
     // If we're in results, start a new game
     if (room.phase === "results") {
       // For rant-first rooms, round1 starts with voting (rants serve as posting)
-      const targetSubPhase = room.rantFirst ? "voting" : "posting";
+      const targetSubPhase = room.rantFirst
+        ? "voting"
+        : "posting";
       await updateRoomPhase("round1", targetSubPhase);
       setTimerActive(room.mode === "realtime");
       return;
@@ -155,12 +178,14 @@ export default function App() {
 
   const startDebate = async () => {
     if (!room) return;
-    
+
     try {
       setStartingDebate(true);
       // For rant-first rooms, go directly to voting after compilation
       // For regular rooms, start with posting
-      const targetSubPhase = room.rantFirst ? "voting" : "posting";
+      const targetSubPhase = room.rantFirst
+        ? "voting"
+        : "posting";
       await updateRoomPhase("round1", targetSubPhase);
       setTimerActive(room.mode === "realtime");
     } finally {
@@ -223,7 +248,8 @@ export default function App() {
   useEffect(() => {
     if (user && targetRoomId && !room) {
       const autoJoinRoom = async () => {
-        const roomData = await handleJoinRoomWithTimer(targetRoomId);
+        const roomData =
+          await handleJoinRoomWithTimer(targetRoomId);
         if (roomData) {
           setTargetRoomId(null); // Clear target after successful join
         } else {
@@ -249,10 +275,10 @@ export default function App() {
       // Activate timer for all sub-phases except lobby and results, but only in realtime mode
       const shouldBeActive =
         room.mode === "realtime" &&
-        room.phase !== "lobby" && 
+        room.phase !== "lobby" &&
         room.phase !== "results";
       setTimerActive(shouldBeActive);
-      
+
       // Update URL to reflect current room
       updateUrlForRoom(room.id);
     }
