@@ -637,11 +637,6 @@ const getVotesForStatements = async (
     try {
       const votes = await getVotesForStatement(statementId);
       allVotes[statementId] = votes;
-      if (votes.length > 0) {
-        console.log(
-          `Statement ${statementId} has ${votes.length} votes`,
-        );
-      }
     } catch (error) {
       console.error(
         `Error fetching votes for statement ${statementId}:`,
@@ -1394,19 +1389,11 @@ app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
     }
 
     const statements = await getStatements(roomId);
-    console.log(
-      `Found ${statements.length} statements for room ${roomId}`,
-    );
 
     // Get rants if this is a rant-first room
     const rants = room.rantFirst
       ? await getRantsForRoom(roomId)
       : [];
-    if (room.rantFirst) {
-      console.log(
-        `Found ${rants.length} rants for room ${roomId}`,
-      );
-    }
 
     return c.json({
       room,
@@ -1806,7 +1793,6 @@ app.post(
 
         try {
           const rants = await getRantsForRoom(roomId);
-          console.log(`Found ${rants.length} rants to compile`);
 
           if (rants.length === 0) {
             return c.json(
