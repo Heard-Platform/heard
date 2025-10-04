@@ -1039,7 +1039,8 @@ StatementIndex,${authors.join(",")}
 2,0,0,1,-1
 
 Use: 1=agree, -1=disagree, 0=pass
-Base predictions on how each profile aligns with each statement.`;
+Base predictions on how each profile aligns with each statement.
+Do not include formatting, backticks, etc, such as markdown. Return in the format exactly as shown above.`;
 
   try {
     const response = await fetch(
