@@ -91,6 +91,7 @@ export function useDebateSession() {
       topic: string,
       mode: DebateMode = "host-controlled",
       rantFirst?: boolean,
+      description?: string,
     ) => {
       if (!user) return null;
 
@@ -101,6 +102,7 @@ export function useDebateSession() {
           user.id,
           mode,
           rantFirst,
+          description,
         );
         if (response.success && response.data) {
           const roomData = response.data.room;
@@ -344,6 +346,37 @@ export function useDebateSession() {
           err instanceof Error ? err.message : "Unknown error";
         setError(errorMsg);
         console.error("Failed to update phase:", errorMsg);
+      }
+      return false;
+    },
+    [user, room],
+  );
+
+  // Update room description
+  const updateRoomDescription = useCallback(
+    async (description: string) => {
+      if (!user || !room) return false;
+
+      try {
+        setError(null);
+        const response = await api.updateRoomDescription(
+          room.id,
+          description,
+          user.id,
+        );
+        if (response.success && response.data) {
+          setRoom(response.data.room);
+          return true;
+        } else {
+          throw new Error(
+            response.error || "Failed to update description",
+          );
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error("Failed to update description:", errorMsg);
       }
       return false;
     },
@@ -700,6 +733,7 @@ export function useDebateSession() {
     submitRant,
     voteOnStatement,
     updateRoomPhase,
+    updateRoomDescription,
     refreshRoom,
     leaveRoom,
     resetSession,

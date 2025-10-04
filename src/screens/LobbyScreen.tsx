@@ -5,6 +5,7 @@ import { Card } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { ActiveRoomsList } from "../components/ActiveRoomsList";
 import {
@@ -30,6 +31,7 @@ interface LobbyScreenProps {
     topic: string,
     mode: DebateMode,
     rantFirst?: boolean,
+    description?: string,
   ) => Promise<void>;
   onJoinRoom: (roomId: string) => Promise<void>;
   onRefreshRooms: () => Promise<DebateRoom[]>;
@@ -37,6 +39,7 @@ interface LobbyScreenProps {
   onCreateSeedData?: () => Promise<any>;
   onCreateTestRoom?: () => Promise<any>;
   onCreateRantTestRoom?: () => Promise<any>;
+  onUpdateRoomDescription?: (description: string) => Promise<boolean>;
   onLogout?: () => void;
 }
 
@@ -63,6 +66,7 @@ export function LobbyScreen({
   onLogout,
 }: LobbyScreenProps) {
   const [newRoomTopic, setNewRoomTopic] = useState("");
+  const [newRoomDescription, setNewRoomDescription] = useState("");
   const [showExamples, setShowExamples] = useState(false);
   const [debateMode, setDebateMode] = useState<DebateMode>(
     "host-controlled",
@@ -78,8 +82,10 @@ export function LobbyScreen({
       newRoomTopic.trim(),
       debateMode,
       rantFirst,
+      newRoomDescription.trim() || undefined,
     );
     setNewRoomTopic(""); // Clear the input after creating
+    setNewRoomDescription(""); // Clear the description after creating
     setDebateMode("host-controlled"); // Reset to default
     setRantFirst(false); // Reset to default
   };
@@ -230,6 +236,29 @@ export function LobbyScreen({
                   )}
                   <span className="text-muted-foreground ml-auto">
                     {newRoomTopic.length}/100
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description-input">
+                  Description (Optional)
+                </Label>
+                <Textarea
+                  id="description-input"
+                  placeholder="Provide context, background, or rules for this debate... (supports Markdown)"
+                  maxLength={2000}
+                  value={newRoomDescription}
+                  onChange={(e) => setNewRoomDescription(e.target.value)}
+                  className="w-full min-h-[80px] resize-none"
+                  rows={3}
+                />
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-muted-foreground">
+                    Add context to help participants understand the topic
+                  </span>
+                  <span className="text-muted-foreground">
+                    {newRoomDescription.length}/2000
                   </span>
                 </div>
               </div>

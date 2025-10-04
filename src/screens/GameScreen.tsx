@@ -7,6 +7,7 @@ import { ScoreBoard } from "../components/ScoreBoard";
 import { StatementCard } from "../components/StatementCard";
 import { StatementSubmission } from "../components/StatementSubmission";
 import { RantSubmission } from "../components/RantSubmission";
+import { DescriptionDisplay } from "../components/DescriptionDisplay";
 import { AchievementNotification } from "../components/AchievementNotification";
 import { RoundIndicator } from "../components/RoundIndicator";
 import { RealTimeResults } from "../components/RealTimeResults";
@@ -52,6 +53,7 @@ interface GameScreenProps {
   onSkipRound?: () => Promise<void>;
   onStartAutoPlay: () => void;
   onStopAutoPlay: () => void;
+  onUpdateRoomDescription: (description: string) => Promise<boolean>;
 }
 
 export function GameScreen({
@@ -74,6 +76,7 @@ export function GameScreen({
   onSkipRound,
   onStartAutoPlay,
   onStopAutoPlay,
+  onUpdateRoomDescription,
 }: GameScreenProps) {
   const isSubmissionPhase = room.subPhase === "posting";
   const isVotingPhase = room.subPhase === "voting";
@@ -264,6 +267,13 @@ export function GameScreen({
             </div>
           </div>
         </Card>
+
+        {/* Room Description */}
+        <DescriptionDisplay
+          description={room.description}
+          isHost={room.hostId === user.id}
+          onUpdate={onUpdateRoomDescription}
+        />
 
         {/* Round Indicator */}
         <RoundIndicator

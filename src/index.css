@@ -1740,6 +1740,10 @@
     color: var(--color-yellow-800);
   }
 
+  .italic {
+    font-style: italic;
+  }
+
   .underline-offset-4 {
     text-underline-offset: 4px;
   }
@@ -2541,6 +2545,13 @@
     a.\[a\&\]\:hover\:text-accent-foreground:hover {
       color: var(--accent-foreground);
     }
+  }
+
+  .line-clamp-3 {
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    overflow: hidden;
   }
 }
 

@@ -43,6 +43,7 @@ export default function App() {
     submitRant,
     voteOnStatement,
     updateRoomPhase,
+    updateRoomDescription,
     leaveRoom,
     resetSession,
     createSeedData,
@@ -91,8 +92,9 @@ export default function App() {
     topic: string,
     mode: "realtime" | "host-controlled",
     rantFirst?: boolean,
+    description?: string,
   ) => {
-    const roomData = await createRoom(topic, mode, rantFirst);
+    const roomData = await createRoom(topic, mode, rantFirst, description);
     if (roomData) {
       setTimerActive(false); // Start in lobby phase
     }
@@ -336,6 +338,7 @@ export default function App() {
           onCreateSeedData={createSeedData}
           onCreateTestRoom={createTestRoom}
           onCreateRantTestRoom={createRantTestRoom}
+          onUpdateRoomDescription={updateRoomDescription}
           onLogout={handleLogout}
         />
         <Toaster />
@@ -367,6 +370,7 @@ export default function App() {
           onSkipRound={nextRound}
           onStartAutoPlay={startAutoPlay}
           onStopAutoPlay={stopAutoPlay}
+          onUpdateRoomDescription={updateRoomDescription}
         />
         <Toaster />
       </>

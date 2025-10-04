@@ -45,6 +45,7 @@ export type DebateMode = "realtime" | "host-controlled";
 export interface DebateRoom {
   id: string;
   topic: string;
+  description?: string; // Optional markdown description for context
   phase: Phase;
   subPhase?: SubPhase;
   gameNumber: number;
