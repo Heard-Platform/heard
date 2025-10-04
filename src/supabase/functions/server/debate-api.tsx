@@ -1906,8 +1906,15 @@ app.post(
         }
       }
 
-      room.phase = phase as Phase;
-      room.subPhase = subPhase;
+      // Special handling for rant-first rooms: skip posting phase and go directly to voting
+      if (room.rantFirst && room.phase === "lobby" && phase === "round1" && subPhase === "posting") {
+        room.phase = phase as Phase;
+        room.subPhase = "voting"; // Skip posting, go straight to voting
+        console.log("Rant-first room: skipping posting phase, going directly to voting");
+      } else {
+        room.phase = phase as Phase;
+        room.subPhase = subPhase;
+      }
       room.roundStartTime = Date.now();
 
       // If moving to results, increment game number
