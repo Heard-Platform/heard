@@ -259,13 +259,16 @@ export function useDebateSession() {
             );
           }
 
-          // Update statement in local state
+          // Update statement in local state with the full response data
           setStatements((prev) =>
             prev.map((stmt) =>
               stmt.id === statementId
-                ? { ...stmt, ...response.data.statement }
+                ? { 
+                    ...stmt, 
+                    ...response.data.statement,
+                  }
                 : stmt,
-            ),
+            )
           );
 
           return true;
