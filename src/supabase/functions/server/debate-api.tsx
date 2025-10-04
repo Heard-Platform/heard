@@ -1078,6 +1078,8 @@ Base predictions on how each profile aligns with each statement.`;
     const data = await response.json();
     const content = data.choices[0]?.message?.content;
 
+    console.log("Vote prediction raw content:", content);
+
     if (!content) {
       throw new Error("No vote predictions generated");
     }
@@ -1907,10 +1909,17 @@ app.post(
       }
 
       // Special handling for rant-first rooms: skip posting phase and go directly to voting
-      if (room.rantFirst && room.phase === "lobby" && phase === "round1" && subPhase === "posting") {
+      if (
+        room.rantFirst &&
+        room.phase === "lobby" &&
+        phase === "round1" &&
+        subPhase === "posting"
+      ) {
         room.phase = phase as Phase;
         room.subPhase = "voting"; // Skip posting, go straight to voting
-        console.log("Rant-first room: skipping posting phase, going directly to voting");
+        console.log(
+          "Rant-first room: skipping posting phase, going directly to voting",
+        );
       } else {
         room.phase = phase as Phase;
         room.subPhase = subPhase;
