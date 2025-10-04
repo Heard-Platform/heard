@@ -127,7 +127,9 @@ export default function App() {
 
     // If we're in results, start a new game
     if (room.phase === "results") {
-      await updateRoomPhase("round1", "posting");
+      // For rant-first rooms, round1 starts with voting (rants serve as posting)
+      const targetSubPhase = room.rantFirst ? "voting" : "posting";
+      await updateRoomPhase("round1", targetSubPhase);
       setTimerActive(room.mode === "realtime");
       return;
     }
@@ -156,7 +158,10 @@ export default function App() {
     
     try {
       setStartingDebate(true);
-      await updateRoomPhase("round1", "posting");
+      // For rant-first rooms, go directly to voting after compilation
+      // For regular rooms, start with posting
+      const targetSubPhase = room.rantFirst ? "voting" : "posting";
+      await updateRoomPhase("round1", targetSubPhase);
       setTimerActive(room.mode === "realtime");
     } finally {
       setStartingDebate(false);
