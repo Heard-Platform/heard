@@ -888,13 +888,19 @@ Statement 2 here
 Statement 3 here
 
 PROFILE
-Brief description of this person's political/social leanings based on their rant (1-2 sentences)
+Brief description of this person's leanings, views, and values based on their rant (1-2 sentences)
 
-Rules:
-- Statements should be clear, voteable positions (1-2 sentences each)
-- Capture the author's key arguments and concerns
-- Include both strong positions and nuanced views from the rant
-- Profile should summarize their general political/ideological perspective
+STRICT Rules:
+- Use the author's actual words and phrases whenever possible
+- Do NOT add interpretations, implications, or extra meaning
+- Do NOT extrapolate beyond what they explicitly said
+- Stay faithful to their tone (casual, formal, emotional, etc.)
+- Only create statements for arguments they actually made
+- Keep their specific examples and concerns intact
+- If they used simple language, keep it simple
+- If they were emotional, preserve that emotion
+- Profile should summarize their general perspective
+
 
 Don't include any explanations or extra text, don't prefix statements with anything.`;
 
@@ -913,7 +919,7 @@ Don't include any explanations or extra text, don't prefix statements with anyth
             {
               role: "system",
               content:
-                "Generate debate statements and user profile. Follow the exact format requested.",
+                "You are a faithful content editor. Transform raw rants into clean debate statements while preserving the author's exact words, tone, and meaning. Do not add interpretations or extrapolate beyond what was actually said.",
             },
             {
               role: "user",
@@ -921,7 +927,7 @@ Don't include any explanations or extra text, don't prefix statements with anyth
             },
           ],
           max_tokens: 400,
-          temperature: 0.4,
+          temperature: 0.1,
         }),
       },
     );
@@ -1065,7 +1071,7 @@ Do not include formatting, backticks, etc, such as markdown. Return in the forma
             },
           ],
           max_tokens: 800,
-          temperature: 0.2,
+          temperature: 0.1,
         }),
       },
     );
