@@ -71,7 +71,7 @@ export function LobbyScreen({
   const [debateMode, setDebateMode] = useState<DebateMode>(
     "host-controlled",
   );
-  const [rantFirst, setRantFirst] = useState(false);
+  const [rantFirst, setRantFirst] = useState(true);
 
   const isTopicValid = newRoomTopic.trim().length >= 10;
   const remainingChars = 10 - newRoomTopic.trim().length;
@@ -87,7 +87,7 @@ export function LobbyScreen({
     setNewRoomTopic(""); // Clear the input after creating
     setNewRoomDescription(""); // Clear the description after creating
     setDebateMode("host-controlled"); // Reset to default
-    setRantFirst(false); // Reset to default
+    setRantFirst(true); // Reset to default
   };
 
   const handleExampleClick = (topic: string) => {
@@ -267,6 +267,23 @@ export function LobbyScreen({
                 <Label className="text-sm">Debate Style</Label>
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center space-x-3">
+                    <Brain className="w-4 h-4 text-purple-600" />
+                    <div>
+                      <p className="text-sm">Rant First Mode</p>
+                      <p className="text-xs text-muted-foreground">
+                        Players write rants, then statements are
+                        auto-generated
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={rantFirst}
+                    onCheckedChange={setRantFirst}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-3">
                     <Clock className="w-4 h-4 text-blue-600" />
                     <div>
                       <p className="text-sm">
@@ -286,23 +303,6 @@ export function LobbyScreen({
                           : "host-controlled",
                       )
                     }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <Brain className="w-4 h-4 text-purple-600" />
-                    <div>
-                      <p className="text-sm">Rant First Mode</p>
-                      <p className="text-xs text-muted-foreground">
-                        Players write rants, then statements are
-                        auto-generated
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={rantFirst}
-                    onCheckedChange={setRantFirst}
                   />
                 </div>
               </div>
