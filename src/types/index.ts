@@ -38,6 +38,7 @@ export interface UserSession {
   currentRoomId?: string;
   lastActive: number;
   isTestUser?: boolean; // Flag to indicate if this is a test/fake user
+  isDeveloper?: boolean; // Flag to indicate if this is a developer account
 }
 
 export type DebateMode = "realtime" | "host-controlled";

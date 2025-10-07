@@ -66,6 +66,7 @@ interface UserSession {
   currentRoomId?: string;
   lastActive: number;
   isTestUser?: boolean; // Flag to indicate if this is a test/fake user
+  isDeveloper?: boolean;
 }
 
 const app = new Hono();
@@ -1219,6 +1220,7 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
       streak: 0,
       lastActive: Date.now(),
       isTestUser: false, // Real users are not test users
+      isDeveloper: false,
     };
 
     await saveUserSession(userSession);

@@ -135,13 +135,20 @@ export function LobbyScreen({
         animate={{ scale: 1, opacity: 1 }}
         className="text-center space-y-6 max-w-2xl w-full"
       >
-        <motion.h1
-          className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          HEARD
-        </motion.h1>
+        <div className="flex items-center justify-center gap-3">
+          <motion.h1
+            className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            HEARD
+          </motion.h1>
+          {user?.isDeveloper && (
+            <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+              DEV
+            </Badge>
+          )}
+        </div>
         <p className="text-xl text-muted-foreground">
           An app for arguing (and secretly saving democracy)
         </p>
@@ -357,52 +364,54 @@ export function LobbyScreen({
           />
         </div>
 
-        <div className="flex flex-wrap gap-3 justify-center">
-          {/* Development only - remove in production */}
-          {onJumpToFinalResults && (
-            <Button
-              onClick={onJumpToFinalResults}
-              variant="outline"
-              size="sm"
-              className="text-xs bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100"
-            >
-              🚧 DEV: Jump to Final Results
-            </Button>
-          )}
-          {onCreateSeedData && (
-            <Button
-              onClick={handleCreateSeedData}
-              variant="outline"
-              size="sm"
-              className="text-xs bg-green-50 border-green-200 text-green-800 hover:bg-green-100"
-            >
-              <Database className="w-3 h-3 mr-1" />
-              🧪 DEV: Create Test Data
-            </Button>
-          )}
-          {onCreateTestRoom && (
-            <Button
-              onClick={handleCreateTestRoom}
-              variant="outline"
-              size="sm"
-              className="text-xs bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100"
-            >
-              <Plus className="w-3 h-3 mr-1" />
-              🏛️ DEV: Q Street Test Room
-            </Button>
-          )}
-          {onCreateRantTestRoom && (
-            <Button
-              onClick={handleCreateRantTestRoom}
-              variant="outline"
-              size="sm"
-              className="text-xs bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100"
-            >
-              <Brain className="w-3 h-3 mr-1" />
-              🧠 DEV: Rant-First Test Room
-            </Button>
-          )}
-        </div>
+        {/* Developer-only controls */}
+        {user?.isDeveloper && (
+          <div className="flex flex-wrap gap-3 justify-center">
+            {onJumpToFinalResults && (
+              <Button
+                onClick={onJumpToFinalResults}
+                variant="outline"
+                size="sm"
+                className="text-xs bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100"
+              >
+                🚧 DEV: Jump to Final Results
+              </Button>
+            )}
+            {onCreateSeedData && (
+              <Button
+                onClick={handleCreateSeedData}
+                variant="outline"
+                size="sm"
+                className="text-xs bg-green-50 border-green-200 text-green-800 hover:bg-green-100"
+              >
+                <Database className="w-3 h-3 mr-1" />
+                🧪 DEV: Create Test Data
+              </Button>
+            )}
+            {onCreateTestRoom && (
+              <Button
+                onClick={handleCreateTestRoom}
+                variant="outline"
+                size="sm"
+                className="text-xs bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100"
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                🏛️ DEV: Q Street Test Room
+              </Button>
+            )}
+            {onCreateRantTestRoom && (
+              <Button
+                onClick={handleCreateRantTestRoom}
+                variant="outline"
+                size="sm"
+                className="text-xs bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100"
+              >
+                <Brain className="w-3 h-3 mr-1" />
+                🧠 DEV: Rant-First Test Room
+              </Button>
+            )}
+          </div>
+        )}
 
         {error && (
           <Card className="p-4 bg-red-50 border-red-200">

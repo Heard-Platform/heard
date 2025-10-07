@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
 import { DebateTimer } from "../components/DebateTimer";
 import { ScoreBoard } from "../components/ScoreBoard";
 import { StatementCard } from "../components/StatementCard";
@@ -157,14 +158,22 @@ export function GameScreen({
           {/* Top row: Title, Dev button, Share, and Leave button */}
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <motion.h1
-                className="text-3xl font-bold text-primary"
-                whileHover={{ scale: 1.05 }}
-              >
-                HEARD
-              </motion.h1>
+              <div className="flex items-center gap-2">
+                <motion.h1
+                  className="text-3xl font-bold text-primary"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  HEARD
+                </motion.h1>
+                {user?.isDeveloper && (
+                  <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                    DEV
+                  </Badge>
+                )}
+              </div>
               {/* Dev Only: Skip Round Button - Host Only */}
-              {onSkipRound &&
+              {user?.isDeveloper && 
+                onSkipRound &&
                 room.phase !== "results" &&
                 room.phase !== "lobby" &&
                 room.hostId === user?.id && (
@@ -180,7 +189,8 @@ export function GameScreen({
                 )}
 
               {/* Dev Only: Auto-Play Button - Host Only */}
-              {room.phase !== "results" &&
+              {user?.isDeveloper &&
+                room.phase !== "results" &&
                 room.phase !== "lobby" &&
                 room.hostId === user?.id && (
                   <Button
