@@ -1306,7 +1306,9 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
     const debateRoom: DebateRoom = {
       id: roomId,
       topic: topic.substring(0, 500), // Limit topic length
-      description: description ? description.substring(0, 2000) : undefined, // Optional description with limit
+      description: description
+        ? description.substring(0, 2000)
+        : undefined, // Optional description with limit
       phase: "lobby",
       gameNumber: 1,
       roundStartTime: Date.now(),
@@ -1987,13 +1989,18 @@ app.put(
       // Only the host can update the description
       if (room.hostId !== userId) {
         return c.json(
-          { error: "Only the room host can update the description" },
+          {
+            error:
+              "Only the room host can update the description",
+          },
           403,
         );
       }
 
       // Update the room description
-      room.description = description ? description.substring(0, 2000) : undefined;
+      room.description = description
+        ? description.substring(0, 2000)
+        : undefined;
       await saveDebateRoom(room);
 
       return c.json({ room });
