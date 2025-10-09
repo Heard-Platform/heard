@@ -784,63 +784,6 @@ const getRantsForRoom = async (
   }
 };
 
-// AI compilation functionality
-const compileRantsWithAI = async (
-  rants: Rant[],
-  topic: string,
-): Promise<string[]> => {
-  try {
-    const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
-
-    if (!openaiApiKey) {
-      console.error("OPENAI_API_KEY not found in environment");
-      throw new Error("AI service not configured");
-    }
-
-    console.log(
-      `Starting parallel processing of ${rants.length} rants...`,
-    );
-
-    // Process each rant in parallel to generate statements
-    const parallelStartTime = Date.now();
-    const rantPromises = rants.map(async (rant, index) => {
-      return generateStatementsFromRant(
-        rant,
-        topic,
-        openaiApiKey,
-        index,
-      );
-    });
-
-    const rantResults = await Promise.all(rantPromises);
-    const parallelEndTime = Date.now();
-
-    console.log(
-      `Parallel processing completed in ${parallelEndTime - parallelStartTime}ms`,
-    );
-
-    // Collect all statements
-    const allStatements: string[] = [];
-
-    rantResults.forEach((result) => {
-      allStatements.push(...result.statements);
-    });
-
-    console.log(
-      `Generated ${allStatements.length} statements`,
-    );
-
-    console.log(
-      `Total AI compilation time: ${parallelEndTime - parallelStartTime}ms`,
-    );
-
-    return allStatements;
-  } catch (error) {
-    console.error("Error in parallel AI compilation:", error);
-    throw error;
-  }
-};
-
 // Generate 3-5 statements for a single rant
 const generateStatementsFromRant = async (
   rant: Rant,
@@ -941,7 +884,79 @@ const parseStatements = (content: string): string[] => {
   return lines;
 };
 
+// Process a single rant immediately and create statements
+const processRantAndCreateStatements = async (
+  rant: Rant,
+  topic: string,
+  roomId: string,
+): Promise<Statement[]> => {
+  try {
+    const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
 
+    if (!openaiApiKey) {
+      console.error("OPENAI_API_KEY not found in environment");
+      throw new Error("AI service not configured");
+    }
+
+    console.log(
+      `Processing rant from ${rant.author} for topic: ${topic}`,
+    );
+
+    // Generate statements from this rant
+    const aiStartTime = Date.now();
+    const result = await generateStatementsFromRant(
+      rant,
+      topic,
+      openaiApiKey,
+      0, // index not important for single rant processing
+    );
+    const aiEndTime = Date.now();
+
+    console.log(
+      `AI generated ${result.statements.length} statements from rant in ${aiEndTime - aiStartTime}ms`,
+    );
+
+    // Create statement objects
+    const baseTimestamp = Date.now();
+    const statements: Statement[] = [];
+
+    for (
+      let index = 0;
+      index < result.statements.length;
+      index++
+    ) {
+      const statementId = generateId();
+      const statement: Statement = {
+        id: statementId,
+        text: result.statements[index],
+        author: rant.author, // Use the rant author's name
+        agrees: 0,
+        disagrees: 0,
+        passes: 0,
+        roomId: roomId,
+        timestamp: baseTimestamp + index,
+        round: 1, // Rants are processed during lobby/round1
+        voters: {},
+      };
+      statements.push(statement);
+    }
+
+    // Save all statements
+    await bulkSaveStatements(statements);
+
+    console.log(
+      `Successfully saved ${statements.length} statements from ${rant.author}'s rant`,
+    );
+
+    return statements;
+  } catch (error) {
+    console.error(
+      `Error processing rant from ${rant.author}:`,
+      error,
+    );
+    throw error;
+  }
+};
 
 // Create or join user session
 app.post("/make-server-f1a393b4/user/create", async (c) => {
@@ -1368,10 +1383,33 @@ app.post(
 
       await saveRant(rant);
 
-      return c.json({
-        rant,
-        message: "Rant submitted successfully",
-      });
+      // Immediately process the rant and create statements
+      try {
+        const statements = await processRantAndCreateStatements(
+          rant,
+          room.topic,
+          roomId,
+        );
+
+        return c.json({
+          rant,
+          statements,
+          message: `Rant submitted and ${statements.length} statements created successfully`,
+        });
+      } catch (aiError) {
+        console.error(
+          "Error processing rant with AI:",
+          aiError,
+        );
+        // Rant was saved, but AI processing failed
+        return c.json({
+          rant,
+          statements: [],
+          message:
+            "Rant submitted, but AI processing failed. Statements will be generated later.",
+          warning: "AI processing error",
+        });
+      }
     } catch (error) {
       console.error("Error submitting rant:", error);
       return c.json({ error: "Failed to submit rant" }, 500);
@@ -1574,96 +1612,17 @@ app.post(
         );
       }
 
-      // Special handling for rant-first rooms: compile rants into statements when starting debate
+      // For rant-first rooms starting debate, just verify rants were submitted
       if (
         room.rantFirst &&
         room.phase === "lobby" &&
         phase === "round1"
       ) {
+        const rants = await getRantsForRoom(roomId);
+
         console.log(
-          "Starting rant-first debate - compiling rants",
+          `Starting rant-first debate with ${rants.length} rants (statements already created)`,
         );
-        const compilationStartTime = Date.now();
-
-        try {
-          const rants = await getRantsForRoom(roomId);
-
-          if (rants.length === 0) {
-            return c.json(
-              {
-                error:
-                  "No rants found to compile. Players must submit rants before starting the debate.",
-              },
-              400,
-            );
-          }
-
-          // Generate statements using AI
-          const aiStartTime = Date.now();
-          const aiStatements = await compileRantsWithAI(
-            rants,
-            room.topic,
-          );
-          const aiEndTime = Date.now();
-          console.log(
-            `AI generated ${aiStatements.length} statements in ${aiEndTime - aiStartTime}ms`,
-          );
-
-          // Prepare all statements for bulk insertion
-          const baseTimestamp = Date.now();
-          const statements: Statement[] = [];
-
-          // Create all statements
-          for (
-            let index = 0;
-            index < aiStatements.length;
-            index++
-          ) {
-            const statementId = generateId();
-            const statement: Statement = {
-              id: statementId,
-              text: aiStatements[index],
-              author: "Generated", // Special author to indicate AI-generated
-              agrees: 0, // Will be calculated from votes
-              disagrees: 0, // Will be calculated from votes
-              passes: 0, // Will be calculated from votes
-              roomId: roomId,
-              timestamp: baseTimestamp + index, // Slight offset to maintain order
-              round: 1, // All AI statements go into round 1
-              voters: {}, // Will be calculated from votes
-            };
-            statements.push(statement);
-          }
-
-          // Bulk save all statements at once
-          console.log(
-            `Bulk saving ${statements.length} statements...`,
-          );
-          await bulkSaveStatements(statements);
-
-          const compilationEndTime = Date.now();
-          const totalTime =
-            compilationEndTime - compilationStartTime;
-          const dbTime = compilationEndTime - aiEndTime;
-          console.log(
-            `Successfully bulk saved ${statements.length} AI-compiled statements to database`,
-          );
-          console.log(
-            `Total compilation time: ${totalTime}ms (AI: ${aiEndTime - aiStartTime}ms, DB: ${dbTime}ms)`,
-          );
-        } catch (error) {
-          console.error(
-            "Error compiling rants with AI:",
-            error,
-          );
-          return c.json(
-            {
-              error:
-                "Failed to compile rants. Please try again.",
-            },
-            500,
-          );
-        }
       }
 
       // Special handling for rant-first rooms: skip posting phase and go directly to voting

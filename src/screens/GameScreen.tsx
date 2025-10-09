@@ -391,7 +391,7 @@ export function GameScreen({
                     <div className="w-full max-w-2xl">
                       <RantSubmission
                         onSubmit={handleRantSubmit}
-                        placeholder="Share your unfiltered thoughts on this topic. We'll use everyone's rants to create structured debate points!"
+                        placeholder="Share your unfiltered thoughts on this topic. We'll use your rant to create debate points!"
                       />
                     </div>
                   </div>
@@ -412,11 +412,11 @@ export function GameScreen({
                             {room.participants.length} players
                             have shared their thoughts.
                           </p>
-                          {rants.length > 0 && (
+                          {statements.length > 0 && (
                             <div className="text-xs text-purple-600 bg-purple-50 p-2 rounded">
-                              All rants will be compiled into
-                              debate statements when the host
-                              starts the debate
+                              {statements.length} debate
+                              statements created from rants so
+                              far
                             </div>
                           )}
                         </div>
@@ -449,16 +449,10 @@ export function GameScreen({
                                   }}
                                   className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
                                 />
-                                {isRantFirstRoom
-                                  ? "Compiling rants..."
-                                  : "Starting debate..."}
+                                Starting debate...
                               </>
                             ) : (
-                              <>
-                                {isRantFirstRoom
-                                  ? "Compile Rants & Start Debate! 🧠"
-                                  : "Start Debate! 🔥"}
-                              </>
+                              <>Start Debate! 🔥</>
                             )}
                           </Button>
                           {room.participants.length < 2 &&
@@ -466,14 +460,6 @@ export function GameScreen({
                               <p className="text-xs text-muted-foreground mt-2">
                                 Need at least 2 players to start
                                 the debate
-                              </p>
-                            )}
-                          {startingDebate &&
-                            isRantFirstRoom && (
-                              <p className="text-xs text-purple-600 mt-2">
-                                AI is compiling everyone's rants
-                                into structured debate
-                                statements...
                               </p>
                             )}
                         </div>
