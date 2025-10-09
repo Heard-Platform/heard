@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
@@ -85,15 +85,33 @@ export function GameScreen({
   const isVotingPhase = room.subPhase === "voting";
   const isReviewPhase = room.subPhase === "review";
 
+  // Track if we've loaded initial data to prevent UI flash
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+
   // Rant logic
   const isRantFirstRoom = room.rantFirst;
   const userHasSubmittedRant = rants.some(
     (rant) => rant.author === user?.nickname,
   );
+  // In rant-first rooms during posting phase, show rant submission if user hasn't submitted rant
   const shouldShowRantSubmission =
     isRantFirstRoom &&
     !userHasSubmittedRant &&
-    (room.phase === "lobby" || room.phase === "round1");
+    isSubmissionPhase;
+
+  // Mark data as loaded after first render with proper rant data
+  useEffect(() => {
+    if (isRantFirstRoom && isSubmissionPhase) {
+      // For rant-first rooms, wait a moment to ensure rants are loaded
+      const timer = setTimeout(() => {
+        setInitialDataLoaded(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      // For non-rant-first rooms, immediately mark as loaded
+      setInitialDataLoaded(true);
+    }
+  }, [isRantFirstRoom, isSubmissionPhase]);
 
   const handleStatementSubmit = useCallback(
     async (text: string) => {
@@ -308,7 +326,8 @@ export function GameScreen({
         {room.mode === "host-controlled" &&
           room.phase !== "lobby" &&
           room.phase !== "results" &&
-          room.hostId === user?.id && (
+          room.hostId === user?.id &&
+          (!isRantFirstRoom || userHasSubmittedRant) && (
             <Card className="p-4 bg-blue-50 border-blue-200">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
@@ -510,30 +529,41 @@ export function GameScreen({
             {/* Posting Round - Centered submission box with statements below */}
             {isSubmissionPhase && (
               <>
-                {/* Rant submission for late-joining users in rant-first rooms */}
-                {shouldShowRantSubmission && (
-                  <div className="flex justify-center mb-6">
-                    <div className="w-full max-w-2xl">
+                {/* In rant-first rooms, show rant submission if user hasn't submitted, otherwise show statement submission */}
+                <div className="flex justify-center mb-6">
+                  <div className="w-full max-w-2xl">
+                    {!initialDataLoaded ? (
+                      <Card className="p-6">
+                        <div className="flex items-center justify-center gap-3">
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{
+                              duration: 1,
+                              repeat: Infinity,
+                              ease: "linear",
+                            }}
+                            className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full"
+                          />
+                          <p className="text-muted-foreground">Loading...</p>
+                        </div>
+                      </Card>
+                    ) : shouldShowRantSubmission ? (
                       <RantSubmission
                         onSubmit={handleRantSubmit}
-                        placeholder="Haven't shared your rant yet? Do it now before making specific statements!"
+                        placeholder="Share your unfiltered thoughts on this topic and we'll create debate points from your rant!"
                       />
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-center">
-                  <div className="w-full max-w-2xl">
-                    <StatementSubmission
-                      onSubmit={handleStatementSubmit}
-                      currentPhase={room.phase}
-                      isActive={isSubmissionPhase}
-                      placeholder={
-                        isRantFirstRoom
-                          ? "Make specific points based on the compiled debate statements 🎯"
-                          : "What's your take? Spicy takes welcome! 🌶️"
-                      }
-                    />
+                    ) : (
+                      <StatementSubmission
+                        onSubmit={handleStatementSubmit}
+                        currentPhase={room.phase}
+                        isActive={isSubmissionPhase}
+                        placeholder={
+                          isRantFirstRoom
+                            ? "Add more specific points to the discussion 🎯"
+                            : "What's your take? Spicy takes welcome! 🌶️"
+                        }
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -544,7 +574,7 @@ export function GameScreen({
                   </h3>
 
                   <div className="flex justify-center">
-                    <div className="w-full max-w-2xl space-y-3 max-h-[500px] overflow-y-auto">
+                    <div className="w-full max-w-2xl space-y-3 max-h-[500px] min-h-[200px] overflow-y-auto">
                       <AnimatePresence>
                         {statements.map((statement) => (
                           <StatementCard

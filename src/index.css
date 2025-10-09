@@ -776,6 +776,10 @@
     min-height: 120px;
   }
 
+  .min-h-\[200px\] {
+    min-height: 200px;
+  }
+
   .min-h-screen {
     min-height: 100vh;
   }
@@ -1138,6 +1142,10 @@
 
   .border-pink-200 {
     border-color: var(--color-pink-200);
+  }
+
+  .border-primary {
+    border-color: var(--primary);
   }
 
   .border-purple-200 {

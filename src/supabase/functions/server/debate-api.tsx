@@ -1105,7 +1105,8 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
       description: description
         ? description.substring(0, 2000)
         : undefined, // Optional description with limit
-      phase: "lobby",
+      phase: rantFirst ? "round1" : "lobby", // Rant-first rooms start in round1
+      subPhase: rantFirst ? "posting" : undefined, // Rant-first rooms start in posting phase
       gameNumber: 1,
       roundStartTime: Date.now(),
       participants: [userId],
@@ -1612,35 +1613,9 @@ app.post(
         );
       }
 
-      // For rant-first rooms starting debate, just verify rants were submitted
-      if (
-        room.rantFirst &&
-        room.phase === "lobby" &&
-        phase === "round1"
-      ) {
-        const rants = await getRantsForRoom(roomId);
-
-        console.log(
-          `Starting rant-first debate with ${rants.length} rants (statements already created)`,
-        );
-      }
-
-      // Special handling for rant-first rooms: skip posting phase and go directly to voting
-      if (
-        room.rantFirst &&
-        room.phase === "lobby" &&
-        phase === "round1" &&
-        subPhase === "posting"
-      ) {
-        room.phase = phase as Phase;
-        room.subPhase = "voting"; // Skip posting, go straight to voting
-        console.log(
-          "Rant-first room: skipping posting phase, going directly to voting",
-        );
-      } else {
-        room.phase = phase as Phase;
-        room.subPhase = subPhase;
-      }
+      // Update room phase and subphase
+      room.phase = phase as Phase;
+      room.subPhase = subPhase;
       room.roundStartTime = Date.now();
 
       // If moving to results, increment game number
@@ -2334,8 +2309,8 @@ app.post(
         id: roomId,
         topic:
           "Should Q Street be closed to traffic during the farmers market?",
-        phase: "lobby", // Start in lobby so host can test the compilation
-        subPhase: undefined,
+        phase: "round1", // Rant-first rooms start in round1
+        subPhase: "posting", // Start in posting phase
         gameNumber: 1,
         roundStartTime: Date.now(),
         participants: [
