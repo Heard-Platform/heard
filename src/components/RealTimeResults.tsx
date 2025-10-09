@@ -178,7 +178,7 @@ export function RealTimeResults({
     >
       <div className="flex items-start justify-between mb-2">
         <span className="text-xs text-muted-foreground">
-          @{statement.author}
+          Anonymous
         </span>
         <div className="flex items-center gap-1">
           {statement.type && (

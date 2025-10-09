@@ -138,7 +138,7 @@ export function FinalResults({
             </div>
             <p className="text-sm mb-2">{statement.text}</p>
             <p className="text-xs text-muted-foreground">
-              by {statement.author}
+              by Anonymous
             </p>
           </div>
           <Button
