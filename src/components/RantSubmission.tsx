@@ -82,7 +82,8 @@ export function RantSubmission({
               </h3>
               <p className="text-sm text-purple-700">
                 Let it all out! We'll compile everyone's
-                thoughts into structured debate points.
+                thoughts into structured anonymous debate
+                points.
               </p>
             </div>
           </div>

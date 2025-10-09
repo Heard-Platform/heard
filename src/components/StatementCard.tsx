@@ -68,7 +68,7 @@ export function StatementCard({
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
-            @{statement.author}
+            Anonymous
           </span>
           {statement.isSpicy && (
             <span className="text-sm">🌶️</span>
