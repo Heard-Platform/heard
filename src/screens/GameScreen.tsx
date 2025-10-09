@@ -54,7 +54,9 @@ interface GameScreenProps {
   onSkipRound?: () => Promise<void>;
   onStartAutoPlay: () => void;
   onStopAutoPlay: () => void;
-  onUpdateRoomDescription: (description: string) => Promise<boolean>;
+  onUpdateRoomDescription: (
+    description: string,
+  ) => Promise<boolean>;
 }
 
 export function GameScreen({
@@ -172,7 +174,7 @@ export function GameScreen({
                 )}
               </div>
               {/* Dev Only: Skip Round Button - Host Only */}
-              {user?.isDeveloper && 
+              {user?.isDeveloper &&
                 onSkipRound &&
                 room.phase !== "results" &&
                 room.phase !== "lobby" &&
@@ -308,7 +310,7 @@ export function GameScreen({
           room.phase !== "results" &&
           room.hostId === user?.id && (
             <Card className="p-4 bg-blue-50 border-blue-200">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <p className="font-medium text-blue-900">
                     Host Controls
@@ -322,21 +324,33 @@ export function GameScreen({
                       "Players are reviewing results"}
                   </p>
                 </div>
-                <Button
-                  onClick={onNextRound}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <SkipForward className="w-4 h-4 mr-2" />
-                  {room.subPhase === "posting" && "Advance to Voting"}
-                  {room.subPhase === "voting" && "Advance to Review"}
-                  {room.subPhase === "review" && (
-                    room.phase === "round3" 
-                      ? "View Final Results"
-                      : room.phase === "round2"
-                        ? "Start Round 3"
-                        : "Start Round 2"
-                  )}
-                </Button>
+                <div className="flex flex-col items-center gap-2">
+                  <Button
+                    onClick={onNextRound}
+                    className="bg-blue-600 hover:bg-blue-700 shrink-0"
+                  >
+                    <SkipForward className="w-4 h-4 mr-2" />
+                    {room.subPhase === "posting" &&
+                      "Advance to Voting"}
+                    {room.subPhase === "voting" &&
+                      "Advance to Results"}
+                    {room.subPhase === "review" &&
+                      (room.phase === "round3"
+                        ? "End Debate"
+                        : room.phase === "round2"
+                          ? "Start Round 3"
+                          : "Start Round 2")}
+                  </Button>
+                  <p className="text-xs text-blue-600 leading-relaxed text-center max-w-xs">
+                    {room.subPhase === "posting" &&
+                      "This ends posting of more statements until the next round."}
+                    {room.subPhase === "voting" &&
+                      "This ends voting and shows results to all players."}
+                    {room.subPhase === "review" &&
+                      room.phase === "round3" &&
+                      "Final highlights will be shown."}
+                  </p>
+                </div>
               </div>
             </Card>
           )}
@@ -457,8 +471,9 @@ export function GameScreen({
                           {startingDebate &&
                             isRantFirstRoom && (
                               <p className="text-xs text-purple-600 mt-2">
-                                AI is compiling everyone's rants into
-                                structured debate statements...
+                                AI is compiling everyone's rants
+                                into structured debate
+                                statements...
                               </p>
                             )}
                         </div>
