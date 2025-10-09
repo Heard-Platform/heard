@@ -449,9 +449,8 @@ export function GameScreen({
                           {startingDebate &&
                             isRantFirstRoom && (
                               <p className="text-xs text-purple-600 mt-2">
-                                We're creating statements and
-                                predicting votes based on what
-                                everyone shared...
+                                AI is compiling everyone's rants into
+                                structured debate statements...
                               </p>
                             )}
                         </div>
