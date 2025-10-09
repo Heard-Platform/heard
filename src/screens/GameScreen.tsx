@@ -86,7 +86,10 @@ export function GameScreen({
   const isReviewPhase = room.subPhase === "review";
 
   // Track if we've loaded initial data to prevent UI flash
-  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+  const [initialDataLoaded, setInitialDataLoaded] =
+    useState(false);
+  const [isSubmittingRant, setIsSubmittingRant] =
+    useState(false);
 
   // Rant logic
   const isRantFirstRoom = room.rantFirst;
@@ -94,13 +97,13 @@ export function GameScreen({
     (rant) => rant.author === user?.nickname,
   );
   const hasEnoughRantsForAnonymity = rants.length >= 3;
-  
+
   // In rant-first rooms during posting phase, show rant submission if user hasn't submitted rant
   const shouldShowRantSubmission =
     isRantFirstRoom &&
     !userHasSubmittedRant &&
     isSubmissionPhase;
-  
+
   // Show holding state if user has submitted rant but not enough total rants yet
   const shouldShowHoldingState =
     isRantFirstRoom &&
@@ -152,7 +155,12 @@ export function GameScreen({
 
   const handleRantSubmit = useCallback(
     async (text: string) => {
-      await onSubmitRant(text);
+      setIsSubmittingRant(true);
+      try {
+        await onSubmitRant(text);
+      } finally {
+        setIsSubmittingRant(false);
+      }
     },
     [onSubmitRant],
   );
@@ -336,7 +344,9 @@ export function GameScreen({
           room.phase !== "lobby" &&
           room.phase !== "results" &&
           room.hostId === user?.id &&
-          (!isRantFirstRoom || (userHasSubmittedRant && hasEnoughRantsForAnonymity)) && (
+          (!isRantFirstRoom ||
+            (userHasSubmittedRant &&
+              hasEnoughRantsForAnonymity)) && (
             <Card className="p-4 bg-blue-50 border-blue-200">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
@@ -553,12 +563,15 @@ export function GameScreen({
                             }}
                             className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full"
                           />
-                          <p className="text-muted-foreground">Loading...</p>
+                          <p className="text-muted-foreground">
+                            Loading...
+                          </p>
                         </div>
                       </Card>
                     ) : shouldShowRantSubmission ? (
                       <RantSubmission
                         onSubmit={handleRantSubmit}
+                        isSubmitting={isSubmittingRant}
                         placeholder="Share your unfiltered thoughts on this topic and we'll create debate points from your rant!"
                       />
                     ) : shouldShowHoldingState ? (
@@ -570,12 +583,18 @@ export function GameScreen({
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <h3 className="text-purple-900">Rant Submitted! 🎉</h3>
+                            <h3 className="text-purple-900">
+                              Rant Submitted! 🎉
+                            </h3>
                             <p className="text-sm text-purple-700">
-                              We're waiting for a few more players to submit rants before showing statements to help protect anonymity.
+                              We're waiting for a few more
+                              players to submit rants before
+                              showing statements to help protect
+                              anonymity.
                             </p>
                             <div className="text-xs text-purple-600 bg-purple-100 p-3 rounded">
-                              {rants.length} / 3 rants submitted so far
+                              {rants.length} / 3 rants submitted
+                              so far
                             </div>
                           </div>
                           <div className="flex justify-center items-center space-x-1 pt-2">
@@ -625,44 +644,45 @@ export function GameScreen({
                 </div>
 
                 {/* Statements below submission box - hidden when awaiting rant submission or in holding state */}
-                {!shouldShowRantSubmission && !shouldShowHoldingState && (
-                  <div className="space-y-4">
-                    <h3 className="text-center flex items-center justify-center gap-2">
-                      Statements ({statements.length})
-                    </h3>
+                {!shouldShowRantSubmission &&
+                  !shouldShowHoldingState && (
+                    <div className="space-y-4">
+                      <h3 className="text-center flex items-center justify-center gap-2">
+                        Statements ({statements.length})
+                      </h3>
 
-                    <div className="flex justify-center">
-                      <div className="w-full max-w-2xl space-y-3 max-h-[500px] min-h-[200px] overflow-y-auto">
-                        <AnimatePresence>
-                          {statements.map((statement) => (
-                            <StatementCard
-                              key={statement.id}
-                              statement={statement}
-                              onVote={handleVote}
-                              onFlag={() =>
-                                console.log(
-                                  "Flag statement:",
-                                  statement.id,
-                                )
-                              }
-                              canVote={false}
-                              currentUserId={user?.id}
-                            />
-                          ))}
-                        </AnimatePresence>
+                      <div className="flex justify-center">
+                        <div className="w-full max-w-2xl space-y-3 max-h-[500px] min-h-[200px] overflow-y-auto">
+                          <AnimatePresence>
+                            {statements.map((statement) => (
+                              <StatementCard
+                                key={statement.id}
+                                statement={statement}
+                                onVote={handleVote}
+                                onFlag={() =>
+                                  console.log(
+                                    "Flag statement:",
+                                    statement.id,
+                                  )
+                                }
+                                canVote={false}
+                                currentUserId={user?.id}
+                              />
+                            ))}
+                          </AnimatePresence>
 
-                        {statements.length === 0 && (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <p>
-                              No statements yet. Be the first to
-                              share your take!
-                            </p>
-                          </div>
-                        )}
+                          {statements.length === 0 && (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <p>
+                                No statements yet. Be the first
+                                to share your take!
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </>
             )}
 
