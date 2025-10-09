@@ -327,7 +327,15 @@ export function GameScreen({
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   <SkipForward className="w-4 h-4 mr-2" />
-                  Next Phase
+                  {room.subPhase === "posting" && "Advance to Voting"}
+                  {room.subPhase === "voting" && "Advance to Review"}
+                  {room.subPhase === "review" && (
+                    room.phase === "round3" 
+                      ? "View Final Results"
+                      : room.phase === "round2"
+                        ? "Start Round 3"
+                        : "Start Round 2"
+                  )}
                 </Button>
               </div>
             </Card>
