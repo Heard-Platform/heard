@@ -2458,6 +2458,199 @@ app.post(
         await saveRant(rant);
       }
 
+      // Create pre-generated statements that would have come from these rants
+      const baseTimestamp = Date.now();
+      const statements: Statement[] = [
+        // Statements from FarmersMarketVendor
+        {
+          id: generateId(),
+          text: "We need to close Q Street to cars during market hours because families are trying to browse produce while cars drive right through the middle of everything.",
+          author: "FarmersMarketVendor",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "Even with light traffic on this one-way street, car traffic creates anxiety for shoppers with kids and disrupts the flow of the market.",
+          author: "FarmersMarketVendor",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 1,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "Closing Q Street for a few hours on Saturday mornings would transform our market from a cramped sidewalk event into a proper community gathering space.",
+          author: "FarmersMarketVendor",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 2,
+          round: 1,
+          voters: {},
+        },
+        // Statements from QStreetResident
+        {
+          id: generateId(),
+          text: "I'm 73 years old and depend on being able to park close to my apartment entrance - a full street closure would force me to park three blocks away.",
+          author: "QStreetResident",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 3,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "Q Street residents need to be able to get through for work, deliveries, and emergency access - the current traffic light setup at least allows that.",
+          author: "QStreetResident",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 4,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "Just because Q Street doesn't get heavy traffic doesn't mean it's not important to those of us who actually live here.",
+          author: "QStreetResident",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 5,
+          round: 1,
+          voters: {},
+        },
+        // Statements from CommunityAdvocate
+        {
+          id: generateId(),
+          text: "The current situation isn't ideal for anyone - the market feels cramped and residents feel like their street is being taken over.",
+          author: "CommunityAdvocate",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 6,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "We could create compromise solutions like designated market hours with resident-only access permits or reserved parking spots for Q Street residents on the next block over.",
+          author: "CommunityAdvocate",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 7,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "Both the market vendors and the residents deserve to feel welcome and accommodated - this doesn't have to be an all-or-nothing fight.",
+          author: "CommunityAdvocate",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 8,
+          round: 1,
+          voters: {},
+        },
+        // Statements from LocalBusiness
+        {
+          id: generateId(),
+          text: "My suppliers have trouble making deliveries on Saturday mornings because of all the market activity, and customers complain about not being able to find parking.",
+          author: "LocalBusiness",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 9,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "If they close the street, there needs to be adequate alternative access and parking for business customers and deliveries.",
+          author: "LocalBusiness",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 10,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "Maybe a full pedestrian zone would actually be better than the current awkward mix of cars and foot traffic.",
+          author: "LocalBusiness",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 11,
+          round: 1,
+          voters: {},
+        },
+        // Statements from UrbanPlanner
+        {
+          id: generateId(),
+          text: "The current compromise of keeping the street open with a traffic light satisfies no one - cars navigate through crowds, shoppers feel unsafe, and the market can't fully utilize the space.",
+          author: "UrbanPlanner",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 12,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "Q Street is a small side street that could serve the community much better as an occasional pedestrian plaza rather than a major traffic artery.",
+          author: "UrbanPlanner",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 13,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "Cities across the country are experimenting with flexible street designs that can adapt to different uses throughout the week - this is about designing public space that serves multiple community needs.",
+          author: "UrbanPlanner",
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 14,
+          round: 1,
+          voters: {},
+        },
+      ];
+
+      // Save all statements
+      await bulkSaveStatements(statements);
+
       // Update user's current room
       user.currentRoomId = roomId;
       await saveUserSession(user);
@@ -2466,8 +2659,11 @@ app.post(
         room: debateRoom,
         players: fakeUsers.length + 1, // +1 for the creating user
         rants: rants.length,
+        statements: statements.length,
         message:
-          "Rant test room created successfully! 5 players have already submitted detailed rants ready for compilation.",
+          "Rant test room created successfully! 5 players have already submitted detailed rants and " +
+          statements.length +
+          " debate statements have been generated.",
       });
     } catch (error) {
       console.error("Error creating rant test room:", error);
