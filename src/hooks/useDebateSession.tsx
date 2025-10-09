@@ -37,6 +37,7 @@ export function useDebateSession() {
     votes: { [playerId: string]: number };
   }>({ posts: {}, votes: {} });
   const autoPlayActiveRef = useRef(false);
+  const roomIdRef = useRef<string | null>(null);
 
   // Initialize user session
   const initializeUser = useCallback(
@@ -106,6 +107,7 @@ export function useDebateSession() {
         );
         if (response.success && response.data) {
           const roomData = response.data.room;
+          roomIdRef.current = roomData.id; // Track room ID in ref
           setRoom(roomData);
           setRoomId(roomData.id);
           return roomData;
@@ -134,6 +136,7 @@ export function useDebateSession() {
         const response = await api.joinRoom(roomId, user.id);
         if (response.success && response.data) {
           const roomData = response.data.room;
+          roomIdRef.current = roomData.id; // Track room ID in ref
           setRoom(roomData);
           setRoomId(roomData.id);
           return roomData;
@@ -155,15 +158,17 @@ export function useDebateSession() {
 
   // Refresh room status and statements
   const refreshRoom = useCallback(async () => {
-    if (!room) return;
+    const currentRoomId = roomIdRef.current;
+    if (!currentRoomId) return;
 
     try {
-      const response = await api.getRoomStatus(room.id);
-      if (response.success && response.data) {
+      const response = await api.getRoomStatus(currentRoomId);
+      // Only update state if we're still in the same room
+      if (response.success && response.data && roomIdRef.current === currentRoomId) {
         setRoom(response.data.room);
         setStatements(response.data.statements || []);
         setRants(response.data.rants || []);
-      } else {
+      } else if (response.error) {
         console.error("Room refresh failed:", response.error);
         setError(response.error || "Failed to refresh room");
       }
@@ -173,7 +178,7 @@ export function useDebateSession() {
         err instanceof Error ? err.message : "Unknown error",
       );
     }
-  }, [room]);
+  }, []);
 
   // Submit statement
   const submitStatement = useCallback(
@@ -410,8 +415,10 @@ export function useDebateSession() {
   // Leave current room but keep user logged in
   const leaveRoom = useCallback(() => {
     stopAutoPlay(); // Stop auto-play when leaving room
+    roomIdRef.current = null; // Clear ref to prevent race conditions with polling
     setRoom(null);
     setStatements([]);
+    setRants([]);
     setLastAchievement(null);
     clearRoomId();
   }, [stopAutoPlay]);

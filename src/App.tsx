@@ -214,6 +214,7 @@ export default function App() {
   const handleLeaveRoom = () => {
     leaveRoom();
     setTimerActive(false);
+    setTargetRoomId(null); // Clear target room ID to prevent re-joining
     clearRoomFromUrl(); // Clear room from URL when leaving
   };
 
