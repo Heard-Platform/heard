@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { ShareButton } from "../components/ShareButton";
 import { InviteButton } from "../components/InviteButton";
+import { DebateMetricsButton } from "../components/DebateMetricsButton";
 import type {
   UserSession,
   DebateRoom,
@@ -188,7 +189,7 @@ export function GameScreen({
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background px-4 pt-4 pb-24">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="space-y-3">
@@ -819,6 +820,16 @@ export function GameScreen({
         <AchievementNotification
           achievement={lastAchievement}
           onClose={() => {}}
+        />
+      )}
+
+      {/* Floating Debate Metrics Button - Dev Only */}
+      {user?.isDeveloper && (
+        <DebateMetricsButton
+          participation={0}
+          spiciness={0}
+          agreement={0}
+          minorityBuyIn={0}
         />
       )}
     </div>
