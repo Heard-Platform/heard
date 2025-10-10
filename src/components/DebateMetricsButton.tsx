@@ -331,9 +331,12 @@ export function DebateMetricsButton({
                     {Math.round((participation + spiciness + agreement + minorityBuyIn) / 4)}%
                   </span>
                 </div>
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#E5DDD0' }}>
                   <motion.div
-                    className="h-full bg-gradient-to-r from-amber-500 to-green-500"
+                    className="h-full"
+                    style={{ 
+                      background: 'linear-gradient(to right, #D4B896, #8B7355)'
+                    }}
                     initial={{ width: 0 }}
                     animate={{
                       width: `${(participation + spiciness + agreement + minorityBuyIn) / 4}%`,
