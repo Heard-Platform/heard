@@ -1,8 +1,10 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
+import { recalculateClustersForRoom } from "./clustering.tsx";
 
-interface Statement {
+// Type definitions - exported for use in other modules
+export interface Statement {
   id: string;
   text: string;
   author: string;
@@ -17,7 +19,7 @@ interface Statement {
   voters: { [userId: string]: "agree" | "disagree" | "pass" }; // Will be calculated from Vote records
 }
 
-interface Vote {
+export interface Vote {
   id: string;
   statementId: string;
   userId: string;
@@ -25,16 +27,16 @@ interface Vote {
   timestamp: number;
 }
 
-type Phase =
+export type Phase =
   | "lobby"
   | "round1"
   | "round2"
   | "round3"
   | "results";
-type SubPhase = "posting" | "voting" | "review";
-type DebateMode = "realtime" | "host-controlled";
+export type SubPhase = "posting" | "voting" | "review";
+export type DebateMode = "realtime" | "host-controlled";
 
-interface DebateRoom {
+export interface DebateRoom {
   id: string;
   topic: string;
   phase: Phase;
@@ -49,7 +51,7 @@ interface DebateRoom {
   rantFirst?: boolean; // Whether this room starts with rants
 }
 
-interface Rant {
+export interface Rant {
   id: string;
   text: string;
   author: string;
@@ -57,7 +59,7 @@ interface Rant {
   timestamp: number;
 }
 
-interface UserSession {
+export interface UserSession {
   id: string;
   nickname: string;
   email: string;
@@ -1536,6 +1538,14 @@ app.post(
         await saveUserSession(user);
       }
 
+      // Trigger clustering recalculation for the room
+      try {
+        await recalculateClustersForRoom(statement.roomId);
+      } catch (clusterError) {
+        console.error("[Clustering] Error during clustering recalculation:", clusterError);
+        // Don't fail the vote if clustering fails
+      }
+
       return c.json({
         statement: updatedStatement,
         pointsEarned,
@@ -2644,6 +2654,61 @@ app.post(
       console.error("Error creating rant test room:", error);
       return c.json(
         { error: "Failed to create rant test room" },
+        500,
+      );
+    }
+  },
+);
+
+// Dev endpoint: Get cluster data for a room
+app.get(
+  "/make-server-f1a393b4/room/:roomId/clusters",
+  async (c) => {
+    try {
+      const roomId = c.req.param("roomId");
+      
+      const room = await getDebateRoom(roomId);
+      if (!room) {
+        return c.json({ error: "Room not found" }, 404);
+      }
+
+      // Get cluster metadata
+      const metadataKey = `cluster:${roomId}:metadata`;
+      const metadataValue = await kv.get(metadataKey);
+      const metadata = metadataValue ? JSON.parse(metadataValue) : null;
+
+      // Get all cluster assignments for participants
+      const clusterKeys = room.participants.map(
+        userId => `cluster:${roomId}:${userId}`
+      );
+      const clusterValues = await kv.mget(clusterKeys);
+      
+      const assignments = room.participants.map((userId, idx) => {
+        const value = clusterValues[idx];
+        if (!value) return { userId, cluster: null };
+        try {
+          const clusterData = JSON.parse(value);
+          return {
+            userId,
+            clusterId: clusterData.clusterId,
+            distance: clusterData.distance,
+            timestamp: clusterData.timestamp
+          };
+        } catch {
+          return { userId, cluster: null };
+        }
+      });
+
+      return c.json({
+        roomId,
+        metadata,
+        assignments,
+        participants: room.participants.length,
+      });
+    } catch (error) {
+      console.error("Error fetching cluster data:", error);
+      return c.json(
+        { error: "Failed to fetch cluster data" },
         500,
       );
     }
