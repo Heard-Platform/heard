@@ -666,7 +666,7 @@ export function GameScreen({
                                     statement.id,
                                   )
                                 }
-                                canVote={false}
+                                canVote={room.mode === "host-controlled"}
                                 currentUserId={user?.id}
                               />
                             ))}
