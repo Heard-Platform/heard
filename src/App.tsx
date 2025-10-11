@@ -137,8 +137,8 @@ export default function App() {
     [voteOnStatement],
   );
 
-  // Handle round transitions
-  const nextRound = useCallback(async () => {
+  // Advance to the next step in the debate (subphase or round depending on mode)
+  const advance = useCallback(async () => {
     if (!room) return;
 
     const phases: Phase[] = ["round1", "round2", "round3"];
@@ -160,6 +160,21 @@ export default function App() {
       return;
     }
 
+    // For host-controlled mode: skip subphases, just advance rounds
+    if (room.mode === "host-controlled") {
+      // Move to next round
+      if (currentPhaseIndex < phases.length - 1) {
+        const nextPhase = phases[currentPhaseIndex + 1];
+        await updateRoomPhase(nextPhase, "posting");
+      }
+      // Go to results
+      else {
+        await updateRoomPhase("results", undefined);
+      }
+      return;
+    }
+
+    // For realtime mode: cycle through subphases
     // Move to next sub-phase within current phase
     if (currentSubPhaseIndex < subPhases.length - 1) {
       const nextSubPhase = subPhases[currentSubPhaseIndex + 1];
@@ -359,12 +374,12 @@ export default function App() {
           onSubmitStatement={handleStatementSubmit}
           onSubmitRant={handleRantSubmit}
           onVote={handleVote}
-          onNextRound={nextRound}
+          onAdvance={advance}
           onStartDebate={startDebate}
           onLeaveRoom={handleLeaveRoom}
           onNewDiscussion={handleNewDiscussion}
           onScheduleFuture={handleScheduleFuture}
-          onSkipRound={nextRound}
+          onSkipToNextStep={advance}
           onStartAutoPlay={startAutoPlay}
           onStopAutoPlay={stopAutoPlay}
           onUpdateRoomDescription={updateRoomDescription}

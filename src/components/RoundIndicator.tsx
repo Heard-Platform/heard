@@ -18,12 +18,14 @@ interface RoundIndicatorProps {
   currentRound: Round;
   currentSubPhase?: SubPhase;
   gameNumber: number;
+  mode?: "realtime" | "host-controlled";
 }
 
 export function RoundIndicator({
   currentRound,
   currentSubPhase,
   gameNumber,
+  mode = "realtime",
 }: RoundIndicatorProps) {
   const rounds = [
     {
@@ -47,6 +49,40 @@ export function RoundIndicator({
   ];
 
   const getCurrentRoundInfo = () => {
+    // For host-controlled mode, don't show subphase in title
+    if (mode === "host-controlled") {
+      if (currentRound === "round1")
+        return {
+          title: "Round 1",
+          subtitle: "Post and vote on statements",
+          emoji: "💭",
+        };
+      if (currentRound === "round2")
+        return {
+          title: "Round 2",
+          subtitle: "Keep the discussion going",
+          emoji: "💬",
+        };
+      if (currentRound === "round3")
+        return {
+          title: "Round 3",
+          subtitle: "Final statements and votes",
+          emoji: "🔥",
+        };
+      if (currentRound === "results")
+        return {
+          title: "Game Complete",
+          subtitle: "See the results",
+          emoji: "🏆",
+        };
+      return {
+        title: "Debate",
+        subtitle: "Express yourself",
+        emoji: "💬",
+      };
+    }
+
+    // For realtime mode, show subphase in title
     if (currentRound === "round1") {
       if (currentSubPhase === "posting")
         return {
@@ -195,8 +231,8 @@ export function RoundIndicator({
               >
                 {round.label}
               </span>
-              {/* Sub-phase indicator */}
-              {isActive && (
+              {/* Sub-phase indicator - only for realtime mode */}
+              {isActive && mode === "realtime" && (
                 <div className="flex gap-1">
                   <div
                     className={`w-1.5 h-1.5 rounded-full ${

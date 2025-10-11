@@ -47,12 +47,12 @@ interface GameScreenProps {
     id: string,
     voteType: "agree" | "disagree" | "pass",
   ) => Promise<void>;
-  onNextRound: () => Promise<void>;
+  onAdvance: () => Promise<void>;
   onStartDebate: () => Promise<void>;
   onLeaveRoom: () => void;
   onNewDiscussion: (statement: Statement) => void;
   onScheduleFuture: () => void;
-  onSkipRound?: () => Promise<void>;
+  onSkipToNextStep?: () => Promise<void>;
   onStartAutoPlay: () => void;
   onStopAutoPlay: () => void;
   onUpdateRoomDescription: (
@@ -72,19 +72,27 @@ export function GameScreen({
   onSubmitStatement,
   onSubmitRant,
   onVote,
-  onNextRound,
+  onAdvance,
   onStartDebate,
   onLeaveRoom,
   onNewDiscussion,
   onScheduleFuture,
-  onSkipRound,
+  onSkipToNextStep,
   onStartAutoPlay,
   onStopAutoPlay,
   onUpdateRoomDescription,
 }: GameScreenProps) {
-  const isSubmissionPhase = room.subPhase === "posting";
-  const isVotingPhase = room.subPhase === "voting";
-  const isReviewPhase = room.subPhase === "review";
+  // For host-controlled mode, posting and voting happen simultaneously
+  // For realtime mode, we still use subphases
+  const isHostControlled = room.mode === "host-controlled";
+  const isSubmissionPhase = isHostControlled
+    ? room.phase !== "lobby" && room.phase !== "results"
+    : room.subPhase === "posting";
+  const isVotingPhase = isHostControlled
+    ? room.phase !== "lobby" && room.phase !== "results"
+    : room.subPhase === "voting";
+  const isReviewPhase =
+    !isHostControlled && room.subPhase === "review";
 
   // Track if we've loaded initial data to prevent UI flash
   const [initialDataLoaded, setInitialDataLoaded] =
@@ -175,7 +183,7 @@ export function GameScreen({
           gameNumber={room.gameNumber}
           onNewDiscussion={handleNewDiscussion}
           onScheduleFuture={handleScheduleFuture}
-          onNextGame={onNextRound}
+          onNextGame={onAdvance}
           onBackToLobby={onLeaveRoom}
         />
         {lastAchievement && (
@@ -209,18 +217,18 @@ export function GameScreen({
                   </Badge>
                 )}
               </div>
-              {/* Dev Only: Skip Round Button - Host Only */}
+              {/* Dev Only: Skip to Next Step Button - Host Only */}
               {user?.isDeveloper &&
-                onSkipRound &&
+                onSkipToNextStep &&
                 room.phase !== "results" &&
                 room.phase !== "lobby" &&
                 room.hostId === user?.id && (
                   <Button
-                    onClick={onSkipRound}
+                    onClick={onSkipToNextStep}
                     variant="outline"
                     size="sm"
                     className="bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100 p-2"
-                    title="DEV: Next Round"
+                    title="DEV: Skip to Next Step"
                   >
                     <SkipForward className="w-4 h-4" />
                   </Button>
@@ -328,13 +336,14 @@ export function GameScreen({
           currentRound={room.phase}
           currentSubPhase={room.subPhase}
           gameNumber={room.gameNumber}
+          mode={room.mode}
         />
 
         {/* Timer for realtime mode */}
         {timerActive && room.mode === "realtime" && (
           <DebateTimer
             duration={90} // 90 seconds for all rounds and sub-phases
-            onTimeUp={onNextRound}
+            onTimeUp={onAdvance}
             isActive={timerActive}
             roundStartTime={room.roundStartTime}
           />
@@ -355,39 +364,25 @@ export function GameScreen({
                     Host Controls
                   </p>
                   <p className="text-sm text-blue-700">
-                    {room.subPhase === "posting" &&
-                      "Players are submitting statements"}
-                    {room.subPhase === "voting" &&
-                      "Players are voting on statements"}
-                    {room.subPhase === "review" &&
-                      "Players are reviewing results"}
+                    Players can post and vote simultaneously
                   </p>
                 </div>
                 <div className="flex flex-col items-center gap-2">
                   <Button
-                    onClick={onNextRound}
+                    onClick={onAdvance}
                     className="bg-blue-600 hover:bg-blue-700 shrink-0"
                   >
                     <SkipForward className="w-4 h-4 mr-2" />
-                    {room.subPhase === "posting" &&
-                      "Advance to Voting"}
-                    {room.subPhase === "voting" &&
-                      "Advance to Results"}
-                    {room.subPhase === "review" &&
-                      (room.phase === "round3"
-                        ? "End Debate"
-                        : room.phase === "round2"
-                          ? "Start Round 3"
-                          : "Start Round 2")}
+                    {room.phase === "round3"
+                      ? "End Debate"
+                      : room.phase === "round2"
+                        ? "Start Round 3"
+                        : "Start Round 2"}
                   </Button>
                   <p className="text-xs text-blue-600 leading-relaxed text-center max-w-xs">
-                    {room.subPhase === "posting" &&
-                      "This ends posting of more statements until the next round."}
-                    {room.subPhase === "voting" &&
-                      "This ends voting and shows results to all players."}
-                    {room.subPhase === "review" &&
-                      room.phase === "round3" &&
-                      "Final highlights will be shown."}
+                    {room.phase === "round3"
+                      ? "Show final results to all players."
+                      : "This will freeze posts from this round so they can't be voted on anymore."}
                   </p>
                 </div>
               </div>
@@ -403,7 +398,7 @@ export function GameScreen({
               <div className="text-center">
                 <p className="text-sm text-purple-700">
                   Host-controlled debate • Waiting for host to
-                  advance to next phase
+                  advance to next round
                 </p>
               </div>
             </Card>
@@ -666,7 +661,10 @@ export function GameScreen({
                                     statement.id,
                                   )
                                 }
-                                canVote={room.mode === "host-controlled"}
+                                canVote={
+                                  room.mode ===
+                                  "host-controlled"
+                                }
                                 currentUserId={user?.id}
                               />
                             ))}
