@@ -2,6 +2,7 @@
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { recalculateClustersForRoom } from "./clustering.tsx";
+import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 
 // Type definitions - exported for use in other modules
 export interface Statement {
@@ -77,6 +78,37 @@ const app = new Hono();
 const generateId = () =>
   Math.random().toString(36).substring(2) +
   Date.now().toString(36);
+
+// Helper to get statement by ID using LIKE pattern (statement:%:statementId)
+export const getStatementById = async (statementId: string): Promise<Statement | null> => {
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+  
+  const { data, error } = await supabase
+    .from("kv_store_f1a393b4")
+    .select("value")
+    .like("key", `statement:%:${statementId}`)
+    .limit(1)
+    .maybeSingle();
+    
+  if (error) {
+    console.error("Error fetching statement by ID:", error);
+    return null;
+  }
+  
+  if (!data?.value) {
+    return null;
+  }
+  
+  try {
+    return JSON.parse(data.value);
+  } catch (e) {
+    console.error("Error parsing statement:", e);
+    return null;
+  }
+};
 
 // Reusable email sending function
 const sendEmail = async (params: {
@@ -1437,27 +1469,15 @@ app.post(
         return c.json({ error: "User session not found" }, 404);
       }
 
-      // Check if statement exists
-      const allStatements = await kv.getByPrefix("statement:");
-      const statementData = allStatements.find((s) => {
-        try {
-          const parsed = JSON.parse(s);
-          return parsed.id === statementId;
-        } catch (error) {
-          console.error(
-            "Error parsing statement during vote search:",
-            s,
-            error,
-          );
-          return false;
-        }
-      });
-
-      if (!statementData) {
+      // Fetch statement using LIKE pattern (statement:%:statementId)
+      const statement = await getStatementById(statementId);
+      
+      if (!statement) {
+        console.error(
+          `Statement not found with ID: ${statementId}`,
+        );
         return c.json({ error: "Statement not found" }, 404);
       }
-
-      const statement: Statement = JSON.parse(statementData);
       console.log(
         `Voting on statement ${statementId} by user ${userId} with vote ${voteType}`,
       );
