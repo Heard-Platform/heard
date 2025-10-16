@@ -13,6 +13,7 @@ import { AchievementNotification } from "../components/AchievementNotification";
 import { RoundIndicator } from "../components/RoundIndicator";
 import { RealTimeResults } from "../components/RealTimeResults";
 import { FinalResults } from "../components/FinalResults";
+import { SwipeableStatementStack } from "../components/SwipeableStatementStack";
 import {
   Users,
   X,
@@ -718,40 +719,14 @@ export function GameScreen({
 
                 return (
                   <div className="space-y-6">
-                    {/* Current Round Statements - Priority voting */}
+                    {/* Current Round Statements - Swipeable Stack */}
                     {currentRoundStatements.length > 0 && (
                       <div className="space-y-4">
-                        <h3 className="text-center flex items-center justify-center gap-2">
-                          This Round's Posts (
-                          {currentRoundStatements.length})
-                          <span className="text-sm text-muted-foreground">
-                            - Vote now!
-                          </span>
-                        </h3>
-
-                        <div className="flex justify-center">
-                          <div className="w-full max-w-2xl space-y-3 max-h-[400px] overflow-y-auto">
-                            <AnimatePresence>
-                              {currentRoundStatements.map(
-                                (statement) => (
-                                  <StatementCard
-                                    key={statement.id}
-                                    statement={statement}
-                                    onVote={handleVote}
-                                    onFlag={() =>
-                                      console.log(
-                                        "Flag statement:",
-                                        statement.id,
-                                      )
-                                    }
-                                    canVote={isVotingPhase}
-                                    currentUserId={user?.id}
-                                  />
-                                ),
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        </div>
+                        <SwipeableStatementStack
+                          statements={currentRoundStatements}
+                          onVote={handleVote}
+                          currentUserId={user?.id}
+                        />
                       </div>
                     )}
 

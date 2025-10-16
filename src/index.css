@@ -520,8 +520,16 @@
     inset: calc(var(--spacing) * 0);
   }
 
+  .top-0 {
+    top: calc(var(--spacing) * 0);
+  }
+
   .top-4 {
     top: calc(var(--spacing) * 4);
+  }
+
+  .top-8 {
+    top: calc(var(--spacing) * 8);
   }
 
   .top-\[50\%\] {
@@ -540,12 +548,32 @@
     right: calc(var(--spacing) * 6);
   }
 
+  .right-8 {
+    right: calc(var(--spacing) * 8);
+  }
+
   .bottom-6 {
     bottom: calc(var(--spacing) * 6);
   }
 
+  .bottom-8 {
+    bottom: calc(var(--spacing) * 8);
+  }
+
   .bottom-full {
     bottom: 100%;
+  }
+
+  .left-0 {
+    left: calc(var(--spacing) * 0);
+  }
+
+  .left-1\/2 {
+    left: 50%;
+  }
+
+  .left-8 {
+    left: calc(var(--spacing) * 8);
   }
 
   .left-\[50\%\] {
@@ -749,6 +777,10 @@
     height: 1.15rem;
   }
 
+  .h-\[500px\] {
+    height: 500px;
+  }
+
   .h-\[calc\(100\%-1px\)\] {
     height: calc(100% - 1px);
   }
@@ -783,10 +815,6 @@
 
   .max-h-\[300px\] {
     max-height: 300px;
-  }
-
-  .max-h-\[400px\] {
-    max-height: 400px;
   }
 
   .max-h-\[500px\] {
@@ -917,6 +945,11 @@
     flex-shrink: 0;
   }
 
+  .-translate-x-1\/2 {
+    --tw-translate-x: calc(calc(1 / 2 * 100%) * -1);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+
   .translate-x-\[-50\%\] {
     --tw-translate-x: -50%;
     translate: var(--tw-translate-x) var(--tw-translate-y);
@@ -934,6 +967,14 @@
     scale: var(--tw-scale-x) var(--tw-scale-y);
   }
 
+  .rotate-\[-25deg\] {
+    rotate: -25deg;
+  }
+
+  .rotate-\[25deg\] {
+    rotate: 25deg;
+  }
+
   .transform {
     transform: var(--tw-rotate-x) var(--tw-rotate-y) var(--tw-rotate-z) var(--tw-skew-x) var(--tw-skew-y);
   }
@@ -944,6 +985,14 @@
 
   .animate-spin {
     animation: var(--animate-spin);
+  }
+
+  .cursor-default {
+    cursor: default;
+  }
+
+  .cursor-grab {
+    cursor: grab;
   }
 
   .cursor-pointer {
@@ -1306,6 +1355,10 @@
     background-color: var(--color-gray-300);
   }
 
+  .bg-gray-500 {
+    background-color: var(--color-gray-500);
+  }
+
   .bg-green-50 {
     background-color: var(--color-green-50);
   }
@@ -1316,6 +1369,10 @@
 
   .bg-green-400 {
     background-color: var(--color-green-400);
+  }
+
+  .bg-green-500 {
+    background-color: var(--color-green-500);
   }
 
   .bg-green-600 {
@@ -1561,6 +1618,10 @@
 
   .py-8 {
     padding-block: calc(var(--spacing) * 8);
+  }
+
+  .py-16 {
+    padding-block: calc(var(--spacing) * 16);
   }
 
   .pt-1 {
@@ -2242,6 +2303,10 @@
     --tw-scale-y: 95%;
     --tw-scale-z: 95%;
     scale: var(--tw-scale-x) var(--tw-scale-y);
+  }
+
+  .active\:cursor-grabbing:active {
+    cursor: grabbing;
   }
 
   .active\:bg-accent\/80:active {
