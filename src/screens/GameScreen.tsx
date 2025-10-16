@@ -640,49 +640,7 @@ export function GameScreen({
                   </div>
                 </div>
 
-                {/* Statements below submission box - hidden when awaiting rant submission or in holding state */}
-                {!shouldShowRantSubmission &&
-                  !shouldShowHoldingState && (
-                    <div className="space-y-4">
-                      <h3 className="text-center flex items-center justify-center gap-2">
-                        Statements ({statements.length})
-                      </h3>
 
-                      <div className="flex justify-center">
-                        <div className="w-full max-w-2xl space-y-3 max-h-[500px] min-h-[200px] overflow-y-auto">
-                          <AnimatePresence>
-                            {statements.map((statement) => (
-                              <StatementCard
-                                key={statement.id}
-                                statement={statement}
-                                onVote={handleVote}
-                                onFlag={() =>
-                                  console.log(
-                                    "Flag statement:",
-                                    statement.id,
-                                  )
-                                }
-                                canVote={
-                                  room.mode ===
-                                  "host-controlled"
-                                }
-                                currentUserId={user?.id}
-                              />
-                            ))}
-                          </AnimatePresence>
-
-                          {statements.length === 0 && (
-                            <div className="text-center py-8 text-muted-foreground">
-                              <p>
-                                No statements yet. Be the first
-                                to share your take!
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
               </>
             )}
 

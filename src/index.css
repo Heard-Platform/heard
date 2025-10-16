@@ -817,10 +817,6 @@
     max-height: 300px;
   }
 
-  .max-h-\[500px\] {
-    max-height: 500px;
-  }
-
   .min-h-16 {
     min-height: calc(var(--spacing) * 16);
   }
