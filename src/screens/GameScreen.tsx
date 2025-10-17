@@ -31,6 +31,7 @@ import type {
   Statement,
   Achievement,
   Rant,
+  VoteType,
 } from "../types";
 
 interface GameScreenProps {
@@ -44,10 +45,7 @@ interface GameScreenProps {
   startingDebate: boolean;
   onSubmitStatement: (text: string) => Promise<void>;
   onSubmitRant: (text: string) => Promise<void>;
-  onVote: (
-    id: string,
-    voteType: "agree" | "disagree" | "pass",
-  ) => Promise<void>;
+  onVote: (id: string, voteType: VoteType) => Promise<void>;
   onAdvance: () => Promise<void>;
   onStartDebate: () => Promise<void>;
   onLeaveRoom: () => void;
@@ -143,10 +141,7 @@ export function GameScreen({
   );
 
   const handleVote = useCallback(
-    async (
-      id: string,
-      voteType: "agree" | "disagree" | "pass",
-    ) => {
+    async (id: string, voteType: VoteType) => {
       await onVote(id, voteType);
     },
     [onVote],
@@ -639,8 +634,6 @@ export function GameScreen({
                     )}
                   </div>
                 </div>
-
-
               </>
             )}
 

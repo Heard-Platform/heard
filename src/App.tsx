@@ -15,6 +15,7 @@ import type {
   SubPhase,
   Statement,
   Achievement,
+  VoteType,
 } from "./types";
 
 export default function App() {
@@ -94,13 +95,18 @@ export default function App() {
     rantFirst?: boolean,
     description?: string,
   ) => {
-    const roomData = await createRoom(topic, mode, rantFirst, description);
+    const roomData = await createRoom(
+      topic,
+      mode,
+      rantFirst,
+      description,
+    );
     if (roomData) {
       // Rant-first rooms start in round1/posting, regular rooms start in lobby
       setTimerActive(
-        mode === "realtime" && 
-        rantFirst === true &&
-        roomData.phase === "round1"
+        mode === "realtime" &&
+          rantFirst === true &&
+          roomData.phase === "round1",
       );
     }
   };
@@ -128,10 +134,7 @@ export default function App() {
 
   // Handle voting
   const handleVote = useCallback(
-    async (
-      id: string,
-      voteType: "agree" | "disagree" | "pass",
-    ) => {
+    async (id: string, voteType: VoteType) => {
       await voteOnStatement(id, voteType);
     },
     [voteOnStatement],

@@ -1472,7 +1472,7 @@ app.post(
       const statementId = c.req.param("statementId");
       const { voteType, userId } = await c.req.json();
 
-      if (!["agree", "disagree", "pass"].includes(voteType)) {
+      if (!["agree", "disagree", "pass", "super_agree"].includes(voteType)) {
         return c.json({ error: "Invalid vote type" }, 400);
       }
 

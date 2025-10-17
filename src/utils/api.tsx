@@ -128,7 +128,7 @@ class ApiClient {
 
   async voteOnStatement(
     statementId: string,
-    voteType: "agree" | "disagree" | "pass",
+    voteType: "agree" | "disagree" | "pass" | "super_agree",
     userId: string,
   ) {
     return this.request(`/statement/${statementId}/vote`, {

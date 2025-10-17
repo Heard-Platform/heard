@@ -1,4 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import {
   api,
   getUserId,
@@ -16,6 +21,7 @@ import type {
   Achievement,
   DebateMode,
   Rant,
+  VoteType,
 } from "../types";
 
 export function useDebateSession() {
@@ -31,7 +37,8 @@ export function useDebateSession() {
   const [lastAchievement, setLastAchievement] =
     useState<Achievement | null>(null);
   const [autoPlayActive, setAutoPlayActive] = useState(false);
-  const [autoPlayInterval, setAutoPlayInterval] = useState<NodeJS.Timeout | null>(null);
+  const [autoPlayInterval, setAutoPlayInterval] =
+    useState<NodeJS.Timeout | null>(null);
   const [autoPlayCounts, setAutoPlayCounts] = useState<{
     posts: { [playerId: string]: number };
     votes: { [playerId: string]: number };
@@ -164,7 +171,11 @@ export function useDebateSession() {
     try {
       const response = await api.getRoomStatus(currentRoomId);
       // Only update state if we're still in the same room
-      if (response.success && response.data && roomIdRef.current === currentRoomId) {
+      if (
+        response.success &&
+        response.data &&
+        roomIdRef.current === currentRoomId
+      ) {
         setRoom(response.data.room);
         setStatements(response.data.statements || []);
         setRants(response.data.rants || []);
@@ -232,10 +243,7 @@ export function useDebateSession() {
 
   // Vote on statement
   const voteOnStatement = useCallback(
-    async (
-      statementId: string,
-      voteType: "agree" | "disagree" | "pass",
-    ) => {
+    async (statementId: string, voteType: VoteType) => {
       if (!user) return false;
 
       try {
@@ -270,12 +278,12 @@ export function useDebateSession() {
           setStatements((prev) =>
             prev.map((stmt) =>
               stmt.id === statementId
-                ? { 
-                    ...stmt, 
+                ? {
+                    ...stmt,
                     ...response.data.statement,
                   }
                 : stmt,
-            )
+            ),
           );
 
           return true;
@@ -381,7 +389,10 @@ export function useDebateSession() {
         const errorMsg =
           err instanceof Error ? err.message : "Unknown error";
         setError(errorMsg);
-        console.error("Failed to update description:", errorMsg);
+        console.error(
+          "Failed to update description:",
+          errorMsg,
+        );
       }
       return false;
     },
@@ -493,7 +504,10 @@ export function useDebateSession() {
       const errorMsg =
         err instanceof Error ? err.message : "Unknown error";
       setError(errorMsg);
-      console.error("Failed to create rant test room:", errorMsg);
+      console.error(
+        "Failed to create rant test room:",
+        errorMsg,
+      );
     }
     return null;
   }, [user, getActiveRooms]);
@@ -501,7 +515,7 @@ export function useDebateSession() {
   // Auto-play statements for testing
   const qStreetDebateStatements = [
     "Closing Q Street during farmers market creates a vibrant community space that brings neighbors together",
-    "Traffic diversions hurt local businesses on surrounding streets - we need better solutions", 
+    "Traffic diversions hurt local businesses on surrounding streets - we need better solutions",
     "The farmers market is a weekly tradition that deserves priority over car convenience",
     "Emergency vehicles can't access residents quickly when Q Street is blocked",
     "Local vendors and artisans benefit enormously from the foot traffic when cars are gone",
@@ -511,19 +525,24 @@ export function useDebateSession() {
     "Kids can safely play and families can enjoy the space without worrying about traffic",
     "Small businesses along Q Street lose customers who can't easily drive and park",
     "This is about creating a more livable neighborhood that values people over cars",
-    "The parking restrictions place an unfair burden on residents who live on Q Street"
+    "The parking restrictions place an unfair burden on residents who live on Q Street",
   ];
 
   const getRandomStatement = () => {
-    return qStreetDebateStatements[Math.floor(Math.random() * qStreetDebateStatements.length)];
+    return qStreetDebateStatements[
+      Math.floor(Math.random() * qStreetDebateStatements.length)
+    ];
   };
 
-  const getRandomDelay = () => Math.floor(Math.random() * 5000) + 5000; // 5-10 seconds
+  const getRandomDelay = () =>
+    Math.floor(Math.random() * 5000) + 5000; // 5-10 seconds
 
   const simulatePlayerActivity = useCallback(async () => {
     if (!room || !user) return;
 
-    const participants = room.participants.filter(p => p !== user.id);
+    const participants = room.participants.filter(
+      (p) => p !== user.id,
+    );
     if (participants.length === 0) return;
 
     // Don't simulate activity during review phase - no user interaction needed
@@ -532,22 +551,30 @@ export function useDebateSession() {
     if (room.subPhase === "posting") {
       // Find players who haven't reached the post limit
       const availablePlayers = participants.filter(
-        playerId => (autoPlayCounts.posts[playerId] || 0) < 4
+        (playerId) => (autoPlayCounts.posts[playerId] || 0) < 4,
       );
-      
+
       if (availablePlayers.length > 0) {
-        const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
+        const randomPlayer =
+          availablePlayers[
+            Math.floor(Math.random() * availablePlayers.length)
+          ];
         const statement = getRandomStatement();
-        
+
         try {
-          const response = await api.submitStatement(room.id, statement, randomPlayer);
+          const response = await api.submitStatement(
+            room.id,
+            statement,
+            randomPlayer,
+          );
           if (response.success) {
-            setAutoPlayCounts(prev => ({
+            setAutoPlayCounts((prev) => ({
               ...prev,
               posts: {
                 ...prev.posts,
-                [randomPlayer]: (prev.posts[randomPlayer] || 0) + 1
-              }
+                [randomPlayer]:
+                  (prev.posts[randomPlayer] || 0) + 1,
+              },
             }));
             await refreshRoom();
           }
@@ -558,39 +585,64 @@ export function useDebateSession() {
     } else if (room.subPhase === "voting") {
       // Find players who haven't reached the vote limit and statements to vote on
       const availablePlayers = participants.filter(
-        playerId => (autoPlayCounts.votes[playerId] || 0) < 4
+        (playerId) => (autoPlayCounts.votes[playerId] || 0) < 4,
       );
-      
-      if (availablePlayers.length > 0 && statements.length > 0) {
-        const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
-        
+
+      if (
+        availablePlayers.length > 0 &&
+        statements.length > 0
+      ) {
+        const randomPlayer =
+          availablePlayers[
+            Math.floor(Math.random() * availablePlayers.length)
+          ];
+
         // Find statements this player hasn't voted on yet
         const unvotedStatements = statements.filter(
-          stmt => !stmt.voters[randomPlayer] && stmt.author !== randomPlayer
+          (stmt) =>
+            !stmt.voters[randomPlayer] &&
+            stmt.author !== randomPlayer,
         );
-        
+
         if (unvotedStatements.length > 0) {
-          const randomStatement = unvotedStatements[Math.floor(Math.random() * unvotedStatements.length)];
-          const voteTypes: ("agree" | "disagree" | "pass")[] = ["agree", "disagree", "pass"];
-          const randomVote = voteTypes[Math.floor(Math.random() * voteTypes.length)];
-          
+          const randomStatement =
+            unvotedStatements[
+              Math.floor(
+                Math.random() * unvotedStatements.length,
+              )
+            ];
+          const voteTypes: ("agree" | "disagree" | "pass")[] = [
+            "agree",
+            "disagree",
+            "pass",
+          ];
+          const randomVote =
+            voteTypes[
+              Math.floor(Math.random() * voteTypes.length)
+            ];
+
           try {
-            const response = await api.voteOnStatement(randomStatement.id, randomVote, randomPlayer);
+            const response = await api.voteOnStatement(
+              randomStatement.id,
+              randomVote,
+              randomPlayer,
+            );
             if (response.success) {
-              setAutoPlayCounts(prev => ({
+              setAutoPlayCounts((prev) => ({
                 ...prev,
                 votes: {
                   ...prev.votes,
-                  [randomPlayer]: (prev.votes[randomPlayer] || 0) + 1
-                }
+                  [randomPlayer]:
+                    (prev.votes[randomPlayer] || 0) + 1,
+                },
               }));
               // Update local statement state
-              setStatements(prev =>
-                prev.map(stmt =>
+              setStatements((prev) =>
+                prev.map((stmt) =>
                   stmt.id === randomStatement.id
                     ? { ...stmt, ...response.data.statement }
-                    : stmt
-                )
+                    : stmt,
+                ),
               );
             }
           } catch (err) {
@@ -605,7 +657,11 @@ export function useDebateSession() {
     if (!room || autoPlayActiveRef.current) return;
 
     // Only start auto-play if we're in a phase that needs activity
-    if (room.subPhase !== "posting" && room.subPhase !== "voting") return;
+    if (
+      room.subPhase !== "posting" &&
+      room.subPhase !== "voting"
+    )
+      return;
 
     setAutoPlayActive(true);
     autoPlayActiveRef.current = true;
@@ -615,24 +671,26 @@ export function useDebateSession() {
     const scheduleActivity = () => {
       // Check if auto-play is still active before scheduling
       if (!autoPlayActiveRef.current) return;
-      
+
       const delay = getRandomDelay();
-      console.log(`Scheduling next auto-play activity in ${delay}ms`);
-      
+      console.log(
+        `Scheduling next auto-play activity in ${delay}ms`,
+      );
+
       const timeoutId = setTimeout(async () => {
         // Double-check if auto-play is still active
         if (!autoPlayActiveRef.current) return;
-        
+
         try {
           await simulatePlayerActivity();
         } catch (error) {
           console.error("Auto-play activity failed:", error);
         }
-        
+
         // Schedule next activity if auto-play is still active
         scheduleActivity();
       }, delay);
-      
+
       setAutoPlayInterval(timeoutId);
     };
 
@@ -664,11 +722,19 @@ export function useDebateSession() {
   useEffect(() => {
     if (autoPlayActive && room) {
       // Stop auto-play during review phase or results
-      if (room.subPhase === "review" || room.phase === "results") {
+      if (
+        room.subPhase === "review" ||
+        room.phase === "results"
+      ) {
         stopAutoPlay();
       }
     }
-  }, [room?.subPhase, room?.phase, autoPlayActive, stopAutoPlay]);
+  }, [
+    room?.subPhase,
+    room?.phase,
+    autoPlayActive,
+    stopAutoPlay,
+  ]);
 
   // Reset session (full logout)
   const resetSession = useCallback(() => {
