@@ -5,9 +5,13 @@ export type Phase =
   | "round3"
   | "results";
 
-export type SubPhase = "posting" | "voting" | "review";
+export type SubPhase = "ranting" | "voting" | "results";
 
-export type VoteType = "agree" | "disagree" | "pass" | "super_agree";
+export type VoteType =
+  | "agree"
+  | "disagree"
+  | "pass"
+  | "super_agree";
 
 export interface Statement {
   id: string;

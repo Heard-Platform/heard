@@ -5,15 +5,15 @@ import { Card } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { DebateTimer } from "../components/DebateTimer";
 import { ScoreBoard } from "../components/ScoreBoard";
-import { StatementCard } from "../components/StatementCard";
-import { StatementSubmission } from "../components/StatementSubmission";
 import { RantSubmission } from "../components/RantSubmission";
 import { DescriptionDisplay } from "../components/DescriptionDisplay";
 import { AchievementNotification } from "../components/AchievementNotification";
 import { RoundIndicator } from "../components/RoundIndicator";
 import { RealTimeResults } from "../components/RealTimeResults";
 import { FinalResults } from "../components/FinalResults";
-import { SwipeableStatementStack } from "../components/SwipeableStatementStack";
+import { DebateTabs } from "../components/DebateTabs";
+import { RantingPhase } from "../components/RantingPhase";
+import { VotingPhase } from "../components/VotingPhase";
 import {
   Users,
   X,
@@ -32,6 +32,7 @@ import type {
   Achievement,
   Rant,
   VoteType,
+  SubPhase,
 } from "../types";
 
 interface GameScreenProps {
@@ -99,10 +100,18 @@ export function GameScreen({
   const [isSubmittingRant, setIsSubmittingRant] =
     useState(false);
 
+  const [activeTab, setActiveTab] = useState<SubPhase>("ranting");
+
+  // Track user progress for tab unlocking (local state - proof of concept)
+  const [userHasRantedForTabs, setUserHasRantedForTabs] =
+    useState(false);
+  const [userHasVotedForTabs, setUserHasVotedForTabs] =
+    useState(false);
+
   // Rant logic
   const isRantFirstRoom = room.rantFirst;
   const userHasSubmittedRant = rants.some(
-    (rant) => rant.author === user?.nickname,
+    (rant) => rant.author === user.nickname,
   );
   const hasEnoughRantsForAnonymity = rants.length >= 3;
 
@@ -110,13 +119,6 @@ export function GameScreen({
   const shouldShowRantSubmission =
     isRantFirstRoom &&
     !userHasSubmittedRant &&
-    isSubmissionPhase;
-
-  // Show holding state if user has submitted rant but not enough total rants yet
-  const shouldShowHoldingState =
-    isRantFirstRoom &&
-    userHasSubmittedRant &&
-    !hasEnoughRantsForAnonymity &&
     isSubmissionPhase;
 
   // Mark data as loaded after first render with proper rant data
@@ -132,6 +134,25 @@ export function GameScreen({
       setInitialDataLoaded(true);
     }
   }, [isRantFirstRoom, isSubmissionPhase]);
+
+  useEffect(() => {
+    const hasRantedNow = userHasSubmittedRant;
+    
+    const votedCount = statements.filter((statement) => {
+      return statement.voters && statement.voters[user.id];
+    }).length;
+
+    setUserHasRantedForTabs(hasRantedNow);
+    setUserHasVotedForTabs(votedCount > 0);
+
+    if (votedCount === statements.length && activeTab === "voting") {
+      setActiveTab("results");
+    } else if (votedCount > 0 && activeTab === "ranting") {
+      setActiveTab("voting");
+    } else if (hasRantedNow && activeTab === "ranting") {
+      setActiveTab("voting");
+    }
+  }, [userHasSubmittedRant, statements, user.id, activeTab]);
 
   const handleStatementSubmit = useCallback(
     async (text: string) => {
@@ -163,6 +184,8 @@ export function GameScreen({
       setIsSubmittingRant(true);
       try {
         await onSubmitRant(text);
+        setUserHasRantedForTabs(true);
+        setActiveTab("voting");
       } finally {
         setIsSubmittingRant(false);
       }
@@ -175,7 +198,7 @@ export function GameScreen({
       <>
         <FinalResults
           statements={statements}
-          score={user?.score || 0}
+          score={user.score}
           gameNumber={room.gameNumber}
           onNewDiscussion={handleNewDiscussion}
           onScheduleFuture={handleScheduleFuture}
@@ -537,205 +560,55 @@ export function GameScreen({
               </>
             )}
 
-            {/* Posting Round - Centered submission box with statements below */}
-            {isSubmissionPhase && (
-              <>
-                {/* In rant-first rooms, show rant submission if user hasn't submitted, otherwise show statement submission */}
-                <div className="flex justify-center mb-6">
-                  <div className="w-full max-w-2xl">
-                    {!initialDataLoaded ? (
-                      <Card className="p-6">
-                        <div className="flex items-center justify-center gap-3">
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{
-                              duration: 1,
-                              repeat: Infinity,
-                              ease: "linear",
-                            }}
-                            className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full"
-                          />
-                          <p className="text-muted-foreground">
-                            Loading...
-                          </p>
-                        </div>
-                      </Card>
-                    ) : shouldShowRantSubmission ? (
-                      <RantSubmission
-                        onSubmit={handleRantSubmit}
-                        isSubmitting={isSubmittingRant}
-                        placeholder="Share your unfiltered thoughts on this topic and we'll create debate points from your rant!"
-                      />
-                    ) : shouldShowHoldingState ? (
-                      <Card className="p-6 bg-purple-50 border-purple-200">
-                        <div className="text-center space-y-4">
-                          <div className="flex justify-center">
-                            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                              <Users className="w-6 h-6 text-purple-600" />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <h3 className="text-purple-900">
-                              Rant Submitted! 🎉
-                            </h3>
-                            <p className="text-sm text-purple-700">
-                              We're waiting for a few more
-                              players to submit rants before
-                              showing statements to help protect
-                              anonymity.
-                            </p>
-                            <div className="text-xs text-purple-600 bg-purple-100 p-3 rounded">
-                              {rants.length} / 3 rants submitted
-                              so far
-                            </div>
-                          </div>
-                          <div className="flex justify-center items-center space-x-1 pt-2">
-                            <motion.div
-                              animate={{ y: [0, -8, 0] }}
-                              transition={{
-                                duration: 0.6,
-                                repeat: Infinity,
-                                delay: 0,
-                              }}
-                              className="w-2 h-2 bg-purple-600 rounded-full"
-                            />
-                            <motion.div
-                              animate={{ y: [0, -8, 0] }}
-                              transition={{
-                                duration: 0.6,
-                                repeat: Infinity,
-                                delay: 0.2,
-                              }}
-                              className="w-2 h-2 bg-purple-600 rounded-full"
-                            />
-                            <motion.div
-                              animate={{ y: [0, -8, 0] }}
-                              transition={{
-                                duration: 0.6,
-                                repeat: Infinity,
-                                delay: 0.4,
-                              }}
-                              className="w-2 h-2 bg-purple-600 rounded-full"
-                            />
-                          </div>
-                        </div>
-                      </Card>
-                    ) : (
-                      <StatementSubmission
-                        onSubmit={handleStatementSubmit}
-                        currentPhase={room.phase}
-                        isActive={isSubmissionPhase}
-                        placeholder={
-                          isRantFirstRoom
-                            ? "Add more specific points to the discussion 🎯"
-                            : "What's your take? Spicy takes welcome! 🌶️"
-                        }
-                      />
-                    )}
-                  </div>
-                </div>
-              </>
+            {/* DEBATE TABS - Active debate with tab navigation */}
+            {room.phase !== "lobby" && (
+              <DebateTabs
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                hasRanted={userHasRantedForTabs}
+                hasVoted={userHasVotedForTabs}
+              >
+                {{
+                  ranting: (
+                    <RantingPhase
+                      isRantFirstRoom={isRantFirstRoom}
+                      isSubmissionPhase={isSubmissionPhase}
+                      userHasSubmittedRant={
+                        userHasSubmittedRant
+                      }
+                      hasEnoughRantsForAnonymity={
+                        hasEnoughRantsForAnonymity
+                      }
+                      initialDataLoaded={initialDataLoaded}
+                      isSubmittingRant={isSubmittingRant}
+                      rants={rants}
+                      roomPhase={room.phase}
+                      onSubmitRant={handleRantSubmit}
+                      onSubmitStatement={handleStatementSubmit}
+                    />
+                  ),
+                  voting: (
+                    <VotingPhase
+                      statements={statements}
+                      roomPhase={room.phase}
+                      isVotingPhase={isVotingPhase}
+                      currentUserId={user?.id}
+                      onVote={handleVote}
+                      onVoteComplete={() =>
+                        setUserHasVotedForTabs(true)
+                      }
+                    />
+                  ),
+                  results: (
+                    <RealTimeResults
+                      statements={statements}
+                      currentRound={room.phase}
+                      currentSubPhase={room.subPhase}
+                    />
+                  ),
+                }}
+              </DebateTabs>
             )}
-
-            {/* Voting Round - Separated by current vs previous rounds */}
-            {isVotingPhase &&
-              (() => {
-                // Convert current phase to round number
-                const getCurrentRound = (
-                  phase: string,
-                ): number => {
-                  switch (phase) {
-                    case "round1":
-                      return 1;
-                    case "round2":
-                      return 2;
-                    case "round3":
-                      return 3;
-                    default:
-                      return 1;
-                  }
-                };
-
-                const currentRound = getCurrentRound(
-                  room.phase,
-                );
-                const currentRoundStatements =
-                  statements.filter(
-                    (s) => s.round === currentRound,
-                  );
-                const previousRoundStatements =
-                  statements.filter(
-                    (s) => s.round !== currentRound,
-                  );
-
-                return (
-                  <div className="space-y-6">
-                    {/* Current Round Statements - Swipeable Stack */}
-                    {currentRoundStatements.length > 0 && (
-                      <div className="space-y-4">
-                        <SwipeableStatementStack
-                          statements={currentRoundStatements}
-                          onVote={handleVote}
-                          currentUserId={user?.id}
-                        />
-                      </div>
-                    )}
-
-                    {/* Previous Round Statements - Secondary */}
-                    {previousRoundStatements.length > 0 && (
-                      <div className="space-y-4">
-                        <div className="flex justify-center">
-                          <div className="w-full max-w-2xl">
-                            <div className="flex items-center gap-2 mb-4">
-                              <div className="flex-1 h-px bg-border"></div>
-                              <h4 className="text-sm text-muted-foreground">
-                                Previous Rounds (
-                                {previousRoundStatements.length}
-                                )
-                              </h4>
-                              <div className="flex-1 h-px bg-border"></div>
-                            </div>
-
-                            <div className="space-y-3 max-h-[300px] overflow-y-auto">
-                              <AnimatePresence>
-                                {previousRoundStatements
-                                  .sort(
-                                    (a, b) =>
-                                      b.timestamp - a.timestamp,
-                                  )
-                                  .map((statement) => (
-                                    <StatementCard
-                                      key={statement.id}
-                                      statement={statement}
-                                      onVote={handleVote}
-                                      onFlag={() =>
-                                        console.log(
-                                          "Flag statement:",
-                                          statement.id,
-                                        )
-                                      }
-                                      canVote={isVotingPhase}
-                                      currentUserId={user?.id}
-                                    />
-                                  ))}
-                              </AnimatePresence>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {statements.length === 0 && (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <p>
-                          No statements yet. Be the first to
-                          share your take!
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
           </div>
         )}
       </div>
