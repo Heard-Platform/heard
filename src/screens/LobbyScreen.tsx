@@ -356,12 +356,15 @@ export function LobbyScreen({
             </div>
           </Card>
 
-          <ActiveRoomsList
-            rooms={activeRooms}
-            onJoinRoom={onJoinRoom}
-            onRefresh={onRefreshRooms}
-            loading={loading}
-          />
+          {/* Only show active rooms list to developers */}
+          {user?.isDeveloper && (
+            <ActiveRoomsList
+              rooms={activeRooms}
+              onJoinRoom={onJoinRoom}
+              onRefresh={onRefreshRooms}
+              loading={loading}
+            />
+          )}
         </div>
 
         {/* Developer-only controls */}
