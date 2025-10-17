@@ -7,6 +7,8 @@ export type Phase =
 
 export type SubPhase = "posting" | "voting" | "review";
 
+export type VoteType = "agree" | "disagree" | "pass" | "super_agree";
+
 export interface Statement {
   id: string;
   text: string;
@@ -14,12 +16,13 @@ export interface Statement {
   agrees: number;
   disagrees: number;
   passes: number;
+  superAgrees: number; // Super agree count
   type?: string; // Will be calculated on backend later
   isSpicy?: boolean;
   roomId: string;
   timestamp: number;
   round: number; // Round number (1, 2, or 3)
-  voters: { [userId: string]: "agree" | "disagree" | "pass" };
+  voters: { [userId: string]: VoteType };
 }
 
 export interface Achievement {

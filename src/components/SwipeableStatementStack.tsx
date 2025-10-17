@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform, PanInfo } from "motion/react";
-import { CheckCircle, XCircle, Ban, ArrowLeft, ArrowRight, ArrowDown } from "lucide-react";
+import { CheckCircle, XCircle, Ban, ArrowLeft, ArrowRight, ArrowDown, ArrowUp, Star } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import type { Statement } from "../types";
 
 interface SwipeableStatementStackProps {
   statements: Statement[];
-  onVote: (id: string, voteType: "agree" | "disagree" | "pass") => Promise<void>;
+  onVote: (id: string, voteType: VoteType) => Promise<void>;
   currentUserId?: string;
 }
 
@@ -20,7 +20,7 @@ export function SwipeableStatementStack({
   const [votedStatementIds, setVotedStatementIds] = useState<Set<string>>(new Set());
   const [isVoting, setIsVoting] = useState(false);
   const [swipedCardId, setSwipedCardId] = useState<string | null>(null);
-  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | "down" | null>(null);
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | "down" | "up" | null>(null);
 
   // Filter out statements the user has already voted on (either previously or just now)
   const unvotedStatements = statements.filter((statement) => {
@@ -39,7 +39,7 @@ export function SwipeableStatementStack({
   const currentStatement = unvotedStatements[0];
   const hasMoreCards = unvotedStatements.length > 0;
 
-  const handleVote = async (statementId: string, voteType: "agree" | "disagree" | "pass", direction: "left" | "right" | "down") => {
+  const handleVote = async (statementId: string, voteType: VoteType, direction: "left" | "right" | "down" | "up") => {
     if (isVoting) return;
     
     setIsVoting(true);
@@ -54,7 +54,18 @@ export function SwipeableStatementStack({
     const truncatedText = statement?.text.slice(0, 50) + (statement?.text.length && statement.text.length > 50 ? "..." : "");
     
     // Show feedback toast
-    if (voteType === "agree") {
+    if (voteType === "super_agree") {
+      // Super agree - special toast
+      toast.success(`🌟 SUPER AGREE! "${truncatedText}"`, {
+        duration: 2500,
+        style: {
+          background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+          color: "white",
+          border: "2px solid #15803d",
+          fontWeight: "bold",
+        },
+      });
+    } else if (voteType === "agree") {
       toast.success(`✅ You agreed with "${truncatedText}"`, {
         duration: 2000,
         style: {
@@ -116,8 +127,12 @@ export function SwipeableStatementStack({
     const velocityX = velocity.x;
     const velocityY = velocity.y;
 
-    // Down swipe - Pass (balanced threshold)
-    if (swipeY > 90 || velocityY > 500) {
+    // Up swipe - Super Agree
+    if (swipeY < -90 || velocityY < -500) {
+      handleVote(statementId, "super_agree", "up");
+    }
+    // Down swipe - Pass
+    else if (swipeY > 90 || velocityY > 500) {
       handleVote(statementId, "pass", "down");
     }
     // Right swipe - Agree
@@ -175,7 +190,7 @@ export function SwipeableStatementStack({
       {/* Instructions */}
       <div className="mb-6 text-center space-y-2">
         <p className="text-sm text-muted-foreground">Swipe to vote</p>
-        <div className="flex justify-center gap-4 text-xs">
+        <div className="flex justify-center gap-3 text-xs flex-wrap">
           <div className="flex items-center gap-1 text-red-600">
             <ArrowLeft className="w-4 h-4" />
             <span>Disagree</span>
@@ -183,6 +198,10 @@ export function SwipeableStatementStack({
           <div className="flex items-center gap-1 text-green-600">
             <ArrowRight className="w-4 h-4" />
             <span>Agree</span>
+          </div>
+          <div className="flex items-center gap-1 text-green-700 font-semibold">
+            <ArrowUp className="w-4 h-4" />
+            <span>Super Agree</span>
           </div>
           <div className="flex items-center gap-1 text-gray-600">
             <ArrowDown className="w-4 h-4" />
@@ -228,7 +247,7 @@ interface SwipeableCardProps {
   onDragEnd: (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => void;
   getTypeColor: (type?: string) => string;
   getTypeIcon: (type?: string) => string | null;
-  direction: "left" | "right" | "down" | null;
+  direction: "left" | "right" | "down" | "up" | null;
 }
 
 function SwipeableCard({
@@ -249,6 +268,7 @@ function SwipeableCard({
   // Visual indicator opacities - must be defined at top level
   const disagreeOpacity = useTransform(x, [-100, 0], [1, 0]);
   const agreeOpacity = useTransform(x, [0, 100], [0, 1]);
+  const superAgreeOpacity = useTransform(y, [-100, 0], [1, 0]);
   const passOpacity = useTransform(y, [0, 100], [0, 1]);
 
   // Reset motion values when this card becomes the top card
@@ -268,6 +288,8 @@ function SwipeableCard({
         return { x: -500, rotate: -45, opacity: 0 };
       case "right":
         return { x: 500, rotate: 45, opacity: 0 };
+      case "up":
+        return { y: -500, opacity: 0, scale: 1.1 };
       case "down":
         return { y: 500, opacity: 0 };
       default:
@@ -353,6 +375,14 @@ function SwipeableCard({
               }}
             >
               <CheckCircle className="w-8 h-8" />
+            </motion.div>
+            <motion.div
+              className="absolute top-8 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-xl shadow-lg"
+              style={{
+                opacity: superAgreeOpacity,
+              }}
+            >
+              <Star className="w-8 h-8 fill-white" />
             </motion.div>
             <motion.div
               className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-500 text-white px-4 py-2 rounded-lg text-xl shadow-lg"

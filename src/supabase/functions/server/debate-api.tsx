@@ -5,6 +5,8 @@ import { recalculateClustersForRoom } from "./clustering.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 
 // Type definitions - exported for use in other modules
+export type VoteType = "agree" | "disagree" | "pass" | "super_agree";
+
 export interface Statement {
   id: string;
   text: string;
@@ -12,19 +14,20 @@ export interface Statement {
   agrees: number; // Will be calculated from Vote records
   disagrees: number; // Will be calculated from Vote records
   passes: number; // Will be calculated from Vote records
+  superAgrees: number; // Will be calculated from Vote records
   type?: string; // Will be calculated on backend later
   isSpicy?: boolean;
   roomId: string;
   timestamp: number;
   round: number; // Round number (1, 2, or 3)
-  voters: { [userId: string]: "agree" | "disagree" | "pass" }; // Will be calculated from Vote records
+  voters: { [userId: string]: VoteType }; // Will be calculated from Vote records
 }
 
 export interface Vote {
   id: string;
   statementId: string;
   userId: string;
-  voteType: "agree" | "disagree" | "pass";
+  voteType: VoteType;
   timestamp: number;
 }
 
@@ -690,14 +693,16 @@ const calculateVoteStats = (
   agrees: number;
   disagrees: number;
   passes: number;
-  voters: { [userId: string]: "agree" | "disagree" | "pass" };
+  superAgrees: number;
+  voters: { [userId: string]: VoteType };
 } => {
   const voters: {
-    [userId: string]: "agree" | "disagree" | "pass";
+    [userId: string]: VoteType;
   } = {};
   let agreeCount = 0;
   let disagreeCount = 0;
   let passCount = 0;
+  let superAgreeCount = 0;
 
   for (const vote of votes) {
     voters[vote.userId] = vote.voteType;
@@ -707,6 +712,10 @@ const calculateVoteStats = (
       disagreeCount++;
     } else if (vote.voteType === "pass") {
       passCount++;
+    } else if (vote.voteType === "super_agree") {
+      superAgreeCount++;
+      // Also count super_agree toward the regular agree count for now
+      agreeCount++;
     }
   }
 
@@ -714,6 +723,7 @@ const calculateVoteStats = (
     agrees: agreeCount,
     disagrees: disagreeCount,
     passes: passCount,
+    superAgrees: superAgreeCount,
     voters,
   };
 };
@@ -753,6 +763,7 @@ const getStatements = async (
           agrees: voteStats.agrees,
           disagrees: voteStats.disagrees,
           passes: voteStats.passes,
+          superAgrees: voteStats.superAgrees,
           voters: voteStats.voters,
         };
       },
@@ -1312,6 +1323,7 @@ app.post(
         agrees: 0, // Will be calculated from Vote records
         disagrees: 0, // Will be calculated from Vote records
         passes: 0, // Will be calculated from Vote records
+        superAgrees: 0, // Will be calculated from Vote records
         type: undefined, // Will be calculated on backend later
         isSpicy: text.includes("🌶️") || text.length > 200,
         roomId,
@@ -1512,7 +1524,7 @@ app.post(
           `Updated vote for user ${userId} on statement ${statementId} to ${voteType}`,
         );
 
-        if (voteType === "agree") {
+        if (voteType === "agree" || voteType === "super_agree") {
           pointsEarned = 10; // Award points for agreeing
         }
       } else {
@@ -1529,7 +1541,7 @@ app.post(
           `Created new vote for user ${userId} on statement ${statementId}: ${voteType}`,
         );
 
-        if (voteType === "agree") {
+        if (voteType === "agree" || voteType === "super_agree") {
           pointsEarned = 10; // Award points for agreeing
         }
       }
@@ -1545,6 +1557,7 @@ app.post(
         agrees: voteStats.agrees,
         disagrees: voteStats.disagrees,
         passes: voteStats.passes,
+        superAgrees: voteStats.superAgrees,
         voters: voteStats.voters,
       };
 
