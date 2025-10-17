@@ -189,7 +189,7 @@ export function SwipeableStatementStack({
         setSwipedCardId(null);
         setSwipeDirection(null);
         setIsVoting(false);
-      }, 300);
+      }, 600);
     } catch (error) {
       console.error("Error voting:", error);
       // Remove from voted set if vote failed
@@ -410,6 +410,7 @@ function SwipeableCard({
         x: isTopCard ? x : 0,
         y: isTopCard ? y : 0,
         rotate: isTopCard ? rotate : 0,
+        opacity: isTopCard ? cardOpacity : 1 - index * 0.2,
         zIndex: 10 - index,
         scale: 1 - index * 0.05,
         pointerEvents: isTopCard ? "auto" : "none",
@@ -424,13 +425,14 @@ function SwipeableCard({
           : {
               scale: 1 - index * 0.05,
               y: index * 10,
-              opacity: 1 - index * 0.2,
             }
       }
       transition={{
         scale: { duration: 0.2 },
         y: { duration: 0.2 },
-        opacity: { duration: 0.2 },
+        opacity: { duration: 0.5 },
+        x: { duration: 0.5 },
+        rotate: { duration: 0.5 },
       }}
     >
       <div
