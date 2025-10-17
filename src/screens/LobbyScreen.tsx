@@ -184,8 +184,9 @@ export function LobbyScreen({
         <Card className="p-6 text-left">
           <h3 className="mb-3">🎮 How to Play:</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• Submit statements on the debate topic</li>
-            <li>• Vote on other players' contributions</li>
+            <li>• Write a rant on the debate topic</li>
+            <li>• Your rant gets transformed into clear statements</li>
+            <li>• Swipe to vote on everyone's statements</li>
             <li>
               • Find <Badge variant="outline">🌉 Bridges</Badge>{" "}
               between different views
@@ -200,7 +201,7 @@ export function LobbyScreen({
               <Badge variant="outline">💎 Pluralities</Badge> -
               underrepresented perspectives
             </li>
-            <li>• Earn points and build streaks!</li>
+            <li>• Solve the debate by finding the best mix of ideas!</li>
           </ul>
         </Card>
 
