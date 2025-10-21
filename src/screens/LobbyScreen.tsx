@@ -15,6 +15,7 @@ import {
   User,
   LogOut,
   Brain,
+  Code2,
 } from "lucide-react";
 import type {
   UserSession,
@@ -371,6 +372,19 @@ export function LobbyScreen({
         {/* Developer-only controls */}
         {user?.isDeveloper && (
           <div className="flex flex-wrap gap-3 justify-center">
+            <Button
+              onClick={() => {
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set("showcase", "true");
+                window.location.href = currentUrl.toString();
+              }}
+              variant="outline"
+              size="sm"
+              className="text-xs bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+            >
+              <Code2 className="w-3 h-3 mr-1" />
+              📚 Component Showcase
+            </Button>
             {onJumpToFinalResults && (
               <Button
                 onClick={onJumpToFinalResults}
