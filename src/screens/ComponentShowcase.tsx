@@ -4,6 +4,7 @@ import { Badge } from "../components/ui/badge";
 import { ArrowLeft, Code2 } from "lucide-react";
 import { RantSubmissionStory } from "../stories/RantSubmission.story";
 import { GameScreenStory } from "../stories/GameScreen.story";
+import { RealTimeResultsStory } from "../stories/RealTimeResults.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -45,6 +46,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
           <TabsList className="mb-6">
             <TabsTrigger value="rant-submission">Rant Submission</TabsTrigger>
             <TabsTrigger value="game-screen">Game Screen</TabsTrigger>
+            <TabsTrigger value="results">Results</TabsTrigger>
           </TabsList>
 
           <TabsContent value="rant-submission">
@@ -53,6 +55,10 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
 
           <TabsContent value="game-screen">
             <GameScreenStory />
+          </TabsContent>
+
+          <TabsContent value="results">
+            <RealTimeResultsStory />
           </TabsContent>
         </Tabs>
       </div>

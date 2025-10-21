@@ -331,12 +331,7 @@ export default function App() {
 
   // Component Showcase Mode (accessible via ?showcase=true) - check this first!
   if (showComponentShowcase) {
-    return (
-      <>
-        <ComponentShowcase onExit={handleExitShowcase} />
-        <Toaster />
-      </>
-    );
+    return <ComponentShowcase onExit={handleExitShowcase} />;
   }
 
   // Derived state - single source of truth
