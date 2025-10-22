@@ -6,6 +6,7 @@ import { GameScreen } from "./screens/GameScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
+import { toast } from "sonner@2.0.3";
 import {
   parseRoomIdFromUrl,
   updateUrlForRoom,
@@ -219,17 +220,49 @@ export default function App() {
   };
 
   const handleNewDiscussion = useCallback(
-    (statement: Statement) => {
-      // In a real app, this would create a new discussion thread
-      console.log(
-        "Creating new discussion based on:",
-        statement.text,
-      );
-      alert(
-        `Starting new discussion: "${statement.text.substring(0, 50)}..."`,
-      );
+    async (statement: Statement) => {
+      if (!user || !room) return;
+
+      try {
+        toast.loading("Creating new discussion...");
+
+        // Copy settings from current room
+        const roomMode = room.mode;
+        const roomRantFirst = room.rantFirst ?? false;
+
+        // Leave current room
+        leaveRoom();
+        setTimerActive(false);
+        clearRoomFromUrl();
+
+        // Create a new room with this statement as the topic, using same settings
+        const newRoomData = await createRoom(
+          statement.text,
+          roomMode, // Copy mode from current room
+          roomRantFirst, // Copy rant-first setting from current room
+          `Deep dive discussion on: "${statement.text.substring(0, 100)}${statement.text.length > 100 ? "..." : ""}"`,
+        );
+
+        if (newRoomData) {
+          setTimerActive(
+            newRoomData.mode === "realtime" &&
+              newRoomData.phase === "round1",
+          );
+          toast.dismiss();
+          const modeText = roomMode === "realtime" ? "Real-time" : "Host-controlled";
+          const rantText = roomRantFirst ? " rant-first" : "";
+          toast.success(`New ${modeText}${rantText} discussion created! 🔥`);
+        } else {
+          toast.dismiss();
+          toast.error("Failed to create discussion. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error creating new discussion:", error);
+        toast.dismiss();
+        toast.error("Something went wrong creating the discussion.");
+      }
     },
-    [],
+    [user, room, leaveRoom, createRoom],
   );
 
   const handleScheduleFuture = useCallback(() => {

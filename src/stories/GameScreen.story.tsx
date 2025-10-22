@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { GameScreen } from "../screens/GameScreen";
 import { StoryContainer } from "./StoryContainer";
+import { toast } from "sonner@2.0.3";
 import type { UserSession, DebateRoom, Statement, Rant } from "../types";
 
 export function GameScreenStory() {
@@ -190,6 +191,7 @@ export function GameScreenStory() {
 
   const handleNewDiscussion = (statement: Statement) => {
     console.log("Mock new discussion:", statement);
+    toast.success(`Creating new discussion: "${statement.text.substring(0, 50)}..." 🔥`);
   };
 
   const handleScheduleFuture = () => {

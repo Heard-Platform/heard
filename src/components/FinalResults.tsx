@@ -145,7 +145,7 @@ export function FinalResults({
             size="sm"
             variant="outline"
             onClick={() => onNewDiscussion(statement)}
-            className="shrink-0"
+            className="shrink-0 hover:bg-purple-50 hover:border-purple-400 hover:text-purple-700 transition-colors"
           >
             <MessageSquarePlus className="w-4 h-4 mr-1" />
             Discuss
