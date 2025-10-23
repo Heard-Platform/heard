@@ -27,14 +27,7 @@ export default function App() {
     string | null
   >(null);
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
-  // Initialize showcase from URL immediately
-  const [showComponentShowcase, setShowComponentShowcase] =
-    useState(() => {
-      const params = new URLSearchParams(
-        window.location.search,
-      );
-      return params.get("showcase") === "true";
-    });
+  const [showComponentShowcase, setShowComponentShowcase] = useState(false);
 
   const {
     user,
@@ -60,6 +53,7 @@ export default function App() {
     createSeedData,
     createTestRoom,
     createRantTestRoom,
+    setRoomInactive,
     startAutoPlay,
     stopAutoPlay,
   } = useDebateSession();
@@ -173,17 +167,9 @@ export default function App() {
       return;
     }
 
-    // For host-controlled mode: skip subphases, just advance rounds
+    // For host-controlled mode: single round, advance directly to results
     if (room.mode === "host-controlled") {
-      // Move to next round
-      if (currentPhaseIndex < phases.length - 1) {
-        const nextPhase = phases[currentPhaseIndex + 1];
-        await updateRoomPhase(nextPhase, "posting");
-      }
-      // Go to results
-      else {
-        await updateRoomPhase("results", undefined);
-      }
+      await updateRoomPhase("results", undefined);
       return;
     }
 
@@ -292,20 +278,12 @@ export default function App() {
     }
   };
 
-  // Check URL for room ID on initial load (showcase is handled in useState initialization)
+  // Check URL for room ID on initial load
   useEffect(() => {
     if (!hasCheckedUrl) {
-      const params = new URLSearchParams(
-        window.location.search,
-      );
-      const showcaseParam = params.get("showcase");
-
-      // Don't check for room ID if in showcase mode
-      if (showcaseParam !== "true") {
-        const roomIdFromUrl = parseRoomIdFromUrl();
-        if (roomIdFromUrl) {
-          setTargetRoomId(roomIdFromUrl);
-        }
+      const roomIdFromUrl = parseRoomIdFromUrl();
+      if (roomIdFromUrl) {
+        setTargetRoomId(roomIdFromUrl);
       }
       setHasCheckedUrl(true);
     }
@@ -351,18 +329,16 @@ export default function App() {
     }
   }, [room?.phase, room?.subPhase, room?.mode, room?.id]);
 
-  // Handle exiting component showcase
-  const handleExitShowcase = () => {
-    setShowComponentShowcase(false);
-    const params = new URLSearchParams(window.location.search);
-    params.delete("showcase");
-    const newUrl = params.toString()
-      ? `${window.location.pathname}?${params.toString()}`
-      : window.location.pathname;
-    window.history.replaceState({}, "", newUrl);
+  // Handle opening and exiting component showcase
+  const handleOpenShowcase = () => {
+    setShowComponentShowcase(true);
   };
 
-  // Component Showcase Mode (accessible via ?showcase=true) - check this first!
+  const handleExitShowcase = () => {
+    setShowComponentShowcase(false);
+  };
+
+  // Component Showcase Mode - check this first!
   if (showComponentShowcase) {
     return <ComponentShowcase onExit={handleExitShowcase} />;
   }
@@ -420,7 +396,9 @@ export default function App() {
           onCreateTestRoom={createTestRoom}
           onCreateRantTestRoom={createRantTestRoom}
           onUpdateRoomDescription={updateRoomDescription}
+          onSetRoomInactive={setRoomInactive}
           onLogout={handleLogout}
+          onOpenShowcase={handleOpenShowcase}
         />
         <Toaster />
       </>

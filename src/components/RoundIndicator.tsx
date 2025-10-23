@@ -49,36 +49,18 @@ export function RoundIndicator({
   ];
 
   const getCurrentRoundInfo = () => {
-    // For host-controlled mode, don't show subphase in title
+    // For host-controlled mode, single round only
     if (mode === "host-controlled") {
-      if (currentRound === "round1")
-        return {
-          title: "Round 1",
-          subtitle: "Post and vote on statements",
-          emoji: "💭",
-        };
-      if (currentRound === "round2")
-        return {
-          title: "Round 2",
-          subtitle: "Keep the discussion going",
-          emoji: "💬",
-        };
-      if (currentRound === "round3")
-        return {
-          title: "Round 3",
-          subtitle: "Final statements and votes",
-          emoji: "🔥",
-        };
       if (currentRound === "results")
         return {
-          title: "Game Complete",
+          title: "Debate Complete",
           subtitle: "See the results",
           emoji: "🏆",
         };
       return {
-        title: "Debate",
-        subtitle: "Express yourself",
-        emoji: "💬",
+        title: "Debate In Progress",
+        subtitle: "Post and vote on statements",
+        emoji: "💭",
       };
     }
 
@@ -189,78 +171,81 @@ export function RoundIndicator({
         </div>
       </motion.div>
 
-      <div className="flex justify-center items-center gap-2 max-w-md mx-auto">
-        {rounds.map((round, index) => {
-          const Icon = round.icon;
-          const isActive = round.key === currentRound;
-          const isCompleted =
-            rounds.findIndex((r) => r.key === currentRound) >
-            index;
+      {/* Only show round indicators for realtime mode */}
+      {mode === "realtime" && (
+        <div className="flex justify-center items-center gap-2 max-w-md mx-auto">
+          {rounds.map((round, index) => {
+            const Icon = round.icon;
+            const isActive = round.key === currentRound;
+            const isCompleted =
+              rounds.findIndex((r) => r.key === currentRound) >
+              index;
 
-          return (
-            <motion.div
-              key={round.key}
-              className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
-                isActive
-                  ? `bg-${round.color}-100 border-2 border-${round.color}-500`
-                  : isCompleted
-                    ? "bg-green-100 border-2 border-green-500"
-                    : "bg-muted border-2 border-transparent"
-              }`}
-              initial={{ scale: 0.8 }}
-              animate={{ scale: isActive ? 1.1 : 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Icon
-                className={`w-5 h-5 ${
+            return (
+              <motion.div
+                key={round.key}
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
                   isActive
-                    ? `text-${round.color}-600`
+                    ? `bg-${round.color}-100 border-2 border-${round.color}-500`
                     : isCompleted
-                      ? "text-green-600"
-                      : "text-muted-foreground"
+                      ? "bg-green-100 border-2 border-green-500"
+                      : "bg-muted border-2 border-transparent"
                 }`}
-              />
-              <span
-                className={`text-xs ${
-                  isActive
-                    ? `text-${round.color}-700`
-                    : isCompleted
-                      ? "text-green-700"
-                      : "text-muted-foreground"
-                }`}
+                initial={{ scale: 0.8 }}
+                animate={{ scale: isActive ? 1.1 : 1 }}
+                transition={{ duration: 0.3 }}
               >
-                {round.label}
-              </span>
-              {/* Sub-phase indicator - only for realtime mode */}
-              {isActive && mode === "realtime" && (
-                <div className="flex gap-1">
-                  <div
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      currentSubPhase === "posting"
-                        ? "bg-orange-400"
-                        : "bg-gray-300"
-                    }`}
-                  />
-                  <div
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      currentSubPhase === "voting"
-                        ? "bg-blue-400"
-                        : "bg-gray-300"
-                    }`}
-                  />
-                  <div
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      currentSubPhase === "review"
-                        ? "bg-green-400"
-                        : "bg-gray-300"
-                    }`}
-                  />
-                </div>
-              )}
-            </motion.div>
-          );
-        })}
-      </div>
+                <Icon
+                  className={`w-5 h-5 ${
+                    isActive
+                      ? `text-${round.color}-600`
+                      : isCompleted
+                        ? "text-green-600"
+                        : "text-muted-foreground"
+                  }`}
+                />
+                <span
+                  className={`text-xs ${
+                    isActive
+                      ? `text-${round.color}-700`
+                      : isCompleted
+                        ? "text-green-700"
+                        : "text-muted-foreground"
+                  }`}
+                >
+                  {round.label}
+                </span>
+                {/* Sub-phase indicator - only for realtime mode */}
+                {isActive && mode === "realtime" && (
+                  <div className="flex gap-1">
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        currentSubPhase === "posting"
+                          ? "bg-orange-400"
+                          : "bg-gray-300"
+                      }`}
+                    />
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        currentSubPhase === "voting"
+                          ? "bg-blue-400"
+                          : "bg-gray-300"
+                      }`}
+                    />
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        currentSubPhase === "review"
+                          ? "bg-green-400"
+                          : "bg-gray-300"
+                      }`}
+                    />
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -76,6 +76,13 @@ class ApiClient {
     });
   }
 
+  async setRoomInactive(roomId: string, userId: string) {
+    return this.request(`/room/${roomId}/inactive`, {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
+
   async joinRoom(roomId: string, userId: string) {
     return this.request(`/room/${roomId}/join`, {
       method: "POST",

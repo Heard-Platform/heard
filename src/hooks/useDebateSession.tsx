@@ -512,6 +512,31 @@ export function useDebateSession() {
     return null;
   }, [user, getActiveRooms]);
 
+  // Mark room as inactive (dev tool)
+  const setRoomInactive = useCallback(async (roomId: string) => {
+    if (!user) return false;
+
+    try {
+      setError(null);
+      const response = await api.setRoomInactive(roomId, user.id);
+      if (response.success) {
+        // Refresh active rooms to remove the inactive room
+        await getActiveRooms();
+        return true;
+      } else {
+        throw new Error(
+          response.error || "Failed to mark room as inactive",
+        );
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to mark room as inactive:", errorMsg);
+    }
+    return false;
+  }, [user, getActiveRooms]);
+
   // Auto-play statements for testing
   const qStreetDebateStatements = [
     "Closing Q Street during farmers market creates a vibrant community space that brings neighbors together",
@@ -813,6 +838,7 @@ export function useDebateSession() {
     createSeedData,
     createTestRoom,
     createRantTestRoom,
+    setRoomInactive,
     startAutoPlay,
     stopAutoPlay,
   };

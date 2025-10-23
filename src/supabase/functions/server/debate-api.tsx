@@ -1738,6 +1738,50 @@ app.put(
   },
 );
 
+// Mark room as inactive (dev tool)
+app.post(
+  "/make-server-f1a393b4/room/:roomId/inactive",
+  async (c) => {
+    try {
+      const roomId = c.req.param("roomId");
+      const { userId } = await c.req.json();
+
+      const room = await getDebateRoom(roomId);
+      if (!room) {
+        return c.json({ error: "Room not found" }, 404);
+      }
+
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User session not found" }, 404);
+      }
+
+      // Only developers can mark rooms as inactive
+      if (!user.isDeveloper) {
+        return c.json(
+          { error: "Only developers can mark rooms as inactive" },
+          403,
+        );
+      }
+
+      // Mark room as inactive
+      room.isActive = false;
+      await saveDebateRoom(room);
+
+      // Remove from active rooms list
+      await kv.del(`active_room:${room.id}`);
+
+      return c.json({ room });
+    } catch (error) {
+      console.error("Error marking room as inactive:", error);
+      return c.json(
+        { error: "Failed to mark room as inactive" },
+        500,
+      );
+    }
+  },
+);
+
 // Get active rooms
 app.get("/make-server-f1a393b4/rooms/active", async (c) => {
   try {

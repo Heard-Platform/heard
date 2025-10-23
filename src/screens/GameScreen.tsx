@@ -392,16 +392,10 @@ export function GameScreen({
                     className="bg-blue-600 hover:bg-blue-700 shrink-0"
                   >
                     <SkipForward className="w-4 h-4 mr-2" />
-                    {room.phase === "round3"
-                      ? "End Debate"
-                      : room.phase === "round2"
-                        ? "Start Round 3"
-                        : "Start Round 2"}
+                    End Debate
                   </Button>
                   <p className="text-xs text-blue-600 leading-relaxed text-center max-w-xs">
-                    {room.phase === "round3"
-                      ? "Show final results to all players."
-                      : "This will freeze posts from this round so they can't be voted on anymore."}
+                    Show final results to all players.
                   </p>
                 </div>
               </div>
@@ -417,7 +411,7 @@ export function GameScreen({
               <div className="text-center">
                 <p className="text-sm text-purple-700">
                   Host-controlled debate • Waiting for host to
-                  advance to next round
+                  end debate
                 </p>
               </div>
             </Card>
