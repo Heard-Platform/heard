@@ -100,14 +100,14 @@ export function CreateRoomSheet({
   };
 
   const handleCreateRoom = async () => {
-    if (!isTopicValid || isCreating) return;
+    if (!isTopicValid || isCreating || !subHeard) return;
     
     setIsCreating(true);
     try {
       // If creating a new sub-heard, use the new name
       const finalSubHeard = subHeard === "create-new" && newSubHeardName.trim()
         ? newSubHeardName.trim().toLowerCase().replace(/\s+/g, '-')
-        : (subHeard && subHeard !== "none" ? subHeard : undefined);
+        : subHeard;
 
       await onCreateRoom(
         newRoomTopic.trim(),
@@ -162,9 +162,9 @@ export function CreateRoomSheet({
         <div className="space-y-6 mt-6">
           {/* Sub-Heard Selector */}
           <div className="space-y-2">
-            <Label htmlFor="subheard-select">Sub-Heard (Optional)</Label>
+            <Label htmlFor="subheard-select">Sub-Heard</Label>
             <Select
-              value={subHeard || "none"}
+              value={subHeard || undefined}
               onValueChange={(value) => {
                 setSubHeard(value);
                 setShowCreateNewSubHeard(value === "create-new");
@@ -177,12 +177,6 @@ export function CreateRoomSheet({
                 <SelectValue placeholder="Select a sub-heard..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">
-                  <div className="flex items-center">
-                    <Home className="w-4 h-4 mr-2" />
-                    No Sub-Heard
-                  </div>
-                </SelectItem>
                 {subHeards.map((sh) => (
                   <SelectItem key={sh.name} value={sh.name}>
                     <div className="flex items-center justify-between w-full">
@@ -349,6 +343,7 @@ export function CreateRoomSheet({
             disabled={
               !isTopicValid ||
               isCreating ||
+              !subHeard ||
               (subHeard === "create-new" && !newSubHeardName.trim())
             }
             className="w-full"
