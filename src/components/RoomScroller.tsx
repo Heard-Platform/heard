@@ -27,6 +27,7 @@ interface RoomScrollerProps {
   isDeveloper: boolean;
   loading: boolean;
   currentUserId?: string;
+  currentSubHeard?: string;
 }
 
 export function RoomScroller({
@@ -37,6 +38,7 @@ export function RoomScroller({
   isDeveloper,
   loading,
   currentUserId,
+  currentSubHeard,
 }: RoomScrollerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -196,6 +198,7 @@ export function RoomScroller({
                   isActive={index === currentIndex}
                   currentUserId={currentUserId}
                   onRefreshStatements={() => refreshRoomStatements(room.id)}
+                  currentSubHeard={currentSubHeard}
                 />
               ) : null}
             </div>
@@ -246,6 +249,7 @@ function RoomCard({
   isActive,
   currentUserId,
   onRefreshStatements,
+  currentSubHeard,
 }: {
   room: DebateRoom;
   statements: Statement[];
@@ -255,6 +259,7 @@ function RoomCard({
   isActive: boolean;
   currentUserId?: string;
   onRefreshStatements?: () => Promise<void>;
+  currentSubHeard?: string;
 }) {
   const participantCount = room.participants?.length || 0;
   const isRantFirst = room.rantFirst;
@@ -367,7 +372,7 @@ function RoomCard({
             
             {/* Features badges */}
             <div className="flex flex-wrap gap-2">
-              {room.subHeard && (
+              {room.subHeard && !currentSubHeard && (
                 <Badge variant="outline" className="bg-orange-100 text-orange-700 border-orange-300 text-xs">
                   <Hash className="w-3 h-3 mr-1" />
                   {room.subHeard.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}

@@ -5,6 +5,7 @@ import { Badge } from "../components/ui/badge";
 import { RoomScroller } from "../components/RoomScroller";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
 import { SubHeardBrowser } from "../components/SubHeardBrowser";
+import { api } from "../utils/api";
 import {
   Plus,
   Database,
@@ -296,6 +297,7 @@ export function LobbyScreen({
           isDeveloper={user?.isDeveloper || false}
           loading={loading}
           currentUserId={user?.id}
+          currentSubHeard={currentSubHeard}
         />
       </div>
 
