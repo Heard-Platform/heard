@@ -14,7 +14,9 @@ import {
   ArrowRight,
   XCircle,
 } from "lucide-react";
-import type { DebateRoom } from "../types";
+import type { DebateRoom, Statement } from "../types";
+import { SwipeableStatementStack } from "./SwipeableStatementStack";
+import { api } from "../utils/api";
 
 interface RoomScrollerProps {
   rooms: DebateRoom[];
@@ -23,6 +25,7 @@ interface RoomScrollerProps {
   onSetRoomInactive?: (roomId: string) => Promise<boolean>;
   isDeveloper: boolean;
   loading: boolean;
+  currentUserId?: string;
 }
 
 export function RoomScroller({
@@ -32,10 +35,52 @@ export function RoomScroller({
   onSetRoomInactive,
   isDeveloper,
   loading,
+  currentUserId,
 }: RoomScrollerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isScrolling = useRef(false);
+  const [roomStatements, setRoomStatements] = useState<Record<string, Statement[]>>({});
+
+  // Function to refresh statements for a specific room
+  const refreshRoomStatements = async (roomId: string) => {
+    try {
+      const response = await api.getRoomStatus(roomId);
+      if (response.success && response.data) {
+        setRoomStatements(prev => ({
+          ...prev,
+          [roomId]: response.data.statements || []
+        }));
+      }
+    } catch (error) {
+      console.error(`Error refreshing statements for room ${roomId}:`, error);
+    }
+  };
+
+  // Fetch statements for all rooms
+  useEffect(() => {
+    const fetchStatements = async () => {
+      const statementsMap: Record<string, Statement[]> = {};
+      
+      for (const room of rooms) {
+        try {
+          const response = await api.getRoomStatus(room.id);
+          if (response.success && response.data) {
+            statementsMap[room.id] = response.data.statements || [];
+          }
+        } catch (error) {
+          console.error(`Error fetching statements for room ${room.id}:`, error);
+          statementsMap[room.id] = [];
+        }
+      }
+      
+      setRoomStatements(statementsMap);
+    };
+    
+    if (rooms.length > 0) {
+      fetchStatements();
+    }
+  }, [rooms]);
 
   // Combine rooms with a "create new" card at the end
   const allCards = [
@@ -136,17 +181,20 @@ export function RoomScroller({
           return (
             <div
               key={card.id}
-              className="h-screen w-full snap-start snap-always flex items-center justify-center p-4"
+              className="h-screen w-full snap-start snap-always flex items-start justify-center pt-20 pb-20 px-4 overflow-y-auto"
             >
               {isCreateCard ? (
                 <CreateRoomCard onCreateRoom={onCreateRoom} />
               ) : room ? (
                 <RoomCard
                   room={room}
+                  statements={roomStatements[room.id] || []}
                   onJoin={() => onJoinRoom(room.id)}
                   onSetInactive={onSetRoomInactive ? () => onSetRoomInactive(room.id) : undefined}
                   isDeveloper={isDeveloper}
                   isActive={index === currentIndex}
+                  currentUserId={currentUserId}
+                  onRefreshStatements={() => refreshRoomStatements(room.id)}
                 />
               ) : null}
             </div>
@@ -190,16 +238,22 @@ export function RoomScroller({
 // Individual room card component
 function RoomCard({
   room,
+  statements,
   onJoin,
   onSetInactive,
   isDeveloper,
   isActive,
+  currentUserId,
+  onRefreshStatements,
 }: {
   room: DebateRoom;
+  statements: Statement[];
   onJoin: () => void;
   onSetInactive?: () => Promise<boolean>;
   isDeveloper: boolean;
   isActive: boolean;
+  currentUserId?: string;
+  onRefreshStatements?: () => Promise<void>;
 }) {
   const participantCount = room.participants?.length || 0;
   const isRantFirst = room.rantFirst;
@@ -210,6 +264,47 @@ function RoomCard({
   const isWaiting = room.phase === "lobby";
   const isCompleted = room.phase === "results";
 
+  // Handle voting
+  const handleVote = async (statementId: string, voteType: "agree" | "disagree" | "pass" | "super_agree") => {
+    if (!currentUserId) {
+      console.error("No user ID available for voting");
+      return null;
+    }
+    
+    try {
+      const response = await api.voteOnStatement(statementId, voteType, currentUserId);
+      if (response.success && response.data) {
+        return response.data as Statement;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error voting on statement:", error);
+      return null;
+    }
+  };
+
+  // Handle statement submission
+  const handleSubmitStatement = async (text: string) => {
+    if (!currentUserId) {
+      console.error("No user ID available for submitting statement");
+      throw new Error("User not logged in");
+    }
+    
+    try {
+      const response = await api.submitStatement(room.id, text, currentUserId);
+      if (!response.success) {
+        throw new Error(response.error || "Failed to submit statement");
+      }
+      // Refresh statements to show the new one
+      if (onRefreshStatements) {
+        await onRefreshStatements();
+      }
+    } catch (error) {
+      console.error("Error submitting statement:", error);
+      throw error;
+    }
+  };
+
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
@@ -217,7 +312,7 @@ function RoomCard({
       transition={{ duration: 0.3 }}
       className="w-full max-w-2xl"
     >
-      <Card className="relative overflow-hidden bg-gradient-to-br from-purple-50 via-white to-blue-50 border-2 border-purple-200 shadow-2xl">
+      <Card className="relative bg-gradient-to-br from-purple-50 via-white to-blue-50 border-2 border-purple-200 shadow-2xl">
         {/* Status badge */}
         <div className="absolute top-4 right-4 z-10">
           {isCompleted ? (
@@ -240,135 +335,76 @@ function RoomCard({
                 await onSetInactive();
               }}
               variant="destructive"
-              size="sm"
-              className="bg-red-600 hover:bg-red-700"
+              size="icon"
+              className="bg-red-600 hover:bg-red-700 w-8 h-8"
             >
-              <XCircle className="w-4 h-4 mr-1" />
-              Hide
+              <XCircle className="w-5 h-5" />
             </Button>
           </div>
         )}
 
-        <div className="p-8 space-y-6">
-          {/* Topic */}
+        <div className="p-6 space-y-4">
+          {/* Compact header */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
             className="space-y-2"
           >
-            <div className="flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-purple-600" />
-              <span className="text-sm text-muted-foreground">
-                Debate Topic
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-purple-600" />
+                <h2 className="text-xl font-bold text-foreground">
+                  {room.topic}
+                </h2>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Users className="w-4 h-4" />
+                <span>{participantCount}</span>
+              </div>
             </div>
-            <h2 className="text-3xl font-bold text-foreground leading-tight">
-              {room.topic}
-            </h2>
+            
+            {/* Features badges */}
+            <div className="flex flex-wrap gap-2">
+              {isRantFirst && (
+                <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-300 text-xs">
+                  <Brain className="w-3 h-3 mr-1" />
+                  Rant First
+                </Badge>
+              )}
+              {isRealtime && (
+                <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300 text-xs">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Real-time
+                </Badge>
+              )}
+            </div>
           </motion.div>
 
-          {/* Description */}
-          {room.description && (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white/60 backdrop-blur-sm rounded-lg p-4 max-h-32 overflow-y-auto"
-            >
-              <p className="text-sm text-muted-foreground line-clamp-4">
-                {room.description}
+          {/* Statement Stack */}
+          {statements.length > 0 ? (
+            <SwipeableStatementStack
+              statements={statements}
+              onVote={handleVote}
+              currentUserId={currentUserId}
+              onSubmitStatement={handleSubmitStatement}
+            />
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground mb-4">
+                No statements yet in this debate
               </p>
-            </motion.div>
+              <Button
+                onClick={onJoin}
+                disabled={isCompleted}
+                size="lg"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+              >
+                {isCompleted ? "Debate Ended" : "Join to Add Statements"}
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </div>
           )}
-
-          {/* Room info grid */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="grid grid-cols-2 gap-4"
-          >
-            {/* Participants */}
-            <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4 flex items-center gap-3">
-              <Users className="w-8 h-8 text-blue-600" />
-              <div>
-                <p className="text-2xl font-bold text-foreground">
-                  {participantCount}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {participantCount === 1 ? "Player" : "Players"}
-                </p>
-              </div>
-            </div>
-
-            {/* Game number */}
-            <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4 flex items-center gap-3">
-              <Zap className="w-8 h-8 text-yellow-600" />
-              <div>
-                <p className="text-2xl font-bold text-foreground">
-                  #{room.gameNumber}
-                </p>
-                <p className="text-xs text-muted-foreground">Game</p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Features */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex flex-wrap gap-2"
-          >
-            {isRantFirst && (
-              <Badge
-                variant="outline"
-                className="bg-purple-100 text-purple-700 border-purple-300"
-              >
-                <Brain className="w-3 h-3 mr-1" />
-                Rant First
-              </Badge>
-            )}
-            {isRealtime && (
-              <Badge
-                variant="outline"
-                className="bg-blue-100 text-blue-700 border-blue-300"
-              >
-                <Clock className="w-3 h-3 mr-1" />
-                Real-time
-              </Badge>
-            )}
-            {!isRealtime && (
-              <Badge
-                variant="outline"
-                className="bg-green-100 text-green-700 border-green-300"
-              >
-                Host-controlled
-              </Badge>
-            )}
-          </motion.div>
-
-          {/* Join button */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Button
-              onClick={onJoin}
-              disabled={isCompleted}
-              size="lg"
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg py-6"
-            >
-              {isCompleted
-                ? "Debate Ended"
-                : isActive_status
-                  ? "Join Live Debate"
-                  : "Join Room"}
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </motion.div>
         </div>
       </Card>
     </motion.div>

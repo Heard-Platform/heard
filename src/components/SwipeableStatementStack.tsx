@@ -14,9 +14,12 @@ import {
   ArrowDown,
   ArrowUp,
   Star,
+  Send,
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import type { Statement, VoteType } from "../types";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 interface SwipeableStatementStackProps {
   statements: Statement[];
@@ -25,6 +28,7 @@ interface SwipeableStatementStackProps {
     voteType: VoteType,
   ) => Promise<Statement | null>;
   currentUserId?: string;
+  onSubmitStatement?: (text: string) => Promise<void>;
 }
 
 const SWIPE_THRESHOLD = 100;
@@ -33,6 +37,7 @@ export function SwipeableStatementStack({
   statements,
   onVote,
   currentUserId,
+  onSubmitStatement,
 }: SwipeableStatementStackProps) {
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
@@ -44,6 +49,8 @@ export function SwipeableStatementStack({
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
+  const [newStatementText, setNewStatementText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filter out statements the user has already voted on (either previously or just now)
   const unvotedStatements = statements.filter((statement) => {
@@ -275,10 +282,56 @@ export function SwipeableStatementStack({
     }
   };
 
+  const handleSubmitStatement = async () => {
+    if (!newStatementText.trim() || !onSubmitStatement) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onSubmitStatement(newStatementText.trim());
+      setNewStatementText("");
+      toast.success("Statement submitted!");
+    } catch (error) {
+      console.error("Error submitting statement:", error);
+      toast.error("Failed to submit statement");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="relative w-full max-w-md mx-auto">
-      {/* Instructions */}
-      <div className="mb-6 text-center space-y-2">
+      {/* Card Stack Container */}
+      <div className="relative min-h-[320px]">
+        {/* Show next 3 cards in stack */}
+        {unvotedStatements
+          .slice(0, 3)
+          .map((statement, index) => {
+            const isTopCard = index === 0;
+            const isBeingSwiped = swipedCardId === statement.id;
+
+            return (
+              <SwipeableCard
+                key={statement.id}
+                statement={statement}
+                index={index}
+                isTopCard={isTopCard}
+                onDragEnd={(event, info) =>
+                  handleDragEnd(statement.id, event, info)
+                }
+                getTypeColor={getTypeColor}
+                getTypeIcon={getTypeIcon}
+                direction={
+                  isBeingSwiped ? swipeDirection : null
+                }
+                currentIndex={statements.length - unvotedStatements.length + 1}
+                totalStatements={statements.length}
+              />
+            );
+          })}
+      </div>
+
+      {/* Instructions - Right below the deck */}
+      <div className="mt-6 text-center space-y-2">
         <p className="text-sm text-muted-foreground">
           Swipe to vote
         </p>
@@ -302,39 +355,33 @@ export function SwipeableStatementStack({
         </div>
       </div>
 
-      {/* Card Stack Container */}
-      <div className="relative h-[500px]">
-        {/* Show next 3 cards in stack */}
-        {unvotedStatements
-          .slice(0, 3)
-          .map((statement, index) => {
-            const isTopCard = index === 0;
-            const isBeingSwiped = swipedCardId === statement.id;
-
-            return (
-              <SwipeableCard
-                key={statement.id}
-                statement={statement}
-                index={index}
-                isTopCard={isTopCard}
-                onDragEnd={(event, info) =>
-                  handleDragEnd(statement.id, event, info)
+      {/* New Statement Input */}
+      {onSubmitStatement && (
+        <div className="mt-6">
+          <div className="flex gap-2">
+            <Input
+              value={newStatementText}
+              onChange={(e) => setNewStatementText(e.target.value)}
+              placeholder="Add your own statement..."
+              disabled={isSubmitting}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmitStatement();
                 }
-                getTypeColor={getTypeColor}
-                getTypeIcon={getTypeIcon}
-                direction={
-                  isBeingSwiped ? swipeDirection : null
-                }
-              />
-            );
-          })}
-      </div>
-
-      {/* Card counter */}
-      <div className="mt-4 text-center text-sm text-muted-foreground">
-        {statements.length - unvotedStatements.length + 1} /{" "}
-        {statements.length}
-      </div>
+              }}
+              className="flex-1"
+            />
+            <Button
+              onClick={handleSubmitStatement}
+              disabled={isSubmitting || !newStatementText.trim()}
+              size="icon"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -350,6 +397,8 @@ interface SwipeableCardProps {
   getTypeColor: (type?: string) => string;
   getTypeIcon: (type?: string) => string | null;
   direction: "left" | "right" | "down" | "up" | null;
+  currentIndex: number;
+  totalStatements: number;
 }
 
 function SwipeableCard({
@@ -360,6 +409,8 @@ function SwipeableCard({
   getTypeColor,
   getTypeIcon,
   direction,
+  currentIndex,
+  totalStatements,
 }: SwipeableCardProps) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -465,10 +516,17 @@ function SwipeableCard({
         </div>
 
         {/* Statement Text */}
-        <div className="mb-6 min-h-[200px] flex items-center justify-center">
+        <div className="mb-6 min-h-[200px] flex items-center justify-center relative">
           <p className="text-lg leading-relaxed text-center">
             {statement.text}
           </p>
+          
+          {/* Card counter - bottom right */}
+          {isTopCard && (
+            <div className="absolute bottom-0 right-0 text-xs text-muted-foreground">
+              {currentIndex} / {totalStatements}
+            </div>
+          )}
         </div>
 
         {/* Visual indicators for swipe direction */}

@@ -186,7 +186,6 @@
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
-    --leading-tight: 1.25;
     --leading-relaxed: 1.625;
     --radius-xs: .125rem;
     --radius-3xl: 1.5rem;
@@ -832,13 +831,6 @@
     overflow: hidden;
   }
 
-  .line-clamp-4 {
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    display: -webkit-box;
-    overflow: hidden;
-  }
-
   .block {
     display: block;
   }
@@ -953,10 +945,6 @@
     height: 90vh;
   }
 
-  .h-\[500px\] {
-    height: 500px;
-  }
-
   .h-\[calc\(100\%-1px\)\] {
     height: calc(100% - 1px);
   }
@@ -979,10 +967,6 @@
 
   .max-h-24 {
     max-height: calc(var(--spacing) * 24);
-  }
-
-  .max-h-32 {
-    max-height: calc(var(--spacing) * 32);
   }
 
   .max-h-\[300px\] {
@@ -1011,6 +995,10 @@
 
   .min-h-\[200px\] {
     min-height: 200px;
+  }
+
+  .min-h-\[320px\] {
+    min-height: 320px;
   }
 
   .min-h-\[500px\] {
@@ -1765,16 +1753,6 @@
     }
   }
 
-  .bg-white\/60 {
-    background-color: #fff9;
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .bg-white\/60 {
-      background-color: color-mix(in oklab, var(--color-white) 60%, transparent);
-    }
-  }
-
   .bg-white\/80 {
     background-color: #fffc;
   }
@@ -2184,6 +2162,10 @@
     padding-block: calc(var(--spacing) * 8);
   }
 
+  .py-12 {
+    padding-block: calc(var(--spacing) * 12);
+  }
+
   .py-16 {
     padding-block: calc(var(--spacing) * 16);
   }
@@ -2200,12 +2182,20 @@
     padding-top: calc(var(--spacing) * 6);
   }
 
+  .pt-20 {
+    padding-top: calc(var(--spacing) * 20);
+  }
+
   .pb-1 {
     padding-bottom: calc(var(--spacing) * 1);
   }
 
   .pb-6 {
     padding-bottom: calc(var(--spacing) * 6);
+  }
+
+  .pb-20 {
+    padding-bottom: calc(var(--spacing) * 20);
   }
 
   .pb-24 {
@@ -2289,11 +2279,6 @@
   .leading-relaxed {
     --tw-leading: var(--leading-relaxed);
     line-height: var(--leading-relaxed);
-  }
-
-  .leading-tight {
-    --tw-leading: var(--leading-tight);
-    line-height: var(--leading-tight);
   }
 
   .font-bold {

@@ -770,7 +770,7 @@ const getStatements = async (
     );
 
     return statementsWithVotes.sort(
-      (a, b) => b.timestamp - a.timestamp,
+      (a, b) => a.timestamp - b.timestamp,
     );
   } catch (error) {
     console.error(

@@ -268,6 +268,7 @@ export function LobbyScreen({
           onSetRoomInactive={onSetRoomInactive}
           isDeveloper={user?.isDeveloper || false}
           loading={loading}
+          currentUserId={user?.id}
         />
       </div>
 
