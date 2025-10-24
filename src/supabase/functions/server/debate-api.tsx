@@ -53,6 +53,7 @@ export interface DebateRoom {
   createdAt: number;
   mode: DebateMode; // Controls whether phases advance automatically or by host
   rantFirst?: boolean; // Whether this room starts with rants
+  subHeard?: string; // Sub-heard name (like subreddits) - optional for backwards compatibility
 }
 
 export interface Rant {
@@ -1129,6 +1130,7 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
       userId,
       mode = "host-controlled",
       rantFirst = false,
+      subHeard,
     } = await c.req.json();
 
     if (!topic || topic.length < 10) {
@@ -1160,6 +1162,7 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
       createdAt: Date.now(),
       mode: mode as DebateMode,
       rantFirst: rantFirst,
+      subHeard: subHeard ? subHeard.trim().toLowerCase().replace(/\s+/g, '-') : undefined,
     };
 
     await saveDebateRoom(debateRoom);
@@ -1785,8 +1788,10 @@ app.post(
 // Get active rooms
 app.get("/make-server-f1a393b4/rooms/active", async (c) => {
   try {
+    const subHeard = c.req.query("subHeard");
+    
     const activeRooms = await kv.getByPrefix("active_room:");
-    const rooms = activeRooms
+    let rooms = activeRooms
       .map((r) => {
         try {
           return JSON.parse(r);
@@ -1797,11 +1802,115 @@ app.get("/make-server-f1a393b4/rooms/active", async (c) => {
       })
       .filter((r) => r !== null);
 
+    // Filter by sub-heard if specified
+    if (subHeard) {
+      rooms = rooms.filter((r) => r.subHeard === subHeard);
+    }
+
     return c.json({ rooms });
   } catch (error) {
     console.error("Error fetching active rooms:", error);
     return c.json(
       { error: "Failed to fetch active rooms" },
+      500,
+    );
+  }
+});
+
+// Get all unique sub-heards from active rooms and created sub-heards
+app.get("/make-server-f1a393b4/subheards", async (c) => {
+  try {
+    // Get active rooms with sub-heards
+    const activeRooms = await kv.getByPrefix("active_room:");
+    const rooms = activeRooms
+      .map((r) => {
+        try {
+          return JSON.parse(r);
+        } catch (error) {
+          console.error("Error parsing active room:", r, error);
+          return null;
+        }
+      })
+      .filter((r) => r !== null && r.subHeard);
+
+    // Get unique sub-heards with room counts
+    const subHeardCounts: { [key: string]: number } = {};
+    rooms.forEach((room) => {
+      if (room.subHeard) {
+        subHeardCounts[room.subHeard] = (subHeardCounts[room.subHeard] || 0) + 1;
+      }
+    });
+
+    // Get created sub-heards (those without rooms will have count 0)
+    const createdSubHeards = await kv.getByPrefix("subheard:");
+    createdSubHeards.forEach((sh) => {
+      try {
+        const data = JSON.parse(sh);
+        if (data.name && !subHeardCounts[data.name]) {
+          subHeardCounts[data.name] = 0;
+        }
+      } catch (error) {
+        console.error("Error parsing sub-heard:", sh, error);
+      }
+    });
+
+    const subHeards = Object.entries(subHeardCounts).map(([name, count]) => ({
+      name,
+      count,
+    }));
+
+    // Sort by count descending, then alphabetically
+    subHeards.sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
+      return a.name.localeCompare(b.name);
+    });
+
+    return c.json({ subHeards });
+  } catch (error) {
+    console.error("Error fetching sub-heards:", error);
+    return c.json(
+      { error: "Failed to fetch sub-heards" },
+      500,
+    );
+  }
+});
+
+// Create a new sub-heard
+app.post("/make-server-f1a393b4/subheard/create", async (c) => {
+  try {
+    const { name } = await c.req.json();
+
+    if (!name || typeof name !== "string") {
+      return c.json({ error: "Sub-heard name is required" }, 400);
+    }
+
+    // Normalize the name (lowercase, replace spaces with hyphens)
+    const normalized = name.trim().toLowerCase().replace(/\s+/g, '-');
+
+    if (normalized.length < 2) {
+      return c.json({ error: "Sub-heard name must be at least 2 characters" }, 400);
+    }
+
+    // Store the sub-heard in KV store
+    const subHeardKey = `subheard:${normalized}`;
+    const subHeardData = {
+      name: normalized,
+      createdAt: Date.now(),
+    };
+
+    await kv.set(subHeardKey, JSON.stringify(subHeardData));
+
+    return c.json({ 
+      success: true, 
+      subHeard: {
+        name: normalized,
+        count: 0
+      }
+    });
+  } catch (error) {
+    console.error("Error creating sub-heard:", error);
+    return c.json(
+      { error: "Failed to create sub-heard" },
       500,
     );
   }

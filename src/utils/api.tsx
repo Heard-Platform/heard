@@ -62,10 +62,10 @@ class ApiClient {
   }
 
   // Room management
-  async createRoom(topic: string, userId: string, mode = "host-controlled", rantFirst?: boolean, description?: string) {
+  async createRoom(topic: string, userId: string, mode = "host-controlled", rantFirst?: boolean, description?: string, subHeard?: string) {
     return this.request("/room/create", {
       method: "POST",
-      body: JSON.stringify({ topic, description, userId, mode, rantFirst }),
+      body: JSON.stringify({ topic, description, userId, mode, rantFirst, subHeard }),
     });
   }
 
@@ -106,8 +106,20 @@ class ApiClient {
     });
   }
 
-  async getActiveRooms() {
-    return this.request("/rooms/active");
+  async getActiveRooms(subHeard?: string) {
+    const params = subHeard ? `?subHeard=${encodeURIComponent(subHeard)}` : "";
+    return this.request(`/rooms/active${params}`);
+  }
+
+  async getSubHeards() {
+    return this.request("/subheards");
+  }
+
+  async createSubHeard(name: string) {
+    return this.request("/subheard/create", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    });
   }
 
   // Statement management

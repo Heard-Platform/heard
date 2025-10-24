@@ -100,6 +100,7 @@ export function useDebateSession() {
       mode: DebateMode = "host-controlled",
       rantFirst?: boolean,
       description?: string,
+      subHeard?: string,
     ) => {
       if (!user) return null;
 
@@ -111,6 +112,7 @@ export function useDebateSession() {
           mode,
           rantFirst,
           description,
+          subHeard,
         );
         if (response.success && response.data) {
           const roomData = response.data.room;
@@ -400,9 +402,9 @@ export function useDebateSession() {
   );
 
   // Get active rooms
-  const getActiveRooms = useCallback(async () => {
+  const getActiveRooms = useCallback(async (subHeard?: string) => {
     try {
-      const response = await api.getActiveRooms();
+      const response = await api.getActiveRooms(subHeard);
       if (response.success && response.data) {
         setActiveRooms(response.data.rooms || []);
         return response.data.rooms || [];

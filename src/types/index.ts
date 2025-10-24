@@ -64,6 +64,12 @@ export interface DebateRoom {
   createdAt: number;
   mode: DebateMode; // Controls whether phases advance automatically or by host
   rantFirst?: boolean; // Whether this room starts with rants
+  subHeard?: string; // Sub-heard name (like subreddits) - optional for backwards compatibility
+}
+
+export interface SubHeard {
+  name: string;
+  count: number;
 }
 
 export interface Rant {

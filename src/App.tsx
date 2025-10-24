@@ -9,7 +9,9 @@ import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner@2.0.3";
 import {
   parseRoomIdFromUrl,
+  parseSubHeardFromUrl,
   updateUrlForRoom,
+  updateUrlForSubHeard,
   clearRoomFromUrl,
 } from "./utils/url";
 import type {
@@ -24,6 +26,9 @@ export default function App() {
   const [timerActive, setTimerActive] = useState(false);
   const [startingDebate, setStartingDebate] = useState(false);
   const [targetRoomId, setTargetRoomId] = useState<
+    string | null
+  >(null);
+  const [currentSubHeard, setCurrentSubHeard] = useState<
     string | null
   >(null);
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
@@ -98,12 +103,14 @@ export default function App() {
     mode: "realtime" | "host-controlled",
     rantFirst?: boolean,
     description?: string,
+    subHeard?: string,
   ) => {
     const roomData = await createRoom(
       topic,
       mode,
       rantFirst,
       description,
+      subHeard,
     );
     if (roomData) {
       // Rant-first rooms start in round1/posting, regular rooms start in lobby
@@ -262,6 +269,15 @@ export default function App() {
     setTimerActive(false);
     setTargetRoomId(null); // Clear target room ID to prevent re-joining
     clearRoomFromUrl(); // Clear room from URL when leaving
+    // Update URL to show current sub-heard if any
+    if (currentSubHeard) {
+      updateUrlForSubHeard(currentSubHeard);
+    }
+  };
+
+  const handleSubHeardChange = (subHeard: string | null) => {
+    setCurrentSubHeard(subHeard);
+    updateUrlForSubHeard(subHeard);
   };
 
   const handleLogout = () => {
@@ -278,12 +294,16 @@ export default function App() {
     }
   };
 
-  // Check URL for room ID on initial load
+  // Check URL for room ID or sub-heard on initial load
   useEffect(() => {
     if (!hasCheckedUrl) {
       const roomIdFromUrl = parseRoomIdFromUrl();
+      const subHeardFromUrl = parseSubHeardFromUrl();
+      
       if (roomIdFromUrl) {
         setTargetRoomId(roomIdFromUrl);
+      } else if (subHeardFromUrl) {
+        setCurrentSubHeard(subHeardFromUrl);
       }
       setHasCheckedUrl(true);
     }
@@ -310,9 +330,9 @@ export default function App() {
   // Load active rooms when in lobby (user but no room and no target)
   useEffect(() => {
     if (user && !room && !targetRoomId) {
-      getActiveRooms();
+      getActiveRooms(currentSubHeard || undefined);
     }
-  }, [user, room, targetRoomId, getActiveRooms]);
+  }, [user, room, targetRoomId, currentSubHeard, getActiveRooms]);
 
   // Sync timerActive with room phase changes (for real-time multiplayer)
   useEffect(() => {
@@ -399,6 +419,8 @@ export default function App() {
           onSetRoomInactive={setRoomInactive}
           onLogout={handleLogout}
           onOpenShowcase={handleOpenShowcase}
+          currentSubHeard={currentSubHeard || undefined}
+          onSubHeardChange={handleSubHeardChange}
         />
         <Toaster />
       </>

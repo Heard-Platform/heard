@@ -4,6 +4,7 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { RoomScroller } from "../components/RoomScroller";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
+import { SubHeardBrowser } from "../components/SubHeardBrowser";
 import {
   Plus,
   Database,
@@ -37,9 +38,10 @@ interface LobbyScreenProps {
     mode: DebateMode,
     rantFirst?: boolean,
     description?: string,
+    subHeard?: string,
   ) => Promise<void>;
   onJoinRoom: (roomId: string) => Promise<void>;
-  onRefreshRooms: () => Promise<DebateRoom[]>;
+  onRefreshRooms: (subHeard?: string) => Promise<DebateRoom[]>;
   onJumpToFinalResults?: () => Promise<void>;
   onCreateSeedData?: () => Promise<any>;
   onCreateTestRoom?: () => Promise<any>;
@@ -48,6 +50,8 @@ interface LobbyScreenProps {
   onSetRoomInactive?: (roomId: string) => Promise<boolean>;
   onLogout?: () => void;
   onOpenShowcase?: () => void;
+  currentSubHeard?: string;
+  onSubHeardChange?: (subHeard: string | null) => void;
 }
 
 export function LobbyScreen({
@@ -65,6 +69,8 @@ export function LobbyScreen({
   onSetRoomInactive,
   onLogout,
   onOpenShowcase,
+  currentSubHeard,
+  onSubHeardChange,
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] = useState(false);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
@@ -73,10 +79,10 @@ export function LobbyScreen({
   const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
   const filteredRooms = activeRooms.filter(room => room.createdAt > oneWeekAgo);
 
-  // Refresh rooms on mount
+  // Refresh rooms on mount and when sub-heard changes
   useEffect(() => {
-    onRefreshRooms();
-  }, []);
+    onRefreshRooms(currentSubHeard);
+  }, [currentSubHeard]);
 
   const handleCreateSeedData = async () => {
     if (onCreateSeedData) {
@@ -127,8 +133,8 @@ export function LobbyScreen({
       {/* Main TikTok-style scroller */}
       <div className="relative">
         {/* Floating header with user info and menu */}
-        <div className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between items-start">
-          <div className="flex items-center gap-2">
+        <div className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
             <motion.h1
               className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
               style={{ WebkitTextStroke: "1px rgba(255,255,255,0.8)" }}
@@ -142,19 +148,39 @@ export function LobbyScreen({
             )}
           </div>
 
-          {/* User menu button */}
-          {user && (
-            <Sheet open={devMenuOpen} onOpenChange={setDevMenuOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-white/90 backdrop-blur-sm shadow-lg"
-                >
-                  <Menu className="w-4 h-4 mr-2" />
-                  Menu
-                </Button>
-              </SheetTrigger>
+          {/* Sub-Heard Browser and User menu */}
+          <div className="flex items-center gap-2">
+            {onSubHeardChange && (
+              <SubHeardBrowser
+                currentSubHeard={currentSubHeard}
+                onSubHeardChange={onSubHeardChange}
+                onCreateSubHeard={async (name: string) => {
+                  try {
+                    const response = await api.createSubHeard(name);
+                    if (response.success) {
+                      return true;
+                    }
+                    console.error("Failed to create sub-heard:", response.error);
+                    return false;
+                  } catch (error) {
+                    console.error("Error creating sub-heard:", error);
+                    return false;
+                  }
+                }}
+              />
+            )}
+
+            {user && (
+              <Sheet open={devMenuOpen} onOpenChange={setDevMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="bg-white/90 backdrop-blur-sm shadow-lg"
+                  >
+                    <Menu className="w-4 h-4" />
+                  </Button>
+                </SheetTrigger>
               <SheetContent side="right">
                 <SheetHeader>
                   <SheetTitle>Menu</SheetTitle>
@@ -258,6 +284,7 @@ export function LobbyScreen({
               </SheetContent>
             </Sheet>
           )}
+          </div>
         </div>
 
         {/* Room scroller */}
@@ -277,6 +304,7 @@ export function LobbyScreen({
         open={createRoomSheetOpen}
         onOpenChange={setCreateRoomSheetOpen}
         onCreateRoom={onCreateRoom}
+        defaultSubHeard={currentSubHeard}
       />
 
       {/* Error notification */}

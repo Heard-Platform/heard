@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Switch } from "./ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import {
   Sheet,
   SheetContent,
@@ -11,8 +18,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "./ui/sheet";
-import { Brain, Clock, Plus } from "lucide-react";
-import type { DebateMode } from "../types";
+import { Brain, Clock, Plus, Hash, Home } from "lucide-react";
+import { api } from "../utils/api";
+import type { DebateMode, SubHeard } from "../types";
 
 interface CreateRoomSheetProps {
   open: boolean;
@@ -21,8 +29,10 @@ interface CreateRoomSheetProps {
     topic: string,
     mode: DebateMode,
     rantFirst?: boolean,
-    description?: string
+    description?: string,
+    subHeard?: string
   ) => Promise<void>;
+  defaultSubHeard?: string;
 }
 
 const topicExamples = [
@@ -37,6 +47,7 @@ export function CreateRoomSheet({
   open,
   onOpenChange,
   onCreateRoom,
+  defaultSubHeard,
 }: CreateRoomSheetProps) {
   const [newRoomTopic, setNewRoomTopic] = useState("");
   const [newRoomDescription, setNewRoomDescription] = useState("");
@@ -44,27 +55,77 @@ export function CreateRoomSheet({
   const [debateMode, setDebateMode] = useState<DebateMode>("host-controlled");
   const [rantFirst, setRantFirst] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [subHeard, setSubHeard] = useState(defaultSubHeard || "");
+  const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
+  const [loadingSubHeards, setLoadingSubHeards] = useState(true);
+  const [showCreateNewSubHeard, setShowCreateNewSubHeard] = useState(false);
+  const [newSubHeardName, setNewSubHeardName] = useState("");
 
   const isTopicValid = newRoomTopic.trim().length >= 10;
   const remainingChars = 10 - newRoomTopic.trim().length;
+
+  // Load sub-heards when sheet opens
+  useEffect(() => {
+    if (open) {
+      loadSubHeards();
+    }
+  }, [open]);
+
+  // Update subHeard when defaultSubHeard changes
+  useEffect(() => {
+    if (defaultSubHeard) {
+      setSubHeard(defaultSubHeard);
+    }
+  }, [defaultSubHeard]);
+
+  const loadSubHeards = async () => {
+    try {
+      setLoadingSubHeards(true);
+      const response = await api.getSubHeards();
+      if (response.success && response.data) {
+        setSubHeards(response.data.subHeards || []);
+      }
+    } catch (error) {
+      console.error("Failed to load sub-heards:", error);
+    } finally {
+      setLoadingSubHeards(false);
+    }
+  };
+
+  const formatSubHeardDisplay = (name: string) => {
+    return name
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
 
   const handleCreateRoom = async () => {
     if (!isTopicValid || isCreating) return;
     
     setIsCreating(true);
     try {
+      // If creating a new sub-heard, use the new name
+      const finalSubHeard = subHeard === "create-new" && newSubHeardName.trim()
+        ? newSubHeardName.trim().toLowerCase().replace(/\s+/g, '-')
+        : (subHeard && subHeard !== "none" ? subHeard : undefined);
+
       await onCreateRoom(
         newRoomTopic.trim(),
         debateMode,
         rantFirst,
-        newRoomDescription.trim() || undefined
+        newRoomDescription.trim() || undefined,
+        finalSubHeard
       );
       
-      // Reset form
+      // Reset form (keep subHeard if it was a default)
       setNewRoomTopic("");
       setNewRoomDescription("");
       setDebateMode("host-controlled");
       setRantFirst(true);
+      setShowCreateNewSubHeard(false);
+      setNewSubHeardName("");
+      // Reset subHeard to default or empty
+      setSubHeard(defaultSubHeard || "");
       onOpenChange(false);
     } finally {
       setIsCreating(false);
@@ -76,8 +137,17 @@ export function CreateRoomSheet({
     setShowExamples(false);
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      // Reset create new sub-heard form when closing
+      setShowCreateNewSubHeard(false);
+      setNewSubHeardName("");
+    }
+    onOpenChange(isOpen);
+  };
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent
         side="bottom"
         className="h-[90vh] overflow-y-auto rounded-t-3xl"
@@ -90,6 +160,69 @@ export function CreateRoomSheet({
         </SheetHeader>
 
         <div className="space-y-6 mt-6">
+          {/* Sub-Heard Selector */}
+          <div className="space-y-2">
+            <Label htmlFor="subheard-select">Sub-Heard (Optional)</Label>
+            <Select
+              value={subHeard || "none"}
+              onValueChange={(value) => {
+                setSubHeard(value);
+                setShowCreateNewSubHeard(value === "create-new");
+                if (value !== "create-new") {
+                  setNewSubHeardName("");
+                }
+              }}
+            >
+              <SelectTrigger id="subheard-select">
+                <SelectValue placeholder="Select a sub-heard..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">
+                  <div className="flex items-center">
+                    <Home className="w-4 h-4 mr-2" />
+                    No Sub-Heard
+                  </div>
+                </SelectItem>
+                {subHeards.map((sh) => (
+                  <SelectItem key={sh.name} value={sh.name}>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center">
+                        <Hash className="w-4 h-4 mr-2" />
+                        {formatSubHeardDisplay(sh.name)}
+                      </div>
+                      <span className="text-xs text-muted-foreground ml-2">
+                        ({sh.count})
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+                <SelectItem value="create-new">
+                  <div className="flex items-center text-purple-600">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New Sub-Heard
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Create new sub-heard input */}
+            {showCreateNewSubHeard && (
+              <div className="mt-2 p-3 border-2 border-dashed rounded-lg space-y-2">
+                <Label htmlFor="new-subheard-name">New Sub-Heard Name</Label>
+                <Input
+                  id="new-subheard-name"
+                  placeholder="e.g., politics, technology..."
+                  value={newSubHeardName}
+                  onChange={(e) => setNewSubHeardName(e.target.value)}
+                  maxLength={50}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Choose a clear, concise name for your sub-heard
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Topic Input */}
           <div className="space-y-2">
             <Label htmlFor="topic-input">What should we debate?</Label>
@@ -213,7 +346,11 @@ export function CreateRoomSheet({
           {/* Create Button */}
           <Button
             onClick={handleCreateRoom}
-            disabled={!isTopicValid || isCreating}
+            disabled={
+              !isTopicValid ||
+              isCreating ||
+              (subHeard === "create-new" && !newSubHeardName.trim())
+            }
             className="w-full"
             size="lg"
           >

@@ -13,6 +13,7 @@ import {
   MessageCircle,
   ArrowRight,
   XCircle,
+  Hash,
 } from "lucide-react";
 import type { DebateRoom, Statement } from "../types";
 import { SwipeableStatementStack } from "./SwipeableStatementStack";
@@ -366,6 +367,12 @@ function RoomCard({
             
             {/* Features badges */}
             <div className="flex flex-wrap gap-2">
+              {room.subHeard && (
+                <Badge variant="outline" className="bg-orange-100 text-orange-700 border-orange-300 text-xs">
+                  <Hash className="w-3 h-3 mr-1" />
+                  {room.subHeard.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                </Badge>
+              )}
               {isRantFirst && (
                 <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-300 text-xs">
                   <Brain className="w-3 h-3 mr-1" />
