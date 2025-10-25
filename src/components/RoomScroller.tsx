@@ -321,19 +321,6 @@ function RoomCard({
       className="w-full max-w-2xl"
     >
       <Card className="relative bg-gradient-to-br from-purple-50 via-white to-blue-50 border-2 border-purple-200 shadow-2xl">
-        {/* Status badge */}
-        <div className="absolute top-4 right-4 z-10">
-          {isCompleted ? (
-            <Badge className="bg-gray-600 text-white">Completed</Badge>
-          ) : isActive_status ? (
-            <Badge className="bg-green-600 text-white animate-pulse">
-              🔴 Live
-            </Badge>
-          ) : (
-            <Badge className="bg-blue-600 text-white">Waiting</Badge>
-          )}
-        </div>
-
         {/* Dev button to mark inactive */}
         {isDeveloper && onSetInactive && (
           <div className="absolute top-4 left-4 z-10">
@@ -357,19 +344,31 @@ function RoomCard({
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="space-y-2"
+            className="relative space-y-2"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MessageCircle className="w-4 h-4 text-purple-600" />
-                <h2 className="text-xl font-bold text-foreground">
-                  {room.topic}
-                </h2>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {/* Status badges in top right */}
+            <div className="absolute top-0 right-0 flex flex-col items-end gap-1.5">
+              {isCompleted ? (
+                <Badge className="bg-gray-600 text-white">Completed</Badge>
+              ) : isActive_status ? (
+                <Badge className="bg-green-600 text-white animate-pulse">
+                  🔴 Live
+                </Badge>
+              ) : (
+                <Badge className="bg-blue-600 text-white">Waiting</Badge>
+              )}
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <Users className="w-4 h-4" />
                 <span>{participantCount}</span>
               </div>
+            </div>
+            
+            {/* Title with space for badges */}
+            <div className="flex items-start gap-2 pr-24">
+              <MessageCircle className="w-4 h-4 text-purple-600 flex-shrink-0 mt-1" />
+              <h2 className="font-bold text-foreground">
+                {room.topic}
+              </h2>
             </div>
             
             {/* Features badges */}
