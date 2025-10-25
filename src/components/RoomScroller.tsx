@@ -105,6 +105,24 @@ export function RoomScroller({
     { id: "create-new", isCreateCard: true },
   ] as Array<DebateRoom | { id: string; isCreateCard: true }>;
 
+  // Poll for updates on the currently visible room
+  useEffect(() => {
+    if (currentIndex >= rooms.length) return; // Don't poll for "create new" card
+    
+    const currentRoom = rooms[currentIndex];
+    if (!currentRoom) return;
+
+    // Immediately fetch on index change
+    refreshRoomStatements(currentRoom.id);
+
+    // Then set up polling interval
+    const pollInterval = setInterval(() => {
+      refreshRoomStatements(currentRoom.id);
+    }, 2000); // Poll every 2 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [currentIndex, rooms]);
+
   // Handle scroll events with debouncing
   useEffect(() => {
     const container = scrollContainerRef.current;
