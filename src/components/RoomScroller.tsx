@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import type { DebateRoom, Statement } from "../types";
 import { SwipeableStatementStack } from "./SwipeableStatementStack";
+import { InProgressResults } from "./results/InProgressResults";
+import { NewStatementInput } from "./NewStatementInput";
 import { api } from "../utils/api";
 
 interface RoomScrollerProps {
@@ -393,15 +395,36 @@ function RoomCard({
             </div>
           </motion.div>
 
-          {/* Statement Stack */}
-          {statements.length > 0 ? (
-            <SwipeableStatementStack
-              statements={statements}
-              onVote={handleVote}
-              currentUserId={currentUserId}
-              onSubmitStatement={handleSubmitStatement}
-            />
-          ) : (
+          {/* Statement Stack or Results */}
+          {statements.length > 0 ? (() => {
+            // Check if user has voted on all statements
+            const hasVotedOnAll = currentUserId && statements.every(
+              statement => statement.voters && statement.voters[currentUserId]
+            );
+
+            // If user has voted on all statements, show InProgressResults + input
+            if (hasVotedOnAll) {
+              return (
+                <div className="space-y-4">
+                  <InProgressResults statements={statements} />
+                  {/* New Statement Input */}
+                  {currentUserId && (
+                    <NewStatementInput onSubmitStatement={handleSubmitStatement} />
+                  )}
+                </div>
+              );
+            }
+
+            // Otherwise show the swipeable stack
+            return (
+              <SwipeableStatementStack
+                statements={statements}
+                onVote={handleVote}
+                currentUserId={currentUserId}
+                onSubmitStatement={handleSubmitStatement}
+              />
+            );
+          })() : (
             <div className="text-center py-12">
               <p className="text-muted-foreground mb-4">
                 No statements yet in this debate

@@ -84,6 +84,7 @@ export function InProgressResults({ statements }: InProgressResultsProps) {
 
             {[...statements]
               .sort((a, b) => b.agrees - a.agrees)
+              .slice(0, 5)
               .map((statement, index) => {
                 const percentage =
                   maxVotes > 0 ? (statement.agrees / maxVotes) * 100 : 0;

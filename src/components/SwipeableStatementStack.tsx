@@ -14,12 +14,10 @@ import {
   ArrowDown,
   ArrowUp,
   Star,
-  Send,
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import type { Statement, VoteType } from "../types";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { NewStatementInput } from "./NewStatementInput";
 
 interface SwipeableStatementStackProps {
   statements: Statement[];
@@ -49,8 +47,6 @@ export function SwipeableStatementStack({
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
-  const [newStatementText, setNewStatementText] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filter out statements the user has already voted on (either previously or just now)
   const unvotedStatements = statements.filter((statement) => {
@@ -282,22 +278,6 @@ export function SwipeableStatementStack({
     }
   };
 
-  const handleSubmitStatement = async () => {
-    if (!newStatementText.trim() || !onSubmitStatement) return;
-    
-    setIsSubmitting(true);
-    try {
-      await onSubmitStatement(newStatementText.trim());
-      setNewStatementText("");
-      toast.success("Statement submitted!");
-    } catch (error) {
-      console.error("Error submitting statement:", error);
-      toast.error("Failed to submit statement");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="relative w-full max-w-md mx-auto">
       {/* Card Stack Container */}
@@ -358,28 +338,7 @@ export function SwipeableStatementStack({
       {/* New Statement Input */}
       {onSubmitStatement && (
         <div className="mt-6">
-          <div className="flex gap-2">
-            <Input
-              value={newStatementText}
-              onChange={(e) => setNewStatementText(e.target.value)}
-              placeholder="Add your own statement..."
-              disabled={isSubmitting}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmitStatement();
-                }
-              }}
-              className="flex-1"
-            />
-            <Button
-              onClick={handleSubmitStatement}
-              disabled={isSubmitting || !newStatementText.trim()}
-              size="icon"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
+          <NewStatementInput onSubmitStatement={onSubmitStatement} />
         </div>
       )}
     </div>
