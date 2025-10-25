@@ -78,7 +78,7 @@ export function InProgressResults({ statements }: InProgressResultsProps) {
                 <span className="sm:hidden">Standings</span>
               </h4>
               <span className="text-[10px] sm:text-xs text-muted-foreground">
-                Most agrees wins!
+                Most popular opinions
               </span>
             </div>
 
