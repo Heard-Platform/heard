@@ -12,9 +12,16 @@ import {
   Zap,
   MessageCircle,
   ArrowRight,
-  XCircle,
   Hash,
+  Settings,
+  XCircle,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import type { DebateRoom, Statement } from "../types";
 import { SwipeableStatementStack } from "./SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
@@ -321,23 +328,6 @@ function RoomCard({
       className="w-full max-w-2xl"
     >
       <Card className="relative bg-gradient-to-br from-purple-50 via-white to-blue-50 border-2 border-purple-200 shadow-2xl">
-        {/* Dev button to mark inactive */}
-        {isDeveloper && onSetInactive && (
-          <div className="absolute top-4 left-4 z-10">
-            <Button
-              onClick={async (e) => {
-                e.stopPropagation();
-                await onSetInactive();
-              }}
-              variant="destructive"
-              size="icon"
-              className="bg-red-600 hover:bg-red-700 w-8 h-8"
-            >
-              <XCircle className="w-5 h-5" />
-            </Button>
-          </div>
-        )}
-
         <div className="p-6 space-y-4">
           {/* Compact header */}
           <motion.div
@@ -358,6 +348,33 @@ function RoomCard({
                 <Badge className="bg-blue-600 text-white">Waiting</Badge>
               )}
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                {/* Settings menu for developers */}
+                {isDeveloper && onSetInactive && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="w-6 h-6 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Settings className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          await onSetInactive();
+                        }}
+                        className="text-red-600 focus:text-red-600"
+                      >
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Mark as Inactive
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
                 <Users className="w-4 h-4" />
                 <span>{participantCount}</span>
               </div>
