@@ -82,7 +82,7 @@ export function RealtimeCountdown({ endTime, onTimeUp }: RealtimeCountdownProps)
         {/* Time display */}
         <div className="flex items-baseline gap-0.5">
           <motion.span
-            key={minutes}
+            key={`minutes-${minutes}`}
             initial={{ scale: 1.2 }}
             animate={{ scale: 1 }}
             className="text-sm font-mono font-bold text-white leading-none"
@@ -91,7 +91,7 @@ export function RealtimeCountdown({ endTime, onTimeUp }: RealtimeCountdownProps)
           </motion.span>
           <span className="text-white/80 text-sm leading-none">:</span>
           <motion.span
-            key={seconds}
+            key={`seconds-${seconds}`}
             initial={{ scale: 1.2 }}
             animate={{ scale: 1 }}
             className="text-sm font-mono font-bold text-white leading-none"
