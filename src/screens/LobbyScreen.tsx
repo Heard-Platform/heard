@@ -14,6 +14,7 @@ import {
   Code2,
   SkipForward,
   Menu,
+  Clock,
 } from "lucide-react";
 import {
   Sheet,
@@ -47,6 +48,7 @@ interface LobbyScreenProps {
   onCreateSeedData?: () => Promise<any>;
   onCreateTestRoom?: () => Promise<any>;
   onCreateRantTestRoom?: () => Promise<any>;
+  onCreateRealtimeTestRoom?: () => Promise<any>;
   onUpdateRoomDescription?: (description: string) => Promise<boolean>;
   onSetRoomInactive?: (roomId: string) => Promise<boolean>;
   onLogout?: () => void;
@@ -67,6 +69,7 @@ export function LobbyScreen({
   onCreateSeedData,
   onCreateTestRoom,
   onCreateRantTestRoom,
+  onCreateRealtimeTestRoom,
   onSetRoomInactive,
   onLogout,
   onOpenShowcase,
@@ -116,6 +119,18 @@ export function LobbyScreen({
         await onRefreshRooms();
         alert(
           `✅ ${result.message}\n\nCreated:\n• ${result.players} players with diverse viewpoints\n• ${result.rants} detailed rants ready for compilation\n• Click "Compile Rants & Start Debate!" to test the system!`,
+        );
+      }
+    }
+  };
+
+  const handleCreateRealtimeTestRoom = async () => {
+    if (onCreateRealtimeTestRoom) {
+      const result = await onCreateRealtimeTestRoom();
+      if (result) {
+        await onRefreshRooms();
+        alert(
+          `✅ ${result.message}\n\nCreated:\n• Real-time debate with 5-minute countdown\n• ${result.statements} diverse statements ready to vote on\n• ${result.players} players participating\n• Watch the countdown bar in action!`,
         );
       }
     }
@@ -275,6 +290,17 @@ export function LobbyScreen({
                             >
                               <Brain className="w-3 h-3 mr-2" />
                               Rant-First Test Room
+                            </Button>
+                          )}
+                          {onCreateRealtimeTestRoom && (
+                            <Button
+                              onClick={handleCreateRealtimeTestRoom}
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-orange-50 border-orange-200 text-orange-800"
+                            >
+                              <Clock className="w-3 h-3 mr-2" />
+                              Real-time Test Room (5min)
                             </Button>
                           )}
                         </div>

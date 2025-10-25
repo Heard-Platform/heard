@@ -65,6 +65,7 @@ export interface DebateRoom {
   mode: DebateMode; // Controls whether phases advance automatically or by host
   rantFirst?: boolean; // Whether this room starts with rants
   subHeard?: string; // Sub-heard name (like subreddits) - optional for backwards compatibility
+  endTime?: number; // For realtime debates - timestamp when the debate ends
 }
 
 export interface SubHeard {

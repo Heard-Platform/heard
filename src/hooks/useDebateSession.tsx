@@ -514,6 +514,34 @@ export function useDebateSession() {
     return null;
   }, [user, getActiveRooms]);
 
+  // Create realtime test room with seed data and 5-minute timer
+  const createRealtimeTestRoom = useCallback(async () => {
+    if (!user) return null;
+
+    try {
+      setError(null);
+      const response = await api.createRealtimeTestRoom(user.id);
+      if (response.success && response.data) {
+        // Refresh active rooms to show the new test room
+        await getActiveRooms();
+        return response.data;
+      } else {
+        throw new Error(
+          response.error || "Failed to create realtime test room",
+        );
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error(
+        "Failed to create realtime test room:",
+        errorMsg,
+      );
+    }
+    return null;
+  }, [user, getActiveRooms]);
+
   // Mark room as inactive (dev tool)
   const setRoomInactive = useCallback(async (roomId: string) => {
     if (!user) return false;
@@ -840,6 +868,7 @@ export function useDebateSession() {
     createSeedData,
     createTestRoom,
     createRantTestRoom,
+    createRealtimeTestRoom,
     setRoomInactive,
     startAutoPlay,
     stopAutoPlay,

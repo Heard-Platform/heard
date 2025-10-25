@@ -2846,6 +2846,227 @@ app.post(
   },
 );
 
+// Create realtime test room with 5-minute countdown and seed data
+app.post(
+  "/make-server-f1a393b4/realtime-test-room/create",
+  async (c) => {
+    try {
+      const { userId } = await c.req.json();
+
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User session not found" }, 404);
+      }
+
+      // Create a realtime test room with a DC-specific debate topic
+      const roomId = generateId();
+      const fiveMinutesFromNow = Date.now() + (5 * 60 * 1000); // 5 minutes
+      
+      const debateRoom: DebateRoom = {
+        id: roomId,
+        topic: "I wish there was a library more conveniently located north of Dupont Circle",
+        phase: "round1",
+        subPhase: "voting",
+        gameNumber: 1,
+        roundStartTime: Date.now(),
+        participants: [
+          userId,
+          "rt_user_1",
+          "rt_user_2",
+          "rt_user_3",
+          "rt_user_4",
+        ],
+        hostId: userId,
+        isActive: true,
+        createdAt: Date.now(),
+        mode: "realtime", // Real-time mode!
+        rantFirst: false,
+        endTime: fiveMinutesFromNow, // Debate ends in 5 minutes
+      };
+
+      await saveDebateRoom(debateRoom);
+
+      // Create fake users with perspectives on DC library access
+      const fakeUsers = [
+        {
+          id: "rt_user_1",
+          nickname: "AdamsOrganResident",
+          email: "adamsorgan@rttest.example",
+          score: 150,
+          streak: 2,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+        {
+          id: "rt_user_2",
+          nickname: "UrbanLibrarian",
+          email: "librarian@rttest.example",
+          score: 200,
+          streak: 3,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+        {
+          id: "rt_user_3",
+          nickname: "RemoteWorkerDC",
+          email: "remote@rttest.example",
+          score: 120,
+          streak: 1,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+        {
+          id: "rt_user_4",
+          nickname: "DCPLBudgetWatcher",
+          email: "budget@rttest.example",
+          score: 300,
+          streak: 5,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+      ];
+
+      // Save fake users
+      for (const fakeUser of fakeUsers) {
+        await saveUserSession(fakeUser);
+      }
+
+      // Create diverse statements about library access north of Dupont
+      const baseTimestamp = Date.now();
+      const statements: Statement[] = [
+        {
+          id: generateId(),
+          text: "The nearest library from Columbia Heights is a 25-minute walk - that's just not accessible for families with young kids or elderly residents.",
+          author: "AdamsOrganResident",
+          agrees: 18,
+          disagrees: 2,
+          passes: 1,
+          superAgrees: 4,
+          roomId: roomId,
+          timestamp: baseTimestamp,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "DCPL already operates 26 branches on a tight budget - we need to focus on maintaining existing libraries rather than building new ones.",
+          author: "DCPLBudgetWatcher",
+          agrees: 9,
+          disagrees: 8,
+          passes: 3,
+          superAgrees: 1,
+          roomId: roomId,
+          timestamp: baseTimestamp + 1,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "A library branch near 14th & Park Road could serve Adams Morgan, Columbia Heights, and Mt Pleasant - three dense neighborhoods with zero library access.",
+          author: "UrbanLibrarian",
+          agrees: 22,
+          disagrees: 1,
+          passes: 0,
+          superAgrees: 5,
+          roomId: roomId,
+          timestamp: baseTimestamp + 2,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "I'm a remote worker who would love a library workspace north of Dupont - all the coffee shops are packed and loud.",
+          author: "RemoteWorkerDC",
+          agrees: 16,
+          disagrees: 3,
+          passes: 2,
+          superAgrees: 3,
+          roomId: roomId,
+          timestamp: baseTimestamp + 3,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "Real estate costs in that area are astronomical - a new library branch would need millions in acquisition and construction funding.",
+          author: "DCPLBudgetWatcher",
+          agrees: 11,
+          disagrees: 7,
+          passes: 4,
+          superAgrees: 0,
+          roomId: roomId,
+          timestamp: baseTimestamp + 4,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "Kids in these neighborhoods shouldn't have to take two buses to get to a library for homework help or summer reading programs.",
+          author: "AdamsOrganResident",
+          agrees: 20,
+          disagrees: 1,
+          passes: 1,
+          superAgrees: 4,
+          roomId: roomId,
+          timestamp: baseTimestamp + 5,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "Mobile library services or pop-up reading rooms could serve this area at a fraction of the cost of a permanent branch.",
+          author: "UrbanLibrarian",
+          agrees: 13,
+          disagrees: 5,
+          passes: 2,
+          superAgrees: 2,
+          roomId: roomId,
+          timestamp: baseTimestamp + 6,
+          round: 1,
+          voters: {},
+        },
+        {
+          id: generateId(),
+          text: "Libraries aren't just about books anymore - they're community centers, job search hubs, and safe spaces. North of Dupont needs this.",
+          author: "RemoteWorkerDC",
+          agrees: 19,
+          disagrees: 2,
+          passes: 1,
+          superAgrees: 3,
+          roomId: roomId,
+          timestamp: baseTimestamp + 7,
+          round: 1,
+          voters: {},
+        },
+      ];
+
+      // Save all statements
+      await bulkSaveStatements(statements);
+
+      // Update user's current room
+      user.currentRoomId = roomId;
+      await saveUserSession(user);
+
+      return c.json({
+        room: debateRoom,
+        players: fakeUsers.length + 1,
+        statements: statements.length,
+        message: "Real-time debate room created! You have 5 minutes to vote on all statements.",
+      });
+    } catch (error) {
+      console.error("Error creating realtime test room:", error);
+      return c.json(
+        { error: "Failed to create realtime test room" },
+        500,
+      );
+    }
+  },
+);
+
 // Dev endpoint: Get cluster data for a room
 app.get(
   "/make-server-f1a393b4/room/:roomId/clusters",

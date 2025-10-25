@@ -25,8 +25,10 @@ import {
 import type { DebateRoom, Statement } from "../types";
 import { SwipeableStatementStack } from "./SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
+import { ConcludedResults } from "./results/ConcludedResults";
 import { NewStatementInput } from "./NewStatementInput";
 import { RantSubmission } from "./RantSubmission";
+import { RealtimeCountdown } from "./RealtimeCountdown";
 import { api } from "../utils/api";
 
 interface RoomScrollerProps {
@@ -274,11 +276,14 @@ function RoomCard({
   const participantCount = room.participants?.length || 0;
   const isRantFirst = room.rantFirst;
   const isRealtime = room.mode === "realtime";
+  
+  // Check if realtime room has ended
+  const hasRealtimeEnded = isRealtime && room.endTime && Date.now() >= room.endTime;
 
   // Determine room status
   const isActive_status = room.phase !== "lobby" && room.phase !== "results";
   const isWaiting = room.phase === "lobby";
-  const isCompleted = room.phase === "results";
+  const isCompleted = room.phase === "results" || hasRealtimeEnded;
 
   // Handle voting
   const handleVote = async (statementId: string, voteType: "agree" | "disagree" | "pass" | "super_agree") => {
@@ -438,8 +443,23 @@ function RoomCard({
             </div>
           </motion.div>
 
+          {/* Realtime Countdown */}
+          {isRealtime && room.endTime && !hasRealtimeEnded && (
+            <RealtimeCountdown
+              endTime={room.endTime}
+              onTimeUp={() => {
+                // Refresh room data when time is up
+                if (onRefreshStatements) {
+                  onRefreshStatements();
+                }
+              }}
+            />
+          )}
+
           {/* Statement Stack or Results */}
-          {statements.length > 0 ? (() => {
+          {hasRealtimeEnded && statements.length > 0 ? (
+            <ConcludedResults statements={statements} />
+          ) : statements.length > 0 ? (() => {
             // Check if user has voted on all statements
             const hasVotedOnAll = currentUserId && statements.every(
               statement => statement.voters && statement.voters[currentUserId]

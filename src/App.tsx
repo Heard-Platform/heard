@@ -58,6 +58,7 @@ export default function App() {
     createSeedData,
     createTestRoom,
     createRantTestRoom,
+    createRealtimeTestRoom,
     setRoomInactive,
     startAutoPlay,
     stopAutoPlay,
@@ -415,6 +416,7 @@ export default function App() {
           onCreateSeedData={createSeedData}
           onCreateTestRoom={createTestRoom}
           onCreateRantTestRoom={createRantTestRoom}
+          onCreateRealtimeTestRoom={createRealtimeTestRoom}
           onUpdateRoomDescription={updateRoomDescription}
           onSetRoomInactive={setRoomInactive}
           onLogout={handleLogout}

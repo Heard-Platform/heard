@@ -185,6 +185,13 @@ class ApiClient {
       body: JSON.stringify({ userId }),
     });
   }
+
+  async createRealtimeTestRoom(userId: string) {
+    return this.request("/realtime-test-room/create", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
 }
 
 export const api = new ApiClient();
