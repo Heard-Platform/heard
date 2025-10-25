@@ -26,6 +26,7 @@ import type { DebateRoom, Statement } from "../types";
 import { SwipeableStatementStack } from "./SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
 import { NewStatementInput } from "./NewStatementInput";
+import { RantSubmission } from "./RantSubmission";
 import { api } from "../utils/api";
 
 interface RoomScrollerProps {
@@ -320,6 +321,32 @@ function RoomCard({
     }
   };
 
+  // Handle rant submission
+  const [isSubmittingRant, setIsSubmittingRant] = useState(false);
+  const handleSubmitRant = async (text: string) => {
+    if (!currentUserId) {
+      console.error("No user ID available for submitting rant");
+      throw new Error("User not logged in");
+    }
+    
+    setIsSubmittingRant(true);
+    try {
+      const response = await api.submitRant(room.id, text, currentUserId);
+      if (!response.success) {
+        throw new Error(response.error || "Failed to submit rant");
+      }
+      // Refresh statements to show the AI-extracted statements
+      if (onRefreshStatements) {
+        await onRefreshStatements();
+      }
+    } catch (error) {
+      console.error("Error submitting rant:", error);
+      throw error;
+    } finally {
+      setIsSubmittingRant(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
@@ -441,19 +468,31 @@ function RoomCard({
               />
             );
           })() : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">
-                No statements yet in this debate
-              </p>
-              <Button
-                onClick={onJoin}
-                disabled={isCompleted}
-                size="lg"
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-              >
-                {isCompleted ? "Debate Ended" : "Join to Add Statements"}
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
+            <div className="space-y-4">
+              <div className="text-center py-4">
+                <p className="text-muted-foreground">
+                  No statements yet in this debate
+                </p>
+              </div>
+              {/* Show rant input to add initial statements */}
+              {currentUserId && !isCompleted && (
+                <RantSubmission
+                  onSubmit={handleSubmitRant}
+                  isSubmitting={isSubmittingRant}
+                  placeholder="Share your thoughts on this topic and we'll create debate points from your rant!"
+                />
+              )}
+              {!currentUserId && (
+                <Button
+                  onClick={onJoin}
+                  disabled={isCompleted}
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                >
+                  {isCompleted ? "Debate Ended" : "Join to Add Statements"}
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              )}
             </div>
           )}
         </div>
