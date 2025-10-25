@@ -18,7 +18,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "./ui/sheet";
-import { Brain, Clock, Plus, Hash, Home } from "lucide-react";
+import { Clock, Plus, Hash } from "lucide-react";
 import { api } from "../utils/api";
 import type { DebateMode, SubHeard } from "../types";
 
@@ -53,7 +53,6 @@ export function CreateRoomSheet({
   const [newRoomDescription, setNewRoomDescription] = useState("");
   const [showExamples, setShowExamples] = useState(false);
   const [debateMode, setDebateMode] = useState<DebateMode>("host-controlled");
-  const [rantFirst, setRantFirst] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [subHeard, setSubHeard] = useState(defaultSubHeard || "");
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
@@ -112,7 +111,7 @@ export function CreateRoomSheet({
       await onCreateRoom(
         newRoomTopic.trim(),
         debateMode,
-        rantFirst,
+        true, // Always enable rant-first mode
         newRoomDescription.trim() || undefined,
         finalSubHeard
       );
@@ -121,7 +120,6 @@ export function CreateRoomSheet({
       setNewRoomTopic("");
       setNewRoomDescription("");
       setDebateMode("host-controlled");
-      setRantFirst(true);
       setShowCreateNewSubHeard(false);
       setNewSubHeardName("");
       // Reset subHeard to default or empty
@@ -307,24 +305,11 @@ export function CreateRoomSheet({
             
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center space-x-3">
-                <Brain className="w-4 h-4 text-purple-600" />
-                <div>
-                  <p className="text-sm">Rant First Mode</p>
-                  <p className="text-xs text-muted-foreground">
-                    Players write rants, then statements are auto-generated
-                  </p>
-                </div>
-              </div>
-              <Switch checked={rantFirst} onCheckedChange={setRantFirst} />
-            </div>
-
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center space-x-3">
                 <Clock className="w-4 h-4 text-blue-600" />
                 <div>
                   <p className="text-sm">Enable Real-time Mode</p>
                   <p className="text-xs text-muted-foreground">
-                    Phases advance automatically with timers
+                    The debate ends when the timer runs out
                   </p>
                 </div>
               </div>
