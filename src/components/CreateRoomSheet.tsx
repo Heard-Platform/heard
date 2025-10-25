@@ -33,6 +33,7 @@ interface CreateRoomSheetProps {
     subHeard?: string
   ) => Promise<void>;
   defaultSubHeard?: string;
+  defaultTopic?: string;
 }
 
 const topicExamples = [
@@ -48,6 +49,7 @@ export function CreateRoomSheet({
   onOpenChange,
   onCreateRoom,
   defaultSubHeard,
+  defaultTopic,
 }: CreateRoomSheetProps) {
   const [newRoomTopic, setNewRoomTopic] = useState("");
   const [newRoomDescription, setNewRoomDescription] = useState("");
@@ -76,6 +78,13 @@ export function CreateRoomSheet({
       setSubHeard(defaultSubHeard);
     }
   }, [defaultSubHeard]);
+
+  // Update topic when defaultTopic changes or when sheet opens
+  useEffect(() => {
+    if (open) {
+      setNewRoomTopic(defaultTopic || "");
+    }
+  }, [open, defaultTopic]);
 
   const loadSubHeards = async () => {
     try {

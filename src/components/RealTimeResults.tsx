@@ -9,12 +9,14 @@ interface RealTimeResultsProps {
   currentRound: string;
   currentSubPhase?: string;
   mode?: "in-progress" | "concluded";
+  onDiscuss?: (statementText: string) => void;
 }
 
 export function RealTimeResults({
   statements,
   currentRound,
   mode = "concluded",
+  onDiscuss,
 }: RealTimeResultsProps) {
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -34,7 +36,7 @@ export function RealTimeResults({
       {mode === "in-progress" ? (
         <InProgressResults statements={statements} />
       ) : (
-        <ConcludedResults statements={statements} />
+        <ConcludedResults statements={statements} onDiscuss={onDiscuss} />
       )}
     </>
   );

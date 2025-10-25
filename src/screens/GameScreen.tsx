@@ -175,6 +175,22 @@ export function GameScreen({
     [onNewDiscussion],
   );
 
+  const handleDiscussStatementText = useCallback(
+    (statementText: string) => {
+      // Find the statement by text, or create a minimal statement object
+      const statement = statements.find(s => s.text === statementText) || {
+        id: `temp-${Date.now()}`,
+        text: statementText,
+        userId: user.id,
+        agrees: 0,
+        disagrees: 0,
+        passes: 0,
+      };
+      onNewDiscussion(statement);
+    },
+    [statements, user.id, onNewDiscussion],
+  );
+
   const handleScheduleFuture = useCallback(() => {
     onScheduleFuture();
   }, [onScheduleFuture]);
@@ -424,6 +440,7 @@ export function GameScreen({
               statements={statements}
               currentRound={room.phase}
               currentSubPhase={room.subPhase}
+              onDiscuss={handleDiscussStatementText}
             />
           </div>
         ) : (
@@ -598,6 +615,7 @@ export function GameScreen({
                       statements={statements}
                       currentRound={room.phase}
                       currentSubPhase={room.subPhase}
+                      onDiscuss={handleDiscussStatementText}
                     />
                   ),
                 }}

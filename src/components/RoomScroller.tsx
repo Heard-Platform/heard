@@ -40,6 +40,7 @@ interface RoomScrollerProps {
   loading: boolean;
   currentUserId?: string;
   currentSubHeard?: string;
+  onDiscussStatement?: (statementText: string, subHeard?: string) => void;
 }
 
 export function RoomScroller({
@@ -51,6 +52,7 @@ export function RoomScroller({
   loading,
   currentUserId,
   currentSubHeard,
+  onDiscussStatement,
 }: RoomScrollerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -211,6 +213,7 @@ export function RoomScroller({
                   currentUserId={currentUserId}
                   onRefreshStatements={() => refreshRoomStatements(room.id)}
                   currentSubHeard={currentSubHeard}
+                  onDiscussStatement={onDiscussStatement}
                 />
               ) : null}
             </div>
@@ -262,6 +265,7 @@ function RoomCard({
   currentUserId,
   onRefreshStatements,
   currentSubHeard,
+  onDiscussStatement,
 }: {
   room: DebateRoom;
   statements: Statement[];
@@ -272,6 +276,7 @@ function RoomCard({
   currentUserId?: string;
   onRefreshStatements?: () => Promise<void>;
   currentSubHeard?: string;
+  onDiscussStatement?: (statementText: string, subHeard?: string) => void;
 }) {
   const participantCount = room.participants?.length || 0;
   const isRantFirst = room.rantFirst;
@@ -458,7 +463,10 @@ function RoomCard({
 
           {/* Statement Stack or Results */}
           {hasRealtimeEnded && statements.length > 0 ? (
-            <ConcludedResults statements={statements} />
+            <ConcludedResults 
+              statements={statements} 
+              onDiscuss={onDiscussStatement ? (text) => onDiscussStatement(text, room.subHeard) : undefined} 
+            />
           ) : statements.length > 0 ? (() => {
             // Check if user has voted on all statements
             const hasVotedOnAll = currentUserId && statements.every(

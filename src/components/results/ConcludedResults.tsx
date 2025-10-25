@@ -8,9 +8,11 @@ import {
   ThumbsDown,
   Flame,
   BarChart3,
+  MessageCircle,
 } from "lucide-react";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Progress } from "../ui/progress";
 import type { Statement } from "../../types";
@@ -19,9 +21,10 @@ import { StatementMini } from "./StatementMini";
 
 interface ConcludedResultsProps {
   statements: Statement[];
+  onDiscuss?: (statementText: string) => void;
 }
 
-export function ConcludedResults({ statements }: ConcludedResultsProps) {
+export function ConcludedResults({ statements, onDiscuss }: ConcludedResultsProps) {
   const [viewMode, setViewMode] = useState<
     "leaderboard" | "categories" | "clusters" | "trends"
   >("leaderboard");
@@ -127,8 +130,21 @@ export function ConcludedResults({ statements }: ConcludedResultsProps) {
                           </div>
                         </div>
                       </div>
-                      <div className="mt-1.5 md:mt-2 p-1.5 sm:p-2 bg-white rounded text-[10px] sm:text-xs line-clamp-2">
-                        {analysis.byAgrees[1].text}
+                      <div className="mt-1.5 md:mt-2 p-1.5 sm:p-2 bg-white rounded space-y-1.5">
+                        <div className="text-[10px] sm:text-xs line-clamp-2">
+                          {analysis.byAgrees[1].text}
+                        </div>
+                        {onDiscuss && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full h-6 text-[10px] gap-1"
+                            onClick={() => onDiscuss(analysis.byAgrees[1].text)}
+                          >
+                            <MessageCircle className="w-3 h-3" />
+                            Discuss
+                          </Button>
+                        )}
                       </div>
                     </motion.div>
                   )}
@@ -181,11 +197,22 @@ export function ConcludedResults({ statements }: ConcludedResultsProps) {
                           </div>
                         </div>
                       </motion.div>
-                      <div className="mt-1.5 md:mt-2 p-2 sm:p-2.5 md:p-3 bg-white rounded border-2 border-yellow-300 text-[10px] sm:text-xs">
-                        <div className="font-medium text-yellow-700 mb-0.5 sm:mb-1 text-[10px] sm:text-xs">
+                      <div className="mt-1.5 md:mt-2 p-2 sm:p-2.5 md:p-3 bg-white rounded border-2 border-yellow-300 space-y-1.5">
+                        <div className="font-medium text-yellow-700 text-[10px] sm:text-xs">
                           WINNER!
                         </div>
-                        <div className="line-clamp-2">{analysis.byAgrees[0].text}</div>
+                        <div className="line-clamp-2 text-[10px] sm:text-xs">{analysis.byAgrees[0].text}</div>
+                        {onDiscuss && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full h-6 text-[10px] gap-1"
+                            onClick={() => onDiscuss(analysis.byAgrees[0].text)}
+                          >
+                            <MessageCircle className="w-3 h-3" />
+                            Discuss
+                          </Button>
+                        )}
                       </div>
                     </motion.div>
                   )}
@@ -219,8 +246,21 @@ export function ConcludedResults({ statements }: ConcludedResultsProps) {
                           </div>
                         </div>
                       </div>
-                      <div className="mt-1.5 md:mt-2 p-1.5 sm:p-2 bg-white rounded text-[10px] sm:text-xs line-clamp-2">
-                        {analysis.byAgrees[2].text}
+                      <div className="mt-1.5 md:mt-2 p-1.5 sm:p-2 bg-white rounded space-y-1.5">
+                        <div className="text-[10px] sm:text-xs line-clamp-2">
+                          {analysis.byAgrees[2].text}
+                        </div>
+                        {onDiscuss && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full h-6 text-[10px] gap-1"
+                            onClick={() => onDiscuss(analysis.byAgrees[2].text)}
+                          >
+                            <MessageCircle className="w-3 h-3" />
+                            Discuss
+                          </Button>
+                        )}
                       </div>
                     </motion.div>
                   )}
@@ -265,6 +305,17 @@ export function ConcludedResults({ statements }: ConcludedResultsProps) {
                           </span>
                         </div>
                       )}
+                      {onDiscuss && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-[10px] gap-1 px-2"
+                          onClick={() => onDiscuss(statement.text)}
+                        >
+                          <MessageCircle className="w-3 h-3" />
+                          <span className="hidden sm:inline">Discuss</span>
+                        </Button>
+                      )}
                     </div>
                   </motion.div>
                 ))}
@@ -293,9 +344,20 @@ export function ConcludedResults({ statements }: ConcludedResultsProps) {
                     <motion.div
                       key={statement.id}
                       whileHover={{ scale: 1.02 }}
-                      className="p-2 bg-white rounded text-xs sm:text-sm border border-orange-200"
+                      className="p-2 bg-white rounded border border-orange-200 space-y-1.5"
                     >
-                      {statement.text}
+                      <div className="text-xs sm:text-sm">{statement.text}</div>
+                      {onDiscuss && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full h-6 text-[10px] gap-1"
+                          onClick={() => onDiscuss(statement.text)}
+                        >
+                          <MessageCircle className="w-3 h-3" />
+                          Discuss
+                        </Button>
+                      )}
                     </motion.div>
                   ))}
                 </div>
@@ -317,7 +379,7 @@ export function ConcludedResults({ statements }: ConcludedResultsProps) {
                   </h4>
                   <div className="space-y-2">
                     {typeStatements.slice(0, 3).map((statement) => (
-                      <StatementMini key={statement.id} statement={statement} />
+                      <StatementMini key={statement.id} statement={statement} onDiscuss={onDiscuss} />
                     ))}
                   </div>
                 </div>
@@ -349,6 +411,7 @@ export function ConcludedResults({ statements }: ConcludedResultsProps) {
                       key={statement.id}
                       statement={statement}
                       showVotes={false}
+                      onDiscuss={onDiscuss}
                     />
                   ))}
                 </div>
@@ -455,12 +518,25 @@ export function ConcludedResults({ statements }: ConcludedResultsProps) {
                     {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "⭐"}
                   </div>
                   <div className="flex-1 text-[10px] sm:text-xs">{statement.text}</div>
-                  <motion.div
-                    whileHover={{ scale: 1.2 }}
-                    className="px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-xs sm:text-sm font-medium whitespace-nowrap"
-                  >
-                    {statement.agrees}
-                  </motion.div>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <motion.div
+                      whileHover={{ scale: 1.2 }}
+                      className="px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-xs sm:text-sm font-medium whitespace-nowrap"
+                    >
+                      {statement.agrees}
+                    </motion.div>
+                    {onDiscuss && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-[10px] gap-1 px-2"
+                        onClick={() => onDiscuss(statement.text)}
+                      >
+                        <MessageCircle className="w-3 h-3" />
+                        <span className="hidden sm:inline">Discuss</span>
+                      </Button>
+                    )}
+                  </div>
                 </motion.div>
               ))}
             </div>

@@ -78,6 +78,8 @@ export function LobbyScreen({
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] = useState(false);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
+  const [discussTopic, setDiscussTopic] = useState<string | undefined>(undefined);
+  const [discussSubHeard, setDiscussSubHeard] = useState<string | undefined>(undefined);
 
   // Filter out rooms older than a week (7 days)
   const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
@@ -141,7 +143,24 @@ export function LobbyScreen({
   };
 
   const handleOpenCreateSheet = () => {
+    setDiscussTopic(undefined);
+    setDiscussSubHeard(undefined);
     setCreateRoomSheetOpen(true);
+  };
+
+  const handleDiscussStatement = (statementText: string, subHeard?: string) => {
+    setDiscussTopic(statementText);
+    setDiscussSubHeard(subHeard);
+    setCreateRoomSheetOpen(true);
+  };
+
+  const handleCreateRoomSheetChange = (open: boolean) => {
+    setCreateRoomSheetOpen(open);
+    if (!open) {
+      // Clear the discuss topic and subheard when the sheet closes
+      setDiscussTopic(undefined);
+      setDiscussSubHeard(undefined);
+    }
   };
 
   return (
@@ -324,15 +343,17 @@ export function LobbyScreen({
           loading={loading}
           currentUserId={user?.id}
           currentSubHeard={currentSubHeard}
+          onDiscussStatement={handleDiscussStatement}
         />
       </div>
 
       {/* Create room sheet */}
       <CreateRoomSheet
         open={createRoomSheetOpen}
-        onOpenChange={setCreateRoomSheetOpen}
+        onOpenChange={handleCreateRoomSheetChange}
         onCreateRoom={onCreateRoom}
-        defaultSubHeard={currentSubHeard}
+        defaultSubHeard={discussSubHeard || currentSubHeard}
+        defaultTopic={discussTopic}
       />
 
       {/* Error notification */}
