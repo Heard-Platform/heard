@@ -1301,8 +1301,13 @@ app.post(
         return c.json({ error: "User session not found" }, 404);
       }
 
+      // Auto-join user to room if they're not already a participant
       if (!room.participants.includes(userId)) {
-        return c.json({ error: "User not in this room" }, 403);
+        room.participants.push(userId);
+        await saveDebateRoom(room);
+        console.log(
+          `Auto-added user ${userId} to room ${roomId} via statement submission`,
+        );
       }
 
       // Convert phase to round number
@@ -1399,11 +1404,12 @@ app.post(
         return c.json({ error: "User session not found" }, 404);
       }
 
-      // Check if user is in the room
+      // Auto-join user to room if they're not already a participant
       if (!room.participants.includes(userId)) {
-        return c.json(
-          { error: "User is not a participant in this room" },
-          403,
+        room.participants.push(userId);
+        await saveDebateRoom(room);
+        console.log(
+          `Auto-added user ${userId} to room ${roomId} via rant submission`,
         );
       }
 
@@ -1496,6 +1502,16 @@ app.post(
       console.log(
         `Voting on statement ${statementId} by user ${userId} with vote ${voteType}`,
       );
+
+      // Auto-join user to room if they're not already a participant
+      const room = await getDebateRoom(statement.roomId);
+      if (room && !room.participants.includes(userId)) {
+        room.participants.push(userId);
+        await saveDebateRoom(room);
+        console.log(
+          `Auto-added user ${userId} to room ${statement.roomId} via voting`,
+        );
+      }
 
       // Get current vote if it exists
       const currentVotes =
