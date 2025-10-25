@@ -3,25 +3,10 @@ import { motion, AnimatePresence } from "motion/react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Users, Clock, RefreshCw, LogIn } from "lucide-react";
-
-interface DebateRoom {
-  id: string;
-  topic: string;
-  phase:
-    | "lobby"
-    | "initial"
-    | "bridge"
-    | "crux"
-    | "plurality"
-    | "voting"
-    | "results";
-  roundNumber: number;
-  phaseStartTime: number;
-  participants: string[];
-  isActive: boolean;
-  createdAt: number;
-}
+import { Users, Clock, RefreshCw, LogIn, Timer, User } from "lucide-react";
+import { ShareButton } from "./ShareButton";
+import { InviteButton } from "./InviteButton";
+import type { DebateRoom } from "../types";
 
 interface ActiveRoomsListProps {
   rooms: DebateRoom[];
@@ -161,7 +146,7 @@ export function ActiveRoomsList({
                 exit={{ opacity: 0, y: -20 }}
                 className="border rounded-lg p-4 space-y-3 hover:shadow-md transition-shadow"
               >
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium leading-tight line-clamp-2">
                       {room.topic}
@@ -174,33 +159,54 @@ export function ActiveRoomsList({
                     </Badge>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1">
-                        <Users className="w-3 h-3" />
-                        <span>{room.participants.length}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        <span>
-                          {formatTimeAgo(room.createdAt)}
-                        </span>
-                      </div>
-                      {room.roundNumber > 1 && (
-                        <Badge
-                          variant="secondary"
-                          className="text-xs px-1 py-0"
-                        >
-                          Round {room.roundNumber}
-                        </Badge>
-                      )}
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3 h-3" />
+                      <span>{room.participants.length}</span>
                     </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span>
+                        {formatTimeAgo(room.createdAt)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {(room.mode || "host-controlled") === "realtime" ? (
+                        <Timer className="w-3 h-3" />
+                      ) : (
+                        <User className="w-3 h-3" />
+                      )}
+                      <span>
+                        {(room.mode || "host-controlled") === "realtime" ? "Timed" : "Host-led"}
+                      </span>
+                    </div>
+                    {room.roundNumber > 1 && (
+                      <Badge
+                        variant="secondary"
+                        className="text-xs px-1 py-0"
+                      >
+                        Round {room.roundNumber}
+                      </Badge>
+                    )}
+                  </div>
 
+                  <div className="flex items-center gap-2 pt-1">
+                    <ShareButton 
+                      roomId={room.id} 
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                    />
+                    <InviteButton
+                      roomId={room.id}
+                      roomTopic={room.topic}
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                    />
                     <Button
                       onClick={() => onJoinRoom(room.id)}
                       size="sm"
                       variant="outline"
-                      className="h-7 px-2 text-xs"
+                      className="flex-1 h-8 text-xs"
                     >
                       <LogIn className="w-3 h-3 mr-1" />
                       Join

@@ -1,30 +1,61 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
-import { ActiveRoomsList } from "../components/ActiveRoomsList";
-import { Plus, Database } from "lucide-react";
+import { RoomScroller } from "../components/RoomScroller";
+import { CreateRoomSheet } from "../components/CreateRoomSheet";
+import { SubHeardBrowser } from "../components/SubHeardBrowser";
+import { api } from "../utils/api";
+import {
+  Plus,
+  Database,
+  LogOut,
+  Brain,
+  Code2,
+  SkipForward,
+  Menu,
+  Clock,
+} from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../components/ui/sheet";
+import type {
+  UserSession,
+  DebateRoom,
+  DebateMode,
+} from "../types";
 
 interface LobbyScreenProps {
-  user: any;
-  activeRooms: any[];
+  user: UserSession | null;
+  activeRooms: DebateRoom[];
   loading: boolean;
   error: string | null;
-  onCreateRoom: (topic: string) => Promise<void>;
+  onCreateRoom: (
+    topic: string,
+    mode: DebateMode,
+    rantFirst?: boolean,
+    description?: string,
+    subHeard?: string,
+  ) => Promise<void>;
   onJoinRoom: (roomId: string) => Promise<void>;
-  onRefreshRooms: () => Promise<any[]>;
+  onRefreshRooms: (subHeard?: string) => Promise<DebateRoom[]>;
   onJumpToFinalResults?: () => Promise<void>;
   onCreateSeedData?: () => Promise<any>;
+  onCreateTestRoom?: () => Promise<any>;
+  onCreateRantTestRoom?: () => Promise<any>;
+  onCreateRealtimeTestRoom?: () => Promise<any>;
+  onUpdateRoomDescription?: (description: string) => Promise<boolean>;
+  onSetRoomInactive?: (roomId: string) => Promise<boolean>;
+  onLogout?: () => void;
+  onOpenShowcase?: () => void;
+  currentSubHeard?: string;
+  onSubHeardChange?: (subHeard: string | null) => void;
 }
-
-const debateTopics = [
-  "Social media does more harm than good for society",
-  "Remote work is better than in-person work",
-  "AI will solve more problems than it creates",
-  "Democracy is the best form of government",
-  "Economic growth should be prioritized over environmental protection",
-];
 
 export function LobbyScreen({
   user,
@@ -36,149 +67,303 @@ export function LobbyScreen({
   onRefreshRooms,
   onJumpToFinalResults,
   onCreateSeedData,
+  onCreateTestRoom,
+  onCreateRantTestRoom,
+  onCreateRealtimeTestRoom,
+  onSetRoomInactive,
+  onLogout,
+  onOpenShowcase,
+  currentSubHeard,
+  onSubHeardChange,
 }: LobbyScreenProps) {
-  const [newRoomTopic, setNewRoomTopic] = useState("");
+  const [createRoomSheetOpen, setCreateRoomSheetOpen] = useState(false);
+  const [devMenuOpen, setDevMenuOpen] = useState(false);
+  const [discussTopic, setDiscussTopic] = useState<string | undefined>(undefined);
+  const [discussSubHeard, setDiscussSubHeard] = useState<string | undefined>(undefined);
 
-  const handleCreateRoom = async () => {
-    if (!newRoomTopic.trim()) return;
-    await onCreateRoom(newRoomTopic.trim());
-  };
+  // Filter out rooms older than a week (7 days)
+  const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+  const filteredRooms = activeRooms.filter(room => room.createdAt > oneWeekAgo);
+
+  // Refresh rooms on mount and when sub-heard changes
+  useEffect(() => {
+    onRefreshRooms(currentSubHeard);
+  }, [currentSubHeard]);
 
   const handleCreateSeedData = async () => {
     if (onCreateSeedData) {
       const result = await onCreateSeedData();
       if (result) {
+        await onRefreshRooms();
         alert(
-          `✅ ${result.message}\n\nCreated:\n• 1 test room with 4 players\n• ${result.statements} diverse statements\n• Various votes and types\n\nCheck the "Join Existing Room" section!`,
+          `✅ ${result.message}\n\nCreated:\n• 1 test room with 4 players\n• ${result.statements} diverse statements\n• Various votes and types`,
         );
       }
     }
   };
 
+  const handleCreateTestRoom = async () => {
+    if (onCreateTestRoom) {
+      const result = await onCreateTestRoom();
+      if (result) {
+        await onRefreshRooms();
+        alert(
+          `✅ ${result.message}\n\nCreated:\n• Q Street farmers market debate room\n• ${result.players} players ready to participate\n• No posts or votes yet - clean slate!`,
+        );
+      }
+    }
+  };
+
+  const handleCreateRantTestRoom = async () => {
+    if (onCreateRantTestRoom) {
+      const result = await onCreateRantTestRoom();
+      if (result) {
+        await onRefreshRooms();
+        alert(
+          `✅ ${result.message}\n\nCreated:\n• ${result.players} players with diverse viewpoints\n• ${result.rants} detailed rants ready for compilation\n• Click "Compile Rants & Start Debate!" to test the system!`,
+        );
+      }
+    }
+  };
+
+  const handleCreateRealtimeTestRoom = async () => {
+    if (onCreateRealtimeTestRoom) {
+      const result = await onCreateRealtimeTestRoom();
+      if (result) {
+        await onRefreshRooms();
+        alert(
+          `✅ ${result.message}\n\nCreated:\n• Real-time debate with 5-minute countdown\n• ${result.statements} diverse statements ready to vote on\n• ${result.players} players participating\n• Watch the countdown bar in action!`,
+        );
+      }
+    }
+  };
+
+  const handleJoinRoom = async (roomId: string) => {
+    await onJoinRoom(roomId);
+  };
+
+  const handleOpenCreateSheet = () => {
+    setDiscussTopic(undefined);
+    setDiscussSubHeard(undefined);
+    setCreateRoomSheetOpen(true);
+  };
+
+  const handleDiscussStatement = (statementText: string, subHeard?: string) => {
+    setDiscussTopic(statementText);
+    setDiscussSubHeard(subHeard);
+    setCreateRoomSheetOpen(true);
+  };
+
+  const handleCreateRoomSheetChange = (open: boolean) => {
+    setCreateRoomSheetOpen(open);
+    if (!open) {
+      // Clear the discuss topic and subheard when the sheet closes
+      setDiscussTopic(undefined);
+      setDiscussSubHeard(undefined);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="text-center space-y-6 max-w-2xl w-full"
-      >
-        <motion.h1
-          className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          HEARD
-        </motion.h1>
-        <p className="text-xl text-muted-foreground">
-          An app for arguing (and secretly saving democracy)
-        </p>
+    <>
+      {/* Main TikTok-style scroller */}
+      <div className="relative">
+        {/* Floating header with user info and menu */}
+        <div className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <motion.h1
+              className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
+              style={{ WebkitTextStroke: "1px rgba(255,255,255,0.8)" }}
+            >
+              HEARD
+            </motion.h1>
+            {user?.isDeveloper && (
+              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                DEV
+              </Badge>
+            )}
+          </div>
 
-        {user && (
-          <Card className="p-4 bg-green-50 border-green-200">
-            <p className="text-green-800">
-              Welcome back,{" "}
-              <span className="font-medium">
-                {user.nickname}
-              </span>
-              !
-              <span className="ml-2 text-sm">
-                Score: {user.score}
-              </span>
-            </p>
-          </Card>
-        )}
+          {/* Sub-Heard Browser and User menu */}
+          <div className="flex items-center gap-2">
+            {onSubHeardChange && (
+              <SubHeardBrowser
+                currentSubHeard={currentSubHeard}
+                onSubHeardChange={onSubHeardChange}
+                onCreateSubHeard={async (name: string) => {
+                  try {
+                    const response = await api.createSubHeard(name);
+                    if (response.success) {
+                      return true;
+                    }
+                    console.error("Failed to create sub-heard:", response.error);
+                    return false;
+                  } catch (error) {
+                    console.error("Error creating sub-heard:", error);
+                    return false;
+                  }
+                }}
+              />
+            )}
 
-        <Card className="p-6 text-left">
-          <h3 className="mb-3">🎮 How to Play:</h3>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• Submit statements on the debate topic</li>
-            <li>• Vote on other players' contributions</li>
-            <li>
-              • Find <Badge variant="outline">🌉 Bridges</Badge>{" "}
-              between different views
-            </li>
-            <li>
-              • Identify{" "}
-              <Badge variant="outline">⚡ Cruxes</Badge> at the
-              heart of disagreements
-            </li>
-            <li>
-              • Discover{" "}
-              <Badge variant="outline">💎 Pluralities</Badge> -
-              underrepresented perspectives
-            </li>
-            <li>• Earn points and build streaks!</li>
-          </ul>
-        </Card>
+            {user && (
+              <Sheet open={devMenuOpen} onOpenChange={setDevMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="bg-white/90 backdrop-blur-sm shadow-lg"
+                  >
+                    <Menu className="w-4 h-4" />
+                  </Button>
+                </SheetTrigger>
+              <SheetContent side="right">
+                <SheetHeader>
+                  <SheetTitle>Menu</SheetTitle>
+                  <SheetDescription>
+                    User settings and options
+                  </SheetDescription>
+                </SheetHeader>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card className="p-6">
-            <h3 className="mb-4">🏛️ Create New Debate Room</h3>
-            <div className="space-y-3">
-              <select
-                className="w-full p-2 border rounded-md"
-                value={newRoomTopic}
-                onChange={(e) =>
-                  setNewRoomTopic(e.target.value)
-                }
-              >
-                <option value="">Choose a topic...</option>
-                {debateTopics.map((topic) => (
-                  <option key={topic} value={topic}>
-                    {topic}
-                  </option>
-                ))}
-              </select>
-              <Button
-                onClick={handleCreateRoom}
-                disabled={!newRoomTopic}
-                className="w-full"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create New Room
-              </Button>
-            </div>
-          </Card>
+                <div className="space-y-4 mt-6">
+                  {/* User info */}
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-green-800">
+                      <span className="font-medium">{user.nickname}</span>
+                    </p>
+                    <p className="text-sm text-green-600 mt-1">
+                      Score: {user.score}
+                    </p>
+                  </div>
 
-          <ActiveRoomsList
-            rooms={activeRooms}
-            onJoinRoom={onJoinRoom}
-            onRefresh={onRefreshRooms}
-            loading={loading}
-          />
+                  {/* Logout */}
+                  {onLogout && (
+                    <Button
+                      onClick={onLogout}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </Button>
+                  )}
+
+                  {/* Developer controls */}
+                  {user?.isDeveloper && (
+                    <>
+                      <div className="border-t pt-4">
+                        <h3 className="font-medium mb-3">Developer Tools</h3>
+                        <div className="space-y-2">
+                          {onOpenShowcase && (
+                            <Button
+                              onClick={() => {
+                                setDevMenuOpen(false);
+                                onOpenShowcase();
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-slate-50 border-slate-200 text-slate-800"
+                            >
+                              <Code2 className="w-3 h-3 mr-2" />
+                              Component Showcase
+                            </Button>
+                          )}
+                          {onJumpToFinalResults && (
+                            <Button
+                              onClick={onJumpToFinalResults}
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-yellow-50 border-yellow-200 text-yellow-800"
+                            >
+                              <SkipForward className="w-3 h-3 mr-2" />
+                              Jump to Final Results
+                            </Button>
+                          )}
+                          {onCreateSeedData && (
+                            <Button
+                              onClick={handleCreateSeedData}
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-green-50 border-green-200 text-green-800"
+                            >
+                              <Database className="w-3 h-3 mr-2" />
+                              Create Test Data
+                            </Button>
+                          )}
+                          {onCreateTestRoom && (
+                            <Button
+                              onClick={handleCreateTestRoom}
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-blue-50 border-blue-200 text-blue-800"
+                            >
+                              <Plus className="w-3 h-3 mr-2" />
+                              Q Street Test Room
+                            </Button>
+                          )}
+                          {onCreateRantTestRoom && (
+                            <Button
+                              onClick={handleCreateRantTestRoom}
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-purple-50 border-purple-200 text-purple-800"
+                            >
+                              <Brain className="w-3 h-3 mr-2" />
+                              Rant-First Test Room
+                            </Button>
+                          )}
+                          {onCreateRealtimeTestRoom && (
+                            <Button
+                              onClick={handleCreateRealtimeTestRoom}
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-orange-50 border-orange-200 text-orange-800"
+                            >
+                              <Clock className="w-3 h-3 mr-2" />
+                              Real-time Test Room (5min)
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-3 justify-center">
-          {/* Development only - remove in production */}
-          {onJumpToFinalResults && (
-            <Button
-              onClick={onJumpToFinalResults}
-              variant="outline"
-              size="sm"
-              className="text-xs bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100"
-            >
-              🚧 DEV: Jump to Final Results
-            </Button>
-          )}
-          {onCreateSeedData && (
-            <Button
-              onClick={handleCreateSeedData}
-              variant="outline"
-              size="sm"
-              className="text-xs bg-green-50 border-green-200 text-green-800 hover:bg-green-100"
-            >
-              <Database className="w-3 h-3 mr-1" />
-              🧪 DEV: Create Test Data
-            </Button>
-          )}
-        </div>
+        {/* Room scroller */}
+        <RoomScroller
+          rooms={filteredRooms}
+          onJoinRoom={handleJoinRoom}
+          onCreateRoom={handleOpenCreateSheet}
+          onSetRoomInactive={onSetRoomInactive}
+          isDeveloper={user?.isDeveloper || false}
+          loading={loading}
+          currentUserId={user?.id}
+          currentSubHeard={currentSubHeard}
+          onDiscussStatement={handleDiscussStatement}
+        />
+      </div>
 
-        {error && (
-          <Card className="p-4 bg-red-50 border-red-200">
+      {/* Create room sheet */}
+      <CreateRoomSheet
+        open={createRoomSheetOpen}
+        onOpenChange={handleCreateRoomSheetChange}
+        onCreateRoom={onCreateRoom}
+        defaultSubHeard={discussSubHeard || currentSubHeard}
+        defaultTopic={discussTopic}
+      />
+
+      {/* Error notification */}
+      {error && (
+        <div className="fixed bottom-4 left-4 right-4 z-50">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg">
             <p className="text-red-600 text-sm">{error}</p>
-          </Card>
-        )}
-      </motion.div>
-    </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

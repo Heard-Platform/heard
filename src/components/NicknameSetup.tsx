@@ -7,17 +7,20 @@ import { Label } from "./ui/label";
 import { UserPlus, Sparkles } from "lucide-react";
 
 interface NicknameSetupProps {
-  onComplete: (nickname: string) => void;
+  onComplete: (nickname: string, email: string) => void;
   loading?: boolean;
   error?: string;
+  joiningRoom?: boolean;
 }
 
 export function NicknameSetup({
   onComplete,
   loading = false,
   error,
+  joiningRoom = false,
 }: NicknameSetupProps) {
   const [nickname, setNickname] = useState("");
+  const [email, setEmail] = useState("");
   const [isValid, setIsValid] = useState(false);
 
   const handleNicknameChange = (value: string) => {
@@ -26,13 +29,24 @@ export function NicknameSetup({
       .replace(/[^a-zA-Z0-9\s\-_.]/g, "")
       .substring(0, 20);
     setNickname(sanitized);
-    setIsValid(sanitized.trim().length >= 2);
+    validateForm(sanitized, email);
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    validateForm(nickname, value);
+  };
+
+  const validateForm = (nicknameVal: string, emailVal: string) => {
+    const nicknameValid = nicknameVal.trim().length >= 2;
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal.trim());
+    setIsValid(nicknameValid && emailValid);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isValid && !loading) {
-      onComplete(nickname.trim());
+      onComplete(nickname.trim(), email.trim());
     }
   };
 
@@ -65,15 +79,36 @@ export function NicknameSetup({
             </motion.div>
 
             <h1 className="text-2xl font-bold">
-              Welcome to HEARD!
+              {joiningRoom ? "Join the Debate!" : "Welcome to HEARD!"}
             </h1>
             <p className="text-muted-foreground">
-              Choose a nickname to start arguing (and secretly
-              saving democracy)
+              {joiningRoom 
+                ? "Enter your details to join this debate and share your thoughts!" 
+                : "Choose a nickname to start arguing (and secretly saving democracy)"
+              }
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">
+                Your Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) =>
+                  handleEmailChange(e.target.value)
+                }
+                placeholder="Enter your email..."
+                disabled={loading}
+              />
+              <p className="text-xs text-muted-foreground">
+                We'll send you a welcome email
+              </p>
+            </div>
+            
             <div className="space-y-2">
               <Label htmlFor="nickname">
                 Your Debate Nickname
@@ -86,7 +121,6 @@ export function NicknameSetup({
                   handleNicknameChange(e.target.value)
                 }
                 placeholder="Enter a nickname..."
-                className={isValid ? "border-green-300" : ""}
                 disabled={loading}
               />
               <p className="text-xs text-muted-foreground">
@@ -128,7 +162,7 @@ export function NicknameSetup({
               ) : (
                 <>
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Start Debating!
+                  {joiningRoom ? "Join Debate!" : "Start Debating!"}
                 </>
               )}
             </Button>

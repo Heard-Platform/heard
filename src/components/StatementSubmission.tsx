@@ -1,40 +1,42 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Send, Lightbulb, Zap, Target, AlertCircle } from "lucide-react";
+import {
+  Send,
+  Lightbulb,
+  Zap,
+  Target,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { toast } from "sonner@2.0.3";
 
 type Phase =
   | "lobby"
-  | "initial"
-  | "bridge"
-  | "crux"
-  | "plurality"
+  | "round1"
+  | "round2"
+  | "round3"
   | "results";
 
 interface StatementSubmissionProps {
-  onSubmit: (
-    statement: string,
-    type?: "bridge" | "crux" | "plurality",
-  ) => Promise<void>;
-  currentRound: Phase;
+  onSubmit: (statement: string) => Promise<void>;
+  currentPhase: Phase;
   isActive: boolean;
   placeholder?: string;
 }
 
 export function StatementSubmission({
   onSubmit,
-  currentRound,
+  currentPhase,
   isActive,
   placeholder,
 }: StatementSubmissionProps) {
   const [statement, setStatement] = useState("");
-  const [selectedType, setSelectedType] = useState<
-    "bridge" | "crux" | "plurality" | null
-  >(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<
+    string | null
+  >(null);
 
   const validateStatement = (text: string): string | null => {
     const trimmed = text.trim();
@@ -53,7 +55,7 @@ export function StatementSubmission({
   const handleSubmit = async () => {
     const trimmed = statement.trim();
     const error = validateStatement(statement);
-    
+
     if (error) {
       setValidationError(error);
       toast.error(error);
@@ -64,12 +66,14 @@ export function StatementSubmission({
     setValidationError(null);
 
     try {
-      await onSubmit(trimmed, selectedType || undefined);
+      await onSubmit(trimmed);
       setStatement("");
-      setSelectedType(null);
       toast.success("Statement submitted! 🎉");
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Failed to submit statement";
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Failed to submit statement";
       setValidationError(errorMsg);
       toast.error(errorMsg);
     } finally {
@@ -86,37 +90,36 @@ export function StatementSubmission({
   };
 
   const getRoundInfo = () => {
-    if (currentRound === "bridge") {
+    if (currentPhase === "round1") {
       return {
-        title: "Find Bridges 🌉",
+        title: "Round 1 - Drop Your Takes 💭",
         description:
-          "Submit ideas that could bridge different perspectives",
+          "Share what you really think about this topic",
         color: "text-blue-600",
         bgColor: "bg-blue-50",
       };
     }
-    if (currentRound === "crux") {
+    if (currentPhase === "round2") {
       return {
-        title: "Identify Cruxes ⚡",
+        title: "Round 2 - Dig Deeper 💬",
         description:
-          "What are the core disagreements? Get to the heart of the matter",
-        color: "text-red-600",
-        bgColor: "bg-red-50",
+          "Add to the conversation - build on what's been said",
+        color: "text-green-600",
+        bgColor: "bg-green-50",
       };
     }
-    if (currentRound === "plurality") {
+    if (currentPhase === "round3") {
       return {
-        title: "Discover Pluralities 💎",
+        title: "Round 3 - Final Thoughts 🔥",
         description:
-          "Share underrepresented perspectives and minority viewpoints",
+          "Last chance to make your point - make it count",
         color: "text-purple-600",
         bgColor: "bg-purple-50",
       };
     }
     return {
       title: "Share Your Take 💭",
-      description:
-        "Submit your initial statement on this topic",
+      description: "Submit your statement on this topic",
       color: "text-gray-600",
       bgColor: "bg-gray-50",
     };
@@ -128,7 +131,7 @@ export function StatementSubmission({
     return (
       <div className="text-center p-8 text-muted-foreground">
         <Lightbulb className="w-8 h-8 mx-auto mb-2 opacity-50" />
-        <p>Round ended - time to vote!</p>
+        <p>Submission phase ended - time to vote!</p>
       </div>
     );
   }
@@ -149,67 +152,20 @@ export function StatementSubmission({
         </p>
       </div>
 
-      {currentRound !== "initial" && (
-        <div className="flex gap-2 mb-4">
-          <Button
-            size="sm"
-            variant={
-              selectedType === "bridge" ? "default" : "outline"
-            }
-            onClick={() =>
-              setSelectedType(
-                selectedType === "bridge" ? null : "bridge",
-              )
-            }
-            className="flex items-center gap-1"
-          >
-            🌉 Bridge
-          </Button>
-          <Button
-            size="sm"
-            variant={
-              selectedType === "crux" ? "default" : "outline"
-            }
-            onClick={() =>
-              setSelectedType(
-                selectedType === "crux" ? null : "crux",
-              )
-            }
-            className="flex items-center gap-1"
-          >
-            ⚡ Crux
-          </Button>
-          <Button
-            size="sm"
-            variant={
-              selectedType === "plurality"
-                ? "default"
-                : "outline"
-            }
-            onClick={() =>
-              setSelectedType(
-                selectedType === "plurality"
-                  ? null
-                  : "plurality",
-              )
-            }
-            className="flex items-center gap-1"
-          >
-            💎 Plurality
-          </Button>
-        </div>
-      )}
-
       <div className="space-y-3">
         <Textarea
           value={statement}
-          onChange={(e) => handleStatementChange(e.target.value)}
+          onChange={(e) =>
+            handleStatementChange(e.target.value)
+          }
           placeholder={
             placeholder ||
             "What's your take? Spicy takes welcome! 🌶️"
           }
           className={`min-h-[100px] resize-none ${
-            validationError ? "border-destructive focus:border-destructive" : ""
+            validationError
+              ? "border-destructive focus:border-destructive"
+              : ""
           }`}
           maxLength={500}
         />
@@ -228,13 +184,15 @@ export function StatementSubmission({
 
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-            <span className={`text-sm ${
-              statement.length < 5 
-                ? "text-destructive" 
-                : statement.length > 450 
-                  ? "text-orange-600" 
-                  : "text-muted-foreground"
-            }`}>
+            <span
+              className={`text-sm ${
+                statement.length < 5
+                  ? "text-destructive"
+                  : statement.length > 450
+                    ? "text-orange-600"
+                    : "text-muted-foreground"
+              }`}
+            >
               {statement.length}/500 characters
             </span>
             {statement.length > 0 && statement.length < 5 && (
@@ -245,7 +203,11 @@ export function StatementSubmission({
           </div>
           <Button
             onClick={handleSubmit}
-            disabled={!statement.trim() || isSubmitting || !!validationError}
+            disabled={
+              !statement.trim() ||
+              isSubmitting ||
+              !!validationError
+            }
             className="flex items-center gap-2"
           >
             <Send className="w-4 h-4" />

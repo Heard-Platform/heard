@@ -50,10 +50,10 @@ class ApiClient {
   }
 
   // User management
-  async createUser(nickname: string) {
+  async createUser(nickname: string, email: string) {
     return this.request("/user/create", {
       method: "POST",
-      body: JSON.stringify({ nickname }),
+      body: JSON.stringify({ nickname, email }),
     });
   }
 
@@ -62,10 +62,24 @@ class ApiClient {
   }
 
   // Room management
-  async createRoom(topic: string, userId: string) {
+  async createRoom(topic: string, userId: string, mode = "host-controlled", rantFirst?: boolean, description?: string, subHeard?: string) {
     return this.request("/room/create", {
       method: "POST",
-      body: JSON.stringify({ topic, userId }),
+      body: JSON.stringify({ topic, description, userId, mode, rantFirst, subHeard }),
+    });
+  }
+
+  async updateRoomDescription(roomId: string, description: string, userId: string) {
+    return this.request(`/room/${roomId}/description`, {
+      method: "PUT",
+      body: JSON.stringify({ description, userId }),
+    });
+  }
+
+  async setRoomInactive(roomId: string, userId: string) {
+    return this.request(`/room/${roomId}/inactive`, {
+      method: "POST",
+      body: JSON.stringify({ userId }),
     });
   }
 
@@ -92,26 +106,48 @@ class ApiClient {
     });
   }
 
-  async getActiveRooms() {
-    return this.request("/rooms/active");
+  async getActiveRooms(subHeard?: string) {
+    const params = subHeard ? `?subHeard=${encodeURIComponent(subHeard)}` : "";
+    return this.request(`/rooms/active${params}`);
+  }
+
+  async getSubHeards() {
+    return this.request("/subheards");
+  }
+
+  async createSubHeard(name: string) {
+    return this.request("/subheard/create", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    });
   }
 
   // Statement management
   async submitStatement(
     roomId: string,
     text: string,
-    type: string | undefined,
     userId: string,
   ) {
     return this.request(`/room/${roomId}/statement`, {
       method: "POST",
-      body: JSON.stringify({ text, type, userId }),
+      body: JSON.stringify({ text, userId }),
+    });
+  }
+
+  async submitRant(
+    roomId: string,
+    text: string,
+    userId: string,
+  ) {
+    return this.request(`/room/${roomId}/rant`, {
+      method: "POST",
+      body: JSON.stringify({ text, userId }),
     });
   }
 
   async voteOnStatement(
     statementId: string,
-    voteType: "up" | "down",
+    voteType: "agree" | "disagree" | "pass" | "super_agree",
     userId: string,
   ) {
     return this.request(`/statement/${statementId}/vote`, {
@@ -120,9 +156,38 @@ class ApiClient {
     });
   }
 
+  // Invite management
+  async sendInvites(roomId: string, emails: string[], customMessage?: string) {
+    return this.request(`/room/${roomId}/invite`, {
+      method: "POST",
+      body: JSON.stringify({ emails, customMessage }),
+    });
+  }
+
   // Development helpers
   async createSeedData(userId: string) {
     return this.request("/seed/create", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
+
+  async createTestRoom(userId: string) {
+    return this.request("/test-room/create", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
+
+  async createRantTestRoom(userId: string) {
+    return this.request("/rant-test-room/create", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
+
+  async createRealtimeTestRoom(userId: string) {
+    return this.request("/realtime-test-room/create", {
       method: "POST",
       body: JSON.stringify({ userId }),
     });

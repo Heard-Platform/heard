@@ -49,6 +49,19 @@ export const get = async (key: string): Promise<any> => {
   return data?.value;
 };
 
+// Bulk set stores multiple key-value pairs in a single transaction
+export const bulkSet = async (
+  items: Array<{ key: string; value: any }>
+): Promise<void> => {
+  const supabase = client();
+  const { error } = await supabase
+    .from("kv_store_f1a393b4")
+    .upsert(items);
+  if (error) {
+    throw new Error(error.message);
+  }
+};
+
 // Delete deletes a key-value pair from the database.
 export const del = async (key: string): Promise<void> => {
   const supabase = client();

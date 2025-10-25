@@ -15,24 +15,18 @@ import {
   Timer,
   Flower2,
   Cat,
+  Home,
 } from "lucide-react";
-
-interface Statement {
-  id: string;
-  text: string;
-  author: string;
-  votes: number;
-  type?: "bridge" | "crux" | "plurality";
-  isSpicy?: boolean;
-}
+import type { Statement } from "../types";
 
 interface FinalResultsProps {
   statements: Statement[];
   score: number;
-  roundNumber: number;
+  gameNumber: number;
   onNewDiscussion: (statement: Statement) => void;
   onScheduleFuture: () => void;
-  onNextRound: () => void;
+  onNextGame: () => void;
+  onBackToLobby: () => void;
 }
 
 type ActivityType =
@@ -44,10 +38,11 @@ type ActivityType =
 export function FinalResults({
   statements,
   score,
-  roundNumber,
+  gameNumber,
   onNewDiscussion,
   onScheduleFuture,
-  onNextRound,
+  onNextGame,
+  onBackToLobby,
 }: FinalResultsProps) {
   const [currentActivity, setCurrentActivity] =
     useState<ActivityType>("overview");
@@ -62,7 +57,7 @@ export function FinalResults({
   ) => {
     return statements
       .filter((s) => (type ? s.type === type : !s.type))
-      .sort((a, b) => b.votes - a.votes)
+      .sort((a, b) => (b.agrees - b.disagrees) - (a.agrees - a.disagrees))
       .slice(0, 3);
   };
 
@@ -138,19 +133,19 @@ export function FinalResults({
                 <Badge variant="destructive">🌶️ Spicy</Badge>
               )}
               <Badge variant="outline">
-                {statement.votes} votes
+                {statement.agrees} agrees, {statement.disagrees} disagrees
               </Badge>
             </div>
             <p className="text-sm mb-2">{statement.text}</p>
             <p className="text-xs text-muted-foreground">
-              by {statement.author}
+              by Anonymous
             </p>
           </div>
           <Button
             size="sm"
             variant="outline"
             onClick={() => onNewDiscussion(statement)}
-            className="shrink-0"
+            className="shrink-0 hover:bg-purple-50 hover:border-purple-400 hover:text-purple-700 transition-colors"
           >
             <MessageSquarePlus className="w-4 h-4 mr-1" />
             Discuss
@@ -362,7 +357,7 @@ export function FinalResults({
         >
           <div className="flex items-center justify-center gap-3">
             <Trophy className="w-8 h-8 text-yellow-500" />
-            <h1>Round {roundNumber} Complete!</h1>
+            <h1>Game {gameNumber} Complete!</h1>
             <Trophy className="w-8 h-8 text-yellow-500" />
           </div>
           <p className="text-muted-foreground">
@@ -370,7 +365,7 @@ export function FinalResults({
             <span className="font-medium text-primary">
               {score} points
             </span>{" "}
-            this round
+            this game
           </p>
         </motion.div>
 
@@ -455,20 +450,36 @@ export function FinalResults({
         <div className="space-y-6">
           <h2 className="text-center">What's Next?</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Continue Playing */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Continue This Topic */}
             <Card className="p-6 text-center space-y-4 hover:shadow-md transition-shadow">
               <div className="w-12 h-12 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-blue-600" />
               </div>
               <div className="space-y-2">
-                <h3>Keep the Energy Going</h3>
+                <h3>Continue This Topic</h3>
                 <p className="text-sm text-muted-foreground">
-                  Start another round with a fresh topic
+                  Start another round with the same participants
                 </p>
               </div>
-              <Button onClick={onNextRound} className="w-full">
+              <Button onClick={onNextGame} className="w-full">
                 Next Round
+              </Button>
+            </Card>
+
+            {/* Back to Lobby */}
+            <Card className="p-6 text-center space-y-4 hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 mx-auto bg-orange-100 rounded-full flex items-center justify-center">
+                <Home className="w-6 h-6 text-orange-600" />
+              </div>
+              <div className="space-y-2">
+                <h3>Browse Other Debates</h3>
+                <p className="text-sm text-muted-foreground">
+                  See what other debates are happening now
+                </p>
+              </div>
+              <Button onClick={onBackToLobby} variant="outline" className="w-full">
+                Back to Lobby
               </Button>
             </Card>
 

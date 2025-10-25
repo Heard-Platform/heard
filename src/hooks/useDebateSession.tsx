@@ -1,4 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import {
   api,
   getUserId,
@@ -7,63 +12,23 @@ import {
   setRoomId,
   clearRoomId,
 } from "../utils/api";
-
-interface UserSession {
-  id: string;
-  nickname: string;
-  score: number;
-  bridgePoints: number;
-  cruxPoints: number;
-  pluralityPoints: number;
-  streak: number;
-  currentRoomId?: string;
-  lastActive: number;
-}
-
-type Phase =
-  | "lobby"
-  | "initial"
-  | "bridge"
-  | "crux"
-  | "plurality"
-  | "results";
-type SubPhase = "posting" | "voting" | "review";
-
-interface DebateRoom {
-  id: string;
-  topic: string;
-  phase: Phase;
-  subPhase?: SubPhase;
-  roundNumber: number;
-  phaseStartTime: number;
-  participants: string[];
-  isActive: boolean;
-  createdAt: number;
-}
-
-interface Statement {
-  id: string;
-  text: string;
-  author: string;
-  votes: number;
-  type?: "bridge" | "crux" | "plurality";
-  isSpicy?: boolean;
-  roomId: string;
-  timestamp: number;
-  voters: { [userId: string]: "up" | "down" };
-}
-
-interface Achievement {
-  title: string;
-  description: string;
-  points: number;
-  type: "score" | "bridge" | "crux" | "plurality" | "streak";
-}
+import type {
+  UserSession,
+  Phase,
+  SubPhase,
+  DebateRoom,
+  Statement,
+  Achievement,
+  DebateMode,
+  Rant,
+  VoteType,
+} from "../types";
 
 export function useDebateSession() {
   const [user, setUser] = useState<UserSession | null>(null);
   const [room, setRoom] = useState<DebateRoom | null>(null);
   const [statements, setStatements] = useState<Statement[]>([]);
+  const [rants, setRants] = useState<Rant[]>([]);
   const [activeRooms, setActiveRooms] = useState<DebateRoom[]>(
     [],
   );
@@ -71,10 +36,19 @@ export function useDebateSession() {
   const [error, setError] = useState<string | null>(null);
   const [lastAchievement, setLastAchievement] =
     useState<Achievement | null>(null);
+  const [autoPlayActive, setAutoPlayActive] = useState(false);
+  const [autoPlayInterval, setAutoPlayInterval] =
+    useState<NodeJS.Timeout | null>(null);
+  const [autoPlayCounts, setAutoPlayCounts] = useState<{
+    posts: { [playerId: string]: number };
+    votes: { [playerId: string]: number };
+  }>({ posts: {}, votes: {} });
+  const autoPlayActiveRef = useRef(false);
+  const roomIdRef = useRef<string | null>(null);
 
   // Initialize user session
   const initializeUser = useCallback(
-    async (nickname?: string) => {
+    async (nickname?: string, email?: string) => {
       try {
         setError(null);
         let userId = getUserId();
@@ -88,9 +62,12 @@ export function useDebateSession() {
           }
         }
 
-        if (!userData && nickname) {
+        if (!userData && nickname && email) {
           // Create new user session
-          const response = await api.createUser(nickname);
+          const response = await api.createUser(
+            nickname,
+            email,
+          );
           if (response.success && response.data) {
             userData = response.data.user;
             setUserId(userData.id);
@@ -118,14 +95,28 @@ export function useDebateSession() {
 
   // Create or join room
   const createRoom = useCallback(
-    async (topic: string) => {
+    async (
+      topic: string,
+      mode: DebateMode = "host-controlled",
+      rantFirst?: boolean,
+      description?: string,
+      subHeard?: string,
+    ) => {
       if (!user) return null;
 
       try {
         setError(null);
-        const response = await api.createRoom(topic, user.id);
+        const response = await api.createRoom(
+          topic,
+          user.id,
+          mode,
+          rantFirst,
+          description,
+          subHeard,
+        );
         if (response.success && response.data) {
           const roomData = response.data.room;
+          roomIdRef.current = roomData.id; // Track room ID in ref
           setRoom(roomData);
           setRoomId(roomData.id);
           return roomData;
@@ -154,6 +145,7 @@ export function useDebateSession() {
         const response = await api.joinRoom(roomId, user.id);
         if (response.success && response.data) {
           const roomData = response.data.room;
+          roomIdRef.current = roomData.id; // Track room ID in ref
           setRoom(roomData);
           setRoomId(roomData.id);
           return roomData;
@@ -175,31 +167,35 @@ export function useDebateSession() {
 
   // Refresh room status and statements
   const refreshRoom = useCallback(async () => {
-    if (!room) return;
+    const currentRoomId = roomIdRef.current;
+    if (!currentRoomId) return;
 
     try {
-      console.log(`Refreshing room: ${room.id}`);
-      const response = await api.getRoomStatus(room.id);
-      console.log("Room refresh response:", response);
-      if (response.success && response.data) {
+      const response = await api.getRoomStatus(currentRoomId);
+      // Only update state if we're still in the same room
+      if (
+        response.success &&
+        response.data &&
+        roomIdRef.current === currentRoomId
+      ) {
         setRoom(response.data.room);
         setStatements(response.data.statements || []);
-      } else {
+        setRants(response.data.rants || []);
+      } else if (response.error) {
         console.error("Room refresh failed:", response.error);
         setError(response.error || "Failed to refresh room");
       }
     } catch (err) {
       console.error("Failed to refresh room:", err);
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(
+        err instanceof Error ? err.message : "Unknown error",
+      );
     }
-  }, [room]);
+  }, []);
 
   // Submit statement
   const submitStatement = useCallback(
-    async (
-      text: string,
-      type?: "bridge" | "crux" | "plurality",
-    ) => {
+    async (text: string) => {
       if (!user || !room) return false;
 
       try {
@@ -207,7 +203,6 @@ export function useDebateSession() {
         const response = await api.submitStatement(
           room.id,
           text,
-          type,
           user.id,
         );
         if (response.success && response.data) {
@@ -218,21 +213,6 @@ export function useDebateSession() {
                   ...prev,
                   score:
                     prev.score + response.data.pointsEarned,
-                  bridgePoints:
-                    type === "bridge"
-                      ? prev.bridgePoints +
-                        response.data.pointsEarned
-                      : prev.bridgePoints,
-                  cruxPoints:
-                    type === "crux"
-                      ? prev.cruxPoints +
-                        response.data.pointsEarned
-                      : prev.cruxPoints,
-                  pluralityPoints:
-                    type === "plurality"
-                      ? prev.pluralityPoints +
-                        response.data.pointsEarned
-                      : prev.pluralityPoints,
                   streak: prev.streak + 1,
                 }
               : prev,
@@ -265,7 +245,7 @@ export function useDebateSession() {
 
   // Vote on statement
   const voteOnStatement = useCallback(
-    async (statementId: string, voteType: "up" | "down") => {
+    async (statementId: string, voteType: VoteType) => {
       if (!user) return false;
 
       try {
@@ -283,7 +263,7 @@ export function useDebateSession() {
         console.log("Vote response:", response);
 
         if (response.success && response.data) {
-          // Update user points if voting up
+          // Update user points if agreeing
           if (response.data.pointsEarned > 0) {
             setUser((prev) =>
               prev
@@ -296,11 +276,14 @@ export function useDebateSession() {
             );
           }
 
-          // Update statement in local state
+          // Update statement in local state with the full response data
           setStatements((prev) =>
             prev.map((stmt) =>
               stmt.id === statementId
-                ? { ...stmt, ...response.data.statement }
+                ? {
+                    ...stmt,
+                    ...response.data.statement,
+                  }
                 : stmt,
             ),
           );
@@ -318,6 +301,38 @@ export function useDebateSession() {
       return false;
     },
     [user],
+  );
+
+  // Submit rant
+  const submitRant = useCallback(
+    async (text: string) => {
+      if (!user || !room) return false;
+
+      try {
+        setError(null);
+        const response = await api.submitRant(
+          room.id,
+          text,
+          user.id,
+        );
+        if (response.success && response.data) {
+          // Refresh room to get updated rants
+          await refreshRoom();
+          return true;
+        } else {
+          throw new Error(
+            response.error || "Failed to submit rant",
+          );
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error("Failed to submit rant:", errorMsg);
+      }
+      return false;
+    },
+    [user, room, refreshRoom],
   );
 
   // Update room phase
@@ -352,10 +367,44 @@ export function useDebateSession() {
     [user, room],
   );
 
+  // Update room description
+  const updateRoomDescription = useCallback(
+    async (description: string) => {
+      if (!user || !room) return false;
+
+      try {
+        setError(null);
+        const response = await api.updateRoomDescription(
+          room.id,
+          description,
+          user.id,
+        );
+        if (response.success && response.data) {
+          setRoom(response.data.room);
+          return true;
+        } else {
+          throw new Error(
+            response.error || "Failed to update description",
+          );
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error(
+          "Failed to update description:",
+          errorMsg,
+        );
+      }
+      return false;
+    },
+    [user, room],
+  );
+
   // Get active rooms
-  const getActiveRooms = useCallback(async () => {
+  const getActiveRooms = useCallback(async (subHeard?: string) => {
     try {
-      const response = await api.getActiveRooms();
+      const response = await api.getActiveRooms(subHeard);
       if (response.success && response.data) {
         setActiveRooms(response.data.rooms || []);
         return response.data.rooms || [];
@@ -366,13 +415,26 @@ export function useDebateSession() {
     return [];
   }, []);
 
+  // Auto-play cleanup function - defined early to avoid dependency issues
+  const stopAutoPlay = useCallback(() => {
+    setAutoPlayActive(false);
+    autoPlayActiveRef.current = false;
+    if (autoPlayInterval) {
+      clearTimeout(autoPlayInterval);
+      setAutoPlayInterval(null);
+    }
+  }, [autoPlayInterval]);
+
   // Leave current room but keep user logged in
   const leaveRoom = useCallback(() => {
+    stopAutoPlay(); // Stop auto-play when leaving room
+    roomIdRef.current = null; // Clear ref to prevent race conditions with polling
     setRoom(null);
     setStatements([]);
+    setRants([]);
     setLastAchievement(null);
     clearRoomId();
-  }, []);
+  }, [stopAutoPlay]);
 
   // Create seed data for testing
   const createSeedData = useCallback(async () => {
@@ -399,8 +461,339 @@ export function useDebateSession() {
     return null;
   }, [user, getActiveRooms]);
 
+  // Create test room with Q Street debate topic and players (no posts/votes)
+  const createTestRoom = useCallback(async () => {
+    if (!user) return null;
+
+    try {
+      setError(null);
+      const response = await api.createTestRoom(user.id);
+      if (response.success && response.data) {
+        // Refresh active rooms to show the new test room
+        await getActiveRooms();
+        return response.data;
+      } else {
+        throw new Error(
+          response.error || "Failed to create test room",
+        );
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to create test room:", errorMsg);
+    }
+    return null;
+  }, [user, getActiveRooms]);
+
+  // Create rant test room with Q Street debate topic and pre-filled rants
+  const createRantTestRoom = useCallback(async () => {
+    if (!user) return null;
+
+    try {
+      setError(null);
+      const response = await api.createRantTestRoom(user.id);
+      if (response.success && response.data) {
+        // Refresh active rooms to show the new test room
+        await getActiveRooms();
+        return response.data;
+      } else {
+        throw new Error(
+          response.error || "Failed to create rant test room",
+        );
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error(
+        "Failed to create rant test room:",
+        errorMsg,
+      );
+    }
+    return null;
+  }, [user, getActiveRooms]);
+
+  // Create realtime test room with seed data and 5-minute timer
+  const createRealtimeTestRoom = useCallback(async () => {
+    if (!user) return null;
+
+    try {
+      setError(null);
+      const response = await api.createRealtimeTestRoom(user.id);
+      if (response.success && response.data) {
+        // Refresh active rooms to show the new test room
+        await getActiveRooms();
+        return response.data;
+      } else {
+        throw new Error(
+          response.error || "Failed to create realtime test room",
+        );
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error(
+        "Failed to create realtime test room:",
+        errorMsg,
+      );
+    }
+    return null;
+  }, [user, getActiveRooms]);
+
+  // Mark room as inactive (dev tool)
+  const setRoomInactive = useCallback(async (roomId: string) => {
+    if (!user) return false;
+
+    try {
+      setError(null);
+      const response = await api.setRoomInactive(roomId, user.id);
+      if (response.success) {
+        // Refresh active rooms to remove the inactive room
+        await getActiveRooms();
+        return true;
+      } else {
+        throw new Error(
+          response.error || "Failed to mark room as inactive",
+        );
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to mark room as inactive:", errorMsg);
+    }
+    return false;
+  }, [user, getActiveRooms]);
+
+  // Auto-play statements for testing
+  const qStreetDebateStatements = [
+    "Closing Q Street during farmers market creates a vibrant community space that brings neighbors together",
+    "Traffic diversions hurt local businesses on surrounding streets - we need better solutions",
+    "The farmers market is a weekly tradition that deserves priority over car convenience",
+    "Emergency vehicles can't access residents quickly when Q Street is blocked",
+    "Local vendors and artisans benefit enormously from the foot traffic when cars are gone",
+    "Elderly residents struggle with longer walking distances when forced to park blocks away",
+    "Air quality improves significantly when we prioritize pedestrians over vehicles",
+    "The current system discriminates against people who work weekends and need car access",
+    "Kids can safely play and families can enjoy the space without worrying about traffic",
+    "Small businesses along Q Street lose customers who can't easily drive and park",
+    "This is about creating a more livable neighborhood that values people over cars",
+    "The parking restrictions place an unfair burden on residents who live on Q Street",
+  ];
+
+  const getRandomStatement = () => {
+    return qStreetDebateStatements[
+      Math.floor(Math.random() * qStreetDebateStatements.length)
+    ];
+  };
+
+  const getRandomDelay = () =>
+    Math.floor(Math.random() * 5000) + 5000; // 5-10 seconds
+
+  const simulatePlayerActivity = useCallback(async () => {
+    if (!room || !user) return;
+
+    const participants = room.participants.filter(
+      (p) => p !== user.id,
+    );
+    if (participants.length === 0) return;
+
+    // Don't simulate activity during review phase - no user interaction needed
+    if (room.subPhase === "review") return;
+
+    if (room.subPhase === "posting") {
+      // Find players who haven't reached the post limit
+      const availablePlayers = participants.filter(
+        (playerId) => (autoPlayCounts.posts[playerId] || 0) < 4,
+      );
+
+      if (availablePlayers.length > 0) {
+        const randomPlayer =
+          availablePlayers[
+            Math.floor(Math.random() * availablePlayers.length)
+          ];
+        const statement = getRandomStatement();
+
+        try {
+          const response = await api.submitStatement(
+            room.id,
+            statement,
+            randomPlayer,
+          );
+          if (response.success) {
+            setAutoPlayCounts((prev) => ({
+              ...prev,
+              posts: {
+                ...prev.posts,
+                [randomPlayer]:
+                  (prev.posts[randomPlayer] || 0) + 1,
+              },
+            }));
+            await refreshRoom();
+          }
+        } catch (err) {
+          console.error("Auto-play post failed:", err);
+        }
+      }
+    } else if (room.subPhase === "voting") {
+      // Find players who haven't reached the vote limit and statements to vote on
+      const availablePlayers = participants.filter(
+        (playerId) => (autoPlayCounts.votes[playerId] || 0) < 4,
+      );
+
+      if (
+        availablePlayers.length > 0 &&
+        statements.length > 0
+      ) {
+        const randomPlayer =
+          availablePlayers[
+            Math.floor(Math.random() * availablePlayers.length)
+          ];
+
+        // Find statements this player hasn't voted on yet
+        const unvotedStatements = statements.filter(
+          (stmt) =>
+            !stmt.voters[randomPlayer] &&
+            stmt.author !== randomPlayer,
+        );
+
+        if (unvotedStatements.length > 0) {
+          const randomStatement =
+            unvotedStatements[
+              Math.floor(
+                Math.random() * unvotedStatements.length,
+              )
+            ];
+          const voteTypes: ("agree" | "disagree" | "pass")[] = [
+            "agree",
+            "disagree",
+            "pass",
+          ];
+          const randomVote =
+            voteTypes[
+              Math.floor(Math.random() * voteTypes.length)
+            ];
+
+          try {
+            const response = await api.voteOnStatement(
+              randomStatement.id,
+              randomVote,
+              randomPlayer,
+            );
+            if (response.success) {
+              setAutoPlayCounts((prev) => ({
+                ...prev,
+                votes: {
+                  ...prev.votes,
+                  [randomPlayer]:
+                    (prev.votes[randomPlayer] || 0) + 1,
+                },
+              }));
+              // Update local statement state
+              setStatements((prev) =>
+                prev.map((stmt) =>
+                  stmt.id === randomStatement.id
+                    ? { ...stmt, ...response.data.statement }
+                    : stmt,
+                ),
+              );
+            }
+          } catch (err) {
+            console.error("Auto-play vote failed:", err);
+          }
+        }
+      }
+    }
+  }, [room, user, statements, autoPlayCounts, refreshRoom]);
+
+  const startAutoPlay = useCallback(() => {
+    if (!room || autoPlayActiveRef.current) return;
+
+    // Only start auto-play if we're in a phase that needs activity
+    if (
+      room.subPhase !== "posting" &&
+      room.subPhase !== "voting"
+    )
+      return;
+
+    setAutoPlayActive(true);
+    autoPlayActiveRef.current = true;
+    setAutoPlayCounts({ posts: {}, votes: {} }); // Reset counts
+
+    // Schedule the first activity
+    const scheduleActivity = () => {
+      // Check if auto-play is still active before scheduling
+      if (!autoPlayActiveRef.current) return;
+
+      const delay = getRandomDelay();
+      console.log(
+        `Scheduling next auto-play activity in ${delay}ms`,
+      );
+
+      const timeoutId = setTimeout(async () => {
+        // Double-check if auto-play is still active
+        if (!autoPlayActiveRef.current) return;
+
+        try {
+          await simulatePlayerActivity();
+        } catch (error) {
+          console.error("Auto-play activity failed:", error);
+        }
+
+        // Schedule next activity if auto-play is still active
+        scheduleActivity();
+      }, delay);
+
+      setAutoPlayInterval(timeoutId);
+    };
+
+    scheduleActivity();
+  }, [room, simulatePlayerActivity]);
+
+  // Clean up auto-play when room changes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (autoPlayInterval) {
+        clearTimeout(autoPlayInterval);
+      }
+    };
+  }, [autoPlayInterval]);
+
+  // Stop auto-play when room is gone
+  useEffect(() => {
+    if (!room && autoPlayActive) {
+      stopAutoPlay();
+    }
+  }, [room, autoPlayActive, stopAutoPlay]);
+
+  // Sync ref with state
+  useEffect(() => {
+    autoPlayActiveRef.current = autoPlayActive;
+  }, [autoPlayActive]);
+
+  // Stop auto-play when phase changes to review or results
+  useEffect(() => {
+    if (autoPlayActive && room) {
+      // Stop auto-play during review phase or results
+      if (
+        room.subPhase === "review" ||
+        room.phase === "results"
+      ) {
+        stopAutoPlay();
+      }
+    }
+  }, [
+    room?.subPhase,
+    room?.phase,
+    autoPlayActive,
+    stopAutoPlay,
+  ]);
+
   // Reset session (full logout)
   const resetSession = useCallback(() => {
+    stopAutoPlay(); // Stop auto-play on logout
     setUser(null);
     setRoom(null);
     setStatements([]);
@@ -408,7 +801,7 @@ export function useDebateSession() {
     setError(null);
     setLastAchievement(null);
     clearRoomId();
-  }, []);
+  }, [stopAutoPlay]);
 
   // Initialize on mount
   useEffect(() => {
@@ -454,20 +847,30 @@ export function useDebateSession() {
     user,
     room,
     statements,
+    rants,
     activeRooms,
     loading,
     error,
     lastAchievement,
+    autoPlayActive,
     initializeUser,
     createRoom,
     joinRoom,
     getActiveRooms,
     submitStatement,
+    submitRant,
     voteOnStatement,
     updateRoomPhase,
+    updateRoomDescription,
     refreshRoom,
     leaveRoom,
     resetSession,
     createSeedData,
+    createTestRoom,
+    createRantTestRoom,
+    createRealtimeTestRoom,
+    setRoomInactive,
+    startAutoPlay,
+    stopAutoPlay,
   };
 }

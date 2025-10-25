@@ -6,131 +6,128 @@ import {
   MessageCircle,
 } from "lucide-react";
 
-type Phase = "lobby" | "initial" | "bridge" | "crux" | "plurality" | "results";
+type Round =
+  | "lobby"
+  | "round1"
+  | "round2"
+  | "round3"
+  | "results";
 type SubPhase = "posting" | "voting" | "review";
 
 interface RoundIndicatorProps {
-  currentRound: Phase;
+  currentRound: Round;
   currentSubPhase?: SubPhase;
-  roundNumber: number;
+  gameNumber: number;
+  mode?: "realtime" | "host-controlled";
 }
 
 export function RoundIndicator({
   currentRound,
   currentSubPhase,
-  roundNumber,
+  gameNumber,
+  mode = "realtime",
 }: RoundIndicatorProps) {
   const rounds = [
     {
-      key: "initial" as Phase,
-      label: "Initial Takes",
+      key: "round1" as Round,
+      label: "Round 1",
       icon: MessageCircle,
-      color: "gray",
-    },
-    {
-      key: "bridge" as Phase,
-      label: "Bridges",
-      icon: Users,
       color: "blue",
     },
     {
-      key: "crux" as Phase,
-      label: "Cruxes",
-      icon: Target,
-      color: "red",
+      key: "round2" as Round,
+      label: "Round 2",
+      icon: Users,
+      color: "green",
     },
     {
-      key: "plurality" as Phase,
-      label: "Pluralities",
+      key: "round3" as Round,
+      label: "Round 3",
       icon: Zap,
       color: "purple",
     },
   ];
 
   const getCurrentRoundInfo = () => {
-    if (currentRound === "initial") {
+    // For host-controlled mode, single round only
+    if (mode === "host-controlled") {
+      if (currentRound === "results")
+        return {
+          title: "Debate Complete",
+          subtitle: "See the results",
+          emoji: "🏆",
+        };
+      return {
+        title: "Debate In Progress",
+        subtitle: "Post and vote on statements",
+        emoji: "💭",
+      };
+    }
+
+    // For realtime mode, show subphase in title
+    if (currentRound === "round1") {
       if (currentSubPhase === "posting")
         return {
-          title: "Initial Takes",
-          subtitle: "Share your perspective",
+          title: "Round 1 - Post",
+          subtitle: "Drop your takes!",
           emoji: "💭",
         };
       if (currentSubPhase === "voting")
         return {
-          title: "Initial Voting",
-          subtitle: "Vote on initial takes",
+          title: "Round 1 - Vote",
+          subtitle: "React to statements",
           emoji: "🗳️",
         };
       if (currentSubPhase === "review")
         return {
-          title: "Initial Review",
-          subtitle: "See how it's shaping up",
+          title: "Round 1 - Results",
+          subtitle: "See what's happening",
           emoji: "📊",
         };
     }
-    if (currentRound === "bridge") {
+    if (currentRound === "round2") {
       if (currentSubPhase === "posting")
         return {
-          title: "Bridge Building",
-          subtitle: "Find common ground",
-          emoji: "🌉",
+          title: "Round 2 - Post",
+          subtitle: "Keep the discussion going",
+          emoji: "💬",
         };
       if (currentSubPhase === "voting")
         return {
-          title: "Bridge Voting",
-          subtitle: "Vote on bridges",
+          title: "Round 2 - Vote",
+          subtitle: "Shape the conversation",
           emoji: "🗳️",
         };
       if (currentSubPhase === "review")
         return {
-          title: "Bridge Review",
-          subtitle: "Review bridge progress",
+          title: "Round 2 - Results",
+          subtitle: "Track the momentum",
           emoji: "📊",
         };
     }
-    if (currentRound === "crux") {
+    if (currentRound === "round3") {
       if (currentSubPhase === "posting")
         return {
-          title: "Crux Hunting",
-          subtitle: "Core disagreements",
-          emoji: "⚡",
+          title: "Round 3 - Post",
+          subtitle: "Final statements",
+          emoji: "🔥",
         };
       if (currentSubPhase === "voting")
         return {
-          title: "Crux Voting",
-          subtitle: "Vote on cruxes",
+          title: "Round 3 - Vote",
+          subtitle: "Last chance to vote",
           emoji: "🗳️",
         };
       if (currentSubPhase === "review")
         return {
-          title: "Crux Review",
-          subtitle: "Review key disagreements",
-          emoji: "📊",
-        };
-    }
-    if (currentRound === "plurality") {
-      if (currentSubPhase === "posting")
-        return {
-          title: "Plurality Mining",
-          subtitle: "Underrepresented views",
-          emoji: "💎",
-        };
-      if (currentSubPhase === "voting")
-        return {
-          title: "Plurality Voting",
-          subtitle: "Vote on pluralities",
-          emoji: "🗳️",
-        };
-      if (currentSubPhase === "review")
-        return {
-          title: "Plurality Review",
-          subtitle: "Review diverse views",
+          title: "Round 3 - Results",
+          subtitle: "Wrap it up",
           emoji: "📊",
         };
     }
     if (currentRound === "results")
       return {
-        title: "Round Complete",
+        title: "Game Complete",
         subtitle: "See the results",
         emoji: "🏆",
       };
@@ -170,83 +167,85 @@ export function RoundIndicator({
           {roundInfo.subtitle}
         </p>
         <div className="text-sm text-muted-foreground">
-          Round {roundNumber}
+          Game {gameNumber}
         </div>
       </motion.div>
 
-      <div className="flex justify-center items-center gap-2 max-w-md mx-auto">
-        {rounds.map((round, index) => {
-          const Icon = round.icon;
-          const isActive = round.key === currentRound;
-          const isCompleted =
-            rounds.findIndex(
-              (r) => r.key === currentRound,
-            ) > index;
+      {/* Only show round indicators for realtime mode */}
+      {mode === "realtime" && (
+        <div className="flex justify-center items-center gap-2 max-w-md mx-auto">
+          {rounds.map((round, index) => {
+            const Icon = round.icon;
+            const isActive = round.key === currentRound;
+            const isCompleted =
+              rounds.findIndex((r) => r.key === currentRound) >
+              index;
 
-          return (
-            <motion.div
-              key={round.key}
-              className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
-                isActive
-                  ? `bg-${round.color}-100 border-2 border-${round.color}-500`
-                  : isCompleted
-                    ? "bg-green-100 border-2 border-green-500"
-                    : "bg-muted border-2 border-transparent"
-              }`}
-              initial={{ scale: 0.8 }}
-              animate={{ scale: isActive ? 1.1 : 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Icon
-                className={`w-5 h-5 ${
+            return (
+              <motion.div
+                key={round.key}
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
                   isActive
-                    ? `text-${round.color}-600`
+                    ? `bg-${round.color}-100 border-2 border-${round.color}-500`
                     : isCompleted
-                      ? "text-green-600"
-                      : "text-muted-foreground"
+                      ? "bg-green-100 border-2 border-green-500"
+                      : "bg-muted border-2 border-transparent"
                 }`}
-              />
-              <span
-                className={`text-xs ${
-                  isActive
-                    ? `text-${round.color}-700`
-                    : isCompleted
-                      ? "text-green-700"
-                      : "text-muted-foreground"
-                }`}
+                initial={{ scale: 0.8 }}
+                animate={{ scale: isActive ? 1.1 : 1 }}
+                transition={{ duration: 0.3 }}
               >
-                {round.label}
-              </span>
-              {/* Sub-phase indicator */}
-              {isActive && (
-                <div className="flex gap-1">
-                  <div
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      currentSubPhase === "posting"
-                        ? "bg-orange-400"
-                        : "bg-gray-300"
-                    }`}
-                  />
-                  <div
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      currentSubPhase === "voting"
-                        ? "bg-blue-400"
-                        : "bg-gray-300"
-                    }`}
-                  />
-                  <div
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      currentSubPhase === "review"
-                        ? "bg-green-400"
-                        : "bg-gray-300"
-                    }`}
-                  />
-                </div>
-              )}
-            </motion.div>
-          );
-        })}
-      </div>
+                <Icon
+                  className={`w-5 h-5 ${
+                    isActive
+                      ? `text-${round.color}-600`
+                      : isCompleted
+                        ? "text-green-600"
+                        : "text-muted-foreground"
+                  }`}
+                />
+                <span
+                  className={`text-xs ${
+                    isActive
+                      ? `text-${round.color}-700`
+                      : isCompleted
+                        ? "text-green-700"
+                        : "text-muted-foreground"
+                  }`}
+                >
+                  {round.label}
+                </span>
+                {/* Sub-phase indicator - only for realtime mode */}
+                {isActive && mode === "realtime" && (
+                  <div className="flex gap-1">
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        currentSubPhase === "posting"
+                          ? "bg-orange-400"
+                          : "bg-gray-300"
+                      }`}
+                    />
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        currentSubPhase === "voting"
+                          ? "bg-blue-400"
+                          : "bg-gray-300"
+                      }`}
+                    />
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        currentSubPhase === "review"
+                          ? "bg-green-400"
+                          : "bg-gray-300"
+                      }`}
+                    />
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
