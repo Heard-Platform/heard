@@ -31,8 +31,8 @@ export function RealtimeCountdown({ endTime, onTimeUp }: RealtimeCountdownProps)
   const seconds = Math.floor((timeLeft % 60000) / 1000);
   const milliseconds = Math.floor((timeLeft % 1000) / 10);
 
-  // Calculate percentage remaining (assume 10 minute default if we can't determine)
-  const estimatedTotal = 10 * 60 * 1000; // 10 minutes in ms
+  // Calculate percentage remaining (assume 5 minute default if we can't determine)
+  const estimatedTotal = 5 * 60 * 1000; // 5 minutes in ms
   const percentRemaining = Math.min(100, (timeLeft / estimatedTotal) * 100);
 
   const isUrgent = timeLeft < 60000; // Less than 1 minute
