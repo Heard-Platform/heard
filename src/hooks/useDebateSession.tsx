@@ -101,6 +101,7 @@ export function useDebateSession() {
       rantFirst?: boolean,
       description?: string,
       subHeard?: string,
+      autoJoin: boolean = false,
     ) => {
       if (!user) return null;
 
@@ -116,9 +117,14 @@ export function useDebateSession() {
         );
         if (response.success && response.data) {
           const roomData = response.data.room;
-          roomIdRef.current = roomData.id; // Track room ID in ref
-          setRoom(roomData);
-          setRoomId(roomData.id);
+          
+          // Only join the room if autoJoin is true
+          if (autoJoin) {
+            roomIdRef.current = roomData.id; // Track room ID in ref
+            setRoom(roomData);
+            setRoomId(roomData.id);
+          }
+          
           return roomData;
         } else {
           throw new Error(

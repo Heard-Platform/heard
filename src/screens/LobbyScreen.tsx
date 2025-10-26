@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
-import { RoomScroller } from "../components/RoomScroller";
+import { RoomScroller, RoomScrollerRef } from "../components/RoomScroller";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
 import { SubHeardBrowser } from "../components/SubHeardBrowser";
 import { api } from "../utils/api";
@@ -55,6 +55,7 @@ interface LobbyScreenProps {
   onOpenShowcase?: () => void;
   currentSubHeard?: string;
   onSubHeardChange?: (subHeard: string | null) => void;
+  onRoomCreated?: () => void;
 }
 
 export function LobbyScreen({
@@ -75,15 +76,19 @@ export function LobbyScreen({
   onOpenShowcase,
   currentSubHeard,
   onSubHeardChange,
+  onRoomCreated,
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] = useState(false);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [discussTopic, setDiscussTopic] = useState<string | undefined>(undefined);
   const [discussSubHeard, setDiscussSubHeard] = useState<string | undefined>(undefined);
+  const roomScrollerRef = useRef<RoomScrollerRef>(null);
 
-  // Filter out rooms older than a week (7 days)
+  // Filter out rooms older than a week (7 days) and sort by newest first
   const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-  const filteredRooms = activeRooms.filter(room => room.createdAt > oneWeekAgo);
+  const filteredRooms = activeRooms
+    .filter(room => room.createdAt > oneWeekAgo)
+    .sort((a, b) => b.createdAt - a.createdAt); // Newest first
 
   // Refresh rooms on mount and when sub-heard changes
   useEffect(() => {
@@ -335,6 +340,7 @@ export function LobbyScreen({
 
         {/* Room scroller */}
         <RoomScroller
+          ref={roomScrollerRef}
           rooms={filteredRooms}
           onJoinRoom={handleJoinRoom}
           onCreateRoom={handleOpenCreateSheet}
@@ -351,7 +357,14 @@ export function LobbyScreen({
       <CreateRoomSheet
         open={createRoomSheetOpen}
         onOpenChange={handleCreateRoomSheetChange}
-        onCreateRoom={onCreateRoom}
+        onCreateRoom={async (...args) => {
+          await onCreateRoom(...args);
+          // Scroll to top after creating room
+          if (onRoomCreated) {
+            onRoomCreated();
+          }
+          roomScrollerRef.current?.scrollToTop();
+        }}
         defaultSubHeard={discussSubHeard || currentSubHeard}
         defaultTopic={discussTopic}
       />

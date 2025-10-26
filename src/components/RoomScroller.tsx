@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -43,7 +43,11 @@ interface RoomScrollerProps {
   onDiscussStatement?: (statementText: string, subHeard?: string) => void;
 }
 
-export function RoomScroller({
+export interface RoomScrollerRef {
+  scrollToTop: () => void;
+}
+
+export const RoomScroller = forwardRef<RoomScrollerRef, RoomScrollerProps>(({
   rooms,
   onJoinRoom,
   onCreateRoom,
@@ -53,7 +57,7 @@ export function RoomScroller({
   currentUserId,
   currentSubHeard,
   onDiscussStatement,
-}: RoomScrollerProps) {
+}, ref) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isScrolling = useRef(false);
@@ -170,6 +174,13 @@ export function RoomScroller({
     }, 500);
   };
 
+  // Expose scrollToTop method via ref
+  useImperativeHandle(ref, () => ({
+    scrollToTop: () => {
+      scrollToIndex(0);
+    }
+  }));
+
   const handleNext = () => {
     if (currentIndex < allCards.length - 1) {
       scrollToIndex(currentIndex + 1);
@@ -270,7 +281,7 @@ export function RoomScroller({
       </div>
     </div>
   );
-}
+});
 
 // Individual room card component
 function RoomCard({

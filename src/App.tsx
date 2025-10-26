@@ -112,14 +112,12 @@ export default function App() {
       rantFirst,
       description,
       subHeard,
+      false, // Don't auto-join - stay on TikTok scroller
     );
+    
+    // Refresh the rooms list to show the newly created room
     if (roomData) {
-      // Rant-first rooms start in round1/posting, regular rooms start in lobby
-      setTimerActive(
-        mode === "realtime" &&
-          rantFirst === true &&
-          roomData.phase === "round1",
-      );
+      getActiveRooms(currentSubHeard || undefined);
     }
   };
 
@@ -235,6 +233,8 @@ export default function App() {
           roomMode, // Copy mode from current room
           roomRantFirst, // Copy rant-first setting from current room
           `Deep dive discussion on: "${statement.text.substring(0, 100)}${statement.text.length > 100 ? "..." : ""}"`,
+          undefined, // subHeard
+          true, // autoJoin - navigate to the new room
         );
 
         if (newRoomData) {
