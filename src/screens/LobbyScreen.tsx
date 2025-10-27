@@ -15,6 +15,7 @@ import {
   SkipForward,
   Menu,
   Clock,
+  Shield,
 } from "lucide-react";
 import {
   Sheet,
@@ -53,6 +54,7 @@ interface LobbyScreenProps {
   onSetRoomInactive?: (roomId: string) => Promise<boolean>;
   onLogout?: () => void;
   onOpenShowcase?: () => void;
+  onOpenAdminPanel?: () => void;
   currentSubHeard?: string;
   onSubHeardChange?: (subHeard: string | null) => void;
   onRoomCreated?: () => void;
@@ -74,6 +76,7 @@ export function LobbyScreen({
   onSetRoomInactive,
   onLogout,
   onOpenShowcase,
+  onOpenAdminPanel,
   currentSubHeard,
   onSubHeardChange,
   onRoomCreated,
@@ -272,6 +275,20 @@ export function LobbyScreen({
                       <div className="border-t pt-4">
                         <h3 className="font-medium mb-3">Developer Tools</h3>
                         <div className="space-y-2">
+                          {onOpenAdminPanel && (
+                            <Button
+                              onClick={() => {
+                                setDevMenuOpen(false);
+                                onOpenAdminPanel();
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-purple-50 border-purple-200 text-purple-800"
+                            >
+                              <Shield className="w-3 h-3 mr-2" />
+                              Admin Panel
+                            </Button>
+                          )}
                           {onOpenShowcase && (
                             <Button
                               onClick={() => {

@@ -1,6 +1,6 @@
 import { projectId, publicAnonKey } from "./supabase/info";
 
-const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
+export const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
 
 interface ApiResponse<T> {
   success: boolean;

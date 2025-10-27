@@ -4,6 +4,7 @@ import { NicknameSetup } from "./components/NicknameSetup";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { GameScreen } from "./screens/GameScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
+import { AdminPanel } from "./components/AdminPanel";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner@2.0.3";
@@ -33,6 +34,7 @@ export default function App() {
   >(null);
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
   const [showComponentShowcase, setShowComponentShowcase] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
 
   const {
     user,
@@ -359,7 +361,30 @@ export default function App() {
     setShowComponentShowcase(false);
   };
 
-  // Component Showcase Mode - check this first!
+  // Handle opening and exiting admin panel
+  const handleOpenAdminPanel = () => {
+    setShowAdminPanel(true);
+  };
+
+  const handleExitAdminPanel = () => {
+    setShowAdminPanel(false);
+  };
+
+  // Check for admin panel URL parameter (for direct access)
+  const urlParams = new URLSearchParams(window.location.search);
+  const isAdminModeUrl = urlParams.get("admin") === "true";
+
+  // Admin Panel Mode - check this first!
+  if (showAdminPanel || isAdminModeUrl) {
+    return (
+      <>
+        <AdminPanel onExit={handleExitAdminPanel} />
+        <Toaster />
+      </>
+    );
+  }
+
+  // Component Showcase Mode - check this second!
   if (showComponentShowcase) {
     return <ComponentShowcase onExit={handleExitShowcase} />;
   }
@@ -421,6 +446,7 @@ export default function App() {
           onSetRoomInactive={setRoomInactive}
           onLogout={handleLogout}
           onOpenShowcase={handleOpenShowcase}
+          onOpenAdminPanel={handleOpenAdminPanel}
           currentSubHeard={currentSubHeard || undefined}
           onSubHeardChange={handleSubHeardChange}
         />
