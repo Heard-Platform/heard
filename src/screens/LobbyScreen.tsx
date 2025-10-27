@@ -193,10 +193,11 @@ export function LobbyScreen({
             {onSubHeardChange && (
               <SubHeardBrowser
                 currentSubHeard={currentSubHeard}
+                currentUserId={user?.id}
                 onSubHeardChange={onSubHeardChange}
-                onCreateSubHeard={async (name: string) => {
+                onCreateSubHeard={async (name: string, userId: string, isPrivate?: boolean) => {
                   try {
-                    const response = await api.createSubHeard(name);
+                    const response = await api.createSubHeard(name, userId, isPrivate);
                     if (response.success) {
                       return true;
                     }
@@ -204,6 +205,19 @@ export function LobbyScreen({
                     return false;
                   } catch (error) {
                     console.error("Error creating sub-heard:", error);
+                    return false;
+                  }
+                }}
+                onUpdateSubHeard={async (name: string, userId: string, isPrivate: boolean) => {
+                  try {
+                    const response = await api.updateSubHeardSettings(name, userId, isPrivate);
+                    if (response.success) {
+                      return true;
+                    }
+                    console.error("Failed to update sub-heard:", response.error);
+                    return false;
+                  } catch (error) {
+                    console.error("Error updating sub-heard:", error);
                     return false;
                   }
                 }}

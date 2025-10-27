@@ -71,6 +71,8 @@ export interface DebateRoom {
 export interface SubHeard {
   name: string;
   count: number;
+  isPrivate?: boolean;
+  adminId?: string; // User ID of the creator/admin
 }
 
 export interface Rant {

@@ -111,14 +111,22 @@ class ApiClient {
     return this.request(`/rooms/active${params}`);
   }
 
-  async getSubHeards() {
-    return this.request("/subheards");
+  async getSubHeards(userId?: string) {
+    const params = userId ? `?userId=${encodeURIComponent(userId)}` : "";
+    return this.request(`/subheards${params}`);
   }
 
-  async createSubHeard(name: string) {
+  async createSubHeard(name: string, userId: string, isPrivate?: boolean) {
     return this.request("/subheard/create", {
       method: "POST",
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, userId, isPrivate }),
+    });
+  }
+
+  async updateSubHeardSettings(name: string, userId: string, isPrivate: boolean) {
+    return this.request(`/subheard/${name}/settings`, {
+      method: "PATCH",
+      body: JSON.stringify({ userId, isPrivate }),
     });
   }
 
