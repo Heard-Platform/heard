@@ -8,6 +8,7 @@ import {
   api,
   getUserId,
   setUserId,
+  clearUserId,
   getRoomId,
   setRoomId,
   clearRoomId,
@@ -117,14 +118,14 @@ export function useDebateSession() {
         );
         if (response.success && response.data) {
           const roomData = response.data.room;
-          
+
           // Only join the room if autoJoin is true
           if (autoJoin) {
             roomIdRef.current = roomData.id; // Track room ID in ref
             setRoom(roomData);
             setRoomId(roomData.id);
           }
-          
+
           return roomData;
         } else {
           throw new Error(
@@ -408,18 +409,21 @@ export function useDebateSession() {
   );
 
   // Get active rooms
-  const getActiveRooms = useCallback(async (subHeard?: string) => {
-    try {
-      const response = await api.getActiveRooms(subHeard);
-      if (response.success && response.data) {
-        setActiveRooms(response.data.rooms || []);
-        return response.data.rooms || [];
+  const getActiveRooms = useCallback(
+    async (subHeard?: string) => {
+      try {
+        const response = await api.getActiveRooms(subHeard);
+        if (response.success && response.data) {
+          setActiveRooms(response.data.rooms || []);
+          return response.data.rooms || [];
+        }
+      } catch (err) {
+        console.error("Failed to fetch active rooms:", err);
       }
-    } catch (err) {
-      console.error("Failed to fetch active rooms:", err);
-    }
-    return [];
-  }, []);
+      return [];
+    },
+    [],
+  );
 
   // Auto-play cleanup function - defined early to avoid dependency issues
   const stopAutoPlay = useCallback(() => {
@@ -526,14 +530,17 @@ export function useDebateSession() {
 
     try {
       setError(null);
-      const response = await api.createRealtimeTestRoom(user.id);
+      const response = await api.createRealtimeTestRoom(
+        user.id,
+      );
       if (response.success && response.data) {
         // Refresh active rooms to show the new test room
         await getActiveRooms();
         return response.data;
       } else {
         throw new Error(
-          response.error || "Failed to create realtime test room",
+          response.error ||
+            "Failed to create realtime test room",
         );
       }
     } catch (err) {
@@ -549,29 +556,38 @@ export function useDebateSession() {
   }, [user, getActiveRooms]);
 
   // Mark room as inactive (dev tool)
-  const setRoomInactive = useCallback(async (roomId: string) => {
-    if (!user) return false;
+  const setRoomInactive = useCallback(
+    async (roomId: string) => {
+      if (!user) return false;
 
-    try {
-      setError(null);
-      const response = await api.setRoomInactive(roomId, user.id);
-      if (response.success) {
-        // Refresh active rooms to remove the inactive room
-        await getActiveRooms();
-        return true;
-      } else {
-        throw new Error(
-          response.error || "Failed to mark room as inactive",
+      try {
+        setError(null);
+        const response = await api.setRoomInactive(
+          roomId,
+          user.id,
+        );
+        if (response.success) {
+          // Refresh active rooms to remove the inactive room
+          await getActiveRooms();
+          return true;
+        } else {
+          throw new Error(
+            response.error || "Failed to mark room as inactive",
+          );
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error(
+          "Failed to mark room as inactive:",
+          errorMsg,
         );
       }
-    } catch (err) {
-      const errorMsg =
-        err instanceof Error ? err.message : "Unknown error";
-      setError(errorMsg);
-      console.error("Failed to mark room as inactive:", errorMsg);
-    }
-    return false;
-  }, [user, getActiveRooms]);
+      return false;
+    },
+    [user, getActiveRooms],
+  );
 
   // Auto-play statements for testing
   const qStreetDebateStatements = [
@@ -806,6 +822,7 @@ export function useDebateSession() {
     setActiveRooms([]);
     setError(null);
     setLastAchievement(null);
+    clearUserId();
     clearRoomId();
   }, [stopAutoPlay]);
 

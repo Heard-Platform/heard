@@ -33,7 +33,8 @@ export default function App() {
     string | null
   >(null);
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
-  const [showComponentShowcase, setShowComponentShowcase] = useState(false);
+  const [showComponentShowcase, setShowComponentShowcase] =
+    useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
 
   const {
@@ -116,7 +117,7 @@ export default function App() {
       subHeard,
       false, // Don't auto-join - stay on TikTok scroller
     );
-    
+
     // Refresh the rooms list to show the newly created room
     if (roomData) {
       getActiveRooms(currentSubHeard || undefined);
@@ -245,17 +246,26 @@ export default function App() {
               newRoomData.phase === "round1",
           );
           toast.dismiss();
-          const modeText = roomMode === "realtime" ? "Real-time" : "Host-controlled";
+          const modeText =
+            roomMode === "realtime"
+              ? "Real-time"
+              : "Host-controlled";
           const rantText = roomRantFirst ? " rant-first" : "";
-          toast.success(`New ${modeText}${rantText} discussion created! 🔥`);
+          toast.success(
+            `New ${modeText}${rantText} discussion created! 🔥`,
+          );
         } else {
           toast.dismiss();
-          toast.error("Failed to create discussion. Please try again.");
+          toast.error(
+            "Failed to create discussion. Please try again.",
+          );
         }
       } catch (error) {
         console.error("Error creating new discussion:", error);
         toast.dismiss();
-        toast.error("Something went wrong creating the discussion.");
+        toast.error(
+          "Something went wrong creating the discussion.",
+        );
       }
     },
     [user, room, leaveRoom, createRoom],
@@ -302,7 +312,7 @@ export default function App() {
     if (!hasCheckedUrl) {
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
-      
+
       if (roomIdFromUrl) {
         setTargetRoomId(roomIdFromUrl);
       } else if (subHeardFromUrl) {
@@ -335,7 +345,13 @@ export default function App() {
     if (user && !room && !targetRoomId) {
       getActiveRooms(currentSubHeard || undefined);
     }
-  }, [user, room, targetRoomId, currentSubHeard, getActiveRooms]);
+  }, [
+    user,
+    room,
+    targetRoomId,
+    currentSubHeard,
+    getActiveRooms,
+  ]);
 
   // Sync timerActive with room phase changes (for real-time multiplayer)
   useEffect(() => {

@@ -2,7 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
-import { RoomScroller, RoomScrollerRef } from "../components/RoomScroller";
+import {
+  RoomScroller,
+  RoomScrollerRef,
+} from "../components/RoomScroller";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
 import { SubHeardBrowser } from "../components/SubHeardBrowser";
 import { api } from "../utils/api";
@@ -50,7 +53,9 @@ interface LobbyScreenProps {
   onCreateTestRoom?: () => Promise<any>;
   onCreateRantTestRoom?: () => Promise<any>;
   onCreateRealtimeTestRoom?: () => Promise<any>;
-  onUpdateRoomDescription?: (description: string) => Promise<boolean>;
+  onUpdateRoomDescription?: (
+    description: string,
+  ) => Promise<boolean>;
   onSetRoomInactive?: (roomId: string) => Promise<boolean>;
   onLogout?: () => void;
   onOpenShowcase?: () => void;
@@ -81,16 +86,21 @@ export function LobbyScreen({
   onSubHeardChange,
   onRoomCreated,
 }: LobbyScreenProps) {
-  const [createRoomSheetOpen, setCreateRoomSheetOpen] = useState(false);
+  const [createRoomSheetOpen, setCreateRoomSheetOpen] =
+    useState(false);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
-  const [discussTopic, setDiscussTopic] = useState<string | undefined>(undefined);
-  const [discussSubHeard, setDiscussSubHeard] = useState<string | undefined>(undefined);
+  const [discussTopic, setDiscussTopic] = useState<
+    string | undefined
+  >(undefined);
+  const [discussSubHeard, setDiscussSubHeard] = useState<
+    string | undefined
+  >(undefined);
   const roomScrollerRef = useRef<RoomScrollerRef>(null);
 
   // Filter out rooms older than a week (7 days) and sort by newest first
-  const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+  const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const filteredRooms = activeRooms
-    .filter(room => room.createdAt > oneWeekAgo)
+    .filter((room) => room.createdAt > oneWeekAgo)
     .sort((a, b) => b.createdAt - a.createdAt); // Newest first
 
   // Refresh rooms on mount and when sub-heard changes
@@ -156,7 +166,10 @@ export function LobbyScreen({
     setCreateRoomSheetOpen(true);
   };
 
-  const handleDiscussStatement = (statementText: string, subHeard?: string) => {
+  const handleDiscussStatement = (
+    statementText: string,
+    subHeard?: string,
+  ) => {
     setDiscussTopic(statementText);
     setDiscussSubHeard(subHeard);
     setCreateRoomSheetOpen(true);
@@ -180,7 +193,9 @@ export function LobbyScreen({
           <div className="flex items-center gap-3">
             <motion.h1
               className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
-              style={{ WebkitTextStroke: "1px rgba(255,255,255,0.8)" }}
+              style={{
+                WebkitTextStroke: "1px rgba(255,255,255,0.8)",
+              }}
             >
               HEARD
             </motion.h1>
@@ -198,29 +213,58 @@ export function LobbyScreen({
                 currentSubHeard={currentSubHeard}
                 currentUserId={user?.id}
                 onSubHeardChange={onSubHeardChange}
-                onCreateSubHeard={async (name: string, userId: string, isPrivate?: boolean) => {
+                onCreateSubHeard={async (
+                  name: string,
+                  userId: string,
+                  isPrivate?: boolean,
+                ) => {
                   try {
-                    const response = await api.createSubHeard(name, userId, isPrivate);
+                    const response = await api.createSubHeard(
+                      name,
+                      userId,
+                      isPrivate,
+                    );
                     if (response.success) {
                       return true;
                     }
-                    console.error("Failed to create sub-heard:", response.error);
+                    console.error(
+                      "Failed to create sub-heard:",
+                      response.error,
+                    );
                     return false;
                   } catch (error) {
-                    console.error("Error creating sub-heard:", error);
+                    console.error(
+                      "Error creating sub-heard:",
+                      error,
+                    );
                     return false;
                   }
                 }}
-                onUpdateSubHeard={async (name: string, userId: string, isPrivate: boolean) => {
+                onUpdateSubHeard={async (
+                  name: string,
+                  userId: string,
+                  isPrivate: boolean,
+                ) => {
                   try {
-                    const response = await api.updateSubHeardSettings(name, userId, isPrivate);
+                    const response =
+                      await api.updateSubHeardSettings(
+                        name,
+                        userId,
+                        isPrivate,
+                      );
                     if (response.success) {
                       return true;
                     }
-                    console.error("Failed to update sub-heard:", response.error);
+                    console.error(
+                      "Failed to update sub-heard:",
+                      response.error,
+                    );
                     return false;
                   } catch (error) {
-                    console.error("Error updating sub-heard:", error);
+                    console.error(
+                      "Error updating sub-heard:",
+                      error,
+                    );
                     return false;
                   }
                 }}
@@ -228,7 +272,10 @@ export function LobbyScreen({
             )}
 
             {user && (
-              <Sheet open={devMenuOpen} onOpenChange={setDevMenuOpen}>
+              <Sheet
+                open={devMenuOpen}
+                onOpenChange={setDevMenuOpen}
+              >
                 <SheetTrigger asChild>
                   <Button
                     variant="outline"
@@ -238,134 +285,142 @@ export function LobbyScreen({
                     <Menu className="w-4 h-4" />
                   </Button>
                 </SheetTrigger>
-              <SheetContent side="right">
-                <SheetHeader>
-                  <SheetTitle>Menu</SheetTitle>
-                  <SheetDescription>
-                    User settings and options
-                  </SheetDescription>
-                </SheetHeader>
+                <SheetContent side="right">
+                  <SheetHeader>
+                    <SheetTitle>Menu</SheetTitle>
+                    <SheetDescription>
+                      User settings and options
+                    </SheetDescription>
+                  </SheetHeader>
 
-                <div className="space-y-4 mt-6">
-                  {/* User info */}
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-green-800">
-                      <span className="font-medium">{user.nickname}</span>
-                    </p>
-                    <p className="text-sm text-green-600 mt-1">
-                      Score: {user.score}
-                    </p>
-                  </div>
+                  <div className="space-y-4 mt-6">
+                    {/* User info */}
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-green-800">
+                        <span className="font-medium">
+                          {user.nickname}
+                        </span>
+                      </p>
+                      <p className="text-sm text-green-600 mt-1">
+                        Score: {user.score}
+                      </p>
+                    </div>
 
-                  {/* Logout */}
-                  {onLogout && (
-                    <Button
-                      onClick={onLogout}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </Button>
-                  )}
+                    {/* Logout */}
+                    {onLogout && (
+                      <Button
+                        onClick={onLogout}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logout
+                      </Button>
+                    )}
 
-                  {/* Developer controls */}
-                  {user?.isDeveloper && (
-                    <>
-                      <div className="border-t pt-4">
-                        <h3 className="font-medium mb-3">Developer Tools</h3>
-                        <div className="space-y-2">
-                          {onOpenAdminPanel && (
-                            <Button
-                              onClick={() => {
-                                setDevMenuOpen(false);
-                                onOpenAdminPanel();
-                              }}
-                              variant="outline"
-                              size="sm"
-                              className="w-full bg-purple-50 border-purple-200 text-purple-800"
-                            >
-                              <Shield className="w-3 h-3 mr-2" />
-                              Admin Panel
-                            </Button>
-                          )}
-                          {onOpenShowcase && (
-                            <Button
-                              onClick={() => {
-                                setDevMenuOpen(false);
-                                onOpenShowcase();
-                              }}
-                              variant="outline"
-                              size="sm"
-                              className="w-full bg-slate-50 border-slate-200 text-slate-800"
-                            >
-                              <Code2 className="w-3 h-3 mr-2" />
-                              Component Showcase
-                            </Button>
-                          )}
-                          {onJumpToFinalResults && (
-                            <Button
-                              onClick={onJumpToFinalResults}
-                              variant="outline"
-                              size="sm"
-                              className="w-full bg-yellow-50 border-yellow-200 text-yellow-800"
-                            >
-                              <SkipForward className="w-3 h-3 mr-2" />
-                              Jump to Final Results
-                            </Button>
-                          )}
-                          {onCreateSeedData && (
-                            <Button
-                              onClick={handleCreateSeedData}
-                              variant="outline"
-                              size="sm"
-                              className="w-full bg-green-50 border-green-200 text-green-800"
-                            >
-                              <Database className="w-3 h-3 mr-2" />
-                              Create Test Data
-                            </Button>
-                          )}
-                          {onCreateTestRoom && (
-                            <Button
-                              onClick={handleCreateTestRoom}
-                              variant="outline"
-                              size="sm"
-                              className="w-full bg-blue-50 border-blue-200 text-blue-800"
-                            >
-                              <Plus className="w-3 h-3 mr-2" />
-                              Q Street Test Room
-                            </Button>
-                          )}
-                          {onCreateRantTestRoom && (
-                            <Button
-                              onClick={handleCreateRantTestRoom}
-                              variant="outline"
-                              size="sm"
-                              className="w-full bg-purple-50 border-purple-200 text-purple-800"
-                            >
-                              <Brain className="w-3 h-3 mr-2" />
-                              Rant-First Test Room
-                            </Button>
-                          )}
-                          {onCreateRealtimeTestRoom && (
-                            <Button
-                              onClick={handleCreateRealtimeTestRoom}
-                              variant="outline"
-                              size="sm"
-                              className="w-full bg-orange-50 border-orange-200 text-orange-800"
-                            >
-                              <Clock className="w-3 h-3 mr-2" />
-                              Real-time Test Room (5min)
-                            </Button>
-                          )}
+                    {/* Developer controls */}
+                    {user?.isDeveloper && (
+                      <>
+                        <div className="border-t pt-4">
+                          <h3 className="font-medium mb-3">
+                            Developer Tools
+                          </h3>
+                          <div className="space-y-2">
+                            {onOpenAdminPanel && (
+                              <Button
+                                onClick={() => {
+                                  setDevMenuOpen(false);
+                                  onOpenAdminPanel();
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="w-full bg-purple-50 border-purple-200 text-purple-800"
+                              >
+                                <Shield className="w-3 h-3 mr-2" />
+                                Admin Panel
+                              </Button>
+                            )}
+                            {onOpenShowcase && (
+                              <Button
+                                onClick={() => {
+                                  setDevMenuOpen(false);
+                                  onOpenShowcase();
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="w-full bg-slate-50 border-slate-200 text-slate-800"
+                              >
+                                <Code2 className="w-3 h-3 mr-2" />
+                                Component Showcase
+                              </Button>
+                            )}
+                            {onJumpToFinalResults && (
+                              <Button
+                                onClick={onJumpToFinalResults}
+                                variant="outline"
+                                size="sm"
+                                className="w-full bg-yellow-50 border-yellow-200 text-yellow-800"
+                              >
+                                <SkipForward className="w-3 h-3 mr-2" />
+                                Jump to Final Results
+                              </Button>
+                            )}
+                            {onCreateSeedData && (
+                              <Button
+                                onClick={handleCreateSeedData}
+                                variant="outline"
+                                size="sm"
+                                className="w-full bg-green-50 border-green-200 text-green-800"
+                              >
+                                <Database className="w-3 h-3 mr-2" />
+                                Create Test Data
+                              </Button>
+                            )}
+                            {onCreateTestRoom && (
+                              <Button
+                                onClick={handleCreateTestRoom}
+                                variant="outline"
+                                size="sm"
+                                className="w-full bg-blue-50 border-blue-200 text-blue-800"
+                              >
+                                <Plus className="w-3 h-3 mr-2" />
+                                Q Street Test Room
+                              </Button>
+                            )}
+                            {onCreateRantTestRoom && (
+                              <Button
+                                onClick={
+                                  handleCreateRantTestRoom
+                                }
+                                variant="outline"
+                                size="sm"
+                                className="w-full bg-purple-50 border-purple-200 text-purple-800"
+                              >
+                                <Brain className="w-3 h-3 mr-2" />
+                                Rant-First Test Room
+                              </Button>
+                            )}
+                            {onCreateRealtimeTestRoom && (
+                              <Button
+                                onClick={
+                                  handleCreateRealtimeTestRoom
+                                }
+                                variant="outline"
+                                size="sm"
+                                className="w-full bg-orange-50 border-orange-200 text-orange-800"
+                              >
+                                <Clock className="w-3 h-3 mr-2" />
+                                Real-time Test Room (5min)
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
-          )}
+                      </>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
           </div>
         </div>
 
