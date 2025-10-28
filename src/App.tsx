@@ -8,6 +8,7 @@ import { AdminPanel } from "./components/AdminPanel";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner@2.0.3";
+import { api } from "./utils/api";
 import {
   parseRoomIdFromUrl,
   parseSubHeardFromUrl,
@@ -321,6 +322,21 @@ export default function App() {
       setHasCheckedUrl(true);
     }
   }, [hasCheckedUrl]);
+
+  // Auto-join sub-heard when user visits its URL
+  useEffect(() => {
+    const autoJoinSubHeard = async () => {
+      if (user && currentSubHeard && hasCheckedUrl) {
+        try {
+          // Idempotent join - will add membership if needed
+          await api.joinSubHeard(currentSubHeard, user.id);
+        } catch (error) {
+          console.error("Error auto-joining sub-heard:", error);
+        }
+      }
+    };
+    autoJoinSubHeard();
+  }, [user, currentSubHeard, hasCheckedUrl]);
 
   // Auto-join room if user exists and there's a target room
   useEffect(() => {

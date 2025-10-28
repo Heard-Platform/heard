@@ -412,7 +412,8 @@ export function useDebateSession() {
   const getActiveRooms = useCallback(
     async (subHeard?: string) => {
       try {
-        const response = await api.getActiveRooms(subHeard);
+        const userId = user?.id;
+        const response = await api.getActiveRooms(subHeard, userId);
         if (response.success && response.data) {
           setActiveRooms(response.data.rooms || []);
           return response.data.rooms || [];
@@ -422,7 +423,7 @@ export function useDebateSession() {
       }
       return [];
     },
-    [],
+    [user?.id],
   );
 
   // Auto-play cleanup function - defined early to avoid dependency issues

@@ -106,9 +106,12 @@ class ApiClient {
     });
   }
 
-  async getActiveRooms(subHeard?: string) {
-    const params = subHeard ? `?subHeard=${encodeURIComponent(subHeard)}` : "";
-    return this.request(`/rooms/active${params}`);
+  async getActiveRooms(subHeard?: string, userId?: string) {
+    const params = new URLSearchParams();
+    if (subHeard) params.append("subHeard", subHeard);
+    if (userId) params.append("userId", userId);
+    const queryString = params.toString();
+    return this.request(`/rooms/active${queryString ? `?${queryString}` : ""}`);
   }
 
   async getSubHeards(userId?: string) {
@@ -127,6 +130,13 @@ class ApiClient {
     return this.request(`/subheard/${name}/settings`, {
       method: "PATCH",
       body: JSON.stringify({ userId, isPrivate }),
+    });
+  }
+
+  async joinSubHeard(name: string, userId: string) {
+    return this.request(`/subheard/${name}/join`, {
+      method: "POST",
+      body: JSON.stringify({ userId }),
     });
   }
 

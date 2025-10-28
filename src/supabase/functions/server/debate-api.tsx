@@ -4,6 +4,7 @@ import * as kv from "./kv_store.tsx";
 import { recalculateClustersForRoom } from "./clustering.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
+import { getUserMemberships } from "./membership-utils.tsx";
 
 // Type definitions - exported for use in other modules
 export type VoteType = "agree" | "disagree" | "pass" | "super_agree";
@@ -1146,6 +1147,34 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
       return c.json({ error: "User session not found" }, 404);
     }
 
+    // If creating a room in a private sub-heard, check membership
+    if (subHeard) {
+      const normalizedSubHeard = subHeard.trim().toLowerCase().replace(/\s+/g, '-');
+      const subHeardKey = `subheard:${normalizedSubHeard}`;
+      const subHeardData = await kv.get(subHeardKey);
+      
+      if (subHeardData) {
+        try {
+          const parsedSubHeard = JSON.parse(subHeardData);
+          if (parsedSubHeard.isPrivate) {
+            // Check if user is admin or member
+            const isAdmin = parsedSubHeard.adminId === userId;
+            const membershipKey = `subheard_member:${userId}:${normalizedSubHeard}`;
+            const isMember = await kv.get(membershipKey);
+            
+            if (!isAdmin && !isMember) {
+              return c.json(
+                { error: "You must be a member of this private sub-heard to create rooms" },
+                403,
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Error checking sub-heard membership:", error);
+        }
+      }
+    }
+
     const roomId = generateId();
     const debateRoom: DebateRoom = {
       id: roomId,
@@ -1205,6 +1234,33 @@ app.post(
       const user = await getUserSession(userId);
       if (!user) {
         return c.json({ error: "User session not found" }, 404);
+      }
+
+      // If joining a room in a private sub-heard, check membership
+      if (room.subHeard) {
+        const subHeardKey = `subheard:${room.subHeard}`;
+        const subHeardData = await kv.get(subHeardKey);
+        
+        if (subHeardData) {
+          try {
+            const parsedSubHeard = JSON.parse(subHeardData);
+            if (parsedSubHeard.isPrivate) {
+              // Check if user is admin or member
+              const isAdmin = parsedSubHeard.adminId === userId;
+              const membershipKey = `subheard_member:${userId}:${room.subHeard}`;
+              const isMember = await kv.get(membershipKey);
+              
+              if (!isAdmin && !isMember) {
+                return c.json(
+                  { error: "You must be a member of this private sub-heard to join rooms" },
+                  403,
+                );
+              }
+            }
+          } catch (error) {
+            console.error("Error checking sub-heard membership:", error);
+          }
+        }
       }
 
       // Add user to participants if not already there
@@ -1806,6 +1862,7 @@ app.post(
 app.get("/make-server-f1a393b4/rooms/active", async (c) => {
   try {
     const subHeard = c.req.query("subHeard");
+    const userId = c.req.query("userId");
     
     const activeRooms = await kv.getByPrefix("active_room:");
     let rooms = activeRooms
@@ -1822,6 +1879,43 @@ app.get("/make-server-f1a393b4/rooms/active", async (c) => {
     // Filter by sub-heard if specified
     if (subHeard) {
       rooms = rooms.filter((r) => r.subHeard === subHeard);
+    }
+
+    // Filter out rooms from private sub-heards where user is not a member
+    if (userId) {
+      // Get all user's memberships once
+      const userMemberships = await getUserMemberships(userId);
+
+      // Get all sub-heard data once
+      const subHeardData = await kv.getByPrefix("subheard:");
+      const subHeardMap = new Map();
+      subHeardData.forEach((sh) => {
+        try {
+          const data = JSON.parse(sh);
+          if (data.name) {
+            subHeardMap.set(data.name, data);
+          }
+        } catch (error) {
+          console.error("Error parsing sub-heard:", error);
+        }
+      });
+
+      // Filter rooms based on memberships
+      rooms = rooms.filter((room) => {
+        const shData = subHeardMap.get(room.subHeard);
+        if (!shData) {
+          return false; // No sub-heard data found, exclude the room
+        }
+
+        if (!shData.isPrivate) {
+          return true; // Public sub-heard, include it
+        }
+
+        // Private sub-heard - check if user is admin or member
+        const isAdmin = shData.adminId === userId;
+        const isMember = userMemberships.has(room.subHeard);
+        return isAdmin || isMember;
+      });
     }
 
     return c.json({ rooms });

@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "./ui/popover";
-import { Home, Hash, Plus, ChevronDown, Lock, Settings, Crown, Share2, Check } from "lucide-react";
+import { Home, Hash, Plus, ChevronDown, Lock, Settings, Share2, Check, Crown } from "lucide-react";
 import { api } from "../utils/api";
 import type { SubHeard } from "../types";
 import { toast } from "sonner@2.0.3";
@@ -258,6 +258,9 @@ export function SubHeardBrowser({
                       {subHeard.isPrivate && (
                         <Lock className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                       )}
+                      {isAdmin && (
+                        <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />
+                      )}
                     </button>
                     
                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -307,7 +310,7 @@ export function SubHeardBrowser({
                                       Private
                                     </Label>
                                     <p className="text-xs text-muted-foreground">
-                                      Only accessible via link
+                                      Members join when they visit the link
                                     </p>
                                   </div>
                                   <Switch

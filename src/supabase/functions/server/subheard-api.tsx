@@ -1,13 +1,14 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
+import { getUserMemberships } from "./membership-utils.tsx";
 
 const app = new Hono();
 
 // Get all unique sub-heards from active rooms and created sub-heards
 app.get("/make-server-f1a393b4/subheards", async (c) => {
   try {
-    const userId = c.req.query("userId"); // Optional: if provided, show private sub-heards where user is admin
+    const userId = c.req.query("userId"); // Optional: if provided, show private sub-heards where user is admin or member
 
     // Get active rooms with sub-heards
     const activeRooms = await kv.getByPrefix("active_room:");
@@ -53,14 +54,23 @@ app.get("/make-server-f1a393b4/subheards", async (c) => {
       }
     });
 
+    // Get user's memberships if userId is provided
+    let userMemberships: Set<string> = new Set();
+    if (userId) {
+      userMemberships = await getUserMemberships(userId);
+    }
+
     const subHeards = Object.entries(subHeardCounts)
-      // Filter out private sub-heards unless user is admin
+      // Filter out private sub-heards unless user is admin or member
       .filter(([name]) => {
         const data = subHeardData[name];
         if (!data) return true; // Show if no data (shouldn't happen)
         if (!data.isPrivate) return true; // Show if not private
         // Show if user is admin of this sub-heard
-        return userId && data.adminId === userId;
+        if (userId && data.adminId === userId) return true;
+        // Show if user is a member
+        if (userId && userMemberships.has(name)) return true;
+        return false;
       })
       .map(([name, count]) => ({
         name,
@@ -129,6 +139,62 @@ app.post("/make-server-f1a393b4/subheard/create", async (c) => {
     console.error("Error creating sub-heard:", error);
     return c.json(
       { error: "Failed to create sub-heard" },
+      500,
+    );
+  }
+});
+
+// Join a sub-heard (become a member) - idempotent
+app.post("/make-server-f1a393b4/subheard/:name/join", async (c) => {
+  try {
+    const name = c.req.param("name");
+    const { userId } = await c.req.json();
+
+    if (!userId || typeof userId !== "string") {
+      return c.json({ error: "User ID is required" }, 400);
+    }
+
+    // Check if sub-heard exists
+    const subHeardKey = `subheard:${name}`;
+    const existingData = await kv.get(subHeardKey);
+
+    if (!existingData) {
+      return c.json({ error: "Sub-heard not found" }, 404);
+    }
+
+    let subHeardData;
+    try {
+      subHeardData = JSON.parse(existingData);
+    } catch (error) {
+      console.error("Error parsing sub-heard data:", error);
+      return c.json({ error: "Invalid sub-heard data" }, 500);
+    }
+
+    // If user is admin, they don't need explicit membership
+    const isAdmin = subHeardData.adminId === userId;
+    
+    if (!isAdmin) {
+      // Store membership (idempotent - will overwrite if already exists)
+      const membershipKey = `subheard_member:${userId}:${name}`;
+      const membershipData = {
+        userId,
+        subHeard: name,
+        joinedAt: Date.now(),
+      };
+      await kv.set(membershipKey, JSON.stringify(membershipData));
+    }
+
+    return c.json({ 
+      success: true,
+      subHeard: {
+        name: subHeardData.name,
+        isPrivate: subHeardData.isPrivate,
+      }
+    });
+  } catch (error) {
+    console.error("Error joining sub-heard:", error);
+    return c.json(
+      { error: "Failed to join sub-heard" },
       500,
     );
   }
