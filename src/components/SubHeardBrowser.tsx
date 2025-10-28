@@ -217,35 +217,37 @@ export function SubHeardBrowser({
             <div className="space-y-2">
               {subHeards.map((subHeard) => {
                 const isAdmin = currentUserId && subHeard.adminId === currentUserId;
+                const isSelected = currentSubHeard === subHeard.name;
                 
                 return (
-                  <Button
+                  <div 
                     key={subHeard.name}
-                    variant={
-                      currentSubHeard === subHeard.name ? "default" : "outline"
-                    }
-                    className="w-full justify-between"
-                    onClick={() => handleSelectSubHeard(subHeard.name)}
+                    className={`flex items-center gap-2 w-full p-3 rounded-lg border ${
+                      isSelected 
+                        ? 'bg-primary text-primary-foreground border-primary' 
+                        : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
+                    }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <Hash className="w-4 h-4" />
-                      {formatSubHeardDisplay(subHeard.name)}
+                    <button
+                      onClick={() => handleSelectSubHeard(subHeard.name)}
+                      className="flex-1 flex items-center gap-2 text-left"
+                    >
+                      <Hash className="w-4 h-4 flex-shrink-0" />
+                      <span>{formatSubHeardDisplay(subHeard.name)}</span>
                       {subHeard.isPrivate && (
-                        <Lock className="w-3 h-3 text-muted-foreground" />
+                        <Lock className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                       )}
-                    </div>
-                    <div className="flex items-center gap-2">
+                    </button>
+                    
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       {isAdmin && (
                         <Popover modal={false}>
                           <PopoverTrigger asChild>
-                            <button
-                              className="p-1 hover:bg-black/10 rounded"
-                              onClick={(e) => e.stopPropagation()}
-                            >
+                            <button className="h-7 w-7 inline-flex items-center justify-center rounded-md hover:bg-black/10">
                               <Settings className="w-4 h-4" />
                             </button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-64" onInteractOutside={(e) => e.preventDefault()}>
+                          <PopoverContent className="w-64">
                             <div className="space-y-4">
                               <div>
                                 <h4 className="font-medium mb-2">Sub-Heard Settings</h4>
@@ -263,15 +265,13 @@ export function SubHeardBrowser({
                                     Only accessible via link
                                   </p>
                                 </div>
-                                <div onClick={(e) => e.stopPropagation()}>
-                                  <Switch
-                                    id={`private-${subHeard.name}`}
-                                    checked={subHeard.isPrivate || false}
-                                    onCheckedChange={(checked) => {
-                                      handleTogglePrivacy(subHeard, checked);
-                                    }}
-                                  />
-                                </div>
+                                <Switch
+                                  id={`private-${subHeard.name}`}
+                                  checked={subHeard.isPrivate || false}
+                                  onCheckedChange={(checked) => {
+                                    handleTogglePrivacy(subHeard, checked);
+                                  }}
+                                />
                               </div>
                             </div>
                           </PopoverContent>
@@ -279,7 +279,7 @@ export function SubHeardBrowser({
                       )}
                       <Badge variant="secondary">{subHeard.count}</Badge>
                     </div>
-                  </Button>
+                  </div>
                 );
               })}
             </div>
