@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Share2, Check } from "lucide-react";
 import { createShareableLink } from "../utils/url";
 import { toast } from "sonner@2.0.3";
+import { share } from "../utils/share";
 
 interface ShareButtonProps {
   roomId: string;
@@ -19,68 +20,24 @@ export function ShareButton({
 }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
-  const copyToClipboard = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    toast.success("Share link copied to clipboard!");
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const handleShare = async () => {
     const shareableLink = createShareableLink(roomId);
-    const isDesktop = window.innerWidth >= 768;
-
-    if (isDesktop) {
-      // Desktop: clipboard only, no fallbacks
-      try {
-        await copyToClipboard(shareableLink);
-      } catch (error) {
-        console.error("Clipboard failed on desktop:", error);
+    
+    await share({
+      title: "Join my debate on HEARD!",
+      text: "Join this debate and share your thoughts!",
+      url: shareableLink,
+      onSuccess: () => {
+        setCopied(true);
+        toast.success("Share link copied to clipboard!");
+        setTimeout(() => setCopied(false), 2000);
+      },
+      onError: (error) => {
         toast.error(
           "Could not copy link. Please manually copy the URL from your browser.",
         );
-      }
-      return;
-    }
-
-    // Mobile: try Web Share API first, then clipboard
-    try {
-      if (navigator.share) {
-        // Test if Web Share API supports our data
-        const shareData = {
-          title: "Join my debate on HEARD!",
-          text: `Join this debate and share your thoughts! ${shareableLink}`, // Include URL in text as fallback
-          url: shareableLink,
-        };
-
-        // Only use canShare if it exists (it's not available on all browsers)
-        if (
-          !navigator.canShare ||
-          navigator.canShare(shareData)
-        ) {
-          await navigator.share(shareData);
-          return;
-        }
-      }
-    } catch (shareError) {
-      console.log(
-        "Web Share API failed, using clipboard fallback:",
-        shareError,
-      );
-    }
-
-    // Mobile clipboard fallback
-    try {
-      await copyToClipboard(shareableLink);
-    } catch (clipboardError) {
-      console.error(
-        "Clipboard failed on mobile:",
-        clipboardError,
-      );
-      toast.error(
-        "Could not copy link. Please manually copy the URL from your browser.",
-      );
-    }
+      },
+    });
   };
 
   return (

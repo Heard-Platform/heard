@@ -18,9 +18,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "./ui/popover";
-import { Home, Hash, Plus, ChevronDown, Lock, Settings, Crown } from "lucide-react";
+import { Home, Hash, Plus, ChevronDown, Lock, Settings, Crown, Share2, Check } from "lucide-react";
 import { api } from "../utils/api";
 import type { SubHeard } from "../types";
+import { toast } from "sonner@2.0.3";
+import { createSubHeardLink } from "../utils/url";
+import { share } from "../utils/share";
 
 interface SubHeardBrowserProps {
   currentSubHeard?: string;
@@ -44,6 +47,7 @@ export function SubHeardBrowser({
   const [newSubHeardName, setNewSubHeardName] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [copiedSubHeard, setCopiedSubHeard] = useState<string | null>(null);
 
   // Load sub-heards on mount, when sheet opens, or when user changes
   useEffect(() => {
@@ -158,6 +162,23 @@ export function SubHeardBrowser({
     }
   };
 
+  const handleShareLink = async (subHeardName: string) => {
+    const url = createSubHeardLink(subHeardName);
+    await share({
+      title: `Join ${formatSubHeardDisplay(subHeardName)} on HEARD!`,
+      text: "Check out this sub-heard on HEARD!",
+      url,
+      onSuccess: () => {
+        setCopiedSubHeard(subHeardName);
+        toast.success("Link shared successfully!");
+        setTimeout(() => setCopiedSubHeard(null), 2000);
+      },
+      onError: (error) => {
+        toast.error("Could not share link. Please manually copy the URL.");
+      },
+    });
+  };
+
   const displayText = currentSubHeard
     ? formatSubHeardDisplay(currentSubHeard)
     : "All";
@@ -247,7 +268,7 @@ export function SubHeardBrowser({
                               <Settings className="w-4 h-4" />
                             </button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-64">
+                          <PopoverContent className="w-80">
                             <div className="space-y-4">
                               <div>
                                 <h4 className="font-medium mb-2">Sub-Heard Settings</h4>
@@ -256,22 +277,47 @@ export function SubHeardBrowser({
                                 </p>
                               </div>
                               
-                              <div className="flex items-center justify-between">
-                                <div className="space-y-0.5">
-                                  <Label htmlFor={`private-${subHeard.name}`}>
-                                    Private
-                                  </Label>
-                                  <p className="text-xs text-muted-foreground">
-                                    Only accessible via link
-                                  </p>
+                              <div className="space-y-3">
+                                <div>
+                                  <Label className="text-sm mb-1.5 block">Share Link</Label>
+                                  <div className="flex gap-2">
+                                    <Input
+                                      readOnly
+                                      value={createSubHeardLink(subHeard.name)}
+                                      className="text-xs"
+                                    />
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleShareLink(subHeard.name)}
+                                      className="flex-shrink-0"
+                                    >
+                                      {copiedSubHeard === subHeard.name ? (
+                                        <Check className="w-4 h-4" />
+                                      ) : (
+                                        <Share2 className="w-4 h-4" />
+                                      )}
+                                    </Button>
+                                  </div>
                                 </div>
-                                <Switch
-                                  id={`private-${subHeard.name}`}
-                                  checked={subHeard.isPrivate || false}
-                                  onCheckedChange={(checked) => {
-                                    handleTogglePrivacy(subHeard, checked);
-                                  }}
-                                />
+
+                                <div className="flex items-center justify-between">
+                                  <div className="space-y-0.5">
+                                    <Label htmlFor={`private-${subHeard.name}`}>
+                                      Private
+                                    </Label>
+                                    <p className="text-xs text-muted-foreground">
+                                      Only accessible via link
+                                    </p>
+                                  </div>
+                                  <Switch
+                                    id={`private-${subHeard.name}`}
+                                    checked={subHeard.isPrivate || false}
+                                    onCheckedChange={(checked) => {
+                                      handleTogglePrivacy(subHeard, checked);
+                                    }}
+                                  />
+                                </div>
                               </div>
                             </div>
                           </PopoverContent>
