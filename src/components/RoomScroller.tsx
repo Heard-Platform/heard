@@ -181,6 +181,11 @@ export const RoomScroller = forwardRef<RoomScrollerRef, RoomScrollerProps>(({
     }
   }));
 
+  // Reset scroll to top when rooms change (e.g., when sub-heard changes)
+  useEffect(() => {
+    scrollToIndex(0);
+  }, [rooms.length]);
+
   const handleNext = () => {
     if (currentIndex < allCards.length - 1) {
       scrollToIndex(currentIndex + 1);
