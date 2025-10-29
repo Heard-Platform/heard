@@ -1288,18 +1288,14 @@ app.post(
 app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
   try {
     const roomId = c.req.param("roomId");
-    console.log(`Fetching room status for: ${roomId}`);
 
     if (!roomId) {
-      console.error("No roomId provided");
       return c.json({ error: "Room ID is required" }, 400);
     }
 
     const room = await getDebateRoom(roomId);
-    console.log(`Room data retrieved:`, room);
 
     if (!room) {
-      console.log(`Room ${roomId} not found`);
       return c.json({ error: "Room not found" }, 404);
     }
 
@@ -1318,8 +1314,6 @@ app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
     });
   } catch (error) {
     console.error("Error fetching room status:", error);
-    console.error("Error details:", error.message);
-    console.error("Error stack:", error.stack);
     return c.json(
       {
         error: "Failed to fetch room status",
