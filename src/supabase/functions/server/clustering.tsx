@@ -3,8 +3,12 @@
  * Uses k-means clustering on user-statement voting matrix
  */
 
-import * as kv from './kv_store.tsx';
-import type { Vote, Statement, DebateRoom } from './debate-api.tsx';
+import * as kv from "./kv_store.tsx";
+import type {
+  Vote,
+  Statement,
+  DebateRoom,
+} from "./debate-api.tsx";
 
 export interface VotingMatrix {
   userIds: string[];
@@ -33,20 +37,25 @@ export function buildVotingMatrix(
   userIds: string[],
   statements: Array<{
     id: string;
-    votes: Array<{ userId: string; vote: 'agree' | 'disagree' | 'pass' }>;
-  }>
+    votes: Array<{
+      userId: string;
+      vote: "agree" | "disagree" | "pass";
+    }>;
+  }>,
 ): VotingMatrix {
-  const statementIds = statements.map(s => s.id);
+  const statementIds = statements.map((s) => s.id);
   const matrix: number[][] = [];
 
   // Build matrix: rows = users, cols = statements
   for (const userId of userIds) {
     const row: number[] = [];
     for (const statement of statements) {
-      const vote = statement.votes.find(v => v.userId === userId);
-      if (!vote || vote.vote === 'pass') {
+      const vote = statement.votes.find(
+        (v) => v.userId === userId,
+      );
+      if (!vote || vote.vote === "pass") {
         row.push(0);
-      } else if (vote.vote === 'agree') {
+      } else if (vote.vote === "agree") {
         row.push(1);
       } else {
         row.push(-1);
@@ -76,17 +85,17 @@ function calculateMean(vectors: number[][]): number[] {
   if (vectors.length === 0) return [];
   const dim = vectors[0].length;
   const mean = new Array(dim).fill(0);
-  
+
   for (const vector of vectors) {
     for (let i = 0; i < dim; i++) {
       mean[i] += vector[i];
     }
   }
-  
+
   for (let i = 0; i < dim; i++) {
     mean[i] /= vectors.length;
   }
-  
+
   return mean;
 }
 
@@ -99,25 +108,25 @@ function calculateMean(vectors: number[][]): number[] {
 export function kMeansClustering(
   matrix: number[][],
   k: number = 3,
-  maxIterations: number = 10
+  maxIterations: number = 10,
 ): { assignments: number[]; centroids: number[][] } {
   const n = matrix.length; // number of users
-  
+
   if (n === 0) {
     return { assignments: [], centroids: [] };
   }
-  
+
   // Adjust k if we have fewer users than clusters
   k = Math.min(k, n);
-  
+
   // Handle edge case: only 1 user or 1 cluster
   if (k === 1 || n === 1) {
     return {
       assignments: new Array(n).fill(0),
-      centroids: [calculateMean(matrix)]
+      centroids: [calculateMean(matrix)],
     };
   }
-  
+
   // Initialize centroids randomly by selecting k random users
   const centroids: number[][] = [];
   const selectedIndices = new Set<number>();
@@ -128,43 +137,50 @@ export function kMeansClustering(
       centroids.push([...matrix[idx]]);
     }
   }
-  
+
   let assignments = new Array(n).fill(0);
   let converged = false;
   let iterations = 0;
-  
+
   while (!converged && iterations < maxIterations) {
     // Assign each user to nearest centroid
-    const newAssignments = matrix.map(userVector => {
+    const newAssignments = matrix.map((userVector) => {
       let minDistance = Infinity;
       let closestCluster = 0;
-      
+
       for (let i = 0; i < k; i++) {
-        const distance = euclideanDistance(userVector, centroids[i]);
+        const distance = euclideanDistance(
+          userVector,
+          centroids[i],
+        );
         if (distance < minDistance) {
           minDistance = distance;
           closestCluster = i;
         }
       }
-      
+
       return closestCluster;
     });
-    
+
     // Check for convergence
-    converged = newAssignments.every((a, i) => a === assignments[i]);
+    converged = newAssignments.every(
+      (a, i) => a === assignments[i],
+    );
     assignments = newAssignments;
-    
+
     // Recalculate centroids
     for (let i = 0; i < k; i++) {
-      const clusterMembers = matrix.filter((_, idx) => assignments[idx] === i);
+      const clusterMembers = matrix.filter(
+        (_, idx) => assignments[idx] === i,
+      );
       if (clusterMembers.length > 0) {
         centroids[i] = calculateMean(clusterMembers);
       }
     }
-    
+
     iterations++;
   }
-  
+
   return { assignments, centroids };
 }
 
@@ -176,69 +192,93 @@ export async function clusterUsersAndSave(
   userIds: string[],
   statements: Array<{
     id: string;
-    votes: Array<{ userId: string; vote: 'agree' | 'disagree' | 'pass' }>;
-  }>
+    votes: Array<{
+      userId: string;
+      vote: "agree" | "disagree" | "pass";
+    }>;
+  }>,
 ): Promise<ClusterMetadata> {
-  console.log(`[Clustering] Starting clustering for room ${roomId} with ${userIds.length} users and ${statements.length} statements`);
-  
+  console.log(
+    `[Clustering] Starting clustering for room ${roomId} with ${userIds.length} users and ${statements.length} statements`,
+  );
+
   // Build voting matrix
   const votingMatrix = buildVotingMatrix(userIds, statements);
-  
+
   // Determine optimal number of clusters (simple heuristic: sqrt(n) or 3, whichever is smaller)
-  const optimalK = Math.min(Math.max(2, Math.floor(Math.sqrt(userIds.length))), 3);
-  
+  const optimalK = Math.min(
+    Math.max(2, Math.floor(Math.sqrt(userIds.length))),
+    3,
+  );
+
   // Perform k-means clustering
-  const { assignments, centroids } = kMeansClustering(votingMatrix.matrix, optimalK);
-  
+  const { assignments, centroids } = kMeansClustering(
+    votingMatrix.matrix,
+    optimalK,
+  );
+
   // Calculate cluster sizes
   const clusterSizes: Record<number, number> = {};
   for (let i = 0; i < optimalK; i++) {
     clusterSizes[i] = 0;
   }
   for (const clusterId of assignments) {
-    clusterSizes[clusterId] = (clusterSizes[clusterId] || 0) + 1;
+    clusterSizes[clusterId] =
+      (clusterSizes[clusterId] || 0) + 1;
   }
-  
+
   // Create cluster assignments
-  const clusterAssignments: ClusterAssignment[] = userIds.map((userId, idx) => ({
-    userId,
-    clusterId: assignments[idx],
-    distance: euclideanDistance(votingMatrix.matrix[idx], centroids[assignments[idx]])
-  }));
-  
+  const clusterAssignments: ClusterAssignment[] = userIds.map(
+    (userId, idx) => ({
+      userId,
+      clusterId: assignments[idx],
+      distance: euclideanDistance(
+        votingMatrix.matrix[idx],
+        centroids[assignments[idx]],
+      ),
+    }),
+  );
+
   // Create metadata
   const metadata: ClusterMetadata = {
     roomId,
     totalClusters: optimalK,
     timestamp: Date.now(),
     clusterSizes,
-    centroids
+    centroids,
   };
-  
+
   // Save to database
   // Store each user's cluster assignment
   const assignmentKeys = clusterAssignments.map(
-    ca => `cluster:${roomId}:${ca.userId}`
+    (ca) => `cluster:${roomId}:${ca.userId}`,
   );
-  const assignmentValues = clusterAssignments.map(ca => JSON.stringify({
-    clusterId: ca.clusterId,
-    distance: ca.distance,
-    timestamp: metadata.timestamp
-  }));
-  
+  const assignmentValues = clusterAssignments.map((ca) =>
+    JSON.stringify({
+      clusterId: ca.clusterId,
+      distance: ca.distance,
+      timestamp: metadata.timestamp,
+    }),
+  );
+
   // Store metadata
   const metadataKey = `cluster:${roomId}:metadata`;
   const metadataValue = JSON.stringify(metadata);
-  
+
   // Batch save to database - mset takes two arrays: keys and values
   const allKeys = [...assignmentKeys, metadataKey];
   const allValues = [...assignmentValues, metadataValue];
-  
+
   await kv.mset(allKeys, allValues);
-  
-  console.log(`[Clustering] Saved ${clusterAssignments.length} cluster assignments and metadata for room ${roomId}`);
-  console.log(`[Clustering] Cluster distribution:`, clusterSizes);
-  
+
+  console.log(
+    `[Clustering] Saved ${clusterAssignments.length} cluster assignments and metadata for room ${roomId}`,
+  );
+  console.log(
+    `[Clustering] Cluster distribution:`,
+    clusterSizes,
+  );
+
   return metadata;
 }
 
@@ -247,13 +287,17 @@ export async function clusterUsersAndSave(
  */
 export async function getUserCluster(
   roomId: string,
-  userId: string
-): Promise<{ clusterId: number; distance: number; timestamp: number } | null> {
+  userId: string,
+): Promise<{
+  clusterId: number;
+  distance: number;
+  timestamp: number;
+} | null> {
   const key = `cluster:${roomId}:${userId}`;
   const value = await kv.get(key);
-  
+
   if (!value) return null;
-  
+
   try {
     return JSON.parse(value);
   } catch {
@@ -264,12 +308,14 @@ export async function getUserCluster(
 /**
  * Get cluster metadata for a room
  */
-export async function getClusterMetadata(roomId: string): Promise<ClusterMetadata | null> {
+export async function getClusterMetadata(
+  roomId: string,
+): Promise<ClusterMetadata | null> {
   const key = `cluster:${roomId}:metadata`;
   const value = await kv.get(key);
-  
+
   if (!value) return null;
-  
+
   try {
     return JSON.parse(value);
   } catch {
@@ -282,13 +328,23 @@ export async function getClusterMetadata(roomId: string): Promise<ClusterMetadat
  */
 export async function getRoomClusters(
   roomId: string,
-  userIds: string[]
-): Promise<Map<string, { clusterId: number; distance: number; timestamp: number }>> {
-  const keys = userIds.map(userId => `cluster:${roomId}:${userId}`);
+  userIds: string[],
+): Promise<
+  Map<
+    string,
+    { clusterId: number; distance: number; timestamp: number }
+  >
+> {
+  const keys = userIds.map(
+    (userId) => `cluster:${roomId}:${userId}`,
+  );
   const values = await kv.mget(keys);
-  
-  const clusters = new Map<string, { clusterId: number; distance: number; timestamp: number }>();
-  
+
+  const clusters = new Map<
+    string,
+    { clusterId: number; distance: number; timestamp: number }
+  >();
+
   for (let i = 0; i < userIds.length; i++) {
     if (values[i]) {
       try {
@@ -298,14 +354,16 @@ export async function getRoomClusters(
       }
     }
   }
-  
+
   return clusters;
 }
 
 /**
  * Helper: Get votes for a statement
  */
-async function getVotesForStatement(statementId: string): Promise<Vote[]> {
+async function getVotesForStatement(
+  statementId: string,
+): Promise<Vote[]> {
   try {
     const votes = await kv.getByPrefix(`vote:${statementId}:`);
     return votes
@@ -318,7 +376,10 @@ async function getVotesForStatement(statementId: string): Promise<Vote[]> {
       })
       .filter((v) => v !== null);
   } catch (error) {
-    console.error(`[Clustering] Error fetching votes for statement ${statementId}:`, error);
+    console.error(
+      `[Clustering] Error fetching votes for statement ${statementId}:`,
+      error,
+    );
     return [];
   }
 }
@@ -326,13 +387,18 @@ async function getVotesForStatement(statementId: string): Promise<Vote[]> {
 /**
  * Helper: Get debate room
  */
-async function getDebateRoom(roomId: string): Promise<DebateRoom | null> {
+async function getDebateRoom(
+  roomId: string,
+): Promise<DebateRoom | null> {
   try {
     const roomData = await kv.get(`room:${roomId}`);
     if (!roomData) return null;
     return JSON.parse(roomData);
   } catch (error) {
-    console.error(`[Clustering] Error fetching room ${roomId}:`, error);
+    console.error(
+      `[Clustering] Error fetching room ${roomId}:`,
+      error,
+    );
     return null;
   }
 }
@@ -341,59 +407,72 @@ async function getDebateRoom(roomId: string): Promise<DebateRoom | null> {
  * Recalculate clusters for a room (main entry point - call this on every vote)
  * Fetches all necessary data and performs clustering
  */
-export async function recalculateClustersForRoom(roomId: string): Promise<ClusterMetadata | null> {
+export async function recalculateClustersForRoom(
+  roomId: string,
+): Promise<ClusterMetadata | null> {
   try {
-    console.log(`[Clustering] Starting recalculation for room ${roomId}`);
-    
+    console.log(
+      `[Clustering] Starting recalculation for room ${roomId}`,
+    );
+
     // Get room data
     const room = await getDebateRoom(roomId);
     if (!room || room.participants.length === 0) {
-      console.log(`[Clustering] Room ${roomId} not found or has no participants`);
+      console.log(
+        `[Clustering] Room ${roomId} not found or has no participants`,
+      );
       return null;
     }
-    
+
     // Get all statements for this room
     const allStatements = await kv.getByPrefix("statement:");
     const roomStatements: Statement[] = allStatements
-      .map(s => {
+      .map((s) => {
         try {
           return JSON.parse(s);
         } catch {
           return null;
         }
       })
-      .filter(s => s && s.roomId === roomId);
-    
+      .filter((s) => s && s.roomId === roomId);
+
     if (roomStatements.length === 0) {
-      console.log(`[Clustering] No statements found for room ${roomId}`);
+      console.log(
+        `[Clustering] No statements found for room ${roomId}`,
+      );
       return null;
     }
-    
+
     // Get votes for all statements and build statement objects with votes
     const statementsWithVotes = await Promise.all(
       roomStatements.map(async (stmt) => {
         const votes = await getVotesForStatement(stmt.id);
         return {
           id: stmt.id,
-          votes: votes.map(v => ({
+          votes: votes.map((v) => ({
             userId: v.userId,
-            vote: v.voteType
-          }))
+            vote: v.voteType,
+          })),
         };
-      })
+      }),
     );
-    
+
     // Run clustering
     const metadata = await clusterUsersAndSave(
       roomId,
       room.participants,
-      statementsWithVotes
+      statementsWithVotes,
     );
-    
-    console.log(`[Clustering] Successfully recalculated clusters for room ${roomId}`);
+
+    console.log(
+      `[Clustering] Successfully recalculated clusters for room ${roomId}`,
+    );
     return metadata;
   } catch (error) {
-    console.error(`[Clustering] Error recalculating clusters for room ${roomId}:`, error);
+    console.error(
+      `[Clustering] Error recalculating clusters for room ${roomId}:`,
+      error,
+    );
     return null;
   }
 }

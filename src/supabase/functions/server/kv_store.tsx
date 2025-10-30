@@ -51,7 +51,7 @@ export const get = async (key: string): Promise<any> => {
 
 // Bulk set stores multiple key-value pairs in a single transaction
 export const bulkSet = async (
-  items: Array<{ key: string; value: any }>
+  items: Array<{ key: string; value: any }>,
 ): Promise<void> => {
   const supabase = client();
   const { error } = await supabase

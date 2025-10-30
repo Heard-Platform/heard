@@ -7,7 +7,11 @@ import { subheardApi } from "./subheard-api.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
 
 // Type definitions - exported for use in other modules
-export type VoteType = "agree" | "disagree" | "pass" | "super_agree";
+export type VoteType =
+  | "agree"
+  | "disagree"
+  | "pass"
+  | "super_agree";
 
 export interface Statement {
   id: string;
@@ -86,28 +90,30 @@ const generateId = () =>
   Date.now().toString(36);
 
 // Helper to get statement by ID using LIKE pattern (statement:%:statementId)
-export const getStatementById = async (statementId: string): Promise<Statement | null> => {
+export const getStatementById = async (
+  statementId: string,
+): Promise<Statement | null> => {
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
-  
+
   const { data, error } = await supabase
     .from("kv_store_f1a393b4")
     .select("value")
     .like("key", `statement:%:${statementId}`)
     .limit(1)
     .maybeSingle();
-    
+
   if (error) {
     console.error("Error fetching statement by ID:", error);
     return null;
   }
-  
+
   if (!data?.value) {
     return null;
   }
-  
+
   try {
     return JSON.parse(data.value);
   } catch (e) {
@@ -1149,10 +1155,13 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
 
     // If creating a room in a private sub-heard, check membership
     if (subHeard) {
-      const normalizedSubHeard = subHeard.trim().toLowerCase().replace(/\s+/g, '-');
+      const normalizedSubHeard = subHeard
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-");
       const subHeardKey = `subheard:${normalizedSubHeard}`;
       const subHeardData = await kv.get(subHeardKey);
-      
+
       if (subHeardData) {
         try {
           const parsedSubHeard = JSON.parse(subHeardData);
@@ -1161,16 +1170,22 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
             const isAdmin = parsedSubHeard.adminId === userId;
             const membershipKey = `subheard_member:${userId}:${normalizedSubHeard}`;
             const isMember = await kv.get(membershipKey);
-            
+
             if (!isAdmin && !isMember) {
               return c.json(
-                { error: "You must be a member of this private sub-heard to create rooms" },
+                {
+                  error:
+                    "You must be a member of this private sub-heard to create rooms",
+                },
                 403,
               );
             }
           }
         } catch (error) {
-          console.error("Error checking sub-heard membership:", error);
+          console.error(
+            "Error checking sub-heard membership:",
+            error,
+          );
         }
       }
     }
@@ -1192,7 +1207,9 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
       createdAt: Date.now(),
       mode: mode as DebateMode,
       rantFirst: rantFirst,
-      subHeard: subHeard ? subHeard.trim().toLowerCase().replace(/\s+/g, '-') : undefined,
+      subHeard: subHeard
+        ? subHeard.trim().toLowerCase().replace(/\s+/g, "-")
+        : undefined,
     };
 
     await saveDebateRoom(debateRoom);
@@ -1240,7 +1257,7 @@ app.post(
       if (room.subHeard) {
         const subHeardKey = `subheard:${room.subHeard}`;
         const subHeardData = await kv.get(subHeardKey);
-        
+
         if (subHeardData) {
           try {
             const parsedSubHeard = JSON.parse(subHeardData);
@@ -1249,16 +1266,22 @@ app.post(
               const isAdmin = parsedSubHeard.adminId === userId;
               const membershipKey = `subheard_member:${userId}:${room.subHeard}`;
               const isMember = await kv.get(membershipKey);
-              
+
               if (!isAdmin && !isMember) {
                 return c.json(
-                  { error: "You must be a member of this private sub-heard to join rooms" },
+                  {
+                    error:
+                      "You must be a member of this private sub-heard to join rooms",
+                  },
                   403,
                 );
               }
             }
           } catch (error) {
-            console.error("Error checking sub-heard membership:", error);
+            console.error(
+              "Error checking sub-heard membership:",
+              error,
+            );
           }
         }
       }
@@ -1532,7 +1555,11 @@ app.post(
       const statementId = c.req.param("statementId");
       const { voteType, userId } = await c.req.json();
 
-      if (!["agree", "disagree", "pass", "super_agree"].includes(voteType)) {
+      if (
+        !["agree", "disagree", "pass", "super_agree"].includes(
+          voteType,
+        )
+      ) {
         return c.json({ error: "Invalid vote type" }, 400);
       }
 
@@ -1543,7 +1570,7 @@ app.post(
 
       // Fetch statement using LIKE pattern (statement:%:statementId)
       const statement = await getStatementById(statementId);
-      
+
       if (!statement) {
         console.error(
           `Statement not found with ID: ${statementId}`,
@@ -1594,7 +1621,10 @@ app.post(
           `Updated vote for user ${userId} on statement ${statementId} to ${voteType}`,
         );
 
-        if (voteType === "agree" || voteType === "super_agree") {
+        if (
+          voteType === "agree" ||
+          voteType === "super_agree"
+        ) {
           pointsEarned = 10; // Award points for agreeing
         }
       } else {
@@ -1611,7 +1641,10 @@ app.post(
           `Created new vote for user ${userId} on statement ${statementId}: ${voteType}`,
         );
 
-        if (voteType === "agree" || voteType === "super_agree") {
+        if (
+          voteType === "agree" ||
+          voteType === "super_agree"
+        ) {
           pointsEarned = 10; // Award points for agreeing
         }
       }
@@ -1645,7 +1678,10 @@ app.post(
       try {
         await recalculateClustersForRoom(statement.roomId);
       } catch (clusterError) {
-        console.error("[Clustering] Error during clustering recalculation:", clusterError);
+        console.error(
+          "[Clustering] Error during clustering recalculation:",
+          clusterError,
+        );
         // Don't fail the vote if clustering fails
       }
 
@@ -1829,7 +1865,9 @@ app.post(
       // Only developers can mark rooms as inactive
       if (!user.isDeveloper) {
         return c.json(
-          { error: "Only developers can mark rooms as inactive" },
+          {
+            error: "Only developers can mark rooms as inactive",
+          },
           403,
         );
       }
@@ -1857,7 +1895,7 @@ app.get("/make-server-f1a393b4/rooms/active", async (c) => {
   try {
     const subHeard = c.req.query("subHeard");
     const userId = c.req.query("userId");
-    
+
     const activeRooms = await kv.getByPrefix("active_room:");
     let rooms = activeRooms
       .map((r) => {
@@ -2869,11 +2907,12 @@ app.post(
 
       // Create a realtime test room with a DC-specific debate topic
       const roomId = generateId();
-      const fiveMinutesFromNow = Date.now() + (5 * 60 * 1000); // 5 minutes
-      
+      const fiveMinutesFromNow = Date.now() + 5 * 60 * 1000; // 5 minutes
+
       const debateRoom: DebateRoom = {
         id: roomId,
-        topic: "I wish there was a library more conveniently located north of Dupont Circle",
+        topic:
+          "I wish there was a library more conveniently located north of Dupont Circle",
         phase: "round1",
         subPhase: "voting",
         gameNumber: 1,
@@ -3065,10 +3104,14 @@ app.post(
         room: debateRoom,
         players: fakeUsers.length + 1,
         statements: statements.length,
-        message: "Real-time debate room created! You have 5 minutes to vote on all statements.",
+        message:
+          "Real-time debate room created! You have 5 minutes to vote on all statements.",
       });
     } catch (error) {
-      console.error("Error creating realtime test room:", error);
+      console.error(
+        "Error creating realtime test room:",
+        error,
+      );
       return c.json(
         { error: "Failed to create realtime test room" },
         500,
@@ -3083,7 +3126,7 @@ app.get(
   async (c) => {
     try {
       const roomId = c.req.param("roomId");
-      
+
       const room = await getDebateRoom(roomId);
       if (!room) {
         return c.json({ error: "Room not found" }, 404);
@@ -3092,29 +3135,33 @@ app.get(
       // Get cluster metadata
       const metadataKey = `cluster:${roomId}:metadata`;
       const metadataValue = await kv.get(metadataKey);
-      const metadata = metadataValue ? JSON.parse(metadataValue) : null;
+      const metadata = metadataValue
+        ? JSON.parse(metadataValue)
+        : null;
 
       // Get all cluster assignments for participants
       const clusterKeys = room.participants.map(
-        userId => `cluster:${roomId}:${userId}`
+        (userId) => `cluster:${roomId}:${userId}`,
       );
       const clusterValues = await kv.mget(clusterKeys);
-      
-      const assignments = room.participants.map((userId, idx) => {
-        const value = clusterValues[idx];
-        if (!value) return { userId, cluster: null };
-        try {
-          const clusterData = JSON.parse(value);
-          return {
-            userId,
-            clusterId: clusterData.clusterId,
-            distance: clusterData.distance,
-            timestamp: clusterData.timestamp
-          };
-        } catch {
-          return { userId, cluster: null };
-        }
-      });
+
+      const assignments = room.participants.map(
+        (userId, idx) => {
+          const value = clusterValues[idx];
+          if (!value) return { userId, cluster: null };
+          try {
+            const clusterData = JSON.parse(value);
+            return {
+              userId,
+              clusterId: clusterData.clusterId,
+              distance: clusterData.distance,
+              timestamp: clusterData.timestamp,
+            };
+          } catch {
+            return { userId, cluster: null };
+          }
+        },
+      );
 
       return c.json({
         roomId,
