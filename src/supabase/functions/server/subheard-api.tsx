@@ -5,38 +5,10 @@ import { getUserMemberships } from "./membership-utils.tsx";
 
 const app = new Hono();
 
-// Get all unique sub-heards from active rooms and created sub-heards
-app.get("/make-server-f1a393b4/subheards", async (c) => {
+app.get("/make-server-f1a393b4/subheards", async (c: any) => {
   try {
     const userId = c.req.query("userId"); // Optional: if provided, show private sub-heards where user is admin or member
 
-    // Get all sub-heards directly from the database
-    const createdSubHeards = await kv.getByPrefix("subheard:");
-
-    // Parse sub-heard data
-    const subHeardData: Array<{
-      name: string;
-      isPrivate: boolean;
-      adminId?: string;
-      accessToken?: string;
-    }> = [];
-    createdSubHeards.forEach((sh) => {
-      try {
-        const data = JSON.parse(sh);
-        if (data.name) {
-          subHeardData.push({
-            name: data.name,
-            isPrivate: data.isPrivate || false,
-            adminId: data.adminId,
-            accessToken: data.accessToken,
-          });
-        }
-      } catch (error) {
-        console.error("Error parsing sub-heard:", sh, error);
-      }
-    });
-
-    // Get active rooms to calculate counts for each sub-heard
     const activeRooms = await kv.getByPrefix("active_room:");
     const rooms = activeRooms
       .map((r) => {
@@ -49,22 +21,45 @@ app.get("/make-server-f1a393b4/subheards", async (c) => {
       })
       .filter((r) => r !== null && r.subHeard);
 
-    // Calculate room counts per sub-heard
-    const subHeardCounts: { [key: string]: number } = {};
+    const roomCounts: { [key: string]: number } = {};
     rooms.forEach((room) => {
       if (room.subHeard) {
-        subHeardCounts[room.subHeard] =
-          (subHeardCounts[room.subHeard] || 0) + 1;
+        roomCounts[room.subHeard] =
+          (roomCounts[room.subHeard] || 0) + 1;
       }
     });
 
-    // Get user's memberships if userId is provided
     let userMemberships: Set<string> = new Set();
     if (userId) {
       userMemberships = await getUserMemberships(userId);
     }
 
-    const subHeards = subHeardData
+    const subheardJsons = await kv.getByPrefix("subheard:");
+
+    let subHeards: Array<{
+      name: string;
+      isPrivate: boolean;
+      adminId?: string;
+      accessToken?: string;
+    }> = [];
+
+    subheardJsons.forEach((sh) => {
+      try {
+        const data = JSON.parse(sh);
+        if (data.name) {
+          subHeards.push({
+            name: data.name,
+            isPrivate: data.isPrivate || false,
+            adminId: data.adminId,
+            accessToken: data.accessToken,
+          });
+        }
+      } catch (error) {
+        console.error("Error parsing sub-heard:", sh, error);
+      }
+    });
+
+    subHeards = subHeards
       // Filter out private sub-heards unless user is admin or member
       .filter((data) => {
         if (!data.isPrivate) return true; // Show if not private
@@ -77,7 +72,7 @@ app.get("/make-server-f1a393b4/subheards", async (c) => {
       })
       .map((data) => {
         const isAdmin = userId && data.adminId === userId;
-        const count = subHeardCounts[data.name] || 0;
+        const count = roomCounts[data.name] || 0;
 
         return {
           name: data.name,
@@ -89,9 +84,7 @@ app.get("/make-server-f1a393b4/subheards", async (c) => {
         };
       });
 
-    // Sort by count descending, then alphabetically
     subHeards.sort((a, b) => {
-      if (b.count !== a.count) return b.count - a.count;
       return a.name.localeCompare(b.name);
     });
 
@@ -116,7 +109,7 @@ export const generateAccessToken = (): string => {
 };
 
 // Create a new sub-heard
-app.post("/make-server-f1a393b4/subheard/create", async (c) => {
+app.post("/make-server-f1a393b4/subheard/create", async (c: any) => {
   try {
     const { name, isPrivate, userId } = await c.req.json();
 
@@ -184,7 +177,7 @@ app.post("/make-server-f1a393b4/subheard/create", async (c) => {
 // Public sub-heards don't need memberships
 app.post(
   "/make-server-f1a393b4/subheard/:name/join",
-  async (c) => {
+  async (c: any) => {
     try {
       const name = c.req.param("name");
       const { userId, accessToken } = await c.req.json();
@@ -276,7 +269,7 @@ app.post(
 // Update sub-heard settings (admin only)
 app.patch(
   "/make-server-f1a393b4/subheard/:name/settings",
-  async (c) => {
+  async (c: any) => {
     try {
       const name = c.req.param("name");
       const { userId, isPrivate } = await c.req.json();
