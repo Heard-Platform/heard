@@ -12,6 +12,7 @@ import { api } from "./utils/api";
 import {
   parseRoomIdFromUrl,
   parseSubHeardFromUrl,
+  parseAccessTokenFromUrl,
   updateUrlForRoom,
   updateUrlForSubHeard,
   clearRoomFromUrl,
@@ -308,7 +309,7 @@ export default function App() {
     }
   };
 
-  // Check URL for room ID or sub-heard on initial load
+  // Check URL for room ID, sub-heard, or access token on initial load
   useEffect(() => {
     if (!hasCheckedUrl) {
       const roomIdFromUrl = parseRoomIdFromUrl();
@@ -323,13 +324,24 @@ export default function App() {
     }
   }, [hasCheckedUrl]);
 
-  // Auto-join sub-heard when user visits its URL
+  // Auto-join sub-heard when user visits its URL with access token
   useEffect(() => {
     const autoJoinSubHeard = async () => {
       if (user && currentSubHeard && hasCheckedUrl) {
         try {
-          // Idempotent join - will add membership if needed
-          await api.joinSubHeard(currentSubHeard, user.id);
+          // Get access token from URL if present
+          const accessToken = parseAccessTokenFromUrl();
+          
+          // Idempotent join - will add membership if private and access token is valid
+          // For public sub-heards, this just returns success
+          const response = await api.joinSubHeard(currentSubHeard, user.id, accessToken || undefined);
+          
+          if (!response.success) {
+            // Any error means access token issue for private sub-heard
+            toast.error("Invalid or missing access code for this private sub-heard");
+            setCurrentSubHeard(null);
+            updateUrlForSubHeard(null);
+          }
         } catch (error) {
           console.error("Error auto-joining sub-heard:", error);
         }

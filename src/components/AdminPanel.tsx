@@ -45,6 +45,7 @@ interface SubHeard {
   createdAt: number;
   isPrivate: boolean;
   adminId?: string;
+  accessToken?: string;
 }
 
 interface AdminPanelProps {
@@ -59,6 +60,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
   const [loading, setLoading] = useState(false);
   const [selectedSubHeard, setSelectedSubHeard] = useState<SubHeard | null>(null);
   const [newAdminId, setNewAdminId] = useState("");
+  const [backfilling, setBackfilling] = useState(false);
 
   const fetchAdminData = async () => {
     if (!adminKey) return;
@@ -142,6 +144,37 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     if (!userId) return "No admin";
     const user = users.find((u) => u.userId === userId);
     return user ? user.name : userId.substring(0, 8);
+  };
+
+  const handleBackfillTokens = async () => {
+    if (!confirm("This will add access tokens to all private sub-heards that don't have one. Continue?")) {
+      return;
+    }
+
+    setBackfilling(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/backfill-tokens`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${publicAnonKey}`,
+          "X-Admin-Key": adminKey,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        alert(`Success! ${data.message}\nSub-heards updated: ${data.subHeards.join(", ") || "none"}`);
+        fetchAdminData(); // Refresh data
+      } else {
+        const error = await res.json();
+        alert(`Failed to backfill tokens: ${error.error}`);
+      }
+    } catch (error) {
+      console.error("Error backfilling tokens:", error);
+      alert("Failed to backfill tokens");
+    } finally {
+      setBackfilling(false);
+    }
   };
 
   if (!isAuthenticated) {
@@ -239,7 +272,17 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
 
         {/* Sub-Heards Management */}
         <Card className="p-6">
-          <h2 className="text-xl mb-4">Manage Sub-Heards</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl">Manage Sub-Heards</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBackfillTokens}
+              disabled={backfilling}
+            >
+              {backfilling ? "Backfilling..." : "Backfill Access Tokens"}
+            </Button>
+          </div>
           <div className="space-y-4">
             {subHeards.map((subHeard) => (
               <div
@@ -257,6 +300,18 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                     <Crown className="w-3 h-3" />
                     <span>Admin: {getUserName(subHeard.adminId)}</span>
                   </div>
+                  {subHeard.isPrivate && subHeard.accessToken && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="font-mono bg-muted px-2 py-1 rounded">
+                        Token: {subHeard.accessToken}
+                      </span>
+                    </div>
+                  )}
+                  {subHeard.isPrivate && !subHeard.accessToken && (
+                    <div className="flex items-center gap-2 text-xs text-orange-600">
+                      <span>⚠️ Missing access token</span>
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     Created: {new Date(subHeard.createdAt).toLocaleDateString()}
                   </p>

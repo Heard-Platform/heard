@@ -133,10 +133,10 @@ class ApiClient {
     });
   }
 
-  async joinSubHeard(name: string, userId: string) {
+  async joinSubHeard(name: string, userId: string, accessToken?: string) {
     return this.request(`/subheard/${name}/join`, {
       method: "POST",
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ userId, accessToken }),
     });
   }
 

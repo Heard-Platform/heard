@@ -162,14 +162,15 @@ export function SubHeardBrowser({
     }
   };
 
-  const handleShareLink = async (subHeardName: string) => {
-    const url = createSubHeardLink(subHeardName);
+  const handleShareLink = async (subHeard: SubHeard) => {
+    const url = createSubHeardLink(subHeard);
+    
     await share({
-      title: `Join ${formatSubHeardDisplay(subHeardName)} on HEARD!`,
+      title: `Join ${formatSubHeardDisplay(subHeard.name)} on HEARD!`,
       text: "Check out this sub-heard on HEARD!",
       url,
       onSuccess: () => {
-        setCopiedSubHeard(subHeardName);
+        setCopiedSubHeard(subHeard.name);
         toast.success("Link shared successfully!");
         setTimeout(() => setCopiedSubHeard(null), 2000);
       },
@@ -286,13 +287,13 @@ export function SubHeardBrowser({
                                   <div className="flex gap-2">
                                     <Input
                                       readOnly
-                                      value={createSubHeardLink(subHeard.name)}
+                                      value={createSubHeardLink(subHeard)}
                                       className="text-xs"
                                     />
                                     <Button
                                       variant="outline"
                                       size="sm"
-                                      onClick={() => handleShareLink(subHeard.name)}
+                                      onClick={() => handleShareLink(subHeard)}
                                       className="flex-shrink-0"
                                     >
                                       {copiedSubHeard === subHeard.name ? (
