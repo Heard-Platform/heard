@@ -2729,6 +2729,10 @@
     color: var(--color-yellow-800);
   }
 
+  .lowercase {
+    text-transform: lowercase;
+  }
+
   .italic {
     font-style: italic;
   }

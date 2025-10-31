@@ -109,68 +109,75 @@ export const generateAccessToken = (): string => {
 };
 
 // Create a new sub-heard
-app.post("/make-server-f1a393b4/subheard/create", async (c: any) => {
-  try {
-    const { name, isPrivate, userId } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/subheard/create",
+  async (c: any) => {
+    try {
+      const { name, isPrivate, userId } = await c.req.json();
 
-    if (!name || typeof name !== "string") {
-      return c.json(
-        { error: "Sub-heard name is required" },
-        400,
-      );
-    }
+      if (!name || typeof name !== "string") {
+        return c.json(
+          { error: "Sub-heard name is required" },
+          400,
+        );
+      }
 
-    if (!userId || typeof userId !== "string") {
-      return c.json({ error: "User ID is required" }, 400);
-    }
+      if (!userId || typeof userId !== "string") {
+        return c.json({ error: "User ID is required" }, 400);
+      }
 
-    // Normalize the name (lowercase, replace spaces with hyphens)
-    const normalized = name
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "-");
+      // Normalize the name (lowercase, replace spaces with hyphens)
+      const normalized = name
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-");
 
-    if (normalized.length < 2) {
-      return c.json(
-        {
-          error: "Sub-heard name must be at least 2 characters",
-        },
-        400,
-      );
-    }
+      if (normalized.length < 2) {
+        return c.json(
+          {
+            error:
+              "Sub-heard name must be at least 2 characters",
+          },
+          400,
+        );
+      }
 
-    // Generate access token for private sub-heards
-    const accessToken = isPrivate
-      ? generateAccessToken()
-      : undefined;
+      // Generate access token for private sub-heards
+      const accessToken = isPrivate
+        ? generateAccessToken()
+        : undefined;
 
-    // Store the sub-heard in KV store
-    const subHeardKey = `subheard:${normalized}`;
-    const subHeardData = {
-      name: normalized,
-      createdAt: Date.now(),
-      isPrivate: isPrivate || false,
-      adminId: userId,
-      accessToken,
-    };
-
-    await kv.set(subHeardKey, JSON.stringify(subHeardData));
-
-    return c.json({
-      success: true,
-      subHeard: {
+      // Store the sub-heard in KV store
+      const subHeardKey = `subheard:${normalized}`;
+      const subHeardData = {
         name: normalized,
-        count: 0,
+        createdAt: Date.now(),
         isPrivate: isPrivate || false,
         adminId: userId,
         accessToken,
-      },
-    });
-  } catch (error) {
-    console.error("Error creating sub-heard:", error);
-    return c.json({ error: "Failed to create sub-heard" }, 500);
-  }
-});
+      };
+
+      await kv.set(subHeardKey, JSON.stringify(subHeardData));
+
+      return c.json({
+        success: true,
+        subHeard: {
+          name: normalized,
+          count: 0,
+          isPrivate: isPrivate || false,
+          adminId: userId,
+          accessToken,
+        },
+      });
+    } catch (error) {
+      console.error("Error creating sub-heard:", error);
+      return c.json(
+        { error: "Failed to create sub-heard" },
+        500,
+      );
+    }
+  },
+);
 
 // Join a sub-heard (become a member) - idempotent
 // Only creates membership for private sub-heards

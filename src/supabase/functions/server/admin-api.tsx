@@ -153,6 +153,127 @@ app.patch(
   },
 );
 
+// Rename a sub-heard (updates sub-heard, memberships, and active rooms)
+app.patch(
+  "/make-server-f1a393b4/admin/subheard/:name/rename",
+  async (c) => {
+    try {
+      const oldName = c.req.param("name");
+      const { newName } = await c.req.json();
+
+      if (!newName || typeof newName !== "string") {
+        return c.json({ error: "New sub-heard name is required" }, 400);
+      }
+
+      // Normalize the new name (lowercase, replace spaces with hyphens)
+      const normalizedNewName = newName.trim().toLowerCase().replace(/\s+/g, '-');
+
+      if (normalizedNewName.length < 2) {
+        return c.json({ error: "Sub-heard name must be at least 2 characters" }, 400);
+      }
+
+      // Check if new name already exists
+      const newSubHeardKey = `subheard:${normalizedNewName}`;
+      const existingNewData = await kv.get(newSubHeardKey);
+      if (existingNewData) {
+        return c.json({ error: "A sub-heard with that name already exists" }, 409);
+      }
+
+      // Get existing sub-heard data
+      const oldSubHeardKey = `subheard:${oldName}`;
+      const existingData = await kv.get(oldSubHeardKey);
+
+      if (!existingData) {
+        return c.json({ error: "Sub-heard not found" }, 404);
+      }
+
+      let subHeardData;
+      try {
+        subHeardData = JSON.parse(existingData);
+      } catch (error) {
+        console.error("Error parsing sub-heard data:", error);
+        return c.json({ error: "Invalid sub-heard data" }, 500);
+      }
+
+      // Update the name
+      subHeardData.name = normalizedNewName;
+      subHeardData.renamedAt = Date.now();
+      subHeardData.previousName = oldName;
+
+      // Save under new key
+      await kv.set(newSubHeardKey, JSON.stringify(subHeardData));
+      
+      // Delete old key
+      await kv.del(oldSubHeardKey);
+
+      // Update all memberships
+      const memberships = await kv.getByPrefix("subheard_member:");
+      let updatedMemberships = 0;
+      
+      for (const membershipData of memberships) {
+        try {
+          const membership = typeof membershipData === "string" 
+            ? JSON.parse(membershipData) 
+            : membershipData;
+          
+          if (membership.subHeard === oldName) {
+            // Delete old membership key
+            const oldMembershipKey = `subheard_member:${membership.userId}:${oldName}`;
+            await kv.del(oldMembershipKey);
+            
+            // Create new membership key
+            const newMembershipKey = `subheard_member:${membership.userId}:${normalizedNewName}`;
+            membership.subHeard = normalizedNewName;
+            await kv.set(newMembershipKey, JSON.stringify(membership));
+            
+            updatedMemberships++;
+          }
+        } catch (error) {
+          console.error("Error updating membership:", error);
+        }
+      }
+
+      // Update all active rooms
+      const activeRooms = await kv.getByPrefix("active_room:");
+      let updatedRooms = 0;
+      
+      for (const roomData of activeRooms) {
+        try {
+          const room = typeof roomData === "string" 
+            ? JSON.parse(roomData) 
+            : roomData;
+          
+          if (room.subHeard === oldName) {
+            room.subHeard = normalizedNewName;
+            const roomKey = `active_room:${room.id}`;
+            await kv.set(roomKey, JSON.stringify(room));
+            updatedRooms++;
+          }
+        } catch (error) {
+          console.error("Error updating room:", error);
+        }
+      }
+
+      console.log(`Renamed sub-heard from "${oldName}" to "${normalizedNewName}"`);
+      console.log(`Updated ${updatedMemberships} memberships and ${updatedRooms} rooms`);
+
+      return c.json({
+        success: true,
+        oldName,
+        newName: normalizedNewName,
+        updatedMemberships,
+        updatedRooms,
+      });
+    } catch (error) {
+      console.error("Error renaming sub-heard:", error);
+      return c.json(
+        { error: "Failed to rename sub-heard" },
+        500,
+      );
+    }
+  },
+);
+
 // Backfill access tokens for private sub-heards without one
 app.post(
   "/make-server-f1a393b4/admin/backfill-tokens",

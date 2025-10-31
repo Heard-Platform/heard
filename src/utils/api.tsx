@@ -210,6 +210,52 @@ class ApiClient {
       body: JSON.stringify({ userId }),
     });
   }
+
+  // Admin methods (require X-Admin-Key header)
+  async adminGetUsers(adminKey: string) {
+    return this.request("/admin/users", {
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
+
+  async adminGetSubHeards(adminKey: string) {
+    return this.request("/admin/subheards", {
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
+
+  async adminUpdateSubHeardAdmin(subHeardName: string, newAdminId: string, adminKey: string) {
+    return this.request(`/admin/subheard/${subHeardName}/admin`, {
+      method: "PATCH",
+      body: JSON.stringify({ newAdminId }),
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
+
+  async adminRenameSubHeard(subHeardName: string, newName: string, adminKey: string) {
+    return this.request(`/admin/subheard/${subHeardName}/rename`, {
+      method: "PATCH",
+      body: JSON.stringify({ newName }),
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
+
+  async adminBackfillTokens(adminKey: string) {
+    return this.request("/admin/backfill-tokens", {
+      method: "POST",
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
 }
 
 export const api = new ApiClient();

@@ -31,8 +31,7 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { Shield, Lock, User, Crown, X } from "lucide-react";
-import { API_BASE_URL } from "../utils/api";
-import { publicAnonKey } from "../utils/supabase/info";
+import { api } from "../utils/api";
 
 interface User {
   userId: string;
@@ -61,6 +60,8 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
   const [selectedSubHeard, setSelectedSubHeard] = useState<SubHeard | null>(null);
   const [newAdminId, setNewAdminId] = useState("");
   const [backfilling, setBackfilling] = useState(false);
+  const [renameSubHeard, setRenameSubHeard] = useState<SubHeard | null>(null);
+  const [newSubHeardName, setNewSubHeardName] = useState("");
 
   const fetchAdminData = async () => {
     if (!adminKey) return;
@@ -68,30 +69,16 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     setLoading(true);
     try {
       const [usersRes, subHeardsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/admin/users`, {
-          headers: {
-            "Authorization": `Bearer ${publicAnonKey}`,
-            "X-Admin-Key": adminKey,
-          },
-        }),
-        fetch(`${API_BASE_URL}/admin/subheards`, {
-          headers: {
-            "Authorization": `Bearer ${publicAnonKey}`,
-            "X-Admin-Key": adminKey,
-          },
-        }),
+        api.adminGetUsers(adminKey),
+        api.adminGetSubHeards(adminKey),
       ]);
 
-      if (usersRes.ok && subHeardsRes.ok) {
-        const usersData = await usersRes.json();
-        const subHeardsData = await subHeardsRes.json();
-        setUsers(usersData.users || []);
-        setSubHeards(subHeardsData.subHeards || []);
+      if (usersRes.success && subHeardsRes.success) {
+        setUsers(usersRes.data?.users || []);
+        setSubHeards(subHeardsRes.data?.subHeards || []);
         setIsAuthenticated(true);
       } else {
-        const usersError = !usersRes.ok ? await usersRes.json() : null;
-        const subHeardsError = !subHeardsRes.ok ? await subHeardsRes.json() : null;
-        alert(`Invalid admin key: ${usersError?.error || subHeardsError?.error || "Unknown error"}`);
+        alert(`Invalid admin key: ${usersRes.error || subHeardsRes.error || "Unknown error"}`);
         setIsAuthenticated(false);
       }
     } catch (error) {
@@ -112,27 +99,19 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     if (!selectedSubHeard || !newAdminId) return;
 
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/admin/subheard/${selectedSubHeard.name}/admin`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${publicAnonKey}`,
-            "X-Admin-Key": adminKey,
-          },
-          body: JSON.stringify({ newAdminId }),
-        }
+      const res = await api.adminUpdateSubHeardAdmin(
+        selectedSubHeard.name,
+        newAdminId,
+        adminKey
       );
 
-      if (res.ok) {
+      if (res.success) {
         alert(`Admin updated successfully for ${selectedSubHeard.name}`);
         setSelectedSubHeard(null);
         setNewAdminId("");
         fetchAdminData(); // Refresh data
       } else {
-        const error = await res.json();
-        alert(`Failed to update admin: ${error.error}`);
+        alert(`Failed to update admin: ${res.error}`);
       }
     } catch (error) {
       console.error("Error updating admin:", error);
@@ -153,27 +132,48 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
 
     setBackfilling(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/backfill-tokens`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${publicAnonKey}`,
-          "X-Admin-Key": adminKey,
-        },
-      });
+      const res = await api.adminBackfillTokens(adminKey);
 
-      if (res.ok) {
-        const data = await res.json();
-        alert(`Success! ${data.message}\nSub-heards updated: ${data.subHeards.join(", ") || "none"}`);
+      if (res.success) {
+        alert(`Success! ${res.data?.message}\nSub-heards updated: ${res.data?.subHeards?.join(", ") || "none"}`);
         fetchAdminData(); // Refresh data
       } else {
-        const error = await res.json();
-        alert(`Failed to backfill tokens: ${error.error}`);
+        alert(`Failed to backfill tokens: ${res.error}`);
       }
     } catch (error) {
       console.error("Error backfilling tokens:", error);
       alert("Failed to backfill tokens");
     } finally {
       setBackfilling(false);
+    }
+  };
+
+  const handleRename = async () => {
+    if (!renameSubHeard || !newSubHeardName) return;
+
+    try {
+      const res = await api.adminRenameSubHeard(
+        renameSubHeard.name,
+        newSubHeardName,
+        adminKey
+      );
+
+      if (res.success) {
+        alert(
+          `Sub-heard renamed successfully!\n` +
+          `Old name: ${res.data?.oldName}\n` +
+          `New name: ${res.data?.newName}\n` +
+          `Updated ${res.data?.updatedMemberships} memberships and ${res.data?.updatedRooms} rooms`
+        );
+        setRenameSubHeard(null);
+        setNewSubHeardName("");
+        fetchAdminData(); // Refresh data
+      } else {
+        alert(`Failed to rename sub-heard: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error renaming sub-heard:", error);
+      alert("Failed to rename sub-heard");
     }
   };
 
@@ -321,6 +321,16 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                     variant="outline"
                     size="sm"
                     onClick={() => {
+                      setRenameSubHeard(subHeard);
+                      setNewSubHeardName(subHeard.name);
+                    }}
+                  >
+                    Rename
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
                       setSelectedSubHeard(subHeard);
                       setNewAdminId(subHeard.adminId || "");
                     }}
@@ -395,6 +405,49 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             </Button>
             <Button onClick={handleUpdateAdmin} disabled={!newAdminId}>
               Update Admin
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rename Sub-Heard Dialog */}
+      <Dialog open={!!renameSubHeard} onOpenChange={() => setRenameSubHeard(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename Sub-Heard</DialogTitle>
+            <DialogDescription>
+              This will update the sub-heard name, all memberships, and all active rooms.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Current Name</Label>
+              <p className="text-sm text-muted-foreground font-mono">
+                {renameSubHeard?.name}
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="newName">New Name</Label>
+              <Input
+                id="newName"
+                value={newSubHeardName}
+                onChange={(e) => setNewSubHeardName(e.target.value)}
+                placeholder="Enter new sub-heard name"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Will be normalized to lowercase with hyphens
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameSubHeard(null)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleRename} 
+              disabled={!newSubHeardName || newSubHeardName === renameSubHeard?.name}
+            >
+              Rename
             </Button>
           </DialogFooter>
         </DialogContent>
