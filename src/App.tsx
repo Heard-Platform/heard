@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import { NicknameSetup } from "./components/NicknameSetup";
+import { PasswordReset } from "./components/PasswordReset";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { GameScreen } from "./screens/GameScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
@@ -38,6 +39,8 @@ export default function App() {
   const [showComponentShowcase, setShowComponentShowcase] =
     useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetToken, setResetToken] = useState<string | null>(null);
 
   const {
     user,
@@ -90,8 +93,10 @@ export default function App() {
   const handleNicknameComplete = async (
     nickname: string,
     email: string,
+    password: string,
+    isSignIn: boolean,
   ) => {
-    await initializeUser(nickname, email);
+    await initializeUser(nickname, email, password, isSignIn);
 
     // If there's a target room ID, try to join it after user creation
     if (targetRoomId) {
@@ -309,13 +314,18 @@ export default function App() {
     }
   };
 
-  // Check URL for room ID, sub-heard, or access token on initial load
+  // Check URL for room ID, sub-heard, access token, or reset token on initial load
   useEffect(() => {
     if (!hasCheckedUrl) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const resetTokenFromUrl = urlParams.get("resetToken");
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
 
-      if (roomIdFromUrl) {
+      if (resetTokenFromUrl) {
+        setResetToken(resetTokenFromUrl);
+        setShowPasswordReset(true);
+      } else if (roomIdFromUrl) {
         setTargetRoomId(roomIdFromUrl);
       } else if (subHeardFromUrl) {
         setCurrentSubHeard(subHeardFromUrl);
@@ -433,6 +443,26 @@ export default function App() {
     return <ComponentShowcase onExit={handleExitShowcase} />;
   }
 
+  // Password Reset Mode - check this third!
+  if (showPasswordReset) {
+    return (
+      <>
+        <PasswordReset
+          onBack={() => {
+            setShowPasswordReset(false);
+            setResetToken(null);
+            // Clear reset token from URL
+            const url = new URL(window.location.href);
+            url.searchParams.delete("resetToken");
+            window.history.replaceState({}, "", url.toString());
+          }}
+          initialToken={resetToken || undefined}
+        />
+        <Toaster />
+      </>
+    );
+  }
+
   // Derived state - single source of truth
   const showNicknameSetup = !user;
   const showLobby = user && !room;
@@ -460,6 +490,7 @@ export default function App() {
       <>
         <NicknameSetup
           onComplete={handleNicknameComplete}
+          onForgotPassword={() => setShowPasswordReset(true)}
           loading={loading}
           error={error}
           joiningRoom={!!targetRoomId}

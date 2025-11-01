@@ -49,7 +49,7 @@ export function useDebateSession() {
 
   // Initialize user session
   const initializeUser = useCallback(
-    async (nickname?: string, email?: string) => {
+    async (nickname?: string, email?: string, password?: string, isSignIn?: boolean) => {
       try {
         setError(null);
         let userId = getUserId();
@@ -63,8 +63,33 @@ export function useDebateSession() {
           }
         }
 
-        if (!userData && nickname && email) {
-          // Create new user session
+        if (!userData && email && password) {
+          // Use new authentication system
+          if (isSignIn) {
+            // Sign in existing user
+            const response = await api.signIn(email, password);
+            if (response.success && response.data) {
+              userData = response.data.user;
+              setUserId(userData.id);
+            } else {
+              throw new Error(
+                response.error || "Failed to sign in",
+              );
+            }
+          } else if (nickname) {
+            // Sign up new user
+            const response = await api.signUp(nickname, email, password);
+            if (response.success && response.data) {
+              userData = response.data.user;
+              setUserId(userData.id);
+            } else {
+              throw new Error(
+                response.error || "Failed to create account",
+              );
+            }
+          }
+        } else if (!userData && nickname && email) {
+          // Fallback to old system for backwards compatibility
           const response = await api.createUser(
             nickname,
             email,

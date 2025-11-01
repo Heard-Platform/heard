@@ -61,6 +61,35 @@ class ApiClient {
     return this.request(`/user/${userId}`);
   }
 
+  // Authentication
+  async signUp(nickname: string, email: string, password: string) {
+    return this.request("/auth/signup", {
+      method: "POST",
+      body: JSON.stringify({ nickname, email, password }),
+    });
+  }
+
+  async signIn(email: string, password: string) {
+    return this.request("/auth/signin", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+  }
+
+  async forgotPassword(email: string) {
+    return this.request("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    return this.request("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, newPassword }),
+    });
+  }
+
   // Room management
   async createRoom(topic: string, userId: string, mode = "host-controlled", rantFirst?: boolean, description?: string, subHeard?: string) {
     return this.request("/room/create", {
