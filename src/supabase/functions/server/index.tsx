@@ -4,6 +4,7 @@ import { logger } from "npm:hono/logger";
 import * as kv from "./kv_store.tsx";
 import { debateApi } from "./debate-api.tsx";
 import { adminApi } from "./admin-api.tsx";
+import { authApi } from "./auth-api.tsx";
 
 const app = new Hono();
 
@@ -43,5 +44,8 @@ app.route("/", debateApi);
 
 // Mount admin API routes
 app.route("/", adminApi);
+
+// Mount auth API routes
+app.route("/", authApi);
 
 Deno.serve(app.fetch);
