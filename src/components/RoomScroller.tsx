@@ -6,7 +6,6 @@ import { Card } from "./ui/card";
 import {
   Users,
   Clock,
-  ChevronDown,
   Plus,
   Brain,
   Zap,
@@ -186,12 +185,6 @@ export const RoomScroller = forwardRef<RoomScrollerRef, RoomScrollerProps>(({
     scrollToIndex(0);
   }, [rooms.length]);
 
-  const handleNext = () => {
-    if (currentIndex < allCards.length - 1) {
-      scrollToIndex(currentIndex + 1);
-    }
-  };
-
   if (loading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
@@ -254,20 +247,6 @@ export const RoomScroller = forwardRef<RoomScrollerRef, RoomScrollerProps>(({
           );
         })}
       </div>
-
-      {/* Scroll indicator */}
-      {currentIndex < allCards.length - 1 && (
-        <motion.div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          onClick={handleNext}
-        >
-          <div className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg cursor-pointer">
-            <ChevronDown className="w-6 h-6 text-purple-600" />
-          </div>
-        </motion.div>
-      )}
 
       {/* Page indicator dots */}
       <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-2 z-10">
