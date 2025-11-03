@@ -210,6 +210,7 @@ export const RoomScroller = forwardRef<RoomScrollerRef, RoomScrollerProps>(({
         style={{
           scrollbarWidth: "none",
           msOverflowStyle: "none",
+          overscrollBehaviorY: "contain",
         }}
       >
         <style>{`
