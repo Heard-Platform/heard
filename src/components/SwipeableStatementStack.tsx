@@ -9,10 +9,6 @@ import {
   CheckCircle,
   XCircle,
   Ban,
-  ArrowLeft,
-  ArrowRight,
-  ArrowDown,
-  ArrowUp,
   Star,
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
@@ -311,28 +307,10 @@ export function SwipeableStatementStack({
       </div>
 
       {/* Instructions - Right below the deck */}
-      <div className="mt-6 text-center space-y-2">
+      <div className="mt-6 text-center">
         <p className="text-sm text-muted-foreground">
           Swipe to vote
         </p>
-        <div className="flex justify-center gap-3 text-xs flex-wrap">
-          <div className="flex items-center gap-1 text-red-600">
-            <ArrowLeft className="w-4 h-4" />
-            <span>Disagree</span>
-          </div>
-          <div className="flex items-center gap-1 text-green-600">
-            <ArrowRight className="w-4 h-4" />
-            <span>Agree</span>
-          </div>
-          <div className="flex items-center gap-1 text-green-700 font-semibold">
-            <ArrowUp className="w-4 h-4" />
-            <span>Super Agree</span>
-          </div>
-          <div className="flex items-center gap-1 text-gray-600">
-            <ArrowDown className="w-4 h-4" />
-            <span>Pass</span>
-          </div>
-        </div>
       </div>
 
       {/* New Statement Input */}
