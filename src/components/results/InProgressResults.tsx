@@ -8,12 +8,17 @@ interface InProgressResultsProps {
   statements: Statement[];
 }
 
-export function InProgressResults({ statements }: InProgressResultsProps) {
+export function InProgressResults({
+  statements,
+}: InProgressResultsProps) {
   const totalVotes = statements.reduce(
     (sum, s) => sum + s.agrees + s.disagrees + s.passes,
-    0
+    0,
   );
-  const maxVotes = Math.max(...statements.map((s) => s.agrees), 1);
+  const maxVotes = Math.max(
+    ...statements.map((s) => s.agrees),
+    1,
+  );
 
   return (
     <motion.div
@@ -55,7 +60,9 @@ export function InProgressResults({ statements }: InProgressResultsProps) {
                 <Zap className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-orange-500" />
               </motion.div>
               <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                <span className="hidden sm:inline">⚡ VOTING IN PROGRESS! ⚡</span>
+                <span className="hidden sm:inline">
+                  ⚡ VOTING IN PROGRESS! ⚡
+                </span>
                 <span className="sm:hidden">⚡ LIVE! ⚡</span>
               </span>
             </h3>
@@ -74,7 +81,9 @@ export function InProgressResults({ statements }: InProgressResultsProps) {
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
                 <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
-                <span className="hidden sm:inline">Live Standings</span>
+                <span className="hidden sm:inline">
+                  Live Standings
+                </span>
                 <span className="sm:hidden">Standings</span>
               </h4>
               <span className="text-[10px] sm:text-xs text-muted-foreground">
@@ -87,7 +96,9 @@ export function InProgressResults({ statements }: InProgressResultsProps) {
               .slice(0, 5)
               .map((statement, index) => {
                 const percentage =
-                  maxVotes > 0 ? (statement.agrees / maxVotes) * 100 : 0;
+                  maxVotes > 0
+                    ? (statement.agrees / maxVotes) * 100
+                    : 0;
                 const isTopThree = index < 3;
 
                 return (
@@ -104,10 +115,10 @@ export function InProgressResults({ statements }: InProgressResultsProps) {
                           {index === 0
                             ? "🥇"
                             : index === 1
-                            ? "🥈"
-                            : index === 2
-                            ? "🥉"
-                            : `#${index + 1}`}
+                              ? "🥈"
+                              : index === 2
+                                ? "🥉"
+                                : `#${index + 1}`}
                         </span>
                         <p className="text-[10px] sm:text-xs truncate">
                           {statement.text}
@@ -160,17 +171,20 @@ export function InProgressResults({ statements }: InProgressResultsProps) {
               <motion.div
                 className="text-lg sm:text-xl md:text-2xl font-mono text-yellow-600"
                 key={
-                  [...statements].sort((a, b) => b.agrees - a.agrees)[0]
-                    ?.agrees || 0
+                  [...statements].sort(
+                    (a, b) => b.agrees - a.agrees,
+                  )[0]?.agrees || 0
                 }
                 initial={{ scale: 1.5, color: "#ff6b00" }}
                 animate={{ scale: 1, color: "#ca8a04" }}
               >
-                {[...statements].sort((a, b) => b.agrees - a.agrees)[0]
-                  ?.agrees || 0}
+                {[...statements].sort(
+                  (a, b) => b.agrees - a.agrees,
+                )[0]?.agrees || 0}
               </motion.div>
               <div className="text-[9px] sm:text-[10px] md:text-xs text-yellow-700 mt-0.5">
-                👑 <span className="hidden sm:inline">Leader</span>
+                👑{" "}
+                <span className="hidden sm:inline">Leader</span>
               </div>
             </div>
 
@@ -184,7 +198,8 @@ export function InProgressResults({ statements }: InProgressResultsProps) {
                 {totalVotes}
               </motion.div>
               <div className="text-[9px] sm:text-[10px] md:text-xs text-purple-700 mt-0.5">
-                🗳️ <span className="hidden sm:inline">Total</span>
+                🗳️{" "}
+                <span className="hidden sm:inline">Total</span>
               </div>
             </div>
 
@@ -202,7 +217,8 @@ export function InProgressResults({ statements }: InProgressResultsProps) {
                 {statements.filter((s) => s.agrees > 0).length}
               </motion.div>
               <div className="text-[9px] sm:text-[10px] md:text-xs text-green-700 mt-0.5">
-                ⭐ <span className="hidden sm:inline">Liked</span>
+                ⭐{" "}
+                <span className="hidden sm:inline">Liked</span>
               </div>
             </div>
           </motion.div>
@@ -227,10 +243,10 @@ export function InProgressResults({ statements }: InProgressResultsProps) {
               {totalVotes === 0
                 ? "🎯 Waiting for votes to roll in..."
                 : totalVotes < 5
-                ? "🔥 The race is heating up!"
-                : totalVotes < 10
-                ? "⚡ Votes are pouring in!"
-                : "💥 EPIC voting battle in progress!"}
+                  ? "🔥 The race is heating up!"
+                  : totalVotes < 10
+                    ? "⚡ Votes are pouring in!"
+                    : "💥 EPIC voting battle in progress!"}
             </motion.p>
           </motion.div>
         </div>
