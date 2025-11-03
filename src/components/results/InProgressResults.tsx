@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Zap, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import type { Statement } from "../../types";
@@ -47,18 +47,6 @@ export function InProgressResults({
             animate={{ y: 0, opacity: 1 }}
           >
             <h3 className="flex items-center gap-1.5 md:gap-2 text-base sm:text-lg md:text-2xl">
-              <motion.div
-                animate={{
-                  scale: [1, 1.2, 1],
-                  rotate: [0, 5, -5, 0],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                }}
-              >
-                <Zap className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-orange-500" />
-              </motion.div>
               <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
                 <span className="hidden sm:inline">
                   ⚡ VOTING IN PROGRESS! ⚡
