@@ -768,6 +768,10 @@
     margin-inline: calc(var(--spacing) * -1);
   }
 
+  .mx-0\.5 {
+    margin-inline: calc(var(--spacing) * .5);
+  }
+
   .mx-auto {
     margin-inline: auto;
   }

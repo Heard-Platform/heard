@@ -4,10 +4,11 @@ import { Clock, Zap, AlertCircle } from "lucide-react";
 
 interface RealtimeCountdownProps {
   endTime: number;
+  startTime?: number; // When the debate started (createdAt timestamp)
   onTimeUp?: () => void;
 }
 
-export function RealtimeCountdown({ endTime, onTimeUp }: RealtimeCountdownProps) {
+export function RealtimeCountdown({ endTime, startTime, onTimeUp }: RealtimeCountdownProps) {
   const [timeLeft, setTimeLeft] = useState(Math.max(0, endTime - Date.now()));
   const [hasCalledOnTimeUp, setHasCalledOnTimeUp] = useState(false);
 
@@ -27,16 +28,21 @@ export function RealtimeCountdown({ endTime, onTimeUp }: RealtimeCountdownProps)
     return () => clearInterval(interval);
   }, [endTime, onTimeUp, hasCalledOnTimeUp]);
 
-  const minutes = Math.floor(timeLeft / 60000);
+  // Calculate time units
+  const days = Math.floor(timeLeft / (24 * 60 * 60 * 1000));
+  const hours = Math.floor((timeLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+  const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / 60000);
   const seconds = Math.floor((timeLeft % 60000) / 1000);
   const milliseconds = Math.floor((timeLeft % 1000) / 10);
 
-  // Calculate percentage remaining (assume 5 minute default if we can't determine)
-  const estimatedTotal = 5 * 60 * 1000; // 5 minutes in ms
-  const percentRemaining = Math.min(100, (timeLeft / estimatedTotal) * 100);
+  // Calculate percentage remaining based on total duration
+  // Default to 1 week (7 days) if startTime not provided
+  const totalDuration = startTime ? endTime - startTime : 7 * 24 * 60 * 60 * 1000;
+  const percentRemaining = Math.min(100, (timeLeft / totalDuration) * 100);
 
   const isUrgent = timeLeft < 60000; // Less than 1 minute
   const isCritical = timeLeft < 30000; // Less than 30 seconds
+  const showDaysHours = timeLeft >= 60 * 60 * 1000; // Show days/hours if more than 1 hour left
 
   if (timeLeft === 0) {
     return (
@@ -81,33 +87,75 @@ export function RealtimeCountdown({ endTime, onTimeUp }: RealtimeCountdownProps)
 
         {/* Time display */}
         <div className="flex items-baseline gap-0.5">
-          <motion.span
-            key={`minutes-${minutes}`}
-            initial={{ scale: 1.2 }}
-            animate={{ scale: 1 }}
-            className="text-sm font-mono font-bold text-white leading-none"
-          >
-            {String(minutes).padStart(2, "0")}
-          </motion.span>
-          <span className="text-white/80 text-sm leading-none">:</span>
-          <motion.span
-            key={`seconds-${seconds}`}
-            initial={{ scale: 1.2 }}
-            animate={{ scale: 1 }}
-            className="text-sm font-mono font-bold text-white leading-none"
-          >
-            {String(seconds).padStart(2, "0")}
-          </motion.span>
-          {isCritical && (
+          {showDaysHours ? (
+            // Show days and hours for longer durations
             <>
-              <span className="text-white/80 text-xs leading-none">.</span>
+              {days > 0 && (
+                <>
+                  <motion.span
+                    key={`days-${days}`}
+                    initial={{ scale: 1.2 }}
+                    animate={{ scale: 1 }}
+                    className="text-sm font-mono font-bold text-white leading-none"
+                  >
+                    {days}
+                  </motion.span>
+                  <span className="text-white/80 text-xs leading-none">d</span>
+                  <span className="text-white/80 text-sm leading-none mx-0.5"></span>
+                </>
+              )}
               <motion.span
-                animate={{ opacity: [1, 0.5, 1] }}
-                transition={{ duration: 0.5, repeat: Infinity }}
-                className="text-xs font-mono text-white/90 leading-none"
+                key={`hours-${hours}`}
+                initial={{ scale: 1.2 }}
+                animate={{ scale: 1 }}
+                className="text-sm font-mono font-bold text-white leading-none"
               >
-                {String(milliseconds).padStart(2, "0")}
+                {hours}
               </motion.span>
+              <span className="text-white/80 text-xs leading-none">h</span>
+              <span className="text-white/80 text-sm leading-none mx-0.5"></span>
+              <motion.span
+                key={`minutes-${minutes}`}
+                initial={{ scale: 1.2 }}
+                animate={{ scale: 1 }}
+                className="text-sm font-mono font-bold text-white leading-none"
+              >
+                {minutes}
+              </motion.span>
+              <span className="text-white/80 text-xs leading-none">m</span>
+            </>
+          ) : (
+            // Show minutes and seconds for shorter durations
+            <>
+              <motion.span
+                key={`minutes-${minutes}`}
+                initial={{ scale: 1.2 }}
+                animate={{ scale: 1 }}
+                className="text-sm font-mono font-bold text-white leading-none"
+              >
+                {String(minutes).padStart(2, "0")}
+              </motion.span>
+              <span className="text-white/80 text-sm leading-none">:</span>
+              <motion.span
+                key={`seconds-${seconds}`}
+                initial={{ scale: 1.2 }}
+                animate={{ scale: 1 }}
+                className="text-sm font-mono font-bold text-white leading-none"
+              >
+                {String(seconds).padStart(2, "0")}
+              </motion.span>
+              {isCritical && (
+                <>
+                  <span className="text-white/80 text-xs leading-none">.</span>
+                  <motion.span
+                    animate={{ opacity: [1, 0.5, 1] }}
+                    transition={{ duration: 0.5, repeat: Infinity }}
+                    className="text-xs font-mono text-white/90 leading-none"
+                  >
+                    {String(milliseconds).padStart(2, "0")}
+                  </motion.span>
+                </>
+              )}
             </>
           )}
         </div>

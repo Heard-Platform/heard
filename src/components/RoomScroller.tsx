@@ -536,6 +536,7 @@ function RoomCard({
           {isRealtime && room.endTime && !hasRealtimeEnded && (
             <RealtimeCountdown
               endTime={room.endTime}
+              startTime={room.createdAt}
               onTimeUp={() => {
                 // Refresh room data when time is up
                 if (onRefreshStatements) {

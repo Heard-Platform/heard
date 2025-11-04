@@ -1178,6 +1178,7 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
       subHeard: subHeard
         ? subHeard.trim().toLowerCase().replace(/\s+/g, "-")
         : undefined,
+      endTime: mode === "realtime" ? Date.now() + 7 * 24 * 60 * 60 * 1000 : undefined, // Realtime debates end in 1 week
     };
 
     await saveDebateRoom(debateRoom);
@@ -2875,7 +2876,7 @@ app.post(
 
       // Create a realtime test room with a DC-specific debate topic
       const roomId = generateId();
-      const fiveMinutesFromNow = Date.now() + 5 * 60 * 1000; // 5 minutes
+      const oneWeekFromNow = Date.now() + 7 * 24 * 60 * 60 * 1000; // 1 week
 
       const debateRoom: DebateRoom = {
         id: roomId,
@@ -2897,7 +2898,7 @@ app.post(
         createdAt: Date.now(),
         mode: "realtime", // Real-time mode!
         rantFirst: false,
-        endTime: fiveMinutesFromNow, // Debate ends in 5 minutes
+        endTime: oneWeekFromNow, // Debate ends in 1 week
         subHeard: "dupont-circle-neighborhoods",
       };
 
