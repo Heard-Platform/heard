@@ -285,6 +285,23 @@ class ApiClient {
       },
     });
   }
+
+  async adminGetDebates(adminKey: string) {
+    return this.request("/admin/debates", {
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
+
+  async adminToggleDebateActive(debateId: string, adminKey: string) {
+    return this.request(`/admin/debate/${debateId}/toggle-active`, {
+      method: "PATCH",
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
 }
 
 export const api = new ApiClient();

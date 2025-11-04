@@ -274,6 +274,94 @@ app.patch(
   },
 );
 
+// Get all debates (rooms) with their active status
+app.get("/make-server-f1a393b4/admin/debates", async (c) => {
+  try {
+    const roomKeys = await kv.getByPrefix("active_room:");
+
+    const debates = roomKeys
+      .map((roomData) => {
+        try {
+          // Check if it's already an object or needs parsing
+          const room =
+            typeof roomData === "string"
+              ? JSON.parse(roomData)
+              : roomData;
+
+          return {
+            id: room.id,
+            topic: room.topic,
+            subHeard: room.subHeard || null,
+            isActive: room.isActive,
+            createdAt: room.createdAt,
+            participants: room.participants?.length || 0,
+            phase: room.phase,
+            mode: room.mode,
+            rantFirst: room.rantFirst || false,
+          };
+        } catch (error) {
+          return null;
+        }
+      })
+      .filter((debate) => debate !== null);
+
+    // Sort by creation date (newest first)
+    debates.sort((a, b) => b.createdAt - a.createdAt);
+
+    return c.json({ debates });
+  } catch (error) {
+    console.error("Error fetching debates:", error);
+    return c.json({ error: "Failed to fetch debates" }, 500);
+  }
+});
+
+// Toggle debate active status
+app.patch(
+  "/make-server-f1a393b4/admin/debate/:id/toggle-active",
+  async (c) => {
+    try {
+      const debateId = c.req.param("id");
+
+      // Get existing debate data
+      const debateKey = `active_room:${debateId}`;
+      const existingData = await kv.get(debateKey);
+
+      if (!existingData) {
+        return c.json({ error: "Debate not found" }, 404);
+      }
+
+      let debateData;
+      try {
+        debateData = JSON.parse(existingData);
+      } catch (error) {
+        console.error("Error parsing debate data:", error);
+        return c.json({ error: "Invalid debate data" }, 500);
+      }
+
+      // Toggle active status
+      debateData.isActive = !debateData.isActive;
+
+      // Save updated data
+      await kv.set(debateKey, JSON.stringify(debateData));
+
+      return c.json({
+        success: true,
+        debate: {
+          id: debateData.id,
+          topic: debateData.topic,
+          isActive: debateData.isActive,
+        },
+      });
+    } catch (error) {
+      console.error("Error toggling debate status:", error);
+      return c.json(
+        { error: "Failed to toggle debate status" },
+        500,
+      );
+    }
+  },
+);
+
 // Backfill access tokens for private sub-heards without one
 app.post(
   "/make-server-f1a393b4/admin/backfill-tokens",

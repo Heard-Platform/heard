@@ -30,16 +30,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { Shield, Lock, User, Crown, X } from "lucide-react";
+import { Shield, Lock, User, Crown, X, MessageSquare, ToggleLeft, ToggleRight } from "lucide-react";
 import { api } from "../utils/api";
+import type { DebateRoom } from "../types";
 
-interface User {
+interface AdminUser {
   userId: string;
   name: string;
   lastSeen: number;
 }
 
-interface SubHeard {
+interface AdminSubHeard {
   name: string;
   createdAt: number;
   isPrivate: boolean;
@@ -54,31 +55,35 @@ interface AdminPanelProps {
 export function AdminPanel({ onExit }: AdminPanelProps) {
   const [adminKey, setAdminKey] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
-  const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [subHeards, setSubHeards] = useState<AdminSubHeard[]>([]);
+  const [debates, setDebates] = useState<DebateRoom[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedSubHeard, setSelectedSubHeard] = useState<SubHeard | null>(null);
+  const [selectedSubHeard, setSelectedSubHeard] = useState<AdminSubHeard | null>(null);
   const [newAdminId, setNewAdminId] = useState("");
   const [backfilling, setBackfilling] = useState(false);
-  const [renameSubHeard, setRenameSubHeard] = useState<SubHeard | null>(null);
+  const [renameSubHeard, setRenameSubHeard] = useState<AdminSubHeard | null>(null);
   const [newSubHeardName, setNewSubHeardName] = useState("");
+  const [togglingDebateId, setTogglingDebateId] = useState<string | null>(null);
 
   const fetchAdminData = async () => {
     if (!adminKey) return;
 
     setLoading(true);
     try {
-      const [usersRes, subHeardsRes] = await Promise.all([
+      const [usersRes, subHeardsRes, debatesRes] = await Promise.all([
         api.adminGetUsers(adminKey),
         api.adminGetSubHeards(adminKey),
+        api.adminGetDebates(adminKey),
       ]);
 
-      if (usersRes.success && subHeardsRes.success) {
+      if (usersRes.success && subHeardsRes.success && debatesRes.success) {
         setUsers(usersRes.data?.users || []);
         setSubHeards(subHeardsRes.data?.subHeards || []);
+        setDebates(debatesRes.data?.debates || []);
         setIsAuthenticated(true);
       } else {
-        alert(`Invalid admin key: ${usersRes.error || subHeardsRes.error || "Unknown error"}`);
+        alert(`Invalid admin key: ${usersRes.error || subHeardsRes.error || debatesRes.error || "Unknown error"}`);
         setIsAuthenticated(false);
       }
     } catch (error) {
@@ -177,6 +182,31 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
+  const handleToggleDebateActive = async (debateId: string) => {
+    setTogglingDebateId(debateId);
+    try {
+      const res = await api.adminToggleDebateActive(debateId, adminKey);
+
+      if (res.success) {
+        // Update local state
+        setDebates(prev => 
+          prev.map(d => 
+            d.id === debateId 
+              ? { ...d, isActive: res.data?.debate?.isActive ?? !d.isActive }
+              : d
+          )
+        );
+      } else {
+        alert(`Failed to toggle debate status: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error toggling debate status:", error);
+      alert("Failed to toggle debate status");
+    } finally {
+      setTogglingDebateId(null);
+    }
+  };
+
 
 
   if (!isAuthenticated) {
@@ -251,7 +281,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-6">
             <div className="flex items-center gap-3">
               <User className="w-6 h-6 text-blue-600" />
@@ -267,6 +297,18 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
               <div>
                 <p className="text-sm text-muted-foreground">Total Sub-Heards</p>
                 <p className="text-2xl">{subHeards.length}</p>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-6">
+            <div className="flex items-center gap-3">
+              <MessageSquare className="w-6 h-6 text-green-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">Total Debates</p>
+                <p className="text-2xl">{debates.length}</p>
+                <p className="text-xs text-muted-foreground">
+                  {debates.filter(d => d.isActive).length} active
+                </p>
               </div>
             </div>
           </Card>
@@ -344,6 +386,84 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                 </div>
               </div>
             ))}
+          </div>
+        </Card>
+
+        {/* Debates Management */}
+        <Card className="p-6">
+          <h2 className="text-xl mb-4">All Debates</h2>
+          <div className="space-y-4 max-h-[600px] overflow-y-auto">
+            {debates.map((debate) => (
+              <div
+                key={debate.id}
+                className="border rounded-lg p-4 flex items-start justify-between"
+              >
+                <div className="space-y-1 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{debate.topic}</span>
+                    {debate.isActive ? (
+                      <Badge variant="default" className="bg-green-600">Active</Badge>
+                    ) : (
+                      <Badge variant="secondary">Inactive</Badge>
+                    )}
+                    {debate.rantFirst && (
+                      <Badge variant="outline" className="text-purple-600 border-purple-600">
+                        Rant First
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    {debate.subHeard && (
+                      <div className="flex items-center gap-1">
+                        <Crown className="w-3 h-3" />
+                        <span>{debate.subHeard}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <User className="w-3 h-3" />
+                      <span>{debate.participants.length} participants</span>
+                    </div>
+                    <div>
+                      <span>Phase: {debate.phase}</span>
+                    </div>
+                    <div>
+                      <span>Mode: {debate.mode}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>ID: {debate.id.substring(0, 12)}...</span>
+                    <span>•</span>
+                    <span>Created: {new Date(debate.createdAt).toLocaleString()}</span>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleToggleDebateActive(debate.id)}
+                  disabled={togglingDebateId === debate.id}
+                  className="ml-4"
+                >
+                  {togglingDebateId === debate.id ? (
+                    "..."
+                  ) : debate.isActive ? (
+                    <>
+                      <ToggleRight className="w-4 h-4 mr-2" />
+                      Deactivate
+                    </>
+                  ) : (
+                    <>
+                      <ToggleLeft className="w-4 h-4 mr-2" />
+                      Activate
+                    </>
+                  )}
+                </Button>
+              </div>
+            ))}
+            {debates.length === 0 && (
+              <p className="text-center text-muted-foreground py-8">
+                No debates found
+              </p>
+            )}
           </div>
         </Card>
 
