@@ -8,6 +8,7 @@ import {
 } from "../components/RoomScroller";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
 import { SubHeardBrowser } from "../components/SubHeardBrowser";
+import { IntroModal } from "../components/IntroModal";
 import { api } from "../utils/api";
 import {
   Plus,
@@ -184,6 +185,9 @@ export function LobbyScreen({
 
   return (
     <>
+      {/* Intro Modal */}
+      <IntroModal />
+
       {/* Main TikTok-style scroller */}
       <div className="relative">
         {/* Floating header with user info and menu */}
