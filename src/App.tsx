@@ -36,8 +36,14 @@ export default function App() {
     string | null
   >(null);
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
-  const [showComponentShowcase, setShowComponentShowcase] =
-    useState(false);
+  const [showComponentShowcase, setShowComponentShowcase] = useState(() => {
+    // Check localStorage on mount
+    try {
+      return localStorage.getItem("showComponentShowcase") === "true";
+    } catch {
+      return false;
+    }
+  });
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetToken, setResetToken] = useState<string | null>(null);
@@ -409,10 +415,12 @@ export default function App() {
   // Handle opening and exiting component showcase
   const handleOpenShowcase = () => {
     setShowComponentShowcase(true);
+    localStorage.setItem("showComponentShowcase", "true");
   };
 
   const handleExitShowcase = () => {
     setShowComponentShowcase(false);
+    localStorage.setItem("showComponentShowcase", "false");
   };
 
   // Handle opening and exiting admin panel

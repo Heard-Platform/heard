@@ -11,6 +11,23 @@ interface ComponentShowcaseProps {
 }
 
 export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
+  // Load active tab from localStorage
+  const getInitialTab = () => {
+    try {
+      return localStorage.getItem("showcaseActiveTab") || "rant-submission";
+    } catch {
+      return "rant-submission";
+    }
+  };
+
+  const handleTabChange = (value: string) => {
+    try {
+      localStorage.setItem("showcaseActiveTab", value);
+    } catch {
+      // Ignore localStorage errors
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
@@ -42,7 +59,11 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
         </div>
 
         {/* Component Tabs */}
-        <Tabs defaultValue="rant-submission" className="w-full">
+        <Tabs 
+          defaultValue={getInitialTab()} 
+          className="w-full"
+          onValueChange={handleTabChange}
+        >
           <TabsList className="mb-6">
             <TabsTrigger value="rant-submission">Rant Submission</TabsTrigger>
             <TabsTrigger value="game-screen">Game Screen</TabsTrigger>
