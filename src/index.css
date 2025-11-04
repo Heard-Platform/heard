@@ -2918,6 +2918,10 @@
     user-select: none;
   }
 
+  .running {
+    animation-play-state: running;
+  }
+
   .group-data-\[disabled\=true\]\:pointer-events-none:is(:where(.group)[data-disabled="true"] *) {
     pointer-events: none;
   }

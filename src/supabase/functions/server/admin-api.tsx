@@ -416,4 +416,55 @@ app.post(
   },
 );
 
+// Data Fixes - One-time operations to fix database issues
+// These are idempotent and can be run multiple times safely
+
+// Fix: Update "Dupont Circle Neighborhoods" to "dupont-circle-neighborhoods"
+app.post(
+  "/make-server-f1a393b4/admin/data-fix/normalize-dupont-circle",
+  async (c) => {
+    try {
+      const oldName = "Dupont Circle Neighborhoods";
+      const normalizedName = "dupont-circle-neighborhoods";
+      
+      // Get all active rooms
+      const activeRooms = await kv.getByPrefix("active_room:");
+      let updatedRooms = 0;
+      const updatedRoomIds: string[] = [];
+      
+      for (const roomData of activeRooms) {
+        try {
+          const room = typeof roomData === "string" 
+            ? JSON.parse(roomData) 
+            : roomData;
+          
+          if (room.subHeard === oldName) {
+            room.subHeard = normalizedName;
+            const roomKey = `active_room:${room.id}`;
+            await kv.set(roomKey, JSON.stringify(room));
+            updatedRooms++;
+            updatedRoomIds.push(room.id);
+            console.log(`Updated room ${room.id} subheard from "${oldName}" to "${normalizedName}"`);
+          }
+        } catch (error) {
+          console.error("Error updating room:", error);
+        }
+      }
+
+      return c.json({
+        success: true,
+        updatedRooms,
+        roomIds: updatedRoomIds,
+        message: `Successfully updated ${updatedRooms} room(s) from "${oldName}" to "${normalizedName}"`,
+      });
+    } catch (error) {
+      console.error("Error running data fix:", error);
+      return c.json(
+        { error: "Failed to run data fix" },
+        500,
+      );
+    }
+  },
+);
+
 export { app as adminApi };

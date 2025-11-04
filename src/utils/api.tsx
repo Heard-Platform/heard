@@ -302,6 +302,16 @@ class ApiClient {
       },
     });
   }
+
+  // Data fixes - one-time operations
+  async adminDataFixNormalizeDupontCircle(adminKey: string) {
+    return this.request("/admin/data-fix/normalize-dupont-circle", {
+      method: "POST",
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
 }
 
 export const api = new ApiClient();

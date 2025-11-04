@@ -57,6 +57,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
   const [renameSubHeard, setRenameSubHeard] = useState<SubHeard | null>(null);
   const [newSubHeardName, setNewSubHeardName] = useState("");
   const [togglingDebateId, setTogglingDebateId] = useState<string | null>(null);
+  const [dataFixLoading, setDataFixLoading] = useState<string | null>(null);
 
   const fetchAdminData = async () => {
     if (!adminKey) return;
@@ -199,7 +200,31 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
+  const handleDataFixNormalizeDupontCircle = async () => {
+    if (!confirm("Run data fix to normalize 'Dupont Circle Neighborhoods' to 'dupont-circle-neighborhoods'?")) {
+      return;
+    }
 
+    setDataFixLoading("dupont-circle");
+    try {
+      const res = await api.adminDataFixNormalizeDupontCircle(adminKey);
+      if (res.success) {
+        alert(
+          res.data?.message || 
+          `Fixed ${res.data?.updatedRooms || 0} room(s)`
+        );
+        // Refresh the debates list
+        await fetchAdminData();
+      } else {
+        alert(`Failed to run data fix: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error running data fix:", error);
+      alert("Failed to run data fix");
+    } finally {
+      setDataFixLoading(null);
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -458,6 +483,35 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                 No debates found
               </p>
             )}
+          </div>
+        </Card>
+
+        {/* One Time Data Fixes */}
+        <Card className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="w-5 h-5 text-orange-600" />
+            <h2 className="text-xl">One-Time Data Fixes</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Idempotent operations to fix database issues. Safe to run multiple times.
+          </p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex-1">
+                <h3 className="font-medium">Normalize Dupont Circle Sub-Heard</h3>
+                <p className="text-sm text-muted-foreground">
+                  Updates rooms with "Dupont Circle Neighborhoods" to "dupont-circle-neighborhoods"
+                </p>
+              </div>
+              <Button
+                onClick={handleDataFixNormalizeDupontCircle}
+                disabled={dataFixLoading === "dupont-circle"}
+                variant="outline"
+                size="sm"
+              >
+                {dataFixLoading === "dupont-circle" ? "Running..." : "Run Fix"}
+              </Button>
+            </div>
           </div>
         </Card>
 
