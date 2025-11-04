@@ -97,10 +97,8 @@ export function LobbyScreen({
   >(undefined);
   const roomScrollerRef = useRef<RoomScrollerRef>(null);
 
-  // Filter out rooms older than a week (7 days) and sort by newest first
-  const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  // Sort rooms by newest first (all active rooms are shown)
   const filteredRooms = activeRooms
-    .filter((room) => room.createdAt > oneWeekAgo)
     .sort((a, b) => b.createdAt - a.createdAt); // Newest first
 
   // Refresh rooms on mount and when sub-heard changes
