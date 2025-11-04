@@ -5,6 +5,7 @@ import { ArrowLeft, Code2 } from "lucide-react";
 import { RantSubmissionStory } from "../stories/RantSubmission.story";
 import { GameScreenStory } from "../stories/GameScreen.story";
 import { RealTimeResultsStory } from "../stories/RealTimeResults.story";
+import { ResultsCardsStory } from "../stories/ResultsCards.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -68,6 +69,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             <TabsTrigger value="rant-submission">Rant Submission</TabsTrigger>
             <TabsTrigger value="game-screen">Game Screen</TabsTrigger>
             <TabsTrigger value="results">Results</TabsTrigger>
+            <TabsTrigger value="results-cards">Results Cards</TabsTrigger>
           </TabsList>
 
           <TabsContent value="rant-submission">
@@ -80,6 +82,10 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
 
           <TabsContent value="results">
             <RealTimeResultsStory />
+          </TabsContent>
+
+          <TabsContent value="results-cards">
+            <ResultsCardsStory />
           </TabsContent>
         </Tabs>
       </div>
