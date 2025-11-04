@@ -25,7 +25,7 @@ export function ActionsCard({
     <div className="space-y-4">
       <CardHeader
         icon={<Heart className="w-6 h-6 text-pink-500" />}
-        title="🎯 Keep The Conversation Going"
+        title="Keep The Conversation Going"
         subtitle="What would you like to do next?"
         gradientFrom="from-purple-600"
         gradientTo="to-blue-600"

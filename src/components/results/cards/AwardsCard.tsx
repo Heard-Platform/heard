@@ -27,7 +27,6 @@ export function AwardsCard({ statements }: AwardsCardProps) {
   return (
     <div className="space-y-4">
       <CardHeader
-        icon={<Trophy className="w-6 h-6 text-yellow-500" />}
         title="🎉 AWARDS 🎉"
         subtitle="Celebrating the best contributions"
         gradientFrom="from-purple-600"

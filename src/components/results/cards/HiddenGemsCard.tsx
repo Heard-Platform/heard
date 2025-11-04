@@ -23,7 +23,7 @@ export function HiddenGemsCard({
     <div className="space-y-4">
       <CardHeader
         icon={<Sparkles className="w-6 h-6 text-purple-500" />}
-        title="💎 Hidden Gems"
+        title="Hidden Gems"
         subtitle="Fresh perspectives worth exploring"
         gradientFrom="from-purple-600"
         gradientTo="to-pink-600"

@@ -15,7 +15,7 @@ export function StatsCard({ statements }: StatsCardProps) {
     <div className="space-y-4">
       <CardHeader
         icon={<Zap className="w-6 h-6 text-blue-500" />}
-        title="📊 By The Numbers"
+        title="By The Numbers"
         subtitle="The stats behind the debate"
         gradientFrom="from-blue-600"
         gradientTo="to-green-600"

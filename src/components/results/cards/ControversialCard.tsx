@@ -21,7 +21,7 @@ export function ControversialCard({
     <div className="space-y-4">
       <CardHeader
         icon={<Flame className="w-6 h-6 text-orange-500" />}
-        title="🌶️ Spicy Takes"
+        title="Spicy Takes"
         subtitle="Where opinions got heated"
         gradientFrom="from-orange-600"
         gradientTo="to-red-600"
