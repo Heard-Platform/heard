@@ -2142,7 +2142,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
       hostId: userId, // Set the user as the host
       isActive: true,
       createdAt: Date.now(),
-      subHeard: "Dupont Circle Neighborhoods",
+      subHeard: "dupont-circle-neighborhoods",
     };
 
     await saveDebateRoom(debateRoom);
@@ -2427,7 +2427,7 @@ app.post(
         isActive: true,
         createdAt: Date.now(),
         mode: "host-controlled", // Allow host to control phases
-        subHeard: "Dupont Circle Neighborhoods",
+        subHeard: "dupont-circle-neighborhoods",
       };
 
       await saveDebateRoom(debateRoom);
@@ -2536,7 +2536,7 @@ app.post(
         createdAt: Date.now(),
         mode: "host-controlled", // Allow host to control phases
         rantFirst: true, // This is a rant-first room
-        subHeard: "Dupont Circle Neighborhoods",
+        subHeard: "dupont-circle-neighborhoods",
       };
 
       await saveDebateRoom(debateRoom);
@@ -2898,7 +2898,7 @@ app.post(
         mode: "realtime", // Real-time mode!
         rantFirst: false,
         endTime: fiveMinutesFromNow, // Debate ends in 5 minutes
-        subHeard: "Dupont Circle Neighborhoods",
+        subHeard: "dupont-circle-neighborhoods",
       };
 
       await saveDebateRoom(debateRoom);
