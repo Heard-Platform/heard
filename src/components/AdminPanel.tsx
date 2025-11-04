@@ -32,20 +32,12 @@ import {
 } from "./ui/dialog";
 import { Shield, Lock, User, Crown, X, MessageSquare, ToggleLeft, ToggleRight } from "lucide-react";
 import { api } from "../utils/api";
-import type { DebateRoom } from "../types";
+import type { DebateRoom, SubHeard } from "../types";
 
 interface AdminUser {
   userId: string;
   name: string;
   lastSeen: number;
-}
-
-interface AdminSubHeard {
-  name: string;
-  createdAt: number;
-  isPrivate: boolean;
-  adminId?: string;
-  accessToken?: string;
 }
 
 interface AdminPanelProps {
@@ -56,13 +48,13 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
   const [adminKey, setAdminKey] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [users, setUsers] = useState<AdminUser[]>([]);
-  const [subHeards, setSubHeards] = useState<AdminSubHeard[]>([]);
+  const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [debates, setDebates] = useState<DebateRoom[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedSubHeard, setSelectedSubHeard] = useState<AdminSubHeard | null>(null);
+  const [selectedSubHeard, setSelectedSubHeard] = useState<SubHeard | null>(null);
   const [newAdminId, setNewAdminId] = useState("");
   const [backfilling, setBackfilling] = useState(false);
-  const [renameSubHeard, setRenameSubHeard] = useState<AdminSubHeard | null>(null);
+  const [renameSubHeard, setRenameSubHeard] = useState<SubHeard | null>(null);
   const [newSubHeardName, setNewSubHeardName] = useState("");
   const [togglingDebateId, setTogglingDebateId] = useState<string | null>(null);
 
@@ -358,9 +350,11 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                       <span>⚠️ Missing access token</span>
                     </div>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    Created: {new Date(subHeard.createdAt).toLocaleDateString()}
-                  </p>
+                  {subHeard.createdAt && (
+                    <p className="text-xs text-muted-foreground">
+                      Created: {new Date(subHeard.createdAt).toLocaleDateString()}
+                    </p>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <Button
