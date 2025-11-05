@@ -1663,6 +1663,16 @@
     border-color: var(--border);
   }
 
+  .border-border\/50 {
+    border-color: var(--border);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .border-border\/50 {
+      border-color: color-mix(in oklab, var(--border) 50%, transparent);
+    }
+  }
+
   .border-current {
     border-color: currentColor;
   }

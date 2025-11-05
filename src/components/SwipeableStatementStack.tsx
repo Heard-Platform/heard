@@ -306,13 +306,6 @@ export function SwipeableStatementStack({
           })}
       </div>
 
-      {/* Instructions - Right below the deck */}
-      <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">
-          Swipe to vote
-        </p>
-      </div>
-
       {/* New Statement Input */}
       {onSubmitStatement && (
         <div className="mt-6">
@@ -445,26 +438,33 @@ function SwipeableCard({
               </span>
             )}
           </div>
-          {statement.type && (
-            <span className="text-xs px-2 py-1 rounded-full bg-primary text-primary-foreground">
-              {statement.type.toUpperCase()}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {statement.type && (
+              <span className="text-xs px-2 py-1 rounded-full bg-primary text-primary-foreground">
+                {statement.type.toUpperCase()}
+              </span>
+            )}
+            {isTopCard && (
+              <span className="text-xs text-muted-foreground">
+                {currentIndex} / {totalStatements}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Statement Text */}
-        <div className="mb-6 min-h-[200px] flex items-center justify-center relative">
+        <div className="mb-4 min-h-[200px] flex items-center justify-center">
           <p className="text-lg leading-relaxed text-center">
             {statement.text}
           </p>
-          
-          {/* Card counter - bottom right */}
-          {isTopCard && (
-            <div className="absolute bottom-0 right-0 text-xs text-muted-foreground">
-              {currentIndex} / {totalStatements}
-            </div>
-          )}
         </div>
+
+        {/* Swipe instructions */}
+        {isTopCard && (
+          <div className="text-center text-xs text-muted-foreground pt-2 border-t border-border/50">
+            Swipe left to disagree, right to agree
+          </div>
+        )}
 
         {/* Visual indicators for swipe direction */}
         {isTopCard && (
