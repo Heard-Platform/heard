@@ -501,6 +501,28 @@ function RoomCard({
                 <Users className="w-4 h-4" />
                 <span>{participantCount}</span>
               </div>
+              {/* Compact Realtime Countdown */}
+              {isRealtime && room.endTime && !hasRealtimeEnded && (
+                <div className="text-xs text-muted-foreground">
+                  {(() => {
+                    const timeLeft = Math.max(0, room.endTime - Date.now());
+                    const days = Math.floor(timeLeft / (24 * 60 * 60 * 1000));
+                    const hours = Math.floor((timeLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                    const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / 60000);
+                    const seconds = Math.floor((timeLeft % 60000) / 1000);
+                    
+                    if (days > 0) {
+                      return `${days}d left`;
+                    } else if (hours > 0) {
+                      return `${hours}h left`;
+                    } else if (minutes > 0) {
+                      return `${minutes}m left`;
+                    } else {
+                      return `${seconds}s left`;
+                    }
+                  })()}
+                </div>
+              )}
             </div>
 
             {/* Title with space for badges */}
@@ -531,20 +553,6 @@ function RoomCard({
               )}
             </div>
           </motion.div>
-
-          {/* Realtime Countdown */}
-          {isRealtime && room.endTime && !hasRealtimeEnded && (
-            <RealtimeCountdown
-              endTime={room.endTime}
-              startTime={room.createdAt}
-              onTimeUp={() => {
-                // Refresh room data when time is up
-                if (onRefreshStatements) {
-                  onRefreshStatements();
-                }
-              }}
-            />
-          )}
 
           {/* Statement Stack or Results */}
           {hasRealtimeEnded && statements.length > 0 ? (
