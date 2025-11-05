@@ -322,7 +322,7 @@ export function CreateRoomSheet({
               <div className="flex items-center gap-2">
                 <Hash className="w-5 h-5 text-emerald-600" />
                 <Label htmlFor="subheard-select" className="text-base text-slate-700">
-                  Pick your community
+                  Where should this debate live?
                 </Label>
               </div>
               <Select
@@ -336,7 +336,7 @@ export function CreateRoomSheet({
                 }}
               >
                 <SelectTrigger id="subheard-select" className="h-12 bg-white border-emerald-200 hover:border-emerald-300 transition-colors">
-                  <SelectValue placeholder="Choose a sub-heard..." />
+                  <SelectValue placeholder="Choose a community..." />
                 </SelectTrigger>
                 <SelectContent>
                   {subHeards.map((sh) => (
@@ -355,7 +355,7 @@ export function CreateRoomSheet({
                   <SelectItem value="create-new">
                     <div className="flex items-center text-purple-600">
                       <Plus className="w-4 h-4 mr-2" />
-                      Create New Sub-Heard
+                      Create New Community
                     </div>
                   </SelectItem>
                 </SelectContent>
