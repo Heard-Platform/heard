@@ -3,7 +3,6 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
-import { Switch } from "./ui/switch";
 import {
   Select,
   SelectContent,
@@ -18,7 +17,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "./ui/sheet";
-import { Clock, Plus, Hash } from "lucide-react";
+import { Plus, Hash } from "lucide-react";
 import { api } from "../utils/api";
 import type { DebateMode, SubHeard } from "../types";
 
@@ -54,7 +53,6 @@ export function CreateRoomSheet({
   const [newRoomTopic, setNewRoomTopic] = useState("");
   const [newRoomDescription, setNewRoomDescription] = useState("");
   const [showExamples, setShowExamples] = useState(false);
-  const [debateMode, setDebateMode] = useState<DebateMode>("host-controlled");
   const [isCreating, setIsCreating] = useState(false);
   const [subHeard, setSubHeard] = useState(defaultSubHeard || "");
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
@@ -119,7 +117,7 @@ export function CreateRoomSheet({
 
       await onCreateRoom(
         newRoomTopic.trim(),
-        debateMode,
+        "realtime", // Always use realtime mode
         true, // Always enable rant-first mode
         newRoomDescription.trim() || undefined,
         finalSubHeard
@@ -128,7 +126,6 @@ export function CreateRoomSheet({
       // Reset form (keep subHeard if it was a default)
       setNewRoomTopic("");
       setNewRoomDescription("");
-      setDebateMode("host-controlled");
       setShowCreateNewSubHeard(false);
       setNewSubHeardName("");
       // Reset subHeard to default or empty
@@ -305,29 +302,6 @@ export function CreateRoomSheet({
               <span className="text-muted-foreground">
                 {newRoomDescription.length}/2000
               </span>
-            </div>
-          </div>
-
-          {/* Debate Settings */}
-          <div className="space-y-3">
-            <Label className="text-sm">Debate Style</Label>
-            
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center space-x-3">
-                <Clock className="w-4 h-4 text-blue-600" />
-                <div>
-                  <p className="text-sm">Enable Real-time Mode</p>
-                  <p className="text-xs text-muted-foreground">
-                    The debate ends when the timer runs out
-                  </p>
-                </div>
-              </div>
-              <Switch
-                checked={debateMode === "realtime"}
-                onCheckedChange={(checked) =>
-                  setDebateMode(checked ? "realtime" : "host-controlled")
-                }
-              />
             </div>
           </div>
 
