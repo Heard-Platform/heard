@@ -3,7 +3,6 @@ import { motion } from "motion/react";
 import { NicknameSetup } from "./components/NicknameSetup";
 import { PasswordReset } from "./components/PasswordReset";
 import { LobbyScreen } from "./screens/LobbyScreen";
-import { GameScreen } from "./screens/GameScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
 import { useDebateSession } from "./hooks/useDebateSession";
@@ -532,37 +531,6 @@ export default function App() {
           onOpenAdminPanel={handleOpenAdminPanel}
           currentSubHeard={currentSubHeard || undefined}
           onSubHeardChange={handleSubHeardChange}
-        />
-        <Toaster />
-      </>
-    );
-  }
-
-  // In-Game Experience
-  if (showGame) {
-    return (
-      <>
-        <GameScreen
-          user={user}
-          room={room}
-          statements={statements}
-          rants={rants}
-          timerActive={timerActive}
-          lastAchievement={lastAchievement}
-          autoPlayActive={autoPlayActive}
-          startingDebate={startingDebate}
-          onSubmitStatement={handleStatementSubmit}
-          onSubmitRant={handleRantSubmit}
-          onVote={handleVote}
-          onAdvance={advance}
-          onStartDebate={startDebate}
-          onLeaveRoom={handleLeaveRoom}
-          onNewDiscussion={handleNewDiscussion}
-          onScheduleFuture={handleScheduleFuture}
-          onSkipToNextStep={advance}
-          onStartAutoPlay={startAutoPlay}
-          onStopAutoPlay={stopAutoPlay}
-          onUpdateRoomDescription={updateRoomDescription}
         />
         <Toaster />
       </>
