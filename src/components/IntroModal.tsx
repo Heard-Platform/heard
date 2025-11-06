@@ -125,7 +125,7 @@ export function IntroModal({ onClose }: IntroModalProps) {
               <div className="flex-1">
                 <p className="text-sm font-medium">Browse Communities</p>
                 <p className="text-xs text-muted-foreground">
-                  Check out different sub-HEARD topics
+                  Check out different communities and topics
                 </p>
               </div>
             </div>

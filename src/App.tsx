@@ -353,8 +353,8 @@ export default function App() {
           const response = await api.joinSubHeard(currentSubHeard, user.id, accessToken || undefined);
           
           if (!response.success) {
-            // Any error means access token issue for private sub-heard
-            toast.error("Invalid or missing access code for this private sub-heard");
+            // Any error means access token issue for private community
+            toast.error("Invalid or missing access code for this private community");
             setCurrentSubHeard(null);
             updateUrlForSubHeard(null);
           }

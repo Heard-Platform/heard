@@ -167,7 +167,7 @@ export function SubHeardBrowser({
     
     await share({
       title: `Join ${formatSubHeardDisplay(subHeard.name)} on HEARD!`,
-      text: "Check out this sub-heard on HEARD!",
+      text: "Check out this community on HEARD!",
       url,
       onSuccess: () => {
         setCopiedSubHeard(subHeard.name);
@@ -208,9 +208,9 @@ export function SubHeardBrowser({
 
       <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Browse Sub-Heards</SheetTitle>
+          <SheetTitle>Browse Communities</SheetTitle>
           <SheetDescription>
-            Select a sub-heard to filter debates by topic
+            Select a community to filter debates by topic
           </SheetDescription>
         </SheetHeader>
 
@@ -275,7 +275,7 @@ export function SubHeardBrowser({
                           <PopoverContent className="w-80">
                             <div className="space-y-4">
                               <div>
-                                <h4 className="font-medium mb-2">Sub-Heard Settings</h4>
+                                <h4 className="font-medium mb-2">Community Settings</h4>
                                 <p className="text-sm text-muted-foreground">
                                   {formatSubHeardDisplay(subHeard.name)}
                                 </p>
@@ -343,12 +343,12 @@ export function SubHeardBrowser({
               onClick={() => setShowCreateNew(true)}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Create New Sub-Heard
+              Create New Community
             </Button>
           ) : (
             <div className="space-y-3 p-4 border-2 border-dashed rounded-lg">
               <div className="space-y-2">
-                <Label htmlFor="new-subheard">New Sub-Heard Name</Label>
+                <Label htmlFor="new-subheard">New Community Name</Label>
                 <Input
                   id="new-subheard"
                   placeholder="e.g., politics, technology..."

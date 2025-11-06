@@ -372,7 +372,7 @@ export function CreateRoomSheet({
                   >
                     <div className="mt-2 p-4 bg-purple-50/50 border-2 border-dashed border-purple-200 rounded-xl space-y-2">
                       <Label htmlFor="new-subheard-name" className="text-sm text-purple-800">
-                        New Sub-Heard Name ✨
+                        New Community Name ✨
                       </Label>
                       <Input
                         id="new-subheard-name"
