@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Statement } from "../types";
+import type { Statement, VoteType } from "../types";
 import { Confetti } from "./results/Confetti";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
@@ -10,6 +10,8 @@ interface RealTimeResultsProps {
   currentSubPhase?: string;
   mode?: "in-progress" | "concluded";
   onDiscuss?: (statementText: string) => void;
+  currentUserId?: string;
+  onChangeVote?: (statementId: string, newVote: VoteType) => Promise<void>;
 }
 
 export function RealTimeResults({
@@ -17,6 +19,8 @@ export function RealTimeResults({
   currentRound,
   mode = "concluded",
   onDiscuss,
+  currentUserId,
+  onChangeVote,
 }: RealTimeResultsProps) {
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -34,7 +38,11 @@ export function RealTimeResults({
       {showConfetti && <Confetti />}
 
       {mode === "in-progress" ? (
-        <InProgressResults statements={statements} />
+        <InProgressResults 
+          statements={statements} 
+          currentUserId={currentUserId}
+          onChangeVote={onChangeVote}
+        />
       ) : (
         <ConcludedResults statements={statements} onDiscuss={onDiscuss} />
       )}

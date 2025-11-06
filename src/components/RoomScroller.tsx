@@ -582,6 +582,8 @@ function RoomCard({
                   <div className="space-y-4">
                     <InProgressResults
                       statements={statements}
+                      currentUserId={currentUserId}
+                      onChangeVote={handleVote}
                     />
                     {/* New Statement Input */}
                     {currentUserId && (

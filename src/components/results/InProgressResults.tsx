@@ -2,14 +2,19 @@ import { motion } from "motion/react";
 import { TrendingUp } from "lucide-react";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
-import type { Statement } from "../../types";
+import { VotesDrawer } from "./VotesDrawer";
+import type { Statement, VoteType } from "../../types";
 
 interface InProgressResultsProps {
   statements: Statement[];
+  currentUserId?: string;
+  onChangeVote?: (statementId: string, newVote: VoteType) => Promise<void>;
 }
 
 export function InProgressResults({
   statements,
+  currentUserId,
+  onChangeVote,
 }: InProgressResultsProps) {
   const totalVotes = statements.reduce(
     (sum, s) => sum + s.agrees + s.disagrees + s.passes,
@@ -54,14 +59,21 @@ export function InProgressResults({
                 <span className="sm:hidden">⚡ LIVE! ⚡</span>
               </span>
             </h3>
-            <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              <Badge className="bg-orange-500 text-white text-xs whitespace-nowrap">
-                {totalVotes} votes 🔥
-              </Badge>
-            </motion.div>
+            <div className="flex items-center gap-2">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <Badge className="bg-orange-500 text-white text-xs whitespace-nowrap">
+                  {totalVotes} votes 🔥
+                </Badge>
+              </motion.div>
+              <VotesDrawer
+                statements={statements}
+                currentUserId={currentUserId}
+                onChangeVote={onChangeVote}
+              />
+            </div>
           </motion.div>
 
           {/* Live Leaderboard - Racing Bars */}
