@@ -49,7 +49,12 @@ export function useDebateSession() {
 
   // Initialize user session
   const initializeUser = useCallback(
-    async (nickname?: string, email?: string, password?: string, isSignIn?: boolean) => {
+    async (
+      nickname?: string,
+      email?: string,
+      password?: string,
+      isSignIn?: boolean,
+    ) => {
       try {
         setError(null);
         let userId = getUserId();
@@ -78,7 +83,11 @@ export function useDebateSession() {
             }
           } else if (nickname) {
             // Sign up new user
-            const response = await api.signUp(nickname, email, password);
+            const response = await api.signUp(
+              nickname,
+              email,
+              password,
+            );
             if (response.success && response.data) {
               userData = response.data.user;
               setUserId(userData.id);
@@ -438,7 +447,10 @@ export function useDebateSession() {
     async (subHeard?: string) => {
       try {
         const userId = user?.id;
-        const response = await api.getActiveRooms(subHeard, userId);
+        const response = await api.getActiveRooms(
+          subHeard,
+          userId,
+        );
         if (response.success && response.data) {
           setActiveRooms(response.data.rooms || []);
           return response.data.rooms || [];
