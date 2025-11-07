@@ -2409,10 +2409,6 @@
     padding-bottom: calc(var(--spacing) * 3);
   }
 
-  .pb-4 {
-    padding-bottom: calc(var(--spacing) * 4);
-  }
-
   .pb-6 {
     padding-bottom: calc(var(--spacing) * 6);
   }
