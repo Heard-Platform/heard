@@ -39,7 +39,7 @@ app.post(
         return c.json({ error: "User session not found" }, 404);
       }
 
-      // If creating a room in a private sub-heard, check membership
+      // If creating a room in a sub-heard, create it if it doesn't exist or check membership if private
       if (subHeard) {
         const normalizedSubHeard = subHeard
           .trim()
@@ -49,6 +49,7 @@ app.post(
         const subHeardData = await kv.get(subHeardKey);
 
         if (subHeardData) {
+          // Sub-heard exists - check if it's private and verify membership
           try {
             const parsedSubHeard = JSON.parse(subHeardData);
             if (parsedSubHeard.isPrivate) {
@@ -73,6 +74,21 @@ app.post(
               error,
             );
           }
+        } else {
+          // Sub-heard doesn't exist - create it as a public sub-heard with this user as admin
+          console.log(
+            `Creating new public sub-heard: ${normalizedSubHeard}`,
+          );
+          const newSubHeardData = {
+            name: normalizedSubHeard,
+            createdAt: Date.now(),
+            isPrivate: false,
+            adminId: userId,
+          };
+          await kv.set(
+            subHeardKey,
+            JSON.stringify(newSubHeardData),
+          );
         }
       }
 

@@ -4,6 +4,7 @@ import * as kv from "./kv_store.tsx";
 import { recalculateClustersForRoom } from "./clustering.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
+import { roomApi } from "./room-api.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
 import {
   getUserSession,
@@ -3093,7 +3094,7 @@ app.get(
   },
 );
 
-// Mount subheard API routes
 app.route("/", subheardApi);
+app.route("/", roomApi);
 
 export { app as debateApi, saveDebateRoom };
