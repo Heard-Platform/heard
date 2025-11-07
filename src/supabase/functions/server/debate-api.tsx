@@ -7,7 +7,9 @@ import { subheardApi } from "./subheard-api.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
 // Utility function to get frontend URL
 const getFrontendUrl = (): string => {
-  return Deno.env.get("FRONTEND_URL") || "https://app.heard-now.com";
+  return (
+    Deno.env.get("FRONTEND_URL") || "https://app.heard-now.com"
+  );
 };
 
 // Type definitions - exported for use in other modules
@@ -1014,7 +1016,8 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
       await saveUserSession(existingUser);
 
       // Return user without password hash
-      const { passwordHash: _, ...userWithoutPassword } = existingUser;
+      const { passwordHash: _, ...userWithoutPassword } =
+        existingUser;
       return c.json({
         user: userWithoutPassword,
         isReturningUser: true,
@@ -1178,7 +1181,10 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
       subHeard: subHeard
         ? subHeard.trim().toLowerCase().replace(/\s+/g, "-")
         : undefined,
-      endTime: mode === "realtime" ? Date.now() + 7 * 24 * 60 * 60 * 1000 : undefined, // Realtime debates end in 1 week
+      endTime:
+        mode === "realtime"
+          ? Date.now() + 7 * 24 * 60 * 60 * 1000
+          : undefined, // Realtime debates end in 1 week
     };
 
     await saveDebateRoom(debateRoom);
@@ -2876,7 +2882,8 @@ app.post(
 
       // Create a realtime test room with a DC-specific debate topic
       const roomId = generateId();
-      const oneWeekFromNow = Date.now() + 7 * 24 * 60 * 60 * 1000; // 1 week
+      const oneWeekFromNow =
+        Date.now() + 7 * 24 * 60 * 60 * 1000; // 1 week
 
       const debateRoom: DebateRoom = {
         id: roomId,

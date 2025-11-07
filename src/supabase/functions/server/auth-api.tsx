@@ -1,13 +1,19 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
-import { hashPassword, verifyPassword, generateResetToken } from "./password-utils.tsx";
+import {
+  hashPassword,
+  verifyPassword,
+  generateResetToken,
+} from "./password-utils.tsx";
 
 const app = new Hono();
 
 // Utility function to get frontend URL
 const getFrontendUrl = (): string => {
-  return Deno.env.get("FRONTEND_URL") || "https://app.heard-now.com";
+  return (
+    Deno.env.get("FRONTEND_URL") || "https://app.heard-now.com"
+  );
 };
 
 // Generate ID for new users
@@ -95,24 +101,29 @@ const sendEmail = async ({
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
 
     if (!resendApiKey) {
-      console.error("RESEND_API_KEY environment variable not set");
+      console.error(
+        "RESEND_API_KEY environment variable not set",
+      );
       return false;
     }
 
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${resendApiKey}`,
+    const response = await fetch(
+      "https://api.resend.com/emails",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${resendApiKey}`,
+        },
+        body: JSON.stringify({
+          from: "HEARD <notifications@heard-now.com>",
+          to: [to],
+          subject,
+          html,
+          text: text || undefined,
+        }),
       },
-      body: JSON.stringify({
-        from: "HEARD <notifications@heard-now.com>",
-        to: [to],
-        subject,
-        html,
-        text: text || undefined,
-      }),
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -179,7 +190,7 @@ const sendPasswordResetEmail = async (
   resetToken: string,
 ) => {
   const appUrl = getFrontendUrl();
-  
+
   const resetHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="text-align: center; margin-bottom: 30px;">
@@ -290,7 +301,8 @@ app.post("/make-server-f1a393b4/auth/signup", async (c) => {
     });
 
     // Return user without password hash
-    const { passwordHash: _, ...userWithoutPassword } = userSession;
+    const { passwordHash: _, ...userWithoutPassword } =
+      userSession;
 
     return c.json({
       user: userWithoutPassword,
@@ -298,10 +310,7 @@ app.post("/make-server-f1a393b4/auth/signup", async (c) => {
     });
   } catch (error) {
     console.error("Error signing up user:", error);
-    return c.json(
-      { error: "Failed to create account" },
-      500,
-    );
+    return c.json({ error: "Failed to create account" }, 500);
   }
 });
 
@@ -332,13 +341,19 @@ app.post("/make-server-f1a393b4/auth/signin", async (c) => {
     // Check if user has a password hash
     if (!user.passwordHash) {
       return c.json(
-        { error: "This account needs to set a password. Please use password reset." },
+        {
+          error:
+            "This account needs to set a password. Please use password reset.",
+        },
         401,
       );
     }
 
     // Verify password
-    const isValid = await verifyPassword(password, user.passwordHash);
+    const isValid = await verifyPassword(
+      password,
+      user.passwordHash,
+    );
 
     if (!isValid) {
       return c.json(
@@ -360,141 +375,144 @@ app.post("/make-server-f1a393b4/auth/signin", async (c) => {
     });
   } catch (error) {
     console.error("Error signing in user:", error);
-    return c.json(
-      { error: "Failed to sign in" },
-      500,
-    );
+    return c.json({ error: "Failed to sign in" }, 500);
   }
 });
 
 // Request password reset
-app.post("/make-server-f1a393b4/auth/forgot-password", async (c) => {
-  try {
-    const { email } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/auth/forgot-password",
+  async (c) => {
+    try {
+      const { email } = await c.req.json();
 
-    if (!email) {
-      return c.json(
-        { error: "Email is required" },
-        400,
+      if (!email) {
+        return c.json({ error: "Email is required" }, 400);
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Get user by email
+      const user = await getUserByEmail(normalizedEmail);
+
+      // Don't reveal if user exists or not (security best practice)
+      if (!user) {
+        return c.json({
+          success: true,
+          message:
+            "If an account exists with this email, you will receive a password reset link.",
+        });
+      }
+
+      // Generate reset token
+      const resetToken = generateResetToken();
+      const expiresAt = Date.now() + 60 * 60 * 1000; // 1 hour from now
+
+      // Store reset token
+      await kv.set(
+        `password_reset:${resetToken}`,
+        JSON.stringify({
+          email: normalizedEmail,
+          expiresAt,
+        }),
       );
-    }
 
-    const normalizedEmail = email.trim().toLowerCase();
+      // Send password reset email
+      await sendPasswordResetEmail(normalizedEmail, resetToken);
 
-    // Get user by email
-    const user = await getUserByEmail(normalizedEmail);
-
-    // Don't reveal if user exists or not (security best practice)
-    if (!user) {
       return c.json({
         success: true,
-        message: "If an account exists with this email, you will receive a password reset link.",
+        message:
+          "If an account exists with this email, you will receive a password reset link.",
       });
+    } catch (error) {
+      console.error("Error requesting password reset:", error);
+      return c.json(
+        { error: "Failed to process password reset request" },
+        500,
+      );
     }
-
-    // Generate reset token
-    const resetToken = generateResetToken();
-    const expiresAt = Date.now() + 60 * 60 * 1000; // 1 hour from now
-
-    // Store reset token
-    await kv.set(
-      `password_reset:${resetToken}`,
-      JSON.stringify({
-        email: normalizedEmail,
-        expiresAt,
-      }),
-    );
-
-    // Send password reset email
-    await sendPasswordResetEmail(normalizedEmail, resetToken);
-
-    return c.json({
-      success: true,
-      message: "If an account exists with this email, you will receive a password reset link.",
-    });
-  } catch (error) {
-    console.error("Error requesting password reset:", error);
-    return c.json(
-      { error: "Failed to process password reset request" },
-      500,
-    );
-  }
-});
+  },
+);
 
 // Reset password with token
-app.post("/make-server-f1a393b4/auth/reset-password", async (c) => {
-  try {
-    const { token, newPassword } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/auth/reset-password",
+  async (c) => {
+    try {
+      const { token, newPassword } = await c.req.json();
 
-    if (!token || !newPassword) {
-      return c.json(
-        { error: "Token and new password are required" },
-        400,
+      if (!token || !newPassword) {
+        return c.json(
+          { error: "Token and new password are required" },
+          400,
+        );
+      }
+
+      if (newPassword.length < 6) {
+        return c.json(
+          { error: "Password must be at least 6 characters" },
+          400,
+        );
+      }
+
+      // Get reset token data
+      const resetDataJson = await kv.get(
+        `password_reset:${token}`,
       );
-    }
 
-    if (newPassword.length < 6) {
-      return c.json(
-        { error: "Password must be at least 6 characters" },
-        400,
-      );
-    }
+      if (!resetDataJson) {
+        return c.json(
+          { error: "Invalid or expired reset token" },
+          400,
+        );
+      }
 
-    // Get reset token data
-    const resetDataJson = await kv.get(`password_reset:${token}`);
+      const resetData = JSON.parse(resetDataJson);
 
-    if (!resetDataJson) {
-      return c.json(
-        { error: "Invalid or expired reset token" },
-        400,
-      );
-    }
+      // Check if token is expired
+      if (Date.now() > resetData.expiresAt) {
+        // Delete expired token
+        await kv.del(`password_reset:${token}`);
+        return c.json(
+          {
+            error:
+              "Reset token has expired. Please request a new one.",
+          },
+          400,
+        );
+      }
 
-    const resetData = JSON.parse(resetDataJson);
+      // Get user
+      const user = await getUserByEmail(resetData.email);
 
-    // Check if token is expired
-    if (Date.now() > resetData.expiresAt) {
-      // Delete expired token
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      // Hash new password
+      const passwordHash = await hashPassword(newPassword);
+
+      // Update user password
+      user.passwordHash = passwordHash;
+      await saveUserSession(user);
+
+      // Delete used reset token
       await kv.del(`password_reset:${token}`);
-      return c.json(
-        { error: "Reset token has expired. Please request a new one." },
-        400,
+
+      console.log(
+        `Password reset successful for user: ${user.email}`,
       );
+
+      return c.json({
+        success: true,
+        message: "Password has been reset successfully",
+      });
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      return c.json({ error: "Failed to reset password" }, 500);
     }
-
-    // Get user
-    const user = await getUserByEmail(resetData.email);
-
-    if (!user) {
-      return c.json(
-        { error: "User not found" },
-        404,
-      );
-    }
-
-    // Hash new password
-    const passwordHash = await hashPassword(newPassword);
-
-    // Update user password
-    user.passwordHash = passwordHash;
-    await saveUserSession(user);
-
-    // Delete used reset token
-    await kv.del(`password_reset:${token}`);
-
-    console.log(`Password reset successful for user: ${user.email}`);
-
-    return c.json({
-      success: true,
-      message: "Password has been reset successfully",
-    });
-  } catch (error) {
-    console.error("Error resetting password:", error);
-    return c.json(
-      { error: "Failed to reset password" },
-      500,
-    );
-  }
-});
+  },
+);
 
 export { app as authApi };
