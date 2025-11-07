@@ -3151,4 +3151,4 @@ app.get(
 // Mount subheard API routes
 app.route("/", subheardApi);
 
-export { app as debateApi };
+export { app as debateApi, saveDebateRoom };

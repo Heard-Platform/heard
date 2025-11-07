@@ -30,7 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { Shield, Lock, User, Crown, X, MessageSquare, ToggleLeft, ToggleRight } from "lucide-react";
+import { Shield, Lock, User, Crown, X, MessageSquare, ToggleLeft, ToggleRight, TestTube } from "lucide-react";
 import { api } from "../utils/api";
 import type { DebateRoom, SubHeard } from "../types";
 
@@ -58,6 +58,9 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
   const [newSubHeardName, setNewSubHeardName] = useState("");
   const [togglingDebateId, setTogglingDebateId] = useState<string | null>(null);
   const [dataFixLoading, setDataFixLoading] = useState<string | null>(null);
+  const [redditUrl, setRedditUrl] = useState("");
+  const [redditSubHeard, setRedditSubHeard] = useState("");
+  const [creatingRedditRoom, setCreatingRedditRoom] = useState(false);
 
   const fetchAdminData = async () => {
     if (!adminKey) return;
@@ -223,6 +226,51 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
       alert("Failed to run data fix");
     } finally {
       setDataFixLoading(null);
+    }
+  };
+
+  const handleCreateRedditRoom = async () => {
+    if (!redditUrl.trim()) {
+      alert("Please enter a Reddit post URL");
+      return;
+    }
+
+    // Use the first user as the room creator
+    const userId = users[0]?.userId;
+    if (!userId) {
+      alert("No users found in the system");
+      return;
+    }
+
+    setCreatingRedditRoom(true);
+    try {
+      const res = await api.adminCreateRedditSeedRoom(
+        redditUrl,
+        userId,
+        adminKey,
+        redditSubHeard || undefined
+      );
+
+      if (res.success) {
+        alert(
+          `Success! Created room with:\n` +
+          `Topic: ${res.data?.room?.topic}\n` +
+          `Rants: ${res.data?.room?.rantCount}\n` +
+          `Statements: ${res.data?.room?.statementCount}\n` +
+          `Room ID: ${res.data?.room?.id}`
+        );
+        setRedditUrl("");
+        setRedditSubHeard("");
+        // Refresh the debates list
+        await fetchAdminData();
+      } else {
+        alert(`Failed to create Reddit room: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error creating Reddit room:", error);
+      alert("Failed to create Reddit room");
+    } finally {
+      setCreatingRedditRoom(false);
     }
   };
 
@@ -483,6 +531,55 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                 No debates found
               </p>
             )}
+          </div>
+        </Card>
+
+        {/* Dev Tools - Reddit Seed */}
+        <Card className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <TestTube className="w-5 h-5 text-blue-600" />
+            <h2 className="text-xl">Dev Tools - Reddit Seed</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Create a test debate room from a Reddit post. The post title becomes the topic, and comments are processed into statements using AI.
+          </p>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="redditUrl">Reddit Post URL</Label>
+              <Input
+                id="redditUrl"
+                value={redditUrl}
+                onChange={(e) => setRedditUrl(e.target.value)}
+                placeholder="https://www.reddit.com/r/subreddit/comments/..."
+                disabled={creatingRedditRoom}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Paste a link to any Reddit post
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="redditSubHeard">Sub-Heard (Optional)</Label>
+              <Select value={redditSubHeard || "none"} onValueChange={(value) => setRedditSubHeard(value === "none" ? "" : value)} disabled={creatingRedditRoom}>
+                <SelectTrigger id="redditSubHeard">
+                  <SelectValue placeholder="None (public)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None (public)</SelectItem>
+                  {subHeards.map((sh) => (
+                    <SelectItem key={sh.name} value={sh.name}>
+                      {sh.name} {sh.isPrivate ? "🔒" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              onClick={handleCreateRedditRoom}
+              disabled={creatingRedditRoom || !redditUrl.trim()}
+              className="w-full"
+            >
+              {creatingRedditRoom ? "Creating Room..." : "Create Test Room from Reddit"}
+            </Button>
           </div>
         </Card>
 

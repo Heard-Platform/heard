@@ -312,6 +312,17 @@ class ApiClient {
       },
     });
   }
+
+  // Create test room from Reddit post
+  async adminCreateRedditSeedRoom(redditUrl: string, userId: string, adminKey: string, subHeard?: string) {
+    return this.request("/reddit/seed", {
+      method: "POST",
+      body: JSON.stringify({ redditUrl, userId, subHeard }),
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
 }
 
 export const api = new ApiClient();

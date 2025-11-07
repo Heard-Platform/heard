@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Eye, CheckCircle, XCircle, MinusCircle, Star } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
 import { ScrollArea } from "../ui/scroll-area";
 import type { Statement, VoteType } from "../../types";
 
@@ -76,11 +76,11 @@ export function VotesDrawer({
             <Eye className="w-5 h-5 text-orange-600 flex-shrink-0" />
             <span>All Votes</span>
           </SheetTitle>
-          <div className="pt-1">
+          <SheetDescription className="pt-1">
             <Badge variant="secondary" className="text-xs">
               {statementsWithVotes.length} statements
             </Badge>
-          </div>
+          </SheetDescription>
         </SheetHeader>
         
         <ScrollArea className="flex-1 px-4 sm:px-6">

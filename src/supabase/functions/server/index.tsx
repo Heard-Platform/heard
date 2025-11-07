@@ -5,6 +5,7 @@ import * as kv from "./kv_store.tsx";
 import { debateApi } from "./debate-api.tsx";
 import { adminApi } from "./admin-api.tsx";
 import { authApi } from "./auth-api.tsx";
+import { redditApi } from "./reddit-api.tsx";
 
 const app = new Hono();
 
@@ -47,5 +48,8 @@ app.route("/", adminApi);
 
 // Mount auth API routes
 app.route("/", authApi);
+
+// Mount reddit API routes
+app.route("/", redditApi);
 
 Deno.serve(app.fetch);
