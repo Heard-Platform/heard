@@ -2,6 +2,7 @@
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
+import { getActiveRooms } from "./debate-api.tsx";
 
 const app = new Hono();
 
@@ -9,17 +10,9 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
   try {
     const userId = c.req.query("userId"); // Optional: if provided, show private sub-heards where user is admin or member
 
-    const activeRooms = await kv.getByPrefix("active_room:");
-    const rooms = activeRooms
-      .map((r) => {
-        try {
-          return JSON.parse(r);
-        } catch (error) {
-          console.error("Error parsing active room:", r, error);
-          return null;
-        }
-      })
-      .filter((r) => r !== null && r.subHeard);
+    // Get all active rooms using helper function
+    const allRooms = await getActiveRooms();
+    const rooms = allRooms.filter((r) => r.subHeard);
 
     const roomCounts: { [key: string]: number } = {};
     rooms.forEach((room) => {

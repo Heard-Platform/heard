@@ -6,6 +6,7 @@ import { debateApi } from "./debate-api.tsx";
 import { adminApi } from "./admin-api.tsx";
 import { authApi } from "./auth-api.tsx";
 import { redditApi } from "./reddit-api.tsx";
+import { oneTimeFixesApi } from "./one-time-fixes.tsx";
 
 const app = new Hono();
 
@@ -51,5 +52,8 @@ app.route("/", authApi);
 
 // Mount reddit API routes
 app.route("/", redditApi);
+
+// Mount one-time fixes API routes
+app.route("/", oneTimeFixesApi);
 
 Deno.serve(app.fetch);

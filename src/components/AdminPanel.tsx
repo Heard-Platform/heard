@@ -229,6 +229,33 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
+  const handleFixActiveRoomPointers = async () => {
+    if (!confirm("Migrate active_room records from full JSON objects to room ID pointers?")) {
+      return;
+    }
+
+    setDataFixLoading("active-room-pointers");
+    try {
+      const res = await api.request("/one-time-fixes/fix-active-room-pointers", {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+      });
+      if (res.success) {
+        alert(
+          `Migrated ${res.data?.migrated || 0} record(s), skipped ${res.data?.skipped || 0} already-migrated record(s)`
+        );
+        await fetchAdminData();
+      } else {
+        alert(`Failed to run migration: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error running migration:", error);
+      alert("Failed to run migration");
+    } finally {
+      setDataFixLoading(null);
+    }
+  };
+
   const handleCreateRedditRoom = async () => {
     if (!redditUrl.trim()) {
       alert("Please enter a Reddit post URL");
@@ -593,6 +620,22 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             Idempotent operations to fix database issues. Safe to run multiple times.
           </p>
           <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex-1">
+                <h3 className="font-medium">Fix Active Room Pointers</h3>
+                <p className="text-sm text-muted-foreground">
+                  Migrate active_room records from full JSON objects to room ID pointers
+                </p>
+              </div>
+              <Button
+                onClick={handleFixActiveRoomPointers}
+                disabled={dataFixLoading === "active-room-pointers"}
+                variant="outline"
+                size="sm"
+              >
+                {dataFixLoading === "active-room-pointers" ? "Running..." : "Run Fix"}
+              </Button>
+            </div>
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div className="flex-1">
                 <h3 className="font-medium">Normalize Dupont Circle Sub-Heard</h3>

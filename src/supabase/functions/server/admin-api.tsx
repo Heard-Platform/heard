@@ -2,6 +2,7 @@
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { generateAccessToken } from "./subheard-api.tsx";
+import { getActiveRooms } from "./debate-api.tsx";
 
 const app = new Hono();
 
@@ -234,19 +235,15 @@ app.patch(
       }
 
       // Update all active rooms
-      const activeRooms = await kv.getByPrefix("active_room:");
+      const rooms = await getActiveRooms();
       let updatedRooms = 0;
       
-      for (const roomData of activeRooms) {
+      for (const room of rooms) {
         try {
-          const room = typeof roomData === "string" 
-            ? JSON.parse(roomData) 
-            : roomData;
-          
           if (room.subHeard === oldName) {
             room.subHeard = normalizedNewName;
-            const roomKey = `active_room:${room.id}`;
-            await kv.set(roomKey, JSON.stringify(room));
+            // Update the main room record
+            await kv.set(`room:${room.id}`, JSON.stringify(room));
             updatedRooms++;
           }
         } catch (error) {
@@ -277,17 +274,11 @@ app.patch(
 // Get all debates (rooms) with their active status
 app.get("/make-server-f1a393b4/admin/debates", async (c) => {
   try {
-    const roomKeys = await kv.getByPrefix("active_room:");
+    const rooms = await getActiveRooms();
 
-    const debates = roomKeys
-      .map((roomData) => {
+    const debates = rooms
+      .map((room) => {
         try {
-          // Check if it's already an object or needs parsing
-          const room =
-            typeof roomData === "string"
-              ? JSON.parse(roomData)
-              : roomData;
-
           return {
             id: room.id,
             topic: room.topic,
@@ -322,9 +313,9 @@ app.patch(
     try {
       const debateId = c.req.param("id");
 
-      // Get existing debate data
-      const debateKey = `active_room:${debateId}`;
-      const existingData = await kv.get(debateKey);
+      // Get existing debate data from main room record
+      const roomKey = `room:${debateId}`;
+      const existingData = await kv.get(roomKey);
 
       if (!existingData) {
         return c.json({ error: "Debate not found" }, 404);
@@ -341,8 +332,15 @@ app.patch(
       // Toggle active status
       debateData.isActive = !debateData.isActive;
 
-      // Save updated data
-      await kv.set(debateKey, JSON.stringify(debateData));
+      // Save updated data to main room record
+      await kv.set(roomKey, JSON.stringify(debateData));
+      
+      // Update active_room pointer
+      if (debateData.isActive) {
+        await kv.set(`active_room:${debateId}`, debateId);
+      } else {
+        await kv.del(`active_room:${debateId}`);
+      }
 
       return c.json({
         success: true,
@@ -428,20 +426,16 @@ app.post(
       const normalizedName = "dupont-circle-neighborhoods";
       
       // Get all active rooms
-      const activeRooms = await kv.getByPrefix("active_room:");
+      const rooms = await getActiveRooms();
       let updatedRooms = 0;
       const updatedRoomIds: string[] = [];
       
-      for (const roomData of activeRooms) {
+      for (const room of rooms) {
         try {
-          const room = typeof roomData === "string" 
-            ? JSON.parse(roomData) 
-            : roomData;
-          
           if (room.subHeard === oldName) {
             room.subHeard = normalizedName;
-            const roomKey = `active_room:${room.id}`;
-            await kv.set(roomKey, JSON.stringify(room));
+            // Update the main room record
+            await kv.set(`room:${room.id}`, JSON.stringify(room));
             updatedRooms++;
             updatedRoomIds.push(room.id);
             console.log(`Updated room ${room.id} subheard from "${oldName}" to "${normalizedName}"`);

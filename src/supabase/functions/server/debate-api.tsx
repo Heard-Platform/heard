@@ -566,15 +566,31 @@ const getDebateRoom = async (
 
 const saveDebateRoom = async (room: DebateRoom) => {
   await kv.set(`room:${room.id}`, JSON.stringify(room));
-  // Also save to active rooms list if active
   if (room.isActive) {
-    await kv.set(
-      `active_room:${room.id}`,
-      JSON.stringify(room),
-    );
+    await kv.set(`active_room:${room.id}`, room.id);
   } else {
     await kv.del(`active_room:${room.id}`);
   }
+};
+
+const getActiveRooms = async (): Promise<DebateRoom[]> => {
+  const activeRoomPointers = await kv.getByPrefix("active_room:");
+  const roomIds = activeRoomPointers.filter((id) => id);
+  const roomDataPromises = roomIds.map((roomId) => 
+    kv.get(`room:${roomId}`)
+  );
+  const roomDataResults = await Promise.all(roomDataPromises);
+  
+  return roomDataResults
+    .map((r) => {
+      try {
+        return r ? JSON.parse(r) : null;
+      } catch (error) {
+        console.error("Error parsing room data:", r, error);
+        return null;
+      }
+    })
+    .filter((r): r is DebateRoom => r !== null);
 };
 
 // Vote utility functions
@@ -1739,12 +1755,9 @@ app.post(
         );
       }
 
-      // Mark room as inactive
+      // Mark room as inactive (saveDebateRoom will handle removing from active_room list)
       room.isActive = false;
       await saveDebateRoom(room);
-
-      // Remove from active rooms list
-      await kv.del(`active_room:${room.id}`);
 
       return c.json({ room });
     } catch (error) {
@@ -1765,21 +1778,8 @@ app.get(
       const subHeard = c.req.query("subHeard");
       const userId = c.req.query("userId");
 
-      const activeRooms = await kv.getByPrefix("active_room:");
-      let rooms = activeRooms
-        .map((r) => {
-          try {
-            return JSON.parse(r);
-          } catch (error) {
-            console.error(
-              "Error parsing active room:",
-              r,
-              error,
-            );
-            return null;
-          }
-        })
-        .filter((r) => r !== null);
+      // Get all active rooms using helper function
+      let rooms = await getActiveRooms();
 
       // Filter by sub-heard if specified
       if (subHeard) {
@@ -3097,4 +3097,4 @@ app.get(
 app.route("/", subheardApi);
 app.route("/", roomApi);
 
-export { app as debateApi, saveDebateRoom };
+export { app as debateApi, saveDebateRoom, getActiveRooms };
