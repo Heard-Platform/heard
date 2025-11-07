@@ -192,16 +192,21 @@ export function LobbyScreen({
       {/* Main TikTok-style scroller */}
       <div className="relative">
         {/* Floating header with user info and menu */}
-        <div className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between items-center">
+        <div className="absolute top-0 left-0 right-0 z-20 px-4 pb-4 pt-2 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <motion.h1
-              className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
-              style={{
-                WebkitTextStroke: "1px rgba(255,255,255,0.8)",
-              }}
-            >
-              HEARD
-            </motion.h1>
+            <div className="flex flex-col">
+              <p className="text-[10px] text-purple-400/80 tracking-wide uppercase mb-[-2px]">
+                A place to be
+              </p>
+              <motion.h1
+                className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
+                style={{
+                  WebkitTextStroke: "1px rgba(255,255,255,0.8)",
+                }}
+              >
+                HEARD
+              </motion.h1>
+            </div>
             {user?.isDeveloper && (
               <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
                 DEV
