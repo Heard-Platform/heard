@@ -5,6 +5,8 @@ import { recalculateClustersForRoom } from "./clustering.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
+import { getUserSession, sendWelcomeEmail } from "./auth-api.tsx";
+
 // Utility function to get frontend URL
 const getFrontendUrl = (): string => {
   return (
@@ -482,29 +484,6 @@ Don't want to miss future updates? HEARD will notify you when each phase begins 
   `.trim();
 };
 
-const getUserSession = async (
-  userId: string,
-): Promise<UserSession | null> => {
-  try {
-    const session = await kv.get(`user:${userId}`);
-    if (!session) return null;
-    const userData = JSON.parse(session);
-
-    // Default isTestUser to false for existing users without this field
-    if (userData.isTestUser === undefined) {
-      userData.isTestUser = false;
-    }
-
-    return userData;
-  } catch (error) {
-    console.error(
-      `Error parsing user session for ${userId}:`,
-      error,
-    );
-    return null;
-  }
-};
-
 const saveUserSession = async (session: UserSession) => {
   await kv.set(`user:${session.id}`, JSON.stringify(session));
   // Also store by email for lookup
@@ -979,7 +958,7 @@ const processRantAndCreateStatements = async (
 };
 
 // Create or join user session
-app.post("/make-server-f1a393b4/user/create", async (c) => {
+app.post("/make-server-f1a393b4/user/create", async (c: any) => {
   try {
     const { nickname, email } = await c.req.json();
 
@@ -1075,7 +1054,7 @@ app.post("/make-server-f1a393b4/user/create", async (c) => {
 });
 
 // Get user session
-app.get("/make-server-f1a393b4/user/:userId", async (c) => {
+app.get("/make-server-f1a393b4/user/:userId", async (c: any) => {
   try {
     const userId = c.req.param("userId");
     const user = await getUserSession(userId);
@@ -1101,7 +1080,7 @@ app.get("/make-server-f1a393b4/user/:userId", async (c) => {
 });
 
 // Create debate room
-app.post("/make-server-f1a393b4/room/create", async (c) => {
+app.post("/make-server-f1a393b4/room/create", async (c: any) => {
   try {
     const {
       topic,
@@ -1206,7 +1185,7 @@ app.post("/make-server-f1a393b4/room/create", async (c) => {
 // Join debate room
 app.post(
   "/make-server-f1a393b4/room/:roomId/join",
-  async (c) => {
+  async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
       const { userId } = await c.req.json();
@@ -1283,7 +1262,7 @@ app.post(
 );
 
 // Get room status
-app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
+app.get("/make-server-f1a393b4/room/:roomId", async (c: any) => {
   try {
     const roomId = c.req.param("roomId");
 
@@ -1325,7 +1304,7 @@ app.get("/make-server-f1a393b4/room/:roomId", async (c) => {
 // Submit statement
 app.post(
   "/make-server-f1a393b4/room/:roomId/statement",
-  async (c) => {
+  async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
       const { text, userId } = await c.req.json();
@@ -1424,7 +1403,7 @@ app.post(
 // Submit rant
 app.post(
   "/make-server-f1a393b4/room/:roomId/rant",
-  async (c) => {
+  async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
       const { text, userId } = await c.req.json();
@@ -1525,7 +1504,7 @@ app.post(
 // Vote on statement
 app.post(
   "/make-server-f1a393b4/statement/:statementId/vote",
-  async (c) => {
+  async (c: any) => {
     try {
       const statementId = c.req.param("statementId");
       const { voteType, userId } = await c.req.json();
@@ -1678,7 +1657,7 @@ app.post(
 // Update room phase
 app.post(
   "/make-server-f1a393b4/room/:roomId/phase",
-  async (c) => {
+  async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
       const { phase, subPhase, userId } = await c.req.json();
@@ -1776,7 +1755,7 @@ app.post(
 // Update room description (host only)
 app.put(
   "/make-server-f1a393b4/room/:roomId/description",
-  async (c) => {
+  async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
       const { description, userId } = await c.req.json();
@@ -1822,7 +1801,7 @@ app.put(
 // Mark room as inactive (dev tool)
 app.post(
   "/make-server-f1a393b4/room/:roomId/inactive",
-  async (c) => {
+  async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
       const { userId } = await c.req.json();
@@ -1866,7 +1845,7 @@ app.post(
 );
 
 // Get active rooms
-app.get("/make-server-f1a393b4/rooms/active", async (c) => {
+app.get("/make-server-f1a393b4/rooms/active", async (c: any) => {
   try {
     const subHeard = c.req.query("subHeard");
     const userId = c.req.query("userId");
@@ -1938,7 +1917,7 @@ app.get("/make-server-f1a393b4/rooms/active", async (c) => {
 // Send email invites to join a room
 app.post(
   "/make-server-f1a393b4/room/:roomId/invite",
-  async (c) => {
+  async (c: any) => {
     try {
       const { emails, customMessage } = await c.req.json();
       const roomId = c.req.param("roomId");
@@ -2121,7 +2100,7 @@ No account needed - just click the link to get started!
 );
 
 // Create seed data for testing
-app.post("/make-server-f1a393b4/seed/create", async (c) => {
+app.post("/make-server-f1a393b4/seed/create", async (c: any) => {
   try {
     const { userId } = await c.req.json();
 
@@ -2404,7 +2383,7 @@ app.post("/make-server-f1a393b4/seed/create", async (c) => {
 // Create test room with Q Street debate topic and players (no posts/votes)
 app.post(
   "/make-server-f1a393b4/test-room/create",
-  async (c) => {
+  async (c: any) => {
     try {
       const { userId } = await c.req.json();
 
@@ -2511,7 +2490,7 @@ app.post(
 // Create rant test room with Q Street debate topic and pre-filled rants
 app.post(
   "/make-server-f1a393b4/rant-test-room/create",
-  async (c) => {
+  async (c: any) => {
     try {
       const { userId } = await c.req.json();
 
@@ -2871,7 +2850,7 @@ app.post(
 // Create realtime test room with 5-minute countdown and seed data
 app.post(
   "/make-server-f1a393b4/realtime-test-room/create",
-  async (c) => {
+  async (c: any) => {
     try {
       const { userId } = await c.req.json();
 
@@ -3099,7 +3078,7 @@ app.post(
 // Dev endpoint: Get cluster data for a room
 app.get(
   "/make-server-f1a393b4/room/:roomId/clusters",
-  async (c) => {
+  async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
 

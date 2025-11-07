@@ -36,7 +36,7 @@ interface UserSession {
 }
 
 // Utility functions
-const getUserSession = async (
+export const getUserSession = async (
   userId: string,
 ): Promise<UserSession | null> => {
   try {
@@ -144,7 +144,7 @@ const sendEmail = async ({
 };
 
 // Welcome email
-const sendWelcomeEmail = async (
+export const sendWelcomeEmail = async (
   email: string,
   nickname: string,
 ) => {
@@ -225,7 +225,7 @@ const sendPasswordResetEmail = async (
 };
 
 // Sign up new user with password
-app.post("/make-server-f1a393b4/auth/signup", async (c) => {
+app.post("/make-server-f1a393b4/auth/signup", async (c: any) => {
   try {
     const { nickname, email, password } = await c.req.json();
 
@@ -315,7 +315,7 @@ app.post("/make-server-f1a393b4/auth/signup", async (c) => {
 });
 
 // Sign in existing user
-app.post("/make-server-f1a393b4/auth/signin", async (c) => {
+app.post("/make-server-f1a393b4/auth/signin", async (c: any) => {
   try {
     const { email, password } = await c.req.json();
 
@@ -382,7 +382,7 @@ app.post("/make-server-f1a393b4/auth/signin", async (c) => {
 // Request password reset
 app.post(
   "/make-server-f1a393b4/auth/forgot-password",
-  async (c) => {
+  async (c: any) => {
     try {
       const { email } = await c.req.json();
 
@@ -438,7 +438,7 @@ app.post(
 // Reset password with token
 app.post(
   "/make-server-f1a393b4/auth/reset-password",
-  async (c) => {
+  async (c: any) => {
     try {
       const { token, newPassword } = await c.req.json();
 
