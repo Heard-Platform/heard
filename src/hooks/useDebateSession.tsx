@@ -899,7 +899,7 @@ export function useDebateSession() {
 
     const interval = setInterval(() => {
       refreshRoom();
-    }, 2000); // Poll every 2 seconds
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [room, refreshRoom]);
