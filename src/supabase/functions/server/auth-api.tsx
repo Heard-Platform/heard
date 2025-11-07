@@ -59,7 +59,7 @@ export const getUserSession = async (
   }
 };
 
-const saveUserSession = async (session: UserSession) => {
+export const saveUserSession = async (session: UserSession) => {
   await kv.set(`user:${session.id}`, JSON.stringify(session));
   // Also store by email for lookup
   await kv.set(`user_email:${session.email}`, session.id);
@@ -225,159 +225,168 @@ const sendPasswordResetEmail = async (
 };
 
 // Sign up new user with password
-app.post("/make-server-f1a393b4/auth/signup", async (c: any) => {
-  try {
-    const { nickname, email, password } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/auth/signup",
+  async (c: any) => {
+    try {
+      const { nickname, email, password } = await c.req.json();
 
-    if (
-      !nickname ||
-      nickname.length < 2 ||
-      nickname.length > 20
-    ) {
-      return c.json(
-        { error: "Nickname must be 2-20 characters" },
-        400,
+      if (
+        !nickname ||
+        nickname.length < 2 ||
+        nickname.length > 20
+      ) {
+        return c.json(
+          { error: "Nickname must be 2-20 characters" },
+          400,
+        );
+      }
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return c.json(
+          { error: "Valid email address is required" },
+          400,
+        );
+      }
+
+      if (!password || password.length < 6) {
+        return c.json(
+          { error: "Password must be at least 6 characters" },
+          400,
+        );
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Check if user already exists with this email
+      const existingUser =
+        await getUserByEmail(normalizedEmail);
+
+      if (existingUser) {
+        return c.json(
+          {
+            error: "An account with this email already exists",
+          },
+          409,
+        );
+      }
+
+      // Hash the password
+      const passwordHash = await hashPassword(password);
+
+      // Create new user
+      console.log(
+        `Creating new user with password for email ${normalizedEmail}`,
       );
+      const userId = generateId();
+      const userSession: UserSession = {
+        id: userId,
+        nickname: nickname.substring(0, 20),
+        email: normalizedEmail,
+        score: 0,
+        streak: 0,
+        lastActive: Date.now(),
+        isTestUser: false,
+        isDeveloper: false,
+        passwordHash,
+      };
+
+      await saveUserSession(userSession);
+
+      // Send welcome email (don't block user creation if email fails)
+      sendWelcomeEmail(
+        userSession.email,
+        userSession.nickname,
+      ).catch((error) => {
+        console.error(
+          "Welcome email failed for user:",
+          userId,
+          error,
+        );
+      });
+
+      // Return user without password hash
+      const { passwordHash: _, ...userWithoutPassword } =
+        userSession;
+
+      return c.json({
+        user: userWithoutPassword,
+        isReturningUser: false,
+      });
+    } catch (error) {
+      console.error("Error signing up user:", error);
+      return c.json({ error: "Failed to create account" }, 500);
     }
-
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return c.json(
-        { error: "Valid email address is required" },
-        400,
-      );
-    }
-
-    if (!password || password.length < 6) {
-      return c.json(
-        { error: "Password must be at least 6 characters" },
-        400,
-      );
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-
-    // Check if user already exists with this email
-    const existingUser = await getUserByEmail(normalizedEmail);
-
-    if (existingUser) {
-      return c.json(
-        { error: "An account with this email already exists" },
-        409,
-      );
-    }
-
-    // Hash the password
-    const passwordHash = await hashPassword(password);
-
-    // Create new user
-    console.log(
-      `Creating new user with password for email ${normalizedEmail}`,
-    );
-    const userId = generateId();
-    const userSession: UserSession = {
-      id: userId,
-      nickname: nickname.substring(0, 20),
-      email: normalizedEmail,
-      score: 0,
-      streak: 0,
-      lastActive: Date.now(),
-      isTestUser: false,
-      isDeveloper: false,
-      passwordHash,
-    };
-
-    await saveUserSession(userSession);
-
-    // Send welcome email (don't block user creation if email fails)
-    sendWelcomeEmail(
-      userSession.email,
-      userSession.nickname,
-    ).catch((error) => {
-      console.error(
-        "Welcome email failed for user:",
-        userId,
-        error,
-      );
-    });
-
-    // Return user without password hash
-    const { passwordHash: _, ...userWithoutPassword } =
-      userSession;
-
-    return c.json({
-      user: userWithoutPassword,
-      isReturningUser: false,
-    });
-  } catch (error) {
-    console.error("Error signing up user:", error);
-    return c.json({ error: "Failed to create account" }, 500);
-  }
-});
+  },
+);
 
 // Sign in existing user
-app.post("/make-server-f1a393b4/auth/signin", async (c: any) => {
-  try {
-    const { email, password } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/auth/signin",
+  async (c: any) => {
+    try {
+      const { email, password } = await c.req.json();
 
-    if (!email || !password) {
-      return c.json(
-        { error: "Email and password are required" },
-        400,
+      if (!email || !password) {
+        return c.json(
+          { error: "Email and password are required" },
+          400,
+        );
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Get user by email
+      const user = await getUserByEmail(normalizedEmail);
+
+      if (!user) {
+        return c.json(
+          { error: "Invalid email or password" },
+          401,
+        );
+      }
+
+      // Check if user has a password hash
+      if (!user.passwordHash) {
+        return c.json(
+          {
+            error:
+              "This account needs to set a password. Please use password reset.",
+          },
+          401,
+        );
+      }
+
+      // Verify password
+      const isValid = await verifyPassword(
+        password,
+        user.passwordHash,
       );
+
+      if (!isValid) {
+        return c.json(
+          { error: "Invalid email or password" },
+          401,
+        );
+      }
+
+      // Update last active time
+      user.lastActive = Date.now();
+      await saveUserSession(user);
+
+      // Return user without password hash
+      const { passwordHash: _, ...userWithoutPassword } = user;
+
+      return c.json({
+        user: userWithoutPassword,
+        isReturningUser: true,
+      });
+    } catch (error) {
+      console.error("Error signing in user:", error);
+      return c.json({ error: "Failed to sign in" }, 500);
     }
-
-    const normalizedEmail = email.trim().toLowerCase();
-
-    // Get user by email
-    const user = await getUserByEmail(normalizedEmail);
-
-    if (!user) {
-      return c.json(
-        { error: "Invalid email or password" },
-        401,
-      );
-    }
-
-    // Check if user has a password hash
-    if (!user.passwordHash) {
-      return c.json(
-        {
-          error:
-            "This account needs to set a password. Please use password reset.",
-        },
-        401,
-      );
-    }
-
-    // Verify password
-    const isValid = await verifyPassword(
-      password,
-      user.passwordHash,
-    );
-
-    if (!isValid) {
-      return c.json(
-        { error: "Invalid email or password" },
-        401,
-      );
-    }
-
-    // Update last active time
-    user.lastActive = Date.now();
-    await saveUserSession(user);
-
-    // Return user without password hash
-    const { passwordHash: _, ...userWithoutPassword } = user;
-
-    return c.json({
-      user: userWithoutPassword,
-      isReturningUser: true,
-    });
-  } catch (error) {
-    console.error("Error signing in user:", error);
-    return c.json({ error: "Failed to sign in" }, 500);
-  }
-});
+  },
+);
 
 // Request password reset
 app.post(

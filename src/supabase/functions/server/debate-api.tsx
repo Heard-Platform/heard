@@ -5,7 +5,10 @@ import { recalculateClustersForRoom } from "./clustering.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
-import { getUserSession, sendWelcomeEmail } from "./auth-api.tsx";
+import {
+  getUserSession,
+  sendWelcomeEmail,
+} from "./auth-api.tsx";
 
 // Utility function to get frontend URL
 const getFrontendUrl = (): string => {
@@ -57,6 +60,7 @@ export type DebateMode = "realtime" | "host-controlled";
 export interface DebateRoom {
   id: string;
   topic: string;
+  description?: string;
   phase: Phase;
   subPhase?: SubPhase;
   gameNumber: number;
@@ -68,6 +72,7 @@ export interface DebateRoom {
   mode: DebateMode; // Controls whether phases advance automatically or by host
   rantFirst?: boolean; // Whether this room starts with rants
   subHeard?: string; // Sub-heard name (like subreddits) - optional for backwards compatibility
+  endTime?: number;
 }
 
 export interface Rant {
@@ -94,7 +99,7 @@ export interface UserSession {
 const app = new Hono();
 
 // Utility functions
-const generateId = () =>
+export const generateId = () =>
   Math.random().toString(36).substring(2) +
   Date.now().toString(36);
 
@@ -958,229 +963,133 @@ const processRantAndCreateStatements = async (
 };
 
 // Create or join user session
-app.post("/make-server-f1a393b4/user/create", async (c: any) => {
-  try {
-    const { nickname, email } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/user/create",
+  async (c: any) => {
+    try {
+      const { nickname, email } = await c.req.json();
 
-    if (
-      !nickname ||
-      nickname.length < 2 ||
-      nickname.length > 20
-    ) {
-      return c.json(
-        { error: "Nickname must be 2-20 characters" },
-        400,
-      );
-    }
-
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return c.json(
-        { error: "Valid email address is required" },
-        400,
-      );
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-
-    // Check if user already exists with this email
-    const existingUser = await getUserByEmail(normalizedEmail);
-
-    if (existingUser) {
-      console.log(
-        `Existing user found for email ${normalizedEmail}, logging them back in`,
-      );
-
-      // Update their last active time and return existing user
-      existingUser.lastActive = Date.now();
-      await saveUserSession(existingUser);
-
-      // Return user without password hash
-      const { passwordHash: _, ...userWithoutPassword } =
-        existingUser;
-      return c.json({
-        user: userWithoutPassword,
-        isReturningUser: true,
-      });
-    }
-
-    // Create new user if email doesn't exist
-    console.log(
-      `Creating new user for email ${normalizedEmail}`,
-    );
-    const userId = generateId();
-    const userSession: UserSession = {
-      id: userId,
-      nickname: nickname.substring(0, 20), // Ensure max length
-      email: normalizedEmail,
-      score: 0,
-      streak: 0,
-      lastActive: Date.now(),
-      isTestUser: false, // Real users are not test users
-      isDeveloper: false,
-    };
-
-    await saveUserSession(userSession);
-
-    // Send welcome email only for real users, not test users (don't block user creation if email fails)
-    if (!userSession.isTestUser) {
-      sendWelcomeEmail(
-        userSession.email,
-        userSession.nickname,
-      ).catch((error) => {
-        console.error(
-          "Welcome email failed for user:",
-          userId,
-          error,
+      if (
+        !nickname ||
+        nickname.length < 2 ||
+        nickname.length > 20
+      ) {
+        return c.json(
+          { error: "Nickname must be 2-20 characters" },
+          400,
         );
-      });
-    } else {
+      }
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return c.json(
+          { error: "Valid email address is required" },
+          400,
+        );
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Check if user already exists with this email
+      const existingUser =
+        await getUserByEmail(normalizedEmail);
+
+      if (existingUser) {
+        console.log(
+          `Existing user found for email ${normalizedEmail}, logging them back in`,
+        );
+
+        // Update their last active time and return existing user
+        existingUser.lastActive = Date.now();
+        await saveUserSession(existingUser);
+
+        // Return user without password hash
+        const { passwordHash: _, ...userWithoutPassword } =
+          existingUser;
+        return c.json({
+          user: userWithoutPassword,
+          isReturningUser: true,
+        });
+      }
+
+      // Create new user if email doesn't exist
       console.log(
-        "Skipping welcome email for test user:",
-        userSession.email,
+        `Creating new user for email ${normalizedEmail}`,
       );
-    }
+      const userId = generateId();
+      const userSession: UserSession = {
+        id: userId,
+        nickname: nickname.substring(0, 20), // Ensure max length
+        email: normalizedEmail,
+        score: 0,
+        streak: 0,
+        lastActive: Date.now(),
+        isTestUser: false, // Real users are not test users
+        isDeveloper: false,
+      };
 
-    return c.json({
-      user: userSession,
-      isReturningUser: false,
-    });
-  } catch (error) {
-    console.error("Error creating user session:", error);
-    return c.json(
-      { error: "Failed to create user session" },
-      500,
-    );
-  }
-});
+      await saveUserSession(userSession);
 
-// Get user session
-app.get("/make-server-f1a393b4/user/:userId", async (c: any) => {
-  try {
-    const userId = c.req.param("userId");
-    const user = await getUserSession(userId);
-
-    if (!user) {
-      return c.json({ error: "User session not found" }, 404);
-    }
-
-    // Update last active
-    user.lastActive = Date.now();
-    await saveUserSession(user);
-
-    // Return user without password hash
-    const { passwordHash: _, ...userWithoutPassword } = user;
-    return c.json({ user: userWithoutPassword });
-  } catch (error) {
-    console.error("Error fetching user session:", error);
-    return c.json(
-      { error: "Failed to fetch user session" },
-      500,
-    );
-  }
-});
-
-// Create debate room
-app.post("/make-server-f1a393b4/room/create", async (c: any) => {
-  try {
-    const {
-      topic,
-      description,
-      userId,
-      mode = "host-controlled",
-      rantFirst = false,
-      subHeard,
-    } = await c.req.json();
-
-    if (!topic || topic.length < 10) {
-      return c.json(
-        { error: "Topic must be at least 10 characters" },
-        400,
-      );
-    }
-
-    const user = await getUserSession(userId);
-    if (!user) {
-      return c.json({ error: "User session not found" }, 404);
-    }
-
-    // If creating a room in a private sub-heard, check membership
-    if (subHeard) {
-      const normalizedSubHeard = subHeard
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "-");
-      const subHeardKey = `subheard:${normalizedSubHeard}`;
-      const subHeardData = await kv.get(subHeardKey);
-
-      if (subHeardData) {
-        try {
-          const parsedSubHeard = JSON.parse(subHeardData);
-          if (parsedSubHeard.isPrivate) {
-            // Check if user is admin or member
-            const isAdmin = parsedSubHeard.adminId === userId;
-            const membershipKey = `subheard_member:${userId}:${normalizedSubHeard}`;
-            const isMember = await kv.get(membershipKey);
-
-            if (!isAdmin && !isMember) {
-              return c.json(
-                {
-                  error:
-                    "You must be a member of this private sub-heard to create rooms",
-                },
-                403,
-              );
-            }
-          }
-        } catch (error) {
+      // Send welcome email only for real users, not test users (don't block user creation if email fails)
+      if (!userSession.isTestUser) {
+        sendWelcomeEmail(
+          userSession.email,
+          userSession.nickname,
+        ).catch((error) => {
           console.error(
-            "Error checking sub-heard membership:",
+            "Welcome email failed for user:",
+            userId,
             error,
           );
-        }
+        });
+      } else {
+        console.log(
+          "Skipping welcome email for test user:",
+          userSession.email,
+        );
       }
+
+      return c.json({
+        user: userSession,
+        isReturningUser: false,
+      });
+    } catch (error) {
+      console.error("Error creating user session:", error);
+      return c.json(
+        { error: "Failed to create user session" },
+        500,
+      );
     }
+  },
+);
 
-    const roomId = generateId();
-    const debateRoom: DebateRoom = {
-      id: roomId,
-      topic: topic.substring(0, 500), // Limit topic length
-      description: description
-        ? description.substring(0, 2000)
-        : undefined, // Optional description with limit
-      phase: rantFirst ? "round1" : "lobby", // Rant-first rooms start in round1
-      subPhase: rantFirst ? "posting" : undefined, // Rant-first rooms start in posting phase
-      gameNumber: 1,
-      roundStartTime: Date.now(),
-      participants: [userId],
-      hostId: userId, // Set the creator as the host
-      isActive: true,
-      createdAt: Date.now(),
-      mode: mode as DebateMode,
-      rantFirst: rantFirst,
-      subHeard: subHeard
-        ? subHeard.trim().toLowerCase().replace(/\s+/g, "-")
-        : undefined,
-      endTime:
-        mode === "realtime"
-          ? Date.now() + 7 * 24 * 60 * 60 * 1000
-          : undefined, // Realtime debates end in 1 week
-    };
+// Get user session
+app.get(
+  "/make-server-f1a393b4/user/:userId",
+  async (c: any) => {
+    try {
+      const userId = c.req.param("userId");
+      const user = await getUserSession(userId);
 
-    await saveDebateRoom(debateRoom);
+      if (!user) {
+        return c.json({ error: "User session not found" }, 404);
+      }
 
-    // Update user's current room
-    user.currentRoomId = roomId;
-    await saveUserSession(user);
+      // Update last active
+      user.lastActive = Date.now();
+      await saveUserSession(user);
 
-    return c.json({ room: debateRoom });
-  } catch (error) {
-    console.error("Error creating debate room:", error);
-    return c.json(
-      { error: "Failed to create debate room" },
-      500,
-    );
-  }
-});
+      // Return user without password hash
+      const { passwordHash: _, ...userWithoutPassword } = user;
+      return c.json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error("Error fetching user session:", error);
+      return c.json(
+        { error: "Failed to fetch user session" },
+        500,
+      );
+    }
+  },
+);
 
 // Join debate room
 app.post(
@@ -1262,44 +1171,47 @@ app.post(
 );
 
 // Get room status
-app.get("/make-server-f1a393b4/room/:roomId", async (c: any) => {
-  try {
-    const roomId = c.req.param("roomId");
+app.get(
+  "/make-server-f1a393b4/room/:roomId",
+  async (c: any) => {
+    try {
+      const roomId = c.req.param("roomId");
 
-    if (!roomId) {
-      return c.json({ error: "Room ID is required" }, 400);
+      if (!roomId) {
+        return c.json({ error: "Room ID is required" }, 400);
+      }
+
+      const room = await getDebateRoom(roomId);
+
+      if (!room) {
+        return c.json({ error: "Room not found" }, 404);
+      }
+
+      const statements = await getStatements(roomId);
+
+      // Get rants if this is a rant-first room
+      const rants = room.rantFirst
+        ? await getRantsForRoom(roomId)
+        : [];
+
+      return c.json({
+        room,
+        statements,
+        rants,
+        participantCount: room.participants?.length || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching room status:", error);
+      return c.json(
+        {
+          error: "Failed to fetch room status",
+          details: error.message,
+        },
+        500,
+      );
     }
-
-    const room = await getDebateRoom(roomId);
-
-    if (!room) {
-      return c.json({ error: "Room not found" }, 404);
-    }
-
-    const statements = await getStatements(roomId);
-
-    // Get rants if this is a rant-first room
-    const rants = room.rantFirst
-      ? await getRantsForRoom(roomId)
-      : [];
-
-    return c.json({
-      room,
-      statements,
-      rants,
-      participantCount: room.participants?.length || 0,
-    });
-  } catch (error) {
-    console.error("Error fetching room status:", error);
-    return c.json(
-      {
-        error: "Failed to fetch room status",
-        details: error.message,
-      },
-      500,
-    );
-  }
-});
+  },
+);
 
 // Submit statement
 app.post(
@@ -1845,74 +1757,82 @@ app.post(
 );
 
 // Get active rooms
-app.get("/make-server-f1a393b4/rooms/active", async (c: any) => {
-  try {
-    const subHeard = c.req.query("subHeard");
-    const userId = c.req.query("userId");
+app.get(
+  "/make-server-f1a393b4/rooms/active",
+  async (c: any) => {
+    try {
+      const subHeard = c.req.query("subHeard");
+      const userId = c.req.query("userId");
 
-    const activeRooms = await kv.getByPrefix("active_room:");
-    let rooms = activeRooms
-      .map((r) => {
-        try {
-          return JSON.parse(r);
-        } catch (error) {
-          console.error("Error parsing active room:", r, error);
-          return null;
-        }
-      })
-      .filter((r) => r !== null);
-
-    // Filter by sub-heard if specified
-    if (subHeard) {
-      rooms = rooms.filter((r) => r.subHeard === subHeard);
-    }
-
-    // Filter out rooms from private sub-heards where user is not a member
-    if (userId) {
-      // Get all user's memberships once
-      const userMemberships = await getUserMemberships(userId);
-
-      // Get all sub-heard data once
-      const subHeardData = await kv.getByPrefix("subheard:");
-      const subHeardMap = new Map();
-      subHeardData.forEach((sh) => {
-        try {
-          const data = JSON.parse(sh);
-          if (data.name) {
-            subHeardMap.set(data.name, data);
+      const activeRooms = await kv.getByPrefix("active_room:");
+      let rooms = activeRooms
+        .map((r) => {
+          try {
+            return JSON.parse(r);
+          } catch (error) {
+            console.error(
+              "Error parsing active room:",
+              r,
+              error,
+            );
+            return null;
           }
-        } catch (error) {
-          console.error("Error parsing sub-heard:", error);
-        }
-      });
+        })
+        .filter((r) => r !== null);
 
-      // Filter rooms based on memberships
-      rooms = rooms.filter((room) => {
-        const shData = subHeardMap.get(room.subHeard);
-        if (!shData) {
-          return false; // No sub-heard data found, exclude the room
-        }
+      // Filter by sub-heard if specified
+      if (subHeard) {
+        rooms = rooms.filter((r) => r.subHeard === subHeard);
+      }
 
-        if (!shData.isPrivate) {
-          return true; // Public sub-heard, include it
-        }
+      // Filter out rooms from private sub-heards where user is not a member
+      if (userId) {
+        // Get all user's memberships once
+        const userMemberships =
+          await getUserMemberships(userId);
 
-        // Private sub-heard - check if user is admin or member
-        const isAdmin = shData.adminId === userId;
-        const isMember = userMemberships.has(room.subHeard);
-        return isAdmin || isMember;
-      });
+        // Get all sub-heard data once
+        const subHeardData = await kv.getByPrefix("subheard:");
+        const subHeardMap = new Map();
+        subHeardData.forEach((sh) => {
+          try {
+            const data = JSON.parse(sh);
+            if (data.name) {
+              subHeardMap.set(data.name, data);
+            }
+          } catch (error) {
+            console.error("Error parsing sub-heard:", error);
+          }
+        });
+
+        // Filter rooms based on memberships
+        rooms = rooms.filter((room) => {
+          const shData = subHeardMap.get(room.subHeard);
+          if (!shData) {
+            return false; // No sub-heard data found, exclude the room
+          }
+
+          if (!shData.isPrivate) {
+            return true; // Public sub-heard, include it
+          }
+
+          // Private sub-heard - check if user is admin or member
+          const isAdmin = shData.adminId === userId;
+          const isMember = userMemberships.has(room.subHeard);
+          return isAdmin || isMember;
+        });
+      }
+
+      return c.json({ rooms });
+    } catch (error) {
+      console.error("Error fetching active rooms:", error);
+      return c.json(
+        { error: "Failed to fetch active rooms" },
+        500,
+      );
     }
-
-    return c.json({ rooms });
-  } catch (error) {
-    console.error("Error fetching active rooms:", error);
-    return c.json(
-      { error: "Failed to fetch active rooms" },
-      500,
-    );
-  }
-});
+  },
+);
 
 // Send email invites to join a room
 app.post(
@@ -2100,285 +2020,324 @@ No account needed - just click the link to get started!
 );
 
 // Create seed data for testing
-app.post("/make-server-f1a393b4/seed/create", async (c: any) => {
-  try {
-    const { userId } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/seed/create",
+  async (c: any) => {
+    try {
+      const { userId } = await c.req.json();
 
-    const user = await getUserSession(userId);
-    if (!user) {
-      return c.json({ error: "User session not found" }, 404);
-    }
-
-    // Create a test room
-    const roomId = generateId();
-    const debateRoom: DebateRoom = {
-      id: roomId,
-      topic:
-        "Metro escalator walking: should you always stand right, or is it okay to walk on the left side?",
-      phase: "round1", // Start in round1 for immediate testing
-      subPhase: "posting",
-      gameNumber: 1,
-      roundStartTime: Date.now(),
-      participants: [
-        userId,
-        "test_user_1",
-        "test_user_2",
-        "test_user_3",
-      ],
-      hostId: userId, // Set the user as the host
-      isActive: true,
-      createdAt: Date.now(),
-      subHeard: "dupont-circle-neighborhoods",
-    };
-
-    await saveDebateRoom(debateRoom);
-
-    // Create fake users
-    const fakeUsers = [
-      {
-        id: "test_user_1",
-        nickname: "MetroCommuter",
-        email: "metro@example.com",
-        score: 450,
-        streak: 3,
-        currentRoomId: roomId,
-        lastActive: Date.now(),
-        isTestUser: true,
-      },
-      {
-        id: "test_user_2",
-        nickname: "RushHourWarrior",
-        email: "rushhour@example.com",
-        score: 380,
-        streak: 5,
-        currentRoomId: roomId,
-        lastActive: Date.now(),
-        isTestUser: true,
-      },
-      {
-        id: "test_user_3",
-        nickname: "EscalatorEtiquette",
-        email: "etiquette@example.com",
-        score: 520,
-        streak: 2,
-        currentRoomId: roomId,
-        lastActive: Date.now(),
-        isTestUser: true,
-      },
-    ];
-
-    // Save fake users
-    for (const fakeUser of fakeUsers) {
-      await saveUserSession(fakeUser);
-    }
-
-    // Create diverse statements with different types
-    const statementData = [
-      {
-        statement: {
-          id: generateId(),
-          text: "Stand right, walk left - it's literally posted everywhere and keeps traffic flowing smoothly for everyone",
-          author: "MetroCommuter",
-          agrees: 0, // Will be calculated
-          disagrees: 0, // Will be calculated
-          passes: 0, // Will be calculated
-          type: undefined,
-          isSpicy: false,
-          roomId,
-          timestamp: Date.now() - 900000, // 15 min ago
-          round: 1, // Current round
-          voters: {}, // Will be calculated
-        },
-        voteData: [
-          { userId, voteType: "agree" as const },
-          { userId: "test_user_2", voteType: "agree" as const },
-          { userId: "test_user_3", voteType: "agree" as const },
-        ],
-      },
-      {
-        statement: {
-          id: generateId(),
-          text: "The real issue is whether escalators are transportation or moving sidewalks - affects the whole etiquette 🌶️",
-          author: "RushHourWarrior",
-          agrees: 0, // Will be calculated
-          disagrees: 0, // Will be calculated
-          passes: 0, // Will be calculated
-          type: undefined,
-          isSpicy: true,
-          roomId,
-          timestamp: Date.now() - 800000, // 13 min ago
-          round: 2, // Previous round
-          voters: {}, // Will be calculated
-        },
-        voteData: [
-          {
-            userId: "test_user_1",
-            voteType: "disagree" as const,
-          },
-          {
-            userId: "test_user_3",
-            voteType: "disagree" as const,
-          },
-        ],
-      },
-      {
-        statement: {
-          id: generateId(),
-          text: "What about people with mobility issues who need to hold the handrail on both sides?",
-          author: "EscalatorEtiquette",
-          agrees: 0, // Will be calculated
-          disagrees: 0, // Will be calculated
-          passes: 0, // Will be calculated
-          type: undefined,
-          isSpicy: false,
-          roomId,
-          timestamp: Date.now() - 700000, // 11 min ago
-          round: 2, // Previous round
-          voters: {}, // Will be calculated
-        },
-        voteData: [
-          { userId, voteType: "agree" as const },
-          { userId: "test_user_1", voteType: "agree" as const },
-        ],
-      },
-      {
-        statement: {
-          id: generateId(),
-          text: "Some escalators are too narrow for two people anyway - the rule doesn't always work",
-          author: user.nickname,
-          agrees: 0, // Will be calculated
-          disagrees: 0, // Will be calculated
-          passes: 0, // Will be calculated
-          isSpicy: false,
-          roomId,
-          timestamp: Date.now() - 600000, // 10 min ago
-          round: 1, // Current round
-          voters: {}, // Will be calculated
-        },
-        voteData: [
-          { userId: "test_user_1", voteType: "agree" as const },
-          { userId: "test_user_3", voteType: "agree" as const },
-        ],
-      },
-      {
-        statement: {
-          id: generateId(),
-          text: "If you're not walking just take the elevator!! Escalators are for MOVING PEOPLE 🌶️",
-          author: "RushHourWarrior",
-          agrees: 0, // Will be calculated
-          disagrees: 0, // Will be calculated
-          passes: 0, // Will be calculated
-          isSpicy: true,
-          roomId,
-          timestamp: Date.now() - 500000, // 8 min ago
-          round: 1, // Current round
-          voters: {}, // Will be calculated
-        },
-        voteData: [
-          { userId: "test_user_2", voteType: "agree" as const },
-          { userId: "test_user_1", voteType: "pass" as const },
-        ],
-      },
-      {
-        statement: {
-          id: generateId(),
-          text: "Maybe we need better signage or even separate escalators for walkers vs standers?",
-          author: "EscalatorEtiquette",
-          agrees: 0, // Will be calculated
-          disagrees: 0, // Will be calculated
-          passes: 0, // Will be calculated
-          type: undefined,
-          isSpicy: false,
-          roomId,
-          timestamp: Date.now() - 400000, // 6 min ago
-          round: 1, // Current round
-          voters: {}, // Will be calculated
-        },
-        voteData: [
-          { userId, voteType: "agree" as const },
-          { userId: "test_user_1", voteType: "agree" as const },
-          { userId: "test_user_2", voteType: "agree" as const },
-        ],
-      },
-      {
-        statement: {
-          id: generateId(),
-          text: "This is about respecting shared public space vs individual convenience - basic civics!",
-          author: "MetroCommuter",
-          agrees: 0, // Will be calculated
-          disagrees: 0, // Will be calculated
-          passes: 0, // Will be calculated
-          type: undefined,
-          isSpicy: false,
-          roomId,
-          timestamp: Date.now() - 300000, // 5 min ago
-          round: 3, // Previous round
-          voters: {}, // Will be calculated
-        },
-        voteData: [
-          { userId: "test_user_1", voteType: "agree" as const },
-          {
-            userId: "test_user_3",
-            voteType: "disagree" as const,
-          },
-          { userId, voteType: "pass" as const },
-        ],
-      },
-      {
-        statement: {
-          id: generateId(),
-          text: "Tourist season changes everything - they don't know the rules and clog up the system",
-          author: "EscalatorEtiquette",
-          agrees: 0, // Will be calculated
-          disagrees: 0, // Will be calculated
-          passes: 0, // Will be calculated
-          type: undefined,
-          isSpicy: false,
-          roomId,
-          timestamp: Date.now() - 200000, // 3 min ago
-          round: 2, // Previous round
-          voters: {}, // Will be calculated
-        },
-        voteData: [
-          { userId, voteType: "agree" as const },
-          { userId: "test_user_2", voteType: "pass" as const },
-        ],
-      },
-    ];
-
-    // Save all statements and their votes
-    for (const { statement, voteData } of statementData) {
-      await saveStatement(statement);
-
-      // Create vote records for this statement
-      for (const { userId: voterId, voteType } of voteData) {
-        const vote: Vote = {
-          id: generateId(),
-          statementId: statement.id,
-          userId: voterId,
-          voteType,
-          timestamp:
-            statement.timestamp + Math.random() * 10000, // Slightly randomize vote times
-        };
-        await saveVote(vote);
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User session not found" }, 404);
       }
+
+      // Create a test room
+      const roomId = generateId();
+      const debateRoom: DebateRoom = {
+        id: roomId,
+        topic:
+          "Metro escalator walking: should you always stand right, or is it okay to walk on the left side?",
+        phase: "round1", // Start in round1 for immediate testing
+        subPhase: "posting",
+        gameNumber: 1,
+        roundStartTime: Date.now(),
+        participants: [
+          userId,
+          "test_user_1",
+          "test_user_2",
+          "test_user_3",
+        ],
+        hostId: userId, // Set the user as the host
+        isActive: true,
+        createdAt: Date.now(),
+        subHeard: "dupont-circle-neighborhoods",
+      };
+
+      await saveDebateRoom(debateRoom);
+
+      // Create fake users
+      const fakeUsers = [
+        {
+          id: "test_user_1",
+          nickname: "MetroCommuter",
+          email: "metro@example.com",
+          score: 450,
+          streak: 3,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+        {
+          id: "test_user_2",
+          nickname: "RushHourWarrior",
+          email: "rushhour@example.com",
+          score: 380,
+          streak: 5,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+        {
+          id: "test_user_3",
+          nickname: "EscalatorEtiquette",
+          email: "etiquette@example.com",
+          score: 520,
+          streak: 2,
+          currentRoomId: roomId,
+          lastActive: Date.now(),
+          isTestUser: true,
+        },
+      ];
+
+      // Save fake users
+      for (const fakeUser of fakeUsers) {
+        await saveUserSession(fakeUser);
+      }
+
+      // Create diverse statements with different types
+      const statementData = [
+        {
+          statement: {
+            id: generateId(),
+            text: "Stand right, walk left - it's literally posted everywhere and keeps traffic flowing smoothly for everyone",
+            author: "MetroCommuter",
+            agrees: 0, // Will be calculated
+            disagrees: 0, // Will be calculated
+            passes: 0, // Will be calculated
+            type: undefined,
+            isSpicy: false,
+            roomId,
+            timestamp: Date.now() - 900000, // 15 min ago
+            round: 1, // Current round
+            voters: {}, // Will be calculated
+          },
+          voteData: [
+            { userId, voteType: "agree" as const },
+            {
+              userId: "test_user_2",
+              voteType: "agree" as const,
+            },
+            {
+              userId: "test_user_3",
+              voteType: "agree" as const,
+            },
+          ],
+        },
+        {
+          statement: {
+            id: generateId(),
+            text: "The real issue is whether escalators are transportation or moving sidewalks - affects the whole etiquette 🌶️",
+            author: "RushHourWarrior",
+            agrees: 0, // Will be calculated
+            disagrees: 0, // Will be calculated
+            passes: 0, // Will be calculated
+            type: undefined,
+            isSpicy: true,
+            roomId,
+            timestamp: Date.now() - 800000, // 13 min ago
+            round: 2, // Previous round
+            voters: {}, // Will be calculated
+          },
+          voteData: [
+            {
+              userId: "test_user_1",
+              voteType: "disagree" as const,
+            },
+            {
+              userId: "test_user_3",
+              voteType: "disagree" as const,
+            },
+          ],
+        },
+        {
+          statement: {
+            id: generateId(),
+            text: "What about people with mobility issues who need to hold the handrail on both sides?",
+            author: "EscalatorEtiquette",
+            agrees: 0, // Will be calculated
+            disagrees: 0, // Will be calculated
+            passes: 0, // Will be calculated
+            type: undefined,
+            isSpicy: false,
+            roomId,
+            timestamp: Date.now() - 700000, // 11 min ago
+            round: 2, // Previous round
+            voters: {}, // Will be calculated
+          },
+          voteData: [
+            { userId, voteType: "agree" as const },
+            {
+              userId: "test_user_1",
+              voteType: "agree" as const,
+            },
+          ],
+        },
+        {
+          statement: {
+            id: generateId(),
+            text: "Some escalators are too narrow for two people anyway - the rule doesn't always work",
+            author: user.nickname,
+            agrees: 0, // Will be calculated
+            disagrees: 0, // Will be calculated
+            passes: 0, // Will be calculated
+            isSpicy: false,
+            roomId,
+            timestamp: Date.now() - 600000, // 10 min ago
+            round: 1, // Current round
+            voters: {}, // Will be calculated
+          },
+          voteData: [
+            {
+              userId: "test_user_1",
+              voteType: "agree" as const,
+            },
+            {
+              userId: "test_user_3",
+              voteType: "agree" as const,
+            },
+          ],
+        },
+        {
+          statement: {
+            id: generateId(),
+            text: "If you're not walking just take the elevator!! Escalators are for MOVING PEOPLE 🌶️",
+            author: "RushHourWarrior",
+            agrees: 0, // Will be calculated
+            disagrees: 0, // Will be calculated
+            passes: 0, // Will be calculated
+            isSpicy: true,
+            roomId,
+            timestamp: Date.now() - 500000, // 8 min ago
+            round: 1, // Current round
+            voters: {}, // Will be calculated
+          },
+          voteData: [
+            {
+              userId: "test_user_2",
+              voteType: "agree" as const,
+            },
+            {
+              userId: "test_user_1",
+              voteType: "pass" as const,
+            },
+          ],
+        },
+        {
+          statement: {
+            id: generateId(),
+            text: "Maybe we need better signage or even separate escalators for walkers vs standers?",
+            author: "EscalatorEtiquette",
+            agrees: 0, // Will be calculated
+            disagrees: 0, // Will be calculated
+            passes: 0, // Will be calculated
+            type: undefined,
+            isSpicy: false,
+            roomId,
+            timestamp: Date.now() - 400000, // 6 min ago
+            round: 1, // Current round
+            voters: {}, // Will be calculated
+          },
+          voteData: [
+            { userId, voteType: "agree" as const },
+            {
+              userId: "test_user_1",
+              voteType: "agree" as const,
+            },
+            {
+              userId: "test_user_2",
+              voteType: "agree" as const,
+            },
+          ],
+        },
+        {
+          statement: {
+            id: generateId(),
+            text: "This is about respecting shared public space vs individual convenience - basic civics!",
+            author: "MetroCommuter",
+            agrees: 0, // Will be calculated
+            disagrees: 0, // Will be calculated
+            passes: 0, // Will be calculated
+            type: undefined,
+            isSpicy: false,
+            roomId,
+            timestamp: Date.now() - 300000, // 5 min ago
+            round: 3, // Previous round
+            voters: {}, // Will be calculated
+          },
+          voteData: [
+            {
+              userId: "test_user_1",
+              voteType: "agree" as const,
+            },
+            {
+              userId: "test_user_3",
+              voteType: "disagree" as const,
+            },
+            { userId, voteType: "pass" as const },
+          ],
+        },
+        {
+          statement: {
+            id: generateId(),
+            text: "Tourist season changes everything - they don't know the rules and clog up the system",
+            author: "EscalatorEtiquette",
+            agrees: 0, // Will be calculated
+            disagrees: 0, // Will be calculated
+            passes: 0, // Will be calculated
+            type: undefined,
+            isSpicy: false,
+            roomId,
+            timestamp: Date.now() - 200000, // 3 min ago
+            round: 2, // Previous round
+            voters: {}, // Will be calculated
+          },
+          voteData: [
+            { userId, voteType: "agree" as const },
+            {
+              userId: "test_user_2",
+              voteType: "pass" as const,
+            },
+          ],
+        },
+      ];
+
+      // Save all statements and their votes
+      for (const { statement, voteData } of statementData) {
+        await saveStatement(statement);
+
+        // Create vote records for this statement
+        for (const { userId: voterId, voteType } of voteData) {
+          const vote: Vote = {
+            id: generateId(),
+            statementId: statement.id,
+            userId: voterId,
+            voteType,
+            timestamp:
+              statement.timestamp + Math.random() * 10000, // Slightly randomize vote times
+          };
+          await saveVote(vote);
+        }
+      }
+
+      // Update user's current room
+      user.currentRoomId = roomId;
+      await saveUserSession(user);
+
+      return c.json({
+        room: debateRoom,
+        statements: statementData.length,
+        message:
+          "Seed data created successfully! You can now join the test room.",
+      });
+    } catch (error) {
+      console.error("Error creating seed data:", error);
+      return c.json(
+        { error: "Failed to create seed data" },
+        500,
+      );
     }
-
-    // Update user's current room
-    user.currentRoomId = roomId;
-    await saveUserSession(user);
-
-    return c.json({
-      room: debateRoom,
-      statements: statementData.length,
-      message:
-        "Seed data created successfully! You can now join the test room.",
-    });
-  } catch (error) {
-    console.error("Error creating seed data:", error);
-    return c.json({ error: "Failed to create seed data" }, 500);
-  }
-});
+  },
+);
 
 // Create test room with Q Street debate topic and players (no posts/votes)
 app.post(
