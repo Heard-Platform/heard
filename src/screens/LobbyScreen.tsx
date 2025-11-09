@@ -10,6 +10,7 @@ import { CreateRoomSheet } from "../components/CreateRoomSheet";
 import { SubHeardBrowser } from "../components/SubHeardBrowser";
 import { IntroModal } from "../components/IntroModal";
 import { FloatingCreateButton } from "../components/FloatingCreateButton";
+import { FloatingFeedbackButton } from "../components/FloatingFeedbackButton";
 import { api } from "../utils/api";
 import {
   Plus,
@@ -449,6 +450,9 @@ export function LobbyScreen({
 
       {/* Floating create button */}
       <FloatingCreateButton onPress={() => setCreateRoomSheetOpen(true)} />
+
+      {/* Floating feedback button */}
+      <FloatingFeedbackButton userId={user?.id} />
 
       {/* Create room sheet */}
       <CreateRoomSheet

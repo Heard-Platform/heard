@@ -323,6 +323,22 @@ class ApiClient {
       },
     });
   }
+
+  // Feedback
+  async submitFeedback(feedbackText: string, userId?: string) {
+    return this.request("/feedback/submit", {
+      method: "POST",
+      body: JSON.stringify({ feedbackText, userId }),
+    });
+  }
+
+  async adminGetFeedback(adminKey: string) {
+    return this.request("/feedback/all", {
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
 }
 
 export const api = new ApiClient();

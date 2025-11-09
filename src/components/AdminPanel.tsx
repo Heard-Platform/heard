@@ -40,6 +40,14 @@ interface AdminUser {
   lastSeen: number;
 }
 
+interface Feedback {
+  id: string;
+  userId: string;
+  text: string;
+  timestamp: number;
+  createdAt: string;
+}
+
 interface AdminPanelProps {
   onExit?: () => void;
 }
@@ -50,6 +58,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [debates, setDebates] = useState<DebateRoom[]>([]);
+  const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedSubHeard, setSelectedSubHeard] = useState<SubHeard | null>(null);
   const [newAdminId, setNewAdminId] = useState("");
@@ -67,19 +76,21 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
 
     setLoading(true);
     try {
-      const [usersRes, subHeardsRes, debatesRes] = await Promise.all([
+      const [usersRes, subHeardsRes, debatesRes, feedbackRes] = await Promise.all([
         api.adminGetUsers(adminKey),
         api.adminGetSubHeards(adminKey),
         api.adminGetDebates(adminKey),
+        api.adminGetFeedback(adminKey),
       ]);
 
-      if (usersRes.success && subHeardsRes.success && debatesRes.success) {
+      if (usersRes.success && subHeardsRes.success && debatesRes.success && feedbackRes.success) {
         setUsers(usersRes.data?.users || []);
         setSubHeards(subHeardsRes.data?.subHeards || []);
         setDebates(debatesRes.data?.debates || []);
+        setFeedback(feedbackRes.data?.feedback || []);
         setIsAuthenticated(true);
       } else {
-        alert(`Invalid admin key: ${usersRes.error || subHeardsRes.error || debatesRes.error || "Unknown error"}`);
+        alert(`Invalid admin key: ${usersRes.error || subHeardsRes.error || debatesRes.error || feedbackRes.error || "Unknown error"}`);
         setIsAuthenticated(false);
       }
     } catch (error) {
@@ -373,7 +384,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-6">
             <div className="flex items-center gap-3">
               <User className="w-6 h-6 text-blue-600" />
@@ -404,9 +415,55 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
               </div>
             </div>
           </Card>
+          <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+            <div className="flex items-center gap-3">
+              <MessageSquare className="w-6 h-6 text-purple-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">Feedback Items</p>
+                <p className="text-2xl">{feedback.length}</p>
+              </div>
+            </div>
+          </Card>
         </div>
 
-
+        {/* Feedback Section */}
+        <Card className="p-6">
+          <h2 className="text-xl mb-4 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-purple-600" />
+            User Feedback
+          </h2>
+          <div className="space-y-3 max-h-[500px] overflow-y-auto">
+            {feedback.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">No feedback yet</p>
+            ) : (
+              feedback.map((item) => (
+                <div
+                  key={item.id}
+                  className="border rounded-lg p-4 bg-gradient-to-br from-purple-50/50 to-pink-50/50 border-purple-100"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <User className="w-3 h-3" />
+                      <span>
+                        {item.userId === "anonymous" 
+                          ? "Anonymous User" 
+                          : getUserName(item.userId)}
+                      </span>
+                      <span>•</span>
+                      <span>{new Date(item.createdAt).toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm whitespace-pre-wrap bg-white p-3 rounded border border-purple-100">
+                    {item.text}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    ID: {item.id.substring(0, 12)}...
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
 
         {/* Sub-Heards Management */}
         <Card className="p-6">
