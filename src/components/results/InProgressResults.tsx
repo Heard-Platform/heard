@@ -93,13 +93,19 @@ export function InProgressResults({
 
             {[...statements]
               .sort((a, b) => b.agrees - a.agrees)
-              .slice(0, 5)
+              .slice(0, 3)
               .map((statement, index) => {
                 const percentage =
                   maxVotes > 0
                     ? (statement.agrees / maxVotes) * 100
                     : 0;
-                const isTopThree = index < 3;
+
+                // Gradient colors for each position
+                const gradients = [
+                  { badge: "from-yellow-500 to-orange-500", bar: "from-yellow-400 to-orange-500" },
+                  { badge: "from-orange-500 to-red-500", bar: "from-orange-400 to-red-500" },
+                  { badge: "from-red-500 to-pink-500", bar: "from-red-400 to-pink-500" },
+                ];
 
                 return (
                   <motion.div
@@ -116,9 +122,7 @@ export function InProgressResults({
                             ? "🥇"
                             : index === 1
                               ? "🥈"
-                              : index === 2
-                                ? "🥉"
-                                : `#${index + 1}`}
+                              : "🥉"}
                         </span>
                         <p className="text-[10px] sm:text-xs truncate">
                           {statement.text}
@@ -128,11 +132,7 @@ export function InProgressResults({
                         key={statement.agrees}
                         initial={{ scale: 1.5 }}
                         animate={{ scale: 1 }}
-                        className={`px-1.5 sm:px-2 py-0.5 rounded-full text-xs sm:text-sm font-medium shrink-0 ${
-                          isTopThree
-                            ? "bg-gradient-to-r from-orange-500 to-red-500 text-white"
-                            : "bg-gray-200 text-gray-700"
-                        }`}
+                        className={`px-1.5 sm:px-2 py-0.5 rounded-full text-xs sm:text-sm font-medium shrink-0 bg-gradient-to-r ${gradients[index].badge} text-white`}
                       >
                         {statement.agrees}
                       </motion.div>
@@ -141,11 +141,7 @@ export function InProgressResults({
                     {/* Racing bar */}
                     <div className="h-2 sm:h-3 bg-gray-200 rounded-full overflow-hidden">
                       <motion.div
-                        className={`h-full rounded-full ${
-                          isTopThree
-                            ? "bg-gradient-to-r from-orange-400 to-red-500"
-                            : "bg-gradient-to-r from-gray-300 to-gray-400"
-                        }`}
+                        className={`h-full rounded-full bg-gradient-to-r ${gradients[index].bar}`}
                         initial={{ width: 0 }}
                         animate={{ width: `${percentage}%` }}
                         transition={{
@@ -167,9 +163,9 @@ export function InProgressResults({
             transition={{ delay: 0.3 }}
             className="grid grid-cols-3 gap-2 sm:gap-3"
           >
-            <div className="text-center p-2 sm:p-3 bg-white/80 backdrop-blur rounded-lg border-2 border-yellow-300">
+            <div className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 py-1 bg-white/80 backdrop-blur rounded-lg border-2 border-yellow-300">
               <motion.div
-                className="text-lg sm:text-xl md:text-2xl font-mono text-yellow-600"
+                className="text-sm sm:text-base md:text-lg font-mono text-yellow-600"
                 key={
                   [...statements].sort(
                     (a, b) => b.agrees - a.agrees,
@@ -182,30 +178,30 @@ export function InProgressResults({
                   (a, b) => b.agrees - a.agrees,
                 )[0]?.agrees || 0}
               </motion.div>
-              <div className="text-[9px] sm:text-[10px] md:text-xs text-yellow-700 mt-0.5">
+              <div className="text-[9px] sm:text-[10px] md:text-xs text-yellow-700">
                 👑{" "}
                 <span className="hidden sm:inline">Leader</span>
               </div>
             </div>
 
-            <div className="text-center p-2 sm:p-3 bg-white/80 backdrop-blur rounded-lg border-2 border-purple-300">
+            <div className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 py-1 bg-white/80 backdrop-blur rounded-lg border-2 border-purple-300">
               <motion.div
-                className="text-lg sm:text-xl md:text-2xl font-mono text-purple-600"
+                className="text-sm sm:text-base md:text-lg font-mono text-purple-600"
                 key={totalVotes}
                 initial={{ scale: 1.3 }}
                 animate={{ scale: 1 }}
               >
                 {totalVotes}
               </motion.div>
-              <div className="text-[9px] sm:text-[10px] md:text-xs text-purple-700 mt-0.5">
+              <div className="text-[9px] sm:text-[10px] md:text-xs text-purple-700">
                 🗳️{" "}
                 <span className="hidden sm:inline">Total</span>
               </div>
             </div>
 
-            <div className="text-center p-2 sm:p-3 bg-white/80 backdrop-blur rounded-lg border-2 border-green-300">
+            <div className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 py-1 bg-white/80 backdrop-blur rounded-lg border-2 border-green-300">
               <motion.div
-                className="text-lg sm:text-xl md:text-2xl font-mono text-green-600"
+                className="text-sm sm:text-base md:text-lg font-mono text-green-600"
                 animate={{
                   scale: [1, 1.1, 1],
                 }}
@@ -216,7 +212,7 @@ export function InProgressResults({
               >
                 {statements.filter((s) => s.agrees > 0).length}
               </motion.div>
-              <div className="text-[9px] sm:text-[10px] md:text-xs text-green-700 mt-0.5">
+              <div className="text-[9px] sm:text-[10px] md:text-xs text-green-700">
                 ⭐{" "}
                 <span className="hidden sm:inline">Liked</span>
               </div>
