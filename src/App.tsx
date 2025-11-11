@@ -31,9 +31,6 @@ export default function App() {
   const [targetRoomId, setTargetRoomId] = useState<
     string | null
   >(null);
-  const [currentSubHeard, setCurrentSubHeard] = useState<
-    string | null
-  >(null);
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
   const [showComponentShowcase, setShowComponentShowcase] = useState(() => {
     // Check localStorage on mount
@@ -53,6 +50,7 @@ export default function App() {
     statements,
     rants,
     activeRooms,
+    currentSubHeard,
     loading,
     error,
     lastAchievement,
@@ -61,6 +59,7 @@ export default function App() {
     createRoom,
     joinRoom,
     getActiveRooms,
+    setCurrentSubHeard,
     submitStatement,
     submitRant,
     voteOnStatement,
@@ -132,7 +131,7 @@ export default function App() {
 
     // Refresh the rooms list to show the newly created room
     if (roomData) {
-      getActiveRooms(currentSubHeard || undefined);
+      getActiveRooms();
     }
   };
 
@@ -386,7 +385,7 @@ export default function App() {
   // Load active rooms when in lobby (user but no room and no target)
   useEffect(() => {
     if (user && !room && !targetRoomId) {
-      getActiveRooms(currentSubHeard || undefined);
+      getActiveRooms();
     }
   }, [
     user,

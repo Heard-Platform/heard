@@ -33,6 +33,7 @@ export function useDebateSession() {
   const [activeRooms, setActiveRooms] = useState<DebateRoom[]>(
     [],
   );
+  const [currentSubHeard, setCurrentSubHeard] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastAchievement, setLastAchievement] =
@@ -442,26 +443,23 @@ export function useDebateSession() {
     [user, room],
   );
 
-  // Get active rooms
-  const getActiveRooms = useCallback(
-    async (subHeard?: string) => {
-      try {
-        const userId = user?.id;
-        const response = await api.getActiveRooms(
-          subHeard,
-          userId,
-        );
-        if (response.success && response.data) {
-          setActiveRooms(response.data.rooms || []);
-          return response.data.rooms || [];
-        }
-      } catch (err) {
-        console.error("Failed to fetch active rooms:", err);
+  // Get active rooms - uses currentSubHeard from state
+  const getActiveRooms = useCallback(async () => {
+    try {
+      const userId = user?.id;
+      const response = await api.getActiveRooms(
+        currentSubHeard || undefined,
+        userId,
+      );
+      if (response.success && response.data) {
+        setActiveRooms(response.data.rooms || []);
+        return response.data.rooms || [];
       }
-      return [];
-    },
-    [user?.id],
-  );
+    } catch (err) {
+      console.error("Failed to fetch active rooms:", err);
+    }
+    return [];
+  }, [user?.id, currentSubHeard]);
 
   // Auto-play cleanup function - defined early to avoid dependency issues
   const stopAutoPlay = useCallback(() => {
@@ -910,6 +908,7 @@ export function useDebateSession() {
     statements,
     rants,
     activeRooms,
+    currentSubHeard,
     loading,
     error,
     lastAchievement,
@@ -918,6 +917,7 @@ export function useDebateSession() {
     createRoom,
     joinRoom,
     getActiveRooms,
+    setCurrentSubHeard,
     submitStatement,
     submitRant,
     voteOnStatement,
