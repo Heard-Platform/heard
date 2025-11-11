@@ -105,7 +105,7 @@ export function FeedbackSheet({
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-purple-600" />
             <Label className="text-base text-slate-700">
-              What's on your mind?
+              What's on your mind? Be honest!
             </Label>
           </div>
           <Textarea
