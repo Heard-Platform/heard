@@ -15,13 +15,21 @@ interface FeedbackSheetProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-export function FeedbackSheet({ userId, trigger, open: controlledOpen, onOpenChange }: FeedbackSheetProps) {
+export function FeedbackSheet({
+  userId,
+  trigger,
+  open: controlledOpen,
+  onOpenChange,
+}: FeedbackSheetProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   // Use controlled open state if provided, otherwise use internal state
-  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const open =
+    controlledOpen !== undefined
+      ? controlledOpen
+      : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
 
   const handleSubmit = async () => {
@@ -31,17 +39,27 @@ export function FeedbackSheet({ userId, trigger, open: controlledOpen, onOpenCha
     }
 
     setSubmitting(true);
-    
+
     try {
-      const response = await api.submitFeedback(feedbackText, userId);
-      
+      const response = await api.submitFeedback(
+        feedbackText,
+        userId,
+      );
+
       if (response.success) {
-        toast.success("Feedback sent! We read every single one 💜");
+        toast.success(
+          "Feedback sent! We read every single one 💜",
+        );
         setFeedbackText("");
         setOpen(false);
       } else {
-        toast.error("Failed to send feedback. Please try again!");
-        console.error("Feedback submission error:", response.error);
+        toast.error(
+          "Failed to send feedback. Please try again!",
+        );
+        console.error(
+          "Feedback submission error:",
+          response.error,
+        );
       }
     } catch (error) {
       toast.error("Something went wrong. Please try again!");
@@ -55,12 +73,20 @@ export function FeedbackSheet({ userId, trigger, open: controlledOpen, onOpenCha
     <FunSheet
       open={open}
       onOpenChange={setOpen}
-      trigger={trigger !== null ? (trigger || (
-        <Button variant="outline" size="sm" className="gap-2">
-          <MessageSquare className="w-4 h-4" />
-          Give Feedback
-        </Button>
-      )) : undefined}
+      trigger={
+        trigger !== null
+          ? trigger || (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Give Feedback
+              </Button>
+            )
+          : undefined
+      }
       title="Help Us Build Heard!"
       description="Your feedback shapes the future of debating! 💜"
       leftIcon={Heart}
@@ -78,7 +104,9 @@ export function FeedbackSheet({ userId, trigger, open: controlledOpen, onOpenCha
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-purple-600" />
-            <Label className="text-base text-slate-700">What's on your mind?</Label>
+            <Label className="text-base text-slate-700">
+              What's on your mind?
+            </Label>
           </div>
           <Textarea
             value={feedbackText}
@@ -103,13 +131,6 @@ export function FeedbackSheet({ userId, trigger, open: controlledOpen, onOpenCha
             )}
           </div>
         </div>
-      </FunSheetCard>
-
-      {/* Encouraging Message */}
-      <FunSheetCard delay={0.25} borderColor="border-pink-100">
-        <p className="text-sm text-center text-slate-600">
-          💡 We're building "Mario Party for debating" - let's make it legendary together!
-        </p>
       </FunSheetCard>
     </FunSheet>
   );
