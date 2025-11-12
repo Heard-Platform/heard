@@ -1,22 +1,16 @@
-import {
-  useState,
-  useRef,
-  useEffect,
-  forwardRef,
-  useImperativeHandle,
-} from "react";
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { motion } from "motion/react";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
 import { Card } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 import {
+  MessageCircle,
   Users,
   Plus,
-  MessageCircle,
   ArrowRight,
-  Hash,
   Settings,
   XCircle,
+  Hash,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,12 +18,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import type { DebateRoom, Statement } from "../types";
+import type { DebateRoom, Statement } from "../utils/api";
 import { SwipeableStatementStack } from "./SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { NewStatementInput } from "./NewStatementInput";
-import { RantSubmission } from "./RantSubmission";
 import { RealtimeCountdown } from "./RealtimeCountdown";
 import { api } from "../utils/api";
 
@@ -406,39 +399,6 @@ function RoomCard({
     }
   };
 
-  // Handle rant submission
-  const [isSubmittingRant, setIsSubmittingRant] =
-    useState(false);
-  const handleSubmitRant = async (text: string) => {
-    if (!currentUserId) {
-      console.error("No user ID available for submitting rant");
-      throw new Error("User not logged in");
-    }
-
-    setIsSubmittingRant(true);
-    try {
-      const response = await api.submitRant(
-        room.id,
-        text,
-        currentUserId,
-      );
-      if (!response.success) {
-        throw new Error(
-          response.error || "Failed to submit rant",
-        );
-      }
-      // Refresh statements to show the AI-extracted statements
-      if (onRefreshStatements) {
-        await onRefreshStatements();
-      }
-    } catch (error) {
-      console.error("Error submitting rant:", error);
-      throw error;
-    } finally {
-      setIsSubmittingRant(false);
-    }
-  };
-
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
@@ -614,12 +574,10 @@ function RoomCard({
                   No statements yet in this debate
                 </p>
               </div>
-              {/* Show rant input to add initial statements */}
+              {/* Show regular statement input to add initial statements */}
               {currentUserId && !isCompleted && (
-                <RantSubmission
-                  onSubmit={handleSubmitRant}
-                  isSubmitting={isSubmittingRant}
-                  placeholder="Share your thoughts on this topic and we'll create debate points from your rant!"
+                <NewStatementInput
+                  onSubmitStatement={handleSubmitStatement}
                 />
               )}
               {!currentUserId && (
