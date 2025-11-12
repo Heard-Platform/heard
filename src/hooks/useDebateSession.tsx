@@ -9,7 +9,6 @@ import {
   getUserId,
   setUserId,
   clearUserId,
-  getRoomId,
   setRoomId,
   clearRoomId,
 } from "../utils/api";
@@ -873,21 +872,6 @@ export function useDebateSession() {
 
       // Try to restore user session
       await initializeUser();
-
-      // Try to restore room if we have a room ID
-      const savedRoomId = getRoomId();
-      if (savedRoomId) {
-        console.log(`Restoring room: ${savedRoomId}`);
-        const response = await api.getRoomStatus(savedRoomId);
-        console.log("Room restore response:", response);
-        if (response.success && response.data) {
-          setRoom(response.data.room);
-          setStatements(response.data.statements || []);
-        } else {
-          console.log("Room restore failed, clearing room ID");
-          clearRoomId();
-        }
-      }
 
       setLoading(false);
     };
