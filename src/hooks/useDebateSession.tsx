@@ -33,7 +33,9 @@ export function useDebateSession() {
   const [activeRooms, setActiveRooms] = useState<DebateRoom[]>(
     [],
   );
-  const [currentSubHeard, setCurrentSubHeard] = useState<string | null>(null);
+  const [currentSubHeard, setCurrentSubHeard] = useState<
+    string | null
+  >(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastAchievement, setLastAchievement] =
