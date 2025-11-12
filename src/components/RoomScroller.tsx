@@ -1,4 +1,10 @@
-import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { motion } from "motion/react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -23,7 +29,7 @@ import { SwipeableStatementStack } from "./SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { NewStatementInput } from "./NewStatementInput";
-import { RealtimeCountdown } from "./RealtimeCountdown";
+import { ShareButton } from "./ShareButton";
 import { api } from "../utils/api";
 
 interface RoomScrollerProps {
@@ -431,6 +437,8 @@ function RoomCard({
                 </Badge>
               )}
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                {/* Link icon to copy shareable URL */}
+                <ShareButton roomId={room.id} />
                 {/* Settings menu for developers */}
                 {isDeveloper && onSetInactive && (
                   <DropdownMenu>
@@ -458,6 +466,9 @@ function RoomCard({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
+              </div>
+              {/* Player count on its own row */}
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <Users className="w-4 h-4" />
                 <span>{participantCount}</span>
               </div>

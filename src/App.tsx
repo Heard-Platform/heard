@@ -175,7 +175,12 @@ export default function App() {
       }
     };
     autoJoinSubHeard();
-  }, [user, currentSubHeard, hasCheckedUrl, setCurrentSubHeard]);
+  }, [
+    user,
+    currentSubHeard,
+    hasCheckedUrl,
+    setCurrentSubHeard,
+  ]);
 
   // Auto-join room if user exists and there's a target room
   useEffect(() => {
@@ -190,7 +195,6 @@ export default function App() {
           ) {
             setCurrentSubHeard(roomData.subHeard);
           }
-          setTargetRoomId(null); // Clear target after successful join
         } else {
           // If join failed, clear target and redirect to lobby
           setTargetRoomId(null);
@@ -199,20 +203,14 @@ export default function App() {
       };
       autoJoinRoom();
     }
-  }, [
-    user,
-    targetRoomId,
-    joinRoom,
-    currentSubHeard,
-    setCurrentSubHeard,
-  ]);
+  }, [user, targetRoomId]);
 
-  // Load active rooms when in lobby (user but no target)
+  // Load active rooms when in lobby
   useEffect(() => {
-    if (user && !targetRoomId) {
+    if (user) {
       getActiveRooms();
     }
-  }, [user, targetRoomId, currentSubHeard, getActiveRooms]);
+  }, [user, currentSubHeard, getActiveRooms]);
 
   // Handle opening and exiting component showcase
   const handleOpenShowcase = () => {
@@ -329,6 +327,7 @@ export default function App() {
         onOpenAdminPanel={handleOpenAdminPanel}
         currentSubHeard={currentSubHeard || undefined}
         onSubHeardChange={handleSubHeardChange}
+        targetRoomId={targetRoomId || undefined}
       />
       <Toaster />
     </>

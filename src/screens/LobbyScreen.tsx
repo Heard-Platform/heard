@@ -66,6 +66,7 @@ interface LobbyScreenProps {
   currentSubHeard?: string;
   onSubHeardChange?: (subHeard: string | null) => void;
   onRoomCreated?: () => void;
+  targetRoomId?: string;
 }
 
 export function LobbyScreen({
@@ -88,6 +89,7 @@ export function LobbyScreen({
   currentSubHeard,
   onSubHeardChange,
   onRoomCreated,
+  targetRoomId,
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
     useState(false);
@@ -100,9 +102,16 @@ export function LobbyScreen({
   >(undefined);
   const roomScrollerRef = useRef<RoomScrollerRef>(null);
 
-  // Sort rooms by newest first (all active rooms are shown)
-  const filteredRooms = activeRooms
-    .sort((a, b) => b.createdAt - a.createdAt); // Newest first
+  // Sort rooms: target room first, then newest first
+  const filteredRooms = activeRooms.sort((a, b) => {
+    // If there's a target room ID, put it first
+    if (targetRoomId) {
+      if (a.id === targetRoomId) return -1;
+      if (b.id === targetRoomId) return 1;
+    }
+    // Otherwise sort by newest first
+    return b.createdAt - a.createdAt;
+  });
 
   // Refresh rooms on mount and when sub-heard changes
   useEffect(() => {

@@ -3458,6 +3458,12 @@
   }
 
   @media (hover: hover) {
+    .hover\:text-purple-600:hover {
+      color: var(--color-purple-600);
+    }
+  }
+
+  @media (hover: hover) {
     .hover\:text-purple-700:hover {
       color: var(--color-purple-700);
     }
