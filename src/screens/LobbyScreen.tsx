@@ -466,6 +466,13 @@ export function LobbyScreen({
           }
           roomScrollerRef.current?.scrollToTop();
         }}
+        onExtractTopicAndStatements={async (rant) => {
+          const response = await api.extractTopicAndStatements(rant);
+          if (!response.success || !response.data) {
+            throw new Error(response.error || "Failed to extract topic and statements");
+          }
+          return response.data;
+        }}
         defaultSubHeard={discussSubHeard || currentSubHeard}
         defaultTopic={discussTopic}
       />

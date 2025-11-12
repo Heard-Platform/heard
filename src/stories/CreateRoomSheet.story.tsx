@@ -32,6 +32,27 @@ export function CreateRoomSheetStory() {
     toast.success(`Debate created: "${topic}"`);
   };
 
+  const handleExtractTopicAndStatements = async (rant: string) => {
+    // Mock extraction function - simulates OpenAI extraction
+    console.log("Extracting from rant:", rant);
+
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Mock extraction
+    const mockTopic = "Should we close Q Street during farmers market?";
+    const mockStatements = [
+      "Closing Q Street during farmers market creates a vibrant community space that brings neighbors together",
+      "Traffic diversions hurt local businesses on surrounding streets - we need better solutions",
+      "The farmers market is a weekly tradition that deserves priority over car convenience",
+    ];
+
+    return {
+      topic: mockTopic,
+      statements: mockStatements,
+    };
+  };
+
   return (
     <div className="space-y-6">
       <Card className="p-6 bg-white">
@@ -115,6 +136,7 @@ export function CreateRoomSheetStory() {
         open={isOpen}
         onOpenChange={setIsOpen}
         onCreateRoom={handleCreateRoom}
+        onExtractTopicAndStatements={handleExtractTopicAndStatements}
         defaultSubHeard={defaultSubHeard}
         defaultTopic={defaultTopic}
       />

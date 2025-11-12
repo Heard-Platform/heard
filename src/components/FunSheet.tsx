@@ -9,7 +9,7 @@ import {
 } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { motion } from "motion/react";
-import { LucideIcon, Sparkles } from "lucide-react";
+import { LucideIcon, Sparkles, ArrowLeft } from "lucide-react";
 
 interface FunSheetTheme {
   bgGradient: string;
@@ -35,6 +35,17 @@ export const themes = {
     leftIconColor: "text-emerald-600",
     rightIconColor: "text-teal-600",
   },
+  blue: {
+    bgGradient: "from-blue-50 via-indigo-50 to-cyan-50",
+    titleGradient: "from-blue-600 to-indigo-600",
+    borderColor: "border-blue-100",
+    buttonGradient: "from-blue-500 to-indigo-500",
+    buttonHoverGradient: "from-blue-600 to-indigo-600",
+    shadowColor: "shadow-blue-200",
+    iconColor: "text-blue-600",
+    leftIconColor: "text-blue-600",
+    rightIconColor: "text-indigo-600",
+  },
   purple: {
     bgGradient: "from-purple-50 via-pink-50 to-fuchsia-50",
     titleGradient: "from-purple-600 to-pink-600",
@@ -55,15 +66,18 @@ interface FunSheetProps {
   title: string;
   description: string;
   leftIcon: LucideIcon;
-  rightIcon: LucideIcon;
+  rightIcon?: LucideIcon; // Made optional
   theme: keyof typeof themes;
   children: ReactNode;
   buttonText: string;
   buttonLoadingText: string;
   buttonIcon: LucideIcon;
-  onButtonClick: () => void;
   buttonDisabled?: boolean;
   isLoading?: boolean;
+  showBackButton?: boolean;
+  backButtonText?: string;
+  onButtonClick: () => void;
+  onBackClick?: () => void;
 }
 
 export function FunSheet({
@@ -79,9 +93,12 @@ export function FunSheet({
   buttonText,
   buttonLoadingText,
   buttonIcon: ButtonIcon,
-  onButtonClick,
   buttonDisabled = false,
   isLoading = false,
+  showBackButton = false,
+  backButtonText = "Back",
+  onButtonClick,
+  onBackClick,
 }: FunSheetProps) {
   const theme = themes[themeKey];
 
@@ -106,13 +123,6 @@ export function FunSheet({
             <SheetTitle className={`text-3xl bg-gradient-to-r ${theme.titleGradient} bg-clip-text text-transparent`}>
               {title}
             </SheetTitle>
-            <motion.div
-              initial={{ rotate: 0 }}
-              animate={{ rotate: [0, -10, 10, -10, 0] }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <RightIcon className={`w-6 h-6 ${theme.rightIconColor || theme.iconColor}`} />
-            </motion.div>
           </div>
           <SheetDescription className="text-center text-sm text-slate-600">
             {description}
@@ -153,6 +163,25 @@ export function FunSheet({
               )}
             </Button>
           </motion.div>
+
+          {/* Back Button */}
+          {showBackButton && onBackClick && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45 }}
+            >
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onBackClick}
+                className="w-full h-12 flex items-center justify-center gap-2 border-slate-300 hover:border-slate-400 bg-white"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                {backButtonText}
+              </Button>
+            </motion.div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

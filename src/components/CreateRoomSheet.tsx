@@ -1,69 +1,60 @@
 import { useState, useEffect } from "react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
+import { Plus, Hash, Sparkles, Wand2, CheckCircle2 } from "lucide-react";
+import type { DebateMode } from "../types";
+import { FunSheet } from "./FunSheet";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
-import { Plus, Hash, Sparkles, MessageCircle, Lightbulb } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
-import { api } from "../utils/api";
-import type { DebateMode, SubHeard } from "../types";
-import { FunSheet, FunSheetCard } from "./FunSheet";
+  WriteRantStep,
+  ReviewExtractionStep,
+  SelectCommunityStep,
+} from "./create-room";
+import { normalizeSubHeardName } from "../utils/subheard";
 
 interface CreateRoomSheetProps {
   open: boolean;
+  defaultSubHeard?: string;
+  defaultTopic?: string;
   onOpenChange: (open: boolean) => void;
   onCreateRoom: (
     topic: string,
     mode: DebateMode,
     rantFirst?: boolean,
     description?: string,
-    subHeard?: string
+    subHeard?: string,
+    seedStatements?: string[] // Add seed statements parameter
   ) => Promise<void>;
-  defaultSubHeard?: string;
-  defaultTopic?: string;
+  onExtractTopicAndStatements: (rant: string) => Promise<{
+    topic: string;
+    statements: string[];
+  }>;
 }
 
-const topicExamples = [
-  "Social media does more harm than good for society",
-  "Remote work is better than in-person work",
-  "AI will solve more problems than it creates",
-  "Democracy is the best form of government",
-  "Economic growth should be prioritized over environmental protection",
-];
+type Step = "write-rant" | "review-extraction" | "select-community";
+
+interface ExtractedData {
+  topic: string;
+  statements: string[];
+}
 
 export function CreateRoomSheet({
   open,
-  onOpenChange,
-  onCreateRoom,
   defaultSubHeard,
   defaultTopic,
+  onOpenChange,
+  onCreateRoom,
+  onExtractTopicAndStatements,
 }: CreateRoomSheetProps) {
-  const [newRoomTopic, setNewRoomTopic] = useState("");
-  const [newRoomDescription, setNewRoomDescription] = useState("");
-  const [showExamples, setShowExamples] = useState(false);
+  const [currentStep, setCurrentStep] = useState<Step>("write-rant");
+  const [rant, setRant] = useState("");
+  const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
+  const [editedTopic, setEditedTopic] = useState("");
+  const [editedStatements, setEditedStatements] = useState<string[]>([]);
+  const [isExtracting, setIsExtracting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [subHeard, setSubHeard] = useState(defaultSubHeard || "");
-  const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
-  const [loadingSubHeards, setLoadingSubHeards] = useState(true);
-  const [showCreateNewSubHeard, setShowCreateNewSubHeard] = useState(false);
   const [newSubHeardName, setNewSubHeardName] = useState("");
 
-  const isTopicValid = newRoomTopic.trim().length >= 10;
-  const remainingChars = 10 - newRoomTopic.trim().length;
-
-  // Load sub-heards when sheet opens
-  useEffect(() => {
-    if (open) {
-      loadSubHeards();
-    }
-  }, [open]);
+  const isRantValid = rant.trim().length >= 50;
+  const remainingChars = 50 - rant.trim().length;
 
   // Update subHeard when defaultSubHeard changes
   useEffect(() => {
@@ -72,58 +63,80 @@ export function CreateRoomSheet({
     }
   }, [defaultSubHeard]);
 
-  // Update topic when defaultTopic changes or when sheet opens
+  // Prefill rant when defaultTopic is provided
+  useEffect(() => {
+    if (defaultTopic && open) {
+      setRant(defaultTopic);
+    }
+  }, [defaultTopic, open]);
+
+  // Reset form when sheet opens/closes
   useEffect(() => {
     if (open) {
-      setNewRoomTopic(defaultTopic || "");
+      setCurrentStep("write-rant");
+      // Only reset if there's no defaultTopic
+      if (!defaultTopic) {
+        setRant("");
+      }
+      setExtractedData(null);
+      setEditedTopic("");
+      setEditedStatements([]);
     }
   }, [open, defaultTopic]);
 
-  const loadSubHeards = async () => {
+  const handleExtractClick = async () => {
+    if (!isRantValid || isExtracting) return;
+
+    setIsExtracting(true);
     try {
-      setLoadingSubHeards(true);
-      const response = await api.getSubHeards();
-      if (response.success && response.data) {
-        setSubHeards(response.data.subHeards || []);
-      }
+      const extracted = await onExtractTopicAndStatements(rant);
+      setExtractedData(extracted);
+      setEditedTopic(extracted.topic);
+      setEditedStatements(extracted.statements);
+      setCurrentStep("review-extraction");
     } catch (error) {
-      console.error("Failed to load sub-heards:", error);
+      console.error("Failed to extract:", error);
     } finally {
-      setLoadingSubHeards(false);
+      setIsExtracting(false);
     }
   };
 
-  const formatSubHeardDisplay = (name: string) => {
-    return name
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+  const handleProceedToSubHeard = () => {
+    setCurrentStep("select-community");
+  };
+
+  const handleBackToRant = () => {
+    setCurrentStep("write-rant");
+  };
+
+  const handleBackToReview = () => {
+    setCurrentStep("review-extraction");
   };
 
   const handleCreateRoom = async () => {
-    if (!isTopicValid || isCreating || !subHeard) return;
-    
+    if (!editedTopic.trim() || isCreating || !subHeard) return;
+
     setIsCreating(true);
     try {
-      // If creating a new sub-heard, use the new name
-      const finalSubHeard = subHeard === "create-new" && newSubHeardName.trim()
-        ? newSubHeardName.trim().toLowerCase().replace(/\s+/g, '-')
+      // Resolve the community name: use custom name if creating new, otherwise use selected
+      const communityName = subHeard === "create-new" && newSubHeardName.trim()
+        ? normalizeSubHeardName(newSubHeardName)
         : subHeard;
 
       await onCreateRoom(
-        newRoomTopic.trim(),
+        editedTopic.trim(),
         "realtime", // Always use realtime mode
         true, // Always enable rant-first mode
-        newRoomDescription.trim() || undefined,
-        finalSubHeard
+        editedStatements.join("\n\n"), // Pass extracted statements as description for now
+        communityName,
+        editedStatements // Add seed statements
       );
-      
-      // Reset form (keep subHeard if it was a default)
-      setNewRoomTopic("");
-      setNewRoomDescription("");
-      setShowCreateNewSubHeard(false);
+
+      // Reset form
+      setCurrentStep("write-rant");
+      setRant("");
+      setExtractedData(null);
       setNewSubHeardName("");
-      // Reset subHeard to default or empty
       setSubHeard(defaultSubHeard || "");
       onOpenChange(false);
     } finally {
@@ -131,234 +144,121 @@ export function CreateRoomSheet({
     }
   };
 
-  const handleExampleClick = (topic: string) => {
-    setNewRoomTopic(topic);
-    setShowExamples(false);
-  };
-
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
-      // Reset create new sub-heard form when closing
-      setShowCreateNewSubHeard(false);
+      // Reset everything when closing
+      setCurrentStep("write-rant");
+      setRant("");
+      setExtractedData(null);
       setNewSubHeardName("");
     }
     onOpenChange(isOpen);
   };
 
+  // Determine sheet props based on current step
+  const getSheetProps = () => {
+    switch (currentStep) {
+      case "write-rant":
+        return {
+          title: "Start with a Rant",
+          description: "Let it all out! We'll turn it into a structured debate.",
+          leftIcon: Sparkles,
+          theme: "green" as const,
+          buttonText: isExtracting ? "Working on it..." : "Continue →",
+          buttonLoadingText: "Working on it...",
+          buttonIcon: Wand2,
+          onButtonClick: handleExtractClick,
+          buttonDisabled: !isRantValid || isExtracting,
+          isLoading: isExtracting,
+          showBackButton: false,
+        };
+      case "review-extraction":
+        return {
+          title: "Review & Edit",
+          description: "Look good? Edit anything that needs tweaking.",
+          leftIcon: CheckCircle2,
+          theme: "blue" as const,
+          buttonText: "Choose Community →",
+          buttonLoadingText: "Loading...",
+          buttonIcon: Hash,
+          onButtonClick: handleProceedToSubHeard,
+          buttonDisabled: !editedTopic.trim() || editedStatements.length === 0,
+          isLoading: false,
+          showBackButton: true,
+          backButtonText: "Back to Rant",
+          onBackClick: handleBackToRant,
+        };
+      case "select-community":
+        return {
+          title: "Pick a Community",
+          description: "Where should this debate live?",
+          leftIcon: Hash,
+          theme: "purple" as const,
+          buttonText: "Create Debate! 🚀",
+          buttonLoadingText: "Creating...",
+          buttonIcon: Plus,
+          onButtonClick: handleCreateRoom,
+          buttonDisabled: !subHeard || (subHeard === "create-new" && !newSubHeardName.trim()) || isCreating,
+          isLoading: isCreating,
+          showBackButton: true,
+          backButtonText: "Back to Review",
+          onBackClick: handleBackToReview,
+        };
+    }
+  };
+
+  const sheetProps = getSheetProps();
+
   return (
     <FunSheet
       open={open}
       onOpenChange={handleOpenChange}
-      title="Start a Debate"
-      description="What's on your mind? Let's hash it out! 💬"
-      leftIcon={Sparkles}
-      rightIcon={MessageCircle}
-      theme="green"
-      buttonText="Let's Go! 🚀"
-      buttonLoadingText="Creating your debate..."
-      buttonIcon={Plus}
-      onButtonClick={handleCreateRoom}
-      buttonDisabled={
-        !isTopicValid ||
-        isCreating ||
-        !subHeard ||
-        (subHeard === "create-new" && !newSubHeardName.trim())
-      }
-      isLoading={isCreating}
+      title={sheetProps.title}
+      description={sheetProps.description}
+      leftIcon={sheetProps.leftIcon}
+      theme={sheetProps.theme}
+      buttonText={sheetProps.buttonText}
+      buttonLoadingText={sheetProps.buttonLoadingText}
+      buttonIcon={sheetProps.buttonIcon}
+      onButtonClick={sheetProps.onButtonClick}
+      buttonDisabled={sheetProps.buttonDisabled}
+      isLoading={sheetProps.isLoading}
+      showBackButton={sheetProps.showBackButton}
+      backButtonText={sheetProps.backButtonText}
+      onBackClick={sheetProps.onBackClick}
     >
-      {/* Topic Input */}
-      <FunSheetCard delay={0.2}>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <MessageCircle className="w-5 h-5 text-teal-600" />
-            <Label htmlFor="topic-input" className="text-base text-slate-700">
-              What should we debate?
-            </Label>
-          </div>
-          <Input
-            id="topic-input"
-            type="text"
-            placeholder="What's the hot take? Drop it here..."
-            maxLength={100}
-            value={newRoomTopic}
-            onChange={(e) => setNewRoomTopic(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && isTopicValid) {
-                handleCreateRoom();
-              }
-            }}
-            className="h-12 bg-white border-teal-200 hover:border-teal-300 transition-colors placeholder:text-slate-400"
-          />
-          <div className="flex justify-between items-center text-xs">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowExamples(!showExamples)}
-              className="text-xs text-teal-700 hover:text-teal-900 hover:bg-teal-100/50 flex items-center gap-1 h-auto px-2 py-1 -ml-2"
-            >
-              <Lightbulb className="w-3.5 h-3.5" />
-              {showExamples ? "Hide" : "Need inspiration?"} 
-            </Button>
-            {newRoomTopic.trim().length > 0 && !isTopicValid && (
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-orange-600 flex items-center gap-1"
-              >
-                <span>⏳</span>
-                Need {remainingChars} more character
-                {remainingChars !== 1 ? "s" : ""}
-              </motion.span>
-            )}
-            {isTopicValid && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="text-emerald-600 flex items-center gap-1"
-              >
-                <span>✨</span> Looking spicy!
-              </motion.span>
-            )}
-            <span className="text-slate-500 ml-auto">
-              {newRoomTopic.length}/100
-            </span>
-          </div>
-        </div>
-      </FunSheetCard>
+      {currentStep === "write-rant" && (
+        <WriteRantStep
+          rant={rant}
+          isRantValid={isRantValid}
+          remainingChars={remainingChars}
+          onRantChange={setRant}
+        />
+      )}
 
-      {/* Example Topics */}
-      <AnimatePresence>
-        {showExamples && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="space-y-2 overflow-hidden -mt-3"
-          >
-            {topicExamples.map((topic, index) => (
-              <motion.div
-                key={topic}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleExampleClick(topic)}
-                  className="w-full text-left justify-start h-auto py-3 px-4 bg-white/50 hover:bg-white border-slate-200 hover:border-teal-300 text-slate-700 hover:text-teal-900 transition-all"
-                >
-                  <span className="mr-2">💡</span>
-                  <span className="text-sm">{topic}</span>
-                </Button>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {currentStep === "review-extraction" && (
+        <ReviewExtractionStep
+          topic={editedTopic}
+          statements={editedStatements}
+          onTopicChange={setEditedTopic}
+          onStatementsChange={setEditedStatements}
+        />
+      )}
 
-      {/* Description */}
-      <FunSheetCard delay={0.25}>
-        <div className="space-y-3">
-          <Label htmlFor="description-input" className="text-sm text-slate-600 flex items-center gap-1.5">
-            <span>📝</span> Add some context (optional)
-          </Label>
-          <Textarea
-            id="description-input"
-            placeholder="Set the stage, lay down some ground rules, add some flavor..."
-            maxLength={2000}
-            value={newRoomDescription}
-            onChange={(e) => setNewRoomDescription(e.target.value)}
-            className="w-full min-h-[90px] resize-none bg-white border-emerald-200 hover:border-emerald-300 transition-colors placeholder:text-slate-400"
-            rows={3}
-          />
-          <div className="flex justify-between items-center text-xs">
-            <span className="text-slate-500">
-              Help everyone get on the same page
-            </span>
-            <span className="text-slate-400">
-              {newRoomDescription.length}/2000
-            </span>
-          </div>
-        </div>
-      </FunSheetCard>
-
-      {/* Sub-Heard Selector */}
-      <FunSheetCard delay={0.3}>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Hash className="w-5 h-5 text-emerald-600" />
-            <Label htmlFor="subheard-select" className="text-base text-slate-700">
-              Where should this debate live?
-            </Label>
-          </div>
-          <Select
-            value={subHeard || undefined}
-            onValueChange={(value) => {
-              setSubHeard(value);
-              setShowCreateNewSubHeard(value === "create-new");
-              if (value !== "create-new") {
-                setNewSubHeardName("");
-              }
-            }}
-          >
-            <SelectTrigger id="subheard-select" className="h-12 bg-white border-emerald-200 hover:border-emerald-300 transition-colors">
-              <SelectValue placeholder="Choose a community..." />
-            </SelectTrigger>
-            <SelectContent>
-              {subHeards.map((sh) => (
-                <SelectItem key={sh.name} value={sh.name}>
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center">
-                      <Hash className="w-4 h-4 mr-2" />
-                      {formatSubHeardDisplay(sh.name)}
-                    </div>
-                    <span className="text-xs text-muted-foreground ml-2">
-                      ({sh.count})
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
-              <SelectItem value="create-new">
-                <div className="flex items-center text-purple-600">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create New Community
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Create new sub-heard input */}
-          <AnimatePresence>
-            {showCreateNewSubHeard && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-2 p-4 bg-purple-50/50 border-2 border-dashed border-purple-200 rounded-xl space-y-2">
-                  <Label htmlFor="new-subheard-name" className="text-sm text-purple-800">
-                    New Community Name ✨
-                  </Label>
-                  <Input
-                    id="new-subheard-name"
-                    placeholder="e.g., politics, technology..."
-                    value={newSubHeardName}
-                    onChange={(e) => setNewSubHeardName(e.target.value)}
-                    maxLength={50}
-                    className="bg-white border-purple-200"
-                  />
-                  <p className="text-xs text-purple-600/80">
-                    Choose a clear, concise name for your community
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </FunSheetCard>
+      {currentStep === "select-community" && (
+        <SelectCommunityStep
+          subHeard={subHeard}
+          newSubHeardName={newSubHeardName}
+          defaultSubHeard={defaultSubHeard}
+          onSubHeardChange={(value) => {
+            setSubHeard(value);
+            if (value !== "create-new") {
+              setNewSubHeardName("");
+            }
+          }}
+          onNewSubHeardNameChange={setNewSubHeardName}
+        />
+      )}
     </FunSheet>
   );
 }

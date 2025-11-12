@@ -9,6 +9,7 @@ import {
   DebateRoom,
   generateId,
   saveDebateRoom,
+  Statement,
 } from "./debate-api.tsx";
 
 const app = new Hono();
@@ -25,6 +26,7 @@ app.post(
         mode = "host-controlled",
         rantFirst = false,
         subHeard,
+        seedStatements, // Optional array of seed statement strings
       } = await c.req.json();
 
       if (!topic || topic.length < 10) {
@@ -119,6 +121,33 @@ app.post(
       };
 
       await saveDebateRoom(debateRoom);
+
+      // Create seed statements if provided (optional, for backwards compatibility)
+      if (seedStatements && Array.isArray(seedStatements) && seedStatements.length > 0) {
+        const statements: Statement[] = seedStatements.map((text: string) => ({
+          id: generateId(),
+          text: text.substring(0, 1000), // Limit statement length
+          author: userId,
+          agrees: 0,
+          disagrees: 0,
+          passes: 0,
+          superAgrees: 0,
+          roomId: roomId,
+          timestamp: Date.now(),
+          round: 1, // Seed statements are for round 1
+          voters: {},
+        }));
+
+        // Save each statement individually
+        for (const statement of statements) {
+          await kv.set(
+            `statement:${roomId}:${statement.id}`,
+            JSON.stringify(statement),
+          );
+        }
+
+        console.log(`Created ${statements.length} seed statements for room ${roomId}`);
+      }
 
       // Update user's current room
       user.currentRoomId = roomId;

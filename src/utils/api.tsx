@@ -91,10 +91,18 @@ class ApiClient {
   }
 
   // Room management
-  async createRoom(topic: string, userId: string, mode = "host-controlled", rantFirst?: boolean, description?: string, subHeard?: string) {
+  async createRoom(
+    topic: string, 
+    userId: string, 
+    mode = "host-controlled", 
+    rantFirst?: boolean, 
+    description?: string, 
+    subHeard?: string,
+    seedStatements?: string[] // Optional array of seed statement strings
+  ) {
     return this.request("/room/create", {
       method: "POST",
-      body: JSON.stringify({ topic, description, userId, mode, rantFirst, subHeard }),
+      body: JSON.stringify({ topic, description, userId, mode, rantFirst, subHeard, seedStatements }),
     });
   }
 
@@ -189,6 +197,13 @@ class ApiClient {
     return this.request(`/room/${roomId}/rant`, {
       method: "POST",
       body: JSON.stringify({ text, userId }),
+    });
+  }
+
+  async extractTopicAndStatements(rant: string) {
+    return this.request<{ topic: string; statements: string[] }>("/rant/extract", {
+      method: "POST",
+      body: JSON.stringify({ rant }),
     });
   }
 

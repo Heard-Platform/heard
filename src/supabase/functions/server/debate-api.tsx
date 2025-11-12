@@ -1430,6 +1430,113 @@ app.post(
   },
 );
 
+// Extract topic and statements from a rant (for creation flow)
+app.post(
+  "/make-server-f1a393b4/rant/extract",
+  async (c: any) => {
+    try {
+      const { rant } = await c.req.json();
+
+      if (!rant || rant.trim().length < 50) {
+        return c.json(
+          { error: "Rant must be at least 50 characters" },
+          400,
+        );
+      }
+
+      const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
+
+      if (!openaiApiKey) {
+        console.error("OPENAI_API_KEY not found in environment");
+        return c.json({ error: "AI service not configured" }, 500);
+      }
+
+      // Extract topic and statements using OpenAI
+      const prompt = `You are analyzing a user's rant to extract a debate topic and key arguments.
+
+Rant:
+${rant.trim()}
+
+Please extract:
+1. A clear, concise debate topic (as a question if possible)
+2. 3-5 key debate statements that represent the main arguments in the rant
+
+STRICT Rules for statements:
+- Use the author's actual words and phrases whenever possible
+- Do NOT add interpretations, implications, or extra meaning
+- Do NOT extrapolate beyond what they explicitly said
+- Stay faithful to their tone (casual, formal, emotional, etc.)
+- Only create statements for arguments they actually made
+- Keep their specific examples and concerns intact
+
+Return ONLY in this exact JSON format:
+{
+  "topic": "the debate topic here",
+  "statements": [
+    "first statement",
+    "second statement",
+    "third statement"
+  ]
+}`;
+
+      const response = await fetch(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${openaiApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are a debate topic extractor. You analyze rants and extract clear debate topics and faithful statements. Always return valid JSON.",
+              },
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+            max_tokens: 500,
+            temperature: 0.3,
+            response_format: { type: "json_object" },
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`OpenAI API error: ${response.status} - ${errorText}`);
+        return c.json({ error: "AI extraction failed" }, 500);
+      }
+
+      const data = await response.json();
+      const content = data.choices[0]?.message?.content;
+
+      if (!content) {
+        return c.json({ error: "No content generated" }, 500);
+      }
+
+      const extracted = JSON.parse(content);
+
+      if (!extracted.topic || !extracted.statements || !Array.isArray(extracted.statements)) {
+        return c.json({ error: "Invalid AI response format" }, 500);
+      }
+
+      return c.json({
+        topic: extracted.topic,
+        statements: extracted.statements,
+      });
+    } catch (error) {
+      console.error("Error extracting from rant:", error);
+      return c.json({ error: "Failed to extract topic and statements" }, 500);
+    }
+  },
+);
+
 // Vote on statement
 app.post(
   "/make-server-f1a393b4/statement/:statementId/vote",

@@ -119,6 +119,7 @@ export default function App() {
     rantFirst?: boolean,
     description?: string,
     subHeard?: string,
+    seedStatements?: string[], // Optional seed statements
   ) => {
     const roomData = await createRoom(
       topic,
@@ -127,6 +128,7 @@ export default function App() {
       description,
       subHeard,
       false, // Don't auto-join - stay on TikTok scroller
+      seedStatements, // Pass seed statements
     );
 
     // Refresh the rooms list to show the newly created room

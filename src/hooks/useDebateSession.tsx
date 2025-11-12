@@ -138,6 +138,7 @@ export function useDebateSession() {
       description?: string,
       subHeard?: string,
       autoJoin: boolean = false,
+      seedStatements?: string[], // Optional seed statements
     ) => {
       if (!user) return null;
 
@@ -150,6 +151,7 @@ export function useDebateSession() {
           rantFirst,
           description,
           subHeard,
+          seedStatements, // Pass seed statements to API
         );
         if (response.success && response.data) {
           const roomData = response.data.room;
