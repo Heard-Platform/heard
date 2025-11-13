@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Plus, Hash, Sparkles, Wand2, CheckCircle2 } from "lucide-react";
+import { Plus, Hash, Sparkles, Wand2, CheckCircle2, PartyPopper } from "lucide-react";
 import type { DebateMode } from "../types";
 import { FunSheet } from "./FunSheet";
 import {
   WriteRantStep,
   ReviewExtractionStep,
   SelectCommunityStep,
+  ShareDebateStep,
 } from "./create-room";
 import { normalizeSubHeardName } from "../utils/subheard";
 
@@ -21,14 +22,14 @@ interface CreateRoomSheetProps {
     description?: string,
     subHeard?: string,
     seedStatements?: string[] // Add seed statements parameter
-  ) => Promise<void>;
+  ) => Promise<{ id: string; topic: string } | null>; // Update return type
   onExtractTopicAndStatements: (rant: string) => Promise<{
     topic: string;
     statements: string[];
   }>;
 }
 
-type Step = "write-rant" | "review-extraction" | "select-community";
+type Step = "write-rant" | "review-extraction" | "select-community" | "share";
 
 interface ExtractedData {
   topic: string;
@@ -52,6 +53,7 @@ export function CreateRoomSheet({
   const [isCreating, setIsCreating] = useState(false);
   const [subHeard, setSubHeard] = useState(defaultSubHeard || "");
   const [newSubHeardName, setNewSubHeardName] = useState("");
+  const [debateId, setDebateId] = useState<string | null>(null);
 
   const isRantValid = rant.trim().length >= 50;
   const remainingChars = 50 - rant.trim().length;
@@ -123,7 +125,7 @@ export function CreateRoomSheet({
         ? normalizeSubHeardName(newSubHeardName)
         : subHeard;
 
-      await onCreateRoom(
+      const result = await onCreateRoom(
         editedTopic.trim(),
         "realtime", // Always use realtime mode
         true, // Always enable rant-first mode
@@ -132,13 +134,10 @@ export function CreateRoomSheet({
         editedStatements // Add seed statements
       );
 
-      // Reset form
-      setCurrentStep("write-rant");
-      setRant("");
-      setExtractedData(null);
-      setNewSubHeardName("");
-      setSubHeard(defaultSubHeard || "");
-      onOpenChange(false);
+      if (result) {
+        setDebateId(result.id);
+        setCurrentStep("share");
+      }
     } finally {
       setIsCreating(false);
     }
@@ -151,6 +150,8 @@ export function CreateRoomSheet({
       setRant("");
       setExtractedData(null);
       setNewSubHeardName("");
+      setDebateId(null);
+      setSubHeard(defaultSubHeard || "");
     }
     onOpenChange(isOpen);
   };
@@ -203,6 +204,20 @@ export function CreateRoomSheet({
           showBackButton: true,
           backButtonText: "Back to Review",
           onBackClick: handleBackToReview,
+        };
+      case "share":
+        return {
+          title: "Share Your Debate",
+          description: "Spread the word about your new debate!",
+          leftIcon: PartyPopper,
+          theme: "orange" as const,
+          buttonText: "Let's Go! 🔥",
+          buttonLoadingText: "Closing...",
+          buttonIcon: Plus,
+          onButtonClick: () => onOpenChange(false),
+          buttonDisabled: false,
+          isLoading: false,
+          showBackButton: false,
         };
     }
   };
@@ -257,6 +272,13 @@ export function CreateRoomSheet({
             }
           }}
           onNewSubHeardNameChange={setNewSubHeardName}
+        />
+      )}
+
+      {currentStep === "share" && debateId && (
+        <ShareDebateStep
+          debateId={debateId}
+          topic={editedTopic}
         />
       )}
     </FunSheet>

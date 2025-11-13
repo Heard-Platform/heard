@@ -105,6 +105,8 @@ export default function App() {
     if (roomData) {
       getActiveRooms();
     }
+    
+    return roomData; // Return room data for share step
   };
 
   // Handle joining existing room

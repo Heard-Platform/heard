@@ -57,6 +57,17 @@ export const themes = {
     leftIconColor: "text-pink-600",
     rightIconColor: "text-purple-600",
   },
+  orange: {
+    bgGradient: "from-orange-50 via-amber-50 to-yellow-50",
+    titleGradient: "from-orange-600 to-amber-600",
+    borderColor: "border-orange-100",
+    buttonGradient: "from-orange-500 to-amber-500",
+    buttonHoverGradient: "from-orange-600 to-amber-600",
+    shadowColor: "shadow-orange-200",
+    iconColor: "text-orange-600",
+    leftIconColor: "text-orange-600",
+    rightIconColor: "text-amber-600",
+  },
 } as const;
 
 interface FunSheetProps {
