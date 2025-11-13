@@ -122,10 +122,10 @@ export function WriteRantStep({
                   variant="outline"
                   size="sm"
                   onClick={() => handleExampleClick(topic)}
-                  className="w-full text-left justify-start h-auto py-3 px-4 bg-white/50 hover:bg-white border-slate-200 hover:border-teal-300 text-slate-700 hover:text-teal-900 transition-all"
+                  className="w-full text-left justify-start h-auto py-3 px-4 bg-white/50 hover:bg-white border-slate-200 hover:border-teal-300 text-slate-700 hover:text-teal-900 transition-all whitespace-normal"
                 >
-                  <span className="mr-2">💡</span>
-                  <span className="text-sm">{topic}</span>
+                  <span className="mr-2 flex-shrink-0">💡</span>
+                  <span className="text-sm line-clamp-2 break-words">{topic}</span>
                 </Button>
               </motion.div>
             ))}
