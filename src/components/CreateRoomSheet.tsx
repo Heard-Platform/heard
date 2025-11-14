@@ -24,7 +24,7 @@ interface CreateRoomSheetProps {
   defaultTopic?: string;
   onOpenChange: (open: boolean) => void;
   onCreateRoom: (
-    newDebate: NewDebateRoom
+    newDebate: NewDebateRoom,
   ) => Promise<DebateRoom>;
   onExtractTopicAndStatements: (rant: string) => Promise<{
     topic: string;
@@ -152,7 +152,7 @@ export function CreateRoomSheet({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to create debate. Please try again."
+          : "Failed to create debate. Please try again.",
       );
     } finally {
       setIsCreating(false);
