@@ -7,7 +7,8 @@ import {
   CheckCircle2,
   PartyPopper,
 } from "lucide-react";
-import type { DebateMode } from "../types";
+import { toast } from "sonner@2.0.3";
+import type { NewDebateRoom, DebateRoom } from "../types";
 import { FunSheet } from "./FunSheet";
 import {
   WriteRantStep,
@@ -23,13 +24,8 @@ interface CreateRoomSheetProps {
   defaultTopic?: string;
   onOpenChange: (open: boolean) => void;
   onCreateRoom: (
-    topic: string,
-    mode: DebateMode,
-    rantFirst?: boolean,
-    description?: string,
-    subHeard?: string,
-    seedStatements?: string[], // Add seed statements parameter
-  ) => Promise<{ id: string; topic: string } | null>; // Update return type
+    newDebate: NewDebateRoom
+  ) => Promise<DebateRoom>;
   onExtractTopicAndStatements: (rant: string) => Promise<{
     topic: string;
     statements: string[];
@@ -143,19 +139,21 @@ export function CreateRoomSheet({
           ? normalizeSubHeardName(newSubHeardName)
           : subHeard;
 
-      const result = await onCreateRoom(
-        editedTopic.trim(),
-        "realtime", // Always use realtime mode
-        true, // Always enable rant-first mode
-        editedStatements.join("\n\n"), // Pass extracted statements as description for now
-        communityName,
-        editedStatements, // Add seed statements
-      );
+      const result = await onCreateRoom({
+        topic: editedTopic.trim(),
+        subHeard: communityName,
+        seedStatements: editedStatements,
+      });
 
-      if (result) {
-        setDebateId(result.id);
-        setCurrentStep("share");
-      }
+      setDebateId(result.id);
+      setCurrentStep("share");
+    } catch (error) {
+      console.error("Failed to create room:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to create debate. Please try again."
+      );
     } finally {
       setIsCreating(false);
     }

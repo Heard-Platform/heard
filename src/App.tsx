@@ -9,6 +9,7 @@ import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner@2.0.3";
 import { api } from "./utils/api";
+import type { NewDebateRoom, DebateRoom } from "./types";
 import {
   parseRoomIdFromUrl,
   parseSubHeardFromUrl,
@@ -84,27 +85,12 @@ export default function App() {
 
   // Handle room creation
   const handleCreateRoom = async (
-    topic: string,
-    mode: "realtime" | "host-controlled",
-    rantFirst?: boolean,
-    description?: string,
-    subHeard?: string,
-    seedStatements?: string[],
-  ) => {
-    const roomData = await createRoom(
-      topic,
-      mode,
-      rantFirst,
-      description,
-      subHeard,
-      false, // Don't auto-join - stay on TikTok scroller
-      seedStatements,
-    );
+    newDebate: NewDebateRoom,
+  ): Promise<DebateRoom> => {
+    const roomData = await createRoom(newDebate);
 
     // Refresh the rooms list to show the newly created room
-    if (roomData) {
-      getActiveRooms();
-    }
+    getActiveRooms();
     
     return roomData; // Return room data for share step
   };

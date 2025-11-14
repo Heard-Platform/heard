@@ -1,4 +1,5 @@
 import { projectId, publicAnonKey } from "./supabase/info";
+import type { DebateRoom, NewDebateRoom } from "../types";
 
 export const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
 
@@ -92,17 +93,12 @@ class ApiClient {
 
   // Room management
   async createRoom(
-    topic: string, 
-    userId: string, 
-    mode = "host-controlled", 
-    rantFirst?: boolean, 
-    description?: string, 
-    subHeard?: string,
-    seedStatements?: string[] // Optional array of seed statement strings
-  ) {
-    return this.request("/room/create", {
+    newDebate: NewDebateRoom,
+    userId: string
+  ): Promise<ApiResponse<DebateRoom>> {
+    return this.request<DebateRoom>("/room/create", {
       method: "POST",
-      body: JSON.stringify({ topic, description, userId, mode, rantFirst, subHeard, seedStatements }),
+      body: JSON.stringify({ ...newDebate, userId }),
     });
   }
 

@@ -13,6 +13,7 @@ import type {
   UserSession,
   DebateRoom,
   DebateMode,
+  NewDebateRoom,
 } from "../types";
 
 export function useDebateSession() {
@@ -110,48 +111,30 @@ export function useDebateSession() {
   // Create room (does not join)
   const createRoom = useCallback(
     async (
-      topic: string,
-      mode: DebateMode = "host-controlled",
-      rantFirst?: boolean,
-      description?: string,
-      subHeard?: string,
+      newDebate: NewDebateRoom,
       autoJoin: boolean = false,
-      seedStatements?: string[],
-    ) => {
-      if (!user) return null;
-
-      try {
-        setError(null);
-        const response = await api.createRoom(
-          topic,
-          user.id,
-          mode,
-          rantFirst,
-          description,
-          subHeard,
-          seedStatements,
-        );
-        if (response.success && response.data) {
-          const roomData = response.data.room;
-
-          // If autoJoin, also join the room
-          if (autoJoin) {
-            await api.joinRoom(roomData.id, user.id);
-          }
-
-          return roomData;
-        } else {
-          throw new Error(
-            response.error || "Failed to create room",
-          );
-        }
-      } catch (err) {
-        const errorMsg =
-          err instanceof Error ? err.message : "Unknown error";
-        setError(errorMsg);
-        console.error("Failed to create room:", errorMsg);
+    ): Promise<DebateRoom> => {
+      if (!user) {
+        throw new Error("User must be logged in to create a room");
       }
-      return null;
+
+      setError(null);
+      const response = await api.createRoom(newDebate, user.id);
+      
+      if (response.success && response.data) {
+        const roomData = response.data;
+
+        // If autoJoin, also join the room
+        if (autoJoin) {
+          await api.joinRoom(roomData.id, user.id);
+        }
+
+        return roomData;
+      } else {
+        const errorMsg = response.error || "Failed to create room";
+        setError(errorMsg);
+        throw new Error(errorMsg);
+      }
     },
     [user],
   );

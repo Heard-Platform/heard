@@ -68,6 +68,10 @@ export interface DebateRoom {
   endTime?: number; // For realtime debates - timestamp when the debate ends
 }
 
+export type NewDebateRoom = Pick<DebateRoom, "topic" | "subHeard"> & {
+  seedStatements?: string[];
+};
+
 export interface SubHeard {
   name: string;
   count?: number; // Number of active debates (used in browser)

@@ -1,3 +1,9 @@
+import type {
+  UserSession,
+  DebateRoom,
+  DebateMode,
+  NewDebateRoom,
+} from "../types";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { Button } from "../components/ui/button";
@@ -31,11 +37,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../components/ui/sheet";
-import type {
-  UserSession,
-  DebateRoom,
-  DebateMode,
-} from "../types";
 
 interface LobbyScreenProps {
   user: UserSession | null;
@@ -43,12 +44,8 @@ interface LobbyScreenProps {
   loading: boolean;
   error: string | null;
   onCreateRoom: (
-    topic: string,
-    mode: DebateMode,
-    rantFirst?: boolean,
-    description?: string,
-    subHeard?: string,
-  ) => Promise<void>;
+    newDebate: NewDebateRoom
+  ) => Promise<DebateRoom>;
   onJoinRoom: (roomId: string) => Promise<void>;
   onRefreshRooms: (subHeard?: string) => Promise<DebateRoom[]>;
   onJumpToFinalResults?: () => Promise<void>;
@@ -192,6 +189,18 @@ export function LobbyScreen({
       setDiscussTopic(undefined);
       setDiscussSubHeard(undefined);
     }
+  };
+
+  const handleCreateRoom = async (
+    newDebate: NewDebateRoom
+  ): Promise<DebateRoom> => {
+    const result = await onCreateRoom(newDebate);
+    // Scroll to top after creating room
+    if (onRoomCreated) {
+      onRoomCreated();
+    }
+    roomScrollerRef.current?.scrollToTop();
+    return result;
   };
 
   return (
@@ -469,14 +478,7 @@ export function LobbyScreen({
       <CreateRoomSheet
         open={createRoomSheetOpen}
         onOpenChange={handleCreateRoomSheetChange}
-        onCreateRoom={async (...args) => {
-          await onCreateRoom(...args);
-          // Scroll to top after creating room
-          if (onRoomCreated) {
-            onRoomCreated();
-          }
-          roomScrollerRef.current?.scrollToTop();
-        }}
+        onCreateRoom={handleCreateRoom}
         onExtractTopicAndStatements={async (rant) => {
           const response =
             await api.extractTopicAndStatements(rant);

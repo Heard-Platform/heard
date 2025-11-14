@@ -21,10 +21,7 @@ app.post(
     try {
       const {
         topic,
-        description,
         userId,
-        mode = "host-controlled",
-        rantFirst = false,
         subHeard,
         seedStatements, // Optional array of seed statement strings
       } = await c.req.json();
@@ -98,26 +95,20 @@ app.post(
       const debateRoom: DebateRoom = {
         id: roomId,
         topic: topic.substring(0, 500), // Limit topic length
-        description: description
-          ? description.substring(0, 2000)
-          : undefined, // Optional description with limit
-        phase: rantFirst ? "round1" : "lobby", // Rant-first rooms start in round1
-        subPhase: rantFirst ? "posting" : undefined, // Rant-first rooms start in posting phase
+        phase: "round1", // All new rooms start in round1 with rant-first
+        subPhase: "posting", // All new rooms start in posting phase
         gameNumber: 1,
         roundStartTime: Date.now(),
         participants: [userId],
         hostId: userId, // Set the creator as the host
         isActive: true,
         createdAt: Date.now(),
-        mode: mode as DebateMode,
-        rantFirst: rantFirst,
+        mode: "realtime", // All new rooms are realtime
+        rantFirst: true, // All new rooms are rant-first
         subHeard: subHeard
           ? subHeard.trim().toLowerCase().replace(/\s+/g, "-")
           : undefined,
-        endTime:
-          mode === "realtime"
-            ? Date.now() + 7 * 24 * 60 * 60 * 1000
-            : undefined, // Realtime debates end in 1 week
+        endTime: Date.now() + 7 * 24 * 60 * 60 * 1000, // Realtime debates end in 1 week
       };
 
       await saveDebateRoom(debateRoom);
@@ -153,7 +144,7 @@ app.post(
       user.currentRoomId = roomId;
       await saveUserSession(user);
 
-      return c.json({ room: debateRoom });
+      return c.json(debateRoom);
     } catch (error) {
       console.error("Error creating debate room:", error);
       return c.json(
