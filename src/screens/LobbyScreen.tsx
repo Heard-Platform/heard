@@ -458,7 +458,9 @@ export function LobbyScreen({
       </div>
 
       {/* Floating create button */}
-      <FloatingCreateButton onPress={() => setCreateRoomSheetOpen(true)} />
+      <FloatingCreateButton
+        onPress={() => setCreateRoomSheetOpen(true)}
+      />
 
       {/* Floating feedback button */}
       <FloatingFeedbackButton userId={user?.id} />
@@ -476,9 +478,13 @@ export function LobbyScreen({
           roomScrollerRef.current?.scrollToTop();
         }}
         onExtractTopicAndStatements={async (rant) => {
-          const response = await api.extractTopicAndStatements(rant);
+          const response =
+            await api.extractTopicAndStatements(rant);
           if (!response.success || !response.data) {
-            throw new Error(response.error || "Failed to extract topic and statements");
+            throw new Error(
+              response.error ||
+                "Failed to extract topic and statements",
+            );
           }
           return response.data;
         }}
