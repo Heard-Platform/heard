@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Plus, Hash, Sparkles, Wand2, CheckCircle2, PartyPopper } from "lucide-react";
+import {
+  Plus,
+  Hash,
+  Sparkles,
+  Wand2,
+  CheckCircle2,
+  PartyPopper,
+} from "lucide-react";
 import type { DebateMode } from "../types";
 import { FunSheet } from "./FunSheet";
 import {
@@ -21,7 +28,7 @@ interface CreateRoomSheetProps {
     rantFirst?: boolean,
     description?: string,
     subHeard?: string,
-    seedStatements?: string[] // Add seed statements parameter
+    seedStatements?: string[], // Add seed statements parameter
   ) => Promise<{ id: string; topic: string } | null>; // Update return type
   onExtractTopicAndStatements: (rant: string) => Promise<{
     topic: string;
@@ -29,7 +36,11 @@ interface CreateRoomSheetProps {
   }>;
 }
 
-type Step = "write-rant" | "review-extraction" | "select-community" | "share";
+type Step =
+  | "write-rant"
+  | "review-extraction"
+  | "select-community"
+  | "share";
 
 interface ExtractedData {
   topic: string;
@@ -44,14 +55,20 @@ export function CreateRoomSheet({
   onCreateRoom,
   onExtractTopicAndStatements,
 }: CreateRoomSheetProps) {
-  const [currentStep, setCurrentStep] = useState<Step>("write-rant");
+  const [currentStep, setCurrentStep] =
+    useState<Step>("write-rant");
   const [rant, setRant] = useState("");
-  const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
+  const [extractedData, setExtractedData] =
+    useState<ExtractedData | null>(null);
   const [editedTopic, setEditedTopic] = useState("");
-  const [editedStatements, setEditedStatements] = useState<string[]>([]);
+  const [editedStatements, setEditedStatements] = useState<
+    string[]
+  >([]);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [subHeard, setSubHeard] = useState(defaultSubHeard || "");
+  const [subHeard, setSubHeard] = useState(
+    defaultSubHeard || "",
+  );
   const [newSubHeardName, setNewSubHeardName] = useState("");
   const [debateId, setDebateId] = useState<string | null>(null);
 
@@ -121,9 +138,10 @@ export function CreateRoomSheet({
     setIsCreating(true);
     try {
       // Resolve the community name: use custom name if creating new, otherwise use selected
-      const communityName = subHeard === "create-new" && newSubHeardName.trim()
-        ? normalizeSubHeardName(newSubHeardName)
-        : subHeard;
+      const communityName =
+        subHeard === "create-new" && newSubHeardName.trim()
+          ? normalizeSubHeardName(newSubHeardName)
+          : subHeard;
 
       const result = await onCreateRoom(
         editedTopic.trim(),
@@ -131,7 +149,7 @@ export function CreateRoomSheet({
         true, // Always enable rant-first mode
         editedStatements.join("\n\n"), // Pass extracted statements as description for now
         communityName,
-        editedStatements // Add seed statements
+        editedStatements, // Add seed statements
       );
 
       if (result) {
@@ -162,10 +180,13 @@ export function CreateRoomSheet({
       case "write-rant":
         return {
           title: "Start with a Rant",
-          description: "Let it all out! We'll turn it into a structured debate.",
+          description:
+            "Let it all out! We'll turn it into a structured debate.",
           leftIcon: Sparkles,
           theme: "green" as const,
-          buttonText: isExtracting ? "Working on it..." : "Continue →",
+          buttonText: isExtracting
+            ? "Working on it..."
+            : "Continue →",
           buttonLoadingText: "Working on it...",
           buttonIcon: Wand2,
           onButtonClick: handleExtractClick,
@@ -176,14 +197,17 @@ export function CreateRoomSheet({
       case "review-extraction":
         return {
           title: "Review & Edit",
-          description: "Look good? Edit anything that needs tweaking.",
+          description:
+            "Look good? Edit anything that needs tweaking.",
           leftIcon: CheckCircle2,
           theme: "blue" as const,
           buttonText: "Choose Community →",
           buttonLoadingText: "Loading...",
           buttonIcon: Hash,
           onButtonClick: handleProceedToSubHeard,
-          buttonDisabled: !editedTopic.trim() || editedStatements.length === 0,
+          buttonDisabled:
+            !editedTopic.trim() ||
+            editedStatements.length === 0,
           isLoading: false,
           showBackButton: true,
           backButtonText: "Back to Rant",
@@ -199,7 +223,11 @@ export function CreateRoomSheet({
           buttonLoadingText: "Creating...",
           buttonIcon: Plus,
           onButtonClick: handleCreateRoom,
-          buttonDisabled: !subHeard || (subHeard === "create-new" && !newSubHeardName.trim()) || isCreating,
+          buttonDisabled:
+            !subHeard ||
+            (subHeard === "create-new" &&
+              !newSubHeardName.trim()) ||
+            isCreating,
           isLoading: isCreating,
           showBackButton: true,
           backButtonText: "Back to Review",
