@@ -8,7 +8,10 @@ import type { Statement, VoteType } from "../../types";
 interface InProgressResultsProps {
   statements: Statement[];
   currentUserId?: string;
-  onChangeVote?: (statementId: string, newVote: VoteType) => Promise<void>;
+  onChangeVote?: (
+    statementId: string,
+    newVote: VoteType,
+  ) => Promise<void>;
 }
 
 export function InProgressResults({
@@ -102,9 +105,18 @@ export function InProgressResults({
 
                 // Gradient colors for each position
                 const gradients = [
-                  { badge: "from-yellow-500 to-orange-500", bar: "from-yellow-400 to-orange-500" },
-                  { badge: "from-orange-500 to-red-500", bar: "from-orange-400 to-red-500" },
-                  { badge: "from-red-500 to-pink-500", bar: "from-red-400 to-pink-500" },
+                  {
+                    badge: "from-yellow-500 to-orange-500",
+                    bar: "from-yellow-400 to-orange-500",
+                  },
+                  {
+                    badge: "from-orange-500 to-red-500",
+                    bar: "from-orange-400 to-red-500",
+                  },
+                  {
+                    badge: "from-red-500 to-pink-500",
+                    bar: "from-red-400 to-pink-500",
+                  },
                 ];
 
                 return (

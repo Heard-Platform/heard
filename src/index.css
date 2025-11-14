@@ -212,6 +212,7 @@
     --font-weight-bold: 700;
     --tracking-wide: .025em;
     --tracking-widest: .1em;
+    --leading-tight: 1.25;
     --leading-relaxed: 1.625;
     --radius-xs: .125rem;
     --radius-2xl: 1rem;
@@ -590,6 +591,10 @@
     inset-block: calc(var(--spacing) * 0);
   }
 
+  .-top-0\.5 {
+    top: calc(var(--spacing) * -.5);
+  }
+
   .-top-1 {
     top: calc(var(--spacing) * -1);
   }
@@ -616,6 +621,10 @@
 
   .top-\[50\%\] {
     top: 50%;
+  }
+
+  .-right-0\.5 {
+    right: calc(var(--spacing) * -.5);
   }
 
   .-right-1 {
@@ -1405,6 +1414,10 @@
     justify-content: flex-start;
   }
 
+  .gap-0\.5 {
+    gap: calc(var(--spacing) * .5);
+  }
+
   .gap-1 {
     gap: calc(var(--spacing) * 1);
   }
@@ -2111,6 +2124,17 @@
     }
   }
 
+  .from-purple-100\/90 {
+    --tw-gradient-from: color-mix(in srgb, oklch(.946 .033 307.174) 90%, transparent);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .from-purple-100\/90 {
+      --tw-gradient-from: color-mix(in oklab, var(--color-purple-100) 90%, transparent);
+    }
+  }
+
   .from-purple-400 {
     --tw-gradient-from: var(--color-purple-400);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
@@ -2343,6 +2367,17 @@
   .to-pink-100 {
     --tw-gradient-to: var(--color-pink-100);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+
+  .to-pink-100\/90 {
+    --tw-gradient-to: color-mix(in srgb, oklch(.948 .028 342.258) 90%, transparent);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .to-pink-100\/90 {
+      --tw-gradient-to: color-mix(in oklab, var(--color-pink-100) 90%, transparent);
+    }
   }
 
   .to-pink-400 {
@@ -2580,8 +2615,8 @@
     padding-right: calc(var(--spacing) * 20);
   }
 
-  .pr-24 {
-    padding-right: calc(var(--spacing) * 24);
+  .pr-28 {
+    padding-right: calc(var(--spacing) * 28);
   }
 
   .pb-3 {
@@ -2665,6 +2700,18 @@
     line-height: var(--tw-leading, var(--text-xs--line-height));
   }
 
+  .text-\[6px\] {
+    font-size: 6px;
+  }
+
+  .text-\[7px\] {
+    font-size: 7px;
+  }
+
+  .text-\[8px\] {
+    font-size: 8px;
+  }
+
   .text-\[9px\] {
     font-size: 9px;
   }
@@ -2681,6 +2728,11 @@
   .leading-relaxed {
     --tw-leading: var(--leading-relaxed);
     line-height: var(--leading-relaxed);
+  }
+
+  .leading-tight {
+    --tw-leading: var(--leading-tight);
+    line-height: var(--leading-tight);
   }
 
   .font-bold {
@@ -4001,6 +4053,12 @@
   }
 
   @media (width >= 40rem) {
+    .sm\:gap-1 {
+      gap: calc(var(--spacing) * 1);
+    }
+  }
+
+  @media (width >= 40rem) {
     .sm\:gap-1\.5 {
       gap: calc(var(--spacing) * 1.5);
     }
@@ -4015,6 +4073,18 @@
   @media (width >= 40rem) {
     .sm\:gap-3 {
       gap: calc(var(--spacing) * 3);
+    }
+  }
+
+  @media (width >= 40rem) {
+    .sm\:rounded-xl {
+      border-radius: calc(var(--radius)  + 4px);
+    }
+  }
+
+  @media (width >= 40rem) {
+    .sm\:p-1\.5 {
+      padding: calc(var(--spacing) * 1.5);
     }
   }
 
@@ -4039,6 +4109,12 @@
   @media (width >= 40rem) {
     .sm\:pt-6 {
       padding-top: calc(var(--spacing) * 6);
+    }
+  }
+
+  @media (width >= 40rem) {
+    .sm\:pr-32 {
+      padding-right: calc(var(--spacing) * 32);
     }
   }
 
@@ -4070,9 +4146,28 @@
   }
 
   @media (width >= 40rem) {
+    .sm\:text-xl {
+      font-size: var(--text-xl);
+      line-height: var(--tw-leading, var(--text-xl--line-height));
+    }
+  }
+
+  @media (width >= 40rem) {
     .sm\:text-xs {
       font-size: var(--text-xs);
       line-height: var(--tw-leading, var(--text-xs--line-height));
+    }
+  }
+
+  @media (width >= 40rem) {
+    .sm\:text-\[7px\] {
+      font-size: 7px;
+    }
+  }
+
+  @media (width >= 40rem) {
+    .sm\:text-\[8px\] {
+      font-size: 8px;
     }
   }
 
