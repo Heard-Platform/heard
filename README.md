@@ -1,7 +1,7 @@
 
-  # Debate Game App
+  # Heard
 
-  This is a code bundle for Debate Game App. The original project is available at https://www.figma.com/design/sokdVjsd00k2od6en8LNCc/Debate-Game-App.
+  This is a code bundle for Heard. The original project is available at https://www.figma.com/design/sokdVjsd00k2od6en8LNCc/Debate-Game-App.
 
   ## Running the code
 
