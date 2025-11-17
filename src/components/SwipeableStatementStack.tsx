@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner@2.0.3";
 import type { Statement, VoteType } from "../types";
 import { NewStatementInput } from "./NewStatementInput";
+import { getPastelColor } from "../utils/colors";
 
 interface SwipeableStatementStackProps {
   statements: Statement[];
@@ -417,7 +418,7 @@ function SwipeableCard({
       }}
     >
       <div
-        className={`p-6 rounded-xl border-2 shadow-xl ${getTypeColor(statement.type)} ${
+        className={`p-6 rounded-xl border-2 shadow-xl ${getPastelColor(statement.id)} ${
           isTopCard
             ? "cursor-grab active:cursor-grabbing"
             : "cursor-default"

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import type { Statement } from "../types";
+import { getPastelColor } from "../utils/colors";
 
 export interface StatementCardProps {
   statement: Statement;
@@ -31,18 +32,6 @@ export function StatementCard({
     ? statement.voters?.[currentUserId]
     : null;
   const userHasVoted = !!userVote;
-  const getTypeColor = () => {
-    switch (statement.type) {
-      case "bridge":
-        return "border-blue-500 bg-blue-50";
-      case "crux":
-        return "border-red-500 bg-red-50";
-      case "plurality":
-        return "border-purple-500 bg-purple-50";
-      default:
-        return "border-border bg-card";
-    }
-  };
 
   const getTypeIcon = () => {
     switch (statement.type) {
@@ -59,7 +48,7 @@ export function StatementCard({
 
   return (
     <motion.div
-      className={`p-4 rounded-lg border-2 transition-all ${getTypeColor()}`}
+      className={`p-4 rounded-lg border-2 transition-all ${getPastelColor(statement.id)}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.02 }}
