@@ -334,13 +334,6 @@ app.patch(
 
       // Save updated data to main room record
       await kv.set(roomKey, JSON.stringify(debateData));
-      
-      // Update active_room pointer
-      if (debateData.isActive) {
-        await kv.set(`active_room:${debateId}`, debateId);
-      } else {
-        await kv.del(`active_room:${debateId}`);
-      }
 
       return c.json({
         success: true,

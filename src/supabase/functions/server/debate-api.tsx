@@ -566,31 +566,21 @@ const getDebateRoom = async (
 
 const saveDebateRoom = async (room: DebateRoom) => {
   await kv.set(`room:${room.id}`, JSON.stringify(room));
-  if (room.isActive) {
-    await kv.set(`active_room:${room.id}`, room.id);
-  } else {
-    await kv.del(`active_room:${room.id}`);
-  }
 };
 
 const getActiveRooms = async (): Promise<DebateRoom[]> => {
-  const activeRoomPointers = await kv.getByPrefix("active_room:");
-  const roomIds = activeRoomPointers.filter((id) => id);
-  const roomDataPromises = roomIds.map((roomId) => 
-    kv.get(`room:${roomId}`)
-  );
-  const roomDataResults = await Promise.all(roomDataPromises);
+  const allRoomData = await kv.getByPrefix("room:");
   
-  return roomDataResults
+  return allRoomData
     .map((r) => {
       try {
-        return r ? JSON.parse(r) : null;
+        return typeof r === 'string' ? JSON.parse(r) : r;
       } catch (error) {
         console.error("Error parsing room data:", r, error);
         return null;
       }
     })
-    .filter((r): r is DebateRoom => r !== null);
+    .filter((r): r is DebateRoom => r !== null && r.isActive);
 };
 
 // Vote utility functions
@@ -1862,7 +1852,7 @@ app.post(
         );
       }
 
-      // Mark room as inactive (saveDebateRoom will handle removing from active_room list)
+      // Mark room as inactive
       room.isActive = false;
       await saveDebateRoom(room);
 

@@ -148,7 +148,7 @@ app.post(
         roundStartTime: Date.now(),
       };
 
-      // Use saveDebateRoom from debate-api to save both room: and active_room: records
+      // Save the room
       await debateApiModule.saveDebateRoom(room);
       console.log(`Created room ${roomId} for topic: ${topic}`);
 

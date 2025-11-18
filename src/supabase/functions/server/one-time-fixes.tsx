@@ -66,4 +66,59 @@ app.post(
   },
 );
 
+// RECOVERY MIGRATION: Set all rooms to active since we lost the active_room lookup data
+app.post(
+  "/make-server-f1a393b4/one-time-fixes/migrate-isactive-to-rooms",
+  async (c) => {
+    try {
+      // Get all rooms and set them to active
+      const allRooms = await kv.getByPrefix("room:");
+      let updatedCount = 0;
+      let alreadyActiveCount = 0;
+      const updatedRoomIds: string[] = [];
+
+      console.log(`Found ${allRooms.length} rooms to process`);
+
+      for (const room of allRooms) {
+        try {
+          if (!room || !room.id) {
+            console.log("Skipping invalid room:", room);
+            continue;
+          }
+
+          const roomId = room.id;
+
+          // Set all rooms to active
+          if (room.isActive !== true) {
+            room.isActive = true;
+            await kv.set(`room:${roomId}`, room);
+            updatedCount++;
+            updatedRoomIds.push(roomId);
+            console.log(`Set room ${roomId} to active`);
+          } else {
+            alreadyActiveCount++;
+            console.log(`Room ${roomId} already active`);
+          }
+        } catch (error) {
+          console.error(`Error processing room:`, error);
+        }
+      }
+
+      return c.json({
+        success: true,
+        updated: updatedCount,
+        alreadyActive: alreadyActiveCount,
+        updatedRoomIds,
+        message: `Set ${updatedCount} room(s) to active, ${alreadyActiveCount} already active. All rooms are now active.`,
+      });
+    } catch (error) {
+      console.error("Error running recovery migration:", error);
+      return c.json(
+        { error: `Failed to run recovery migration: ${error}` },
+        500,
+      );
+    }
+  },
+);
+
 export { app as oneTimeFixesApi };

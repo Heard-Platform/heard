@@ -267,6 +267,36 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
+  const handleMigrateIsActiveToRooms = async () => {
+    if (!confirm("Migrate isActive field into room objects and delete all active_room lookup records? This is a one-time migration.")) {
+      return;
+    }
+
+    setDataFixLoading("migrate-isactive");
+    try {
+      const res = await api.request("/one-time-fixes/migrate-isactive-to-rooms", {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+      });
+      if (res.success) {
+        alert(
+          `Migration complete!\n` +
+          `Updated: ${res.data?.updated || 0} room(s)\n` +
+          `Already correct: ${res.data?.alreadyCorrect || 0} room(s)\n` +
+          `Deleted: ${res.data?.deleted || 0} active_room record(s)`
+        );
+        await fetchAdminData();
+      } else {
+        alert(`Failed to run migration: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error running migration:", error);
+      alert("Failed to run migration");
+    } finally {
+      setDataFixLoading(null);
+    }
+  };
+
   const handleCreateRedditRoom = async () => {
     if (!redditUrl.trim()) {
       alert("Please enter a Reddit post URL");
@@ -677,20 +707,20 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             Idempotent operations to fix database issues. Safe to run multiple times.
           </p>
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-purple-50">
               <div className="flex-1">
-                <h3 className="font-medium">Fix Active Room Pointers</h3>
+                <h3 className="font-medium">Set All Rooms to Active</h3>
                 <p className="text-sm text-muted-foreground">
-                  Migrate active_room records from full JSON objects to room ID pointers
+                  Recovery migration: Sets all rooms to isActive=true. Run this to restore room visibility after the active_room data was lost.
                 </p>
               </div>
               <Button
-                onClick={handleFixActiveRoomPointers}
-                disabled={dataFixLoading === "active-room-pointers"}
+                onClick={handleMigrateIsActiveToRooms}
+                disabled={dataFixLoading === "migrate-isactive"}
                 variant="outline"
                 size="sm"
               >
-                {dataFixLoading === "active-room-pointers" ? "Running..." : "Run Fix"}
+                {dataFixLoading === "migrate-isactive" ? "Running..." : "Set All Active"}
               </Button>
             </div>
             <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -707,6 +737,22 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                 size="sm"
               >
                 {dataFixLoading === "dupont-circle" ? "Running..." : "Run Fix"}
+              </Button>
+            </div>
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 opacity-60">
+              <div className="flex-1">
+                <h3 className="font-medium text-muted-foreground">Fix Active Room Pointers (Obsolete)</h3>
+                <p className="text-sm text-muted-foreground">
+                  Migrate active_room records from full JSON objects to room ID pointers. This migration is obsolete - use "Migrate isActive to Rooms" instead.
+                </p>
+              </div>
+              <Button
+                onClick={handleFixActiveRoomPointers}
+                disabled={true}
+                variant="outline"
+                size="sm"
+              >
+                Disabled
               </Button>
             </div>
           </div>
