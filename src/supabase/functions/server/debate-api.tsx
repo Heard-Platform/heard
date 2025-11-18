@@ -1,6 +1,7 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
+import { getByPrefixParsed } from "./kv-utils.tsx";
 import { recalculateClustersForRoom } from "./clustering.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
@@ -569,18 +570,8 @@ const saveDebateRoom = async (room: DebateRoom) => {
 };
 
 const getActiveRooms = async (): Promise<DebateRoom[]> => {
-  const allRoomData = await kv.getByPrefix("room:");
-  
-  return allRoomData
-    .map((r) => {
-      try {
-        return typeof r === 'string' ? JSON.parse(r) : r;
-      } catch (error) {
-        console.error("Error parsing room data:", r, error);
-        return null;
-      }
-    })
-    .filter((r): r is DebateRoom => r !== null && r.isActive);
+  const allRooms = await getByPrefixParsed<DebateRoom>("room:");
+  return allRooms.filter((r) => r.isActive);
 };
 
 // Vote utility functions

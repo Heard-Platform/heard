@@ -1,6 +1,7 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
+import { getByPrefixParsed } from "./kv-utils.tsx";
 
 const app = new Hono();
 
@@ -72,7 +73,7 @@ app.post(
   async (c) => {
     try {
       // Get all rooms and set them to active
-      const allRooms = await kv.getByPrefix("room:");
+      const allRooms = await getByPrefixParsed<any>("room:");
       let updatedCount = 0;
       let alreadyActiveCount = 0;
       const updatedRoomIds: string[] = [];
