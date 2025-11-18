@@ -15,6 +15,8 @@ import { toast } from "sonner@2.0.3";
 import type { Statement, VoteType } from "../types";
 import { NewStatementInput } from "./NewStatementInput";
 import { getPastelColor } from "../utils/colors";
+import { SwipeIndicator } from "./SwipeIndicators";
+import { SwipeInstructions } from "./SwipeInstructions";
 
 interface SwipeableStatementStackProps {
   statements: Statement[];
@@ -462,46 +464,16 @@ function SwipeableCard({
 
         {/* Swipe instructions */}
         {isTopCard && (
-          <div className="text-center text-xs text-muted-foreground pt-2 border-t border-border/50">
-            Swipe left to disagree, right to agree
-          </div>
+          <SwipeInstructions className="pt-2 border-t border-border/50" />
         )}
 
         {/* Visual indicators for swipe direction */}
         {isTopCard && (
           <>
-            <motion.div
-              className="absolute top-8 left-8 bg-red-500 text-white px-4 py-2 rounded-lg text-xl rotate-[-25deg] shadow-lg"
-              style={{
-                opacity: disagreeOpacity,
-              }}
-            >
-              <XCircle className="w-8 h-8" />
-            </motion.div>
-            <motion.div
-              className="absolute top-8 right-8 bg-green-500 text-white px-4 py-2 rounded-lg text-xl rotate-[25deg] shadow-lg"
-              style={{
-                opacity: agreeOpacity,
-              }}
-            >
-              <CheckCircle className="w-8 h-8" />
-            </motion.div>
-            <motion.div
-              className="absolute top-8 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-xl shadow-lg"
-              style={{
-                opacity: superAgreeOpacity,
-              }}
-            >
-              <Star className="w-8 h-8 fill-white" />
-            </motion.div>
-            <motion.div
-              className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-500 text-white px-4 py-2 rounded-lg text-xl shadow-lg"
-              style={{
-                opacity: passOpacity,
-              }}
-            >
-              <Ban className="w-8 h-8" />
-            </motion.div>
+            <SwipeIndicator direction="disagree" opacity={disagreeOpacity} />
+            <SwipeIndicator direction="agree" opacity={agreeOpacity} />
+            <SwipeIndicator direction="superAgree" opacity={superAgreeOpacity} />
+            <SwipeIndicator direction="pass" opacity={passOpacity} />
           </>
         )}
       </div>
