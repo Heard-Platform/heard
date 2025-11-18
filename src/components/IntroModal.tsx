@@ -11,31 +11,45 @@ import { ArrowDown, HandIcon as Swipe, Sparkles } from "lucide-react";
 
 interface IntroModalProps {
   onClose?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const INTRO_SEEN_KEY = "heard_intro_seen";
 
-export function IntroModal({ onClose }: IntroModalProps) {
-  const [open, setOpen] = useState(false);
+export function IntroModal({ onClose, open: controlledOpen, onOpenChange }: IntroModalProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
 
+  // If controlled externally, use that, otherwise use internal state
+  const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  
   useEffect(() => {
-    // Check if user has seen the intro before
-    const hasSeenIntro = localStorage.getItem(INTRO_SEEN_KEY);
-    if (!hasSeenIntro) {
-      // Small delay before showing to let the page load
-      const timer = setTimeout(() => setOpen(true), 500);
-      return () => clearTimeout(timer);
+    // Only auto-show if not controlled externally
+    if (controlledOpen === undefined) {
+      // Check if user has seen the intro before
+      const hasSeenIntro = localStorage.getItem(INTRO_SEEN_KEY);
+      if (!hasSeenIntro) {
+        // Small delay before showing to let the page load
+        const timer = setTimeout(() => setInternalOpen(true), 500);
+        return () => clearTimeout(timer);
+      }
     }
-  }, []);
+  }, [controlledOpen]);
 
   const handleClose = () => {
     localStorage.setItem(INTRO_SEEN_KEY, "true");
-    setOpen(false);
+    
+    if (onOpenChange) {
+      onOpenChange(false);
+    } else {
+      setInternalOpen(false);
+    }
+    
     onClose?.();
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 border-2 border-purple-300">
         <DialogHeader>
           <DialogTitle className="text-center">

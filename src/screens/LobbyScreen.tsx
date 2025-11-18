@@ -28,6 +28,7 @@ import {
   Menu,
   Clock,
   Shield,
+  HelpCircle,
 } from "lucide-react";
 import {
   Sheet,
@@ -91,6 +92,7 @@ export function LobbyScreen({
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
     useState(false);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [discussTopic, setDiscussTopic] = useState<
     string | undefined
   >(undefined);
@@ -205,8 +207,8 @@ export function LobbyScreen({
 
   return (
     <>
-      {/* Intro Modal */}
-      <IntroModal />
+      {/* Intro Modal - controlled externally */}
+      <IntroModal open={helpModalOpen} onOpenChange={setHelpModalOpen} />
 
       {/* Main TikTok-style scroller */}
       <div className="relative">
@@ -344,6 +346,19 @@ export function LobbyScreen({
                         Logout
                       </Button>
                     )}
+
+                    {/* Help button */}
+                    <Button
+                      onClick={() => {
+                        setDevMenuOpen(false);
+                        setHelpModalOpen(true);
+                      }}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <HelpCircle className="w-4 h-4 mr-2" />
+                      Help
+                    </Button>
 
                     {/* Developer controls */}
                     {user?.isDeveloper && (
