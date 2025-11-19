@@ -78,7 +78,6 @@ export interface SubHeard {
   createdAt?: number; // Timestamp when created (used in admin panel)
   isPrivate?: boolean;
   adminId?: string; // User ID of the creator/admin
-  accessToken?: string; // Secret access token for private sub-heards
 }
 
 export interface Rant {

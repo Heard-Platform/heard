@@ -35,13 +35,6 @@ export const parseSubHeardFromUrl = (): string | null => {
   return parseFromUrl('h')
 }
 
-export const parseAccessTokenFromUrl = (): string | null => {
-  if (typeof window === 'undefined') return null
-  
-  const url = new URL(window.location.href)
-  return url.searchParams.get('access_token')
-}
-
 export const createShareableLink = (roomId: string): string => {
   if (typeof window === 'undefined') return ''
   
@@ -53,14 +46,7 @@ export const createSubHeardLink = (subHeard: SubHeard): string => {
   if (typeof window === 'undefined') return ''
   
   const baseUrl = window.location.origin
-  const basePath = `${baseUrl}/h/${subHeard.name}`
-  
-  // Add access token as query param if provided (for private sub-heards)
-  if (subHeard.accessToken) {
-    return `${basePath}?access_token=${encodeURIComponent(subHeard.accessToken)}`
-  }
-  
-  return basePath
+  return `${baseUrl}/h/${subHeard.name}`
 }
 
 export const updateUrlForRoom = (roomId: string | null) => {

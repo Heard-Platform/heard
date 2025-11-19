@@ -137,29 +137,6 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     return user ? user.name : userId.substring(0, 8);
   };
 
-  const handleBackfillTokens = async () => {
-    if (!confirm("This will add access tokens to all private sub-heards that don't have one. Continue?")) {
-      return;
-    }
-
-    setBackfilling(true);
-    try {
-      const res = await api.adminBackfillTokens(adminKey);
-
-      if (res.success) {
-        alert(`Success! ${res.data?.message}\nSub-heards updated: ${res.data?.subHeards?.join(", ") || "none"}`);
-        fetchAdminData(); // Refresh data
-      } else {
-        alert(`Failed to backfill tokens: ${res.error}`);
-      }
-    } catch (error) {
-      console.error("Error backfilling tokens:", error);
-      alert("Failed to backfill tokens");
-    } finally {
-      setBackfilling(false);
-    }
-  };
-
   const handleRename = async () => {
     if (!renameSubHeard || !newSubHeardName) return;
 
@@ -497,76 +474,53 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
 
         {/* Sub-Heards Management */}
         <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl">Manage Sub-Heards</h2>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleBackfillTokens}
-              disabled={backfilling}
+          <h2 className="text-xl mb-4">Manage Sub-Heards</h2>
+          <div className="space-y-4">{subHeards.map((subHeard) => (
+            <div
+              key={subHeard.name}
+              className="border rounded-lg p-4 flex items-center justify-between"
             >
-              {backfilling ? "Backfilling..." : "Backfill Access Tokens"}
-            </Button>
-          </div>
-          <div className="space-y-4">
-            {subHeards.map((subHeard) => (
-              <div
-                key={subHeard.name}
-                className="border rounded-lg p-4 flex items-center justify-between"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{subHeard.name}</span>
-                    {subHeard.isPrivate && (
-                      <Lock className="w-4 h-4 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Crown className="w-3 h-3" />
-                    <span>Admin: {getUserName(subHeard.adminId)}</span>
-                  </div>
-                  {subHeard.isPrivate && subHeard.accessToken && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="font-mono bg-muted px-2 py-1 rounded">
-                        Token: {subHeard.accessToken}
-                      </span>
-                    </div>
-                  )}
-                  {subHeard.isPrivate && !subHeard.accessToken && (
-                    <div className="flex items-center gap-2 text-xs text-orange-600">
-                      <span>⚠️ Missing access token</span>
-                    </div>
-                  )}
-                  {subHeard.createdAt && (
-                    <p className="text-xs text-muted-foreground">
-                      Created: {new Date(subHeard.createdAt).toLocaleDateString()}
-                    </p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{subHeard.name}</span>
+                  {subHeard.isPrivate && (
+                    <Lock className="w-4 h-4 text-muted-foreground" />
                   )}
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setRenameSubHeard(subHeard);
-                      setNewSubHeardName(subHeard.name);
-                    }}
-                  >
-                    Rename
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedSubHeard(subHeard);
-                      setNewAdminId(subHeard.adminId || "");
-                    }}
-                  >
-                    Change Admin
-                  </Button>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Crown className="w-3 h-3" />
+                  <span>Admin: {getUserName(subHeard.adminId)}</span>
                 </div>
+                {subHeard.createdAt && (
+                  <p className="text-xs text-muted-foreground">
+                    Created: {new Date(subHeard.createdAt).toLocaleDateString()}
+                  </p>
+                )}
               </div>
-            ))}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setRenameSubHeard(subHeard);
+                    setNewSubHeardName(subHeard.name);
+                  }}
+                >
+                  Rename
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedSubHeard(subHeard);
+                    setNewAdminId(subHeard.adminId || "");
+                  }}
+                >
+                  Change Admin
+                </Button>
+              </div>
+            </div>
+          ))}
           </div>
         </Card>
 

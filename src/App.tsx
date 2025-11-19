@@ -13,7 +13,6 @@ import type { NewDebateRoom, DebateRoom } from "./types";
 import {
   parseRoomIdFromUrl,
   parseSubHeardFromUrl,
-  parseAccessTokenFromUrl,
   updateUrlForSubHeard,
   clearRoomFromUrl,
 } from "./utils/url";
@@ -111,7 +110,7 @@ export default function App() {
     clearRoomFromUrl();
   };
 
-  // Check URL for room ID, sub-heard, access token, or reset token on initial load
+  // Check URL for room ID, sub-heard, or reset token on initial load
   useEffect(() => {
     if (!hasCheckedUrl) {
       const urlParams = new URLSearchParams(
@@ -133,26 +132,22 @@ export default function App() {
     }
   }, [hasCheckedUrl, setCurrentSubHeard]);
 
-  // Auto-join sub-heard when user visits its URL with access token
+  // Auto-join sub-heard when user visits its URL
   useEffect(() => {
     const autoJoinSubHeard = async () => {
       if (user && currentSubHeard && hasCheckedUrl) {
         try {
-          // Get access token from URL if present
-          const accessToken = parseAccessTokenFromUrl();
-
-          // Idempotent join - will add membership if private and access token is valid
-          // For public sub-heards, this just returns success
+          // Auto-join on visit - no access token needed
+          // If you have the link, you can join
           const response = await api.joinSubHeard(
             currentSubHeard,
             user.id,
-            accessToken || undefined,
           );
 
           if (!response.success) {
-            // Any error means access token issue for private community
+            // Error joining (e.g., community doesn't exist)
             toast.error(
-              "Invalid or missing access code for this private community",
+              "Unable to join this community",
             );
             setCurrentSubHeard(null);
             updateUrlForSubHeard(null);

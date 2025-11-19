@@ -33,7 +33,6 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
       name: string;
       isPrivate: boolean;
       adminId?: string;
-      accessToken?: string;
     }> = [];
 
     subheardJsons.forEach((sh) => {
@@ -44,7 +43,6 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
             name: data.name,
             isPrivate: data.isPrivate || false,
             adminId: data.adminId,
-            accessToken: data.accessToken,
           });
         }
       } catch (error) {
@@ -64,7 +62,6 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
         return false;
       })
       .map((data) => {
-        const isAdmin = userId && data.adminId === userId;
         const count = roomCounts[data.name] || 0;
 
         return {
@@ -72,8 +69,6 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
           count,
           isPrivate: data.isPrivate,
           adminId: data.adminId,
-          // Only include access token if user is the admin
-          accessToken: isAdmin ? data.accessToken : undefined,
         };
       });
 
@@ -87,19 +82,6 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
     return c.json({ error: "Failed to fetch sub-heards" }, 500);
   }
 });
-
-// Helper function to generate a random access token
-export const generateAccessToken = (): string => {
-  // Generate a random 16-character alphanumeric token
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let token = "";
-  for (let i = 0; i < 16; i++) {
-    token += chars.charAt(
-      Math.floor(Math.random() * chars.length),
-    );
-  }
-  return token;
-};
 
 // Create a new sub-heard
 app.post(
@@ -135,11 +117,6 @@ app.post(
         );
       }
 
-      // Generate access token for private sub-heards
-      const accessToken = isPrivate
-        ? generateAccessToken()
-        : undefined;
-
       // Store the sub-heard in KV store
       const subHeardKey = `subheard:${normalized}`;
       const subHeardData = {
@@ -147,7 +124,6 @@ app.post(
         createdAt: Date.now(),
         isPrivate: isPrivate || false,
         adminId: userId,
-        accessToken,
       };
 
       await kv.set(subHeardKey, JSON.stringify(subHeardData));
@@ -159,7 +135,6 @@ app.post(
           count: 0,
           isPrivate: isPrivate || false,
           adminId: userId,
-          accessToken,
         },
       });
     } catch (error) {
@@ -173,14 +148,14 @@ app.post(
 );
 
 // Join a sub-heard (become a member) - idempotent
-// Only creates membership for private sub-heards
-// Public sub-heards don't need memberships
+// Auto-join on visit - no access token validation needed
+// Private sub-heards just need you to know the link
 app.post(
   "/make-server-f1a393b4/subheard/:name/join",
   async (c: any) => {
     try {
       const name = c.req.param("name");
-      const { userId, accessToken } = await c.req.json();
+      const { userId } = await c.req.json();
 
       if (!userId || typeof userId !== "string") {
         return c.json({ error: "User ID is required" }, 400);
@@ -213,34 +188,8 @@ app.post(
         });
       }
 
-      // For private sub-heards, check if user is admin
-      const isAdmin = subHeardData.adminId === userId;
-
-      // Admin doesn't need to validate access token or create membership
-      if (isAdmin) {
-        return c.json({
-          success: true,
-          subHeard: {
-            name: subHeardData.name,
-            isPrivate: true,
-          },
-        });
-      }
-
-      // For non-admin users, validate access token
-      if (
-        !accessToken ||
-        accessToken !== subHeardData.accessToken
-      ) {
-        return c.json(
-          {
-            error: "Invalid access token for private sub-heard",
-          },
-          403,
-        );
-      }
-
-      // Store membership for private sub-heards (non-admin users)
+      // For private sub-heards, auto-join by creating membership
+      // No access token validation - if you have the link, you can join
       const membershipKey = `subheard_member:${userId}:${name}`;
       const membershipData = {
         userId,
@@ -308,15 +257,6 @@ app.patch(
       // Update settings
       if (typeof isPrivate === "boolean") {
         subHeardData.isPrivate = isPrivate;
-
-        // Generate access token if making private and doesn't have one
-        if (isPrivate && !subHeardData.accessToken) {
-          subHeardData.accessToken = generateAccessToken();
-        }
-        // Remove access token if making public
-        if (!isPrivate) {
-          subHeardData.accessToken = undefined;
-        }
       }
 
       // Save updated data
@@ -328,7 +268,6 @@ app.patch(
           name: subHeardData.name,
           isPrivate: subHeardData.isPrivate,
           adminId: subHeardData.adminId,
-          accessToken: subHeardData.accessToken,
         },
       });
     } catch (error) {

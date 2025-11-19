@@ -1,7 +1,6 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
-import { generateAccessToken } from "./subheard-api.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 
 const app = new Hono();
@@ -59,7 +58,7 @@ app.get("/make-server-f1a393b4/admin/users", async (c) => {
   }
 });
 
-// Get all subheards (including private ones with access tokens)
+// Get all subheards (including private ones)
 app.get("/make-server-f1a393b4/admin/subheards", async (c) => {
   try {
     const createdSubHeards = await kv.getByPrefix("subheard:");
@@ -70,13 +69,11 @@ app.get("/make-server-f1a393b4/admin/subheards", async (c) => {
           // Check if it's already an object or needs parsing
           const data =
             typeof sh === "string" ? JSON.parse(sh) : sh;
-          // Return full data including access tokens (this is admin endpoint)
           return {
             name: data.name,
             createdAt: data.createdAt,
             isPrivate: data.isPrivate || false,
             adminId: data.adminId,
-            accessToken: data.accessToken,
           };
         } catch (error) {
           return null;
@@ -347,60 +344,6 @@ app.patch(
       console.error("Error toggling debate status:", error);
       return c.json(
         { error: "Failed to toggle debate status" },
-        500,
-      );
-    }
-  },
-);
-
-// Backfill access tokens for private sub-heards without one
-app.post(
-  "/make-server-f1a393b4/admin/backfill-tokens",
-  async (c) => {
-    try {
-      const createdSubHeards =
-        await kv.getByPrefix("subheard:");
-
-      let backfilledCount = 0;
-      const backfilledSubHeards: string[] = [];
-
-      for (const sh of createdSubHeards) {
-        try {
-          const data =
-            typeof sh === "string" ? JSON.parse(sh) : sh;
-
-          // Check if it's private and missing an access token
-          if (data.isPrivate && !data.accessToken) {
-            const accessToken = generateAccessToken();
-            data.accessToken = accessToken;
-
-            const subHeardKey = `subheard:${data.name}`;
-            await kv.set(subHeardKey, JSON.stringify(data));
-
-            backfilledCount++;
-            backfilledSubHeards.push(data.name);
-            console.log(
-              `Backfilled access token for sub-heard: ${data.name}`,
-            );
-          }
-        } catch (error) {
-          console.error(
-            "Error processing sub-heard during backfill:",
-            error,
-          );
-        }
-      }
-
-      return c.json({
-        success: true,
-        backfilledCount,
-        subHeards: backfilledSubHeards,
-        message: `Successfully backfilled ${backfilledCount} sub-heard(s)`,
-      });
-    } catch (error) {
-      console.error("Error backfilling access tokens:", error);
-      return c.json(
-        { error: "Failed to backfill access tokens" },
         500,
       );
     }
