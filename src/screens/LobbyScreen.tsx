@@ -492,6 +492,7 @@ export function LobbyScreen({
       {/* Create room sheet */}
       <CreateRoomSheet
         open={createRoomSheetOpen}
+        userId={user?.id}
         onOpenChange={handleCreateRoomSheetChange}
         onCreateRoom={handleCreateRoom}
         onExtractTopicAndStatements={async (rant) => {

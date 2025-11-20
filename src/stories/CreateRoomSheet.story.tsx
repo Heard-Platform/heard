@@ -136,6 +136,7 @@ export function CreateRoomSheetStory() {
         {/* The actual drawer */}
         <CreateRoomSheet
           open={isOpen}
+          userId="story-user-123"
           onOpenChange={setIsOpen}
           onCreateRoom={handleCreateRoom}
           onExtractTopicAndStatements={handleExtractTopicAndStatements}

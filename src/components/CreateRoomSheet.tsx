@@ -22,6 +22,7 @@ interface CreateRoomSheetProps {
   open: boolean;
   defaultSubHeard?: string;
   defaultTopic?: string;
+  userId?: string;
   onOpenChange: (open: boolean) => void;
   onCreateRoom: (
     newDebate: NewDebateRoom,
@@ -47,6 +48,7 @@ export function CreateRoomSheet({
   open,
   defaultSubHeard,
   defaultTopic,
+  userId,
   onOpenChange,
   onCreateRoom,
   onExtractTopicAndStatements,
@@ -291,6 +293,7 @@ export function CreateRoomSheet({
           subHeard={subHeard}
           newSubHeardName={newSubHeardName}
           defaultSubHeard={defaultSubHeard}
+          userId={userId}
           onSubHeardChange={(value) => {
             setSubHeard(value);
             if (value !== "create-new") {

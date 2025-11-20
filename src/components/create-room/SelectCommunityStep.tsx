@@ -13,6 +13,7 @@ interface SelectCommunityStepProps {
   subHeard: string;
   newSubHeardName: string;
   defaultSubHeard?: string;
+  userId?: string;
   onSubHeardChange: (subHeard: string) => void;
   onNewSubHeardNameChange: (name: string) => void;
 }
@@ -21,6 +22,7 @@ export function SelectCommunityStep({
   subHeard,
   newSubHeardName,
   defaultSubHeard,
+  userId,
   onSubHeardChange,
   onNewSubHeardNameChange,
 }: SelectCommunityStepProps) {
@@ -42,7 +44,7 @@ export function SelectCommunityStep({
   const loadSubHeards = async () => {
     try {
       setLoadingSubHeards(true);
-      const response = await api.getSubHeards();
+      const response = await api.getSubHeards(userId);
       if (response.success && response.data) {
         setSubHeards(response.data.subHeards || []);
       }
