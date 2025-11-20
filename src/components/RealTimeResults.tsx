@@ -5,27 +5,25 @@ import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 
 interface RealTimeResultsProps {
+  debateTitle: string;
   statements: Statement[];
-  currentRound: string;
   currentSubPhase?: string;
   mode?: "in-progress" | "concluded";
   onDiscuss?: (statementText: string) => void;
   currentUserId?: string;
-  onChangeVote?: (
+  onChangeVote: (
     statementId: string,
     newVote: VoteType,
   ) => Promise<void>;
-  debateTitle?: string;
 }
 
 export function RealTimeResults({
+  debateTitle,
   statements,
-  currentRound,
   mode = "concluded",
   onDiscuss,
   currentUserId,
   onChangeVote,
-  debateTitle,
 }: RealTimeResultsProps) {
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -49,7 +47,7 @@ export function RealTimeResults({
         <InProgressResults
           statements={statements}
           currentUserId={currentUserId}
-          debateTitle={debateTitle || "Debate"}
+          debateTitle={debateTitle}
           onChangeVote={onChangeVote}
         />
       ) : (

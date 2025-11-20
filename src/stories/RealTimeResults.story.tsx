@@ -269,10 +269,11 @@ export function RealTimeResultsStory() {
     >
       <div className="max-w-4xl mx-auto">
         <RealTimeResults
+          debateTitle="Community Garden Planning"
           statements={statements}
-          currentRound="round1"
           currentSubPhase="results"
           mode={mode}
+          onChangeVote={async () => {}}
         />
       </div>
     </StoryContainer>
