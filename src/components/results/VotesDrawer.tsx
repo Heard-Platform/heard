@@ -70,8 +70,8 @@ export function VotesDrawer({
           <span className="sm:hidden">Votes</span>
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-lg p-0 flex flex-col">
-        <SheetHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 pr-12 border-b">
+      <SheetContent className="w-full sm:max-w-lg p-0 flex flex-col h-full">
+        <SheetHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 pr-12 border-b flex-shrink-0">
           <SheetTitle className="flex items-center gap-2 text-left">
             <Eye className="w-5 h-5 text-orange-600 flex-shrink-0" />
             <span>All Votes</span>
@@ -83,7 +83,7 @@ export function VotesDrawer({
           </SheetDescription>
         </SheetHeader>
         
-        <ScrollArea className="flex-1 px-4 sm:px-6">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6">
           <div className="py-4 space-y-3">
             {statementsWithVotes.map((statement) => {
               const counts = getVoteCounts(statement);
@@ -168,7 +168,7 @@ export function VotesDrawer({
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
       </SheetContent>
     </Sheet>
   );
