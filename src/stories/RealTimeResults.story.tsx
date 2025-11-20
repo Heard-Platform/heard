@@ -4,7 +4,9 @@ import { StoryContainer } from "./StoryContainer";
 import type { Statement } from "../types";
 
 export function RealTimeResultsStory() {
-  const [activeVariant, setActiveVariant] = useState<"in-progress" | "few-votes" | "many-votes" | "controversial">("in-progress");
+  const [activeVariant, setActiveVariant] = useState<
+    "in-progress" | "few-votes" | "many-votes" | "controversial"
+  >("in-progress");
 
   // Mock statements with few votes
   const mockStatementsFewVotes: Statement[] = [
@@ -234,17 +236,24 @@ export function RealTimeResultsStory() {
   ];
 
   // Determine which data to show based on active variant
-  const statements = 
-    activeVariant === "in-progress" ? mockStatementsFewVotes :
-    activeVariant === "few-votes" ? mockStatementsFewVotes :
-    activeVariant === "controversial" ? mockStatementsControversial :
-    mockStatementsManyVotes;
+  const statements =
+    activeVariant === "in-progress"
+      ? mockStatementsFewVotes
+      : activeVariant === "few-votes"
+        ? mockStatementsFewVotes
+        : activeVariant === "controversial"
+          ? mockStatementsControversial
+          : mockStatementsManyVotes;
 
-  const mode = activeVariant === "in-progress" ? "in-progress" : "concluded";
+  const mode =
+    activeVariant === "in-progress"
+      ? "in-progress"
+      : "concluded";
 
   const totalVotes = statements.reduce(
-    (sum, s) => sum + s.agrees + s.disagrees + s.passes + s.superAgrees,
-    0
+    (sum, s) =>
+      sum + s.agrees + s.disagrees + s.passes + s.superAgrees,
+    0,
   );
 
   return (
@@ -252,7 +261,10 @@ export function RealTimeResultsStory() {
       title="Real-Time Results"
       variants={[
         { id: "in-progress", label: "⚡ In Progress (LIVE!)" },
-        { id: "many-votes", label: "🎉 Concluded - Many Votes" },
+        {
+          id: "many-votes",
+          label: "🎉 Concluded - Many Votes",
+        },
         { id: "few-votes", label: "Concluded - Few Votes" },
         { id: "controversial", label: "🌶️ Controversial" },
       ]}
@@ -261,9 +273,20 @@ export function RealTimeResultsStory() {
       previewClassName="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-lg"
       debugInfo={
         <>
-          <div><span className="text-slate-400">Statements:</span> {statements.length}</div>
-          <div><span className="text-slate-400">Total votes:</span> {totalVotes}</div>
-          <div><span className="text-slate-400">Top vote count:</span> {Math.max(...statements.map(s => s.agrees), 0)}</div>
+          <div>
+            <span className="text-slate-400">Statements:</span>{" "}
+            {statements.length}
+          </div>
+          <div>
+            <span className="text-slate-400">Total votes:</span>{" "}
+            {totalVotes}
+          </div>
+          <div>
+            <span className="text-slate-400">
+              Top vote count:
+            </span>{" "}
+            {Math.max(...statements.map((s) => s.agrees), 0)}
+          </div>
         </>
       }
     >
