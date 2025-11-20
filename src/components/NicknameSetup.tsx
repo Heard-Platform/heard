@@ -4,10 +4,21 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
 import { Label } from "./ui/label";
-import { UserPlus, Sparkles, LogIn, Eye, EyeOff } from "lucide-react";
+import {
+  UserPlus,
+  Sparkles,
+  LogIn,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 interface NicknameSetupProps {
-  onComplete: (nickname: string, email: string, password: string, isSignIn: boolean) => void;
+  onComplete: (
+    nickname: string,
+    email: string,
+    password: string,
+    isSignIn: boolean,
+  ) => void;
   onForgotPassword?: () => void;
   loading?: boolean;
   error?: string;
@@ -21,7 +32,9 @@ export function NicknameSetup({
   error,
   joiningRoom = false,
 }: NicknameSetupProps) {
-  const [mode, setMode] = useState<"signin" | "signup">("signup");
+  const [mode, setMode] = useState<"signin" | "signup">(
+    "signup",
+  );
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,10 +60,16 @@ export function NicknameSetup({
     validateForm(nickname, email, value);
   };
 
-  const validateForm = (nicknameVal: string, emailVal: string, passwordVal: string) => {
-    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal.trim());
+  const validateForm = (
+    nicknameVal: string,
+    emailVal: string,
+    passwordVal: string,
+  ) => {
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      emailVal.trim(),
+    );
     const passwordValid = passwordVal.length >= 6;
-    
+
     if (mode === "signup") {
       const nicknameValid = nicknameVal.trim().length >= 2;
       setIsValid(nicknameValid && emailValid && passwordValid);
@@ -62,7 +81,12 @@ export function NicknameSetup({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isValid && !loading) {
-      onComplete(nickname.trim(), email.trim(), password, mode === "signin");
+      onComplete(
+        nickname.trim(),
+        email.trim(),
+        password,
+        mode === "signin",
+      );
     }
   };
 
@@ -105,28 +129,24 @@ export function NicknameSetup({
             </motion.div>
 
             <h1 className="text-2xl font-bold">
-              {joiningRoom 
-                ? "Join the Debate!" 
-                : mode === "signup" 
-                  ? "Welcome to HEARD!" 
-                  : "Welcome Back!"
-              }
+              {joiningRoom
+                ? "Join the Debate!"
+                : mode === "signup"
+                  ? "Welcome to HEARD!"
+                  : "Welcome Back!"}
             </h1>
             <p className="text-muted-foreground">
-              {joiningRoom 
-                ? "Sign in or create an account to join this debate!" 
+              {joiningRoom
+                ? "Sign in or create an account to join this debate!"
                 : mode === "signup"
                   ? "Create an account to start arguing (and secretly saving democracy)"
-                  : "Sign in to continue debating"
-              }
+                  : "Sign in to continue debating"}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">
-                Your Email
-              </Label>
+              <Label htmlFor="email">Your Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -162,11 +182,9 @@ export function NicknameSetup({
                 </p>
               </div>
             )}
-            
+
             <div className="space-y-2">
-              <Label htmlFor="password">
-                Password
-              </Label>
+              <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -175,9 +193,17 @@ export function NicknameSetup({
                   onChange={(e) =>
                     handlePasswordChange(e.target.value)
                   }
-                  placeholder={mode === "signup" ? "Create a password..." : "Enter your password..."}
+                  placeholder={
+                    mode === "signup"
+                      ? "Create a password..."
+                      : "Enter your password..."
+                  }
                   disabled={loading}
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  autoComplete={
+                    mode === "signup"
+                      ? "new-password"
+                      : "current-password"
+                  }
                   className="pr-10"
                 />
                 <button
@@ -194,7 +220,9 @@ export function NicknameSetup({
                 </button>
               </div>
               <p className="text-xs text-muted-foreground">
-                {mode === "signup" ? "At least 6 characters" : ""}
+                {mode === "signup"
+                  ? "At least 6 characters"
+                  : ""}
               </p>
               {mode === "signin" && onForgotPassword && (
                 <button
@@ -236,19 +264,25 @@ export function NicknameSetup({
                   >
                     <Sparkles className="w-4 h-4" />
                   </motion.div>
-                  {mode === "signup" ? "Creating Account..." : "Signing In..."}
+                  {mode === "signup"
+                    ? "Creating Account..."
+                    : "Signing In..."}
                 </>
               ) : (
                 <>
                   {mode === "signup" ? (
                     <>
                       <UserPlus className="w-4 h-4 mr-2" />
-                      {joiningRoom ? "Create Account & Join!" : "Create Account"}
+                      {joiningRoom
+                        ? "Create Account & Join!"
+                        : "Create Account"}
                     </>
                   ) : (
                     <>
                       <LogIn className="w-4 h-4 mr-2" />
-                      {joiningRoom ? "Sign In & Join!" : "Sign In"}
+                      {joiningRoom
+                        ? "Sign In & Join!"
+                        : "Sign In"}
                     </>
                   )}
                 </>
@@ -263,10 +297,9 @@ export function NicknameSetup({
               disabled={loading}
               className="text-sm text-muted-foreground hover:text-foreground underline"
             >
-              {mode === "signup" 
-                ? "Already have an account? Sign in" 
-                : "Need an account? Sign up"
-              }
+              {mode === "signup"
+                ? "Already have an account? Sign in"
+                : "Need an account? Sign up"}
             </button>
           </div>
 
