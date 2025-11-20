@@ -11,7 +11,10 @@ interface RealTimeResultsProps {
   mode?: "in-progress" | "concluded";
   onDiscuss?: (statementText: string) => void;
   currentUserId?: string;
-  onChangeVote?: (statementId: string, newVote: VoteType) => Promise<void>;
+  onChangeVote?: (
+    statementId: string,
+    newVote: VoteType,
+  ) => Promise<void>;
   debateTitle?: string;
 }
 
@@ -30,7 +33,10 @@ export function RealTimeResults({
   useEffect(() => {
     if (mode === "concluded") {
       setShowConfetti(true);
-      const timer = setTimeout(() => setShowConfetti(false), 3000);
+      const timer = setTimeout(
+        () => setShowConfetti(false),
+        3000,
+      );
       return () => clearTimeout(timer);
     }
   }, [mode]);
@@ -40,14 +46,17 @@ export function RealTimeResults({
       {showConfetti && <Confetti />}
 
       {mode === "in-progress" ? (
-        <InProgressResults 
-          statements={statements} 
+        <InProgressResults
+          statements={statements}
           currentUserId={currentUserId}
           debateTitle={debateTitle || "Debate"}
           onChangeVote={onChangeVote}
         />
       ) : (
-        <ConcludedResults statements={statements} onDiscuss={onDiscuss} />
+        <ConcludedResults
+          statements={statements}
+          onDiscuss={onDiscuss}
+        />
       )}
     </>
   );
