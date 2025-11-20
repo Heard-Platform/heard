@@ -350,6 +350,54 @@ app.patch(
   },
 );
 
+// Update debate subHeard
+app.patch(
+  "/make-server-f1a393b4/admin/debate/:id/subheard",
+  async (c) => {
+    try {
+      const debateId = c.req.param("id");
+      const { newSubHeard } = await c.req.json();
+
+      // Get existing debate data from main room record
+      const roomKey = `room:${debateId}`;
+      const existingData = await kv.get(roomKey);
+
+      if (!existingData) {
+        return c.json({ error: "Debate not found" }, 404);
+      }
+
+      let debateData;
+      try {
+        debateData = JSON.parse(existingData);
+      } catch (error) {
+        console.error("Error parsing debate data:", error);
+        return c.json({ error: "Invalid debate data" }, 500);
+      }
+
+      // Update subHeard (can be string or null for public debates)
+      debateData.subHeard = newSubHeard || null;
+
+      // Save updated data to main room record
+      await kv.set(roomKey, JSON.stringify(debateData));
+
+      return c.json({
+        success: true,
+        debate: {
+          id: debateData.id,
+          topic: debateData.topic,
+          subHeard: debateData.subHeard,
+        },
+      });
+    } catch (error) {
+      console.error("Error updating debate subheard:", error);
+      return c.json(
+        { error: "Failed to update debate subheard" },
+        500,
+      );
+    }
+  },
+);
+
 // Data Fixes - One-time operations to fix database issues
 // These are idempotent and can be run multiple times safely
 

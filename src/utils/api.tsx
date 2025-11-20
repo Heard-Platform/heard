@@ -314,6 +314,16 @@ class ApiClient {
     });
   }
 
+  async adminUpdateDebateSubHeard(debateId: string, newSubHeard: string | null, adminKey: string) {
+    return this.request(`/admin/debate/${debateId}/subheard`, {
+      method: "PATCH",
+      body: JSON.stringify({ newSubHeard }),
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
+
   // Data fixes - one-time operations
   async adminDataFixNormalizeDupontCircle(adminKey: string) {
     return this.request("/admin/data-fix/normalize-dupont-circle", {

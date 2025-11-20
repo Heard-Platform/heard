@@ -70,6 +70,8 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
   const [redditUrl, setRedditUrl] = useState("");
   const [redditSubHeard, setRedditSubHeard] = useState("");
   const [creatingRedditRoom, setCreatingRedditRoom] = useState(false);
+  const [selectedDebate, setSelectedDebate] = useState<DebateRoom | null>(null);
+  const [newDebateSubHeard, setNewDebateSubHeard] = useState<string>("");
 
   const fetchAdminData = async () => {
     if (!adminKey) return;
@@ -188,6 +190,37 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
       alert("Failed to toggle debate status");
     } finally {
       setTogglingDebateId(null);
+    }
+  };
+
+  const handleUpdateDebateSubHeard = async () => {
+    if (!selectedDebate) return;
+
+    try {
+      const res = await api.adminUpdateDebateSubHeard(
+        selectedDebate.id,
+        newDebateSubHeard || null,
+        adminKey
+      );
+
+      if (res.success) {
+        alert(`Community updated successfully for debate!`);
+        // Update local state
+        setDebates(prev =>
+          prev.map(d =>
+            d.id === selectedDebate.id
+              ? { ...d, subHeard: res.data?.debate?.subHeard }
+              : d
+          )
+        );
+        setSelectedDebate(null);
+        setNewDebateSubHeard("");
+      } else {
+        alert(`Failed to update community: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error updating debate community:", error);
+      alert("Failed to update debate community");
     }
   };
 
@@ -548,10 +581,15 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                     )}
                   </div>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    {debate.subHeard && (
+                    {debate.subHeard ? (
                       <div className="flex items-center gap-1">
                         <Crown className="w-3 h-3" />
                         <span>{debate.subHeard}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <Crown className="w-3 h-3" />
+                        <span className="italic">No community</span>
                       </div>
                     )}
                     <div className="flex items-center gap-1">
@@ -571,27 +609,39 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                     <span>Created: {new Date(debate.createdAt).toLocaleString()}</span>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleToggleDebateActive(debate.id)}
-                  disabled={togglingDebateId === debate.id}
-                  className="ml-4"
-                >
-                  {togglingDebateId === debate.id ? (
-                    "..."
-                  ) : debate.isActive ? (
-                    <>
-                      <ToggleRight className="w-4 h-4 mr-2" />
-                      Deactivate
-                    </>
-                  ) : (
-                    <>
-                      <ToggleLeft className="w-4 h-4 mr-2" />
-                      Activate
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2 ml-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedDebate(debate);
+                      setNewDebateSubHeard(debate.subHeard || "");
+                    }}
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    Change Community
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleToggleDebateActive(debate.id)}
+                    disabled={togglingDebateId === debate.id}
+                  >
+                    {togglingDebateId === debate.id ? (
+                      "..."
+                    ) : debate.isActive ? (
+                      <>
+                        <ToggleRight className="w-4 h-4 mr-2" />
+                        Deactivate
+                      </>
+                    ) : (
+                      <>
+                        <ToggleLeft className="w-4 h-4 mr-2" />
+                        Activate
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             ))}
             {debates.length === 0 && (
@@ -817,6 +867,59 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
               disabled={!newSubHeardName || newSubHeardName === renameSubHeard?.name}
             >
               Rename
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Debate Community Dialog */}
+      <Dialog open={!!selectedDebate} onOpenChange={() => setSelectedDebate(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Community for Debate</DialogTitle>
+            <DialogDescription>
+              Move this debate to a different community or make it public
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Debate Topic</Label>
+              <p className="text-sm text-muted-foreground">
+                {selectedDebate?.topic}
+              </p>
+            </div>
+            <div>
+              <Label>Current Community</Label>
+              <p className="text-sm text-muted-foreground font-mono">
+                {selectedDebate?.subHeard || "(Public / No community)"}
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="debateCommunity">New Community</Label>
+              <Select value={newDebateSubHeard || "none"} onValueChange={setNewDebateSubHeard}>
+                <SelectTrigger id="debateCommunity">
+                  <SelectValue placeholder="Select community" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None (Public)</SelectItem>
+                  {subHeards.map((sh) => (
+                    <SelectItem key={sh.name} value={sh.name}>
+                      {sh.name} {sh.isPrivate ? "🔒" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Select "None" to make the debate public
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedDebate(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateDebateSubHeard}>
+              Update Community
             </Button>
           </DialogFooter>
         </DialogContent>
