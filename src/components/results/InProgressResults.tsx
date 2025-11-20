@@ -8,7 +8,8 @@ import type { Statement, VoteType } from "../../types";
 interface InProgressResultsProps {
   statements: Statement[];
   currentUserId?: string;
-  onChangeVote?: (
+  debateTitle: string;
+  onChangeVote: (
     statementId: string,
     newVote: VoteType,
   ) => Promise<void>;
@@ -17,6 +18,7 @@ interface InProgressResultsProps {
 export function InProgressResults({
   statements,
   currentUserId,
+  debateTitle,
   onChangeVote,
 }: InProgressResultsProps) {
   const totalVotes = statements.reduce(
@@ -74,6 +76,7 @@ export function InProgressResults({
               <VotesDrawer
                 statements={statements}
                 currentUserId={currentUserId}
+                debateTitle={debateTitle}
                 onChangeVote={onChangeVote}
               />
             </div>

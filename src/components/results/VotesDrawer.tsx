@@ -1,25 +1,121 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Eye, CheckCircle, XCircle, MinusCircle, Star } from "lucide-react";
+import { Eye, CheckCircle, XCircle, MinusCircle, Star, X, LucideIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
 import { ScrollArea } from "../ui/scroll-area";
-import type { Statement, VoteType } from "../../types";
+import type { Statement, VoteType, SortBy } from "../../types";
 
 interface VotesDrawerProps {
   statements: Statement[];
   currentUserId?: string;
-  onChangeVote?: (statementId: string, newVote: VoteType) => Promise<void>;
+  debateTitle: string;
+  onChangeVote: (statementId: string, newVote: VoteType) => Promise<void>;
+}
+
+const voteTypeConfig: Record<VoteType, {
+  icon: LucideIcon;
+  borderColor: string;
+  hoverColor: string;
+  activeColor: string;
+}> = {
+  agree: {
+    icon: CheckCircle,
+    borderColor: "border-green-300",
+    hoverColor: "hover:bg-green-50",
+    activeColor: "bg-green-100 border-green-400"
+  },
+  disagree: {
+    icon: XCircle,
+    borderColor: "border-red-300",
+    hoverColor: "hover:bg-red-50",
+    activeColor: "bg-red-100 border-red-400"
+  },
+  super_agree: {
+    icon: Star,
+    borderColor: "border-yellow-300",
+    hoverColor: "hover:bg-yellow-50",
+    activeColor: "bg-yellow-100 border-yellow-400"
+  },
+  pass: {
+    icon: MinusCircle,
+    borderColor: "border-gray-300",
+    hoverColor: "hover:bg-gray-50",
+    activeColor: "bg-gray-100 border-gray-400"
+  }
+};
+
+interface SortButtonProps {
+  type: VoteType;
+  count: number;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function SortButton({ type, count, isActive, onClick }: SortButtonProps) {
+  const config = voteTypeConfig[type];
+  const Icon = config.icon;
+  
+  return (
+    <Button
+      size="sm"
+      variant={isActive ? "default" : "outline"}
+      className={`h-8 px-2.5 flex items-center gap-1.5 ${isActive ? "" : `${config.borderColor} ${config.hoverColor}`}`}
+      disabled={false}
+      onClick={onClick}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      <span className="text-sm">{count}</span>
+    </Button>
+  );
+}
+
+interface VoteButtonProps {
+  type: VoteType;
+  count: number;
+  isUserVote: boolean;
+  isChanging: boolean;
+  hasUser: boolean;
+  onClick: () => void;
+}
+
+function VoteButton({ 
+  type, 
+  count, 
+  isUserVote, 
+  isChanging, 
+  hasUser,
+  onClick 
+}: VoteButtonProps) {
+  const config = voteTypeConfig[type];
+  const Icon = config.icon;
+  
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      className={`h-8 px-2.5 flex items-center gap-1.5 flex-1 ${
+        isUserVote ? config.activeColor : `${config.borderColor} ${config.hoverColor}`
+      }`}
+      disabled={isChanging || !hasUser}
+      onClick={onClick}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      <span className="text-sm">{count}</span>
+    </Button>
+  );
 }
 
 export function VotesDrawer({
   statements,
   currentUserId,
+  debateTitle,
   onChangeVote,
 }: VotesDrawerProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [changingVoteId, setChangingVoteId] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortBy>("none");
 
   // Get all statements that have at least one vote
   const statementsWithVotes = statements.filter(
@@ -44,7 +140,6 @@ export function VotesDrawer({
   };
 
   const handleChangeVote = async (statementId: string, newVote: VoteType) => {
-    if (!onChangeVote) return;
     setChangingVoteId(statementId);
     try {
       await onChangeVote(statementId, newVote);
@@ -56,6 +151,29 @@ export function VotesDrawer({
   if (statementsWithVotes.length === 0) {
     return null;
   }
+
+  // Calculate total votes by type
+  const totalVotes = statementsWithVotes.reduce(
+    (acc, statement) => {
+      const counts = getVoteCounts(statement);
+      acc.agree += counts.agree;
+      acc.disagree += counts.disagree;
+      acc.super_agree += counts.super_agree;
+      acc.pass += counts.pass;
+      return acc;
+    },
+    { agree: 0, disagree: 0, super_agree: 0, pass: 0 }
+  );
+
+  const sortedStatements = [...statementsWithVotes].sort((a, b) => {
+    const aCounts = getVoteCounts(a);
+    const bCounts = getVoteCounts(b);
+    if (sortBy === "agree") return bCounts.agree - aCounts.agree;
+    if (sortBy === "disagree") return bCounts.disagree - aCounts.disagree;
+    if (sortBy === "super_agree") return bCounts.super_agree - aCounts.super_agree;
+    if (sortBy === "pass") return bCounts.pass - aCounts.pass;
+    return 0;
+  });
 
   return (
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -71,21 +189,51 @@ export function VotesDrawer({
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-lg p-0 flex flex-col h-full">
-        <SheetHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 pr-12 border-b flex-shrink-0">
-          <SheetTitle className="flex items-center gap-2 text-left">
-            <Eye className="w-5 h-5 text-orange-600 flex-shrink-0" />
-            <span>All Votes</span>
-          </SheetTitle>
-          <SheetDescription className="pt-1">
-            <Badge variant="secondary" className="text-xs">
-              {statementsWithVotes.length} statements
-            </Badge>
-          </SheetDescription>
+        <SheetHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 pr-12 border-b flex-shrink-0 space-y-3">
+          <div>
+            <SheetTitle className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{debateTitle}</SheetTitle>
+            <SheetDescription className="pt-1">
+              <Badge variant="secondary" className="text-xs">
+                {statementsWithVotes.length} statements
+              </Badge>
+            </SheetDescription>
+          </div>
+          
+          {/* Sort buttons */}
+          <div className="space-y-1.5">
+            <p className="text-xs text-gray-600">Sort by:</p>
+            <div className="flex flex-wrap gap-1.5">
+              <SortButton
+                type="agree"
+                count={totalVotes.agree}
+                isActive={sortBy === "agree"}
+                onClick={() => setSortBy(sortBy === "agree" ? "none" : "agree")}
+              />
+              <SortButton
+                type="disagree"
+                count={totalVotes.disagree}
+                isActive={sortBy === "disagree"}
+                onClick={() => setSortBy(sortBy === "disagree" ? "none" : "disagree")}
+              />
+              <SortButton
+                type="super_agree"
+                count={totalVotes.super_agree}
+                isActive={sortBy === "super_agree"}
+                onClick={() => setSortBy(sortBy === "super_agree" ? "none" : "super_agree")}
+              />
+              <SortButton
+                type="pass"
+                count={totalVotes.pass}
+                isActive={sortBy === "pass"}
+                onClick={() => setSortBy(sortBy === "pass" ? "none" : "pass")}
+              />
+            </div>
+          </div>
         </SheetHeader>
         
         <div className="flex-1 overflow-y-auto px-4 sm:px-6">
           <div className="py-4 space-y-3">
-            {statementsWithVotes.map((statement) => {
+            {sortedStatements.map((statement) => {
               const counts = getVoteCounts(statement);
               const userVote = getUserVote(statement);
               const isChanging = changingVoteId === statement.id;
@@ -104,65 +252,41 @@ export function VotesDrawer({
 
                   {/* Vote buttons */}
                   <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className={`h-8 px-2.5 flex items-center gap-1.5 flex-1 ${
-                        userVote === "agree"
-                          ? "bg-green-500 hover:bg-green-600 text-white border-green-500"
-                          : "border-green-300 hover:bg-green-50"
-                      }`}
-                      onClick={() => currentUserId && onChangeVote && handleChangeVote(statement.id, "agree")}
-                      disabled={isChanging || !currentUserId || !onChangeVote}
-                    >
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      <span className="text-sm">{counts.agree}</span>
-                    </Button>
+                    <VoteButton
+                      type="agree"
+                      count={counts.agree}
+                      isUserVote={userVote === "agree"}
+                      isChanging={isChanging}
+                      hasUser={!!currentUserId}
+                      onClick={() => currentUserId && handleChangeVote(statement.id, "agree")}
+                    />
 
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className={`h-8 px-2.5 flex items-center gap-1.5 flex-1 ${
-                        userVote === "disagree"
-                          ? "bg-red-500 hover:bg-red-600 text-white border-red-500"
-                          : "border-red-300 hover:bg-red-50"
-                      }`}
-                      onClick={() => currentUserId && onChangeVote && handleChangeVote(statement.id, "disagree")}
-                      disabled={isChanging || !currentUserId || !onChangeVote}
-                    >
-                      <XCircle className="w-3.5 h-3.5" />
-                      <span className="text-sm">{counts.disagree}</span>
-                    </Button>
+                    <VoteButton
+                      type="disagree"
+                      count={counts.disagree}
+                      isUserVote={userVote === "disagree"}
+                      isChanging={isChanging}
+                      hasUser={!!currentUserId}
+                      onClick={() => currentUserId && handleChangeVote(statement.id, "disagree")}
+                    />
 
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className={`h-8 px-2.5 flex items-center gap-1.5 flex-1 ${
-                        userVote === "super_agree"
-                          ? "bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500"
-                          : "border-yellow-300 hover:bg-yellow-50"
-                      }`}
-                      onClick={() => currentUserId && onChangeVote && handleChangeVote(statement.id, "super_agree")}
-                      disabled={isChanging || !currentUserId || !onChangeVote}
-                    >
-                      <Star className="w-3.5 h-3.5" />
-                      <span className="text-sm">{counts.super_agree}</span>
-                    </Button>
+                    <VoteButton
+                      type="super_agree"
+                      count={counts.super_agree}
+                      isUserVote={userVote === "super_agree"}
+                      isChanging={isChanging}
+                      hasUser={!!currentUserId}
+                      onClick={() => currentUserId && handleChangeVote(statement.id, "super_agree")}
+                    />
 
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className={`h-8 px-2.5 flex items-center gap-1.5 flex-1 ${
-                        userVote === "pass"
-                          ? "bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
-                          : "border-gray-300 hover:bg-gray-50"
-                      }`}
-                      onClick={() => currentUserId && onChangeVote && handleChangeVote(statement.id, "pass")}
-                      disabled={isChanging || !currentUserId || !onChangeVote}
-                    >
-                      <MinusCircle className="w-3.5 h-3.5" />
-                      <span className="text-sm">{counts.pass}</span>
-                    </Button>
+                    <VoteButton
+                      type="pass"
+                      count={counts.pass}
+                      isUserVote={userVote === "pass"}
+                      isChanging={isChanging}
+                      hasUser={!!currentUserId}
+                      onClick={() => currentUserId && handleChangeVote(statement.id, "pass")}
+                    />
                   </div>
                 </motion.div>
               );

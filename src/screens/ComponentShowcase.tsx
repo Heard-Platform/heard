@@ -1,11 +1,12 @@
-import { Button } from "../components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { Badge } from "../components/ui/badge";
 import { ArrowLeft, Code2 } from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { RantSubmissionStory } from "../stories/RantSubmission.story";
 import { RealTimeResultsStory } from "../stories/RealTimeResults.story";
 import { ResultsCardsStory } from "../stories/ResultsCards.story";
 import { CreateRoomSheetStory } from "../stories/CreateRoomSheet.story";
+import { VotesDrawerStory } from "../stories/VotesDrawer.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -70,6 +71,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             <TabsTrigger value="results">Results</TabsTrigger>
             <TabsTrigger value="results-cards">Results Cards</TabsTrigger>
             <TabsTrigger value="create-room">Create Room</TabsTrigger>
+            <TabsTrigger value="votes-drawer">Votes Drawer</TabsTrigger>
           </TabsList>
 
           <TabsContent value="rant-submission">
@@ -86,6 +88,10 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
 
           <TabsContent value="create-room">
             <CreateRoomSheetStory />
+          </TabsContent>
+
+          <TabsContent value="votes-drawer">
+            <VotesDrawerStory />
           </TabsContent>
         </Tabs>
       </div>

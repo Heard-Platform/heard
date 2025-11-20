@@ -568,6 +568,7 @@ function RoomCard({
                     <InProgressResults
                       statements={statements}
                       currentUserId={currentUserId}
+                      debateTitle={room.topic}
                       onChangeVote={handleVote}
                     />
                     {/* New Statement Input */}

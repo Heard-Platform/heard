@@ -98,6 +98,8 @@ export const InProgressDebate = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4">
       <InProgressResults
         statements={mockStatements}
+        debateTitle="Is social media good or bad for society?"
+        onChangeVote={async () => {}}
       />
     </div>
   );

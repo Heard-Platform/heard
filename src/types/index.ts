@@ -13,6 +13,8 @@ export type VoteType =
   | "pass"
   | "super_agree";
 
+export type SortBy = VoteType | "none";
+
 export interface Statement {
   id: string;
   text: string;

@@ -12,6 +12,7 @@ interface RealTimeResultsProps {
   onDiscuss?: (statementText: string) => void;
   currentUserId?: string;
   onChangeVote?: (statementId: string, newVote: VoteType) => Promise<void>;
+  debateTitle?: string;
 }
 
 export function RealTimeResults({
@@ -21,6 +22,7 @@ export function RealTimeResults({
   onDiscuss,
   currentUserId,
   onChangeVote,
+  debateTitle,
 }: RealTimeResultsProps) {
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -41,6 +43,7 @@ export function RealTimeResults({
         <InProgressResults 
           statements={statements} 
           currentUserId={currentUserId}
+          debateTitle={debateTitle || "Debate"}
           onChangeVote={onChangeVote}
         />
       ) : (
