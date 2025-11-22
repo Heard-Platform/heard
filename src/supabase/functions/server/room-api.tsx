@@ -24,6 +24,7 @@ app.post(
         userId,
         subHeard,
         seedStatements, // Optional array of seed statement strings
+        imageUrl, // Optional cover image URL
       } = await c.req.json();
 
       if (!topic || topic.length < 10) {
@@ -109,6 +110,7 @@ app.post(
           ? subHeard.trim().toLowerCase().replace(/\s+/g, "-")
           : undefined,
         endTime: Date.now() + 7 * 24 * 60 * 60 * 1000, // Realtime debates end in 1 week
+        imageUrl, // Add cover image URL if provided
       };
 
       await saveDebateRoom(debateRoom);

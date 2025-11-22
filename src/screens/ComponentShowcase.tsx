@@ -7,6 +7,7 @@ import { RealTimeResultsStory } from "../stories/RealTimeResults.story";
 import { ResultsCardsStory } from "../stories/ResultsCards.story";
 import { CreateRoomSheetStory } from "../stories/CreateRoomSheet.story";
 import { VotesDrawerStory } from "../stories/VotesDrawer.story";
+import { DebateScrollerStory } from "../stories/DebateScroller.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -72,6 +73,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             <TabsTrigger value="results-cards">Results Cards</TabsTrigger>
             <TabsTrigger value="create-room">Create Room</TabsTrigger>
             <TabsTrigger value="votes-drawer">Votes Drawer</TabsTrigger>
+            <TabsTrigger value="debate-scroller">Debate Scroller</TabsTrigger>
           </TabsList>
 
           <TabsContent value="rant-submission">
@@ -92,6 +94,10 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
 
           <TabsContent value="votes-drawer">
             <VotesDrawerStory />
+          </TabsContent>
+
+          <TabsContent value="debate-scroller">
+            <DebateScrollerStory />
           </TabsContent>
         </Tabs>
       </div>

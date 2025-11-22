@@ -56,6 +56,7 @@ export interface DebateRoom {
   id: string;
   topic: string;
   description?: string; // Optional markdown description for context
+  imageUrl?: string; // Optional cover image for the debate
   phase: Phase;
   subPhase?: SubPhase;
   gameNumber: number;
@@ -72,6 +73,7 @@ export interface DebateRoom {
 
 export type NewDebateRoom = Pick<DebateRoom, "topic" | "subHeard"> & {
   seedStatements?: string[];
+  imageUrl?: string;
 };
 
 export interface SubHeard {

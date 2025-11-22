@@ -17,6 +17,7 @@ import {
   ShareDebateStep,
 } from "./create-room";
 import { normalizeSubHeardName } from "../utils/subheard";
+import { api } from "../utils/api";
 
 interface CreateRoomSheetProps {
   open: boolean;
@@ -69,6 +70,8 @@ export function CreateRoomSheet({
   );
   const [newSubHeardName, setNewSubHeardName] = useState("");
   const [debateId, setDebateId] = useState<string | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const isRantValid = rant.trim().length >= 50;
   const remainingChars = 50 - rant.trim().length;
@@ -98,6 +101,7 @@ export function CreateRoomSheet({
       setExtractedData(null);
       setEditedTopic("");
       setEditedStatements([]);
+      setUploadedImageUrl(null);
     }
   }, [open, defaultTopic]);
 
@@ -145,6 +149,7 @@ export function CreateRoomSheet({
         topic: editedTopic.trim(),
         subHeard: communityName,
         seedStatements: editedStatements,
+        imageUrl: uploadedImageUrl || undefined,
       });
 
       setDebateId(result.id);
@@ -158,6 +163,24 @@ export function CreateRoomSheet({
       );
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    setIsUploadingImage(true);
+    try {
+      const result = await api.uploadDebateImage(file);
+      if (result.success && result.data?.imageUrl) {
+        setUploadedImageUrl(result.data.imageUrl);
+        toast.success("Image uploaded!");
+      } else {
+        toast.error(result.error || "Failed to upload image");
+      }
+    } catch (error) {
+      console.error("Image upload error:", error);
+      toast.error("Failed to upload image");
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -283,8 +306,11 @@ export function CreateRoomSheet({
         <ReviewExtractionStep
           topic={editedTopic}
           statements={editedStatements}
+          isUploadingImage={isUploadingImage}
+          uploadedImageUrl={uploadedImageUrl}
           onTopicChange={setEditedTopic}
           onStatementsChange={setEditedStatements}
+          onImageUpload={handleImageUpload}
         />
       )}
 

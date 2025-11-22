@@ -2,22 +2,28 @@ import { useState } from "react";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
-import { Sparkles, MessageCircle, Edit2, Trash2, CheckCircle2 } from "lucide-react";
+import { Sparkles, MessageCircle, Edit2, Trash2, CheckCircle2, Image as ImageIcon, Loader2, Check } from "lucide-react";
 import { motion } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
 
 interface ReviewExtractionStepProps {
   topic: string;
   statements: string[];
+  isUploadingImage?: boolean;
+  uploadedImageUrl?: string | null;
   onTopicChange: (topic: string) => void;
   onStatementsChange: (statements: string[]) => void;
+  onImageUpload?: (file: File) => void;
 }
 
 export function ReviewExtractionStep({
   topic,
   statements,
+  isUploadingImage,
+  uploadedImageUrl,
   onTopicChange,
   onStatementsChange,
+  onImageUpload,
 }: ReviewExtractionStepProps) {
   const [editingStatementIndex, setEditingStatementIndex] = useState<number | null>(null);
 
@@ -58,6 +64,78 @@ export function ReviewExtractionStep({
           </div>
         </div>
       </FunSheetCard>
+
+      {/* Image Upload Section */}
+      {onImageUpload && (
+        <FunSheetCard delay={0.2}>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-blue-500" />
+              <Label className="text-base text-slate-700">
+                Add cover image (optional)
+              </Label>
+            </div>
+            
+            <input
+              type="file"
+              id="debate-image"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  onImageUpload(file);
+                }
+              }}
+              className="hidden"
+              disabled={isUploadingImage}
+            />
+            
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => document.getElementById("debate-image")?.click()}
+              disabled={isUploadingImage}
+              className="w-full h-auto py-4 border-2 border-dashed border-blue-300 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 hover:border-blue-400"
+            >
+              {isUploadingImage ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                  <span className="text-blue-700">Uploading...</span>
+                </div>
+              ) : uploadedImageUrl ? (
+                <div className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-green-600" />
+                  <span className="text-green-700">Image uploaded! Click to change</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-blue-600" />
+                  <span className="text-blue-700">Choose an image</span>
+                </div>
+              )}
+            </Button>
+            
+            {/* Thumbnail Preview */}
+            {uploadedImageUrl && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mt-3 rounded-xl overflow-hidden border-2 border-blue-200"
+              >
+                <img
+                  src={uploadedImageUrl}
+                  alt="Preview"
+                  className="w-full h-48 object-cover"
+                />
+              </motion.div>
+            )}
+            
+            <p className="text-xs text-slate-500 text-center">
+              Make your debate stand out with a cover image
+            </p>
+          </div>
+        </FunSheetCard>
+      )}
 
       {/* Extracted Statements */}
       <FunSheetCard delay={0.25}>

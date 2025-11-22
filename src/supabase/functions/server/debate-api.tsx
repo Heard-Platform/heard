@@ -75,6 +75,7 @@ export interface DebateRoom {
   rantFirst?: boolean; // Whether this room starts with rants
   subHeard?: string; // Sub-heard name (like subreddits) - optional for backwards compatibility
   endTime?: number;
+  imageUrl?: string; // Optional cover image for the debate
 }
 
 export interface Rant {

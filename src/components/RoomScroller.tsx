@@ -511,8 +511,32 @@ function RoomCard({
             </div>
 
             {/* Title with space for badges */}
-            <div className="flex items-start gap-2 pr-24">
-              <MessageCircle className="w-4 h-4 text-purple-600 flex-shrink-0 mt-1" />
+            <div className="flex items-start gap-2 pr-18">
+              {room.imageUrl ? (
+                <div
+                  className="w-10 h-10 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-2 border-purple-300 flex-shrink-0"
+                  onClick={() => {
+                    const fullScreenDiv = document.createElement("div");
+                    fullScreenDiv.className = "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4";
+                    fullScreenDiv.onclick = () => fullScreenDiv.remove();
+                    
+                    const img = document.createElement("img");
+                    img.src = room.imageUrl!;
+                    img.className = "max-w-full max-h-full object-contain";
+                    
+                    fullScreenDiv.appendChild(img);
+                    document.body.appendChild(fullScreenDiv);
+                  }}
+                >
+                  <img
+                    src={room.imageUrl}
+                    alt={room.topic}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <MessageCircle className="w-4 h-4 text-purple-600 flex-shrink-0 mt-1" />
+              )}
               <h2 className="font-bold text-foreground">
                 {room.topic}
               </h2>
