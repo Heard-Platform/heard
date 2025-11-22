@@ -108,6 +108,7 @@ export function LobbyScreen({
   });
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const roomScrollerRef = useRef<RoomScrollerRef>(null);
+  const initialWindowHeightRef = useRef<number>(0);
 
   // Sort rooms: target room first, then newest first
   const filteredRooms = activeRooms.sort((a, b) => {
@@ -119,6 +120,64 @@ export function LobbyScreen({
     // Otherwise sort by newest first
     return b.createdAt - a.createdAt;
   });
+
+  // Detect mobile keyboard state
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.visualViewport) {
+      console.log("🚫 Visual Viewport API not available");
+      return;
+    }
+
+    // Capture the initial window height ONCE on mount (before any keyboard interactions)
+    if (initialWindowHeightRef.current === 0) {
+      initialWindowHeightRef.current = window.innerHeight;
+      console.log("📏 Initial window height captured:", initialWindowHeightRef.current);
+    }
+
+    const handleResize = () => {
+      const viewportHeight = window.visualViewport.height;
+      const currentWindowHeight = window.innerHeight;
+      const initialWindowHeight = initialWindowHeightRef.current;
+      
+      // Use the INITIAL window height for ratio calculation, not the current one
+      const ratio = viewportHeight / initialWindowHeight;
+      
+      // Keyboard open = viewport shrinks significantly
+      const keyboardOpen = ratio < 0.75;
+      
+      console.log("📱 Viewport change:", {
+        viewportHeight,
+        currentWindowHeight,
+        initialWindowHeight,
+        ratio: ratio.toFixed(2),
+        keyboardOpen,
+        threshold: 0.75,
+      });
+      
+      setIsKeyboardOpen(keyboardOpen);
+      setDebugViewport({
+        viewportHeight,
+        windowHeight: currentWindowHeight,
+        ratio,
+      });
+    };
+    
+    // Check initial state
+    handleResize();
+    
+    window.visualViewport.addEventListener("resize", handleResize);
+    window.visualViewport.addEventListener("scroll", handleResize);
+    
+    return () => {
+      window.visualViewport.removeEventListener("resize", handleResize);
+      window.visualViewport.removeEventListener("scroll", handleResize);
+    };
+  }, []);
+
+  // Debug: log when keyboard state changes
+  useEffect(() => {
+    console.log("⌨️ Keyboard state changed:", isKeyboardOpen ? "OPEN" : "CLOSED");
+  }, [isKeyboardOpen]);
 
   // Refresh rooms on mount and when sub-heard changes
   useEffect(() => {
@@ -497,13 +556,15 @@ export function LobbyScreen({
         />
       </div>
 
-      {/* Floating create button */}
-      <FloatingCreateButton
-        onPress={() => setCreateRoomSheetOpen(true)}
-      />
+      {/* Floating create button - hide when keyboard is open */}
+      {!isKeyboardOpen && (
+        <FloatingCreateButton
+          onPress={() => setCreateRoomSheetOpen(true)}
+        />
+      )}
 
-      {/* Floating feedback button */}
-      <FloatingFeedbackButton userId={user?.id} />
+      {/* Floating feedback button - hide when keyboard is open */}
+      {!isKeyboardOpen && <FloatingFeedbackButton userId={user?.id} />}
 
       {/* Create room sheet */}
       <CreateRoomSheet
@@ -543,6 +604,7 @@ export function LobbyScreen({
           viewportHeight={debugViewport.viewportHeight}
           windowHeight={debugViewport.windowHeight}
           ratio={debugViewport.ratio}
+          initialWindowHeight={initialWindowHeightRef.current}
         />
       )}
     </>

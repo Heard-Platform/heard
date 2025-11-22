@@ -5,6 +5,7 @@ interface KeyboardDebugPanelProps {
   windowHeight: number;
   ratio: number;
   threshold?: number;
+  initialWindowHeight?: number;
 }
 
 export function KeyboardDebugPanel({
@@ -14,6 +15,7 @@ export function KeyboardDebugPanel({
   windowHeight,
   ratio,
   threshold = 0.75,
+  initialWindowHeight,
 }: KeyboardDebugPanelProps) {
   if (!show) return null;
 
@@ -49,6 +51,12 @@ export function KeyboardDebugPanel({
             {!isKeyboardOpen ? "VISIBLE" : "HIDDEN"}
           </span>
         </div>
+        {initialWindowHeight && (
+          <div>
+            <span className="text-gray-400">initialWindowHeight:</span>{" "}
+            <span className="text-yellow-300">{initialWindowHeight.toFixed(0)}</span>
+          </div>
+        )}
       </div>
     </div>
   );

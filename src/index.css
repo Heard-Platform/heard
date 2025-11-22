@@ -134,6 +134,7 @@
     --color-teal-900: oklch(.386 .063 188.416);
     --color-cyan-50: oklch(.984 .019 200.873);
     --color-cyan-100: oklch(.956 .045 203.388);
+    --color-cyan-300: oklch(.865 .127 207.078);
     --color-sky-50: oklch(.977 .013 236.62);
     --color-sky-100: oklch(.951 .026 236.824);
     --color-blue-50: oklch(.97 .014 254.604);
@@ -189,6 +190,7 @@
     --color-gray-400: oklch(.707 .022 261.325);
     --color-gray-500: oklch(.551 .027 264.364);
     --color-gray-600: oklch(.446 .03 256.802);
+    --color-gray-700: oklch(.373 .034 259.733);
     --color-gray-900: oklch(.21 .034 264.665);
     --color-black: #000;
     --color-white: #fff;
@@ -625,6 +627,10 @@
 
   .top-8 {
     top: calc(var(--spacing) * 8);
+  }
+
+  .top-20 {
+    top: calc(var(--spacing) * 20);
   }
 
   .top-\[50\%\] {
@@ -1349,6 +1355,10 @@
     cursor: pointer;
   }
 
+  .resize {
+    resize: both;
+  }
+
   .resize-none {
     resize: none;
   }
@@ -1672,6 +1682,10 @@
     border-color: var(--color-gray-400);
   }
 
+  .border-gray-700 {
+    border-color: var(--color-gray-700);
+  }
+
   .border-green-200 {
     border-color: var(--color-green-200);
   }
@@ -1682,6 +1696,10 @@
 
   .border-green-400 {
     border-color: var(--color-green-400);
+  }
+
+  .border-green-500 {
+    border-color: var(--color-green-500);
   }
 
   .border-input {
@@ -2943,6 +2961,10 @@
     color: var(--color-amber-600);
   }
 
+  .text-blue-300 {
+    color: var(--color-blue-300);
+  }
+
   .text-blue-500 {
     color: var(--color-blue-500);
   }
@@ -2971,6 +2993,10 @@
     color: currentColor;
   }
 
+  .text-cyan-300 {
+    color: var(--color-cyan-300);
+  }
+
   .text-emerald-600 {
     color: var(--color-emerald-600);
   }
@@ -2989,6 +3015,10 @@
 
   .text-gray-900 {
     color: var(--color-gray-900);
+  }
+
+  .text-green-400 {
+    color: var(--color-green-400);
   }
 
   .text-green-600 {
@@ -3081,6 +3111,10 @@
     color: var(--color-purple-900);
   }
 
+  .text-red-400 {
+    color: var(--color-red-400);
+  }
+
   .text-red-600 {
     color: var(--color-red-600);
   }
@@ -3127,6 +3161,10 @@
 
   .text-white {
     color: var(--color-white);
+  }
+
+  .text-yellow-300 {
+    color: var(--color-yellow-300);
   }
 
   .text-yellow-500 {
