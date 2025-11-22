@@ -17,6 +17,7 @@ import { SubHeardBrowser } from "../components/SubHeardBrowser";
 import { IntroModal } from "../components/IntroModal";
 import { FloatingCreateButton } from "../components/FloatingCreateButton";
 import { FloatingFeedbackButton } from "../components/FloatingFeedbackButton";
+import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
 import { api } from "../utils/api";
 import {
   Plus,
@@ -99,6 +100,13 @@ export function LobbyScreen({
   const [discussSubHeard, setDiscussSubHeard] = useState<
     string | undefined
   >(undefined);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [debugViewport, setDebugViewport] = useState({
+    viewportHeight: 0,
+    windowHeight: 0,
+    ratio: 0,
+  });
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
   const roomScrollerRef = useRef<RoomScrollerRef>(null);
 
   // Sort rooms: target room first, then newest first
@@ -215,7 +223,15 @@ export function LobbyScreen({
         {/* Floating header with user info and menu */}
         <div className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="flex flex-col">
+            <div 
+              className="flex flex-col"
+              onClick={() => {
+                if (user?.isDeveloper) {
+                  setShowDebugPanel(!showDebugPanel);
+                }
+              }}
+              style={{ cursor: user?.isDeveloper ? 'pointer' : 'default' }}
+            >
               <p className="text-[10px] text-purple-400/80 tracking-wide uppercase mb-[-2px]">
                 A place to be
               </p>
@@ -517,6 +533,17 @@ export function LobbyScreen({
             <p className="text-red-600 text-sm">{error}</p>
           </div>
         </div>
+      )}
+
+      {/* Developer viewport debug panel */}
+      {user?.isDeveloper && (
+        <KeyboardDebugPanel
+          show={showDebugPanel}
+          isKeyboardOpen={isKeyboardOpen}
+          viewportHeight={debugViewport.viewportHeight}
+          windowHeight={debugViewport.windowHeight}
+          ratio={debugViewport.ratio}
+        />
       )}
     </>
   );
