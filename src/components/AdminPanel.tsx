@@ -33,6 +33,7 @@ import {
 import { Shield, Lock, User, Crown, X, MessageSquare, ToggleLeft, ToggleRight, TestTube } from "lucide-react";
 import { api } from "../utils/api";
 import type { DebateRoom, SubHeard } from "../types";
+import { SparklineChart } from "./SparklineChart";
 
 interface AdminUser {
   userId: string;
@@ -352,6 +353,41 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
+  // Generate sparkline data from items with timestamps
+  const generateSparklineData = (items: any[], daysBack = 7) => {
+    const now = Date.now();
+    const dayInMs = 24 * 60 * 60 * 1000;
+    
+    // Create buckets for each day
+    const buckets = Array.from({ length: daysBack }, (_, i) => {
+      const day = daysBack - i - 1;
+      const timestamp = now - (day * dayInMs);
+      return { day: i, count: 0, timestamp };
+    });
+
+    // Count items in each bucket
+    items.forEach(item => {
+      const itemTime = item.createdAt ? new Date(item.createdAt).getTime() : 
+                       item.lastSeen || item.timestamp || 0;
+      const daysAgo = Math.floor((now - itemTime) / dayInMs);
+      
+      if (daysAgo >= 0 && daysAgo < daysBack) {
+        const bucketIndex = daysBack - daysAgo - 1;
+        if (buckets[bucketIndex]) {
+          buckets[bucketIndex].count++;
+        }
+      }
+    });
+
+    return buckets;
+  };
+
+  // Calculate sparkline data
+  const usersSparkline = generateSparklineData(users, 7);
+  const subHeardsSparkline = generateSparklineData(subHeards, 7);
+  const debatesSparkline = generateSparklineData(debates, 7);
+  const feedbackSparkline = generateSparklineData(feedback, 7);
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
@@ -433,6 +469,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                 <p className="text-2xl">{users.length}</p>
               </div>
             </div>
+            <SparklineChart data={usersSparkline} color="#2563eb" />
           </Card>
           <Card className="p-6">
             <div className="flex items-center gap-3">
@@ -442,6 +479,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                 <p className="text-2xl">{subHeards.length}</p>
               </div>
             </div>
+            <SparklineChart data={subHeardsSparkline} color="#9333ea" />
           </Card>
           <Card className="p-6">
             <div className="flex items-center gap-3">
@@ -454,6 +492,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                 </p>
               </div>
             </div>
+            <SparklineChart data={debatesSparkline} color="#16a34a" />
           </Card>
           <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
             <div className="flex items-center gap-3">
@@ -463,6 +502,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                 <p className="text-2xl">{feedback.length}</p>
               </div>
             </div>
+            <SparklineChart data={feedbackSparkline} color="#c026d3" />
           </Card>
         </div>
 
