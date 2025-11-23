@@ -117,12 +117,15 @@ export default function App() {
         window.location.search,
       );
       const resetTokenFromUrl = urlParams.get("resetToken");
+      const isAdminRoute = window.location.pathname === "/admin";
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
 
       if (resetTokenFromUrl) {
         setResetToken(resetTokenFromUrl);
         setShowPasswordReset(true);
+      } else if (isAdminRoute) {
+        setShowAdminPanel(true);
       } else if (roomIdFromUrl) {
         setTargetRoomId(roomIdFromUrl);
       } else if (subHeardFromUrl) {
@@ -209,18 +212,16 @@ export default function App() {
   // Handle opening and exiting admin panel
   const handleOpenAdminPanel = () => {
     setShowAdminPanel(true);
+    window.history.pushState({}, "", "/admin");
   };
 
   const handleExitAdminPanel = () => {
     setShowAdminPanel(false);
+    window.history.pushState({}, "", "/");
   };
 
-  // Check for admin panel URL parameter (for direct access)
-  const urlParams = new URLSearchParams(window.location.search);
-  const isAdminModeUrl = urlParams.get("admin") === "true";
-
   // Admin Panel Mode - check this first!
-  if (showAdminPanel || isAdminModeUrl) {
+  if (showAdminPanel) {
     return (
       <>
         <AdminPanel onExit={handleExitAdminPanel} />
