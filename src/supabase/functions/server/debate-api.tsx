@@ -1300,6 +1300,7 @@ app.post(
       return c.json({
         statement,
         pointsEarned: totalPoints,
+        userScore: user.score,
         achievement: {
           title: "Statement Posted!",
           description: `+${totalPoints} points`,
@@ -1671,6 +1672,7 @@ app.post(
       return c.json({
         statement: updatedStatement,
         pointsEarned,
+        userScore: user.score,
         userVote: voteStats.voters[userId] || null,
       });
     } catch (error) {

@@ -148,7 +148,7 @@ app.post(
       user.currentRoomId = roomId;
       await saveUserSession(user);
 
-      return c.json(debateRoom);
+      return c.json({ ...debateRoom, userScore: user.score });
     } catch (error) {
       console.error("Error creating debate room:", error);
       return c.json(

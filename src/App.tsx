@@ -50,6 +50,8 @@ export default function App() {
     initializeUser,
     createRoom,
     joinRoom,
+    submitStatement,
+    voteOnStatement,
     getActiveRooms,
     setCurrentSubHeard,
     resetSession,
@@ -301,6 +303,8 @@ export default function App() {
         onCreateRoom={handleCreateRoom}
         onJoinRoom={handleJoinRoom}
         onRefreshRooms={getActiveRooms}
+        onSubmitStatement={submitStatement}
+        onVoteOnStatement={voteOnStatement}
         onCreateSeedData={createSeedData}
         onCreateTestRoom={createTestRoom}
         onCreateRantTestRoom={createRantTestRoom}

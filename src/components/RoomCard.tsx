@@ -16,19 +16,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import type { DebateRoom, Statement } from "../utils/api";
+import type { DebateRoom, Statement, VoteType } from "../utils/api";
 import { SwipeableStatementStack } from "./SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { NewStatementInput } from "./NewStatementInput";
 import { ShareButton } from "./ShareButton";
-import { api } from "../utils/api";
 
 interface RoomCardProps {
   room: DebateRoom;
   statements: Statement[];
   onJoin: () => void;
   onSetInactive?: () => Promise<boolean>;
+  onSubmitStatement: (roomId: string, text: string) => Promise<any>;
+  onVoteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
   isDeveloper: boolean;
   isActive: boolean;
   currentUserId?: string;
@@ -45,6 +46,8 @@ export function RoomCard({
   statements,
   onJoin,
   onSetInactive,
+  onSubmitStatement,
+  onVoteOnStatement,
   isDeveloper,
   isActive,
   currentUserId,
@@ -78,15 +81,8 @@ export function RoomCard({
     }
 
     try {
-      const response = await api.voteOnStatement(
-        statementId,
-        voteType,
-        currentUserId,
-      );
-      if (response.success && response.data) {
-        return response.data as Statement;
-      }
-      return null;
+      const result = await onVoteOnStatement(statementId, voteType);
+      return result as Statement;
     } catch (error) {
       console.error("Error voting on statement:", error);
       return null;
@@ -103,16 +99,7 @@ export function RoomCard({
     }
 
     try {
-      const response = await api.submitStatement(
-        room.id,
-        text,
-        currentUserId,
-      );
-      if (!response.success) {
-        throw new Error(
-          response.error || "Failed to submit statement",
-        );
-      }
+      await onSubmitStatement(room.id, text);
       // Refresh statements to show the new one
       if (onRefreshStatements) {
         await onRefreshStatements();

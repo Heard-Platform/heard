@@ -3,6 +3,7 @@ import type {
   DebateRoom,
   DebateMode,
   NewDebateRoom,
+  VoteType,
 } from "../types";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
@@ -58,6 +59,8 @@ interface LobbyScreenProps {
     description: string,
   ) => Promise<boolean>;
   onSetRoomInactive?: (roomId: string) => Promise<boolean>;
+  onSubmitStatement: (roomId: string, text: string) => Promise<any>;
+  onVoteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
   onLogout?: () => void;
   onOpenShowcase?: () => void;
   onOpenAdminPanel?: () => void;
@@ -81,6 +84,8 @@ export function LobbyScreen({
   onCreateRantTestRoom,
   onCreateRealtimeTestRoom,
   onSetRoomInactive,
+  onSubmitStatement,
+  onVoteOnStatement,
   onLogout,
   onOpenShowcase,
   onOpenAdminPanel,
@@ -542,6 +547,8 @@ export function LobbyScreen({
           onJoinRoom={handleJoinRoom}
           onCreateRoom={handleOpenCreateSheet}
           onSetRoomInactive={onSetRoomInactive}
+          onSubmitStatement={onSubmitStatement}
+          onVoteOnStatement={onVoteOnStatement}
           isDeveloper={user?.isDeveloper || false}
           loading={loading}
           currentUserId={user?.id}

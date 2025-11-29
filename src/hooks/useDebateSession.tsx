@@ -108,6 +108,13 @@ export function useDebateSession() {
     [],
   );
 
+  // Update user score from API response
+  const updateUserScoreFromResponse = useCallback((responseData: any) => {
+    if (responseData && responseData.userScore !== undefined) {
+      setUser(prev => prev ? { ...prev, score: responseData.userScore } : prev);
+    }
+  }, []);
+
   // Create room (does not join)
   const createRoom = useCallback(
     async (
@@ -124,7 +131,8 @@ export function useDebateSession() {
       if (response.success && response.data) {
         const roomData = response.data;
 
-        // If autoJoin, also join the room
+        updateUserScoreFromResponse(roomData);
+
         if (autoJoin) {
           await api.joinRoom(roomData.id, user.id);
         }
@@ -136,7 +144,7 @@ export function useDebateSession() {
         throw new Error(errorMsg);
       }
     },
-    [user],
+    [user, updateUserScoreFromResponse],
   );
 
   // Join room (backend only - no local state)
@@ -163,6 +171,57 @@ export function useDebateSession() {
       return null;
     },
     [user],
+  );
+
+  // Submit statement
+  const submitStatement = useCallback(
+    async (roomId: string, text: string) => {
+      if (!user) {
+        throw new Error("User must be logged in to submit a statement");
+      }
+
+      setError(null);
+      const response = await api.submitStatement(roomId, text, user.id);
+
+      if (response.success && response.data) {
+        updateUserScoreFromResponse(response.data);
+        return response.data;
+      } else {
+        const errorMsg = response.error || "Failed to submit statement";
+        setError(errorMsg);
+        throw new Error(errorMsg);
+      }
+    },
+    [user, updateUserScoreFromResponse],
+  );
+
+  // Vote on statement
+  const voteOnStatement = useCallback(
+    async (
+      statementId: string,
+      voteType: "agree" | "disagree" | "pass" | "super_agree",
+    ) => {
+      if (!user) {
+        throw new Error("User must be logged in to vote");
+      }
+
+      setError(null);
+      const response = await api.voteOnStatement(
+        statementId,
+        voteType,
+        user.id,
+      );
+
+      if (response.success && response.data) {
+        updateUserScoreFromResponse(response.data);
+        return response.data;
+      } else {
+        const errorMsg = response.error || "Failed to vote on statement";
+        setError(errorMsg);
+        throw new Error(errorMsg);
+      }
+    },
+    [user, updateUserScoreFromResponse],
   );
 
   // Get active rooms - uses currentSubHeard from state
@@ -357,6 +416,8 @@ export function useDebateSession() {
     initializeUser,
     createRoom,
     joinRoom,
+    submitStatement,
+    voteOnStatement,
     getActiveRooms,
     setCurrentSubHeard,
     resetSession,
