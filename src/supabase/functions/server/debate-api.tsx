@@ -385,7 +385,7 @@ const getPhaseChangeNotificationContent = (
 
   // Fallback for other combinations
   return {
-    subject: `📢 ${phaseName}${subPhaseName ? ` - ${subPhaseName}` : ""} in "${room.topic}"`,
+    subject: `�� ${phaseName}${subPhaseName ? ` - ${subPhaseName}` : ""} in "${room.topic}"`,
     title: `${phaseName}${subPhaseName ? ` - ${subPhaseName}` : ""}`,
     message: `The debate has moved to a new phase. Join now to participate!`,
     action: "Join Debate",
@@ -1281,7 +1281,6 @@ app.post(
 
       await saveStatement(statement);
 
-      // Award points to user
       const basePoints = 50;
       const totalPoints = basePoints;
 
@@ -1289,6 +1288,14 @@ app.post(
       user.streak += 1;
 
       await saveUserSession(user);
+
+      if (room.hostId && room.hostId !== userId) {
+        const roomCreator = await getUserSession(room.hostId);
+        if (roomCreator) {
+          roomCreator.score += 5;
+          await saveUserSession(roomCreator);
+        }
+      }
 
       return c.json({
         statement,
@@ -1594,7 +1601,6 @@ app.post(
 
         // No points for changing vote
       } else {
-        // First time voting - create new vote record
         const newVote: Vote = {
           id: generateId(),
           statementId,
@@ -1607,8 +1613,23 @@ app.post(
           `Created new vote for user ${userId} on statement ${statementId}: ${voteType}`,
         );
 
-        // Award points for first vote on this statement (regardless of vote type)
         pointsEarned = 10;
+
+        const allUsers = await getByPrefixParsed<UserSession>('user:');
+        const statementAuthorUser = allUsers.find(u => u.nickname === statement.author);
+
+        if (statementAuthorUser && statementAuthorUser.id !== userId) {
+          statementAuthorUser.score += 3;
+          await saveUserSession(statementAuthorUser);
+        }
+
+        if (room && room.hostId && room.hostId !== userId) {
+          const roomCreator = await getUserSession(room.hostId);
+          if (roomCreator) {
+            roomCreator.score += 1;
+            await saveUserSession(roomCreator);
+          }
+        }
       }
 
       // Get updated vote data to return

@@ -115,6 +115,8 @@ app.post(
 
       await saveDebateRoom(debateRoom);
 
+      user.score += 100;
+
       // Create seed statements if provided (optional, for backwards compatibility)
       if (seedStatements && Array.isArray(seedStatements) && seedStatements.length > 0) {
         const statements: Statement[] = seedStatements.map((text: string) => ({
