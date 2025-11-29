@@ -1283,8 +1283,7 @@ app.post(
 
       // Award points to user
       const basePoints = 50;
-      const spicyBonus = statement.isSpicy ? 25 : 0;
-      const totalPoints = basePoints + spicyBonus;
+      const totalPoints = basePoints;
 
       user.score += totalPoints;
       user.streak += 1;
@@ -1593,12 +1592,7 @@ app.post(
           `Updated vote for user ${userId} on statement ${statementId} to ${voteType}`,
         );
 
-        if (
-          voteType === "agree" ||
-          voteType === "super_agree"
-        ) {
-          pointsEarned = 10; // Award points for agreeing
-        }
+        // No points for changing vote
       } else {
         // First time voting - create new vote record
         const newVote: Vote = {
@@ -1613,12 +1607,8 @@ app.post(
           `Created new vote for user ${userId} on statement ${statementId}: ${voteType}`,
         );
 
-        if (
-          voteType === "agree" ||
-          voteType === "super_agree"
-        ) {
-          pointsEarned = 10; // Award points for agreeing
-        }
+        // Award points for first vote on this statement (regardless of vote type)
+        pointsEarned = 10;
       }
 
       // Get updated vote data to return
