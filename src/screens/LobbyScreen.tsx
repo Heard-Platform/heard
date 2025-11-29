@@ -26,7 +26,6 @@ import {
   Brain,
   Code2,
   SkipForward,
-  Menu,
   Clock,
   Shield,
   HelpCircle,
@@ -303,11 +302,6 @@ export function LobbyScreen({
                 HEARD
               </motion.h1>
             </div>
-            {user?.isDeveloper && (
-              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
-                DEV
-              </Badge>
-            )}
           </div>
 
           {/* Sub-Heard Browser and User menu */}
@@ -383,10 +377,10 @@ export function LobbyScreen({
                 <SheetTrigger asChild>
                   <Button
                     variant="outline"
-                    size="icon"
-                    className="bg-white/90 backdrop-blur-sm shadow-lg"
+                    className="bg-white/90 backdrop-blur-sm shadow-lg px-3 py-2 h-auto gap-2"
                   >
-                    <Menu className="w-4 h-4" />
+                    <span className="text-lg">⭐</span>
+                    <span className="font-semibold">{user.score}</span>
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right">
