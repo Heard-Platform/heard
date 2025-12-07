@@ -95,6 +95,13 @@ export function useDebateSession() {
 
         if (userData) {
           setUser(userData);
+          
+          // Track user activity
+          api.trackActivity(userData.id).catch(err => {
+            console.error("Failed to track activity:", err);
+            // Don't block user flow if tracking fails
+          });
+          
           return userData;
         }
       } catch (err) {

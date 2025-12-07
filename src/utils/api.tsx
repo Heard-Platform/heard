@@ -393,6 +393,22 @@ class ApiClient {
       },
     });
   }
+
+  // Activity tracking
+  async trackActivity(userId: string) {
+    return this.request("/activity/track", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
+
+  async adminGetActivityMetrics(adminKey: string) {
+    return this.request("/activity/metrics", {
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
 }
 
 export const api = new ApiClient();

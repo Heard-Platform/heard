@@ -9,6 +9,7 @@ import { redditApi } from "./reddit-api.tsx";
 import { oneTimeFixesApi } from "./one-time-fixes.tsx";
 import { feedbackApi } from "./feedback-api.tsx";
 import { imageApi } from "./image-api.tsx";
+import { activityApi } from "./activity-api.tsx";
 
 const app = new Hono();
 
@@ -63,5 +64,8 @@ app.route("/", feedbackApi);
 
 // Mount image API routes
 app.route("/", imageApi);
+
+// Mount activity API routes
+app.route("/", activityApi);
 
 Deno.serve(app.fetch);

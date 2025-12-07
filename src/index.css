@@ -1706,6 +1706,10 @@
     border-color: var(--color-green-500);
   }
 
+  .border-indigo-100 {
+    border-color: var(--color-indigo-100);
+  }
+
   .border-input {
     border-color: var(--input);
   }
@@ -4379,6 +4383,12 @@
   @media (width >= 48rem) {
     .md\:w-2 {
       width: calc(var(--spacing) * 2);
+    }
+  }
+
+  @media (width >= 48rem) {
+    .md\:grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 

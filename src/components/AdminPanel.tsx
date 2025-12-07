@@ -34,6 +34,7 @@ import { Shield, Lock, User, Crown, X, MessageSquare, ToggleLeft, ToggleRight, T
 import { api } from "../utils/api";
 import type { DebateRoom, SubHeard } from "../types";
 import { SparklineChart } from "./SparklineChart";
+import { ActivityMetrics } from "./ActivityMetrics";
 
 interface AdminUser {
   userId: string;
@@ -53,6 +54,14 @@ interface AdminPanelProps {
   onExit?: () => void;
 }
 
+interface ActivityMetrics {
+  dau: number;
+  wau: number;
+  mau: number;
+  dailyBreakdown: Array<{ date: string; activeUsers: number }>;
+  calculatedAt: string;
+}
+
 export function AdminPanel({ onExit }: AdminPanelProps) {
   const [adminKey, setAdminKey] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -60,6 +69,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [debates, setDebates] = useState<DebateRoom[]>([]);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
+  const [activityMetrics, setActivityMetrics] = useState<ActivityMetrics | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedSubHeard, setSelectedSubHeard] = useState<SubHeard | null>(null);
   const [newAdminId, setNewAdminId] = useState("");
@@ -79,21 +89,23 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
 
     setLoading(true);
     try {
-      const [usersRes, subHeardsRes, debatesRes, feedbackRes] = await Promise.all([
+      const [usersRes, subHeardsRes, debatesRes, feedbackRes, activityMetricsRes] = await Promise.all([
         api.adminGetUsers(adminKey),
         api.adminGetSubHeards(adminKey),
         api.adminGetDebates(adminKey),
         api.adminGetFeedback(adminKey),
+        api.adminGetActivityMetrics(adminKey),
       ]);
 
-      if (usersRes.success && subHeardsRes.success && debatesRes.success && feedbackRes.success) {
+      if (usersRes.success && subHeardsRes.success && debatesRes.success && feedbackRes.success && activityMetricsRes.success) {
         setUsers(usersRes.data?.users || []);
         setSubHeards(subHeardsRes.data?.subHeards || []);
         setDebates(debatesRes.data?.debates || []);
         setFeedback(feedbackRes.data?.feedback || []);
+        setActivityMetrics(activityMetricsRes.data || null);
         setIsAuthenticated(true);
       } else {
-        alert(`Invalid admin key: ${usersRes.error || subHeardsRes.error || debatesRes.error || feedbackRes.error || "Unknown error"}`);
+        alert(`Invalid admin key: ${usersRes.error || subHeardsRes.error || debatesRes.error || feedbackRes.error || activityMetricsRes.error || "Unknown error"}`);
         setIsAuthenticated(false);
       }
     } catch (error) {
@@ -505,6 +517,9 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             <SparklineChart data={feedbackSparkline} color="#c026d3" />
           </Card>
         </div>
+
+        {/* Activity Metrics Section */}
+        {activityMetrics && <ActivityMetrics metrics={activityMetrics} />}
 
         {/* Feedback Section */}
         <Card className="p-6">
