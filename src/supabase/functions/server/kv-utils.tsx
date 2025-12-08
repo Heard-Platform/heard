@@ -31,3 +31,13 @@ export const getByPrefixParsed = async <T,>(prefix: string): Promise<T[]> => {
   const rawData = await kv.getByPrefix(prefix);
   return parseKvDataArray<T>(rawData);
 };
+
+/**
+ * Gets a single item from KV store and parses it
+ * Handles both stringified JSON and object data
+ */
+export const getParsedKvData = async <T,>(key: string): Promise<T | null> => {
+  const rawData = await kv.get(key);
+  if (!rawData) return null;
+  return parseKvData<T>(rawData);
+};

@@ -6,6 +6,7 @@ import {
   verifyPassword,
   generateResetToken,
 } from "./password-utils.tsx";
+import { getParsedKvData } from "./kv-utils.tsx";
 
 const app = new Hono();
 
@@ -41,9 +42,8 @@ export const getUserSession = async (
   userId: string,
 ): Promise<UserSession | null> => {
   try {
-    const session = await kv.get(`user:${userId}`);
-    if (!session) return null;
-    const userData = JSON.parse(session);
+    const userData = await getParsedKvData<UserSession>(`user:${userId}`);
+    if (!userData) return null;
 
     // Default isTestUser to false for existing users without this field
     if (userData.isTestUser === undefined) {
