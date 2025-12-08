@@ -42,7 +42,9 @@ export const getUserSession = async (
   userId: string,
 ): Promise<UserSession | null> => {
   try {
-    const userData = await getParsedKvData<UserSession>(`user:${userId}`);
+    const userData = await getParsedKvData<UserSession>(
+      `user:${userId}`,
+    );
     if (!userData) return null;
 
     // Default isTestUser to false for existing users without this field

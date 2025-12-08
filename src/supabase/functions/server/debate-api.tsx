@@ -1437,8 +1437,13 @@ app.post(
       const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
 
       if (!openaiApiKey) {
-        console.error("OPENAI_API_KEY not found in environment");
-        return c.json({ error: "AI service not configured" }, 500);
+        console.error(
+          "OPENAI_API_KEY not found in environment",
+        );
+        return c.json(
+          { error: "AI service not configured" },
+          500,
+        );
       }
 
       // Extract topic and statements using OpenAI
@@ -1499,7 +1504,9 @@ Return ONLY in this exact JSON format:
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`OpenAI API error: ${response.status} - ${errorText}`);
+        console.error(
+          `OpenAI API error: ${response.status} - ${errorText}`,
+        );
         return c.json({ error: "AI extraction failed" }, 500);
       }
 
@@ -1512,8 +1519,15 @@ Return ONLY in this exact JSON format:
 
       const extracted = JSON.parse(content);
 
-      if (!extracted.topic || !extracted.statements || !Array.isArray(extracted.statements)) {
-        return c.json({ error: "Invalid AI response format" }, 500);
+      if (
+        !extracted.topic ||
+        !extracted.statements ||
+        !Array.isArray(extracted.statements)
+      ) {
+        return c.json(
+          { error: "Invalid AI response format" },
+          500,
+        );
       }
 
       return c.json({
@@ -1522,7 +1536,10 @@ Return ONLY in this exact JSON format:
       });
     } catch (error) {
       console.error("Error extracting from rant:", error);
-      return c.json({ error: "Failed to extract topic and statements" }, 500);
+      return c.json(
+        { error: "Failed to extract topic and statements" },
+        500,
+      );
     }
   },
 );
@@ -1617,10 +1634,16 @@ app.post(
 
         pointsEarned = 10;
 
-        const allUsers = await getByPrefixParsed<UserSession>('user:');
-        const statementAuthorUser = allUsers.find(u => u.nickname === statement.author);
+        const allUsers =
+          await getByPrefixParsed<UserSession>("user:");
+        const statementAuthorUser = allUsers.find(
+          (u) => u.nickname === statement.author,
+        );
 
-        if (statementAuthorUser && statementAuthorUser.id !== userId) {
+        if (
+          statementAuthorUser &&
+          statementAuthorUser.id !== userId
+        ) {
           statementAuthorUser.score += 3;
           await saveUserSession(statementAuthorUser);
         }
@@ -3199,21 +3222,28 @@ app.get(
 
 app.get("/make-server-f1a393b4/public-stats", async (c) => {
   try {
-    const generateSparklineData = (items: any[], daysBack = 7) => {
+    const generateSparklineData = (
+      items: any[],
+      daysBack = 7,
+    ) => {
       const now = Date.now();
       const dayInMs = 24 * 60 * 60 * 1000;
-      
-      const buckets = Array.from({ length: daysBack }, (_, i) => {
-        const day = daysBack - i - 1;
-        const timestamp = now - (day * dayInMs);
-        return { day: i, count: 0, timestamp };
-      });
 
-      items.forEach(item => {
-        const itemTime = item.createdAt ? new Date(item.createdAt).getTime() : 
-                         item.lastSeen || item.timestamp || 0;
+      const buckets = Array.from(
+        { length: daysBack },
+        (_, i) => {
+          const day = daysBack - i - 1;
+          const timestamp = now - day * dayInMs;
+          return { day: i, count: 0, timestamp };
+        },
+      );
+
+      items.forEach((item) => {
+        const itemTime = item.createdAt
+          ? new Date(item.createdAt).getTime()
+          : item.lastSeen || item.timestamp || 0;
         const daysAgo = Math.floor((now - itemTime) / dayInMs);
-        
+
         if (daysAgo >= 0 && daysAgo < daysBack) {
           const bucketIndex = daysBack - daysAgo - 1;
           if (buckets[bucketIndex]) {
@@ -3231,11 +3261,17 @@ app.get("/make-server-f1a393b4/public-stats", async (c) => {
 
     const subHeardKeys = await kv.getByPrefix("subheard:");
     const totalSubHeards = subHeardKeys.length;
-    const subHeardsSparkline = generateSparklineData(subHeardKeys, 7);
+    const subHeardsSparkline = generateSparklineData(
+      subHeardKeys,
+      7,
+    );
 
     const debateKeys = await kv.getByPrefix("room:");
     const totalDebates = debateKeys.length;
-    const debatesSparkline = generateSparklineData(debateKeys, 7);
+    const debatesSparkline = generateSparklineData(
+      debateKeys,
+      7,
+    );
 
     return c.json({
       totalUsers,
