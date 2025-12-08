@@ -10,6 +10,7 @@ import { oneTimeFixesApi } from "./one-time-fixes.tsx";
 import { feedbackApi } from "./feedback-api.tsx";
 import { imageApi } from "./image-api.tsx";
 import { activityApi } from "./activity-api.tsx";
+import { statsApi } from "./stats-api.tsx";
 
 const app = new Hono();
 
@@ -67,5 +68,8 @@ app.route("/", imageApi);
 
 // Mount activity API routes
 app.route("/", activityApi);
+
+// Mount stats API routes
+app.route("/", statsApi);
 
 Deno.serve(app.fetch);

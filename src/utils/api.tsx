@@ -405,6 +405,10 @@ class ApiClient {
   async getPublicStats() {
     return this.request("/public-stats");
   }
+
+  async getRetentionStats() {
+    return this.request("/retention-stats");
+  }
 }
 
 export const api = new ApiClient();

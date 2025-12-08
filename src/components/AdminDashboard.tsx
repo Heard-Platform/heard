@@ -6,6 +6,7 @@ import { api } from "../utils/api";
 import type { DebateRoom, SubHeard } from "../types";
 import { SparklineChart } from "./SparklineChart";
 import { ActivityMetrics } from "./ActivityMetrics";
+import { RetentionCard } from "./RetentionCard";
 
 interface AdminUser {
   userId: string;
@@ -43,6 +44,12 @@ interface PublicStats {
   debatesSparkline: Array<{ day: number; count: number; timestamp: number }>;
 }
 
+interface RetentionStats {
+  d1Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
+  d7Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
+  d30Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
+}
+
 export function AdminDashboard({ onExit, currentUserId }: AdminDashboardProps) {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
@@ -50,6 +57,7 @@ export function AdminDashboard({ onExit, currentUserId }: AdminDashboardProps) {
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [activityMetrics, setActivityMetrics] = useState<ActivityMetrics | null>(null);
   const [publicStats, setPublicStats] = useState<PublicStats | null>(null);
+  const [retentionStats, setRetentionStats] = useState<RetentionStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -73,11 +81,12 @@ export function AdminDashboard({ onExit, currentUserId }: AdminDashboardProps) {
 
         if (userIsAdmin) {
           // Fetch metrics data (these don't require auth)
-          const [debatesRes, feedbackRes, activityMetricsRes, publicStatsRes] = await Promise.all([
+          const [debatesRes, feedbackRes, activityMetricsRes, publicStatsRes, retentionStatsRes] = await Promise.all([
             api.getActiveRooms(undefined, currentUserId),
             api.getFeedbackList(),
             api.getPublicActivityMetrics(),
             api.getPublicStats(),
+            api.getRetentionStats(),
           ]);
 
           if (debatesRes.success) {
@@ -91,6 +100,9 @@ export function AdminDashboard({ onExit, currentUserId }: AdminDashboardProps) {
           }
           if (publicStatsRes.success) {
             setPublicStats(publicStatsRes.data || null);
+          }
+          if (retentionStatsRes.success) {
+            setRetentionStats(retentionStatsRes.data || null);
           }
         }
       }
@@ -194,6 +206,48 @@ export function AdminDashboard({ onExit, currentUserId }: AdminDashboardProps) {
 
         {/* Activity Metrics Section */}
         {activityMetrics && <ActivityMetrics metrics={activityMetrics} />}
+
+        {/* User Retention Section */}
+        {retentionStats && (
+          <Card className="p-6">
+            <h2 className="text-xl mb-4 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-purple-600" />
+              User Retention Rates
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <RetentionCard
+                title="Day 1 Retention"
+                cohortDescription="week"
+                rate={retentionStats.d1Retention.rate}
+                retained={retentionStats.d1Retention.retained}
+                eligible={retentionStats.d1Retention.eligible}
+                totalInCohort={retentionStats.d1Retention.totalInCohort}
+                activityWindow="24-48h"
+                colorScheme="blue"
+              />
+              <RetentionCard
+                title="Day 7 Retention"
+                cohortDescription="month"
+                rate={retentionStats.d7Retention.rate}
+                retained={retentionStats.d7Retention.retained}
+                eligible={retentionStats.d7Retention.eligible}
+                totalInCohort={retentionStats.d7Retention.totalInCohort}
+                activityWindow="days 7-14"
+                colorScheme="purple"
+              />
+              <RetentionCard
+                title="Day 30 Retention"
+                cohortDescription="quarter"
+                rate={retentionStats.d30Retention.rate}
+                retained={retentionStats.d30Retention.retained}
+                eligible={retentionStats.d30Retention.eligible}
+                totalInCohort={retentionStats.d30Retention.totalInCohort}
+                activityWindow="days 30-60"
+                colorScheme="green"
+              />
+            </div>
+          </Card>
+        )}
 
         {/* Feedback Section */}
         <Card className="p-6">
