@@ -23,7 +23,7 @@ const generateId = () => {
 };
 
 // Types
-interface UserSession {
+export interface UserSession {
   id: string;
   nickname: string;
   email: string;

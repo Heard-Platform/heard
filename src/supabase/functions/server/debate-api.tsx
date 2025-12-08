@@ -11,6 +11,7 @@ import {
   getUserSession,
   sendWelcomeEmail,
 } from "./auth-api.tsx";
+import type { UserSession } from "./auth-api.tsx";
 
 // Utility function to get frontend URL
 const getFrontendUrl = (): string => {
@@ -84,20 +85,6 @@ export interface Rant {
   author: string;
   roomId: string;
   timestamp: number;
-}
-
-export interface UserSession {
-  id: string;
-  nickname: string;
-  email: string;
-  score: number;
-  streak: number;
-  currentRoomId?: string;
-  lastActive: number;
-  isTestUser?: boolean; // Flag to indicate if this is a test/fake user
-  isDeveloper?: boolean;
-  passwordHash?: string; // Hashed password (optional for backwards compatibility)
-  createdAt: number; // Timestamp when user account was created
 }
 
 const app = new Hono();
