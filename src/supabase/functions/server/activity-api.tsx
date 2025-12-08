@@ -40,15 +40,9 @@ app.post("/make-server-f1a393b4/activity/track", async (c) => {
   }
 });
 
-app.get("/make-server-f1a393b4/activity/metrics", async (c) => {
+// Get activity metrics (public for community admins)
+app.get("/make-server-f1a393b4/activity/public-metrics", async (c) => {
   try {
-    const adminKey = c.req.header("X-Admin-Key");
-    const expectedKey = Deno.env.get("DEV_ADMIN_KEY");
-
-    if (!adminKey || adminKey !== expectedKey) {
-      return c.json({ error: "Unauthorized" }, 401);
-    }
-
     const allRecords: Array<{ userId: string; date: string; timestamp: number }> = [];
     const dailyBreakdown: Array<{ date: string; activeUsers: number }> = [];
 

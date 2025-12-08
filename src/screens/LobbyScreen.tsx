@@ -30,6 +30,7 @@ import {
   Clock,
   Shield,
   HelpCircle,
+  BarChart3,
 } from "lucide-react";
 import {
   Sheet,
@@ -64,6 +65,7 @@ interface LobbyScreenProps {
   onLogout?: () => void;
   onOpenShowcase?: () => void;
   onOpenAdminPanel?: () => void;
+  onOpenAdminDashboard?: () => void;
   currentSubHeard?: string;
   onSubHeardChange?: (subHeard: string | null) => void;
   onRoomCreated?: () => void;
@@ -89,6 +91,7 @@ export function LobbyScreen({
   onLogout,
   onOpenShowcase,
   onOpenAdminPanel,
+  onOpenAdminDashboard,
   currentSubHeard,
   onSubHeardChange,
   onRoomCreated,
@@ -433,6 +436,21 @@ export function LobbyScreen({
                       <HelpCircle className="w-4 h-4 mr-2" />
                       Help
                     </Button>
+
+                    {/* Admin Dashboard button - for community admins */}
+                    {onOpenAdminDashboard && (
+                      <Button
+                        onClick={() => {
+                          setDevMenuOpen(false);
+                          onOpenAdminDashboard();
+                        }}
+                        variant="outline"
+                        className="w-full bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200"
+                      >
+                        <BarChart3 className="w-4 h-4 mr-2 text-purple-600" />
+                        Admin Dashboard
+                      </Button>
+                    )}
 
                     {/* Developer controls */}
                     {user?.isDeveloper && (

@@ -4393,12 +4393,6 @@
   }
 
   @media (width >= 48rem) {
-    .md\:grid-cols-4 {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
-
-  @media (width >= 48rem) {
     .md\:gap-2 {
       gap: calc(var(--spacing) * 2);
     }

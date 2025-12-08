@@ -5,6 +5,7 @@ import { PasswordReset } from "./components/PasswordReset";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
+import { AdminDashboard } from "./components/AdminDashboard";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner@2.0.3";
@@ -17,6 +18,14 @@ import {
   clearRoomFromUrl,
 } from "./utils/url";
 
+function getStoredDashboardState(): boolean {
+  try {
+    return localStorage.getItem("showAdminDashboard") === "true";
+  } catch {
+    return false;
+  }
+}
+
 export default function App() {
   const [targetRoomId, setTargetRoomId] = useState<
     string | null
@@ -24,7 +33,6 @@ export default function App() {
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
   const [showComponentShowcase, setShowComponentShowcase] =
     useState(() => {
-      // Check localStorage on mount
       try {
         return (
           localStorage.getItem("showComponentShowcase") ===
@@ -35,6 +43,7 @@ export default function App() {
       }
     });
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showAdminDashboard, setShowAdminDashboard] = useState(getStoredDashboardState);
   const [showPasswordReset, setShowPasswordReset] =
     useState(false);
   const [resetToken, setResetToken] = useState<string | null>(
@@ -222,6 +231,19 @@ export default function App() {
     window.history.pushState({}, "", "/");
   };
 
+  // Handle opening and exiting admin dashboard
+  const handleOpenAdminDashboard = () => {
+    setShowAdminDashboard(true);
+    localStorage.setItem("showAdminDashboard", "true");
+    window.history.pushState({}, "", "/dashboard");
+  };
+
+  const handleExitAdminDashboard = () => {
+    setShowAdminDashboard(false);
+    localStorage.setItem("showAdminDashboard", "false");
+    window.history.pushState({}, "", "/");
+  };
+
   // Admin Panel Mode - check this first!
   if (showAdminPanel) {
     return (
@@ -232,12 +254,22 @@ export default function App() {
     );
   }
 
-  // Component Showcase Mode - check this second!
+  // Admin Dashboard Mode - check this second!
+  if (showAdminDashboard && user) {
+    return (
+      <>
+        <AdminDashboard onExit={handleExitAdminDashboard} currentUserId={user.id} />
+        <Toaster />
+      </>
+    );
+  }
+
+  // Component Showcase Mode - check this third!
   if (showComponentShowcase) {
     return <ComponentShowcase onExit={handleExitShowcase} />;
   }
 
-  // Password Reset Mode - check this third!
+  // Password Reset Mode - check this fourth!
   if (showPasswordReset) {
     return (
       <>
@@ -313,6 +345,7 @@ export default function App() {
         onLogout={handleLogout}
         onOpenShowcase={handleOpenShowcase}
         onOpenAdminPanel={handleOpenAdminPanel}
+        onOpenAdminDashboard={handleOpenAdminDashboard}
         currentSubHeard={currentSubHeard || undefined}
         onSubHeardChange={handleSubHeardChange}
         targetRoomId={targetRoomId || undefined}

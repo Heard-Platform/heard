@@ -9,7 +9,7 @@
  * - Change sub-heard admins
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -30,11 +30,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { Shield, Lock, User, Crown, X, MessageSquare, ToggleLeft, ToggleRight, TestTube } from "lucide-react";
+import { Shield, Lock, User, Crown, X, ToggleLeft, ToggleRight, TestTube } from "lucide-react";
 import { api } from "../utils/api";
 import type { DebateRoom, SubHeard } from "../types";
-import { SparklineChart } from "./SparklineChart";
-import { ActivityMetrics } from "./ActivityMetrics";
 
 interface AdminUser {
   userId: string;
@@ -42,24 +40,8 @@ interface AdminUser {
   lastSeen: number;
 }
 
-interface Feedback {
-  id: string;
-  userId: string;
-  text: string;
-  timestamp: number;
-  createdAt: string;
-}
-
 interface AdminPanelProps {
   onExit?: () => void;
-}
-
-interface ActivityMetrics {
-  dau: number;
-  wau: number;
-  mau: number;
-  dailyBreakdown: Array<{ date: string; activeUsers: number }>;
-  calculatedAt: string;
 }
 
 export function AdminPanel({ onExit }: AdminPanelProps) {
@@ -68,12 +50,9 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [debates, setDebates] = useState<DebateRoom[]>([]);
-  const [feedback, setFeedback] = useState<Feedback[]>([]);
-  const [activityMetrics, setActivityMetrics] = useState<ActivityMetrics | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedSubHeard, setSelectedSubHeard] = useState<SubHeard | null>(null);
   const [newAdminId, setNewAdminId] = useState("");
-  const [backfilling, setBackfilling] = useState(false);
   const [renameSubHeard, setRenameSubHeard] = useState<SubHeard | null>(null);
   const [newSubHeardName, setNewSubHeardName] = useState("");
   const [togglingDebateId, setTogglingDebateId] = useState<string | null>(null);
@@ -89,23 +68,19 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
 
     setLoading(true);
     try {
-      const [usersRes, subHeardsRes, debatesRes, feedbackRes, activityMetricsRes] = await Promise.all([
+      const [usersRes, subHeardsRes, debatesRes] = await Promise.all([
         api.adminGetUsers(adminKey),
         api.adminGetSubHeards(adminKey),
         api.adminGetDebates(adminKey),
-        api.adminGetFeedback(adminKey),
-        api.adminGetActivityMetrics(adminKey),
       ]);
 
-      if (usersRes.success && subHeardsRes.success && debatesRes.success && feedbackRes.success && activityMetricsRes.success) {
+      if (usersRes.success && subHeardsRes.success && debatesRes.success) {
         setUsers(usersRes.data?.users || []);
         setSubHeards(subHeardsRes.data?.subHeards || []);
         setDebates(debatesRes.data?.debates || []);
-        setFeedback(feedbackRes.data?.feedback || []);
-        setActivityMetrics(activityMetricsRes.data || null);
         setIsAuthenticated(true);
       } else {
-        alert(`Invalid admin key: ${usersRes.error || subHeardsRes.error || debatesRes.error || feedbackRes.error || activityMetricsRes.error || "Unknown error"}`);
+        alert(`Invalid admin key: ${usersRes.error || subHeardsRes.error || debatesRes.error || "Unknown error"}`);
         setIsAuthenticated(false);
       }
     } catch (error) {
@@ -389,41 +364,6 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
-  // Generate sparkline data from items with timestamps
-  const generateSparklineData = (items: any[], daysBack = 7) => {
-    const now = Date.now();
-    const dayInMs = 24 * 60 * 60 * 1000;
-    
-    // Create buckets for each day
-    const buckets = Array.from({ length: daysBack }, (_, i) => {
-      const day = daysBack - i - 1;
-      const timestamp = now - (day * dayInMs);
-      return { day: i, count: 0, timestamp };
-    });
-
-    // Count items in each bucket
-    items.forEach(item => {
-      const itemTime = item.createdAt ? new Date(item.createdAt).getTime() : 
-                       item.lastSeen || item.timestamp || 0;
-      const daysAgo = Math.floor((now - itemTime) / dayInMs);
-      
-      if (daysAgo >= 0 && daysAgo < daysBack) {
-        const bucketIndex = daysBack - daysAgo - 1;
-        if (buckets[bucketIndex]) {
-          buckets[bucketIndex].count++;
-        }
-      }
-    });
-
-    return buckets;
-  };
-
-  // Calculate sparkline data
-  const usersSparkline = generateSparklineData(users, 7);
-  const subHeardsSparkline = generateSparklineData(subHeards, 7);
-  const debatesSparkline = generateSparklineData(debates, 7);
-  const feedbackSparkline = generateSparklineData(feedback, 7);
-
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
@@ -494,95 +434,6 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             </Button>
           </div>
         </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-6">
-            <div className="flex items-center gap-3">
-              <User className="w-6 h-6 text-blue-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Total Users</p>
-                <p className="text-2xl">{users.length}</p>
-              </div>
-            </div>
-            <SparklineChart data={usersSparkline} color="#2563eb" />
-          </Card>
-          <Card className="p-6">
-            <div className="flex items-center gap-3">
-              <Crown className="w-6 h-6 text-purple-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Total Sub-Heards</p>
-                <p className="text-2xl">{subHeards.length}</p>
-              </div>
-            </div>
-            <SparklineChart data={subHeardsSparkline} color="#9333ea" />
-          </Card>
-          <Card className="p-6">
-            <div className="flex items-center gap-3">
-              <MessageSquare className="w-6 h-6 text-green-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Total Debates</p>
-                <p className="text-2xl">{debates.length}</p>
-                <p className="text-xs text-muted-foreground">
-                  {debates.filter(d => d.isActive).length} active
-                </p>
-              </div>
-            </div>
-            <SparklineChart data={debatesSparkline} color="#16a34a" />
-          </Card>
-          <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
-            <div className="flex items-center gap-3">
-              <MessageSquare className="w-6 h-6 text-purple-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Feedback Items</p>
-                <p className="text-2xl">{feedback.length}</p>
-              </div>
-            </div>
-            <SparklineChart data={feedbackSparkline} color="#c026d3" />
-          </Card>
-        </div>
-
-        {/* Activity Metrics Section */}
-        {activityMetrics && <ActivityMetrics metrics={activityMetrics} />}
-
-        {/* Feedback Section */}
-        <Card className="p-6">
-          <h2 className="text-xl mb-4 flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-purple-600" />
-            User Feedback
-          </h2>
-          <div className="space-y-3 max-h-[500px] overflow-y-auto">
-            {feedback.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No feedback yet</p>
-            ) : (
-              feedback.map((item) => (
-                <div
-                  key={item.id}
-                  className="border rounded-lg p-4 bg-gradient-to-br from-purple-50/50 to-pink-50/50 border-purple-100"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <User className="w-3 h-3" />
-                      <span>
-                        {item.userId === "anonymous" 
-                          ? "Anonymous User" 
-                          : getUserName(item.userId)}
-                      </span>
-                      <span>•</span>
-                      <span>{new Date(item.createdAt).toLocaleString()}</span>
-                    </div>
-                  </div>
-                  <p className="text-sm whitespace-pre-wrap bg-white p-3 rounded border border-purple-100">
-                    {item.text}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    ID: {item.id.substring(0, 12)}...
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-        </Card>
 
         {/* Sub-Heards Management */}
         <Card className="p-6">

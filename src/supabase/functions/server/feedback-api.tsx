@@ -48,19 +48,8 @@ app.post("/make-server-f1a393b4/feedback/submit", async (c) => {
   }
 });
 
-// Get all feedback (admin only)
-app.get("/make-server-f1a393b4/feedback/all", async (c) => {
+app.get("/make-server-f1a393b4/feedback/list", async (c) => {
   try {
-    const adminKey = c.req.header("X-Admin-Key");
-    const validKey = Deno.env.get("DEV_ADMIN_KEY");
-
-    if (!adminKey || !validKey || adminKey !== validKey) {
-      return c.json(
-        { error: "Unauthorized - Invalid admin key" },
-        401,
-      );
-    }
-
     const feedbackKeys = await kv.getByPrefix("feedback:");
 
     const feedbackList = feedbackKeys

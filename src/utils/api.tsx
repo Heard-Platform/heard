@@ -386,12 +386,8 @@ class ApiClient {
     });
   }
 
-  async adminGetFeedback(adminKey: string) {
-    return this.request("/feedback/all", {
-      headers: {
-        "X-Admin-Key": adminKey,
-      },
-    });
+  async getFeedbackList() {
+    return this.request("/feedback/list");
   }
 
   // Activity tracking
@@ -402,12 +398,12 @@ class ApiClient {
     });
   }
 
-  async adminGetActivityMetrics(adminKey: string) {
-    return this.request("/activity/metrics", {
-      headers: {
-        "X-Admin-Key": adminKey,
-      },
-    });
+  async getPublicActivityMetrics() {
+    return this.request("/activity/public-metrics");
+  }
+
+  async getPublicStats() {
+    return this.request("/public-stats");
   }
 }
 
