@@ -97,6 +97,7 @@ export interface UserSession {
   isTestUser?: boolean; // Flag to indicate if this is a test/fake user
   isDeveloper?: boolean;
   passwordHash?: string; // Hashed password (optional for backwards compatibility)
+  createdAt: number; // Timestamp when user account was created
 }
 
 const app = new Hono();

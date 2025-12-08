@@ -2,6 +2,7 @@
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getByPrefixParsed } from "./kv-utils.tsx";
+import { backfillUserCreatedAtApi } from "./backfill-user-created-at.tsx";
 
 const app = new Hono();
 
@@ -67,12 +68,10 @@ app.post(
   },
 );
 
-// RECOVERY MIGRATION: Set all rooms to active since we lost the active_room lookup data
 app.post(
   "/make-server-f1a393b4/one-time-fixes/migrate-isactive-to-rooms",
   async (c) => {
     try {
-      // Get all rooms and set them to active
       const allRooms = await getByPrefixParsed<any>("room:");
       let updatedCount = 0;
       let alreadyActiveCount = 0;
@@ -89,7 +88,6 @@ app.post(
 
           const roomId = room.id;
 
-          // Set all rooms to active
           if (room.isActive !== true) {
             room.isActive = true;
             await kv.set(`room:${roomId}`, room);
@@ -121,5 +119,7 @@ app.post(
     }
   },
 );
+
+app.route("/", backfillUserCreatedAtApi);
 
 export { app as oneTimeFixesApi };

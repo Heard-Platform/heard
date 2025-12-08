@@ -303,10 +303,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
       });
       if (res.success) {
         alert(
-          `Migration complete!\n` +
-          `Updated: ${res.data?.updated || 0} room(s)\n` +
-          `Already correct: ${res.data?.alreadyCorrect || 0} room(s)\n` +
-          `Deleted: ${res.data?.deleted || 0} active_room record(s)`
+          `Set ${res.data?.updated || 0} room(s) to active, ${res.data?.alreadyActive || 0} already active`
         );
         await fetchAdminData();
       } else {
@@ -315,6 +312,33 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     } catch (error) {
       console.error("Error running migration:", error);
       alert("Failed to run migration");
+    } finally {
+      setDataFixLoading(null);
+    }
+  };
+
+  const handleBackfillUserCreatedAt = async () => {
+    if (!confirm("Backfill createdAt field for all users from database created_at column? Safe to run multiple times.")) {
+      return;
+    }
+
+    setDataFixLoading("backfill-user-created-at");
+    try {
+      const res = await api.request("/one-time-fixes/backfill-user-created-at", {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+      });
+      if (res.success) {
+        alert(
+          `Backfilled ${res.data?.updated || 0} user(s), skipped ${res.data?.skipped || 0} already-backfilled, ${res.data?.errors || 0} error(s)`
+        );
+        await fetchAdminData();
+      } else {
+        alert(`Failed to run backfill: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error running backfill:", error);
+      alert("Failed to run backfill");
     } finally {
       setDataFixLoading(null);
     }
@@ -812,6 +836,22 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                 size="sm"
               >
                 Disabled
+              </Button>
+            </div>
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-blue-50">
+              <div className="flex-1">
+                <h3 className="font-medium">Backfill User CreatedAt</h3>
+                <p className="text-sm text-muted-foreground">
+                  Backfill createdAt field for all users from database created_at column. Safe to run multiple times.
+                </p>
+              </div>
+              <Button
+                onClick={handleBackfillUserCreatedAt}
+                disabled={dataFixLoading === "backfill-user-created-at"}
+                variant="outline"
+                size="sm"
+              >
+                {dataFixLoading === "backfill-user-created-at" ? "Running..." : "Backfill CreatedAt"}
               </Button>
             </div>
           </div>

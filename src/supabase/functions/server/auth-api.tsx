@@ -33,6 +33,7 @@ interface UserSession {
   isTestUser?: boolean;
   isDeveloper?: boolean;
   passwordHash?: string;
+  createdAt: number;
 }
 
 // Utility functions
@@ -289,6 +290,7 @@ app.post(
         isTestUser: false,
         isDeveloper: false,
         passwordHash,
+        createdAt: Date.now(),
       };
 
       await saveUserSession(userSession);
