@@ -47,7 +47,7 @@ interface LobbyScreenProps {
   loading: boolean;
   error: string | null;
   onCreateRoom: (
-    newDebate: NewDebateRoom
+    newDebate: NewDebateRoom,
   ) => Promise<DebateRoom>;
   onJoinRoom: (roomId: string) => Promise<void>;
   onRefreshRooms: (subHeard?: string) => Promise<DebateRoom[]>;
@@ -60,8 +60,14 @@ interface LobbyScreenProps {
     description: string,
   ) => Promise<boolean>;
   onSetRoomInactive?: (roomId: string) => Promise<boolean>;
-  onSubmitStatement: (roomId: string, text: string) => Promise<any>;
-  onVoteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
+  onSubmitStatement: (
+    roomId: string,
+    text: string,
+  ) => Promise<any>;
+  onVoteOnStatement: (
+    statementId: string,
+    voteType: VoteType,
+  ) => Promise<any>;
   onLogout?: () => void;
   onOpenShowcase?: () => void;
   onOpenAdminPanel?: () => void;
@@ -136,7 +142,10 @@ export function LobbyScreen({
 
   // Detect mobile keyboard state
   useEffect(() => {
-    if (typeof window === "undefined" || !window.visualViewport) {
+    if (
+      typeof window === "undefined" ||
+      !window.visualViewport
+    ) {
       console.log("🚫 Visual Viewport API not available");
       return;
     }
@@ -144,20 +153,24 @@ export function LobbyScreen({
     // Capture the initial window height ONCE on mount (before any keyboard interactions)
     if (initialWindowHeightRef.current === 0) {
       initialWindowHeightRef.current = window.innerHeight;
-      console.log("📏 Initial window height captured:", initialWindowHeightRef.current);
+      console.log(
+        "📏 Initial window height captured:",
+        initialWindowHeightRef.current,
+      );
     }
 
     const handleResize = () => {
       const viewportHeight = window.visualViewport.height;
       const currentWindowHeight = window.innerHeight;
-      const initialWindowHeight = initialWindowHeightRef.current;
-      
+      const initialWindowHeight =
+        initialWindowHeightRef.current;
+
       // Use the INITIAL window height for ratio calculation, not the current one
       const ratio = viewportHeight / initialWindowHeight;
-      
+
       // Keyboard open = viewport shrinks significantly
       const keyboardOpen = ratio < 0.75;
-      
+
       console.log("📱 Viewport change:", {
         viewportHeight,
         currentWindowHeight,
@@ -166,7 +179,7 @@ export function LobbyScreen({
         keyboardOpen,
         threshold: 0.75,
       });
-      
+
       setIsKeyboardOpen(keyboardOpen);
       setDebugViewport({
         viewportHeight,
@@ -174,22 +187,37 @@ export function LobbyScreen({
         ratio,
       });
     };
-    
+
     // Check initial state
     handleResize();
-    
-    window.visualViewport.addEventListener("resize", handleResize);
-    window.visualViewport.addEventListener("scroll", handleResize);
-    
+
+    window.visualViewport.addEventListener(
+      "resize",
+      handleResize,
+    );
+    window.visualViewport.addEventListener(
+      "scroll",
+      handleResize,
+    );
+
     return () => {
-      window.visualViewport.removeEventListener("resize", handleResize);
-      window.visualViewport.removeEventListener("scroll", handleResize);
+      window.visualViewport.removeEventListener(
+        "resize",
+        handleResize,
+      );
+      window.visualViewport.removeEventListener(
+        "scroll",
+        handleResize,
+      );
     };
   }, []);
 
   // Debug: log when keyboard state changes
   useEffect(() => {
-    console.log("⌨️ Keyboard state changed:", isKeyboardOpen ? "OPEN" : "CLOSED");
+    console.log(
+      "⌨️ Keyboard state changed:",
+      isKeyboardOpen ? "OPEN" : "CLOSED",
+    );
   }, [isKeyboardOpen]);
 
   // Refresh rooms on mount and when sub-heard changes
@@ -274,7 +302,7 @@ export function LobbyScreen({
   };
 
   const handleCreateRoom = async (
-    newDebate: NewDebateRoom
+    newDebate: NewDebateRoom,
   ): Promise<DebateRoom> => {
     const result = await onCreateRoom(newDebate);
     // Scroll to top after creating room
@@ -288,21 +316,28 @@ export function LobbyScreen({
   return (
     <>
       {/* Intro Modal - controlled externally */}
-      <IntroModal open={helpModalOpen} onOpenChange={setHelpModalOpen} />
+      <IntroModal
+        open={helpModalOpen}
+        onOpenChange={setHelpModalOpen}
+      />
 
       {/* Main TikTok-style scroller */}
       <div className="relative">
         {/* Floating header with user info and menu */}
         <div className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="flex flex-col"
               onClick={() => {
                 if (user?.isDeveloper) {
                   setShowDebugPanel(!showDebugPanel);
                 }
               }}
-              style={{ cursor: user?.isDeveloper ? 'pointer' : 'default' }}
+              style={{
+                cursor: user?.isDeveloper
+                  ? "pointer"
+                  : "default",
+              }}
             >
               <p className="text-[10px] text-purple-400/80 tracking-wide uppercase mb-[-2px]">
                 A place to be
@@ -310,7 +345,8 @@ export function LobbyScreen({
               <motion.h1
                 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
                 style={{
-                  WebkitTextStroke: "0.6px rgba(255,255,255,0.8)",
+                  WebkitTextStroke:
+                    "0.6px rgba(255,255,255,0.8)",
                 }}
               >
                 HEARD
@@ -394,7 +430,9 @@ export function LobbyScreen({
                     className="bg-white/90 backdrop-blur-sm shadow-lg px-3 py-2 h-auto gap-2"
                   >
                     <span className="text-lg">⭐</span>
-                    <span className="font-semibold">{user.score}</span>
+                    <span className="font-semibold">
+                      {user.score}
+                    </span>
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right">
@@ -592,7 +630,9 @@ export function LobbyScreen({
       )}
 
       {/* Floating feedback button - hide when keyboard is open */}
-      {!isKeyboardOpen && <FloatingFeedbackButton userId={user?.id} />}
+      {!isKeyboardOpen && (
+        <FloatingFeedbackButton userId={user?.id} />
+      )}
 
       {/* Create room sheet */}
       <CreateRoomSheet

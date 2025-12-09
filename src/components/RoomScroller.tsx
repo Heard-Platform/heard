@@ -9,11 +9,7 @@ import { motion } from "motion/react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
-import type {
-  DebateRoom,
-  Statement,
-  VoteType,
-} from "../types";
+import type { DebateRoom, Statement, VoteType } from "../types";
 import { RoomCard } from "./RoomCard";
 
 interface RoomScrollerProps {
@@ -39,7 +35,9 @@ interface RoomScrollerProps {
   ) => void;
   roomStatements: Record<string, Statement[]>;
   onGetRoomStatements: (roomId: string) => Promise<Statement[]>;
-  onGetAllRoomStatements: () => Promise<Record<string, Statement[]>>;
+  onGetAllRoomStatements: () => Promise<
+    Record<string, Statement[]>
+  >;
 }
 
 export interface RoomScrollerRef {
@@ -87,7 +85,7 @@ export const RoomScroller = forwardRef<
 
     // Fetch statements for all rooms
     useEffect(() => {
-      onGetAllRoomStatements()
+      onGetAllRoomStatements();
     }, []);
 
     // Combine rooms with a "create new" card at the end

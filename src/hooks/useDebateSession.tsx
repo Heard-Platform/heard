@@ -438,31 +438,28 @@ export function useDebateSession() {
   );
 
   // Fetch statements for multiple rooms
-  const getAllRoomStatements = useCallback(
-    async () => {
-      const statementsMap: Record<string, Statement[]> = {};
+  const getAllRoomStatements = useCallback(async () => {
+    const statementsMap: Record<string, Statement[]> = {};
 
-      for (const room of activeRooms) {
-        try {
-          const response = await api.getRoomStatus(room.id);
-          if (response.success && response.data) {
-            statementsMap[room.id] =
-              response.data.statements || [];
-          }
-        } catch (error) {
-          console.error(
-            `Error fetching statements for room ${room.id}:`,
-            error,
-          );
-          statementsMap[room.id] = [];
+    for (const room of activeRooms) {
+      try {
+        const response = await api.getRoomStatus(room.id);
+        if (response.success && response.data) {
+          statementsMap[room.id] =
+            response.data.statements || [];
         }
+      } catch (error) {
+        console.error(
+          `Error fetching statements for room ${room.id}:`,
+          error,
+        );
+        statementsMap[room.id] = [];
       }
+    }
 
-      setRoomStatements(statementsMap);
-      return statementsMap;
-    },
-    [],
-  );
+    setRoomStatements(statementsMap);
+    return statementsMap;
+  }, []);
 
   // Reset session (full logout)
   const resetSession = useCallback(() => {
