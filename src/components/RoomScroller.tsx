@@ -39,7 +39,9 @@ interface RoomScrollerProps {
   ) => void;
   roomStatements: Record<string, Statement[]>;
   onGetRoomStatements: (roomId: string) => Promise<Statement[]>;
-  onGetAllRoomStatements: (rooms: DebateRoom[]) => Promise<Record<string, Statement[]>>;
+  onGetAllRoomStatements: (
+    rooms: DebateRoom[],
+  ) => Promise<Record<string, Statement[]>>;
 }
 
 export interface RoomScrollerRef {
