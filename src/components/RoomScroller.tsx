@@ -133,13 +133,6 @@ export const RoomScroller = forwardRef<
 
       // Immediately fetch on index change
       refreshRoomStatements(currentRoom.id);
-
-      // Then set up polling interval
-      const pollInterval = setInterval(() => {
-        refreshRoomStatements(currentRoom.id);
-      }, 2000); // Poll every 2 seconds
-
-      return () => clearInterval(pollInterval);
     }, [currentIndex, rooms]);
 
     // Handle scroll events with debouncing
