@@ -231,7 +231,7 @@ export function SwipeableStatementStack({
         <div className="text-center space-y-4">
           <div className="text-6xl mb-4">🎉</div>
           <h3 className="text-2xl text-primary">
-            All caught up!
+            Loading results...
           </h3>
           <p className="text-muted-foreground">
             You've voted on all available statements.
