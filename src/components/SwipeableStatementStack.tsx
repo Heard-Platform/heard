@@ -5,12 +5,6 @@ import {
   useTransform,
   PanInfo,
 } from "motion/react";
-import {
-  CheckCircle,
-  XCircle,
-  Ban,
-  Star,
-} from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import type { Statement, VoteType } from "../types";
 import { NewStatementInput } from "./NewStatementInput";
@@ -295,7 +289,11 @@ export function SwipeableStatementStack({
                 direction={
                   isBeingSwiped ? swipeDirection : null
                 }
-                currentIndex={statements.length - unvotedStatements.length + 1}
+                currentIndex={
+                  statements.length -
+                  unvotedStatements.length +
+                  1
+                }
                 totalStatements={statements.length}
               />
             );
@@ -305,7 +303,9 @@ export function SwipeableStatementStack({
       {/* New Statement Input */}
       {onSubmitStatement && (
         <div className="mt-6">
-          <NewStatementInput onSubmitStatement={onSubmitStatement} />
+          <NewStatementInput
+            onSubmitStatement={onSubmitStatement}
+          />
         </div>
       )}
     </div>
@@ -463,10 +463,22 @@ function SwipeableCard({
         {/* Visual indicators for swipe direction */}
         {isTopCard && (
           <>
-            <SwipeIndicator direction="disagree" opacity={disagreeOpacity} />
-            <SwipeIndicator direction="agree" opacity={agreeOpacity} />
-            <SwipeIndicator direction="superAgree" opacity={superAgreeOpacity} />
-            <SwipeIndicator direction="pass" opacity={passOpacity} />
+            <SwipeIndicator
+              direction="disagree"
+              opacity={disagreeOpacity}
+            />
+            <SwipeIndicator
+              direction="agree"
+              opacity={agreeOpacity}
+            />
+            <SwipeIndicator
+              direction="superAgree"
+              opacity={superAgreeOpacity}
+            />
+            <SwipeIndicator
+              direction="pass"
+              opacity={passOpacity}
+            />
           </>
         )}
       </div>
