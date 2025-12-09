@@ -439,10 +439,10 @@ export function useDebateSession() {
 
   // Fetch statements for multiple rooms
   const getAllRoomStatements = useCallback(
-    async (rooms: DebateRoom[]) => {
+    async () => {
       const statementsMap: Record<string, Statement[]> = {};
 
-      for (const room of rooms) {
+      for (const room of activeRooms) {
         try {
           const response = await api.getRoomStatus(room.id);
           if (response.success && response.data) {

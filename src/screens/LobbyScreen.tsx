@@ -70,7 +70,7 @@ interface LobbyScreenProps {
   onSubHeardChange?: (subHeard: string | null) => void;
   roomStatements: Record<string, any[]>;
   onGetRoomStatements: (roomId: string) => Promise<any[]>;
-  onGetAllRoomStatements: (rooms: DebateRoom[]) => Promise<Record<string, any[]>>;
+  onGetAllRoomStatements: () => Promise<Record<string, any[]>>;
   targetRoomId?: string;
   onRoomCreated?: () => void;
 }

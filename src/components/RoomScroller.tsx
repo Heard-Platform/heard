@@ -13,7 +13,7 @@ import type {
   DebateRoom,
   Statement,
   VoteType,
-} from "../utils/api";
+} from "../types";
 import { RoomCard } from "./RoomCard";
 
 interface RoomScrollerProps {
@@ -39,9 +39,7 @@ interface RoomScrollerProps {
   ) => void;
   roomStatements: Record<string, Statement[]>;
   onGetRoomStatements: (roomId: string) => Promise<Statement[]>;
-  onGetAllRoomStatements: (
-    rooms: DebateRoom[],
-  ) => Promise<Record<string, Statement[]>>;
+  onGetAllRoomStatements: () => Promise<Record<string, Statement[]>>;
 }
 
 export interface RoomScrollerRef {
@@ -89,14 +87,8 @@ export const RoomScroller = forwardRef<
 
     // Fetch statements for all rooms
     useEffect(() => {
-      const fetchStatements = async () => {
-        await onGetAllRoomStatements(rooms);
-      };
-
-      if (rooms.length > 0) {
-        fetchStatements();
-      }
-    }, [rooms, onGetAllRoomStatements]);
+      onGetAllRoomStatements()
+    }, []);
 
     // Combine rooms with a "create new" card at the end
     const allCards = [
