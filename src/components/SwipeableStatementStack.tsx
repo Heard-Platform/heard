@@ -173,12 +173,14 @@ export function SwipeableStatementStack({
 
     onVote(statementId, voteType).catch((error) => {
       console.error("Error voting:", error);
-      
-      toast.error("⚠️ Your vote couldn't be saved. Please try again.", {
+
+      toast.error(
+        "⚠️ Your vote couldn't be saved. Please try again.",
+        {
           duration: 3000,
         },
       );
-      
+
       setVotedStatementIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(statementId);
