@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence, useMotionValue, useTransform } from "motion/react";
+import { motion } from "motion/react";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { Button } from "./ui/button";
-import { Sparkles } from "lucide-react";
 import { getPastelColor } from "../utils/colors";
 import { SwipeIndicatorCompact } from "./SwipeIndicators";
 import { SwipeInstructions } from "./SwipeInstructions";
@@ -39,7 +38,9 @@ const DEMO_STATEMENTS = [
 function DemoSwipeCard() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [shouldAnimate, setShouldAnimate] = useState(false);
-  const [swipeDirection, setSwipeDirection] = useState<"left" | "right">("left");
+  const [swipeDirection, setSwipeDirection] = useState<
+    "left" | "right"
+  >("left");
 
   // Trigger animation after modal loads
   useEffect(() => {
@@ -53,17 +54,21 @@ function DemoSwipeCard() {
   useEffect(() => {
     if (shouldAnimate) {
       const timer = setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % DEMO_STATEMENTS.length);
+        setCurrentIndex(
+          (prev) => (prev + 1) % DEMO_STATEMENTS.length,
+        );
         setShouldAnimate(false);
-        
+
         // Alternate swipe direction
-        setSwipeDirection((prev) => prev === "left" ? "right" : "left");
-        
+        setSwipeDirection((prev) =>
+          prev === "left" ? "right" : "left",
+        );
+
         // Start the cycle again
         const restartTimer = setTimeout(() => {
           setShouldAnimate(true);
         }, 1500); // Reduced from 2000 (25% faster)
-        
+
         return () => clearTimeout(restartTimer);
       }, 750); // Reduced from 1000 (25% faster)
       return () => clearTimeout(timer);
@@ -71,7 +76,10 @@ function DemoSwipeCard() {
   }, [shouldAnimate, currentIndex]);
 
   const currentStatement = DEMO_STATEMENTS[currentIndex];
-  const nextStatement = DEMO_STATEMENTS[(currentIndex + 1) % DEMO_STATEMENTS.length];
+  const nextStatement =
+    DEMO_STATEMENTS[
+      (currentIndex + 1) % DEMO_STATEMENTS.length
+    ];
 
   return (
     <div className="relative w-full h-[180px] pb-12">
@@ -95,11 +103,15 @@ function DemoSwipeCard() {
       <motion.div
         key={`top-${currentStatement.id}`}
         className={`absolute top-0 left-0 w-full p-4 rounded-xl border-2 shadow-xl ${getPastelColor(currentStatement.id)}`}
-        animate={shouldAnimate ? { 
-          x: swipeDirection === "left" ? -400 : 400, 
-          rotate: swipeDirection === "left" ? -25 : 25, 
-          opacity: 0 
-        } : { x: 0, rotate: 0, opacity: 1 }}
+        animate={
+          shouldAnimate
+            ? {
+                x: swipeDirection === "left" ? -400 : 400,
+                rotate: swipeDirection === "left" ? -25 : 25,
+                opacity: 0,
+              }
+            : { x: 0, rotate: 0, opacity: 1 }
+        }
         transition={{ duration: 0.6, ease: "easeInOut" }}
       >
         <div className="flex items-center justify-center min-h-[140px]">
@@ -110,7 +122,7 @@ function DemoSwipeCard() {
 
         {/* Disagree indicator (swipe left) */}
         {swipeDirection === "left" && (
-          <SwipeIndicatorCompact 
+          <SwipeIndicatorCompact
             direction="disagree"
             opacity={shouldAnimate ? 1 : 0}
           />
@@ -118,7 +130,7 @@ function DemoSwipeCard() {
 
         {/* Agree indicator (swipe right) */}
         {swipeDirection === "right" && (
-          <SwipeIndicatorCompact 
+          <SwipeIndicatorCompact
             direction="agree"
             opacity={shouldAnimate ? 1 : 0}
           />
@@ -136,12 +148,19 @@ function DemoSwipeCard() {
   );
 }
 
-export function IntroModal({ onClose, open: controlledOpen, onOpenChange }: IntroModalProps) {
+export function IntroModal({
+  onClose,
+  open: controlledOpen,
+  onOpenChange,
+}: IntroModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
 
   // If controlled externally, use that, otherwise use internal state
-  const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
-  
+  const isOpen =
+    controlledOpen !== undefined
+      ? controlledOpen
+      : internalOpen;
+
   useEffect(() => {
     // Only auto-show if not controlled externally
     if (controlledOpen === undefined) {
@@ -149,7 +168,10 @@ export function IntroModal({ onClose, open: controlledOpen, onOpenChange }: Intr
       const hasSeenIntro = localStorage.getItem(INTRO_SEEN_KEY);
       if (!hasSeenIntro) {
         // Small delay before showing to let the page load
-        const timer = setTimeout(() => setInternalOpen(true), 500);
+        const timer = setTimeout(
+          () => setInternalOpen(true),
+          500,
+        );
         return () => clearTimeout(timer);
       }
     }
@@ -157,13 +179,13 @@ export function IntroModal({ onClose, open: controlledOpen, onOpenChange }: Intr
 
   const handleClose = () => {
     localStorage.setItem(INTRO_SEEN_KEY, "true");
-    
+
     if (onOpenChange) {
       onOpenChange(false);
     } else {
       setInternalOpen(false);
     }
-    
+
     onClose?.();
   };
 
@@ -189,9 +211,10 @@ export function IntroModal({ onClose, open: controlledOpen, onOpenChange }: Intr
                 </span>
               </div>
               <p className="text-sm text-muted-foreground font-normal max-w-sm mx-auto">
-                Heard is a debate app that makes arguing fun! Share your hot takes,
-                vote on others, and discover where you agree, how you differ,
-                and what quieter ideas are getting missed.
+                Heard is a debate app that makes arguing fun!
+                Share your hot takes, vote on others, and
+                discover where you agree, how you differ, and
+                what quieter ideas are getting missed.
               </p>
             </motion.div>
           </DialogTitle>
