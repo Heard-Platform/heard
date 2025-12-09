@@ -15,7 +15,6 @@ import type {
   VoteType,
 } from "../utils/api";
 import { RoomCard } from "./RoomCard";
-import { api } from "../utils/api";
 
 interface RoomScrollerProps {
   rooms: DebateRoom[];
@@ -38,6 +37,9 @@ interface RoomScrollerProps {
     statementText: string,
     subHeard?: string,
   ) => void;
+  roomStatements: Record<string, Statement[]>;
+  onGetRoomStatements: (roomId: string) => Promise<Statement[]>;
+  onGetAllRoomStatements: (rooms: DebateRoom[]) => Promise<Record<string, Statement[]>>;
 }
 
 export interface RoomScrollerRef {
@@ -61,26 +63,20 @@ export const RoomScroller = forwardRef<
       currentUserId,
       currentSubHeard,
       onDiscussStatement,
+      roomStatements,
+      onGetRoomStatements,
+      onGetAllRoomStatements,
     },
     ref,
   ) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
-    const [roomStatements, setRoomStatements] = useState<
-      Record<string, Statement[]>
-    >({});
 
     // Function to refresh statements for a specific room
     const refreshRoomStatements = async (roomId: string) => {
       try {
-        const response = await api.getRoomStatus(roomId);
-        if (response.success && response.data) {
-          setRoomStatements((prev) => ({
-            ...prev,
-            [roomId]: response.data.statements || [],
-          }));
-        }
+        await onGetRoomStatements(roomId);
       } catch (error) {
         console.error(
           `Error refreshing statements for room ${roomId}:`,
@@ -92,31 +88,13 @@ export const RoomScroller = forwardRef<
     // Fetch statements for all rooms
     useEffect(() => {
       const fetchStatements = async () => {
-        const statementsMap: Record<string, Statement[]> = {};
-
-        for (const room of rooms) {
-          try {
-            const response = await api.getRoomStatus(room.id);
-            if (response.success && response.data) {
-              statementsMap[room.id] =
-                response.data.statements || [];
-            }
-          } catch (error) {
-            console.error(
-              `Error fetching statements for room ${room.id}:`,
-              error,
-            );
-            statementsMap[room.id] = [];
-          }
-        }
-
-        setRoomStatements(statementsMap);
+        await onGetAllRoomStatements(rooms);
       };
 
       if (rooms.length > 0) {
         fetchStatements();
       }
-    }, [rooms]);
+    }, [rooms, onGetAllRoomStatements]);
 
     // Combine rooms with a "create new" card at the end
     const allCards = [

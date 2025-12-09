@@ -69,6 +69,9 @@ export default function App() {
     createRantTestRoom,
     createRealtimeTestRoom,
     setRoomInactive,
+    roomStatements,
+    getRoomStatements,
+    getAllRoomStatements,
   } = useDebateSession();
 
   // Handle nickname setup completion
@@ -349,6 +352,9 @@ export default function App() {
         currentSubHeard={currentSubHeard || undefined}
         onSubHeardChange={handleSubHeardChange}
         targetRoomId={targetRoomId || undefined}
+        roomStatements={roomStatements}
+        onGetRoomStatements={getRoomStatements}
+        onGetAllRoomStatements={getAllRoomStatements}
       />
       <Toaster />
     </>

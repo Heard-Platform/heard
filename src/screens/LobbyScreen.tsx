@@ -68,8 +68,11 @@ interface LobbyScreenProps {
   onOpenAdminDashboard?: () => void;
   currentSubHeard?: string;
   onSubHeardChange?: (subHeard: string | null) => void;
-  onRoomCreated?: () => void;
+  roomStatements: Record<string, any[]>;
+  onGetRoomStatements: (roomId: string) => Promise<any[]>;
+  onGetAllRoomStatements: (rooms: DebateRoom[]) => Promise<Record<string, any[]>>;
   targetRoomId?: string;
+  onRoomCreated?: () => void;
 }
 
 export function LobbyScreen({
@@ -94,8 +97,11 @@ export function LobbyScreen({
   onOpenAdminDashboard,
   currentSubHeard,
   onSubHeardChange,
-  onRoomCreated,
+  roomStatements,
+  onGetRoomStatements,
+  onGetAllRoomStatements,
   targetRoomId,
+  onRoomCreated,
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
     useState(false);
@@ -572,6 +578,9 @@ export function LobbyScreen({
           currentUserId={user?.id}
           currentSubHeard={currentSubHeard}
           onDiscussStatement={handleDiscussStatement}
+          roomStatements={roomStatements}
+          onGetRoomStatements={onGetRoomStatements}
+          onGetAllRoomStatements={onGetAllRoomStatements}
         />
       </div>
 

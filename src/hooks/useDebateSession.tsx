@@ -14,6 +14,7 @@ import type {
   DebateRoom,
   DebateMode,
   NewDebateRoom,
+  Statement,
 } from "../types";
 
 export function useDebateSession() {
@@ -26,6 +27,9 @@ export function useDebateSession() {
   >(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [roomStatements, setRoomStatements] = useState<
+    Record<string, Statement[]>
+  >({});
 
   // Initialize user session
   const initializeUser = useCallback(
@@ -392,10 +396,56 @@ export function useDebateSession() {
     [user, getActiveRooms],
   );
 
+  // Fetch statements for a specific room
+  const getRoomStatements = useCallback(async (roomId: string) => {
+    try {
+      const response = await api.getRoomStatus(roomId);
+      if (response.success && response.data) {
+        const statements = response.data.statements || [];
+        setRoomStatements((prev) => ({
+          ...prev,
+          [roomId]: statements,
+        }));
+        return statements;
+      }
+    } catch (error) {
+      console.error(
+        `Error fetching statements for room ${roomId}:`,
+        error,
+      );
+    }
+    return [];
+  }, []);
+
+  // Fetch statements for multiple rooms
+  const getAllRoomStatements = useCallback(async (rooms: DebateRoom[]) => {
+    const statementsMap: Record<string, Statement[]> = {};
+
+    for (const room of rooms) {
+      try {
+        const response = await api.getRoomStatus(room.id);
+        if (response.success && response.data) {
+          statementsMap[room.id] =
+            response.data.statements || [];
+        }
+      } catch (error) {
+        console.error(
+          `Error fetching statements for room ${room.id}:`,
+          error,
+        );
+        statementsMap[room.id] = [];
+      }
+    }
+
+    setRoomStatements(statementsMap);
+    return statementsMap;
+  }, []);
+
   // Reset session (full logout)
   const resetSession = useCallback(() => {
     setUser(null);
     setActiveRooms([]);
+    setRoomStatements({});
     setError(null);
     clearUserId();
   }, []);
@@ -433,5 +483,8 @@ export function useDebateSession() {
     createRantTestRoom,
     createRealtimeTestRoom,
     setRoomInactive,
+    roomStatements,
+    getRoomStatements,
+    getAllRoomStatements,
   };
 }
