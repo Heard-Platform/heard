@@ -171,26 +171,27 @@ export function SwipeableStatementStack({
       }
     }
 
-    try {
-      await onVote(statementId, voteType);
-      // Reset after animation completes
-      setTimeout(() => {
-        setSwipedCardId(null);
-        setSwipeDirection(null);
-        setIsVoting(false);
-      }, 600);
-    } catch (error) {
+    onVote(statementId, voteType).catch((error) => {
       console.error("Error voting:", error);
-      // Remove from voted set if vote failed
+      
+      toast.error("⚠️ Your vote couldn't be saved. Please try again.", {
+          duration: 3000,
+        },
+      );
+      
       setVotedStatementIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(statementId);
         return newSet;
       });
+    });
+
+    // Reset after animation completes (reduced from 600ms to 300ms)
+    setTimeout(() => {
       setSwipedCardId(null);
       setSwipeDirection(null);
       setIsVoting(false);
-    }
+    }, 300);
   };
 
   const handleDragEnd = (
