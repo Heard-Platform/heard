@@ -9,7 +9,11 @@ import { motion } from "motion/react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
-import type { DebateRoom, Statement, VoteType } from "../utils/api";
+import type {
+  DebateRoom,
+  Statement,
+  VoteType,
+} from "../utils/api";
 import { RoomCard } from "./RoomCard";
 import { api } from "../utils/api";
 
@@ -18,8 +22,14 @@ interface RoomScrollerProps {
   onJoinRoom: (roomId: string) => void;
   onCreateRoom: () => void;
   onSetRoomInactive?: (roomId: string) => Promise<boolean>;
-  onSubmitStatement: (roomId: string, text: string) => Promise<any>;
-  onVoteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
+  onSubmitStatement: (
+    roomId: string,
+    text: string,
+  ) => Promise<any>;
+  onVoteOnStatement: (
+    statementId: string,
+    voteType: VoteType,
+  ) => Promise<any>;
   isDeveloper: boolean;
   loading: boolean;
   currentUserId?: string;
