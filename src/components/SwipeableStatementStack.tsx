@@ -55,13 +55,6 @@ export function SwipeableStatementStack({
     return !hasVotedBefore && !justVoted;
   });
 
-  // Reset voted IDs when statements list changes significantly
-  useEffect(() => {
-    setVotedStatementIds(new Set());
-    setSwipedCardId(null);
-    setSwipeDirection(null);
-  }, [statements.length]);
-
   const currentStatement = unvotedStatements[0];
   const hasMoreCards = unvotedStatements.length > 0;
 
