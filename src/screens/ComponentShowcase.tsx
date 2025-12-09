@@ -2,7 +2,6 @@ import { ArrowLeft, Code2 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { RantSubmissionStory } from "../stories/RantSubmission.story";
 import { RealTimeResultsStory } from "../stories/RealTimeResults.story";
 import { ResultsCardsStory } from "../stories/ResultsCards.story";
 import { CreateRoomSheetStory } from "../stories/CreateRoomSheet.story";
@@ -17,9 +16,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
   // Load active tab from localStorage
   const getInitialTab = () => {
     try {
-      return localStorage.getItem("showcaseActiveTab") || "rant-submission";
+      return localStorage.getItem("showcaseActiveTab") || "results";
     } catch {
-      return "rant-submission";
+      return "results";
     }
   };
 
@@ -68,17 +67,12 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
           onValueChange={handleTabChange}
         >
           <TabsList className="mb-6">
-            <TabsTrigger value="rant-submission">Rant Submission</TabsTrigger>
             <TabsTrigger value="results">Results</TabsTrigger>
             <TabsTrigger value="results-cards">Results Cards</TabsTrigger>
             <TabsTrigger value="create-room">Create Room</TabsTrigger>
             <TabsTrigger value="votes-drawer">Votes Drawer</TabsTrigger>
             <TabsTrigger value="debate-scroller">Debate Scroller</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="rant-submission">
-            <RantSubmissionStory />
-          </TabsContent>
 
           <TabsContent value="results">
             <RealTimeResultsStory />

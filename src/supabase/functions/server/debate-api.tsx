@@ -563,6 +563,21 @@ const getActiveRooms = async (): Promise<DebateRoom[]> => {
   return allRooms.filter((r) => r.isActive);
 };
 
+// Shared prompt rules for rant statement extraction
+const RANT_EXTRACTION_RULES = `STRICT Rules:
+- Use the author's actual words and phrases whenever possible
+- Do NOT add interpretations, implications, or extra meaning
+- Do NOT extrapolate beyond what they explicitly said
+- Stay faithful to their tone (casual, formal, emotional, etc.)
+- Only create statements for arguments they actually made
+- Keep their specific examples and concerns intact
+- If they used simple language, keep it simple
+- If they were emotional, preserve that emotion
+- Each statement MUST be a complete, well-formed sentence
+- Capitalize the first letter of each statement
+- Add minimal wording ONLY if needed to make incomplete thoughts into complete sentences
+- Ensure each statement stands alone as something people can vote on`;
+
 // Vote utility functions
 const saveVote = async (vote: Vote) => {
   await kv.set(
@@ -793,15 +808,7 @@ Rant: ${truncatedText}
 
 Generate 3-5 debate statements based on this person's rant.
 
-STRICT Rules:
-- Use the author's actual words and phrases whenever possible
-- Do NOT add interpretations, implications, or extra meaning
-- Do NOT extrapolate beyond what they explicitly said
-- Stay faithful to their tone (casual, formal, emotional, etc.)
-- Only create statements for arguments they actually made
-- Keep their specific examples and concerns intact
-- If they used simple language, keep it simple
-- If they were emotional, preserve that emotion
+${RANT_EXTRACTION_RULES}
 
 Return only the statements, one per line. Don't include any explanations, extra text, or prefixes.`;
 
@@ -873,80 +880,6 @@ const parseStatements = (content: string): string[] => {
     .filter((line) => line.length > 0);
 
   return lines;
-};
-
-// Process a single rant immediately and create statements
-const processRantAndCreateStatements = async (
-  rant: Rant,
-  topic: string,
-  roomId: string,
-): Promise<Statement[]> => {
-  try {
-    const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
-
-    if (!openaiApiKey) {
-      console.error("OPENAI_API_KEY not found in environment");
-      throw new Error("AI service not configured");
-    }
-
-    console.log(
-      `Processing rant from ${rant.author} for topic: ${topic}`,
-    );
-
-    // Generate statements from this rant
-    const aiStartTime = Date.now();
-    const result = await generateStatementsFromRant(
-      rant,
-      topic,
-      openaiApiKey,
-      0, // index not important for single rant processing
-    );
-    const aiEndTime = Date.now();
-
-    console.log(
-      `AI generated ${result.statements.length} statements from rant in ${aiEndTime - aiStartTime}ms`,
-    );
-
-    // Create statement objects
-    const baseTimestamp = Date.now();
-    const statements: Statement[] = [];
-
-    for (
-      let index = 0;
-      index < result.statements.length;
-      index++
-    ) {
-      const statementId = generateId();
-      const statement: Statement = {
-        id: statementId,
-        text: result.statements[index],
-        author: rant.author, // Use the rant author's name
-        agrees: 0,
-        disagrees: 0,
-        passes: 0,
-        roomId: roomId,
-        timestamp: baseTimestamp + index,
-        round: 1, // Rants are processed during lobby/round1
-        voters: {},
-      };
-      statements.push(statement);
-    }
-
-    // Save all statements
-    await bulkSaveStatements(statements);
-
-    console.log(
-      `Successfully saved ${statements.length} statements from ${rant.author}'s rant`,
-    );
-
-    return statements;
-  } catch (error) {
-    console.error(
-      `Error processing rant from ${rant.author}:`,
-      error,
-    );
-    throw error;
-  }
 };
 
 // Create or join user session
@@ -1306,107 +1239,6 @@ app.post(
   },
 );
 
-// Submit rant
-app.post(
-  "/make-server-f1a393b4/room/:roomId/rant",
-  async (c: any) => {
-    try {
-      const roomId = c.req.param("roomId");
-      const { text, userId } = await c.req.json();
-
-      if (!text || text.trim().length < 50) {
-        return c.json(
-          { error: "Rant must be at least 50 characters" },
-          400,
-        );
-      }
-
-      const room = await getDebateRoom(roomId);
-      if (!room) {
-        return c.json({ error: "Room not found" }, 404);
-      }
-
-      if (!room.rantFirst) {
-        return c.json(
-          { error: "This room does not support rants" },
-          400,
-        );
-      }
-
-      const user = await getUserSession(userId);
-      if (!user) {
-        return c.json({ error: "User session not found" }, 404);
-      }
-
-      // Auto-join user to room if they're not already a participant
-      if (!room.participants.includes(userId)) {
-        room.participants.push(userId);
-        await saveDebateRoom(room);
-        console.log(
-          `Auto-added user ${userId} to room ${roomId} via rant submission`,
-        );
-      }
-
-      // Check if user has already submitted a rant
-      const existingRants = await getRantsForRoom(roomId);
-      const userHasRant = existingRants.some(
-        (rant) => rant.author === user.nickname,
-      );
-
-      if (userHasRant) {
-        return c.json(
-          {
-            error:
-              "You have already submitted a rant for this debate",
-          },
-          400,
-        );
-      }
-
-      const rant: Rant = {
-        id: generateId(),
-        text: text.trim(),
-        author: user.nickname,
-        roomId,
-        timestamp: Date.now(),
-      };
-
-      await saveRant(rant);
-
-      // Immediately process the rant and create statements
-      try {
-        const statements = await processRantAndCreateStatements(
-          rant,
-          room.topic,
-          roomId,
-        );
-
-        return c.json({
-          rant,
-          statements,
-          message: `Rant submitted and ${statements.length} statements created successfully`,
-        });
-      } catch (aiError) {
-        console.error(
-          "Error processing rant with AI:",
-          aiError,
-        );
-        // Rant was saved, but AI processing failed
-        return c.json({
-          rant,
-          statements: [],
-          message:
-            "Rant submitted, but AI processing failed. Statements will be generated later.",
-          warning: "AI processing error",
-        });
-      }
-    } catch (error) {
-      console.error("Error submitting rant:", error);
-      return c.json({ error: "Failed to submit rant" }, 500);
-    }
-  },
-);
-
 // Extract topic and statements from a rant (for creation flow)
 app.post(
   "/make-server-f1a393b4/rant/extract",
@@ -1443,13 +1275,7 @@ Please extract:
 1. A clear, concise debate topic (as a question if possible)
 2. 3-5 key debate statements that represent the main arguments in the rant
 
-STRICT Rules for statements:
-- Use the author's actual words and phrases whenever possible
-- Do NOT add interpretations, implications, or extra meaning
-- Do NOT extrapolate beyond what they explicitly said
-- Stay faithful to their tone (casual, formal, emotional, etc.)
-- Only create statements for arguments they actually made
-- Keep their specific examples and concerns intact
+${RANT_EXTRACTION_RULES}
 
 Return ONLY in this exact JSON format:
 {

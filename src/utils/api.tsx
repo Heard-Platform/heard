@@ -218,17 +218,6 @@ class ApiClient {
     });
   }
 
-  async submitRant(
-    roomId: string,
-    text: string,
-    userId: string,
-  ) {
-    return this.request(`/room/${roomId}/rant`, {
-      method: "POST",
-      body: JSON.stringify({ text, userId }),
-    });
-  }
-
   async extractTopicAndStatements(rant: string) {
     return this.request<{ topic: string; statements: string[] }>("/rant/extract", {
       method: "POST",
