@@ -140,6 +140,14 @@ export function LobbyScreen({
     return b.createdAt - a.createdAt;
   });
 
+  useEffect(() => {
+    const hasSeenIntro = localStorage.getItem("hasSeenIntro");
+    if (!hasSeenIntro) {
+      setHelpModalOpen(true);
+      localStorage.setItem("hasSeenIntro", "true");
+    }
+  }, []);
+
   // Detect mobile keyboard state
   useEffect(() => {
     if (
