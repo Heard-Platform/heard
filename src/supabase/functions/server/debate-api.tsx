@@ -1897,6 +1897,10 @@ app.get(
       // Filter by sub-heard if specified
       if (subHeard) {
         rooms = rooms.filter((r) => r.subHeard === subHeard);
+      } else {
+        rooms = rooms
+          .sort((a, b) => b.createdAt - a.createdAt)
+          .slice(0, 20);
       }
 
       // Filter out rooms from private sub-heards where user is not a member
