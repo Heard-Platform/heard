@@ -138,10 +138,10 @@ function DemoSwipeCard() {
       </motion.div>
 
       {/* Instructions */}
-      <div className="absolute -bottom-2 left-0 right-0 space-y-1">
+      <div className="absolute bottom-4 left-0 right-0 space-y-1">
         <SwipeInstructions />
         <div className="text-center text-xs text-muted-foreground">
-          Scroll up and down to switch debates
+          Swipe up to super agree and down to pass
         </div>
       </div>
     </div>
