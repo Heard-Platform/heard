@@ -1,8 +1,4 @@
-import {
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   api,
   getUserId,
@@ -99,13 +95,13 @@ export function useDebateSession() {
 
         if (userData) {
           setUser(userData);
-          
+
           // Track user activity
-          api.trackActivity(userData.id).catch(err => {
+          api.trackActivity(userData.id).catch((err) => {
             console.error("Failed to track activity:", err);
             // Don't block user flow if tracking fails
           });
-          
+
           return userData;
         }
       } catch (err) {
@@ -120,11 +116,21 @@ export function useDebateSession() {
   );
 
   // Update user score from API response
-  const updateUserScoreFromResponse = useCallback((responseData: any) => {
-    if (responseData && responseData.userScore !== undefined) {
-      setUser(prev => prev ? { ...prev, score: responseData.userScore } : prev);
-    }
-  }, []);
+  const updateUserScoreFromResponse = useCallback(
+    (responseData: any) => {
+      if (
+        responseData &&
+        responseData.userScore !== undefined
+      ) {
+        setUser((prev) =>
+          prev
+            ? { ...prev, score: responseData.userScore }
+            : prev,
+        );
+      }
+    },
+    [],
+  );
 
   // Create room (does not join)
   const createRoom = useCallback(
@@ -133,12 +139,14 @@ export function useDebateSession() {
       autoJoin: boolean = false,
     ): Promise<DebateRoom> => {
       if (!user) {
-        throw new Error("User must be logged in to create a room");
+        throw new Error(
+          "User must be logged in to create a room",
+        );
       }
 
       setError(null);
       const response = await api.createRoom(newDebate, user.id);
-      
+
       if (response.success && response.data) {
         const roomData = response.data;
 
@@ -150,7 +158,8 @@ export function useDebateSession() {
 
         return roomData;
       } else {
-        const errorMsg = response.error || "Failed to create room";
+        const errorMsg =
+          response.error || "Failed to create room";
         setError(errorMsg);
         throw new Error(errorMsg);
       }
@@ -188,17 +197,24 @@ export function useDebateSession() {
   const submitStatement = useCallback(
     async (roomId: string, text: string) => {
       if (!user) {
-        throw new Error("User must be logged in to submit a statement");
+        throw new Error(
+          "User must be logged in to submit a statement",
+        );
       }
 
       setError(null);
-      const response = await api.submitStatement(roomId, text, user.id);
+      const response = await api.submitStatement(
+        roomId,
+        text,
+        user.id,
+      );
 
       if (response.success && response.data) {
         updateUserScoreFromResponse(response.data);
         return response.data;
       } else {
-        const errorMsg = response.error || "Failed to submit statement";
+        const errorMsg =
+          response.error || "Failed to submit statement";
         setError(errorMsg);
         throw new Error(errorMsg);
       }
@@ -227,7 +243,8 @@ export function useDebateSession() {
         updateUserScoreFromResponse(response.data);
         return response.data;
       } else {
-        const errorMsg = response.error || "Failed to vote on statement";
+        const errorMsg =
+          response.error || "Failed to vote on statement";
         setError(errorMsg);
         throw new Error(errorMsg);
       }
@@ -397,49 +414,55 @@ export function useDebateSession() {
   );
 
   // Fetch statements for a specific room
-  const getRoomStatements = useCallback(async (roomId: string) => {
-    try {
-      const response = await api.getRoomStatus(roomId);
-      if (response.success && response.data) {
-        const statements = response.data.statements || [];
-        setRoomStatements((prev) => ({
-          ...prev,
-          [roomId]: statements,
-        }));
-        return statements;
-      }
-    } catch (error) {
-      console.error(
-        `Error fetching statements for room ${roomId}:`,
-        error,
-      );
-    }
-    return [];
-  }, []);
-
-  // Fetch statements for multiple rooms
-  const getAllRoomStatements = useCallback(async (rooms: DebateRoom[]) => {
-    const statementsMap: Record<string, Statement[]> = {};
-
-    for (const room of rooms) {
+  const getRoomStatements = useCallback(
+    async (roomId: string) => {
       try {
-        const response = await api.getRoomStatus(room.id);
+        const response = await api.getRoomStatus(roomId);
         if (response.success && response.data) {
-          statementsMap[room.id] =
-            response.data.statements || [];
+          const statements = response.data.statements || [];
+          setRoomStatements((prev) => ({
+            ...prev,
+            [roomId]: statements,
+          }));
+          return statements;
         }
       } catch (error) {
         console.error(
-          `Error fetching statements for room ${room.id}:`,
+          `Error fetching statements for room ${roomId}:`,
           error,
         );
-        statementsMap[room.id] = [];
       }
-    }
+      return [];
+    },
+    [],
+  );
 
-    setRoomStatements(statementsMap);
-    return statementsMap;
-  }, []);
+  // Fetch statements for multiple rooms
+  const getAllRoomStatements = useCallback(
+    async (rooms: DebateRoom[]) => {
+      const statementsMap: Record<string, Statement[]> = {};
+
+      for (const room of rooms) {
+        try {
+          const response = await api.getRoomStatus(room.id);
+          if (response.success && response.data) {
+            statementsMap[room.id] =
+              response.data.statements || [];
+          }
+        } catch (error) {
+          console.error(
+            `Error fetching statements for room ${room.id}:`,
+            error,
+          );
+          statementsMap[room.id] = [];
+        }
+      }
+
+      setRoomStatements(statementsMap);
+      return statementsMap;
+    },
+    [],
+  );
 
   // Reset session (full logout)
   const resetSession = useCallback(() => {
