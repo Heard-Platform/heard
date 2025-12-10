@@ -5,11 +5,7 @@
 
 import { getDebate } from "./kv-utils.tsx";
 import * as kv from "./kv_store.tsx";
-import type {
-  Vote,
-  Statement,
-  DebateRoom,
-} from "./types.tsx";
+import type { Vote, Statement } from "./types.tsx";
 
 export interface VotingMatrix {
   userIds: string[];
