@@ -2979,4 +2979,6 @@ export {
   saveDebateRoom,
   getActiveRooms,
   generateId,
+  getDebateRoom,
+  getStatements,
 };

@@ -412,6 +412,10 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  async getRoomAnalysis(roomId: string) {
+    return this.request(`/room/${roomId}/analysis`);
+  }
 }
 
 export const api = new ApiClient();
