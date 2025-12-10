@@ -1,8 +1,9 @@
 import { Hono } from "npm:hono@4";
-import * as kv from "./kv_store.tsx";
 import {
   getAllUsers,
   getActivitiesForDate,
+  getAllSubHeards,
+  getAllDebates,
 } from "./kv-utils.tsx";
 import { UserSession } from "./auth-api.tsx";
 
@@ -126,23 +127,20 @@ function calculateRetention({
 // Public stats endpoint - platform-wide statistics with 7-day trends
 app.get("/make-server-f1a393b4/public-stats", async (c) => {
   try {
-    const userKeys = await kv.getByPrefix("user:");
-    const totalUsers = userKeys.length;
-    const usersSparkline = generateSparklineData(userKeys, 7);
+    const users = await getAllUsers();
+    const totalUsers = users.length;
+    const usersSparkline = generateSparklineData(users, 7);
 
-    const subHeardKeys = await kv.getByPrefix("subheard:");
-    const totalSubHeards = subHeardKeys.length;
+    const subHeards = await getAllSubHeards();
+    const totalSubHeards = subHeards.length;
     const subHeardsSparkline = generateSparklineData(
-      subHeardKeys,
+      subHeards,
       7,
     );
 
-    const debateKeys = await kv.getByPrefix("room:");
-    const totalDebates = debateKeys.length;
-    const debatesSparkline = generateSparklineData(
-      debateKeys,
-      7,
-    );
+    const debates = await getAllDebates();
+    const totalDebates = debates.length;
+    const debatesSparkline = generateSparklineData(debates, 7);
 
     return c.json({
       totalUsers,

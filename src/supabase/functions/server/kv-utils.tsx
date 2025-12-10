@@ -54,6 +54,12 @@ export const getAllUsers = async <T = any,>(): Promise<T[]> => {
   return getByPrefixParsed<T>("user:");
 };
 
+export const getAllDebates = async <T = any,>(): Promise<
+  T[]
+> => {
+  return getByPrefixParsed<T>("debate:");
+};
+
 export const getAllSubHeards = async <T = any,>(): Promise<
   T[]
 > => {
