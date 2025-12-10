@@ -398,6 +398,20 @@ class ApiClient {
   async getRetentionStats() {
     return this.request("/retention-stats");
   }
+
+  async importPolisData(data: {
+    debateName: string;
+    subHeard: string;
+    statementsCSV: string;
+    votesCSV: string;
+    importerId: string;
+    dryRun: boolean;
+  }) {
+    return this.request("/import-polis", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const api = new ApiClient();

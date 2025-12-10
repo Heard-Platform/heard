@@ -11,6 +11,7 @@ import { feedbackApi } from "./feedback-api.tsx";
 import { imageApi } from "./image-api.tsx";
 import { activityApi } from "./activity-api.tsx";
 import { statsApi } from "./stats-api.tsx";
+import { polisImportApi } from "./polis-import-api.tsx";
 
 const app = new Hono();
 
@@ -71,5 +72,8 @@ app.route("/", activityApi);
 
 // Mount stats API routes
 app.route("/", statsApi);
+
+// Mount polis import API routes
+app.route("/", polisImportApi);
 
 Deno.serve(app.fetch);

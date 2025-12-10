@@ -683,6 +683,13 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
           </div>
         </Card>
 
+        {/* Dev Tools - Polis Importer */}
+        <PolisImporter
+          subHeards={subHeards}
+          currentUserId={users[0]?.userId || ""}
+          onImportComplete={fetchAdminData}
+        />
+
         {/* Dev Tools - Reddit Seed */}
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
