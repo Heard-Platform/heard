@@ -3,6 +3,7 @@
  * Uses k-means clustering on user-statement voting matrix
  */
 
+import { getDebate } from "./kv-utils.tsx";
 import * as kv from "./kv_store.tsx";
 import type {
   Vote,
@@ -385,25 +386,6 @@ async function getVotesForStatement(
 }
 
 /**
- * Helper: Get debate room
- */
-async function getDebateRoom(
-  roomId: string,
-): Promise<DebateRoom | null> {
-  try {
-    const roomData = await kv.get(`room:${roomId}`);
-    if (!roomData) return null;
-    return JSON.parse(roomData);
-  } catch (error) {
-    console.error(
-      `[Clustering] Error fetching room ${roomId}:`,
-      error,
-    );
-    return null;
-  }
-}
-
-/**
  * Recalculate clusters for a room (main entry point - call this on every vote)
  * Fetches all necessary data and performs clustering
  */
@@ -416,7 +398,7 @@ export async function recalculateClustersForRoom(
     );
 
     // Get room data
-    const room = await getDebateRoom(roomId);
+    const room = await getDebate(roomId);
     if (!room || room.participants.length === 0) {
       console.log(
         `[Clustering] Room ${roomId} not found or has no participants`,

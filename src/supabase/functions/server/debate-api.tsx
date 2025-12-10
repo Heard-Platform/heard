@@ -1,7 +1,7 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
-import { getByPrefixParsed } from "./kv-utils.tsx";
+import { getByPrefixParsed, getDebate } from "./kv-utils.tsx";
 import { recalculateClustersForRoom } from "./clustering.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
@@ -475,14 +475,13 @@ const getDebateRoom = async (
   roomId: string,
 ): Promise<DebateRoom | null> => {
   try {
-    const room = await kv.get(`room:${roomId}`);
+    const room = await getDebate(roomId);
     if (!room) return null;
-    const parsedRoom = JSON.parse(room);
     // Default to host-controlled mode for existing rooms that don't have mode set
-    if (!parsedRoom.mode) {
-      parsedRoom.mode = "host-controlled";
+    if (!room.mode) {
+      room.mode = "host-controlled";
     }
-    return parsedRoom;
+    return room;
   } catch (error) {
     console.error(
       `Error parsing room data for ${roomId}:`,
@@ -2978,4 +2977,9 @@ app.get(
 app.route("/", subheardApi);
 app.route("/", roomApi);
 
-export { app as debateApi, saveDebateRoom, getActiveRooms, generateId };
+export {
+  app as debateApi,
+  saveDebateRoom,
+  getActiveRooms,
+  generateId,
+};

@@ -1,5 +1,11 @@
 // Utility functions for working with KV store data
 import * as kv from "./kv_store.tsx";
+import type {
+  UserSession,
+  Vote,
+  Statement,
+  DebateRoom,
+} from "./types.tsx";
 
 /**
  * Safely parses JSON data from KV store
@@ -50,24 +56,43 @@ export const getParsedKvData = async <T,>(
  * Entity-specific helpers for common KV operations
  */
 
-export const getAllUsers = async <T = any,>(): Promise<T[]> => {
-  return getByPrefixParsed<T>("user:");
+export const getAllUsers = async (): Promise<UserSession[]> => {
+  return getByPrefixParsed<UserSession>("user:");
+};
+
+export const createUser = async (user: UserSession) => {
+  await kv.set(`user:${user.id}`, JSON.stringify(user));
+};
+
+export const createVote = async (vote: Vote) => {
+  await kv.set(`vote:${vote.id}`, JSON.stringify(vote));
+};
+
+export const createStatement = async (statement: Statement) => {
+  await kv.set(
+    `statement:${statement.roomId}:${statement.id}`,
+    JSON.stringify(statement),
+  );
+};
+
+export const createRoom = async (room: DebateRoom) => {
+  await kv.set(`room:${room.id}`, JSON.stringify(room));
 };
 
 export const getAllDebates = async <T = any,>(): Promise<
   T[]
 > => {
-  return getByPrefixParsed<T>("debate:");
+  return getByPrefixParsed<T>("room:");
+};
+
+export const getDebate = async (debateId: string) => {
+  return getParsedKvData<DebateRoom>(`room:${debateId}`);
 };
 
 export const getAllSubHeards = async <T = any,>(): Promise<
   T[]
 > => {
   return getByPrefixParsed<T>("subheard:");
-};
-
-export const getAllRooms = async <T = any,>(): Promise<T[]> => {
-  return getByPrefixParsed<T>("room:");
 };
 
 export const getUserActivityRecords = async <T = any,>(
