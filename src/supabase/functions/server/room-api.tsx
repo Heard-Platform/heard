@@ -4,13 +4,12 @@ import {
   getUserSession,
   saveUserSession,
 } from "./auth-api.tsx";
-import {
+import { generateId, saveDebateRoom } from "./debate-api.tsx";
+import type {
   DebateMode,
   DebateRoom,
-  generateId,
-  saveDebateRoom,
   Statement,
-} from "./debate-api.tsx";
+} from "./types.tsx";
 
 const app = new Hono();
 

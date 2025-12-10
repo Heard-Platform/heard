@@ -8,7 +8,7 @@ import type {
   Vote,
   Statement,
   DebateRoom,
-} from "./debate-api.tsx";
+} from "./types.tsx";
 
 export interface VotingMatrix {
   userIds: string[];

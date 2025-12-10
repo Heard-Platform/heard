@@ -12,84 +12,25 @@ import {
   sendWelcomeEmail,
 } from "./auth-api.tsx";
 import type { UserSession } from "./auth-api.tsx";
+import type {
+  VoteType,
+  Statement,
+  Vote,
+  Phase,
+  SubPhase,
+  DebateMode,
+  DebateRoom,
+  Rant,
+} from "./types.tsx";
 
-// Utility function to get frontend URL
 const getFrontendUrl = (): string => {
   return (
     Deno.env.get("FRONTEND_URL") || "https://app.heard-now.com"
   );
 };
 
-// Type definitions - exported for use in other modules
-export type VoteType =
-  | "agree"
-  | "disagree"
-  | "pass"
-  | "super_agree";
-
-export interface Statement {
-  id: string;
-  text: string;
-  author: string;
-  agrees: number; // Will be calculated from Vote records
-  disagrees: number; // Will be calculated from Vote records
-  passes: number; // Will be calculated from Vote records
-  superAgrees: number; // Will be calculated from Vote records
-  type?: string; // Will be calculated on backend later
-  isSpicy?: boolean;
-  roomId: string;
-  timestamp: number;
-  round: number; // Round number (1, 2, or 3)
-  voters: { [userId: string]: VoteType }; // Will be calculated from Vote records
-}
-
-export interface Vote {
-  id: string;
-  statementId: string;
-  userId: string;
-  voteType: VoteType;
-  timestamp: number;
-}
-
-export type Phase =
-  | "lobby"
-  | "round1"
-  | "round2"
-  | "round3"
-  | "results";
-export type SubPhase = "posting" | "voting" | "review";
-export type DebateMode = "realtime" | "host-controlled";
-
-export interface DebateRoom {
-  id: string;
-  topic: string;
-  description?: string;
-  phase: Phase;
-  subPhase?: SubPhase;
-  gameNumber: number;
-  roundStartTime: number;
-  participants: string[];
-  hostId: string; // ID of the user who created the room
-  isActive: boolean;
-  createdAt: number;
-  mode: DebateMode; // Controls whether phases advance automatically or by host
-  rantFirst?: boolean; // Whether this room starts with rants
-  subHeard?: string; // Sub-heard name (like subreddits) - optional for backwards compatibility
-  endTime?: number;
-  imageUrl?: string; // Optional cover image for the debate
-}
-
-export interface Rant {
-  id: string;
-  text: string;
-  author: string;
-  roomId: string;
-  timestamp: number;
-}
-
 const app = new Hono();
 
-// Utility functions
 export const generateId = () =>
   Math.random().toString(36).substring(2) +
   Date.now().toString(36);
