@@ -10,6 +10,7 @@ import {
   XCircle,
   Hash,
   BarChart3,
+  Loader2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -33,6 +34,7 @@ import { useState } from "react";
 interface RoomCardProps {
   room: DebateRoom;
   statements: Statement[];
+  loadingStatements: boolean;
   onJoin: () => void;
   onSetInactive?: () => Promise<boolean>;
   onSubmitStatement: (
@@ -57,6 +59,7 @@ interface RoomCardProps {
 export function RoomCard({
   room,
   statements,
+  loadingStatements,
   onJoin,
   onSetInactive,
   onSubmitStatement,
@@ -354,29 +357,39 @@ export function RoomCard({
             })()
           ) : (
             <div className="space-y-4">
-              <div className="text-center py-4">
-                <p className="text-muted-foreground">
-                  No statements yet in this debate
-                </p>
-              </div>
-              {/* Show regular statement input to add initial statements */}
-              {currentUserId && !isCompleted && (
-                <NewStatementInput
-                  onSubmitStatement={handleSubmitStatement}
-                />
-              )}
-              {!currentUserId && (
-                <Button
-                  onClick={onJoin}
-                  disabled={isCompleted}
-                  size="lg"
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                >
-                  {isCompleted
-                    ? "Debate Ended"
-                    : "Join to Add Statements"}
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
+              {loadingStatements ? (
+                <div className="text-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto text-purple-600" />
+                  <p className="text-muted-foreground mt-2">
+                    Loading statements...
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="text-center py-4">
+                    <p className="text-muted-foreground">
+                      No statements yet in this debate
+                    </p>
+                  </div>
+                  {currentUserId && !isCompleted && (
+                    <NewStatementInput
+                      onSubmitStatement={handleSubmitStatement}
+                    />
+                  )}
+                  {!currentUserId && (
+                    <Button
+                      onClick={onJoin}
+                      disabled={isCompleted}
+                      size="lg"
+                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                    >
+                      {isCompleted
+                        ? "Debate Ended"
+                        : "Join to Add Statements"}
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           )}

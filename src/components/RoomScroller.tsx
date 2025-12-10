@@ -70,16 +70,20 @@ export const RoomScroller = forwardRef<
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
+    const [loadingRooms, setLoadingRooms] = useState<Record<string, boolean>>({});
 
     // Function to refresh statements for a specific room
     const refreshRoomStatements = async (roomId: string) => {
       try {
+        setLoadingRooms(prev => ({ ...prev, [roomId]: true }));
         await onGetRoomStatements(roomId);
       } catch (error) {
         console.error(
           `Error refreshing statements for room ${roomId}:`,
           error,
         );
+      } finally {
+        setLoadingRooms(prev => ({ ...prev, [roomId]: false }));
       }
     };
 
@@ -240,6 +244,7 @@ export const RoomScroller = forwardRef<
                     }
                     currentSubHeard={currentSubHeard}
                     onDiscussStatement={onDiscussStatement}
+                    loadingStatements={loadingRooms[room.id] || false}
                   />
                 ) : null}
               </div>
