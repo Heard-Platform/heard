@@ -1,7 +1,11 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
-import { getByPrefixParsed, getDebate } from "./kv-utils.tsx";
+import {
+  createStatement,
+  getByPrefixParsed,
+  getDebate,
+} from "./kv-utils.tsx";
 import { recalculateClustersForRoom } from "./clustering.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
@@ -679,13 +683,6 @@ const getStatements = async (
   }
 };
 
-const saveStatement = async (statement: Statement) => {
-  await kv.set(
-    `statement:${statement.roomId}:${statement.id}`,
-    JSON.stringify(statement),
-  );
-};
-
 const bulkSaveStatements = async (statements: Statement[]) => {
   const items = statements.map((statement) => ({
     key: `statement:${statement.roomId}:${statement.id}`,
@@ -1137,7 +1134,7 @@ app.post(
         voters: {}, // Will be calculated from Vote records
       };
 
-      await saveStatement(statement);
+      await createStatement(statement);
 
       const basePoints = 50;
       const totalPoints = basePoints;
