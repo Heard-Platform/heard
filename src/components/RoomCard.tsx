@@ -9,6 +9,7 @@ import {
   Settings,
   XCircle,
   Hash,
+  BarChart3,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -16,20 +17,32 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import type { DebateRoom, Statement, VoteType } from "../utils/api";
+import type {
+  DebateRoom,
+  Statement,
+  VoteType,
+} from "../utils/api";
 import { SwipeableStatementStack } from "./SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { NewStatementInput } from "./NewStatementInput";
 import { ShareButton } from "./ShareButton";
+import { DebateAnalysisView } from "./DebateAnalysisView";
+import { useState } from "react";
 
 interface RoomCardProps {
   room: DebateRoom;
   statements: Statement[];
   onJoin: () => void;
   onSetInactive?: () => Promise<boolean>;
-  onSubmitStatement: (roomId: string, text: string) => Promise<any>;
-  onVoteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
+  onSubmitStatement: (
+    roomId: string,
+    text: string,
+  ) => Promise<any>;
+  onVoteOnStatement: (
+    statementId: string,
+    voteType: VoteType,
+  ) => Promise<any>;
   isDeveloper: boolean;
   isActive: boolean;
   currentUserId?: string;
@@ -55,6 +68,8 @@ export function RoomCard({
   currentSubHeard,
   onDiscussStatement,
 }: RoomCardProps) {
+  const [showAnalysis, setShowAnalysis] = useState(false);
+
   const participantCount = room.participants?.length || 0;
   const isRantFirst = room.rantFirst;
   const isRealtime = room.mode === "realtime";
@@ -81,7 +96,10 @@ export function RoomCard({
     }
 
     try {
-      const result = await onVoteOnStatement(statementId, voteType);
+      const result = await onVoteOnStatement(
+        statementId,
+        voteType,
+      );
       return result as Statement;
     } catch (error) {
       console.error("Error voting on statement:", error);
@@ -174,6 +192,17 @@ export function RoomCard({
               </div>
               {/* Player count on its own row */}
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-6 h-6 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowAnalysis(true);
+                  }}
+                >
+                  <BarChart3 className="w-4 h-4" />
+                </Button>
                 <Users className="w-4 h-4" />
                 <span>{participantCount}</span>
               </div>
@@ -221,14 +250,18 @@ export function RoomCard({
                 <div
                   className="w-10 h-10 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-2 border-purple-300 flex-shrink-0"
                   onClick={() => {
-                    const fullScreenDiv = document.createElement("div");
-                    fullScreenDiv.className = "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4";
-                    fullScreenDiv.onclick = () => fullScreenDiv.remove();
-                    
+                    const fullScreenDiv =
+                      document.createElement("div");
+                    fullScreenDiv.className =
+                      "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4";
+                    fullScreenDiv.onclick = () =>
+                      fullScreenDiv.remove();
+
                     const img = document.createElement("img");
                     img.src = room.imageUrl!;
-                    img.className = "max-w-full max-h-full object-contain";
-                    
+                    img.className =
+                      "max-w-full max-h-full object-contain";
+
                     fullScreenDiv.appendChild(img);
                     document.body.appendChild(fullScreenDiv);
                   }}
@@ -350,8 +383,36 @@ export function RoomCard({
               )}
             </div>
           )}
+
+          {isCompleted && (
+            <div className="mt-4">
+              <Button
+                onClick={() => setShowAnalysis(!showAnalysis)}
+                size="sm"
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+              >
+                {showAnalysis
+                  ? "Hide Analysis"
+                  : "Show Analysis"}
+                <BarChart3 className="w-5 h-5 ml-2" />
+              </Button>
+              {showAnalysis && (
+                <DebateAnalysisView
+                  roomId={room.id}
+                  onClose={() => setShowAnalysis(false)}
+                />
+              )}
+            </div>
+          )}
         </div>
       </Card>
+
+      {showAnalysis && (
+        <DebateAnalysisView
+          roomId={room.id}
+          onClose={() => setShowAnalysis(false)}
+        />
+      )}
     </motion.div>
   );
 }
