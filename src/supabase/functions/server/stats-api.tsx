@@ -8,8 +8,11 @@ import { UserSession } from "./auth-api.tsx";
 
 const app = new Hono();
 
-const generateSparklineData = (items: any[], daysBack = 7) => {
-  const now = Date.now();
+export const generateSparklineData = (
+  items: any[],
+  daysBack = 7,
+  now = Date.now(),
+) => {
   const dayInMs = 24 * 60 * 60 * 1000;
 
   const buckets = Array.from({ length: daysBack }, (_, i) => {
@@ -82,7 +85,12 @@ function calculateRetention({
   });
 
   if (eligibleUsers.length === 0) {
-    return { rate: 0, eligible: 0, retained: 0, totalInCohort: cohortUsers.length };
+    return {
+      rate: 0,
+      eligible: 0,
+      retained: 0,
+      totalInCohort: cohortUsers.length,
+    };
   }
 
   let retained = 0;
