@@ -160,9 +160,6 @@ export function RoomCard({
                 </Badge>
               )}
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                {/* Link icon to copy shareable URL */}
-                <ShareButton roomId={room.id} />
-                {/* Settings menu for developers */}
                 {isDeveloper && onSetInactive && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -189,20 +186,20 @@ export function RoomCard({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-              </div>
-              {/* Player count on its own row */}
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <Button
                   variant="ghost"
                   size="icon"
                   className="w-6 h-6 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-0"
-                  onClick={(e) => {
+                  onClick={(e: any) => {
                     e.stopPropagation();
                     setShowAnalysis(true);
                   }}
                 >
                   <BarChart3 className="w-4 h-4" />
                 </Button>
+                <ShareButton roomId={room.id} />
+              </div>
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <Users className="w-4 h-4" />
                 <span>{participantCount}</span>
               </div>
