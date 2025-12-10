@@ -1,3 +1,17 @@
+export interface UserSession {
+  id: string;
+  nickname: string;
+  email: string;
+  score: number;
+  streak: number;
+  currentRoomId?: string;
+  lastActive: number;
+  isTestUser?: boolean;
+  isDeveloper?: boolean;
+  passwordHash?: string;
+  createdAt: number;
+}
+
 export type VoteType =
   | "agree"
   | "disagree"

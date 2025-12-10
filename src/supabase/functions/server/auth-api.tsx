@@ -7,6 +7,7 @@ import {
   generateResetToken,
 } from "./password-utils.tsx";
 import { getParsedKvData } from "./kv-utils.tsx";
+import type { UserSession } from "./types.tsx";
 
 const app = new Hono();
 
@@ -21,21 +22,6 @@ const getFrontendUrl = (): string => {
 const generateId = () => {
   return crypto.randomUUID();
 };
-
-// Types
-export interface UserSession {
-  id: string;
-  nickname: string;
-  email: string;
-  score: number;
-  streak: number;
-  currentRoomId?: string;
-  lastActive: number;
-  isTestUser?: boolean;
-  isDeveloper?: boolean;
-  passwordHash?: string;
-  createdAt: number;
-}
 
 // Utility functions
 export const getUserSession = async (

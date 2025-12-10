@@ -1,11 +1,11 @@
-import { Hono } from "npm:hono@4";
+import { Hono } from "npm:hono";
 import {
   getAllUsers,
-  getActivitiesForDate,
   getAllSubHeards,
   getAllDebates,
+  getActivitiesForDate,
 } from "./kv-utils.tsx";
-import { UserSession } from "./auth-api.tsx";
+import type { UserSession } from "./types.tsx";
 
 const app = new Hono();
 

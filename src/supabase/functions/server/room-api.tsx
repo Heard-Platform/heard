@@ -6,6 +6,7 @@ import {
 } from "./auth-api.tsx";
 import { generateId, saveDebateRoom } from "./debate-api.tsx";
 import type {
+  UserSession,
   DebateMode,
   DebateRoom,
   Statement,

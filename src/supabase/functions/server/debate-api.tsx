@@ -11,8 +11,9 @@ import {
   getUserSession,
   sendWelcomeEmail,
 } from "./auth-api.tsx";
-import type { UserSession } from "./auth-api.tsx";
+import { generateId } from "./utils.tsx";
 import type {
+  UserSession,
   VoteType,
   Statement,
   Vote,
@@ -30,10 +31,6 @@ const getFrontendUrl = (): string => {
 };
 
 const app = new Hono();
-
-export const generateId = () =>
-  Math.random().toString(36).substring(2) +
-  Date.now().toString(36);
 
 // Helper to get statement by ID using LIKE pattern (statement:%:statementId)
 export const getStatementById = async (
@@ -2981,4 +2978,4 @@ app.get(
 app.route("/", subheardApi);
 app.route("/", roomApi);
 
-export { app as debateApi, saveDebateRoom, getActiveRooms };
+export { app as debateApi, saveDebateRoom, getActiveRooms, generateId };
