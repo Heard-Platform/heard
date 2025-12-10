@@ -139,7 +139,7 @@ export function NicknameSetup({
               {joiningRoom
                 ? "Sign in or create an account to join this debate!"
                 : mode === "signup"
-                  ? "Create an account to start arguing (and secretly saving democracy)"
+                  ? "Create an account to start debating (and secretly saving democracy)"
                   : "Sign in to continue debating"}
             </p>
           </div>
