@@ -1,5 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { clusterUsers } from "./clustering.tsx";
+import { Vote } from "./types.tsx";
 
 Deno.test(
   "clusterUsers - basic clustering with 4 users and polarized votes",
@@ -11,20 +12,20 @@ Deno.test(
       {
         id: "stmt1",
         votes: [
-          { userId: "user1", vote: "agree" as const },
-          { userId: "user2", vote: "agree" as const },
-          { userId: "user3", vote: "disagree" as const },
-          { userId: "user4", vote: "disagree" as const },
-        ],
+          { userId: "user1", voteType: "agree" },
+          { userId: "user2", voteType: "agree" },
+          { userId: "user3", voteType: "disagree" },
+          { userId: "user4", voteType: "disagree" },
+        ] as Vote[],
       },
       {
         id: "stmt2",
         votes: [
-          { userId: "user1", vote: "agree" as const },
-          { userId: "user2", vote: "agree" as const },
-          { userId: "user3", vote: "disagree" as const },
-          { userId: "user4", vote: "disagree" as const },
-        ],
+          { userId: "user1", voteType: "agree" },
+          { userId: "user2", voteType: "agree" },
+          { userId: "user3", voteType: "disagree" },
+          { userId: "user4", voteType: "disagree" },
+        ] as Vote[],
       },
     ];
 

@@ -3,9 +3,15 @@
  * Uses k-means clustering on user-statement voting matrix
  */
 
+import { getByPrefixParsed } from "./kv-utils.tsx";
 import { getDebate } from "./kv-utils.tsx";
 import * as kv from "./kv_store.tsx";
 import type { Vote, Statement, VoteType } from "./types.tsx";
+
+export type StatementWithVotes = {
+  id: string;
+  votes: Vote[];
+};
 
 export interface VotingMatrix {
   userIds: string[];
@@ -32,13 +38,7 @@ export interface ClusterMetadata {
  */
 export function buildVotingMatrix(
   userIds: string[],
-  statements: Array<{
-    id: string;
-    votes: Array<{
-      userId: string;
-      vote: VoteType;
-    }>;
-  }>,
+  statements: StatementWithVotes[],
 ): VotingMatrix {
   const statementIds = statements.map((s) => s.id);
   const matrix: number[][] = [];
@@ -50,9 +50,9 @@ export function buildVotingMatrix(
       const vote = statement.votes.find(
         (v) => v.userId === userId,
       );
-      if (!vote || vote.vote === "pass") {
+      if (!vote || vote.voteType === "pass") {
         row.push(0);
-      } else if (vote.vote === "agree") {
+      } else if (vote.voteType === "agree") {
         row.push(1);
       } else {
         row.push(-1);
@@ -187,13 +187,7 @@ export function kMeansClustering(
 export function clusterUsers(
   roomId: string,
   userIds: string[],
-  statements: Array<{
-    id: string;
-    votes: Array<{
-      userId: string;
-      vote: VoteType;
-    }>;
-  }>,
+  statements: StatementWithVotes[],
 ): {
   metadata: ClusterMetadata;
   clusterAssignments: ClusterAssignment[];
@@ -247,13 +241,7 @@ export function clusterUsers(
 export async function clusterUsersAndSave(
   roomId: string,
   userIds: string[],
-  statements: Array<{
-    id: string;
-    votes: Array<{
-      userId: string;
-      vote: VoteType;
-    }>;
-  }>,
+  statements: StatementWithVotes[],
 ): Promise<ClusterMetadata> {
   console.log(
     `[Clustering] Starting clustering for room ${roomId} with ${userIds.length} users and ${statements.length} statements`,
@@ -382,16 +370,7 @@ async function getVotesForStatement(
   statementId: string,
 ): Promise<Vote[]> {
   try {
-    const votes = await kv.getByPrefix(`vote:${statementId}:`);
-    return votes
-      .map((v) => {
-        try {
-          return JSON.parse(v);
-        } catch {
-          return null;
-        }
-      })
-      .filter((v) => v !== null);
+    return getByPrefixParsed(`vote:${statementId}:`);
   } catch (error) {
     console.error(
       `[Clustering] Error fetching votes for statement ${statementId}:`,
@@ -441,17 +420,10 @@ export async function recalculateClustersForRoom(
       return null;
     }
 
-    // Get votes for all statements and build statement objects with votes
     const statementsWithVotes = await Promise.all(
       roomStatements.map(async (stmt) => {
         const votes = await getVotesForStatement(stmt.id);
-        return {
-          id: stmt.id,
-          votes: votes.map((v) => ({
-            userId: v.userId,
-            vote: v.voteType,
-          })),
-        };
+        return { id: stmt.id, votes };
       }),
     );
 
