@@ -139,4 +139,39 @@ app.get(
   },
 );
 
+app.post(
+  "/make-server-f1a393b4/room/:roomId/regenerate-clusters",
+  async (c: any) => {
+    try {
+      const roomId = c.req.param("roomId");
+
+      const room = await getDebateRoom(roomId);
+      if (!room) {
+        return c.json({ error: "Room not found" }, 404);
+      }
+
+      console.log(`[RegenerateClusters] Regenerating clusters for room ${roomId}...`);
+      
+      const clusterMetadata = await recalculateClustersForRoom(roomId);
+
+      if (!clusterMetadata) {
+        return c.json({ error: "Failed to regenerate clusters" }, 500);
+      }
+
+      console.log(`[RegenerateClusters] Successfully regenerated clusters for room ${roomId}`);
+      
+      return c.json({ 
+        success: true,
+        totalClusters: clusterMetadata.totalClusters 
+      });
+    } catch (error) {
+      console.error("Error regenerating clusters:", error);
+      return c.json(
+        { error: `Failed to regenerate clusters: ${error instanceof Error ? error.message : "Unknown error"}` },
+        500,
+      );
+    }
+  },
+);
+
 export { app as analysisApi };

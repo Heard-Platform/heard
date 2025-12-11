@@ -20,6 +20,7 @@ export function DebateAnalysisView({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<AnalysisData | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
 
   const fetchAnalysis = async () => {
     setLoading(true);
@@ -34,6 +35,26 @@ export function DebateAnalysisView({
     }
 
     setLoading(false);
+  };
+
+  const handleRegenerateClusters = async () => {
+    setRegenerating(true);
+    
+    try {
+      const response = await api.regenerateClusters(roomId);
+      
+      if (response.success) {
+        await fetchAnalysis();
+      } else {
+        console.error("Failed to regenerate clusters:", response.error);
+        alert(`Failed to regenerate clusters: ${response.error}`);
+      }
+    } catch (error) {
+      console.error("Error regenerating clusters:", error);
+      alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+    
+    setRegenerating(false);
   };
 
   useEffect(() => {

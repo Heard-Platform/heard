@@ -97,6 +97,22 @@ export function DebateAnalysisReport({
                 />
               ))}
             </div>
+
+            {isDeveloper && (
+              <div className="mt-6">
+                <Button
+                  onClick={onRegenerateClusters}
+                  disabled={regenerating}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  {regenerating ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Regenerate Clusters"
+                  )}
+                </Button>
+              </div>
+            )}
           </Card>
         )}
       </div>
