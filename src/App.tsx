@@ -6,6 +6,7 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
+import { DevTools } from "./components/DevTools";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner@2.0.3";
@@ -21,6 +22,14 @@ import {
 function getStoredDashboardState(): boolean {
   try {
     return localStorage.getItem("showAdminDashboard") === "true";
+  } catch {
+    return false;
+  }
+}
+
+function getStoredDevToolsState(): boolean {
+  try {
+    return localStorage.getItem("showDevTools") === "true";
   } catch {
     return false;
   }
@@ -44,6 +53,7 @@ export default function App() {
     });
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = useState(getStoredDashboardState);
+  const [showDevTools, setShowDevTools] = useState(getStoredDevToolsState);
   const [showPasswordReset, setShowPasswordReset] =
     useState(false);
   const [resetToken, setResetToken] = useState<string | null>(
@@ -247,6 +257,19 @@ export default function App() {
     window.history.pushState({}, "", "/");
   };
 
+  // Handle opening and exiting dev tools
+  const handleOpenDevTools = () => {
+    setShowDevTools(true);
+    localStorage.setItem("showDevTools", "true");
+    window.history.pushState({}, "", "/devtools");
+  };
+
+  const handleExitDevTools = () => {
+    setShowDevTools(false);
+    localStorage.setItem("showDevTools", "false");
+    window.history.pushState({}, "", "/");
+  };
+
   // Admin Panel Mode - check this first!
   if (showAdminPanel) {
     return (
@@ -267,12 +290,17 @@ export default function App() {
     );
   }
 
-  // Component Showcase Mode - check this third!
+  // Dev Tools Mode - check this third!
+  if (showDevTools) {
+    return <DevTools onExit={handleExitDevTools} />;
+  }
+
+  // Component Showcase Mode - check this fourth!
   if (showComponentShowcase) {
     return <ComponentShowcase onExit={handleExitShowcase} />;
   }
 
-  // Password Reset Mode - check this fourth!
+  // Password Reset Mode - check this fifth!
   if (showPasswordReset) {
     return (
       <>
@@ -349,6 +377,7 @@ export default function App() {
         onOpenShowcase={handleOpenShowcase}
         onOpenAdminPanel={handleOpenAdminPanel}
         onOpenAdminDashboard={handleOpenAdminDashboard}
+        onOpenDevTools={handleOpenDevTools}
         currentSubHeard={currentSubHeard || undefined}
         onSubHeardChange={handleSubHeardChange}
         targetRoomId={targetRoomId || undefined}

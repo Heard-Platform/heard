@@ -31,6 +31,7 @@ import {
   Shield,
   HelpCircle,
   BarChart3,
+  Wrench,
 } from "lucide-react";
 import {
   Sheet,
@@ -72,6 +73,7 @@ interface LobbyScreenProps {
   onOpenShowcase?: () => void;
   onOpenAdminPanel?: () => void;
   onOpenAdminDashboard?: () => void;
+  onOpenDevTools?: () => void;
   currentSubHeard?: string;
   onSubHeardChange?: (subHeard: string | null) => void;
   roomStatements: Record<string, any[]>;
@@ -101,6 +103,7 @@ export function LobbyScreen({
   onOpenShowcase,
   onOpenAdminPanel,
   onOpenAdminDashboard,
+  onOpenDevTools,
   currentSubHeard,
   onSubHeardChange,
   roomStatements,
@@ -512,6 +515,20 @@ export function LobbyScreen({
                             Developer Tools
                           </h3>
                           <div className="space-y-2">
+                            {onOpenDevTools && (
+                              <Button
+                                onClick={() => {
+                                  setDevMenuOpen(false);
+                                  onOpenDevTools();
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="w-full bg-blue-50 border-blue-200 text-blue-800"
+                              >
+                                <Wrench className="w-3 h-3 mr-2" />
+                                Dev Tools
+                              </Button>
+                            )}
                             {onOpenAdminPanel && (
                               <Button
                                 onClick={() => {
@@ -524,20 +541,6 @@ export function LobbyScreen({
                               >
                                 <Shield className="w-3 h-3 mr-2" />
                                 Admin Panel
-                              </Button>
-                            )}
-                            {onOpenShowcase && (
-                              <Button
-                                onClick={() => {
-                                  setDevMenuOpen(false);
-                                  onOpenShowcase();
-                                }}
-                                variant="outline"
-                                size="sm"
-                                className="w-full bg-slate-50 border-slate-200 text-slate-800"
-                              >
-                                <Code2 className="w-3 h-3 mr-2" />
-                                Component Showcase
                               </Button>
                             )}
                             {onJumpToFinalResults && (
