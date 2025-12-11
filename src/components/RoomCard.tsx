@@ -321,7 +321,7 @@ export function RoomCard({
           </motion.div>
 
           {/* Statement Stack or Results */}
-          {hasRealtimeEnded && statements.length > 0 ? (
+          {isCompleted && statements.length > 0 ? (
             <ConcludedResults
               statements={statements}
               onDiscuss={
