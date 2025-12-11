@@ -92,3 +92,35 @@ export interface Rant {
   roomId: string;
   timestamp: number;
 }
+
+export interface TopPost {
+  id: string;
+  text: string;
+  agreeVotes: number;
+  disagreeVotes: number;
+  passVotes: number;
+  consensusScore: number;
+}
+
+export interface ClusterStatement {
+  id: string;
+  text: string;
+  agreeVotes: number;
+  totalVotes: number;
+  consensusScore: number;
+}
+
+export interface ClusterConsensus {
+  totalClusters: number;
+  clusterSizes: Record<number, number>;
+  consensusStatements: Record<number, ClusterStatement[]>;
+}
+
+export interface AnalysisData {
+  debateTopic: string;
+  totalParticipants: number;
+  totalStatements: number;
+  totalVotes: number;
+  topPosts: TopPost[];
+  clusterConsensus?: ClusterConsensus | null;
+}

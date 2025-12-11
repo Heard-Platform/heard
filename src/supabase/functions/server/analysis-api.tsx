@@ -8,33 +8,44 @@ app.get(
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
-      
+
       const room = await getDebateRoom(roomId);
       if (!room) {
         return c.json({ error: "Room not found" }, 404);
       }
 
       const statements = await getStatements(roomId);
-      
+
       const uniqueParticipants = new Set<string>();
       let totalVotes = 0;
-      
-      statements.forEach(statement => {
+
+      statements.forEach((statement) => {
         uniqueParticipants.add(statement.author);
-        totalVotes += statement.agrees + statement.disagrees + statement.passes;
+        totalVotes +=
+          statement.agrees +
+          statement.disagrees +
+          statement.passes;
       });
 
       const topPosts = statements
-        .map(statement => {
-          const totalVoteCount = statement.agrees + statement.superAgrees + statement.disagrees + statement.passes;
-          const consensusScore = totalVoteCount > 0 
-            ? ((statement.agrees + statement.superAgrees) / totalVoteCount) * 100 
-            : 0;
-          
+        .map((statement) => {
+          const totalVoteCount =
+            statement.agrees +
+            statement.superAgrees +
+            statement.disagrees +
+            statement.passes;
+          const consensusScore =
+            totalVoteCount > 0
+              ? ((statement.agrees + statement.superAgrees) /
+                  totalVoteCount) *
+                100
+              : 0;
+
           return {
             id: statement.id,
             text: statement.text,
-            agreeVotes: statement.agrees + statement.superAgrees,
+            agreeVotes:
+              statement.agrees + statement.superAgrees,
             disagreeVotes: statement.disagrees,
             passVotes: statement.passes,
             consensusScore,
