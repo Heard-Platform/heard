@@ -5,7 +5,7 @@
 
 import { getDebate } from "./kv-utils.tsx";
 import * as kv from "./kv_store.tsx";
-import type { Vote, Statement } from "./types.tsx";
+import type { Vote, Statement, VoteType } from "./types.tsx";
 
 export interface VotingMatrix {
   userIds: string[];
@@ -36,7 +36,7 @@ export function buildVotingMatrix(
     id: string;
     votes: Array<{
       userId: string;
-      vote: "agree" | "disagree" | "pass";
+      vote: VoteType;
     }>;
   }>,
 ): VotingMatrix {
@@ -182,39 +182,34 @@ export function kMeansClustering(
 }
 
 /**
- * Perform clustering and save to database
+ * Perform clustering on user voting data (pure function - no database operations)
  */
-export async function clusterUsersAndSave(
+export function clusterUsers(
   roomId: string,
   userIds: string[],
   statements: Array<{
     id: string;
     votes: Array<{
       userId: string;
-      vote: "agree" | "disagree" | "pass";
+      vote: VoteType;
     }>;
   }>,
-): Promise<ClusterMetadata> {
-  console.log(
-    `[Clustering] Starting clustering for room ${roomId} with ${userIds.length} users and ${statements.length} statements`,
-  );
-
-  // Build voting matrix
+): {
+  metadata: ClusterMetadata;
+  clusterAssignments: ClusterAssignment[];
+} {
   const votingMatrix = buildVotingMatrix(userIds, statements);
 
-  // Determine optimal number of clusters (simple heuristic: sqrt(n) or 3, whichever is smaller)
   const optimalK = Math.min(
     Math.max(2, Math.floor(Math.sqrt(userIds.length))),
     3,
   );
 
-  // Perform k-means clustering
   const { assignments, centroids } = kMeansClustering(
     votingMatrix.matrix,
     optimalK,
   );
 
-  // Calculate cluster sizes
   const clusterSizes: Record<number, number> = {};
   for (let i = 0; i < optimalK; i++) {
     clusterSizes[i] = 0;
@@ -224,7 +219,6 @@ export async function clusterUsersAndSave(
       (clusterSizes[clusterId] || 0) + 1;
   }
 
-  // Create cluster assignments
   const clusterAssignments: ClusterAssignment[] = userIds.map(
     (userId, idx) => ({
       userId,
@@ -236,7 +230,6 @@ export async function clusterUsersAndSave(
     }),
   );
 
-  // Create metadata
   const metadata: ClusterMetadata = {
     roomId,
     totalClusters: optimalK,
@@ -244,6 +237,33 @@ export async function clusterUsersAndSave(
     clusterSizes,
     centroids,
   };
+
+  return { metadata, clusterAssignments };
+}
+
+/**
+ * Perform clustering and save to database
+ */
+export async function clusterUsersAndSave(
+  roomId: string,
+  userIds: string[],
+  statements: Array<{
+    id: string;
+    votes: Array<{
+      userId: string;
+      vote: VoteType;
+    }>;
+  }>,
+): Promise<ClusterMetadata> {
+  console.log(
+    `[Clustering] Starting clustering for room ${roomId} with ${userIds.length} users and ${statements.length} statements`,
+  );
+
+  const { metadata, clusterAssignments } = clusterUsers(
+    roomId,
+    userIds,
+    statements,
+  );
 
   // Save to database
   // Store each user's cluster assignment
@@ -273,7 +293,7 @@ export async function clusterUsersAndSave(
   );
   console.log(
     `[Clustering] Cluster distribution:`,
-    clusterSizes,
+    metadata.clusterSizes,
   );
 
   return metadata;
