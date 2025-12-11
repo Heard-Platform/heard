@@ -88,19 +88,14 @@ export function DebateAnalysisReport({
             </div>
 
             <div className="space-y-6">
-              {Object.entries(clusterConsensus.statementsByCluster).map(([clusterId, statements]) => {
-                const clusterNum = Number(clusterId);
-                const clusterSize = clusterConsensus.clusterSizes[clusterNum] || 0;
-
-                return (
-                  <ClusterConsensusBox
-                    key={clusterId}
-                    clusterNumber={clusterNum + 1}
-                    clusterSize={clusterSize}
-                    statements={statements}
-                  />
-                );
-              })}
+              {clusterConsensus.clusters.map((cluster, index) => (
+                <ClusterConsensusBox
+                  key={cluster.id}
+                  clusterNumber={index + 1}
+                  clusterSize={cluster.size}
+                  statements={cluster.statements}
+                />
+              ))}
             </div>
           </Card>
         )}

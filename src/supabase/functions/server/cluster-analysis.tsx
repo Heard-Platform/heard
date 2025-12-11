@@ -1,5 +1,6 @@
 import { Statement } from "./types.tsx";
 import { ClusterAssignment } from "./clustering.tsx";
+import { Cluster } from "../../../types/index.ts";
 
 interface ClusterMetadata {
   totalClusters: number;
@@ -16,11 +17,7 @@ interface ClusterConsensusStatement {
 
 export interface ClusterConsensus {
   totalClusters: number;
-  clusterSizes: Record<number, number>;
-  statementsByCluster: Record<
-    number,
-    ClusterConsensusStatement[]
-  >;
+  clusters: Cluster[];
 }
 
 export function calculateClusterConsensus(
@@ -45,10 +42,7 @@ export function calculateClusterConsensus(
     usersByCluster[clusterId].push(userId);
   });
 
-  const statementsByCluster: Record<
-    number,
-    ClusterConsensusStatement[]
-  > = {};
+  const clusters: Cluster[] = [];
 
   for (
     let clusterId = 0;
@@ -94,15 +88,22 @@ export function calculateClusterConsensus(
       }
       return b.totalVotes - a.totalVotes;
     });
-    statementsByCluster[clusterId] = clusterStatements.slice(
-      0,
-      3,
-    );
+
+    clusters.push({
+      id: clusterId,
+      size: usersInCluster.length,
+      statements: clusterStatements.slice(0, 3),
+    });
   }
+
+  clusters.sort((a, b) => b.size - a.size);
+
+  clusters.forEach((cluster, idx) => {
+    cluster.id = idx;
+  });
 
   return {
     totalClusters: clusterMetadata.totalClusters,
-    clusterSizes: clusterMetadata.clusterSizes,
-    statementsByCluster,
+    clusters,
   };
 }

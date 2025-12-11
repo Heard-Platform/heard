@@ -110,10 +110,15 @@ export interface ClusterStatement {
   consensusScore: number;
 }
 
+export interface Cluster {
+  id: number;
+  size: number;
+  statements: ClusterStatement[];
+}
+
 export interface ClusterConsensus {
   totalClusters: number;
-  clusterSizes: Record<number, number>;
-  statementsByCluster: Record<number, ClusterStatement[]>;
+  clusters: Cluster[];
 }
 
 export interface AnalysisData {

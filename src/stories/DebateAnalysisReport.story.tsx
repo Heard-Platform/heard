@@ -36,82 +36,89 @@ const mockTopPosts: TopPost[] = [
 
 const mockClusterConsensus: ClusterConsensus = {
   totalClusters: 3,
-  clusterSizes: {
-    0: 85,
-    1: 92,
-    2: 70,
-  },
-  statementsByCluster: {
-    0: [
-      {
-        id: "cluster-0-statement-1",
-        text: "Renewable energy projects should be the top priority for long-term sustainability and economic growth.",
-        agreeVotes: 68,
-        totalVotes: 85,
-        consensusScore: 80.0,
-      },
-      {
-        id: "cluster-0-statement-2",
-        text: "Solar panel installations on public buildings would demonstrate our commitment to clean energy.",
-        agreeVotes: 62,
-        totalVotes: 85,
-        consensusScore: 72.9,
-      },
-      {
-        id: "cluster-0-statement-3",
-        text: "Wind energy farms could provide clean power while creating local jobs.",
-        agreeVotes: 58,
-        totalVotes: 85,
-        consensusScore: 68.2,
-      },
-    ],
-    1: [
-      {
-        id: "cluster-1-statement-1",
-        text: "Expanding public transit reduces traffic and makes the city more accessible for everyone.",
-        agreeVotes: 76,
-        totalVotes: 92,
-        consensusScore: 82.6,
-      },
-      {
-        id: "cluster-1-statement-2",
-        text: "Better bike lanes and pedestrian infrastructure encourage healthier transportation options.",
-        agreeVotes: 71,
-        totalVotes: 92,
-        consensusScore: 77.2,
-      },
-      {
-        id: "cluster-1-statement-3",
-        text: "Light rail connections to surrounding suburbs would reduce car dependency.",
-        agreeVotes: 65,
-        totalVotes: 92,
-        consensusScore: 70.7,
-      },
-    ],
-    2: [
-      {
-        id: "cluster-2-statement-1",
-        text: "Community parks and green spaces improve mental health and quality of life for residents.",
-        agreeVotes: 59,
-        totalVotes: 70,
-        consensusScore: 84.3,
-      },
-      {
-        id: "cluster-2-statement-2",
-        text: "Neighborhood gardens foster community connections and provide fresh produce access.",
-        agreeVotes: 54,
-        totalVotes: 70,
-        consensusScore: 77.1,
-      },
-      {
-        id: "cluster-2-statement-3",
-        text: "Tree planting programs help combat urban heat islands and improve air quality.",
-        agreeVotes: 51,
-        totalVotes: 70,
-        consensusScore: 72.9,
-      },
-    ],
-  },
+  clusters: [
+    {
+      id: 0,
+      size: 92,
+      statements: [
+        {
+          id: "cluster-0-statement-1",
+          text: "Expanding public transit reduces traffic and makes the city more accessible for everyone.",
+          agreeVotes: 76,
+          totalVotes: 92,
+          consensusScore: 82.6,
+        },
+        {
+          id: "cluster-0-statement-2",
+          text: "Better bike lanes and pedestrian infrastructure encourage healthier transportation options.",
+          agreeVotes: 71,
+          totalVotes: 92,
+          consensusScore: 77.2,
+        },
+        {
+          id: "cluster-0-statement-3",
+          text: "Light rail connections to surrounding suburbs would reduce car dependency.",
+          agreeVotes: 65,
+          totalVotes: 92,
+          consensusScore: 70.7,
+        },
+      ],
+    },
+    {
+      id: 1,
+      size: 85,
+      statements: [
+        {
+          id: "cluster-1-statement-1",
+          text: "Renewable energy projects should be the top priority for long-term sustainability and economic growth.",
+          agreeVotes: 68,
+          totalVotes: 85,
+          consensusScore: 80.0,
+        },
+        {
+          id: "cluster-1-statement-2",
+          text: "Solar panel installations on public buildings would demonstrate our commitment to clean energy.",
+          agreeVotes: 62,
+          totalVotes: 85,
+          consensusScore: 72.9,
+        },
+        {
+          id: "cluster-1-statement-3",
+          text: "Wind energy farms could provide clean power while creating local jobs.",
+          agreeVotes: 58,
+          totalVotes: 85,
+          consensusScore: 68.2,
+        },
+      ],
+    },
+    {
+      id: 2,
+      size: 70,
+      statements: [
+        {
+          id: "cluster-2-statement-1",
+          text: "Community parks and green spaces improve mental health and quality of life for residents.",
+          agreeVotes: 59,
+          totalVotes: 70,
+          consensusScore: 84.3,
+        },
+        {
+          id: "cluster-2-statement-2",
+          text: "Neighborhood gardens foster community connections and provide fresh produce access.",
+          agreeVotes: 54,
+          totalVotes: 70,
+          consensusScore: 77.1,
+        },
+        {
+          id: "cluster-2-statement-3",
+          text: "Tree planting programs help combat urban heat islands and improve air quality.",
+          agreeVotes: 51,
+          totalVotes: 70,
+          consensusScore: 72.9,
+        },
+      ],
+    },
+  ],
 };
 
 export const WithClusters = () => {
