@@ -7,7 +7,6 @@ import {
   getDebate,
   saveVote,
 } from "./kv-utils.tsx";
-import { recalculateClustersForRoom } from "./clustering.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
 import { roomApi } from "./room-api.tsx";
@@ -1414,16 +1413,7 @@ app.post(
         await saveUserSession(user);
       }
 
-      // Trigger clustering recalculation for the room
-      try {
-        await recalculateClustersForRoom(statement.roomId);
-      } catch (clusterError) {
-        console.error(
-          "[Clustering] Error during clustering recalculation:",
-          clusterError,
-        );
-        // Don't fail the vote if clustering fails
-      }
+      // Clustering is now calculated lazily when analysis is requested
 
       return c.json({
         statement: updatedStatement,

@@ -416,12 +416,6 @@ class ApiClient {
   async getRoomAnalysis(roomId: string) {
     return this.request(`/room/${roomId}/analysis`);
   }
-
-  async recalculateClusters(roomId: string) {
-    return this.request(`/room/${roomId}/recalculate-clusters`, {
-      method: "POST",
-    });
-  }
 }
 
 export const api = new ApiClient();

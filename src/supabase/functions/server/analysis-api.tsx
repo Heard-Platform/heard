@@ -111,42 +111,4 @@ app.get(
   },
 );
 
-app.post(
-  "/make-server-f1a393b4/room/:roomId/recalculate-clusters",
-  async (c: any) => {
-    try {
-      const roomId = c.req.param("roomId");
-
-      const room = await getDebateRoom(roomId);
-      if (!room) {
-        return c.json({ error: "Room not found" }, 404);
-      }
-
-      const statements = await getStatements(roomId);
-
-      if (room.participants.length === 0 || statements.length === 0) {
-        return c.json(
-          { error: "Cannot recalculate clusters: insufficient data" },
-          400,
-        );
-      }
-
-      console.log(`[Analysis] Manually recalculating clusters for room ${roomId}...`);
-      const clusterMetadata = await recalculateClustersForRoom(roomId);
-
-      return c.json({
-        success: true,
-        message: "Clusters recalculated successfully",
-        totalClusters: clusterMetadata?.totalClusters || 0,
-      });
-    } catch (error) {
-      console.error("Error recalculating clusters:", error);
-      return c.json(
-        { error: "Failed to recalculate clusters" },
-        500,
-      );
-    }
-  },
-);
-
 export { app as analysisApi };
