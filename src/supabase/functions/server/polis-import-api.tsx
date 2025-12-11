@@ -5,6 +5,7 @@ import {
   assemblePolisData,
   importAllData,
 } from "./polis-utils.tsx";
+import { recalculateClustersForRoom } from "./clustering.tsx";
 
 const app = new Hono();
 
@@ -152,6 +153,7 @@ app.post("/make-server-f1a393b4/import-polis", async (c) => {
       });
     } else {
       await importAllData(data);
+      await recalculateClustersForRoom(data.room.id);
     }
 
     return c.json({
