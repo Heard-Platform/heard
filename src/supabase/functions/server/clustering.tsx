@@ -256,7 +256,7 @@ export async function clusterUsersAndSave(
   // Save to database
   // Store each user's cluster assignment
   const assignmentKeys = clusterAssignments.map(
-    (ca) => `cluster:${roomId}:${ca.userId}`,
+    (ca) => `cluster_assignment:${roomId}:${ca.userId}`,
   );
   const assignmentValues = clusterAssignments.map((ca) =>
     JSON.stringify({
@@ -298,7 +298,7 @@ export async function getUserCluster(
   distance: number;
   timestamp: number;
 } | null> {
-  const key = `cluster:${roomId}:${userId}`;
+  const key = `cluster_assignment:${roomId}:${userId}`;
   const value = await kv.get(key);
 
   if (!value) return null;
@@ -341,7 +341,7 @@ export async function getRoomClusters(
   >
 > {
   const keys = userIds.map(
-    (userId) => `cluster:${roomId}:${userId}`,
+    (userId) => `cluster_assignment:${roomId}:${userId}`,
   );
   const values = await kv.mget(keys);
 

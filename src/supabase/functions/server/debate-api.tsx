@@ -2926,7 +2926,7 @@ app.get(
 
       // Get all cluster assignments for participants
       const clusterKeys = room.participants.map(
-        (userId) => `cluster:${roomId}:${userId}`,
+        (userId) => `cluster_assignment:${roomId}:${userId}`,
       );
       const clusterValues = await kv.mget(clusterKeys);
 

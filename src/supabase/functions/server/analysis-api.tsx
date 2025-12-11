@@ -69,7 +69,7 @@ app.get(
 
       if (clusterMetadata && room.participants.length > 0) {
         const assignmentKeys = room.participants.map(
-          (userId) => `cluster:${roomId}:${userId}`,
+          (userId) => `cluster_assignment:${roomId}:${userId}`,
         );
         const assignments =
           await bulkGet<ClusterAssignment>(assignmentKeys);
