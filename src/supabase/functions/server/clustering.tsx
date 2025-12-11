@@ -29,6 +29,7 @@ export interface ClusterMetadata {
   roomId: string;
   totalClusters: number;
   timestamp: number;
+  totalVotes: number;
   clusterSizes: Record<number, number>; // clusterId -> number of users
   centroids: number[][]; // cluster centroids in feature space
 }
@@ -228,6 +229,10 @@ export function clusterUsers(
     roomId,
     totalClusters: optimalK,
     timestamp: Date.now(),
+    totalVotes: statements.reduce(
+      (sum, stmt) => sum + stmt.votes.length,
+      0,
+    ),
     clusterSizes,
     centroids,
   };

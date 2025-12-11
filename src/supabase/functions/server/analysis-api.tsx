@@ -71,14 +71,42 @@ app.get(
       let clusterMetadata =
         await getParsedKvData<ClusterMetadata>(metadataKey);
 
-      if (!clusterMetadata && room.participants.length > 0 && statements.length > 0) {
-        console.log(`[Analysis] No cluster data found for room ${roomId}, generating now...`);
-        clusterMetadata = await recalculateClustersForRoom(roomId);
+      if (
+        !clusterMetadata &&
+        room.participants.length > 0 &&
+        statements.length > 0
+      ) {
+        console.log(
+          `[Analysis] No cluster data found for room ${roomId}, generating now...`,
+        );
+        clusterMetadata =
+          await recalculateClustersForRoom(roomId);
+      } else if (clusterMetadata) {
+        const lastClusterVoteCount =
+          clusterMetadata.totalVotes ?? null;
+        if (
+          lastClusterVoteCount === null ||
+          totalVotes > lastClusterVoteCount
+        ) {
+          console.log(
+            `[Analysis] ${lastClusterVoteCount === null ? "Legacy cluster data" : `New votes detected`} for room ${roomId} (${totalVotes} vs ${lastClusterVoteCount}), recalculating clusters...`,
+          );
+          clusterMetadata =
+            await recalculateClustersForRoom(roomId);
+        } else {
+          console.log(
+            `[Analysis] Using cached cluster data for room ${roomId} (${totalVotes} votes)`,
+          );
+        }
       }
 
       let clusterConsensus = null;
 
-      if (clusterMetadata && room.participants.length > 0) {
+      if (
+        clusterMetadata &&
+        room.participants &&
+        room.participants.length > 0
+      ) {
         const assignmentKeys = room.participants.map(
           (userId) => `cluster_assignment:${roomId}:${userId}`,
         );
