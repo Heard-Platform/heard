@@ -72,7 +72,12 @@ export function calculateClusterConsensus(
       });
     });
 
-    clusterStatements.sort((a, b) => b.consensusScore - a.consensusScore);
+    clusterStatements.sort((a, b) => {
+      if (b.consensusScore !== a.consensusScore) {
+        return b.consensusScore - a.consensusScore;
+      }
+      return b.totalVotes - a.totalVotes;
+    });
     statementsByCluster[clusterId] = clusterStatements.slice(0, 3);
   }
 
