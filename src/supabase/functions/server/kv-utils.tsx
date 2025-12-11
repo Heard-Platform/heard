@@ -75,7 +75,7 @@ export const bulkUpsert = async (
     value: JSON.stringify(item),
   }));
 
-  const batchSize = 100;
+  const batchSize = 10;
   for (let i = 0; i < records.length; i += batchSize) {
     const batch = records.slice(i, i + batchSize);
     await kv.bulkSet(batch);
@@ -86,12 +86,15 @@ export const bulkUpsert = async (
  * Entity-specific helpers for common KV operations
  */
 
+export const userKeyFn = (user: UserSession) =>
+  `user:${user.id}`;
+
 export const getAllUsers = async (): Promise<UserSession[]> => {
   return getByPrefixParsed<UserSession>("user:");
 };
 
 export const createUser = async (user: UserSession) => {
-  await kv.set(`user:${user.id}`, JSON.stringify(user));
+  await kv.set(userKeyFn(user), JSON.stringify(user));
 };
 
 export const voteKeyFn = (vote: Vote) =>

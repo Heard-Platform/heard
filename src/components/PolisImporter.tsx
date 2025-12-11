@@ -161,6 +161,11 @@ export function PolisImporter({
           <h3>Import Polis Data</h3>
         </div>
 
+        <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-800">
+          <Info className="w-4 h-4 flex-shrink-0" />
+          <span>Imports are limited to 1,000 users, statements, and votes each to optimize performance.</span>
+        </div>
+
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="debate-name">Debate Name</Label>

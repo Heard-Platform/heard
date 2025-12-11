@@ -1,4 +1,3 @@
-import * as kv from "./kv_store.tsx";
 import { generateId } from "./utils.tsx";
 import type {
   UserSession,
@@ -11,10 +10,8 @@ import Papa from "npm:papaparse@5.4.1";
 import {
   bulkUpsert,
   createRoom,
-  createStatement,
-  createUser,
-  saveVote,
   statementKeyFn,
+  userKeyFn,
   voteKeyFn,
 } from "./kv-utils.tsx";
 
@@ -41,6 +38,11 @@ export type AssembledData = {
   };
   statements: Statement[];
   votes: Vote[];
+  truncateFlags: {
+    statements: boolean;
+    votes: boolean;
+    users: boolean;
+  };
 };
 
 function parseCSV(
@@ -251,13 +253,39 @@ export function assemblePolisData(
   polisStatements: PolisStatement[],
   polisVotes: PolisVoteRow[],
 ): AssembledData {
+  const MAX_RECORD_LIMIT = 1000;
+
+  const truncateFlags = {
+    statements: false,
+    votes: false,
+    users: false,
+  };
+
+  if (polisStatements.length > MAX_RECORD_LIMIT) {
+    polisStatements = polisStatements.slice(
+      0,
+      MAX_RECORD_LIMIT,
+    );
+    truncateFlags.statements = true;
+  }
+
+  if (polisVotes.length > MAX_RECORD_LIMIT) {
+    polisVotes = polisVotes.slice(0, MAX_RECORD_LIMIT);
+    truncateFlags.votes = true;
+  }
+
   const roomId = generateId();
   const now = Date.now();
 
-  const { users, userIdMap } = assembleUsers(
+  let { users, userIdMap } = assembleUsers(
     polisStatements,
     polisVotes,
   );
+
+  if (users.length > MAX_RECORD_LIMIT) {
+    users = users.slice(0, MAX_RECORD_LIMIT);
+    truncateFlags.users = true;
+  }
 
   const room: DebateRoom = {
     id: roomId,
@@ -265,7 +293,10 @@ export function assemblePolisData(
     phase: "results",
     gameNumber: 1,
     roundStartTime: now,
-    participants: Array.from(userIdMap.values()),
+    participants: Array.from(userIdMap.values()).slice(
+      0,
+      MAX_RECORD_LIMIT,
+    ),
     hostId: importerId,
     isActive: true,
     createdAt: now,
@@ -304,20 +335,24 @@ export function assemblePolisData(
     roomIndex,
     statements,
     votes,
+    truncateFlags,
   };
 }
 
 export async function importAllData(
   data: AssembledData,
 ): Promise<void> {
-  for (const user of data.users) {
-    await createUser(user);
-  }
-
   await createRoom(data.room);
 
+  console.log(`Bulk upserting ${data.users.length} users`);
+  await bulkUpsert(data.users, userKeyFn);
+
+  console.log(
+    `Bulk upserting ${data.statements.length} statements`,
+  );
   await bulkUpsert(data.statements, statementKeyFn);
 
+  console.log(`Bulk upserting ${data.votes.length} votes`);
   await bulkUpsert(data.votes, voteKeyFn);
 
   console.log(

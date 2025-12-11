@@ -119,6 +119,22 @@ app.post("/make-server-f1a393b4/import-polis", async (c) => {
         );
       }
 
+      if (data.truncateFlags.statements) {
+        warnings.push(
+          `Statements truncated to 1000 (original: ${polisStatements.length})`,
+        );
+      }
+
+      if (data.truncateFlags.votes) {
+        warnings.push(
+          `Votes truncated to 1000 (original: ${polisVotes.length})`,
+        );
+      }
+
+      if (data.truncateFlags.users) {
+        warnings.push(`Users truncated to 1000`);
+      }
+
       const avgVotesPerStatement =
         data.votes.length / data.statements.length;
       if (avgVotesPerStatement < 2) {
