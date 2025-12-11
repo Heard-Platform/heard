@@ -67,6 +67,27 @@ export const updateUrlForSubHeard = (subHeard: string | null) => {
   window.history.pushState(null, '', newPath)
 }
 
+export const parseAnalysisRoomIdFromUrl = (): string | null => {
+  if (typeof window === 'undefined') return null
+  
+  const url = new URL(window.location.href)
+  return url.searchParams.get('analysis')
+}
+
+export const updateUrlForAnalysis = (roomId: string | null) => {
+  if (typeof window === 'undefined') return
+  
+  const url = new URL(window.location.href)
+  
+  if (roomId) {
+    url.searchParams.set('analysis', roomId)
+  } else {
+    url.searchParams.delete('analysis')
+  }
+  
+  window.history.pushState(null, '', url.toString())
+}
+
 export const clearRoomFromUrl = () => {
   updateUrlForRoom(null)
 }

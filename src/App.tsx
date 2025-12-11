@@ -17,6 +17,7 @@ import {
   parseSubHeardFromUrl,
   updateUrlForSubHeard,
   clearRoomFromUrl,
+  parseAnalysisRoomIdFromUrl,
 } from "./utils/url";
 
 function getStoredDashboardState(): boolean {
@@ -37,6 +38,9 @@ function getStoredDevToolsState(): boolean {
 
 export default function App() {
   const [targetRoomId, setTargetRoomId] = useState<
+    string | null
+  >(null);
+  const [analysisRoomId, setAnalysisRoomId] = useState<
     string | null
   >(null);
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
@@ -144,6 +148,11 @@ export default function App() {
       const isAdminRoute = window.location.pathname === "/admin";
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
+      const analysisRoomIdFromUrl = parseAnalysisRoomIdFromUrl();
+
+      if (analysisRoomIdFromUrl) {
+        setAnalysisRoomId(analysisRoomIdFromUrl);
+      }
 
       if (resetTokenFromUrl) {
         setResetToken(resetTokenFromUrl);
@@ -363,6 +372,10 @@ export default function App() {
         activeRooms={activeRooms}
         loading={loading}
         error={error}
+        currentSubHeard={currentSubHeard || undefined}
+        roomStatements={roomStatements}
+        targetRoomId={targetRoomId || undefined}
+        analysisRoomId={analysisRoomId || undefined}
         onCreateRoom={handleCreateRoom}
         onJoinRoom={handleJoinRoom}
         onRefreshRooms={getActiveRooms}
@@ -378,10 +391,7 @@ export default function App() {
         onOpenAdminPanel={handleOpenAdminPanel}
         onOpenAdminDashboard={handleOpenAdminDashboard}
         onOpenDevTools={handleOpenDevTools}
-        currentSubHeard={currentSubHeard || undefined}
         onSubHeardChange={handleSubHeardChange}
-        targetRoomId={targetRoomId || undefined}
-        roomStatements={roomStatements}
         onGetRoomStatements={getRoomStatements}
         onGetAllRoomStatements={getAllRoomStatements}
       />

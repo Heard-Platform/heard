@@ -29,12 +29,18 @@ import { ConcludedResults } from "./results/ConcludedResults";
 import { NewStatementInput } from "./NewStatementInput";
 import { ShareButton } from "./ShareButton";
 import { DebateAnalysisView } from "./DebateAnalysisView";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { updateUrlForAnalysis } from "../utils/url";
 
 interface RoomCardProps {
   room: DebateRoom;
   statements: Statement[];
   loadingStatements: boolean;
+  isDeveloper: boolean;
+  isActive: boolean;
+  currentUserId?: string;
+  currentSubHeard?: string;
+  analysisRoomId?: string;
   onJoin: () => void;
   onSetInactive?: () => Promise<boolean>;
   onSubmitStatement: (
@@ -45,11 +51,7 @@ interface RoomCardProps {
     statementId: string,
     voteType: VoteType,
   ) => Promise<any>;
-  isDeveloper: boolean;
-  isActive: boolean;
-  currentUserId?: string;
   onRefreshStatements?: () => Promise<void>;
-  currentSubHeard?: string;
   onDiscussStatement?: (
     statementText: string,
     subHeard?: string,
@@ -60,18 +62,35 @@ export function RoomCard({
   room,
   statements,
   loadingStatements,
+  isDeveloper,
+  isActive,
+  currentUserId,
+  currentSubHeard,
+  analysisRoomId,
   onJoin,
   onSetInactive,
   onSubmitStatement,
   onVoteOnStatement,
-  isDeveloper,
-  isActive,
-  currentUserId,
   onRefreshStatements,
-  currentSubHeard,
   onDiscussStatement,
 }: RoomCardProps) {
   const [showAnalysis, setShowAnalysis] = useState(false);
+
+  useEffect(() => {
+    if (analysisRoomId === room.id) {
+      setShowAnalysis(true);
+    }
+  }, [analysisRoomId, room.id]);
+
+  const handleOpenAnalysis = () => {
+    setShowAnalysis(true);
+    updateUrlForAnalysis(room.id);
+  };
+
+  const handleCloseAnalysis = () => {
+    setShowAnalysis(false);
+    updateUrlForAnalysis(null);
+  };
 
   const participantCount = room.participants?.length || 0;
   const isRantFirst = room.rantFirst;
@@ -195,7 +214,7 @@ export function RoomCard({
                   className="w-6 h-6 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-0"
                   onClick={(e: any) => {
                     e.stopPropagation();
-                    setShowAnalysis(true);
+                    handleOpenAnalysis();
                   }}
                 >
                   <BarChart3 className="w-4 h-4" />
@@ -397,7 +416,7 @@ export function RoomCard({
           {isCompleted && (
             <div className="mt-4">
               <Button
-                onClick={() => setShowAnalysis(!showAnalysis)}
+                onClick={handleOpenAnalysis}
                 size="sm"
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
               >
@@ -409,7 +428,7 @@ export function RoomCard({
               {showAnalysis && (
                 <DebateAnalysisView
                   roomId={room.id}
-                  onClose={() => setShowAnalysis(false)}
+                  onClose={handleCloseAnalysis}
                 />
               )}
             </div>
@@ -420,7 +439,7 @@ export function RoomCard({
       {showAnalysis && (
         <DebateAnalysisView
           roomId={room.id}
-          onClose={() => setShowAnalysis(false)}
+          onClose={handleCloseAnalysis}
         />
       )}
     </motion.div>

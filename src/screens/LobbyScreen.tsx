@@ -47,6 +47,10 @@ interface LobbyScreenProps {
   activeRooms: DebateRoom[];
   loading: boolean;
   error: string | null;
+  currentSubHeard?: string;
+  roomStatements: Record<string, any[]>;
+  targetRoomId?: string;
+  analysisRoomId?: string;
   onCreateRoom: (
     newDebate: NewDebateRoom,
   ) => Promise<DebateRoom>;
@@ -74,9 +78,7 @@ interface LobbyScreenProps {
   onOpenAdminPanel?: () => void;
   onOpenAdminDashboard?: () => void;
   onOpenDevTools?: () => void;
-  currentSubHeard?: string;
   onSubHeardChange?: (subHeard: string | null) => void;
-  roomStatements: Record<string, any[]>;
   onGetRoomStatements: (roomId: string) => Promise<any[]>;
   onGetAllRoomStatements: () => Promise<Record<string, any[]>>;
   targetRoomId?: string;
@@ -111,6 +113,7 @@ export function LobbyScreen({
   onGetAllRoomStatements,
   targetRoomId,
   onRoomCreated,
+  analysisRoomId,
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
     useState(false);
@@ -617,17 +620,18 @@ export function LobbyScreen({
         <RoomScroller
           ref={roomScrollerRef}
           rooms={filteredRooms}
+          isDeveloper={user?.isDeveloper || false}
+          loading={loading}
+          currentUserId={user?.id}
+          currentSubHeard={currentSubHeard}
+          roomStatements={roomStatements}
+          analysisRoomId={analysisRoomId}
           onJoinRoom={handleJoinRoom}
           onCreateRoom={handleOpenCreateSheet}
           onSetRoomInactive={onSetRoomInactive}
           onSubmitStatement={onSubmitStatement}
           onVoteOnStatement={onVoteOnStatement}
-          isDeveloper={user?.isDeveloper || false}
-          loading={loading}
-          currentUserId={user?.id}
-          currentSubHeard={currentSubHeard}
           onDiscussStatement={handleDiscussStatement}
-          roomStatements={roomStatements}
           onGetRoomStatements={onGetRoomStatements}
           onGetAllRoomStatements={onGetAllRoomStatements}
         />

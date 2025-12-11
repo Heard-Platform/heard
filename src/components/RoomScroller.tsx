@@ -14,6 +14,12 @@ import { RoomCard } from "./RoomCard";
 
 interface RoomScrollerProps {
   rooms: DebateRoom[];
+  isDeveloper: boolean;
+  loading: boolean;
+  currentUserId?: string;
+  currentSubHeard?: string;
+  roomStatements: Record<string, Statement[]>;
+  analysisRoomId?: string;
   onJoinRoom: (roomId: string) => void;
   onCreateRoom: () => void;
   onSetRoomInactive?: (roomId: string) => Promise<boolean>;
@@ -25,15 +31,10 @@ interface RoomScrollerProps {
     statementId: string,
     voteType: VoteType,
   ) => Promise<any>;
-  isDeveloper: boolean;
-  loading: boolean;
-  currentUserId?: string;
-  currentSubHeard?: string;
   onDiscussStatement?: (
     statementText: string,
     subHeard?: string,
   ) => void;
-  roomStatements: Record<string, Statement[]>;
   onGetRoomStatements: (roomId: string) => Promise<Statement[]>;
   onGetAllRoomStatements: () => Promise<
     Record<string, Statement[]>
@@ -64,6 +65,7 @@ export const RoomScroller = forwardRef<
       roomStatements,
       onGetRoomStatements,
       onGetAllRoomStatements,
+      analysisRoomId,
     },
     ref,
   ) => {
@@ -245,6 +247,7 @@ export const RoomScroller = forwardRef<
                     currentSubHeard={currentSubHeard}
                     onDiscussStatement={onDiscussStatement}
                     loadingStatements={loadingRooms[room.id] || false}
+                    analysisRoomId={analysisRoomId}
                   />
                 ) : null}
               </div>
