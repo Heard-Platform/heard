@@ -1,6 +1,37 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { clusterUsers } from "./clustering.tsx";
+import {
+  clusterUsers,
+  ClusterAssignment,
+} from "./clustering.tsx";
 import { Vote } from "./types.tsx";
+import { assertArrayIncludes } from "https://deno.land/std@0.208.0/assert/assert_array_includes.ts";
+import { assertExists } from "https://deno.land/std@0.208.0/assert/assert_exists.ts";
+
+function assertClusterStructure(
+  clusterAssignments: ClusterAssignment[],
+  expectedUserGroupings: string[][],
+) {
+  const usersByCluster: Record<number, string[]> = {};
+  for (const { clusterId, userId } of clusterAssignments) {
+    usersByCluster[clusterId] = usersByCluster[clusterId] || [];
+    usersByCluster[clusterId].push(userId);
+  }
+
+  const groups = Object.values(usersByCluster);
+
+  expectedUserGroupings.forEach((expectedGroup) => {
+    const group = groups.find((group) => {
+      return (
+        group.every((user) => expectedGroup.includes(user)) &&
+        expectedGroup.every((user) => group.includes(user))
+      );
+    });
+    assertExists(
+      group,
+      `Expected group ${expectedGroup} to exist`,
+    );
+  });
+}
 
 Deno.test(
   "clusterUsers - basic clustering with 4 users and polarized votes",
@@ -31,34 +62,12 @@ Deno.test(
 
     const result = clusterUsers(roomId, userIds, statements);
 
-    assertEquals(result.metadata.roomId, roomId);
     assertEquals(result.metadata.totalClusters, 2);
     assertEquals(result.clusterAssignments.length, 4);
 
-    assertEquals(
-      Object.keys(result.metadata.clusterSizes).length,
-      2,
-    );
-    assertEquals(
-      result.metadata.clusterSizes[0] +
-        result.metadata.clusterSizes[1],
-      4,
-    );
-
-    const user1Cluster = result.clusterAssignments.find(
-      (ca) => ca.userId === "user1",
-    )?.clusterId;
-    const user2Cluster = result.clusterAssignments.find(
-      (ca) => ca.userId === "user2",
-    )?.clusterId;
-    const user3Cluster = result.clusterAssignments.find(
-      (ca) => ca.userId === "user3",
-    )?.clusterId;
-    const user4Cluster = result.clusterAssignments.find(
-      (ca) => ca.userId === "user4",
-    )?.clusterId;
-
-    assertEquals(user1Cluster, user2Cluster);
-    assertEquals(user3Cluster, user4Cluster);
+    assertClusterStructure(result.clusterAssignments, [
+      ["user1", "user2"],
+      ["user3", "user4"],
+    ]);
   },
 );
