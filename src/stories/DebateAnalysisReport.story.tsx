@@ -15,6 +15,7 @@ const mockTopPosts: TopPost[] = [
     disagreeVotes: 23,
     passVotes: 15,
     consensusScore: 78.9,
+    totalVotes: 180,
   },
   {
     id: "post-2",
@@ -23,6 +24,7 @@ const mockTopPosts: TopPost[] = [
     disagreeVotes: 45,
     passVotes: 22,
     consensusScore: 59.4,
+    totalVotes: 165,
   },
   {
     id: "post-3",
@@ -31,6 +33,7 @@ const mockTopPosts: TopPost[] = [
     disagreeVotes: 31,
     passVotes: 28,
     consensusScore: 59.6,
+    totalVotes: 146,
   },
 ];
 
@@ -151,6 +154,7 @@ export const NoClusters = () => {
           disagreeVotes: 8,
           passVotes: 6,
           consensusScore: 66.7,
+          totalVotes: 42,
         },
         {
           id: "post-b",
@@ -159,6 +163,7 @@ export const NoClusters = () => {
           disagreeVotes: 12,
           passVotes: 6,
           consensusScore: 57.1,
+          totalVotes: 42,
         },
       ]}
       clusterConsensus={null}

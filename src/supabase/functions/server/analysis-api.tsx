@@ -62,9 +62,15 @@ app.get(
             disagreeVotes: statement.disagrees,
             passVotes: statement.passes,
             consensusScore,
+            totalVotes: totalVoteCount,
           };
         })
-        .sort((a, b) => b.consensusScore - a.consensusScore)
+        .sort((a, b) => {
+          if (b.consensusScore !== a.consensusScore) {
+            return b.consensusScore - a.consensusScore;
+          }
+          return b.totalVotes - a.totalVotes;
+        })
         .slice(0, 3);
 
       const metadataKey = `cluster:${roomId}:metadata`;

@@ -100,6 +100,7 @@ export interface TopPost {
   disagreeVotes: number;
   passVotes: number;
   consensusScore: number;
+  totalVotes: number;
 }
 
 export interface ClusterStatement {

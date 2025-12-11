@@ -1,6 +1,5 @@
 import { Statement } from "./types.tsx";
 import { ClusterAssignment } from "./clustering.tsx";
-import { Cluster } from "../../../types/index.ts";
 
 interface ClusterMetadata {
   totalClusters: number;
@@ -13,6 +12,12 @@ interface ClusterConsensusStatement {
   agreeVotes: number;
   totalVotes: number;
   consensusScore: number;
+}
+
+export interface Cluster {
+  id: number;
+  size: number;
+  statements: ClusterConsensusStatement[];
 }
 
 export interface ClusterConsensus {

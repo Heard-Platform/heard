@@ -1,6 +1,7 @@
 import { Card } from "./ui/card";
-import { Users, MessageSquare, Target, ThumbsUp, ThumbsDown, Minus, GitBranch, AlertCircle } from "lucide-react";
+import { Users, MessageSquare, Target, ThumbsUp, ThumbsDown, Minus, GitBranch, AlertCircle, RefreshCw } from "lucide-react";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 import { StatBox } from "./analysis/StatBox";
 import { TopAgreedPosts } from "./analysis/TopAgreedPosts";
 import { ClusterConsensusBox } from "./analysis/ClusterConsensusBox";
@@ -14,6 +15,9 @@ interface DebateAnalysisReportProps {
   totalVotes: number;
   topPosts: TopPost[];
   clusterConsensus?: ClusterConsensus | null;
+  isDeveloper?: boolean;
+  regenerating?: boolean;
+  onRegenerateClusters?: () => void;
 }
 
 export function DebateAnalysisReport({
@@ -24,6 +28,9 @@ export function DebateAnalysisReport({
   totalVotes,
   topPosts,
   clusterConsensus,
+  isDeveloper,
+  regenerating,
+  onRegenerateClusters,
 }: DebateAnalysisReportProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">

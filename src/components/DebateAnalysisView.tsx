@@ -124,6 +124,9 @@ export function DebateAnalysisView({
               totalVotes={data.totalVotes}
               topPosts={data.topPosts}
               clusterConsensus={data.clusterConsensus}
+              isDeveloper={isDeveloper}
+              regenerating={regenerating}
+              onRegenerateClusters={handleRegenerateClusters}
             />
           )}
         </div>
