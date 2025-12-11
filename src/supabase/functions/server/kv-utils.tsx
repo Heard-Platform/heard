@@ -52,11 +52,34 @@ export const getParsedKvData = async <T,>(
   return parseKvData<T>(rawData);
 };
 
+export const upsert = async (
+  item: any,
+  keyFn: (item: any) => string,
+) => {
+  await kv.set(keyFn(item), JSON.stringify(item));
+};
+
 export const bulkGet = async <T,>(
   keys: string[],
 ): Promise<T[]> => {
   const results = await kv.mget(keys);
   return parseKvDataArray<T>(results);
+};
+
+export const bulkUpsert = async (
+  items: any[],
+  keyFn: (item: any) => string,
+) => {
+  const records = items.map((item) => ({
+    key: keyFn(item),
+    value: JSON.stringify(item),
+  }));
+
+  const batchSize = 100;
+  for (let i = 0; i < records.length; i += batchSize) {
+    const batch = records.slice(i, i + batchSize);
+    await kv.bulkSet(batch);
+  }
 };
 
 /**
@@ -71,18 +94,22 @@ export const createUser = async (user: UserSession) => {
   await kv.set(`user:${user.id}`, JSON.stringify(user));
 };
 
+export const voteKeyFn = (vote: Vote) =>
+  `vote:${vote.statementId}:${vote.userId}`;
+
 export const saveVote = async (vote: Vote) => {
-  await kv.set(
-    `vote:${vote.statementId}:${vote.userId}`,
-    JSON.stringify(vote),
-  );
+  await kv.set(voteKeyFn(vote), JSON.stringify(vote));
 };
 
+export const bulkSaveVotes = async (votes: Vote[]) => {
+  await bulkUpsert(votes, voteKeyFn);
+};
+
+export const statementKeyFn = (statement: Statement) =>
+  `statement:${statement.roomId}:${statement.id}`;
+
 export const createStatement = async (statement: Statement) => {
-  await kv.set(
-    `statement:${statement.roomId}:${statement.id}`,
-    JSON.stringify(statement),
-  );
+  await upsert(statement, statementKeyFn);
 };
 
 export const createRoom = async (room: DebateRoom) => {

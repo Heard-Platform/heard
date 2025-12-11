@@ -9,10 +9,13 @@ import type {
 } from "./types.tsx";
 import Papa from "npm:papaparse@5.4.1";
 import {
+  bulkUpsert,
   createRoom,
   createStatement,
   createUser,
   saveVote,
+  statementKeyFn,
+  voteKeyFn,
 } from "./kv-utils.tsx";
 
 export type PolisStatement = {
@@ -313,13 +316,9 @@ export async function importAllData(
 
   await createRoom(data.room);
 
-  for (const statement of data.statements) {
-    await createStatement(statement);
-  }
+  await bulkUpsert(data.statements, statementKeyFn);
 
-  for (const vote of data.votes) {
-    await saveVote(vote);
-  }
+  await bulkUpsert(data.votes, voteKeyFn);
 
   console.log(
     `Imported ${data.users.length} users, ${data.statements.length} statements, ${data.votes.length} votes`,

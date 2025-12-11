@@ -520,14 +520,6 @@ const RANT_EXTRACTION_RULES = `STRICT Rules:
 - Add minimal wording ONLY if needed to make incomplete thoughts into complete sentences
 - Ensure each statement stands alone as something people can vote on`;
 
-const bulkSaveVotes = async (votes: Vote[]) => {
-  const items = votes.map((vote) => ({
-    key: `vote:${vote.statementId}:${vote.userId}`,
-    value: JSON.stringify(vote),
-  }));
-  await kv.bulkSet(items);
-};
-
 const deleteVote = async (
   statementId: string,
   userId: string,
