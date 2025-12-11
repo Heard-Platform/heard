@@ -4,6 +4,7 @@ import { bulkGet } from "./kv-utils.tsx";
 import {
   ClusterAssignment,
   ClusterMetadata,
+  recalculateClustersForRoom,
 } from "./clustering.tsx";
 import { calculateClusterConsensus } from "./cluster-analysis.tsx";
 import { getParsedKvData } from "./kv-utils.tsx";
@@ -67,8 +68,13 @@ app.get(
         .slice(0, 3);
 
       const metadataKey = `cluster:${roomId}:metadata`;
-      const clusterMetadata =
+      let clusterMetadata =
         await getParsedKvData<ClusterMetadata>(metadataKey);
+
+      if (!clusterMetadata && room.participants.length > 0 && statements.length > 0) {
+        console.log(`[Analysis] No cluster data found for room ${roomId}, generating now...`);
+        clusterMetadata = await recalculateClustersForRoom(roomId);
+      }
 
       let clusterConsensus = null;
 
