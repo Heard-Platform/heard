@@ -17,7 +17,10 @@ interface ClusterConsensusStatement {
 export interface ClusterConsensus {
   totalClusters: number;
   clusterSizes: Record<number, number>;
-  statementsByCluster: Record<number, ClusterConsensusStatement[]>;
+  statementsByCluster: Record<
+    number,
+    ClusterConsensusStatement[]
+  >;
 }
 
 export function calculateClusterConsensus(
@@ -42,9 +45,16 @@ export function calculateClusterConsensus(
     usersByCluster[clusterId].push(userId);
   });
 
-  const statementsByCluster: Record<number, ClusterConsensusStatement[]> = {};
+  const statementsByCluster: Record<
+    number,
+    ClusterConsensusStatement[]
+  > = {};
 
-  for (let clusterId = 0; clusterId < clusterMetadata.totalClusters; clusterId++) {
+  for (
+    let clusterId = 0;
+    clusterId < clusterMetadata.totalClusters;
+    clusterId++
+  ) {
     const usersInCluster = usersByCluster[clusterId];
     const clusterStatements: ClusterConsensusStatement[] = [];
 
@@ -56,13 +66,19 @@ export function calculateClusterConsensus(
         const voteType = statement.voters?.[userId];
         if (voteType) {
           totalVoteCount++;
-          if (voteType === "agree" || voteType === "super_agree") {
+          if (
+            voteType === "agree" ||
+            voteType === "super_agree"
+          ) {
             agreeCount++;
           }
         }
       }
 
-      const consensusScore = totalVoteCount > 0 ? (agreeCount / totalVoteCount) * 100 : 0;
+      const consensusScore =
+        totalVoteCount > 0
+          ? (agreeCount / totalVoteCount) * 100
+          : 0;
       clusterStatements.push({
         id: statement.id,
         text: statement.text,
@@ -78,7 +94,10 @@ export function calculateClusterConsensus(
       }
       return b.totalVotes - a.totalVotes;
     });
-    statementsByCluster[clusterId] = clusterStatements.slice(0, 3);
+    statementsByCluster[clusterId] = clusterStatements.slice(
+      0,
+      3,
+    );
   }
 
   return {
