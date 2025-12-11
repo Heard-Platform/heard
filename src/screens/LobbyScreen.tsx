@@ -495,6 +495,21 @@ export function LobbyScreen({
                       Help
                     </Button>
 
+                    {/* Showcase button */}
+                    {onOpenShowcase && (
+                      <Button
+                        onClick={() => {
+                          setDevMenuOpen(false);
+                          onOpenShowcase();
+                        }}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <Code2 className="w-4 h-4 mr-2" />
+                        Component Showcase
+                      </Button>
+                    )}
+
                     {/* Admin Dashboard button - for community admins */}
                     {onOpenAdminDashboard && (
                       <Button
