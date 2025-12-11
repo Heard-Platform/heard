@@ -5,6 +5,7 @@ import {
   createStatement,
   getByPrefixParsed,
   getDebate,
+  saveVote,
 } from "./kv-utils.tsx";
 import { recalculateClustersForRoom } from "./clustering.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
@@ -518,14 +519,6 @@ const RANT_EXTRACTION_RULES = `STRICT Rules:
 - Capitalize the first letter of each statement
 - Add minimal wording ONLY if needed to make incomplete thoughts into complete sentences
 - Ensure each statement stands alone as something people can vote on`;
-
-// Vote utility functions
-const saveVote = async (vote: Vote) => {
-  await kv.set(
-    `vote:${vote.statementId}:${vote.userId}`,
-    JSON.stringify(vote),
-  );
-};
 
 const bulkSaveVotes = async (votes: Vote[]) => {
   const items = votes.map((vote) => ({

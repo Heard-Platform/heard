@@ -71,8 +71,11 @@ export const createUser = async (user: UserSession) => {
   await kv.set(`user:${user.id}`, JSON.stringify(user));
 };
 
-export const createVote = async (vote: Vote) => {
-  await kv.set(`vote:${vote.id}`, JSON.stringify(vote));
+export const saveVote = async (vote: Vote) => {
+  await kv.set(
+    `vote:${vote.statementId}:${vote.userId}`,
+    JSON.stringify(vote),
+  );
 };
 
 export const createStatement = async (statement: Statement) => {

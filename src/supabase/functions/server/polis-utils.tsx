@@ -12,7 +12,7 @@ import {
   createRoom,
   createStatement,
   createUser,
-  createVote,
+  saveVote,
 } from "./kv-utils.tsx";
 
 export type PolisStatement = {
@@ -318,7 +318,7 @@ export async function importAllData(
   }
 
   for (const vote of data.votes) {
-    await createVote(vote);
+    await saveVote(vote);
   }
 
   console.log(
