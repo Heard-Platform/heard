@@ -28,6 +28,11 @@ app.get(
 
       statements.forEach((statement) => {
         uniqueParticipants.add(statement.author);
+        if (statement.voters) {
+          Object.keys(statement.voters).forEach((userId) => {
+            uniqueParticipants.add(userId);
+          });
+        }
         totalVotes +=
           statement.agrees +
           statement.disagrees +
