@@ -52,6 +52,13 @@ export const getParsedKvData = async <T,>(
   return parseKvData<T>(rawData);
 };
 
+export const bulkGet = async <T,>(
+  keys: string[],
+): Promise<T[]> => {
+  const results = await kv.mget(keys);
+  return parseKvDataArray<T>(results);
+};
+
 /**
  * Entity-specific helpers for common KV operations
  */

@@ -1,15 +1,7 @@
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { CheckCircle, XCircle, MinusCircle } from "lucide-react";
-
-interface TopPost {
-  id: string;
-  text: string;
-  agreeVotes: number;
-  disagreeVotes: number;
-  passVotes: number;
-  consensusScore: number;
-}
+import { TopPost } from "../../types";
 
 interface TopAgreedPostsProps {
   topPosts: TopPost[];

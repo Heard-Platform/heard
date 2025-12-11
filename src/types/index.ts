@@ -113,7 +113,7 @@ export interface ClusterStatement {
 export interface ClusterConsensus {
   totalClusters: number;
   clusterSizes: Record<number, number>;
-  consensusStatements: Record<number, ClusterStatement[]>;
+  statementsByCluster: Record<number, ClusterStatement[]>;
 }
 
 export interface AnalysisData {

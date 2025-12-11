@@ -4,25 +4,11 @@ import { X, Loader2 } from "lucide-react";
 import { DebateAnalysisReport } from "./DebateAnalysisReport";
 import { useState, useEffect } from "react";
 import { api } from "../utils/api";
+import { AnalysisData } from "../types";
 
 interface DebateAnalysisViewProps {
   roomId: string;
   onClose: () => void;
-}
-
-interface AnalysisData {
-  debateTopic: string;
-  totalParticipants: number;
-  totalStatements: number;
-  totalVotes: number;
-  topPosts: Array<{
-    id: string;
-    text: string;
-    agreeVotes: number;
-    disagreeVotes: number;
-    passVotes: number;
-    consensusScore: number;
-  }>;
 }
 
 export function DebateAnalysisView({
@@ -106,6 +92,7 @@ export function DebateAnalysisView({
               totalStatements={data.totalStatements}
               totalVotes={data.totalVotes}
               topPosts={data.topPosts}
+              clusterConsensus={data.clusterConsensus}
             />
           )}
         </div>

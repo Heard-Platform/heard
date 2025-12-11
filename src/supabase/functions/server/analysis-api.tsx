@@ -1,5 +1,12 @@
 import { Hono } from "npm:hono";
 import { getDebateRoom, getStatements } from "./debate-api.tsx";
+import { bulkGet } from "./kv-utils.tsx";
+import {
+  ClusterAssignment,
+  ClusterMetadata,
+} from "./clustering.tsx";
+import { calculateClusterConsensus } from "./cluster-analysis.tsx";
+import { getParsedKvData } from "./kv-utils.tsx";
 
 const app = new Hono();
 
@@ -54,12 +61,34 @@ app.get(
         .sort((a, b) => b.consensusScore - a.consensusScore)
         .slice(0, 3);
 
+      const metadataKey = `cluster:${roomId}:metadata`;
+      const clusterMetadata =
+        await getParsedKvData<ClusterMetadata>(metadataKey);
+
+      let clusterConsensus = null;
+
+      if (clusterMetadata && room.participants.length > 0) {
+        const assignmentKeys = room.participants.map(
+          (userId) => `cluster:${roomId}:${userId}`,
+        );
+        const assignments =
+          await bulkGet<ClusterAssignment>(assignmentKeys);
+
+        clusterConsensus = calculateClusterConsensus(
+          statements,
+          clusterMetadata,
+          assignments,
+          room.participants,
+        );
+      }
+
       return c.json({
         debateTopic: room.topic,
         totalParticipants: uniqueParticipants.size,
         totalStatements: statements.length,
         totalVotes,
         topPosts,
+        clusterConsensus,
       });
     } catch (error) {
       console.error("Error fetching debate analysis:", error);
