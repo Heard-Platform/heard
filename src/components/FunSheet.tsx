@@ -8,8 +8,9 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import { Button } from "./ui/button";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { LucideIcon, Sparkles, ArrowLeft } from "lucide-react";
+import { useState, useRef } from "react";
 
 interface FunSheetTheme {
   bgGradient: string;
@@ -114,6 +115,52 @@ export function FunSheet({
   onBackClick,
 }: FunSheetProps) {
   const theme = themes[themeKey];
+  const [showGreeting, setShowGreeting] = useState(false);
+  const [greeting, setGreeting] = useState("");
+  const [jiggleKey, setJiggleKey] = useState(0);
+  const [clickCount, setClickCount] = useState(0);
+  const timeoutRef = useRef<number | null>(null);
+
+  const greetings = [
+    "Hey!",
+    "Hi!",
+    "Howdy!",
+    "Hello!",
+    "Yo!",
+    "Sup!",
+    "Heya!",
+    "What's up?",
+  ];
+
+  const handleAvatarClick = () => {
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    const newClickCount = clickCount + 1;
+    setClickCount(newClickCount);
+
+    if (newClickCount > 3) {
+      setGreeting("Just give me a call already!");
+      setShowGreeting(true);
+      setJiggleKey((prev) => prev + 1);
+      setClickCount(0);
+
+      timeoutRef.current = window.setTimeout(() => {
+        setShowGreeting(false);
+      }, 4000);
+    } else {
+      const randomGreeting =
+        greetings[Math.floor(Math.random() * greetings.length)];
+      setGreeting(randomGreeting);
+      setShowGreeting(true);
+      setJiggleKey((prev) => prev + 1);
+
+      timeoutRef.current = window.setTimeout(() => {
+        setShowGreeting(false);
+      }, 2000);
+    }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -131,9 +178,13 @@ export function FunSheet({
               animate={{ rotate: [0, 10, -10, 10, 0] }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <LeftIcon className={`w-6 h-6 ${theme.leftIconColor || theme.iconColor}`} />
+              <LeftIcon
+                className={`w-6 h-6 ${theme.leftIconColor || theme.iconColor}`}
+              />
             </motion.div>
-            <SheetTitle className={`text-3xl bg-gradient-to-r ${theme.titleGradient} bg-clip-text text-transparent`}>
+            <SheetTitle
+              className={`text-3xl bg-gradient-to-r ${theme.titleGradient} bg-clip-text text-transparent`}
+            >
               {title}
             </SheetTitle>
           </div>
@@ -141,18 +192,46 @@ export function FunSheet({
             {description}
           </SheetDescription>
           {avatar && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.3 }}
-              className="flex justify-center pt-2"
-            >
-              <img 
-                src={avatar} 
-                alt="Avatar" 
-                className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
-              />
-            </motion.div>
+            <div className="flex justify-center pt-2 relative">
+              <motion.button
+                key={jiggleKey}
+                animate={{
+                  rotate:
+                    jiggleKey > 0
+                      ? [0, -10, 10, -10, 10, 0]
+                      : 0,
+                }}
+                transition={{
+                  rotate: { duration: 0.5 },
+                }}
+                onClick={handleAvatarClick}
+                className="cursor-pointer focus:outline-none"
+                type="button"
+              >
+                <img
+                  src={avatar}
+                  alt="Avatar"
+                  className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
+                />
+              </motion.button>
+
+              <AnimatePresence>
+                {showGreeting && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white px-4 py-2 rounded-full shadow-lg border-2 border-purple-200"
+                  >
+                    <span className="text-purple-600 whitespace-nowrap">
+                      {greeting}
+                    </span>
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r-2 border-b-2 border-purple-200 rotate-45" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           )}
         </SheetHeader>
 
@@ -175,17 +254,25 @@ export function FunSheet({
                 <>
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                     className="mr-2"
                   >
                     <Sparkles className="w-5 h-5" />
                   </motion.div>
-                  <span className="text-base">{buttonLoadingText}</span>
+                  <span className="text-base">
+                    {buttonLoadingText}
+                  </span>
                 </>
               ) : (
                 <>
                   <ButtonIcon className="w-5 h-5 mr-2" />
-                  <span className="text-base">{buttonText}</span>
+                  <span className="text-base">
+                    {buttonText}
+                  </span>
                 </>
               )}
             </Button>
@@ -221,7 +308,11 @@ interface FunSheetCardProps {
   borderColor?: string;
 }
 
-export function FunSheetCard({ children, delay = 0.2, borderColor = "border-emerald-100" }: FunSheetCardProps) {
+export function FunSheetCard({
+  children,
+  delay = 0.2,
+  borderColor = "border-emerald-100",
+}: FunSheetCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}

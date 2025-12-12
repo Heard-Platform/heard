@@ -610,6 +610,10 @@
     top: calc(var(--spacing) * -1);
   }
 
+  .-top-8 {
+    top: calc(var(--spacing) * -8);
+  }
+
   .top-0 {
     top: calc(var(--spacing) * 0);
   }
@@ -664,6 +668,10 @@
 
   .right-8 {
     right: calc(var(--spacing) * 8);
+  }
+
+  .-bottom-1 {
+    bottom: calc(var(--spacing) * -1);
   }
 
   .bottom-0 {
@@ -1332,6 +1340,10 @@
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
+  .rotate-45 {
+    rotate: 45deg;
+  }
+
   .rotate-\[-25deg\] {
     rotate: -25deg;
   }
@@ -1637,6 +1649,11 @@
   .border-r {
     border-right-style: var(--tw-border-style);
     border-right-width: 1px;
+  }
+
+  .border-r-2 {
+    border-right-style: var(--tw-border-style);
+    border-right-width: 2px;
   }
 
   .border-b {
