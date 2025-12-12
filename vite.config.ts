@@ -14,6 +14,7 @@
         'react-resizable-panels@2.1.7': 'react-resizable-panels',
         'react-hook-form@7.55.0': 'react-hook-form',
         'react-day-picker@8.10.1': 'react-day-picker',
+        'papaparse@5.4.1': 'papaparse',
         'next-themes@0.4.6': 'next-themes',
         'moment@2.30.1': 'moment',
         'lucide-react@0.487.0': 'lucide-react',
