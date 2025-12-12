@@ -211,10 +211,11 @@ export function IntroModal({
                 </span>
               </div>
               <p className="text-sm text-muted-foreground font-normal max-w-sm mx-auto">
-                Heard is a debate app that makes arguing fun!
-                Share your hot takes, vote on others, and
-                discover where you agree, how you differ, and
-                what quieter ideas are getting missed.
+                Heard makes conversations, debates, and
+                decisions actually fun. Share your hot takes,
+                vote on others, and discover where you agree,
+                how you differ, and what quieter ideas are
+                getting missed.
               </p>
             </motion.div>
           </DialogTitle>
