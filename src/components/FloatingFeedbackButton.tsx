@@ -70,7 +70,7 @@ export function FloatingFeedbackButton({ userId }: FloatingFeedbackButtonProps) 
           />
           
           <span className="text-white relative z-10 whitespace-nowrap">
-            Give feedback
+            Talk to Alex
           </span>
           
           {/* Sparkle effect */}

@@ -76,8 +76,9 @@ interface FunSheetProps {
   trigger?: ReactNode;
   title: string;
   description: string;
+  avatar?: string;
   leftIcon: LucideIcon;
-  rightIcon?: LucideIcon; // Made optional
+  rightIcon?: LucideIcon;
   theme: keyof typeof themes;
   children: ReactNode;
   buttonText: string;
@@ -97,6 +98,7 @@ export function FunSheet({
   trigger,
   title,
   description,
+  avatar,
   leftIcon: LeftIcon,
   rightIcon: RightIcon,
   theme: themeKey,
@@ -138,6 +140,20 @@ export function FunSheet({
           <SheetDescription className="text-center text-sm text-slate-600">
             {description}
           </SheetDescription>
+          {avatar && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
+              className="flex justify-center pt-2"
+            >
+              <img 
+                src={avatar} 
+                alt="Avatar" 
+                className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
+              />
+            </motion.div>
+          )}
         </SheetHeader>
 
         <div className="space-y-5 pb-32">

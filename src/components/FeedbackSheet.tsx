@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
-import { MessageSquare, Heart } from "lucide-react";
+import { MessageSquare, Heart, Phone } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner@2.0.3";
 import { api } from "../utils/api";
 import { FunSheet, FunSheetCard } from "./FunSheet";
+import alexAvatar from "figma:asset/666a1c47b00c0b4dbc630b8672610dd57a571842.png";
 
 interface FeedbackSheetProps {
   userId?: string;
@@ -82,30 +83,56 @@ export function FeedbackSheet({
                 className="gap-2"
               >
                 <MessageSquare className="w-4 h-4" />
-                Give Feedback
+                Talk to Alex
               </Button>
             )
           : undefined
       }
-      title="Help Us Build Heard!"
-      description="Your feedback shapes the future of debating! 💜"
+      title="Talk to Alex"
+      description="Hey! I'm Alex, the creator of Heard 👋"
+      avatar={alexAvatar}
       leftIcon={Heart}
-      rightIcon={MessageSquare}
+      rightIcon={Phone}
       theme="purple"
-      buttonText="Send Feedback 💜"
-      buttonLoadingText="Sending your feedback..."
+      buttonText="Send Message 💜"
+      buttonLoadingText="Sending your message..."
       buttonIcon={Heart}
       onButtonClick={handleSubmit}
       buttonDisabled={!feedbackText.trim()}
       isLoading={submitting}
     >
+      <FunSheetCard delay={0.1} borderColor="border-purple-100">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Phone className="w-5 h-5 text-purple-600" />
+            <Label className="text-base text-slate-700">
+              Text or call me!
+            </Label>
+          </div>
+          <p className="text-slate-600 leading-relaxed">
+            I'd love to hear from you! Text or call Alex at{" "}
+            <a
+              href="tel:916-234-3273"
+              className="font-bold text-purple-600 hover:text-purple-700 underline decoration-2 decoration-purple-300 underline-offset-2"
+            >
+              916-BE-HEARD (234-3273)
+            </a>{" "}
+            with feedback, questions, bugs, interesting stories
+            about your great grandma, or just to say hi.
+          </p>
+          <p className="text-slate-600 leading-relaxed">
+            Or you can send a message directly below:
+          </p>
+        </div>
+      </FunSheetCard>
+
       {/* Feedback Text */}
       <FunSheetCard delay={0.2} borderColor="border-purple-100">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-purple-600" />
             <Label className="text-base text-slate-700">
-              What's on your mind? Be honest!
+              Send a message
             </Label>
           </div>
           <Textarea
