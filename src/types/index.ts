@@ -72,7 +72,10 @@ export interface DebateRoom {
   endTime?: number; // For realtime debates - timestamp when the debate ends
 }
 
-export type NewDebateRoom = Pick<DebateRoom, "topic" | "subHeard"> & {
+export type NewDebateRoom = Pick<
+  DebateRoom,
+  "topic" | "subHeard"
+> & {
   seedStatements?: string[];
   imageUrl?: string;
 };

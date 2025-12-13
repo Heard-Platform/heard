@@ -222,7 +222,6 @@ export function VineNavigator({
               className="w-full h-full object-contain drop-shadow-lg"
               style={{ scaleX: -1, opacity: 1 }}
               animate={{
-                rotate: [0, -2, 2, -2, 0],
                 filter: [
                   "drop-shadow(0 0 0px rgba(16, 185, 129, 0))",
                   "drop-shadow(0 0 12px rgba(16, 185, 129, 0.9))",
@@ -230,14 +229,8 @@ export function VineNavigator({
                 ],
               }}
               transition={{
-                rotate: {
-                  duration: 2,
-                  repeat: Infinity,
-                },
-                filter: {
-                  duration: 2,
-                  repeat: Infinity,
-                },
+                duration: 2,
+                repeat: Infinity,
               }}
             />
           </motion.div>
