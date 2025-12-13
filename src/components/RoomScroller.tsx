@@ -112,8 +112,16 @@ export const RoomScroller = forwardRef<
 
     // Fetch statements for all rooms
     useEffect(() => {
-      onGetAllRoomStatements();
-    }, []);
+      console.log("fetch")
+      if (rooms.length > 0) {
+        setLoadingRooms(
+          Object.fromEntries(rooms.map((r) => [r.id, true])),
+        );
+        onGetAllRoomStatements().finally(() => {
+          setLoadingRooms({});
+        });
+      }
+    }, [rooms, currentSubHeard]);
 
     // Combine rooms with a "create new" card at the end
     const allCards = [

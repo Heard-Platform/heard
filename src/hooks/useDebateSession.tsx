@@ -459,7 +459,7 @@ export function useDebateSession() {
 
     setRoomStatements(statementsMap);
     return statementsMap;
-  }, []);
+  }, [activeRooms]);
 
   // Reset session (full logout)
   const resetSession = useCallback(() => {
