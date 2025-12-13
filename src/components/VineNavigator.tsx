@@ -126,7 +126,7 @@ export function VineNavigator({
 
   return (
     <div
-      className="absolute -right-1 top-0 z-10 pointer-events-none"
+      className="absolute right-0 top-0 z-10 pointer-events-none"
       style={{ height: vineHeight }}
     >
       <svg
