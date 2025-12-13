@@ -2,7 +2,7 @@
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import {
-  createStatement,
+  saveStatement,
   getByPrefixParsed,
   getDebate,
   saveVote,
@@ -1118,7 +1118,7 @@ app.post(
         voters: {}, // Will be calculated from Vote records
       };
 
-      await createStatement(statement);
+      await saveStatement(statement);
 
       const basePoints = 50;
       const totalPoints = basePoints;
@@ -1393,7 +1393,6 @@ app.post(
         await getVotesForStatement(statementId);
       const voteStats = calculateVoteStats(updatedVotes);
 
-      // Update statement with calculated vote data (but don't save it - votes are separate)
       const updatedStatement = {
         ...statement,
         agrees: voteStats.agrees,
@@ -1402,6 +1401,8 @@ app.post(
         superAgrees: voteStats.superAgrees,
         voters: voteStats.voters,
       };
+
+      await saveStatement(updatedStatement);
 
       console.log(
         `Final vote count for statement ${statementId}: ${voteStats.agrees} agree, ${voteStats.disagrees} disagree, ${voteStats.passes} pass (${updatedVotes.length} total votes)`,

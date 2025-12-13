@@ -111,7 +111,7 @@ export const bulkSaveVotes = async (votes: Vote[]) => {
 export const statementKeyFn = (statement: Statement) =>
   `statement:${statement.roomId}:${statement.id}`;
 
-export const createStatement = async (statement: Statement) => {
+export const saveStatement = async (statement: Statement) => {
   await upsert(statement, statementKeyFn);
 };
 
