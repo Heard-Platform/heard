@@ -112,7 +112,6 @@ export const RoomScroller = forwardRef<
 
     // Fetch statements for all rooms
     useEffect(() => {
-      console.log("fetch")
       if (rooms.length > 0) {
         setLoadingRooms(
           Object.fromEntries(rooms.map((r) => [r.id, true])),
@@ -226,7 +225,7 @@ export const RoomScroller = forwardRef<
       <div className="relative h-screen w-full overflow-hidden">
         <div
           ref={scrollContainerRef}
-          className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth relative"
+          className="h-full w-full overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scroll-smooth relative"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
