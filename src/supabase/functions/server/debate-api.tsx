@@ -1105,7 +1105,7 @@ app.post(
       const statement: Statement = {
         id: generateId(),
         text: text.trim(),
-        author: user.nickname,
+        author: user.id,
         agrees: 0, // Will be calculated from Vote records
         disagrees: 0, // Will be calculated from Vote records
         passes: 0, // Will be calculated from Vote records
