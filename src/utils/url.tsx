@@ -74,6 +74,17 @@ export const parseAnalysisRoomIdFromUrl = (): string | null => {
   return url.searchParams.get('analysis')
 }
 
+export const parseDevToolsTabFromUrl = (): string | null => {
+  if (typeof window === 'undefined') return null
+  
+  const pathParts = window.location.pathname.split('/')
+  if (pathParts[1] === 'devtools' && pathParts[2]) {
+    return pathParts[2]
+  }
+  
+  return null
+}
+
 export const updateUrlForAnalysis = (roomId: string | null) => {
   if (typeof window === 'undefined') return
   
@@ -86,6 +97,13 @@ export const updateUrlForAnalysis = (roomId: string | null) => {
   }
   
   window.history.pushState(null, '', url.toString())
+}
+
+export const updateUrlForDevTools = (tab: string | null) => {
+  if (typeof window === 'undefined') return
+  
+  const newPath = tab ? `/devtools/${tab}` : '/'
+  window.history.pushState(null, '', newPath)
 }
 
 export const clearRoomFromUrl = () => {

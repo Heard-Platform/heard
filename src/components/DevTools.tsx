@@ -2,6 +2,10 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { X, Wrench } from "lucide-react";
 import { EmailPreviews } from "./EmailPreviews";
+import {
+  parseDevToolsTabFromUrl,
+  updateUrlForDevTools,
+} from "../utils/url";
 
 interface DevToolsProps {
   onExit?: () => void;
@@ -10,7 +14,15 @@ interface DevToolsProps {
 type TabType = "clustering" | "email";
 
 export function DevTools({ onExit }: DevToolsProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("clustering");
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    const tabFromUrl = parseDevToolsTabFromUrl();
+    return tabFromUrl ? (tabFromUrl as TabType) : "clustering";
+  });
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    updateUrlForDevTools(tab);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -36,7 +48,7 @@ export function DevTools({ onExit }: DevToolsProps) {
           <div className="border-b">
             <div className="flex gap-1 px-6">
               <button
-                onClick={() => setActiveTab("clustering")}
+                onClick={() => handleTabChange("clustering")}
                 className={`px-4 py-3 border-b-2 transition-colors ${
                   activeTab === "clustering"
                     ? "border-blue-600 text-blue-600"
@@ -46,7 +58,7 @@ export function DevTools({ onExit }: DevToolsProps) {
                 Clustering
               </button>
               <button
-                onClick={() => setActiveTab("email")}
+                onClick={() => handleTabChange("email")}
                 className={`px-4 py-3 border-b-2 transition-colors ${
                   activeTab === "email"
                     ? "border-blue-600 text-blue-600"
@@ -61,12 +73,13 @@ export function DevTools({ onExit }: DevToolsProps) {
           <div className="p-6">
             {activeTab === "clustering" && (
               <div className="space-y-4">
-                <p className="text-slate-600">Clustering visualization and testing tools coming soon...</p>
+                <p className="text-slate-600">
+                  Clustering visualization and testing tools
+                  coming soon...
+                </p>
               </div>
             )}
-            {activeTab === "email" && (
-              <EmailPreviews />
-            )}
+            {activeTab === "email" && <EmailPreviews />}
           </div>
         </div>
       </div>

@@ -18,19 +18,14 @@ import {
   updateUrlForSubHeard,
   clearRoomFromUrl,
   parseAnalysisRoomIdFromUrl,
+  updateUrlForDevTools,
 } from "./utils/url";
 
 function getStoredDashboardState(): boolean {
   try {
-    return localStorage.getItem("showAdminDashboard") === "true";
-  } catch {
-    return false;
-  }
-}
-
-function getStoredDevToolsState(): boolean {
-  try {
-    return localStorage.getItem("showDevTools") === "true";
+    return (
+      localStorage.getItem("showAdminDashboard") === "true"
+    );
   } catch {
     return false;
   }
@@ -56,8 +51,10 @@ export default function App() {
       }
     });
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [showAdminDashboard, setShowAdminDashboard] = useState(getStoredDashboardState);
-  const [showDevTools, setShowDevTools] = useState(getStoredDevToolsState);
+  const [showAdminDashboard, setShowAdminDashboard] = useState(
+    getStoredDashboardState,
+  );
+  const [showDevTools, setShowDevTools] = useState(false);
   const [showPasswordReset, setShowPasswordReset] =
     useState(false);
   const [resetToken, setResetToken] = useState<string | null>(
@@ -136,10 +133,14 @@ export default function App() {
         window.location.search,
       );
       const resetTokenFromUrl = urlParams.get("resetToken");
-      const isAdminRoute = window.location.pathname === "/admin";
+      const isAdminRoute =
+        window.location.pathname === "/admin";
+      const isDevToolsRoute =
+        window.location.pathname.startsWith("/devtools");
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
-      const analysisRoomIdFromUrl = parseAnalysisRoomIdFromUrl();
+      const analysisRoomIdFromUrl =
+        parseAnalysisRoomIdFromUrl();
 
       if (analysisRoomIdFromUrl) {
         setAnalysisRoomId(analysisRoomIdFromUrl);
@@ -150,6 +151,8 @@ export default function App() {
         setShowPasswordReset(true);
       } else if (isAdminRoute) {
         setShowAdminPanel(true);
+      } else if (isDevToolsRoute) {
+        setShowDevTools(true);
       } else if (roomIdFromUrl) {
         setTargetRoomId(roomIdFromUrl);
       } else if (subHeardFromUrl) {
@@ -246,14 +249,12 @@ export default function App() {
 
   const handleOpenDevTools = () => {
     setShowDevTools(true);
-    localStorage.setItem("showDevTools", "true");
-    window.history.pushState({}, "", "/devtools");
+    updateUrlForDevTools("clustering");
   };
 
   const handleExitDevTools = () => {
     setShowDevTools(false);
-    localStorage.setItem("showDevTools", "false");
-    window.history.pushState({}, "", "/");
+    updateUrlForDevTools(null);
   };
 
   if (showAdminPanel) {
@@ -268,7 +269,10 @@ export default function App() {
   if (showAdminDashboard && user) {
     return (
       <>
-        <AdminDashboard onExit={handleExitAdminDashboard} currentUserId={user.id} />
+        <AdminDashboard
+          onExit={handleExitAdminDashboard}
+          currentUserId={user.id}
+        />
         <Toaster />
       </>
     );
