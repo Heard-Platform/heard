@@ -13,6 +13,7 @@ import { activityApi } from "./activity-api.tsx";
 import { statsApi } from "./stats-api.tsx";
 import { polisImportApi } from "./polis-import-api.tsx";
 import { analysisApi } from "./analysis-api.tsx";
+import { vineApi } from "./vine-api.tsx";
 
 const app = new Hono();
 
@@ -79,5 +80,8 @@ app.route("/", polisImportApi);
 
 // Mount analysis API routes
 app.route("/", analysisApi);
+
+// Mount vine API routes
+app.route("/", vineApi);
 
 Deno.serve(app.fetch);

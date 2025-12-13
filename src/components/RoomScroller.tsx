@@ -11,6 +11,7 @@ import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
 import type { DebateRoom, Statement, VoteType } from "../types";
 import { RoomCard } from "./RoomCard";
+import { VineNavigator } from "./VineNavigator";
 
 interface RoomScrollerProps {
   rooms: DebateRoom[];
@@ -72,12 +73,17 @@ export const RoomScroller = forwardRef<
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
-    const [loadingRooms, setLoadingRooms] = useState<Record<string, boolean>>({});
+    const [loadingRooms, setLoadingRooms] = useState<
+      Record<string, boolean>
+    >({});
 
     // Function to refresh statements for a specific room
     const refreshRoomStatements = async (roomId: string) => {
       try {
-        setLoadingRooms(prev => ({ ...prev, [roomId]: true }));
+        setLoadingRooms((prev) => ({
+          ...prev,
+          [roomId]: true,
+        }));
         await onGetRoomStatements(roomId);
       } catch (error) {
         console.error(
@@ -85,7 +91,10 @@ export const RoomScroller = forwardRef<
           error,
         );
       } finally {
-        setLoadingRooms(prev => ({ ...prev, [roomId]: false }));
+        setLoadingRooms((prev) => ({
+          ...prev,
+          [roomId]: false,
+        }));
       }
     };
 
@@ -196,10 +205,9 @@ export const RoomScroller = forwardRef<
 
     return (
       <div className="relative h-screen w-full overflow-hidden">
-        {/* Scroll container with snap points */}
         <div
           ref={scrollContainerRef}
-          className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth"
+          className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth relative"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
@@ -211,6 +219,14 @@ export const RoomScroller = forwardRef<
             display: none;
           }
         `}</style>
+
+          {isDeveloper && (
+            <VineNavigator
+              totalCards={allCards.length}
+              currentIndex={currentIndex}
+              currentUserId={currentUserId}
+            />
+          )}
 
           {allCards.map((card, index) => {
             const isCreateCard =
@@ -246,29 +262,15 @@ export const RoomScroller = forwardRef<
                     }
                     currentSubHeard={currentSubHeard}
                     onDiscussStatement={onDiscussStatement}
-                    loadingStatements={loadingRooms[room.id] || false}
+                    loadingStatements={
+                      loadingRooms[room.id] || false
+                    }
                     analysisRoomId={analysisRoomId}
                   />
                 ) : null}
               </div>
             );
           })}
-        </div>
-
-        {/* Page indicator dots */}
-        <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-2 z-10">
-          {allCards.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => scrollToIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentIndex
-                  ? "bg-purple-600 h-8"
-                  : "bg-gray-300 hover:bg-gray-400"
-              }`}
-              aria-label={`Go to card ${index + 1}`}
-            />
-          ))}
         </div>
       </div>
     );

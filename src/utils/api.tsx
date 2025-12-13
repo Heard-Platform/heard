@@ -422,6 +422,17 @@ class ApiClient {
       method: "POST",
     });
   }
+
+  async updateUserPresence(userId: string, currentRoomIndex: number) {
+    return this.request("/vine/presence", {
+      method: "POST",
+      body: JSON.stringify({ userId, currentRoomIndex }),
+    });
+  }
+
+  async getActivePresences() {
+    return this.request("/vine/presences");
+  }
 }
 
 export const api = new ApiClient();
