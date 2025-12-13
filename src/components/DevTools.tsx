@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { X, Wrench } from "lucide-react";
+import { EmailPreviews } from "./EmailPreviews";
 
 interface DevToolsProps {
   onExit?: () => void;
 }
 
-type TabType = "clustering";
+type TabType = "clustering" | "email";
 
 export function DevTools({ onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>("clustering");
@@ -44,6 +45,16 @@ export function DevTools({ onExit }: DevToolsProps) {
               >
                 Clustering
               </button>
+              <button
+                onClick={() => setActiveTab("email")}
+                className={`px-4 py-3 border-b-2 transition-colors ${
+                  activeTab === "email"
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Email
+              </button>
             </div>
           </div>
 
@@ -52,6 +63,9 @@ export function DevTools({ onExit }: DevToolsProps) {
               <div className="space-y-4">
                 <p className="text-slate-600">Clustering visualization and testing tools coming soon...</p>
               </div>
+            )}
+            {activeTab === "email" && (
+              <EmailPreviews />
             )}
           </div>
         </div>
