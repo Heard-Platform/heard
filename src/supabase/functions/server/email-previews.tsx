@@ -1,54 +1,12 @@
 import { Hono } from "npm:hono";
+import * as kvUtils from "./kv-utils.tsx";
+import {
+  generateRealEmailData,
+} from "./email-data-generator.tsx";
+import type { UserSession } from "./types.tsx";
+import { FeaturedTake, EmailData, ConversationUpdate, TakeUpdate, ParticipatedConversation, CommunityUpdate } from "./email-types.ts";
 
 const app = new Hono();
-
-interface FeaturedTake {
-  text: string;
-  agrees: number;
-  disagrees: number;
-}
-
-interface ConversationUpdate {
-  title: string;
-  newTakes: number;
-  newVotes: number;
-  featuredTakes: FeaturedTake[];
-}
-
-interface TakeUpdate {
-  text: string;
-  conversationTitle: string;
-  agrees: number;
-  disagrees: number;
-  totalVotes: number;
-}
-
-interface ParticipatedConversation {
-  title: string;
-  newTakes: number;
-  newVotes: number;
-  featuredTake: FeaturedTake;
-}
-
-interface FeaturedConvo {
-  title: string;
-  newTakes: number;
-  totalParticipants: number;
-}
-
-interface CommunityUpdate {
-  name: string;
-  newConversations: number;
-  activeMembers: number;
-  featuredConvo: FeaturedConvo;
-}
-
-interface EmailData {
-  conversationsStarted: ConversationUpdate[];
-  takesPosted: TakeUpdate[];
-  conversationsParticipated: ParticipatedConversation[];
-  communities: CommunityUpdate[];
-}
 
 const STYLES = {
   sectionContainer: "margin-bottom: 40px;",
@@ -479,17 +437,7 @@ function generateEmailHtml(data: EmailData): string {
         </div>
         
         <div style="padding: 32px 24px;">
-          ${
-            sections.length > 0
-              ? sections.join("")
-              : `
-            <div style="text-align: center; padding: 40px 0; color: #718096;">
-              <div style="font-size: 48px; margin-bottom: 16px;">😴</div>
-              <h2 style="color: #2d3748; margin: 0 0 8px 0;">All quiet!</h2>
-              <p style="margin: 0;">No new activity since you last checked in.</p>
-            </div>
-          `
-          }
+          ${sections.join("")}
         </div>
         
         <div style="padding: 24px; text-align: center; color: #717182; font-size: 14px; background-color: #f8f9fa;">
@@ -508,11 +456,41 @@ function generateEmailHtml(data: EmailData): string {
   `;
 }
 
+function hasEmailContent(data: EmailData): boolean {
+  return (
+    data.conversationsStarted.length > 0 ||
+    data.takesPosted.length > 0 ||
+    data.conversationsParticipated.length > 0 ||
+    data.communities.length > 0
+  );
+}
+
 app.get(
   "/make-server-f1a393b4/dev/email-previews",
   async (c) => {
-    const fakeData = generateFakeData();
-    const emailHtml = generateEmailHtml(fakeData);
+    const userId = c.req.query("userId");
+    
+    console.log(`[email-previews GET] Received request with userId: ${userId || 'none (will use mock data)'}`);
+    
+    let emailData: EmailData;
+    if (userId) {
+      console.log(`[email-previews GET] Generating real data for userId: ${userId}`);
+      emailData = await generateRealEmailData(userId);
+    } else {
+      console.log(`[email-previews GET] Generating mock data`);
+      emailData = generateFakeData();
+    }
+    
+    const hasContent = hasEmailContent(emailData);
+    console.log(`[email-previews GET] Email has content: ${hasContent}`);
+    console.log(`[email-previews GET] Data summary:`, {
+      conversationsStarted: emailData.conversationsStarted.length,
+      takesPosted: emailData.takesPosted.length,
+      conversationsParticipated: emailData.conversationsParticipated.length,
+      communities: emailData.communities.length
+    });
+    
+    const emailHtml = generateEmailHtml(emailData);
     return c.html(emailHtml);
   },
 );
@@ -522,12 +500,19 @@ app.post(
   async (c) => {
     try {
       const body = await c.req.json();
-      const { toEmail } = body;
+      const { userId, useMockData } = body;
 
-      if (!toEmail) {
+      if (!userId) {
+        return c.json({ error: "User ID is required" }, 400);
+      }
+
+      const user = await kvUtils.getParsedKvData<UserSession>(
+        `user:${userId}`,
+      );
+      if (!user || !user.email) {
         return c.json(
-          { error: "Email address is required" },
-          400,
+          { error: "User not found or email not available" },
+          404,
         );
       }
 
@@ -542,8 +527,25 @@ app.post(
         );
       }
 
-      const fakeData = generateFakeData();
-      const emailHtml = generateEmailHtml(fakeData);
+      let emailData: EmailData;
+      if (useMockData) {
+        emailData = generateFakeData();
+      } else {
+        emailData = await generateRealEmailData(userId);
+      }
+
+      if (!hasEmailContent(emailData)) {
+        return c.json(
+          {
+            error: "No content to send",
+            message:
+              "User has no activity to include in the email",
+          },
+          400,
+        );
+      }
+
+      const emailHtml = generateEmailHtml(emailData);
 
       const resendResponse = await fetch(
         "https://api.resend.com/emails",
@@ -555,7 +557,7 @@ app.post(
           },
           body: JSON.stringify({
             from: "Heard <updates@heard-now.com>",
-            to: [toEmail],
+            to: [user.email],
             subject: "🎯 The Latest on Heard",
             html: emailHtml,
           }),
@@ -575,13 +577,13 @@ app.post(
 
       const result = await resendResponse.json();
       console.log(
-        `Test email sent successfully to ${toEmail}`,
+        `Test email sent successfully to ${user.email}`,
         result,
       );
 
       return c.json({
         success: true,
-        message: `Test email sent to ${toEmail}`,
+        message: `Test email sent to ${user.email}`,
         emailId: result.id,
       });
     } catch (error) {

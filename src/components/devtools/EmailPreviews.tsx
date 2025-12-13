@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { RefreshCw, Mail } from "lucide-react";
-import {
-  projectId,
-  publicAnonKey,
-} from "../../utils/supabase/info";
-import { toast } from "sonner@2.0.3";
+import { api } from "../../utils/api";
 import type { UserSession } from "../../types";
 
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+
 interface EmailPreviewsProps {
-  user: UserSession | null;
+  user: UserSession;
 }
 
 export function EmailPreviews({ user }: EmailPreviewsProps) {
@@ -17,28 +16,14 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [useMockData, setUseMockData] = useState(true);
 
   const fetchEmailPreview = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4/dev/email-previews`,
-        {
-          headers: {
-            Authorization: `Bearer ${publicAnonKey}`,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `HTTP error! status: ${response.status}`,
-        );
-      }
-
-      const html = await response.text();
+      const html = await api.getEmailPreview(useMockData ? undefined : user.id);
       setEmailHtml(html);
     } catch (err) {
       console.error("Error fetching email preview:", err);
@@ -52,39 +37,19 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
 
   useEffect(() => {
     fetchEmailPreview();
-  }, []);
+  }, [useMockData]);
 
   const sendEmail = async () => {
-    if (!user?.email) {
-      toast.error("No email address found for current user");
-      return;
-    }
-
     setSending(true);
     setError(null);
 
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4/dev/email-previews/send`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${publicAnonKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ toEmail: user.email }),
-        },
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.error ||
-            `HTTP error! status: ${response.status}`,
-        );
+      const result = await api.sendTestEmail(user.id, useMockData);
+      
+      if (!result.success) {
+        throw new Error(result.error || "Failed to send email");
       }
-
-      const result = await response.json();
+      
       toast.success(`Email sent to ${user.email}!`);
     } catch (err) {
       console.error("Error sending email:", err);
@@ -101,14 +66,46 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3>Email Previews</h3>
-        <Button
-          onClick={fetchEmailPreview}
-          variant="outline"
-          size="sm"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-slate-600">
+              Mock Data
+            </label>
+            <button
+              onClick={() => setUseMockData(!useMockData)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                useMockData ? "bg-purple-600" : "bg-slate-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  useMockData
+                    ? "translate-x-6"
+                    : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+          <Button
+            onClick={fetchEmailPreview}
+            variant="outline"
+            size="sm"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+          {user.email && (
+            <Button
+              onClick={sendEmail}
+              variant="outline"
+              size="sm"
+              disabled={sending}
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              {sending ? "Sending..." : "Send Test Email"}
+            </Button>
+          )}
+        </div>
       </div>
 
       {loading && (
@@ -133,32 +130,6 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
             className="w-full h-[800px] border-0"
             sandbox="allow-same-origin"
           />
-        </div>
-      )}
-
-      {!loading && !error && emailHtml && (
-        <div className="flex items-center justify-between mt-4 p-4 bg-slate-50 rounded-lg border">
-          <div className="text-sm text-slate-600">
-            {user?.email ? (
-              <>
-                Send test email to:{" "}
-                <span className="font-medium">
-                  {user.email}
-                </span>
-              </>
-            ) : (
-              "No email address found"
-            )}
-          </div>
-          <Button
-            onClick={sendEmail}
-            variant="outline"
-            size="sm"
-            disabled={sending || !user?.email}
-          >
-            <Mail className="w-4 h-4 mr-2" />
-            {sending ? "Sending..." : "Send Test Email"}
-          </Button>
         </div>
       )}
     </div>

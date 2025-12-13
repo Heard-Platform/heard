@@ -433,6 +433,31 @@ class ApiClient {
   async getActivePresences() {
     return this.request("/vine/presences");
   }
+
+  async getEmailPreview(userId?: string) {
+    const params = userId ? `?userId=${encodeURIComponent(userId)}` : "";
+    const response = await fetch(
+      `${API_BASE_URL}/dev/email-previews${params}`,
+      {
+        headers: {
+          Authorization: `Bearer ${publicAnonKey}`,
+        },
+      },
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return response.text();
+  }
+
+  async sendTestEmail(userId: string, useMockData: boolean) {
+    return this.request("/dev/email-previews/send", {
+      method: "POST",
+      body: JSON.stringify({ userId, useMockData }),
+    });
+  }
 }
 
 export const api = new ApiClient();

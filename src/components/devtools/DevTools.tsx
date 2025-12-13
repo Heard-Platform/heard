@@ -9,7 +9,7 @@ import {
 import type { UserSession } from "../../types";
 
 interface DevToolsProps {
-  user: UserSession | null;
+  user: UserSession;
   onExit?: () => void;
 }
 

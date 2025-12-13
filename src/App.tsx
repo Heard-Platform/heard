@@ -279,6 +279,9 @@ export default function App() {
   }
 
   if (showDevTools) {
+    if (!user) {
+      return null;
+    }
     return <DevTools user={user} onExit={handleExitDevTools} />;
   }
 
