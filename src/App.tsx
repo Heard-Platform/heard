@@ -88,7 +88,6 @@ export default function App() {
     getAllRoomStatements,
   } = useDebateSession();
 
-  // Handle nickname setup completion
   const handleNicknameComplete = async (
     nickname: string,
     email: string,
@@ -97,11 +96,9 @@ export default function App() {
   ) => {
     await initializeUser(nickname, email, password, isSignIn);
 
-    // If there's a target room ID, join it after user creation
     if (targetRoomId) {
       const roomData = await joinRoom(targetRoomId);
       if (roomData) {
-        // Set community context to match room's community
         if (roomData.subHeard) {
           setCurrentSubHeard(roomData.subHeard);
         }
@@ -110,19 +107,14 @@ export default function App() {
     }
   };
 
-  // Handle room creation
   const handleCreateRoom = async (
     newDebate: NewDebateRoom,
   ): Promise<DebateRoom> => {
     const roomData = await createRoom(newDebate);
-
-    // Refresh the rooms list to show the newly created room
     getActiveRooms();
-    
-    return roomData; // Return room data for share step
+    return roomData;
   };
 
-  // Handle joining existing room
   const handleJoinRoom = async (roomId: string) => {
     await joinRoom(roomId);
   };
@@ -138,7 +130,6 @@ export default function App() {
     clearRoomFromUrl();
   };
 
-  // Check URL for room ID, sub-heard, or reset token on initial load
   useEffect(() => {
     if (!hasCheckedUrl) {
       const urlParams = new URLSearchParams(
@@ -168,23 +159,17 @@ export default function App() {
     }
   }, [hasCheckedUrl, setCurrentSubHeard]);
 
-  // Auto-join sub-heard when user visits its URL
   useEffect(() => {
     const autoJoinSubHeard = async () => {
       if (user && currentSubHeard && hasCheckedUrl) {
         try {
-          // Auto-join on visit - no access token needed
-          // If you have the link, you can join
           const response = await api.joinSubHeard(
             currentSubHeard,
             user.id,
           );
 
           if (!response.success) {
-            // Error joining (e.g., community doesn't exist)
-            toast.error(
-              "Unable to join this community",
-            );
+            toast.error("Unable to join this community");
             setCurrentSubHeard(null);
             updateUrlForSubHeard(null);
           }
@@ -201,13 +186,11 @@ export default function App() {
     setCurrentSubHeard,
   ]);
 
-  // Auto-join room if user exists and there's a target room
   useEffect(() => {
     if (user && targetRoomId) {
       const autoJoinRoom = async () => {
         const roomData = await joinRoom(targetRoomId);
         if (roomData) {
-          // Set the community context to match the room's community
           if (
             roomData.subHeard &&
             roomData.subHeard !== currentSubHeard
@@ -215,7 +198,6 @@ export default function App() {
             setCurrentSubHeard(roomData.subHeard);
           }
         } else {
-          // If join failed, clear target and redirect to lobby
           setTargetRoomId(null);
           clearRoomFromUrl();
         }
@@ -224,14 +206,12 @@ export default function App() {
     }
   }, [user, targetRoomId]);
 
-  // Load active rooms when in lobby
   useEffect(() => {
     if (user) {
       getActiveRooms();
     }
   }, [user, currentSubHeard, getActiveRooms]);
 
-  // Handle opening and exiting component showcase
   const handleOpenShowcase = () => {
     setShowComponentShowcase(true);
     localStorage.setItem("showComponentShowcase", "true");
@@ -242,7 +222,6 @@ export default function App() {
     localStorage.setItem("showComponentShowcase", "false");
   };
 
-  // Handle opening and exiting admin panel
   const handleOpenAdminPanel = () => {
     setShowAdminPanel(true);
     window.history.pushState({}, "", "/admin");
@@ -253,7 +232,6 @@ export default function App() {
     window.history.pushState({}, "", "/");
   };
 
-  // Handle opening and exiting admin dashboard
   const handleOpenAdminDashboard = () => {
     setShowAdminDashboard(true);
     localStorage.setItem("showAdminDashboard", "true");
@@ -266,7 +244,6 @@ export default function App() {
     window.history.pushState({}, "", "/");
   };
 
-  // Handle opening and exiting dev tools
   const handleOpenDevTools = () => {
     setShowDevTools(true);
     localStorage.setItem("showDevTools", "true");
@@ -279,7 +256,6 @@ export default function App() {
     window.history.pushState({}, "", "/");
   };
 
-  // Admin Panel Mode - check this first!
   if (showAdminPanel) {
     return (
       <>
@@ -289,7 +265,6 @@ export default function App() {
     );
   }
 
-  // Admin Dashboard Mode - check this second!
   if (showAdminDashboard && user) {
     return (
       <>
@@ -299,17 +274,14 @@ export default function App() {
     );
   }
 
-  // Dev Tools Mode - check this third!
   if (showDevTools) {
     return <DevTools onExit={handleExitDevTools} />;
   }
 
-  // Component Showcase Mode - check this fourth!
   if (showComponentShowcase) {
     return <ComponentShowcase onExit={handleExitShowcase} />;
   }
 
-  // Password Reset Mode - check this fifth!
   if (showPasswordReset) {
     return (
       <>
@@ -317,7 +289,6 @@ export default function App() {
           onBack={() => {
             setShowPasswordReset(false);
             setResetToken(null);
-            // Clear reset token from URL
             const url = new URL(window.location.href);
             url.searchParams.delete("resetToken");
             window.history.replaceState({}, "", url.toString());
@@ -329,7 +300,6 @@ export default function App() {
     );
   }
 
-  // Show nickname setup if no user
   const showNicknameSetup = !user;
 
   if (loading) {
@@ -348,7 +318,6 @@ export default function App() {
     );
   }
 
-  // Nickname Setup
   if (showNicknameSetup) {
     return (
       <>
@@ -364,7 +333,6 @@ export default function App() {
     );
   }
 
-  // Lobby - Room Selection/Creation (always show when user exists)
   return (
     <>
       <LobbyScreen
