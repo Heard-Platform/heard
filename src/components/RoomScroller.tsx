@@ -9,7 +9,12 @@ import { motion } from "motion/react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
-import type { DebateRoom, Statement, VoteType } from "../types";
+import type {
+  DebateRoom,
+  Statement,
+  UserPresence,
+  VoteType,
+} from "../types";
 import { RoomCard } from "./RoomCard";
 import { VineNavigator } from "./VineNavigator";
 
@@ -21,6 +26,7 @@ interface RoomScrollerProps {
   currentSubHeard?: string;
   roomStatements: Record<string, Statement[]>;
   analysisRoomId?: string;
+  presences: UserPresence[];
   onJoinRoom: (roomId: string) => void;
   onCreateRoom: () => void;
   onSetRoomInactive?: (roomId: string) => Promise<boolean>;
@@ -40,6 +46,10 @@ interface RoomScrollerProps {
   onGetAllRoomStatements: () => Promise<
     Record<string, Statement[]>
   >;
+  onUpdatePresence: (
+    userId: string,
+    currentRoomIndex: number,
+  ) => void;
 }
 
 export interface RoomScrollerRef {
@@ -67,6 +77,8 @@ export const RoomScroller = forwardRef<
       onGetRoomStatements,
       onGetAllRoomStatements,
       analysisRoomId,
+      presences,
+      onUpdatePresence,
     },
     ref,
   ) => {
@@ -111,14 +123,13 @@ export const RoomScroller = forwardRef<
 
     // Poll for updates on the currently visible room
     useEffect(() => {
-      if (currentIndex >= rooms.length) return; // Don't poll for "create new" card
+      if (currentIndex >= rooms.length) return;
 
       const currentRoom = rooms[currentIndex];
       if (!currentRoom) return;
 
-      // Immediately fetch on index change
       refreshRoomStatements(currentRoom.id);
-    }, [currentIndex, rooms]);
+    }, [currentIndex]);
 
     // Handle scroll events with debouncing
     useEffect(() => {
@@ -225,6 +236,12 @@ export const RoomScroller = forwardRef<
               totalCards={allCards.length}
               currentIndex={currentIndex}
               currentUserId={currentUserId}
+              presences={
+                presences?.filter(
+                  (p) => p.userId !== currentUserId,
+                ) || []
+              }
+              onUpdatePresence={onUpdatePresence}
             />
           )}
 

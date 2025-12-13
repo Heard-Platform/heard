@@ -4,11 +4,11 @@ import type {
   DebateMode,
   NewDebateRoom,
   VoteType,
+  UserPresence,
 } from "../types";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
 import {
   RoomScroller,
   RoomScrollerRef,
@@ -134,6 +134,9 @@ export function LobbyScreen({
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const roomScrollerRef = useRef<RoomScrollerRef>(null);
   const initialWindowHeightRef = useRef<number>(0);
+  const [presences, setPresences] = useState<UserPresence[]>(
+    [],
+  );
 
   // Sort rooms: target room first, then newest first
   const filteredRooms = activeRooms.sort((a, b) => {
@@ -238,6 +241,32 @@ export function LobbyScreen({
   useEffect(() => {
     onRefreshRooms(currentSubHeard);
   }, [currentSubHeard]);
+
+  // Poll for user presences
+  useEffect(() => {
+    const fetchPresences = async () => {
+      const response = await api.getActivePresences();
+      if (response.success && response.data) {
+        const presenceData =
+          response.data.data || response.data;
+        if (Array.isArray(presenceData)) {
+          setPresences(presenceData);
+        }
+      }
+    };
+
+    fetchPresences();
+    const pollInterval = setInterval(fetchPresences, 2000);
+
+    return () => clearInterval(pollInterval);
+  }, []);
+
+  const handleUpdatePresence = async (
+    userId: string,
+    currentRoomIndex: number,
+  ) => {
+    await api.updateUserPresence(userId, currentRoomIndex);
+  };
 
   const handleCreateSeedData = async () => {
     if (onCreateSeedData) {
@@ -641,6 +670,7 @@ export function LobbyScreen({
           currentSubHeard={currentSubHeard}
           roomStatements={roomStatements}
           analysisRoomId={analysisRoomId}
+          presences={presences}
           onJoinRoom={handleJoinRoom}
           onCreateRoom={handleOpenCreateSheet}
           onSetRoomInactive={onSetRoomInactive}
@@ -649,6 +679,7 @@ export function LobbyScreen({
           onDiscussStatement={handleDiscussStatement}
           onGetRoomStatements={onGetRoomStatements}
           onGetAllRoomStatements={onGetAllRoomStatements}
+          onUpdatePresence={handleUpdatePresence}
         />
       </div>
 

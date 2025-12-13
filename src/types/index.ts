@@ -130,3 +130,9 @@ export interface AnalysisData {
   topPosts: TopPost[];
   clusterConsensus?: ClusterConsensus | null;
 }
+
+export interface UserPresence {
+  userId: string;
+  currentRoomIndex: number;
+  lastUpdated: number;
+}

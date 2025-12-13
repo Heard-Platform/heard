@@ -1,34 +1,38 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { api } from "../utils/api";
-import monkeyImg from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
 
-interface UserPresence {
-  userId: string;
-  currentRoomIndex: number;
-  lastUpdated: number;
-}
+// @ts-ignore
+import monkeyImg from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
+import { UserPresence } from "../types";
 
 interface VineNavigatorProps {
   totalCards: number;
   currentIndex: number;
   currentUserId?: string;
+  presences: UserPresence[];
+  onUpdatePresence: (
+    userId: string,
+    currentRoomIndex: number,
+  ) => void;
 }
 
 const AVATAR_SIZE = 32;
+const OTHER_MONKEY_SIZE = 24;
 const VINE_WIDTH = 16;
 
 export function VineNavigator({
   totalCards,
   currentIndex,
   currentUserId,
+  presences,
+  onUpdatePresence,
 }: VineNavigatorProps) {
-  const [presences, setPresences] = useState<UserPresence[]>(
-    [],
-  );
   const [monkeyPosition, setMonkeyPosition] =
     useState(currentIndex);
   const [monkeyOffset, setMonkeyOffset] = useState(0);
+  const [otherMonkeyOffsets, setOtherMonkeyOffsets] = useState<
+    Record<string, number>
+  >({});
 
   const vineHeight = totalCards * window.innerHeight;
 
@@ -41,43 +45,33 @@ export function VineNavigator({
   }, [currentIndex]);
 
   useEffect(() => {
-    if (!currentUserId) return;
+    if (!currentUserId || !onUpdatePresence) return;
 
-    const updatePresence = async () => {
-      await api.updateUserPresence(
-        currentUserId,
-        currentIndex,
-      );
-    };
+    onUpdatePresence(currentUserId, currentIndex);
 
-    updatePresence();
-
-    const presenceInterval = setInterval(updatePresence, 3000);
+    const presenceInterval = setInterval(() => {
+      onUpdatePresence(currentUserId, currentIndex);
+    }, 3000);
 
     return () => clearInterval(presenceInterval);
   }, [currentUserId, currentIndex]);
 
   useEffect(() => {
-    const fetchPresences = async () => {
-      const response = await api.getActivePresences();
-      if (response.success && response.data) {
-        const presenceData =
-          response.data.data || response.data;
-        if (Array.isArray(presenceData)) {
-          setPresences(
-            presenceData.filter(
-              (p: UserPresence) => p.userId !== currentUserId,
-            ),
-          );
-        }
+    const newOffsets: Record<string, number> = {};
+    presences.forEach((presence) => {
+      const key = `${presence.userId}-${presence.currentRoomIndex}`;
+      if (!otherMonkeyOffsets[key]) {
+        newOffsets[key] = (Math.random() - 0.5) * 300;
       }
-    };
+    });
 
-    fetchPresences();
-    const pollInterval = setInterval(fetchPresences, 2000);
-
-    return () => clearInterval(pollInterval);
-  }, [currentUserId]);
+    if (Object.keys(newOffsets).length > 0) {
+      setOtherMonkeyOffsets((prev) => ({
+        ...prev,
+        ...newOffsets,
+      }));
+    }
+  }, [presences]);
 
   const getAvatarPositionFromIndex = (roomIndex: number) => {
     return (
@@ -227,93 +221,74 @@ export function VineNavigator({
               alt="Monkey Avatar"
               className="w-full h-full object-contain drop-shadow-lg"
               style={{ scaleX: -1, opacity: 1 }}
-              animate={
-                monkeyPosition !== currentIndex
-                  ? {
-                      rotate: [0, -5, 5, -5, 5, 0],
-                      scale: [1, 1.05, 1],
-                    }
-                  : {
-                      rotate: [0, -2, 2, -2, 0],
-                    }
-              }
-              transition={
-                monkeyPosition !== currentIndex
-                  ? {
-                      duration: 0.5,
-                      repeat: Infinity,
-                      repeatDelay: 0.3,
-                    }
-                  : {
-                      duration: 2,
-                      repeat: Infinity,
-                    }
-              }
+              animate={{
+                rotate: [0, -2, 2, -2, 0],
+                filter: [
+                  "drop-shadow(0 0 0px rgba(16, 185, 129, 0))",
+                  "drop-shadow(0 0 12px rgba(16, 185, 129, 0.9))",
+                  "drop-shadow(0 0 0px rgba(16, 185, 129, 0))",
+                ],
+              }}
+              transition={{
+                rotate: {
+                  duration: 2,
+                  repeat: Infinity,
+                },
+                filter: {
+                  duration: 2,
+                  repeat: Infinity,
+                },
+              }}
             />
           </motion.div>
         )}
 
         <AnimatePresence>
           {presences.map((presence) => {
-            const top = getAvatarPositionFromIndex(
-              presence.currentRoomIndex,
-            );
+            const key = `${presence.userId}-${presence.currentRoomIndex}`;
+            const offset = otherMonkeyOffsets[key] || 0;
+            const top =
+              getAvatarPositionFromIndex(
+                presence.currentRoomIndex,
+              ) + offset;
             const isOnSameConvo =
               presence.currentRoomIndex === currentIndex;
+
+            const monkeyWidth = OTHER_MONKEY_SIZE * 0.857;
+            const monkeyHeight = OTHER_MONKEY_SIZE;
 
             return (
               <motion.div
                 key={presence.userId}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{
-                  opacity: 1,
+                  opacity: 0.8,
                   scale: isOnSameConvo ? 1.2 : 1,
                   top,
                 }}
                 exit={{ opacity: 0, scale: 0 }}
                 transition={{
                   type: "spring",
-                  stiffness: 200,
-                  damping: 25,
+                  stiffness: 100,
+                  damping: 50,
                 }}
                 className="absolute"
                 style={{
-                  width: AVATAR_SIZE,
-                  height: AVATAR_SIZE,
-                  left: VINE_WIDTH / 2 - AVATAR_SIZE / 2,
+                  width: monkeyWidth,
+                  height: monkeyHeight,
+                  left: 4,
+                  marginTop: -monkeyHeight / 2,
                 }}
               >
                 <div className="relative group">
-                  <motion.div
-                    className={`w-full h-full rounded-full bg-gradient-to-br ${getAvatarColor(presence.userId)} shadow-lg flex items-center justify-center cursor-pointer border-2 border-white`}
+                  <motion.img
+                    src={monkeyImg}
+                    alt={`${presence.userId} monkey`}
+                    className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
+                    style={{ scaleX: -1 }}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    animate={
-                      isOnSameConvo
-                        ? {
-                            boxShadow: [
-                              "0 0 0 0 rgba(16, 185, 129, 0)",
-                              "0 0 0 8px rgba(16, 185, 129, 0.3)",
-                              "0 0 0 0 rgba(16, 185, 129, 0)",
-                            ],
-                          }
-                        : {}
-                    }
-                    transition={
-                      isOnSameConvo
-                        ? {
-                            duration: 2,
-                            repeat: Infinity,
-                          }
-                        : {}
-                    }
-                  >
-                    <span className="text-white text-xs font-bold">
-                      {presence.userId
-                        .charAt(0)
-                        .toUpperCase()}
-                    </span>
-                  </motion.div>
+                  />
 
                   <div className="absolute -right-2 top-1/2 transform translate-x-full -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                     <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap shadow-lg">
