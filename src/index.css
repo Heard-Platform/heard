@@ -2070,6 +2070,10 @@
     background-color: var(--secondary);
   }
 
+  .bg-slate-50 {
+    background-color: var(--color-slate-50);
+  }
+
   .bg-slate-100 {
     background-color: var(--color-slate-100);
   }

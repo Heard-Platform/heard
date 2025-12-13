@@ -6,14 +6,12 @@ interface FeaturedTake {
   text: string;
   agrees: number;
   disagrees: number;
-  totalVotes: number;
 }
 
 interface ConversationUpdate {
   title: string;
   newTakes: number;
   newVotes: number;
-  totalParticipants: number;
   featuredTakes: FeaturedTake[];
 }
 
@@ -29,7 +27,6 @@ interface ParticipatedConversation {
   title: string;
   newTakes: number;
   newVotes: number;
-  totalParticipants: number;
   featuredTake: FeaturedTake;
 }
 
@@ -58,9 +55,7 @@ const STYLES = {
   sectionTitle:
     "color: #030213; font-size: 22px; margin: 0 0 16px 0;",
   statsCard:
-    "border-radius: 12px; padding: 20px; margin-bottom: 20px;",
-  statsFlex:
-    "display: flex; justify-content: space-around; text-align: center;",
+    "border-radius: 12px; padding: 20px; margin-bottom: 20px; width: 100%; box-sizing: border-box;",
   statNumber:
     "color: #ffffff; font-size: 32px; font-weight: bold; margin-bottom: 4px;",
   statLabel: "color: rgba(255,255,255,0.9); font-size: 14px;",
@@ -109,18 +104,20 @@ function renderStatCard(
 ): string {
   return `
     <div style="${STYLES.statsCard} ${gradient}">
-      <div style="${STYLES.statsFlex}">
-        ${items
-          .map(
-            (item) => `
-          <div>
-            <div style="${STYLES.statNumber}">${item.value}</div>
-            <div style="${STYLES.statLabel}">${item.label}</div>
-          </div>
-        `,
-          )
-          .join("")}
-      </div>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          ${items
+            .map(
+              (item) => `
+            <td align="center" style="padding: 0 10px;">
+              <div style="${STYLES.statNumber}">${item.value}</div>
+              <div style="${STYLES.statLabel}">${item.label}</div>
+            </td>
+          `,
+            )
+            .join("")}
+        </tr>
+      </table>
     </div>
   `;
 }
@@ -144,13 +141,11 @@ function renderBadges(
 function renderVoteStats(
   agrees: number,
   disagrees: number,
-  totalVotes: number,
 ): string {
   return `
     <div style="${STYLES.voteStats}">
       <span style="color: #48bb78; margin-right: 12px;">👍 ${agrees} agrees</span>
       <span style="color: #f56565; margin-right: 12px;">👎 ${disagrees} disagrees</span>
-      <span style="color: #667eea;">🗳️ ${totalVotes} total</span>
     </div>
   `;
 }
@@ -159,7 +154,7 @@ function renderFeaturedTake(take: FeaturedTake): string {
   return `
     <div style="background-color: ${CARDS.pink.bg}; border-left: 4px solid ${CARDS.pink.border}; ${STYLES.cardBase}">
       <div style="${STYLES.takeText}">"${take.text}"</div>
-      ${renderVoteStats(take.agrees, take.disagrees, take.totalVotes)}
+      ${renderVoteStats(take.agrees, take.disagrees)}
     </div>
   `;
 }
@@ -171,13 +166,11 @@ function generateFakeData(): EmailData {
         title: "What it's like being a new dad",
         newTakes: 12,
         newVotes: 47,
-        totalParticipants: 23,
         featuredTakes: [
           {
             text: "The hardest part is making decisions when you're exhausted and second-guessing everything.",
             agrees: 18,
             disagrees: 3,
-            totalVotes: 21,
           },
         ],
       },
@@ -186,7 +179,6 @@ function generateFakeData(): EmailData {
           "Getting our neighborhood to finally fix the sidewalks",
         newTakes: 8,
         newVotes: 31,
-        totalParticipants: 15,
         featuredTakes: [],
       },
     ],
@@ -212,24 +204,20 @@ function generateFakeData(): EmailData {
         title: "Starting a community fridge",
         newTakes: 23,
         newVotes: 45,
-        totalParticipants: 18,
         featuredTake: {
           text: "Local restaurants throw out tons of perfectly good food.",
           agrees: 15,
           disagrees: 8,
-          totalVotes: 23,
         },
       },
       {
         title: "Can you learn to play guitar in your 30s?",
         newTakes: 15,
         newVotes: 28,
-        totalParticipants: 12,
         featuredTake: {
           text: "Started at 32. It's humbling but oddly therapeutic.",
           agrees: 10,
           disagrees: 2,
-          totalVotes: 12,
         },
       },
     ],
@@ -289,17 +277,12 @@ function makeYourConvosSection(
           ${renderBadges([
             {
               emoji: "💬",
-              text: `${conv.newTakes} new`,
+              text: `${conv.newTakes} takes`,
               color: CARDS.purple.badge,
             },
             {
               emoji: "🗳️",
               text: `${conv.newVotes} votes`,
-              color: CARDS.purple.badge,
-            },
-            {
-              emoji: "👥",
-              text: `${conv.totalParticipants} people`,
               color: CARDS.purple.badge,
             },
           ])}
@@ -347,7 +330,7 @@ function makeYourTakesSection(takes: TakeUpdate[]): string {
         <div style="background-color: ${CARDS.pink.bg}; border-left: 4px solid ${CARDS.pink.border}; ${STYLES.cardBase}">
           <div style="${STYLES.takeText}">"${take.text}"</div>
           <div style="color: #718096; font-size: 13px; margin-bottom: 12px;">in <strong>${take.conversationTitle}</strong></div>
-          ${renderVoteStats(take.agrees, take.disagrees, take.totalVotes)}
+          ${renderVoteStats(take.agrees, take.disagrees)}
         </div>
       `,
         )
@@ -386,17 +369,12 @@ function makeConvosSection(
           ${renderBadges([
             {
               emoji: "💬",
-              text: `${conv.newTakes} new`,
+              text: `${conv.newTakes} takes`,
               color: CARDS.blue.badge,
             },
             {
               emoji: "🗳️",
               text: `${conv.newVotes} votes`,
-              color: CARDS.blue.badge,
-            },
-            {
-              emoji: "👥",
-              text: `${conv.totalParticipants} people`,
               color: CARDS.blue.badge,
             },
           ])}
@@ -443,7 +421,7 @@ function makeCommunitiesSection(
               ${renderBadges([
                 {
                   emoji: "💬",
-                  text: `${comm.featuredConvo.newTakes} new`,
+                  text: `${comm.featuredConvo.newTakes} takes`,
                   color: CARDS.purple.badge,
                 },
                 {
@@ -536,6 +514,88 @@ app.get(
     const fakeData = generateFakeData();
     const emailHtml = generateEmailHtml(fakeData);
     return c.html(emailHtml);
+  },
+);
+
+app.post(
+  "/make-server-f1a393b4/dev/email-previews/send",
+  async (c) => {
+    try {
+      const body = await c.req.json();
+      const { toEmail } = body;
+
+      if (!toEmail) {
+        return c.json(
+          { error: "Email address is required" },
+          400,
+        );
+      }
+
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (!resendApiKey) {
+        console.log(
+          "Error sending test email: RESEND_API_KEY not configured",
+        );
+        return c.json(
+          { error: "Email service not configured" },
+          500,
+        );
+      }
+
+      const fakeData = generateFakeData();
+      const emailHtml = generateEmailHtml(fakeData);
+
+      const resendResponse = await fetch(
+        "https://api.resend.com/emails",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${resendApiKey}`,
+          },
+          body: JSON.stringify({
+            from: "Heard <updates@heard-now.com>",
+            to: [toEmail],
+            subject: "🎯 The Latest on Heard",
+            html: emailHtml,
+          }),
+        },
+      );
+
+      if (!resendResponse.ok) {
+        const errorText = await resendResponse.text();
+        console.log(
+          `Error sending email via Resend: ${resendResponse.status} - ${errorText}`,
+        );
+        return c.json(
+          { error: `Failed to send email: ${errorText}` },
+          500,
+        );
+      }
+
+      const result = await resendResponse.json();
+      console.log(
+        `Test email sent successfully to ${toEmail}`,
+        result,
+      );
+
+      return c.json({
+        success: true,
+        message: `Test email sent to ${toEmail}`,
+        emailId: result.id,
+      });
+    } catch (error) {
+      console.log("Error sending test email:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error
+              ? error.message
+              : "Unknown error sending email",
+        },
+        500,
+      );
+    }
   },
 );
 

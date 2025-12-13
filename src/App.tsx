@@ -279,7 +279,7 @@ export default function App() {
   }
 
   if (showDevTools) {
-    return <DevTools onExit={handleExitDevTools} />;
+    return <DevTools user={user} onExit={handleExitDevTools} />;
   }
 
   if (showComponentShowcase) {

@@ -6,14 +6,16 @@ import {
   parseDevToolsTabFromUrl,
   updateUrlForDevTools,
 } from "../../utils/url";
+import type { UserSession } from "../../types";
 
 interface DevToolsProps {
+  user: UserSession | null;
   onExit?: () => void;
 }
 
 type TabType = "clustering" | "email";
 
-export function DevTools({ onExit }: DevToolsProps) {
+export function DevTools({ user, onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     const tabFromUrl = parseDevToolsTabFromUrl();
     return tabFromUrl ? (tabFromUrl as TabType) : "clustering";
@@ -79,7 +81,7 @@ export function DevTools({ onExit }: DevToolsProps) {
                 </p>
               </div>
             )}
-            {activeTab === "email" && <EmailPreviews />}
+            {activeTab === "email" && <EmailPreviews user={user} />}
           </div>
         </div>
       </div>
