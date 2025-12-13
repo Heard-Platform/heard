@@ -231,19 +231,17 @@ export const RoomScroller = forwardRef<
           }
         `}</style>
 
-          {isDeveloper && (
-            <VineNavigator
-              totalCards={allCards.length}
-              currentIndex={currentIndex}
-              currentUserId={currentUserId}
-              presences={
-                presences?.filter(
-                  (p) => p.userId !== currentUserId,
-                ) || []
-              }
-              onUpdatePresence={onUpdatePresence}
-            />
-          )}
+          <VineNavigator
+            totalCards={allCards.length}
+            currentIndex={currentIndex}
+            currentUserId={currentUserId}
+            presences={
+              presences?.filter(
+                (p) => p.userId !== currentUserId,
+              ) || []
+            }
+            onUpdatePresence={onUpdatePresence}
+          />
 
           {allCards.map((card, index) => {
             const isCreateCard =
