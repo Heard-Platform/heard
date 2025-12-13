@@ -6,7 +6,7 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
-import { DevTools } from "./components/DevTools";
+import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner@2.0.3";
