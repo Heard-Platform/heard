@@ -89,11 +89,20 @@ export const bulkUpsert = async (
 export const userKeyFn = (user: UserSession) =>
   `user:${user.id}`;
 
-export const getAllUsers = async (): Promise<UserSession[]> => {
-  return getByPrefixParsed<UserSession>("user:");
+export const createUser = async (user: UserSession) => {
+  await kv.set(userKeyFn(user), JSON.stringify(user));
 };
 
-export const createUser = async (user: UserSession) => {
+export const updateUserField = async <K extends keyof UserSession>(
+  userId: string,
+  field: K,
+  value: UserSession[K],
+) => {
+  const user = await getParsedKvData<UserSession>(`user:${userId}`);
+  if (!user) {
+    throw new Error(`User ${userId} not found`);
+  }
+  user[field] = value;
   await kv.set(userKeyFn(user), JSON.stringify(user));
 };
 

@@ -1,7 +1,6 @@
 import { Hono } from "npm:hono";
 import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
-import * as kv from "./kv_store.tsx";
 import { debateApi } from "./debate-api.tsx";
 import { adminApi } from "./admin-api.tsx";
 import { authApi } from "./auth-api.tsx";
@@ -15,6 +14,7 @@ import { polisImportApi } from "./polis-import-api.tsx";
 import { analysisApi } from "./analysis-api.tsx";
 import { vineApi } from "./vine-api.tsx";
 import { emailPreviewsApi } from "./email-previews.tsx";
+import { digestEmailSenderApi } from "./email-digest-sender.tsx";
 
 const app = new Hono();
 
@@ -87,5 +87,8 @@ app.route("/", vineApi);
 
 // Mount email previews API routes
 app.route("/", emailPreviewsApi);
+
+// Mount dev digest emails API routes
+app.route("/", digestEmailSenderApi);
 
 Deno.serve(app.fetch);

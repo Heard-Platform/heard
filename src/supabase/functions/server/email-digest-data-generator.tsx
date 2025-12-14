@@ -298,3 +298,12 @@ export async function generateRealEmailData(
 
   return emailData;
 }
+
+export function hasEmailContent(data: EmailData): boolean {
+  return (
+    data.conversationsStarted.length > 0 ||
+    data.takesPosted.length > 0 ||
+    data.conversationsParticipated.length > 0 ||
+    data.communities.length > 0
+  );
+}
