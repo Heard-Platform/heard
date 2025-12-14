@@ -1,10 +1,15 @@
 import { Hono } from "npm:hono";
 import * as kvUtils from "./kv-utils.tsx";
-import {
-  generateRealEmailData,
-} from "./email-data-generator.tsx";
+import { generateRealEmailData } from "./email-data-generator.tsx";
 import type { UserSession } from "./types.tsx";
-import { FeaturedTake, EmailData, ConversationUpdate, TakeUpdate, ParticipatedConversation, CommunityUpdate } from "./email-types.ts";
+import {
+  FeaturedTake,
+  EmailData,
+  ConversationUpdate,
+  TakeUpdate,
+  ParticipatedConversation,
+  CommunityUpdate,
+} from "./email-types.ts";
 
 const app = new Hono();
 
@@ -469,27 +474,49 @@ app.get(
   "/make-server-f1a393b4/dev/email-previews",
   async (c) => {
     const userId = c.req.query("userId");
-    
-    console.log(`[email-previews GET] Received request with userId: ${userId || 'none (will use mock data)'}`);
-    
+    const sinceTimestamp = c.req.query("sinceTimestamp");
+
+    console.log(
+      `[email-previews GET] Received request with userId: ${userId || "none (will use mock data)"}, sinceTimestamp: ${sinceTimestamp}`,
+    );
+
     let emailData: EmailData;
     if (userId) {
-      console.log(`[email-previews GET] Generating real data for userId: ${userId}`);
-      emailData = await generateRealEmailData(userId);
+      if (!sinceTimestamp) {
+        return c.json(
+          {
+            error: "sinceTimestamp query parameter is required",
+          },
+          400,
+        );
+      }
+
+      console.log(
+        `[email-previews GET] Generating real data for userId: ${userId}`,
+      );
+      const timestamp = parseInt(sinceTimestamp, 10);
+      emailData = await generateRealEmailData(
+        userId,
+        timestamp,
+      );
     } else {
       console.log(`[email-previews GET] Generating mock data`);
       emailData = generateFakeData();
     }
-    
+
     const hasContent = hasEmailContent(emailData);
-    console.log(`[email-previews GET] Email has content: ${hasContent}`);
+    console.log(
+      `[email-previews GET] Email has content: ${hasContent}`,
+    );
     console.log(`[email-previews GET] Data summary:`, {
-      conversationsStarted: emailData.conversationsStarted.length,
+      conversationsStarted:
+        emailData.conversationsStarted.length,
       takesPosted: emailData.takesPosted.length,
-      conversationsParticipated: emailData.conversationsParticipated.length,
-      communities: emailData.communities.length
+      conversationsParticipated:
+        emailData.conversationsParticipated.length,
+      communities: emailData.communities.length,
     });
-    
+
     const emailHtml = generateEmailHtml(emailData);
     return c.html(emailHtml);
   },
@@ -500,7 +527,7 @@ app.post(
   async (c) => {
     try {
       const body = await c.req.json();
-      const { userId, useMockData } = body;
+      const { userId, useMockData, sinceTimestamp } = body;
 
       if (!userId) {
         return c.json({ error: "User ID is required" }, 400);
@@ -531,7 +558,10 @@ app.post(
       if (useMockData) {
         emailData = generateFakeData();
       } else {
-        emailData = await generateRealEmailData(userId);
+        emailData = await generateRealEmailData(
+          userId,
+          sinceTimestamp,
+        );
       }
 
       if (!hasEmailContent(emailData)) {

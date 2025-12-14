@@ -16,14 +16,35 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [useMockData, setUseMockData] = useState(true);
+  const [useMockData, setUseMockData] = useState(false);
+  const [timeframe, setTimeframe] = useState<string>("24h");
+
+  const getTimestamp = () => {
+    if (timeframe === "all") return undefined;
+    
+    const now = Date.now();
+    switch (timeframe) {
+      case "24h":
+        return now - 24 * 60 * 60 * 1000;
+      case "7d":
+        return now - 7 * 24 * 60 * 60 * 1000;
+      case "30d":
+        return now - 30 * 24 * 60 * 60 * 1000;
+      default:
+        return undefined;
+    }
+  };
 
   const fetchEmailPreview = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const html = await api.getEmailPreview(useMockData ? undefined : user.id);
+      const timestamp = useMockData ? undefined : getTimestamp();
+      const html = await api.getEmailPreview(
+        useMockData ? undefined : user.id,
+        timestamp,
+      );
       setEmailHtml(html);
     } catch (err) {
       console.error("Error fetching email preview:", err);
@@ -37,14 +58,15 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
 
   useEffect(() => {
     fetchEmailPreview();
-  }, [useMockData]);
+  }, [useMockData, timeframe]);
 
   const sendEmail = async () => {
     setSending(true);
     setError(null);
 
     try {
-      const result = await api.sendTestEmail(user.id, useMockData);
+      const timestamp = useMockData ? undefined : getTimestamp();
+      const result = await api.sendTestEmail(user.id, useMockData, timestamp);
       
       if (!result.success) {
         throw new Error(result.error || "Failed to send email");
@@ -85,6 +107,21 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
                 }`}
               />
             </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-slate-600">
+              Timeframe
+            </label>
+            <select
+              value={timeframe}
+              onChange={(e) => setTimeframe(e.target.value)}
+              className="border border-slate-300 rounded px-2 py-1 text-sm"
+            >
+              <option value="all">All</option>
+              <option value="24h">Last 24 hours</option>
+              <option value="7d">Last 7 days</option>
+              <option value="30d">Last 30 days</option>
+            </select>
           </div>
           <Button
             onClick={fetchEmailPreview}

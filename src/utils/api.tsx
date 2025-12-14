@@ -434,10 +434,14 @@ class ApiClient {
     return this.request("/vine/presences");
   }
 
-  async getEmailPreview(userId?: string) {
-    const params = userId ? `?userId=${encodeURIComponent(userId)}` : "";
+  async getEmailPreview(userId?: string, sinceTimestamp?: number) {
+    const params = new URLSearchParams();
+    if (userId) params.append("userId", userId);
+    if (sinceTimestamp) params.append("sinceTimestamp", sinceTimestamp.toString());
+    
+    const queryString = params.toString();
     const response = await fetch(
-      `${API_BASE_URL}/dev/email-previews${params}`,
+      `${API_BASE_URL}/dev/email-previews${queryString ? `?${queryString}` : ""}`,
       {
         headers: {
           Authorization: `Bearer ${publicAnonKey}`,
@@ -452,10 +456,10 @@ class ApiClient {
     return response.text();
   }
 
-  async sendTestEmail(userId: string, useMockData: boolean) {
+  async sendTestEmail(userId: string, useMockData: boolean, sinceTimestamp?: number) {
     return this.request("/dev/email-previews/send", {
       method: "POST",
-      body: JSON.stringify({ userId, useMockData }),
+      body: JSON.stringify({ userId, useMockData, sinceTimestamp }),
     });
   }
 }

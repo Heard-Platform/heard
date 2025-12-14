@@ -100,6 +100,12 @@ export const createUser = async (user: UserSession) => {
 export const voteKeyFn = (vote: Vote) =>
   `vote:${vote.statementId}:${vote.userId}`;
 
+export const getVotesForUser = async (
+  userId: string,
+): Promise<Vote[]> => {
+  return getByPrefixParsed<Vote>(`vote:%:${userId}`);
+};
+
 export const saveVote = async (vote: Vote) => {
   await kv.set(voteKeyFn(vote), JSON.stringify(vote));
 };
@@ -110,6 +116,16 @@ export const bulkSaveVotes = async (votes: Vote[]) => {
 
 export const statementKeyFn = (statement: Statement) =>
   `statement:${statement.roomId}:${statement.id}`;
+
+export const getStatement = async (statementId: string): Promise<Statement | null> => {
+  return getParsedKvData<Statement>(`statement:%:${statementId}`);
+};
+
+export const getStatementsForRoom = async (
+  roomId: string,
+): Promise<Statement[]> => {
+  return getByPrefixParsed<Statement>(`statement:${roomId}:`);
+};
 
 export const saveStatement = async (statement: Statement) => {
   await upsert(statement, statementKeyFn);
