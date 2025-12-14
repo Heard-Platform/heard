@@ -79,3 +79,10 @@ export interface Rant {
   roomId: string;
   timestamp: number;
 }
+
+export interface SentEmail {
+  id: string;
+  userId: string;
+  sentAt: number;
+  emailType: string;
+}

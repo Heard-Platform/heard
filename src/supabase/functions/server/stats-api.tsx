@@ -5,7 +5,7 @@ import {
   getActivitiesForDate,
 } from "./kv-utils.tsx";
 import type { UserSession } from "./types.tsx";
-import { getAllUsers } from "./db-utils.ts";
+import { getAllRealUsers } from "./db-utils.ts";
 
 const app = new Hono();
 
@@ -127,7 +127,7 @@ function calculateRetention({
 // Public stats endpoint - platform-wide statistics with 7-day trends
 app.get("/make-server-f1a393b4/public-stats", async (c) => {
   try {
-    const users = await getAllUsers();
+    const users = await getAllRealUsers();
     const totalUsers = users.length;
     const usersSparkline = generateSparklineData(users, 7);
 
@@ -162,7 +162,7 @@ app.get("/make-server-f1a393b4/public-stats", async (c) => {
 // Retention stats endpoint - user retention rates based on account creation
 app.get("/make-server-f1a393b4/retention-stats", async (c) => {
   try {
-    const allUsers = await getAllUsers();
+    const allUsers = await getAllRealUsers();
     const now = Date.now();
 
     const activitiesByUser = new Map<string, Set<string>>();

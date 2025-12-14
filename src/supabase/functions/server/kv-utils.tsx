@@ -5,6 +5,7 @@ import type {
   Vote,
   Statement,
   DebateRoom,
+  SentEmail,
 } from "./types.tsx";
 
 /**
@@ -170,4 +171,22 @@ export const getActivitiesForDate = async <T = any,>(
   dateStr: string,
 ): Promise<T[]> => {
   return getByPrefixParsed<T>(`user_activity:${dateStr}:`);
+};
+
+export const getSentEmails = async <T = any,>(): Promise<
+  T[]
+> => {
+  return getByPrefixParsed<T>("sent_email:");
+};
+
+export const getSentEmail = async (emailId: string) => {
+  return getParsedKvData<SentEmail>(`sent_email:${emailId}`);
+};
+
+export const saveSentEmail = async (email: SentEmail) => {
+  await kv.set(`sent_email:${email.id}`, JSON.stringify(email));
+};
+
+export const bulkSaveSentEmails = async (emails: SentEmail[]) => {
+  await bulkUpsert(emails, (email) => `sent_email:${email.id}`);
 };

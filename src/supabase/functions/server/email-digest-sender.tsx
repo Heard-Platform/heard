@@ -2,7 +2,7 @@ import { Hono } from "npm:hono@4";
 import { cors } from "npm:hono/cors";
 import { generateRealEmailData, hasEmailContent } from "./email-digest-data-generator.tsx";
 import { generateEmailHtml } from "./email-digest-template.tsx";
-import { getAllUsers } from "./db-utils.ts";
+import { getAllRealUsers } from "./db-utils.ts";
 import { UserSession } from "./types.tsx";
 
 const app = new Hono();
@@ -12,7 +12,7 @@ app.use("*", cors());
 const HOURS_24 = 24 * 60 * 60 * 1000;
 
 export const getEligibleEmailUsers = async (): Promise<UserSession[]> => {
-  const allUsers = await getAllUsers();
+  const allUsers = await getAllRealUsers();
   
   const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
   const oneWeekAgo = Date.now() - ONE_WEEK;

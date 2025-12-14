@@ -6,7 +6,7 @@ import {
   EmailData
 } from "./email-types.ts";
 import { generateEmailHtml, generateFakeData } from "./email-digest-template.tsx";
-import { getEligibleEmailUsers } from "./email-digest-sender.tsx";
+import { sendEmailViaResend, getUsersToEmailWeeklyDigest } from "./email-sender-utils.tsx";
 
 const app = new Hono();
 
@@ -117,44 +117,31 @@ app.post(
 
       const emailHtml = generateEmailHtml(emailData);
 
-      const resendResponse = await fetch(
-        "https://api.resend.com/emails",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${resendApiKey}`,
-          },
-          body: JSON.stringify({
-            from: "Heard <updates@heard-now.com>",
-            to: [user.email],
-            subject: "🎯 The Latest on Heard",
-            html: emailHtml,
-          }),
-        },
-      );
+      const sendResult = await sendEmailViaResend({
+        to: user.email,
+        subject: "🎯 The Latest on Heard",
+        html: emailHtml,
+      });
 
-      if (!resendResponse.ok) {
-        const errorText = await resendResponse.text();
+      if (!sendResult.success) {
         console.log(
-          `Error sending email via Resend: ${resendResponse.status} - ${errorText}`,
+          `Error sending email via Resend: ${sendResult.error}`,
         );
         return c.json(
-          { error: `Failed to send email: ${errorText}` },
+          { error: sendResult.error },
           500,
         );
       }
 
-      const result = await resendResponse.json();
       console.log(
         `Test email sent successfully to ${user.email}`,
-        result,
+        sendResult.emailId,
       );
 
       return c.json({
         success: true,
         message: `Test email sent to ${user.email}`,
-        emailId: result.id,
+        emailId: sendResult.emailId,
       });
     } catch (error) {
       console.log("Error sending test email:", error);
@@ -187,15 +174,18 @@ app.get(
       console.log(`[email-count] Calculating eligible users since ${sinceTimestamp}`);
 
       const timestamp = parseInt(sinceTimestamp, 10);
-      const allUsers = await getEligibleEmailUsers();
+
+      const { usersToConsider, stats } = await getUsersToEmailWeeklyDigest();
       
-      console.log(`[email-count] Filtered to ${allUsers.length} eligible users (active in last week, not test users, with email)`);
+      console.log(`[email-count] ${stats.totalUsers} total users`);
+      console.log(`[email-count] ${stats.recentlyEmailedCount} users recently emailed`);
+      console.log(`[email-count] ${stats.eligibleUsers} eligible users to consider`);
 
       let eligibleCount = 0;
       const eligibleUsers: Array<{ email: string; nickname: string; id: string }> = [];
       const consideredUsers: Array<{ email: string; nickname: string; id: string }> = [];
 
-      for (const user of allUsers) {
+      for (const user of usersToConsider) {
         const userInfo = { email: user.email, nickname: user.nickname, id: user.id };
         consideredUsers.push(userInfo);
         
@@ -211,12 +201,14 @@ app.get(
         }
       }
 
-      console.log(`[email-count] ${eligibleCount}/${allUsers.length} users have content`);
+      console.log(`[email-count] ${eligibleCount}/${usersToConsider.length} users have content`);
 
       return c.json({
         success: true,
         eligibleCount,
-        totalCount: allUsers.length,
+        totalCount: stats.totalUsers,
+        consideredCount: stats.eligibleUsers,
+        recentlyEmailedCount: stats.recentlyEmailedCount,
         sinceTimestamp: timestamp,
         eligibleUsers,
         consideredUsers,
