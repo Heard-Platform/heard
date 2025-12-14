@@ -1,4 +1,4 @@
-import { Hono } from "npm:hono";
+import { Hono } from "npm:hono@4";
 import * as kvUtils from "./kv-utils.tsx";
 import { generateRealEmailData, hasEmailContent } from "./email-digest-data-generator.tsx";
 import type { UserSession } from "./types.tsx";
@@ -6,6 +6,7 @@ import {
   EmailData
 } from "./email-types.ts";
 import { generateEmailHtml, generateFakeData } from "./email-digest-template.tsx";
+import { getEligibleEmailUsers } from "./email-digest-sender.tsx";
 
 const app = new Hono();
 
@@ -163,6 +164,71 @@ app.post(
             error instanceof Error
               ? error.message
               : "Unknown error sending email",
+        },
+        500,
+      );
+    }
+  },
+);
+
+app.get(
+  "/make-server-f1a393b4/dev/email-previews/count",
+  async (c) => {
+    try {
+      const sinceTimestamp = c.req.query("sinceTimestamp");
+
+      if (!sinceTimestamp) {
+        return c.json(
+          { error: "sinceTimestamp query parameter is required" },
+          400,
+        );
+      }
+
+      console.log(`[email-count] Calculating eligible users since ${sinceTimestamp}`);
+
+      const timestamp = parseInt(sinceTimestamp, 10);
+      const allUsers = await getEligibleEmailUsers();
+      
+      console.log(`[email-count] Filtered to ${allUsers.length} eligible users (active in last week, not test users, with email)`);
+
+      let eligibleCount = 0;
+      const eligibleUsers: Array<{ email: string; nickname: string; id: string }> = [];
+      const consideredUsers: Array<{ email: string; nickname: string; id: string }> = [];
+
+      for (const user of allUsers) {
+        const userInfo = { email: user.email, nickname: user.nickname, id: user.id };
+        consideredUsers.push(userInfo);
+        
+        try {
+          const emailData = await generateRealEmailData(user.id, timestamp);
+          
+          if (hasEmailContent(emailData)) {
+            eligibleCount++;
+            eligibleUsers.push(userInfo);
+          }
+        } catch (error) {
+          console.log(`[email-count] Error checking user ${user.id}:`, error);
+        }
+      }
+
+      console.log(`[email-count] ${eligibleCount}/${allUsers.length} users have content`);
+
+      return c.json({
+        success: true,
+        eligibleCount,
+        totalCount: allUsers.length,
+        sinceTimestamp: timestamp,
+        eligibleUsers,
+        consideredUsers,
+      });
+    } catch (error) {
+      console.log("[email-count] Error:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error
+              ? error.message
+              : "Unknown error calculating count",
         },
         500,
       );

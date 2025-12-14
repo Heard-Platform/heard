@@ -462,6 +462,19 @@ class ApiClient {
       body: JSON.stringify({ userId, useMockData, sinceTimestamp }),
     });
   }
+
+  async getEmailDigestCount(sinceTimestamp: number) {
+    const params = new URLSearchParams();
+    params.append("sinceTimestamp", sinceTimestamp.toString());
+    
+    return this.request<{
+      eligibleCount: number;
+      totalCount: number;
+      sinceTimestamp: number;
+      eligibleUsers: Array<{ email: string; nickname: string; id: string }>;
+      consideredUsers: Array<{ email: string; nickname: string; id: string }>;
+    }>(`/dev/email-previews/count?${params.toString()}`);
+  }
 }
 
 export const api = new ApiClient();

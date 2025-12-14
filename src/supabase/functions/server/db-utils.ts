@@ -77,4 +77,4 @@ export const getAllRecords = async <T>(
 
 export const getAllUsers = async (): Promise<UserSession[]> => {
   return getAllRecords<UserSession>("user:");
-}
+};

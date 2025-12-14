@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
-import { RefreshCw, Mail } from "lucide-react";
+import { RefreshCw, Mail, ChevronDown, ChevronUp } from "lucide-react";
 import { api } from "../../utils/api";
 import type { UserSession } from "../../types";
 
@@ -11,6 +11,48 @@ interface EmailPreviewsProps {
   user: UserSession;
 }
 
+interface UserListCollapsibleProps {
+  title: string;
+  users: Array<{ email: string; nickname: string; id: string }>;
+  isExpanded: boolean;
+  onToggle: () => void;
+}
+
+function UserListCollapsible({ title, users, isExpanded, onToggle }: UserListCollapsibleProps) {
+  if (users.length === 0) return null;
+
+  return (
+    <div className="mt-4 border-t border-blue-200 pt-4">
+      <button
+        onClick={onToggle}
+        className="flex items-center gap-2 text-sm text-blue-900 hover:text-blue-700 transition-colors"
+      >
+        {isExpanded ? (
+          <ChevronUp className="w-4 h-4" />
+        ) : (
+          <ChevronDown className="w-4 h-4" />
+        )}
+        <span className="font-medium">
+          {title} ({users.length})
+        </span>
+      </button>
+      {isExpanded && (
+        <div className="mt-3 space-y-2 max-h-60 overflow-y-auto">
+          {users.map((u) => (
+            <div
+              key={u.id}
+              className="bg-white rounded px-3 py-2 text-sm border border-blue-100"
+            >
+              <div className="font-medium text-blue-900">{u.nickname}</div>
+              <div className="text-blue-700">{u.email}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function EmailPreviews({ user }: EmailPreviewsProps) {
   const [emailHtml, setEmailHtml] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -18,6 +60,15 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
   const [sending, setSending] = useState(false);
   const [useMockData, setUseMockData] = useState(false);
   const [timeframe, setTimeframe] = useState<string>("24h");
+  const [countData, setCountData] = useState<{
+    eligibleCount: number;
+    totalCount: number;
+  } | null>(null);
+  const [loadingCount, setLoadingCount] = useState(false);
+  const [eligibleUsers, setEligibleUsers] = useState<Array<{ email: string; nickname: string; id: string }>>([]);
+  const [consideredUsers, setConsideredUsers] = useState<Array<{ email: string; nickname: string; id: string }>>([]);
+  const [showEligibleUsers, setShowEligibleUsers] = useState(false);
+  const [showConsideredUsers, setShowConsideredUsers] = useState(false);
 
   const getTimestamp = () => {
     if (timeframe === "all") return undefined;
@@ -84,6 +135,48 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
     }
   };
 
+  const fetchCountData = async () => {
+    if (useMockData || timeframe === "all") {
+      setCountData(null);
+      setEligibleUsers([]);
+      setConsideredUsers([]);
+      return;
+    }
+
+    setLoadingCount(true);
+
+    try {
+      const timestamp = getTimestamp();
+      if (!timestamp) {
+        setCountData(null);
+        setEligibleUsers([]);
+        setConsideredUsers([]);
+        return;
+      }
+
+      const result = await api.getEmailDigestCount(timestamp);
+      
+      if (result.success && result.data) {
+        setCountData({
+          eligibleCount: result.data.eligibleCount,
+          totalCount: result.data.totalCount,
+        });
+        setEligibleUsers(result.data.eligibleUsers || []);
+        setConsideredUsers(result.data.consideredUsers || []);
+      } else {
+        throw new Error(result.error || "Failed to fetch count");
+      }
+    } catch (err) {
+      console.error("Error fetching count data:", err);
+    } finally {
+      setLoadingCount(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCountData();
+  }, [useMockData, timeframe]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -144,6 +237,43 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
           )}
         </div>
       </div>
+
+      {!useMockData && timeframe !== "all" && countData && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-blue-900">
+                <span className="font-semibold">{countData.eligibleCount} of {countData.totalCount}</span> users would receive an email for this timeframe
+              </p>
+              <p className="text-sm text-blue-700 mt-1">
+                {countData.eligibleCount === 0 && "No users have activity in this period"}
+                {countData.eligibleCount > 0 && `${Math.round((countData.eligibleCount / countData.totalCount) * 100)}% of users have activity`}
+              </p>
+            </div>
+            {loadingCount && (
+              <RefreshCw className="w-4 h-4 text-blue-600 animate-spin" />
+            )}
+          </div>
+
+          {eligibleUsers.length > 0 && (
+            <UserListCollapsible
+              title="Users who would receive email"
+              users={eligibleUsers}
+              isExpanded={showEligibleUsers}
+              onToggle={() => setShowEligibleUsers(!showEligibleUsers)}
+            />
+          )}
+
+          {consideredUsers.length > 0 && (
+            <UserListCollapsible
+              title="All users considered (active in last week)"
+              users={consideredUsers}
+              isExpanded={showConsideredUsers}
+              onToggle={() => setShowConsideredUsers(!showConsideredUsers)}
+            />
+          )}
+        </div>
+      )}
 
       {loading && (
         <div className="text-center py-12">

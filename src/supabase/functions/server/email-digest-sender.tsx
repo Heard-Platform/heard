@@ -1,14 +1,28 @@
 import { Hono } from "npm:hono@4";
 import { cors } from "npm:hono/cors";
 import { generateRealEmailData, hasEmailContent } from "./email-digest-data-generator.tsx";
-import { getAllUsers } from "./db-utils.ts";
 import { generateEmailHtml } from "./email-digest-template.tsx";
+import { getAllUsers } from "./db-utils.ts";
+import { UserSession } from "./types.tsx";
 
 const app = new Hono();
 
 app.use("*", cors());
 
 const HOURS_24 = 24 * 60 * 60 * 1000;
+
+export const getEligibleEmailUsers = async (): Promise<UserSession[]> => {
+  const allUsers = await getAllUsers();
+  
+  const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+  const oneWeekAgo = Date.now() - ONE_WEEK;
+  
+  return allUsers.filter((user) => 
+    !user.isTestUser && 
+    user.lastActive >= oneWeekAgo &&
+    user.email
+  );
+};
 
 app.post(
   "/make-server-f1a393b4/cron/send-digest-email",
@@ -28,34 +42,29 @@ app.post(
         return c.json({ error: "Email service not configured" }, 500);
       }
 
-      const allUsers = await getAllUsers();
-      console.log(`[dev-digest] Retrieved ${allUsers.length} total users`);
-      const developers1 = allUsers.filter((user) => user.isDeveloper );
-      console.log(`[dev-digest] Found ${developers1.length} developer users (including those without email)`);
-      const developers = allUsers.filter((user) => user.isDeveloper && user.email);
-
-      console.log(`[dev-digest] Found ${developers.length} developer users with emails`);
-
+      const eligibleUsers = await getEligibleEmailUsers();
+      console.log(`[dev-digest] Retrieved ${eligibleUsers.length} eligible users (active in last week, not test users, with email)`);
+      
       const now = Date.now();
       const last24Hours = now - HOURS_24;
 
       const results = {
-        totalDevelopers: developers.length,
+        totalUsers: eligibleUsers.length,
         sent: 0,
         failed: 0,
         skipped: 0,
         errors: [] as string[],
       };
 
-      for (const developer of developers) {
+      for (const user of eligibleUsers) {
         try {
-          console.log(`[dev-digest] Processing developer ${developer.id} (${developer.email})`);
+          console.log(`[dev-digest] Processing user ${user.id} (${user.email})`);
 
-          const emailData = await generateRealEmailData(developer.id, last24Hours);
+          const emailData = await generateRealEmailData(user.id, last24Hours);
 
           if (!hasEmailContent(emailData)) {
             console.log(
-              `[dev-digest] Skipping developer ${developer.id} - no activity in last 24 hours`,
+              `[dev-digest] Skipping user ${user.id} - no activity in last 24 hours`,
             );
             results.skipped++;
             continue;
@@ -73,7 +82,7 @@ app.post(
               },
               body: JSON.stringify({
                 from: "Heard <updates@heard-now.com>",
-                to: [developer.email],
+                to: [user.email],
                 subject: `🔧 Dev Digest - Activity in Last 24 Hours`,
                 html: emailHtml,
               }),
@@ -83,27 +92,27 @@ app.post(
           if (!resendResponse.ok) {
             const errorText = await resendResponse.text();
             console.log(
-              `[dev-digest] Failed to send to ${developer.email}: ${errorText}`,
+              `[dev-digest] Failed to send to ${user.email}: ${errorText}`,
             );
             results.failed++;
-            results.errors.push(`${developer.email}: ${errorText}`);
+            results.errors.push(`${user.email}: ${errorText}`);
             continue;
           }
 
           const result = await resendResponse.json();
           console.log(
-            `[dev-digest] Sent to ${developer.email}, emailId: ${result.id}`,
+            `[dev-digest] Sent to ${user.email}, emailId: ${result.id}`,
           );
 
           results.sent++;
         } catch (error) {
           console.log(
-            `[dev-digest] Error processing developer ${developer.id}:`,
+            `[dev-digest] Error processing user ${user.id}:`,
             error,
           );
           results.failed++;
           results.errors.push(
-            `${developer.email}: ${error instanceof Error ? error.message : "Unknown error"}`,
+            `${user.email}: ${error instanceof Error ? error.message : "Unknown error"}`,
           );
         }
       }
@@ -112,7 +121,7 @@ app.post(
 
       return c.json({
         success: true,
-        message: `Processed ${results.totalDevelopers} developers`,
+        message: `Processed ${results.totalUsers} users`,
         results,
       });
     } catch (error) {
