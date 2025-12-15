@@ -100,6 +100,11 @@ export const getAllRealUsers = async (): Promise<UserSession[]> => {
   return allUsers.filter(user => !user.isTestUser);
 };
 
+export const getDevUsers = async (): Promise<UserSession[]> => {
+  const allUsers = await getAllRecords<UserSession>("user:");
+  return allUsers.filter(user => user.isDeveloper);
+};
+
 export const saveUser = async (user: UserSession) => {
   await kv.set(userKeyFn(user), JSON.stringify(user));
 };
@@ -183,10 +188,10 @@ export const getActivitiesForDate = async <T = any,>(
   return getByPrefixParsed<T>(`user_activity:${dateStr}:`);
 };
 
-export const getSentEmails = async <T = any,>(): Promise<
-  T[]
+export const getSentEmails = async (): Promise<
+  SentEmail[]
 > => {
-  return getByPrefixParsed<T>("sent_email:");
+  return getAllRecords<SentEmail>("sent_email:");
 };
 
 export const getSentEmail = async (emailId: string) => {

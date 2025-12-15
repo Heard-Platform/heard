@@ -7,6 +7,7 @@ import {
 } from "./email-types.ts";
 import { generateEmailHtml, generateFakeData } from "./email-digest-template.tsx";
 import { sendEmailViaResend, getUsersToEmailDigest } from "./email-sender-utils.tsx";
+import { getAdminDailyStats, generateAdminDigestHtml } from "./admin-digest.tsx";
 
 const app = new Hono();
 
@@ -30,6 +31,13 @@ app.get(
     console.log(
       `[email-previews GET] Received request with userId: ${userId || "none (will use mock data)"}, digestType: ${digestType}`,
     );
+
+    if (digestType === "admin_daily_digest") {
+      console.log("[email-previews GET] Generating admin digest preview");
+      const stats = await getAdminDailyStats(24 * 60 * 60 * 1000);
+      const emailHtml = generateAdminDigestHtml(stats);
+      return c.html(emailHtml);
+    }
 
     let emailData: EmailData;
     if (userId) {
@@ -102,34 +110,47 @@ app.post(
         );
       }
 
-      let emailData: EmailData;
-      if (useMockData) {
-        emailData = generateFakeData();
+      let emailHtml: string;
+      let subject: string;
+
+      if (digestType === "admin_daily_digest") {
+        console.log("[send-email] Generating admin digest for test email");
+        const stats = await getAdminDailyStats(24 * 60 * 60 * 1000);
+        emailHtml = generateAdminDigestHtml(stats);
+        subject = "📊 Heard Admin Daily Digest";
       } else {
-        const timestamp = getDigestTimestamp(digestType);
-        
-        emailData = await generateRealEmailData(
-          userId,
-          timestamp,
-        );
-      }
+        let emailData: EmailData;
+        if (useMockData) {
+          emailData = generateFakeData();
+        } else {
+          const timestamp = getDigestTimestamp(digestType);
+          
+          emailData = await generateRealEmailData(
+            userId,
+            timestamp,
+          );
+        }
 
-      if (!hasEmailContent(emailData)) {
-        return c.json(
-          {
-            error: "No content to send",
-            message:
-              "User has no activity to include in the email",
-          },
-          400,
-        );
-      }
+        if (!hasEmailContent(emailData)) {
+          return c.json(
+            {
+              error: "No content to send",
+              message:
+                "User has no activity to include in the email",
+            },
+            400,
+          );
+        }
 
-      const emailHtml = generateEmailHtml(emailData, userId);
+        emailHtml = generateEmailHtml(emailData, userId);
+        subject = digestType === "first_day_digest" 
+          ? "🔥 Your First Day on Heard"
+          : "🎯 The Latest on Heard";
+      }
 
       const sendResult = await sendEmailViaResend({
         to: user.email,
-        subject: "🎯 The Latest on Heard",
+        subject,
         html: emailHtml,
       });
 

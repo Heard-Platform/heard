@@ -118,7 +118,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
   };
 
   const fetchCountData = async () => {
-    if (useMockData) {
+    if (useMockData || digestType === "admin_daily_digest") {
       setCountData(null);
       setEligibleUsers([]);
       setConsideredUsers([]);
@@ -156,25 +156,27 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
       <div className="flex items-center justify-between">
         <h3>Email Previews</h3>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-slate-600">
-              Mock Data
-            </label>
-            <button
-              onClick={() => setUseMockData(!useMockData)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                useMockData ? "bg-purple-600" : "bg-slate-300"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  useMockData
-                    ? "translate-x-6"
-                    : "translate-x-1"
+          {digestType !== "admin_daily_digest" && (
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-slate-600">
+                Mock Data
+              </label>
+              <button
+                onClick={() => setUseMockData(!useMockData)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  useMockData ? "bg-purple-600" : "bg-slate-300"
                 }`}
-              />
-            </button>
-          </div>
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    useMockData
+                      ? "translate-x-6"
+                      : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <label className="text-sm text-slate-600">
               Digest Type
@@ -186,6 +188,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
             >
               <option value="weekly_digest">Weekly Digest</option>
               <option value="first_day_digest">First Day Digest</option>
+              <option value="admin_daily_digest">Admin Daily Digest</option>
             </select>
           </div>
           <Button

@@ -1,6 +1,7 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
+import { getDevUsers } from "./kv-utils.tsx";
 
 const app = new Hono();
 
@@ -81,9 +82,9 @@ async function sendFeedbackEmail(feedback: any) {
   }
 
   // Get all dev users
-  const devUsers = await getDevUsers();
+  const devEmails = await getDevEmails();
   
-  if (devUsers.length === 0) {
+  if (devEmails.length === 0) {
     console.log("No dev users found to send feedback email to");
     return;
   }
@@ -130,7 +131,7 @@ async function sendFeedbackEmail(feedback: any) {
   `;
 
   // Send email to all dev users
-  for (const devEmail of devUsers) {
+  for (const devEmail of devEmails) {
     try {
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -158,27 +159,12 @@ async function sendFeedbackEmail(feedback: any) {
   }
 }
 
-async function getDevUsers(): Promise<string[]> {
+async function getDevEmails(): Promise<string[]> {
   try {
-    // Get all users from KV store
-    const userKeys = await kv.getByPrefix("user:");
-    
-    const devEmails: string[] = [];
-    
-    for (const userData of userKeys) {
-      try {
-        const user = typeof userData === "string" 
-          ? JSON.parse(userData) 
-          : userData;
-        
-        // Check if user is a developer and has an email
-        if (user.isDeveloper && user.email) {
-          devEmails.push(user.email);
-        }
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-      }
-    }
+    const devUsers = await getDevUsers();
+    const devEmails = devUsers
+      .filter(user => user.email)
+      .map(user => user.email);
     
     // If we found dev users, return their emails
     if (devEmails.length > 0) {

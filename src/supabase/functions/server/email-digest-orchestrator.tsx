@@ -2,9 +2,10 @@ import { Hono } from "npm:hono@4";
 import { cors } from "npm:hono/cors";
 import { generateRealEmailData, hasEmailContent } from "./email-digest-data-generator.tsx";
 import { generateEmailHtml } from "./email-digest-template.tsx";
-import { saveSentEmail } from "./kv-utils.tsx";
+import { saveSentEmail, getSentEmails, getDevUsers } from "./kv-utils.tsx";
 import type { SentEmail } from "./types.tsx";
 import { sendEmailViaResend, getUsersToEmailDigest } from "./email-sender-utils.tsx";
+import { getAdminDailyStats, generateAdminDigestHtml } from "./admin-digest.tsx";
 
 const app = new Hono();
 
@@ -137,9 +138,97 @@ app.post(
         console.log(`[digest-orchestrator] ${result.digestType} Results:`, result);
       });
 
+      console.log("[digest-orchestrator] === ADMIN DAILY DIGEST ===");
+      const adminResults = {
+        digestType: "admin_daily_digest",
+        sent: 0,
+        failed: 0,
+        skipped: 0,
+        errors: [] as string[],
+      };
+
+      try {
+        const allSentEmails = await getSentEmails();
+        const recentAdminDigests = allSentEmails.filter(
+          (email: any) =>
+            email.emailType === "admin_daily_digest" &&
+            email.sentAt >= now - HOURS_24
+        );
+
+        if (recentAdminDigests.length > 0) {
+          console.log(
+            `[digest-orchestrator] Skipping admin digest - already sent ${recentAdminDigests.length} in past 24 hours`
+          );
+          adminResults.skipped = 1;
+          allResults.push(adminResults);
+        } else {
+          const adminStats = await getAdminDailyStats(HOURS_24);
+          const devUsers = await getDevUsers();
+
+          console.log(`[digest-orchestrator] Found ${devUsers.length} developer users for admin digest`);
+          console.log("[digest-orchestrator] Admin stats:", adminStats);
+
+          if (devUsers.length > 0) {
+            const adminEmailHtml = generateAdminDigestHtml(adminStats);
+
+            for (const dev of devUsers) {
+              try {
+                const sendResult = await sendEmailViaResend({
+                  to: dev.email,
+                  subject: "📊 Heard Admin Daily Digest",
+                  html: adminEmailHtml,
+                });
+
+                if (!sendResult.success) {
+                  console.log(
+                    `[digest-orchestrator] Failed to send admin digest to ${dev.email}: ${sendResult.error}`,
+                  );
+                  adminResults.failed++;
+                  adminResults.errors.push(`${dev.email}: ${sendResult.error}`);
+                  continue;
+                }
+
+                console.log(
+                  `[digest-orchestrator] Sent admin digest to ${dev.email}, emailId: ${sendResult.emailId}`,
+                );
+
+                const sentEmailRecord: SentEmail = {
+                  id: `${dev.id}_admin_${now}`,
+                  userId: dev.id,
+                  sentAt: now,
+                  emailType: "admin_daily_digest",
+                };
+                await saveSentEmail(sentEmailRecord);
+
+                adminResults.sent++;
+              } catch (error) {
+                console.log(
+                  `[digest-orchestrator] Error sending admin digest to ${dev.email}:`,
+                  error,
+                );
+                adminResults.failed++;
+                adminResults.errors.push(
+                  `${dev.email}: ${error instanceof Error ? error.message : "Unknown error"}`,
+                );
+              }
+            }
+          }
+
+          allResults.push(adminResults);
+        }
+      } catch (error) {
+        console.log("[digest-orchestrator] Error generating admin digest:", error);
+        adminResults.errors.push(
+          error instanceof Error ? error.message : "Unknown error",
+        );
+        allResults.push(adminResults);
+      }
+
+      console.log("[digest-orchestrator] Admin digest results:", adminResults);
+
       return c.json({
         success: true,
-        message: `Processed ${allResults.map(r => `${r.totalConsidered} ${r.digestType}`).join(" and ")} users`,
+        message: `Processed email digests`,
         results: allResults,
       });
     } catch (error) {
