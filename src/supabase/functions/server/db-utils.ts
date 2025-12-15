@@ -76,5 +76,6 @@ export const getAllRecords = async <T>(
 };
 
 export const getAllRealUsers = async (): Promise<UserSession[]> => {
-  return getAllRecords<UserSession>("user:");
+  const allUsers = await getAllRecords<UserSession>("user:");
+  return allUsers.filter(user => !user.isTestUser);
 };

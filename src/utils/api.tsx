@@ -434,10 +434,10 @@ class ApiClient {
     return this.request("/vine/presences");
   }
 
-  async getEmailPreview(userId?: string, sinceTimestamp?: number) {
+  async getEmailPreview(userId?: string, digestType?: string) {
     const params = new URLSearchParams();
     if (userId) params.append("userId", userId);
-    if (sinceTimestamp) params.append("sinceTimestamp", sinceTimestamp.toString());
+    if (digestType) params.append("digestType", digestType);
     
     const queryString = params.toString();
     const response = await fetch(
@@ -456,16 +456,16 @@ class ApiClient {
     return response.text();
   }
 
-  async sendTestEmail(userId: string, useMockData: boolean, sinceTimestamp?: number) {
+  async sendTestEmail(userId: string, useMockData: boolean, digestType?: string) {
     return this.request("/dev/email-previews/send", {
       method: "POST",
-      body: JSON.stringify({ userId, useMockData, sinceTimestamp }),
+      body: JSON.stringify({ userId, useMockData, digestType }),
     });
   }
 
-  async getEmailDigestCount(sinceTimestamp: number) {
+  async getEmailDigestCount(digestType: string) {
     const params = new URLSearchParams();
-    params.append("sinceTimestamp", sinceTimestamp.toString());
+    params.append("digestType", digestType);
     
     return this.request<{
       eligibleCount: number;

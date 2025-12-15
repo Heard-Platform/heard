@@ -59,7 +59,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [useMockData, setUseMockData] = useState(false);
-  const [timeframe, setTimeframe] = useState<string>("24h");
+  const [digestType, setDigestType] = useState<string>("weekly_digest");
   const [countData, setCountData] = useState<{
     eligibleCount: number;
     totalCount: number;
@@ -70,31 +70,14 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
   const [showEligibleUsers, setShowEligibleUsers] = useState(false);
   const [showConsideredUsers, setShowConsideredUsers] = useState(false);
 
-  const getTimestamp = () => {
-    if (timeframe === "all") return undefined;
-    
-    const now = Date.now();
-    switch (timeframe) {
-      case "24h":
-        return now - 24 * 60 * 60 * 1000;
-      case "7d":
-        return now - 7 * 24 * 60 * 60 * 1000;
-      case "30d":
-        return now - 30 * 24 * 60 * 60 * 1000;
-      default:
-        return undefined;
-    }
-  };
-
   const fetchEmailPreview = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const timestamp = useMockData ? undefined : getTimestamp();
       const html = await api.getEmailPreview(
         useMockData ? undefined : user.id,
-        timestamp,
+        digestType,
       );
       setEmailHtml(html);
     } catch (err) {
@@ -109,15 +92,14 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
 
   useEffect(() => {
     fetchEmailPreview();
-  }, [useMockData, timeframe]);
+  }, [useMockData, digestType]);
 
   const sendEmail = async () => {
     setSending(true);
     setError(null);
 
     try {
-      const timestamp = useMockData ? undefined : getTimestamp();
-      const result = await api.sendTestEmail(user.id, useMockData, timestamp);
+      const result = await api.sendTestEmail(user.id, useMockData, digestType);
       
       if (!result.success) {
         throw new Error(result.error || "Failed to send email");
@@ -136,7 +118,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
   };
 
   const fetchCountData = async () => {
-    if (useMockData || timeframe === "all") {
+    if (useMockData) {
       setCountData(null);
       setEligibleUsers([]);
       setConsideredUsers([]);
@@ -146,15 +128,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
     setLoadingCount(true);
 
     try {
-      const timestamp = getTimestamp();
-      if (!timestamp) {
-        setCountData(null);
-        setEligibleUsers([]);
-        setConsideredUsers([]);
-        return;
-      }
-
-      const result = await api.getEmailDigestCount(timestamp);
+      const result = await api.getEmailDigestCount(digestType);
       
       if (result.success && result.data) {
         setCountData({
@@ -175,7 +149,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
 
   useEffect(() => {
     fetchCountData();
-  }, [useMockData, timeframe]);
+  }, [useMockData, digestType]);
 
   return (
     <div className="space-y-4">
@@ -203,17 +177,15 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
           </div>
           <div className="flex items-center gap-2">
             <label className="text-sm text-slate-600">
-              Timeframe
+              Digest Type
             </label>
             <select
-              value={timeframe}
-              onChange={(e) => setTimeframe(e.target.value)}
+              value={digestType}
+              onChange={(e) => setDigestType(e.target.value)}
               className="border border-slate-300 rounded px-2 py-1 text-sm"
             >
-              <option value="all">All</option>
-              <option value="24h">Last 24 hours</option>
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
+              <option value="weekly_digest">Weekly Digest</option>
+              <option value="first_day_digest">First Day Digest</option>
             </select>
           </div>
           <Button
@@ -238,7 +210,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
         </div>
       </div>
 
-      {!useMockData && timeframe !== "all" && countData && (
+      {!useMockData && countData && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex-1">
@@ -266,7 +238,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
 
           {consideredUsers.length > 0 && (
             <UserListCollapsible
-              title="All users considered (active in last week)"
+              title={digestType === "first_day_digest" ? "All users considered (created in last day)" : "All users considered (active in last week)"}
               users={consideredUsers}
               isExpanded={showConsideredUsers}
               onToggle={() => setShowConsideredUsers(!showConsideredUsers)}

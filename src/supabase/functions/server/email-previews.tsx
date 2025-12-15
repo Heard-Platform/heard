@@ -6,35 +6,39 @@ import {
   EmailData
 } from "./email-types.ts";
 import { generateEmailHtml, generateFakeData } from "./email-digest-template.tsx";
-import { sendEmailViaResend, getUsersToEmailWeeklyDigest } from "./email-sender-utils.tsx";
+import { sendEmailViaResend, getUsersToEmailDigest } from "./email-sender-utils.tsx";
 
 const app = new Hono();
+
+const getDigestTimestamp = (digestType: string) => {
+  const now = Date.now();
+  return digestType === "first_day_digest" 
+    ? now - 24 * 60 * 60 * 1000
+    : now - 7 * 24 * 60 * 60 * 1000;
+};
 
 app.get(
   "/make-server-f1a393b4/dev/email-previews",
   async (c) => {
     const userId = c.req.query("userId");
-    const sinceTimestamp = c.req.query("sinceTimestamp");
+    const digestType = c.req.query("digestType");
+
+    if (!digestType) {
+      return c.json({ error: "digestType query parameter is required" }, 400);
+    }
 
     console.log(
-      `[email-previews GET] Received request with userId: ${userId || "none (will use mock data)"}, sinceTimestamp: ${sinceTimestamp}`,
+      `[email-previews GET] Received request with userId: ${userId || "none (will use mock data)"}, digestType: ${digestType}`,
     );
 
     let emailData: EmailData;
     if (userId) {
-      if (!sinceTimestamp) {
-        return c.json(
-          {
-            error: "sinceTimestamp query parameter is required",
-          },
-          400,
-        );
-      }
-
       console.log(
         `[email-previews GET] Generating real data for userId: ${userId}`,
       );
-      const timestamp = parseInt(sinceTimestamp, 10);
+      
+      const timestamp = getDigestTimestamp(digestType);
+      
       emailData = await generateRealEmailData(
         userId,
         timestamp,
@@ -67,10 +71,14 @@ app.post(
   async (c) => {
     try {
       const body = await c.req.json();
-      const { userId, useMockData, sinceTimestamp } = body;
+      const { userId, useMockData, digestType } = body;
 
       if (!userId) {
         return c.json({ error: "User ID is required" }, 400);
+      }
+
+      if (!digestType) {
+        return c.json({ error: "digestType is required" }, 400);
       }
 
       const user = await kvUtils.getParsedKvData<UserSession>(
@@ -98,9 +106,11 @@ app.post(
       if (useMockData) {
         emailData = generateFakeData();
       } else {
+        const timestamp = getDigestTimestamp(digestType);
+        
         emailData = await generateRealEmailData(
           userId,
-          sinceTimestamp,
+          timestamp,
         );
       }
 
@@ -162,20 +172,24 @@ app.get(
   "/make-server-f1a393b4/dev/email-previews/count",
   async (c) => {
     try {
-      const sinceTimestamp = c.req.query("sinceTimestamp");
+      const digestType = c.req.query("digestType");
 
-      if (!sinceTimestamp) {
-        return c.json(
-          { error: "sinceTimestamp query parameter is required" },
-          400,
-        );
+      if (!digestType) {
+        return c.json({ error: "digestType query parameter is required" }, 400);
       }
 
-      console.log(`[email-count] Calculating eligible users since ${sinceTimestamp}`);
+      console.log(`[email-count] Calculating eligible users for ${digestType}`);
 
-      const timestamp = parseInt(sinceTimestamp, 10);
-
-      const { usersToConsider, stats } = await getUsersToEmailWeeklyDigest();
+      const isFirstDay = digestType === "first_day_digest";
+      const cutoffDays = isFirstDay ? 1 : 7;
+      
+      const { usersToConsider, stats } = await getUsersToEmailDigest(
+        digestType,
+        cutoffDays,
+        isFirstDay,
+      );
+      
+      const timestamp = getDigestTimestamp(digestType);
       
       console.log(`[email-count] ${stats.totalUsers} total users`);
       console.log(`[email-count] ${stats.recentlyEmailedCount} users recently emailed`);

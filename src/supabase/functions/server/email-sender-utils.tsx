@@ -63,15 +63,15 @@ export const sendEmailViaResend = async (
   }
 };
 
-export const getUsersToEmailWeeklyDigest = async () => {
+export const getUsersToEmailDigest = async (emailType: string, cutoffDays: number, filterByNewUsers: boolean) => {
   const now = Date.now();
   const allUsers = await getAllRealUsers();
 
-  const cutoffTime = now - 7 * 24 * 60 * 60 * 1000;
+  const cutoffTime = now - cutoffDays * 24 * 60 * 60 * 1000;
   const allSentEmails = await getSentEmails();
   const recentSentEmails = allSentEmails.filter(
     (email: any) =>
-      email.sentAt >= cutoffTime && email.emailType === "weekly_digest",
+      email.sentAt >= cutoffTime && email.emailType === emailType,
   );
   const recentlyEmailedUserIds = new Set(
     recentSentEmails.map((email: any) => email.userId),
@@ -79,16 +79,16 @@ export const getUsersToEmailWeeklyDigest = async () => {
 
   const isUserEligible = (user: any): boolean => {
     if (!user.email) return false;
-    const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
-    const oneWeekAgo = now - ONE_WEEK;
-    if (user.lastActive < oneWeekAgo) return false;
-    return true;
+    if (recentlyEmailedUserIds.has(user.id)) return false;
+    
+    if (filterByNewUsers) {
+      return user.createdAt >= cutoffTime;
+    } else {
+      return user.lastActive >= cutoffTime;
+    }
   };
 
-  const usersToConsider = allUsers.filter(
-    (user: any) =>
-      !recentlyEmailedUserIds.has(user.id) && isUserEligible(user),
-  );
+  const usersToConsider = allUsers.filter(isUserEligible);
 
   return {
     allUsers,
