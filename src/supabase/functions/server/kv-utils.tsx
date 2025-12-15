@@ -1,4 +1,5 @@
 // Utility functions for working with KV store data
+import { getAllRecords } from "./db-utils.ts";
 import * as kv from "./kv_store.tsx";
 import type {
   UserSession,
@@ -90,7 +91,16 @@ export const bulkUpsert = async (
 export const userKeyFn = (user: UserSession) =>
   `user:${user.id}`;
 
-export const createUser = async (user: UserSession) => {
+export const getUser = async (userId: string) => {
+  return getParsedKvData<UserSession>(`user:${userId}`);
+};
+
+export const getAllRealUsers = async (): Promise<UserSession[]> => {
+  const allUsers = await getAllRecords<UserSession>("user:");
+  return allUsers.filter(user => !user.isTestUser);
+};
+
+export const saveUser = async (user: UserSession) => {
   await kv.set(userKeyFn(user), JSON.stringify(user));
 };
 

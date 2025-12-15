@@ -74,8 +74,3 @@ export const getAllRecords = async <T>(
   }
   return records;
 };
-
-export const getAllRealUsers = async (): Promise<UserSession[]> => {
-  const allUsers = await getAllRecords<UserSession>("user:");
-  return allUsers.filter(user => !user.isTestUser);
-};

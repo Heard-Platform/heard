@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { NicknameSetup } from "./components/NicknameSetup";
 import { PasswordReset } from "./components/PasswordReset";
+import { UnsubscribePage } from "./components/UnsubscribePage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
@@ -57,6 +58,7 @@ export default function App() {
   const [showDevTools, setShowDevTools] = useState(false);
   const [showPasswordReset, setShowPasswordReset] =
     useState(false);
+  const [showUnsubscribe, setShowUnsubscribe] = useState(false);
   const [resetToken, setResetToken] = useState<string | null>(
     null,
   );
@@ -137,6 +139,8 @@ export default function App() {
         window.location.pathname === "/admin";
       const isDevToolsRoute =
         window.location.pathname.startsWith("/devtools");
+      const isUnsubscribeRoute =
+        window.location.pathname === "/unsubscribe";
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl =
@@ -149,6 +153,8 @@ export default function App() {
       if (resetTokenFromUrl) {
         setResetToken(resetTokenFromUrl);
         setShowPasswordReset(true);
+      } else if (isUnsubscribeRoute) {
+        setShowUnsubscribe(true);
       } else if (isAdminRoute) {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
@@ -305,6 +311,10 @@ export default function App() {
         <Toaster />
       </>
     );
+  }
+
+  if (showUnsubscribe) {
+    return <UnsubscribePage />;
   }
 
   const showNicknameSetup = !user;

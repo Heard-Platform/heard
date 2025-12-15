@@ -1,5 +1,4 @@
-import { getAllRealUsers } from "./db-utils.ts";
-import { getSentEmails } from "./kv-utils.tsx";
+import { getAllRealUsers, getSentEmails } from "./kv-utils.tsx";
 
 export interface SendEmailParams {
   to: string;
@@ -79,6 +78,7 @@ export const getUsersToEmailDigest = async (emailType: string, cutoffDays: numbe
 
   const isUserEligible = (user: any): boolean => {
     if (!user.email) return false;
+    if (user.emailDigestsEnabled === false) return false;
     if (recentlyEmailedUserIds.has(user.id)) return false;
     
     if (filterByNewUsers) {

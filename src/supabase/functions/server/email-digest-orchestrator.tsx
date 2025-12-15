@@ -87,7 +87,7 @@ app.post(
               continue;
             }
 
-            const emailHtml = generateEmailHtml(emailData);
+            const emailHtml = generateEmailHtml(emailData, user.id);
 
             const sendResult = await sendEmailViaResend({
               to: user.email,

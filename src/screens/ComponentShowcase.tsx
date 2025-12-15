@@ -9,6 +9,7 @@ import { VotesDrawerStory } from "../stories/VotesDrawer.story";
 import { DebateScrollerStory } from "../stories/DebateScroller.story";
 import { DebateAnalysisReportStory } from "../stories/DebateAnalysisReport.story";
 import { DebateAnalysisReportDemoStory } from "../stories/DebateAnalysisReportDemo.story";
+import { UnsubscribePageStory } from "../stories/UnsubscribePage.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -76,6 +77,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             <TabsTrigger value="debate-scroller">Debate Scroller</TabsTrigger>
             <TabsTrigger value="debate-analysis-report">Debate Analysis Report</TabsTrigger>
             <TabsTrigger value="debate-analysis-report-demo">Debate Analysis Report (Demo)</TabsTrigger>
+            <TabsTrigger value="unsubscribe-page">Unsubscribe Page</TabsTrigger>
           </TabsList>
 
           <TabsContent value="results">
@@ -104,6 +106,10 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
 
           <TabsContent value="debate-analysis-report-demo">
             <DebateAnalysisReportDemoStory />
+          </TabsContent>
+
+          <TabsContent value="unsubscribe-page">
+            <UnsubscribePageStory />
           </TabsContent>
         </Tabs>
       </div>

@@ -8,6 +8,7 @@ export interface UserSession {
   lastActive: number;
   isTestUser?: boolean;
   isDeveloper?: boolean;
+  emailDigestsEnabled: boolean;
   passwordHash?: string;
   createdAt: number;
 }

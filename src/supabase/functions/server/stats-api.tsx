@@ -3,9 +3,9 @@ import {
   getAllSubHeards,
   getAllDebates,
   getActivitiesForDate,
+  getAllRealUsers,
 } from "./kv-utils.tsx";
 import type { UserSession } from "./types.tsx";
-import { getAllRealUsers } from "./db-utils.ts";
 
 const app = new Hono();
 

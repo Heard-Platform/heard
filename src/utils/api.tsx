@@ -475,6 +475,13 @@ class ApiClient {
       consideredUsers: Array<{ email: string; nickname: string; id: string }>;
     }>(`/dev/email-previews/count?${params.toString()}`);
   }
+
+  async unsubscribe(userId: string) {
+    return this.request("/unsubscribe", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
 }
 
 export const api = new ApiClient();

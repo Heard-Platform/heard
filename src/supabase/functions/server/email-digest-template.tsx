@@ -390,7 +390,7 @@ function makeCommunitiesSection(
   `;
 }
 
-export function generateEmailHtml(data: EmailData): string {
+export function generateEmailHtml(data: EmailData, userId: string): string {
   const sections: string[] = [];
 
   if (data.conversationsStarted.length > 0) {
@@ -438,8 +438,7 @@ export function generateEmailHtml(data: EmailData): string {
           </a>
           <p style="margin: 0 0 8px 0;">Heard - Conversation made fun</p>
           <p style="margin: 0; font-size: 12px;">
-            <a href="#" style="color: #667eea; text-decoration: none; margin: 0 8px;">Unsubscribe</a> | 
-            <a href="#" style="color: #667eea; text-decoration: none; margin: 0 8px;">Preferences</a>
+            <a href="https://heard-now.com/unsubscribe?userId=${userId}" style="color: #667eea; text-decoration: none;">Unsubscribe</a>
           </p>
         </div>
       </div>

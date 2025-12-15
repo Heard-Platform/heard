@@ -61,7 +61,7 @@ app.get(
       communities: emailData.communities.length,
     });
 
-    const emailHtml = generateEmailHtml(emailData);
+    const emailHtml = generateEmailHtml(emailData, userId || "preview-user");
     return c.html(emailHtml);
   },
 );
@@ -125,7 +125,7 @@ app.post(
         );
       }
 
-      const emailHtml = generateEmailHtml(emailData);
+      const emailHtml = generateEmailHtml(emailData, userId);
 
       const sendResult = await sendEmailViaResend({
         to: user.email,
