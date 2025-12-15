@@ -121,6 +121,17 @@ export function FeedbackSheet({
             about your great grandma, or just to say hi.
           </p>
           <p className="text-slate-600 leading-relaxed">
+            If you're in D.C. let's grab coffee! Here's a calendar booking link:{" "}
+            <a
+              href="https://calendly.com/alexmasonlong/30-minute"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-purple-600 hover:text-purple-700 underline decoration-2 decoration-purple-300 underline-offset-2"
+            >
+              Book a time
+            </a>
+          </p>
+          <p className="text-slate-600 leading-relaxed">
             Or you can send a message directly below:
           </p>
         </div>
