@@ -1,3 +1,6 @@
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { NicknameSetup } from "./components/NicknameSetup";
@@ -10,7 +13,6 @@ import { AdminDashboard } from "./components/AdminDashboard";
 import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-import { toast } from "sonner@2.0.3";
 import { api } from "./utils/api";
 import type { NewDebateRoom, DebateRoom } from "./types";
 import {
@@ -140,7 +142,7 @@ export default function App() {
       const isDevToolsRoute =
         window.location.pathname.startsWith("/devtools");
       const isUnsubscribeRoute =
-        window.location.pathname === "/unsubscribe";
+        window.location.pathname.startsWith("/unsubscribe");
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl =
@@ -342,7 +344,7 @@ export default function App() {
           onComplete={handleNicknameComplete}
           onForgotPassword={() => setShowPasswordReset(true)}
           loading={loading}
-          error={error}
+          error={error || undefined}
           joiningRoom={!!targetRoomId}
         />
         <Toaster />
