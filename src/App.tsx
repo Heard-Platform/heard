@@ -1,9 +1,6 @@
-// @ts-ignore
-import { toast } from "sonner@2.0.3";
-
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { NicknameSetup } from "./components/NicknameSetup";
+import { LandingPage } from "./screens/LandingPage";
 import { PasswordReset } from "./components/PasswordReset";
 import { UnsubscribePage } from "./components/UnsubscribePage";
 import { LobbyScreen } from "./screens/LobbyScreen";
@@ -340,12 +337,12 @@ export default function App() {
   if (showNicknameSetup) {
     return (
       <>
-        <NicknameSetup
+        <LandingPage
+          loading={loading}
+          error={error || ""}
+          joiningRoom={!!targetRoomId}
           onComplete={handleNicknameComplete}
           onForgotPassword={() => setShowPasswordReset(true)}
-          loading={loading}
-          error={error || undefined}
-          joiningRoom={!!targetRoomId}
         />
         <Toaster />
       </>

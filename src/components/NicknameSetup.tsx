@@ -135,13 +135,11 @@ export function NicknameSetup({
                   ? "Welcome to HEARD!"
                   : "Welcome Back!"}
             </h1>
-            <p className="text-muted-foreground">
-              {joiningRoom
-                ? "Sign in or create an account to join this debate!"
-                : mode === "signup"
-                  ? "Create an account to start debating (and secretly saving democracy)"
-                  : "Sign in to continue debating"}
-            </p>
+            {joiningRoom && (
+              <p className="text-muted-foreground">
+                Sign in or create an account to join this debate!
+              </p>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
