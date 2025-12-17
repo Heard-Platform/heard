@@ -147,7 +147,7 @@ export function LandingPage({
             <p className="text-white/90 text-lg">
               You can{" "}
               <a
-                href="https://www.notion.so/amasonlong/About-Heard-2cc4ab4bf00380a9b63ce3b83234ae02?source=copy_link"
+                href="https://amasonlong.notion.site/About-Heard-2cc4ab4bf00380a9b63ce3b83234ae02?pvs=73"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-black text-yellow-200 hover:text-yellow-100 underline decoration-4 decoration-yellow-300/50 underline-offset-4 transition-colors"
