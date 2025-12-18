@@ -489,7 +489,7 @@ const getDebateRoom = async (
   }
 };
 
-const saveDebateRoom = async (room: DebateRoom) => {
+export const saveDebateRoom = async (room: DebateRoom) => {
   await kv.set(`room:${room.id}`, JSON.stringify(room));
 };
 
@@ -2946,7 +2946,6 @@ app.route("/", roomApi);
 
 export {
   app as debateApi,
-  saveDebateRoom,
   getActiveRooms,
   generateId,
   getDebateRoom,

@@ -240,7 +240,7 @@ export async function generateRealEmailData(
 
   try {
     console.log(`[generateRealEmailData] Fetching all rooms...`);
-    const allRooms = await getAllDebates<DebateRoom>();
+    const allRooms = await getAllDebates();
     console.log(
       `[generateRealEmailData] Found ${allRooms.length} total rooms`,
     );

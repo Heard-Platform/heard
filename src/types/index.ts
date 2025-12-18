@@ -56,20 +56,23 @@ export type DebateMode = "realtime" | "host-controlled";
 export interface DebateRoom {
   id: string;
   topic: string;
-  description?: string; // Optional markdown description for context
-  imageUrl?: string; // Optional cover image for the debate
+  description?: string;
+  imageUrl?: string;
   phase: Phase;
   subPhase?: SubPhase;
   gameNumber: number;
   roundStartTime: number;
   participants: string[];
-  hostId: string; // ID of the user who created the room
+  hostId: string;
   isActive: boolean;
   createdAt: number;
-  mode: DebateMode; // Controls whether phases advance automatically or by host
-  rantFirst?: boolean; // Whether this room starts with rants
-  subHeard?: string; // Sub-heard name (like subreddits) - optional for backwards compatibility
-  endTime?: number; // For realtime debates - timestamp when the debate ends
+  mode: DebateMode;
+  rantFirst?: boolean;
+  subHeard?: string;
+  endTime?: number;
+  allowAnonymous?: boolean;
+  anonymousLinkId?: string;
+  isTestRoom?: boolean;
 }
 
 export type NewDebateRoom = Pick<

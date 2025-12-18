@@ -160,10 +160,8 @@ export const createRoom = async (room: DebateRoom) => {
   await kv.set(`room:${room.id}`, JSON.stringify(room));
 };
 
-export const getAllDebates = async <T = any,>(): Promise<
-  T[]
-> => {
-  return getByPrefixParsed<T>("room:");
+export const getAllDebates = async (): Promise<DebateRoom[]> => {
+  return getAllRecords<DebateRoom>("room:");
 };
 
 export const getDebate = async (debateId: string) => {

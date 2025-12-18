@@ -1,9 +1,13 @@
 import { Hono } from "npm:hono";
-import { getUserSession, saveUserSession } from "./auth-api.tsx";
+import {
+  getUserSession,
+  saveUserSession,
+} from "./auth-api.tsx";
 import { saveDebateRoom } from "./debate-api.tsx";
 import { DebateRoom } from "./types.tsx";
 import { generateId, getFrontendUrl } from "./utils.tsx";
 import { API_URL_PREFIX } from "./constants.tsx";
+import { getAllDebates } from "./kv-utils.tsx";
 
 const app = new Hono();
 
@@ -112,6 +116,35 @@ app.post(
       console.error("Error creating anonymous debate:", error);
       return c.json(
         { error: "Failed to create anonymous debate" },
+        500,
+      );
+    }
+  },
+);
+
+app.get(
+  `${API_URL_PREFIX}/dev/anon-debates`,
+  async (c: any) => {
+    try {
+      const allRooms = await getAllDebates();
+
+      const anonDebates = allRooms
+        .filter(
+          (room) =>
+            room.allowAnonymous === true &&
+            room.isTestRoom === true
+        )
+        .map((room) => ({
+          ...room,
+          inviteLink: `${getFrontendUrl()}/join/${room.anonymousLinkId}`,
+        }))
+        .sort((a, b) => b.createdAt - a.createdAt);
+
+      return c.json({ debates: anonDebates });
+    } catch (error) {
+      console.error("Error fetching anon debates:", error);
+      return c.json(
+        { error: "Failed to fetch anon debates" },
         500,
       );
     }

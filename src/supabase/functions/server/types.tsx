@@ -73,6 +73,7 @@ export interface DebateRoom {
   imageUrl?: string;
   allowAnonymous?: boolean;
   anonymousLinkId?: string;
+  isTestRoom?: boolean;
 }
 
 export interface Rant {

@@ -280,6 +280,12 @@ class ApiClient {
     });
   }
 
+  async getAnonDebates() {
+    return this.request("/dev/anon-debates", {
+      method: "GET",
+    });
+  }
+
   // Admin methods (require X-Admin-Key header)
   async adminGetUsers(adminKey: string) {
     return this.request("/admin/users", {
