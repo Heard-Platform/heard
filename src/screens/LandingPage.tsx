@@ -1,6 +1,9 @@
 import { Sparkles, Zap, MessageCircle, Heart, Users } from "lucide-react";
 import { NicknameSetup } from "../components/NicknameSetup";
 import { DevDebateListPanel } from "../components/onboarding/DevDebateListPanel";
+import { useState } from "react";
+import { motion } from "motion/react";
+import { Button } from "../components/ui/button";
 
 interface LandingPageProps {
   loading: boolean;
