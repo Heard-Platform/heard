@@ -15,7 +15,7 @@ import {
   getUserSession,
   sendWelcomeEmail,
 } from "./auth-api.tsx";
-import { generateId } from "./utils.tsx";
+import { generateId, getFrontendUrl } from "./utils.tsx";
 import type {
   UserSession,
   VoteType,
@@ -27,12 +27,6 @@ import type {
   DebateRoom,
   Rant,
 } from "./types.tsx";
-
-const getFrontendUrl = (): string => {
-  return (
-    Deno.env.get("FRONTEND_URL") || "https://app.heard-now.com"
-  );
-};
 
 const app = new Hono();
 

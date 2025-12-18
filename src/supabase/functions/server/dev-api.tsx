@@ -1,4 +1,9 @@
 import { Hono } from "npm:hono";
+import { getUserSession, saveUserSession } from "./auth-api.tsx";
+import { saveDebateRoom } from "./debate-api.tsx";
+import { DebateRoom } from "./types.tsx";
+import { generateId, getFrontendUrl } from "./utils.tsx";
+import { API_URL_PREFIX } from "./constants.tsx";
 
 const app = new Hono();
 
@@ -57,5 +62,60 @@ app.get("/make-server-f1a393b4/dev/email-previews", async (c) => {
 
   return c.html(emailHtml);
 });
+
+app.post(
+  `${API_URL_PREFIX}/dev/create-anon-enabled-debate`,
+  async (c: any) => {
+    try {
+      const { userId } = await c.req.json();
+
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User session not found" }, 404);
+      }
+
+      const roomId = generateId();
+      const anonymousLinkId = generateId();
+      
+      const debateRoom: DebateRoom = {
+        id: roomId,
+        topic: "What's the best cat personality?",
+        phase: "round1",
+        subPhase: "posting",
+        gameNumber: 1,
+        roundStartTime: Date.now(),
+        participants: [userId],
+        hostId: userId,
+        isActive: true,
+        createdAt: Date.now(),
+        mode: "realtime",
+        rantFirst: true,
+        endTime: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        allowAnonymous: true,
+        anonymousLinkId,
+      };
+
+      await saveDebateRoom(debateRoom);
+
+      user.currentRoomId = roomId;
+      await saveUserSession(user);
+
+      const frontendUrl = getFrontendUrl();
+      const inviteLink = `${frontendUrl}/join/${anonymousLinkId}`;
+
+      return c.json({ 
+        room: debateRoom, 
+        inviteLink,
+        message: `Anon-enabled debate created! Share: ${inviteLink}`,
+      });
+    } catch (error) {
+      console.error("Error creating anonymous debate:", error);
+      return c.json(
+        { error: "Failed to create anonymous debate" },
+        500,
+      );
+    }
+  },
+);
 
 export { app as devApi };

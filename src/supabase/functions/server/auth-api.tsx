@@ -7,16 +7,10 @@ import {
   generateResetToken,
 } from "./password-utils.tsx";
 import { getParsedKvData } from "./kv-utils.tsx";
+import { getFrontendUrl } from "./utils.tsx";
 import type { UserSession } from "./types.tsx";
 
 const app = new Hono();
-
-// Utility function to get frontend URL
-const getFrontendUrl = (): string => {
-  return (
-    Deno.env.get("FRONTEND_URL") || "https://app.heard-now.com"
-  );
-};
 
 // Generate ID for new users
 const generateId = () => {

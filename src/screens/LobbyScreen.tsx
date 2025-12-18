@@ -1,14 +1,11 @@
 import type {
   UserSession,
-  DebateRoom,
-  DebateMode,
-  NewDebateRoom,
+  DebateRoom, NewDebateRoom,
   VoteType,
-  UserPresence,
+  UserPresence
 } from "../types";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
-import { Button } from "../components/ui/button";
 import {
   RoomScroller,
   RoomScrollerRef,
@@ -19,28 +16,8 @@ import { IntroModal } from "../components/IntroModal";
 import { FloatingCreateButton } from "../components/FloatingCreateButton";
 import { FloatingFeedbackButton } from "../components/FloatingFeedbackButton";
 import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
+import { SidePanelMenu } from "../components/SidePanelMenu";
 import { api } from "../utils/api";
-import {
-  Plus,
-  Database,
-  LogOut,
-  Brain,
-  Code2,
-  SkipForward,
-  Clock,
-  Shield,
-  HelpCircle,
-  BarChart3,
-  Wrench,
-} from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "../components/ui/sheet";
 
 interface LobbyScreenProps {
   user: UserSession | null;
@@ -117,7 +94,6 @@ export function LobbyScreen({
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
     useState(false);
-  const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [discussTopic, setDiscussTopic] = useState<
     string | undefined
@@ -316,6 +292,23 @@ export function LobbyScreen({
     }
   };
 
+  const handleCreateAnonDebate = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await api.createAnonDebate(user.id);
+      if (response.success && response.data) {
+        await onRefreshRooms();
+        alert(
+          `✅ ${response.data.message}\n\nShare this invite link:\n${response.data.inviteLink}\n\nAnyone with this link can join anonymously!`,
+        );
+      }
+    } catch (error) {
+      console.error("Error creating anon debate:", error);
+      alert("Failed to create anon-enabled debate");
+    }
+  };
+
   const handleJoinRoom = async (roomId: string) => {
     await onJoinRoom(roomId);
   };
@@ -462,200 +455,22 @@ export function LobbyScreen({
               />
             )}
 
-            {user && (
-              <Sheet
-                open={devMenuOpen}
-                onOpenChange={setDevMenuOpen}
-              >
-                <SheetTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="bg-white/90 backdrop-blur-sm shadow-lg px-3 py-2 h-auto gap-2"
-                  >
-                    <span className="text-lg">⭐</span>
-                    <span className="font-semibold">
-                      {user.score}
-                    </span>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right">
-                  <SheetHeader>
-                    <SheetTitle>Menu</SheetTitle>
-                    <SheetDescription>
-                      User settings and options
-                    </SheetDescription>
-                  </SheetHeader>
-
-                  <div className="space-y-4 mt-6">
-                    {/* User info */}
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-green-800">
-                        <span className="font-medium">
-                          {user.nickname}
-                        </span>
-                      </p>
-                      <p className="text-sm text-green-600 mt-1">
-                        Score: {user.score}
-                      </p>
-                    </div>
-
-                    {/* Logout */}
-                    {onLogout && (
-                      <Button
-                        onClick={onLogout}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Logout
-                      </Button>
-                    )}
-
-                    {/* Help button */}
-                    <Button
-                      onClick={() => {
-                        setDevMenuOpen(false);
-                        setHelpModalOpen(true);
-                      }}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <HelpCircle className="w-4 h-4 mr-2" />
-                      Help
-                    </Button>
-
-                    {/* Showcase button */}
-                    {onOpenShowcase && (
-                      <Button
-                        onClick={() => {
-                          setDevMenuOpen(false);
-                          onOpenShowcase();
-                        }}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <Code2 className="w-4 h-4 mr-2" />
-                        Component Showcase
-                      </Button>
-                    )}
-
-                    {/* Admin Dashboard button - for community admins */}
-                    {onOpenAdminDashboard && (
-                      <Button
-                        onClick={() => {
-                          setDevMenuOpen(false);
-                          onOpenAdminDashboard();
-                        }}
-                        variant="outline"
-                        className="w-full bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200"
-                      >
-                        <BarChart3 className="w-4 h-4 mr-2 text-purple-600" />
-                        Admin Dashboard
-                      </Button>
-                    )}
-
-                    {/* Developer controls */}
-                    {user?.isDeveloper && (
-                      <>
-                        <div className="border-t pt-4">
-                          <h3 className="font-medium mb-3">
-                            Developer Tools
-                          </h3>
-                          <div className="space-y-2">
-                            {onOpenDevTools && (
-                              <Button
-                                onClick={() => {
-                                  setDevMenuOpen(false);
-                                  onOpenDevTools();
-                                }}
-                                variant="outline"
-                                size="sm"
-                                className="w-full bg-blue-50 border-blue-200 text-blue-800"
-                              >
-                                <Wrench className="w-3 h-3 mr-2" />
-                                Dev Tools
-                              </Button>
-                            )}
-                            {onOpenAdminPanel && (
-                              <Button
-                                onClick={() => {
-                                  setDevMenuOpen(false);
-                                  onOpenAdminPanel();
-                                }}
-                                variant="outline"
-                                size="sm"
-                                className="w-full bg-purple-50 border-purple-200 text-purple-800"
-                              >
-                                <Shield className="w-3 h-3 mr-2" />
-                                Admin Panel
-                              </Button>
-                            )}
-                            {onJumpToFinalResults && (
-                              <Button
-                                onClick={onJumpToFinalResults}
-                                variant="outline"
-                                size="sm"
-                                className="w-full bg-yellow-50 border-yellow-200 text-yellow-800"
-                              >
-                                <SkipForward className="w-3 h-3 mr-2" />
-                                Jump to Final Results
-                              </Button>
-                            )}
-                            {onCreateSeedData && (
-                              <Button
-                                onClick={handleCreateSeedData}
-                                variant="outline"
-                                size="sm"
-                                className="w-full bg-green-50 border-green-200 text-green-800"
-                              >
-                                <Database className="w-3 h-3 mr-2" />
-                                Create Test Data
-                              </Button>
-                            )}
-                            {onCreateTestRoom && (
-                              <Button
-                                onClick={handleCreateTestRoom}
-                                variant="outline"
-                                size="sm"
-                                className="w-full bg-blue-50 border-blue-200 text-blue-800"
-                              >
-                                <Plus className="w-3 h-3 mr-2" />
-                                Q Street Test Room
-                              </Button>
-                            )}
-                            {onCreateRantTestRoom && (
-                              <Button
-                                onClick={
-                                  handleCreateRantTestRoom
-                                }
-                                variant="outline"
-                                size="sm"
-                                className="w-full bg-purple-50 border-purple-200 text-purple-800"
-                              >
-                                <Brain className="w-3 h-3 mr-2" />
-                                Rant-First Test Room
-                              </Button>
-                            )}
-                            {onCreateRealtimeTestRoom && (
-                              <Button
-                                onClick={
-                                  handleCreateRealtimeTestRoom
-                                }
-                                variant="outline"
-                                size="sm"
-                                className="w-full bg-orange-50 border-orange-200 text-orange-800"
-                              >
-                                <Clock className="w-3 h-3 mr-2" />
-                                Real-time Test Room (5min)
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
+            {user && onLogout && (
+              <SidePanelMenu
+                user={user}
+                onLogout={onLogout}
+                onOpenHelp={() => setHelpModalOpen(true)}
+                onOpenShowcase={onOpenShowcase}
+                onOpenAdminDashboard={onOpenAdminDashboard}
+                onOpenDevTools={onOpenDevTools}
+                onOpenAdminPanel={onOpenAdminPanel}
+                onJumpToFinalResults={onJumpToFinalResults}
+                onCreateSeedData={onCreateSeedData ? handleCreateSeedData : undefined}
+                onCreateTestRoom={onCreateTestRoom ? handleCreateTestRoom : undefined}
+                onCreateRantTestRoom={onCreateRantTestRoom ? handleCreateRantTestRoom : undefined}
+                onCreateRealtimeTestRoom={onCreateRealtimeTestRoom ? handleCreateRealtimeTestRoom : undefined}
+                onCreateAnonDebate={handleCreateAnonDebate}
+              />
             )}
           </div>
         </div>

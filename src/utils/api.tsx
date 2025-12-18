@@ -273,6 +273,13 @@ class ApiClient {
     });
   }
 
+  async createAnonDebate(userId: string) {
+    return this.request("/dev/create-anon-enabled-debate", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
+
   // Admin methods (require X-Admin-Key header)
   async adminGetUsers(adminKey: string) {
     return this.request("/admin/users", {

@@ -1,0 +1,1 @@
+export const API_URL_PREFIX = "/make-server-f1a393b4";

@@ -16,6 +16,7 @@ import { vineApi } from "./vine-api.tsx";
 import { emailPreviewsApi } from "./email-previews.tsx";
 import { digestEmailOrchestratorApi } from "./email-digest-orchestrator.tsx";
 import { unsubscribeApi } from "./unsubscribe.tsx";
+import { devApi } from "./dev-api.tsx";
 
 const app = new Hono();
 
@@ -94,5 +95,8 @@ app.route("/", digestEmailOrchestratorApi);
 
 // Mount unsubscribe API routes
 app.route("/", unsubscribeApi);
+
+// Mount dev API routes
+app.route("/", devApi);
 
 Deno.serve(app.fetch);

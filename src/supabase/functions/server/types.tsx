@@ -71,6 +71,8 @@ export interface DebateRoom {
   subHeard?: string;
   endTime?: number;
   imageUrl?: string;
+  allowAnonymous?: boolean;
+  anonymousLinkId?: string;
 }
 
 export interface Rant {
