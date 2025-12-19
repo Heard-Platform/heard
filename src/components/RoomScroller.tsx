@@ -113,11 +113,8 @@ export const RoomScroller = forwardRef<
     // Fetch statements for all rooms
     useEffect(() => {
       if (rooms.length > 0) {
-        setLoadingRooms(
-          Object.fromEntries(rooms.map((r) => [r.id, true])),
-        );
-        onGetAllRoomStatements().finally(() => {
-          setLoadingRooms({});
+        rooms.forEach(room => {
+          refreshRoomStatements(room.id);
         });
       }
     }, [rooms, currentSubHeard]);
