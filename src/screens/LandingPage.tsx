@@ -16,6 +16,7 @@ interface LandingPageProps {
     isSignIn: boolean,
   ) => void;
   onForgotPassword: () => void;
+  onJoinAnonymousLink: (anonymousLinkId: string) => void;
 }
 
 const animatedIcons = [
@@ -31,6 +32,7 @@ export function LandingPage({
   joiningRoom,
   onComplete,
   onForgotPassword,
+  onJoinAnonymousLink,
 }: LandingPageProps) {
   const [showSignup, setShowSignup] = useState(false);
 
@@ -49,7 +51,7 @@ export function LandingPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-orange-500 relative overflow-hidden">
-      <DevDebateListPanel />
+      <DevDebateListPanel onJoinAnonymousLink={onJoinAnonymousLink} />
       
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.2)_0%,transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.15)_0%,transparent_50%)]" />

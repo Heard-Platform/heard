@@ -112,6 +112,7 @@ export default function App() {
 
   const handleAnonymousJoin = async (anonymousLinkIdFromUrl: string) => {
   try {
+    setIsJoiningAnonymously(true);
     const response = await api.joinViaAnonymousLink(anonymousLinkIdFromUrl) as any;
     if (response.success && response.data) {
       const { user: anonUser, roomId, subHeard } = response.data;
@@ -123,9 +124,11 @@ export default function App() {
       setTargetRoomId(roomId);
     } else {
       console.error("Failed to join via anonymous link:", response.error);
+      setIsJoiningAnonymously(false);
     }
   } catch (error) {
     console.error("Error joining via anonymous link:", error);
+    setIsJoiningAnonymously(false);
   }
 };
 
@@ -185,7 +188,6 @@ export default function App() {
         setShowDevTools(true);
       } else if (anonymousLinkIdFromUrl) {
         handleAnonymousJoin(anonymousLinkIdFromUrl);
-        setIsJoiningAnonymously(true);
       } else if (roomIdFromUrl) {
         setTargetRoomId(roomIdFromUrl);
       } else if (subHeardFromUrl) {
@@ -373,6 +375,7 @@ export default function App() {
           joiningRoom={!!targetRoomId}
           onComplete={handleNicknameComplete}
           onForgotPassword={() => setShowPasswordReset(true)}
+          onJoinAnonymousLink={handleAnonymousJoin}
         />
         <Toaster />
       </>

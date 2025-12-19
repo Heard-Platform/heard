@@ -15,13 +15,18 @@ import { Code2, Copy, ArrowRight, RefreshCw } from "lucide-react";
 import { api } from "../../utils/api";
 import { DebateRoom } from "../../types";
 
-interface DevDebate extends DebateRoom {
+interface DevAnonDebate extends DebateRoom {
   invitePath: string;
+  anonymousLinkId: Required<DebateRoom>["anonymousLinkId"];
 }
 
-export function DevDebateListPanel() {
+interface DevDebateListPanelProps {
+  onJoinAnonymousLink: (anonymousLinkId: string) => void;
+}
+
+export function DevDebateListPanel({ onJoinAnonymousLink }: DevDebateListPanelProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [debates, setDebates] = useState<DevDebate[]>([]);
+  const [debates, setDebates] = useState<DevAnonDebate[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchDebates = async () => {
@@ -146,7 +151,10 @@ export function DevDebateListPanel() {
                     Copy Link
                   </Button>
                   <Button
-                    onClick={() => window.location.href = fullUrl}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onJoinAnonymousLink(debate.anonymousLinkId);
+                    }}
                     variant="outline"
                     size="sm"
                     className="flex-1"
