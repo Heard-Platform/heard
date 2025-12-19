@@ -12,12 +12,10 @@ import { saveDebateRoom } from "./debate-api.tsx";
 
 const app = new Hono();
 
-// Generate ID for new users
 const generateId = () => {
   return crypto.randomUUID();
 };
 
-// Utility functions
 export const getUserSession = async (
   userId: string,
 ): Promise<UserSession | null> => {
@@ -27,7 +25,6 @@ export const getUserSession = async (
     );
     if (!user) return null;
 
-    // Default isTestUser to false for existing users without this field
     if (user.isTestUser === undefined) {
       user.isTestUser = false;
     }
@@ -44,7 +41,6 @@ export const getUserSession = async (
 
 export const saveUserSession = async (session: UserSession) => {
   await kv.set(`user:${session.id}`, JSON.stringify(session));
-  // Also store by email for lookup
   await kv.set(`user_email:${session.email}`, session.id);
 };
 
@@ -66,6 +62,84 @@ const getUserByEmail = async (
     );
     return null;
   }
+};
+
+const validateAccountCredentials = (
+  nickname: string,
+  email: string,
+  password: string,
+): { error: string; status: number } | null => {
+  if (!nickname || nickname.length < 2 || nickname.length > 20) {
+    return {
+      error: "Nickname must be 2-20 characters",
+      status: 400,
+    };
+  }
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return {
+      error: "Valid email address is required",
+      status: 400,
+    };
+  }
+
+  if (!password || password.length < 6) {
+    return {
+      error: "Password must be at least 6 characters",
+      status: 400,
+    };
+  }
+
+  return null;
+};
+
+const processAccountSetup = async (
+  nickname: string,
+  email: string,
+  password: string,
+  existingUserId?: string,
+): Promise<{ user: Omit<UserSession, "passwordHash">; error?: never, status?: never } | { error: string; status: number; user?: never }> => {
+  const normalizedEmail = email.trim().toLowerCase();
+  
+  const existingUser = await getUserByEmail(normalizedEmail);
+  if (existingUser && existingUser.id !== existingUserId) {
+    return {
+      error: "An account with this email already exists",
+      status: 409,
+    };
+  }
+
+  const passwordHash = await hashPassword(password);
+
+  let userSession: UserSession;
+  
+  if (existingUserId) {
+    const user = await getUserSession(existingUserId);
+    if (!user) {
+      return { error: "User not found", status: 404 };
+    }
+    if (!user.isAnonymous) {
+      return { error: "User is already a full account", status: 400 };
+    }
+    
+    user.nickname = nickname.substring(0, 20);
+    user.email = normalizedEmail;
+    user.passwordHash = passwordHash;
+    user.isAnonymous = false;
+    user.lastActive = Date.now();
+    await saveUserSession(user);
+    userSession = user;
+  } else {
+    console.log(`Creating new user with password for email ${normalizedEmail}`);
+    userSession = await createUserAccount(nickname, normalizedEmail, passwordHash);
+  }
+
+  sendWelcomeEmail(userSession.email, userSession.nickname).catch((error) => {
+    console.error("Welcome email failed:", error);
+  });
+
+  const { passwordHash: _, ...userWithoutPassword } = userSession;
+  return { user: userWithoutPassword };
 };
 
 const createUserAccount = async (
@@ -94,7 +168,6 @@ const createUserAccount = async (
   return userSession;
 };
 
-// Email sending utility
 const sendEmail = async ({
   to,
   subject,
@@ -152,7 +225,6 @@ const sendEmail = async ({
   }
 };
 
-// Welcome email
 export const sendWelcomeEmail = async (
   email: string,
   nickname: string,
@@ -193,7 +265,6 @@ export const sendWelcomeEmail = async (
   });
 };
 
-// Password reset email
 const sendPasswordResetEmail = async (
   email: string,
   resetToken: string,
@@ -233,84 +304,24 @@ const sendPasswordResetEmail = async (
   });
 };
 
-// Sign up new user with password
 app.post(
   "/make-server-f1a393b4/auth/signup",
   async (c: any) => {
     try {
       const { nickname, email, password } = await c.req.json();
 
-      if (
-        !nickname ||
-        nickname.length < 2 ||
-        nickname.length > 20
-      ) {
-        return c.json(
-          { error: "Nickname must be 2-20 characters" },
-          400,
-        );
+      const validationError = validateAccountCredentials(nickname, email, password);
+      if (validationError) {
+        return c.json({ error: validationError.error }, validationError.status);
       }
 
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return c.json(
-          { error: "Valid email address is required" },
-          400,
-        );
+      const result = await processAccountSetup(nickname, email, password);
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status);
       }
-
-      if (!password || password.length < 6) {
-        return c.json(
-          { error: "Password must be at least 6 characters" },
-          400,
-        );
-      }
-
-      const normalizedEmail = email.trim().toLowerCase();
-
-      // Check if user already exists with this email
-      const existingUser =
-        await getUserByEmail(normalizedEmail);
-
-      if (existingUser) {
-        return c.json(
-          {
-            error: "An account with this email already exists",
-          },
-          409,
-        );
-      }
-
-      // Hash the password
-      const passwordHash = await hashPassword(password);
-
-      // Create new user
-      console.log(
-        `Creating new user with password for email ${normalizedEmail}`,
-      );
-      const userSession = await createUserAccount(
-        nickname,
-        normalizedEmail,
-        passwordHash,
-      );
-
-      // Send welcome email (don't block user creation if email fails)
-      sendWelcomeEmail(
-        userSession.email,
-        userSession.nickname,
-      ).catch((error) => {
-        console.error(
-          "Welcome email failed for user:",
-          userSession.id,
-          error,
-        );
-      });
-
-      // Return user without password hash
-      const { passwordHash: _, ...userWithoutPassword } =
-        userSession;
 
       return c.json({
-        user: userWithoutPassword,
+        user: result.user,
         isReturningUser: false,
       });
     } catch (error) {
@@ -320,7 +331,6 @@ app.post(
   },
 );
 
-// Sign in existing user
 app.post(
   "/make-server-f1a393b4/auth/signin",
   async (c: any) => {
@@ -336,7 +346,6 @@ app.post(
 
       const normalizedEmail = email.trim().toLowerCase();
 
-      // Get user by email
       const user = await getUserByEmail(normalizedEmail);
 
       if (!user) {
@@ -346,7 +355,6 @@ app.post(
         );
       }
 
-      // Check if user has a password hash
       if (!user.passwordHash) {
         return c.json(
           {
@@ -357,7 +365,6 @@ app.post(
         );
       }
 
-      // Verify password
       const isValid = await verifyPassword(
         password,
         user.passwordHash,
@@ -370,11 +377,9 @@ app.post(
         );
       }
 
-      // Update last active time
       user.lastActive = Date.now();
       await saveUserSession(user);
 
-      // Return user without password hash
       const { passwordHash: _, ...userWithoutPassword } = user;
 
       return c.json({
@@ -388,7 +393,39 @@ app.post(
   },
 );
 
-// Request password reset
+app.post(
+  "/make-server-f1a393b4/auth/setup-anon",
+  async (c: any) => {
+    try {
+      const { userId, nickname, email, password } = await c.req.json();
+
+      if (!userId) {
+        return c.json(
+          { error: "User ID is required" },
+          400,
+        );
+      }
+
+      const validationError = validateAccountCredentials(nickname, email, password);
+      if (validationError) {
+        return c.json({ error: validationError.error }, validationError.status);
+      }
+
+      const result = await processAccountSetup(nickname, email, password, userId);
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status);
+      }
+
+      return c.json({
+        user: result.user,
+      });
+    } catch (error) {
+      console.error("Error setting up anonymous user account:", error);
+      return c.json({ error: "Failed to setup account" }, 500);
+    }
+  },
+);
+
 app.post(
   "/make-server-f1a393b4/auth/forgot-password",
   async (c: any) => {
@@ -401,10 +438,8 @@ app.post(
 
       const normalizedEmail = email.trim().toLowerCase();
 
-      // Get user by email
       const user = await getUserByEmail(normalizedEmail);
 
-      // Don't reveal if user exists or not (security best practice)
       if (!user) {
         return c.json({
           success: true,
@@ -413,11 +448,9 @@ app.post(
         });
       }
 
-      // Generate reset token
       const resetToken = generateResetToken();
-      const expiresAt = Date.now() + 60 * 60 * 1000; // 1 hour from now
+      const expiresAt = Date.now() + 60 * 60 * 1000;
 
-      // Store reset token
       await kv.set(
         `password_reset:${resetToken}`,
         JSON.stringify({
@@ -426,7 +459,6 @@ app.post(
         }),
       );
 
-      // Send password reset email
       await sendPasswordResetEmail(normalizedEmail, resetToken);
 
       return c.json({
@@ -444,7 +476,6 @@ app.post(
   },
 );
 
-// Reset password with token
 app.post(
   "/make-server-f1a393b4/auth/reset-password",
   async (c: any) => {
@@ -465,7 +496,6 @@ app.post(
         );
       }
 
-      // Get reset token data
       const resetDataJson = await kv.get(
         `password_reset:${token}`,
       );
@@ -479,9 +509,7 @@ app.post(
 
       const resetData = JSON.parse(resetDataJson);
 
-      // Check if token is expired
       if (Date.now() > resetData.expiresAt) {
-        // Delete expired token
         await kv.del(`password_reset:${token}`);
         return c.json(
           {
@@ -492,21 +520,17 @@ app.post(
         );
       }
 
-      // Get user
       const user = await getUserByEmail(resetData.email);
 
       if (!user) {
         return c.json({ error: "User not found" }, 404);
       }
 
-      // Hash new password
       const passwordHash = await hashPassword(newPassword);
 
-      // Update user password
       user.passwordHash = passwordHash;
       await saveUserSession(user);
 
-      // Delete used reset token
       await kv.del(`password_reset:${token}`);
 
       console.log(

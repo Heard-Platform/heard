@@ -49,6 +49,7 @@ export interface UserSession {
   isTestUser?: boolean;
   isDeveloper?: boolean;
   createdAt: number;
+  isAnonymous?: boolean;
 }
 
 export type DebateMode = "realtime" | "host-controlled";

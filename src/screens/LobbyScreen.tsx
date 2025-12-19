@@ -17,6 +17,7 @@ import { FloatingCreateButton } from "../components/FloatingCreateButton";
 import { FloatingFeedbackButton } from "../components/FloatingFeedbackButton";
 import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
 import { SidePanelMenu } from "../components/SidePanelMenu";
+import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api } from "../utils/api";
 
 interface LobbyScreenProps {
@@ -58,7 +59,6 @@ interface LobbyScreenProps {
   onSubHeardChange?: (subHeard: string | null) => void;
   onGetRoomStatements: (roomId: string) => Promise<any[]>;
   onGetAllRoomStatements: () => Promise<Record<string, any[]>>;
-  targetRoomId?: string;
   onRoomCreated?: () => void;
 }
 
@@ -113,6 +113,7 @@ export function LobbyScreen({
   const [presences, setPresences] = useState<UserPresence[]>(
     [],
   );
+  const [showAccountSetupAnonModal, setShowAccountSetupAnonModal] = useState(false);
 
   // Sort rooms: target room first, then newest first
   const filteredRooms = activeRooms.sort((a, b) => {
@@ -153,7 +154,7 @@ export function LobbyScreen({
     }
 
     const handleResize = () => {
-      const viewportHeight = window.visualViewport.height;
+      const viewportHeight = window.visualViewport!.height;
       const currentWindowHeight = window.innerHeight;
       const initialWindowHeight =
         initialWindowHeightRef.current;
@@ -194,11 +195,11 @@ export function LobbyScreen({
     );
 
     return () => {
-      window.visualViewport.removeEventListener(
+      window.visualViewport!.removeEventListener(
         "resize",
         handleResize,
       );
-      window.visualViewport.removeEventListener(
+      window.visualViewport!.removeEventListener(
         "scroll",
         handleResize,
       );
@@ -221,7 +222,7 @@ export function LobbyScreen({
   // Poll for user presences
   useEffect(() => {
     const fetchPresences = async () => {
-      const response = await api.getActivePresences();
+      const response = await api.getActivePresences() as any;
       if (response.success && response.data) {
         const presenceData =
           response.data.data || response.data;
@@ -296,7 +297,7 @@ export function LobbyScreen({
     if (!user) return;
     
     try {
-      const response = await api.createAnonDebate(user.id);
+      const response = await api.createAnonDebate(user.id) as any;
       if (response.success && response.data) {
         await onRefreshRooms();
         alert(
@@ -314,9 +315,24 @@ export function LobbyScreen({
   };
 
   const handleOpenCreateSheet = () => {
-    setDiscussTopic(undefined);
-    setDiscussSubHeard(undefined);
-    setCreateRoomSheetOpen(true);
+    if (user?.isAnonymous) {
+      setShowAccountSetupAnonModal(true);
+    } else {
+      setDiscussTopic(undefined);
+      setDiscussSubHeard(undefined);
+      setCreateRoomSheetOpen(true);
+    }
+  };
+
+  const handleSetupAnonAccount = async (nickname: string, email: string, password: string) => {
+    if (!user) return;
+    
+    const response = await api.setupAnonymousUser(user.id, nickname, email, password);
+    if (response.success && response.data) {
+      window.location.reload();
+    } else {
+      throw new Error(response.error || "Failed to setup account");
+    }
   };
 
   const handleDiscussStatement = (
@@ -501,7 +517,7 @@ export function LobbyScreen({
       {/* Floating create button - hide when keyboard is open */}
       {!isKeyboardOpen && (
         <FloatingCreateButton
-          onPress={() => setCreateRoomSheetOpen(true)}
+          onPress={handleOpenCreateSheet}
         />
       )}
 
@@ -551,6 +567,14 @@ export function LobbyScreen({
           initialWindowHeight={initialWindowHeightRef.current}
         />
       )}
+
+      {/* Account Setup Modal */}
+      <AnonAccountSetupModal
+        featureText="creating debates"
+        isOpen={showAccountSetupAnonModal}
+        onSetupAnon={handleSetupAnonAccount}
+        onClose={() => setShowAccountSetupAnonModal(false)}
+      />
     </>
   );
 }

@@ -77,6 +77,13 @@ class ApiClient {
     });
   }
 
+  async setupAnonymousUser(userId: string, nickname: string, email: string, password: string) {
+    return this.request("/auth/setup-anon", {
+      method: "POST",
+      body: JSON.stringify({ userId, nickname, email, password }),
+    });
+  }
+
   async forgotPassword(email: string) {
     return this.request("/auth/forgot-password", {
       method: "POST",
