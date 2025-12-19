@@ -39,6 +39,13 @@ app.post(
         return c.json({ error: "User session not found" }, 404);
       }
 
+      if (user.isAnonymous) {
+        return c.json(
+          { error: "Anonymous users cannot create debates" },
+          403,
+        );
+      }
+
       // If creating a room in a sub-heard, create it if it doesn't exist or check membership if private
       if (subHeard) {
         const normalizedSubHeard = subHeard
