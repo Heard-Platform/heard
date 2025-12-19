@@ -268,6 +268,14 @@ export const RoomScroller = forwardRef<
                   <RoomCard
                     room={room}
                     statements={roomStatements[room.id] || []}
+                    isDeveloper={isDeveloper}
+                    isActive={index === currentIndex}
+                    currentUserId={currentUserId}
+                    currentSubHeard={currentSubHeard}
+                    loadingStatements={
+                      loadingRooms[room.id] || false
+                    }
+                    analysisRoomId={analysisRoomId}
                     onJoin={() => onJoinRoom(room.id)}
                     onSetInactive={
                       onSetRoomInactive
@@ -276,18 +284,10 @@ export const RoomScroller = forwardRef<
                     }
                     onSubmitStatement={onSubmitStatement}
                     onVoteOnStatement={onVoteOnStatement}
-                    isDeveloper={isDeveloper}
-                    isActive={index === currentIndex}
-                    currentUserId={currentUserId}
                     onRefreshStatements={() =>
                       refreshRoomStatements(room.id)
                     }
-                    currentSubHeard={currentSubHeard}
                     onDiscussStatement={onDiscussStatement}
-                    loadingStatements={
-                      loadingRooms[room.id] || false
-                    }
-                    analysisRoomId={analysisRoomId}
                   />
                 ) : null}
               </div>

@@ -18,11 +18,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import type {
-  DebateRoom,
-  Statement,
-  VoteType,
-} from "../utils/api";
 import { SwipeableStatementStack } from "./SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
@@ -31,6 +26,7 @@ import { ShareButton } from "./ShareButton";
 import { DebateAnalysisView } from "./DebateAnalysisView";
 import { useState, useEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
+import { DebateRoom, Statement, VoteType } from "../types";
 
 interface RoomCardProps {
   room: DebateRoom;
