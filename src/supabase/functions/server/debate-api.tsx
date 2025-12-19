@@ -1657,14 +1657,13 @@ app.get(
         rooms = rooms.filter((room) => {
           const shData = subHeardMap.get(room.subHeard);
           if (!shData) {
-            return false; // No sub-heard data found, exclude the room
+            return false;
           }
 
           if (!shData.isPrivate) {
-            return true; // Public sub-heard, include it
+            return true;
           }
 
-          // Private sub-heard - check if user is admin or member
           const isAdmin = shData.adminId === userId;
           const isMember = userMemberships.has(room.subHeard);
           return isAdmin || isMember;

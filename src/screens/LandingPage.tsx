@@ -37,11 +37,12 @@ export function LandingPage({
   if (showSignup) {
     return (
       <NicknameSetup
-        onComplete={onComplete}
-        onForgotPassword={onForgotPassword}
         loading={loading}
         error={error}
         joiningRoom={joiningRoom}
+        onForgotPassword={onForgotPassword}
+        onBack={() => setShowSignup(false)}
+        onComplete={onComplete}
       />
     );
   }

@@ -11,6 +11,7 @@ export interface UserSession {
   emailDigestsEnabled: boolean;
   passwordHash?: string;
   createdAt: number;
+  isAnonymous?: boolean;
 }
 
 export type VoteType =

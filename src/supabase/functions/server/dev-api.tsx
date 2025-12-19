@@ -104,13 +104,12 @@ app.post(
       user.currentRoomId = roomId;
       await saveUserSession(user);
 
-      const frontendUrl = getFrontendUrl();
-      const inviteLink = `${frontendUrl}/join/${anonymousLinkId}`;
+      const invitePath = `/join/${anonymousLinkId}`;
 
       return c.json({ 
         room: debateRoom, 
-        inviteLink,
-        message: `Anon-enabled debate created! Share: ${inviteLink}`,
+        invitePath,
+        message: `Anon-enabled debate created! Share: ${invitePath}`,
       });
     } catch (error) {
       console.error("Error creating anonymous debate:", error);
@@ -136,7 +135,7 @@ app.get(
         )
         .map((room) => ({
           ...room,
-          inviteLink: `${getFrontendUrl()}/join/${room.anonymousLinkId}`,
+          invitePath: `/join/${room.anonymousLinkId}`,
         }))
         .sort((a, b) => b.createdAt - a.createdAt);
 

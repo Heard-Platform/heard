@@ -10,27 +10,30 @@ import {
   LogIn,
   Eye,
   EyeOff,
+  ArrowLeft,
 } from "lucide-react";
 
 interface NicknameSetupProps {
+  loading?: boolean;
+  error?: string;
+  joiningRoom?: boolean;
+  onForgotPassword?: () => void;
+  onBack: () => void;
   onComplete: (
     nickname: string,
     email: string,
     password: string,
     isSignIn: boolean,
   ) => void;
-  onForgotPassword?: () => void;
-  loading?: boolean;
-  error?: string;
-  joiningRoom?: boolean;
 }
 
 export function NicknameSetup({
-  onComplete,
-  onForgotPassword,
   loading = false,
   error,
   joiningRoom = false,
+  onForgotPassword,
+  onBack,
+  onComplete,
 }: NicknameSetupProps) {
   const [mode, setMode] = useState<"signin" | "signup">(
     "signup",
@@ -109,6 +112,15 @@ export function NicknameSetup({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
+      <button
+        onClick={onBack}
+        disabled={loading}
+        className="fixed top-4 left-4 z-10 p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+        aria-label="Go back"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </button>
+      
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

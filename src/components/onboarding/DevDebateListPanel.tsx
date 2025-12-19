@@ -16,7 +16,7 @@ import { api } from "../../utils/api";
 import { DebateRoom } from "../../types";
 
 interface DevDebate extends DebateRoom {
-  inviteLink: string;
+  invitePath: string;
 }
 
 export function DevDebateListPanel() {
@@ -55,6 +55,11 @@ export function DevDebateListPanel() {
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleString();
+  };
+
+  const getFullUrl = (path: string) => {
+    const origin = window.location.origin;
+    return `${origin}${path}`;
   };
 
   return (
@@ -101,7 +106,9 @@ export function DevDebateListPanel() {
             </div>
           )}
 
-          {debates.map((debate) => (
+          {debates.map((debate) => {
+            const fullUrl = getFullUrl(debate.invitePath);
+            return (
             <div
               key={debate.id}
               className={`p-4 rounded-lg border ${
@@ -130,7 +137,7 @@ export function DevDebateListPanel() {
 
                 <div className="flex gap-2 mt-3">
                   <Button
-                    onClick={() => copyToClipboard(debate.inviteLink)}
+                    onClick={() => copyToClipboard(fullUrl)}
                     variant="outline"
                     size="sm"
                     className="flex-1"
@@ -139,7 +146,7 @@ export function DevDebateListPanel() {
                     Copy Link
                   </Button>
                   <Button
-                    onClick={() => window.location.href = debate.inviteLink}
+                    onClick={() => window.location.href = fullUrl}
                     variant="outline"
                     size="sm"
                     className="flex-1"
@@ -150,11 +157,12 @@ export function DevDebateListPanel() {
                 </div>
 
                 <div className="mt-2 p-2 bg-gray-100 rounded text-xs font-mono break-all">
-                  {debate.inviteLink}
+                  {fullUrl}
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </SheetContent>
     </Sheet>

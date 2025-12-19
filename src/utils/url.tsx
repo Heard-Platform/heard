@@ -35,6 +35,10 @@ export const parseSubHeardFromUrl = (): string | null => {
   return parseFromUrl('h')
 }
 
+export const parseAnonymousLinkIdFromUrl = (): string | null => {
+  return parseFromUrl('join');
+}
+
 export const createShareableLink = (roomId: string): string => {
   if (typeof window === 'undefined') return ''
   

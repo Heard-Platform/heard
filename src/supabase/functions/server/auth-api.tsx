@@ -1,14 +1,14 @@
-// @ts-ignore
-import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import {
   hashPassword,
   verifyPassword,
   generateResetToken,
 } from "./password-utils.tsx";
-import { getParsedKvData } from "./kv-utils.tsx";
+import { getAllDebates, getParsedKvData } from "./kv-utils.tsx";
 import { getFrontendUrl } from "./utils.tsx";
 import type { UserSession } from "./types.tsx";
+import { Hono } from "npm:hono";
+import { saveDebateRoom } from "./debate-api.tsx";
 
 const app = new Hono();
 
@@ -66,6 +66,32 @@ const getUserByEmail = async (
     );
     return null;
   }
+};
+
+const createUserAccount = async (
+  nickname: string,
+  email: string,
+  passwordHash: string,
+  isAnonymous: boolean = false,
+): Promise<UserSession> => {
+  const userId = generateId();
+  const userSession: UserSession = {
+    id: userId,
+    nickname: nickname.substring(0, 20),
+    email: email.trim().toLowerCase(),
+    score: 0,
+    streak: 0,
+    lastActive: Date.now(),
+    isTestUser: false,
+    isDeveloper: false,
+    emailDigestsEnabled: !isAnonymous,
+    passwordHash,
+    createdAt: Date.now(),
+    isAnonymous,
+  };
+
+  await saveUserSession(userSession);
+  return userSession;
 };
 
 // Email sending utility
@@ -261,21 +287,11 @@ app.post(
       console.log(
         `Creating new user with password for email ${normalizedEmail}`,
       );
-      const userId = generateId();
-      const userSession: UserSession = {
-        id: userId,
-        nickname: nickname.substring(0, 20),
-        email: normalizedEmail,
-        score: 0,
-        streak: 0,
-        lastActive: Date.now(),
-        isTestUser: false,
-        isDeveloper: false,
+      const userSession = await createUserAccount(
+        nickname,
+        normalizedEmail,
         passwordHash,
-        createdAt: Date.now(),
-      };
-
-      await saveUserSession(userSession);
+      );
 
       // Send welcome email (don't block user creation if email fails)
       sendWelcomeEmail(
@@ -284,7 +300,7 @@ app.post(
       ).catch((error) => {
         console.error(
           "Welcome email failed for user:",
-          userId,
+          userSession.id,
           error,
         );
       });
@@ -504,6 +520,80 @@ app.post(
     } catch (error) {
       console.error("Error resetting password:", error);
       return c.json({ error: "Failed to reset password" }, 500);
+    }
+  },
+);
+
+app.post(
+  "/make-server-f1a393b4/auth/join-anonymous-link",
+  async (c: any) => {
+    try {
+      const { anonymousLinkId } = await c.req.json();
+
+      if (!anonymousLinkId) {
+        return c.json({ error: "Anonymous link ID is required" }, 400);
+      }
+
+      const allDebates = await getAllDebates();
+      const debate = allDebates.find(
+        (room) => room.anonymousLinkId === anonymousLinkId
+      );
+
+      if (!debate) {
+        return c.json({ error: "Debate not found for this link" }, 404);
+      }
+
+      if (!debate.allowAnonymous) {
+        return c.json({ error: "This debate does not allow anonymous participants" }, 403);
+      }
+
+      const userId = generateId();
+      const anonymousNickname = `AnonUser${userId.slice(0, 5)}`;
+      const anonymousEmail = `anon-${userId}@heard.anonymous`;
+      const randomPassword = generateId();
+
+      const passwordHash = await hashPassword(randomPassword);
+
+      console.log(
+        `Creating anonymous user ${userId} via link ${anonymousLinkId} for debate ${debate.id}`,
+      );
+      const userSession = await createUserAccount(
+        anonymousNickname,
+        anonymousEmail,
+        passwordHash,
+        true,
+      );
+
+      if (!debate.participants.includes(userSession.id)) {
+        debate.participants.push(userSession.id);
+        await saveDebateRoom(debate);
+      }
+
+      userSession.currentRoomId = debate.id;
+      await saveUserSession(userSession);
+
+      if (debate.subHeard) {
+        const membershipKey = `subheard_member:${userSession.id}:${debate.subHeard}`;
+        const membershipData = {
+          userId: userSession.id,
+          subHeard: debate.subHeard,
+          joinedAt: Date.now(),
+        };
+        await kv.set(membershipKey, JSON.stringify(membershipData));
+        console.log(`Added anonymous user ${userSession.id} to subHeard ${debate.subHeard}`);
+      }
+
+      const { passwordHash: _, ...userWithoutPassword } = userSession;
+
+      return c.json({
+        user: userWithoutPassword,
+        roomId: debate.id,
+        subHeard: debate.subHeard || null,
+        isReturningUser: false,
+      });
+    } catch (error) {
+      console.error("Error joining via anonymous link:", error);
+      return c.json({ error: "Failed to join via anonymous link" }, 500);
     }
   },
 );

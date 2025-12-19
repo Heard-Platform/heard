@@ -1,3 +1,6 @@
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { LandingPage } from "./screens/LandingPage";
@@ -10,7 +13,7 @@ import { AdminDashboard } from "./components/AdminDashboard";
 import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-import { api } from "./utils/api";
+import { api, setUserId } from "./utils/api";
 import type { NewDebateRoom, DebateRoom } from "./types";
 import {
   parseRoomIdFromUrl,
@@ -19,6 +22,7 @@ import {
   clearRoomFromUrl,
   parseAnalysisRoomIdFromUrl,
   updateUrlForDevTools,
+  parseAnonymousLinkIdFromUrl,
 } from "./utils/url";
 
 function getStoredDashboardState(): boolean {
@@ -39,6 +43,7 @@ export default function App() {
     string | null
   >(null);
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
+  const [isJoiningAnonymously, setIsJoiningAnonymously] = useState(false);
   const [showComponentShowcase, setShowComponentShowcase] =
     useState(() => {
       try {
@@ -105,6 +110,25 @@ export default function App() {
     }
   };
 
+  const handleAnonymousJoin = async (anonymousLinkIdFromUrl: string) => {
+  try {
+    const response = await api.joinViaAnonymousLink(anonymousLinkIdFromUrl) as any;
+    if (response.success && response.data) {
+      const { user: anonUser, roomId, subHeard } = response.data;
+      setUserId(anonUser.id);
+      await initializeUser("", "", "", false);
+      if (subHeard) {
+        setCurrentSubHeard(subHeard);
+      }
+      setTargetRoomId(roomId);
+    } else {
+      console.error("Failed to join via anonymous link:", response.error);
+    }
+  } catch (error) {
+    console.error("Error joining via anonymous link:", error);
+  }
+};
+
   const handleCreateRoom = async (
     newDebate: NewDebateRoom,
   ): Promise<DebateRoom> => {
@@ -144,6 +168,7 @@ export default function App() {
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl =
         parseAnalysisRoomIdFromUrl();
+      const anonymousLinkIdFromUrl = parseAnonymousLinkIdFromUrl();
 
       if (analysisRoomIdFromUrl) {
         setAnalysisRoomId(analysisRoomIdFromUrl);
@@ -158,6 +183,9 @@ export default function App() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
+      } else if (anonymousLinkIdFromUrl) {
+        handleAnonymousJoin(anonymousLinkIdFromUrl);
+        setIsJoiningAnonymously(true);
       } else if (roomIdFromUrl) {
         setTargetRoomId(roomIdFromUrl);
       } else if (subHeardFromUrl) {
@@ -205,9 +233,11 @@ export default function App() {
           ) {
             setCurrentSubHeard(roomData.subHeard);
           }
+          setIsJoiningAnonymously(false);
         } else {
           setTargetRoomId(null);
           clearRoomFromUrl();
+          setIsJoiningAnonymously(false);
         }
       };
       autoJoinRoom();
@@ -318,7 +348,7 @@ export default function App() {
 
   const showNicknameSetup = !user;
 
-  if (loading) {
+  if (loading || isJoiningAnonymously) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
         <motion.div

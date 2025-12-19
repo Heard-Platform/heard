@@ -286,6 +286,13 @@ class ApiClient {
     });
   }
 
+  async joinViaAnonymousLink(anonymousLinkId: string) {
+    return this.request("/auth/join-anonymous-link", {
+      method: "POST",
+      body: JSON.stringify({ anonymousLinkId }),
+    });
+  }
+
   // Admin methods (require X-Admin-Key header)
   async adminGetUsers(adminKey: string) {
     return this.request("/admin/users", {
