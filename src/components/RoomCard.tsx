@@ -26,7 +26,11 @@ import { ShareButton } from "./ShareButton";
 import { DebateAnalysisView } from "./DebateAnalysisView";
 import { useState, useEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
+import { ANONYMOUS_VOTING_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType } from "../types";
+
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -47,11 +51,9 @@ interface RoomCardProps {
     statementId: string,
     voteType: VoteType,
   ) => Promise<any>;
-  onRefreshStatements?: () => Promise<void>;
-  onDiscussStatement?: (
-    statementText: string,
-    subHeard?: string,
-  ) => void;
+  onRefreshStatements: () => Promise<void>;
+  onDiscussStatement: (statementText: string, subHeard?: string) => void;
+  onShowAccountSetupModal: (featureText: string) => void;
 }
 
 export function RoomCard({
@@ -69,6 +71,7 @@ export function RoomCard({
   onVoteOnStatement,
   onRefreshStatements,
   onDiscussStatement,
+  onShowAccountSetupModal,
 }: RoomCardProps) {
   const [showAnalysis, setShowAnalysis] = useState(false);
 
@@ -119,9 +122,18 @@ export function RoomCard({
         voteType,
       );
       return result as Statement;
-    } catch (error) {
-      console.error("Error voting on statement:", error);
-      return null;
+    } catch (error: any) {
+      if (error.message === ANONYMOUS_VOTING_NOT_ALLOWED_ERROR) {
+        onShowAccountSetupModal("voting in this debate");
+        toast.error("⚠️ This discussion requires an account.");
+      } else {
+        toast.error(
+          "⚠️ Your vote couldn't be saved. Please try again.",
+          { duration: 3000 },
+        );
+        console.error("Error voting on statement:", error);
+      }
+      throw error;
     }
   };
 
@@ -185,14 +197,14 @@ export function RoomCard({
                         variant="ghost"
                         size="icon"
                         className="w-6 h-6 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-0"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
                       >
                         <Settings className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
-                        onClick={async (e) => {
+                        onClick={async (e: React.MouseEvent) => {
                           e.stopPropagation();
                           await onSetInactive();
                         }}
@@ -346,7 +358,7 @@ export function RoomCard({
                       statements={statements}
                       currentUserId={currentUserId}
                       debateTitle={room.topic}
-                      onChangeVote={handleVote}
+                      onChangeVote={handleVote as any}
                     />
                     {/* New Statement Input */}
                     {currentUserId && (
@@ -367,6 +379,7 @@ export function RoomCard({
                   onVote={handleVote}
                   currentUserId={currentUserId}
                   onSubmitStatement={handleSubmitStatement}
+                  onShowAccountSetupModal={onShowAccountSetupModal}
                 />
               );
             })()

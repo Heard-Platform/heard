@@ -5,12 +5,14 @@ import {
   useTransform,
   PanInfo,
 } from "motion/react";
-import { toast } from "sonner@2.0.3";
 import type { Statement, VoteType } from "../types";
 import { NewStatementInput } from "./NewStatementInput";
 import { getPastelColor } from "../utils/colors";
 import { SwipeIndicator } from "./SwipeIndicators";
 import { SwipeInstructions } from "./SwipeInstructions";
+
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
 
 interface SwipeableStatementStackProps {
   statements: Statement[];
@@ -19,7 +21,7 @@ interface SwipeableStatementStackProps {
     voteType: VoteType,
   ) => Promise<Statement | null>;
   currentUserId?: string;
-  onSubmitStatement?: (text: string) => Promise<void>;
+  onSubmitStatement: (text: string) => Promise<void>;
 }
 
 const SWIPE_THRESHOLD = 100;
@@ -171,16 +173,7 @@ export function SwipeableStatementStack({
       }
     }
 
-    onVote(statementId, voteType).catch((error) => {
-      console.error("Error voting:", error);
-
-      toast.error(
-        "⚠️ Your vote couldn't be saved. Please try again.",
-        {
-          duration: 3000,
-        },
-      );
-
+    onVote(statementId, voteType).catch(() => {
       setVotedStatementIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(statementId);

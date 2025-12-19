@@ -12,6 +12,7 @@ import type {
   NewDebateRoom,
   Statement,
 } from "../types";
+import { ANONYMOUS_VOTING_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 
 export function useDebateSession() {
   const [user, setUser] = useState<UserSession | null>(null);
@@ -245,7 +246,9 @@ export function useDebateSession() {
       } else {
         const errorMsg =
           response.error || "Failed to vote on statement";
-        setError(errorMsg);
+        if (errorMsg !== ANONYMOUS_VOTING_NOT_ALLOWED_ERROR) {
+          setError(errorMsg);
+        }
         throw new Error(errorMsg);
       }
     },

@@ -38,7 +38,7 @@ interface RoomScrollerProps {
     statementId: string,
     voteType: VoteType,
   ) => Promise<any>;
-  onDiscussStatement?: (
+  onDiscussStatement: (
     statementText: string,
     subHeard?: string,
   ) => void;
@@ -50,6 +50,7 @@ interface RoomScrollerProps {
     userId: string,
     currentRoomIndex: number,
   ) => void;
+  onShowAccountSetupModal: (featureText: string) => void;
 }
 
 export interface RoomScrollerRef {
@@ -79,6 +80,7 @@ export const RoomScroller = forwardRef<
       analysisRoomId,
       presences,
       onUpdatePresence,
+      onShowAccountSetupModal,
     },
     ref,
   ) => {
@@ -285,6 +287,7 @@ export const RoomScroller = forwardRef<
                       refreshRoomStatements(room.id)
                     }
                     onDiscussStatement={onDiscussStatement}
+                    onShowAccountSetupModal={onShowAccountSetupModal}
                   />
                 ) : null}
               </div>

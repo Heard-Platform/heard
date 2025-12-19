@@ -1305,6 +1305,17 @@ app.post(
 
       // Auto-join user to room if they're not already a participant
       const room = await getDebateRoom(statement.roomId);
+
+      if (user.isAnonymous && room && !room.allowAnonymous) {
+        return c.json(
+          {
+            error: "ANONYMOUS_VOTING_NOT_ALLOWED",
+            message: "This debate doesn't allow anonymous voting",
+          },
+          403,
+        );
+      }
+
       if (room && !room.participants.includes(userId)) {
         room.participants.push(userId);
         await saveDebateRoom(room);

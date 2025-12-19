@@ -114,6 +114,7 @@ export function LobbyScreen({
     [],
   );
   const [showAccountSetupAnonModal, setShowAccountSetupAnonModal] = useState(false);
+  const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
 
   // Sort rooms: target room first, then newest first
   const filteredRooms = activeRooms.sort((a, b) => {
@@ -317,6 +318,7 @@ export function LobbyScreen({
   const handleOpenCreateSheet = () => {
     if (user?.isAnonymous) {
       setShowAccountSetupAnonModal(true);
+      setAccountSetupFeatureText("creating debates");
     } else {
       setDiscussTopic(undefined);
       setDiscussSubHeard(undefined);
@@ -511,6 +513,10 @@ export function LobbyScreen({
           onGetRoomStatements={onGetRoomStatements}
           onGetAllRoomStatements={onGetAllRoomStatements}
           onUpdatePresence={handleUpdatePresence}
+          onShowAccountSetupModal={(featureText) => {
+            setAccountSetupFeatureText(featureText);
+            setShowAccountSetupAnonModal(true);
+          }}
         />
       </div>
 
@@ -570,7 +576,7 @@ export function LobbyScreen({
 
       {/* Account Setup Modal */}
       <AnonAccountSetupModal
-        featureText="creating debates"
+        featureText={accountSetupFeatureText}
         isOpen={showAccountSetupAnonModal}
         onSetupAnon={handleSetupAnonAccount}
         onClose={() => setShowAccountSetupAnonModal(false)}
