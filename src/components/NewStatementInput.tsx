@@ -31,11 +31,23 @@ export function NewStatementInput({
   };
 
   const handleSubmitStatement = async () => {
-    if (!newStatementText.trim()) return;
+    const trimmedText = newStatementText.trim();
+    
+    if (!trimmedText) return;
+
+    if (trimmedText.length < 5) {
+      toast.error("Statement must be at least 5 characters");
+      return;
+    }
+
+    if (trimmedText.length > 500) {
+      toast.error("Statement must be 500 characters or less");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      await onSubmitStatement(newStatementText.trim());
+      await onSubmitStatement(trimmedText);
       setNewStatementText("");
       toast.success("Statement submitted!");
     } catch (error) {
@@ -48,19 +60,25 @@ export function NewStatementInput({
 
   return (
     <div className="flex gap-2">
-      <Input
-        value={newStatementText}
-        onChange={(e) => handleInputChange(e.target.value)}
-        placeholder="Add your own statement..."
-        disabled={isSubmitting}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSubmitStatement();
-          }
-        }}
-        className="flex-1"
-      />
+      <div className="flex-1 relative">
+        <Input
+          value={newStatementText}
+          onChange={(e) => handleInputChange(e.target.value)}
+          placeholder="Add your own statement..."
+          disabled={isSubmitting}
+          maxLength={500}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmitStatement();
+            }
+          }}
+          className="pr-16"
+        />
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">
+          {newStatementText.length}/500
+        </div>
+      </div>
       <Button
         onClick={handleSubmitStatement}
         disabled={isSubmitting || !newStatementText.trim()}
