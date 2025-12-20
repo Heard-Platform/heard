@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
-import { Sparkles, MessageCircle, Edit2, Trash2, CheckCircle2, Image as ImageIcon, Loader2, Check } from "lucide-react";
+import { Checkbox } from "../ui/checkbox";
+import { Sparkles, MessageCircle, Edit2, Trash2, CheckCircle2, Image as ImageIcon, Loader2, Check, UserCheck } from "lucide-react";
 import { motion } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
 
@@ -11,9 +12,11 @@ interface ReviewExtractionStepProps {
   statements: string[];
   isUploadingImage?: boolean;
   uploadedImageUrl?: string | null;
+  allowAnonymousVoting: boolean;
   onTopicChange: (topic: string) => void;
   onStatementsChange: (statements: string[]) => void;
   onImageUpload?: (file: File) => void;
+  onAllowAnonymousVotingChange: (value: boolean) => void;
 }
 
 export function ReviewExtractionStep({
@@ -21,9 +24,11 @@ export function ReviewExtractionStep({
   statements,
   isUploadingImage,
   uploadedImageUrl,
+  allowAnonymousVoting,
   onTopicChange,
   onStatementsChange,
   onImageUpload,
+  onAllowAnonymousVotingChange,
 }: ReviewExtractionStepProps) {
   const [editingStatementIndex, setEditingStatementIndex] = useState<number | null>(null);
 
@@ -229,6 +234,29 @@ export function ReviewExtractionStep({
               <p className="text-sm">No statements yet</p>
             </div>
           )}
+        </div>
+      </FunSheetCard>
+
+      {/* Allow Anonymous Voting */}
+      <FunSheetCard delay={0.3}>
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="allow-anon"
+              checked={allowAnonymousVoting}
+              onCheckedChange={(checked: boolean) => onAllowAnonymousVotingChange(checked === true)}
+              className="mt-1"
+            />
+            <div className="flex-1">
+              <Label htmlFor="allow-anon" className="text-base text-slate-700 flex items-center gap-2 cursor-pointer">
+                <UserCheck className="w-5 h-5 text-blue-500" />
+                Allow Anonymous Participation
+              </Label>
+              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                This encourages rapid participation by making it so people with the link can vote and post the moment they click the link, without being asked to create an account.
+              </p>
+            </div>
+          </div>
         </div>
       </FunSheetCard>
     </>

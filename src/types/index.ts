@@ -78,7 +78,7 @@ export interface DebateRoom {
 
 export type NewDebateRoom = Pick<
   DebateRoom,
-  "topic" | "subHeard"
+  "topic" | "subHeard" | "allowAnonymous"
 > & {
   seedStatements?: string[];
   imageUrl?: string;

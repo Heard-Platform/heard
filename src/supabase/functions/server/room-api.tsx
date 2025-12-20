@@ -25,6 +25,7 @@ app.post(
         subHeard,
         seedStatements, // Optional array of seed statement strings
         imageUrl, // Optional cover image URL
+        allowAnonymous,
       } = await c.req.json();
 
       if (!topic || topic.length < 10) {
@@ -118,6 +119,7 @@ app.post(
           : undefined,
         endTime: Date.now() + 7 * 24 * 60 * 60 * 1000, // Realtime debates end in 1 week
         imageUrl, // Add cover image URL if provided
+        allowAnonymous: !!allowAnonymous,
       };
 
       await saveDebateRoom(debateRoom);

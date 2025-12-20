@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   PartyPopper,
 } from "lucide-react";
-import { toast } from "sonner@2.0.3";
 import type { NewDebateRoom, DebateRoom } from "../types";
 import { FunSheet } from "./FunSheet";
 import {
@@ -18,6 +17,9 @@ import {
 } from "./create-room";
 import { normalizeSubHeardName } from "../utils/subheard";
 import { api } from "../utils/api";
+
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
 
 interface CreateRoomSheetProps {
   open: boolean;
@@ -72,6 +74,7 @@ export function CreateRoomSheet({
   const [debateId, setDebateId] = useState<string | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [allowAnonymousVoting, setAllowAnonymousVoting] = useState(false);
 
   const isRantValid = rant.trim().length >= 50;
   const remainingChars = 50 - rant.trim().length;
@@ -150,6 +153,7 @@ export function CreateRoomSheet({
         subHeard: communityName,
         seedStatements: editedStatements,
         imageUrl: uploadedImageUrl || undefined,
+        allowAnonymous: allowAnonymousVoting,
       });
 
       setDebateId(result.id);
@@ -308,9 +312,11 @@ export function CreateRoomSheet({
           statements={editedStatements}
           isUploadingImage={isUploadingImage}
           uploadedImageUrl={uploadedImageUrl}
+          allowAnonymousVoting={allowAnonymousVoting}
           onTopicChange={setEditedTopic}
           onStatementsChange={setEditedStatements}
           onImageUpload={handleImageUpload}
+          onAllowAnonymousVotingChange={setAllowAnonymousVoting}
         />
       )}
 
