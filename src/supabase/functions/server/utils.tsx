@@ -4,6 +4,6 @@ export const generateId = () =>
 
 export const getFrontendUrl = (): string => {
   return (
-    Deno.env.get("FRONTEND_URL") || "https://app.heard-now.com"
+    Deno.env.get("FRONTEND_URL") || "https://heard-now.com"
   );
 };
