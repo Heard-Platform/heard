@@ -21,6 +21,7 @@ import {
   Brain,
   Clock,
   Link2,
+  AlertCircle,
 } from "lucide-react";
 import type { UserSession } from "../types";
 
@@ -38,6 +39,7 @@ interface SidePanelMenuProps {
   onCreateRantTestRoom?: () => void;
   onCreateRealtimeTestRoom?: () => void;
   onCreateAnonDebate?: () => void;
+  onShowAccountSetupModal: (featureText: string) => void;
 }
 
 export function SidePanelMenu({
@@ -54,6 +56,7 @@ export function SidePanelMenu({
   onCreateRantTestRoom,
   onCreateRealtimeTestRoom,
   onCreateAnonDebate,
+  onShowAccountSetupModal,
 }: SidePanelMenuProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -88,6 +91,32 @@ export function SidePanelMenu({
               Score: {user.score}
             </p>
           </div>
+
+          {user.isAnonymous && (
+            <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-start gap-2 mb-3">
+                <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-orange-800 font-medium text-sm">
+                    Your score won't be saved
+                  </p>
+                  <p className="text-orange-700 text-xs mt-1">
+                    Setup an account to keep your progress and unlock more features
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => {
+                  setMenuOpen(false);
+                  onShowAccountSetupModal("saving your progress");
+                }}
+                size="sm"
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                Setup Account
+              </Button>
+            </div>
+          )}
 
           <Button
             onClick={onLogout}

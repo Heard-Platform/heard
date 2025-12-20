@@ -494,6 +494,7 @@ export function LobbyScreen({
                 onCreateRantTestRoom={onCreateRantTestRoom ? handleCreateRantTestRoom : undefined}
                 onCreateRealtimeTestRoom={onCreateRealtimeTestRoom ? handleCreateRealtimeTestRoom : undefined}
                 onCreateAnonDebate={handleCreateAnonDebate}
+                onShowAccountSetupModal={handleShowAccountSetupModal}
               />
             )}
           </div>
