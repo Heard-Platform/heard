@@ -210,7 +210,7 @@ export function VineNavigator({
               damping: 20,
               mass: 1.2,
             }}
-            className="absolute z-20"
+            className="absolute z-20 pointer-events-auto"
             style={{
               width: 45,
               height: 52.5,
@@ -234,7 +234,10 @@ export function VineNavigator({
                 duration: 2,
                 repeat: Infinity,
               }}
-              onClick={() => setShowMonkeyInfo(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMonkeyInfo(true);
+              }}
               whileTap={{ scale: 0.95 }}
             />
           </motion.div>
