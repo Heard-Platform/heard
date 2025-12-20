@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { UserPresence } from "../types";
+import { MonkeyInfoModal } from "./MonkeyInfoModal";
 
 // @ts-ignore
 import monkeyImg from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
-import { UserPresence } from "../types";
 
 interface VineNavigatorProps {
   totalCards: number;
@@ -33,6 +34,7 @@ export function VineNavigator({
   const [otherMonkeyOffsets, setOtherMonkeyOffsets] = useState<
     Record<string, number>
   >({});
+  const [showMonkeyInfo, setShowMonkeyInfo] = useState(false);
 
   const vineHeight = totalCards * window.innerHeight;
 
@@ -219,7 +221,7 @@ export function VineNavigator({
             <motion.img
               src={monkeyImg}
               alt="Monkey Avatar"
-              className="w-full h-full object-contain drop-shadow-lg"
+              className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
               style={{ scaleX: -1, opacity: 1 }}
               animate={{
                 filter: [
@@ -232,6 +234,8 @@ export function VineNavigator({
                 duration: 2,
                 repeat: Infinity,
               }}
+              onClick={() => setShowMonkeyInfo(true)}
+              whileTap={{ scale: 0.95 }}
             />
           </motion.div>
         )}
@@ -281,6 +285,7 @@ export function VineNavigator({
                     style={{ scaleX: -1 }}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowMonkeyInfo(true)}
                   />
 
                   <div className="absolute -right-2 top-1/2 transform translate-x-full -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
@@ -294,6 +299,13 @@ export function VineNavigator({
           })}
         </AnimatePresence>
       </div>
+
+      {showMonkeyInfo && (
+        <MonkeyInfoModal
+          isOpen={showMonkeyInfo}
+          onClose={() => setShowMonkeyInfo(false)}
+        />
+      )}
     </div>
   );
 }

@@ -123,6 +123,7 @@
     --color-emerald-50: oklch(.979 .021 166.113);
     --color-emerald-100: oklch(.95 .052 163.051);
     --color-emerald-200: oklch(.905 .093 164.15);
+    --color-emerald-400: oklch(.765 .177 163.223);
     --color-emerald-500: oklch(.696 .17 162.48);
     --color-emerald-600: oklch(.596 .145 163.225);
     --color-emerald-700: oklch(.508 .118 165.612);
@@ -1094,6 +1095,10 @@
     height: calc(var(--spacing) * 24);
   }
 
+  .h-28 {
+    height: calc(var(--spacing) * 28);
+  }
+
   .h-32 {
     height: calc(var(--spacing) * 32);
   }
@@ -1304,6 +1309,10 @@
 
   .w-80 {
     width: calc(var(--spacing) * 80);
+  }
+
+  .w-\[90\%\] {
+    width: 90%;
   }
 
   .w-fit {
@@ -2193,6 +2202,16 @@
     background-color: var(--color-white);
   }
 
+  .bg-white\/20 {
+    background-color: #fff3;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-white\/20 {
+      background-color: color-mix(in oklab, var(--color-white) 20%, transparent);
+    }
+  }
+
   .bg-white\/50 {
     background-color: #ffffff80;
   }
@@ -2337,6 +2356,11 @@
 
   .from-green-100 {
     --tw-gradient-from: var(--color-green-100);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+
+  .from-green-400 {
+    --tw-gradient-from: var(--color-green-400);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
 
@@ -2562,6 +2586,12 @@
 
   .via-emerald-50 {
     --tw-gradient-via: var(--color-emerald-50);
+    --tw-gradient-via-stops: var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-via) var(--tw-gradient-via-position), var(--tw-gradient-to) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-via-stops);
+  }
+
+  .via-emerald-400 {
+    --tw-gradient-via: var(--color-emerald-400);
     --tw-gradient-via-stops: var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-via) var(--tw-gradient-via-position), var(--tw-gradient-to) var(--tw-gradient-to-position);
     --tw-gradient-stops: var(--tw-gradient-via-stops);
   }
@@ -3128,6 +3158,10 @@
 
   .pt-6 {
     padding-top: calc(var(--spacing) * 6);
+  }
+
+  .pt-8 {
+    padding-top: calc(var(--spacing) * 8);
   }
 
   .pt-20 {
@@ -4211,6 +4245,18 @@
   }
 
   @media (hover: hover) {
+    .hover\:bg-white\/30:hover {
+      background-color: #ffffff4d;
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-white\/30:hover {
+        background-color: color-mix(in oklab, var(--color-white) 30%, transparent);
+      }
+    }
+  }
+
+  @media (hover: hover) {
     .hover\:bg-yellow-50:hover {
       background-color: var(--color-yellow-50);
     }
@@ -4225,6 +4271,13 @@
   @media (hover: hover) {
     .hover\:from-blue-100:hover {
       --tw-gradient-from: var(--color-blue-100);
+      --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:from-green-500:hover {
+      --tw-gradient-from: var(--color-green-500);
       --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
     }
   }
@@ -4253,6 +4306,13 @@
   @media (hover: hover) {
     .hover\:to-blue-700:hover {
       --tw-gradient-to: var(--color-blue-700);
+      --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:to-emerald-600:hover {
+      --tw-gradient-to: var(--color-emerald-600);
       --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
     }
   }
