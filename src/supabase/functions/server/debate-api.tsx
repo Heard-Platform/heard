@@ -1073,6 +1073,16 @@ app.post(
         return c.json({ error: "User session not found" }, 404);
       }
 
+      if (user.isAnonymous && !room.allowAnonymous) {
+        return c.json(
+          { 
+            error: ANONYMOUS_ACTION_NOT_ALLOWED_ERROR,
+            message: "This debate does not allow anonymous users to submit statements."
+          },
+          403
+        );
+      }
+
       // Auto-join user to room if they're not already a participant
       if (!room.participants.includes(userId)) {
         room.participants.push(userId);
