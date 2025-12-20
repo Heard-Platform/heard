@@ -27,7 +27,7 @@ import { DebateAnalysisView } from "./DebateAnalysisView";
 import { useState, useEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
-import { DebateRoom, Statement, VoteType } from "../types";
+import { DebateRoom, Statement, VoteType, UserSession } from "../types";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -38,7 +38,7 @@ interface RoomCardProps {
   loadingStatements: boolean;
   isDeveloper: boolean;
   isActive: boolean;
-  currentUserId?: string;
+  user: UserSession | null;
   currentSubHeard?: string;
   analysisRoomId?: string;
   onJoin: () => void;
@@ -62,7 +62,7 @@ export function RoomCard({
   loadingStatements,
   isDeveloper,
   isActive,
-  currentUserId,
+  user,
   currentSubHeard,
   analysisRoomId,
   onJoin,
@@ -74,6 +74,8 @@ export function RoomCard({
   onShowAccountSetupModal,
 }: RoomCardProps) {
   const [showAnalysis, setShowAnalysis] = useState(false);
+
+  const currentUserId = user?.id;
 
   useEffect(() => {
     if (analysisRoomId === room.id) {
@@ -366,6 +368,9 @@ export function RoomCard({
                         onSubmitStatement={
                           handleSubmitStatement
                         }
+                        allowAnonymous={!!room.allowAnonymous}
+                        isAnonymous={!!user?.isAnonymous}
+                        onShowAccountSetupModal={onShowAccountSetupModal}
                       />
                     )}
                   </div>
@@ -379,6 +384,9 @@ export function RoomCard({
                   onVote={handleVote}
                   currentUserId={currentUserId}
                   onSubmitStatement={handleSubmitStatement}
+                  allowAnonymous={!!room.allowAnonymous}
+                  isAnonymous={!!user?.isAnonymous}
+                  onShowAccountSetupModal={onShowAccountSetupModal}
                 />
               );
             })()
@@ -401,6 +409,9 @@ export function RoomCard({
                   {currentUserId && !isCompleted && (
                     <NewStatementInput
                       onSubmitStatement={handleSubmitStatement}
+                      allowAnonymous={!!room.allowAnonymous}
+                      isAnonymous={!!user?.isAnonymous}
+                      onShowAccountSetupModal={onShowAccountSetupModal}
                     />
                   )}
                   {!currentUserId && (

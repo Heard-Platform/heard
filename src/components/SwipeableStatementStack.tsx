@@ -22,6 +22,9 @@ interface SwipeableStatementStackProps {
   ) => Promise<Statement | null>;
   currentUserId?: string;
   onSubmitStatement: (text: string) => Promise<void>;
+  allowAnonymous: boolean;
+  isAnonymous: boolean;
+  onShowAccountSetupModal: (featureText: string) => void;
 }
 
 const SWIPE_THRESHOLD = 100;
@@ -31,6 +34,9 @@ export function SwipeableStatementStack({
   onVote,
   currentUserId,
   onSubmitStatement,
+  allowAnonymous,
+  isAnonymous,
+  onShowAccountSetupModal,
 }: SwipeableStatementStackProps) {
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
@@ -301,6 +307,9 @@ export function SwipeableStatementStack({
         <div className="mt-6">
           <NewStatementInput
             onSubmitStatement={onSubmitStatement}
+            allowAnonymous={allowAnonymous}
+            isAnonymous={isAnonymous}
+            onShowAccountSetupModal={onShowAccountSetupModal}
           />
         </div>
       )}

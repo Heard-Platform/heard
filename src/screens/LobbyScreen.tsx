@@ -505,7 +505,7 @@ export function LobbyScreen({
           rooms={filteredRooms}
           isDeveloper={user?.isDeveloper || false}
           loading={loading}
-          currentUserId={user?.id}
+          user={user}
           currentSubHeard={currentSubHeard}
           roomStatements={roomStatements}
           analysisRoomId={analysisRoomId}

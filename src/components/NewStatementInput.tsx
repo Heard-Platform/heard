@@ -2,17 +2,33 @@ import { useState } from "react";
 import { Send } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+
+// @ts-ignore
 import { toast } from "sonner@2.0.3";
 
 interface NewStatementInputProps {
   onSubmitStatement: (text: string) => Promise<void>;
+  allowAnonymous: boolean;
+  isAnonymous: boolean;
+  onShowAccountSetupModal: (featureText: string) => void;
 }
 
 export function NewStatementInput({
   onSubmitStatement,
+  allowAnonymous,
+  isAnonymous,
+  onShowAccountSetupModal,
 }: NewStatementInputProps) {
   const [newStatementText, setNewStatementText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleInputChange = (value: string) => {
+    if (!allowAnonymous && isAnonymous && value.length > 0) {
+      onShowAccountSetupModal("posting statements in this debate");
+      return;
+    }
+    setNewStatementText(value);
+  };
 
   const handleSubmitStatement = async () => {
     if (!newStatementText.trim()) return;
@@ -34,7 +50,7 @@ export function NewStatementInput({
     <div className="flex gap-2">
       <Input
         value={newStatementText}
-        onChange={(e) => setNewStatementText(e.target.value)}
+        onChange={(e) => handleInputChange(e.target.value)}
         placeholder="Add your own statement..."
         disabled={isSubmitting}
         onKeyDown={(e) => {

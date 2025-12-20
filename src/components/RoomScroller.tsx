@@ -14,6 +14,7 @@ import type {
   Statement,
   UserPresence,
   VoteType,
+  UserSession,
 } from "../types";
 import { RoomCard } from "./RoomCard";
 import { VineNavigator } from "./VineNavigator";
@@ -22,7 +23,7 @@ interface RoomScrollerProps {
   rooms: DebateRoom[];
   isDeveloper: boolean;
   loading: boolean;
-  currentUserId?: string;
+  user: UserSession | null;
   currentSubHeard?: string;
   roomStatements: Record<string, Statement[]>;
   analysisRoomId?: string;
@@ -71,7 +72,7 @@ export const RoomScroller = forwardRef<
       onVoteOnStatement,
       isDeveloper,
       loading,
-      currentUserId,
+      user,
       currentSubHeard,
       onDiscussStatement,
       roomStatements,
@@ -240,10 +241,10 @@ export const RoomScroller = forwardRef<
           <VineNavigator
             totalCards={allCards.length}
             currentIndex={currentIndex}
-            currentUserId={currentUserId}
+            currentUserId={user?.id}
             presences={
               presences?.filter(
-                (p) => p.userId !== currentUserId,
+                (p) => p.userId !== user?.id,
               ) || []
             }
             onUpdatePresence={onUpdatePresence}
@@ -269,7 +270,7 @@ export const RoomScroller = forwardRef<
                     statements={roomStatements[room.id] || []}
                     isDeveloper={isDeveloper}
                     isActive={index === currentIndex}
-                    currentUserId={currentUserId}
+                    user={user}
                     currentSubHeard={currentSubHeard}
                     loadingStatements={
                       loadingRooms[room.id] || false
