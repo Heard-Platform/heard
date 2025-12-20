@@ -204,7 +204,7 @@ export function CreateRoomSheet({
         return {
           title: "Start with a Rant",
           description:
-            "Let it all out! We'll turn it into a structured debate.",
+            "Let it all out! We'll help you turn it into a structured discussion.",
           leftIcon: Sparkles,
           theme: "green" as const,
           buttonText: isExtracting
