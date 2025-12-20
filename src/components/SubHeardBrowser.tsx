@@ -20,25 +20,29 @@ import {
 } from "./ui/popover";
 import { Home, Hash, Plus, ChevronDown, Lock, Settings, Share2, Check, Crown } from "lucide-react";
 import { api } from "../utils/api";
-import type { SubHeard } from "../types";
-import { toast } from "sonner@2.0.3";
+import type { SubHeard, UserSession } from "../types";
 import { createSubHeardLink } from "../utils/url";
 import { share } from "../utils/share";
 
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+
 interface SubHeardBrowserProps {
   currentSubHeard?: string;
-  currentUserId?: string;
+  user: UserSession | null;
   onSubHeardChange: (subHeard: string | null) => void;
   onCreateSubHeard?: (name: string, userId: string, isPrivate?: boolean) => Promise<boolean>;
   onUpdateSubHeard?: (name: string, userId: string, isPrivate: boolean) => Promise<boolean>;
+  onShowAccountSetupModal: (featureText: string) => void;
 }
 
 export function SubHeardBrowser({
   currentSubHeard,
-  currentUserId,
+  user,
   onSubHeardChange,
   onCreateSubHeard,
   onUpdateSubHeard,
+  onShowAccountSetupModal,
 }: SubHeardBrowserProps) {
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +52,8 @@ export function SubHeardBrowser({
   const [isPrivate, setIsPrivate] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [copiedSubHeard, setCopiedSubHeard] = useState<string | null>(null);
+
+  const currentUserId = user?.id || undefined;
 
   // Load sub-heards on mount, when sheet opens, or when user changes
   useEffect(() => {
@@ -63,7 +69,7 @@ export function SubHeardBrowser({
   const loadSubHeards = async () => {
     try {
       setLoading(true);
-      const response = await api.getSubHeards(currentUserId);
+      const response = await api.getSubHeards(currentUserId) as any;
       if (response.success && response.data) {
         setSubHeards(response.data.subHeards || []);
       }
@@ -317,7 +323,7 @@ export function SubHeardBrowser({
                                   <Switch
                                     id={`private-${subHeard.name}`}
                                     checked={subHeard.isPrivate || false}
-                                    onCheckedChange={(checked) => {
+                                    onCheckedChange={(checked: boolean) => {
                                       handleTogglePrivacy(subHeard, checked);
                                     }}
                                   />
@@ -340,7 +346,13 @@ export function SubHeardBrowser({
             <Button
               variant="outline"
               className="w-full justify-start border-dashed"
-              onClick={() => setShowCreateNew(true)}
+              onClick={() => {
+                if (user?.isAnonymous) {
+                  onShowAccountSetupModal("creating communities");
+                } else {
+                  setShowCreateNew(true);
+                }
+              }}
             >
               <Plus className="w-4 h-4 mr-2" />
               Create New Community
@@ -366,7 +378,7 @@ export function SubHeardBrowser({
                 <Checkbox
                   id="private-subheard"
                   checked={isPrivate}
-                  onCheckedChange={(checked) => setIsPrivate(checked as boolean)}
+                  onCheckedChange={(checked: boolean) => setIsPrivate(checked)}
                 />
                 <Label
                   htmlFor="private-subheard"

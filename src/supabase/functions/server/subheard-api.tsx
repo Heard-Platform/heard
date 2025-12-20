@@ -3,6 +3,8 @@ import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
+import { getUserSession } from "./auth-api.tsx";
+import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 
 const app = new Hono();
 
@@ -101,7 +103,21 @@ app.post(
         return c.json({ error: "User ID is required" }, 400);
       }
 
-      // Normalize the name (lowercase, replace spaces with hyphens)
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User session not found" }, 404);
+      }
+
+      if (user.isAnonymous) {
+        return c.json(
+          {
+            error: ANONYMOUS_ACTION_NOT_ALLOWED_ERROR,
+            message: "Anonymous users cannot create communities",
+          },
+          403,
+        );
+      }
+
       const normalized = name
         .trim()
         .toLowerCase()
@@ -117,7 +133,6 @@ app.post(
         );
       }
 
-      // Store the sub-heard in KV store
       const subHeardKey = `subheard:${normalized}`;
       const subHeardData = {
         name: normalized,

@@ -8,11 +8,10 @@ import {
 import type {
   UserSession,
   DebateRoom,
-  DebateMode,
   NewDebateRoom,
   Statement,
 } from "../types";
-import { ANONYMOUS_VOTING_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
+import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 
 export function useDebateSession() {
   const [user, setUser] = useState<UserSession | null>(null);
@@ -43,7 +42,7 @@ export function useDebateSession() {
 
         if (userId) {
           // Try to restore existing session
-          const response = await api.getUser(userId);
+          const response = await api.getUser(userId) as any;
           if (response.success && response.data) {
             userData = response.data.user;
           }
@@ -53,7 +52,7 @@ export function useDebateSession() {
           // Use new authentication system
           if (isSignIn) {
             // Sign in existing user
-            const response = await api.signIn(email, password);
+            const response = await api.signIn(email, password) as any;
             if (response.success && response.data) {
               userData = response.data.user;
               setUserId(userData.id);
@@ -68,7 +67,7 @@ export function useDebateSession() {
               nickname,
               email,
               password,
-            );
+            ) as any;
             if (response.success && response.data) {
               userData = response.data.user;
               setUserId(userData.id);
@@ -83,7 +82,7 @@ export function useDebateSession() {
           const response = await api.createUser(
             nickname,
             email,
-          );
+          ) as any;
           if (response.success && response.data) {
             userData = response.data.user;
             setUserId(userData.id);
@@ -175,7 +174,7 @@ export function useDebateSession() {
 
       try {
         setError(null);
-        const response = await api.joinRoom(roomId, user.id);
+        const response = await api.joinRoom(roomId, user.id) as any;
         if (response.success && response.data) {
           return response.data.room;
         } else {
@@ -246,7 +245,7 @@ export function useDebateSession() {
       } else {
         const errorMsg =
           response.error || "Failed to vote on statement";
-        if (errorMsg !== ANONYMOUS_VOTING_NOT_ALLOWED_ERROR) {
+        if (errorMsg !== ANONYMOUS_ACTION_NOT_ALLOWED_ERROR) {
           setError(errorMsg);
         }
         throw new Error(errorMsg);
@@ -262,7 +261,7 @@ export function useDebateSession() {
       const response = await api.getActiveRooms(
         currentSubHeard || undefined,
         userId,
-      );
+      ) as any;
       if (response.success && response.data) {
         setActiveRooms(response.data.rooms || []);
         return response.data.rooms || [];
@@ -420,7 +419,7 @@ export function useDebateSession() {
   const getRoomStatements = useCallback(
     async (roomId: string) => {
       try {
-        const response = await api.getRoomStatus(roomId);
+        const response = await api.getRoomStatus(roomId) as any;
         if (response.success && response.data) {
           const statements = response.data.statements || [];
           setRoomStatements((prev) => ({
@@ -446,7 +445,7 @@ export function useDebateSession() {
 
     for (const room of activeRooms) {
       try {
-        const response = await api.getRoomStatus(room.id);
+        const response = await api.getRoomStatus(room.id) as any;
         if (response.success && response.data) {
           statementsMap[room.id] =
             response.data.statements || [];

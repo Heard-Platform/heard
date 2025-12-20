@@ -367,6 +367,11 @@ export function LobbyScreen({
     return result;
   };
 
+  const handleShowAccountSetupModal = (featureText: string) => {
+    setAccountSetupFeatureText(featureText);
+    setShowAccountSetupAnonModal(true);
+  };
+
   return (
     <>
       {/* Intro Modal - controlled externally */}
@@ -413,7 +418,7 @@ export function LobbyScreen({
             {onSubHeardChange && (
               <SubHeardBrowser
                 currentSubHeard={currentSubHeard}
-                currentUserId={user?.id}
+                user={user}
                 onSubHeardChange={onSubHeardChange}
                 onCreateSubHeard={async (
                   name: string,
@@ -470,6 +475,7 @@ export function LobbyScreen({
                     return false;
                   }
                 }}
+                onShowAccountSetupModal={handleShowAccountSetupModal}
               />
             )}
 
@@ -513,10 +519,7 @@ export function LobbyScreen({
           onGetRoomStatements={onGetRoomStatements}
           onGetAllRoomStatements={onGetAllRoomStatements}
           onUpdatePresence={handleUpdatePresence}
-          onShowAccountSetupModal={(featureText) => {
-            setAccountSetupFeatureText(featureText);
-            setShowAccountSetupAnonModal(true);
-          }}
+          onShowAccountSetupModal={handleShowAccountSetupModal}
         />
       </div>
 

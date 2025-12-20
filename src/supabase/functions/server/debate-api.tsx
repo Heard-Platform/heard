@@ -23,10 +23,10 @@ import type {
   Vote,
   Phase,
   SubPhase,
-  DebateMode,
   DebateRoom,
   Rant,
 } from "./types.tsx";
+import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 
 const app = new Hono();
 
@@ -1309,7 +1309,7 @@ app.post(
       if (user.isAnonymous && room && !room.allowAnonymous) {
         return c.json(
           {
-            error: "ANONYMOUS_VOTING_NOT_ALLOWED",
+            error: ANONYMOUS_ACTION_NOT_ALLOWED_ERROR,
             message: "This debate doesn't allow anonymous voting",
           },
           403,

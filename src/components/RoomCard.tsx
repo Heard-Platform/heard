@@ -26,7 +26,7 @@ import { ShareButton } from "./ShareButton";
 import { DebateAnalysisView } from "./DebateAnalysisView";
 import { useState, useEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
-import { ANONYMOUS_VOTING_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
+import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType } from "../types";
 
 // @ts-ignore
@@ -123,7 +123,7 @@ export function RoomCard({
       );
       return result as Statement;
     } catch (error: any) {
-      if (error.message === ANONYMOUS_VOTING_NOT_ALLOWED_ERROR) {
+      if (error.message === ANONYMOUS_ACTION_NOT_ALLOWED_ERROR) {
         onShowAccountSetupModal("voting in this debate");
         toast.error("⚠️ This discussion requires an account.");
       } else {
@@ -379,7 +379,6 @@ export function RoomCard({
                   onVote={handleVote}
                   currentUserId={currentUserId}
                   onSubmitStatement={handleSubmitStatement}
-                  onShowAccountSetupModal={onShowAccountSetupModal}
                 />
               );
             })()
