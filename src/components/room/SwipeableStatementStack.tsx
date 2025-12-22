@@ -10,17 +10,17 @@ import { toast } from "sonner@2.0.3";
 interface SwipeableStatementStackProps {
   statements: Statement[];
   currentUserId?: string;
-  roomId: string;
   allowAnonymous: boolean;
   isAnonymous: boolean;
+  chanceCardSeen: boolean;
+  checkingChanceCard: boolean;
   onVote: (
     id: string,
     voteType: VoteType,
   ) => Promise<void>;
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
-  checkChanceCardSeen: (userId: string, roomId: string) => Promise<boolean>;
-  markChanceCardSeen: (userId: string, roomId: string) => Promise<void>;
+  onChanceCardSwiped: () => Promise<void>;
 }
 
 const SWIPE_THRESHOLD = 100;
@@ -28,14 +28,14 @@ const SWIPE_THRESHOLD = 100;
 export function SwipeableStatementStack({
   statements,
   currentUserId,
-  roomId,
   allowAnonymous,
   isAnonymous,
+  chanceCardSeen,
+  checkingChanceCard,
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
-  checkChanceCardSeen,
-  markChanceCardSeen,
+  onChanceCardSwiped,
 }: SwipeableStatementStackProps) {
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
@@ -50,23 +50,6 @@ export function SwipeableStatementStack({
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
-  const [chanceCardSeen, setChanceCardSeen] = useState(false);
-  const [checkingChanceCard, setCheckingChanceCard] = useState(true);
-
-  useEffect(() => {
-    const checkChanceCard = async () => {
-      if (!currentUserId || !roomId) {
-        setCheckingChanceCard(false);
-        return;
-      }
-
-      const seen = await checkChanceCardSeen(currentUserId, roomId);
-      setChanceCardSeen(seen);
-      setCheckingChanceCard(false);
-    };
-
-    checkChanceCard();
-  }, [currentUserId, roomId, checkChanceCardSeen]);
 
   const unvotedStatements = statements.filter((statement) => {
     const hasVotedBefore =
@@ -82,7 +65,8 @@ export function SwipeableStatementStack({
   
   if (!chanceCardSeen && !checkingChanceCard) {
     const chanceCard: ChanceCard = { type: "chance" };
-    cards.splice(Math.min(5, cards.length) - votedStatementIds.size, 0, chanceCard);
+    const chanceCardIndex = Math.min(5, statements.length) - votedStatementIds.size;
+    cards.splice(chanceCardIndex, 0, chanceCard);
   }
 
   const hasMoreCards = cards.length > 0;
@@ -237,10 +221,7 @@ export function SwipeableStatementStack({
         setSwipedChanceCard(true);
         setSwipeDirection(swipeY < 0 ? "up" : "down");
         
-        if (currentUserId) {
-          markChanceCardSeen(currentUserId, roomId);
-          setChanceCardSeen(true);
-        }
+        onChanceCardSwiped();
         
         setTimeout(() => {
           setSwipedChanceCard(false);
@@ -265,6 +246,11 @@ export function SwipeableStatementStack({
         handleVote(statementId, "disagree", "left");
       }
     }
+  };
+
+  const handleSubmitFromChanceCard = async (text: string) => {
+    onChanceCardSwiped();
+    await onSubmitStatement(text);
   };
 
   if (!hasMoreCards) {
@@ -310,7 +296,7 @@ export function SwipeableStatementStack({
   };
 
   const topCard = cards[0];
-  const isStatementCardOnTop = topCard?.type === "statement";
+  const isChanceCardOnTop = topCard?.type === "chance";
 
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
@@ -345,14 +331,14 @@ export function SwipeableStatementStack({
                 totalStatements={statements.length}
                 allowAnonymous={allowAnonymous}
                 isAnonymous={isAnonymous}
-                onSubmitStatement={onSubmitStatement}
+                onSubmitStatement={handleSubmitFromChanceCard}
                 onShowAccountSetupModal={onShowAccountSetupModal}
               />
             );
           })}
       </div>
 
-      {isStatementCardOnTop && (
+      {!isChanceCardOnTop && (
         <NewStatementInput
           onSubmitStatement={onSubmitStatement}
           allowAnonymous={allowAnonymous}

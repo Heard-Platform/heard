@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { SwipeableStatementStack } from "./SwipeableStatementStack";
+import { SwipeableStatementStack } from "./room/SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { NewStatementInput } from "./NewStatementInput";
@@ -41,6 +41,8 @@ interface RoomCardProps {
   user: UserSession | null;
   currentSubHeard?: string;
   analysisRoomId?: string;
+  checkChanceCardSeen: (userId: string, roomId: string) => Promise<boolean>;
+  markChanceCardSeen: (userId: string, roomId: string) => Promise<void>;
   onJoin: () => void;
   onSetInactive?: () => Promise<boolean>;
   onSubmitStatement: (
@@ -65,6 +67,8 @@ export function RoomCard({
   user,
   currentSubHeard,
   analysisRoomId,
+  checkChanceCardSeen,
+  markChanceCardSeen,
   onJoin,
   onSetInactive,
   onSubmitStatement,
@@ -73,6 +77,8 @@ export function RoomCard({
   onDiscussStatement,
   onShowAccountSetupModal,
 }: RoomCardProps) {
+  const [chanceCardSeen, setChanceCardSeen] = useState(false);
+  const [checkingChanceCard, setCheckingChanceCard] = useState(true);
   const [showAnalysis, setShowAnalysis] = useState(false);
 
   const currentUserId = user?.id;
@@ -83,6 +89,21 @@ export function RoomCard({
     }
   }, [analysisRoomId, room.id]);
 
+  useEffect(() => {
+    const checkChanceCard = async () => {
+      if (!currentUserId || !room.id) {
+        setCheckingChanceCard(false);
+        return;
+      }
+
+      const seen = await checkChanceCardSeen(currentUserId, room.id);
+      setChanceCardSeen(seen);
+      setCheckingChanceCard(false);
+    };
+
+    checkChanceCard();
+  }, [currentUserId, room.id, checkChanceCardSeen]);
+  
   const handleOpenAnalysis = () => {
     setShowAnalysis(true);
     updateUrlForAnalysis(room.id);
@@ -115,29 +136,34 @@ export function RoomCard({
   ) => {
     if (!currentUserId) {
       console.error("No user ID available for voting");
-      return null;
-    }
-
-    try {
-      const result = await onVoteOnStatement(
-        statementId,
-        voteType,
-      );
-      return result as Statement;
-    } catch (error: any) {
-      if (error.message === ANONYMOUS_ACTION_NOT_ALLOWED_ERROR) {
-        onShowAccountSetupModal("voting in this debate");
-        toast.error("⚠️ This discussion requires an account.");
-      } else {
-        toast.error(
-          "⚠️ Your vote couldn't be saved. Please try again.",
-          { duration: 3000 },
+    } else {
+      try {
+        await onVoteOnStatement(
+          statementId,
+          voteType,
         );
-        console.error("Error voting on statement:", error);
+      } catch (error: any) {
+        if (error.message === ANONYMOUS_ACTION_NOT_ALLOWED_ERROR) {
+          onShowAccountSetupModal("voting in this debate");
+          toast.error("⚠️ This discussion requires an account.");
+        } else {
+          toast.error(
+            "⚠️ Your vote couldn't be saved. Please try again.",
+            { duration: 3000 },
+          );
+          console.error("Error voting on statement:", error);
+        }
+        throw error;
       }
-      throw error;
     }
   };
+
+  const handleSwipeChanceCard = async () => {
+    setChanceCardSeen(true);
+    if (currentUserId) {
+      await markChanceCardSeen(currentUserId, room.id);
+    }
+  }
 
   // Handle statement submission
   const handleSubmitStatement = async (text: string) => {
@@ -344,23 +370,23 @@ export function RoomCard({
           ) : statements.length > 0 ? (
             (() => {
               // Check if user has voted on all statements
-              const hasVotedOnAll =
+              const hasSwipedAll =
                 currentUserId &&
                 statements.every(
                   (statement) =>
                     statement.voters &&
                     statement.voters[currentUserId],
-                );
+                ) && chanceCardSeen;
 
               // If user has voted on all statements, show InProgressResults + input
-              if (hasVotedOnAll) {
+              if (hasSwipedAll) {
                 return (
                   <div className="space-y-4">
                     <InProgressResults
                       statements={statements}
                       currentUserId={currentUserId}
                       debateTitle={room.topic}
-                      onChangeVote={handleVote as any}
+                      onChangeVote={handleVote}
                     />
                     {/* New Statement Input */}
                     {currentUserId && (
@@ -375,20 +401,23 @@ export function RoomCard({
                     )}
                   </div>
                 );
+              } else {
+                // Otherwise show the swipeable stack
+                return (
+                  <SwipeableStatementStack
+                    statements={statements}
+                    currentUserId={currentUserId}
+                    allowAnonymous={!!room.allowAnonymous}
+                    isAnonymous={!!user?.isAnonymous}
+                    onVote={handleVote}
+                    chanceCardSeen={chanceCardSeen}
+                    checkingChanceCard={checkingChanceCard}
+                    onSubmitStatement={handleSubmitStatement}
+                    onShowAccountSetupModal={onShowAccountSetupModal}
+                    onChanceCardSwiped={handleSwipeChanceCard}
+                  />
+                );
               }
-
-              // Otherwise show the swipeable stack
-              return (
-                <SwipeableStatementStack
-                  statements={statements}
-                  onVote={handleVote}
-                  currentUserId={currentUserId}
-                  onSubmitStatement={handleSubmitStatement}
-                  allowAnonymous={!!room.allowAnonymous}
-                  isAnonymous={!!user?.isAnonymous}
-                  onShowAccountSetupModal={onShowAccountSetupModal}
-                />
-              );
             })()
           ) : (
             <div className="space-y-4">

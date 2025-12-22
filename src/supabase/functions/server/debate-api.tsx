@@ -2902,6 +2902,56 @@ app.post(
   },
 );
 
+// Mark chance card as seen
+app.post(
+  "/make-server-f1a393b4/chance-card/mark-seen",
+  async (c: any) => {
+    try {
+      const { userId, roomId } = await c.req.json();
+
+      if (!userId || !roomId) {
+        return c.json(
+          { error: "userId and roomId are required" },
+          400
+        );
+      }
+
+      const key = `chance_card_seen:${userId}:${roomId}`;
+      await kv.set(key, JSON.stringify({ 
+        seen: true, 
+        timestamp: Date.now() 
+      }));
+
+      return c.json({ success: true });
+    } catch (error) {
+      console.error("Error marking chance card as seen:", error);
+      return c.json(
+        { error: "Failed to mark chance card as seen" },
+        500
+      );
+    }
+  }
+);
+
+// Check if chance card has been seen
+app.get(
+  "/make-server-f1a393b4/chance-card/check-seen/:userId/:roomId",
+  async (c: any) => {
+    try {
+      const userId = c.req.param("userId");
+      const roomId = c.req.param("roomId");
+
+      const key = `chance_card_seen:${userId}:${roomId}`;
+      const data = await kv.get(key);
+
+      return c.json({ seen: !!data });
+    } catch (error) {
+      console.error("Error checking chance card seen status:", error);
+      return c.json({ seen: false });
+    }
+  }
+);
+
 // Dev endpoint: Get cluster data for a room
 app.get(
   "/make-server-f1a393b4/room/:roomId/clusters",

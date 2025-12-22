@@ -52,6 +52,8 @@ interface RoomScrollerProps {
     currentRoomIndex: number,
   ) => void;
   onShowAccountSetupModal: (featureText: string) => void;
+  checkChanceCardSeen: (userId: string, roomId: string) => Promise<boolean>;
+  markChanceCardSeen: (userId: string, roomId: string) => Promise<void>;
 }
 
 export interface RoomScrollerRef {
@@ -82,6 +84,8 @@ export const RoomScroller = forwardRef<
       presences,
       onUpdatePresence,
       onShowAccountSetupModal,
+      checkChanceCardSeen,
+      markChanceCardSeen,
     },
     ref,
   ) => {
@@ -289,6 +293,8 @@ export const RoomScroller = forwardRef<
                     }
                     onDiscussStatement={onDiscussStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
+                    checkChanceCardSeen={checkChanceCardSeen}
+                    markChanceCardSeen={markChanceCardSeen}
                   />
                 ) : null}
               </div>

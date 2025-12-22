@@ -1239,6 +1239,10 @@
     min-height: 500px;
   }
 
+  .min-h-\[600px\] {
+    min-height: 600px;
+  }
+
   .min-h-screen {
     min-height: 100vh;
   }
@@ -2102,6 +2106,16 @@
 
   .bg-muted {
     background-color: var(--muted);
+  }
+
+  .bg-muted\/30 {
+    background-color: var(--muted);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-muted\/30 {
+      background-color: color-mix(in oklab, var(--muted) 30%, transparent);
+    }
   }
 
   .bg-orange-50 {
@@ -3202,10 +3216,6 @@
 
   .pr-12 {
     padding-right: calc(var(--spacing) * 12);
-  }
-
-  .pr-16 {
-    padding-right: calc(var(--spacing) * 16);
   }
 
   .pr-18 {

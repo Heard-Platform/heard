@@ -59,7 +59,9 @@ interface LobbyScreenProps {
   onSubHeardChange?: (subHeard: string | null) => void;
   onGetRoomStatements: (roomId: string) => Promise<any[]>;
   onGetAllRoomStatements: () => Promise<Record<string, any[]>>;
+  targetRoomId?: string;
   onRoomCreated?: () => void;
+  analysisRoomId?: string;
 }
 
 export function LobbyScreen({
@@ -521,6 +523,13 @@ export function LobbyScreen({
           onGetAllRoomStatements={onGetAllRoomStatements}
           onUpdatePresence={handleUpdatePresence}
           onShowAccountSetupModal={handleShowAccountSetupModal}
+          checkChanceCardSeen={async (userId, roomId) => {
+            const response = await api.checkChanceCardSeen(userId, roomId);
+            return response.success && response.data ? response.data.seen : false;
+          }}
+          markChanceCardSeen={async (userId, roomId) => {
+            await api.markChanceCardSeen(userId, roomId);
+          }}
         />
       </div>
 

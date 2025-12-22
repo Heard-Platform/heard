@@ -64,7 +64,7 @@ export function NewStatementInput({
         <Input
           value={newStatementText}
           onChange={(e) => handleInputChange(e.target.value)}
-          placeholder="Add your own statement..."
+          placeholder="Share your voice here"
           disabled={isSubmitting}
           maxLength={500}
           onKeyDown={(e) => {
@@ -73,11 +73,7 @@ export function NewStatementInput({
               handleSubmitStatement();
             }
           }}
-          className="pr-16"
         />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">
-          {newStatementText.length}/500
-        </div>
       </div>
       <Button
         onClick={handleSubmitStatement}

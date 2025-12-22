@@ -22,14 +22,33 @@ export interface Statement {
   agrees: number;
   disagrees: number;
   passes: number;
-  superAgrees: number; // Super agree count
-  type?: string; // Will be calculated on backend later
+  superAgrees: number;
+  type?: string;
   isSpicy?: boolean;
   roomId: string;
   timestamp: number;
-  round: number; // Round number (1, 2, or 3)
+  round: number;
   voters: { [userId: string]: VoteType };
 }
+
+export type StatementCard = {
+  type: "statement";
+  statement: Statement;
+}
+
+export type ChanceCard = {
+  type: "chance";
+}
+
+export type Card = StatementCard | ChanceCard;
+
+export const isStatementCard = (card: Card): card is StatementCard => {
+  return card.type === "statement";
+};
+
+export const isChanceCard = (card: Card): card is ChanceCard => {
+  return card.type === "chance";
+};
 
 export interface Achievement {
   title: string;

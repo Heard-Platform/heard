@@ -243,6 +243,19 @@ class ApiClient {
     });
   }
 
+  async markChanceCardSeen(userId: string, roomId: string) {
+    return this.request("/chance-card/mark-seen", {
+      method: "POST",
+      body: JSON.stringify({ userId, roomId }),
+    });
+  }
+
+  async checkChanceCardSeen(userId: string, roomId: string): Promise<ApiResponse<{ seen: boolean }>> {
+    return this.request<{ seen: boolean }>(`/chance-card/check-seen/${userId}/${roomId}`, {
+      method: "GET",
+    });
+  }
+
   // Invite management
   async sendInvites(roomId: string, emails: string[], customMessage?: string) {
     return this.request(`/room/${roomId}/invite`, {
