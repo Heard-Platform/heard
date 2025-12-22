@@ -23,7 +23,7 @@ import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { NewStatementInput } from "./NewStatementInput";
 import { ShareButton } from "./ShareButton";
-import { DebateAnalysisView } from "./DebateAnalysisView";
+import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
 import { useState, useEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DebateAnalysisViewDemo } from "../components/DebateAnalysisViewDemo";
+import { DebateAnalysisViewDemo } from "../components/analysis/DebateAnalysisViewDemo";
 import { Button } from "../components/ui/button";
 import { BarChart3 } from "lucide-react";
 
