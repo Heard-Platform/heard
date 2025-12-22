@@ -41,8 +41,8 @@ interface RoomCardProps {
   user: UserSession | null;
   currentSubHeard?: string;
   analysisRoomId?: string;
-  checkChanceCardSeen: (userId: string, roomId: string) => Promise<boolean>;
-  markChanceCardSeen: (userId: string, roomId: string) => Promise<void>;
+  checkChanceCardSwiped: (userId: string, roomId: string) => Promise<boolean>;
+  markChanceCardSwiped: (userId: string, roomId: string) => Promise<void>;
   onJoin: () => void;
   onSetInactive?: () => Promise<boolean>;
   onSubmitStatement: (
@@ -67,8 +67,8 @@ export function RoomCard({
   user,
   currentSubHeard,
   analysisRoomId,
-  checkChanceCardSeen,
-  markChanceCardSeen,
+  checkChanceCardSwiped,
+  markChanceCardSwiped,
   onJoin,
   onSetInactive,
   onSubmitStatement,
@@ -77,7 +77,7 @@ export function RoomCard({
   onDiscussStatement,
   onShowAccountSetupModal,
 }: RoomCardProps) {
-  const [chanceCardSeen, setChanceCardSeen] = useState(false);
+  const [chanceCardSwiped, setChanceCardSwiped] = useState(false);
   const [checkingChanceCard, setCheckingChanceCard] = useState(true);
   const [showAnalysis, setShowAnalysis] = useState(false);
 
@@ -96,13 +96,13 @@ export function RoomCard({
         return;
       }
 
-      const seen = await checkChanceCardSeen(currentUserId, room.id);
-      setChanceCardSeen(seen);
+      const swiped = await checkChanceCardSwiped(currentUserId, room.id);
+      setChanceCardSwiped(swiped);
       setCheckingChanceCard(false);
     };
 
     checkChanceCard();
-  }, [currentUserId, room.id, checkChanceCardSeen]);
+  }, [currentUserId, room.id, checkChanceCardSwiped]);
   
   const handleOpenAnalysis = () => {
     setShowAnalysis(true);
@@ -159,9 +159,9 @@ export function RoomCard({
   };
 
   const handleSwipeChanceCard = async () => {
-    setChanceCardSeen(true);
+    setChanceCardSwiped(true);
     if (currentUserId) {
-      await markChanceCardSeen(currentUserId, room.id);
+      await markChanceCardSwiped(currentUserId, room.id);
     }
   }
 
@@ -376,7 +376,7 @@ export function RoomCard({
                   (statement) =>
                     statement.voters &&
                     statement.voters[currentUserId],
-                ) && chanceCardSeen;
+                ) && chanceCardSwiped;
 
               // If user has voted on all statements, show InProgressResults + input
               if (hasSwipedAll) {
@@ -410,7 +410,7 @@ export function RoomCard({
                     allowAnonymous={!!room.allowAnonymous}
                     isAnonymous={!!user?.isAnonymous}
                     onVote={handleVote}
-                    chanceCardSeen={chanceCardSeen}
+                    chanceCardSwiped={chanceCardSwiped}
                     checkingChanceCard={checkingChanceCard}
                     onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}

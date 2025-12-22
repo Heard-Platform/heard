@@ -108,23 +108,23 @@ const mockStatements: Statement[] = [
 ];
 
 export function SwipeableStatementStackStory() {
-  const [chanceCardSeen, setChanceCardSeen] = useState(false);
+  const [chanceCardSwiped, setChanceCardSwiped] = useState(false);
 
   useEffect(() => {
-    const checkChanceCardSeen = async (
+    const checkChanceCardSwiped = async (
       userId: string,
       roomId: string,
     ) => {
-      console.log("Check chance card seen:", {
+      console.log("Check chance card swiped:", {
         userId,
         roomId,
-        seen: chanceCardSeen,
+        swiped: chanceCardSwiped,
       });
       await new Promise((resolve) => setTimeout(resolve, 300));
-      return chanceCardSeen;
+      return chanceCardSwiped;
     };
-    checkChanceCardSeen("story-user", "room-1");
-  }, [chanceCardSeen]);
+    checkChanceCardSwiped("story-user", "room-1");
+  }, [chanceCardSwiped]);
 
   const handleVote = async (
     statementId: string,
@@ -139,13 +139,13 @@ export function SwipeableStatementStackStory() {
   };
 
   const handleChanceCardSwiped = async () => {
-    console.log("Mark chance card seen");
+    console.log("Mark chance card swiped");
     await new Promise((resolve) => setTimeout(resolve, 100));
-    setChanceCardSeen(true);
+    setChanceCardSwiped(true);
   };
 
   const handleReset = () => {
-    setChanceCardSeen(false);
+    setChanceCardSwiped(false);
   };
 
   return (
@@ -167,18 +167,18 @@ export function SwipeableStatementStackStory() {
                     Reset Story
                   </Button>
                   <Button
-                    onClick={() => setChanceCardSeen(!chanceCardSeen)}
+                    onClick={() => setChanceCardSwiped(!chanceCardSwiped)}
                     variant="outline"
                     size="sm"
                   >
-                    {chanceCardSeen ? "Show Chance Card" : "Hide Chance Card"}
+                    {chanceCardSwiped ? "Show Chance Card" : "Hide Chance Card"}
                   </Button>
                 </div>
 
                 <div className="p-4 rounded-lg border bg-muted/30">
                   <span className="text-muted-foreground">Chance Card:</span>{" "}
                   <span className="font-medium">
-                    {chanceCardSeen ? "Seen" : "Not Seen"}
+                    {chanceCardSwiped ? "Swiped" : "Not Swiped"}
                   </span>
                 </div>
               </CardContent>
@@ -190,7 +190,7 @@ export function SwipeableStatementStackStory() {
                 currentUserId="story-user"
                 allowAnonymous={true}
                 isAnonymous={false}
-                chanceCardSeen={chanceCardSeen}
+                chanceCardSwiped={chanceCardSwiped}
                 checkingChanceCard={false}
                 onVote={handleVote}
                 onSubmitStatement={handleSubmitStatement}

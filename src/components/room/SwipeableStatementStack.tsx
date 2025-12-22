@@ -12,7 +12,7 @@ interface SwipeableStatementStackProps {
   currentUserId?: string;
   allowAnonymous: boolean;
   isAnonymous: boolean;
-  chanceCardSeen: boolean;
+  chanceCardSwiped: boolean;
   checkingChanceCard: boolean;
   onVote: (
     id: string,
@@ -30,7 +30,7 @@ export function SwipeableStatementStack({
   currentUserId,
   allowAnonymous,
   isAnonymous,
-  chanceCardSeen,
+  chanceCardSwiped,
   checkingChanceCard,
   onVote,
   onSubmitStatement,
@@ -63,7 +63,7 @@ export function SwipeableStatementStack({
     statement,
   }));
   
-  if (!chanceCardSeen && !checkingChanceCard) {
+  if (!chanceCardSwiped && !checkingChanceCard) {
     const chanceCard: ChanceCard = { type: "chance" };
     const chanceCardIndex = Math.min(5, statements.length) - votedStatementIds.size;
     cards.splice(chanceCardIndex, 0, chanceCard);

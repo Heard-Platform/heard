@@ -280,6 +280,8 @@ export const RoomScroller = forwardRef<
                       loadingRooms[room.id] || false
                     }
                     analysisRoomId={analysisRoomId}
+                    checkChanceCardSwiped={checkChanceCardSeen}
+                    markChanceCardSwiped={markChanceCardSeen}
                     onJoin={() => onJoinRoom(room.id)}
                     onSetInactive={
                       onSetRoomInactive
@@ -293,8 +295,6 @@ export const RoomScroller = forwardRef<
                     }
                     onDiscussStatement={onDiscussStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
-                    checkChanceCardSeen={checkChanceCardSeen}
-                    markChanceCardSeen={markChanceCardSeen}
                   />
                 ) : null}
               </div>
