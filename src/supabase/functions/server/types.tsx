@@ -1,3 +1,6 @@
+import { TopPost } from "./analysis-utils.tsx";
+import { ClusterConsensus } from "./cluster-analysis.tsx";
+
 export interface UserSession {
   id: string;
   nickname: string;
@@ -83,6 +86,18 @@ export interface Rant {
   author: string;
   roomId: string;
   timestamp: number;
+}
+
+export interface AnalysisData {
+  debateTopic: string;
+  totalParticipants: number;
+  totalStatements: number;
+  totalVotes: number;
+  uniquePosters: number;
+  uniqueVoters: number;
+  participation: number;
+  topPosts: TopPost[];
+  clusterConsensus?: ClusterConsensus | null;
 }
 
 export interface SentEmail {

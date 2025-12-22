@@ -8,6 +8,8 @@ import {
 } from "./clustering.tsx";
 import { calculateClusterConsensus } from "./cluster-analysis.tsx";
 import { getParsedKvData } from "./kv-utils.tsx";
+import { calculateAnalysisMetrics } from "./analysis-utils.tsx";
+import { AnalysisData } from "./types.tsx";
 
 const app = new Hono();
 
@@ -24,62 +26,7 @@ app.get(
 
       const statements = await getStatements(roomId);
 
-      const uniqueParticipants = new Set<string>();
-      const uniquePosters = new Set<string>();
-      const uniqueVoters = new Set<string>();
-      let totalVotes = 0;
-
-      statements.forEach((statement) => {
-        uniqueParticipants.add(statement.author);
-        uniquePosters.add(statement.author);
-        if (statement.voters) {
-          Object.keys(statement.voters).forEach((userId) => {
-            uniqueParticipants.add(userId);
-            uniqueVoters.add(userId);
-          });
-        }
-        totalVotes +=
-          statement.agrees +
-          statement.disagrees +
-          statement.passes;
-      });
-
-      const participation = uniqueVoters.size > 0 
-        ? Math.min(uniquePosters.size / uniqueVoters.size, 1) 
-        : 0;
-
-      const topPosts = statements
-        .map((statement) => {
-          const totalVoteCount =
-            statement.agrees +
-            statement.superAgrees +
-            statement.disagrees +
-            statement.passes;
-          const consensusScore =
-            totalVoteCount > 0
-              ? ((statement.agrees + statement.superAgrees) /
-                  totalVoteCount) *
-                100
-              : 0;
-
-          return {
-            id: statement.id,
-            text: statement.text,
-            agreeVotes:
-              statement.agrees + statement.superAgrees,
-            disagreeVotes: statement.disagrees,
-            passVotes: statement.passes,
-            consensusScore,
-            totalVotes: totalVoteCount,
-          };
-        })
-        .sort((a, b) => {
-          if (b.consensusScore !== a.consensusScore) {
-            return b.consensusScore - a.consensusScore;
-          }
-          return b.totalVotes - a.totalVotes;
-        })
-        .slice(0, 3);
+      const metrics = calculateAnalysisMetrics(statements);
 
       const metadataKey = `cluster:${roomId}:metadata`;
       let clusterMetadata =
@@ -100,16 +47,16 @@ app.get(
           clusterMetadata.totalVotes ?? null;
         if (
           lastClusterVoteCount === null ||
-          totalVotes > lastClusterVoteCount
+          metrics.totalVotes > lastClusterVoteCount
         ) {
           console.log(
-            `[Analysis] ${lastClusterVoteCount === null ? "Legacy cluster data" : `New votes detected`} for room ${roomId} (${totalVotes} vs ${lastClusterVoteCount}), recalculating clusters...`,
+            `[Analysis] ${lastClusterVoteCount === null ? "Legacy cluster data" : `New votes detected`} for room ${roomId} (${metrics.totalVotes} vs ${lastClusterVoteCount}), recalculating clusters...`,
           );
           clusterMetadata =
             await recalculateClustersForRoom(roomId);
         } else {
           console.log(
-            `[Analysis] Using cached cluster data for room ${roomId} (${totalVotes} votes)`,
+            `[Analysis] Using cached cluster data for room ${roomId} (${metrics.totalVotes} votes)`,
           );
         }
       }
@@ -135,17 +82,19 @@ app.get(
         );
       }
 
-      return c.json({
+      const analysisData: AnalysisData = {
         debateTopic: room.topic,
-        totalParticipants: uniqueParticipants.size,
+        totalParticipants: metrics.uniqueParticipants,
         totalStatements: statements.length,
-        totalVotes,
-        uniquePosters: uniquePosters.size,
-        uniqueVoters: uniqueVoters.size,
-        participation,
-        topPosts,
+        totalVotes: metrics.totalVotes,
+        uniquePosters: metrics.uniquePosters,
+        uniqueVoters: metrics.uniqueVoters,
+        participation: metrics.participation,
+        topPosts: metrics.topPosts,
         clusterConsensus,
-      });
+      };
+      
+      return c.json(analysisData);
     } catch (error) {
       console.error("Error fetching debate analysis:", error);
       return c.json(
