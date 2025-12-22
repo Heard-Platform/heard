@@ -132,6 +132,9 @@ export const WithClusters = () => {
       totalParticipants={247}
       totalStatements={156}
       totalVotes={1842}
+      uniquePosters={156}
+      uniqueVoters={220}
+      participation={0.71}
       topPosts={mockTopPosts}
       clusterConsensus={mockClusterConsensus}
     />
@@ -146,6 +149,9 @@ export const NoClusters = () => {
       totalParticipants={42}
       totalStatements={28}
       totalVotes={315}
+      uniquePosters={28}
+      uniqueVoters={38}
+      participation={0.74}
       topPosts={[
         {
           id: "post-a",

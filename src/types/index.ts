@@ -153,6 +153,9 @@ export interface AnalysisData {
   totalParticipants: number;
   totalStatements: number;
   totalVotes: number;
+  uniquePosters: number;
+  uniqueVoters: number;
+  participation: number;
   topPosts: TopPost[];
   clusterConsensus?: ClusterConsensus | null;
 }

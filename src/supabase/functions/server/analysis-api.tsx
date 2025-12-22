@@ -25,13 +25,17 @@ app.get(
       const statements = await getStatements(roomId);
 
       const uniqueParticipants = new Set<string>();
+      const uniquePosters = new Set<string>();
+      const uniqueVoters = new Set<string>();
       let totalVotes = 0;
 
       statements.forEach((statement) => {
         uniqueParticipants.add(statement.author);
+        uniquePosters.add(statement.author);
         if (statement.voters) {
           Object.keys(statement.voters).forEach((userId) => {
             uniqueParticipants.add(userId);
+            uniqueVoters.add(userId);
           });
         }
         totalVotes +=
@@ -39,6 +43,10 @@ app.get(
           statement.disagrees +
           statement.passes;
       });
+
+      const participation = uniqueVoters.size > 0 
+        ? Math.min(uniquePosters.size / uniqueVoters.size, 1) 
+        : 0;
 
       const topPosts = statements
         .map((statement) => {
@@ -132,6 +140,9 @@ app.get(
         totalParticipants: uniqueParticipants.size,
         totalStatements: statements.length,
         totalVotes,
+        uniquePosters: uniquePosters.size,
+        uniqueVoters: uniqueVoters.size,
+        participation,
         topPosts,
         clusterConsensus,
       });

@@ -122,6 +122,9 @@ export function DebateAnalysisView({
               totalParticipants={data.totalParticipants}
               totalStatements={data.totalStatements}
               totalVotes={data.totalVotes}
+              uniquePosters={data.uniquePosters}
+              uniqueVoters={data.uniqueVoters}
+              participation={data.participation}
               topPosts={data.topPosts}
               clusterConsensus={data.clusterConsensus}
               isDeveloper={isDeveloper}

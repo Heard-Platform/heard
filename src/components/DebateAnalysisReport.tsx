@@ -13,6 +13,9 @@ interface DebateAnalysisReportProps {
   totalParticipants: number;
   totalStatements: number;
   totalVotes: number;
+  uniquePosters: number;
+  uniqueVoters: number;
+  participation: number;
   topPosts: TopPost[];
   clusterConsensus?: ClusterConsensus | null;
   isDeveloper?: boolean;
@@ -26,6 +29,9 @@ export function DebateAnalysisReport({
   totalParticipants,
   totalStatements,
   totalVotes,
+  uniquePosters,
+  uniqueVoters,
+  participation,
   topPosts,
   clusterConsensus,
   isDeveloper,
@@ -62,6 +68,13 @@ export function DebateAnalysisReport({
             gradientFrom="from-green-500"
             gradientTo="to-green-600"
           />
+        </div>
+
+        <div className="text-sm text-muted-foreground mb-2">
+          Participation: {(participation * 100).toFixed(0)}%
+          <div className="text-xs mt-0.5">
+            {uniquePosters} posters / {uniqueVoters} voters
+          </div>
         </div>
 
         <TopAgreedPosts topPosts={topPosts} />
