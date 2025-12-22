@@ -4,7 +4,7 @@ import type {
   VoteType,
   UserPresence
 } from "../types";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "motion/react";
 import {
   RoomScroller,
@@ -374,6 +374,15 @@ export function LobbyScreen({
     setShowAccountSetupAnonModal(true);
   };
 
+  const checkChanceCardSeen = useCallback(async (userId: string, roomId: string) => {
+    const response = await api.checkChanceCardSeen(userId, roomId);
+    return response.success && response.data ? response.data.seen : false;
+  }, []);
+
+  const markChanceCardSeen = useCallback(async (userId: string, roomId: string) => {
+    await api.markChanceCardSeen(userId, roomId);
+  }, []);
+
   return (
     <>
       {/* Intro Modal - controlled externally */}
@@ -523,13 +532,8 @@ export function LobbyScreen({
           onGetAllRoomStatements={onGetAllRoomStatements}
           onUpdatePresence={handleUpdatePresence}
           onShowAccountSetupModal={handleShowAccountSetupModal}
-          checkChanceCardSeen={async (userId, roomId) => {
-            const response = await api.checkChanceCardSeen(userId, roomId);
-            return response.success && response.data ? response.data.seen : false;
-          }}
-          markChanceCardSeen={async (userId, roomId) => {
-            await api.markChanceCardSeen(userId, roomId);
-          }}
+          checkChanceCardSeen={checkChanceCardSeen}
+          markChanceCardSeen={markChanceCardSeen}
         />
       </div>
 
