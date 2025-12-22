@@ -25,6 +25,7 @@ export function DebateAnalysisReport({
   totalVoters,
   participation,
   consensusData,
+  spicinessData,
   topPosts,
   clusterConsensus,
   isDeveloper,
@@ -74,6 +75,13 @@ export function DebateAnalysisReport({
           Consensus: {scoreToWord(consensusData.consensus)}
           <div className="text-xs mt-0.5">
             {consensusData.highConsensusPostCount} high consensus posts
+          </div>
+        </div>
+
+        <div className="text-sm text-muted-foreground mb-2">
+          Spiciness: {scoreToWord(spicinessData.spiciness)}
+          <div className="text-xs mt-0.5">
+            {spicinessData.lowConsensusPostCount} low consensus posts
           </div>
         </div>
 

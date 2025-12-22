@@ -20,6 +20,10 @@ export interface AnalysisMetrics {
     highConsensusPostCount: number;
     consensus: number;
   };
+  spicinessData: {
+    lowConsensusPostCount: number;
+    spiciness: number;
+  };
   topPosts: TopPost[];
 }
 
@@ -58,6 +62,40 @@ export function calcConsensus(
   }
 }
 
+export function calcSpiciness(
+  statements: Statement[],
+) {
+  let lowConsensusPostCount = 0;
+  
+  statements.forEach((statement) => {
+    const agreeCount = 
+      statement.agrees + 
+      statement.superAgrees;
+
+    const totalVoteCount =
+      agreeCount +
+      statement.disagrees;
+    
+    if (totalVoteCount > 0) {
+      const agreePercentage = agreeCount / totalVoteCount;
+      if (agreePercentage < 0.25) {
+        lowConsensusPostCount++;
+      }
+    }
+  });
+
+  const spicinessPercentage = statements.length > 0
+    ? (lowConsensusPostCount / statements.length)
+    : 0;
+
+  const normalizedSpiciness = Math.min(spicinessPercentage * 1/0.2, 1);
+
+  return {
+    lowConsensusPostCount,
+    spiciness: normalizedSpiciness,
+  }
+}
+
 export function calculateAnalysisMetrics(
   statements: Statement[]
 ): AnalysisMetrics {
@@ -86,6 +124,7 @@ export function calculateAnalysisMetrics(
     : 0;
 
   const consensusData = calcConsensus(statements);
+  const spicinessData = calcSpiciness(statements);
 
   const topPosts = statements
     .map((statement) => {
@@ -127,6 +166,7 @@ export function calculateAnalysisMetrics(
     totalVotes,
     participation,
     consensusData,
+    spicinessData,
     topPosts,
   };
 }

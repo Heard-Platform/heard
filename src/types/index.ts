@@ -158,6 +158,10 @@ export interface AnalysisMetrics {
     highConsensusPostCount: number;
     consensus: number;
   };
+  spicinessData: {
+    lowConsensusPostCount: number;
+    spiciness: number;
+  };
   topPosts: TopPost[];
 }
 

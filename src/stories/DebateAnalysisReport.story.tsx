@@ -133,6 +133,7 @@ const defaultAnalysisData: AnalysisData = {
   totalVoters: 220,
   participation: 0.71,
   consensusData: {consensus: 0.62, highConsensusPostCount: 48},
+  spicinessData: {spiciness: 0.35, lowConsensusPostCount: 11},
   topPosts: mockTopPosts,
   clusterConsensus: mockClusterConsensus,
 };
@@ -155,6 +156,7 @@ export const NoClusters = () => {
       debateTopic="Should our neighborhood allow food trucks?"
       participation={0.74}
       consensusData={{consensus: 0.45, highConsensusPostCount: 12}}
+      spicinessData={{spiciness: 0.68, lowConsensusPostCount: 19}}
       topPosts={[
         {
           id: "post-a",
