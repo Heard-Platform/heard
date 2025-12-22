@@ -41,7 +41,6 @@ interface RoomCardProps {
   user: UserSession | null;
   currentSubHeard?: string;
   analysisRoomId?: string;
-  checkChanceCardSwiped: (userId: string, roomId: string) => Promise<boolean>;
   markChanceCardSwiped: (userId: string, roomId: string) => Promise<void>;
   onJoin: () => void;
   onSetInactive?: () => Promise<boolean>;
@@ -67,7 +66,6 @@ export function RoomCard({
   user,
   currentSubHeard,
   analysisRoomId,
-  checkChanceCardSwiped,
   markChanceCardSwiped,
   onJoin,
   onSetInactive,
@@ -77,8 +75,7 @@ export function RoomCard({
   onDiscussStatement,
   onShowAccountSetupModal,
 }: RoomCardProps) {
-  const [chanceCardSwiped, setChanceCardSwiped] = useState(false);
-  const [checkingChanceCard, setCheckingChanceCard] = useState(true);
+  const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [showAnalysis, setShowAnalysis] = useState(false);
 
   const currentUserId = user?.id;
@@ -90,19 +87,8 @@ export function RoomCard({
   }, [analysisRoomId, room.id]);
 
   useEffect(() => {
-    const checkChanceCard = async () => {
-      if (!currentUserId || !room.id) {
-        setCheckingChanceCard(false);
-        return;
-      }
-
-      const swiped = await checkChanceCardSwiped(currentUserId, room.id);
-      setChanceCardSwiped(swiped);
-      setCheckingChanceCard(false);
-    };
-
-    checkChanceCard();
-  }, [currentUserId, room.id, checkChanceCardSwiped]);
+    setChanceCardSwiped(room.chanceCardSwiped || false);
+  }, [room.chanceCardSwiped]);
   
   const handleOpenAnalysis = () => {
     setShowAnalysis(true);
