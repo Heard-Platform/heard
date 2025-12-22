@@ -37,6 +37,36 @@ const mockTopPosts: TopPost[] = [
   },
 ];
 
+const mockSpiciestPosts: TopPost[] = [
+  {
+    id: "spicy-1",
+    text: "We should completely ban cars in the downtown core to prioritize pedestrian spaces.",
+    agreeVotes: 18,
+    disagreeVotes: 112,
+    passVotes: 25,
+    consensusScore: 11.6,
+    totalVotes: 155,
+  },
+  {
+    id: "spicy-2",
+    text: "Property taxes should be tripled to fund ambitious green initiatives.",
+    agreeVotes: 22,
+    disagreeVotes: 96,
+    passVotes: 14,
+    consensusScore: 16.7,
+    totalVotes: 132,
+  },
+  {
+    id: "spicy-3",
+    text: "All parking lots should be converted to housing developments immediately.",
+    agreeVotes: 15,
+    disagreeVotes: 78,
+    passVotes: 19,
+    consensusScore: 13.4,
+    totalVotes: 112,
+  },
+];
+
 const mockClusterConsensus: ClusterConsensus = {
   totalClusters: 3,
   clusters: [
@@ -136,6 +166,7 @@ const defaultAnalysisData: AnalysisData = {
   spicinessData: {spiciness: 0.35, lowConsensusPostCount: 11},
   reachData: {reach: 0.42, postersWithHighConsensusPost: 66},
   topPosts: mockTopPosts,
+  spiciestPosts: mockSpiciestPosts,
   clusterConsensus: mockClusterConsensus,
 };
 
@@ -177,6 +208,17 @@ export const NoClusters = () => {
           passVotes: 6,
           consensusScore: 57.1,
           totalVotes: 42,
+        },
+      ]}
+      spiciestPosts={[
+        {
+          id: "spicy-a",
+          text: "Ban all restaurants within 500 feet of food truck locations.",
+          agreeVotes: 5,
+          disagreeVotes: 34,
+          passVotes: 8,
+          consensusScore: 10.6,
+          totalVotes: 47,
         },
       ]}
       clusterConsensus={null}

@@ -1,4 +1,5 @@
 import { Statement } from "./types.tsx";
+import { getTotalVoteCount, serializeStatement } from "./utils.tsx";
 
 export interface TopPost {
   id: string;
@@ -29,6 +30,7 @@ export interface AnalysisMetrics {
     reach: number;
   };
   topPosts: TopPost[];
+  spiciestPosts: TopPost[];
 }
 
 function getHighConsensusStatements(statements: Statement[]) {
@@ -37,14 +39,29 @@ function getHighConsensusStatements(statements: Statement[]) {
       statement.agrees + 
       statement.superAgrees;
 
-    const totalVoteCount =
-      agreeCount +
-      statement.disagrees +
-      statement.passes;
+    const totalVoteCount = getTotalVoteCount(statement);
     
     if (totalVoteCount > 0) {
       const agreePercentage = agreeCount / totalVoteCount;
       return agreePercentage > 0.7;
+    }
+    return false;
+  });
+}
+
+function getLowConsensusStatements(statements: Statement[]) {
+  return statements.filter((statement) => {
+    const agreeCount = 
+      statement.agrees + 
+      statement.superAgrees;
+
+    const totalVotes =
+      agreeCount +
+      statement.disagrees;
+    
+    if (totalVotes > 0) {
+      const agreePercentage = agreeCount / totalVotes;
+      return agreePercentage < 0.25;
     }
     return false;
   });
@@ -71,24 +88,8 @@ export function calcConsensus(
 export function calcSpiciness(
   statements: Statement[],
 ) {
-  let lowConsensusPostCount = 0;
-  
-  statements.forEach((statement) => {
-    const agreeCount = 
-      statement.agrees + 
-      statement.superAgrees;
-
-    const totalVoteCount =
-      agreeCount +
-      statement.disagrees;
-    
-    if (totalVoteCount > 0) {
-      const agreePercentage = agreeCount / totalVoteCount;
-      if (agreePercentage < 0.25) {
-        lowConsensusPostCount++;
-      }
-    }
-  });
+  const lowConsensusStatements = getLowConsensusStatements(statements);
+  const lowConsensusPostCount = lowConsensusStatements.length;
 
   const spicinessPercentage = statements.length > 0
     ? (lowConsensusPostCount / statements.length)
@@ -133,33 +134,21 @@ export function calculateAnalysisMetrics(
   const spicinessData = calcSpiciness(statements);
 
   const topPosts = statements
-    .map((statement) => {
-      const totalVoteCount =
-        statement.agrees +
-        statement.superAgrees +
-        statement.disagrees +
-        statement.passes;
-      const consensusScore =
-        totalVoteCount > 0
-          ? ((statement.agrees + statement.superAgrees) /
-              totalVoteCount) *
-            100
-          : 0;
-
-      return {
-        id: statement.id,
-        text: statement.text,
-        agreeVotes:
-          statement.agrees + statement.superAgrees,
-        disagreeVotes: statement.disagrees,
-        passVotes: statement.passes,
-        consensusScore,
-        totalVotes: totalVoteCount,
-      };
-    })
+    .map(serializeStatement)
     .sort((a, b) => {
       if (b.consensusScore !== a.consensusScore) {
         return b.consensusScore - a.consensusScore;
+      }
+      return b.totalVotes - a.totalVotes;
+    })
+    .slice(0, 3);
+
+  const lowConsensusStatements = getLowConsensusStatements(statements);
+  const spiciestPosts = lowConsensusStatements
+    .map(serializeStatement)
+    .sort((a, b) => {
+      if (a.consensusScore !== b.consensusScore) {
+        return a.consensusScore - b.consensusScore;
       }
       return b.totalVotes - a.totalVotes;
     })
@@ -187,5 +176,6 @@ export function calculateAnalysisMetrics(
       reach,
     },
     topPosts,
+    spiciestPosts,
   };
 }

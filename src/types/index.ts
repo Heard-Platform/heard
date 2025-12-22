@@ -167,6 +167,7 @@ export interface AnalysisMetrics {
     reach: number;
   };
   topPosts: TopPost[];
+  spiciestPosts: TopPost[];
 }
 
 export interface AnalysisData extends AnalysisMetrics {

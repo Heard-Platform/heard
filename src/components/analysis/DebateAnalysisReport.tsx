@@ -3,6 +3,7 @@ import { Users, MessageSquare, Target, GitBranch, AlertCircle, RefreshCw } from 
 import { Button } from "../ui/button";
 import { StatBox } from "./StatBox";
 import { TopAgreedPosts } from "./TopAgreedPosts";
+import { SpiciestPosts } from "./SpiciestPosts";
 import { ClusterConsensusBox } from "./ClusterConsensusBox";
 import { AnalysisData } from "../../types";
 import { scoreToWord } from "../../utils/analysis";
@@ -28,6 +29,7 @@ export function DebateAnalysisReport({
   spicinessData,
   reachData,
   topPosts,
+  spiciestPosts,
   clusterConsensus,
   isDeveloper,
   regenerating,
@@ -94,6 +96,7 @@ export function DebateAnalysisReport({
         </div>
 
         <TopAgreedPosts topPosts={topPosts} />
+        <SpiciestPosts spiciestPosts={spiciestPosts} />
 
         {!clusterConsensus || clusterConsensus.totalClusters === 0 ? (
           <Card className="p-6 border-2 border-yellow-200 bg-yellow-50">
