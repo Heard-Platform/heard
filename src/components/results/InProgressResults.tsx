@@ -35,9 +35,10 @@ export function InProgressResults({
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.5, type: "spring" }}
+      className="relative"
+      style={{ zIndex: 1 }}
     >
       <Card className="p-3 md:p-4 bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 border-2 border-orange-300 overflow-hidden relative">
-        {/* Animated background pulse */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-yellow-200/20 to-orange-200/20"
           animate={{
