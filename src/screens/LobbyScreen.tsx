@@ -374,13 +374,8 @@ export function LobbyScreen({
     setShowAccountSetupAnonModal(true);
   };
 
-  const checkChanceCardSeen = useCallback(async (userId: string, roomId: string) => {
-    const response = await api.checkChanceCardSeen(userId, roomId);
-    return response.success && response.data ? response.data.seen : false;
-  }, []);
-
-  const markChanceCardSeen = useCallback(async (userId: string, roomId: string) => {
-    await api.markChanceCardSeen(userId, roomId);
+  const markChanceCardSwiped = useCallback(async (userId: string, roomId: string) => {
+    await api.markChanceCardSwiped(userId, roomId);
   }, []);
 
   return (
@@ -532,8 +527,7 @@ export function LobbyScreen({
           onGetAllRoomStatements={onGetAllRoomStatements}
           onUpdatePresence={handleUpdatePresence}
           onShowAccountSetupModal={handleShowAccountSetupModal}
-          checkChanceCardSeen={checkChanceCardSeen}
-          markChanceCardSeen={markChanceCardSeen}
+          markChanceCardSwiped={markChanceCardSwiped}
         />
       </div>
 

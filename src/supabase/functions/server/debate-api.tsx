@@ -6,6 +6,9 @@ import {
   getByPrefixParsed,
   getDebate,
   saveVote,
+  getAllDebates,
+  saveChanceCardStatus,
+  getUsersChanceCardStatuses,
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
@@ -25,8 +28,10 @@ import type {
   SubPhase,
   DebateRoom,
   Rant,
+  ChanceCardStatus,
 } from "./types.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
+import { getAllRecords } from "./db-utils.ts";
 
 const app = new Hono();
 
@@ -493,8 +498,8 @@ export const saveDebateRoom = async (room: DebateRoom) => {
   await kv.set(`room:${room.id}`, JSON.stringify(room));
 };
 
-const getActiveRooms = async (): Promise<DebateRoom[]> => {
-  const allRooms = await getByPrefixParsed<DebateRoom>("room:");
+export const getActiveRooms = async (): Promise<DebateRoom[]> => {
+  const allRooms = await getAllDebates();
   return allRooms.filter((r) => r.isActive);
 };
 
@@ -1689,6 +1694,19 @@ app.get(
           const isMember = userMemberships.has(room.subHeard);
           return isAdmin || isMember;
         });
+
+        const statuses = await getUsersChanceCardStatuses(
+          userId,
+        );
+        
+        const swipedRoomIds = new Set(
+            statuses.map(status => status.roomId)
+        );
+
+        rooms = rooms.map((room) => ({
+          ...room,
+          chanceCardSwiped: swipedRoomIds.has(room.id),
+        }));
       }
 
       return c.json({ rooms });
@@ -2902,9 +2920,9 @@ app.post(
   },
 );
 
-// Mark chance card as seen
+// Mark chance card as swiped
 app.post(
-  "/make-server-f1a393b4/chance-card/mark-seen",
+  "/make-server-f1a393b4/chance-card/mark-swiped",
   async (c: any) => {
     try {
       const { userId, roomId } = await c.req.json();
@@ -2916,38 +2934,15 @@ app.post(
         );
       }
 
-      const key = `chance_card_seen:${userId}:${roomId}`;
-      await kv.set(key, JSON.stringify({ 
-        seen: true, 
-        timestamp: Date.now() 
-      }));
+      await saveChanceCardStatus({ userId, roomId, swipedAt: Date.now() });
 
       return c.json({ success: true });
     } catch (error) {
-      console.error("Error marking chance card as seen:", error);
+      console.error("Error marking chance card as swiped:", error);
       return c.json(
-        { error: "Failed to mark chance card as seen" },
+        { error: "Failed to mark chance card as swiped" },
         500
       );
-    }
-  }
-);
-
-// Check if chance card has been seen
-app.get(
-  "/make-server-f1a393b4/chance-card/check-seen/:userId/:roomId",
-  async (c: any) => {
-    try {
-      const userId = c.req.param("userId");
-      const roomId = c.req.param("roomId");
-
-      const key = `chance_card_seen:${userId}:${roomId}`;
-      const data = await kv.get(key);
-
-      return c.json({ seen: !!data });
-    } catch (error) {
-      console.error("Error checking chance card seen status:", error);
-      return c.json({ seen: false });
     }
   }
 );
@@ -3016,7 +3011,6 @@ app.route("/", roomApi);
 
 export {
   app as debateApi,
-  getActiveRooms,
   generateId,
   getDebateRoom,
   getStatements,

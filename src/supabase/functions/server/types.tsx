@@ -78,6 +78,7 @@ export interface DebateRoom {
   allowAnonymous?: boolean;
   anonymousLinkId?: string;
   isTestRoom?: boolean;
+  chanceCardSwiped?: boolean;
 }
 
 export interface Rant {
@@ -86,6 +87,12 @@ export interface Rant {
   author: string;
   roomId: string;
   timestamp: number;
+}
+
+export interface ChanceCardStatus {
+  userId: string;
+  roomId: string;
+  swipedAt: number;
 }
 
 export interface AnalysisData extends AnalysisMetrics {

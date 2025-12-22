@@ -52,8 +52,7 @@ interface RoomScrollerProps {
     currentRoomIndex: number,
   ) => void;
   onShowAccountSetupModal: (featureText: string) => void;
-  checkChanceCardSeen: (userId: string, roomId: string) => Promise<boolean>;
-  markChanceCardSeen: (userId: string, roomId: string) => Promise<void>;
+  markChanceCardSwiped: (userId: string, roomId: string) => Promise<void>;
 }
 
 export interface RoomScrollerRef {
@@ -84,8 +83,7 @@ export const RoomScroller = forwardRef<
       presences,
       onUpdatePresence,
       onShowAccountSetupModal,
-      checkChanceCardSeen,
-      markChanceCardSeen,
+      markChanceCardSwiped,
     },
     ref,
   ) => {
@@ -280,8 +278,7 @@ export const RoomScroller = forwardRef<
                       loadingRooms[room.id] || false
                     }
                     analysisRoomId={analysisRoomId}
-                    checkChanceCardSwiped={checkChanceCardSeen}
-                    markChanceCardSwiped={markChanceCardSeen}
+                    markChanceCardSwiped={markChanceCardSwiped}
                     onJoin={() => onJoinRoom(room.id)}
                     onSetInactive={
                       onSetRoomInactive

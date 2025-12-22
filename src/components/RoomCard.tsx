@@ -411,7 +411,6 @@ export function RoomCard({
                     isAnonymous={!!user?.isAnonymous}
                     onVote={handleVote}
                     chanceCardSwiped={chanceCardSwiped}
-                    checkingChanceCard={checkingChanceCard}
                     onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
                     onChanceCardSwiped={handleSwipeChanceCard}

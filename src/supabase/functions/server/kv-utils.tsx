@@ -7,6 +7,7 @@ import type {
   Statement,
   DebateRoom,
   SentEmail,
+  ChanceCardStatus,
 } from "./types.tsx";
 
 /**
@@ -184,6 +185,19 @@ export const getActivitiesForDate = async <T = any,>(
   dateStr: string,
 ): Promise<T[]> => {
   return getByPrefixParsed<T>(`user_activity:${dateStr}:`);
+};
+
+export const chanceCardStatusKeyFn = (status: ChanceCardStatus) =>
+  `chance_card_status:${status.userId}:${status.roomId}`;
+
+export const getUsersChanceCardStatuses = async (
+  userId: string,
+) => {
+  return getAllRecords<ChanceCardStatus>(`chance_card_status:${userId}:`);
+};
+
+export const saveChanceCardStatus = async (status: ChanceCardStatus) => {
+  await upsert(status, chanceCardStatusKeyFn);
 };
 
 export const getSentEmails = async (): Promise<

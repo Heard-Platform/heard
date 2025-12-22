@@ -93,6 +93,7 @@ export interface DebateRoom {
   allowAnonymous?: boolean;
   anonymousLinkId?: string;
   isTestRoom?: boolean;
+  chanceCardSwiped?: boolean;
 }
 
 export type NewDebateRoom = Pick<
