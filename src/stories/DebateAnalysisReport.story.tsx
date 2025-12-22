@@ -1,7 +1,7 @@
 import { DebateAnalysisReport } from "../components/DebateAnalysisReport";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { TopPost, ClusterConsensus } from "../types";
+import { TopPost, ClusterConsensus, AnalysisData } from "../types";
 
 export default {
   title: "Analysis/Report",
@@ -124,19 +124,25 @@ const mockClusterConsensus: ClusterConsensus = {
   ],
 };
 
+const defaultAnalysisData: AnalysisData = {
+  debateTopic: "What should our city prioritize in the next budget?",
+  totalParticipants: 247,
+  totalStatements: 156,
+  totalVotes: 1842,
+  totalPosters: 156,
+  totalVoters: 220,
+  participation: 0.71,
+  consensusData: {consensus: 0.62, highConsensusPostCount: 48},
+  topPosts: mockTopPosts,
+  clusterConsensus: mockClusterConsensus,
+};
+
 export const WithClusters = () => {
   return (
     <DebateAnalysisReport
+      {...defaultAnalysisData}
       debateId="demo-debate-123"
       debateTopic="What should our city prioritize in the next budget?"
-      totalParticipants={247}
-      totalStatements={156}
-      totalVotes={1842}
-      uniquePosters={156}
-      uniqueVoters={220}
-      participation={0.71}
-      topPosts={mockTopPosts}
-      clusterConsensus={mockClusterConsensus}
     />
   );
 };
@@ -144,14 +150,11 @@ export const WithClusters = () => {
 export const NoClusters = () => {
   return (
     <DebateAnalysisReport
+      {...defaultAnalysisData}
       debateId="demo-debate-456"
       debateTopic="Should our neighborhood allow food trucks?"
-      totalParticipants={42}
-      totalStatements={28}
-      totalVotes={315}
-      uniquePosters={28}
-      uniqueVoters={38}
       participation={0.74}
+      consensusData={{consensus: 0.45, highConsensusPostCount: 12}}
       topPosts={[
         {
           id: "post-a",

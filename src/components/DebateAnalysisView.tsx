@@ -19,7 +19,7 @@ export function DebateAnalysisView({
 }: DebateAnalysisViewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<AnalysisData | null>(null);
+  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [regenerating, setRegenerating] = useState(false);
 
   const fetchAnalysis = async () => {
@@ -29,7 +29,7 @@ export function DebateAnalysisView({
     const response = await api.getRoomAnalysis(roomId);
 
     if (response.success && response.data) {
-      setData(response.data as AnalysisData);
+      setAnalysisData(response.data as AnalysisData);
     } else {
       setError(response.error || "Failed to load analysis");
     }
@@ -115,18 +115,11 @@ export function DebateAnalysisView({
             </div>
           )}
 
-          {data && (
+          {analysisData && (
             <DebateAnalysisReport
+              {...analysisData}
               debateId={roomId}
-              debateTopic={data.debateTopic}
-              totalParticipants={data.totalParticipants}
-              totalStatements={data.totalStatements}
-              totalVotes={data.totalVotes}
-              uniquePosters={data.uniquePosters}
-              uniqueVoters={data.uniqueVoters}
-              participation={data.participation}
-              topPosts={data.topPosts}
-              clusterConsensus={data.clusterConsensus}
+              debateTopic={analysisData.debateTopic}
               isDeveloper={isDeveloper}
               regenerating={regenerating}
               onRegenerateClusters={handleRegenerateClusters}

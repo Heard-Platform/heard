@@ -11,12 +11,51 @@ export interface TopPost {
 }
 
 export interface AnalysisMetrics {
-  uniqueParticipants: number;
-  uniquePosters: number;
-  uniqueVoters: number;
+  totalParticipants: number;
+  totalPosters: number;
+  totalVoters: number;
   totalVotes: number;
   participation: number;
+  consensusData: {
+    highConsensusPostCount: number;
+    consensus: number;
+  };
   topPosts: TopPost[];
+}
+
+export function calcConsensus(
+  statements: Statement[],
+) {
+  let highConsensusPostCount = 0;
+  
+  statements.forEach((statement) => {
+    const agreeCount = 
+      statement.agrees + 
+      statement.superAgrees;
+
+    const totalVoteCount =
+      agreeCount +
+      statement.disagrees +
+      statement.passes;
+    
+    if (totalVoteCount > 0) {
+      const agreePercentage = agreeCount / totalVoteCount;
+      if (agreePercentage > 0.7) {
+        highConsensusPostCount++;
+      }
+    }
+  });
+
+  const consensusPercentage = statements.length > 0
+    ? (highConsensusPostCount / statements.length)
+    : 0;
+
+  const normalizedConsensus = Math.min(consensusPercentage * 1/0.3, 1);
+
+  return {
+    highConsensusPostCount,
+    consensus: normalizedConsensus,
+  }
 }
 
 export function calculateAnalysisMetrics(
@@ -45,6 +84,8 @@ export function calculateAnalysisMetrics(
   const participation = uniqueVoters.size > 0 
     ? Math.min(uniquePosters.size / uniqueVoters.size, 1) 
     : 0;
+
+  const consensusData = calcConsensus(statements);
 
   const topPosts = statements
     .map((statement) => {
@@ -80,11 +121,12 @@ export function calculateAnalysisMetrics(
     .slice(0, 3);
 
   return {
-    uniqueParticipants: uniqueParticipants.size,
-    uniquePosters: uniquePosters.size,
-    uniqueVoters: uniqueVoters.size,
+    totalParticipants: uniqueParticipants.size,
+    totalPosters: uniquePosters.size,
+    totalVoters: uniqueVoters.size,
     totalVotes,
     participation,
+    consensusData,
     topPosts,
   };
 }

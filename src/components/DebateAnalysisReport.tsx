@@ -1,23 +1,15 @@
 import { Card } from "./ui/card";
-import { Users, MessageSquare, Target, ThumbsUp, ThumbsDown, Minus, GitBranch, AlertCircle, RefreshCw } from "lucide-react";
-import { Badge } from "./ui/badge";
+import { Users, MessageSquare, Target, GitBranch, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "./ui/button";
 import { StatBox } from "./analysis/StatBox";
 import { TopAgreedPosts } from "./analysis/TopAgreedPosts";
 import { ClusterConsensusBox } from "./analysis/ClusterConsensusBox";
-import { TopPost, ClusterConsensus } from "../types";
+import { AnalysisData } from "../types";
+import { scoreToWord } from "../utils/analysis";
 
-interface DebateAnalysisReportProps {
+interface DebateAnalysisReportProps extends AnalysisData{
   debateId: string;
   debateTopic: string;
-  totalParticipants: number;
-  totalStatements: number;
-  totalVotes: number;
-  uniquePosters: number;
-  uniqueVoters: number;
-  participation: number;
-  topPosts: TopPost[];
-  clusterConsensus?: ClusterConsensus | null;
   isDeveloper?: boolean;
   regenerating?: boolean;
   onRegenerateClusters?: () => void;
@@ -29,9 +21,10 @@ export function DebateAnalysisReport({
   totalParticipants,
   totalStatements,
   totalVotes,
-  uniquePosters,
-  uniqueVoters,
+  totalPosters,
+  totalVoters,
   participation,
+  consensusData,
   topPosts,
   clusterConsensus,
   isDeveloper,
@@ -71,9 +64,16 @@ export function DebateAnalysisReport({
         </div>
 
         <div className="text-sm text-muted-foreground mb-2">
-          Participation: {(participation * 100).toFixed(0)}%
+          Participation: {scoreToWord(participation)}
           <div className="text-xs mt-0.5">
-            {uniquePosters} posters / {uniqueVoters} voters
+            {totalPosters} posters / {totalVoters} voters
+          </div>
+        </div>
+
+        <div className="text-sm text-muted-foreground mb-2">
+          Consensus: {scoreToWord(consensusData.consensus)}
+          <div className="text-xs mt-0.5">
+            {consensusData.highConsensusPostCount} high consensus posts
           </div>
         </div>
 

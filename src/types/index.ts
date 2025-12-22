@@ -148,15 +148,22 @@ export interface ClusterConsensus {
   clusters: Cluster[];
 }
 
-export interface AnalysisData {
-  debateTopic: string;
+export interface AnalysisMetrics {
   totalParticipants: number;
-  totalStatements: number;
+  totalPosters: number;
+  totalVoters: number;
   totalVotes: number;
-  uniquePosters: number;
-  uniqueVoters: number;
   participation: number;
+  consensusData: {
+    highConsensusPostCount: number;
+    consensus: number;
+  };
   topPosts: TopPost[];
+}
+
+export interface AnalysisData extends AnalysisMetrics {
+  debateTopic: string;
+  totalStatements: number;
   clusterConsensus?: ClusterConsensus | null;
 }
 

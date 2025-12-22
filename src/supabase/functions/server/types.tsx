@@ -1,4 +1,4 @@
-import { TopPost } from "./analysis-utils.tsx";
+import { AnalysisMetrics, TopPost } from "./analysis-utils.tsx";
 import { ClusterConsensus } from "./cluster-analysis.tsx";
 
 export interface UserSession {
@@ -88,15 +88,9 @@ export interface Rant {
   timestamp: number;
 }
 
-export interface AnalysisData {
+export interface AnalysisData extends AnalysisMetrics {
   debateTopic: string;
-  totalParticipants: number;
   totalStatements: number;
-  totalVotes: number;
-  uniquePosters: number;
-  uniqueVoters: number;
-  participation: number;
-  topPosts: TopPost[];
   clusterConsensus?: ClusterConsensus | null;
 }
 

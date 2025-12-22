@@ -84,14 +84,9 @@ app.get(
 
       const analysisData: AnalysisData = {
         debateTopic: room.topic,
-        totalParticipants: metrics.uniqueParticipants,
         totalStatements: statements.length,
-        totalVotes: metrics.totalVotes,
-        uniquePosters: metrics.uniquePosters,
-        uniqueVoters: metrics.uniqueVoters,
-        participation: metrics.participation,
-        topPosts: metrics.topPosts,
         clusterConsensus,
+        ...metrics,
       };
       
       return c.json(analysisData);
