@@ -134,6 +134,7 @@ const defaultAnalysisData: AnalysisData = {
   participation: 0.71,
   consensusData: {consensus: 0.62, highConsensusPostCount: 48},
   spicinessData: {spiciness: 0.35, lowConsensusPostCount: 11},
+  reachData: {reach: 0.42, postersWithHighConsensusPost: 66},
   topPosts: mockTopPosts,
   clusterConsensus: mockClusterConsensus,
 };
@@ -157,6 +158,7 @@ export const NoClusters = () => {
       participation={0.74}
       consensusData={{consensus: 0.45, highConsensusPostCount: 12}}
       spicinessData={{spiciness: 0.68, lowConsensusPostCount: 19}}
+      reachData={{reach: 0.28, postersWithHighConsensusPost: 15}}
       topPosts={[
         {
           id: "post-a",

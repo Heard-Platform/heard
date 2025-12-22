@@ -24,15 +24,15 @@ export interface AnalysisMetrics {
     lowConsensusPostCount: number;
     spiciness: number;
   };
+  reachData: {
+    postersWithHighConsensusPost: number;
+    reach: number;
+  };
   topPosts: TopPost[];
 }
 
-export function calcConsensus(
-  statements: Statement[],
-) {
-  let highConsensusPostCount = 0;
-  
-  statements.forEach((statement) => {
+function getHighConsensusStatements(statements: Statement[]) {
+  return statements.filter((statement) => {
     const agreeCount = 
       statement.agrees + 
       statement.superAgrees;
@@ -44,11 +44,17 @@ export function calcConsensus(
     
     if (totalVoteCount > 0) {
       const agreePercentage = agreeCount / totalVoteCount;
-      if (agreePercentage > 0.7) {
-        highConsensusPostCount++;
-      }
+      return agreePercentage > 0.7;
     }
+    return false;
   });
+}
+
+export function calcConsensus(
+  statements: Statement[],
+) {
+  const highConsensusStatements = getHighConsensusStatements(statements);
+  const highConsensusPostCount = highConsensusStatements.length;
 
   const consensusPercentage = statements.length > 0
     ? (highConsensusPostCount / statements.length)
@@ -159,6 +165,15 @@ export function calculateAnalysisMetrics(
     })
     .slice(0, 3);
 
+  const highConsensusStatements = getHighConsensusStatements(statements);
+  const postersWithHighConsensusPost = new Set(
+    highConsensusStatements.map((statement) => statement.author)
+  );
+
+  const reach = uniquePosters.size > 0
+    ? Math.min(postersWithHighConsensusPost.size / uniquePosters.size, 1)
+    : 0;
+
   return {
     totalParticipants: uniqueParticipants.size,
     totalPosters: uniquePosters.size,
@@ -167,6 +182,10 @@ export function calculateAnalysisMetrics(
     participation,
     consensusData,
     spicinessData,
+    reachData: {
+      postersWithHighConsensusPost: postersWithHighConsensusPost.size,
+      reach,
+    },
     topPosts,
   };
 }

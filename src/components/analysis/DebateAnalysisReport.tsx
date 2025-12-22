@@ -26,6 +26,7 @@ export function DebateAnalysisReport({
   participation,
   consensusData,
   spicinessData,
+  reachData,
   topPosts,
   clusterConsensus,
   isDeveloper,
@@ -82,6 +83,13 @@ export function DebateAnalysisReport({
           Spiciness: {scoreToWord(spicinessData.spiciness)}
           <div className="text-xs mt-0.5">
             {spicinessData.lowConsensusPostCount} low consensus posts
+          </div>
+        </div>
+
+        <div className="text-sm text-muted-foreground mb-2">
+          Reach: {scoreToWord(reachData.reach)}
+          <div className="text-xs mt-0.5">
+            {reachData.postersWithHighConsensusPost} posters with a high consensus post
           </div>
         </div>
 
