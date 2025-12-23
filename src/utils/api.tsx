@@ -1,5 +1,5 @@
 import { projectId, publicAnonKey } from "./supabase/info";
-import type { DebateRoom, NewDebateRoom } from "../types";
+import { AnalysisData, type DebateRoom, type NewDebateRoom } from "../types";
 
 export const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
 
@@ -448,7 +448,7 @@ class ApiClient {
   }
 
   async getRoomAnalysis(roomId: string) {
-    return this.request(`/room/${roomId}/analysis`);
+    return this.request<AnalysisData>(`/room/${roomId}/analysis`);
   }
 
   async regenerateClusters(roomId: string) {

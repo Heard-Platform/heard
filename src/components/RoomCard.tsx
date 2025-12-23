@@ -1,36 +1,28 @@
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+
 import { motion } from "motion/react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
-  MessageCircle,
-  Users,
-  ArrowRight,
-  Settings,
-  XCircle,
-  Hash,
+  MessageCircle, ArrowRight, Hash,
   BarChart3,
-  Loader2,
+  Loader2
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
 import { SwipeableStatementStack } from "./room/SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { NewStatementInput } from "./NewStatementInput";
-import { ShareButton } from "./ShareButton";
 import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
 import { useState, useEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
-import { DebateRoom, Statement, VoteType, UserSession } from "../types";
+import { DebateRoom, Statement, VoteType, UserSession, AnalysisData } from "../types";
+import { api } from "../utils/api";
+import { MetricsCircle } from "./analysis/MetricsCircle";
+import { RoomCardMenu } from "./room/RoomCardMenu";
 
-// @ts-ignore
-import { toast } from "sonner@2.0.3";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -77,6 +69,7 @@ export function RoomCard({
 }: RoomCardProps) {
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
 
   const currentUserId = user?.id;
 
@@ -89,6 +82,23 @@ export function RoomCard({
   useEffect(() => {
     setChanceCardSwiped(room.chanceCardSwiped || false);
   }, [room.chanceCardSwiped]);
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      if (isActive && statements.length > 0) {
+        try {
+          const response = await api.getRoomAnalysis(room.id)
+          if (response.data) {
+            setAnalysis(response.data);
+          }
+        } catch (error) {
+          console.error('Error fetching room metrics:', error);
+        }
+      }
+    };
+
+    fetchMetrics();
+  }, [isActive, room.id, statements.length]);
   
   const handleOpenAnalysis = () => {
     setShowAnalysis(true);
@@ -186,107 +196,10 @@ export function RoomCard({
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="relative space-y-2"
+            className="space-y-2"
           >
-            {/* Status badges in top right */}
-            <div className="absolute top-0 right-0 flex flex-col items-end gap-1.5">
-              {isCompleted ? (
-                <Badge className="bg-gray-600 text-white">
-                  Completed
-                </Badge>
-              ) : isActive_status ? (
-                <Badge className="bg-green-600 text-white animate-pulse">
-                  🔴 Live
-                </Badge>
-              ) : (
-                <Badge className="bg-blue-600 text-white">
-                  Waiting
-                </Badge>
-              )}
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                {isDeveloper && onSetInactive && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="w-6 h-6 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-0"
-                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                      >
-                        <Settings className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={async (e: React.MouseEvent) => {
-                          e.stopPropagation();
-                          await onSetInactive();
-                        }}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <XCircle className="w-4 h-4 mr-2" />
-                        Mark as Inactive
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="w-6 h-6 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-0"
-                  onClick={(e: any) => {
-                    e.stopPropagation();
-                    handleOpenAnalysis();
-                  }}
-                >
-                  <BarChart3 className="w-4 h-4" />
-                </Button>
-                <ShareButton roomId={room.id} />
-              </div>
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Users className="w-4 h-4" />
-                <span>{participantCount}</span>
-              </div>
-              {/* Compact Realtime Countdown */}
-              {isRealtime &&
-                room.endTime &&
-                !hasRealtimeEnded && (
-                  <div className="text-xs text-muted-foreground">
-                    {(() => {
-                      const timeLeft = Math.max(
-                        0,
-                        room.endTime - Date.now(),
-                      );
-                      const days = Math.floor(
-                        timeLeft / (24 * 60 * 60 * 1000),
-                      );
-                      const hours = Math.floor(
-                        (timeLeft % (24 * 60 * 60 * 1000)) /
-                          (60 * 60 * 1000),
-                      );
-                      const minutes = Math.floor(
-                        (timeLeft % (60 * 60 * 1000)) / 60000,
-                      );
-                      const seconds = Math.floor(
-                        (timeLeft % 60000) / 1000,
-                      );
-
-                      if (days > 0) {
-                        return `${days}d left`;
-                      } else if (hours > 0) {
-                        return `${hours}h left`;
-                      } else if (minutes > 0) {
-                        return `${minutes}m left`;
-                      } else {
-                        return `${seconds}s left`;
-                      }
-                    })()}
-                  </div>
-                )}
-            </div>
-
-            {/* Title with space for badges */}
-            <div className="flex items-start gap-2 pr-18">
+            {/* Title row with hamburger menu */}
+            <div className="flex items-start gap-2">
               {room.imageUrl ? (
                 <div
                   className="w-10 h-10 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-2 border-purple-300 flex-shrink-0"
@@ -316,29 +229,65 @@ export function RoomCard({
               ) : (
                 <MessageCircle className="w-4 h-4 text-purple-600 flex-shrink-0 mt-1" />
               )}
-              <h2 className="font-bold text-foreground">
+              <h2 className="font-bold text-foreground flex-1">
                 {room.topic}
               </h2>
+              <RoomCardMenu
+                room={room}
+                participantCount={participantCount}
+                isRealtime={isRealtime}
+                hasRealtimeEnded={hasRealtimeEnded}
+                isDeveloper={isDeveloper}
+                handleOpenAnalysis={handleOpenAnalysis}
+                onSetInactive={onSetInactive}
+              />
             </div>
 
-            {/* Features badges */}
-            <div className="flex flex-wrap gap-2">
-              {room.subHeard && !currentSubHeard && (
-                <Badge
-                  variant="outline"
-                  className="bg-orange-100 text-orange-700 border-orange-300 text-xs"
-                >
-                  <Hash className="w-3 h-3 mr-1" />
-                  {room.subHeard
-                    .split("-")
-                    .map(
-                      (word) =>
-                        word.charAt(0).toUpperCase() +
-                        word.slice(1),
-                    )
-                    .join(" ")}
-                </Badge>
-              )}
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                {room.subHeard && !currentSubHeard && (
+                  <Badge
+                    variant="outline"
+                    className="bg-orange-100 text-orange-700 border-orange-300 text-xs"
+                  >
+                    <Hash className="w-3 h-3 mr-1" />
+                    {room.subHeard
+                      .split("-")
+                      .map(
+                        (word) =>
+                          word.charAt(0).toUpperCase() +
+                          word.slice(1),
+                      )
+                      .join(" ")}
+                  </Badge>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {analysis && (
+                  <MetricsCircle
+                    participation={analysis.participation}
+                    consensus={analysis.consensusData.consensus}
+                    spiciness={analysis.spicinessData.spiciness}
+                    reach={analysis.reachData.reach}
+                    size={25}
+                  />
+                )}
+                
+                {isCompleted ? (
+                  <Badge className="bg-gray-600 text-white">
+                    Completed
+                  </Badge>
+                ) : isActive_status ? (
+                  <Badge className="bg-green-600 text-white animate-pulse">
+                    🔴 Live
+                  </Badge>
+                ) : (
+                  <Badge className="bg-blue-600 text-white">
+                    Waiting
+                  </Badge>
+                )}
+              </div>
             </div>
           </motion.div>
 

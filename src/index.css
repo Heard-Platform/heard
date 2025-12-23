@@ -3229,10 +3229,6 @@
     padding-right: calc(var(--spacing) * 12);
   }
 
-  .pr-18 {
-    padding-right: calc(var(--spacing) * 18);
-  }
-
   .pr-20 {
     padding-right: calc(var(--spacing) * 20);
   }
@@ -4433,12 +4429,6 @@
   @media (hover: hover) {
     .hover\:text-gray-600:hover {
       color: var(--color-gray-600);
-    }
-  }
-
-  @media (hover: hover) {
-    .hover\:text-purple-600:hover {
-      color: var(--color-purple-600);
     }
   }
 
