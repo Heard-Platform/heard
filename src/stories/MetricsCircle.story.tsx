@@ -132,13 +132,13 @@ export const MetricsCircleStory = () => {
       <h2 className="p-8 pb-0">Different Sizes</h2>
       <div className="p-8 bg-gray-50 flex items-center gap-8">
         <div>
-          <p className="mb-2 text-sm">Small (50px)</p>
+          <p className="mb-2 text-sm">Small (25px)</p>
           <MetricsCircle
             participation={0.85}
             consensus={0.45}
             spiciness={0.12}
             reach={0.78}
-            size={50}
+            size={25}
           />
         </div>
         <div>

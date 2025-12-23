@@ -26,18 +26,19 @@ export function MetricsCircle({
   const reachRings = getRingsLit(reach);
 
   const center = size / 2;
-  const ringThickness = size * 0.1;
+  const ringThickness = size * 0.05;
+  const gapSize = size * 0.05;
   const rings = [
     { radius: size * 0.2, strokeWidth: ringThickness },
-    { radius: size * 0.325, strokeWidth: ringThickness },
-    { radius: size * 0.45, strokeWidth: ringThickness },
+    { radius: size * 0.2 + ringThickness + gapSize, strokeWidth: ringThickness },
+    { radius: size * 0.2 + (ringThickness + gapSize) * 2, strokeWidth: ringThickness },
   ];
 
   const colors = {
-    participation: "#8b5cf6",
-    consensus: "#3b82f6",
-    spiciness: "#ef4444",
-    reach: "#10b981",
+    participation: "#a78bfa",
+    consensus: "#60a5fa",
+    spiciness: "#f87171",
+    reach: "#34d399",
   };
 
   const createQuadrantPath = (
@@ -48,8 +49,9 @@ export function MetricsCircle({
     const innerRadius = radius - strokeWidth / 2;
     const outerRadius = radius + strokeWidth / 2;
 
-    const startRad = (startAngle * Math.PI) / 180;
-    const endRad = ((startAngle + 90) * Math.PI) / 180;
+    const quadrantGap = 2;
+    const startRad = ((startAngle + quadrantGap) * Math.PI) / 180;
+    const endRad = ((startAngle + 90 - quadrantGap) * Math.PI) / 180;
 
     const x1Outer = center + outerRadius * Math.cos(startRad);
     const y1Outer = center + outerRadius * Math.sin(startRad);
@@ -84,12 +86,17 @@ export function MetricsCircle({
           <g key={ringIndex}>
             {metrics.map((metric) => {
               const isLit = ringIndex < metric.ringsLit;
+              const dashLength = size * 0.03;
+              const gapLength = size * 0.015;
               return (
                 <path
                   key={`${metric.name}-${ringIndex}`}
                   d={createQuadrantPath(metric.angle, ring.radius, ring.strokeWidth)}
                   fill={isLit ? metric.color : "#e5e7eb"}
-                  opacity={isLit ? 1 : 0.3}
+                  opacity={isLit ? 0.85 : 0.15}
+                  stroke={isLit ? metric.color : "#d1d5db"}
+                  strokeWidth="0.5"
+                  strokeDasharray={`${dashLength} ${gapLength}`}
                 />
               );
             })}
