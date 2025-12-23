@@ -13,6 +13,7 @@ export function AllHighScores() {
         consensus={0.92}
         spiciness={0.78}
         reach={0.88}
+        size={200}
       />
     </div>
   );
@@ -27,6 +28,7 @@ export function AllMediumScores() {
         consensus={0.55}
         spiciness={0.48}
         reach={0.52}
+        size={200}
       />
     </div>
   );
@@ -41,6 +43,7 @@ export function AllLowScores() {
         consensus={0.18}
         spiciness={0.25}
         reach={0.15}
+        size={200}
       />
     </div>
   );
@@ -55,6 +58,7 @@ export function MixedScores() {
         consensus={0.45}
         spiciness={0.12}
         reach={0.78}
+        size={200}
       />
     </div>
   );
@@ -69,6 +73,7 @@ export function EdgeCaseZeroScores() {
         consensus={0}
         spiciness={0}
         reach={0}
+        size={200}
       />
     </div>
   );
@@ -84,6 +89,7 @@ export function ThresholdTesting() {
           consensus={0.32}
           spiciness={0.32}
           reach={0.32}
+          size={200}
         />
       </div>
       <div>
@@ -93,6 +99,7 @@ export function ThresholdTesting() {
           consensus={0.33}
           spiciness={0.33}
           reach={0.33}
+          size={200}
         />
       </div>
       <div>
@@ -102,6 +109,7 @@ export function ThresholdTesting() {
           consensus={0.65}
           spiciness={0.65}
           reach={0.65}
+          size={200}
         />
       </div>
       <div>
@@ -111,6 +119,7 @@ export function ThresholdTesting() {
           consensus={0.66}
           spiciness={0.66}
           reach={0.66}
+          size={200}
         />
       </div>
     </div>
@@ -120,6 +129,39 @@ export function ThresholdTesting() {
 export const MetricsCircleStory = () => {
   return (
     <>
+      <h2 className="p-8 pb-0">Different Sizes</h2>
+      <div className="p-8 bg-gray-50 flex items-center gap-8">
+        <div>
+          <p className="mb-2 text-sm">Small (50px)</p>
+          <MetricsCircle
+            participation={0.85}
+            consensus={0.45}
+            spiciness={0.12}
+            reach={0.78}
+            size={50}
+          />
+        </div>
+        <div>
+          <p className="mb-2 text-sm">Medium (100px)</p>
+          <MetricsCircle
+            participation={0.85}
+            consensus={0.45}
+            spiciness={0.12}
+            reach={0.78}
+            size={100}
+          />
+        </div>
+        <div>
+          <p className="mb-2 text-sm">Large (200px)</p>
+          <MetricsCircle
+            participation={0.85}
+            consensus={0.45}
+            spiciness={0.12}
+            reach={0.78}
+            size={200}
+          />
+        </div>
+      </div>
       <AllHighScores />
       <AllMediumScores />
       <AllLowScores />

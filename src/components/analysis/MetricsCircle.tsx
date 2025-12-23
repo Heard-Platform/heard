@@ -3,6 +3,7 @@ interface MetricsCircleProps {
   consensus: number;
   spiciness: number;
   reach: number;
+  size: number;
 }
 
 export function MetricsCircle({
@@ -10,6 +11,7 @@ export function MetricsCircle({
   consensus,
   spiciness,
   reach,
+  size,
 }: MetricsCircleProps) {
   const getRingsLit = (score: number) => {
     if (score >= 0.66) return 3;
@@ -23,12 +25,12 @@ export function MetricsCircle({
   const spicinessRings = getRingsLit(spiciness);
   const reachRings = getRingsLit(reach);
 
-  const size = 50;
   const center = size / 2;
+  const ringThickness = size * 0.1;
   const rings = [
-    { radius: 22.5, strokeWidth: 5 },
-    { radius: 16.25, strokeWidth: 5 },
-    { radius: 10, strokeWidth: 5 },
+    { radius: size * 0.2, strokeWidth: ringThickness },
+    { radius: size * 0.325, strokeWidth: ringThickness },
+    { radius: size * 0.45, strokeWidth: ringThickness },
   ];
 
   const colors = {
