@@ -22,6 +22,7 @@ import { DebateRoom, Statement, VoteType, UserSession, AnalysisData } from "../t
 import { api } from "../utils/api";
 import { MetricsCircle } from "./analysis/MetricsCircle";
 import { RoomCardMenu } from "./room/RoomCardMenu";
+import { MetricsExplainerModal } from "./analysis/MetricsExplainerModal";
 
 
 interface RoomCardProps {
@@ -69,7 +70,8 @@ export function RoomCard({
 }: RoomCardProps) {
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [showAnalysis, setShowAnalysis] = useState(false);
-  const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
+  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+  const [showMetricsModal, setShowMetricsModal] = useState(false);
 
   const currentUserId = user?.id;
 
@@ -89,7 +91,7 @@ export function RoomCard({
         try {
           const response = await api.getRoomAnalysis(room.id)
           if (response.data) {
-            setAnalysis(response.data);
+            setAnalysisData(response.data);
           }
         } catch (error) {
           console.error('Error fetching room metrics:', error);
@@ -264,14 +266,22 @@ export function RoomCard({
               </div>
               
               <div className="flex items-center gap-2">
-                {analysis && (
-                  <MetricsCircle
-                    participation={analysis.participation}
-                    consensus={analysis.consensusData.consensus}
-                    spiciness={analysis.spicinessData.spiciness}
-                    reach={analysis.reachData.reach}
-                    size={25}
-                  />
+                {analysisData && (
+                  <div 
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMetricsModal(true);
+                    }}
+                  >
+                    <MetricsCircle
+                      participation={analysisData.participation}
+                      consensus={analysisData.consensusData.consensus}
+                      spiciness={analysisData.spicinessData.spiciness}
+                      reach={analysisData.reachData.reach}
+                      size={25}
+                    />
+                  </div>
                 )}
                 
                 {isCompleted ? (
@@ -424,6 +434,13 @@ export function RoomCard({
           roomId={room.id}
           isDeveloper={isDeveloper}
           onClose={handleCloseAnalysis}
+        />
+      )}
+
+      {showMetricsModal && analysisData && (
+        <MetricsExplainerModal
+          analysisData={analysisData}
+          onClose={() => setShowMetricsModal(false)}
         />
       )}
     </motion.div>
