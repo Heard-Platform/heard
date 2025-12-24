@@ -3,7 +3,7 @@ import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import { getAllDebates, getAllRealUsers, getAllStatements, getByPrefixParsed, getParsedKvData, rantKeyFn } from "./kv-utils.tsx";
-import { getVotesForUser } from "./kv-utils.tsx";
+import { getVotesForUser, getUserActivityRecords } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
 
 const app = new Hono();
@@ -419,11 +419,13 @@ app.get(
       }
 
       const votes = await getVotesForUser(userId);
+      const activities = await getUserActivityRecords(userId);
 
       rooms.sort((a, b) => b.createdAt - a.createdAt);
       statements.sort((a, b) => b.timestamp - a.timestamp);
       votes.sort((a, b) => b.timestamp - a.timestamp);
       rants.sort((a, b) => b.timestamp - a.timestamp);
+      activities.sort((a: any, b: any) => b.timestamp - a.timestamp);
 
       return c.json({
         userId,
@@ -431,6 +433,7 @@ app.get(
         statements,
         votes,
         rants,
+        activities,
       });
     } catch (error) {
       console.error("Error fetching user history:", error);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "../ui/card";
 import { Label } from "../ui/label";
-import { Loader2, User, MessageSquare, ThumbsUp, Flame } from "lucide-react";
+import { Loader2, User, MessageSquare, ThumbsUp, Flame, Activity } from "lucide-react";
 import { api } from "../../utils/api";
 
 interface UserOption {
@@ -16,6 +16,7 @@ interface UserHistoryData {
   statements: any[];
   votes: any[];
   rants: any[];
+  activities: any[];
 }
 
 interface UserHistoryProps {
@@ -270,6 +271,33 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
                     </div>
                     <div className="text-sm text-slate-500">
                       Status: {rant.processed ? "Processed" : "Pending"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Activity className="w-5 h-5 text-gray-600" />
+              <h3 className="text-lg">Activities</h3>
+              <span className="text-sm text-slate-500">
+                ({historyData.activities.length})
+              </span>
+            </div>
+            {historyData.activities.length === 0 ? (
+              <p className="text-slate-500 text-sm">No activities recorded</p>
+            ) : (
+              <div className="space-y-3">
+                {historyData.activities.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="p-4 bg-slate-50 rounded-lg border border-slate-200"
+                  >
+                    <div className="text-slate-900 mb-1">{activity.description}</div>
+                    <div className="text-sm text-slate-500">
+                      Timestamp: {formatDate(activity.timestamp)}
                     </div>
                   </div>
                 ))}
