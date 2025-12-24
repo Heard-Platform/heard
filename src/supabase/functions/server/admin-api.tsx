@@ -2,6 +2,9 @@
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
+import { getAllDebates, getAllRealUsers, getAllStatements, getByPrefixParsed, getParsedKvData, rantKeyFn } from "./kv-utils.tsx";
+import { getVotesForUser } from "./kv-utils.tsx";
+import { DebateRoom, Rant, Statement } from "./types.tsx";
 
 const app = new Hono();
 
@@ -26,34 +29,20 @@ app.use("/make-server-f1a393b4/admin/*", verifyAdminKey);
 // Get all users
 app.get("/make-server-f1a393b4/admin/users", async (c) => {
   try {
-    const userKeys = await kv.getByPrefix("user:");
+    const allUsers = await getAllRealUsers();
 
-    const users = userKeys
-      .map((userData) => {
-        try {
-          // Check if it's already an object or needs parsing
-          const user =
-            typeof userData === "string"
-              ? JSON.parse(userData)
-              : userData;
+    const users = allUsers.map((user) => ({
+      userId: user.id,
+      name: user.nickname || "Unknown",
+      email: user.email || "no-email",
+      lastSeen: user.lastActive || 0,
+    }));
 
-          return {
-            userId: user.id,
-            name: user.nickname || user.name || "Unknown",
-            lastSeen: user.lastActive || 0,
-          };
-        } catch (error) {
-          return null;
-        }
-      })
-      .filter((user) => user !== null);
-
-    // Sort by most recent activity
     users.sort((a, b) => b.lastSeen - a.lastSeen);
 
     return c.json({ users });
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error("Error fetching all users for admin:", error);
     return c.json({ error: "Failed to fetch users" }, 500);
   }
 });
@@ -394,6 +383,58 @@ app.patch(
         { error: "Failed to update debate subheard" },
         500,
       );
+    }
+  },
+);
+
+app.get(
+  "/make-server-f1a393b4/admin/user-history/:userId",
+  async (c) => {
+    try {
+      const userId = c.req.param("userId");
+
+      const rooms: DebateRoom[] = [];
+      const statements: Statement[] = [];
+      const rants: Rant[] = [];
+
+      const allRooms = await getAllDebates();
+      for (const room of allRooms) {
+        if (room.participants.includes(userId) || room.hostId === userId) {
+          rooms.push(room);
+        }
+
+        if (room.hostId === userId) {
+          const rants = await getByPrefixParsed<Rant>(`rant:${room.id}:`);
+          if (rants.length) {
+            rants.push(rants[0]);
+          }
+        }
+      }
+
+      const allStatements = await getAllStatements();
+      for (const statement of allStatements) {
+        if (statement.author === userId) {
+          statements.push(statement);
+        }
+      }
+
+      const votes = await getVotesForUser(userId);
+
+      rooms.sort((a, b) => b.createdAt - a.createdAt);
+      statements.sort((a, b) => b.timestamp - a.timestamp);
+      votes.sort((a, b) => b.timestamp - a.timestamp);
+      rants.sort((a, b) => b.timestamp - a.timestamp);
+
+      return c.json({
+        userId,
+        rooms,
+        statements,
+        votes,
+        rants,
+      });
+    } catch (error) {
+      console.error("Error fetching user history:", error);
+      return c.json({ error: "Failed to fetch user history" }, 500);
     }
   },
 );

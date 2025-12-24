@@ -1,55 +1,8 @@
-import { projectId, publicAnonKey } from "./supabase/info";
 import { AnalysisData, type DebateRoom, type NewDebateRoom } from "../types";
+import { BaseApiClient, API_BASE_URL, ApiResponse } from "./api-client";
+import { publicAnonKey } from "./supabase/info";
 
-export const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
-
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-class ApiClient {
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {},
-  ): Promise<ApiResponse<T>> {
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}${endpoint}`,
-        {
-          ...options,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${publicAnonKey}`,
-            ...options.headers,
-          },
-        },
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error(`API Error (${response.status}):`, data);
-        return {
-          success: false,
-          error: data.error || `HTTP ${response.status}`,
-        };
-      }
-
-      return { success: true, data };
-    } catch (error) {
-      console.error("API Request failed:", error);
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Network error",
-      };
-    }
-  }
-
+class ApiClient extends BaseApiClient {
   // User management
   async createUser(nickname: string, email: string) {
     return this.request("/user/create", {
@@ -374,6 +327,22 @@ class ApiClient {
     return this.request(`/admin/debate/${debateId}/subheard`, {
       method: "PATCH",
       body: JSON.stringify({ newSubHeard }),
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
+
+  async adminGetAllUsers(adminKey: string) {
+    return this.request("/admin/users", {
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
+
+  async adminGetUserHistory(userId: string, adminKey: string) {
+    return this.request(`/admin/user-history/${userId}`, {
       headers: {
         "X-Admin-Key": adminKey,
       },

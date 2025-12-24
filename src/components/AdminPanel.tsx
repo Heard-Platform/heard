@@ -39,10 +39,12 @@ import {
   ToggleLeft,
   ToggleRight,
   TestTube,
+  History,
 } from "lucide-react";
 import { api } from "../utils/api";
 import type { DebateRoom, SubHeard } from "../types";
 import { PolisImporter } from "./PolisImporter";
+import { UserHistory } from "./devtools/UserHistory";
 
 interface AdminUser {
   userId: string;
@@ -926,6 +928,23 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                 </div>
               ))}
             </div>
+          </Card>
+        )}
+
+        {activeTab === "history" && (
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <History className="w-5 h-5 text-gray-600" />
+              <h2 className="text-xl">User History</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              View detailed history of user actions and
+              interactions.
+            </p>
+            <UserHistory
+              currentUserId={users[0]?.userId || ""}
+              adminKey={adminKey}
+            />
           </Card>
         )}
       </div>

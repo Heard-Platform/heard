@@ -8,6 +8,7 @@ import type {
   DebateRoom,
   SentEmail,
   ChanceCardStatus,
+  Rant,
 } from "./types.tsx";
 
 /**
@@ -143,6 +144,10 @@ export const bulkSaveVotes = async (votes: Vote[]) => {
 export const statementKeyFn = (statement: Statement) =>
   `statement:${statement.roomId}:${statement.id}`;
 
+export const getAllStatements = async (): Promise<Statement[]> => {
+  return getAllRecords<Statement>("statement:");
+};
+
 export const getStatement = async (statementId: string): Promise<Statement | null> => {
   return getParsedKvData<Statement>(`statement:%:${statementId}`);
 };
@@ -168,6 +173,9 @@ export const getAllDebates = async (): Promise<DebateRoom[]> => {
 export const getDebate = async (debateId: string) => {
   return getParsedKvData<DebateRoom>(`room:${debateId}`);
 };
+
+export const rantKeyFn = (rant: Rant) =>
+  `rant:${rant.roomId}:${rant.id}`;
 
 export const getAllSubHeards = async <T = any,>(): Promise<
   T[]
