@@ -23,7 +23,8 @@ import { api } from "../utils/api";
 import { MetricsCircle } from "./analysis/MetricsCircle";
 import { RoomCardMenu } from "./room/RoomCardMenu";
 import { MetricsExplainerModal } from "./analysis/MetricsExplainerModal";
-
+import { TimeLeftBadge } from "./room/TimeLeftBadge";
+import { getTimeRemaining, ONE_WEEK_MS } from "../utils/time";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -116,11 +117,9 @@ export function RoomCard({
   const isRantFirst = room.rantFirst;
   const isRealtime = room.mode === "realtime";
 
-  // Check if realtime room has ended
   const hasRealtimeEnded =
     isRealtime && room.endTime && Date.now() >= room.endTime;
 
-  // Determine room status
   const isActive_status =
     room.phase !== "lobby" && room.phase !== "results";
   const isWaiting = room.phase === "lobby";
@@ -289,9 +288,11 @@ export function RoomCard({
                     Completed
                   </Badge>
                 ) : isActive_status ? (
-                  <Badge className="bg-green-600 text-white animate-pulse">
-                    🔴 Live
-                  </Badge>
+                  <TimeLeftBadge
+                    endTime={room.endTime}
+                    createdAt={room.createdAt}
+                    isRealtime={isRealtime}
+                  />
                 ) : (
                   <Badge className="bg-blue-600 text-white">
                     Waiting

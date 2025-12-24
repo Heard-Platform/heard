@@ -12,6 +12,7 @@ import { DebateAnalysisReportDemoStory } from "../stories/DebateAnalysisReportDe
 import { UnsubscribePageStory } from "../stories/UnsubscribePage.story";
 import { SwipeableStatementStackStory } from "../stories/SwipeableStatementStack.story";
 import { MetricsCircleStory } from "../stories/MetricsCircle.story";
+import { TimeLeftBadgeStory } from "../stories/TimeLeftBadge.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -82,6 +83,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             <TabsTrigger value="unsubscribe-page">Unsubscribe Page</TabsTrigger>
             <TabsTrigger value="swipeable-statement-stack">Swipeable Statement Stack</TabsTrigger>
             <TabsTrigger value="metrics-circle">Metrics Circle</TabsTrigger>
+            <TabsTrigger value="time-left-badge">Time Left Badge</TabsTrigger>
           </TabsList>
 
           <TabsContent value="results">
@@ -122,6 +124,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
 
           <TabsContent value="metrics-circle">
             <MetricsCircleStory />
+          </TabsContent>
+          <TabsContent value="time-left-badge">
+            <TimeLeftBadgeStory />
           </TabsContent>
         </Tabs>
       </div>
