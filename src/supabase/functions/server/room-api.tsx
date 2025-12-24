@@ -6,11 +6,10 @@ import {
 } from "./auth-api.tsx";
 import { generateId, saveDebateRoom } from "./debate-api.tsx";
 import type {
-  UserSession,
-  DebateMode,
   DebateRoom,
-  Statement,
+  Statement
 } from "./types.tsx";
+import { ONE_WEEK_MS } from "./time-utils.ts";
 
 const app = new Hono();
 
@@ -23,9 +22,10 @@ app.post(
         topic,
         userId,
         subHeard,
-        seedStatements, // Optional array of seed statement strings
-        imageUrl, // Optional cover image URL
+        seedStatements,
+        imageUrl,
         allowAnonymous,
+        debateLength,
       } = await c.req.json();
 
       if (!topic || topic.length < 10) {
@@ -101,6 +101,10 @@ app.post(
       }
 
       const roomId = generateId();
+      const debateLengthMs = debateLength
+        ? debateLength * 60 * 1000
+        : ONE_WEEK_MS; // CN-1 (BC)
+
       const debateRoom: DebateRoom = {
         id: roomId,
         topic: topic.substring(0, 500), // Limit topic length
@@ -117,7 +121,7 @@ app.post(
         subHeard: subHeard
           ? subHeard.trim().toLowerCase().replace(/\s+/g, "-")
           : undefined,
-        endTime: Date.now() + 7 * 24 * 60 * 60 * 1000, // Realtime debates end in 1 week
+        endTime: Date.now() + debateLengthMs, // Realtime debates end in 1 week
         imageUrl, // Add cover image URL if provided
         allowAnonymous: !!allowAnonymous,
       };

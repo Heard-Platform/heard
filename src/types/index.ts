@@ -102,6 +102,7 @@ export type NewDebateRoom = Pick<
 > & {
   seedStatements?: string[];
   imageUrl?: string;
+  debateLength: number;
 };
 
 export interface SubHeard {

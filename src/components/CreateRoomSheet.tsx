@@ -20,6 +20,7 @@ import { api } from "../utils/api";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
+import { ONE_WEEK_MIN } from "../utils/time";
 
 interface CreateRoomSheetProps {
   open: boolean;
@@ -75,6 +76,7 @@ export function CreateRoomSheet({
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [allowAnonymousVoting, setAllowAnonymousVoting] = useState(false);
+  const [debateLength, setDebateLength] = useState(ONE_WEEK_MIN);
 
   const isRantValid = rant.trim().length >= 50;
   const remainingChars = 50 - rant.trim().length;
@@ -154,6 +156,7 @@ export function CreateRoomSheet({
         seedStatements: editedStatements,
         imageUrl: uploadedImageUrl || undefined,
         allowAnonymous: allowAnonymousVoting,
+        debateLength,
       });
 
       setDebateId(result.id);
@@ -312,10 +315,12 @@ export function CreateRoomSheet({
           statements={editedStatements}
           isUploadingImage={isUploadingImage}
           uploadedImageUrl={uploadedImageUrl}
+          debateLength={debateLength}
           allowAnonymousVoting={allowAnonymousVoting}
           onTopicChange={setEditedTopic}
           onStatementsChange={setEditedStatements}
           onImageUpload={handleImageUpload}
+          onDebateLengthChange={setDebateLength}
           onAllowAnonymousVotingChange={setAllowAnonymousVoting}
         />
       )}

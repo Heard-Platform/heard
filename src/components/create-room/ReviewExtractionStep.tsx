@@ -3,7 +3,7 @@ import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
-import { Sparkles, MessageCircle, Edit2, Trash2, CheckCircle2, Image as ImageIcon, Loader2, Check, UserCheck } from "lucide-react";
+import { Sparkles, MessageCircle, Edit2, Trash2, CheckCircle2, Image as ImageIcon, Loader2, Check, UserCheck, Clock } from "lucide-react";
 import { motion } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
 
@@ -12,10 +12,12 @@ interface ReviewExtractionStepProps {
   statements: string[];
   isUploadingImage?: boolean;
   uploadedImageUrl?: string | null;
+  debateLength: number;
   allowAnonymousVoting: boolean;
   onTopicChange: (topic: string) => void;
   onStatementsChange: (statements: string[]) => void;
   onImageUpload?: (file: File) => void;
+  onDebateLengthChange: (length: number) => void;
   onAllowAnonymousVotingChange: (value: boolean) => void;
 }
 
@@ -24,22 +26,18 @@ export function ReviewExtractionStep({
   statements,
   isUploadingImage,
   uploadedImageUrl,
+  debateLength,
   allowAnonymousVoting,
   onTopicChange,
   onStatementsChange,
   onImageUpload,
+  onDebateLengthChange,
   onAllowAnonymousVotingChange,
 }: ReviewExtractionStepProps) {
   const [editingStatementIndex, setEditingStatementIndex] = useState<number | null>(null);
 
   const handleDeleteStatement = (index: number) => {
     onStatementsChange(statements.filter((_, i) => i !== index));
-  };
-
-  const handleEditStatement = (index: number, newText: string) => {
-    onStatementsChange(
-      statements.map((stmt, i) => (i === index ? newText : stmt))
-    );
   };
 
   return (
@@ -237,8 +235,45 @@ export function ReviewExtractionStep({
         </div>
       </FunSheetCard>
 
-      {/* Allow Anonymous Voting */}
+      {/* Debate Length */}
       <FunSheetCard delay={0.3}>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-blue-500" />
+            <Label className="text-base text-slate-700">
+              Length
+            </Label>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { minutes: 10, label: '10m' },
+              { minutes: 60, label: '1h' },
+              { minutes: 720, label: '12h' },
+              { minutes: 1440, label: '24h' },
+              { minutes: 4320, label: '3d' },
+              { minutes: 10080, label: '7d' },
+            ].map(({ minutes, label }) => (
+              <Button
+                key={minutes}
+                type="button"
+                variant={debateLength === minutes ? "default" : "outline"}
+                onClick={() => onDebateLengthChange(minutes)}
+                className={debateLength === minutes ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-50"}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+          
+          <p className="text-xs text-slate-500 text-center">
+            How long should this run before closing?
+          </p>
+        </div>
+      </FunSheetCard>
+
+      {/* Allow Anonymous Voting */}
+      <FunSheetCard delay={0.35}>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
             <Checkbox

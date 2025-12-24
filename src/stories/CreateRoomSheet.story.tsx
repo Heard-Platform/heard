@@ -1,16 +1,32 @@
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+
 import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
 import { ShareDebateStep } from "../components/create-room/ShareDebateStep";
+import { ReviewExtractionStep } from "../components/create-room/ReviewExtractionStep";
 import { Card } from "../components/ui/card";
-import { toast } from "sonner@2.0.3";
 import { Toaster } from "../components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { ONE_WEEK_MIN } from "../utils/time";
+    
+const mockTopic = "Should we close Q Street during farmers market?";
+const mockStatements = [
+  "Closing Q Street during farmers market creates a vibrant community space that brings neighbors together",
+  "Traffic diversions hurt local businesses on surrounding streets - we need better solutions",
+  "The farmers market is a weekly tradition that deserves priority over car convenience",
+];
 
 export function CreateRoomSheetStory() {
   const [isOpen, setIsOpen] = useState(false);
   const [defaultSubHeard, setDefaultSubHeard] = useState<string | undefined>(undefined);
   const [defaultTopic, setDefaultTopic] = useState<string | undefined>(undefined);
+  
+  const [reviewTopic, setReviewTopic] = useState(mockTopic);
+  const [reviewStatements, setReviewStatements] = useState(mockStatements);
+  const [reviewDebateLength, setReviewDebateLength] = useState(ONE_WEEK_MIN);
+  const [reviewAllowAnonymous, setReviewAllowAnonymous] = useState(false);
 
   const handleCreateRoom = async (
     topic: string,
@@ -50,13 +66,6 @@ export function CreateRoomSheetStory() {
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Mock extraction
-    const mockTopic = "Should we close Q Street during farmers market?";
-    const mockStatements = [
-      "Closing Q Street during farmers market creates a vibrant community space that brings neighbors together",
-      "Traffic diversions hurt local businesses on surrounding streets - we need better solutions",
-      "The farmers market is a weekly tradition that deserves priority over car convenience",
-    ];
-
     return {
       topic: mockTopic,
       statements: mockStatements,
@@ -68,6 +77,7 @@ export function CreateRoomSheetStory() {
       <TabsList className="mb-6">
         <TabsTrigger value="full-flow">Full Flow</TabsTrigger>
         <TabsTrigger value="share-step">Share Step Only</TabsTrigger>
+        <TabsTrigger value="review-step">Review Step Only</TabsTrigger>
       </TabsList>
 
       <TabsContent value="full-flow" className="space-y-6">
@@ -162,6 +172,21 @@ export function CreateRoomSheetStory() {
             />
           </Card>
         </div>
+      </TabsContent>
+
+      <TabsContent value="review-step" className="space-y-6">
+        <Card className="p-6 bg-white">
+          <ReviewExtractionStep
+            topic={reviewTopic}
+            statements={reviewStatements}
+            debateLength={reviewDebateLength}
+            allowAnonymousVoting={reviewAllowAnonymous}
+            onTopicChange={setReviewTopic}
+            onStatementsChange={setReviewStatements}
+            onDebateLengthChange={setReviewDebateLength}
+            onAllowAnonymousVotingChange={setReviewAllowAnonymous}
+          />
+        </Card>
       </TabsContent>
 
       <Toaster />
