@@ -81,6 +81,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     useState<DebateRoom | null>(null);
   const [newDebateSubHeard, setNewDebateSubHeard] =
     useState<string>("");
+  const [activeTab, setActiveTab] = useState<string>("subheards");
 
   const fetchAdminData = async () => {
     if (!adminKey) return;
@@ -500,387 +501,433 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
           </div>
         </div>
 
-        {/* Sub-Heards Management */}
-        <Card className="p-6">
-          <h2 className="text-xl mb-4">Manage Sub-Heards</h2>
-          <div className="space-y-4">
-            {subHeards.map((subHeard) => (
-              <div
-                key={subHeard.name}
-                className="border rounded-lg p-4 flex items-center justify-between"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">
-                      {subHeard.name}
-                    </span>
-                    {subHeard.isPrivate && (
-                      <Lock className="w-4 h-4 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Crown className="w-3 h-3" />
-                    <span>
-                      Admin: {getUserName(subHeard.adminId)}
-                    </span>
-                  </div>
-                  {subHeard.createdAt && (
-                    <p className="text-xs text-muted-foreground">
-                      Created:{" "}
-                      {new Date(
-                        subHeard.createdAt,
-                      ).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setRenameSubHeard(subHeard);
-                      setNewSubHeardName(subHeard.name);
-                    }}
-                  >
-                    Rename
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedSubHeard(subHeard);
-                      setNewAdminId(subHeard.adminId || "");
-                    }}
-                  >
-                    Change Admin
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+        <div className="flex gap-2 border-b">
+          <Button
+            variant={activeTab === "subheards" ? "default" : "ghost"}
+            onClick={() => setActiveTab("subheards")}
+          >
+            Communities
+          </Button>
+          <Button
+            variant={activeTab === "debates" ? "default" : "ghost"}
+            onClick={() => setActiveTab("debates")}
+          >
+            Debates
+          </Button>
+          <Button
+            variant={activeTab === "tools" ? "default" : "ghost"}
+            onClick={() => setActiveTab("tools")}
+          >
+            Dev Tools
+          </Button>
+          <Button
+            variant={activeTab === "fixes" ? "default" : "ghost"}
+            onClick={() => setActiveTab("fixes")}
+          >
+            Data Fixes
+          </Button>
+          <Button
+            variant={activeTab === "users" ? "default" : "ghost"}
+            onClick={() => setActiveTab("users")}
+          >
+            Users
+          </Button>
+          <Button
+            variant={activeTab === "history" ? "default" : "ghost"}
+            onClick={() => setActiveTab("history")}
+          >
+            <History className="w-4 h-4 mr-2" />
+            User History
+          </Button>
+        </div>
 
-        {/* Debates Management */}
-        <Card className="p-6">
-          <h2 className="text-xl mb-4">All Debates</h2>
-          <div className="space-y-4 max-h-[600px] overflow-y-auto">
-            {debates.map((debate) => (
-              <div
-                key={debate.id}
-                className="border rounded-lg p-4 flex items-start justify-between"
-              >
-                <div className="space-y-1 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">
-                      {debate.topic}
-                    </span>
-                    {debate.isActive ? (
-                      <Badge
-                        variant="default"
-                        className="bg-green-600"
-                      >
-                        Active
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">
-                        Inactive
-                      </Badge>
-                    )}
-                    {debate.rantFirst && (
-                      <Badge
-                        variant="outline"
-                        className="text-purple-600 border-purple-600"
-                      >
-                        Rant First
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    {debate.subHeard ? (
-                      <div className="flex items-center gap-1">
-                        <Crown className="w-3 h-3" />
-                        <span>{debate.subHeard}</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1">
-                        <Crown className="w-3 h-3" />
-                        <span className="italic">
-                          No community
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <User className="w-3 h-3" />
+        {activeTab === "subheards" && (
+          <Card className="p-6">
+            <h2 className="text-xl mb-4">Manage Sub-Heards</h2>
+            <div className="space-y-4">
+              {subHeards.map((subHeard) => (
+                <div
+                  key={subHeard.name}
+                  className="border rounded-lg p-4 flex items-center justify-between"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">
+                        {subHeard.name}
+                      </span>
+                      {subHeard.isPrivate && (
+                        <Lock className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Crown className="w-3 h-3" />
                       <span>
-                        {debate.participants.length}{" "}
-                        participants
+                        Admin: {getUserName(subHeard.adminId)}
                       </span>
                     </div>
-                    <div>
-                      <span>Phase: {debate.phase}</span>
-                    </div>
-                    <div>
-                      <span>Mode: {debate.mode}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>
-                      ID: {debate.id.substring(0, 12)}...
-                    </span>
-                    <span>•</span>
-                    <span>
-                      Created:{" "}
-                      {new Date(
-                        debate.createdAt,
-                      ).toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-2 ml-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedDebate(debate);
-                      setNewDebateSubHeard(
-                        debate.subHeard || "",
-                      );
-                    }}
-                  >
-                    <Crown className="w-4 h-4 mr-2" />
-                    Change Community
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      handleToggleDebateActive(debate.id)
-                    }
-                    disabled={togglingDebateId === debate.id}
-                  >
-                    {togglingDebateId === debate.id ? (
-                      "..."
-                    ) : debate.isActive ? (
-                      <>
-                        <ToggleRight className="w-4 h-4 mr-2" />
-                        Deactivate
-                      </>
-                    ) : (
-                      <>
-                        <ToggleLeft className="w-4 h-4 mr-2" />
-                        Activate
-                      </>
+                    {subHeard.createdAt && (
+                      <p className="text-xs text-muted-foreground">
+                        Created:{" "}
+                        {new Date(
+                          subHeard.createdAt,
+                        ).toLocaleDateString()}
+                      </p>
                     )}
-                  </Button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setRenameSubHeard(subHeard);
+                        setNewSubHeardName(subHeard.name);
+                      }}
+                    >
+                      Rename
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedSubHeard(subHeard);
+                        setNewAdminId(subHeard.adminId || "");
+                      }}
+                    >
+                      Change Admin
+                    </Button>
+                  </div>
                 </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {activeTab === "debates" && (
+          <Card className="p-6">
+            <h2 className="text-xl mb-4">All Debates</h2>
+            <div className="space-y-4 max-h-[600px] overflow-y-auto">
+              {debates.map((debate) => (
+                <div
+                  key={debate.id}
+                  className="border rounded-lg p-4 flex items-start justify-between"
+                >
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">
+                        {debate.topic}
+                      </span>
+                      {debate.isActive ? (
+                        <Badge
+                          variant="default"
+                          className="bg-green-600"
+                        >
+                          Active
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">
+                          Inactive
+                        </Badge>
+                      )}
+                      {debate.rantFirst && (
+                        <Badge
+                          variant="outline"
+                          className="text-purple-600 border-purple-600"
+                        >
+                          Rant First
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      {debate.subHeard ? (
+                        <div className="flex items-center gap-1">
+                          <Crown className="w-3 h-3" />
+                          <span>{debate.subHeard}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <Crown className="w-3 h-3" />
+                          <span className="italic">
+                            No community
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <User className="w-3 h-3" />
+                        <span>
+                          {debate.participants.length}{" "}
+                          participants
+                        </span>
+                      </div>
+                      <div>
+                        <span>Phase: {debate.phase}</span>
+                      </div>
+                      <div>
+                        <span>Mode: {debate.mode}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>
+                        ID: {debate.id.substring(0, 12)}...
+                      </span>
+                      <span>•</span>
+                      <span>
+                        Created:{" "}
+                        {new Date(
+                          debate.createdAt,
+                        ).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedDebate(debate);
+                        setNewDebateSubHeard(
+                          debate.subHeard || "",
+                        );
+                      }}
+                    >
+                      <Crown className="w-4 h-4 mr-2" />
+                      Change Community
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        handleToggleDebateActive(debate.id)
+                      }
+                      disabled={togglingDebateId === debate.id}
+                    >
+                      {togglingDebateId === debate.id ? (
+                        "..."
+                      ) : debate.isActive ? (
+                        <>
+                          <ToggleRight className="w-4 h-4 mr-2" />
+                          Deactivate
+                        </>
+                      ) : (
+                        <>
+                          <ToggleLeft className="w-4 h-4 mr-2" />
+                          Activate
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {debates.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  No debates found
+                </p>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {activeTab === "tools" && (
+          <>
+            <PolisImporter
+              subHeards={subHeards}
+              currentUserId={users[0]?.userId || ""}
+              onImportComplete={fetchAdminData}
+            />
+
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <TestTube className="w-5 h-5 text-blue-600" />
+                <h2 className="text-xl">Dev Tools - Reddit Seed</h2>
               </div>
-            ))}
-            {debates.length === 0 && (
-              <p className="text-center text-muted-foreground py-8">
-                No debates found
+              <p className="text-sm text-muted-foreground mb-4">
+                Create a test debate room from a Reddit post. The
+                post title becomes the topic, and comments are
+                processed into statements using AI.
               </p>
-            )}
-          </div>
-        </Card>
-
-        {/* Dev Tools - Polis Importer */}
-        <PolisImporter
-          subHeards={subHeards}
-          currentUserId={users[0]?.userId || ""}
-          onImportComplete={fetchAdminData}
-        />
-
-        {/* Dev Tools - Reddit Seed */}
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <TestTube className="w-5 h-5 text-blue-600" />
-            <h2 className="text-xl">Dev Tools - Reddit Seed</h2>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Create a test debate room from a Reddit post. The
-            post title becomes the topic, and comments are
-            processed into statements using AI.
-          </p>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="redditUrl">Reddit Post URL</Label>
-              <Input
-                id="redditUrl"
-                value={redditUrl}
-                onChange={(e) => setRedditUrl(e.target.value)}
-                placeholder="https://www.reddit.com/r/subreddit/comments/..."
-                disabled={creatingRedditRoom}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Paste a link to any Reddit post
-              </p>
-            </div>
-            <div>
-              <Label htmlFor="redditSubHeard">
-                Sub-Heard (Optional)
-              </Label>
-              <Select
-                value={redditSubHeard || "none"}
-                onValueChange={(value) =>
-                  setRedditSubHeard(
-                    value === "none" ? "" : value,
-                  )
-                }
-                disabled={creatingRedditRoom}
-              >
-                <SelectTrigger id="redditSubHeard">
-                  <SelectValue placeholder="None (public)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">
-                    None (public)
-                  </SelectItem>
-                  {subHeards.map((sh) => (
-                    <SelectItem key={sh.name} value={sh.name}>
-                      {sh.name} {sh.isPrivate ? "🔒" : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              onClick={handleCreateRedditRoom}
-              disabled={creatingRedditRoom || !redditUrl.trim()}
-              className="w-full"
-            >
-              {creatingRedditRoom
-                ? "Creating Room..."
-                : "Create Test Room from Reddit"}
-            </Button>
-          </div>
-        </Card>
-
-        {/* One Time Data Fixes */}
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Shield className="w-5 h-5 text-orange-600" />
-            <h2 className="text-xl">One-Time Data Fixes</h2>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Idempotent operations to fix database issues. Safe
-            to run multiple times.
-          </p>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-4 border rounded-lg bg-purple-50">
-              <div className="flex-1">
-                <h3 className="font-medium">
-                  Set All Rooms to Active
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Recovery migration: Sets all rooms to
-                  isActive=true. Run this to restore room
-                  visibility after the active_room data was
-                  lost.
-                </p>
-              </div>
-              <Button
-                onClick={handleMigrateIsActiveToRooms}
-                disabled={dataFixLoading === "migrate-isactive"}
-                variant="outline"
-                size="sm"
-              >
-                {dataFixLoading === "migrate-isactive"
-                  ? "Running..."
-                  : "Set All Active"}
-              </Button>
-            </div>
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div className="flex-1">
-                <h3 className="font-medium">
-                  Normalize Dupont Circle Sub-Heard
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Updates rooms with "Dupont Circle
-                  Neighborhoods" to
-                  "dupont-circle-neighborhoods"
-                </p>
-              </div>
-              <Button
-                onClick={handleDataFixNormalizeDupontCircle}
-                disabled={dataFixLoading === "dupont-circle"}
-                variant="outline"
-                size="sm"
-              >
-                {dataFixLoading === "dupont-circle"
-                  ? "Running..."
-                  : "Run Fix"}
-              </Button>
-            </div>
-            <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 opacity-60">
-              <div className="flex-1">
-                <h3 className="font-medium text-muted-foreground">
-                  Fix Active Room Pointers (Obsolete)
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Migrate active_room records from full JSON
-                  objects to room ID pointers. This migration is
-                  obsolete - use "Migrate isActive to Rooms"
-                  instead.
-                </p>
-              </div>
-              <Button
-                onClick={handleFixActiveRoomPointers}
-                disabled={true}
-                variant="outline"
-                size="sm"
-              >
-                Disabled
-              </Button>
-            </div>
-            <div className="flex items-center justify-between p-4 border rounded-lg bg-blue-50">
-              <div className="flex-1">
-                <h3 className="font-medium">
-                  Backfill User CreatedAt
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Backfill createdAt field for all users from
-                  database created_at column. Safe to run
-                  multiple times.
-                </p>
-              </div>
-              <Button
-                onClick={handleBackfillUserCreatedAt}
-                disabled={
-                  dataFixLoading === "backfill-user-created-at"
-                }
-                variant="outline"
-                size="sm"
-              >
-                {dataFixLoading === "backfill-user-created-at"
-                  ? "Running..."
-                  : "Backfill CreatedAt"}
-              </Button>
-            </div>
-          </div>
-        </Card>
-
-        {/* Users List */}
-        <Card className="p-6">
-          <h2 className="text-xl mb-4">Recent Users</h2>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {users.slice(0, 50).map((user) => (
-              <div
-                key={user.userId}
-                className="border rounded p-3 flex items-center justify-between"
-              >
+              <div className="space-y-4">
                 <div>
-                  <p className="font-medium">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {user.userId.substring(0, 12)}...
+                  <Label htmlFor="redditUrl">Reddit Post URL</Label>
+                  <Input
+                    id="redditUrl"
+                    value={redditUrl}
+                    onChange={(e) => setRedditUrl(e.target.value)}
+                    placeholder="https://www.reddit.com/r/subreddit/comments/..."
+                    disabled={creatingRedditRoom}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Paste a link to any Reddit post
                   </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(user.lastSeen).toLocaleDateString()}
-                </p>
+                <div>
+                  <Label htmlFor="redditSubHeard">
+                    Sub-Heard (Optional)
+                  </Label>
+                  <Select
+                    value={redditSubHeard || "none"}
+                    onValueChange={(value) =>
+                      setRedditSubHeard(
+                        value === "none" ? "" : value,
+                      )
+                    }
+                    disabled={creatingRedditRoom}
+                  >
+                    <SelectTrigger id="redditSubHeard">
+                      <SelectValue placeholder="None (public)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">
+                        None (public)
+                      </SelectItem>
+                      {subHeards.map((sh) => (
+                        <SelectItem key={sh.name} value={sh.name}>
+                          {sh.name} {sh.isPrivate ? "🔒" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={handleCreateRedditRoom}
+                  disabled={creatingRedditRoom || !redditUrl.trim()}
+                  className="w-full"
+                >
+                  {creatingRedditRoom
+                    ? "Creating Room..."
+                    : "Create Test Room from Reddit"}
+                </Button>
               </div>
-            ))}
-          </div>
-        </Card>
+            </Card>
+          </>
+        )}
+
+        {activeTab === "fixes" && (
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield className="w-5 h-5 text-orange-600" />
+              <h2 className="text-xl">One-Time Data Fixes</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Idempotent operations to fix database issues. Safe
+              to run multiple times.
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-purple-50">
+                <div className="flex-1">
+                  <h3 className="font-medium">
+                    Set All Rooms to Active
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Recovery migration: Sets all rooms to
+                    isActive=true. Run this to restore room
+                    visibility after the active_room data was
+                    lost.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleMigrateIsActiveToRooms}
+                  disabled={dataFixLoading === "migrate-isactive"}
+                  variant="outline"
+                  size="sm"
+                >
+                  {dataFixLoading === "migrate-isactive"
+                    ? "Running..."
+                    : "Set All Active"}
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <h3 className="font-medium">
+                    Normalize Dupont Circle Sub-Heard
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Updates rooms with "Dupont Circle
+                    Neighborhoods" to
+                    "dupont-circle-neighborhoods"
+                  </p>
+                </div>
+                <Button
+                  onClick={handleDataFixNormalizeDupontCircle}
+                  disabled={dataFixLoading === "dupont-circle"}
+                  variant="outline"
+                  size="sm"
+                >
+                  {dataFixLoading === "dupont-circle"
+                    ? "Running..."
+                    : "Run Fix"}
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 opacity-60">
+                <div className="flex-1">
+                  <h3 className="font-medium text-muted-foreground">
+                    Fix Active Room Pointers (Obsolete)
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Migrate active_room records from full JSON
+                    objects to room ID pointers. This migration is
+                    obsolete - use "Migrate isActive to Rooms"
+                    instead.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleFixActiveRoomPointers}
+                  disabled={true}
+                  variant="outline"
+                  size="sm"
+                >
+                  Disabled
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-blue-50">
+                <div className="flex-1">
+                  <h3 className="font-medium">
+                    Backfill User CreatedAt
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Backfill createdAt field for all users from
+                    database created_at column. Safe to run
+                    multiple times.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleBackfillUserCreatedAt}
+                  disabled={
+                    dataFixLoading === "backfill-user-created-at"
+                  }
+                  variant="outline"
+                  size="sm"
+                >
+                  {dataFixLoading === "backfill-user-created-at"
+                    ? "Running..."
+                    : "Backfill CreatedAt"}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {activeTab === "users" && (
+          <Card className="p-6">
+            <h2 className="text-xl mb-4">Recent Users</h2>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {users.slice(0, 50).map((user) => (
+                <div
+                  key={user.userId}
+                  className="border rounded p-3 flex items-center justify-between"
+                >
+                  <div>
+                    <p className="font-medium">{user.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user.userId.substring(0, 12)}...
+                    </p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(user.lastSeen).toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
       </div>
 
       {/* Change Admin Dialog */}
