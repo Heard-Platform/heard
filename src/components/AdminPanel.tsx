@@ -44,7 +44,7 @@ import {
 import { api } from "../utils/api";
 import type { DebateRoom, SubHeard } from "../types";
 import { PolisImporter } from "./PolisImporter";
-import { UserHistory } from "./devtools/UserHistory";
+import { UserHistory } from "./admin/UserHistory";
 
 interface AdminUser {
   userId: string;
