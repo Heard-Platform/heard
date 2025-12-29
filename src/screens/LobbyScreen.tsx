@@ -35,13 +35,6 @@ interface LobbyScreenProps {
   onJoinRoom: (roomId: string) => Promise<void>;
   onRefreshRooms: (subHeard?: string) => Promise<DebateRoom[]>;
   onJumpToFinalResults?: () => Promise<void>;
-  onCreateSeedData?: () => Promise<any>;
-  onCreateTestRoom?: () => Promise<any>;
-  onCreateRantTestRoom?: () => Promise<any>;
-  onCreateRealtimeTestRoom?: () => Promise<any>;
-  onUpdateRoomDescription?: (
-    description: string,
-  ) => Promise<boolean>;
   onSubmitStatement: (
     roomId: string,
     text: string,
@@ -57,7 +50,6 @@ interface LobbyScreenProps {
   onOpenDevTools?: () => void;
   onSubHeardChange?: (subHeard: string | null) => void;
   onGetAllRoomStatements: () => Promise<Record<string, any[]>>;
-  onRoomCreated?: () => void;
 }
 
 export function LobbyScreen({
@@ -69,10 +61,6 @@ export function LobbyScreen({
   onJoinRoom,
   onRefreshRooms,
   onJumpToFinalResults,
-  onCreateSeedData,
-  onCreateTestRoom,
-  onCreateRantTestRoom,
-  onCreateRealtimeTestRoom,
   onSubmitStatement,
   onVoteOnStatement,
   onLogout,
@@ -85,7 +73,6 @@ export function LobbyScreen({
   roomStatements,
   onGetAllRoomStatements,
   targetRoomId,
-  onRoomCreated,
   analysisRoomId,
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
@@ -240,54 +227,6 @@ export function LobbyScreen({
     currentRoomIndex: number,
   ) => {
     await api.updateUserPresence(userId, currentRoomIndex);
-  };
-
-  const handleCreateSeedData = async () => {
-    if (onCreateSeedData) {
-      const result = await onCreateSeedData();
-      if (result) {
-        await onRefreshRooms();
-        alert(
-          `✅ ${result.message}\n\nCreated:\n• 1 test room with 4 players\n• ${result.statements} diverse statements\n• Various votes and types`,
-        );
-      }
-    }
-  };
-
-  const handleCreateTestRoom = async () => {
-    if (onCreateTestRoom) {
-      const result = await onCreateTestRoom();
-      if (result) {
-        await onRefreshRooms();
-        alert(
-          `✅ ${result.message}\n\nCreated:\n• Q Street farmers market debate room\n• ${result.players} players ready to participate\n• No posts or votes yet - clean slate!`,
-        );
-      }
-    }
-  };
-
-  const handleCreateRantTestRoom = async () => {
-    if (onCreateRantTestRoom) {
-      const result = await onCreateRantTestRoom();
-      if (result) {
-        await onRefreshRooms();
-        alert(
-          `✅ ${result.message}\n\nCreated:\n• ${result.players} players with diverse viewpoints\n• ${result.rants} detailed rants ready for compilation\n• Click "Compile Rants & Start Debate!" to test the system!`,
-        );
-      }
-    }
-  };
-
-  const handleCreateRealtimeTestRoom = async () => {
-    if (onCreateRealtimeTestRoom) {
-      const result = await onCreateRealtimeTestRoom();
-      if (result) {
-        await onRefreshRooms();
-        alert(
-          `✅ ${result.message}\n\nCreated:\n• Real-time debate with 5-minute countdown\n• ${result.statements} diverse statements ready to vote on\n• ${result.players} players participating\n• Watch the countdown bar in action!`,
-        );
-      }
-    }
   };
 
   const handleCreateAnonDebate = async () => {
@@ -489,10 +428,6 @@ export function LobbyScreen({
                 onOpenDevTools={onOpenDevTools}
                 onOpenAdminPanel={onOpenAdminPanel}
                 onJumpToFinalResults={onJumpToFinalResults}
-                onCreateSeedData={onCreateSeedData ? handleCreateSeedData : undefined}
-                onCreateTestRoom={onCreateTestRoom ? handleCreateTestRoom : undefined}
-                onCreateRantTestRoom={onCreateRantTestRoom ? handleCreateRantTestRoom : undefined}
-                onCreateRealtimeTestRoom={onCreateRealtimeTestRoom ? handleCreateRealtimeTestRoom : undefined}
                 onCreateAnonDebate={handleCreateAnonDebate}
                 onShowAccountSetupModal={handleShowAccountSetupModal}
               />

@@ -24,6 +24,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import type { UserSession } from "../types";
+import { useDebateSession } from "../hooks/useDebateSession";
 
 interface SidePanelMenuProps {
   user: UserSession;
@@ -34,10 +35,6 @@ interface SidePanelMenuProps {
   onOpenDevTools?: () => void;
   onOpenAdminPanel?: () => void;
   onJumpToFinalResults?: () => void;
-  onCreateSeedData?: () => void;
-  onCreateTestRoom?: () => void;
-  onCreateRantTestRoom?: () => void;
-  onCreateRealtimeTestRoom?: () => void;
   onCreateAnonDebate?: () => void;
   onShowAccountSetupModal: (featureText: string) => void;
 }
@@ -51,18 +48,60 @@ export function SidePanelMenu({
   onOpenDevTools,
   onOpenAdminPanel,
   onJumpToFinalResults,
-  onCreateSeedData,
-  onCreateTestRoom,
-  onCreateRantTestRoom,
-  onCreateRealtimeTestRoom,
   onCreateAnonDebate,
   onShowAccountSetupModal,
 }: SidePanelMenuProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const {
+    createSeedData,
+    createTestRoom,
+    createRantTestRoom,
+    createRealtimeTestRoom,
+  } = useDebateSession();
 
   const closeMenuAndRun = (action: () => void) => {
     setMenuOpen(false);
     action();
+  };
+
+  const handleCreateSeedData = async () => {
+    try {
+      await createSeedData();
+      alert("✅ Seed data created successfully!");
+    } catch (error) {
+      console.error("Error creating seed data:", error);
+      alert("❌ Failed to create seed data");
+    }
+  };
+
+  const handleCreateTestRoom = async () => {
+    try {
+      await createTestRoom();
+      alert("✅ Q Street test room created!");
+    } catch (error) {
+      console.error("Error creating test room:", error);
+      alert("❌ Failed to create test room");
+    }
+  };
+
+  const handleCreateRantTestRoom = async () => {
+    try {
+      await createRantTestRoom();
+      alert("✅ Rant-first test room created!");
+    } catch (error) {
+      console.error("Error creating rant test room:", error);
+      alert("❌ Failed to create rant test room");
+    }
+  };
+
+  const handleCreateRealtimeTestRoom = async () => {
+    try {
+      await createRealtimeTestRoom();
+      alert("✅ Real-time test room created!");
+    } catch (error) {
+      console.error("Error creating realtime test room:", error);
+      alert("❌ Failed to create realtime test room");
+    }
   };
 
   return (
@@ -207,50 +246,42 @@ export function SidePanelMenu({
                       Create Anon Debate
                     </Button>
                   )}
-                  {onCreateSeedData && (
-                    <Button
-                      onClick={onCreateSeedData}
-                      variant="outline"
-                      size="sm"
-                      className="w-full bg-green-50 border-green-200 text-green-800"
-                    >
-                      <Database className="w-3 h-3 mr-2" />
-                      Create Test Data
-                    </Button>
-                  )}
-                  {onCreateTestRoom && (
-                    <Button
-                      onClick={onCreateTestRoom}
-                      variant="outline"
-                      size="sm"
-                      className="w-full bg-blue-50 border-blue-200 text-blue-800"
-                    >
-                      <Plus className="w-3 h-3 mr-2" />
-                      Q Street Test Room
-                    </Button>
-                  )}
-                  {onCreateRantTestRoom && (
-                    <Button
-                      onClick={onCreateRantTestRoom}
-                      variant="outline"
-                      size="sm"
-                      className="w-full bg-purple-50 border-purple-200 text-purple-800"
-                    >
-                      <Brain className="w-3 h-3 mr-2" />
-                      Rant-First Test Room
-                    </Button>
-                  )}
-                  {onCreateRealtimeTestRoom && (
-                    <Button
-                      onClick={onCreateRealtimeTestRoom}
-                      variant="outline"
-                      size="sm"
-                      className="w-full bg-orange-50 border-orange-200 text-orange-800"
-                    >
-                      <Clock className="w-3 h-3 mr-2" />
-                      Real-time Test Room (5min)
-                    </Button>
-                  )}
+                  <Button
+                    onClick={handleCreateSeedData}
+                    variant="outline"
+                    size="sm"
+                    className="w-full bg-green-50 border-green-200 text-green-800"
+                  >
+                    <Database className="w-3 h-3 mr-2" />
+                    Create Test Data
+                  </Button>
+                  <Button
+                    onClick={handleCreateTestRoom}
+                    variant="outline"
+                    size="sm"
+                    className="w-full bg-blue-50 border-blue-200 text-blue-800"
+                  >
+                    <Plus className="w-3 h-3 mr-2" />
+                    Q Street Test Room
+                  </Button>
+                  <Button
+                    onClick={handleCreateRantTestRoom}
+                    variant="outline"
+                    size="sm"
+                    className="w-full bg-purple-50 border-purple-200 text-purple-800"
+                  >
+                    <Brain className="w-3 h-3 mr-2" />
+                    Rant-First Test Room
+                  </Button>
+                  <Button
+                    onClick={handleCreateRealtimeTestRoom}
+                    variant="outline"
+                    size="sm"
+                    className="w-full bg-orange-50 border-orange-200 text-orange-800"
+                  >
+                    <Clock className="w-3 h-3 mr-2" />
+                    Real-time Test Room (5min)
+                  </Button>
                 </div>
               </div>
             </>

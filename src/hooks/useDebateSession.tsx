@@ -570,6 +570,22 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
         console.log("[Showcase] getRoomAnalysis called"); 
         return null;
       },
+      createSeedData: async () => {
+        console.log("[Showcase] createSeedData called");
+        return { success: true };
+      },
+      createTestRoom: async () => {
+        console.log("[Showcase] createTestRoom called");
+        return { success: true };
+      },
+      createRantTestRoom: async () => {
+        console.log("[Showcase] createRantTestRoom called");
+        return { success: true };
+      },
+      createRealtimeTestRoom: async () => {
+        console.log("[Showcase] createRealtimeTestRoom called");
+        return { success: true };
+      },
     };
   }
 

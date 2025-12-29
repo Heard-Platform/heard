@@ -399,10 +399,6 @@ function AppContent() {
         onRefreshRooms={getActiveRooms}
         onSubmitStatement={submitStatement}
         onVoteOnStatement={voteOnStatement}
-        onCreateSeedData={createSeedData}
-        onCreateTestRoom={createTestRoom}
-        onCreateRantTestRoom={createRantTestRoom}
-        onCreateRealtimeTestRoom={createRealtimeTestRoom}
         onLogout={handleLogout}
         onOpenShowcase={handleOpenShowcase}
         onOpenAdminPanel={handleOpenAdminPanel}
