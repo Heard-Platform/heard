@@ -1,6 +1,3 @@
-// @ts-ignore
-import { toast } from "sonner@2.0.3";
-
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { LandingPage } from "./screens/LandingPage";
@@ -12,6 +9,7 @@ import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession } from "./hooks/useDebateSession";
+import { setShowcaseMode } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { api, setUserId } from "./utils/api";
 import type { NewDebateRoom, DebateRoom } from "./types";
@@ -254,11 +252,13 @@ export default function App() {
   }, [user, currentSubHeard, getActiveRooms]);
 
   const handleOpenShowcase = () => {
+    setShowcaseMode(true);
     setShowComponentShowcase(true);
     localStorage.setItem("showComponentShowcase", "true");
   };
 
   const handleExitShowcase = () => {
+    setShowcaseMode(false);
     setShowComponentShowcase(false);
     localStorage.setItem("showComponentShowcase", "false");
   };
@@ -403,7 +403,6 @@ export default function App() {
         onCreateTestRoom={createTestRoom}
         onCreateRantTestRoom={createRantTestRoom}
         onCreateRealtimeTestRoom={createRealtimeTestRoom}
-        onSetRoomInactive={setRoomInactive}
         onLogout={handleLogout}
         onOpenShowcase={handleOpenShowcase}
         onOpenAdminPanel={handleOpenAdminPanel}

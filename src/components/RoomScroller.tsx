@@ -30,7 +30,6 @@ interface RoomScrollerProps {
   presences: UserPresence[];
   onJoinRoom: (roomId: string) => void;
   onCreateRoom: () => void;
-  onSetRoomInactive?: (roomId: string) => Promise<boolean>;
   onSubmitStatement: (
     roomId: string,
     text: string,
@@ -68,7 +67,6 @@ export const RoomScroller = forwardRef<
       rooms,
       onJoinRoom,
       onCreateRoom,
-      onSetRoomInactive,
       onSubmitStatement,
       onVoteOnStatement,
       isDeveloper,
@@ -280,11 +278,6 @@ export const RoomScroller = forwardRef<
                     analysisRoomId={analysisRoomId}
                     markChanceCardSwiped={markChanceCardSwiped}
                     onJoin={() => onJoinRoom(room.id)}
-                    onSetInactive={
-                      onSetRoomInactive
-                        ? () => onSetRoomInactive(room.id)
-                        : undefined
-                    }
                     onSubmitStatement={onSubmitStatement}
                     onVoteOnStatement={onVoteOnStatement}
                     onRefreshStatements={() =>

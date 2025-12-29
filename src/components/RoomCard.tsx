@@ -37,7 +37,6 @@ interface RoomCardProps {
   analysisRoomId?: string;
   markChanceCardSwiped: (userId: string, roomId: string) => Promise<void>;
   onJoin: () => void;
-  onSetInactive?: () => Promise<boolean>;
   onSubmitStatement: (
     roomId: string,
     text: string,
@@ -62,7 +61,6 @@ export function RoomCard({
   analysisRoomId,
   markChanceCardSwiped,
   onJoin,
-  onSetInactive,
   onSubmitStatement,
   onVoteOnStatement,
   onRefreshStatements,
@@ -240,7 +238,6 @@ export function RoomCard({
                 hasRealtimeEnded={hasRealtimeEnded}
                 isDeveloper={isDeveloper}
                 handleOpenAnalysis={handleOpenAnalysis}
-                onSetInactive={onSetInactive}
               />
             </div>
 

@@ -42,7 +42,6 @@ interface LobbyScreenProps {
   onUpdateRoomDescription?: (
     description: string,
   ) => Promise<boolean>;
-  onSetRoomInactive?: (roomId: string) => Promise<boolean>;
   onSubmitStatement: (
     roomId: string,
     text: string,
@@ -75,7 +74,6 @@ export function LobbyScreen({
   onCreateTestRoom,
   onCreateRantTestRoom,
   onCreateRealtimeTestRoom,
-  onSetRoomInactive,
   onSubmitStatement,
   onVoteOnStatement,
   onLogout,
@@ -517,7 +515,6 @@ export function LobbyScreen({
           presences={presences}
           onJoinRoom={handleJoinRoom}
           onCreateRoom={handleOpenCreateSheet}
-          onSetRoomInactive={onSetRoomInactive}
           onSubmitStatement={onSubmitStatement}
           onVoteOnStatement={onVoteOnStatement}
           onDiscussStatement={handleDiscussStatement}

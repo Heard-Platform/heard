@@ -19,6 +19,7 @@ import {
 import { createShareableLink } from "../../utils/url";
 import { share } from "../../utils/share";
 import { DebateRoom } from "../../types";
+import { useDebateSession } from "../../hooks/useDebateSession";
 
 interface RoomCardMenuProps {
   room: DebateRoom;
@@ -27,7 +28,6 @@ interface RoomCardMenuProps {
   hasRealtimeEnded: boolean | number | undefined;
   isDeveloper: boolean;
   handleOpenAnalysis: () => void;
-  onSetInactive?: () => Promise<boolean>;
 }
 
 export function RoomCardMenu({
@@ -36,9 +36,10 @@ export function RoomCardMenu({
   isRealtime,
   hasRealtimeEnded,
   isDeveloper,
-  onSetInactive,
   handleOpenAnalysis,
 }: RoomCardMenuProps) {
+  const { setRoomInactive } = useDebateSession();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -120,13 +121,13 @@ export function RoomCardMenu({
             })()}
           </DropdownMenuItem>
         )}
-        {isDeveloper && onSetInactive && (
+        {isDeveloper && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={async (e: React.MouseEvent) => {
                 e.stopPropagation();
-                await onSetInactive();
+                await setRoomInactive(room.id);
               }}
               className="text-red-600 focus:text-red-600"
             >

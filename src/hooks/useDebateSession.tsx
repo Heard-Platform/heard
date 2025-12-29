@@ -13,6 +13,12 @@ import type {
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 
+let SHOWCASE_MODE = false;
+
+export function setShowcaseMode(enabled: boolean) {
+  SHOWCASE_MODE = enabled;
+}
+
 export function useDebateSession() {
   const [user, setUser] = useState<UserSession | null>(null);
   const [activeRooms, setActiveRooms] = useState<DebateRoom[]>(
@@ -385,6 +391,11 @@ export function useDebateSession() {
   const setRoomInactive = useCallback(
     async (roomId: string) => {
       if (!user) return false;
+
+      if (SHOWCASE_MODE) {
+        console.log('[Showcase Mode] Skipping setRoomInactive API call for room:', roomId);
+        return true;
+      }
 
       try {
         setError(null);
