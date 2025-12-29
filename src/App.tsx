@@ -409,7 +409,6 @@ function AppContent() {
         onOpenAdminDashboard={handleOpenAdminDashboard}
         onOpenDevTools={handleOpenDevTools}
         onSubHeardChange={handleSubHeardChange}
-        onGetRoomStatements={getRoomStatements}
         onGetAllRoomStatements={getAllRoomStatements}
       />
       <Toaster />

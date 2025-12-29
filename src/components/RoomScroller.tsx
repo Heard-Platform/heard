@@ -18,6 +18,7 @@ import type {
 } from "../types";
 import { RoomCard } from "./RoomCard";
 import { VineNavigator } from "./VineNavigator";
+import { useDebateSession } from "../hooks/useDebateSession";
 
 interface RoomScrollerProps {
   rooms: DebateRoom[];
@@ -42,7 +43,6 @@ interface RoomScrollerProps {
     statementText: string,
     subHeard?: string,
   ) => void;
-  onGetRoomStatements: (roomId: string) => Promise<Statement[]>;
   onGetAllRoomStatements: () => Promise<
     Record<string, Statement[]>
   >;
@@ -75,7 +75,6 @@ export const RoomScroller = forwardRef<
       currentSubHeard,
       onDiscussStatement,
       roomStatements,
-      onGetRoomStatements,
       onGetAllRoomStatements,
       analysisRoomId,
       presences,
@@ -91,6 +90,7 @@ export const RoomScroller = forwardRef<
     const [loadingRooms, setLoadingRooms] = useState<
       Record<string, boolean>
     >({});
+    const { getRoomStatements } = useDebateSession();
 
     // Function to refresh statements for a specific room
     const refreshRoomStatements = async (roomId: string) => {
@@ -99,7 +99,7 @@ export const RoomScroller = forwardRef<
           ...prev,
           [roomId]: true,
         }));
-        await onGetRoomStatements(roomId);
+        await getRoomStatements(roomId);
       } catch (error) {
         console.error(
           `Error refreshing statements for room ${roomId}:`,

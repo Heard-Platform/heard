@@ -544,6 +544,10 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
         console.log("[Showcase] setRoomInactive called"); 
         return true; 
       },
+      getRoomStatements: async () => { 
+        console.log("[Showcase] getRoomStatements called"); 
+        return [];
+      },
     };
   }
 
