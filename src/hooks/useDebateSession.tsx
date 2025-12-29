@@ -392,11 +392,6 @@ export function useDebateSession() {
     async (roomId: string) => {
       if (!user) return false;
 
-      if (SHOWCASE_MODE) {
-        console.log('[Showcase Mode] Skipping setRoomInactive API call for room:', roomId);
-        return true;
-      }
-
       try {
         setError(null);
         const response = await api.setRoomInactive(
@@ -497,7 +492,7 @@ export function useDebateSession() {
     init();
   }, [initializeUser]);
 
-  return {
+  let returnObj = {
     user,
     activeRooms,
     currentSubHeard,
@@ -520,4 +515,13 @@ export function useDebateSession() {
     getRoomStatements,
     getAllRoomStatements,
   };
+
+  if (SHOWCASE_MODE) {
+    returnObj = {
+      ...returnObj,
+      setRoomInactive: async () => { console.log("setRoomInactive called in showcase mode"); return true; },
+    };
+  }
+
+  return returnObj;
 }

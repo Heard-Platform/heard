@@ -13,12 +13,21 @@ import { UnsubscribePageStory } from "../stories/UnsubscribePage.story";
 import { SwipeableStatementStackStory } from "../stories/SwipeableStatementStack.story";
 import { MetricsCircleStory } from "../stories/MetricsCircle.story";
 import { TimeLeftBadgeStory } from "../stories/TimeLeftBadge.story";
+import { useEffect } from "react";
+import { setShowcaseMode } from "../hooks/useDebateSession";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
 }
 
 export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
+  useEffect(() => {
+    setShowcaseMode(true);
+    return () => {
+      setShowcaseMode(false);
+    };
+  }, []);
+  
   // Load active tab from localStorage
   const getInitialTab = () => {
     try {
