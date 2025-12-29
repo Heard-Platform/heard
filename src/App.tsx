@@ -136,7 +136,8 @@ export default function App() {
     newDebate: NewDebateRoom,
   ): Promise<DebateRoom> => {
     const roomData = await createRoom(newDebate);
-    getActiveRooms();
+    await getActiveRooms();
+    setCurrentSubHeard(roomData.subHeard || null);
     return roomData;
   };
 

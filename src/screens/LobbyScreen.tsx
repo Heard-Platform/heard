@@ -59,9 +59,7 @@ interface LobbyScreenProps {
   onSubHeardChange?: (subHeard: string | null) => void;
   onGetRoomStatements: (roomId: string) => Promise<any[]>;
   onGetAllRoomStatements: () => Promise<Record<string, any[]>>;
-  targetRoomId?: string;
   onRoomCreated?: () => void;
-  analysisRoomId?: string;
 }
 
 export function LobbyScreen({
@@ -361,11 +359,11 @@ export function LobbyScreen({
     newDebate: NewDebateRoom,
   ): Promise<DebateRoom> => {
     const result = await onCreateRoom(newDebate);
-    // Scroll to top after creating room
-    if (onRoomCreated) {
-      onRoomCreated();
-    }
-    roomScrollerRef.current?.scrollToTop();
+    
+    setTimeout(() => {
+      roomScrollerRef.current?.scrollToTop();
+    }, 300);
+
     return result;
   };
 
