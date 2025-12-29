@@ -1,22 +1,22 @@
 import { useState } from "react";
-import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { MessageCircle, Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
+import _ from "lodash";
 
-const topicExamples = [
-  "The Georgetown Trader Joe's parking lot is a nightmare and they should ban cars entirely",
-  "Pineapple on pizza is actually good and you're all just cowards",
-  "DC should ban right turns on red everywhere because drivers can't handle it",
+const topicExamples = _.shuffle([
+  "The 14th St Trader Joe's parking lot is a mess and they should limit its use",
+  "Pineapple on pizza is actually good, even if it's a little weird",
+  "Men In Black 3 is an underrated sequel! (But MIB 2 was no good)",
   "The best way to eat Oreos is to dunk them in orange juice",
-  "We should replace all lawns with native wildflower meadows",
-  "Cats are better than dogs and I will die on this hill",
-  "The DC Metro needs to run 24/7 like NYC or it's basically useless",
+  "We need more green spaces around the city, even if it means fewer parking spots",
+  "People who don't like cats just haven't met the right one yet",
+  "The DC Metro needs to run 24/7 like NYC to support nightlife and shift workers",
   "Breakfast foods are superior to all other meals and should be eaten at any time",
-];
+]);
 
 interface WriteRantStepProps {
   rant: string;
