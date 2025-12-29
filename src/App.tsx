@@ -1,3 +1,5 @@
+import { toast } from "sonner@2.0.3";
+
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { LandingPage } from "./screens/LandingPage";
@@ -8,7 +10,7 @@ import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { DevTools } from "./components/devtools/DevTools";
-import { useDebateSession } from "./hooks/useDebateSession";
+import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { setShowcaseMode } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { api, setUserId } from "./utils/api";
@@ -33,7 +35,7 @@ function getStoredDashboardState(): boolean {
   }
 }
 
-export default function App() {
+function AppContent() {
   const [targetRoomId, setTargetRoomId] = useState<
     string | null
   >(null);
@@ -414,5 +416,13 @@ export default function App() {
       />
       <Toaster />
     </>
+  );
+}
+
+export default function App() {
+  return (
+    <DebateSessionProvider>
+      <AppContent />
+    </DebateSessionProvider>
   );
 }

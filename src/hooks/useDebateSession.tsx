@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from "react";
 import {
   api,
   getUserId,
@@ -10,6 +10,7 @@ import type {
   DebateRoom,
   NewDebateRoom,
   Statement,
+  VoteType,
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 
@@ -19,7 +20,33 @@ export function setShowcaseMode(enabled: boolean) {
   SHOWCASE_MODE = enabled;
 }
 
-export function useDebateSession() {
+interface DebateSessionContextType {
+  user: UserSession | null;
+  activeRooms: DebateRoom[];
+  currentSubHeard: string | null;
+  loading: boolean;
+  error: string | null;
+  initializeUser: (nickname?: string, email?: string, password?: string, isSignIn?: boolean) => Promise<UserSession | null>;
+  createRoom: (newDebate: NewDebateRoom, autoJoin?: boolean) => Promise<DebateRoom>;
+  joinRoom: (roomId: string) => Promise<any>;
+  submitStatement: (roomId: string, text: string) => Promise<any>;
+  voteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
+  getActiveRooms: () => Promise<DebateRoom[]>;
+  setCurrentSubHeard: (subHeard: string | null) => void;
+  resetSession: () => void;
+  createSeedData: () => Promise<any>;
+  createTestRoom: () => Promise<any>;
+  createRantTestRoom: () => Promise<any>;
+  createRealtimeTestRoom: () => Promise<any>;
+  setRoomInactive: (roomId: string) => Promise<boolean>;
+  roomStatements: Record<string, Statement[]>;
+  getRoomStatements: (roomId: string) => Promise<Statement[]>;
+  getAllRoomStatements: () => Promise<Record<string, Statement[]>>;
+}
+
+const DebateSessionContext = createContext<DebateSessionContextType | null>(null);
+
+export function DebateSessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserSession | null>(null);
   const [activeRooms, setActiveRooms] = useState<DebateRoom[]>(
     [],
@@ -523,5 +550,17 @@ export function useDebateSession() {
     };
   }
 
-  return returnObj;
+  return (
+    <DebateSessionContext.Provider value={returnObj}>
+      {children}
+    </DebateSessionContext.Provider>
+  );
+}
+
+export function useDebateSession() {
+  const context = useContext(DebateSessionContext);
+  if (!context) {
+    throw new Error("useDebateSession must be used within a DebateSessionProvider");
+  }
+  return context;
 }
