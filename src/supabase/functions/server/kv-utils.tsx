@@ -170,6 +170,11 @@ export const getAllDebates = async (): Promise<DebateRoom[]> => {
   return getAllRecords<DebateRoom>("room:");
 };
 
+export const getAllRealDebates = async (): Promise<DebateRoom[]> => {
+  const allRooms = await getAllRecords<DebateRoom>("room:");
+  return allRooms.filter(room => !room.isTestRoom);
+};
+
 export const getDebate = async (debateId: string) => {
   return getParsedKvData<DebateRoom>(`room:${debateId}`);
 };

@@ -2,7 +2,7 @@
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
-import { getAllDebates, getAllRealUsers, getAllStatements, getByPrefixParsed, getParsedKvData, rantKeyFn } from "./kv-utils.tsx";
+import { getAllRealDebates, getAllRealUsers, getAllStatements, getByPrefixParsed } from "./kv-utils.tsx";
 import { getVotesForUser, getUserActivityRecords } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
 
@@ -397,7 +397,7 @@ app.get(
       const statements: Statement[] = [];
       const rants: Rant[] = [];
 
-      const allRooms = await getAllDebates();
+      const allRooms = await getAllRealDebates();
       for (const room of allRooms) {
         if (room.participants.includes(userId) || room.hostId === userId) {
           rooms.push(room);

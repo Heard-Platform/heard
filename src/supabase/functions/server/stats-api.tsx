@@ -1,9 +1,8 @@
 import { Hono } from "npm:hono";
 import {
-  getAllSubHeards,
-  getAllDebates,
-  getActivitiesForDate,
+  getAllSubHeards, getActivitiesForDate,
   getAllRealUsers,
+  getAllRealDebates
 } from "./kv-utils.tsx";
 import type { UserSession } from "./types.tsx";
 
@@ -138,7 +137,7 @@ app.get("/make-server-f1a393b4/public-stats", async (c) => {
       7,
     );
 
-    const debates = await getAllDebates();
+    const debates = await getAllRealDebates();
     const totalDebates = debates.length;
     const debatesSparkline = generateSparklineData(debates, 7);
 
