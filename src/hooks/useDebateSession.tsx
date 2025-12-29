@@ -11,6 +11,7 @@ import type {
   NewDebateRoom,
   Statement,
   VoteType,
+  AnalysisData,
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 
@@ -36,6 +37,7 @@ interface DebateSessionContextType {
   roomStatements: Record<string, Statement[]>;
   getRoomStatements: (roomId: string) => Promise<Statement[]>;
   getAllRoomStatements: () => Promise<Record<string, Statement[]>>;
+  getRoomAnalysis: (roomId: string) => Promise<AnalysisData | null>;
 }
 
 const DebateSessionContext = createContext<DebateSessionContextType | null>(null);
@@ -466,6 +468,21 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     [],
   );
 
+  const getRoomAnalysis = useCallback(async (roomId: string) => {
+    try {
+      const response = (await api.getRoomAnalysis(roomId)) as any;
+      if (response.success && response.data) {
+        return response.data.analysis;
+      }
+    } catch (error) {
+      console.error(
+        `Error fetching analysis for room ${roomId}:`,
+        error,
+      );
+    }
+    return null;
+  }, []);
+
   // Fetch statements for multiple rooms
   const getAllRoomStatements = useCallback(async () => {
     const statementsMap: Record<string, Statement[]> = {};
@@ -535,6 +552,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     roomStatements,
     getRoomStatements,
     getAllRoomStatements,
+    getRoomAnalysis,
   };
 
   if (showcase) {
@@ -547,6 +565,10 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       getRoomStatements: async () => { 
         console.log("[Showcase] getRoomStatements called"); 
         return [];
+      },
+      getRoomAnalysis: async () => { 
+        console.log("[Showcase] getRoomAnalysis called"); 
+        return null;
       },
     };
   }

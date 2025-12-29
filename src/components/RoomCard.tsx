@@ -19,12 +19,11 @@ import { useState, useEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType, UserSession, AnalysisData } from "../types";
-import { api } from "../utils/api";
 import { MetricsCircle } from "./analysis/MetricsCircle";
 import { RoomCardMenu } from "./room/RoomCardMenu";
 import { MetricsExplainerModal } from "./analysis/MetricsExplainerModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
-import { getTimeRemaining, ONE_WEEK_MS } from "../utils/time";
+import { useDebateSession } from "../hooks/useDebateSession";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -71,6 +70,7 @@ export function RoomCard({
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [showMetricsModal, setShowMetricsModal] = useState(false);
+  const { getRoomAnalysis } = useDebateSession();
 
   const currentUserId = user?.id;
 
@@ -88,9 +88,9 @@ export function RoomCard({
     const fetchMetrics = async () => {
       if (isActive && statements.length > 0) {
         try {
-          const response = await api.getRoomAnalysis(room.id)
-          if (response.data) {
-            setAnalysisData(response.data);
+          const data = await getRoomAnalysis(room.id);
+          if (data) {
+            setAnalysisData(data);
           }
         } catch (error) {
           console.error('Error fetching room metrics:', error);
@@ -99,7 +99,7 @@ export function RoomCard({
     };
 
     fetchMetrics();
-  }, [isActive, room.id, statements.length]);
+  }, [isActive, room.id, statements.length, getRoomAnalysis]);
   
   const handleOpenAnalysis = () => {
     setShowAnalysis(true);
