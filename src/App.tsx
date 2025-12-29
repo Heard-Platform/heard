@@ -1,3 +1,4 @@
+// @ts-ignore
 import { toast } from "sonner@2.0.3";
 
 import { useState, useEffect } from "react";
@@ -11,7 +12,6 @@ import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
-import { setShowcaseMode } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { api, setUserId } from "./utils/api";
 import type { NewDebateRoom, DebateRoom } from "./types";
@@ -254,13 +254,11 @@ function AppContent() {
   }, [user, currentSubHeard, getActiveRooms]);
 
   const handleOpenShowcase = () => {
-    setShowcaseMode(true);
     setShowComponentShowcase(true);
     localStorage.setItem("showComponentShowcase", "true");
   };
 
   const handleExitShowcase = () => {
-    setShowcaseMode(false);
     setShowComponentShowcase(false);
     localStorage.setItem("showComponentShowcase", "false");
   };

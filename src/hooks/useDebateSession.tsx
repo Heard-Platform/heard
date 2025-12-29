@@ -14,12 +14,6 @@ import type {
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 
-let SHOWCASE_MODE = false;
-
-export function setShowcaseMode(enabled: boolean) {
-  SHOWCASE_MODE = enabled;
-}
-
 interface DebateSessionContextType {
   user: UserSession | null;
   activeRooms: DebateRoom[];
@@ -46,7 +40,7 @@ interface DebateSessionContextType {
 
 const DebateSessionContext = createContext<DebateSessionContextType | null>(null);
 
-export function DebateSessionProvider({ children }: { children: ReactNode }) {
+export function DebateSessionProvider({ children, showcase }: { children: ReactNode; showcase?: boolean }) {
   const [user, setUser] = useState<UserSession | null>(null);
   const [activeRooms, setActiveRooms] = useState<DebateRoom[]>(
     [],
@@ -543,10 +537,13 @@ export function DebateSessionProvider({ children }: { children: ReactNode }) {
     getAllRoomStatements,
   };
 
-  if (SHOWCASE_MODE) {
+  if (showcase) {
     returnObj = {
       ...returnObj,
-      setRoomInactive: async () => { console.log("setRoomInactive called in showcase mode"); return true; },
+      setRoomInactive: async () => { 
+        console.log("[Showcase] setRoomInactive called"); 
+        return true; 
+      },
     };
   }
 

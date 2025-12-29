@@ -167,7 +167,6 @@ export function DebateScrollerStory() {
   };
 
   const handleGetRoomStatements = async (roomId: string) => {
-    console.log("Get room statements:", roomId);
     return mockStatements[roomId] || [];
   };
 
@@ -321,7 +320,6 @@ export function DebateScrollerStory() {
           presences={presences}
           onJoinRoom={handleJoinRoom}
           onCreateRoom={handleCreateRoom}
-          onSetRoomInactive={handleSetRoomInactive}
           onSubmitStatement={handleSubmitStatement}
           onVoteOnStatement={handleVoteOnStatement}
           onGetRoomStatements={handleGetRoomStatements}
