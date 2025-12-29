@@ -183,3 +183,9 @@ export interface UserPresence {
   currentRoomIndex: number;
   lastUpdated: number;
 }
+
+export interface AdminUser {
+  userId: string;
+  name: string;
+  lastSeen: number;
+}

@@ -1,4 +1,4 @@
-import { AnalysisData, type DebateRoom, type NewDebateRoom } from "../types";
+import { AdminUser, AnalysisData, SubHeard, type DebateRoom, type NewDebateRoom } from "../types";
 import { BaseApiClient, API_BASE_URL, ApiResponse } from "./api-client";
 import { publicAnonKey } from "./supabase/info";
 
@@ -30,7 +30,12 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async setupAnonymousUser(userId: string, nickname: string, email: string, password: string) {
+  async setupAnonymousUser(
+    userId: string,
+    nickname: string,
+    email: string,
+    password: string,
+  ) {
     return this.request("/auth/setup-anon", {
       method: "POST",
       body: JSON.stringify({ userId, nickname, email, password }),
@@ -54,7 +59,7 @@ class ApiClient extends BaseApiClient {
   // Room management
   async createRoom(
     newDebate: NewDebateRoom,
-    userId: string
+    userId: string,
   ): Promise<ApiResponse<DebateRoom>> {
     return this.request<DebateRoom>("/room/create", {
       method: "POST",
@@ -62,23 +67,31 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async uploadDebateImage(imageFile: File): Promise<ApiResponse<{ imageUrl: string; filename: string }>> {
+  async uploadDebateImage(
+    imageFile: File,
+  ): Promise<ApiResponse<{ imageUrl: string; filename: string }>> {
     const formData = new FormData();
     formData.append("image", imageFile);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/upload-debate-image`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${publicAnonKey}`,
+      const response = await fetch(
+        `${API_BASE_URL}/upload-debate-image`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${publicAnonKey}`,
+          },
+          body: formData,
         },
-        body: formData,
-      });
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        console.error(`Image Upload Error (${response.status}):`, data);
+        console.error(
+          `Image Upload Error (${response.status}):`,
+          data,
+        );
         return {
           success: false,
           error: data.error || `HTTP ${response.status}`,
@@ -90,12 +103,17 @@ class ApiClient extends BaseApiClient {
       console.error("Image upload failed:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Network error",
+        error:
+          error instanceof Error ? error.message : "Network error",
       };
     }
   }
 
-  async updateRoomDescription(roomId: string, description: string, userId: string) {
+  async updateRoomDescription(
+    roomId: string,
+    description: string,
+    userId: string,
+  ) {
     return this.request(`/room/${roomId}/description`, {
       method: "PUT",
       body: JSON.stringify({ description, userId }),
@@ -137,22 +155,34 @@ class ApiClient extends BaseApiClient {
     if (subHeard) params.append("subHeard", subHeard);
     if (userId) params.append("userId", userId);
     const queryString = params.toString();
-    return this.request(`/rooms/active${queryString ? `?${queryString}` : ""}`);
+    return this.request(
+      `/rooms/active${queryString ? `?${queryString}` : ""}`,
+    );
   }
 
   async getSubHeards(userId?: string) {
-    const params = userId ? `?userId=${encodeURIComponent(userId)}` : "";
+    const params = userId
+      ? `?userId=${encodeURIComponent(userId)}`
+      : "";
     return this.request(`/subheards${params}`);
   }
 
-  async createSubHeard(name: string, userId: string, isPrivate?: boolean) {
+  async createSubHeard(
+    name: string,
+    userId: string,
+    isPrivate?: boolean,
+  ) {
     return this.request("/subheard/create", {
       method: "POST",
       body: JSON.stringify({ name, userId, isPrivate }),
     });
   }
 
-  async updateSubHeardSettings(name: string, userId: string, isPrivate: boolean) {
+  async updateSubHeardSettings(
+    name: string,
+    userId: string,
+    isPrivate: boolean,
+  ) {
     return this.request(`/subheard/${name}/settings`, {
       method: "PATCH",
       body: JSON.stringify({ userId, isPrivate }),
@@ -179,10 +209,13 @@ class ApiClient extends BaseApiClient {
   }
 
   async extractTopicAndStatements(rant: string) {
-    return this.request<{ topic: string; statements: string[] }>("/rant/extract", {
-      method: "POST",
-      body: JSON.stringify({ rant }),
-    });
+    return this.request<{ topic: string; statements: string[] }>(
+      "/rant/extract",
+      {
+        method: "POST",
+        body: JSON.stringify({ rant }),
+      },
+    );
   }
 
   async voteOnStatement(
@@ -204,7 +237,11 @@ class ApiClient extends BaseApiClient {
   }
 
   // Invite management
-  async sendInvites(roomId: string, emails: string[], customMessage?: string) {
+  async sendInvites(
+    roomId: string,
+    emails: string[],
+    customMessage?: string,
+  ) {
     return this.request(`/room/${roomId}/invite`, {
       method: "POST",
       body: JSON.stringify({ emails, customMessage }),
@@ -261,7 +298,9 @@ class ApiClient extends BaseApiClient {
   }
 
   // Admin methods (require X-Admin-Key header)
-  async adminGetUsers(adminKey: string) {
+  async adminGetUsers(
+    adminKey: string,
+  ): Promise<ApiResponse<{ users: AdminUser[] }>> {
     return this.request("/admin/users", {
       headers: {
         "X-Admin-Key": adminKey,
@@ -269,7 +308,9 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async adminGetSubHeards(adminKey: string) {
+  async adminGetSubHeards(
+    adminKey: string,
+  ): Promise<ApiResponse<{ subHeards: SubHeard[] }>> {
     return this.request("/admin/subheards", {
       headers: {
         "X-Admin-Key": adminKey,
@@ -277,7 +318,11 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async adminUpdateSubHeardAdmin(subHeardName: string, newAdminId: string, adminKey: string) {
+  async adminUpdateSubHeardAdmin(
+    subHeardName: string,
+    newAdminId: string,
+    adminKey: string,
+  ) {
     return this.request(`/admin/subheard/${subHeardName}/admin`, {
       method: "PATCH",
       body: JSON.stringify({ newAdminId }),
@@ -287,7 +332,11 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async adminRenameSubHeard(subHeardName: string, newName: string, adminKey: string) {
+  async adminRenameSubHeard(
+    subHeardName: string,
+    newName: string,
+    adminKey: string,
+  ) {
     return this.request(`/admin/subheard/${subHeardName}/rename`, {
       method: "PATCH",
       body: JSON.stringify({ newName }),
@@ -306,7 +355,9 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async adminGetDebates(adminKey: string) {
+  async adminGetDebates(
+    adminKey: string,
+  ): Promise<ApiResponse<{ debates: DebateRoom[] }>> {
     return this.request("/admin/debates", {
       headers: {
         "X-Admin-Key": adminKey,
@@ -314,7 +365,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async adminToggleDebateActive(debateId: string, adminKey: string) {
+  async adminToggleDebateActive(
+    debateId: string,
+    adminKey: string,
+  ): Promise<ApiResponse<{ debate: Partial<DebateRoom> }>> {
     return this.request(`/admin/debate/${debateId}/toggle-active`, {
       method: "PATCH",
       headers: {
@@ -323,7 +377,11 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async adminUpdateDebateSubHeard(debateId: string, newSubHeard: string | null, adminKey: string) {
+  async adminUpdateDebateSubHeard(
+    debateId: string,
+    newSubHeard: string | null,
+    adminKey: string,
+  ): Promise<ApiResponse<{ debate: DebateRoom }>> {
     return this.request(`/admin/debate/${debateId}/subheard`, {
       method: "PATCH",
       body: JSON.stringify({ newSubHeard }),
@@ -360,7 +418,12 @@ class ApiClient extends BaseApiClient {
   }
 
   // Create test room from Reddit post
-  async adminCreateRedditSeedRoom(redditUrl: string, userId: string, adminKey: string, subHeard?: string) {
+  async adminCreateRedditSeedRoom(
+    redditUrl: string,
+    userId: string,
+    adminKey: string,
+    subHeard?: string,
+  ) {
     return this.request("/reddit/seed", {
       method: "POST",
       body: JSON.stringify({ redditUrl, userId, subHeard }),
@@ -441,25 +504,31 @@ class ApiClient extends BaseApiClient {
     const params = new URLSearchParams();
     if (userId) params.append("userId", userId);
     if (digestType) params.append("digestType", digestType);
-    
+
     const queryString = params.toString();
     const response = await fetch(
-      `${API_BASE_URL}/dev/email-previews${queryString ? `?${queryString}` : ""}`,
+      `${API_BASE_URL}/dev/email-previews${
+        queryString ? `?${queryString}` : ""
+      }`,
       {
         headers: {
           Authorization: `Bearer ${publicAnonKey}`,
         },
       },
     );
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     return response.text();
   }
 
-  async sendTestEmail(userId: string, useMockData: boolean, digestType?: string) {
+  async sendTestEmail(
+    userId: string,
+    useMockData: boolean,
+    digestType?: string,
+  ) {
     return this.request("/dev/email-previews/send", {
       method: "POST",
       body: JSON.stringify({ userId, useMockData, digestType }),
@@ -469,13 +538,21 @@ class ApiClient extends BaseApiClient {
   async getEmailDigestCount(digestType: string) {
     const params = new URLSearchParams();
     params.append("digestType", digestType);
-    
+
     return this.request<{
       eligibleCount: number;
       totalCount: number;
       sinceTimestamp: number;
-      eligibleUsers: Array<{ email: string; nickname: string; id: string }>;
-      consideredUsers: Array<{ email: string; nickname: string; id: string }>;
+      eligibleUsers: Array<{
+        email: string;
+        nickname: string;
+        id: string;
+      }>;
+      consideredUsers: Array<{
+        email: string;
+        nickname: string;
+        id: string;
+      }>;
     }>(`/dev/email-previews/count?${params.toString()}`);
   }
 
