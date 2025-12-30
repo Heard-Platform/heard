@@ -26,7 +26,7 @@ interface CreateRoomSheetProps {
   open: boolean;
   defaultSubHeard?: string;
   defaultTopic?: string;
-  userId?: string;
+  userId: string;
   onOpenChange: (open: boolean) => void;
   onCreateRoom: (
     newDebate: NewDebateRoom,

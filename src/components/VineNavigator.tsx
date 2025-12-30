@@ -9,7 +9,7 @@ import monkeyImg from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png"
 interface VineNavigatorProps {
   totalCards: number;
   currentIndex: number;
-  currentUserId?: string;
+  currentUserId: string;
   presences: UserPresence[];
   onUpdatePresence: (
     userId: string,
@@ -47,7 +47,7 @@ export function VineNavigator({
   }, [currentIndex]);
 
   useEffect(() => {
-    if (!currentUserId || !onUpdatePresence) return;
+    if (!onUpdatePresence) return;
 
     onUpdatePresence(currentUserId, currentIndex);
 
@@ -197,60 +197,57 @@ export function VineNavigator({
         className="relative pointer-events-auto"
         style={{ height: vineHeight, width: AVATAR_SIZE + 20 }}
       >
-        {currentUserId && (
-          <motion.div
+        <motion.div
+          animate={{
+            top:
+              getAvatarPositionFromIndex(monkeyPosition) +
+              monkeyOffset,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 150,
+            damping: 20,
+            mass: 1.2,
+          }}
+          className="absolute z-20 pointer-events-auto"
+          style={{
+            width: 45,
+            height: 52.5,
+            left: VINE_WIDTH / 2 - 13.5,
+            marginTop: -26.25,
+          }}
+        >
+          <motion.img
+            src={monkeyImg}
+            alt="Monkey Avatar"
+            className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
+            style={{ scaleX: -1, opacity: 1 }}
             animate={{
-              top:
-                getAvatarPositionFromIndex(monkeyPosition) +
-                monkeyOffset,
+              filter: [
+                "drop-shadow(0 0 0px rgba(16, 185, 129, 0))",
+                "drop-shadow(0 0 12px rgba(16, 185, 129, 0.9))",
+                "drop-shadow(0 0 0px rgba(16, 185, 129, 0))",
+              ],
             }}
             transition={{
-              type: "spring",
-              stiffness: 150,
-              damping: 20,
-              mass: 1.2,
+              duration: 2,
+              repeat: Infinity,
             }}
-            className="absolute z-20 pointer-events-auto"
-            style={{
-              width: 45,
-              height: 52.5,
-              left: VINE_WIDTH / 2 - 13.5,
-              marginTop: -26.25,
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMonkeyInfo(true);
             }}
-          >
-            <motion.img
-              src={monkeyImg}
-              alt="Monkey Avatar"
-              className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
-              style={{ scaleX: -1, opacity: 1 }}
-              animate={{
-                filter: [
-                  "drop-shadow(0 0 0px rgba(16, 185, 129, 0))",
-                  "drop-shadow(0 0 12px rgba(16, 185, 129, 0.9))",
-                  "drop-shadow(0 0 0px rgba(16, 185, 129, 0))",
-                ],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMonkeyInfo(true);
-              }}
-              whileTap={{ scale: 0.95 }}
-            />
-          </motion.div>
-        )}
+            whileTap={{ scale: 0.95 }}
+          />
+        </motion.div>
 
         <AnimatePresence>
           {presences.map((presence) => {
             const key = `${presence.userId}-${presence.currentRoomIndex}`;
             const offset = otherMonkeyOffsets[key] || 0;
             const top =
-              getAvatarPositionFromIndex(
-                presence.currentRoomIndex,
-              ) + offset;
+              getAvatarPositionFromIndex(presence.currentRoomIndex) +
+              offset;
             const isOnSameConvo =
               presence.currentRoomIndex === currentIndex;
 

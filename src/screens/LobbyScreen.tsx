@@ -21,7 +21,7 @@ import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api } from "../utils/api";
 
 interface LobbyScreenProps {
-  user: UserSession | null;
+  user: UserSession;
   activeRooms: DebateRoom[];
   loading: boolean;
   error: string | null;
@@ -230,8 +230,6 @@ export function LobbyScreen({
   };
 
   const handleCreateAnonDebate = async () => {
-    if (!user) return;
-    
     try {
       const response = await api.createAnonDebate(user.id) as any;
       if (response.success && response.data) {
@@ -251,7 +249,7 @@ export function LobbyScreen({
   };
 
   const handleOpenCreateSheet = () => {
-    if (user?.isAnonymous) {
+    if (user.isAnonymous) {
       setShowAccountSetupAnonModal(true);
       setAccountSetupFeatureText("creating debates");
     } else {
@@ -262,8 +260,6 @@ export function LobbyScreen({
   };
 
   const handleSetupAnonAccount = async (nickname: string, email: string, password: string) => {
-    if (!user) return;
-    
     const response = await api.setupAnonymousUser(user.id, nickname, email, password);
     if (response.success && response.data) {
       window.location.reload();
@@ -323,12 +319,12 @@ export function LobbyScreen({
             <div
               className="flex flex-col"
               onClick={() => {
-                if (user?.isDeveloper) {
+                if (user.isDeveloper) {
                   setShowDebugPanel(!showDebugPanel);
                 }
               }}
               style={{
-                cursor: user?.isDeveloper
+                cursor: user.isDeveloper
                   ? "pointer"
                   : "default",
               }}
@@ -414,7 +410,7 @@ export function LobbyScreen({
               />
             )}
 
-            {user && onLogout && (
+            {onLogout && (
               <SidePanelMenu
                 user={user}
                 onLogout={onLogout}
@@ -435,7 +431,7 @@ export function LobbyScreen({
         <RoomScroller
           ref={roomScrollerRef}
           rooms={filteredRooms}
-          isDeveloper={user?.isDeveloper || false}
+          isDeveloper={user.isDeveloper || false}
           loading={loading}
           user={user}
           currentSubHeard={currentSubHeard}
@@ -462,13 +458,13 @@ export function LobbyScreen({
 
       {/* Floating feedback button - hide when keyboard is open */}
       {!isKeyboardOpen && (
-        <FloatingFeedbackButton userId={user?.id} />
+        <FloatingFeedbackButton userId={user.id} />
       )}
 
       {/* Create room sheet */}
       <CreateRoomSheet
         open={createRoomSheetOpen}
-        userId={user?.id}
+        userId={user.id}
         onOpenChange={handleCreateRoomSheetChange}
         onCreateRoom={handleCreateRoom}
         onExtractTopicAndStatements={async (rant) => {
@@ -496,7 +492,7 @@ export function LobbyScreen({
       )}
 
       {/* Developer viewport debug panel */}
-      {user?.isDeveloper && (
+      {user.isDeveloper && (
         <KeyboardDebugPanel
           show={showDebugPanel}
           isKeyboardOpen={isKeyboardOpen}

@@ -29,7 +29,7 @@ import { toast } from "sonner@2.0.3";
 
 interface SubHeardBrowserProps {
   currentSubHeard?: string;
-  user: UserSession | null;
+  user: UserSession;
   onSubHeardChange: (subHeard: string | null) => void;
   onCreateSubHeard?: (name: string, userId: string, isPrivate?: boolean) => Promise<boolean>;
   onUpdateSubHeard?: (name: string, userId: string, isPrivate: boolean) => Promise<boolean>;
@@ -53,12 +53,10 @@ export function SubHeardBrowser({
   const [isCreating, setIsCreating] = useState(false);
   const [copiedSubHeard, setCopiedSubHeard] = useState<string | null>(null);
 
-  const currentUserId = user?.id || undefined;
-
-  // Load sub-heards on mount, when sheet opens, or when user changes
+    // Load sub-heards on mount, when sheet opens, or when user changes
   useEffect(() => {
     loadSubHeards();
-  }, [currentUserId]);
+  }, [user.id]);
 
   useEffect(() => {
     if (sheetOpen) {
@@ -69,7 +67,7 @@ export function SubHeardBrowser({
   const loadSubHeards = async () => {
     try {
       setLoading(true);
-      const response = await api.getSubHeards(currentUserId) as any;
+      const response = await api.getSubHeards(user.id) as any;
       if (response.success && response.data) {
         setSubHeards(response.data.subHeards || []);
       }
@@ -96,14 +94,14 @@ export function SubHeardBrowser({
   };
 
   const handleCreateNew = async () => {
-    if (!newSubHeardName.trim() || isCreating || !currentUserId) return;
+    if (!newSubHeardName.trim() || isCreating) return;
 
     const normalized = newSubHeardName.trim().toLowerCase().replace(/\s+/g, '-');
     
     setIsCreating(true);
     try {
       if (onCreateSubHeard) {
-        const success = await onCreateSubHeard(normalized, currentUserId, isPrivate);
+        const success = await onCreateSubHeard(normalized, user.id, isPrivate);
         if (success) {
           // Reload sub-heards to show the newly created one
           await loadSubHeards();
@@ -122,7 +120,7 @@ export function SubHeardBrowser({
   };
 
   const handleTogglePrivacy = async (subHeard: SubHeard, newPrivacy: boolean) => {
-    if (!currentUserId || !onUpdateSubHeard) return;
+    if (!onUpdateSubHeard) return;
 
     // Optimistic update - immediately update UI
     setSubHeards(prev => 
@@ -134,7 +132,7 @@ export function SubHeardBrowser({
     );
 
     try {
-      const success = await onUpdateSubHeard(subHeard.name, currentUserId, newPrivacy);
+      const success = await onUpdateSubHeard(subHeard.name, user.id, newPrivacy);
       if (!success) {
         // Revert on failure
         setSubHeards(prev => 
@@ -191,7 +189,7 @@ export function SubHeardBrowser({
     : "All";
 
   const currentSubHeardData = subHeards.find(sh => sh.name === currentSubHeard);
-  const isCurrentAdmin = currentUserId && currentSubHeardData?.adminId === currentUserId;
+  const isCurrentAdmin = currentSubHeardData?.adminId === user.id;
 
   return (
     <Sheet open={sheetOpen} onOpenChange={handleSheetOpenChange}>
@@ -244,7 +242,7 @@ export function SubHeardBrowser({
           ) : (
             <div className="space-y-2">
               {subHeards.map((subHeard) => {
-                const isAdmin = currentUserId && subHeard.adminId === currentUserId;
+                const isAdmin = subHeard.adminId === user.id;
                 const isSelected = currentSubHeard === subHeard.name;
                 
                 return (
@@ -347,7 +345,7 @@ export function SubHeardBrowser({
               variant="outline"
               className="w-full justify-start border-dashed"
               onClick={() => {
-                if (user?.isAnonymous) {
+                if (user.isAnonymous) {
                   onShowAccountSetupModal("creating communities");
                 } else {
                   setShowCreateNew(true);

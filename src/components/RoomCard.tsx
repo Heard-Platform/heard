@@ -31,7 +31,7 @@ interface RoomCardProps {
   loadingStatements: boolean;
   isDeveloper: boolean;
   isActive: boolean;
-  user: UserSession | null;
+  user: UserSession;
   currentSubHeard?: string;
   analysisRoomId?: string;
   onJoin: () => void;
@@ -69,8 +69,6 @@ export function RoomCard({
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [showMetricsModal, setShowMetricsModal] = useState(false);
   const { getRoomAnalysis, markChanceCardSwiped } = useDebateSession();
-
-  const currentUserId = user?.id;
 
   useEffect(() => {
     if (analysisRoomId === room.id) {
@@ -127,49 +125,35 @@ export function RoomCard({
     statementId: string,
     voteType: "agree" | "disagree" | "pass" | "super_agree",
   ) => {
-    if (!currentUserId) {
-      console.error("No user ID available for voting");
-    } else {
-      try {
-        await onVoteOnStatement(
-          statementId,
-          voteType,
+    try {
+      await onVoteOnStatement(
+        statementId,
+        voteType,
+      );
+    } catch (error: any) {
+      if (error.message === ANONYMOUS_ACTION_NOT_ALLOWED_ERROR) {
+        onShowAccountSetupModal("voting in this debate");
+        toast.error("⚠️ This discussion requires an account.");
+      } else {
+        toast.error(
+          "⚠️ Your vote couldn't be saved. Please try again.",
+          { duration: 3000 },
         );
-      } catch (error: any) {
-        if (error.message === ANONYMOUS_ACTION_NOT_ALLOWED_ERROR) {
-          onShowAccountSetupModal("voting in this debate");
-          toast.error("⚠️ This discussion requires an account.");
-        } else {
-          toast.error(
-            "⚠️ Your vote couldn't be saved. Please try again.",
-            { duration: 3000 },
-          );
-          console.error("Error voting on statement:", error);
-        }
-        throw error;
+        console.error("Error voting on statement:", error);
       }
+      throw error;
     }
   };
 
   const handleSwipeChanceCard = async () => {
     setChanceCardSwiped(true);
-    if (currentUserId) {
-      await markChanceCardSwiped(currentUserId, room.id);
-    }
+    await markChanceCardSwiped(user.id, room.id);
   }
 
   // Handle statement submission
   const handleSubmitStatement = async (text: string) => {
-    if (!currentUserId) {
-      console.error(
-        "No user ID available for submitting statement",
-      );
-      throw new Error("User not logged in");
-    }
-
     try {
       await onSubmitStatement(room.id, text);
-      // Refresh statements to show the new one
       if (onRefreshStatements) {
         await onRefreshStatements();
       }
@@ -258,10 +242,10 @@ export function RoomCard({
                   </Badge>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-2">
                 {analysisData && (
-                  <div 
+                  <div
                     className="cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -277,7 +261,7 @@ export function RoomCard({
                     />
                   </div>
                 )}
-                
+
                 {isCompleted ? (
                   <Badge className="bg-gray-600 text-white">
                     Completed
@@ -303,8 +287,7 @@ export function RoomCard({
               statements={statements}
               onDiscuss={
                 onDiscussStatement
-                  ? (text) =>
-                      onDiscussStatement(text, room.subHeard)
+                  ? (text) => onDiscussStatement(text, room.subHeard)
                   : undefined
               }
             />
@@ -312,11 +295,9 @@ export function RoomCard({
             (() => {
               // Check if user has voted on all statements
               const hasSwipedAll =
-                currentUserId &&
                 statements.every(
                   (statement) =>
-                    statement.voters &&
-                    statement.voters[currentUserId],
+                    statement.voters && statement.voters[user.id],
                 ) && chanceCardSwiped;
 
               // If user has voted on all statements, show InProgressResults + input
@@ -325,21 +306,18 @@ export function RoomCard({
                   <div className="space-y-4">
                     <InProgressResults
                       statements={statements}
-                      currentUserId={currentUserId}
+                      currentUserId={user.id}
                       debateTitle={room.topic}
                       onChangeVote={handleVote}
                     />
-                    {/* New Statement Input */}
-                    {currentUserId && (
-                      <NewStatementInput
-                        onSubmitStatement={
-                          handleSubmitStatement
-                        }
-                        allowAnonymous={!!room.allowAnonymous}
-                        isAnonymous={!!user?.isAnonymous}
-                        onShowAccountSetupModal={onShowAccountSetupModal}
-                      />
-                    )}
+                    <NewStatementInput
+                      onSubmitStatement={handleSubmitStatement}
+                      allowAnonymous={!!room.allowAnonymous}
+                      isAnonymous={!!user?.isAnonymous}
+                      onShowAccountSetupModal={
+                        onShowAccountSetupModal
+                      }
+                    />
                   </div>
                 );
               } else {
@@ -347,7 +325,7 @@ export function RoomCard({
                 return (
                   <SwipeableStatementStack
                     statements={statements}
-                    currentUserId={currentUserId}
+                    currentUserId={user.id}
                     allowAnonymous={!!room.allowAnonymous}
                     isAnonymous={!!user?.isAnonymous}
                     onVote={handleVote}
@@ -375,27 +353,27 @@ export function RoomCard({
                       No statements yet in this debate
                     </p>
                   </div>
-                  {currentUserId && !isCompleted && (
+                  {!isCompleted && (
                     <NewStatementInput
                       onSubmitStatement={handleSubmitStatement}
                       allowAnonymous={!!room.allowAnonymous}
                       isAnonymous={!!user?.isAnonymous}
-                      onShowAccountSetupModal={onShowAccountSetupModal}
+                      onShowAccountSetupModal={
+                        onShowAccountSetupModal
+                      }
                     />
                   )}
-                  {!currentUserId && (
-                    <Button
-                      onClick={onJoin}
-                      disabled={isCompleted}
-                      size="lg"
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                    >
-                      {isCompleted
-                        ? "Debate Ended"
-                        : "Join to Add Statements"}
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </Button>
-                  )}
+                  <Button
+                    onClick={onJoin}
+                    disabled={isCompleted}
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                  >
+                    {isCompleted
+                      ? "Debate Ended"
+                      : "Join to Add Statements"}
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
                 </>
               )}
             </div>
@@ -408,9 +386,7 @@ export function RoomCard({
                 size="sm"
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
               >
-                {showAnalysis
-                  ? "Hide Analysis"
-                  : "Show Analysis"}
+                {showAnalysis ? "Hide Analysis" : "Show Analysis"}
                 <BarChart3 className="w-5 h-5 ml-2" />
               </Button>
               {showAnalysis && (

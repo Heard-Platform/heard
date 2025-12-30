@@ -10,7 +10,7 @@ import { FunSheet, FunSheetCard } from "./FunSheet";
 import alexAvatar from "figma:asset/666a1c47b00c0b4dbc630b8672610dd57a571842.png";
 
 interface FeedbackSheetProps {
-  userId?: string;
+  userId: string;
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;

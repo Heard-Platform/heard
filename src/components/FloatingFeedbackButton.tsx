@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { FeedbackSheet } from "./FeedbackSheet";
 
 interface FloatingFeedbackButtonProps {
-  userId?: string;
+  userId: string;
 }
 
 export function FloatingFeedbackButton({ userId }: FloatingFeedbackButtonProps) {

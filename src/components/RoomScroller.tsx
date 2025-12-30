@@ -24,7 +24,7 @@ interface RoomScrollerProps {
   rooms: DebateRoom[];
   isDeveloper: boolean;
   loading: boolean;
-  user: UserSession | null;
+  user: UserSession;
   currentSubHeard?: string;
   roomStatements: Record<string, Statement[]>;
   analysisRoomId?: string;
@@ -239,10 +239,10 @@ export const RoomScroller = forwardRef<
           <VineNavigator
             totalCards={allCards.length}
             currentIndex={currentIndex}
-            currentUserId={user?.id}
+            currentUserId={user.id}
             presences={
               presences?.filter(
-                (p) => p.userId !== user?.id,
+                (p) => p.userId !== user.id,
               ) || []
             }
             onUpdatePresence={onUpdatePresence}

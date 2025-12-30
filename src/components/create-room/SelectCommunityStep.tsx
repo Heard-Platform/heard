@@ -13,7 +13,7 @@ interface SelectCommunityStepProps {
   subHeard: string;
   newSubHeardName: string;
   defaultSubHeard?: string;
-  userId?: string;
+  userId: string;
   onSubHeardChange: (subHeard: string) => void;
   onNewSubHeardNameChange: (name: string) => void;
 }
