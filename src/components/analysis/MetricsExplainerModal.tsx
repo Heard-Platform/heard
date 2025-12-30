@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
+import { Dialog, DialogContent } from "../ui/dialog";
 import { MetricsCircle } from "./MetricsCircle";
 import { scoreToWord } from "../../utils/analysis";
 import { AnalysisData } from "../../types";
@@ -24,25 +25,8 @@ export function MetricsExplainerModal({
   } = analysisData;
   
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        transition={{
-          type: "spring",
-          damping: 25,
-          stiffness: 300,
-        }}
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden relative"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="p-0 border-0 shadow-2xl max-w-md overflow-hidden max-h-[90vh]">
         <div className="absolute top-4 right-4 z-10">
           <Button
             variant="ghost"
@@ -70,7 +54,7 @@ export function MetricsExplainerModal({
             </div>
           </div>
 
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 bg-white">
             <div className="bg-white rounded-2xl p-5 shadow-lg border-2 border-purple-200">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full bg-purple-400"></div>
@@ -158,7 +142,7 @@ export function MetricsExplainerModal({
             </div>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </DialogContent>
+    </Dialog>
   );
 }

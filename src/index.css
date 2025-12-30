@@ -786,10 +786,6 @@
     z-index: 50;
   }
 
-  .z-\[9999\] {
-    z-index: 9999;
-  }
-
   .col-start-2 {
     grid-column-start: 2;
   }
@@ -1332,10 +1328,6 @@
     width: calc(var(--spacing) * 80);
   }
 
-  .w-\[90\%\] {
-    width: 90%;
-  }
-
   .w-fit {
     width: fit-content;
   }
@@ -1711,10 +1703,6 @@
 
   .rounded-2xl {
     border-radius: var(--radius-2xl);
-  }
-
-  .rounded-3xl {
-    border-radius: var(--radius-3xl);
   }
 
   .rounded-\[4px\] {

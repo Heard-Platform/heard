@@ -1,6 +1,6 @@
-import { motion } from "motion/react";
 import { Button } from "../ui/button";
 import { X, Loader2 } from "lucide-react";
+import { Dialog, DialogContent } from "../ui/dialog";
 import { DebateAnalysisReport } from "./DebateAnalysisReport";
 import { useState, useEffect } from "react";
 import { api } from "../../utils/api";
@@ -62,25 +62,8 @@ export function DebateAnalysisView({
   }, [roomId]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{
-          type: "spring",
-          damping: 25,
-          stiffness: 300,
-        }}
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-7xl h-[95vh] overflow-hidden relative"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="p-0 border-0 shadow-2xl max-w-7xl h-[95vh] overflow-hidden">
         <div className="absolute top-4 right-4 z-10">
           <Button
             variant="ghost"
@@ -92,7 +75,7 @@ export function DebateAnalysisView({
           </Button>
         </div>
 
-        <div className="h-full overflow-y-auto">
+        <div className="h-full overflow-y-auto bg-white">
           {loading && (
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
@@ -126,7 +109,7 @@ export function DebateAnalysisView({
             />
           )}
         </div>
-      </motion.div>
-    </motion.div>
+      </DialogContent>
+    </Dialog>
   );
 }
