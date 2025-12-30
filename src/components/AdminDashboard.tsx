@@ -3,61 +3,32 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { X, User, BarChart3, MessageSquare } from "lucide-react";
 import { api } from "../utils/api";
-import type { DebateRoom, SubHeard } from "../types";
+import type {
+  DebateRoom,
+  Feedback,
+  SubHeard,
+  UserSession,
+  ActivityMetricsData,
+  PublicStatsData,
+  RetentionStatsData,
+} from "../types";
 import { SparklineChart } from "./SparklineChart";
 import { ActivityMetrics } from "./ActivityMetrics";
 import { RetentionCard } from "./RetentionCard";
 
-interface AdminUser {
-  userId: string;
-  name: string;
-  lastSeen: number;
-}
-
-interface Feedback {
-  id: string;
-  userId: string;
-  text: string;
-  timestamp: number;
-  createdAt: string;
-}
-
 interface AdminDashboardProps {
-  onExit?: () => void;
   currentUserId: string;
+  onExit?: () => void;
 }
 
-interface ActivityMetrics {
-  dau: number;
-  wau: number;
-  mau: number;
-  dailyBreakdown: Array<{ date: string; activeUsers: number }>;
-  calculatedAt: string;
-}
-
-interface PublicStats {
-  totalUsers: number;
-  totalSubHeards: number;
-  totalDebates: number;
-  usersSparkline: Array<{ day: number; count: number; timestamp: number }>;
-  subHeardsSparkline: Array<{ day: number; count: number; timestamp: number }>;
-  debatesSparkline: Array<{ day: number; count: number; timestamp: number }>;
-}
-
-interface RetentionStats {
-  d1Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
-  d7Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
-  d30Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
-}
-
-export function AdminDashboard({ onExit, currentUserId }: AdminDashboardProps) {
-  const [users, setUsers] = useState<AdminUser[]>([]);
+export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
+  const [users, setUsers] = useState<UserSession[]>([]);
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [debates, setDebates] = useState<DebateRoom[]>([]);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
-  const [activityMetrics, setActivityMetrics] = useState<ActivityMetrics | null>(null);
-  const [publicStats, setPublicStats] = useState<PublicStats | null>(null);
-  const [retentionStats, setRetentionStats] = useState<RetentionStats | null>(null);
+  const [activityMetrics, setActivityMetrics] = useState<ActivityMetricsData | null>(null);
+  const [publicStats, setPublicStats] = useState<PublicStatsData | null>(null);
+  const [retentionStats, setRetentionStats] = useState<RetentionStatsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 

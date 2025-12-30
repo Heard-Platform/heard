@@ -42,7 +42,7 @@ import {
   History,
 } from "lucide-react";
 import { api } from "../utils/api";
-import type { AdminUser, DebateRoom, SubHeard } from "../types";
+import type { DebateRoom, SubHeard, UserSession } from "../types";
 import { PolisImporter } from "./PolisImporter";
 import { UserHistory } from "./admin/UserHistory";
 
@@ -53,7 +53,7 @@ interface AdminPanelProps {
 export function AdminPanel({ onExit }: AdminPanelProps) {
   const [adminKey, setAdminKey] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [users, setUsers] = useState<UserSession[]>([]);
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [debates, setDebates] = useState<DebateRoom[]>([]);
   const [loading, setLoading] = useState(false);
@@ -148,8 +148,8 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
 
   const getUserName = (userId?: string) => {
     if (!userId) return "No admin";
-    const user = users.find((u) => u.userId === userId);
-    return user ? user.name : userId.substring(0, 8);
+    const user = users.find((u) => u.id === userId);
+    return user ? user.nickname : userId.substring(0, 8);
   };
 
   const handleRename = async () => {
@@ -387,7 +387,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
 
     // Use the first user as the room creator
-    const userId = users[0]?.userId;
+    const userId = users[0]?.id;
     if (!userId) {
       alert("No users found in the system");
       return;
@@ -729,7 +729,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
           <>
             <PolisImporter
               subHeards={subHeards}
-              currentUserId={users[0]?.userId || ""}
+              currentUserId={users[0]?.id || ""}
               onImportComplete={fetchAdminData}
             />
 
@@ -910,17 +910,17 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {users.slice(0, 50).map((user) => (
                 <div
-                  key={user.userId}
+                  key={user.id}
                   className="border rounded p-3 flex items-center justify-between"
                 >
                   <div>
-                    <p className="font-medium">{user.name}</p>
+                    <p className="font-medium">{user.nickname}</p>
                     <p className="text-xs text-muted-foreground">
-                      {user.userId.substring(0, 12)}...
+                      {user.id.substring(0, 12)}...
                     </p>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(user.lastSeen).toLocaleDateString()}
+                    {new Date(user.lastActive).toLocaleDateString()}
                   </p>
                 </div>
               ))}
@@ -939,7 +939,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
               interactions.
             </p>
             <UserHistory
-              currentUserId={users[0]?.userId || ""}
+              currentUserId={users[0]?.id || ""}
               adminKey={adminKey}
             />
           </Card>
@@ -979,10 +979,10 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                 <SelectContent>
                   {users.map((user) => (
                     <SelectItem
-                      key={user.userId}
-                      value={user.userId}
+                      key={user.id}
+                      value={user.id}
                     >
-                      {user.name} ({user.userId.substring(0, 8)}
+                      {user.nickname} ({user.id.substring(0, 8)}
                       ...)
                     </SelectItem>
                   ))}

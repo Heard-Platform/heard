@@ -2,7 +2,7 @@
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
-import { getAllRealDebates, getAllRealUsers, getAllStatements, getByPrefixParsed } from "./kv-utils.tsx";
+import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, saveDebate } from "./kv-utils.tsx";
 import { getVotesForUser, getUserActivityRecords } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
 
@@ -29,17 +29,9 @@ app.use("/make-server-f1a393b4/admin/*", verifyAdminKey);
 // Get all users
 app.get("/make-server-f1a393b4/admin/users", async (c) => {
   try {
-    const allUsers = await getAllRealUsers();
-
-    const users = allUsers.map((user) => ({
-      userId: user.id,
-      name: user.nickname || "Unknown",
-      email: user.email || "no-email",
-      lastSeen: user.lastActive || 0,
-    }));
-
-    users.sort((a, b) => b.lastSeen - a.lastSeen);
-
+    let users = await getAllRealUsers();
+    users = users.map(({passwordHash, ...rest}) => rest);
+    users.sort((a, b) => b.lastActive - a.lastActive);
     return c.json({ users });
   } catch (error) {
     console.error("Error fetching all users for admin:", error);
@@ -50,31 +42,10 @@ app.get("/make-server-f1a393b4/admin/users", async (c) => {
 // Get all subheards (including private ones)
 app.get("/make-server-f1a393b4/admin/subheards", async (c) => {
   try {
-    const createdSubHeards = await kv.getByPrefix("subheard:");
-
-    const subHeards = createdSubHeards
-      .map((sh) => {
-        try {
-          // Check if it's already an object or needs parsing
-          const data =
-            typeof sh === "string" ? JSON.parse(sh) : sh;
-          return {
-            name: data.name,
-            createdAt: data.createdAt,
-            isPrivate: data.isPrivate || false,
-            adminId: data.adminId,
-          };
-        } catch (error) {
-          return null;
-        }
-      })
-      .filter((sh) => sh !== null);
-
-    // Sort by creation date
+    const subHeards = await getAllSubHeards();
     subHeards.sort(
       (a, b) => (b.createdAt || 0) - (a.createdAt || 0),
     );
-
     return c.json({ subHeards });
   } catch (error) {
     console.error("Error fetching sub-heards:", error);
@@ -260,31 +231,8 @@ app.patch(
 // Get all debates (rooms) with their active status
 app.get("/make-server-f1a393b4/admin/debates", async (c) => {
   try {
-    const rooms = await getActiveRooms();
-
-    const debates = rooms
-      .map((room) => {
-        try {
-          return {
-            id: room.id,
-            topic: room.topic,
-            subHeard: room.subHeard || null,
-            isActive: room.isActive,
-            createdAt: room.createdAt,
-            participants: room.participants?.length || 0,
-            phase: room.phase,
-            mode: room.mode,
-            rantFirst: room.rantFirst || false,
-          };
-        } catch (error) {
-          return null;
-        }
-      })
-      .filter((debate) => debate !== null);
-
-    // Sort by creation date (newest first)
+    const debates = await getActiveRooms();
     debates.sort((a, b) => b.createdAt - a.createdAt);
-
     return c.json({ debates });
   } catch (error) {
     console.error("Error fetching debates:", error);
@@ -299,35 +247,19 @@ app.patch(
     try {
       const debateId = c.req.param("id");
 
-      // Get existing debate data from main room record
-      const roomKey = `room:${debateId}`;
-      const existingData = await kv.get(roomKey);
+      const debate = await getDebate(debateId);
 
-      if (!existingData) {
+      if (!debate) {
         return c.json({ error: "Debate not found" }, 404);
       }
 
-      let debateData;
-      try {
-        debateData = JSON.parse(existingData);
-      } catch (error) {
-        console.error("Error parsing debate data:", error);
-        return c.json({ error: "Invalid debate data" }, 500);
-      }
+      debate.isActive = !debate.isActive;
 
-      // Toggle active status
-      debateData.isActive = !debateData.isActive;
-
-      // Save updated data to main room record
-      await kv.set(roomKey, JSON.stringify(debateData));
+      await saveDebate(debate);
 
       return c.json({
         success: true,
-        debate: {
-          id: debateData.id,
-          topic: debateData.topic,
-          isActive: debateData.isActive,
-        },
+        debate,
       });
     } catch (error) {
       console.error("Error toggling debate status:", error);
@@ -347,35 +279,18 @@ app.patch(
       const debateId = c.req.param("id");
       const { newSubHeard } = await c.req.json();
 
-      // Get existing debate data from main room record
-      const roomKey = `room:${debateId}`;
-      const existingData = await kv.get(roomKey);
-
-      if (!existingData) {
+      const debate = await getDebate(debateId);
+      if (!debate) {
         return c.json({ error: "Debate not found" }, 404);
       }
 
-      let debateData;
-      try {
-        debateData = JSON.parse(existingData);
-      } catch (error) {
-        console.error("Error parsing debate data:", error);
-        return c.json({ error: "Invalid debate data" }, 500);
-      }
+      debate.subHeard = newSubHeard || null;
 
-      // Update subHeard (can be string or null for public debates)
-      debateData.subHeard = newSubHeard || null;
-
-      // Save updated data to main room record
-      await kv.set(roomKey, JSON.stringify(debateData));
+      await saveDebate(debate);
 
       return c.json({
         success: true,
-        debate: {
-          id: debateData.id,
-          topic: debateData.topic,
-          subHeard: debateData.subHeard,
-        },
+        debate,
       });
     } catch (error) {
       console.error("Error updating debate subheard:", error);

@@ -72,7 +72,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
 
         if (userId) {
           // Try to restore existing session
-          const response = await api.getUser(userId) as any;
+          const response = await api.getUser(userId);
           if (response.success && response.data) {
             userData = response.data.user;
           }

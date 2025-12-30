@@ -184,8 +184,73 @@ export interface UserPresence {
   lastUpdated: number;
 }
 
-export interface AdminUser {
+export type DryRunResult = {
+  summary: {
+    debateName: string;
+    subHeard: string;
+    userCount: number;
+    statementCount: number;
+    voteCount: number;
+    avgVotesPerStatement: string;
+  };
+  room: {
+    topic: string;
+    phase: string;
+    mode: string;
+    participantCount: number;
+  };
+  voteDistribution: {
+    agree: number;
+    disagree: number;
+    pass: number;
+  };
+  samples: {
+    users: Array<{ nickname: string; email: string; isTestUser: boolean }>;
+    statements: Array<{ text: string; author: string; agrees: number; disagrees: number; passes: number }>;
+  };
+  warnings: string[];
+};
+
+export interface Feedback {
+  id: string;
   userId: string;
-  name: string;
-  lastSeen: number;
+  text: string;
+  timestamp: number;
+  createdAt: string;
+}
+
+export interface ActivityMetricsData {
+  dau: number;
+  wau: number;
+  mau: number;
+  dailyBreakdown: Array<{ date: string; activeUsers: number }>;
+  calculatedAt: string;
+}
+
+export interface PublicStatsData {
+  totalUsers: number;
+  totalSubHeards: number;
+  totalDebates: number;
+  usersSparkline: Array<{ day: number; count: number; timestamp: number }>;
+  subHeardsSparkline: Array<{ day: number; count: number; timestamp: number }>;
+  debatesSparkline: Array<{ day: number; count: number; timestamp: number }>;
+}
+
+export interface RetentionStatsData {
+  d1Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
+  d7Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
+  d30Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
+}
+
+export interface UserHistoryData {
+  rooms: any[];
+  statements: any[];
+  votes: any[];
+  rants: any[];
+  activities: any[];
+}
+
+export interface DevAnonDebate extends DebateRoom {
+  invitePath: string;
+  anonymousLinkId: Required<DebateRoom>["anonymousLinkId"];
 }

@@ -206,7 +206,7 @@ export function LobbyScreen({
   // Poll for user presences
   useEffect(() => {
     const fetchPresences = async () => {
-      const response = await api.getActivePresences() as any;
+      const response = await api.getActivePresences();
       if (response.success && response.data) {
         const presenceData =
           response.data.data || response.data;
@@ -231,11 +231,11 @@ export function LobbyScreen({
 
   const handleCreateAnonDebate = async () => {
     try {
-      const response = await api.createAnonDebate(user.id) as any;
+      const response = await api.createAnonDebate(user.id);
       if (response.success && response.data) {
         await onRefreshRooms();
         alert(
-          `✅ ${response.data.message}\n\nShare this invite link:\n${response.data.inviteLink}\n\nAnyone with this link can join anonymously!`,
+          `✅ Room created!\n\nShare this invite link:\n${response.data.invitePath}\n\nAnyone with this link can join anonymously!`,
         );
       }
     } catch (error) {

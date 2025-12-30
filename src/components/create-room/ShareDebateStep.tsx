@@ -1,9 +1,11 @@
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+
 import { Check, Share2, Clipboard } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { createShareableLink } from "../../utils/url";
 import { share } from "../../utils/share";
-import { toast } from "sonner@2.0.3";
 
 interface ShareDebateStepProps {
   debateId: string | null;

@@ -1,45 +1,20 @@
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+
 import { useState } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Upload, FileText, Users, AlertCircle, CheckCircle, Info } from "lucide-react";
-import { toast } from "sonner@2.0.3";
 import { api } from "../utils/api";
-import type { SubHeard } from "../types";
+import type { DryRunResult, SubHeard } from "../types";
 
 interface PolisImporterProps {
   subHeards: SubHeard[];
   currentUserId: string;
   onImportComplete?: () => void;
 }
-
-type DryRunResult = {
-  summary: {
-    debateName: string;
-    subHeard: string;
-    userCount: number;
-    statementCount: number;
-    voteCount: number;
-    avgVotesPerStatement: string;
-  };
-  room: {
-    topic: string;
-    phase: string;
-    mode: string;
-    participantCount: number;
-  };
-  voteDistribution: {
-    agree: number;
-    disagree: number;
-    pass: number;
-  };
-  samples: {
-    users: Array<{ nickname: string; email: string; isTestUser: boolean }>;
-    statements: Array<{ text: string; author: string; agrees: number; disagrees: number; passes: number }>;
-  };
-  warnings: string[];
-};
 
 export function PolisImporter({
   subHeards,
@@ -84,10 +59,10 @@ export function PolisImporter({
         votesCSV: votesText,
         importerId: currentUserId,
         dryRun: true,
-      });
+      }) as { success: boolean; data?: DryRunResult; error?: string };
 
       if (response.success && response.data) {
-        setDryRunResult(response.data as DryRunResult);
+        setDryRunResult(response.data);
         toast.success("Preview generated successfully");
       } else {
         toast.error(response.error || "Failed to generate preview");
@@ -129,7 +104,7 @@ export function PolisImporter({
         votesCSV: votesText,
         importerId: currentUserId,
         dryRun: false,
-      });
+      }) as any;
 
       if (response.success) {
         toast.success(`Successfully imported debate with ${response.data?.userCount} users and ${response.data?.statementCount} statements!`);

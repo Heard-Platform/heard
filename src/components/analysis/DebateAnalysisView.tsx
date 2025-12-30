@@ -29,7 +29,7 @@ export function DebateAnalysisView({
     const response = await api.getRoomAnalysis(roomId);
 
     if (response.success && response.data) {
-      setAnalysisData(response.data as AnalysisData);
+      setAnalysisData(response.data);
     } else {
       setError(response.error || "Failed to load analysis");
     }

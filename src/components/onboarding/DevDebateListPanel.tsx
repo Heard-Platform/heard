@@ -13,12 +13,7 @@ import {
 } from "../ui/sheet";
 import { Code2, Copy, ArrowRight, RefreshCw } from "lucide-react";
 import { api } from "../../utils/api";
-import { DebateRoom } from "../../types";
-
-interface DevAnonDebate extends DebateRoom {
-  invitePath: string;
-  anonymousLinkId: Required<DebateRoom>["anonymousLinkId"];
-}
+import { DevAnonDebate } from "../../types";
 
 interface DevDebateListPanelProps {
   onJoinAnonymousLink: (anonymousLinkId: string) => void;
@@ -32,7 +27,7 @@ export function DevDebateListPanel({ onJoinAnonymousLink }: DevDebateListPanelPr
   const fetchDebates = async () => {
     setLoading(true);
     try {
-      const response = await api.getAnonDebates() as any
+      const response = await api.getAnonDebates()
       if (response.success && response.data) {
         setDebates(response.data.debates || []);
       } else {

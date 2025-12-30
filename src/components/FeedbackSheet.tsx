@@ -1,13 +1,16 @@
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+// @ts-ignore
+import alexAvatar from "figma:asset/666a1c47b00c0b4dbc630b8672610dd57a571842.png";
+
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { MessageSquare, Heart, Phone } from "lucide-react";
 import { motion } from "motion/react";
-import { toast } from "sonner@2.0.3";
 import { api } from "../utils/api";
 import { FunSheet, FunSheetCard } from "./FunSheet";
-import alexAvatar from "figma:asset/666a1c47b00c0b4dbc630b8672610dd57a571842.png";
 
 interface FeedbackSheetProps {
   userId: string;

@@ -10,7 +10,13 @@ interface SwipeIndicatorProps {
 }
 
 // Shared configuration for all indicators
-const BASE_CONFIGS = {
+const BASE_CONFIGS: Record<string, {
+  bg: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  position: { default: string; compact: string };
+  rotation: string;
+  fill?: boolean;
+}> = {
   disagree: {
     bg: "bg-red-500",
     icon: XCircle,

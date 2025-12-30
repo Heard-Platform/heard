@@ -1,13 +1,14 @@
 import { VotesDrawer } from "../components/results/VotesDrawer";
 import type { Statement } from "../types";
+import { mockStatements as baseMockStatements } from "./mockData";
 
 // Mock data with various vote distributions
 const mockStatements: Statement[] = [
   {
     id: "1",
     text: "Climate change is the most pressing issue of our generation and requires immediate global action.",
-    user_id: "user1",
-    created_at: new Date().toISOString(),
+    author: "user1",
+    timestamp: Date.now(),
     voters: {
       "voter1": "agree",
       "voter2": "agree",
@@ -23,8 +24,8 @@ const mockStatements: Statement[] = [
   {
     id: "2",
     text: "Pineapple belongs on pizza and anyone who disagrees is wrong.",
-    user_id: "user2",
-    created_at: new Date().toISOString(),
+    author: "user2",
+    timestamp: Date.now(),
     voters: {
       "voter1": "disagree",
       "voter2": "disagree",
@@ -40,8 +41,8 @@ const mockStatements: Statement[] = [
   {
     id: "3",
     text: "Remote work is more productive than office work for most knowledge workers.",
-    user_id: "user3",
-    created_at: new Date().toISOString(),
+    author: "user3",
+    timestamp: Date.now(),
     voters: {
       "voter1": "agree",
       "voter2": "agree",
@@ -57,8 +58,8 @@ const mockStatements: Statement[] = [
   {
     id: "4",
     text: "Cats are superior to dogs as pets.",
-    user_id: "user4",
-    created_at: new Date().toISOString(),
+    author: "user4",
+    timestamp: Date.now(),
     voters: {
       "voter1": "super_agree",
       "voter2": "super_agree",
@@ -72,8 +73,8 @@ const mockStatements: Statement[] = [
   {
     id: "5",
     text: "Social media has done more harm than good to society.",
-    user_id: "user5",
-    created_at: new Date().toISOString(),
+    author: "user5",
+    timestamp: Date.now(),
     voters: {
       "voter1": "pass",
       "voter2": "pass",
@@ -87,8 +88,8 @@ const mockStatements: Statement[] = [
   {
     id: "6",
     text: "Artificial intelligence will create more jobs than it destroys.",
-    user_id: "user6",
-    created_at: new Date().toISOString(),
+    author: "user6",
+    timestamp: Date.now(),
     voters: {
       "voter1": "agree",
       "voter2": "disagree",
@@ -99,8 +100,8 @@ const mockStatements: Statement[] = [
   {
     id: "7",
     text: "The movie is always better than the book.",
-    user_id: "user7",
-    created_at: new Date().toISOString(),
+    author: "user7",
+    timestamp: Date.now(),
     voters: {
       "voter1": "disagree",
       "voter2": "disagree",
@@ -117,8 +118,8 @@ const mockStatements: Statement[] = [
   {
     id: "8",
     text: "Universal basic income is a viable solution to automation-driven unemployment.",
-    user_id: "user8",
-    created_at: new Date().toISOString(),
+    author: "user8",
+    timestamp: Date.now(),
     voters: {
       "voter1": "agree",
       "voter2": "agree",
@@ -133,8 +134,8 @@ const mockStatements: Statement[] = [
   {
     id: "9",
     text: "Coffee is objectively better than tea.",
-    user_id: "user9",
-    created_at: new Date().toISOString(),
+    author: "user9",
+    timestamp: Date.now(),
     voters: {
       "voter1": "super_agree",
       "voter2": "agree",
@@ -146,8 +147,8 @@ const mockStatements: Statement[] = [
   {
     id: "10",
     text: "Video games should be considered a legitimate form of art.",
-    user_id: "user10",
-    created_at: new Date().toISOString(),
+    author: "user10",
+    timestamp: Date.now(),
     voters: {
       "voter1": "super_agree",
       "voter2": "super_agree",
@@ -161,7 +162,10 @@ const mockStatements: Statement[] = [
       "voter10": "disagree",
     }
   },
-];
+].map(stmt => ({
+  ...stmt,
+  ...baseMockStatements["debate-no-image"][0],
+}));
 
 export function VotesDrawerStory() {
   const handleChangeVote = async (statementId: string, newVote: any) => {

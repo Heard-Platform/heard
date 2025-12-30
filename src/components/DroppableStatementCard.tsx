@@ -36,7 +36,7 @@ export function DroppableStatementCard({
   const isActive = isOver && canDrop;
 
   return (
-    <div ref={drop} className="relative">
+    <div ref={drop as any} className="relative">
       {/* Drop target overlay */}
       <AnimatePresence>
         {isActive && (

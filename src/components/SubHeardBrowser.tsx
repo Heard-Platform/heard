@@ -67,7 +67,7 @@ export function SubHeardBrowser({
   const loadSubHeards = async () => {
     try {
       setLoading(true);
-      const response = await api.getSubHeards(user.id) as any;
+      const response = await api.getSubHeards(user.id);
       if (response.success && response.data) {
         setSubHeards(response.data.subHeards || []);
       }

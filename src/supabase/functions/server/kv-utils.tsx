@@ -175,9 +175,15 @@ export const getAllRealDebates = async (): Promise<DebateRoom[]> => {
   return allRooms.filter(room => !room.isTestRoom);
 };
 
+export const debateKeyFn = (debateId: string) => `room:${debateId}`;
+
 export const getDebate = async (debateId: string) => {
-  return getParsedKvData<DebateRoom>(`room:${debateId}`);
+  return getParsedKvData<DebateRoom>(debateKeyFn(debateId));
 };
+
+export const saveDebate = async (debate: DebateRoom) => {
+  await kv.set(debateKeyFn(debate.id), JSON.stringify(debate));
+}
 
 export const rantKeyFn = (rant: Rant) =>
   `rant:${rant.roomId}:${rant.id}`;

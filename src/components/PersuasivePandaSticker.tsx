@@ -17,7 +17,7 @@ export function PandaSticker({ id, index }: PandaStickerProps) {
 
   return (
     <motion.div
-      ref={drag}
+      ref={drag as any}
       initial={{ scale: 0, rotate: -180 }}
       animate={{ 
         scale: isDragging ? 1.2 : 1, 

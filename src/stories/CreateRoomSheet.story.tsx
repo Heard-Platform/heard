@@ -10,6 +10,8 @@ import { Card } from "../components/ui/card";
 import { Toaster } from "../components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { ONE_WEEK_MIN } from "../utils/time";
+import { DebateRoom, NewDebateRoom } from "../types";
+import { mockRooms } from "./mockData";
     
 const mockTopic = "Should we close Q Street during farmers market?";
 const mockStatements = [
@@ -29,19 +31,17 @@ export function CreateRoomSheetStory() {
   const [reviewAllowAnonymous, setReviewAllowAnonymous] = useState(false);
 
   const handleCreateRoom = async (
-    topic: string,
-    mode: "realtime" | "host-controlled",
-    rantFirst?: boolean,
-    description?: string,
-    subHeard?: string,
-    seedStatements?: string[]
-  ) => {
+    newDebate: NewDebateRoom
+  ): Promise<DebateRoom> => {
+    const {
+      topic,
+      subHeard,
+      seedStatements,
+    } = newDebate;
+
     // Mock create room function
     console.log("Creating room:", {
       topic,
-      mode,
-      rantFirst,
-      description,
       subHeard,
       seedStatements,
     });
@@ -53,8 +53,8 @@ export function CreateRoomSheetStory() {
     
     // Return mock room data with ID
     return {
-      id: `mock-room-${Date.now()}`,
-      topic: topic,
+      ...mockRooms[0],
+      ...newDebate,
     };
   };
 

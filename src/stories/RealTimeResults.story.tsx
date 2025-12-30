@@ -270,7 +270,6 @@ export function RealTimeResultsStory() {
       ]}
       activeVariant={activeVariant}
       onVariantChange={setActiveVariant}
-      previewClassName="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-lg"
       debugInfo={
         <>
           <div>

@@ -3,20 +3,13 @@ import { Card } from "../ui/card";
 import { Label } from "../ui/label";
 import { Loader2, User, MessageSquare, ThumbsUp, Flame, Activity } from "lucide-react";
 import { api } from "../../utils/api";
+import { UserHistoryData } from "../../types";
 
 interface UserOption {
   id: string;
   displayName: string;
   email: string;
   lastSeen: number;
-}
-
-interface UserHistoryData {
-  rooms: any[];
-  statements: any[];
-  votes: any[];
-  rants: any[];
-  activities: any[];
 }
 
 interface UserHistoryProps {
@@ -41,7 +34,7 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
     setIsLoadingUsers(true);
     setError(null);
     try {
-      const response = await api.adminGetAllUsers(adminKey) as any;
+      const response = await api.adminGetUsers(adminKey);
       if (response.success && response.data) {
         const rawUsers = response.data.users || [];
         const mappedUsers = rawUsers.map((user: any) => ({
@@ -69,7 +62,7 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
     setIsLoadingHistory(true);
     setError(null);
     try {
-      const response = await api.adminGetUserHistory(userId, adminKey) as any;
+      const response = await api.adminGetUserHistory(userId, adminKey);
       if (response.success && response.data) {
         setHistoryData(response.data);
       } else {

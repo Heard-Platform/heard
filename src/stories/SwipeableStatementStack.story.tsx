@@ -191,7 +191,6 @@ export function SwipeableStatementStackStory() {
                 allowAnonymous={true}
                 isAnonymous={false}
                 chanceCardSwiped={chanceCardSwiped}
-                checkingChanceCard={false}
                 onVote={handleVote}
                 onSubmitStatement={handleSubmitStatement}
                 onShowAccountSetupModal={() => {}}

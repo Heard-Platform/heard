@@ -1,8 +1,10 @@
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+
 import { Button } from "./ui/button";
 import { Link2 } from "lucide-react";
 import { createShareableLink } from "../utils/url";
 import { share } from "../utils/share";
-import { toast } from "sonner@2.0.3";
 
 interface ShareButtonProps {
   roomId: string;
