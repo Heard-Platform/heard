@@ -26,6 +26,7 @@ interface DebateSessionContextType {
   joinRoom: (roomId: string) => Promise<any>;
   submitStatement: (roomId: string, text: string) => Promise<any>;
   voteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
+  markChanceCardSwiped: (userId: string, roomId: string) => Promise<void>;
   getActiveRooms: () => Promise<DebateRoom[]>;
   setCurrentSubHeard: (subHeard: string | null) => void;
   resetSession: () => void;
@@ -281,6 +282,22 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       }
     },
     [user, updateUserScoreFromResponse],
+  );
+
+  const markChanceCardSwiped = useCallback(
+    async (userId: string, roomId: string) => {
+      try {
+        const response = await api.markChanceCardSwiped(userId, roomId);
+        if (!response.success) {
+          throw new Error(response.error || "Failed to mark chance card as swiped");
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error("Failed to mark chance card as swiped:", errorMsg);
+      }
+    }, [],
   );
 
   // Get active rooms - uses currentSubHeard from state
@@ -553,6 +570,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     getRoomStatements,
     getAllRoomStatements,
     getRoomAnalysis,
+    markChanceCardSwiped,
   };
 
   if (showcase) {
@@ -585,6 +603,9 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       createRealtimeTestRoom: async () => {
         console.log("[Showcase] createRealtimeTestRoom called");
         return { success: true };
+      },
+      markChanceCardSwiped: async (userId: string, roomId: string) => {
+        console.log("[Showcase] markChanceCardSwiped called");
       },
     };
   }

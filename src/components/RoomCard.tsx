@@ -34,7 +34,6 @@ interface RoomCardProps {
   user: UserSession | null;
   currentSubHeard?: string;
   analysisRoomId?: string;
-  markChanceCardSwiped: (userId: string, roomId: string) => Promise<void>;
   onJoin: () => void;
   onSubmitStatement: (
     roomId: string,
@@ -58,7 +57,6 @@ export function RoomCard({
   user,
   currentSubHeard,
   analysisRoomId,
-  markChanceCardSwiped,
   onJoin,
   onSubmitStatement,
   onVoteOnStatement,
@@ -70,7 +68,7 @@ export function RoomCard({
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [showMetricsModal, setShowMetricsModal] = useState(false);
-  const { getRoomAnalysis } = useDebateSession();
+  const { getRoomAnalysis, markChanceCardSwiped } = useDebateSession();
 
   const currentUserId = user?.id;
 

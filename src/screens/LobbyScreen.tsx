@@ -307,10 +307,6 @@ export function LobbyScreen({
     setShowAccountSetupAnonModal(true);
   };
 
-  const markChanceCardSwiped = useCallback(async (userId: string, roomId: string) => {
-    await api.markChanceCardSwiped(userId, roomId);
-  }, []);
-
   return (
     <>
       {/* Intro Modal - controlled externally */}
@@ -454,7 +450,6 @@ export function LobbyScreen({
           onGetAllRoomStatements={onGetAllRoomStatements}
           onUpdatePresence={handleUpdatePresence}
           onShowAccountSetupModal={handleShowAccountSetupModal}
-          markChanceCardSwiped={markChanceCardSwiped}
         />
       </div>
 
