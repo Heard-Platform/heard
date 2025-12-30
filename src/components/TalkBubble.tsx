@@ -17,7 +17,7 @@ export function TalkBubble({
   position = "top",
 }: TalkBubbleProps) {
   const positionClasses = {
-    top: "-top-8 left-1/2 -translate-x-1/2",
+    top: "-top-[52px] left-1/2 -translate-x-1/2",
     bottom: "-bottom-8 left-1/2 -translate-x-1/2",
     left: "left-0 top-1/2 -translate-y-1/2 -translate-x-full mr-2",
     right: "right-0 top-1/2 -translate-y-1/2 translate-x-full ml-2",

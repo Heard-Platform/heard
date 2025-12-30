@@ -639,6 +639,10 @@
     top: calc(var(--spacing) * -8);
   }
 
+  .-top-\[52px\] {
+    top: -52px;
+  }
+
   .top-0 {
     top: calc(var(--spacing) * 0);
   }
