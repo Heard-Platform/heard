@@ -197,7 +197,7 @@ export function SubHeardBrowser({
         <Button
           variant="outline"
           size="sm"
-          className="bg-white/90 backdrop-blur-sm shadow-lg max-w-[160px]"
+          className="controls-layer bg-white/90 backdrop-blur-sm shadow-lg max-w-[160px]"
         >
           {currentSubHeard ? (
             <Hash className="w-4 h-4 mr-1 flex-shrink-0" />

@@ -8,12 +8,21 @@ import monkeyImg from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png"
 interface MonkeyInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onFeedMonkey: () => void;
 }
 
 export function MonkeyInfoModal({
   isOpen,
   onClose,
+  onFeedMonkey,
 }: MonkeyInfoModalProps) {
+  const handleFeedMonkey = () => {
+    onClose();
+    setTimeout(() => {
+      onFeedMonkey();
+    }, 300);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="p-0 border-0 shadow-2xl max-w-md overflow-hidden">
@@ -55,12 +64,20 @@ export function MonkeyInfoModal({
             You can also see other people's monkeys to see who
             else is "hanging" around! 🙈
           </p>
-          <button
-            onClick={onClose}
-            className="w-full mt-2 py-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full hover:from-green-500 hover:to-emerald-600 transition-all shadow-md"
-          >
-            Got it!
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleFeedMonkey}
+              className="flex-1 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full hover:from-yellow-500 hover:to-orange-600 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              🍌 Feed Monkey
+            </button>
+            <button
+              onClick={onClose}
+              className="flex-1 py-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full hover:from-green-500 hover:to-emerald-600 transition-all shadow-md"
+            >
+              Got it!
+            </button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

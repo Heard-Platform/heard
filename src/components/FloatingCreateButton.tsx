@@ -18,7 +18,7 @@ export function FloatingCreateButton({ onPress }: FloatingCreateButtonProps) {
 
   return (
     <motion.div
-      className="fixed bottom-6 right-6 z-30 cursor-grab active:cursor-grabbing"
+      className="controls-layer fixed bottom-6 right-6 cursor-grab active:cursor-grabbing"
       initial={{ scale: 0 }}
       animate={{ scale: 1 }}
       transition={{

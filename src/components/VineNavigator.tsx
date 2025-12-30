@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { UserPresence } from "../types";
 import { MonkeyInfoModal } from "./MonkeyInfoModal";
+import { TalkBubble } from "./TalkBubble";
 
 // @ts-ignore
 import monkeyImg from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
+// @ts-ignore
+import monkeyEatGif from "figma:asset/416642fb93a66e81fcfc63265a8ca59b7901788e.png";
 
 interface VineNavigatorProps {
   totalCards: number;
@@ -35,8 +38,24 @@ export function VineNavigator({
     Record<string, number>
   >({});
   const [showMonkeyInfo, setShowMonkeyInfo] = useState(false);
+  const [isEating, setIsEating] = useState(false);
+  const [showSpeechBubble, setShowSpeechBubble] = useState(false);
 
   const vineHeight = totalCards * window.innerHeight;
+
+  const handleFeedMonkey = () => {
+    setIsEating(true);
+    setShowSpeechBubble(false);
+    setTimeout(() => {
+      setShowSpeechBubble(true);
+    }, 2000);
+    setTimeout(() => {
+      setIsEating(false);
+    }, 3000);
+    setTimeout(() => {
+      setShowSpeechBubble(false);
+    }, 4000);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -122,7 +141,7 @@ export function VineNavigator({
 
   return (
     <div
-      className="absolute -right-2 top-0 z-10 pointer-events-none"
+      className="absolute -right-2 top-0 vine-layer pointer-events-none"
       style={{ height: vineHeight }}
     >
       <svg
@@ -218,11 +237,17 @@ export function VineNavigator({
           }}
         >
           <motion.img
-            src={monkeyImg}
+            src={isEating ? monkeyEatGif : monkeyImg}
             alt="Monkey Avatar"
             className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
             style={{ scaleX: -1, opacity: 1 }}
-            animate={{
+            animate={isEating ? {
+              filter: [
+                "drop-shadow(0 0 20px rgba(255, 183, 0, 1))",
+                "drop-shadow(0 0 30px rgba(255, 183, 0, 1))",
+                "drop-shadow(0 0 20px rgba(255, 183, 0, 1))",
+              ],
+            } : {
               filter: [
                 "drop-shadow(0 0 0px rgba(16, 185, 129, 0))",
                 "drop-shadow(0 0 12px rgba(16, 185, 129, 0.9))",
@@ -238,6 +263,13 @@ export function VineNavigator({
               setShowMonkeyInfo(true);
             }}
             whileTap={{ scale: 0.95 }}
+          />
+          <TalkBubble
+            text="Yum!"
+            isVisible={showSpeechBubble}
+            color="text-amber-600"
+            borderColor="border-amber-200"
+            position="top"
           />
         </motion.div>
 
@@ -304,6 +336,7 @@ export function VineNavigator({
         <MonkeyInfoModal
           isOpen={showMonkeyInfo}
           onClose={() => setShowMonkeyInfo(false)}
+          onFeedMonkey={handleFeedMonkey}
         />
       )}
     </div>
