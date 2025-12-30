@@ -5546,6 +5546,10 @@
     z-index: 400;
   }
 
+  .drawer-layer {
+    z-index: 550;
+  }
+
   .modal-layer {
     z-index: 600;
   }
