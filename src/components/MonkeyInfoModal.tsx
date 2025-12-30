@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { motion } from "motion/react";
-import { Dialog, DialogContent } from "./ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 
 // @ts-ignore
 import monkeyImg from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
@@ -17,6 +17,7 @@ export function MonkeyInfoModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="p-0 border-0 shadow-2xl max-w-md overflow-hidden">
+        <DialogTitle className="sr-only">Your Monkey Friend</DialogTitle>
         <div className="relative bg-gradient-to-br from-green-400 via-emerald-400 to-teal-500 pt-8 pb-6 px-6">
           <button
             onClick={onClose}
