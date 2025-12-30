@@ -6,4 +6,8 @@
   .vine-layer {
     z-index: 400;
   }
+
+  .modal-layer {
+    z-index: 600;
+  }
 }
