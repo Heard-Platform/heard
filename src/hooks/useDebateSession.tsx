@@ -489,7 +489,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     try {
       const response = (await api.getRoomAnalysis(roomId)) as any;
       if (response.success && response.data) {
-        return response.data.analysis;
+        return response.data;
       }
     } catch (error) {
       console.error(
