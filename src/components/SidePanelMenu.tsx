@@ -22,6 +22,7 @@ import {
   Clock,
   Link2,
   AlertCircle,
+  User,
 } from "lucide-react";
 import type { UserSession } from "../types";
 import { useDebateSession } from "../hooks/useDebateSession";
@@ -109,10 +110,14 @@ export function SidePanelMenu({
       <SheetTrigger asChild>
         <Button
           variant="outline"
-          className="bg-white/90 backdrop-blur-sm shadow-lg px-3 py-2 h-auto gap-2"
+          className="bg-white/90 backdrop-blur-sm shadow-lg px-3 py-2 h-auto gap-2 border-2"
         >
-          <span className="text-lg">⭐</span>
-          <span className="font-semibold">{user.score}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-sm">{user.score}</span>
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
+              <User className="w-4 h-4 text-white" />
+            </div>
+          </div>
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="flex flex-col">
