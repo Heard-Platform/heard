@@ -12,12 +12,9 @@ import { SwipeIndicatorCompact } from "./SwipeIndicators";
 import { SwipeInstructions } from "./SwipeInstructions";
 
 interface IntroModalProps {
-  onClose?: () => void;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
-
-const INTRO_SEEN_KEY = "heard_intro_seen";
 
 // Demo statement cards
 const DEMO_STATEMENTS = [
@@ -149,48 +146,11 @@ function DemoSwipeCard() {
 }
 
 export function IntroModal({
+  isOpen,
   onClose,
-  open: controlledOpen,
-  onOpenChange,
 }: IntroModalProps) {
-  const [internalOpen, setInternalOpen] = useState(false);
-
-  // If controlled externally, use that, otherwise use internal state
-  const isOpen =
-    controlledOpen !== undefined
-      ? controlledOpen
-      : internalOpen;
-
-  useEffect(() => {
-    // Only auto-show if not controlled externally
-    if (controlledOpen === undefined) {
-      // Check if user has seen the intro before
-      const hasSeenIntro = localStorage.getItem(INTRO_SEEN_KEY);
-      if (!hasSeenIntro) {
-        // Small delay before showing to let the page load
-        const timer = setTimeout(
-          () => setInternalOpen(true),
-          500,
-        );
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [controlledOpen]);
-
-  const handleClose = () => {
-    localStorage.setItem(INTRO_SEEN_KEY, "true");
-
-    if (onOpenChange) {
-      onOpenChange(false);
-    } else {
-      setInternalOpen(false);
-    }
-
-    onClose?.();
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 border-2 border-purple-300">
         <DialogHeader>
           <DialogTitle className="text-center">
@@ -246,7 +206,7 @@ export function IntroModal({
             transition={{ delay: 0.3 }}
           >
             <Button
-              onClick={handleClose}
+              onClick={onClose}
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             >
               Let's Go! 🚀

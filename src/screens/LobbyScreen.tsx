@@ -110,14 +110,6 @@ export function LobbyScreen({
     return b.createdAt - a.createdAt;
   });
 
-  useEffect(() => {
-    const hasSeenIntro = localStorage.getItem("hasSeenIntro");
-    if (!hasSeenIntro) {
-      setHelpModalOpen(true);
-      localStorage.setItem("hasSeenIntro", "true");
-    }
-  }, []);
-
   // Detect mobile keyboard state
   useEffect(() => {
     if (
@@ -307,8 +299,8 @@ export function LobbyScreen({
     <>
       {/* Intro Modal - controlled externally */}
       <IntroModal
-        open={helpModalOpen}
-        onOpenChange={setHelpModalOpen}
+        isOpen={helpModalOpen}
+        onClose={() => setHelpModalOpen(false)}
       />
 
       {/* Main TikTok-style scroller */}
