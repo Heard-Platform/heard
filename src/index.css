@@ -1137,6 +1137,10 @@
     height: 1.15rem;
   }
 
+  .h-\[42px\] {
+    height: 42px;
+  }
+
   .h-\[80vh\] {
     height: 80vh;
   }
@@ -3274,6 +3278,10 @@
 
   .pt-20 {
     padding-top: calc(var(--spacing) * 20);
+  }
+
+  .pt-\[5px\] {
+    padding-top: 5px;
   }
 
   .pr-1 {
@@ -5586,6 +5594,10 @@
 
   .min-h-190px {
     min-height: 190px;
+  }
+
+  .pt-15 {
+    padding-top: 3.75rem;
   }
 }
 

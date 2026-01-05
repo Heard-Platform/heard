@@ -109,7 +109,7 @@ export function SidePanelMenu({
       <SheetTrigger asChild>
         <Button
           variant="outline"
-          className="controls-layer bg-white/90 backdrop-blur-sm shadow-lg px-3 py-2 h-auto gap-2 border-2"
+          className="controls-layer bg-white/90 backdrop-blur-sm shadow-lg px-3 py-2 h-[42px] gap-2 border-2"
         >
           <div className="flex items-center gap-2">
             <span className="font-semibold text-sm">{user.score}</span>

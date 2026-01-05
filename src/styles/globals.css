@@ -155,6 +155,10 @@
   .min-h-190px {
     min-height: 190px;
   }
+
+  .pt-15 {
+    padding-top: 3.75rem;
+  }
 }
 
 /**

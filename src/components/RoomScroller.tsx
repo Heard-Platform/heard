@@ -258,7 +258,7 @@ export const RoomScroller = forwardRef<
             return (
               <div
                 key={card.id}
-                className="h-screen w-full snap-start snap-always flex items-start justify-center pt-20 pb-20 px-4"
+                className="h-screen w-full snap-start snap-always flex items-start justify-center pt-15 pb-20 px-4"
               >
                 {isCreateCard ? (
                   <CreateRoomCard onCreateRoom={onCreateRoom} />
