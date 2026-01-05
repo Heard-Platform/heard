@@ -231,14 +231,19 @@ export function RoomCard({
                     className="bg-orange-100 text-orange-700 border-orange-300 text-xs"
                   >
                     <Hash className="w-3 h-3 mr-1" />
-                    {room.subHeard
-                      .split("-")
-                      .map(
-                        (word) =>
-                          word.charAt(0).toUpperCase() +
-                          word.slice(1),
-                      )
-                      .join(" ")}
+                    {(() => {
+                      const formatted = room.subHeard
+                        .split("-")
+                        .map(
+                          (word) =>
+                            word.charAt(0).toUpperCase() +
+                            word.slice(1),
+                        )
+                        .join(" ");
+                      return formatted.length > 15
+                        ? formatted.slice(0, 15) + "..."
+                        : formatted;
+                    })()}
                   </Badge>
                 )}
               </div>
