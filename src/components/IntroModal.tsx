@@ -137,9 +137,6 @@ function DemoSwipeCard() {
       {/* Instructions */}
       <div className="absolute bottom-4 left-0 right-0 space-y-1">
         <SwipeInstructions />
-        <div className="text-center text-xs text-muted-foreground">
-          Swipe up to super agree and down to pass
-        </div>
       </div>
     </div>
   );
