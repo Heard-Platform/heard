@@ -13,6 +13,7 @@ interface StatementCardProps {
   superAgreeOpacity: MotionValue<number>;
   passOpacity: MotionValue<number>;
   getTypeIcon: (type?: string) => string | null;
+  onSkip: () => void;
 }
 
 export function StatementCard({
@@ -25,14 +26,13 @@ export function StatementCard({
   superAgreeOpacity,
   passOpacity,
   getTypeIcon,
+  onSkip,
 }: StatementCardProps) {
   return (
     <>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            Anonymous
-          </span>
+          <span className="text-sm text-muted-foreground"> </span>
           {statement.isSpicy && (
             <span className="text-lg">🌶️</span>
           )}
@@ -56,11 +56,25 @@ export function StatementCard({
         </div>
       </div>
 
-      <div className="mb-4 min-h-[200px] flex items-center justify-center">
+      <div className="flex min-h-190px items-center justify-center">
         <p className="text-lg leading-relaxed text-center">
           {statement.text}
         </p>
       </div>
+
+      {isTopCard && (
+        <div className="flex justify-end mb-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSkip();
+            }}
+            className="px-3 py-1.5 text-xs rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+          >
+            ⏭️ Unsure/Skip
+          </button>
+        </div>
+      )}
 
       {isTopCard && (
         <SwipeInstructions className="pt-2 border-t border-border/50" />

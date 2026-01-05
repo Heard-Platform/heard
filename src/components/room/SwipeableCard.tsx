@@ -26,6 +26,7 @@ interface SwipeableCardProps {
   ) => void;
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
+  onSkip: () => void;
 }
 
 export function SwipeableCard({
@@ -41,6 +42,7 @@ export function SwipeableCard({
   onDragEnd,
   onSubmitStatement,
   onShowAccountSetupModal,
+  onSkip,
 }: SwipeableCardProps) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -93,7 +95,7 @@ export function SwipeableCard({
         scale: 1 - index * 0.05,
         pointerEvents: isTopCard ? "auto" : "none",
       }}
-      drag={isTopCard ? true : false}
+      drag={isTopCard ? "x" : false}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={1}
       onDragEnd={isTopCard ? onDragEnd : undefined}
@@ -143,6 +145,7 @@ export function SwipeableCard({
             agreeOpacity={agreeOpacity}
             superAgreeOpacity={superAgreeOpacity}
             passOpacity={passOpacity}
+            onSkip={onSkip}
           />
         ) : null}
       </div>

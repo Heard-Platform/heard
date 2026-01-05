@@ -204,20 +204,16 @@ export function SwipeableStatementStack({
   ) => {
     const { offset, velocity } = info;
     const swipeX = offset.x;
-    const swipeY = offset.y;
     const velocityX = velocity.x;
-    const velocityY = velocity.y;
 
-    const swipingUp = swipeY < -90 || velocityY < -500;
-    const swipingDown = swipeY > 90 || velocityY > 500;
     const swipingLeft = swipeX < -SWIPE_THRESHOLD || velocityX < -500;
     const swipingRight = swipeX > SWIPE_THRESHOLD || velocityX > 500;
 
     if (card.type === "chance") {
-      if (swipingUp || swipingDown || swipingLeft || swipingRight) {
+      if (swipingLeft || swipingRight) {
         setIsVoting(true);
         setSwipedChanceCard(true);
-        setSwipeDirection(swipeY < 0 ? "up" : "down");
+        setSwipeDirection(swipingLeft ? "left" : "right");
         
         onChanceCardSwiped();
         
@@ -231,13 +227,7 @@ export function SwipeableStatementStack({
     } else if (card.type === "statement") {
       const statementId = card.statement.id;
 
-      if (swipingUp) {
-        handleVote(statementId, "super_agree", "up");
-      }
-      else if (swipingDown) {
-        handleVote(statementId, "pass", "down");
-      }
-      else if (swipingRight) {
+      if (swipingRight) {
         handleVote(statementId, "agree", "right");
       }
       else if (swipingLeft) {
@@ -331,6 +321,11 @@ export function SwipeableStatementStack({
                 isAnonymous={isAnonymous}
                 onSubmitStatement={handleSubmitFromChanceCard}
                 onShowAccountSetupModal={onShowAccountSetupModal}
+                onSkip={() => {
+                  if (card.type === "statement") {
+                    handleVote(card.statement.id, "pass", "down");
+                  }
+                }}
               />
             );
           })}

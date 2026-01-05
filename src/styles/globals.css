@@ -151,6 +151,10 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  .min-h-190px {
+    min-height: 190px;
+  }
 }
 
 /**
