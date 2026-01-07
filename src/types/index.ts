@@ -42,7 +42,12 @@ export type ChanceCard = {
   type: "chance";
 }
 
-export type Card = StatementCard | ChanceCard;
+export type YouTubeCard = {
+  type: "youtube";
+  url: string;
+}
+
+export type Card = StatementCard | ChanceCard | YouTubeCard;
 
 export const isStatementCard = (card: Card): card is StatementCard => {
   return card.type === "statement";
@@ -50,6 +55,10 @@ export const isStatementCard = (card: Card): card is StatementCard => {
 
 export const isChanceCard = (card: Card): card is ChanceCard => {
   return card.type === "chance";
+};
+
+export const isYouTubeCard = (card: Card): card is YouTubeCard => {
+  return card.type === "youtube";
 };
 
 export interface Achievement {

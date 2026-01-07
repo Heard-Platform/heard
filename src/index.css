@@ -1166,6 +1166,10 @@
     height: 180px;
   }
 
+  .h-\[200px\] {
+    height: 200px;
+  }
+
   .h-\[800px\] {
     height: 800px;
   }

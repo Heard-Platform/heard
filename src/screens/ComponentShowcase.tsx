@@ -14,6 +14,7 @@ import { SwipeableStatementStackStory } from "../stories/SwipeableStatementStack
 import { MetricsCircleStory } from "../stories/MetricsCircle.story";
 import { TimeLeftBadgeStory } from "../stories/TimeLeftBadge.story";
 import { QRScanResultDialogStory } from "../stories/QRScanResultDialog.story";
+import { YouTubeCardStory } from "../stories/YouTubeCard.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 
 interface ComponentShowcaseProps {
@@ -88,6 +89,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="metrics-circle">Metrics Circle</TabsTrigger>
               <TabsTrigger value="time-left-badge">Time Left Badge</TabsTrigger>
               <TabsTrigger value="qr-scan-result-dialog">QR Scan Result Dialog</TabsTrigger>
+              <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
             </TabsList>
 
             <TabsContent value="results">
@@ -134,6 +136,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="qr-scan-result-dialog">
               <QRScanResultDialogStory />
+            </TabsContent>
+            <TabsContent value="youtube-card">
+              <YouTubeCardStory />
             </TabsContent>
           </Tabs>
         </div>

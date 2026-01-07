@@ -1,6 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { PanInfo } from "motion/react";
-import { type Statement, type VoteType, type Card, type ChanceCard } from "../../types";
+import {
+  type Statement,
+  type VoteType,
+  type Card,
+  type ChanceCard,
+  type YouTubeCard,
+} from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
 import { NewStatementInput } from "../NewStatementInput";
 
@@ -13,6 +19,8 @@ interface SwipeableStatementStackProps {
   allowAnonymous: boolean;
   isAnonymous: boolean;
   chanceCardSwiped: boolean;
+  youtubeUrl?: string;
+  youtubeCardSwiped?: boolean;
   onVote: (
     id: string,
     voteType: VoteType,
@@ -20,6 +28,7 @@ interface SwipeableStatementStackProps {
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
   onChanceCardSwiped: () => Promise<void>;
+  onYouTubeCardSwiped?: () => Promise<void>;
 }
 
 const SWIPE_THRESHOLD = 100;
@@ -30,10 +39,13 @@ export function SwipeableStatementStack({
   allowAnonymous,
   isAnonymous,
   chanceCardSwiped,
+  youtubeUrl,
+  youtubeCardSwiped,
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
   onChanceCardSwiped,
+  onYouTubeCardSwiped,
 }: SwipeableStatementStackProps) {
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
@@ -42,9 +54,7 @@ export function SwipeableStatementStack({
   const [swipedCardId, setSwipedCardId] = useState<
     string | null
   >(null);
-  const [swipedChanceCard, setSwipedChanceCard] = useState<
-    boolean
-  >(false);
+  const [swipedNoopCard, setSwipedNoopCard] = useState<"chance" | "youtube" | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
@@ -65,6 +75,11 @@ export function SwipeableStatementStack({
     const chanceCard: ChanceCard = { type: "chance" };
     const chanceCardIndex = Math.min(5, statements.length) - votedStatementIds.size;
     cards.splice(chanceCardIndex, 0, chanceCard);
+  }
+
+  if (youtubeUrl && !youtubeCardSwiped) {
+    const youtubeCard: YouTubeCard = { type: "youtube", url: youtubeUrl };
+    cards.unshift(youtubeCard);
   }
 
   const hasMoreCards = cards.length > 0;
@@ -209,16 +224,20 @@ export function SwipeableStatementStack({
     const swipingLeft = swipeX < -SWIPE_THRESHOLD || velocityX < -500;
     const swipingRight = swipeX > SWIPE_THRESHOLD || velocityX > 500;
 
-    if (card.type === "chance") {
+    if (card.type === "chance" || card.type === "youtube") {
       if (swipingLeft || swipingRight) {
         setIsVoting(true);
-        setSwipedChanceCard(true);
+        setSwipedNoopCard(card.type);
         setSwipeDirection(swipingLeft ? "left" : "right");
         
-        onChanceCardSwiped();
+        if (card.type === "chance") {
+          onChanceCardSwiped();
+        } else if (card.type === "youtube") {
+          onYouTubeCardSwiped && onYouTubeCardSwiped();
+        }
         
         setTimeout(() => {
-          setSwipedChanceCard(false);
+          setSwipedNoopCard(null);
           setSwipeDirection(null);
           setIsVoting(false);
         }, 300);
@@ -296,11 +315,18 @@ export function SwipeableStatementStack({
             const isBeingSwiped =
               (card.type === "statement" &&
               swipedCardId === card.statement.id)
-              || (card.type === "chance" && swipedChanceCard);
+              || (card.type === swipedNoopCard)
+
+            const getCardKey = () => {
+              if (card.type === "statement") return card.statement.id;
+              if (card.type === "chance") return "chance";
+              if (card.type === "youtube") return "youtube";
+              return "unknown";
+            };
 
             return (
               <SwipeableCard
-                key={card.type === "statement" ? card.statement.id : "chance"}
+                key={getCardKey()}
                 card={card}
                 index={index}
                 isTopCard={isTopCard}

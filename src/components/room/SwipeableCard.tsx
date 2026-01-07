@@ -9,6 +9,7 @@ import type { Card } from "../../types";
 import { getPastelColor } from "../../utils/colors";
 import { ChanceCard } from "./ChanceCard";
 import { StatementCard } from "./StatementCard";
+import { YouTubeCard } from "./YouTubeCard";
 
 interface SwipeableCardProps {
   card: Card;
@@ -119,6 +120,8 @@ export function SwipeableCard({
         className={`p-6 rounded-xl border-2 shadow-xl ${
           card.type === "chance"
             ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-orange-300"
+            : card.type === "youtube"
+            ? "bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300"
             : getPastelColor(card.statement.id)
         } ${
           isTopCard
@@ -133,6 +136,11 @@ export function SwipeableCard({
             allowAnonymous={allowAnonymous}
             isAnonymous={isAnonymous}
             onShowAccountSetupModal={onShowAccountSetupModal}
+          />
+        ) : card.type === "youtube" ? (
+          <YouTubeCard
+            url={card.url}
+            isTopCard={isTopCard}
           />
         ) : card.statement ? (
           <StatementCard
