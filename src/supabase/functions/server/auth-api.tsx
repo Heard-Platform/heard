@@ -572,7 +572,7 @@ app.post(
       }
 
       const userId = generateId();
-      const anonymousNickname = `AnonUser${userId.slice(0, 5)}`;
+      const anonymousNickname = "Anonymous User";
       const anonymousEmail = `anon-${userId}@heard.anonymous`;
       const randomPassword = generateId();
 
