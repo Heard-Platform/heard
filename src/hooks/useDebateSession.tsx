@@ -49,6 +49,10 @@ interface DebateSessionContextType {
     userId: string,
     roomId: string,
   ) => Promise<void>;
+  markYouTubeCardSwiped: (
+    userId: string,
+    roomId: string,
+  ) => Promise<void>;
   getActiveRooms: () => Promise<DebateRoom[]>;
   setCurrentSubHeard: (subHeard: string | null) => void;
   resetSession: () => void;
@@ -357,6 +361,22 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     }, [],
   );
 
+  const markYouTubeCardSwiped = useCallback(
+    async (userId: string, roomId: string) => {
+      try {
+        const response = await api.markYouTubeCardSwiped(userId, roomId);
+        if (!response.success) {
+          throw new Error(response.error || "Failed to mark YouTube card as swiped");
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error("Failed to mark YouTube card as swiped:", errorMsg);
+      }
+    }, [],
+  );
+
   // Get active rooms - uses currentSubHeard from state
   const getActiveRooms = useCallback(async () => {
     try {
@@ -629,6 +649,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     getAllRoomStatements,
     getRoomAnalysis,
     markChanceCardSwiped,
+    markYouTubeCardSwiped,
   };
 
   if (showcase) {
@@ -664,6 +685,9 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       },
       markChanceCardSwiped: async (userId: string, roomId: string) => {
         console.log("[Showcase] markChanceCardSwiped called");
+      },
+      markYouTubeCardSwiped: async (userId: string, roomId: string) => {
+        console.log("[Showcase] markYouTubeCardSwiped called");
       },
     };
   }

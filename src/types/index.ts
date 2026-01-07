@@ -90,6 +90,7 @@ export interface DebateRoom {
   topic: string;
   description?: string;
   imageUrl?: string;
+  youtubeUrl?: string;
   phase: Phase;
   subPhase?: SubPhase;
   gameNumber: number;
@@ -106,6 +107,7 @@ export interface DebateRoom {
   anonymousLinkId?: string;
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
+  youtubeCardSwiped?: boolean;
 }
 
 export type NewDebateRoom = Pick<
@@ -114,6 +116,7 @@ export type NewDebateRoom = Pick<
 > & {
   seedStatements?: string[];
   imageUrl?: string;
+  youtubeUrl?: string;
   debateLength: number;
 };
 

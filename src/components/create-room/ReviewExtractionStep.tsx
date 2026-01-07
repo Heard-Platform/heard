@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
+import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
-import { Sparkles, MessageCircle, Edit2, Trash2, CheckCircle2, Image as ImageIcon, Loader2, Check, UserCheck, Clock } from "lucide-react";
+import { Sparkles, MessageCircle, Edit2, Trash2, CheckCircle2, Image as ImageIcon, Loader2, Check, UserCheck, Clock, Youtube } from "lucide-react";
 import { motion } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
 
@@ -12,11 +13,13 @@ interface ReviewExtractionStepProps {
   statements: string[];
   isUploadingImage?: boolean;
   uploadedImageUrl?: string | null;
+  youtubeUrl?: string;
   debateLength: number;
   allowAnonymousVoting: boolean;
   onTopicChange: (topic: string) => void;
   onStatementsChange: (statements: string[]) => void;
   onImageUpload?: (file: File) => void;
+  onYoutubeUrlChange?: (url: string) => void;
   onDebateLengthChange: (length: number) => void;
   onAllowAnonymousVotingChange: (value: boolean) => void;
 }
@@ -26,11 +29,13 @@ export function ReviewExtractionStep({
   statements,
   isUploadingImage,
   uploadedImageUrl,
+  youtubeUrl,
   debateLength,
   allowAnonymousVoting,
   onTopicChange,
   onStatementsChange,
   onImageUpload,
+  onYoutubeUrlChange,
   onDebateLengthChange,
   onAllowAnonymousVotingChange,
 }: ReviewExtractionStepProps) {
@@ -135,6 +140,33 @@ export function ReviewExtractionStep({
             
             <p className="text-xs text-slate-500 text-center">
               Make your debate stand out with a cover image
+            </p>
+          </div>
+        </FunSheetCard>
+      )}
+
+      {/* YouTube URL Section */}
+      {onYoutubeUrlChange && (
+        <FunSheetCard delay={0.25}>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Youtube className="w-5 h-5 text-blue-500" />
+              <Label className="text-base text-slate-700">
+                Add YouTube video URL (optional)
+              </Label>
+            </div>
+            
+            <Input
+              type="url"
+              id="youtube-url"
+              placeholder="https://www.youtube.com/watch?v=..."
+              value={youtubeUrl || ""}
+              onChange={(e) => onYoutubeUrlChange?.(e.target.value)}
+              className="w-full h-auto py-4 border-2 border-dashed border-blue-300 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 hover:border-blue-400"
+            />
+            
+            <p className="text-xs text-slate-500 text-center">
+              Add a YouTube video to enhance your debate
             </p>
           </div>
         </FunSheetCard>

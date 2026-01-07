@@ -20,7 +20,7 @@ interface SwipeableStatementStackProps {
   isAnonymous: boolean;
   chanceCardSwiped: boolean;
   youtubeUrl?: string;
-  youtubeCardSwiped?: boolean;
+  youtubeCardSwiped: boolean;
   onVote: (
     id: string,
     voteType: VoteType,
@@ -28,7 +28,7 @@ interface SwipeableStatementStackProps {
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
   onChanceCardSwiped: () => Promise<void>;
-  onYouTubeCardSwiped?: () => Promise<void>;
+  onYouTubeCardSwiped: () => Promise<void>;
 }
 
 const SWIPE_THRESHOLD = 100;

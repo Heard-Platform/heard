@@ -9,6 +9,7 @@ import type {
   SentEmail,
   ChanceCardStatus,
   Rant,
+  YouTubeCardStatus,
 } from "./types.tsx";
 
 /**
@@ -230,6 +231,19 @@ export const getUsersChanceCardStatuses = async (
 
 export const saveChanceCardStatus = async (status: ChanceCardStatus) => {
   await upsert(status, chanceCardStatusKeyFn);
+};
+
+export const youtubeCardStatusKeyFn = (status: YouTubeCardStatus) =>
+  `youtube_card_status:${status.userId}:${status.roomId}`;
+
+export const getUsersYouTubeCardStatuses = async (
+  userId: string,
+) => {
+  return getAllRecords<YouTubeCardStatus>(`youtube_card_status:${userId}:`);
+};
+
+export const saveYouTubeCardStatus = async (status: YouTubeCardStatus) => {
+  await upsert(status, youtubeCardStatusKeyFn);
 };
 
 export const getSentEmails = async (): Promise<

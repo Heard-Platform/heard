@@ -7,6 +7,8 @@ import {
   getAllDebates,
   saveChanceCardStatus,
   getUsersChanceCardStatuses,
+  saveYouTubeCardStatus,
+  getUsersYouTubeCardStatuses,
   getVotesForStatement
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
@@ -1457,9 +1459,18 @@ app.get(
             statuses.map(status => status.roomId)
         );
 
+        const youtubeStatuses = await getUsersYouTubeCardStatuses(
+          userId,
+        );
+        
+        const swipedYoutubeRoomIds = new Set(
+            youtubeStatuses.map(status => status.roomId)
+        );
+
         rooms = rooms.map((room) => ({
           ...room,
           chanceCardSwiped: swipedRoomIds.has(room.id),
+          youtubeCardSwiped: swipedYoutubeRoomIds.has(room.id),
         }));
       }
 
@@ -2695,6 +2706,32 @@ app.post(
       console.error("Error marking chance card as swiped:", error);
       return c.json(
         { error: "Failed to mark chance card as swiped" },
+        500
+      );
+    }
+  }
+);
+
+app.post(
+  "/make-server-f1a393b4/youtube-card/mark-swiped",
+  async (c: any) => {
+    try {
+      const { userId, roomId } = await c.req.json();
+
+      if (!userId || !roomId) {
+        return c.json(
+          { error: "userId and roomId are required" },
+          400
+        );
+      }
+
+      await saveYouTubeCardStatus({ userId, roomId, swipedAt: Date.now() });
+
+      return c.json({ success: true });
+    } catch (error) {
+      console.error("Error marking YouTube card as swiped:", error);
+      return c.json(
+        { error: "Failed to mark YouTube card as swiped" },
         500
       );
     }

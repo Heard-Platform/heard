@@ -77,10 +77,12 @@ export interface DebateRoom {
   subHeard?: string;
   endTime?: number;
   imageUrl?: string;
+  youtubeUrl?: string;
   allowAnonymous?: boolean;
   anonymousLinkId?: string;
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
+  youtubeCardSwiped?: boolean;
 }
 
 export interface Rant {
@@ -92,6 +94,12 @@ export interface Rant {
 }
 
 export interface ChanceCardStatus {
+  userId: string;
+  roomId: string;
+  swipedAt: number;
+}
+
+export interface YouTubeCardStatus {
   userId: string;
   roomId: string;
   swipedAt: number;

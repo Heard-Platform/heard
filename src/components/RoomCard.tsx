@@ -65,10 +65,11 @@ export function RoomCard({
   onShowAccountSetupModal,
 }: RoomCardProps) {
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
+  const [youtubeCardSwiped, setYoutubeCardSwiped] = useState(room.youtubeCardSwiped || false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [showMetricsModal, setShowMetricsModal] = useState(false);
-  const { getRoomAnalysis, markChanceCardSwiped } = useDebateSession();
+  const { getRoomAnalysis, markChanceCardSwiped, markYouTubeCardSwiped } = useDebateSession();
 
   useEffect(() => {
     if (analysisRoomId === room.id) {
@@ -79,6 +80,10 @@ export function RoomCard({
   useEffect(() => {
     setChanceCardSwiped(room.chanceCardSwiped || false);
   }, [room.chanceCardSwiped]);
+
+  useEffect(() => {
+    setYoutubeCardSwiped(room.youtubeCardSwiped || false);
+  }, [room.youtubeCardSwiped]);
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -148,6 +153,11 @@ export function RoomCard({
   const handleSwipeChanceCard = async () => {
     setChanceCardSwiped(true);
     await markChanceCardSwiped(user.id, room.id);
+  }
+
+  const handleSwipeYouTubeCard = async () => {
+    setYoutubeCardSwiped(true);
+    await markYouTubeCardSwiped(user.id, room.id);
   }
 
   // Handle statement submission
@@ -335,9 +345,12 @@ export function RoomCard({
                     isAnonymous={!!user?.isAnonymous}
                     onVote={handleVote}
                     chanceCardSwiped={chanceCardSwiped}
+                    youtubeUrl={room.youtubeUrl}
+                    youtubeCardSwiped={youtubeCardSwiped}
                     onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
                     onChanceCardSwiped={handleSwipeChanceCard}
+                    onYouTubeCardSwiped={handleSwipeYouTubeCard}
                   />
                 );
               }

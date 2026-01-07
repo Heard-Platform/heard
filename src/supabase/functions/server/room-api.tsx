@@ -24,6 +24,7 @@ app.post(
         subHeard,
         seedStatements,
         imageUrl,
+        youtubeUrl,
         allowAnonymous,
         debateLength,
       } = await c.req.json();
@@ -107,22 +108,23 @@ app.post(
 
       const debateRoom: DebateRoom = {
         id: roomId,
-        topic: topic.substring(0, 500), // Limit topic length
-        phase: "round1", // All new rooms start in round1 with rant-first
-        subPhase: "posting", // All new rooms start in posting phase
+        topic: topic.substring(0, 500),
+        phase: "round1",
+        subPhase: "posting",
         gameNumber: 1,
         roundStartTime: Date.now(),
         participants: [userId],
-        hostId: userId, // Set the creator as the host
+        hostId: userId,
         isActive: true,
         createdAt: Date.now(),
-        mode: "realtime", // All new rooms are realtime
-        rantFirst: true, // All new rooms are rant-first
+        mode: "realtime",
+        rantFirst: true,
         subHeard: subHeard
           ? subHeard.trim().toLowerCase().replace(/\s+/g, "-")
           : undefined,
-        endTime: Date.now() + debateLengthMs, // Realtime debates end in 1 week
-        imageUrl, // Add cover image URL if provided
+        endTime: Date.now() + debateLengthMs,
+        imageUrl,
+        youtubeUrl,
         allowAnonymous: !!allowAnonymous,
       };
 

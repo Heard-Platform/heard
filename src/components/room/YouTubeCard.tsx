@@ -32,9 +32,9 @@ export function YouTubeCard({ url, isTopCard }: YouTubeCardProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">📺</span>
+          <span className="text-l">📺</span>
           <span className="text-sm text-purple-700 font-medium">Intro Video</span>
         </div>
       </div>

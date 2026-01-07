@@ -75,6 +75,7 @@ export function CreateRoomSheet({
   const [debateId, setDebateId] = useState<string | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState<string>("");
   const [allowAnonymousVoting, setAllowAnonymousVoting] = useState(false);
   const [debateLength, setDebateLength] = useState(ONE_WEEK_MIN);
 
@@ -107,6 +108,7 @@ export function CreateRoomSheet({
       setEditedTopic("");
       setEditedStatements([]);
       setUploadedImageUrl(null);
+      setYoutubeUrl("");
     }
   }, [open, defaultTopic]);
 
@@ -144,7 +146,6 @@ export function CreateRoomSheet({
 
     setIsCreating(true);
     try {
-      // Resolve the community name: use custom name if creating new, otherwise use selected
       const communityName =
         subHeard === "create-new" && newSubHeardName.trim()
           ? normalizeSubHeardName(newSubHeardName)
@@ -155,6 +156,7 @@ export function CreateRoomSheet({
         subHeard: communityName,
         seedStatements: editedStatements,
         imageUrl: uploadedImageUrl || undefined,
+        youtubeUrl: youtubeUrl.trim() || undefined,
         allowAnonymous: allowAnonymousVoting,
         debateLength,
       });
@@ -315,11 +317,13 @@ export function CreateRoomSheet({
           statements={editedStatements}
           isUploadingImage={isUploadingImage}
           uploadedImageUrl={uploadedImageUrl}
+          youtubeUrl={youtubeUrl}
           debateLength={debateLength}
           allowAnonymousVoting={allowAnonymousVoting}
           onTopicChange={setEditedTopic}
           onStatementsChange={setEditedStatements}
           onImageUpload={handleImageUpload}
+          onYoutubeUrlChange={setYoutubeUrl}
           onDebateLengthChange={setDebateLength}
           onAllowAnonymousVotingChange={setAllowAnonymousVoting}
         />
