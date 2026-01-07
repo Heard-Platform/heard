@@ -28,7 +28,7 @@ export function ChanceCard({
         <div className="text-3xl mb-2">💬</div>
         <h3 className="text-2xl text-center">What do you think?</h3>
         <p className="text-base text-center text-muted-foreground max-w-sm">
-          Use the field below to share your ideas on the topic.
+          Use the field below to share your takes on the topic.
         </p>
       </div>
 
