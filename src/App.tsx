@@ -122,7 +122,7 @@ function AppContent() {
     if (response.success && response.data) {
       const { user: anonUser, roomId, subHeard } = response.data;
       setUserId(anonUser.id);
-      await initializeUser("", "", "", false);
+      await initializeUser("", "", "", false, anonUser);
       if (subHeard) {
         setCurrentSubHeard(subHeard);
       }
