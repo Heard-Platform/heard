@@ -48,7 +48,7 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c) => {
       userId = crypto.randomUUID();
       const newUser: UserSession = {
         id: userId,
-        nickname: `FlyerUser_${flyerId.slice(0, 8)}`,
+        nickname: 'Anonymous User',
         email: "",
         score: 0,
         streak: 0,
