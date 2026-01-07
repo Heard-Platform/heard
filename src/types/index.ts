@@ -13,6 +13,8 @@ export type VoteType =
   | "pass"
   | "super_agree";
 
+export type VoteTypeNew = Exclude<VoteType, "super_agree">;
+
 export type SortBy = VoteType | "none";
 
 export interface Statement {
@@ -69,6 +71,7 @@ export interface UserSession {
   isDeveloper?: boolean;
   createdAt: number;
   isAnonymous?: boolean;
+  flyerId?: string;
 }
 
 export type DebateMode = "realtime" | "host-controlled";

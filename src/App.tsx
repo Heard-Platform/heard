@@ -13,8 +13,8 @@ import { AdminDashboard } from "./components/AdminDashboard";
 import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-import { api, setUserId } from "./utils/api";
-import type { NewDebateRoom, DebateRoom } from "./types";
+import { api, getUserId, setUserId } from "./utils/api";
+import type { NewDebateRoom, DebateRoom, VoteType } from "./types";
 import {
   parseRoomIdFromUrl,
   parseSubHeardFromUrl,
@@ -23,7 +23,9 @@ import {
   parseAnalysisRoomIdFromUrl,
   updateUrlForDevTools,
   parseAnonymousLinkIdFromUrl,
+  parseFlyerDataFromUrl,
 } from "./utils/url";
+import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 
 function getStoredDashboardState(): boolean {
   try {
@@ -66,6 +68,8 @@ function AppContent() {
   const [resetToken, setResetToken] = useState<string | null>(
     null,
   );
+  const [qrScanResult, setQrScanResult] =
+    useState<QRScanResult | null>(null);
 
   const {
     user,
@@ -78,6 +82,7 @@ function AppContent() {
     joinRoom,
     submitStatement,
     voteOnStatement,
+    voteViaFlyer,
     getActiveRooms,
     setCurrentSubHeard,
     resetSession,
@@ -132,6 +137,39 @@ function AppContent() {
   }
 };
 
+  const handleFlyerJoin = async (flyerData: { flyerId: string; statementId: string; vote: VoteType }) => {
+    try {
+      setIsJoiningAnonymously(true);
+      const existingUserId = getUserId();
+      
+      const response = await voteViaFlyer(
+        flyerData.flyerId,
+        flyerData.statementId,
+        flyerData.vote,
+        existingUserId || undefined
+      );
+
+      const { user: flyerUser, room } = response;
+        
+      if (!flyerUser) {
+        console.error("No userId or user in flyer response");
+        toast.error("Failed to process flyer vote");
+        setIsJoiningAnonymously(false);
+        return;
+      }
+      
+      setUserId(flyerUser.id);
+      await initializeUser("", "", "", false, flyerUser);
+      
+      setTargetRoomId(room.id);
+      setQrScanResult(response);
+    } catch (error) {
+      console.error("Error voting via flyer:", error);
+      toast.error("Failed to process flyer vote");
+      setIsJoiningAnonymously(false);
+    }
+  };
+
   const handleCreateRoom = async (
     newDebate: NewDebateRoom,
   ): Promise<DebateRoom> => {
@@ -173,6 +211,7 @@ function AppContent() {
       const analysisRoomIdFromUrl =
         parseAnalysisRoomIdFromUrl();
       const anonymousLinkIdFromUrl = parseAnonymousLinkIdFromUrl();
+      const flyerDataFromUrl = parseFlyerDataFromUrl();
 
       if (analysisRoomIdFromUrl) {
         setAnalysisRoomId(analysisRoomIdFromUrl);
@@ -187,6 +226,8 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
+      } else if (flyerDataFromUrl) {
+        handleFlyerJoin(flyerDataFromUrl);
       } else if (anonymousLinkIdFromUrl) {
         handleAnonymousJoin(anonymousLinkIdFromUrl);
       } else if (roomIdFromUrl) {
@@ -408,6 +449,19 @@ function AppContent() {
         onGetAllRoomStatements={getAllRoomStatements}
       />
       <Toaster />
+      {qrScanResult && (
+        <QRScanResultDialog
+          room={qrScanResult.room}
+          agreePercent={qrScanResult.agreePercent}
+          disagreePercent={qrScanResult.disagreePercent}
+          passPercent={qrScanResult.passPercent}
+          userVote={qrScanResult.userVote}
+          isOpen={true}
+          onJoinDiscussion={() => {
+            setQrScanResult(null);
+          }}
+        />
+      )}
     </>
   );
 }

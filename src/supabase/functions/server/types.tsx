@@ -1,4 +1,4 @@
-import { AnalysisMetrics, TopPost } from "./analysis-utils.tsx";
+import { AnalysisMetrics } from "./analysis-utils.tsx";
 import { ClusterConsensus } from "./cluster-analysis.tsx";
 
 export interface UserSession {
@@ -15,6 +15,7 @@ export interface UserSession {
   passwordHash?: string;
   createdAt: number;
   isAnonymous?: boolean;
+  flyerId?: string;
 }
 
 export type VoteType =
@@ -45,6 +46,7 @@ export interface Vote {
   userId: string;
   voteType: VoteType;
   timestamp: number;
+  flyerId?: string;
 }
 
 export type Phase =

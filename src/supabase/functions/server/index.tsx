@@ -17,6 +17,7 @@ import { emailPreviewsApi } from "./email-previews.tsx";
 import { digestEmailOrchestratorApi } from "./email-digest-orchestrator.tsx";
 import { unsubscribeApi } from "./unsubscribe.tsx";
 import { devApi } from "./dev-api.tsx";
+import { flyerApi } from "./flyer-api.tsx";
 
 const app = new Hono();
 
@@ -98,5 +99,8 @@ app.route("/", unsubscribeApi);
 
 // Mount dev API routes
 app.route("/", devApi);
+
+// Mount flyer API routes
+app.route("/", flyerApi);
 
 Deno.serve(app.fetch);

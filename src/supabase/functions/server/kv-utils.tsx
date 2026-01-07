@@ -133,12 +133,25 @@ export const getVotesForUser = async (
   return getByPrefixParsed<Vote>(`vote:%:${userId}`);
 };
 
+export const getVotesForStatement = async (
+  statementId: string,
+): Promise<Vote[]> => {
+  return getByPrefixParsed<Vote>(`vote:${statementId}:`);
+};
+
 export const saveVote = async (vote: Vote) => {
   await kv.set(voteKeyFn(vote), JSON.stringify(vote));
 };
 
 export const bulkSaveVotes = async (votes: Vote[]) => {
   await bulkUpsert(votes, voteKeyFn);
+};
+
+export const deleteVote = async (
+  statementId: string,
+  userId: string,
+) => {
+  await kv.del(`vote:${statementId}:${userId}`);
 };
 
 export const statementKeyFn = (statement: Statement) =>

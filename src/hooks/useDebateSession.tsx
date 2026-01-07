@@ -14,6 +14,7 @@ import type {
   AnalysisData,
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
+import { FlyerVoteResponse } from "../types/api-responses";
 
 interface DebateSessionContextType {
   user: UserSession | null;
@@ -21,12 +22,33 @@ interface DebateSessionContextType {
   currentSubHeard: string | null;
   loading: boolean;
   error: string | null;
-  initializeUser: (nickname?: string, email?: string, password?: string, isSignIn?: boolean) => Promise<UserSession | null>;
-  createRoom: (newDebate: NewDebateRoom, autoJoin?: boolean) => Promise<DebateRoom>;
+  initializeUser: (
+    nickname?: string,
+    email?: string,
+    password?: string,
+    isSignIn?: boolean,
+    providedUser?: UserSession,
+  ) => Promise<UserSession | null>;
+  createRoom: (
+    newDebate: NewDebateRoom,
+    autoJoin?: boolean,
+  ) => Promise<DebateRoom>;
   joinRoom: (roomId: string) => Promise<any>;
   submitStatement: (roomId: string, text: string) => Promise<any>;
-  voteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
-  markChanceCardSwiped: (userId: string, roomId: string) => Promise<void>;
+  voteOnStatement: (
+    statementId: string,
+    voteType: VoteType,
+  ) => Promise<any>;
+  voteViaFlyer: (
+    flyerId: string,
+    statementId: string,
+    vote: VoteType,
+    userId?: string,
+  ) => Promise<FlyerVoteResponse>;
+  markChanceCardSwiped: (
+    userId: string,
+    roomId: string,
+  ) => Promise<void>;
   getActiveRooms: () => Promise<DebateRoom[]>;
   setCurrentSubHeard: (subHeard: string | null) => void;
   resetSession: () => void;
@@ -64,28 +86,28 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       email?: string,
       password?: string,
       isSignIn?: boolean,
+      providedUser?: UserSession,
     ) => {
       try {
         setError(null);
         let userId = getUserId();
-        let userData = null;
+        let user = providedUser || null;
 
-        if (userId) {
-          // Try to restore existing session
+        if (!user && userId) {
           const response = await api.getUser(userId);
           if (response.success && response.data) {
-            userData = response.data.user;
+            user = response.data.user;
           }
         }
 
-        if (!userData && email && password) {
+        if (!user && email && password) {
           // Use new authentication system
           if (isSignIn) {
             // Sign in existing user
             const response = await api.signIn(email, password) as any;
             if (response.success && response.data) {
-              userData = response.data.user;
-              setUserId(userData.id);
+              user = response.data.user;
+              setUserId(user.id);
             } else {
               throw new Error(
                 response.error || "Failed to sign in",
@@ -99,23 +121,23 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
               password,
             ) as any;
             if (response.success && response.data) {
-              userData = response.data.user;
-              setUserId(userData.id);
+              user = response.data.user;
+              setUserId(user.id);
             } else {
               throw new Error(
                 response.error || "Failed to create account",
               );
             }
           }
-        } else if (!userData && nickname && email) {
+        } else if (!user && nickname && email) {
           // Fallback to old system for backwards compatibility
           const response = await api.createUser(
             nickname,
             email,
           ) as any;
           if (response.success && response.data) {
-            userData = response.data.user;
-            setUserId(userData.id);
+            user = response.data.user;
+            setUserId(user.id);
           } else {
             throw new Error(
               response.error || "Failed to create user",
@@ -123,16 +145,16 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
           }
         }
 
-        if (userData) {
-          setUser(userData);
+        if (user) {
+          setUser(user);
 
           // Track user activity
-          api.trackActivity(userData.id).catch((err) => {
+          api.trackActivity(user.id).catch((err) => {
             console.error("Failed to track activity:", err);
             // Don't block user flow if tracking fails
           });
 
-          return userData;
+          return user;
         }
       } catch (err) {
         const errorMsg =
@@ -282,6 +304,41 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       }
     },
     [user, updateUserScoreFromResponse],
+  );
+
+  const voteViaFlyer = useCallback(
+    async (
+      flyerId: string,
+      statementId: string,
+      vote: VoteType,
+      userId?: string,
+    ) => {
+      setError(null);
+      try {
+        const response = await api.voteViaFlyer(
+          flyerId,
+          statementId,
+          vote,
+          userId,
+        );
+
+        if (response.success && response.data) {
+          return response.data;
+        } else {
+          const errorMsg =
+            response.error || "Failed to vote via flyer";
+          setError(errorMsg);
+          throw new Error(errorMsg);
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error("Failed to vote via flyer:", errorMsg);
+        throw err;
+      }
+    },
+    [user],
   );
 
   const markChanceCardSwiped = useCallback(
@@ -558,6 +615,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     joinRoom,
     submitStatement,
     voteOnStatement,
+    voteViaFlyer,
     getActiveRooms,
     setCurrentSubHeard,
     resetSession,

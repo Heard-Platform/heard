@@ -1,5 +1,5 @@
 // URL parsing utilities for shareable debate links and sub-heards
-import type { SubHeard } from '../types';
+import type { SubHeard, VoteType } from '../types';
 
 /**
  * Generic URL path parser utility
@@ -38,6 +38,26 @@ export const parseSubHeardFromUrl = (): string | null => {
 export const parseAnonymousLinkIdFromUrl = (): string | null => {
   return parseFromUrl('join');
 }
+
+export const parseFlyerDataFromUrl = (): { flyerId: string; statementId: string; vote: VoteType } | null => {
+  if (typeof window === 'undefined') return null
+  
+  const pathParts = window.location.pathname.split('/')
+  
+  if (pathParts[1] === 'flyer' && pathParts[2] && pathParts[3] && pathParts[4]) {
+    const vote = pathParts[4].toLowerCase()
+    const validVotes: VoteType[] = ['agree', 'disagree', 'pass', 'super_agree']
+    if (validVotes.includes(vote as VoteType)) {
+      return {
+        flyerId: pathParts[2],
+        statementId: pathParts[3],
+        vote: vote as VoteType
+      }
+    }
+  }
+  
+  return null
+};
 
 export const createShareableLink = (roomId: string): string => {
   if (typeof window === 'undefined') return ''

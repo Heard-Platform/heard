@@ -1,5 +1,26 @@
-import { ActivityMetricsData, AnalysisData, DevAnonDebate, DryRunResult, Feedback, PublicStatsData, RetentionStatsData, SubHeard, UserHistoryData, UserPresence, UserSession, type DebateRoom, type NewDebateRoom } from "../types";
-import { BaseApiClient, API_BASE_URL, ApiResponse } from "./api-client";
+import {
+  ActivityMetricsData,
+  AnalysisData,
+  DevAnonDebate,
+  DryRunResult,
+  Feedback,
+  PublicStatsData,
+  RetentionStatsData,
+  Statement,
+  SubHeard,
+  UserHistoryData,
+  UserPresence,
+  UserSession,
+  type DebateRoom,
+  type NewDebateRoom,
+  type VoteType,
+} from "../types";
+import { FlyerVoteResponse } from "../types/api-responses";
+import {
+  BaseApiClient,
+  API_BASE_URL,
+  ApiResponse,
+} from "./api-client";
 import { publicAnonKey } from "./supabase/info";
 
 class ApiClient extends BaseApiClient {
@@ -225,10 +246,31 @@ class ApiClient extends BaseApiClient {
     voteType: "agree" | "disagree" | "pass" | "super_agree",
     userId: string,
   ) {
-    return this.request(`/statement/${statementId}/vote`, {
+    type VoteResponse = {
+      statement: Statement;
+      user: UserSession;
+      pointsEarned: number;
+      userVote: VoteType | null;
+    };
+    return this.request<VoteResponse>(`/statement/${statementId}/vote`, {
       method: "POST",
       body: JSON.stringify({ voteType, userId }),
     });
+  }
+
+  async voteViaFlyer(
+    flyerId: string,
+    statementId: string,
+    vote: VoteType,
+    userId?: string,
+  ) {
+    return this.request<FlyerVoteResponse>(
+      "/flyer/vote",
+      {
+        method: "POST",
+        body: JSON.stringify({ flyerId, statementId, vote, userId }),
+      },
+    );
   }
 
   async markChanceCardSwiped(userId: string, roomId: string) {

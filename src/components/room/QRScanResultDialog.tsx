@@ -5,12 +5,15 @@ import { Button } from "../ui/button";
 import { DebateRoom } from "../../types";
 import { VoteType } from "../../types";
 
-interface QRScanResultDialogProps {
+export type QRScanResult = {
   room: DebateRoom;
   agreePercent: number;
   disagreePercent: number;
   passPercent: number;
   userVote: VoteType;
+};
+
+interface QRScanResultDialogProps extends QRScanResult {
   isOpen: boolean;
   onJoinDiscussion: () => void;
 }
