@@ -443,33 +443,6 @@ const getUserByEmail = async (
   }
 };
 
-const getUserByNickname = async (
-  nickname: string,
-): Promise<UserSession | null> => {
-  try {
-    // Get all users and find by nickname
-    // This is not the most efficient, but works for our small-scale test environment
-    const userKeys = await kv.getByPrefix("user:");
-    for (const userJson of userKeys) {
-      try {
-        const user = JSON.parse(userJson);
-        if (user.nickname === nickname) {
-          return user;
-        }
-      } catch (parseError) {
-        console.error("Error parsing user data:", parseError);
-      }
-    }
-    return null;
-  } catch (error) {
-    console.error(
-      `Error fetching user by nickname ${nickname}:`,
-      error,
-    );
-    return null;
-  }
-};
-
 const getDebateRoom = async (
   roomId: string,
 ): Promise<DebateRoom | null> => {

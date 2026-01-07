@@ -148,7 +148,7 @@ export const processVote = async (
 
     const allUsers = await getByPrefixParsed<UserSession>("user:");
     const statementAuthorUser = allUsers.find(
-      (u) => u.nickname === statement.author,
+      (u) => u.id === statement.author,
     );
 
     if (statementAuthorUser && statementAuthorUser.id !== userId) {
