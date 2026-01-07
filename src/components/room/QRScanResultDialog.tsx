@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { MessageSquare, Sparkles } from "lucide-react";
+import { MessageSquare, Sparkles, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { DebateRoom } from "../../types";
 import { VoteType } from "../../types";
@@ -16,6 +16,7 @@ export type QRScanResult = {
 interface QRScanResultDialogProps extends QRScanResult {
   isOpen: boolean;
   onJoinDiscussion: () => void;
+  onClose: () => void;
 }
 
 export function QRScanResultDialog({
@@ -26,6 +27,7 @@ export function QRScanResultDialog({
   userVote,
   isOpen,
   onJoinDiscussion,
+  onClose,
 }: QRScanResultDialogProps) {
   const [showBars, setShowBars] = useState(false);
 
@@ -71,9 +73,17 @@ export function QRScanResultDialog({
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={{ type: "spring", duration: 0.5 }}
-        className="w-full max-w-md bg-gradient-to-br from-purple-600 via-pink-500 to-orange-500 p-1 rounded-3xl shadow-2xl"
+        className="relative w-full max-w-md bg-gradient-to-br from-purple-600 via-pink-500 to-orange-500 p-1 rounded-3xl shadow-2xl"
       >
         <div className="bg-slate-900 rounded-3xl p-6 space-y-6">
+          <button
+            onClick={onClose}
+            className="absolute top-7 right-7 rounded-full opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-slate-900 p-1"
+          >
+            <X className="w-4 h-4 text-white" />
+            <span className="sr-only">Close</span>
+          </button>
+          
           <div className="text-center space-y-2">
             <motion.div
               initial={{ scale: 0 }}

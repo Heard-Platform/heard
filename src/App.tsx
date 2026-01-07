@@ -460,6 +460,7 @@ function AppContent() {
           onJoinDiscussion={() => {
             setQrScanResult(null);
           }}
+          onClose={() => setQrScanResult(null)}
         />
       )}
     </>

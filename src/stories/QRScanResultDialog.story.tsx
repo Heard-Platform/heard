@@ -144,6 +144,7 @@ export function QRScanResultDialogStory() {
           setDialogOpen(false);
           alert("User would be redirected to the debate room!");
         }}
+        onClose={() => setDialogOpen(false)}
       />
     </div>
   );
