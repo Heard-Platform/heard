@@ -13,6 +13,7 @@ import { UnsubscribePageStory } from "../stories/UnsubscribePage.story";
 import { SwipeableStatementStackStory } from "../stories/SwipeableStatementStack.story";
 import { MetricsCircleStory } from "../stories/MetricsCircle.story";
 import { TimeLeftBadgeStory } from "../stories/TimeLeftBadge.story";
+import { QRScanResultDialogStory } from "../stories/QRScanResultDialog.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 
 interface ComponentShowcaseProps {
@@ -86,6 +87,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="swipeable-statement-stack">Swipeable Statement Stack</TabsTrigger>
               <TabsTrigger value="metrics-circle">Metrics Circle</TabsTrigger>
               <TabsTrigger value="time-left-badge">Time Left Badge</TabsTrigger>
+              <TabsTrigger value="qr-scan-result-dialog">QR Scan Result Dialog</TabsTrigger>
             </TabsList>
 
             <TabsContent value="results">
@@ -129,6 +131,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="time-left-badge">
               <TimeLeftBadgeStory />
+            </TabsContent>
+            <TabsContent value="qr-scan-result-dialog">
+              <QRScanResultDialogStory />
             </TabsContent>
           </Tabs>
         </div>
