@@ -179,7 +179,7 @@ export function SidePanelMenu({
             Help
           </Button>
 
-          {onOpenShowcase && (
+          {user.isDeveloper && onOpenShowcase && (
             <Button
               onClick={() => closeMenuAndRun(onOpenShowcase)}
               variant="outline"
@@ -190,7 +190,7 @@ export function SidePanelMenu({
             </Button>
           )}
 
-          {onOpenAdminDashboard && (
+          {user.isDeveloper && onOpenAdminDashboard && (
             <Button
               onClick={() => closeMenuAndRun(onOpenAdminDashboard)}
               variant="outline"
@@ -201,7 +201,7 @@ export function SidePanelMenu({
             </Button>
           )}
 
-          {user?.isDeveloper && (
+          {user.isDeveloper && (
             <>
               <div className="border-t pt-4">
                 <h3 className="font-medium mb-3">Developer Tools</h3>
