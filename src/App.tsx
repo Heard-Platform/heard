@@ -201,7 +201,7 @@ function AppContent() {
       );
       const resetTokenFromUrl = urlParams.get("resetToken");
       const isAdminRoute =
-        window.location.pathname === "/admin";
+        window.location.pathname.startsWith("/admin");
       const isDevToolsRoute =
         window.location.pathname.startsWith("/devtools");
       const isUnsubscribeRoute =
