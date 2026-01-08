@@ -9,7 +9,7 @@
  * - Change sub-heard admins
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -51,7 +51,13 @@ interface AdminPanelProps {
 }
 
 export function AdminPanel({ onExit }: AdminPanelProps) {
-  const [adminKey, setAdminKey] = useState("");
+  const [adminKey, setAdminKey] = useState(() => {
+    try {
+      return localStorage.getItem("devAdminKey") || "";
+    } catch {
+      return "";
+    }
+  });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [users, setUsers] = useState<UserSession[]>([]);
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
@@ -100,20 +106,29 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         setSubHeards(subHeardsRes.data?.subHeards || []);
         setDebates(debatesRes.data?.debates || []);
         setIsAuthenticated(true);
+        localStorage.setItem("devAdminKey", adminKey);
       } else {
         alert(
           `Invalid admin key: ${usersRes.error || subHeardsRes.error || debatesRes.error || "Unknown error"}`,
         );
         setIsAuthenticated(false);
+        localStorage.removeItem("devAdminKey");
       }
     } catch (error) {
       console.error("Error fetching admin data:", error);
       alert("Failed to authenticate");
       setIsAuthenticated(false);
+      localStorage.removeItem("devAdminKey");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (adminKey && !isAuthenticated) {
+      fetchAdminData();
+    }
+  }, []);
 
   const handleAuthenticate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -493,6 +508,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
               onClick={() => {
                 setIsAuthenticated(false);
                 setAdminKey("");
+                localStorage.removeItem("devAdminKey");
               }}
             >
               Logout
