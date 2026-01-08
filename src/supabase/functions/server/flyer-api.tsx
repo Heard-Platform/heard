@@ -3,6 +3,7 @@ import type { UserSession } from "./types.tsx";
 import { getUser, saveUser, getDebate } from "./kv-utils.tsx";
 import type { VoteType } from "./types.tsx";
 import { processVote } from "./voting-utils.ts";
+import { createAnonymousUser } from "./auth-api.tsx";
 
 export const flyerApi = new Hono();
 
@@ -45,21 +46,10 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c) => {
     }
 
     if (!userId) {
-      userId = crypto.randomUUID();
-      const newUser: UserSession = {
-        id: userId,
-        nickname: 'Anonymous User',
-        email: "",
-        score: 0,
-        streak: 0,
-        lastActive: Date.now(),
-        createdAt: Date.now(),
-        isAnonymous: true,
-        emailDigestsEnabled: false,
-        flyerId,
-      };
-
+      const newUser = await createAnonymousUser();
+      newUser.flyerId = flyerId;
       await saveUser(newUser);
+      userId = newUser.id;
     }
 
     const result = await processVote(

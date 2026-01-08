@@ -1,6 +1,3 @@
-// @ts-ignore
-import { toast } from "sonner@2.0.3";
-
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { LandingPage } from "./screens/LandingPage";
@@ -21,11 +18,12 @@ import {
   updateUrlForSubHeard,
   clearRoomFromUrl,
   parseAnalysisRoomIdFromUrl,
-  updateUrlForDevTools,
-  parseAnonymousLinkIdFromUrl,
-  parseFlyerDataFromUrl,
+  updateUrlForDevTools, parseFlyerDataFromUrl
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
+
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
 
 function getStoredDashboardState(): boolean {
   try {
@@ -86,13 +84,7 @@ function AppContent() {
     getActiveRooms,
     setCurrentSubHeard,
     resetSession,
-    createSeedData,
-    createTestRoom,
-    createRantTestRoom,
-    createRealtimeTestRoom,
-    setRoomInactive,
     roomStatements,
-    getRoomStatements,
     getAllRoomStatements,
   } = useDebateSession();
 
@@ -115,7 +107,7 @@ function AppContent() {
     }
   };
 
-  const handleAnonymousJoin = async (anonymousLinkIdFromUrl: string) => {
+  const handleAnonymousJoinDev = async (anonymousLinkIdFromUrl: string) => {
   try {
     setIsJoiningAnonymously(true);
     const response = await api.joinViaAnonymousLink(anonymousLinkIdFromUrl) as any;
@@ -194,8 +186,45 @@ function AppContent() {
     clearRoomFromUrl();
   };
 
+  const autoJoinAsAnonymous = async (roomIdFromUrl: string) => {
+    setTargetRoomId(roomIdFromUrl);
+    try {
+      setIsJoiningAnonymously(true);
+      const response = await api.getRoomStatus(roomIdFromUrl);
+
+      if (!response.success || !response.data) {
+        toast.error("Room not found");
+        setIsJoiningAnonymously(false);
+        return;
+      }
+
+      const room = response.data.room;
+
+      if (!room.allowAnonymous) {
+        setIsJoiningAnonymously(false);
+        return;
+      }
+
+      const anonUserResponse = await api.createAnonymousUser();
+      if (anonUserResponse.success && anonUserResponse.data) {
+        const anonUser = anonUserResponse.data;
+        setUserId(anonUser.id);
+        await initializeUser("", "", "", false, anonUser);
+
+        if (room.subHeard) {
+          setCurrentSubHeard(room.subHeard);
+        }
+      } else {
+        setIsJoiningAnonymously(false);
+      }
+    } catch (error) {
+      console.error("Error auto-joining as anonymous:", error);
+      setIsJoiningAnonymously(false);
+    }
+  };
+
   useEffect(() => {
-    if (!hasCheckedUrl) {
+    if (!hasCheckedUrl && !loading) {
       const urlParams = new URLSearchParams(
         window.location.search,
       );
@@ -210,7 +239,6 @@ function AppContent() {
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl =
         parseAnalysisRoomIdFromUrl();
-      const anonymousLinkIdFromUrl = parseAnonymousLinkIdFromUrl();
       const flyerDataFromUrl = parseFlyerDataFromUrl();
 
       if (analysisRoomIdFromUrl) {
@@ -228,16 +256,18 @@ function AppContent() {
         setShowDevTools(true);
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
-      } else if (anonymousLinkIdFromUrl) {
-        handleAnonymousJoin(anonymousLinkIdFromUrl);
       } else if (roomIdFromUrl) {
-        setTargetRoomId(roomIdFromUrl);
+        if (user) {
+          setTargetRoomId(roomIdFromUrl);
+        } else {
+          autoJoinAsAnonymous(roomIdFromUrl);
+        }
       } else if (subHeardFromUrl) {
         setCurrentSubHeard(subHeardFromUrl);
       }
       setHasCheckedUrl(true);
     }
-  }, [hasCheckedUrl, setCurrentSubHeard]);
+  }, [hasCheckedUrl, setCurrentSubHeard, user, loading]);
 
   useEffect(() => {
     const autoJoinSubHeard = async () => {
@@ -417,7 +447,7 @@ function AppContent() {
           joiningRoom={!!targetRoomId}
           onComplete={handleNicknameComplete}
           onForgotPassword={() => setShowPasswordReset(true)}
-          onJoinAnonymousLink={handleAnonymousJoin}
+          onJoinAnonymousLink={handleAnonymousJoinDev}
         />
         <Toaster />
       </>

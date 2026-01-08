@@ -15,7 +15,7 @@ import {
   type NewDebateRoom,
   type VoteType,
 } from "../types";
-import { FlyerVoteResponse } from "../types/api-responses";
+import { FlyerVoteResponse, RoomStatusResponse } from "../types/api-responses";
 import {
   BaseApiClient,
   API_BASE_URL,
@@ -156,7 +156,14 @@ class ApiClient extends BaseApiClient {
   }
 
   async getRoomStatus(roomId: string) {
-    return this.request(`/room/${roomId}`);
+    return this.request<RoomStatusResponse>(`/room/${roomId}`);
+  }
+
+  async createAnonymousUser() {
+    return this.request<UserSession>("/user/anonymous", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
   }
 
   async updateRoomPhase(

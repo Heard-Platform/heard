@@ -542,7 +542,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
   const getRoomStatements = useCallback(
     async (roomId: string) => {
       try {
-        const response = await api.getRoomStatus(roomId) as any;
+        const response = await api.getRoomStatus(roomId);
         if (response.success && response.data) {
           const statements = response.data.statements || [];
           setRoomStatements((prev) => ({
@@ -583,7 +583,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
 
     for (const room of activeRooms) {
       try {
-        const response = await api.getRoomStatus(room.id) as any;
+        const response = await api.getRoomStatus(room.id);
         if (response.success && response.data) {
           statementsMap[room.id] =
             response.data.statements || [];

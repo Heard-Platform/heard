@@ -901,7 +901,6 @@ app.get(
         room,
         statements,
         rants,
-        participantCount: room.participants?.length || 0,
       });
     } catch (error) {
       console.error("Error fetching room status:", error);

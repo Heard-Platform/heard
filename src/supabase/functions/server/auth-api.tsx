@@ -142,7 +142,7 @@ const processAccountSetup = async (
   return { user: userWithoutPassword };
 };
 
-const createUserAccount = async (
+export const createUserAccount = async (
   nickname: string,
   email: string,
   passwordHash: string,
@@ -165,6 +165,23 @@ const createUserAccount = async (
   };
 
   await saveUserSession(userSession);
+  return userSession;
+};
+
+export const createAnonymousUser = async (): Promise<UserSession> => {
+  const anonymousNickname = "Anonymous User";
+  const anonymousEmail = `anon-${generateId()}@heard.anonymous`;
+
+  const randomPassword = generateId();
+  const passwordHash = await hashPassword(randomPassword);
+
+  const userSession = await createUserAccount(
+    anonymousNickname,
+    anonymousEmail,
+    passwordHash,
+    true,
+  );
+
   return userSession;
 };
 
@@ -571,43 +588,31 @@ app.post(
         return c.json({ error: "This debate does not allow anonymous participants" }, 403);
       }
 
-      const userId = generateId();
-      const anonymousNickname = "Anonymous User";
-      const anonymousEmail = `anon-${userId}@heard.anonymous`;
-      const randomPassword = generateId();
-
-      const passwordHash = await hashPassword(randomPassword);
-
       console.log(
-        `Creating anonymous user ${userId} via link ${anonymousLinkId} for debate ${debate.id}`,
+        `Creating anonymous user via link ${anonymousLinkId} for debate ${debate.id}`,
       );
-      const userSession = await createUserAccount(
-        anonymousNickname,
-        anonymousEmail,
-        passwordHash,
-        true,
-      );
+      const user = await createAnonymousUser();
 
-      if (!debate.participants.includes(userSession.id)) {
-        debate.participants.push(userSession.id);
+      if (!debate.participants.includes(user.id)) {
+        debate.participants.push(user.id);
         await saveDebateRoom(debate);
       }
 
-      userSession.currentRoomId = debate.id;
-      await saveUserSession(userSession);
+      user.currentRoomId = debate.id;
+      await saveUserSession(user);
 
       if (debate.subHeard) {
-        const membershipKey = `subheard_member:${userSession.id}:${debate.subHeard}`;
+        const membershipKey = `subheard_member:${user.id}:${debate.subHeard}`;
         const membershipData = {
-          userId: userSession.id,
+          userId: user.id,
           subHeard: debate.subHeard,
           joinedAt: Date.now(),
         };
         await kv.set(membershipKey, JSON.stringify(membershipData));
-        console.log(`Added anonymous user ${userSession.id} to subHeard ${debate.subHeard}`);
+        console.log(`Added anonymous user ${user.id} to subHeard ${debate.subHeard}`);
       }
 
-      const { passwordHash: _, ...userWithoutPassword } = userSession;
+      const { passwordHash: _, ...userWithoutPassword } = user;
 
       return c.json({
         user: userWithoutPassword,
@@ -618,6 +623,21 @@ app.post(
     } catch (error) {
       console.error("Error joining via anonymous link:", error);
       return c.json({ error: "Failed to join via anonymous link" }, 500);
+    }
+  },
+);
+
+app.post(
+  "/make-server-f1a393b4/user/anonymous",
+  async (c: any) => {
+    try {
+      const user = await createAnonymousUser();
+
+      const { passwordHash: _, ...userWithoutPassword } = user;
+      return c.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error creating anonymous user:", error);
+      return c.json({ error: "Failed to create anonymous user" }, 500);
     }
   },
 );
