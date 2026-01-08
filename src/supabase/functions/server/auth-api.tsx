@@ -126,6 +126,7 @@ const processAccountSetup = async (
     user.email = normalizedEmail;
     user.passwordHash = passwordHash;
     user.isAnonymous = false;
+    user.convertedFromAnonAt = Date.now();
     user.lastActive = Date.now();
     await saveUserSession(user);
     userSession = user;

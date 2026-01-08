@@ -16,6 +16,7 @@ export interface UserSession {
   createdAt: number;
   isAnonymous?: boolean;
   flyerId?: string;
+  convertedFromAnonAt?: number;
 }
 
 export type VoteType =
