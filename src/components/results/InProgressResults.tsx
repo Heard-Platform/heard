@@ -258,7 +258,7 @@ export function InProgressResults({
                   ? "🔥 The race is heating up!"
                   : totalVotes < 10
                     ? "⚡ Votes are pouring in!"
-                    : "💥 EPIC voting battle in progress!"}
+                    : "💥 EPIC vote-fest in progress!"}
             </motion.p>
           </motion.div>
         </div>
