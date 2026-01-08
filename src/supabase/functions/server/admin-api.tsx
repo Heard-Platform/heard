@@ -2,9 +2,10 @@
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
-import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, saveDebate } from "./kv-utils.tsx";
+import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, getUser, saveDebate } from "./kv-utils.tsx";
 import { getVotesForUser, getUserActivityRecords } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
+import { saveUser } from "./kv-utils.tsx";
 
 const app = new Hono();
 
@@ -296,6 +297,41 @@ app.patch(
       console.error("Error updating debate subheard:", error);
       return c.json(
         { error: "Failed to update debate subheard" },
+        500,
+      );
+    }
+  },
+);
+
+app.patch(
+  "/make-server-f1a393b4/admin/user/:userId/test-status",
+  async (c) => {
+    try {
+      const userId = c.req.param("userId");
+      const { isTestUser } = await c.req.json();
+
+      if (typeof isTestUser !== "boolean") {
+        return c.json({ error: "isTestUser must be a boolean" }, 400);
+      }
+
+      const user = await getUser(userId);
+
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      user.isTestUser = isTestUser;
+
+      await saveUser(user);
+
+      return c.json({
+        success: true,
+        user: user,
+      });
+    } catch (error) {
+      console.error("Error updating user test status:", error);
+      return c.json(
+        { error: "Failed to update user test status" },
         500,
       );
     }

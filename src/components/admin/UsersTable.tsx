@@ -1,15 +1,53 @@
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
+import { Checkbox } from "../ui/checkbox";
+import { Label } from "../ui/label";
 import type { UserSession } from "../../types";
+import { useState } from "react";
 
 interface UsersTableProps {
   users: UserSession[];
+  adminKey: string;
+  onUserUpdate: (userId: string, isTestUser: boolean) => void;
 }
 
-export function UsersTable({ users }: UsersTableProps) {
+export function UsersTable({ users, adminKey, onUserUpdate }: UsersTableProps) {
+  const [hideTestUsers, setHideTestUsers] = useState(false);
+  const [hideAnonUsers, setHideAnonUsers] = useState(false);
+
+  const filteredUsers = users.filter(user => {
+    if (hideTestUsers && user.isTestUser) return false;
+    if (hideAnonUsers && user.isAnonymous) return false;
+    return true;
+  });
+
   return (
     <Card className="p-6">
-      <h2 className="text-xl mb-4">All Users</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl">All Users ({filteredUsers.length})</h2>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Checkbox 
+              id="hide-test-users"
+              checked={hideTestUsers}
+              onCheckedChange={(checked) => setHideTestUsers(checked as boolean)}
+            />
+            <Label htmlFor="hide-test-users" className="cursor-pointer">
+              Hide test users
+            </Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox 
+              id="hide-anon-users"
+              checked={hideAnonUsers}
+              onCheckedChange={(checked) => setHideAnonUsers(checked as boolean)}
+            />
+            <Label htmlFor="hide-anon-users" className="cursor-pointer">
+              Hide anon users
+            </Label>
+          </div>
+        </div>
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
@@ -23,7 +61,7 @@ export function UsersTable({ users }: UsersTableProps) {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <tr key={user.id} className="border-b hover:bg-muted/30">
                 <td className="p-3">{user.nickname}</td>
                 <td className="p-3 text-sm">{user.email}</td>
@@ -43,19 +81,16 @@ export function UsersTable({ users }: UsersTableProps) {
                   )}
                 </td>
                 <td className="p-3 text-center">
-                  {user.isTestUser ? (
-                    <Badge variant="outline" className="text-purple-600 border-purple-600">
-                      Test
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
+                  <Checkbox
+                    checked={user.isTestUser || false}
+                    onCheckedChange={(checked) => onUserUpdate(user.id, checked as boolean)}
+                  />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {users.length === 0 && (
+        {filteredUsers.length === 0 && (
           <p className="text-center text-muted-foreground py-8">
             No users found
           </p>

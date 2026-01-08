@@ -408,6 +408,24 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
+  const handleUpdateUserTestStatus = async (userId: string, isTestUser: boolean) => {
+    try {
+      const res = await api.adminUpdateUserTestStatus(userId, isTestUser, adminKey);
+      if (res.success) {
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === userId ? { ...u, isTestUser } : u
+          )
+        );
+      } else {
+        alert(`Failed to update test user status: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error updating test user status:", error);
+      alert("Failed to update test user status");
+    }
+  };
+
   const handleCreateRedditRoom = async () => {
     if (!redditUrl.trim()) {
       alert("Please enter a Reddit post URL");
@@ -934,7 +952,11 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         )}
 
         {activeTab === "users" && (
-          <UsersTable users={users} />
+          <UsersTable 
+            users={users} 
+            adminKey={adminKey}
+            onUserUpdate={handleUpdateUserTestStatus}
+          />
         )}
 
         {activeTab === "history" && (

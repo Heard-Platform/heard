@@ -438,6 +438,20 @@ class ApiClient extends BaseApiClient {
     );
   }
 
+  async adminUpdateUserTestStatus(
+    userId: string,
+    isTestUser: boolean,
+    adminKey: string,
+  ) {
+    return this.request(`/admin/user/${userId}/test-status`, {
+      method: "PATCH",
+      body: JSON.stringify({ isTestUser }),
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
+
   async adminUpdateDebateSubHeard(
     debateId: string,
     newSubHeard: string | null,
