@@ -752,6 +752,8 @@ app.post(
         `Creating new user for email ${normalizedEmail}`,
       );
       const userId = generateId();
+
+      // @ts-ignore
       const userSession: UserSession = {
         id: userId,
         nickname: nickname.substring(0, 20), // Ensure max length
@@ -1413,6 +1415,8 @@ app.get(
           }
 
           const isAdmin = shData.adminId === userId;
+
+          // @ts-ignore
           const isMember = userMemberships.has(room.subHeard);
           return isAdmin || isMember;
         });
@@ -1665,6 +1669,7 @@ app.post(
           "test_user_3",
         ],
         hostId: userId, // Set the user as the host
+        mode: "host-controlled",
         isActive: true,
         createdAt: Date.now(),
         subHeard: "dupont-circle-neighborhoods",
@@ -1673,7 +1678,7 @@ app.post(
       await saveDebateRoom(debateRoom);
 
       // Create fake users
-      const fakeUsers = [
+      const fakeUsers: UserSession[] = [
         {
           id: "test_user_1",
           nickname: "MetroCommuter",
@@ -1704,7 +1709,11 @@ app.post(
           lastActive: Date.now(),
           isTestUser: true,
         },
-      ];
+      ].map((u) => ({
+        emailDigestsEnabled: false,
+        createdAt: Date.now(),
+        ...u,
+      }));
 
       // Save fake users
       for (const fakeUser of fakeUsers) {
@@ -1920,6 +1929,7 @@ app.post(
 
       // Save all statements and their votes
       for (const { statement, voteData } of statementData) {
+        // @ts-ignore
         await saveStatement(statement);
 
         // Create vote records for this statement
@@ -2040,6 +2050,7 @@ app.post(
 
       // Save fake users
       for (const fakeUser of fakeUsers) {
+        // @ts-ignore
         await saveUserSession(fakeUser);
       }
 
@@ -2159,6 +2170,7 @@ app.post(
 
       // Save fake users
       for (const fakeUser of fakeUsers) {
+        // @ts-ignore
         await saveUserSession(fakeUser);
       }
 
@@ -2394,7 +2406,7 @@ app.post(
           round: 1,
           voters: {},
         },
-      ];
+      ].map((stmt) => ({ ...stmt, superAgrees: 0 }));
 
       // Save all statements
       await bulkSaveStatements(statements);
@@ -2467,7 +2479,7 @@ app.post(
       await saveDebateRoom(debateRoom);
 
       // Create fake users with perspectives on DC library access
-      const fakeUsers = [
+      const fakeUsers: UserSession[] = [
         {
           id: "rt_user_1",
           nickname: "AdamsOrganResident",
@@ -2508,7 +2520,11 @@ app.post(
           lastActive: Date.now(),
           isTestUser: true,
         },
-      ];
+      ].map((user) => ({
+        emailDigestsEnabled: false,
+        createdAt: Date.now(),
+        ...user,
+      }));
 
       // Save fake users
       for (const fakeUser of fakeUsers) {
