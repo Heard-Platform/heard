@@ -1,6 +1,5 @@
 import { Sparkles, Zap, MessageCircle, Heart, Users } from "lucide-react";
 import { NicknameSetup } from "../components/NicknameSetup";
-import { DevDebateListPanel } from "../components/onboarding/DevDebateListPanel";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { Button } from "../components/ui/button";
@@ -51,8 +50,6 @@ export function LandingPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-orange-500 relative overflow-hidden">
-      <DevDebateListPanel onJoinAnonymousLink={onJoinAnonymousLink} />
-      
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.2)_0%,transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.15)_0%,transparent_50%)]" />
       
