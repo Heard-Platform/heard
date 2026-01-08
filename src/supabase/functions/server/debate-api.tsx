@@ -852,39 +852,6 @@ app.post(
         return c.json({ error: "User session not found" }, 404);
       }
 
-      // If joining a room in a private sub-heard, check membership
-      if (room.subHeard) {
-        const subHeardKey = `subheard:${room.subHeard}`;
-        const subHeardData = await kv.get(subHeardKey);
-
-        if (subHeardData) {
-          try {
-            const parsedSubHeard = JSON.parse(subHeardData);
-            if (parsedSubHeard.isPrivate) {
-              // Check if user is admin or member
-              const isAdmin = parsedSubHeard.adminId === userId;
-              const membershipKey = `subheard_member:${userId}:${room.subHeard}`;
-              const isMember = await kv.get(membershipKey);
-
-              if (!isAdmin && !isMember) {
-                return c.json(
-                  {
-                    error:
-                      "You must be a member of this private sub-heard to join rooms",
-                  },
-                  403,
-                );
-              }
-            }
-          } catch (error) {
-            console.error(
-              "Error checking sub-heard membership:",
-              error,
-            );
-          }
-        }
-      }
-
       // Add user to participants if not already there
       if (!room.participants.includes(userId)) {
         room.participants.push(userId);

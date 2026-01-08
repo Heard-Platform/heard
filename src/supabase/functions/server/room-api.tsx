@@ -57,33 +57,7 @@ app.post(
         const subHeardKey = `subheard:${normalizedSubHeard}`;
         const subHeardData = await kv.get(subHeardKey);
 
-        if (subHeardData) {
-          // Sub-heard exists - check if it's private and verify membership
-          try {
-            const parsedSubHeard = JSON.parse(subHeardData);
-            if (parsedSubHeard.isPrivate) {
-              // Check if user is admin or member
-              const isAdmin = parsedSubHeard.adminId === userId;
-              const membershipKey = `subheard_member:${userId}:${normalizedSubHeard}`;
-              const isMember = await kv.get(membershipKey);
-
-              if (!isAdmin && !isMember) {
-                return c.json(
-                  {
-                    error:
-                      "You must be a member of this private sub-heard to create rooms",
-                  },
-                  403,
-                );
-              }
-            }
-          } catch (error) {
-            console.error(
-              "Error checking sub-heard membership:",
-              error,
-            );
-          }
-        } else {
+        if (!subHeardData) {
           // Sub-heard doesn't exist - create it as a public sub-heard with this user as admin
           console.log(
             `Creating new public sub-heard: ${normalizedSubHeard}`,
