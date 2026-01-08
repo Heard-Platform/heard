@@ -313,7 +313,8 @@ export function RoomCard({
                 statements.every(
                   (statement) =>
                     statement.voters && statement.voters[user.id],
-                ) && chanceCardSwiped && youtubeCardSwiped;
+                ) && chanceCardSwiped
+                && (!room.youtubeUrl || youtubeCardSwiped);
 
               // If user has voted on all statements, show InProgressResults + input
               if (hasSwipedAll) {

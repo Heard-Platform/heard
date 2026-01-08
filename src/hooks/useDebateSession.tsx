@@ -297,6 +297,20 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
 
       if (response.success && response.data) {
         updateUserScoreFromResponse(response.data);
+        
+        const updatedStatement = response.data.statement;
+        setRoomStatements((prev) => {
+          const roomId = updatedStatement.roomId;
+          return {
+            ...prev,
+            [roomId]: prev[roomId].map((stmt) =>
+              stmt.id === updatedStatement.id
+                ? updatedStatement
+                : stmt,
+            ),
+          };
+        });
+        
         return response.data;
       } else {
         const errorMsg =
