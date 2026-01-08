@@ -83,7 +83,19 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     useState<DebateRoom | null>(null);
   const [newDebateSubHeard, setNewDebateSubHeard] =
     useState<string>("");
-  const [activeTab, setActiveTab] = useState<string>("subheards");
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (typeof window === "undefined") return "subheards";
+    const url = new URL(window.location.href);
+    const tab = url.searchParams.get("tab");
+    return tab || "subheards";
+  });
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", tab);
+    window.history.pushState({}, "", url.toString());
+  };
 
   const fetchAdminData = async () => {
     if (!adminKey) return;
@@ -519,37 +531,37 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         <div className="flex gap-2 border-b">
           <Button
             variant={activeTab === "subheards" ? "default" : "ghost"}
-            onClick={() => setActiveTab("subheards")}
+            onClick={() => handleTabChange("subheards")}
           >
             Communities
           </Button>
           <Button
             variant={activeTab === "debates" ? "default" : "ghost"}
-            onClick={() => setActiveTab("debates")}
+            onClick={() => handleTabChange("debates")}
           >
             Debates
           </Button>
           <Button
             variant={activeTab === "tools" ? "default" : "ghost"}
-            onClick={() => setActiveTab("tools")}
+            onClick={() => handleTabChange("tools")}
           >
             Dev Tools
           </Button>
           <Button
             variant={activeTab === "fixes" ? "default" : "ghost"}
-            onClick={() => setActiveTab("fixes")}
+            onClick={() => handleTabChange("fixes")}
           >
             Data Fixes
           </Button>
           <Button
             variant={activeTab === "users" ? "default" : "ghost"}
-            onClick={() => setActiveTab("users")}
+            onClick={() => handleTabChange("users")}
           >
             Users
           </Button>
           <Button
             variant={activeTab === "history" ? "default" : "ghost"}
-            onClick={() => setActiveTab("history")}
+            onClick={() => handleTabChange("history")}
           >
             <History className="w-4 h-4 mr-2" />
             User History
