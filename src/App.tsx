@@ -488,6 +488,7 @@ function AppContent() {
           userVote={qrScanResult.userVote}
           isOpen={true}
           onJoinDiscussion={() => {
+            setTargetRoomId(qrScanResult.room.id);
             setQrScanResult(null);
           }}
           onClose={() => setQrScanResult(null)}
