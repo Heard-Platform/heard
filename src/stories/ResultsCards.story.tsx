@@ -230,7 +230,7 @@ export function ResultsCardsStory() {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="concluded" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
             <TabsTrigger value="concluded">Concluded</TabsTrigger>
             <TabsTrigger value="in-progress">In Progress</TabsTrigger>
             <TabsTrigger value="few">Few Players</TabsTrigger>

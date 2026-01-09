@@ -5,8 +5,8 @@ import type { Statement } from "../types";
 
 export function RealTimeResultsStory() {
   const [activeVariant, setActiveVariant] = useState<
-    "in-progress" | "few-votes" | "many-votes" | "controversial"
-  >("in-progress");
+    "in-progress" | "few-votes" | "many-votes" | "controversial" | "anonymous"
+  >("anonymous");
 
   // Mock statements with few votes
   const mockStatementsFewVotes: Statement[] = [
@@ -243,12 +243,16 @@ export function RealTimeResultsStory() {
         ? mockStatementsFewVotes
         : activeVariant === "controversial"
           ? mockStatementsControversial
-          : mockStatementsManyVotes;
+          : activeVariant === "anonymous"
+            ? mockStatementsManyVotes
+            : mockStatementsManyVotes;
 
   const mode =
-    activeVariant === "in-progress"
+    activeVariant === "in-progress" || activeVariant === "anonymous"
       ? "in-progress"
       : "concluded";
+
+  const isAnonymousView = activeVariant === "anonymous";
 
   const totalVotes = statements.reduce(
     (sum, s) =>
@@ -260,13 +264,14 @@ export function RealTimeResultsStory() {
     <StoryContainer
       title="Real-Time Results"
       variants={[
-        { id: "in-progress", label: "⚡ In Progress (LIVE!)" },
+        { id: "anonymous", label: "Anonymous User" },
+        { id: "in-progress", label: "In Progress" },
         {
           id: "many-votes",
-          label: "🎉 Concluded - Many Votes",
+          label: "Concluded - Many",
         },
-        { id: "few-votes", label: "Concluded - Few Votes" },
-        { id: "controversial", label: "🌶️ Controversial" },
+        { id: "few-votes", label: "Concluded - Few" },
+        { id: "controversial", label: "Controversial" },
       ]}
       activeVariant={activeVariant}
       onVariantChange={setActiveVariant}
@@ -295,6 +300,10 @@ export function RealTimeResultsStory() {
           statements={statements}
           currentSubPhase="results"
           mode={mode}
+          isAnonymous={isAnonymousView}
+          onFollowDiscussion={() => {
+            alert("Account setup modal would open here to convert anonymous user to registered user");
+          }}
           onChangeVote={async () => {}}
         />
       </div>

@@ -324,6 +324,12 @@ export function RoomCard({
                       statements={statements}
                       currentUserId={user.id}
                       debateTitle={room.topic}
+                      isAnonymous={!!user?.isAnonymous}
+                      onFollowDiscussion={() =>
+                        onShowAccountSetupModal(
+                          "follow this discussion",
+                        )
+                      }
                       onChangeVote={handleVote}
                     />
                     <NewStatementInput

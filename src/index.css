@@ -2116,16 +2116,6 @@
     background-color: var(--color-blue-500);
   }
 
-  .bg-blue-500\/90 {
-    background-color: color-mix(in srgb, oklch(.623 .214 259.815) 90%, transparent);
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .bg-blue-500\/90 {
-      background-color: color-mix(in oklab, var(--color-blue-500) 90%, transparent);
-    }
-  }
-
   .bg-blue-600 {
     background-color: var(--color-blue-600);
   }
@@ -3540,10 +3530,6 @@
     overflow-wrap: break-word;
   }
 
-  .break-all {
-    word-break: break-all;
-  }
-
   .whitespace-normal {
     white-space: normal;
   }
@@ -3610,10 +3596,6 @@
 
   .text-gray-400 {
     color: var(--color-gray-400);
-  }
-
-  .text-gray-500 {
-    color: var(--color-gray-500);
   }
 
   .text-gray-600 {
@@ -4706,12 +4688,6 @@
   }
 
   @media (hover: hover) {
-    .hover\:text-white:hover {
-      color: var(--color-white);
-    }
-  }
-
-  @media (hover: hover) {
     .hover\:text-yellow-100:hover {
       color: var(--color-yellow-100);
     }
@@ -5437,8 +5413,8 @@
   }
 
   @media (width >= 64rem) {
-    .lg\:grid-cols-7 {
-      grid-template-columns: repeat(7, minmax(0, 1fr));
+    .lg\:grid-cols-6 {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
     }
   }
 

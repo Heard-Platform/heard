@@ -11,6 +11,8 @@ interface RealTimeResultsProps {
   mode?: "in-progress" | "concluded";
   onDiscuss?: (statementText: string) => void;
   currentUserId?: string;
+  isAnonymous?: boolean;
+  onFollowDiscussion?: () => void;
   onChangeVote: (
     statementId: string,
     newVote: VoteType,
@@ -23,6 +25,8 @@ export function RealTimeResults({
   mode = "concluded",
   onDiscuss,
   currentUserId,
+  isAnonymous,
+  onFollowDiscussion,
   onChangeVote,
 }: RealTimeResultsProps) {
   const [showConfetti, setShowConfetti] = useState(false);
@@ -48,6 +52,8 @@ export function RealTimeResults({
           statements={statements}
           currentUserId={currentUserId}
           debateTitle={debateTitle}
+          isAnonymous={isAnonymous}
+          onFollowDiscussion={onFollowDiscussion}
           onChangeVote={onChangeVote}
         />
       ) : (

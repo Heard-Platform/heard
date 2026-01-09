@@ -9,6 +9,8 @@ interface InProgressResultsProps {
   statements: Statement[];
   currentUserId?: string;
   debateTitle: string;
+  isAnonymous?: boolean;
+  onFollowDiscussion?: () => void;
   onChangeVote: (
     statementId: string,
     newVote: VoteType,
@@ -19,6 +21,8 @@ export function InProgressResults({
   statements,
   currentUserId,
   debateTitle,
+  isAnonymous,
+  onFollowDiscussion,
   onChangeVote,
 }: InProgressResultsProps) {
   const totalVotes = statements.reduce(
@@ -172,68 +176,103 @@ export function InProgressResults({
               })}
           </div>
 
-          {/* Quick Stats - Fun metrics */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="grid grid-cols-3 gap-2 sm:gap-3"
-          >
-            <div className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 py-1 bg-white/80 backdrop-blur rounded-lg border-2 border-yellow-300">
+          {isAnonymous && onFollowDiscussion ? (
+            <motion.button
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="w-full mt-4 py-4 px-6 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white rounded-xl font-bold text-lg shadow-lg relative overflow-hidden"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onFollowDiscussion}
+            >
               <motion.div
-                className="text-sm sm:text-base md:text-lg font-mono text-yellow-600"
-                key={
-                  [...statements].sort(
-                    (a, b) => b.agrees - a.agrees,
-                  )[0]?.agrees || 0
-                }
-                initial={{ scale: 1.5, color: "#ff6b00" }}
-                animate={{ scale: 1, color: "#ca8a04" }}
-              >
-                {[...statements].sort(
-                  (a, b) => b.agrees - a.agrees,
-                )[0]?.agrees || 0}
-              </motion.div>
-              <div className="text-[9px] sm:text-[10px] md:text-xs text-yellow-700">
-                👑{" "}
-                <span className="hidden sm:inline">Leader</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 py-1 bg-white/80 backdrop-blur rounded-lg border-2 border-purple-300">
-              <motion.div
-                className="text-sm sm:text-base md:text-lg font-mono text-purple-600"
-                key={totalVotes}
-                initial={{ scale: 1.3 }}
-                animate={{ scale: 1 }}
-              >
-                {totalVotes}
-              </motion.div>
-              <div className="text-[9px] sm:text-[10px] md:text-xs text-purple-700">
-                🗳️{" "}
-                <span className="hidden sm:inline">Total</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 py-1 bg-white/80 backdrop-blur rounded-lg border-2 border-green-300">
-              <motion.div
-                className="text-sm sm:text-base md:text-lg font-mono text-green-600"
+                className="absolute inset-0 bg-white/30"
                 animate={{
-                  scale: [1, 1.1, 1],
+                  x: ["-100%", "200%"],
                 }}
                 transition={{
                   duration: 2,
                   repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+              <motion.span
+                className="relative z-10 flex items-center justify-center gap-2"
+                animate={{
+                  scale: [1, 1.05, 1],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
                 }}
               >
-                {statements.filter((s) => s.agrees > 0).length}
-              </motion.div>
-              <div className="text-[9px] sm:text-[10px] md:text-xs text-green-700">
-                ⭐{" "}
-                <span className="hidden sm:inline">Liked</span>
+                Follow this discussion
+              </motion.span>
+            </motion.button>
+          ) : (
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="grid grid-cols-3 gap-2 sm:gap-3 mt-4"
+            >
+              <div className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 py-1 bg-white/80 backdrop-blur rounded-lg border-2 border-yellow-300">
+                <motion.div
+                  className="text-sm sm:text-base md:text-lg font-mono text-yellow-600"
+                  key={
+                    [...statements].sort(
+                      (a, b) => b.agrees - a.agrees,
+                    )[0]?.agrees || 0
+                  }
+                  initial={{ scale: 1.5, color: "#ff6b00" }}
+                  animate={{ scale: 1, color: "#ca8a04" }}
+                >
+                  {[...statements].sort(
+                    (a, b) => b.agrees - a.agrees,
+                  )[0]?.agrees || 0}
+                </motion.div>
+                <div className="text-[9px] sm:text-[10px] md:text-xs text-yellow-700">
+                  👑{" "}
+                  <span className="hidden sm:inline">Leader</span>
+                </div>
               </div>
-            </div>
-          </motion.div>
+
+              <div className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 py-1 bg-white/80 backdrop-blur rounded-lg border-2 border-purple-300">
+                <motion.div
+                  className="text-sm sm:text-base md:text-lg font-mono text-purple-600"
+                  key={totalVotes}
+                  initial={{ scale: 1.3 }}
+                  animate={{ scale: 1 }}
+                >
+                  {totalVotes}
+                </motion.div>
+                <div className="text-[9px] sm:text-[10px] md:text-xs text-purple-700">
+                  🗳️{" "}
+                  <span className="hidden sm:inline">Total</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 py-1 bg-white/80 backdrop-blur rounded-lg border-2 border-green-300">
+                <motion.div
+                  className="text-sm sm:text-base md:text-lg font-mono text-green-600"
+                  animate={{
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                  }}
+                >
+                  {statements.filter((s) => s.agrees > 0).length}
+                </motion.div>
+                <div className="text-[9px] sm:text-[10px] md:text-xs text-green-700">
+                  ⭐{" "}
+                  <span className="hidden sm:inline">Liked</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* Fun encouragement message */}
           <motion.div
