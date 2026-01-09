@@ -319,10 +319,10 @@ function AppContent() {
   }, [user, targetRoomId]);
 
   useEffect(() => {
-    if (user) {
+    if (user && hasCheckedUrl) {
       getActiveRooms();
     }
-  }, [user, currentSubHeard, getActiveRooms]);
+  }, [user, currentSubHeard, getActiveRooms, hasCheckedUrl]);
 
   const handleOpenShowcase = () => {
     setShowComponentShowcase(true);
