@@ -218,14 +218,11 @@ export function QRScanResultDialog({
             transition={{ delay: 1.8 }}
             className="flex items-center justify-center gap-2 pt-2 border-t border-slate-800"
           >
-            <span className="text-xs text-slate-500">
-              Welcome to
-            </span>
             <span className="text-sm font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               Heard
             </span>
             <span className="text-xs text-slate-500">
-              • Public discourse made fun
+              Beta • Public discourse made fun
             </span>
           </motion.div>
         </div>

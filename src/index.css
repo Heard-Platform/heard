@@ -933,6 +933,10 @@
     margin-top: calc(var(--spacing) * 6);
   }
 
+  .mt-\[-4px\] {
+    margin-top: -4px;
+  }
+
   .mt-auto {
     margin-top: auto;
   }
@@ -3689,6 +3693,16 @@
 
   .text-primary-foreground {
     color: var(--primary-foreground);
+  }
+
+  .text-purple-400\/60 {
+    color: color-mix(in srgb, oklch(.714 .203 305.504) 60%, transparent);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .text-purple-400\/60 {
+      color: color-mix(in oklab, var(--color-purple-400) 60%, transparent);
+    }
   }
 
   .text-purple-400\/80 {

@@ -333,6 +333,9 @@ export function LobbyScreen({
               >
                 HEARD
               </motion.h1>
+              <p className="text-[9px] text-purple-400/60 tracking-widest uppercase mt-[-4px]">
+                BETA
+              </p>
             </div>
           </div>
 
