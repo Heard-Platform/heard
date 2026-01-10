@@ -18,7 +18,9 @@ import {
   updateUrlForSubHeard,
   clearRoomFromUrl,
   parseAnalysisRoomIdFromUrl,
-  updateUrlForDevTools, parseFlyerDataFromUrl
+  updateUrlForDevTools,
+  parseFlyerDataFromUrl,
+  updateUrlForRoom
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 
@@ -489,6 +491,7 @@ function AppContent() {
           isOpen={true}
           onJoinDiscussion={() => {
             setTargetRoomId(qrScanResult.room.id);
+            updateUrlForRoom(qrScanResult.room.id);
             setQrScanResult(null);
           }}
           onClose={() => setQrScanResult(null)}
