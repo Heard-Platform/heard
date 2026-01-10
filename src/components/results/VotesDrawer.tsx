@@ -1,11 +1,26 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Eye, CheckCircle, XCircle, MinusCircle, Star, X, LucideIcon } from "lucide-react";
+import {
+  Eye,
+  CheckCircle,
+  XCircle,
+  MinusCircle,
+  Star,
+  LucideIcon,
+  Link as LinkIcon,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
-import { ScrollArea } from "../ui/scroll-area";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../ui/sheet";
 import type { Statement, VoteType, SortBy } from "../../types";
+import { QRFlyerDialog } from "./QRFlyerDialog";
 
 interface VotesDrawerProps {
   statements: Statement[];
@@ -116,11 +131,7 @@ export function VotesDrawer({
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [changingVoteId, setChangingVoteId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("none");
-
-  // Get all statements that have at least one vote
-  const statementsWithVotes = statements.filter(
-    (s) => s.voters && Object.keys(s.voters).length > 0
-  );
+  const [qrDialogStatement, setQrDialogStatement] = useState<Statement | null>(null);
 
   const getUserVote = (statement: Statement): VoteType | null => {
     if (!currentUserId || !statement.voters?.[currentUserId]) return null;
@@ -148,12 +159,8 @@ export function VotesDrawer({
     }
   };
 
-  if (statementsWithVotes.length === 0) {
-    return null;
-  }
-
   // Calculate total votes by type
-  const totalVotes = statementsWithVotes.reduce(
+  const totalVotes = statements.reduce(
     (acc, statement) => {
       const counts = getVoteCounts(statement);
       acc.agree += counts.agree;
@@ -165,7 +172,7 @@ export function VotesDrawer({
     { agree: 0, disagree: 0, super_agree: 0, pass: 0 }
   );
 
-  const sortedStatements = [...statementsWithVotes].sort((a, b) => {
+  const sortedStatements = [...statements].sort((a, b) => {
     const aCounts = getVoteCounts(a);
     const bCounts = getVoteCounts(b);
     if (sortBy === "agree") return bCounts.agree - aCounts.agree;
@@ -194,7 +201,7 @@ export function VotesDrawer({
             <SheetTitle className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{debateTitle}</SheetTitle>
             <SheetDescription className="pt-1">
               <Badge variant="secondary" className="text-xs">
-                {statementsWithVotes.length} statements
+                {statements.length} statements
               </Badge>
             </SheetDescription>
           </div>
@@ -243,14 +250,21 @@ export function VotesDrawer({
                   key={statement.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-3 sm:p-4 bg-gradient-to-br from-white to-orange-50 border-2 border-orange-200 rounded-xl space-y-3"
+                  className="p-3 sm:p-4 bg-gradient-to-br from-white to-orange-50 border-2 border-orange-200 rounded-xl space-y-3 relative"
                 >
-                  {/* Statement text */}
-                  <p className="text-sm leading-relaxed">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="absolute top-2 right-2 h-7 w-7 p-0"
+                    onClick={() => setQrDialogStatement(statement)}
+                  >
+                    <LinkIcon className="w-4 h-4" />
+                  </Button>
+
+                  <p className="text-sm leading-relaxed pr-8">
                     {statement.text}
                   </p>
 
-                  {/* Vote buttons */}
                   <div className="flex gap-2">
                     <VoteButton
                       type="agree"
@@ -294,6 +308,14 @@ export function VotesDrawer({
           </div>
         </div>
       </SheetContent>
+
+      {qrDialogStatement &&
+        <QRFlyerDialog
+          statement={qrDialogStatement}
+          isOpen={!!qrDialogStatement}
+          onClose={() => setQrDialogStatement(null)}
+        />
+      }
     </Sheet>
   );
 }

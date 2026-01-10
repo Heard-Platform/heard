@@ -176,14 +176,12 @@ export function VotesDrawerStory() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <VotesDrawer
-          statements={mockStatements}
-          currentUserId="voter1"
-          debateTitle="Is pineapple on pizza acceptable?"
-          onChangeVote={handleChangeVote}
-        />
-      </div>
+      <VotesDrawer
+        statements={mockStatements}
+        currentUserId="voter1"
+        debateTitle="Is pineapple on pizza acceptable?"
+        onChangeVote={handleChangeVote}
+      />
     </div>
   );
 }
