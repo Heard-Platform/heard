@@ -7,6 +7,9 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { Card } from "./ui/card";
+import { MessageCircle } from "lucide-react";
 import { getPastelColor } from "../utils/colors";
 import { SwipeIndicatorCompact } from "./SwipeIndicators";
 import { SwipeInstructions } from "./SwipeInstructions";
@@ -16,19 +19,24 @@ interface IntroModalProps {
   onClose: () => void;
 }
 
-// Demo statement cards
+const DEMO_TOPIC = "What are the best pizza toppings? 🍕";
+
 const DEMO_STATEMENTS = [
   {
     id: "demo-1",
-    text: "Pineapple absolutely belongs on pizza! 🍕🍍",
+    text: "Pineapple belongs on pizza and makes it sweet and savory perfection!",
   },
   {
     id: "demo-2",
-    text: "Dogs are better than cats. Fight me! 🐕",
+    text: "Pepperoni is the only topping you ever really need on a pizza.",
   },
   {
     id: "demo-3",
-    text: "Coffee is overrated, tea is superior ☕",
+    text: "White pizza is great if tomatoes give you acid reflux.",
+  },
+  {
+    id: "demo-4",
+    text: "Mushrooms are underrated! They'll grow on you.",
   },
 ];
 
@@ -168,11 +176,8 @@ export function IntroModal({
                 </span>
               </div>
               <p className="text-sm text-muted-foreground font-normal max-w-sm mx-auto">
-                Heard makes conversations, debates, and
-                decisions actually fun. Share your hot takes,
-                vote on others, and discover where you agree,
-                how you differ, and what quieter ideas are
-                getting missed.
+                Heard helps you connect with your community by
+                making public discourse fun, fast, and fair.
               </p>
             </motion.div>
           </DialogTitle>
@@ -191,9 +196,29 @@ export function IntroModal({
             </h3>
 
             {/* Demo Swipe Card */}
-            <div className="p-4 bg-white/80 rounded-lg border-2 border-purple-200">
-              <DemoSwipeCard />
-            </div>
+            <Card className="relative bg-gradient-to-br from-purple-50 via-white to-blue-50 border-2 border-purple-200 shadow-xl">
+              <div className="p-4 space-y-3">
+                <div className="flex items-start gap-2">
+                  <MessageCircle className="w-4 h-4 text-purple-600 flex-shrink-0 mt-1" />
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Conversation topic
+                    </p>
+                    <h2 className="font-bold text-foreground text-sm">
+                      {DEMO_TOPIC}
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    4 responses
+                  </span>
+                </div>
+
+                <DemoSwipeCard />
+              </div>
+            </Card>
           </motion.div>
 
           {/* CTA Button */}
