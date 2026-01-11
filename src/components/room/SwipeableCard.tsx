@@ -95,6 +95,7 @@ export function SwipeableCard({
         zIndex: 10 - index,
         scale: 1 - index * 0.05,
         pointerEvents: isTopCard ? "auto" : "none",
+        touchAction: isTopCard ? "none" : "auto",
       }}
       drag={isTopCard ? "x" : false}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
@@ -128,6 +129,7 @@ export function SwipeableCard({
             ? "cursor-grab active:cursor-grabbing"
             : "cursor-default"
         }`}
+        style={{ touchAction: isTopCard ? "none" : "auto" }}
       >
         {card.type === "chance" ? (
           <ChanceCard
