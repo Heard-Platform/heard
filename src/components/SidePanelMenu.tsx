@@ -162,21 +162,21 @@ export function SidePanelMenu({
           )}
 
           <Button
-            onClick={onLogout}
-            variant="outline"
-            className="w-full"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
-
-          <Button
             onClick={() => closeMenuAndRun(onOpenHelp)}
             variant="outline"
             className="w-full"
           >
             <HelpCircle className="w-4 h-4 mr-2" />
             Help
+          </Button>
+
+          <Button
+            onClick={onLogout}
+            variant="outline"
+            className="w-full"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
           </Button>
 
           {user.isDeveloper && onOpenShowcase && (

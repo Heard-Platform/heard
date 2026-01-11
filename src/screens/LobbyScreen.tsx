@@ -19,6 +19,7 @@ import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
 import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api } from "../utils/api";
+import { INTRO_SEEN_KEY } from "../utils/localStorage";
 
 interface LobbyScreenProps {
   user: UserSession;
@@ -109,6 +110,16 @@ export function LobbyScreen({
     // Otherwise sort by newest first
     return b.createdAt - a.createdAt;
   });
+
+  useEffect(() => {
+    const hasSeenIntro = localStorage.getItem(INTRO_SEEN_KEY);
+    if (!hasSeenIntro) {
+      localStorage.setItem(INTRO_SEEN_KEY, "true");
+      setTimeout(() => {
+        setHelpModalOpen(true);
+      }, 500);
+    }
+  }, []);
 
   // Detect mobile keyboard state
   useEffect(() => {

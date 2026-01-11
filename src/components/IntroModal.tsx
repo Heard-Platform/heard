@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
 import { Card } from "./ui/card";
 import { MessageCircle } from "lucide-react";
 import { getPastelColor } from "../utils/colors";
