@@ -21,10 +21,38 @@ import {
   Brain,
   Clock,
   Link2,
-  AlertCircle, User
+  AlertCircle,
+  User,
+  Target,
+  Info,
+  Heart,
+  Video,
 } from "lucide-react";
 import type { UserSession } from "../types";
 import { useDebateSession } from "../hooks/useDebateSession";
+
+const learnMoreLinks = [
+  {
+    icon: Target,
+    label: "Alex's July 4th Goals",
+    url: "https://youtu.be/JM0WUrFkYZc",
+  },
+  {
+    icon: Info,
+    label: "About Heard",
+    url: "https://amasonlong.notion.site/About-Heard-2cc4ab4bf00380a9b63ce3b83234ae02?pvs=73",
+  },
+  {
+    icon: Heart,
+    label: "Support Heard on Patreon",
+    url: "https://patreon.com/heardapp",
+  },
+  {
+    icon: Video,
+    label: "Live Streams",
+    url: "https://www.youtube.com/@AlexLongHeard",
+  },
+];
 
 interface SidePanelMenuProps {
   user: UserSession;
@@ -125,7 +153,7 @@ export function SidePanelMenu({
           <SheetDescription>User settings and options</SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-4 mt-6 overflow-y-auto flex-1 pr-2">
+        <div className="space-y-4 mt-6 overflow-y-auto flex-1 px-1">
           <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-green-800">
               <span className="font-medium">{user.nickname}</span>
@@ -200,6 +228,26 @@ export function SidePanelMenu({
               Admin Dashboard
             </Button>
           )}
+
+          <div className="border-t pt-4">
+            <h3 className="font-medium mb-3 text-sm text-muted-foreground">Learn More</h3>
+            <div className="space-y-2">
+              {learnMoreLinks.map((link) => (
+                <Button
+                  key={link.label}
+                  onClick={() => {
+                    window.open(link.url, "_blank");
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                >
+                  <link.icon className="w-4 h-4 mr-2" />
+                  {link.label}
+                </Button>
+              ))}
+            </div>
+          </div>
 
           {user.isDeveloper && (
             <>
