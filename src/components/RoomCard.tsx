@@ -6,7 +6,7 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
-  MessageCircle, ArrowRight, Hash,
+  MessageCircle, ArrowRight,
   BarChart3,
   Loader2
 } from "lucide-react";
@@ -24,6 +24,7 @@ import { RoomCardMenu } from "./room/RoomCardMenu";
 import { MetricsExplainerModal } from "./analysis/MetricsExplainerModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
+import moment from "moment";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -223,42 +224,28 @@ export function RoomCard({
               <h2 className="font-bold text-foreground flex-1">
                 {room.topic}
               </h2>
-              <RoomCardMenu
-                room={room}
-                participantCount={participantCount}
-                isRealtime={isRealtime}
-                hasRealtimeEnded={hasRealtimeEnded}
-                isDeveloper={isDeveloper}
-                handleOpenAnalysis={handleOpenAnalysis}
-              />
             </div>
 
             <div className="flex items-center justify-between gap-2">
-              <div>
+              <div className="space-y-0.5 flex-1 min-w-0">
                 {room.subHeard && !currentSubHeard && (
-                  <Badge
-                    variant="outline"
-                    className="bg-orange-100 text-orange-700 border-orange-300 text-xs"
-                  >
-                    <Hash className="w-3 h-3 mr-1" />
-                    {(() => {
-                      const formatted = room.subHeard
-                        .split("-")
-                        .map(
-                          (word) =>
-                            word.charAt(0).toUpperCase() +
-                            word.slice(1),
-                        )
-                        .join(" ");
-                      return formatted.length > 15
-                        ? formatted.slice(0, 15) + "..."
-                        : formatted;
-                    })()}
-                  </Badge>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {room.subHeard
+                      .split("-")
+                      .map(
+                        (word) =>
+                          word.charAt(0).toUpperCase() +
+                          word.slice(1),
+                      )
+                      .join(" ")}
+                  </p>
                 )}
+                <p className="text-xs text-muted-foreground">
+                  Posted {moment(room.createdAt).fromNow()}
+                </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {analysisData && (
                   <div
                     className="cursor-pointer hover:opacity-80 transition-opacity"
@@ -279,7 +266,7 @@ export function RoomCard({
 
                 {isCompleted ? (
                   <Badge className="bg-gray-600 text-white">
-                    Completed
+                    Done
                   </Badge>
                 ) : isActive_status ? (
                   <TimeLeftBadge
@@ -292,6 +279,15 @@ export function RoomCard({
                     Waiting
                   </Badge>
                 )}
+                
+                <RoomCardMenu
+                  room={room}
+                  participantCount={participantCount}
+                  isRealtime={isRealtime}
+                  hasRealtimeEnded={hasRealtimeEnded}
+                  isDeveloper={isDeveloper}
+                  handleOpenAnalysis={handleOpenAnalysis}
+                />
               </div>
             </div>
           </motion.div>
