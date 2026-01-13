@@ -13,6 +13,8 @@ export interface UserSession {
   isDeveloper?: boolean;
   emailDigestsEnabled: boolean;
   passwordHash?: string;
+  supabaseAuthId?: string;
+  migratedToSupabaseAt?: number;
   createdAt: number;
   isAnonymous?: boolean;
   flyerId?: string;

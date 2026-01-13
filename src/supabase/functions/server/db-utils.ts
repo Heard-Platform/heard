@@ -4,7 +4,7 @@ import { parseKvDataArray } from "./kv-utils.tsx";
 
 export const TABLE_NAME = "kv_store_f1a393b4";
 
-export const client = () =>
+export const createClientFromEnv = () =>
   createClient(
     Deno.env.get("SUPABASE_URL") as string,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string,
@@ -13,7 +13,7 @@ export const client = () =>
 export const getStatementsForUser = async (
   userId: string,
 ): Promise<Statement[]> => {
-  const supabase = client();
+  const supabase = createClientFromEnv();
   let userStatements: Statement[] = [];
   let offset = 0;
   const limit = 1000;
@@ -48,7 +48,7 @@ export const getStatementsForUser = async (
 export const getAllRecords = async <T>(
   prefix: string,
 ): Promise<T[]> => {
-  const supabase = client();
+  const supabase = createClientFromEnv();
   const records: T[] = [];
   let offset = 0;
   const limit = 1000;

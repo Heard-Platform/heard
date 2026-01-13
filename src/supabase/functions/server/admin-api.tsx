@@ -1,11 +1,13 @@
-// @ts-ignore
-import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, getUser, saveDebate } from "./kv-utils.tsx";
 import { getVotesForUser, getUserActivityRecords } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
 import { saveUser } from "./kv-utils.tsx";
+import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
+
+// @ts-ignore
+import { Hono } from "npm:hono";
 
 const app = new Hono();
 
@@ -434,6 +436,28 @@ app.post(
       console.error("Error running data fix:", error);
       return c.json(
         { error: "Failed to run data fix" },
+        500,
+      );
+    }
+  },
+);
+
+// Migrate all users to Supabase
+app.post(
+  "/make-server-f1a393b4/admin/migrate-users-to-supabase",
+  async (c) => {
+    try {
+      const body = await c.req.json();
+      const dryRun = body.dryRun === true;
+      const result = await migrateAllUsersToSupabase(dryRun);
+      return c.json({
+        success: true,
+        result,
+      });
+    } catch (error) {
+      console.error("Error migrating users to Supabase:", error);
+      return c.json(
+        { error: "Failed to migrate users to Supabase" },
         500,
       );
     }

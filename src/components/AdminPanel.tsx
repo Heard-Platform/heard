@@ -46,6 +46,7 @@ import type { DebateRoom, SubHeard, UserSession } from "../types";
 import { PolisImporter } from "./PolisImporter";
 import { UserHistory } from "./admin/UserHistory";
 import { UsersTable } from "./admin/UsersTable";
+import { DataFixes } from "./admin/DataFixes";
 
 interface AdminPanelProps {
   onExit?: () => void;
@@ -71,9 +72,6 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     useState<SubHeard | null>(null);
   const [newSubHeardName, setNewSubHeardName] = useState("");
   const [togglingDebateId, setTogglingDebateId] = useState<
-    string | null
-  >(null);
-  const [dataFixLoading, setDataFixLoading] = useState<
     string | null
   >(null);
   const [redditUrl, setRedditUrl] = useState("");
@@ -272,142 +270,6 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
-  const handleDataFixNormalizeDupontCircle = async () => {
-    if (
-      !confirm(
-        "Run data fix to normalize 'Dupont Circle Neighborhoods' to 'dupont-circle-neighborhoods'?",
-      )
-    ) {
-      return;
-    }
-
-    setDataFixLoading("dupont-circle");
-    try {
-      const res =
-        await api.adminDataFixNormalizeDupontCircle(adminKey) as any;
-      if (res.success) {
-        alert(
-          res.data?.message ||
-            `Fixed ${res.data?.updatedRooms || 0} room(s)`,
-        );
-        // Refresh the debates list
-        await fetchAdminData();
-      } else {
-        alert(`Failed to run data fix: ${res.error}`);
-      }
-    } catch (error) {
-      console.error("Error running data fix:", error);
-      alert("Failed to run data fix");
-    } finally {
-      setDataFixLoading(null);
-    }
-  };
-
-  const handleFixActiveRoomPointers = async () => {
-    if (
-      !confirm(
-        "Migrate active_room records from full JSON objects to room ID pointers?",
-      )
-    ) {
-      return;
-    }
-
-    setDataFixLoading("active-room-pointers");
-    try {
-      // @ts-ignore
-      const res = await api.request(
-        "/one-time-fixes/fix-active-room-pointers",
-        {
-          method: "POST",
-          headers: { "X-Admin-Key": adminKey },
-        },
-      ) as any;
-      if (res.success) {
-        alert(
-          `Migrated ${res.data?.migrated || 0} record(s), skipped ${res.data?.skipped || 0} already-migrated record(s)`,
-        );
-        await fetchAdminData();
-      } else {
-        alert(`Failed to run migration: ${res.error}`);
-      }
-    } catch (error) {
-      console.error("Error running migration:", error);
-      alert("Failed to run migration");
-    } finally {
-      setDataFixLoading(null);
-    }
-  };
-
-  const handleMigrateIsActiveToRooms = async () => {
-    if (
-      !confirm(
-        "Migrate isActive field into room objects and delete all active_room lookup records? This is a one-time migration.",
-      )
-    ) {
-      return;
-    }
-
-    setDataFixLoading("migrate-isactive");
-    try {
-      // @ts-ignore
-      const res = await api.request(
-        "/one-time-fixes/migrate-isactive-to-rooms",
-        {
-          method: "POST",
-          headers: { "X-Admin-Key": adminKey },
-        },
-      ) as any;
-      if (res.success) {
-        alert(
-          `Set ${res.data?.updated || 0} room(s) to active, ${res.data?.alreadyActive || 0} already active`,
-        );
-        await fetchAdminData();
-      } else {
-        alert(`Failed to run migration: ${res.error}`);
-      }
-    } catch (error) {
-      console.error("Error running migration:", error);
-      alert("Failed to run migration");
-    } finally {
-      setDataFixLoading(null);
-    }
-  };
-
-  const handleBackfillUserCreatedAt = async () => {
-    if (
-      !confirm(
-        "Backfill createdAt field for all users from database created_at column? Safe to run multiple times.",
-      )
-    ) {
-      return;
-    }
-
-    setDataFixLoading("backfill-user-created-at");
-    try {
-      // @ts-ignore
-      const res = await api.request(
-        "/one-time-fixes/backfill-user-created-at",
-        {
-          method: "POST",
-          headers: { "X-Admin-Key": adminKey },
-        },
-      ) as any;
-      if (res.success) {
-        alert(
-          `Backfilled ${res.data?.updated || 0} user(s), skipped ${res.data?.skipped || 0} already-backfilled, ${res.data?.errors || 0} error(s)`,
-        );
-        await fetchAdminData();
-      } else {
-        alert(`Failed to run backfill: ${res.error}`);
-      }
-    } catch (error) {
-      console.error("Error running backfill:", error);
-      alert("Failed to run backfill");
-    } finally {
-      setDataFixLoading(null);
-    }
-  };
-
   const handleUpdateUserTestStatus = async (userId: string, isTestUser: boolean) => {
     try {
       const res = await api.adminUpdateUserTestStatus(userId, isTestUser, adminKey);
@@ -432,7 +294,6 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
       return;
     }
 
-    // Use the first user as the room creator
     const userId = users[0]?.id;
     if (!userId) {
       alert("No users found in the system");
@@ -458,7 +319,6 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         );
         setRedditUrl("");
         setRedditSubHeard("");
-        // Refresh the debates list
         await fetchAdminData();
       } else {
         alert(`Failed to create Reddit room: ${res.error}`);
@@ -470,6 +330,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
       setCreatingRedditRoom(false);
     }
   };
+
 
   if (!isAuthenticated) {
     return (
@@ -810,7 +671,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                   </Label>
                   <Select
                     value={redditSubHeard || "none"}
-                    onValueChange={(value) =>
+                    onValueChange={(value: string) =>
                       setRedditSubHeard(
                         value === "none" ? "" : value,
                       )
@@ -847,108 +708,10 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         )}
 
         {activeTab === "fixes" && (
-          <Card className="p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Shield className="w-5 h-5 text-orange-600" />
-              <h2 className="text-xl">One-Time Data Fixes</h2>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Idempotent operations to fix database issues. Safe
-              to run multiple times.
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 border rounded-lg bg-purple-50">
-                <div className="flex-1">
-                  <h3 className="font-medium">
-                    Set All Rooms to Active
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Recovery migration: Sets all rooms to
-                    isActive=true. Run this to restore room
-                    visibility after the active_room data was
-                    lost.
-                  </p>
-                </div>
-                <Button
-                  onClick={handleMigrateIsActiveToRooms}
-                  disabled={dataFixLoading === "migrate-isactive"}
-                  variant="outline"
-                  size="sm"
-                >
-                  {dataFixLoading === "migrate-isactive"
-                    ? "Running..."
-                    : "Set All Active"}
-                </Button>
-              </div>
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <h3 className="font-medium">
-                    Normalize Dupont Circle Sub-Heard
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Updates rooms with "Dupont Circle
-                    Neighborhoods" to
-                    "dupont-circle-neighborhoods"
-                  </p>
-                </div>
-                <Button
-                  onClick={handleDataFixNormalizeDupontCircle}
-                  disabled={dataFixLoading === "dupont-circle"}
-                  variant="outline"
-                  size="sm"
-                >
-                  {dataFixLoading === "dupont-circle"
-                    ? "Running..."
-                    : "Run Fix"}
-                </Button>
-              </div>
-              <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 opacity-60">
-                <div className="flex-1">
-                  <h3 className="font-medium text-muted-foreground">
-                    Fix Active Room Pointers (Obsolete)
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Migrate active_room records from full JSON
-                    objects to room ID pointers. This migration is
-                    obsolete - use "Migrate isActive to Rooms"
-                    instead.
-                  </p>
-                </div>
-                <Button
-                  onClick={handleFixActiveRoomPointers}
-                  disabled={true}
-                  variant="outline"
-                  size="sm"
-                >
-                  Disabled
-                </Button>
-              </div>
-              <div className="flex items-center justify-between p-4 border rounded-lg bg-blue-50">
-                <div className="flex-1">
-                  <h3 className="font-medium">
-                    Backfill User CreatedAt
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Backfill createdAt field for all users from
-                    database created_at column. Safe to run
-                    multiple times.
-                  </p>
-                </div>
-                <Button
-                  onClick={handleBackfillUserCreatedAt}
-                  disabled={
-                    dataFixLoading === "backfill-user-created-at"
-                  }
-                  variant="outline"
-                  size="sm"
-                >
-                  {dataFixLoading === "backfill-user-created-at"
-                    ? "Running..."
-                    : "Backfill CreatedAt"}
-                </Button>
-              </div>
-            </div>
-          </Card>
+          <DataFixes
+            adminKey={adminKey}
+            fetchAdminData={fetchAdminData}
+          />
         )}
 
         {activeTab === "users" && (
