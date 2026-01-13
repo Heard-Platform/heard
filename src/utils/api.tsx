@@ -26,7 +26,7 @@ import { publicAnonKey } from "./supabase/info";
 class ApiClient extends BaseApiClient {
   // User management
   async createUser(nickname: string, email: string) {
-    return this.request("/user/create", {
+    return this.request<{ user: UserSession }>("/user/create", {
       method: "POST",
       body: JSON.stringify({ nickname, email }),
     });
@@ -38,14 +38,14 @@ class ApiClient extends BaseApiClient {
 
   // Authentication
   async signUp(nickname: string, email: string, password: string) {
-    return this.request("/auth/signup", {
+    return this.request<{ user: UserSession }>("/auth/signup", {
       method: "POST",
       body: JSON.stringify({ nickname, email, password }),
     });
   }
 
   async signIn(email: string, password: string) {
-    return this.request("/auth/signin", {
+    return this.request<{ user: UserSession }>("/auth/signin", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });

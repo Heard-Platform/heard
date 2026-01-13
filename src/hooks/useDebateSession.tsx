@@ -108,7 +108,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
           // Use new authentication system
           if (isSignIn) {
             // Sign in existing user
-            const response = await api.signIn(email, password) as any;
+            const response = await api.signIn(email, password);
             if (response.success && response.data) {
               user = response.data.user;
               setUserId(user.id);
@@ -123,7 +123,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
               nickname,
               email,
               password,
-            ) as any;
+            );
             if (response.success && response.data) {
               user = response.data.user;
               setUserId(user.id);
@@ -138,7 +138,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
           const response = await api.createUser(
             nickname,
             email,
-          ) as any;
+          );
           if (response.success && response.data) {
             user = response.data.user;
             setUserId(user.id);
