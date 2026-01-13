@@ -6,6 +6,8 @@ import {
   type Card,
   type ChanceCard,
   type YouTubeCard,
+  type DemographicsCard,
+  DemographicQuestion,
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
 import { NewStatementInput } from "../NewStatementInput";
@@ -21,6 +23,8 @@ interface SwipeableStatementStackProps {
   chanceCardSwiped: boolean;
   youtubeUrl?: string;
   youtubeCardSwiped: boolean;
+  demographicQuestions?: DemographicQuestion[];
+  demographicsAnswered?: Set<number>;
   onVote: (
     id: string,
     voteType: VoteType,
@@ -29,6 +33,7 @@ interface SwipeableStatementStackProps {
   onShowAccountSetupModal: (featureText: string) => void;
   onChanceCardSwiped: () => Promise<void>;
   onYouTubeCardSwiped: () => Promise<void>;
+  onDemographicsAnswer?: (questionId: number, answer: string) => void;
 }
 
 const SWIPE_THRESHOLD = 100;
@@ -41,11 +46,14 @@ export function SwipeableStatementStack({
   chanceCardSwiped,
   youtubeUrl,
   youtubeCardSwiped,
+  demographicQuestions,
+  demographicsAnswered,
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
   onChanceCardSwiped,
   onYouTubeCardSwiped,
+  onDemographicsAnswer,
 }: SwipeableStatementStackProps) {
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
@@ -58,6 +66,7 @@ export function SwipeableStatementStack({
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
+  const [demographicsAnsweredInternal, setDemographicsAnsweredInternal] = useState<Set<number>>(new Set());
 
   const unvotedStatements = statements.filter((statement) => {
     const hasVotedBefore =
@@ -70,6 +79,23 @@ export function SwipeableStatementStack({
     type: "statement",
     statement,
   }));
+
+  if (demographicQuestions) {
+    const unansweredDemos = demographicQuestions.filter(
+      (q) =>
+        demographicsAnswered &&
+        !demographicsAnswered.has(q.id) &&
+        !demographicsAnsweredInternal.has(q.id),
+    );
+
+    const demoCards: DemographicsCard[] =
+      unansweredDemos.map((question) => ({
+        type: "demographics",
+        question,
+      }));
+
+    cards.unshift(...demoCards);
+  }
   
   if (!chanceCardSwiped) {
     const chanceCard: ChanceCard = { type: "chance" };
@@ -260,6 +286,15 @@ export function SwipeableStatementStack({
     await onSubmitStatement(text);
   };
 
+  const handleDemographicsAnswer = (questionId: number, answer: string) => {
+    setDemographicsAnsweredInternal((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(questionId);
+      return newSet;
+    });
+    onDemographicsAnswer!(questionId, answer);
+  };
+
   if (!hasMoreCards) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4">
@@ -321,6 +356,7 @@ export function SwipeableStatementStack({
               if (card.type === "statement") return card.statement.id;
               if (card.type === "chance") return "chance";
               if (card.type === "youtube") return "youtube";
+              if (card.type === "demographics") return `demographics-${card.question.id}`;
               return "unknown";
             };
 
@@ -347,6 +383,7 @@ export function SwipeableStatementStack({
                 isAnonymous={isAnonymous}
                 onSubmitStatement={handleSubmitFromChanceCard}
                 onShowAccountSetupModal={onShowAccountSetupModal}
+                onDemographicsAnswer={handleDemographicsAnswer}
                 onSkip={() => {
                   if (card.type === "statement") {
                     handleVote(card.statement.id, "pass", "down");

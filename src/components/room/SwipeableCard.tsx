@@ -8,8 +8,9 @@ import {
 import type { Card } from "../../types";
 import { getPastelColor } from "../../utils/colors";
 import { ChanceCard } from "./ChanceCard";
-import { StatementCard } from "./StatementCard";
 import { YouTubeCard } from "./YouTubeCard";
+import { DemographicsCard } from "./DemographicsCard";
+import { StatementCard } from "./StatementCard";
 
 interface SwipeableCardProps {
   card: Card;
@@ -27,6 +28,7 @@ interface SwipeableCardProps {
   ) => void;
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
+  onDemographicsAnswer?: (index: number, answer: string) => void;
   onSkip: () => void;
 }
 
@@ -43,6 +45,7 @@ export function SwipeableCard({
   onDragEnd,
   onSubmitStatement,
   onShowAccountSetupModal,
+  onDemographicsAnswer,
   onSkip,
 }: SwipeableCardProps) {
   const x = useMotionValue(0);
@@ -118,12 +121,20 @@ export function SwipeableCard({
       }}
     >
       <div
-        className={`p-6 rounded-xl border-2 shadow-xl ${
+        className={`${
+          card.type === "demographics"
+            ? "p-0"
+            : "p-6"
+        } rounded-xl border-2 shadow-xl ${
           card.type === "chance"
             ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-orange-300"
             : card.type === "youtube"
             ? "bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300"
-            : getPastelColor(card.statement.id)
+            : card.type === "demographics"
+            ? "border-transparent p-0"
+            : card.type === "statement"
+            ? getPastelColor(card.statement.id)
+            : ""
         } ${
           isTopCard
             ? "cursor-grab active:cursor-grabbing"
@@ -144,7 +155,14 @@ export function SwipeableCard({
             url={card.url}
             isTopCard={isTopCard}
           />
-        ) : card.statement ? (
+        ) : card.type === "demographics" ? (
+          <DemographicsCard
+            question={card.question}
+            onAnswer={(answer) => {
+              onDemographicsAnswer && onDemographicsAnswer(card.question.id, answer);
+            }}
+          />
+        ) : card.type === "statement" ? (
           <StatementCard
             statement={card.statement}
             isTopCard={isTopCard}

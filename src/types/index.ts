@@ -47,7 +47,25 @@ export type YouTubeCard = {
   url: string;
 }
 
-export type Card = StatementCard | ChanceCard | YouTubeCard;
+export type DemographicQuestionType =
+  | "gender"
+  | "age_range"
+  | "occupation"
+  | "custom";
+
+export type DemographicQuestion = {
+  id: number;
+  type: DemographicQuestionType;
+  text?: string;
+  options?: string[];
+}
+
+export type DemographicsCard = {
+  type: "demographics";
+  question: DemographicQuestion;
+}
+
+export type Card = StatementCard | ChanceCard | YouTubeCard | DemographicsCard;
 
 export const isStatementCard = (card: Card): card is StatementCard => {
   return card.type === "statement";
@@ -59,6 +77,10 @@ export const isChanceCard = (card: Card): card is ChanceCard => {
 
 export const isYouTubeCard = (card: Card): card is YouTubeCard => {
   return card.type === "youtube";
+};
+
+export const isDemographicsCard = (card: Card): card is DemographicsCard => {
+  return card.type === "demographics";
 };
 
 export interface Achievement {

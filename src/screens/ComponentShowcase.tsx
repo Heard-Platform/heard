@@ -16,6 +16,7 @@ import { TimeLeftBadgeStory } from "../stories/TimeLeftBadge.story";
 import { QRScanResultDialogStory } from "../stories/QRScanResultDialog.story";
 import { YouTubeCardStory } from "../stories/YouTubeCard.story";
 import { IntroModalStory } from "../stories/IntroModal.story";
+import { DemographicsCardStory } from "../stories/DemographicsCard.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 
 interface ComponentShowcaseProps {
@@ -92,6 +93,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="qr-scan-result-dialog">QR Scan Result Dialog</TabsTrigger>
               <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
               <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
+              <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
             </TabsList>
 
             <TabsContent value="results">
@@ -144,6 +146,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="intro-modal">
               <IntroModalStory />
+            </TabsContent>
+            <TabsContent value="demographics-card">
+              <DemographicsCardStory />
             </TabsContent>
           </Tabs>
         </div>
