@@ -5,6 +5,7 @@ import { getVotesForUser, getUserActivityRecords } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
 import { saveUser } from "./kv-utils.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
+import { getNewsletterEmail } from "./email-templates.tsx";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
@@ -39,6 +40,27 @@ app.get("/make-server-f1a393b4/admin/users", async (c) => {
   } catch (error) {
     console.error("Error fetching all users for admin:", error);
     return c.json({ error: "Failed to fetch users" }, 500);
+  }
+});
+
+app.get("/make-server-f1a393b4/admin/newsletter-eligible-count", async (c) => {
+  try {
+    const users = await getAllRealUsers();
+    const eligibleUsers = users.filter(u => !u.isTestUser && !u.isAnonymous && u.email);
+    
+    const newsletterSentKey = "newsletter:edition1:sent-users";
+    const alreadySent = await kv.get(newsletterSentKey);
+    
+    const remainingUsers = eligibleUsers.filter(u => !alreadySent.includes(u.id));
+    
+    return c.json({ 
+      eligible: remainingUsers.length,
+      alreadySent: alreadySent.length,
+      total: eligibleUsers.length
+    });
+  } catch (error) {
+    console.error("Error fetching newsletter eligible count:", error);
+    return c.json({ error: "Failed to fetch count" }, 500);
   }
 });
 
@@ -458,6 +480,97 @@ app.post(
       console.error("Error migrating users to Supabase:", error);
       return c.json(
         { error: "Failed to migrate users to Supabase" },
+        500,
+      );
+    }
+  },
+);
+
+app.post(
+  "/make-server-f1a393b4/admin/send-newsletter",
+  async (c) => {
+    try {
+      const { testMode, testEmail } = await c.req.json();
+
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (!resendApiKey) {
+        return c.json(
+          { error: "RESEND_API_KEY not configured" },
+          500,
+        );
+      }
+
+      let eligibleUsers;
+      if (testMode && testEmail) {
+        eligibleUsers = [{ email: testEmail, id: 'test' }];
+        console.log(`Sending test newsletter to ${testEmail}`);
+      } else {
+        const users = await getAllRealUsers();
+        eligibleUsers = users.filter(u => !u.isTestUser && !u.isAnonymous && u.email);
+        console.log(`Found ${eligibleUsers.length} eligible users for newsletter`);
+      }
+
+      const newsletterSentKey = "newsletter:edition1:sent-users";
+      const alreadySent = await kv.get(newsletterSentKey) || [];
+      console.log(`Already sent to ${alreadySent.length} users`);
+
+      const usersToSend = eligibleUsers.filter(u => !alreadySent.includes(u.id));
+      console.log(`Sending to ${usersToSend.length} new users`);
+
+      let sent = 0;
+      let failed = 0;
+      const newlySent: string[] = [];
+
+      for (const user of usersToSend) {
+        try {
+          const html = getNewsletterEmail();
+
+          const response = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${resendApiKey}`,
+            },
+            body: JSON.stringify({
+              from: "Alex @ Heard <alex@heard-now.com>",
+              to: [user.email],
+              subject: `${testMode ? "[TEST] " : ""}The 1st Heard Newsletter! Cold showers, live streams, and QR codes - oh my!`,
+              html,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Failed to send to ${user.email}: ${errorText}`);
+            failed++;
+          } else {
+            console.log(`Successfully sent to ${user.email}`);
+            sent++;
+            newlySent.push(user.id);
+            
+            await kv.set(newsletterSentKey, [...alreadySent, ...newlySent]);
+          }
+        } catch (error) {
+          console.error(`Error sending to ${user.email}:`, error);
+          failed++;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      console.log(`Newsletter batch complete: ${sent} sent, ${failed} failed`);
+
+      return c.json({
+        success: true,
+        sent,
+        failed,
+        total: usersToSend.length,
+        skipped: alreadySent.length,
+      });
+    } catch (error) {
+      console.error("Error sending newsletter:", error);
+      return c.json(
+        { error: "Failed to send newsletter" },
         500,
       );
     }

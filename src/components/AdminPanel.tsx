@@ -40,6 +40,7 @@ import {
   ToggleRight,
   TestTube,
   History,
+  Mail,
 } from "lucide-react";
 import { api } from "../utils/api";
 import type { DebateRoom, SubHeard, UserSession } from "../types";
@@ -47,6 +48,7 @@ import { PolisImporter } from "./PolisImporter";
 import { UserHistory } from "./admin/UserHistory";
 import { UsersTable } from "./admin/UsersTable";
 import { DataFixes } from "./admin/DataFixes";
+import { Newsletter } from "./admin/Newsletter";
 
 interface AdminPanelProps {
   onExit?: () => void;
@@ -422,6 +424,13 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             Debates
           </Button>
           <Button
+            variant={activeTab === "newsletter" ? "default" : "ghost"}
+            onClick={() => handleTabChange("newsletter")}
+          >
+            <Mail className="w-4 h-4 mr-2" />
+            Newsletter
+          </Button>
+          <Button
             variant={activeTab === "tools" ? "default" : "ghost"}
             onClick={() => handleTabChange("tools")}
           >
@@ -737,6 +746,12 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
               adminKey={adminKey}
             />
           </Card>
+        )}
+
+        {activeTab === "newsletter" && (
+          <Newsletter
+            adminKey={adminKey}
+          />
         )}
       </div>
 
