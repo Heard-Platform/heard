@@ -11,7 +11,7 @@ import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { api, getUserId, setUserId } from "./utils/api";
-import type { NewDebateRoom, DebateRoom, VoteType } from "./types";
+import type { NewDebateRoom, DebateRoom, VoteType, UserSession } from "./types";
 import {
   parseRoomIdFromUrl,
   parseSubHeardFromUrl,
@@ -110,6 +110,12 @@ function AppContent() {
         setTargetRoomId(null);
       }
     }
+  };
+
+  const handleMagicLinkSuccess = async (userId: string, userData: UserSession) => {
+    setUserId(userId);
+    await initializeUser("", "", "", false, userData);
+    toast.success("Signed in successfully!");
   };
 
   const handleAnonymousJoinDev = async (anonymousLinkIdFromUrl: string) => {
@@ -340,9 +346,7 @@ function AppContent() {
         try {
           const response = await api.verifyMagicLink(magicLinkToken);
           if (response.success && response.data) {
-            setUserId(response.data.user.id);
-            await initializeUser("", "", "", false, response.data.user);
-            toast.success("Signed in successfully!");
+            handleMagicLinkSuccess(response.data.user.id, response.data.user);
             window.history.pushState({}, "", "/");
           } else {
             toast.error(response.error || "Invalid or expired magic link");
@@ -484,6 +488,7 @@ function AppContent() {
           onComplete={handleNicknameComplete}
           onForgotPassword={() => setShowPasswordReset(true)}
           onJoinAnonymousLink={handleAnonymousJoinDev}
+          onMagicLinkSuccess={handleMagicLinkSuccess}
         />
         <Toaster />
       </>

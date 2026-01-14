@@ -17,6 +17,15 @@ const generateId = () => {
   return crypto.randomUUID();
 };
 
+const generateMagicLinkCode = () => {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+};
+
 export const getUserSession = async (
   userId: string,
 ): Promise<UserSession | null> => {
@@ -665,7 +674,7 @@ app.post(
         );
       }
 
-      const token = generateId();
+      const token = generateMagicLinkCode();
       const expiresAt = Date.now() + 15 * 60 * 1000;
 
       await saveMagicLink(token, {
@@ -682,7 +691,7 @@ app.post(
 
       const magicLinkUrl = `https://heard-now.com/magic-link?token=${token}`;
 
-      const html = getMagicLinkEmail(magicLinkUrl);
+      const html = getMagicLinkEmail(magicLinkUrl, token);
 
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",

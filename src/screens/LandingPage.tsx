@@ -16,6 +16,7 @@ interface LandingPageProps {
   ) => void;
   onForgotPassword: () => void;
   onJoinAnonymousLink: (anonymousLinkId: string) => void;
+  onMagicLinkSuccess: (userId: string, userData: any) => void;
 }
 
 const animatedIcons = [
@@ -32,6 +33,7 @@ export function LandingPage({
   onComplete,
   onForgotPassword,
   onJoinAnonymousLink,
+  onMagicLinkSuccess,
 }: LandingPageProps) {
   const [showSignup, setShowSignup] = useState(false);
 
@@ -44,6 +46,7 @@ export function LandingPage({
         onForgotPassword={onForgotPassword}
         onBack={() => setShowSignup(false)}
         onComplete={onComplete}
+        onMagicLinkSuccess={onMagicLinkSuccess}
       />
     );
   }

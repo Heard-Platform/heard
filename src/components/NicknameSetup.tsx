@@ -28,6 +28,7 @@ interface NicknameSetupProps {
     password: string,
     isSignIn: boolean,
   ) => void;
+  onMagicLinkSuccess: (userId: string, userData: any) => void;
 }
 
 export function NicknameSetup({
@@ -37,6 +38,7 @@ export function NicknameSetup({
   onForgotPassword,
   onBack,
   onComplete,
+  onMagicLinkSuccess,
 }: NicknameSetupProps) {
   const [mode, setMode] = useState<"signin" | "signup">(
     "signup",
@@ -48,6 +50,8 @@ export function NicknameSetup({
   const [isValid, setIsValid] = useState(false);
   const [sendingMagicLink, setSendingMagicLink] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [magicCode, setMagicCode] = useState("");
+  const [verifyingCode, setVerifyingCode] = useState(false);
 
   const handleNicknameChange = (value: string) => {
     // Allow letters, numbers, spaces, and common symbols
@@ -121,6 +125,27 @@ export function NicknameSetup({
       alert("Failed to send magic link");
     } finally {
       setSendingMagicLink(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (magicCode.length !== 6) {
+      return;
+    }
+
+    setVerifyingCode(true);
+    try {
+      const res = await api.verifyMagicLink(magicCode.toUpperCase());
+      if (res.success && res.data?.user) {
+        onMagicLinkSuccess(res.data.user.id, res.data.user);
+      } else {
+        alert(res.error || "Invalid or expired code");
+      }
+    } catch (err) {
+      console.error("Error verifying code:", err);
+      alert("Invalid or expired code");
+    } finally {
+      setVerifyingCode(false);
     }
   };
 
@@ -341,15 +366,55 @@ export function NicknameSetup({
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-4 bg-green-50 border border-green-200 rounded-md text-center"
+                    className="space-y-3"
                   >
-                    <Mail className="w-8 h-8 mx-auto text-green-600 mb-2" />
-                    <p className="text-sm font-medium text-green-900">
-                      Magic link sent!
-                    </p>
-                    <p className="text-xs text-green-700 mt-1">
-                      Check your email and click the link to sign in
-                    </p>
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-md text-center">
+                      <Mail className="w-8 h-8 mx-auto text-green-600 mb-2" />
+                      <p className="text-sm font-medium text-green-900">
+                        Magic link sent!
+                      </p>
+                      <p className="text-xs text-green-700 mt-1">
+                        Check your email and click the link to sign in
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="magicCode" className="text-xs text-center block">
+                        Or enter the 6-character code from your email:
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="magicCode"
+                          type="text"
+                          value={magicCode}
+                          onChange={(e) => setMagicCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 6))}
+                          placeholder="ABC123"
+                          disabled={verifyingCode}
+                          className="text-center font-mono text-lg tracking-widest uppercase"
+                          maxLength={6}
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleVerifyCode}
+                          disabled={magicCode.length !== 6 || verifyingCode}
+                        >
+                          {verifyingCode ? (
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{
+                                duration: 1,
+                                repeat: Infinity,
+                                ease: "linear",
+                              }}
+                            >
+                              <Sparkles className="w-4 h-4" />
+                            </motion.div>
+                          ) : (
+                            "Verify"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                   </motion.div>
                 ) : (
                   <Button

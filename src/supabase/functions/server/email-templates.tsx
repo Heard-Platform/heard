@@ -1,4 +1,4 @@
-export const getMagicLinkEmail = (magicLinkUrl: string): string => {
+export const getMagicLinkEmail = (magicLinkUrl: string, code: string): string => {
   return `
 <!DOCTYPE html>
 <html>
@@ -23,6 +23,25 @@ export const getMagicLinkEmail = (magicLinkUrl: string): string => {
          style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 16px 48px; border-radius: 8px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(102,126,234,0.3);">
         Log In to Heard
       </a>
+    </div>
+    
+    <p style="color: #999; font-size: 0.85rem; text-align: center; margin: 16px 0 0 0; line-height: 1.5;">
+      Or copy and paste this URL into your browser:
+      <br>
+      <span style="color: #666; font-family: 'Courier New', monospace; word-break: break-all;">
+        ${magicLinkUrl}
+      </span>
+    </p>
+    
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 24px 0;">
+      <p style="color: #555; margin: 0 0 12px 0; font-size: 0.95rem; text-align: center;">
+        <strong>Can't click the button?</strong> Enter this code manually:
+      </p>
+      <div style="text-align: center; background: white; padding: 16px; border-radius: 8px; border: 2px dashed #8B5CF6;">
+        <span style="font-size: 2rem; font-weight: bold; color: #8B5CF6; letter-spacing: 0.2em; font-family: 'Courier New', monospace;">
+          ${code}
+        </span>
+      </div>
     </div>
     
     <p style="color: #666; font-size: 0.9rem; margin: 24px 0 0 0; padding-top: 24px; border-top: 1px solid #e0e0e0;">
