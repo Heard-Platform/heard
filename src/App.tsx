@@ -68,6 +68,9 @@ function AppContent() {
   const [resetToken, setResetToken] = useState<string | null>(
     null,
   );
+  const [magicLinkToken, setMagicLinkToken] = useState<string | null>(
+    null,
+  );
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
 
@@ -231,6 +234,9 @@ function AppContent() {
         window.location.search,
       );
       const resetTokenFromUrl = urlParams.get("resetToken");
+      const magicTokenFromUrl = urlParams.get("token");
+      const isMagicLinkRoute =
+        window.location.pathname.startsWith("/magic-link");
       const isAdminRoute =
         window.location.pathname.startsWith("/admin");
       const isDevToolsRoute =
@@ -250,6 +256,8 @@ function AppContent() {
       if (resetTokenFromUrl) {
         setResetToken(resetTokenFromUrl);
         setShowPasswordReset(true);
+      } else if (isMagicLinkRoute && magicTokenFromUrl) {
+        setMagicLinkToken(magicTokenFromUrl);
       } else if (isUnsubscribeRoute) {
         setShowUnsubscribe(true);
       } else if (isAdminRoute) {
@@ -325,6 +333,32 @@ function AppContent() {
       getActiveRooms();
     }
   }, [user, currentSubHeard, getActiveRooms, hasCheckedUrl]);
+
+  useEffect(() => {
+    const handleMagicLinkLogin = async () => {
+      if (magicLinkToken && !user) {
+        try {
+          const response = await api.verifyMagicLink(magicLinkToken);
+          if (response.success && response.data) {
+            setUserId(response.data.user.id);
+            await initializeUser("", "", "", false, response.data.user);
+            toast.success("Signed in successfully!");
+            window.history.pushState({}, "", "/");
+          } else {
+            toast.error(response.error || "Invalid or expired magic link");
+            window.history.pushState({}, "", "/");
+          }
+        } catch (error) {
+          console.error("Error verifying magic link:", error);
+          toast.error("Failed to verify magic link");
+          window.history.pushState({}, "", "/");
+        } finally {
+          setMagicLinkToken(null);
+        }
+      }
+    };
+    handleMagicLinkLogin();
+  }, [magicLinkToken, user, initializeUser]);
 
   const handleOpenShowcase = () => {
     setShowComponentShowcase(true);

@@ -1,15 +1,16 @@
 // Utility functions for working with KV store data
 import { getAllRecords } from "./db-utils.ts";
 import * as kv from "./kv_store.tsx";
-import type {
-  UserSession,
-  Vote,
-  Statement,
-  DebateRoom,
-  SentEmail,
-  ChanceCardStatus,
-  Rant,
-  YouTubeCardStatus,
+import {
+  type UserSession,
+  type Vote,
+  type Statement,
+  type DebateRoom,
+  type SentEmail,
+  type ChanceCardStatus,
+  type Rant,
+  type YouTubeCardStatus,
+  MagicLinkRecord,
 } from "./types.tsx";
 
 /**
@@ -123,6 +124,28 @@ export const updateUserField = async <K extends keyof UserSession>(
   }
   user[field] = value;
   await kv.set(userKeyFn(user), JSON.stringify(user));
+};
+
+export const magicLinkKeyFn = (token: string) =>
+  `magic_link:${token}`;
+
+export const saveMagicLink = async (
+  token: string,
+  data: MagicLinkRecord,
+) => {
+  await kv.set(magicLinkKeyFn(token), data)
+};
+
+export const getMagicLink = async (
+  token: string,
+) => {
+  return getParsedKvData<MagicLinkRecord>(magicLinkKeyFn(token));
+};
+
+export const deleteMagicLink = async (
+  token: string,
+) => {
+  await kv.del(magicLinkKeyFn(token));
 };
 
 export const voteKeyFn = (vote: Vote) =>

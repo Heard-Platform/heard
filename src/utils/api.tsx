@@ -51,6 +51,20 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async sendMagicLink(email: string) {
+    return this.request<{ user: UserSession }>("/auth/send-magic-link", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async verifyMagicLink(token: string) {
+    return this.request<{ user: UserSession }>("/auth/verify-magic-link", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  }
+
   async setupAnonymousUser(
     userId: string,
     nickname: string,

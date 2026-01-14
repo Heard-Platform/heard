@@ -4,11 +4,12 @@ import {
   verifyPassword,
   generateResetToken,
 } from "./password-utils.tsx";
-import { getAllDebates, getParsedKvData } from "./kv-utils.tsx";
+import { deleteMagicLink, getAllDebates, getMagicLink, getParsedKvData, getUser, saveMagicLink } from "./kv-utils.tsx";
 import { getFrontendUrl } from "./utils.tsx";
 import type { UserSession } from "./types.tsx";
 import { Hono } from "npm:hono";
 import { saveDebateRoom } from "./debate-api.tsx";
+import { getMagicLinkEmail } from "./email-templates.tsx";
 
 const app = new Hono();
 
@@ -639,6 +640,119 @@ app.post(
     } catch (error) {
       console.error("Error creating anonymous user:", error);
       return c.json({ error: "Failed to create anonymous user" }, 500);
+    }
+  },
+);
+
+app.post(
+  "/make-server-f1a393b4/auth/send-magic-link",
+  async (c: any) => {
+    try {
+      const { email } = await c.req.json();
+
+      if (!email) {
+        return c.json({ error: "Email is required" }, 400);
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      const user = await getUserByEmail(normalizedEmail);
+
+      if (!user) {
+        return c.json(
+          { error: "No account found with this email" },
+          404,
+        );
+      }
+
+      const token = generateId();
+      const expiresAt = Date.now() + 15 * 60 * 1000;
+
+      await saveMagicLink(token, {
+        userId: user.id,
+        email: normalizedEmail,
+        expiresAt,
+      });
+
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (!resendApiKey) {
+        console.error("RESEND_API_KEY not configured");
+        return c.json({ error: "Email service not configured" }, 500);
+      }
+
+      const magicLinkUrl = `https://heard-now.com/magic-link?token=${token}`;
+
+      const html = getMagicLinkEmail(magicLinkUrl);
+
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${resendApiKey}`,
+        },
+        body: JSON.stringify({
+          from: "Heard <noreply@heard-now.com>",
+          to: [normalizedEmail],
+          subject: "Log in to Heard",
+          html,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to send magic link email:", errorText);
+        return c.json({ error: "Failed to send email" }, 500);
+      }
+
+      console.log(`Magic link sent to ${normalizedEmail}`);
+
+      return c.json({ success: true });
+    } catch (error) {
+      console.error("Error sending magic link:", error);
+      return c.json({ error: "Failed to send magic link" }, 500);
+    }
+  },
+);
+
+app.post(
+  "/make-server-f1a393b4/auth/verify-magic-link",
+  async (c: any) => {
+    try {
+      const { token } = await c.req.json();
+
+      if (!token) {
+        return c.json({ error: "Token is required" }, 400);
+      }
+
+      const magicLinkData = await getMagicLink(token);
+
+      if (!magicLinkData) {
+        return c.json({ error: "Invalid or expired magic link" }, 401);
+      }
+
+      const { userId, expiresAt } = magicLinkData;
+
+      if (Date.now() > expiresAt) {
+        await deleteMagicLink(token);
+        return c.json({ error: "Magic link has expired" }, 401);
+      }
+
+      const user = await getUser(userId);
+
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      await deleteMagicLink(token);
+
+      user.lastActive = Date.now();
+      await saveUserSession(user);
+
+      const { passwordHash: _, ...userWithoutPassword } = user;
+      return c.json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error("Error verifying magic link:", error);
+      return c.json({ error: "Failed to verify magic link" }, 500);
     }
   },
 );

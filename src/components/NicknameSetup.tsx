@@ -11,7 +11,10 @@ import {
   Eye,
   EyeOff,
   ArrowLeft,
+  Mail,
 } from "lucide-react";
+import { api } from "../utils/api";
+import { isValidEmail } from "../utils/validation";
 
 interface NicknameSetupProps {
   loading?: boolean;
@@ -43,6 +46,8 @@ export function NicknameSetup({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isValid, setIsValid] = useState(false);
+  const [sendingMagicLink, setSendingMagicLink] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   const handleNicknameChange = (value: string) => {
     // Allow letters, numbers, spaces, and common symbols
@@ -68,9 +73,7 @@ export function NicknameSetup({
     emailVal: string,
     passwordVal: string,
   ) => {
-    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-      emailVal.trim(),
-    );
+    const emailValid = isValidEmail(emailVal.trim());
     const passwordValid = passwordVal.length >= 6;
 
     if (mode === "signup") {
@@ -97,6 +100,28 @@ export function NicknameSetup({
     setMode(mode === "signin" ? "signup" : "signin");
     // Revalidate when switching modes
     validateForm(nickname, email, password);
+  };
+
+  const handleSendMagicLink = async () => {
+    const emailValid = isValidEmail(email.trim());
+    if (!emailValid) {
+      return;
+    }
+
+    setSendingMagicLink(true);
+    try {
+      const res = await api.sendMagicLink(email.trim());
+      if (res.success) {
+        setMagicLinkSent(true);
+      } else {
+        alert(res.error || "Failed to send magic link");
+      }
+    } catch (err) {
+      console.error("Error sending magic link:", err);
+      alert("Failed to send magic link");
+    } finally {
+      setSendingMagicLink(false);
+    }
   };
 
   const suggestions = [
@@ -298,6 +323,71 @@ export function NicknameSetup({
                 </>
               )}
             </Button>
+
+            {mode === "signin" && (
+              <>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or
+                    </span>
+                  </div>
+                </div>
+
+                {magicLinkSent ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 bg-green-50 border border-green-200 rounded-md text-center"
+                  >
+                    <Mail className="w-8 h-8 mx-auto text-green-600 mb-2" />
+                    <p className="text-sm font-medium text-green-900">
+                      Magic link sent!
+                    </p>
+                    <p className="text-xs text-green-700 mt-1">
+                      Check your email and click the link to sign in
+                    </p>
+                  </motion.div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    disabled={
+                      !isValidEmail(email.trim()) ||
+                      loading ||
+                      sendingMagicLink
+                    }
+                    onClick={handleSendMagicLink}
+                  >
+                    {sendingMagicLink ? (
+                      <>
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{
+                            duration: 1,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
+                          className="w-4 h-4 mr-2"
+                        >
+                          <Mail className="w-4 h-4" />
+                        </motion.div>
+                        Sending Magic Link...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="w-4 h-4 mr-2" />
+                        Send Me a Magic Link
+                      </>
+                    )}
+                  </Button>
+                )}
+              </>
+            )}
           </form>
 
           <div className="text-center">

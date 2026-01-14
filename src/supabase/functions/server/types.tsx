@@ -21,6 +21,12 @@ export interface UserSession {
   convertedFromAnonAt?: number;
 }
 
+export type MagicLinkRecord = {
+  userId: string;
+  email: string;
+  expiresAt: number;
+};
+
 export type VoteType =
   | "agree"
   | "disagree"
