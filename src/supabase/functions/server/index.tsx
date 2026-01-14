@@ -18,13 +18,16 @@ import { digestEmailOrchestratorApi } from "./email-digest-orchestrator.tsx";
 import { unsubscribeApi } from "./unsubscribe.tsx";
 import { devApi } from "./dev-api.tsx";
 import { flyerApi } from "./flyer-api.tsx";
+import { validateSessionId } from "./auth-api.tsx";
 
-const app = new Hono();
+type Variables = {
+  userId?: string;
+};
 
-// Enable logger
+const app = new Hono<{ Variables: Variables }>();
+
 app.use("*", logger(console.log));
 
-// Enable CORS for all routes and methods
 app.use(
   "/*",
   cors({
@@ -33,6 +36,7 @@ app.use(
       "Content-Type",
       "Authorization",
       "X-Admin-Key",
+      "X-Session-Id",
     ],
     allowMethods: [
       "GET",
@@ -47,60 +51,42 @@ app.use(
   }),
 );
 
-// Health check endpoint
+app.use("*", async (c, next) => {
+  const sessionId = c.req.header("X-Session-Id");
+  
+  if (sessionId) {
+    const validation = await validateSessionId(sessionId);
+    
+    if (!validation.valid) {
+      return c.json({ error: validation.error || "Invalid session" }, 401);
+    }
+    
+    c.set("userId", validation.userId);
+  }
+  
+  await next();
+});
+
 app.get("/make-server-f1a393b4/health", (c) => {
   return c.json({ status: "ok" });
 });
 
-// Mount debate API routes
 app.route("/", debateApi);
-
-// Mount admin API routes
 app.route("/", adminApi);
-
-// Mount auth API routes
 app.route("/", authApi);
-
-// Mount reddit API routes
 app.route("/", redditApi);
-
-// Mount one-time fixes API routes
 app.route("/", oneTimeFixesApi);
-
-// Mount feedback API routes
 app.route("/", feedbackApi);
-
-// Mount image API routes
 app.route("/", imageApi);
-
-// Mount activity API routes
 app.route("/", activityApi);
-
-// Mount stats API routes
 app.route("/", statsApi);
-
-// Mount polis import API routes
 app.route("/", polisImportApi);
-
-// Mount analysis API routes
 app.route("/", analysisApi);
-
-// Mount vine API routes
 app.route("/", vineApi);
-
-// Mount email previews API routes
 app.route("/", emailPreviewsApi);
-
-// Mount digest email orchestrator API routes
 app.route("/", digestEmailOrchestratorApi);
-
-// Mount unsubscribe API routes
 app.route("/", unsubscribeApi);
-
-// Mount dev API routes
 app.route("/", devApi);
-
-// Mount flyer API routes
 app.route("/", flyerApi);
 
 Deno.serve(app.fetch);

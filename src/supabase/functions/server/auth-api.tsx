@@ -4,9 +4,9 @@ import {
   verifyPassword,
   generateResetToken,
 } from "./password-utils.tsx";
-import { deleteMagicLink, getAllDebates, getMagicLink, getParsedKvData, getUser, saveMagicLink } from "./kv-utils.tsx";
+import { deleteMagicLink, getAllDebates, getMagicLink, getParsedKvData, getSession, getUser, saveMagicLink, saveSession } from "./kv-utils.tsx";
 import { getFrontendUrl } from "./utils.tsx";
-import type { UserSession } from "./types.tsx";
+import type { Session, UserSession } from "./types.tsx";
 import { Hono } from "npm:hono";
 import { saveDebateRoom } from "./debate-api.tsx";
 import { getMagicLinkEmail } from "./email-templates.tsx";
@@ -24,6 +24,42 @@ const generateMagicLinkCode = () => {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return code;
+};
+
+const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
+
+export const createSession = async (userId: string): Promise<Session> => {
+  const id = crypto.randomUUID();
+  const now = Date.now();
+  
+  const session: Session = {
+    id,
+    userId,
+    createdAt: now,
+    expiresAt: now + SESSION_DURATION_MS,
+  };
+  
+  await saveSession(session);
+  return session;
+};
+
+export const validateSessionId = async (sessionId: string): Promise<{ valid: boolean; userId?: string; error?: string }> => {
+  try {
+    const session = await getSession(sessionId);
+
+    if (!session) {
+      return { valid: false, error: "Session not found" };
+    }
+    
+    if (Date.now() > session.expiresAt) {
+      return { valid: false, error: "Session expired" };
+    }
+    
+    return { valid: true, userId: session.userId };
+  } catch (error) {
+    console.error("Error validating session ID:", error);
+    return { valid: false, error: "Invalid session" };
+  }
 };
 
 export const getUserSession = async (
@@ -408,10 +444,13 @@ app.post(
       user.lastActive = Date.now();
       await saveUserSession(user);
 
+      const session = await createSession(user.id);
+
       const { passwordHash: _, ...userWithoutPassword } = user;
 
       return c.json({
         user: userWithoutPassword,
+        sessionId: session.id,
         isReturningUser: true,
       });
     } catch (error) {
@@ -757,8 +796,10 @@ app.post(
       user.lastActive = Date.now();
       await saveUserSession(user);
 
+      const session = await createSession(user.id);
+
       const { passwordHash: _, ...userWithoutPassword } = user;
-      return c.json({ user: userWithoutPassword });
+      return c.json({ user: userWithoutPassword, sessionId: session.id });
     } catch (error) {
       console.error("Error verifying magic link:", error);
       return c.json({ error: "Failed to verify magic link" }, 500);

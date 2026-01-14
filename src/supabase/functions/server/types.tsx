@@ -27,6 +27,13 @@ export type MagicLinkRecord = {
   expiresAt: number;
 };
 
+export interface Session {
+  id: string;
+  userId: string;
+  createdAt: number;
+  expiresAt: number;
+}
+
 export type VoteType =
   | "agree"
   | "disagree"

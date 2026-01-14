@@ -11,6 +11,7 @@ import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { api, getUserId, setUserId } from "./utils/api";
+import { setSessionId } from "./utils/api-client";
 import type { NewDebateRoom, DebateRoom, VoteType, UserSession } from "./types";
 import {
   parseRoomIdFromUrl,
@@ -346,6 +347,9 @@ function AppContent() {
         try {
           const response = await api.verifyMagicLink(magicLinkToken);
           if (response.success && response.data) {
+            if (response.data.sessionId) {
+              setSessionId(response.data.sessionId);
+            }
             handleMagicLinkSuccess(response.data.user.id, response.data.user);
             window.history.pushState({}, "", "/");
           } else {

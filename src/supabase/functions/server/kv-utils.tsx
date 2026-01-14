@@ -11,6 +11,7 @@ import {
   type Rant,
   type YouTubeCardStatus,
   MagicLinkRecord,
+  Session,
 } from "./types.tsx";
 
 /**
@@ -146,6 +147,21 @@ export const deleteMagicLink = async (
   token: string,
 ) => {
   await kv.del(magicLinkKeyFn(token));
+};
+
+const sessionKeyFn = (session: Session) =>
+  `session:${session.id}`;
+
+export const getSession = async (
+  sessionId: string,
+) => {
+  return getParsedKvData<Session>(`session:${sessionId}`);
+};
+
+export const saveSession = async (
+  session: Session
+) => {
+  await kv.set(sessionKeyFn(session), session);
 };
 
 export const voteKeyFn = (vote: Vote) =>

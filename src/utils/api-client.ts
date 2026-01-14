@@ -8,6 +8,49 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+const SESSION_ID_KEY = "heard_session_id";
+
+export const getSessionId = (): string | null => {
+  try {
+    return localStorage.getItem(SESSION_ID_KEY);
+  } catch {
+    return null;
+  }
+};
+
+export const setSessionId = (id: string): void => {
+  try {
+    localStorage.setItem(SESSION_ID_KEY, id);
+  } catch (error) {
+    console.error("Failed to store session ID:", error);
+  }
+};
+
+export const clearSessionId = (): void => {
+  try {
+    localStorage.removeItem(SESSION_ID_KEY);
+  } catch (error) {
+    console.error("Failed to clear session ID:", error);
+  }
+};
+
+type HeadersDict = Record<string, string>;
+
+const buildHeaders = (extraHeaders?: HeadersDict): HeadersDict => {
+  const sessionId = getSessionId();
+  const headers: HeadersDict = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${publicAnonKey}`,
+    ...extraHeaders,
+  };
+  
+  if (sessionId) {
+    headers["X-Session-Id"] = sessionId;
+  }
+  
+  return headers;
+};
+
 export class BaseApiClient {
   protected async request<T>(
     endpoint: string,
@@ -18,11 +61,7 @@ export class BaseApiClient {
         `${API_BASE_URL}${endpoint}`,
         {
           ...options,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${publicAnonKey}`,
-            ...options.headers,
-          },
+          headers: buildHeaders(options.headers as HeadersDict),
         },
       );
 
@@ -49,36 +88,24 @@ export class BaseApiClient {
     }
   }
 
-  async get(endpoint: string, headers?: Record<string, string>) {
+  async get(endpoint: string, headers?: HeadersDict) {
     return fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${publicAnonKey}`,
-        ...headers,
-      },
+      headers: buildHeaders(headers),
     });
   }
 
-  async post(endpoint: string, body?: any, headers?: Record<string, string>) {
+  async post(endpoint: string, body?: any, headers?: HeadersDict) {
     return fetch(`${API_BASE_URL}${endpoint}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${publicAnonKey}`,
-        ...headers,
-      },
+      headers: buildHeaders(headers),
       body: body ? JSON.stringify(body) : undefined,
     });
   }
 
-  async patch(endpoint: string, body?: any, headers?: Record<string, string>) {
+  async patch(endpoint: string, body?: any, headers?: HeadersDict) {
     return fetch(`${API_BASE_URL}${endpoint}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${publicAnonKey}`,
-        ...headers,
-      },
+      headers: buildHeaders(headers),
       body: body ? JSON.stringify(body) : undefined,
     });
   }

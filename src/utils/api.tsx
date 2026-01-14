@@ -15,7 +15,7 @@ import {
   type NewDebateRoom,
   type VoteType,
 } from "../types";
-import { FlyerVoteResponse, RoomStatusResponse } from "../types/api-responses";
+import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
   BaseApiClient,
   API_BASE_URL,
@@ -45,7 +45,7 @@ class ApiClient extends BaseApiClient {
   }
 
   async signIn(email: string, password: string) {
-    return this.request<{ user: UserSession }>("/auth/signin", {
+    return this.request<UserSessionResponse>("/auth/signin", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
@@ -59,7 +59,7 @@ class ApiClient extends BaseApiClient {
   }
 
   async verifyMagicLink(token: string) {
-    return this.request<{ user: UserSession }>("/auth/verify-magic-link", {
+    return this.request<UserSessionResponse>("/auth/verify-magic-link", {
       method: "POST",
       body: JSON.stringify({ token }),
     });

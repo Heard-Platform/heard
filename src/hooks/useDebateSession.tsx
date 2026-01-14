@@ -5,6 +5,7 @@ import {
   setUserId,
   clearUserId,
 } from "../utils/api";
+import { setSessionId, clearSessionId } from "../utils/api-client";
 import type {
   UserSession,
   DebateRoom,
@@ -112,6 +113,9 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
             if (response.success && response.data) {
               user = response.data.user;
               setUserId(user.id);
+              if (response.data.sessionId) {
+                setSessionId(response.data.sessionId);
+              }
             } else {
               throw new Error(
                 response.error || "Failed to sign in",
@@ -622,6 +626,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     setRoomStatements({});
     setError(null);
     clearUserId();
+    clearSessionId();
   }, []);
 
   // Initialize on mount
