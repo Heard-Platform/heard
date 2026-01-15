@@ -47,6 +47,7 @@ export function QRScanResultDialogStory() {
     },
   };
 
+  // @ts-ignore
   const currentScenario = scenarios[scenario];
 
   return (

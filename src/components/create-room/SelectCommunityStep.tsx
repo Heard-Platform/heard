@@ -70,6 +70,7 @@ export function SelectCommunityStep({
   const sortedSubHeards = [...subHeards].sort((a, b) => {
     if (a.name === defaultSubHeard) return -1;
     if (b.name === defaultSubHeard) return 1;
+    // @ts-ignore
     return b.count - a.count; // Otherwise sort by count
   });
 

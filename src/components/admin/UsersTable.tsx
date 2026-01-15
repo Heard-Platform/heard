@@ -30,7 +30,7 @@ export function UsersTable({ users, adminKey, onUserUpdate }: UsersTableProps) {
             <Checkbox 
               id="hide-test-users"
               checked={hideTestUsers}
-              onCheckedChange={(checked) => setHideTestUsers(checked as boolean)}
+              onCheckedChange={(checked: boolean) => setHideTestUsers(checked)}
             />
             <Label htmlFor="hide-test-users" className="cursor-pointer">
               Hide test users
@@ -40,7 +40,7 @@ export function UsersTable({ users, adminKey, onUserUpdate }: UsersTableProps) {
             <Checkbox 
               id="hide-anon-users"
               checked={hideAnonUsers}
-              onCheckedChange={(checked) => setHideAnonUsers(checked as boolean)}
+              onCheckedChange={(checked: boolean) => setHideAnonUsers(checked)}
             />
             <Label htmlFor="hide-anon-users" className="cursor-pointer">
               Hide anon users
@@ -83,7 +83,7 @@ export function UsersTable({ users, adminKey, onUserUpdate }: UsersTableProps) {
                 <td className="p-3 text-center">
                   <Checkbox
                     checked={user.isTestUser || false}
-                    onCheckedChange={(checked) => onUserUpdate(user.id, checked as boolean)}
+                    onCheckedChange={(checked: boolean) => onUserUpdate(user.id, checked)}
                   />
                 </td>
               </tr>

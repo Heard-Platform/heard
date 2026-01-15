@@ -179,6 +179,7 @@ export function FunSheet({
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <LeftIcon
+                // @ts-ignore
                 className={`w-6 h-6 ${theme.leftIconColor || theme.iconColor}`}
               />
             </motion.div>
