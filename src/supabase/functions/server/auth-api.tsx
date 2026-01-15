@@ -414,8 +414,14 @@ app.post(
         return c.json({ error: result.error }, result.status);
       }
 
+      const sessionResult = await createSessionForUser(result.user.id);
+      if ("error" in sessionResult) {
+        return c.json({ error: sessionResult.error }, sessionResult.status);
+      }
+
       return c.json({
-        user: result.user,
+        user: sessionResult.user,
+        sessionId: sessionResult.sessionId,
         isReturningUser: false,
       });
     } catch (error) {

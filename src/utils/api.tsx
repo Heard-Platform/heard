@@ -39,7 +39,7 @@ class ApiClient extends BaseApiClient {
 
   // Authentication
   async signUp(nickname: string, email: string, password: string) {
-    return this.request<{ user: UserSession }>("/auth/signup", {
+    return this.request<UserSessionResponse>("/auth/signup", {
       method: "POST",
       body: JSON.stringify({ nickname, email, password }),
     });

@@ -153,6 +153,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
             if (response.success && response.data) {
               user = response.data.user;
               setUserId(user.id);
+              setSessionId(response.data.sessionId);
             } else {
               throw new Error(
                 response.error || "Failed to create account",
