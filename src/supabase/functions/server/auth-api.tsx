@@ -62,6 +62,36 @@ export const validateSessionId = async (sessionId: string): Promise<{ valid: boo
   }
 };
 
+const createSessionForUser = async (userId: string) => {
+  const user = await getUser(userId);
+
+  if (!user) {
+    return { error: "User not found", status: 404 };
+  }
+
+  user.lastActive = Date.now();
+  await saveUserSession(user);
+
+  const session = await createSession(user.id);
+
+  const { passwordHash: _, ...userWithoutPassword } = user;
+  return { user: userWithoutPassword, sessionId: session.id };
+};
+
+const updateUserLastActive = async (userId: string) => {
+  const user = await getUser(userId);
+
+  if (!user) {
+    return { error: "User not found", status: 404 };
+  }
+
+  user.lastActive = Date.now();
+  await saveUserSession(user);
+
+  const { passwordHash: _, ...userWithoutPassword } = user;
+  return { user: userWithoutPassword };
+};
+
 export const getUserSession = async (
   userId: string,
 ): Promise<UserSession | null> => {
@@ -441,16 +471,13 @@ app.post(
         );
       }
 
-      user.lastActive = Date.now();
-      await saveUserSession(user);
-
-      const session = await createSession(user.id);
-
-      const { passwordHash: _, ...userWithoutPassword } = user;
+      const result = await createSessionForUser(user.id);
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status);
+      }
 
       return c.json({
-        user: userWithoutPassword,
-        sessionId: session.id,
+        ...result,
         isReturningUser: true,
       });
     } catch (error) {
@@ -785,21 +812,14 @@ app.post(
         return c.json({ error: "Magic link has expired" }, 401);
       }
 
-      const user = await getUser(userId);
-
-      if (!user) {
-        return c.json({ error: "User not found" }, 404);
-      }
-
       await deleteMagicLink(token);
 
-      user.lastActive = Date.now();
-      await saveUserSession(user);
+      const result = await createSessionForUser(userId);
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status);
+      }
 
-      const session = await createSession(user.id);
-
-      const { passwordHash: _, ...userWithoutPassword } = user;
-      return c.json({ user: userWithoutPassword, sessionId: session.id });
+      return c.json(result);
     } catch (error) {
       console.error("Error verifying magic link:", error);
       return c.json({ error: "Failed to verify magic link" }, 500);
@@ -807,4 +827,28 @@ app.post(
   },
 );
 
+app.post(
+  "/make-server-f1a393b4/auth/migrate-session",
+  async (c: any) => {
+    try {
+      const { userId } = await c.req.json();
+
+      if (!userId) {
+        return c.json({ error: "User ID is required" }, 400);
+      }
+
+      const result = await createSessionForUser(userId);
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status);
+      }
+
+      return c.json(result);
+    } catch (error) {
+      console.error("Error migrating session:", error);
+      return c.json({ error: "Failed to migrate session" }, 500);
+    }
+  },
+);
+
 export { app as authApi };
+export { updateUserLastActive };

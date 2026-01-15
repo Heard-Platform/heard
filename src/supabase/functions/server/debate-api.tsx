@@ -18,6 +18,7 @@ import { getUserMemberships } from "./membership-utils.tsx";
 import {
   getUserSession,
   sendWelcomeEmail,
+  updateUserLastActive,
 } from "./auth-api.tsx";
 import { generateId, getFrontendUrl } from "./utils.tsx";
 import type {
@@ -806,19 +807,13 @@ app.get(
   async (c: any) => {
     try {
       const userId = c.req.param("userId");
-      const user = await getUserSession(userId);
-
-      if (!user) {
-        return c.json({ error: "User session not found" }, 404);
+      
+      const result = await updateUserLastActive(userId);
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status);
       }
 
-      // Update last active
-      user.lastActive = Date.now();
-      await saveUserSession(user);
-
-      // Return user without password hash
-      const { passwordHash: _, ...userWithoutPassword } = user;
-      return c.json({ user: userWithoutPassword });
+      return c.json(result);
     } catch (error) {
       console.error("Error fetching user session:", error);
       return c.json(

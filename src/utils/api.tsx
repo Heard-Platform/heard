@@ -22,6 +22,7 @@ import {
   ApiResponse,
 } from "./api-client";
 import { publicAnonKey } from "./supabase/info";
+export { getSessionId, setSessionId, clearSessionId } from "./api-client";
 
 class ApiClient extends BaseApiClient {
   // User management
@@ -88,6 +89,13 @@ class ApiClient extends BaseApiClient {
     return this.request("/auth/reset-password", {
       method: "POST",
       body: JSON.stringify({ token, newPassword }),
+    });
+  }
+
+  async migrateSession(userId: string) {
+    return this.request<UserSessionResponse>("/auth/migrate-session", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
     });
   }
 

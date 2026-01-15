@@ -4,8 +4,10 @@ import {
   getUserId,
   setUserId,
   clearUserId,
+  getSessionId,
+  setSessionId,
+  clearSessionId,
 } from "../utils/api";
-import { setSessionId, clearSessionId } from "../utils/api-client";
 import type {
   UserSession,
   DebateRoom,
@@ -99,9 +101,29 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
         let user = providedUser || null;
 
         if (!user && userId) {
-          const response = await api.getUser(userId);
-          if (response.success && response.data) {
-            user = response.data.user;
+          const sessionId = getSessionId();
+          
+          if (!sessionId) {
+            console.log("No session ID found, migrating legacy user to new session system");
+            const migrationResponse = await api.migrateSession(userId);
+            if (migrationResponse.success && migrationResponse.data) {
+              user = migrationResponse.data.user;
+              if (migrationResponse.data.sessionId) {
+                setSessionId(migrationResponse.data.sessionId);
+                console.log("Session migration successful");
+              }
+            } else {
+              console.error("Failed to migrate session, fetching user without session");
+              const response = await api.getUser(userId);
+              if (response.success && response.data) {
+                user = response.data.user;
+              }
+            }
+          } else {
+            const response = await api.getUser(userId);
+            if (response.success && response.data) {
+              user = response.data.user;
+            }
           }
         }
 
