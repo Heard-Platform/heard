@@ -1,7 +1,7 @@
 import { AnalysisMetrics } from "./analysis-utils.tsx";
 import { ClusterConsensus } from "./cluster-analysis.tsx";
 
-export interface UserSession {
+export interface User {
   id: string;
   nickname: string;
   email: string;

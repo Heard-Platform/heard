@@ -2,7 +2,7 @@
 import { getAllRecords } from "./db-utils.ts";
 import * as kv from "./kv_store.tsx";
 import {
-  type UserSession,
+  type User,
   type Vote,
   type Statement,
   type DebateRoom,
@@ -93,33 +93,33 @@ export const bulkUpsert = async (
  * Entity-specific helpers for common KV operations
  */
 
-export const userKeyFn = (user: UserSession) =>
+export const userKeyFn = (user: User) =>
   `user:${user.id}`;
 
 export const getUser = async (userId: string) => {
-  return getParsedKvData<UserSession>(`user:${userId}`);
+  return getParsedKvData<User>(`user:${userId}`);
 };
 
-export const getAllRealUsers = async (): Promise<UserSession[]> => {
-  const allUsers = await getAllRecords<UserSession>("user:");
+export const getAllRealUsers = async (): Promise<User[]> => {
+  const allUsers = await getAllRecords<User>("user:");
   return allUsers.filter(user => !user.isTestUser);
 };
 
-export const getDevUsers = async (): Promise<UserSession[]> => {
-  const allUsers = await getAllRecords<UserSession>("user:");
+export const getDevUsers = async (): Promise<User[]> => {
+  const allUsers = await getAllRecords<User>("user:");
   return allUsers.filter(user => user.isDeveloper);
 };
 
-export const saveUser = async (user: UserSession) => {
+export const saveUser = async (user: User) => {
   await kv.set(userKeyFn(user), JSON.stringify(user));
 };
 
-export const updateUserField = async <K extends keyof UserSession>(
+export const updateUserField = async <K extends keyof User>(
   userId: string,
   field: K,
-  value: UserSession[K],
+  value: User[K],
 ) => {
-  const user = await getParsedKvData<UserSession>(`user:${userId}`);
+  const user = await getParsedKvData<User>(`user:${userId}`);
   if (!user) {
     throw new Error(`User ${userId} not found`);
   }

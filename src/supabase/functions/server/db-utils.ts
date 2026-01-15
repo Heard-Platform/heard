@@ -1,5 +1,5 @@
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
-import { Statement, UserSession } from "./types.tsx";
+import { Statement } from "./types.tsx";
 import { parseKvDataArray } from "./kv-utils.tsx";
 
 export const TABLE_NAME = "kv_store_f1a393b4";

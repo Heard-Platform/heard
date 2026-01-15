@@ -1,6 +1,5 @@
-import * as kv from "./kv_store.tsx";
 import { saveUserSession } from "./auth-api.tsx";
-import type { UserSession } from "./types.tsx";
+import type { User } from "./types.tsx";
 import { createClientFromEnv } from "./db-utils.ts";
 import { getAllRealUsers } from "./kv-utils.tsx";
 
@@ -16,7 +15,7 @@ interface MigrationStats {
   errors: Array<{ userId: string; error: string }>;
 }
 
-async function migrateAnonymousUser(user: UserSession): Promise<{ success: boolean; error?: string }> {
+async function migrateAnonymousUser(user: User): Promise<{ success: boolean; error?: string }> {
   try {
     const { data: anonData, error } = await supabase.auth.signInAnonymously();
     
@@ -38,7 +37,7 @@ async function migrateAnonymousUser(user: UserSession): Promise<{ success: boole
   }
 }
 
-async function migrateFullAccountUser(user: UserSession): Promise<{ success: boolean; error?: string }> {
+async function migrateFullAccountUser(user: User): Promise<{ success: boolean; error?: string }> {
   try {
     const { data: authData, error: createError } = await supabase.auth.admin.createUser({
       email: user.email,

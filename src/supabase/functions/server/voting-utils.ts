@@ -1,4 +1,4 @@
-import type { Vote, Statement, UserSession, VoteType } from "./types.tsx";
+import type { Vote, Statement, User, VoteType } from "./types.tsx";
 import { saveStatement, saveVote, getVotesForStatement, deleteVote } from "./kv-utils.tsx";
 import { getByPrefixParsed } from "./kv-utils.tsx";
 import { getUserSession, saveUserSession } from "./auth-api.tsx";
@@ -47,7 +47,7 @@ type ProcessVoteFailure = {
 type ProcessVoteSuccess = {
   success: true;
   statement: Statement;
-  user: UserSession;
+  user: User;
   pointsEarned: number;
   userVote: VoteType | null;
 };
@@ -146,7 +146,7 @@ export const processVote = async (
 
     pointsEarned = 10;
 
-    const allUsers = await getByPrefixParsed<UserSession>("user:");
+    const allUsers = await getByPrefixParsed<User>("user:");
     const statementAuthorUser = allUsers.find(
       (u) => u.id === statement.author,
     );

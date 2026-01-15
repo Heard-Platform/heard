@@ -22,7 +22,7 @@ import {
 } from "./auth-api.tsx";
 import { generateId, getFrontendUrl } from "./utils.tsx";
 import type {
-  UserSession, Statement,
+  User, Statement,
   Vote,
   Phase,
   SubPhase,
@@ -323,7 +323,7 @@ const getPhaseChangeNotificationContent = (
 
 // Generate HTML email for phase change notifications
 const getPhaseChangeEmailHtml = (
-  participant: UserSession,
+  participant: User,
   room: DebateRoom,
   notification: {
     subject: string;
@@ -391,7 +391,7 @@ const getPhaseChangeEmailHtml = (
 
 // Generate text email for phase change notifications
 const getPhaseChangeEmailText = (
-  participant: UserSession,
+  participant: User,
   room: DebateRoom,
   notification: {
     subject: string;
@@ -420,7 +420,7 @@ Don't want to miss future updates? HEARD will notify you when each phase begins 
   `.trim();
 };
 
-const saveUserSession = async (session: UserSession) => {
+const saveUserSession = async (session: User) => {
   await kv.set(`user:${session.id}`, JSON.stringify(session));
   // Also store by email for lookup
   await kv.set(`user_email:${session.email}`, session.id);
@@ -428,7 +428,7 @@ const saveUserSession = async (session: UserSession) => {
 
 const getUserByEmail = async (
   email: string,
-): Promise<UserSession | null> => {
+): Promise<User | null> => {
   try {
     const normalizedEmail = email.trim().toLowerCase();
     const userId = await kv.get(
@@ -755,7 +755,7 @@ app.post(
       const userId = generateId();
 
       // @ts-ignore
-      const userSession: UserSession = {
+      const userSession: User = {
         id: userId,
         nickname: nickname.substring(0, 20), // Ensure max length
         email: normalizedEmail,
@@ -1673,7 +1673,7 @@ app.post(
       await saveDebateRoom(debateRoom);
 
       // Create fake users
-      const fakeUsers: UserSession[] = [
+      const fakeUsers: User[] = [
         {
           id: "test_user_1",
           nickname: "MetroCommuter",
@@ -2474,7 +2474,7 @@ app.post(
       await saveDebateRoom(debateRoom);
 
       // Create fake users with perspectives on DC library access
-      const fakeUsers: UserSession[] = [
+      const fakeUsers: User[] = [
         {
           id: "rt_user_1",
           nickname: "AdamsOrganResident",

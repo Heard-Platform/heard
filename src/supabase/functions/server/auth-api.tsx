@@ -6,7 +6,7 @@ import {
 } from "./password-utils.tsx";
 import { deleteMagicLink, getAllDebates, getMagicLink, getParsedKvData, getSession, getUser, saveMagicLink, saveSession } from "./kv-utils.tsx";
 import { getFrontendUrl } from "./utils.tsx";
-import type { Session, UserSession } from "./types.tsx";
+import type { Session, User } from "./types.tsx";
 import { Hono } from "npm:hono";
 import { saveDebateRoom } from "./debate-api.tsx";
 import { getMagicLinkEmail } from "./email-templates.tsx";
@@ -94,9 +94,9 @@ const updateUserLastActive = async (userId: string) => {
 
 export const getUserSession = async (
   userId: string,
-): Promise<UserSession | null> => {
+): Promise<User | null> => {
   try {
-    const user = await getParsedKvData<UserSession>(
+    const user = await getParsedKvData<User>(
       `user:${userId}`,
     );
     if (!user) return null;
@@ -115,14 +115,14 @@ export const getUserSession = async (
   }
 };
 
-export const saveUserSession = async (session: UserSession) => {
+export const saveUserSession = async (session: User) => {
   await kv.set(`user:${session.id}`, JSON.stringify(session));
   await kv.set(`user_email:${session.email}`, session.id);
 };
 
 const getUserByEmail = async (
   email: string,
-): Promise<UserSession | null> => {
+): Promise<User | null> => {
   try {
     const normalizedEmail = email.trim().toLowerCase();
     const userId = await kv.get(
@@ -174,7 +174,7 @@ const processAccountSetup = async (
   email: string,
   password: string,
   existingUserId?: string,
-): Promise<{ user: Omit<UserSession, "passwordHash">; error?: never, status?: never } | { error: string; status: number; user?: never }> => {
+): Promise<{ user: Omit<User, "passwordHash">; error?: never, status?: never } | { error: string; status: number; user?: never }> => {
   const normalizedEmail = email.trim().toLowerCase();
   
   const existingUser = await getUserByEmail(normalizedEmail);
@@ -187,7 +187,7 @@ const processAccountSetup = async (
 
   const passwordHash = await hashPassword(password);
 
-  let userSession: UserSession;
+  let userSession: User;
   
   if (existingUserId) {
     const user = await getUserSession(existingUserId);
@@ -224,9 +224,9 @@ export const createUserAccount = async (
   email: string,
   passwordHash: string,
   isAnonymous: boolean = false,
-): Promise<UserSession> => {
+): Promise<User> => {
   const userId = generateId();
-  const userSession: UserSession = {
+  const userSession: User = {
     id: userId,
     nickname: nickname.substring(0, 20),
     email: email.trim().toLowerCase(),
@@ -245,7 +245,7 @@ export const createUserAccount = async (
   return userSession;
 };
 
-export const createAnonymousUser = async (): Promise<UserSession> => {
+export const createAnonymousUser = async (): Promise<User> => {
   const anonymousNickname = "Anonymous User";
   const anonymousEmail = `anon-${generateId()}@heard.anonymous`;
 
@@ -418,7 +418,7 @@ app.post(
       if ("error" in userResult) {
         return c.json({ error: userResult.error }, userResult.status);
       }
-      
+
       return c.json({
         user: userResult.user,
         sessionId: userResult.sessionId,
