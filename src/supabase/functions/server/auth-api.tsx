@@ -62,7 +62,7 @@ export const validateSessionId = async (sessionId: string): Promise<{ valid: boo
   }
 };
 
-const createSessionForUser = async (userId: string) => {
+const getUserAndNewSession = async (userId: string) => {
   const user = await getUser(userId);
 
   if (!user) {
@@ -409,19 +409,19 @@ app.post(
         return c.json({ error: validationError.error }, validationError.status);
       }
 
-      const result = await processAccountSetup(nickname, email, password);
-      if ("error" in result) {
-        return c.json({ error: result.error }, result.status);
+      const setupResult = await processAccountSetup(nickname, email, password);
+      if ("error" in setupResult) {
+        return c.json({ error: setupResult.error }, setupResult.status);
       }
 
-      const sessionResult = await createSessionForUser(result.user.id);
-      if ("error" in sessionResult) {
-        return c.json({ error: sessionResult.error }, sessionResult.status);
+      const userResult = await getUserAndNewSession(setupResult.user.id);
+      if ("error" in userResult) {
+        return c.json({ error: userResult.error }, userResult.status);
       }
-
+      
       return c.json({
-        user: sessionResult.user,
-        sessionId: sessionResult.sessionId,
+        user: userResult.user,
+        sessionId: userResult.sessionId,
         isReturningUser: false,
       });
     } catch (error) {
@@ -477,7 +477,7 @@ app.post(
         );
       }
 
-      const result = await createSessionForUser(user.id);
+      const result = await getUserAndNewSession(user.id);
       if ("error" in result) {
         return c.json({ error: result.error }, result.status);
       }
@@ -820,7 +820,7 @@ app.post(
 
       await deleteMagicLink(token);
 
-      const result = await createSessionForUser(userId);
+      const result = await getUserAndNewSession(userId);
       if ("error" in result) {
         return c.json({ error: result.error }, result.status);
       }
@@ -843,7 +843,7 @@ app.post(
         return c.json({ error: "User ID is required" }, 400);
       }
 
-      const result = await createSessionForUser(userId);
+      const result = await getUserAndNewSession(userId);
       if ("error" in result) {
         return c.json({ error: result.error }, result.status);
       }
