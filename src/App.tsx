@@ -119,28 +119,6 @@ function AppContent() {
     toast.success("Signed in successfully!");
   };
 
-  const handleAnonymousJoinDev = async (anonymousLinkIdFromUrl: string) => {
-  try {
-    setIsJoiningAnonymously(true);
-    const response = await api.joinViaAnonymousLink(anonymousLinkIdFromUrl) as any;
-    if (response.success && response.data) {
-      const { user: anonUser, roomId, subHeard } = response.data;
-      setUserId(anonUser.id);
-      await initializeUser("", "", "", false, anonUser);
-      if (subHeard) {
-        setCurrentSubHeard(subHeard);
-      }
-      setTargetRoomId(roomId);
-    } else {
-      console.error("Failed to join via anonymous link:", response.error);
-      setIsJoiningAnonymously(false);
-    }
-  } catch (error) {
-    console.error("Error joining via anonymous link:", error);
-    setIsJoiningAnonymously(false);
-  }
-};
-
   const handleFlyerJoin = async (flyerData: { flyerId: string; statementId: string; vote: VoteType }) => {
     try {
       setIsJoiningAnonymously(true);
@@ -491,7 +469,6 @@ function AppContent() {
           joiningRoom={!!targetRoomId}
           onComplete={handleNicknameComplete}
           onForgotPassword={() => setShowPasswordReset(true)}
-          onJoinAnonymousLink={handleAnonymousJoinDev}
           onMagicLinkSuccess={handleMagicLinkSuccess}
         />
         <Toaster />

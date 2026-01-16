@@ -15,7 +15,6 @@ interface LandingPageProps {
     isSignIn: boolean,
   ) => void;
   onForgotPassword: () => void;
-  onJoinAnonymousLink: (anonymousLinkId: string) => void;
   onMagicLinkSuccess: (userId: string, userData: any) => void;
 }
 
@@ -32,7 +31,6 @@ export function LandingPage({
   joiningRoom,
   onComplete,
   onForgotPassword,
-  onJoinAnonymousLink,
   onMagicLinkSuccess,
 }: LandingPageProps) {
   const [showSignup, setShowSignup] = useState(false);

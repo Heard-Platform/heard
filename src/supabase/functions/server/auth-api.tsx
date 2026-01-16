@@ -649,68 +649,6 @@ app.post(
 );
 
 app.post(
-  "/make-server-f1a393b4/auth/join-anonymous-link",
-  async (c: any) => {
-    try {
-      const { anonymousLinkId } = await c.req.json();
-
-      if (!anonymousLinkId) {
-        return c.json({ error: "Anonymous link ID is required" }, 400);
-      }
-
-      const allDebates = await getAllDebates();
-      const debate = allDebates.find(
-        (room) => room.anonymousLinkId === anonymousLinkId
-      );
-
-      if (!debate) {
-        return c.json({ error: "Debate not found for this link" }, 404);
-      }
-
-      if (!debate.allowAnonymous) {
-        return c.json({ error: "This debate does not allow anonymous participants" }, 403);
-      }
-
-      console.log(
-        `Creating anonymous user via link ${anonymousLinkId} for debate ${debate.id}`,
-      );
-      const user = await createAnonymousUser();
-
-      if (!debate.participants.includes(user.id)) {
-        debate.participants.push(user.id);
-        await saveDebateRoom(debate);
-      }
-
-      user.currentRoomId = debate.id;
-      await saveUserSession(user);
-
-      if (debate.subHeard) {
-        const membershipKey = `subheard_member:${user.id}:${debate.subHeard}`;
-        const membershipData = {
-          userId: user.id,
-          subHeard: debate.subHeard,
-          joinedAt: Date.now(),
-        };
-        await kv.set(membershipKey, JSON.stringify(membershipData));
-        console.log(`Added anonymous user ${user.id} to subHeard ${debate.subHeard}`);
-      }
-
-      const { passwordHash: _, ...userWithoutPassword } = user;
-
-      return c.json({
-        user: userWithoutPassword,
-        roomId: debate.id,
-        subHeard: debate.subHeard || null,
-        isReturningUser: false,
-      });
-    } catch (error) {
-      console.error("Error joining via anonymous link:", error);
-      return c.json({ error: "Failed to join via anonymous link" }, 500);
-    }
-  },
-);
-
-app.post(
   "/make-server-f1a393b4/user/anonymous",
   async (c: any) => {
     try {
