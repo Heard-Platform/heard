@@ -49,19 +49,15 @@ import { UserHistory } from "./admin/UserHistory";
 import { UsersTable } from "./admin/UsersTable";
 import { DataFixes } from "./admin/DataFixes";
 import { Newsletter } from "./admin/Newsletter";
+import { safelyGetStorageItem } from "../utils/localStorage";
 
 interface AdminPanelProps {
   onExit?: () => void;
 }
 
 export function AdminPanel({ onExit }: AdminPanelProps) {
-  const [adminKey, setAdminKey] = useState(() => {
-    try {
-      return localStorage.getItem("devAdminKey") || "";
-    } catch {
-      return "";
-    }
-  });
+  const [adminKey, setAdminKey] =
+    useState(safelyGetStorageItem<string>("devAdminKey", ""));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [users, setUsers] = useState<UserSession[]>([]);
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);

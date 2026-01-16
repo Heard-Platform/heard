@@ -21,6 +21,7 @@ import {
   API_BASE_URL,
   ApiResponse,
 } from "./api-client";
+import { safelyGetStorageItem } from "./localStorage";
 import { publicAnonKey } from "./supabase/info";
 export { getSessionId, setSessionId, clearSessionId } from "./api-client";
 
@@ -665,7 +666,7 @@ export const api = new ApiClient();
 // Local storage helpers for user session
 export const getUserId = (): string | null => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("heard_user_id");
+  return safelyGetStorageItem<string | null>("heard_user_id", null);
 };
 
 export const setUserId = (userId: string) => {
@@ -680,7 +681,7 @@ export const clearUserId = () => {
 
 export const getRoomId = (): string | null => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("heard_room_id");
+  return safelyGetStorageItem<string | null>("heard_room_id", null);
 };
 
 export const setRoomId = (roomId: string) => {

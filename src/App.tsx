@@ -24,19 +24,10 @@ import {
   updateUrlForRoom
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
+import { safelyGetStorageItem } from "./utils/localStorage";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
-
-function getStoredDashboardState(): boolean {
-  try {
-    return (
-      localStorage.getItem("showAdminDashboard") === "true"
-    );
-  } catch {
-    return false;
-  }
-}
 
 function AppContent() {
   const [targetRoomId, setTargetRoomId] = useState<
@@ -48,20 +39,10 @@ function AppContent() {
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
   const [isJoiningAnonymously, setIsJoiningAnonymously] = useState(false);
   const [showComponentShowcase, setShowComponentShowcase] =
-    useState(() => {
-      try {
-        return (
-          localStorage.getItem("showComponentShowcase") ===
-          "true"
-        );
-      } catch {
-        return false;
-      }
-    });
+    useState(safelyGetStorageItem<boolean>("showComponentShowcase", false));
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [showAdminDashboard, setShowAdminDashboard] = useState(
-    getStoredDashboardState,
-  );
+  const [showAdminDashboard, setShowAdminDashboard] =
+    useState(safelyGetStorageItem<boolean>("showAdminDashboard", false));
   const [showDevTools, setShowDevTools] = useState(false);
   const [showPasswordReset, setShowPasswordReset] =
     useState(false);

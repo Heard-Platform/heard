@@ -18,6 +18,7 @@ import { YouTubeCardStory } from "../stories/YouTubeCard.story";
 import { IntroModalStory } from "../stories/IntroModal.story";
 import { DemographicsCardStory } from "../stories/DemographicsCard.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
+import { safelyGetStorageItem } from "../utils/localStorage";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -25,13 +26,8 @@ interface ComponentShowcaseProps {
 
 export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
   // Load active tab from localStorage
-  const getInitialTab = () => {
-    try {
-      return localStorage.getItem("showcaseActiveTab") || "results";
-    } catch {
-      return "results";
-    }
-  };
+  const getInitialTab = () =>
+    safelyGetStorageItem<string>("showcaseActiveTab", "results");
 
   const handleTabChange = (value: string) => {
     try {

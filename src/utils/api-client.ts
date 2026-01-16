@@ -1,3 +1,4 @@
+import { safelyGetStorageItem } from "./localStorage";
 import { projectId, publicAnonKey } from "./supabase/info";
 
 export const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
@@ -10,13 +11,8 @@ export interface ApiResponse<T> {
 
 const SESSION_ID_KEY = "heard_session_id";
 
-export const getSessionId = (): string | null => {
-  try {
-    return localStorage.getItem(SESSION_ID_KEY);
-  } catch {
-    return null;
-  }
-};
+export const getSessionId = (): string | null =>
+  safelyGetStorageItem<string | null>(SESSION_ID_KEY, null);
 
 export const setSessionId = (id: string): void => {
   try {
