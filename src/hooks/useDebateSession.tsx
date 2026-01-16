@@ -25,13 +25,10 @@ interface DebateSessionContextType {
   currentSubHeard: string | null;
   loading: boolean;
   error: string | null;
-  initializeUser: (
-    nickname?: string,
-    email?: string,
-    password?: string,
-    isSignIn?: boolean,
-    providedUser?: UserSession,
-  ) => Promise<UserSession | null>;
+  loadUserFromStorage: () => Promise<UserSession | null>;
+  setUserAndSession: (user: UserSession, sessionId: string) => Promise<UserSession | null>;
+  sendMagicLink: (email: string) => Promise<{ success: boolean; error?: string }>;
+  verifyMagicLink: (code: string) => Promise<{ success: boolean; user?: UserSession; error?: string }>;
   createRoom: (
     newDebate: NewDebateRoom,
     autoJoin?: boolean,
@@ -86,118 +83,80 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     Record<string, Statement[]>
   >({});
 
-  // Initialize user session
-  const initializeUser = useCallback(
-    async (
-      nickname?: string,
-      email?: string,
-      password?: string,
-      isSignIn?: boolean,
-      providedUser?: UserSession,
-    ) => {
-      try {
-        setError(null);
-        let userId = getUserId();
-        let user = providedUser || null;
+  const loadUserFromStorage = useCallback(async () => {
+    try {
+      setError(null);
+      const userId = getUserId();
+      const sessionId = getSessionId();
 
-        if (!user && userId) {
-          const sessionId = getSessionId();
-          
-          if (!sessionId) {
-            console.log("No session ID found, migrating legacy user to new session system");
-            const migrationResponse = await api.migrateSession(userId);
-            if (migrationResponse.success && migrationResponse.data) {
-              user = migrationResponse.data.user;
-              if (migrationResponse.data.sessionId) {
-                setSessionId(migrationResponse.data.sessionId);
-                console.log("Session migration successful");
-              }
-            } else {
-              console.error("Failed to migrate session, fetching user without session");
-              const response = await api.getUser(userId);
-              if (response.success && response.data) {
-                user = response.data.user;
-              }
-            }
-          } else {
-            const response = await api.getUser(userId);
-            if (response.success && response.data) {
-              user = response.data.user;
-            }
-          }
-        }
+      if (!userId) {
+        console.log("No user ID found in storage");
+        return null;
+      }
 
-        if (!user && email && password) {
-          // Use new authentication system
-          if (isSignIn) {
-            // Sign in existing user
-            const response = await api.signIn(email, password);
-            if (response.success && response.data) {
-              user = response.data.user;
-              setUserId(user.id);
-              if (response.data.sessionId) {
-                setSessionId(response.data.sessionId);
-              }
-            } else {
-              throw new Error(
-                response.error || "Failed to sign in",
-              );
-            }
-          } else if (nickname) {
-            // Sign up new user
-            const response = await api.signUp(
-              nickname,
-              email,
-              password,
-            );
-            if (response.success && response.data) {
-              user = response.data.user;
-              setUserId(user.id);
-              setSessionId(response.data.sessionId);
-            } else {
-              throw new Error(
-                response.error || "Failed to create account",
-              );
-            }
+      if (!sessionId) {
+        console.log("No session ID found, migrating legacy user to new session system");
+        const migrationResponse = await api.migrateSession(userId);
+        if (migrationResponse.success && migrationResponse.data) {
+          const user = migrationResponse.data.user;
+          if (migrationResponse.data.sessionId) {
+            setSessionId(migrationResponse.data.sessionId);
+            console.log("Session migration successful");
           }
-        } else if (!user && nickname && email) {
-          // Fallback to old system for backwards compatibility
-          const response = await api.createUser(
-            nickname,
-            email,
-          );
-          if (response.success && response.data) {
-            user = response.data.user;
-            setUserId(user.id);
-          } else {
-            throw new Error(
-              response.error || "Failed to create user",
-            );
-          }
-        }
-
-        if (user) {
           setUser(user);
-
-          // Track user activity
           api.trackActivity(user.id).catch((err) => {
             console.error("Failed to track activity:", err);
-            // Don't block user flow if tracking fails
           });
-
+          return user;
+        } else {
+          console.error("Failed to migrate session, fetching user without session");
+          const response = await api.getUser(userId);
+          if (response.success && response.data) {
+            const user = response.data.user;
+            setUser(user);
+            api.trackActivity(user.id).catch((err) => {
+              console.error("Failed to track activity:", err);
+            });
+            return user;
+          }
+        }
+      } else {
+        const response = await api.getUser(userId);
+        if (response.success && response.data) {
+          const user = response.data.user;
+          setUser(user);
+          api.trackActivity(user.id).catch((err) => {
+            console.error("Failed to track activity:", err);
+          });
           return user;
         }
-      } catch (err) {
-        const errorMsg =
-          err instanceof Error ? err.message : "Unknown error";
-        setError(errorMsg);
-        console.error("Failed to initialize user:", errorMsg);
       }
-      return null;
-    },
-    [],
-  );
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to load user from storage:", errorMsg);
+    }
+    return null;
+  }, []);
 
+  const setUserAndSession = useCallback(async (providedUser: UserSession, sessionId: string) => {
+    try {
+      setError(null);
+      setUser(providedUser);
+      setUserId(providedUser.id);
+      setSessionId(sessionId);
+      api.trackActivity(providedUser.id).catch((err) => {
+        console.error("Failed to track activity:", err);
+      });
+      
+      return providedUser;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to set user session:", errorMsg);
+    }
+    return null;
+  }, []);
   // Update user score from API response
   const updateUserScoreFromResponse = useCallback(
     (responseData: any) => {
@@ -214,6 +173,20 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     },
     [],
   );
+
+  const sendMagicLink = useCallback(async (email: string) => {
+    return await api.sendMagicLink(email);
+  }, []);
+
+  const verifyMagicLink = useCallback(async (code: string) => {
+    const response = await api.verifyMagicLink(code);
+    if (response.success && response.data) {
+      setUser(response.data.user);
+      setUserId(response.data.user.id);
+      setSessionId(response.data.sessionId);
+    }
+    return response;
+  }, []);
 
   // Create room (does not join)
   const createRoom = useCallback(
@@ -657,14 +630,13 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     const init = async () => {
       setLoading(true);
 
-      // Try to restore user session
-      await initializeUser();
+      await loadUserFromStorage();
 
       setLoading(false);
     };
 
     init();
-  }, [initializeUser]);
+  }, [loadUserFromStorage]);
 
   let returnObj = {
     user,
@@ -672,7 +644,10 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     currentSubHeard,
     loading,
     error,
-    initializeUser,
+    loadUserFromStorage,
+    setUserAndSession,
+    sendMagicLink,
+    verifyMagicLink,
     createRoom,
     joinRoom,
     submitStatement,
@@ -697,6 +672,17 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
   if (showcase) {
     returnObj = {
       ...returnObj,
+      sendMagicLink: async (email: string) => { 
+        console.log("[Showcase] sendMagicLink called"); 
+        return { success: true }; 
+      },
+      verifyMagicLink: async (code: string) => { 
+        console.log("[Showcase] verifyMagicLink called"); 
+        return { 
+          success: true, 
+          user: {} as UserSession 
+        }; 
+      },
       setRoomInactive: async () => { 
         console.log("[Showcase] setRoomInactive called"); 
         return true; 

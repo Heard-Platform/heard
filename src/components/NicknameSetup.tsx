@@ -5,105 +5,37 @@ import { Input } from "./ui/input";
 import { Card } from "./ui/card";
 import { Label } from "./ui/label";
 import {
-  UserPlus,
-  Sparkles,
-  LogIn,
-  Eye,
-  EyeOff,
-  ArrowLeft,
   Mail,
+  ArrowLeft,
+  Sparkles,
 } from "lucide-react";
-import { api } from "../utils/api";
 import { isValidEmail } from "../utils/validation";
+import { useDebateSession } from "../hooks/useDebateSession";
 
 interface NicknameSetupProps {
-  loading?: boolean;
-  error?: string;
-  joiningRoom?: boolean;
-  onForgotPassword?: () => void;
+  loading: boolean;
+  error: string;
+  joiningRoom: boolean;
   onBack: () => void;
-  onComplete: (
-    nickname: string,
-    email: string,
-    password: string,
-    isSignIn: boolean,
-  ) => void;
-  onMagicLinkSuccess: (userId: string, userData: any) => void;
+  onMagicLinkSuccess: () => void;
 }
 
 export function NicknameSetup({
-  loading = false,
+  loading,
   error,
-  joiningRoom = false,
-  onForgotPassword,
+  joiningRoom,
   onBack,
-  onComplete,
   onMagicLinkSuccess,
 }: NicknameSetupProps) {
-  const [mode, setMode] = useState<"signin" | "signup">(
-    "signup",
-  );
-  const [nickname, setNickname] = useState("");
+  const { sendMagicLink, verifyMagicLink } = useDebateSession();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isValid, setIsValid] = useState(false);
   const [sendingMagicLink, setSendingMagicLink] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [magicCode, setMagicCode] = useState("");
   const [verifyingCode, setVerifyingCode] = useState(false);
 
-  const handleNicknameChange = (value: string) => {
-    // Allow letters, numbers, spaces, and common symbols
-    const sanitized = value
-      .replace(/[^a-zA-Z0-9\s\-_.]/g, "")
-      .substring(0, 20);
-    setNickname(sanitized);
-    validateForm(sanitized, email, password);
-  };
-
   const handleEmailChange = (value: string) => {
     setEmail(value);
-    validateForm(nickname, value, password);
-  };
-
-  const handlePasswordChange = (value: string) => {
-    setPassword(value);
-    validateForm(nickname, email, value);
-  };
-
-  const validateForm = (
-    nicknameVal: string,
-    emailVal: string,
-    passwordVal: string,
-  ) => {
-    const emailValid = isValidEmail(emailVal.trim());
-    const passwordValid = passwordVal.length >= 6;
-
-    if (mode === "signup") {
-      const nicknameValid = nicknameVal.trim().length >= 2;
-      setIsValid(nicknameValid && emailValid && passwordValid);
-    } else {
-      setIsValid(emailValid && passwordValid);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isValid && !loading) {
-      onComplete(
-        nickname.trim(),
-        email.trim(),
-        password,
-        mode === "signin",
-      );
-    }
-  };
-
-  const toggleMode = () => {
-    setMode(mode === "signin" ? "signup" : "signin");
-    // Revalidate when switching modes
-    validateForm(nickname, email, password);
   };
 
   const handleSendMagicLink = async () => {
@@ -114,7 +46,7 @@ export function NicknameSetup({
 
     setSendingMagicLink(true);
     try {
-      const res = await api.sendMagicLink(email.trim());
+      const res = await sendMagicLink(email.trim());
       if (res.success) {
         setMagicLinkSent(true);
       } else {
@@ -135,9 +67,9 @@ export function NicknameSetup({
 
     setVerifyingCode(true);
     try {
-      const res = await api.verifyMagicLink(magicCode.toUpperCase());
-      if (res.success && res.data?.user) {
-        onMagicLinkSuccess(res.data.user.id, res.data.user);
+      const res = await verifyMagicLink(magicCode.toUpperCase());
+      if (res.success && res.user) {
+        onMagicLinkSuccess();
       } else {
         alert(res.error || "Invalid or expired code");
       }
@@ -148,17 +80,6 @@ export function NicknameSetup({
       setVerifyingCode(false);
     }
   };
-
-  const suggestions = [
-    "DebateMaster",
-    "BridgeBuilder",
-    "CruxHunter",
-    "VoiceOfReason",
-    "SpicyTaker",
-    "Synthesizer",
-    "TruthSeeker",
-    "Diplomat",
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
@@ -183,28 +104,28 @@ export function NicknameSetup({
               transition={{ duration: 2, repeat: Infinity }}
               className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center"
             >
-              {mode === "signup" ? (
-                <UserPlus className="w-8 h-8 text-white" />
-              ) : (
-                <LogIn className="w-8 h-8 text-white" />
-              )}
+              <Mail className="w-8 h-8 text-white" />
             </motion.div>
 
             <h1 className="text-2xl font-bold">
               {joiningRoom
                 ? "Join the Debate!"
-                : mode === "signup"
-                  ? "Welcome to HEARD!"
-                  : "Welcome Back!"}
+                : "Welcome to Heard!"}
             </h1>
-            {joiningRoom && (
-              <p className="text-muted-foreground">
-                Sign in or create an account to join this debate!
+            <p className="text-muted-foreground text-sm">
+              {joiningRoom
+                ? "Enter your email to join this debate!"
+                : "Enter your email to get started!"}
+            </p>
+            <div className="p-3 bg-purple-50 border border-purple-200 rounded-md">
+              <p className="text-xs text-purple-900 leading-relaxed">
+                We'll email you a magic link to sign in or create your account.
+                You can also copy the code from the email and paste it here to continue.
               </p>
-            )}
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Your Email</Label>
               <Input
@@ -215,85 +136,9 @@ export function NicknameSetup({
                   handleEmailChange(e.target.value)
                 }
                 placeholder="Enter your email..."
-                disabled={loading}
+                disabled={loading || magicLinkSent}
                 autoComplete="email"
               />
-            </div>
-
-            {mode === "signup" && (
-              <div className="space-y-2">
-                <Label htmlFor="nickname">
-                  Your Debate Nickname
-                </Label>
-                <Input
-                  id="nickname"
-                  type="text"
-                  value={nickname}
-                  onChange={(e) =>
-                    handleNicknameChange(e.target.value)
-                  }
-                  placeholder="Enter a nickname..."
-                  disabled={loading}
-                  autoComplete="username"
-                />
-                <p className="text-xs text-muted-foreground">
-                  2-20 characters • Letters, numbers, and basic
-                  symbols only
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) =>
-                    handlePasswordChange(e.target.value)
-                  }
-                  placeholder={
-                    mode === "signup"
-                      ? "Create a password..."
-                      : "Enter your password..."
-                  }
-                  disabled={loading}
-                  autoComplete={
-                    mode === "signup"
-                      ? "new-password"
-                      : "current-password"
-                  }
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  disabled={loading}
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {mode === "signup"
-                  ? "At least 6 characters"
-                  : ""}
-              </p>
-              {mode === "signin" && onForgotPassword && (
-                <button
-                  type="button"
-                  onClick={onForgotPassword}
-                  className="text-xs text-purple-600 hover:text-purple-700 hover:underline"
-                  disabled={loading}
-                >
-                  Forgot password?
-                </button>
-              )}
             </div>
 
             {error && (
@@ -306,130 +151,43 @@ export function NicknameSetup({
               </motion.div>
             )}
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!isValid || loading}
-            >
-              {loading ? (
-                <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    className="w-4 h-4 mr-2"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                  </motion.div>
-                  {mode === "signup"
-                    ? "Creating Account..."
-                    : "Signing In..."}
-                </>
-              ) : (
-                <>
-                  {mode === "signup" ? (
-                    <>
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      {joiningRoom
-                        ? "Create Account & Join!"
-                        : "Create Account"}
-                    </>
-                  ) : (
-                    <>
-                      <LogIn className="w-4 h-4 mr-2" />
-                      {joiningRoom
-                        ? "Sign In & Join!"
-                        : "Sign In"}
-                    </>
-                  )}
-                </>
-              )}
-            </Button>
-
-            {mode === "signin" && (
-              <>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Or
-                    </span>
-                  </div>
+            {magicLinkSent ? (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-3"
+              >
+                <div className="p-4 bg-green-50 border border-green-200 rounded-md text-center">
+                  <Mail className="w-8 h-8 mx-auto text-green-600 mb-2" />
+                  <p className="text-sm font-medium text-green-900">
+                    Magic link sent!
+                  </p>
+                  <p className="text-xs text-green-700 mt-1">
+                    Check your email and click the link to sign in
+                  </p>
                 </div>
-
-                {magicLinkSent ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-3"
-                  >
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-md text-center">
-                      <Mail className="w-8 h-8 mx-auto text-green-600 mb-2" />
-                      <p className="text-sm font-medium text-green-900">
-                        Magic link sent!
-                      </p>
-                      <p className="text-xs text-green-700 mt-1">
-                        Check your email and click the link to sign in
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="magicCode" className="text-xs text-center block">
-                        Or enter the 6-character code from your email:
-                      </Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="magicCode"
-                          type="text"
-                          value={magicCode}
-                          onChange={(e) => setMagicCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 6))}
-                          placeholder="ABC123"
-                          disabled={verifyingCode}
-                          className="text-center font-mono text-lg tracking-widest uppercase"
-                          maxLength={6}
-                        />
-                        <Button
-                          type="button"
-                          onClick={handleVerifyCode}
-                          disabled={magicCode.length !== 6 || verifyingCode}
-                        >
-                          {verifyingCode ? (
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{
-                                duration: 1,
-                                repeat: Infinity,
-                                ease: "linear",
-                              }}
-                            >
-                              <Sparkles className="w-4 h-4" />
-                            </motion.div>
-                          ) : (
-                            "Verify"
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    disabled={
-                      !isValidEmail(email.trim()) ||
-                      loading ||
-                      sendingMagicLink
-                    }
-                    onClick={handleSendMagicLink}
-                  >
-                    {sendingMagicLink ? (
-                      <>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="magicCode" className="text-xs text-center block">
+                    Or enter the 6-character code from your email:
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="magicCode"
+                      type="text"
+                      value={magicCode}
+                      onChange={(e) => setMagicCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 6))}
+                      placeholder="ABC123"
+                      disabled={verifyingCode}
+                      className="text-center font-mono text-lg tracking-widest uppercase"
+                      maxLength={6}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleVerifyCode}
+                      disabled={magicCode.length !== 6 || verifyingCode}
+                    >
+                      {verifyingCode ? (
                         <motion.div
                           animate={{ rotate: 360 }}
                           transition={{
@@ -437,60 +195,51 @@ export function NicknameSetup({
                             repeat: Infinity,
                             ease: "linear",
                           }}
-                          className="w-4 h-4 mr-2"
                         >
-                          <Mail className="w-4 h-4" />
+                          <Sparkles className="w-4 h-4" />
                         </motion.div>
-                        Sending Magic Link...
-                      </>
-                    ) : (
-                      <>
-                        <Mail className="w-4 h-4 mr-2" />
-                        Send Me a Magic Link
-                      </>
-                    )}
-                  </Button>
+                      ) : (
+                        "Verify"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <Button
+                type="button"
+                className="w-full"
+                disabled={
+                  !isValidEmail(email.trim()) ||
+                  loading ||
+                  sendingMagicLink
+                }
+                onClick={handleSendMagicLink}
+              >
+                {sendingMagicLink ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                      className="w-4 h-4 mr-2"
+                    >
+                      <Mail className="w-4 h-4" />
+                    </motion.div>
+                    Sending Magic Link...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="w-4 h-4 mr-2" />
+                    {joiningRoom ? "Send Magic Link & Join!" : "Send Me a Magic Link"}
+                  </>
                 )}
-              </>
+              </Button>
             )}
-          </form>
-
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={toggleMode}
-              disabled={loading}
-              className="text-sm text-muted-foreground hover:text-foreground underline"
-            >
-              {mode === "signup"
-                ? "Already have an account? Sign in"
-                : "Need an account? Sign up"}
-            </button>
           </div>
-
-          {mode === "signup" && (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground text-center">
-                Or try one of these nicknames:
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {suggestions.map((suggestion) => (
-                  <Button
-                    key={suggestion}
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      handleNicknameChange(suggestion)
-                    }
-                    disabled={loading}
-                    className="text-xs"
-                  >
-                    {suggestion}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
         </Card>
       </motion.div>
     </div>

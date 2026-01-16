@@ -10,7 +10,7 @@ import { AdminDashboard } from "./components/AdminDashboard";
 import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-import { api, getUserId, setUserId } from "./utils/api";
+import { api, getUserId } from "./utils/api";
 import { setSessionId } from "./utils/api-client";
 import type { NewDebateRoom, DebateRoom, VoteType, UserSession } from "./types";
 import {
@@ -81,7 +81,7 @@ function AppContent() {
     currentSubHeard,
     loading,
     error,
-    initializeUser,
+    setUserAndSession,
     createRoom,
     joinRoom,
     submitStatement,
@@ -94,52 +94,9 @@ function AppContent() {
     getAllRoomStatements,
   } = useDebateSession();
 
-  const handleNicknameComplete = async (
-    nickname: string,
-    email: string,
-    password: string,
-    isSignIn: boolean,
-  ) => {
-    await initializeUser(nickname, email, password, isSignIn);
-
-    if (targetRoomId) {
-      const roomData = await joinRoom(targetRoomId);
-      if (roomData) {
-        if (roomData.subHeard) {
-          setCurrentSubHeard(roomData.subHeard);
-        }
-        setTargetRoomId(null);
-      }
-    }
-  };
-
-  const handleMagicLinkSuccess = async (userId: string, userData: UserSession) => {
-    setUserId(userId);
-    await initializeUser("", "", "", false, userData);
+  const handleMagicLinkSuccess = async () => {
     toast.success("Signed in successfully!");
   };
-
-  const handleAnonymousJoinDev = async (anonymousLinkIdFromUrl: string) => {
-  try {
-    setIsJoiningAnonymously(true);
-    const response = await api.joinViaAnonymousLink(anonymousLinkIdFromUrl) as any;
-    if (response.success && response.data) {
-      const { user: anonUser, roomId, subHeard } = response.data;
-      setUserId(anonUser.id);
-      await initializeUser("", "", "", false, anonUser);
-      if (subHeard) {
-        setCurrentSubHeard(subHeard);
-      }
-      setTargetRoomId(roomId);
-    } else {
-      console.error("Failed to join via anonymous link:", response.error);
-      setIsJoiningAnonymously(false);
-    }
-  } catch (error) {
-    console.error("Error joining via anonymous link:", error);
-    setIsJoiningAnonymously(false);
-  }
-};
 
   const handleFlyerJoin = async (flyerData: { flyerId: string; statementId: string; vote: VoteType }) => {
     try {
@@ -161,9 +118,6 @@ function AppContent() {
         setIsJoiningAnonymously(false);
         return;
       }
-      
-      setUserId(flyerUser.id);
-      await initializeUser("", "", "", false, flyerUser);
       
       setTargetRoomId(room.id);
       setQrScanResult(response);
@@ -219,9 +173,10 @@ function AppContent() {
 
       const anonUserResponse = await api.createAnonymousUser();
       if (anonUserResponse.success && anonUserResponse.data) {
-        const anonUser = anonUserResponse.data;
-        setUserId(anonUser.id);
-        await initializeUser("", "", "", false, anonUser);
+        const { user: anonUser, sessionId } = anonUserResponse.data;
+        if (sessionId) {
+          await setUserAndSession(anonUser, sessionId);
+        }
 
         if (room.subHeard) {
           setCurrentSubHeard(room.subHeard);
@@ -350,7 +305,7 @@ function AppContent() {
             if (response.data.sessionId) {
               setSessionId(response.data.sessionId);
             }
-            handleMagicLinkSuccess(response.data.user.id, response.data.user);
+            handleMagicLinkSuccess();
             window.history.pushState({}, "", "/");
           } else {
             toast.error(response.error || "Invalid or expired magic link");
@@ -366,7 +321,7 @@ function AppContent() {
       }
     };
     handleMagicLinkLogin();
-  }, [magicLinkToken, user, initializeUser]);
+  }, [magicLinkToken, user]);
 
   const handleOpenShowcase = () => {
     setShowComponentShowcase(true);
@@ -489,9 +444,6 @@ function AppContent() {
           loading={loading}
           error={error || ""}
           joiningRoom={!!targetRoomId}
-          onComplete={handleNicknameComplete}
-          onForgotPassword={() => setShowPasswordReset(true)}
-          onJoinAnonymousLink={handleAnonymousJoinDev}
           onMagicLinkSuccess={handleMagicLinkSuccess}
         />
         <Toaster />

@@ -35,10 +35,6 @@ export const parseSubHeardFromUrl = (): string | null => {
   return parseFromUrl('h')
 }
 
-export const parseAnonymousLinkIdFromUrl = (): string | null => {
-  return parseFromUrl('join');
-}
-
 export const parseFlyerDataFromUrl = (): { flyerId: string; statementId: string; vote: VoteType } | null => {
   if (typeof window === 'undefined') return null
   

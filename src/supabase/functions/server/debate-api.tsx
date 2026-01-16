@@ -735,15 +735,14 @@ app.post(
           `Existing user found for email ${normalizedEmail}, logging them back in`,
         );
 
-        // Update their last active time and return existing user
-        existingUser.lastActive = Date.now();
-        await saveUserSession(existingUser);
+        const userResult = await getUserAndNewSession(existingUser.id);
+        if ("error" in userResult) {
+          return c.json({ error: userResult.error }, userResult.status);
+        }
 
-        // Return user without password hash
-        const { passwordHash: _, ...userWithoutPassword } =
-          existingUser;
         return c.json({
-          user: userWithoutPassword,
+          user: userResult.user,
+          sessionId: userResult.sessionId,
           isReturningUser: true,
         });
       }
@@ -787,8 +786,14 @@ app.post(
         );
       }
 
+      const userResult = await getUserAndNewSession(userSession.id);
+      if ("error" in userResult) {
+        return c.json({ error: userResult.error }, userResult.status);
+      }
+
       return c.json({
-        user: userSession,
+        user: userResult.user,
+        sessionId: userResult.sessionId,
         isReturningUser: false,
       });
     } catch (error) {

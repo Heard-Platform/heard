@@ -4,39 +4,72 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useState } from "react";
-import { Sparkles, Users, Award } from "lucide-react";
+import { Sparkles, Users, Award, Mail } from "lucide-react";
+import { isValidEmail } from "../utils/validation";
+import { useDebateSession } from "../hooks/useDebateSession";
 
 interface AnonAccountSetupModalProps {
   featureText: string;
   isOpen: boolean;
-  onSetupAnon: (nickname: string, email: string, password: string) => Promise<void>;
   onClose: () => void;
 }
 
 export function AnonAccountSetupModal({
   featureText,
   isOpen,
-  onSetupAnon,
   onClose,
 }: AnonAccountSetupModalProps) {
-  const [nickname, setNickname] = useState("");
+  const { sendMagicLink, verifyMagicLink } = useDebateSession();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [magicCode, setMagicCode] = useState("");
+  const [verifyingCode, setVerifyingCode] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const handleSendMagicLink = async () => {
+    const emailValid = isValidEmail(email.trim());
+    if (!emailValid) {
+      setError("Please enter a valid email");
+      return;
+    }
+
     setLoading(true);
-
+    setError("");
     try {
-      await onSetupAnon(nickname, email, password);
-      onClose();
+      const res = await sendMagicLink(email.trim());
+      if (res.success) {
+        setMagicLinkSent(true);
+      } else {
+        setError(res.error || "Failed to send magic link");
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create account");
+      console.error("Error sending magic link:", err);
+      setError("Failed to send magic link");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (magicCode.length !== 6) {
+      return;
+    }
+
+    setVerifyingCode(true);
+    setError("");
+    try {
+      const res = await verifyMagicLink(magicCode.toUpperCase());
+      if (res.success && res.user) {
+        window.location.reload();
+      } else {
+        setError(res.error || "Invalid or expired code");
+      }
+    } catch (err) {
+      console.error("Error verifying code:", err);
+      setError("Invalid or expired code");
+    } finally {
+      setVerifyingCode(false);
     }
   };
 
@@ -101,7 +134,7 @@ export function AnonAccountSetupModal({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="grid grid-cols-3 gap-4 py-4"
+              className="grid grid-cols-3 gap-4"
             >
               <FeatureBadge icon={Sparkles} label="Start Discussions" />
               <FeatureBadge icon={Users} label="Explore Communities" />
@@ -112,91 +145,129 @@ export function AnonAccountSetupModal({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              onSubmit={handleSubmit}
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMagicLink();
+              }}
               className="space-y-4"
             >
-              <div className="space-y-2">
-                <Label htmlFor="nickname">Nickname</Label>
-                <Input
-                  id="nickname"
-                  type="text"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  placeholder="Your nickname"
-                  required
-                  disabled={loading}
-                  className="bg-white dark:bg-gray-900"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                  disabled={loading}
-                  className="bg-white dark:bg-gray-900"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  disabled={loading}
-                  className="bg-white dark:bg-gray-900"
-                />
-              </div>
-
-              {error && (
-                <motion.p
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-sm text-red-600 dark:text-red-400"
+              {magicLinkSent ? (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-3"
                 >
-                  {error}
-                </motion.p>
-              )}
-
-              <div className="flex gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onClose}
-                  disabled={loading}
-                  className="flex-1"
-                >
-                  Maybe Later
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                >
-                  {loading ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 1,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                      className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-md text-center">
+                    <Mail className="w-8 h-8 mx-auto text-green-600 mb-2" />
+                    <p className="text-sm font-medium text-green-900">
+                      Magic link sent!
+                    </p>
+                    <p className="text-xs text-green-700 mt-1">
+                      Check your email and click the link to complete setup
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="magicCode" className="text-xs text-center block">
+                      Or enter the 6-character code from your email:
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="magicCode"
+                        type="text"
+                        value={magicCode}
+                        onChange={(e) => setMagicCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 6))}
+                        placeholder="ABC123"
+                        disabled={verifyingCode}
+                        className="text-center font-mono text-lg tracking-widest uppercase"
+                        maxLength={6}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleVerifyCode}
+                        disabled={magicCode.length !== 6 || verifyingCode}
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                      >
+                        {verifyingCode ? (
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{
+                              duration: 1,
+                              repeat: Infinity,
+                              ease: "linear",
+                            }}
+                            className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                          />
+                        ) : (
+                          "Verify"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      disabled={loading}
+                      className="bg-white dark:bg-gray-900"
                     />
-                  ) : (
-                    "Submit"
+                    <p className="text-xs text-muted-foreground">
+                      We'll send you a magic link to complete setup
+                    </p>
+                  </div>
+
+                  {error && (
+                    <motion.p
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-sm text-red-600 dark:text-red-400"
+                    >
+                      {error}
+                    </motion.p>
                   )}
-                </Button>
-              </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={onClose}
+                      disabled={loading}
+                      className="flex-1"
+                    >
+                      Maybe Later
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={!isValidEmail(email.trim()) || loading}
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                    >
+                      {loading ? (
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{
+                            duration: 1,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
+                          className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                        />
+                      ) : (
+                        <>
+                          <Mail className="w-4 h-4 mr-2" />
+                          Send Magic Link
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </>
+              )}
             </motion.form>
           </div>
         </motion.div>

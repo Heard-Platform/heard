@@ -262,15 +262,6 @@ export function LobbyScreen({
     }
   };
 
-  const handleSetupAnonAccount = async (nickname: string, email: string, password: string) => {
-    const response = await api.setupAnonymousUser(user.id, nickname, email, password);
-    if (response.success && response.data) {
-      window.location.reload();
-    } else {
-      throw new Error(response.error || "Failed to setup account");
-    }
-  };
-
   const handleDiscussStatement = (
     statementText: string,
     subHeard?: string,
@@ -513,7 +504,6 @@ export function LobbyScreen({
       <AnonAccountSetupModal
         featureText={accountSetupFeatureText}
         isOpen={showAccountSetupAnonModal}
-        onSetupAnon={handleSetupAnonAccount}
         onClose={() => setShowAccountSetupAnonModal(false)}
       />
     </>

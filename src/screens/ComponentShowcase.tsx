@@ -17,6 +17,7 @@ import { QRScanResultDialogStory } from "../stories/QRScanResultDialog.story";
 import { YouTubeCardStory } from "../stories/YouTubeCard.story";
 import { IntroModalStory } from "../stories/IntroModal.story";
 import { DemographicsCardStory } from "../stories/DemographicsCard.story";
+import { AnonAccountSetupModalStory } from "../stories/AnonAccountSetupModal.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 
 interface ComponentShowcaseProps {
@@ -94,6 +95,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
               <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
               <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
+              <TabsTrigger value="anon-account-setup-modal">Anon Account Setup Modal</TabsTrigger>
             </TabsList>
 
             <TabsContent value="results">
@@ -149,6 +151,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="demographics-card">
               <DemographicsCardStory />
+            </TabsContent>
+            <TabsContent value="anon-account-setup-modal">
+              <AnonAccountSetupModalStory />
             </TabsContent>
           </Tabs>
         </div>
