@@ -182,7 +182,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
 
   const sendMagicLink = useCallback(async (email: string) => {
     return safelyMakeApiCall<undefined>(() => api.sendMagicLink(email));
-  }, []);
+  }, [safelyMakeApiCall]);
 
   const verifyMagicLink = useCallback(async (code: string) => {
     const response = await safelyMakeApiCall<UserSessionResponse>(() => api.verifyMagicLink(code));
@@ -190,7 +190,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       setUserAndSession(response.data.user, response.data.sessionId);
     }
     return response;
-  }, []);
+  }, [safelyMakeApiCall, setUserAndSession]);
 
   const createAnonymousUser = useCallback(async () => {
     const response = await safelyMakeApiCall<UserSessionResponse>(() => api.createAnonymousUser());
@@ -198,7 +198,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       setUserAndSession(response.data.user, response.data.sessionId);
     }
     return response;
-  }, []);
+  }, [safelyMakeApiCall, setUserAndSession]);
 
   // Create room (does not join)
   const createRoom = useCallback(
@@ -660,7 +660,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     };
 
     init();
-  }, [loadUserUsingStoredId]);
+  }, [loadUserUsingStoredId, initializeSessionForLegacyUser]);
 
   let returnObj = {
     user,

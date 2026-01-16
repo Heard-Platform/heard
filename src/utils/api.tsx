@@ -21,7 +21,7 @@ import {
   API_BASE_URL,
   ApiResponse,
 } from "./api-client";
-import { safelyGetStorageItem } from "./localStorage";
+import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { publicAnonKey } from "./supabase/info";
 export { getSessionId, setSessionId, clearSessionId } from "./api-client";
 
@@ -663,7 +663,7 @@ export const getUserId = (): string | null => {
 
 export const setUserId = (userId: string) => {
   if (typeof window === "undefined") return;
-  localStorage.setItem("heard_user_id", userId);
+  safelySetStorageItem("heard_user_id", userId);
 };
 
 export const clearUserId = () => {

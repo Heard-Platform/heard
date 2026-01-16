@@ -1,4 +1,4 @@
-import { safelyGetStorageItem } from "./localStorage";
+import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { projectId, publicAnonKey } from "./supabase/info";
 
 export const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
@@ -15,11 +15,7 @@ export const getSessionId = (): string | null =>
   safelyGetStorageItem<string | null>(SESSION_ID_KEY, null);
 
 export const setSessionId = (id: string): void => {
-  try {
-    localStorage.setItem(SESSION_ID_KEY, id);
-  } catch (error) {
-    console.error("Failed to store session ID:", error);
-  }
+  safelySetStorageItem(SESSION_ID_KEY, id);
 };
 
 export const clearSessionId = (): void => {
