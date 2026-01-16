@@ -50,9 +50,6 @@ function AppContent() {
   const [resetToken, setResetToken] = useState<string | null>(
     null,
   );
-  const [magicLinkToken, setMagicLinkToken] = useState<string | null>(
-    null,
-  );
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
 
@@ -62,7 +59,8 @@ function AppContent() {
     currentSubHeard,
     loading,
     error,
-    initializeUser,
+    verifyMagicLink,
+    createAnonymousUser,
     createRoom,
     joinRoom,
     submitStatement,
@@ -75,28 +73,7 @@ function AppContent() {
     getAllRoomStatements,
   } = useDebateSession();
 
-  const handleNicknameComplete = async (
-    nickname: string,
-    email: string,
-    password: string,
-    isSignIn: boolean,
-  ) => {
-    await initializeUser(nickname, email, password, isSignIn);
-
-    if (targetRoomId) {
-      const roomData = await joinRoom(targetRoomId);
-      if (roomData) {
-        if (roomData.subHeard) {
-          setCurrentSubHeard(roomData.subHeard);
-        }
-        setTargetRoomId(null);
-      }
-    }
-  };
-
-  const handleMagicLinkSuccess = async (userId: string, userData: UserSession) => {
-    setUserId(userId);
-    await initializeUser("", "", "", false, userData);
+  const handleMagicLinkSuccess = async () => {
     toast.success("Signed in successfully!");
   };
 
@@ -120,10 +97,6 @@ function AppContent() {
         setIsJoiningAnonymously(false);
         return;
       }
-      
-      setUserId(flyerUser.id);
-      await initializeUser("", "", "", false, flyerUser);
-      
       setTargetRoomId(room.id);
       setQrScanResult(response);
     } catch (error) {
@@ -157,6 +130,15 @@ function AppContent() {
     clearRoomFromUrl();
   };
 
+  const loginViaMagicTokenInUrl = async (magicToken: string) => {
+    const response = await verifyMagicLink(magicToken);
+    if (response && response.success) {
+      handleMagicLinkSuccess();
+    }
+
+    window.history.pushState({}, "", "/");
+  };
+
   const autoJoinAsAnonymous = async (roomIdFromUrl: string) => {
     setTargetRoomId(roomIdFromUrl);
     try {
@@ -176,12 +158,8 @@ function AppContent() {
         return;
       }
 
-      const anonUserResponse = await api.createAnonymousUser();
-      if (anonUserResponse.success && anonUserResponse.data) {
-        const anonUser = anonUserResponse.data;
-        setUserId(anonUser.id);
-        await initializeUser("", "", "", false, anonUser);
-
+      const anonUserResponse = await createAnonymousUser();
+      if (anonUserResponse && anonUserResponse.success) {
         if (room.subHeard) {
           setCurrentSubHeard(room.subHeard);
         }
@@ -223,7 +201,7 @@ function AppContent() {
         setResetToken(resetTokenFromUrl);
         setShowPasswordReset(true);
       } else if (isMagicLinkRoute && magicTokenFromUrl) {
-        setMagicLinkToken(magicTokenFromUrl);
+        loginViaMagicTokenInUrl(magicTokenFromUrl);
       } else if (isUnsubscribeRoute) {
         setShowUnsubscribe(true);
       } else if (isAdminRoute) {
@@ -299,33 +277,6 @@ function AppContent() {
       getActiveRooms();
     }
   }, [user, currentSubHeard, getActiveRooms, hasCheckedUrl]);
-
-  useEffect(() => {
-    const handleMagicLinkLogin = async () => {
-      if (magicLinkToken && !user) {
-        try {
-          const response = await api.verifyMagicLink(magicLinkToken);
-          if (response.success && response.data) {
-            if (response.data.sessionId) {
-              setSessionId(response.data.sessionId);
-            }
-            handleMagicLinkSuccess(response.data.user.id, response.data.user);
-            window.history.pushState({}, "", "/");
-          } else {
-            toast.error(response.error || "Invalid or expired magic link");
-            window.history.pushState({}, "", "/");
-          }
-        } catch (error) {
-          console.error("Error verifying magic link:", error);
-          toast.error("Failed to verify magic link");
-          window.history.pushState({}, "", "/");
-        } finally {
-          setMagicLinkToken(null);
-        }
-      }
-    };
-    handleMagicLinkLogin();
-  }, [magicLinkToken, user, initializeUser]);
 
   const handleOpenShowcase = () => {
     setShowComponentShowcase(true);
@@ -448,8 +399,6 @@ function AppContent() {
           loading={loading}
           error={error || ""}
           joiningRoom={!!targetRoomId}
-          onComplete={handleNicknameComplete}
-          onForgotPassword={() => setShowPasswordReset(true)}
           onMagicLinkSuccess={handleMagicLinkSuccess}
         />
         <Toaster />

@@ -8,14 +8,7 @@ interface LandingPageProps {
   loading: boolean;
   error: string;
   joiningRoom: boolean;
-  onComplete: (
-    nickname: string,
-    email: string,
-    password: string,
-    isSignIn: boolean,
-  ) => void;
-  onForgotPassword: () => void;
-  onMagicLinkSuccess: (userId: string, userData: any) => void;
+  onMagicLinkSuccess: () => void;
 }
 
 const animatedIcons = [
@@ -29,8 +22,6 @@ export function LandingPage({
   loading,
   error,
   joiningRoom,
-  onComplete,
-  onForgotPassword,
   onMagicLinkSuccess,
 }: LandingPageProps) {
   const [showSignup, setShowSignup] = useState(false);
@@ -41,9 +32,7 @@ export function LandingPage({
         loading={loading}
         error={error}
         joiningRoom={joiningRoom}
-        onForgotPassword={onForgotPassword}
         onBack={() => setShowSignup(false)}
-        onComplete={onComplete}
         onMagicLinkSuccess={onMagicLinkSuccess}
       />
     );

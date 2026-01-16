@@ -46,7 +46,7 @@ class ApiClient extends BaseApiClient {
   }
 
   async sendMagicLink(email: string) {
-    return this.request<{ user: UserSession }>("/auth/send-magic-link", {
+    return this.request<undefined>("/auth/send-magic-link-auto", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
@@ -65,7 +65,7 @@ class ApiClient extends BaseApiClient {
     email: string,
     password: string,
   ) {
-    return this.request("/auth/setup-anon", {
+    return this.request<UserSessionResponse>("/auth/setup-anon", {
       method: "POST",
       body: JSON.stringify({ userId, nickname, email, password }),
     });
@@ -175,7 +175,7 @@ class ApiClient extends BaseApiClient {
   }
 
   async createAnonymousUser() {
-    return this.request<UserSession>("/user/anonymous", {
+    return this.request<UserSessionResponse>("/user/anonymous", {
       method: "POST",
       body: JSON.stringify({}),
     });

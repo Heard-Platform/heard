@@ -516,8 +516,14 @@ app.post(
         return c.json({ error: result.error }, result.status);
       }
 
+      const userResult = await getUserAndNewSession(result.user.id);
+      if ("error" in userResult) {
+        return c.json({ error: userResult.error }, userResult.status);
+      }
+
       return c.json({
-        user: result.user,
+        user: userResult.user,
+        sessionId: userResult.sessionId,
       });
     } catch (error) {
       console.error("Error setting up anonymous user account:", error);
@@ -654,8 +660,15 @@ app.post(
     try {
       const user = await createAnonymousUser();
 
-      const { passwordHash: _, ...userWithoutPassword } = user;
-      return c.json(userWithoutPassword);
+      const userResult = await getUserAndNewSession(user.id);
+      if ("error" in userResult) {
+        return c.json({ error: userResult.error }, userResult.status);
+      }
+
+      return c.json({
+        user: userResult.user,
+        sessionId: userResult.sessionId,
+      });
     } catch (error) {
       console.error("Error creating anonymous user:", error);
       return c.json({ error: "Failed to create anonymous user" }, 500);
@@ -728,6 +741,89 @@ app.post(
       return c.json({ success: true });
     } catch (error) {
       console.error("Error sending magic link:", error);
+      return c.json({ error: "Failed to send magic link" }, 500);
+    }
+  },
+);
+
+app.post(
+  "/make-server-f1a393b4/auth/send-magic-link-auto",
+  async (c: any) => {
+    try {
+      const { email } = await c.req.json();
+
+      if (!email) {
+        return c.json({ error: "Email is required" }, 400);
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      let user = await getUserByEmail(normalizedEmail);
+
+      if (!user) {
+        console.log(`No account found for ${normalizedEmail}, creating new account`);
+        
+        const emailPrefix = normalizedEmail.split('@')[0];
+        const randomSuffix = Math.floor(Math.random() * 10000);
+        const generatedNickname = `${emailPrefix}${randomSuffix}`;
+        
+        const randomPassword = generateId();
+        const passwordHash = await hashPassword(randomPassword);
+        
+        user = await createUserAccount(
+          generatedNickname,
+          normalizedEmail,
+          passwordHash,
+          false,
+        );
+        
+        console.log(`Created new account for ${normalizedEmail} with nickname ${generatedNickname}`);
+      }
+
+      const token = generateMagicLinkCode();
+      const expiresAt = Date.now() + 15 * 60 * 1000;
+
+      await saveMagicLink(token, {
+        userId: user.id,
+        email: normalizedEmail,
+        expiresAt,
+      });
+
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (!resendApiKey) {
+        console.error("RESEND_API_KEY not configured");
+        return c.json({ error: "Email service not configured" }, 500);
+      }
+
+      const magicLinkUrl = `https://heard-now.com/magic-link?token=${token}`;
+
+      const html = getMagicLinkEmail(magicLinkUrl, token);
+
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${resendApiKey}`,
+        },
+        body: JSON.stringify({
+          from: "Heard <noreply@heard-now.com>",
+          to: [normalizedEmail],
+          subject: "Log in to Heard",
+          html,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to send magic link email:", errorText);
+        return c.json({ error: "Failed to send email" }, 500);
+      }
+
+      console.log(`Magic link sent to ${normalizedEmail}`);
+
+      return c.json({ success: true });
+    } catch (error) {
+      console.error("Error sending magic link auto:", error);
       return c.json({ error: "Failed to send magic link" }, 500);
     }
   },

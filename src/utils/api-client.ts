@@ -3,7 +3,7 @@ import { projectId, publicAnonKey } from "./supabase/info";
 
 export const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
 
-export interface ApiResponse<T> {
+export interface ApiResponse<T = undefined> {
   success: boolean;
   data?: T;
   error?: string;

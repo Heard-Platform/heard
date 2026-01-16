@@ -17,7 +17,8 @@ import type {
   AnalysisData,
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
-import { FlyerVoteResponse } from "../types/api-responses";
+import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
+import { ApiResponse } from "../utils/api-client";
 
 interface DebateSessionContextType {
   user: UserSession | null;
@@ -25,13 +26,9 @@ interface DebateSessionContextType {
   currentSubHeard: string | null;
   loading: boolean;
   error: string | null;
-  initializeUser: (
-    nickname?: string,
-    email?: string,
-    password?: string,
-    isSignIn?: boolean,
-    providedUser?: UserSession,
-  ) => Promise<UserSession | null>;
+  sendMagicLink: (email: string) => Promise<ApiResponse | null>;
+  verifyMagicLink: (code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
+  createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
   createRoom: (
     newDebate: NewDebateRoom,
     autoJoin?: boolean,
@@ -86,67 +83,23 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     Record<string, Statement[]>
   >({});
 
-  const initializeUser = useCallback(
-    async (
-      nickname?: string,
-      email?: string,
-      password?: string,
-      isSignIn?: boolean,
-      providedUser?: UserSession,
-    ) => {
-      try {
-        setError(null);
-        let user = providedUser;
-
-        if (!user && email && password) {
-          if (isSignIn) {
-            const response = await api.signIn(email, password);
-            if (response.success && response.data) {
-              user = response.data.user;
-              setUserId(user.id);
-              setSessionId(response.data.sessionId);
-            } else {
-              throw new Error(
-                response.error || "Failed to sign in",
-              );
-            }
-          } else if (nickname) {
-            const response = await api.signUp(
-              nickname,
-              email,
-              password,
-            );
-            if (response.success && response.data) {
-              user = response.data.user;
-              setUserId(user.id);
-              setSessionId(response.data.sessionId);
-            } else {
-              throw new Error(
-                response.error || "Failed to create account",
-              );
-            }
-          }
-        }
-        
-        if (user) {
-          setUser(user);
-
-          api.trackActivity(user.id).catch((err) => {
-            console.error("Failed to track activity:", err);
-          });
-
-          return user;
-        }
-      } catch (err) {
-        const errorMsg =
-          err instanceof Error ? err.message : "Unknown error";
-        setError(errorMsg);
-        console.error("Failed to initialize user:", errorMsg);
+  const loadUserUsingStoredId = useCallback(async (userId: string) => {
+    try {
+      setError(null);
+      const response = await api.getUser(userId);
+      if (response.success && response.data) {
+        const user = response.data.user;
+        setUser(user);
+        return user;
       }
-      return null;
-    },
-    [],
-  );
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to load user from storage:", errorMsg);
+    }
+    return null;
+  }, []);
 
   const initializeSessionForLegacyUser = useCallback(async (userId: string) => {
     try {
@@ -170,20 +123,21 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     return null;
   }, []);
 
-  const loadUserFromStorage = useCallback(async (userId: string) => {
+  const setUserAndSession = useCallback((providedUser: UserSession, sessionId: string) => {
     try {
       setError(null);
-      const response = await api.getUser(userId);
-      if (response.success && response.data) {
-        const user = response.data.user;
-        setUser(user);
-        return user;
-      }
+      setUser(providedUser);
+      setUserId(providedUser.id);
+      setSessionId(sessionId);
+      api.trackActivity(providedUser.id).catch((err) => {
+        console.error("Failed to track activity:", err);
+      });
+      
+      return providedUser;
     } catch (err) {
-      const errorMsg =
-        err instanceof Error ? err.message : "Unknown error";
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
       setError(errorMsg);
-      console.error("Failed to load user from storage:", errorMsg);
+      console.error("Failed to set user session:", errorMsg);
     }
     return null;
   }, []);
@@ -204,6 +158,47 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     },
     [],
   );
+
+  const safelyMakeApiCall = useCallback(
+    async <T,>(callFn: () => Promise<ApiResponse<T>>): Promise<ApiResponse<T> | null> => {
+      setError(null);
+      try {
+        const response = await callFn();
+        if (response.success) {
+          return response;
+        } else {
+          throw new Error(response.error || "Unknown error");
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error("API call failed:", errorMsg);
+        return null;
+      }
+    },
+    [],
+  );
+
+  const sendMagicLink = useCallback(async (email: string) => {
+    return safelyMakeApiCall<undefined>(() => api.sendMagicLink(email));
+  }, []);
+
+  const verifyMagicLink = useCallback(async (code: string) => {
+    const response = await safelyMakeApiCall<UserSessionResponse>(() => api.verifyMagicLink(code));
+    if (response && response.success && response.data) {
+      setUserAndSession(response.data.user, response.data.sessionId);
+    }
+    return response;
+  }, []);
+
+  const createAnonymousUser = useCallback(async () => {
+    const response = await safelyMakeApiCall<UserSessionResponse>(() => api.createAnonymousUser());
+    if (response && response.success && response.data) {
+      setUserAndSession(response.data.user, response.data.sessionId);
+    }
+    return response;
+  }, []);
 
   // Create room (does not join)
   const createRoom = useCallback(
@@ -649,7 +644,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
 
       const storedUserId = getUserId();
       if (storedUserId) {
-        await loadUserFromStorage(storedUserId);
+        await loadUserUsingStoredId(storedUserId);
   
         const sessionId = getSessionId();
         if (!sessionId) {
@@ -665,7 +660,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     };
 
     init();
-  }, [loadUserFromStorage, initializeSessionForLegacyUser]);
+  }, [loadUserUsingStoredId]);
 
   let returnObj = {
     user,
@@ -673,7 +668,9 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     currentSubHeard,
     loading,
     error,
-    initializeUser,
+    sendMagicLink,
+    verifyMagicLink,
+    createAnonymousUser,
     createRoom,
     joinRoom,
     submitStatement,
@@ -698,6 +695,18 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
   if (showcase) {
     returnObj = {
       ...returnObj,
+      sendMagicLink: async (email: string) => { 
+        console.log("[Showcase] sendMagicLink called"); 
+        return { success: true };
+      },
+      verifyMagicLink: async (code: string) => { 
+        console.log("[Showcase] verifyMagicLink called"); 
+        return { success: true };
+      },
+      createAnonymousUser: async () => {
+        console.log("[Showcase] createAnonymousUser called");
+        return { success: true };
+      },
       setRoomInactive: async () => { 
         console.log("[Showcase] setRoomInactive called"); 
         return true; 
