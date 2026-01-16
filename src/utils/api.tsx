@@ -26,14 +26,6 @@ import { publicAnonKey } from "./supabase/info";
 export { getSessionId, setSessionId, clearSessionId } from "./api-client";
 
 class ApiClient extends BaseApiClient {
-  // User management
-  async createUser(nickname: string, email: string) {
-    return this.request<{ user: UserSession }>("/user/create", {
-      method: "POST",
-      body: JSON.stringify({ nickname, email }),
-    });
-  }
-
   async getUser(userId: string) {
     return this.request<{ user: UserSession }>(`/user/${userId}`);
   }

@@ -86,7 +86,6 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     Record<string, Statement[]>
   >({});
 
-  // Initialize user session
   const initializeUser = useCallback(
     async (
       nickname?: string,
@@ -97,54 +96,21 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     ) => {
       try {
         setError(null);
-        let userId = getUserId();
-        let user = providedUser || null;
-
-        if (!user && userId) {
-          const sessionId = getSessionId();
-          
-          if (!sessionId) {
-            console.log("No session ID found, migrating legacy user to new session system");
-            const migrationResponse = await api.migrateSession(userId);
-            if (migrationResponse.success && migrationResponse.data) {
-              user = migrationResponse.data.user;
-              if (migrationResponse.data.sessionId) {
-                setSessionId(migrationResponse.data.sessionId);
-                console.log("Session migration successful");
-              }
-            } else {
-              console.error("Failed to migrate session, fetching user without session");
-              const response = await api.getUser(userId);
-              if (response.success && response.data) {
-                user = response.data.user;
-              }
-            }
-          } else {
-            const response = await api.getUser(userId);
-            if (response.success && response.data) {
-              user = response.data.user;
-            }
-          }
-        }
+        let user = providedUser;
 
         if (!user && email && password) {
-          // Use new authentication system
           if (isSignIn) {
-            // Sign in existing user
             const response = await api.signIn(email, password);
             if (response.success && response.data) {
               user = response.data.user;
               setUserId(user.id);
-              if (response.data.sessionId) {
-                setSessionId(response.data.sessionId);
-              }
+              setSessionId(response.data.sessionId);
             } else {
               throw new Error(
                 response.error || "Failed to sign in",
               );
             }
           } else if (nickname) {
-            // Sign up new user
             const response = await api.signUp(
               nickname,
               email,
@@ -160,29 +126,13 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
               );
             }
           }
-        } else if (!user && nickname && email) {
-          // Fallback to old system for backwards compatibility
-          const response = await api.createUser(
-            nickname,
-            email,
-          );
-          if (response.success && response.data) {
-            user = response.data.user;
-            setUserId(user.id);
-          } else {
-            throw new Error(
-              response.error || "Failed to create user",
-            );
-          }
         }
-
+        
         if (user) {
           setUser(user);
 
-          // Track user activity
           api.trackActivity(user.id).catch((err) => {
             console.error("Failed to track activity:", err);
-            // Don't block user flow if tracking fails
           });
 
           return user;
@@ -197,6 +147,46 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     },
     [],
   );
+
+  const initializeSessionForLegacyUser = useCallback(async (userId: string) => {
+    try {
+      setError(null);
+      console.log("Initializing session for legacy user:", userId);
+      const migrationResponse = await api.migrateSession(userId);
+      if (migrationResponse.success && migrationResponse.data) {
+        setSessionId(migrationResponse.data.sessionId);
+        console.log("Session initialization successful");
+      } else {
+        throw new Error(
+          migrationResponse.error || "Failed to initialize session for legacy user",
+        );
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to initialize session for legacy user:", errorMsg);
+    }
+    return null;
+  }, []);
+
+  const loadUserFromStorage = useCallback(async (userId: string) => {
+    try {
+      setError(null);
+      const response = await api.getUser(userId);
+      if (response.success && response.data) {
+        const user = response.data.user;
+        setUser(user);
+        return user;
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to load user from storage:", errorMsg);
+    }
+    return null;
+  }, []);
 
   // Update user score from API response
   const updateUserScoreFromResponse = useCallback(
@@ -657,14 +647,25 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     const init = async () => {
       setLoading(true);
 
-      // Try to restore user session
-      await initializeUser();
+      const storedUserId = getUserId();
+      if (storedUserId) {
+        await loadUserFromStorage(storedUserId);
+  
+        const sessionId = getSessionId();
+        if (!sessionId) {
+          await initializeSessionForLegacyUser(storedUserId);
+        }
+        api.trackActivity(storedUserId).catch((err) => {
+          console.error("Failed to track activity on init:", err);
+        });
+      }
+
 
       setLoading(false);
     };
 
     init();
-  }, [initializeUser]);
+  }, [loadUserFromStorage, initializeSessionForLegacyUser]);
 
   let returnObj = {
     user,
