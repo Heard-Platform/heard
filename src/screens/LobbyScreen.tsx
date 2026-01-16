@@ -134,10 +134,6 @@ export function LobbyScreen({
     // Capture the initial window height ONCE on mount (before any keyboard interactions)
     if (initialWindowHeightRef.current === 0) {
       initialWindowHeightRef.current = window.innerHeight;
-      console.log(
-        "📏 Initial window height captured:",
-        initialWindowHeightRef.current,
-      );
     }
 
     const handleResize = () => {
@@ -151,15 +147,6 @@ export function LobbyScreen({
 
       // Keyboard open = viewport shrinks significantly
       const keyboardOpen = ratio < 0.75;
-
-      console.log("📱 Viewport change:", {
-        viewportHeight,
-        currentWindowHeight,
-        initialWindowHeight,
-        ratio: ratio.toFixed(2),
-        keyboardOpen,
-        threshold: 0.75,
-      });
 
       setIsKeyboardOpen(keyboardOpen);
       setDebugViewport({
@@ -192,14 +179,6 @@ export function LobbyScreen({
       );
     };
   }, []);
-
-  // Debug: log when keyboard state changes
-  useEffect(() => {
-    console.log(
-      "⌨️ Keyboard state changed:",
-      isKeyboardOpen ? "OPEN" : "CLOSED",
-    );
-  }, [isKeyboardOpen]);
 
   // Refresh rooms on mount and when sub-heard changes
   useEffect(() => {
@@ -259,15 +238,6 @@ export function LobbyScreen({
       setDiscussTopic(undefined);
       setDiscussSubHeard(undefined);
       setCreateRoomSheetOpen(true);
-    }
-  };
-
-  const handleSetupAnonAccount = async (nickname: string, email: string, password: string) => {
-    const response = await api.setupAnonymousUser(user.id, nickname, email, password);
-    if (response.success && response.data) {
-      window.location.reload();
-    } else {
-      throw new Error(response.error || "Failed to setup account");
     }
   };
 
@@ -513,7 +483,6 @@ export function LobbyScreen({
       <AnonAccountSetupModal
         featureText={accountSetupFeatureText}
         isOpen={showAccountSetupAnonModal}
-        onSetupAnon={handleSetupAnonAccount}
         onClose={() => setShowAccountSetupAnonModal(false)}
       />
     </>
