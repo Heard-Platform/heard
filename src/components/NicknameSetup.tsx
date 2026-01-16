@@ -81,7 +81,7 @@ export function NicknameSetup({
         animate={{ scale: 1, opacity: 1 }}
         className="w-full max-w-md"
       >
-        <Card className="p-8 space-y-6">
+        <Card className="p-8">
           <div className="text-center space-y-3">
             <motion.div
               animate={{ rotate: [0, 10, -10, 0] }}
@@ -109,7 +109,7 @@ export function NicknameSetup({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="mt-2 space-y-3">
             <div className="space-y-2">
               <Label htmlFor="email">Your Email</Label>
               <Input
