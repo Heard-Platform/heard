@@ -1,7 +1,7 @@
 import { Hono } from "npm:hono";
 import {
   getUserSession,
-  saveUserSession,
+  saveUserAndEmail,
 } from "./auth-api.tsx";
 import { saveDebateRoom } from "./debate-api.tsx";
 import { DebateRoom } from "./types.tsx";
@@ -102,7 +102,7 @@ app.post(
       await saveDebateRoom(debateRoom);
 
       user.currentRoomId = roomId;
-      await saveUserSession(user);
+      await saveUserAndEmail(user);
 
       const invitePath = `/join/${anonymousLinkId}`;
 
