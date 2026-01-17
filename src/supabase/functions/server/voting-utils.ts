@@ -1,7 +1,7 @@
 import type { Vote, Statement, User, VoteType } from "./types.tsx";
 import { saveStatement, saveVote, getVotesForStatement, deleteVote } from "./kv-utils.tsx";
 import { getByPrefixParsed } from "./kv-utils.tsx";
-import { getUserSession, saveUserSession } from "./auth-api.tsx";
+import { getUserSession, saveUserAndEmail } from "./auth-api.tsx";
 import { generateId, getDebateRoom, getStatementById, saveDebateRoom } from "./debate-api.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 
@@ -153,14 +153,14 @@ export const processVote = async (
 
     if (statementAuthorUser && statementAuthorUser.id !== userId) {
       statementAuthorUser.score += 3;
-      await saveUserSession(statementAuthorUser);
+      await saveUserAndEmail(statementAuthorUser);
     }
 
     if (room && room.hostId && room.hostId !== userId) {
       const roomCreator = await getUserSession(room.hostId);
       if (roomCreator) {
         roomCreator.score += 1;
-        await saveUserSession(roomCreator);
+        await saveUserAndEmail(roomCreator);
       }
     }
   }
@@ -187,7 +187,7 @@ export const processVote = async (
   // Update user points
   if (pointsEarned > 0) {
     user.score += pointsEarned;
-    await saveUserSession(user);
+    await saveUserAndEmail(user);
   }
 
   // Clustering is now calculated lazily when analysis is requested

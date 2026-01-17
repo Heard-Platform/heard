@@ -2,7 +2,7 @@ import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import {
   getUserSession,
-  saveUserSession,
+  saveUserAndEmail,
 } from "./auth-api.tsx";
 import { generateId, saveDebateRoom } from "./debate-api.tsx";
 import type {
@@ -135,7 +135,7 @@ app.post(
 
       // Update user's current room
       user.currentRoomId = roomId;
-      await saveUserSession(user);
+      await saveUserAndEmail(user);
 
       return c.json({ ...debateRoom, userScore: user.score });
     } catch (error) {

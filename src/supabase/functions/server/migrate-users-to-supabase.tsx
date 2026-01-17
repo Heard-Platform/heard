@@ -1,4 +1,4 @@
-import { saveUserSession } from "./auth-api.tsx";
+import { saveUserAndEmail } from "./auth-api.tsx";
 import type { User } from "./types.tsx";
 import { createClientFromEnv } from "./db-utils.ts";
 import { getAllRealUsers } from "./kv-utils.tsx";
@@ -27,7 +27,7 @@ async function migrateAnonymousUser(user: User): Promise<{ success: boolean; err
     
     user.supabaseAuthId = anonData.user.id;
     user.migratedToSupabaseAt = Date.now();
-    await saveUserSession(user);
+    await saveUserAndEmail(user);
     
     console.log(`  ✓ Anonymous user ${user.id} → Supabase ${anonData.user.id}`);
     return { success: true };
@@ -66,7 +66,7 @@ async function migrateFullAccountUser(user: User): Promise<{ success: boolean; e
         
         user.supabaseAuthId = existingUser.id;
         user.migratedToSupabaseAt = Date.now();
-        await saveUserSession(user);
+        await saveUserAndEmail(user);
         
         console.log(`  ✓ Linked existing account ${user.email} → ${existingUser.id}`);
         return { success: true };
@@ -77,7 +77,7 @@ async function migrateFullAccountUser(user: User): Promise<{ success: boolean; e
     
     user.supabaseAuthId = authData.user.id;
     user.migratedToSupabaseAt = Date.now();
-    await saveUserSession(user);
+    await saveUserAndEmail(user);
     
     console.log(`  ✓ Full account ${user.email} → Supabase ${authData.user.id}`);
     return { success: true };
