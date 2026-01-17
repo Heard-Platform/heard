@@ -1,14 +1,14 @@
 import { Hono } from "npm:hono";
-import type { UserSession } from "./types.tsx";
 import { getUser, saveUser, getDebate } from "./kv-utils.tsx";
-import type { VoteType } from "./types.tsx";
+import type { User, VoteType } from "./types.tsx";
 import { processVote } from "./voting-utils.ts";
-import { createAnonymousUser } from "./auth-api.tsx";
+import { createAnonymousUser, createSession } from "./auth-api.tsx";
 
 export const flyerApi = new Hono();
 
 type FlyerVoteResponse = {
-  user: UserSession;
+  user: User;
+  sessionId: string;
   room: any;
   agreePercent: number;
   disagreePercent: number;
@@ -97,8 +97,11 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c) => {
           ? Math.round((result.statement.passes / totalVotes) * 100)
           : 0;
 
+      const session = await createSession(userId);
+
       const response: FlyerVoteResponse = {
         user: result.user,
+        sessionId: session.id,
         room,
         agreePercent,
         disagreePercent,

@@ -12,4 +12,7 @@ export type RoomStatusResponse = {
   rants: Rant[];
 };
 
-export type FlyerVoteResponse = QRScanResult & { user: UserSession }
+export type FlyerVoteResponse = QRScanResult & {
+  user: UserSession;
+  sessionId: string;
+};

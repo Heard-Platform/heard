@@ -10,9 +10,8 @@ import { AdminDashboard } from "./components/AdminDashboard";
 import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-import { api, getUserId, setUserId } from "./utils/api";
-import { setSessionId } from "./utils/api-client";
-import type { NewDebateRoom, DebateRoom, VoteType, UserSession } from "./types";
+import { api, getUserId } from "./utils/api";
+import type { NewDebateRoom, DebateRoom, VoteType } from "./types";
 import {
   parseRoomIdFromUrl,
   parseSubHeardFromUrl,
@@ -78,32 +77,24 @@ function AppContent() {
   };
 
   const handleFlyerJoin = async (flyerData: { flyerId: string; statementId: string; vote: VoteType }) => {
-    try {
-      setIsJoiningAnonymously(true);
-      const existingUserId = getUserId();
-      
-      const response = await voteViaFlyer(
-        flyerData.flyerId,
-        flyerData.statementId,
-        flyerData.vote,
-        existingUserId || undefined
-      );
+    setIsJoiningAnonymously(true);
+    const existingUserId = getUserId();
+    
+    const response = await voteViaFlyer(
+      flyerData.flyerId,
+      flyerData.statementId,
+      flyerData.vote,
+      existingUserId || undefined
+    );
 
-      const { user: flyerUser, room } = response;
-        
-      if (!flyerUser) {
-        console.error("No userId or user in flyer response");
-        toast.error("Failed to process flyer vote");
-        setIsJoiningAnonymously(false);
-        return;
-      }
-      setTargetRoomId(room.id);
-      setQrScanResult(response);
-    } catch (error) {
-      console.error("Error voting via flyer:", error);
+    if (!response || !response.user) {
       toast.error("Failed to process flyer vote");
-      setIsJoiningAnonymously(false);
+    } else {
+      setTargetRoomId(response.room.id);
+      setQrScanResult(response);
     }
+
+    setIsJoiningAnonymously(false);
   };
 
   const handleCreateRoom = async (

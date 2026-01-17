@@ -67,7 +67,7 @@ export function SwipeIndicator({
 
   return (
     <motion.div
-      className={`absolute ${position} ${config.bg} text-white ${sizeClasses} rounded-lg text-xl ${config.rotation} shadow-lg ${isCompact ? "flex items-center gap-1" : ""} ${className}`}
+      className={`absolute ${position} ${config.bg} text-white ${sizeClasses} rounded-lg text-xl ${config.rotation} shadow-lg ${isCompact ? "flex items-center gap-1" : ""} pointer-events-none ${className}`}
       style={{
         opacity: opacity,
       }}

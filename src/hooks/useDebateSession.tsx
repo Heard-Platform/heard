@@ -44,7 +44,7 @@ interface DebateSessionContextType {
     statementId: string,
     vote: VoteType,
     userId?: string,
-  ) => Promise<FlyerVoteResponse>;
+  ) => Promise<FlyerVoteResponse | null>;
   markChanceCardSwiped: (
     userId: string,
     roomId: string,
@@ -343,32 +343,18 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       vote: VoteType,
       userId?: string,
     ) => {
-      setError(null);
-      try {
-        const response = await api.voteViaFlyer(
-          flyerId,
-          statementId,
-          vote,
-          userId,
+      const response = await safelyMakeApiCall<FlyerVoteResponse>(() =>
+        api.voteViaFlyer(flyerId, statementId, vote, userId),
+      );
+      if (response && response.success && response.data) {
+        setUserAndSession(
+          response.data.user,
+          response.data.sessionId,
         );
-
-        if (response.success && response.data) {
-          return response.data;
-        } else {
-          const errorMsg =
-            response.error || "Failed to vote via flyer";
-          setError(errorMsg);
-          throw new Error(errorMsg);
-        }
-      } catch (err) {
-        const errorMsg =
-          err instanceof Error ? err.message : "Unknown error";
-        setError(errorMsg);
-        console.error("Failed to vote via flyer:", errorMsg);
-        throw err;
       }
+      return response?.data ? response.data : null;
     },
-    [user],
+    [safelyMakeApiCall, setUserAndSession],
   );
 
   const markChanceCardSwiped = useCallback(
