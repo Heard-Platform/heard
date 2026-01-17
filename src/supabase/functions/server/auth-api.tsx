@@ -70,7 +70,7 @@ const getUserAndNewSession = async (userId: string) => {
   }
 
   user.lastActive = Date.now();
-  await saveUserSession(user);
+  await saveUserAndEmail(user);
 
   const session = await createSession(user.id);
 
@@ -86,7 +86,7 @@ const updateUserLastActive = async (userId: string) => {
   }
 
   user.lastActive = Date.now();
-  await saveUserSession(user);
+  await saveUserAndEmail(user);
 
   const { passwordHash: _, ...userWithoutPassword } = user;
   return { user: userWithoutPassword };
@@ -115,9 +115,9 @@ export const getUserSession = async (
   }
 };
 
-export const saveUserSession = async (session: User) => {
-  await kv.set(`user:${session.id}`, JSON.stringify(session));
-  await kv.set(`user_email:${session.email}`, session.id);
+export const saveUserAndEmail = async (user: User) => {
+  await kv.set(`user:${user.id}`, JSON.stringify(user));
+  await kv.set(`user_email:${user.email}`, user.id);
 };
 
 const getUserByEmail = async (
@@ -204,7 +204,7 @@ const processAccountSetup = async (
     user.isAnonymous = false;
     user.convertedFromAnonAt = Date.now();
     user.lastActive = Date.now();
-    await saveUserSession(user);
+    await saveUserAndEmail(user);
     userSession = user;
   } else {
     console.log(`Creating new user with password for email ${normalizedEmail}`);
@@ -226,7 +226,7 @@ export const createUserAccount = async (
   isAnonymous: boolean = false,
 ): Promise<User> => {
   const userId = generateId();
-  const userSession: User = {
+  const user: User = {
     id: userId,
     nickname: nickname.substring(0, 20),
     email: email.trim().toLowerCase(),
@@ -241,8 +241,8 @@ export const createUserAccount = async (
     isAnonymous,
   };
 
-  await saveUserSession(userSession);
-  return userSession;
+  await saveUserAndEmail(user);
+  return user;
 };
 
 export const createAnonymousUser = async (): Promise<User> => {
@@ -252,14 +252,14 @@ export const createAnonymousUser = async (): Promise<User> => {
   const randomPassword = generateId();
   const passwordHash = await hashPassword(randomPassword);
 
-  const userSession = await createUserAccount(
+  const user = await createUserAccount(
     anonymousNickname,
     anonymousEmail,
     passwordHash,
     true,
   );
 
-  return userSession;
+  return user;
 };
 
 const sendEmail = async ({
@@ -635,7 +635,7 @@ app.post(
       const passwordHash = await hashPassword(newPassword);
 
       user.passwordHash = passwordHash;
-      await saveUserSession(user);
+      await saveUserAndEmail(user);
 
       await kv.del(`password_reset:${token}`);
 
