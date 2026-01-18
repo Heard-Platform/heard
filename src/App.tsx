@@ -408,6 +408,7 @@ function AppContent() {
         roomStatements={roomStatements}
         targetRoomId={targetRoomId || undefined}
         analysisRoomId={analysisRoomId || undefined}
+        hasQrScanResult={!!qrScanResult}
         onCreateRoom={handleCreateRoom}
         onJoinRoom={handleJoinRoom}
         onRefreshRooms={getActiveRooms}

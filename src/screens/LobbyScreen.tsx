@@ -30,6 +30,7 @@ interface LobbyScreenProps {
   roomStatements: Record<string, any[]>;
   targetRoomId?: string;
   analysisRoomId?: string;
+  hasQrScanResult?: boolean;
   onCreateRoom: (
     newDebate: NewDebateRoom,
   ) => Promise<DebateRoom>;
@@ -58,6 +59,7 @@ export function LobbyScreen({
   activeRooms,
   loading,
   error,
+  hasQrScanResult,
   onCreateRoom,
   onJoinRoom,
   onRefreshRooms,
@@ -113,13 +115,13 @@ export function LobbyScreen({
 
   useEffect(() => {
     const hasSeenIntro = localStorage.getItem(INTRO_SEEN_KEY);
-    if (!hasSeenIntro) {
+    if (!hasSeenIntro && !hasQrScanResult) {
       localStorage.setItem(INTRO_SEEN_KEY, "true");
       setTimeout(() => {
         setHelpModalOpen(true);
       }, 500);
     }
-  }, []);
+  }, [hasQrScanResult]);
 
   // Detect mobile keyboard state
   useEffect(() => {
