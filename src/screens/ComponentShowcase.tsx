@@ -19,7 +19,7 @@ import { IntroModalStory } from "../stories/IntroModal.story";
 import { DemographicsCardStory } from "../stories/DemographicsCard.story";
 import { AnonAccountSetupModalStory } from "../stories/AnonAccountSetupModal.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
-import { safelyGetStorageItem } from "../utils/localStorage";
+import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -32,7 +32,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
 
   const handleTabChange = (value: string) => {
     try {
-      localStorage.setItem("showcaseActiveTab", value);
+      safelySetStorageItem("showcaseActiveTab", value);
     } catch {
       // Ignore localStorage errors
     }

@@ -678,7 +678,7 @@ export const getRoomId = (): string | null => {
 
 export const setRoomId = (roomId: string) => {
   if (typeof window === "undefined") return;
-  localStorage.setItem("heard_room_id", roomId);
+  safelySetStorageItem("heard_room_id", roomId);
 };
 
 export const clearRoomId = () => {
