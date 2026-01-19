@@ -33,6 +33,14 @@ export interface Statement {
   voters: { [userId: string]: VoteType };
 }
 
+export interface Comment {
+  id: string;
+  statementId: string;
+  userId: string;
+  text: string;
+  timestamp: number;
+}
+
 export type StatementCard = {
   type: "statement";
   statement: Statement;
