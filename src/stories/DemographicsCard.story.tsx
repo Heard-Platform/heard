@@ -9,22 +9,23 @@ import { SwipeableStatementStack } from "../components/room/SwipeableStatementSt
 import type {
   DemographicQuestion
 } from "../types";
+import { useState } from "react";
 
 const questions: DemographicQuestion[] = [
   {
-    id: 1,
+    id: "1",
     type: "gender",
   },
   {
-    id: 2,
+    id: "2",
     type: "age_range",
   },
   {
-    id: 3,
+    id: "3",
     type: "occupation",
   },
   {
-    id: 4,
+    id: "4",
     type: "custom",
     text: "Do you currently live in Washington, DC?",
     options: ["Yes", "No"],
@@ -78,8 +79,15 @@ export function DemographicsCardStory() {
 }
 
 function DemographicsSwipeableStack() {
-  const handleAnswer = (index: number, answer: string) => {
+  const [demographicsAnswered, setDemographicsAnswered] = useState<Set<string>>(new Set());
+
+  const handleAnswer = (index: string, answer: string) => {
     console.log(`Question ${index} answered:`, answer);
+    setDemographicsAnswered((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(answer);
+      return newSet;
+    });
   };
 
   return (
@@ -92,6 +100,7 @@ function DemographicsSwipeableStack() {
         chanceCardSwiped={true}
         youtubeCardSwiped={true}
         demographicQuestions={questions}
+        demographicsAnswered={demographicsAnswered}
         onVote={async () => {}}
         onSubmitStatement={async () => {}}
         onShowAccountSetupModal={() => {}}

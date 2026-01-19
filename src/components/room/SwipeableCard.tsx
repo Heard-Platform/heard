@@ -28,7 +28,7 @@ interface SwipeableCardProps {
   ) => void;
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
-  onDemographicsAnswer?: (index: number, answer: string) => void;
+  onDemographicsAnswer?: (id: string, answer: string) => void;
   onSkip: () => void;
 }
 
@@ -100,7 +100,7 @@ export function SwipeableCard({
         pointerEvents: isTopCard ? "auto" : "none",
         touchAction: isTopCard ? "none" : "auto",
       }}
-      drag={isTopCard ? "x" : false}
+      drag={isTopCard && !card.isUnswipeable ? "x" : false}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={1}
       onDragEnd={isTopCard ? onDragEnd : undefined}
@@ -136,11 +136,11 @@ export function SwipeableCard({
             ? getPastelColor(card.statement.id)
             : ""
         } ${
-          isTopCard
+          isTopCard && !card.isUnswipeable
             ? "cursor-grab active:cursor-grabbing"
             : "cursor-default"
         }`}
-        style={{ touchAction: isTopCard ? "none" : "auto" }}
+        style={{ touchAction: isTopCard && !card.isUnswipeable ? "none" : "auto" }}
       >
         {card.type === "chance" ? (
           <ChanceCard

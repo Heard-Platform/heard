@@ -54,7 +54,7 @@ export type DemographicQuestionType =
   | "custom";
 
 export type DemographicQuestion = {
-  id: number;
+  id: string;
   type: DemographicQuestionType;
   text?: string;
   options?: string[];
@@ -63,9 +63,11 @@ export type DemographicQuestion = {
 export type DemographicsCard = {
   type: "demographics";
   question: DemographicQuestion;
+  isUnswipeable: true;
 }
 
-export type Card = StatementCard | ChanceCard | YouTubeCard | DemographicsCard;
+export type Card = (StatementCard | ChanceCard | YouTubeCard | DemographicsCard)
+  & { isUnswipeable?: boolean };
 
 export const isStatementCard = (card: Card): card is StatementCard => {
   return card.type === "statement";
