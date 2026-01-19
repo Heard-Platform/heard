@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
@@ -180,6 +181,9 @@ export function IntroModal({
               </p>
             </motion.div>
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Learn how to use Heard by swiping on statements
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
