@@ -44,8 +44,8 @@ const learnMoreLinks = [
   },
   {
     icon: Heart,
-    label: "Support Heard on Patreon",
-    url: "https://patreon.com/heardapp",
+    label: "Support Heard on GoFundMe",
+    url: "https://www.gofundme.com/f/support-heard-making-democracy-fun-and-engaging",
   },
   {
     icon: Video,
