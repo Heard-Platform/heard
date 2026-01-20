@@ -67,20 +67,20 @@ class AdminApiClient extends BaseApiClient {
     );
   }
 
-  async sendNewsletter(adminKey: string, testMode: boolean, testEmail: string) {
+  async sendNewsletter(adminKey: string, testMode: boolean, testEmail: string, newsletterEdition: number) {
     return this.request<{ sent: number; failed: number; total: number }>(
       "/admin/send-newsletter",
       {
         method: "POST",
         headers: { "X-Admin-Key": adminKey },
-        body: JSON.stringify({ testMode, testEmail }),
+        body: JSON.stringify({ testMode, testEmail, newsletterEdition }),
       },
     );
   }
 
-  async getNewsletterEligibleCount(adminKey: string) {
+  async getNewsletterEligibleCount(adminKey: string, newsletterEdition: number) {
     return this.request<{ eligible: number; alreadySent: number; total: number }>(
-      "/admin/newsletter-eligible-count",
+      `/admin/newsletter-eligible-count?edition=${newsletterEdition}`,
       {
         method: "GET",
         headers: { "X-Admin-Key": adminKey },

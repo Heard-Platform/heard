@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Card } from "../ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Mail, Send, TestTube } from "lucide-react";
 import { adminApi } from "../../utils/admin-api";
 
@@ -17,11 +18,12 @@ export function Newsletter({ adminKey }: NewsletterProps) {
   const [eligibleCount, setEligibleCount] = useState<number | null>(null);
   const [alreadySentCount, setAlreadySentCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedNewsletter, setSelectedNewsletter] = useState<number>(2);
 
   const fetchEligibleCount = async () => {
     try {
       setLoading(true);
-      const res = await adminApi.getNewsletterEligibleCount(adminKey);
+      const res = await adminApi.getNewsletterEligibleCount(adminKey, selectedNewsletter);
       if (res.success && res.data) {
         setEligibleCount(res.data.eligible);
         setAlreadySentCount(res.data.alreadySent);
@@ -35,7 +37,7 @@ export function Newsletter({ adminKey }: NewsletterProps) {
 
   useEffect(() => {
     fetchEligibleCount();
-  }, []);
+  }, [selectedNewsletter]);
 
   const handleSendNewsletter = async (isTest: boolean) => {
     if (isTest && !testEmail.trim()) {
@@ -62,7 +64,8 @@ export function Newsletter({ adminKey }: NewsletterProps) {
       const res = await adminApi.sendNewsletter(
         adminKey,
         isTest,
-        testEmail
+        testEmail,
+        selectedNewsletter
       );
 
       if (res.success && res.data) {
@@ -94,9 +97,27 @@ export function Newsletter({ adminKey }: NewsletterProps) {
         <h2 className="text-xl">Send Newsletter</h2>
       </div>
 
+      <div className="space-y-4 mb-6">
+        <div>
+          <Label htmlFor="newsletterSelect">Newsletter Edition</Label>
+          <Select
+            value={selectedNewsletter.toString()}
+            onValueChange={(value: string) => setSelectedNewsletter(parseInt(value))}
+          >
+            <SelectTrigger id="newsletterSelect">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">Newsletter #1 - Cold Showers & Livestreams</SelectItem>
+              <SelectItem value="2">Newsletter #2 - News Feature & Broken Strings</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 mb-6">
         <h3 className="font-semibold text-purple-900 mb-2">
-          📧 Ya' Heard? Newsletter
+          📧 Ya' Heard? Newsletter #{selectedNewsletter}
         </h3>
         {loading ? (
           <p className="text-sm text-purple-800">Loading eligible users...</p>

@@ -1,3 +1,4 @@
+import { getNewsletterEmail, getNewsletter2Email } from "./email-templates.tsx";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, getUser, saveDebate } from "./kv-utils.tsx";
@@ -5,7 +6,6 @@ import { getVotesForUser, getUserActivityRecords } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
 import { saveUser } from "./kv-utils.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
-import { getNewsletterEmail } from "./email-templates.tsx";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
@@ -45,18 +45,19 @@ app.get("/make-server-f1a393b4/admin/users", async (c) => {
 
 app.get("/make-server-f1a393b4/admin/newsletter-eligible-count", async (c) => {
   try {
+    const edition = c.req.query("edition") || "1";
     const users = await getAllRealUsers();
     const eligibleUsers = users.filter(u => !u.isTestUser && !u.isAnonymous && u.email);
     
-    const newsletterSentKey = "newsletter:edition1:sent-users";
-    const alreadySent = await kv.get(newsletterSentKey);
+    const newsletterSentKey = `newsletter:edition${edition}:sent-users`;
+    const alreadySent = await kv.get(newsletterSentKey) || [];
     
     const remainingUsers = eligibleUsers.filter(u => !alreadySent.includes(u.id));
     
     return c.json({ 
       eligible: remainingUsers.length,
       alreadySent: alreadySent.length,
-      total: eligibleUsers.length
+      total: eligibleUsers.length,
     });
   } catch (error) {
     console.error("Error fetching newsletter eligible count:", error);
@@ -490,7 +491,7 @@ app.post(
   "/make-server-f1a393b4/admin/send-newsletter",
   async (c) => {
     try {
-      const { testMode, testEmail } = await c.req.json();
+      const { testMode, testEmail, newsletterEdition } = await c.req.json();
 
       const resendApiKey = Deno.env.get("RESEND_API_KEY");
       if (!resendApiKey) {
@@ -500,30 +501,40 @@ app.post(
         );
       }
 
-      let eligibleUsers;
-      if (testMode && testEmail) {
-        eligibleUsers = [{ email: testEmail, id: 'test' }];
-        console.log(`Sending test newsletter to ${testEmail}`);
-      } else {
-        const users = await getAllRealUsers();
-        eligibleUsers = users.filter(u => !u.isTestUser && !u.isAnonymous && u.email);
-        console.log(`Found ${eligibleUsers.length} eligible users for newsletter`);
-      }
-
-      const newsletterSentKey = "newsletter:edition1:sent-users";
+      const newsletterSentKey = `newsletter:edition${newsletterEdition}:sent-users`;
       const alreadySent = await kv.get(newsletterSentKey) || [];
       console.log(`Already sent to ${alreadySent.length} users`);
 
-      const usersToSend = eligibleUsers.filter(u => !alreadySent.includes(u.id));
-      console.log(`Sending to ${usersToSend.length} new users`);
+      let eligibleUsers;
+      if (testMode && testEmail) {
+        eligibleUsers = [{ email: testEmail, id: 'test' }];
+        console.log(`Sending test newsletter #${newsletterEdition} to ${testEmail}`);
+      } else {
+        const users = await getAllRealUsers();
+        eligibleUsers = users.filter(
+          u => !u.isTestUser && !u.isAnonymous && u.email
+            && !alreadySent.includes(u.id)
+        );
+        console.log(`Found ${eligibleUsers.length} eligible users for newsletter #${newsletterEdition}`);
+      }
+
+
+      console.log(`Sending to ${eligibleUsers.length} users`);
 
       let sent = 0;
       let failed = 0;
       const newlySent: string[] = [];
 
-      for (const user of usersToSend) {
+      const getNewsletterHtml = newsletterEdition === 2 ? getNewsletter2Email : getNewsletterEmail;
+      const newsletterSubjects = {
+        1: "The 1st Heard Newsletter! Cold showers, live streams, and QR codes - oh my!",
+        2: "The 2nd Heard Newsletter! Heard in the news, broken strings, and getting closer to 100 users!",
+      };
+      const subject = newsletterSubjects[newsletterEdition as 1 | 2] || newsletterSubjects[1];
+
+      for (const user of eligibleUsers) {
         try {
-          const html = getNewsletterEmail();
+          const html = getNewsletterHtml();
 
           const response = await fetch("https://api.resend.com/emails", {
             method: "POST",
@@ -534,7 +545,7 @@ app.post(
             body: JSON.stringify({
               from: "Alex @ Heard <alex@heard-now.com>",
               to: [user.email],
-              subject: `${testMode ? "[TEST] " : ""}The 1st Heard Newsletter! Cold showers, live streams, and QR codes - oh my!`,
+              subject: `${testMode ? "[TEST] " : ""}${subject}`,
               html,
             }),
           });
@@ -564,7 +575,7 @@ app.post(
         success: true,
         sent,
         failed,
-        total: usersToSend.length,
+        total: eligibleUsers.length,
         skipped: alreadySent.length,
       });
     } catch (error) {

@@ -84,6 +84,107 @@ const styles = {
   link: "color: #667eea; text-decoration: none;",
 };
 
+const getOrdinalSuffix = (num: number): string => {
+  const lastDigit = num % 10;
+  const lastTwoDigits = num % 100;
+  
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+    return `${num}th`;
+  }
+  
+  switch (lastDigit) {
+    case 1:
+      return `${num}st`;
+    case 2:
+      return `${num}nd`;
+    case 3:
+      return `${num}rd`;
+    default:
+      return `${num}th`;
+  }
+};
+
+const getNewsletterHeader = (editionNumber: number) => `
+  <div style="${styles.header}">
+    <h1 style="${styles.headerTitle}">
+      Ya' Heard?
+    </h1>
+    <p style="${styles.headerSubtitle}">The ${getOrdinalSuffix(editionNumber)} Edition of the Heard Newsletter!</p>
+  </div>
+`;
+
+const getSupportSection = () => `
+  <div style="${styles.section}">
+    <h2 style="${styles.helpSectionTitle}">
+    💜 Thanks to everyone supporting Heard!
+    </h2>
+
+    <p style="${styles.helpIntro}">
+      Here are more ways you can help if you're wanting to
+    </p>
+    
+    <div style="${styles.helpBox}">
+      <h3 style="${styles.helpBoxTitle}">
+        1. Use the app! Keep the feedback coming
+      </h3>
+      <p style="${styles.helpBoxText}">
+        Be brutally honest! All the feedback I've gotten so far has been really great. Thank you to everyone who's been using the app. ❤️
+      </p>
+    </div>
+
+    <div style="${styles.helpBox}">
+      <h3 style="${styles.helpBoxTitle}">
+        2. Support on GoFundMe
+      </h3>
+      <p style="${styles.helpBoxTextWithButton}">
+        Please consider supporting Heard on GoFundMe to help me work full time on Heard for the next 6 months.
+      </p>
+      <a href="https://www.gofundme.com/f/support-heard-making-democracy-fun-and-engaging" 
+         style="${styles.buttonGreen}">
+        💚 Support on GoFundMe
+      </a>
+    </div>
+
+    <div style="${styles.helpBoxLast}">
+      <h3 style="${styles.helpBoxTitle}">
+        3. Help with guerrilla marketing
+      </h3>
+      <p style="${styles.helpBoxText}">
+        Do you live in DC and want to get into some totally innocent trouble with me? I'm putting up QR codes around DC for debates on the app and would love any help! Just reply to this email and let me know.
+      </p>
+    </div>
+  </div>
+
+  <div style="${styles.closing}">
+    <p style="${styles.closingText}">
+      Thanks for being a part of Heard and helping save democracy, one swipe at a time!
+    </p>
+    <p style="${styles.signature}">
+      - Alex
+    </p>
+  </div>
+`;
+
+const getNewsletterFooter = () => `
+  <div style="${styles.footer}">
+    <p>You're receiving this because you have an account on Heard</p>
+    <p>If you don't want to receive newsletters anymore, just respond to this email and let me know. Thanks!</p>
+  </div>
+`;
+
+const getMusicLivestreamButtons = (youtubeUrl: string, songRequestRoomUrl: string) => `
+  <div style="${styles.buttonContainer}">
+    <a href="${youtubeUrl}" 
+       style="${styles.buttonRed}">
+      📺 Next Live Stream
+    </a>
+    <a href="${songRequestRoomUrl}" 
+       style="${styles.buttonPurple}">
+      🎶 Make a Song Request!
+    </a>
+  </div>
+`;
+
 export const getNewsletterEmail = (): string => {
   return `
 <!DOCTYPE html>
@@ -95,12 +196,7 @@ export const getNewsletterEmail = (): string => {
 <body style="${styles.body}">
   <div style="${styles.container}">
     
-    <div style="${styles.header}">
-      <h1 style="${styles.headerTitle}">
-        Ya' Heard?
-      </h1>
-      <p style="${styles.headerSubtitle}">The 1st Edition of the Heard Newsletter!</p>
-    </div>
+    ${getNewsletterHeader(1)}
 
     <div style="${styles.contentCard}">
       
@@ -115,7 +211,7 @@ export const getNewsletterEmail = (): string => {
           🚿 10 Daily Cold Showers In To My 100 User Challenge!
         </h2>
         <p style="${styles.paragraph}">
-          I'm taking cold showers every day until I hit 100 users! You can see for yourself on <a href="https://www.youtube.com/@AlexLongHeard" style="${styles.link}">YouTube</a> and <a href="https://www.instagram.com/alexlongheard/" style="${styles.link}">Instagram</a>.
+          I'm taking cold showers every day until I hit 100 users! You can see for yourself on <a href="https://www.youtube.com/@AlexLongHeard" style="${styles.link}">YouTube</a> and <a href="https://www.instagram.com/alexmasonlong/" style="${styles.link}">Instagram</a>.
         </p>
         <img src="https://i.ibb.co/YF2CP8yM/Screenshot-2026-01-14-at-11-10-38-AM.png" 
              alt="Cold shower challenge" 
@@ -132,16 +228,7 @@ export const getNewsletterEmail = (): string => {
         <img src="https://i.ibb.co/n8qVSKqN/Screenshot-2026-01-14-at-11-07-06-AM.png" 
              alt="Music livestream" 
              style="${styles.image}; margin-bottom: 20px;" />
-        <div style="${styles.buttonContainer}">
-          <a href="https://www.youtube.com/@AlexLongHeard" 
-             style="${styles.buttonRed}">
-            📺 Live Streams
-          </a>
-          <a href="https://heard-now.com/room/ycrrn2a3ijgmk7qj2c8" 
-             style="${styles.buttonPurple}">
-            🎶 Make a Song Request!
-          </a>
-        </div>
+        ${getMusicLivestreamButtons("https://www.youtube.com/@AlexLongHeard", "https://heard-now.com/room/ycrrn2a3ijgmk7qj2c8")}
       </div>
 
       <div style="${styles.section}">
@@ -156,61 +243,76 @@ export const getNewsletterEmail = (): string => {
              style="${styles.image}" />
       </div>
 
+      ${getSupportSection()}
+
+    </div>
+
+    ${getNewsletterFooter()}
+  </div>
+</body>
+</html>
+  `;
+};
+
+export const getNewsletter2Email = (): string => {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Heard Newsletter</title>
+</head>
+<body style="${styles.body}">
+  <div style="${styles.container}">
+    
+    ${getNewsletterHeader(2)}
+
+    <div style="${styles.contentCard}">
+
       <div style="${styles.section}">
-        <h2 style="${styles.helpSectionTitle}">
-        💜 The feedback and support so far has been great.
+        <h2 style="${styles.sectionTitle}">
+          🎤 Heard was in the news! (not really)
         </h2>
-
-        <p style="${styles.helpIntro}">
-          Here are more ways you can help if you're wanting to
+        <p style="${styles.paragraph}">
+          We did some guerilla marketing at Farmers Market again and had 15 people vote to close an intersection using Heard!
         </p>
-        
-        <div style="${styles.helpBox}">
-          <h3 style="${styles.helpBoxTitle}">
-            1. Use the app! Keep the feedback coming
-          </h3>
-          <p style="${styles.helpBoxText}">
-            Be brutally honest! All the feedback I've gotten so far has been really great. Thank you to everyone who's been using the app. ❤️
-          </p>
-        </div>
-
-        <div style="${styles.helpBox}">
-          <h3 style="${styles.helpBoxTitle}">
-            2. Support on GoFundMe
-          </h3>
-          <p style="${styles.helpBoxTextWithButton}">
-            I announced a Patreon last week but after some strategizing I realized at this stage a GoFundMe makes more sense. Please consider supporting me on GoFundMe to help me work full time on Heard for the next 6 months.
-          </p>
-          <a href="https://www.gofundme.com/f/support-heard-making-democracy-fun-and-engaging" 
-             style="${styles.buttonGreen}">
-            💚 Support on GoFundMe
-          </a>
-        </div>
-
-        <div style="${styles.helpBoxLast}">
-          <h3 style="${styles.helpBoxTitle}">
-            3. Help with guerrilla marketing
-          </h3>
-          <p style="${styles.helpBoxText}">
-            Do you live in DC and want to get into some totally innocent trouble with me? I'm putting up QR codes around DC for debates on the app and would love any help! Just reply to this email and let me know.
-          </p>
-        </div>
-      </div>
-
-      <div style="${styles.closing}">
-        <p style="${styles.closingText}">
-          Thanks for being a part of Heard and helping save democracy, one swipe at a time!
-        </p>
-        <p style="${styles.signature}">
-          - Alex
+        <a href="https://youtube.com/shorts/q4Mt_I3H8VE">
+          <img src="https://i.postimg.cc/wTdKdVcG/Screenshot-2026-01-20-at-1-45-18-PM.png" 
+               alt="News feature" 
+               style="${styles.image}" />
+        </a>
+        <p style="${styles.paragraph}">
+          You can watch our "coverage" of the event <a href="https://youtube.com/shorts/q4Mt_I3H8VE" style="${styles.link}">here</a>. Thanks to Greg for being an awesome cameraman!
         </p>
       </div>
+
+      <div style="${styles.section}">
+        <h2 style="${styles.sectionTitle}">
+          💔 Breaking hearts, breaking strings
+        </h2>
+        <p style="${styles.paragraph}">
+          I broke my guitar string live on stream! Here's the moment it happened:
+        </p>
+        <img src="https://i.postimg.cc/9Xk3N2rc/Copy-of-string-break-gif.gif" 
+             alt="Breaking guitar string" 
+             style="${styles.image}" />
+        ${getMusicLivestreamButtons("https://youtube.com/live/-okUoAoYLFQ", "https://heard-now.com/room/7zsnxx6po4fmkhlz7r6")}
+      </div>
+
+      <div style="${styles.section}">
+        <h2 style="${styles.sectionTitle}">
+          🚿 Only 46 users left to end the cold shower mania!
+        </h2>
+        <p style="${styles.paragraph}">
+          We're getting closer! I'm still taking cold showers every day until I hit 100 users. You can watch my daily cold shower videos on <a href="https://www.youtube.com/@AlexLongHeard" style="${styles.link}">YouTube</a> and <a href="https://www.instagram.com/alexmasonlong/" style="${styles.link}">Instagram</a>.
+        </p>
+      </div>
+
+      ${getSupportSection()}
+
     </div>
 
-    <div style="${styles.footer}">
-      <p>You're receiving this because you have an account on Heard</p>
-      <p>If you don't want to receive newsletters anymore, just respond to this email and let me know. Thanks!</p>
-    </div>
+    ${getNewsletterFooter()}
   </div>
 </body>
 </html>
