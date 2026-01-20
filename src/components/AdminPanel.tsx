@@ -49,7 +49,7 @@ import { UserHistory } from "./admin/UserHistory";
 import { UsersTable } from "./admin/UsersTable";
 import { DataFixes } from "./admin/DataFixes";
 import { Newsletter } from "./admin/Newsletter";
-import { safelyGetStorageItem } from "../utils/localStorage";
+import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 
 interface AdminPanelProps {
   onExit?: () => void;
@@ -115,7 +115,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         setSubHeards(subHeardsRes.data?.subHeards || []);
         setDebates(debatesRes.data?.debates || []);
         setIsAuthenticated(true);
-        localStorage.setItem("devAdminKey", adminKey);
+        safelySetStorageItem("devAdminKey", adminKey);
       } else {
         alert(
           `Invalid admin key: ${usersRes.error || subHeardsRes.error || debatesRes.error || "Unknown error"}`,
