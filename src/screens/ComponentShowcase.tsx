@@ -19,6 +19,7 @@ import { IntroModalStory } from "../stories/IntroModal.story";
 import { DemographicsCardStory } from "../stories/DemographicsCard.story";
 import { AnonAccountSetupModalStory } from "../stories/AnonAccountSetupModal.story";
 import { CommentingModalStory } from "../stories/CommentingModal.story";
+import { EditAnswersModalStory } from "../stories/EditAnswersModal.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 
@@ -94,6 +95,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
               <TabsTrigger value="anon-account-setup-modal">Anon Account Setup Modal</TabsTrigger>
               <TabsTrigger value="comment-modal">Comment Modal</TabsTrigger>
+              <TabsTrigger value="edit-answers-modal">Edit Answers Modal</TabsTrigger>
             </TabsList>
 
             <TabsContent value="results">
@@ -155,6 +157,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="comment-modal">
               <CommentingModalStory />
+            </TabsContent>
+            <TabsContent value="edit-answers-modal">
+              <EditAnswersModalStory />
             </TabsContent>
           </Tabs>
         </div>
