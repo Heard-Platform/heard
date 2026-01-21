@@ -1,6 +1,3 @@
-// @ts-ignore
-import { toast } from "sonner@2.0.3";
-
 import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
@@ -10,9 +7,12 @@ import { Card } from "../components/ui/card";
 import { Toaster } from "../components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { ONE_WEEK_MIN } from "../utils/time";
-import { DebateRoom, NewDebateRoom } from "../types";
+import { DebateRoom, NewDebateRoom, DemographicQuestion } from "../types";
 import { mockRooms } from "./mockData";
-    
+
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+
 const mockTopic = "Should we close Q Street during farmers market?";
 const mockStatements = [
   "Closing Q Street during farmers market creates a vibrant community space that brings neighbors together",
@@ -29,6 +29,7 @@ export function CreateRoomSheetStory() {
   const [reviewStatements, setReviewStatements] = useState(mockStatements);
   const [reviewDebateLength, setReviewDebateLength] = useState(ONE_WEEK_MIN);
   const [reviewAllowAnonymous, setReviewAllowAnonymous] = useState(false);
+  const [reviewDemographicQuestions, setReviewDemographicQuestions] = useState<DemographicQuestion[]>([]);
 
   const handleCreateRoom = async (
     newDebate: NewDebateRoom
@@ -181,10 +182,15 @@ export function CreateRoomSheetStory() {
             statements={reviewStatements}
             debateLength={reviewDebateLength}
             allowAnonymousVoting={reviewAllowAnonymous}
+            demographicQuestions={reviewDemographicQuestions}
+            showAdvancedFeatures={true}
             onTopicChange={setReviewTopic}
             onStatementsChange={setReviewStatements}
+            onImageUpload={() => {}}
+            onYoutubeUrlChange={() => {}}
             onDebateLengthChange={setReviewDebateLength}
             onAllowAnonymousVotingChange={setReviewAllowAnonymous}
+            onDemographicQuestionsChange={setReviewDemographicQuestions}
           />
         </Card>
       </TabsContent>

@@ -320,12 +320,14 @@ export function CreateRoomSheet({
           youtubeUrl={youtubeUrl}
           debateLength={debateLength}
           allowAnonymousVoting={allowAnonymousVoting}
+          demographicQuestions={[]}
           onTopicChange={setEditedTopic}
           onStatementsChange={setEditedStatements}
           onImageUpload={handleImageUpload}
           onYoutubeUrlChange={setYoutubeUrl}
           onDebateLengthChange={setDebateLength}
           onAllowAnonymousVotingChange={setAllowAnonymousVoting}
+          onDemographicQuestionsChange={() => {}}
         />
       )}
 

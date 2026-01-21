@@ -21,6 +21,8 @@ import { AnonAccountSetupModalStory } from "../stories/AnonAccountSetupModal.sto
 import { CommentingModalStory } from "../stories/CommentingModal.story";
 import { EditAnswersModalStory } from "../stories/EditAnswersModal.story";
 import { DataPrivacyModalStory } from "../stories/DataPrivacyModal.story";
+import { CustomDemographicQuestionStory } from "../stories/CustomDemographicQuestion.story";
+import { AdvancedFeaturesStory } from "../stories/AdvancedFeatures.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 
@@ -98,6 +100,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="comment-modal">Comment Modal</TabsTrigger>
               <TabsTrigger value="edit-answers-modal">Edit Answers Modal</TabsTrigger>
               <TabsTrigger value="data-privacy-modal">Data Privacy Modal</TabsTrigger>
+              <TabsTrigger value="custom-demographic-question">Custom Demographic Question</TabsTrigger>
+              <TabsTrigger value="advanced-features">Advanced Features</TabsTrigger>
             </TabsList>
 
             <TabsContent value="results">
@@ -165,6 +169,12 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="data-privacy-modal">
               <DataPrivacyModalStory />
+            </TabsContent>
+            <TabsContent value="custom-demographic-question">
+              <CustomDemographicQuestionStory />
+            </TabsContent>
+            <TabsContent value="advanced-features">
+              <AdvancedFeaturesStory />
             </TabsContent>
           </Tabs>
         </div>

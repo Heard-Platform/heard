@@ -7,6 +7,8 @@ import { Checkbox } from "../ui/checkbox";
 import { Sparkles, MessageCircle, Edit2, Trash2, CheckCircle2, Image as ImageIcon, Loader2, Check, UserCheck, Clock, Youtube } from "lucide-react";
 import { motion } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
+import { AdvancedFeatures } from "./AdvancedFeatures";
+import type { DemographicQuestion } from "../../types";
 
 interface ReviewExtractionStepProps {
   topic: string;
@@ -16,12 +18,15 @@ interface ReviewExtractionStepProps {
   youtubeUrl?: string;
   debateLength: number;
   allowAnonymousVoting: boolean;
+  demographicQuestions: DemographicQuestion[];
+  showAdvancedFeatures?: boolean;
   onTopicChange: (topic: string) => void;
   onStatementsChange: (statements: string[]) => void;
-  onImageUpload?: (file: File) => void;
-  onYoutubeUrlChange?: (url: string) => void;
+  onImageUpload: (file: File) => void;
+  onYoutubeUrlChange: (url: string) => void;
   onDebateLengthChange: (length: number) => void;
   onAllowAnonymousVotingChange: (value: boolean) => void;
+  onDemographicQuestionsChange: (questions: DemographicQuestion[]) => void;
 }
 
 export function ReviewExtractionStep({
@@ -32,12 +37,15 @@ export function ReviewExtractionStep({
   youtubeUrl,
   debateLength,
   allowAnonymousVoting,
+  demographicQuestions,
+  showAdvancedFeatures = false,
   onTopicChange,
   onStatementsChange,
   onImageUpload,
   onYoutubeUrlChange,
   onDebateLengthChange,
   onAllowAnonymousVotingChange,
+  onDemographicQuestionsChange,
 }: ReviewExtractionStepProps) {
   const [editingStatementIndex, setEditingStatementIndex] = useState<number | null>(null);
 
@@ -326,6 +334,14 @@ export function ReviewExtractionStep({
           </div>
         </div>
       </FunSheetCard>
+
+      {/* Advanced Features */}
+      {showAdvancedFeatures && (
+        <AdvancedFeatures
+          demographicQuestions={demographicQuestions}
+          onDemographicQuestionsChange={onDemographicQuestionsChange}
+        />
+      )}
     </>
   );
 }
