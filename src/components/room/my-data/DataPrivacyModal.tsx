@@ -148,7 +148,7 @@ export function DataPrivacyModal({
               <InfoBlock
                 icon={DollarSign}
                 title="We don't sell your data"
-                description="Heard does not currently sell any user data and has no immediate plans to do so. If this ever changes, it will only be done in an anonymized way and only on an opt-in basis for existing users, meaning by default your data will not be sold in any manner without your explicit consent."
+                description="Heard does not sell user data and currently has no plans to do so. As a startup we are, of course, still figuring out ways to bring in revenue though. If our thinking around data usage changes, we will make users aware in advance and will only use an opt-in approach. This means that by default your data won't be sold in any manner, and your explicit consent will always be required."
                 colorScheme="orange"
               />
             </div>
