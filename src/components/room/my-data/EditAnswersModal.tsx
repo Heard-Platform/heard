@@ -10,6 +10,7 @@ import {
 } from "../../ui/dropdown-menu";
 import { X, Info, ChevronDown } from "lucide-react";
 import type { DemographicQuestion } from "../../../types";
+import { DataPrivacyModal } from "./DataPrivacyModal";
 
 interface Answer {
   questionId: string;
@@ -83,6 +84,7 @@ export function EditAnswersModal({
   const [localAnswers, setLocalAnswers] = useState<Map<string, string>>(
     new Map(answers.map(a => [a.questionId, a.answer]))
   );
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
   const handleUpdateAnswer = (questionId: string, answer: string) => {
     setLocalAnswers(new Map(localAnswers.set(questionId, answer)));
@@ -142,7 +144,7 @@ export function EditAnswersModal({
           </div>
 
           <p className="text-xs text-muted-foreground leading-relaxed text-center">
-            <button className="hover:text-foreground transition-colors underline decoration-dotted underline-offset-2">
+            <button className="hover:text-foreground transition-colors underline decoration-dotted underline-offset-2" onClick={() => setIsPrivacyModalOpen(true)}>
               Learn more about how we protect your privacy
             </button>
           </p>
@@ -219,6 +221,11 @@ export function EditAnswersModal({
           </div>
         </div>
       </DialogContent>
+      <DataPrivacyModal 
+        variant="learn more"
+        isOpen={isPrivacyModalOpen} 
+        onClose={() => setIsPrivacyModalOpen(false)} 
+      />
     </Dialog>
   );
 }

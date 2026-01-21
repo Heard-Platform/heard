@@ -1,14 +1,15 @@
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from "../ui/dialog";
-import { Button } from "../ui/button";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from "../../ui/dialog";
+import { Button } from "../../ui/button";
 import { Shield, Eye, Lock, DollarSign } from "lucide-react";
 import { LucideIcon } from "lucide-react";
+import { YOUR_DATA_YOUTUBE_ID } from "../../../utils/constants/links";
 
 interface DataPrivacyModalProps {
+  variant: "decision" | "learn more";
   isOpen: boolean;
+  onWillingToShare?: () => void;
+  onDeclineToShare?: () => void;
   onClose: () => void;
-  onDeclineToShare: () => void;
-  onWillingToShare: () => void;
-  youtubeVideoId: string;
 }
 
 interface InfoBlockProps {
@@ -64,19 +65,19 @@ function InfoBlock({ icon: Icon, title, description, colorScheme }: InfoBlockPro
 }
 
 export function DataPrivacyModal({
-  onDeclineToShare,
-  onWillingToShare,
-  youtubeVideoId,
+  variant,
   isOpen,
+  onWillingToShare,
+  onDeclineToShare,
   onClose,
 }: DataPrivacyModalProps) {
   const handleDecline = () => {
-    onDeclineToShare();
+    onDeclineToShare?.();
     onClose();
   };
 
   const handleAccept = () => {
-    onWillingToShare();
+    onWillingToShare?.();
     onClose();
   };
 
@@ -87,7 +88,7 @@ export function DataPrivacyModal({
           <DialogHeader className="p-6 pb-4">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Shield className="w-6 h-6 text-purple-600" />
-              Sharing data on Heard
+              Your data on Heard
             </DialogTitle>
             <DialogDescription className="sr-only">
               Information about how we handle your demographic data
@@ -99,7 +100,7 @@ export function DataPrivacyModal({
               <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                 <iframe
                   className="absolute top-0 left-0 w-full h-full"
-                  src={`https://www.youtube.com/embed/${youtubeVideoId}`}
+                  src={`https://www.youtube.com/embed/${YOUR_DATA_YOUTUBE_ID}`}
                   title="Data Privacy Explanation"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -117,7 +118,7 @@ export function DataPrivacyModal({
             <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
               <h4 className="font-semibold text-purple-900 mb-2">How your answers help</h4>
               <p className="text-sm text-purple-800 leading-relaxed">
-                Answers around things like age, gender, and background help the community understand which voices are being represented in this discussion. 
+                When you create a discussion on Heard you can choose to add questions such as age, gender, or neighborhood into the mix. These answers help the community understand which voices are being represented in this discussion. 
                 It's valuable context that helps make conversations more meaningful and inclusive.
               </p>
             </div>
@@ -156,21 +157,34 @@ export function DataPrivacyModal({
           </div>
 
           <div className="p-6 pt-4 border-t border-border bg-muted/30 space-y-3">
-            <Button
-              onClick={handleAccept}
-              className="w-full bg-purple-600 hover:bg-purple-700"
-              size="lg"
-            >
-              Got it, I'm willing to reconsider
-            </Button>
-            <Button
-              onClick={handleDecline}
-              variant="outline"
-              className="w-full"
-              size="lg"
-            >
-              I still prefer not to answer
-            </Button>
+            {variant === "decision" ? (
+              <>
+                <Button
+                  onClick={handleAccept}
+                  className="w-full bg-purple-600 hover:bg-purple-700"
+                  size="lg"
+                >
+                  Got it, I'm willing to reconsider
+                </Button>
+                <Button
+                  onClick={handleDecline}
+                  variant="outline"
+                  className="w-full"
+                  size="lg"
+                >
+                  I still prefer not to answer
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={onClose}
+                variant="outline"
+                className="w-full"
+                size="lg"
+              >
+                Close
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>

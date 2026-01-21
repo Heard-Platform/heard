@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DataPrivacyModal } from "../components/room/DataPrivacyModal";
+import { DataPrivacyModal } from "../components/room/my-data/DataPrivacyModal";
 import { Button } from "../components/ui/button";
 
 export function DataPrivacyModalStory() {
@@ -38,11 +38,11 @@ export function DataPrivacyModalStory() {
         )}
 
         <DataPrivacyModal
+          variant="decision"
           isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
-          onDeclineToShare={handleDecline}
           onWillingToShare={handleAccept}
-          youtubeVideoId="dQw4w9WgXcQ"
+          onDeclineToShare={handleDecline}
+          onClose={() => setIsOpen(false)}
         />
       </div>
     </div>
