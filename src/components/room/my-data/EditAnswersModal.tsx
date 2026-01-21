@@ -19,7 +19,6 @@ interface Answer {
 
 interface EditAnswersModalProps {
   isOpen: boolean;
-  roomTopic: string;
   questions: DemographicQuestion[];
   answers: Answer[];
   onClose: () => void;
@@ -74,7 +73,6 @@ const standardQuestionsByType: Record<
 
 export function EditAnswersModal({
   isOpen,
-  roomTopic,
   questions,
   answers,
   onClose,
@@ -128,12 +126,6 @@ export function EditAnswersModal({
         </DialogHeader>
 
         <div className="px-6 py-4 space-y-4">
-          <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
-            <p className="text-sm font-medium text-purple-900 mb-1">
-              {roomTopic}
-            </p>
-          </div>
-
           <div className="flex gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-blue-900 leading-relaxed">
@@ -150,7 +142,7 @@ export function EditAnswersModal({
           </p>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-3 min-h-0 relative">
+        <div className="flex-1 overflow-y-auto px-6 space-y-3 min-h-0 relative">
           {questions.map((question) => {
             const currentAnswer = localAnswers.get(question.id) || PREFER_NOT_TO_SAY;
             const questionText = getQuestionText(question);
@@ -210,15 +202,14 @@ export function EditAnswersModal({
               </div>
             );
           })}
+
+          <div className="sticky bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background via-background/60 to-transparent pointer-events-none -mx-6" />
         </div>
 
-        <div className="relative">
-          <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-          <div className="p-6 pt-4">
-            <Button onClick={onClose} className="w-full">
-              Done
-            </Button>
-          </div>
+        <div className="p-6 pt-4 border-t border-border bg-muted/30">
+          <Button onClick={onClose} className="w-full">
+            Done
+          </Button>
         </div>
       </DialogContent>
       <DataPrivacyModal 

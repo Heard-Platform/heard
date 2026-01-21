@@ -75,7 +75,6 @@ export function EditAnswersModalStory() {
 
         <EditAnswersModal
           isOpen={isOpen}
-          roomTopic="💼 The Future of Work"
           questions={mockQuestions}
           answers={answers}
           onClose={() => setIsOpen(false)}

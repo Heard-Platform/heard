@@ -109,12 +109,6 @@ export function DataPrivacyModal({
               </div>
             </div>
 
-            <div className="prose prose-sm max-w-none">
-              <p className="text-muted-foreground leading-relaxed">
-                Here's how your answers are used and protected when you choose to share them on Heard.
-              </p>
-            </div>
-
             <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
               <h4 className="font-semibold text-purple-900 mb-2">How your answers help</h4>
               <p className="text-sm text-purple-800 leading-relaxed">

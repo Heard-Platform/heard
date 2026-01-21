@@ -106,7 +106,7 @@ export function CommentingModalStory() {
         <CommentingModal
           isOpen={isOpen}
           statement={mockStatement}
-          roomTopic="💼 The Future of Work"
+          roomTopic="💼 What are your thoughts on the future of work?"
           comments={comments}
           currentUserId="current-user"
           onClose={() => setIsOpen(false)}
