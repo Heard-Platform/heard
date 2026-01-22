@@ -142,7 +142,7 @@ export function SidePanelMenu({
           >
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-white" />
-              <span className="font-bold text-sm text-white">Login</span>
+              <span className="font-bold text-sm text-white">Sign Up</span>
             </div>
           </Button>
         ) : (
