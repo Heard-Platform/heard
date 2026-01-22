@@ -99,6 +99,7 @@
     --color-amber-100: oklch(.962 .059 95.617);
     --color-amber-200: oklch(.924 .12 95.746);
     --color-amber-300: oklch(.879 .169 91.605);
+    --color-amber-400: oklch(.828 .189 84.429);
     --color-amber-500: oklch(.769 .188 70.08);
     --color-amber-600: oklch(.666 .179 58.318);
     --color-amber-700: oklch(.555 .163 48.998);
@@ -2123,12 +2124,12 @@
     border-color: var(--color-yellow-400);
   }
 
-  .border-t-transparent {
-    border-top-color: #0000;
-  }
-
   .bg-amber-100 {
     background-color: var(--color-amber-100);
+  }
+
+  .bg-amber-400 {
+    background-color: var(--color-amber-400);
   }
 
   .bg-background {
@@ -4554,6 +4555,12 @@
   }
 
   @media (hover: hover) {
+    .hover\:bg-amber-500:hover {
+      background-color: var(--color-amber-500);
+    }
+  }
+
+  @media (hover: hover) {
     .hover\:bg-black\/10:hover {
       background-color: #0000001a;
     }
@@ -5967,6 +5974,71 @@
   .pt-15 {
     padding-top: 3.75rem;
   }
+
+  .heard-page-bg {
+    background: var(--page-bg-gradient);
+    min-height: 100vh;
+  }
+
+  .heard-card-bg {
+    background: linear-gradient(to bottom right, #faf5ff, #fff, #eff6ff);
+    border: 2px solid #e9d5ff;
+    position: relative;
+    box-shadow: 0 25px 50px -12px #00000040;
+  }
+
+  .heard-icon-circle {
+    background: linear-gradient(to bottom right, #a855f7, #3b82f6);
+    border-radius: 9999px;
+    justify-content: center;
+    align-items: center;
+    width: 4rem;
+    height: 4rem;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+  }
+
+  .heard-badge-circle {
+    color: #fff;
+    background: linear-gradient(to bottom right, #a855f7, #3b82f6);
+    border-radius: 9999px;
+    justify-content: center;
+    align-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: .75rem;
+    line-height: 1rem;
+    display: flex;
+  }
+
+  .heard-primary-gradient {
+    background: linear-gradient(to bottom right, #a855f7, #3b82f6);
+  }
+
+  .heard-spinner {
+    border: 2px solid #9333ea;
+    border-top-color: #0000;
+    border-radius: 9999px;
+  }
+
+  .heard-spinner-white {
+    border: 2px solid #fff;
+    border-top-color: #0000;
+    border-radius: 9999px;
+  }
+
+  .heard-center {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+  }
+
+  .heard-between {
+    justify-content: space-between;
+    align-items: center;
+    display: flex;
+  }
 }
 
 :root {
@@ -6008,6 +6080,7 @@
   --sidebar-accent-foreground: oklch(.205 0 0);
   --sidebar-border: oklch(.922 0 0);
   --sidebar-ring: oklch(.708 0 0);
+  --page-bg-gradient: linear-gradient(to bottom right, #faf5ff, #eff6ff);
 }
 
 .dark {
@@ -6045,6 +6118,7 @@
   --sidebar-accent-foreground: oklch(.985 0 0);
   --sidebar-border: oklch(.269 0 0);
   --sidebar-ring: oklch(.439 0 0);
+  --page-bg-gradient: linear-gradient(to bottom right, #1e1b2b, #181f2f);
 }
 
 html {

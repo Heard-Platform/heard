@@ -208,7 +208,7 @@ export function DebateAnalysisReportDemo({
   }) => (
     <button
       onClick={() => toggleSection(id)}
-      className="w-full flex items-center justify-between p-4 hover:bg-slate-50 rounded-lg transition-colors"
+      className="w-full heard-between p-4 hover:bg-slate-50 rounded-lg transition-colors"
     >
       <div className="flex items-center gap-2">
         <Icon className="w-5 h-5 text-purple-600" />
@@ -223,7 +223,7 @@ export function DebateAnalysisReportDemo({
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 md:p-8">
+    <div className="heard-page-bg p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-start justify-between">
           <div>

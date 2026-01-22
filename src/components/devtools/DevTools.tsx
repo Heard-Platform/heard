@@ -30,7 +30,7 @@ export function DevTools({ user, onExit }: DevToolsProps) {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="max-w-7xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow-lg">
-          <div className="flex items-center justify-between p-6 border-b">
+          <div className="heard-between p-6 border-b">
             <div className="flex items-center gap-2">
               <Wrench className="w-8 h-8 text-blue-600" />
               <h1 className="text-2xl">Dev Tools</h1>

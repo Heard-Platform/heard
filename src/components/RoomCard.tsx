@@ -181,7 +181,7 @@ export function RoomCard({
       transition={{ duration: 0.3 }}
       className="w-full max-w-2xl"
     >
-      <Card className="relative bg-gradient-to-br from-purple-50 via-white to-blue-50 border-2 border-purple-200 shadow-2xl">
+      <Card className="heard-card-bg">
         <div className="p-6 space-y-4">
           {/* Compact header */}
           <motion.div

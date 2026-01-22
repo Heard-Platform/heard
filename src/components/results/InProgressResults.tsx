@@ -89,7 +89,7 @@ export function InProgressResults({
 
           {/* Live Leaderboard - Racing Bars */}
           <div className="space-y-3 md:space-y-4 mb-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="heard-between mb-2">
               <h4 className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
                 <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
                 <span className="hidden sm:inline">

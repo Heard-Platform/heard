@@ -2,7 +2,7 @@ import type { Statement } from "../../types";
 import { SwipeInstructions } from "../SwipeInstructions";
 import { SwipeIndicator } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
-import { X } from "lucide-react";
+import { X, Star } from "lucide-react";
 import moment from "moment";
 
 interface StatementCardProps {
@@ -15,6 +15,7 @@ interface StatementCardProps {
   superAgreeOpacity: MotionValue<number>;
   passOpacity: MotionValue<number>;
   getTypeIcon: (type?: string) => string | null;
+  onSuperAgree: () => void;
   onSkip: () => void;
 }
 
@@ -28,6 +29,7 @@ export function StatementCard({
   superAgreeOpacity,
   passOpacity,
   getTypeIcon,
+  onSuperAgree,
   onSkip,
 }: StatementCardProps) {
   const timeAgo = moment(statement.timestamp).fromNow();
@@ -35,7 +37,7 @@ export function StatementCard({
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div className="heard-between">
         <div className="flex items-center gap-2">
           {statement.isSpicy && (
             <span className="text-lg">🌶️</span>
@@ -52,15 +54,26 @@ export function StatementCard({
           )}
         </div>
         {isTopCard && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onSkip();
-            }}
-            className="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors flex items-center justify-center flex-shrink-0"
-          >
-            <X className="w-4 h-4 text-gray-700" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onSuperAgree();
+              }}
+              className="w-7 h-7 rounded-full bg-amber-400 hover:bg-amber-500 transition-colors flex items-center justify-center flex-shrink-0"
+            >
+              <Star className="w-4 h-4 text-white" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onSkip();
+              }}
+              className="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors flex items-center justify-center flex-shrink-0"
+            >
+              <X className="w-4 h-4 text-gray-700" />
+            </button>
+          </div>
         )}
       </div>
 

@@ -85,6 +85,7 @@ export const RoomScroller = forwardRef<
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
+    const isPolling = useRef(false);
     const [loadingRooms, setLoadingRooms] = useState<
       Record<string, boolean>
     >({});
@@ -134,7 +135,25 @@ export const RoomScroller = forwardRef<
       if (!currentRoom) return;
 
       refreshRoomStatements(currentRoom.id);
-    }, [currentIndex]);
+
+      const pollInterval = setInterval(async () => {
+        if (isPolling.current) return;
+        
+        isPolling.current = true;
+        try {
+          await getRoomStatements(currentRoom.id);
+        } catch (error) {
+          console.error(`Error polling room ${currentRoom.id}:`, error);
+        } finally {
+          isPolling.current = false;
+        }
+      }, 3000);
+
+      return () => {
+        clearInterval(pollInterval);
+        isPolling.current = false;
+      };
+    }, [currentIndex, rooms]);
 
     // Handle scroll events with debouncing
     useEffect(() => {
@@ -213,7 +232,7 @@ export const RoomScroller = forwardRef<
               repeat: Infinity,
               ease: "linear",
             }}
-            className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full"
+            className="w-8 h-8 heard-spinner"
           />
         </div>
       );

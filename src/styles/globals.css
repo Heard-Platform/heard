@@ -41,6 +41,8 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  
+  --page-bg-gradient: linear-gradient(to bottom right, rgb(250 245 255), rgb(239 246 255));
 }
 
 .dark {
@@ -78,6 +80,8 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+  
+  --page-bg-gradient: linear-gradient(to bottom right, rgb(30 27 43), rgb(24 31 47));
 }
 
 @theme inline {
@@ -158,6 +162,71 @@
 
   .pt-15 {
     padding-top: 3.75rem;
+  }
+
+  .heard-page-bg {
+    min-height: 100vh;
+    background: var(--page-bg-gradient);
+  }
+
+  .heard-card-bg {
+    position: relative;
+    background: linear-gradient(to bottom right, rgb(250 245 255), rgb(255 255 255), rgb(239 246 255));
+    border: 2px solid rgb(233 213 255);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  .heard-icon-circle {
+    width: 4rem;
+    height: 4rem;
+    margin-left: auto;
+    margin-right: auto;
+    background: linear-gradient(to bottom right, rgb(168 85 247), rgb(59 130 246));
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .heard-badge-circle {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background: linear-gradient(to bottom right, rgb(168 85 247), rgb(59 130 246));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  .heard-primary-gradient {
+    background: linear-gradient(to bottom right, rgb(168 85 247), rgb(59 130 246));
+  }
+
+  .heard-spinner {
+    border: 2px solid rgb(147 51 234);
+    border-top-color: transparent;
+    border-radius: 9999px;
+  }
+
+  .heard-spinner-white {
+    border: 2px solid white;
+    border-top-color: transparent;
+    border-radius: 9999px;
+  }
+
+  .heard-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .heard-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 }
 

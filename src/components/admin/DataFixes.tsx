@@ -198,7 +198,7 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
         to run multiple times.
       </p>
       <div className="space-y-3">
-        <div className="flex items-center justify-between p-4 border rounded-lg bg-purple-50">
+        <div className="heard-between p-4 border rounded-lg">
           <div className="flex-1">
             <h3 className="font-medium">
               Set All Rooms to Active
@@ -221,7 +221,7 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
               : "Set All Active"}
           </Button>
         </div>
-        <div className="flex items-center justify-between p-4 border rounded-lg">
+        <div className="heard-between p-4 border rounded-lg">
           <div className="flex-1">
             <h3 className="font-medium">
               Normalize Dupont Circle Sub-Heard
@@ -264,7 +264,7 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
             Disabled
           </Button>
         </div>
-        <div className="flex items-center justify-between p-4 border rounded-lg bg-blue-50">
+        <div className="heard-between p-4 border rounded-lg bg-blue-50">
           <div className="flex-1">
             <h3 className="font-medium">
               Backfill User CreatedAt

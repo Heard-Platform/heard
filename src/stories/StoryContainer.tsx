@@ -30,7 +30,7 @@ export function StoryContainer({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="heard-between">
           <div>
             <CardTitle>{title}</CardTitle>
             {description && <CardDescription>{description}</CardDescription>}

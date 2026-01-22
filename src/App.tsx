@@ -369,7 +369,7 @@ function AppContent() {
 
   if (loading || isJoiningAnonymously) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
+      <div className="heard-page-bg heard-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{
@@ -377,7 +377,7 @@ function AppContent() {
             repeat: Infinity,
             ease: "linear",
           }}
-          className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full"
+          className="w-8 h-8 heard-spinner"
         />
       </div>
     );

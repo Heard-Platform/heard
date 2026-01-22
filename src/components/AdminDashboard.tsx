@@ -86,7 +86,7 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="heard-page-bg heard-center p-4">
         <Card className="w-full max-w-md p-8">
           <p className="text-center">Loading dashboard...</p>
         </Card>
@@ -96,9 +96,9 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="heard-page-bg heard-center p-4">
         <Card className="w-full max-w-md p-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="heard-between mb-6">
             <h1 className="text-2xl">Admin Dashboard</h1>
             {onExit && (
               <Button
@@ -119,10 +119,10 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
+    <div className="heard-page-bg p-4">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="heard-between">
           <div className="flex items-center gap-2">
             <BarChart3 className="w-8 h-8 text-purple-600" />
             <h1 className="text-3xl">Admin Dashboard</h1>

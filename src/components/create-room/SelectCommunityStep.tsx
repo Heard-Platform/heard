@@ -162,7 +162,7 @@ export function SelectCommunityStep({
                 <Button
                   variant="outline"
                   onClick={handleCreateNewClick}
-                  className={`w-full h-auto py-3 px-4 flex items-center justify-between transition-all ${
+                  className={`w-full h-auto py-3 px-4 heard-between transition-all ${
                     showCreateNew
                       ? "bg-purple-100 border-purple-400 border-2 hover:bg-purple-100"
                       : "bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 border-dashed border-2 hover:border-purple-400 hover:from-purple-100 hover:to-pink-100"

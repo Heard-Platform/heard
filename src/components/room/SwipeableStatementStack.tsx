@@ -402,6 +402,11 @@ export function SwipeableStatementStack({
                     handleVote(card.statement.id, "pass", "down");
                   }
                 }}
+                onSuperAgree={() => {
+                  if (card.type === "statement") {
+                    handleVote(card.statement.id, "super_agree", "up");
+                  }
+                }}
               />
             );
           })}

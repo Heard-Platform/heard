@@ -309,7 +309,7 @@ export function SubHeardBrowser({
                                   </div>
                                 </div>
 
-                                <div className="flex items-center justify-between">
+                                <div className="heard-between">
                                   <div className="space-y-0.5">
                                     <Label htmlFor={`private-${subHeard.name}`}>
                                       Private
