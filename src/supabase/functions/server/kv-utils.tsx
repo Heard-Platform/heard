@@ -167,6 +167,13 @@ export const saveSession = async (
 export const voteKeyFn = (vote: Vote) =>
   `vote:${vote.statementId}:${vote.userId}`;
 
+export const getVote = async (
+  statementId: string,
+  userId: string,
+): Promise<Vote | null> => {
+  return getParsedKvData<Vote>(`vote:${statementId}:${userId}`);
+};
+
 export const getVotesForUser = async (
   userId: string,
 ): Promise<Vote[]> => {

@@ -54,6 +54,7 @@ export interface Statement {
   timestamp: number;
   round: number;
   voters: { [userId: string]: VoteType };
+  anonymousUserId?: string;
 }
 
 export interface Vote {
@@ -63,6 +64,7 @@ export interface Vote {
   voteType: VoteType;
   timestamp: number;
   flyerId?: string;
+  anonymousUserId?: string;
 }
 
 export type Phase =
@@ -100,6 +102,8 @@ export interface DebateRoom {
   chanceCardSwiped?: boolean;
   youtubeCardSwiped?: boolean;
 }
+
+export type AnonCreatableRecords = "votes" | "statements";
 
 export interface Rant {
   id: string;

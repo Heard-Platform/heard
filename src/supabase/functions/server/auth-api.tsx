@@ -4,12 +4,13 @@ import {
   verifyPassword,
   generateResetToken,
 } from "./password-utils.tsx";
-import { deleteMagicLink, getAllDebates, getMagicLink, getParsedKvData, getSession, getUser, saveMagicLink, saveSession } from "./kv-utils.tsx";
+import { deleteMagicLink, getMagicLink, getParsedKvData, getSession, getUser, saveMagicLink, saveSession } from "./kv-utils.tsx";
 import { getFrontendUrl } from "./utils.tsx";
 import type { Session, User } from "./types.tsx";
-import { Hono } from "npm:hono";
-import { saveDebateRoom } from "./debate-api.tsx";
+import { Context, Hono } from "npm:hono";
 import { getMagicLinkEmail } from "./email-templates.tsx";
+import { mergeAnonymousUserActivity } from "./anonymous-merge-utils.tsx";
+import { ENABLE_ANONYMOUS_MERGE } from "./constants.tsx";
 
 const app = new Hono();
 
@@ -831,9 +832,14 @@ app.post(
 
 app.post(
   "/make-server-f1a393b4/auth/verify-magic-link",
-  async (c: any) => {
+  async (c: Context) => {
+    type Params = {
+      token: string;
+      userId?: string;
+    };
+
     try {
-      const { token } = await c.req.json();
+      const { token, userId: currentUserId } = await c.req.json<Params>();
 
       if (!token) {
         return c.json({ error: "Token is required" }, 400);
@@ -853,10 +859,21 @@ app.post(
       }
 
       await deleteMagicLink(token);
+      
+      if (currentUserId) {
+        const currentUser = await getUser(currentUserId);
+        if (ENABLE_ANONYMOUS_MERGE && currentUser && currentUser.isAnonymous) {
+          try {
+            await mergeAnonymousUserActivity(currentUserId, userId);
+          } catch (error) {
+            console.error("Error during anonymous activity merge:", error);
+          }
+        }
+      }
 
       const result = await getUserAndNewSession(userId);
       if ("error" in result) {
-        return c.json({ error: result.error }, result.status);
+        return c.json({ error: result.error }, result.status as any);
       }
 
       return c.json(result);
