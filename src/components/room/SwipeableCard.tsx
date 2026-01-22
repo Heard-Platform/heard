@@ -29,6 +29,7 @@ interface SwipeableCardProps {
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
   onDemographicsAnswer?: (id: string, answer: string) => void;
+  onSuperAgree: () => void;
   onSkip: () => void;
 }
 
@@ -46,6 +47,7 @@ export function SwipeableCard({
   onSubmitStatement,
   onShowAccountSetupModal,
   onDemographicsAnswer,
+  onSuperAgree,
   onSkip,
 }: SwipeableCardProps) {
   const x = useMotionValue(0);
@@ -173,6 +175,7 @@ export function SwipeableCard({
             agreeOpacity={agreeOpacity}
             superAgreeOpacity={superAgreeOpacity}
             passOpacity={passOpacity}
+            onSuperAgree={onSuperAgree}
             onSkip={onSkip}
           />
         ) : null}
