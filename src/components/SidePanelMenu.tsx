@@ -178,10 +178,10 @@ export function SidePanelMenu({
                 <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-orange-800 font-medium text-sm">
-                    Your score won't be saved
+                    Your score isn't being saved
                   </p>
                   <p className="text-orange-700 text-xs mt-1">
-                    Sign in or setup an account to keep your progress and unlock more features
+                    Sign in or setup an account to save your score, make rooms, and access more features.
                   </p>
                 </div>
               </div>
