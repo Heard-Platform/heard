@@ -86,7 +86,7 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
 
   if (loading) {
     return (
-      <div className="heard-page-bg flex items-center justify-center p-4">
+      <div className="heard-page-bg heard-center p-4">
         <Card className="w-full max-w-md p-8">
           <p className="text-center">Loading dashboard...</p>
         </Card>
@@ -96,7 +96,7 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
 
   if (!isAdmin) {
     return (
-      <div className="heard-page-bg flex items-center justify-center p-4">
+      <div className="heard-page-bg heard-center p-4">
         <Card className="w-full max-w-md p-8">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl">Admin Dashboard</h1>

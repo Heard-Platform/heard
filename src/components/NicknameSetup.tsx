@@ -66,7 +66,7 @@ export function NicknameSetup({
   };
 
   return (
-    <div className="heard-page-bg flex items-center justify-center p-4">
+    <div className="heard-page-bg heard-center p-4">
       <button
         onClick={onBack}
         disabled={loading}

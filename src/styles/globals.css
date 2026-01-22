@@ -212,6 +212,12 @@
     border-top-color: transparent;
     border-radius: 9999px;
   }
+
+  .heard-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 /**

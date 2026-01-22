@@ -6027,6 +6027,12 @@
     border-top-color: #0000;
     border-radius: 9999px;
   }
+
+  .heard-center {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+  }
 }
 
 :root {

@@ -369,7 +369,7 @@ function AppContent() {
 
   if (loading || isJoiningAnonymously) {
     return (
-      <div className="heard-page-bg flex items-center justify-center">
+      <div className="heard-page-bg heard-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{
