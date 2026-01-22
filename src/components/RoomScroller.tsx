@@ -43,9 +43,6 @@ interface RoomScrollerProps {
     statementText: string,
     subHeard?: string,
   ) => void;
-  onGetAllRoomStatements: () => Promise<
-    Record<string, Statement[]>
-  >;
   onUpdatePresence: (
     userId: string,
     currentRoomIndex: number,
@@ -74,7 +71,6 @@ export const RoomScroller = forwardRef<
       currentSubHeard,
       onDiscussStatement,
       roomStatements,
-      onGetAllRoomStatements,
       analysisRoomId,
       presences,
       onUpdatePresence,

@@ -69,7 +69,6 @@ function AppContent() {
     setCurrentSubHeard,
     resetSession,
     roomStatements,
-    getAllRoomStatements,
   } = useDebateSession();
 
   const handleMagicLinkSuccess = async () => {
@@ -420,7 +419,6 @@ function AppContent() {
         onOpenAdminDashboard={handleOpenAdminDashboard}
         onOpenDevTools={handleOpenDevTools}
         onSubHeardChange={handleSubHeardChange}
-        onGetAllRoomStatements={getAllRoomStatements}
       />
       <Toaster />
       {qrScanResult && (

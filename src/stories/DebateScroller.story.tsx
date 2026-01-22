@@ -195,7 +195,6 @@ export function DebateScrollerStory() {
           onCreateRoom={handleCreateRoom}
           onSubmitStatement={handleSubmitStatement}
           onVoteOnStatement={handleVoteOnStatement}
-          onGetAllRoomStatements={handleGetAllRoomStatements}
           onUpdatePresence={handleUpdatePresence}
           isDeveloper={true}
           loading={false}

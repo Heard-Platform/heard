@@ -63,7 +63,6 @@ interface DebateSessionContextType {
   setRoomInactive: (roomId: string) => Promise<boolean>;
   roomStatements: Record<string, Statement[]>;
   getRoomStatements: (roomId: string) => Promise<Statement[]>;
-  getAllRoomStatements: () => Promise<Record<string, Statement[]>>;
   getRoomAnalysis: (roomId: string) => Promise<AnalysisData | null>;
 }
 
@@ -589,30 +588,6 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     return null;
   }, []);
 
-  // Fetch statements for multiple rooms
-  const getAllRoomStatements = useCallback(async () => {
-    const statementsMap: Record<string, Statement[]> = {};
-
-    for (const room of activeRooms) {
-      try {
-        const response = await api.getRoomStatus(room.id);
-        if (response.success && response.data) {
-          statementsMap[room.id] =
-            response.data.statements || [];
-        }
-      } catch (error) {
-        console.error(
-          `Error fetching statements for room ${room.id}:`,
-          error,
-        );
-        statementsMap[room.id] = [];
-      }
-    }
-
-    setRoomStatements(statementsMap);
-    return statementsMap;
-  }, [activeRooms]);
-
   // Reset session (full logout)
   const resetSession = useCallback(() => {
     setUser(null);
@@ -672,7 +647,6 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     setRoomInactive,
     roomStatements,
     getRoomStatements,
-    getAllRoomStatements,
     getRoomAnalysis,
     markChanceCardSwiped,
     markYouTubeCardSwiped,

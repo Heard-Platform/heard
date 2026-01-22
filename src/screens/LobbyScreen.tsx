@@ -51,7 +51,6 @@ interface LobbyScreenProps {
   onOpenAdminDashboard?: () => void;
   onOpenDevTools?: () => void;
   onSubHeardChange?: (subHeard: string | null) => void;
-  onGetAllRoomStatements: () => Promise<Record<string, any[]>>;
 }
 
 export function LobbyScreen({
@@ -74,7 +73,6 @@ export function LobbyScreen({
   currentSubHeard,
   onSubHeardChange,
   roomStatements,
-  onGetAllRoomStatements,
   targetRoomId,
   analysisRoomId,
 }: LobbyScreenProps) {
@@ -420,7 +418,6 @@ export function LobbyScreen({
           onSubmitStatement={onSubmitStatement}
           onVoteOnStatement={onVoteOnStatement}
           onDiscussStatement={handleDiscussStatement}
-          onGetAllRoomStatements={onGetAllRoomStatements}
           onUpdatePresence={handleUpdatePresence}
           onShowAccountSetupModal={handleShowAccountSetupModal}
         />
