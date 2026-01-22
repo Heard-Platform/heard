@@ -135,17 +135,29 @@ export function SidePanelMenu({
   return (
     <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          className="controls-layer bg-white/90 backdrop-blur-sm shadow-lg px-3 py-2 h-[42px] gap-2 border-2"
-        >
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-sm">{user.score}</span>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
-              <User className="w-4 h-4 text-white" />
+        {user.isAnonymous ? (
+          <Button
+            variant="outline"
+            className="controls-layer bg-gradient-to-r from-orange-500 to-amber-500 backdrop-blur-sm shadow-lg px-4 py-2 h-[42px] gap-2 border-2 border-orange-400 hover:from-orange-600 hover:to-amber-600 transition-all"
+          >
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-white" />
+              <span className="font-bold text-sm text-white">Login</span>
             </div>
-          </div>
-        </Button>
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            className="controls-layer bg-white/90 backdrop-blur-sm shadow-lg px-3 py-2 h-[42px] gap-2 border-2"
+          >
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm">{user.score}</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
+            </div>
+          </Button>
+        )}
       </SheetTrigger>
       <SheetContent side="right" className="flex flex-col">
         <SheetHeader>
@@ -169,7 +181,7 @@ export function SidePanelMenu({
                     Your score won't be saved
                   </p>
                   <p className="text-orange-700 text-xs mt-1">
-                    Setup an account to keep your progress and unlock more features
+                    Sign in or setup an account to keep your progress and unlock more features
                   </p>
                 </div>
               </div>
@@ -181,7 +193,7 @@ export function SidePanelMenu({
                 size="sm"
                 className="w-full bg-orange-600 hover:bg-orange-700 text-white"
               >
-                Setup Account
+                Login or Signup
               </Button>
             </div>
           )}
