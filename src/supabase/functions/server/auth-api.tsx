@@ -860,9 +860,17 @@ app.post(
 
       await deleteMagicLink(token);
       
+      const result = await getUserAndNewSession(userId);
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status as any);
+      }
+
       if (currentUserId) {
         const currentUser = await getUser(currentUserId);
-        if (ENABLE_ANONYMOUS_MERGE && currentUser && currentUser.isAnonymous) {
+        if (
+          currentUser?.isAnonymous &&
+          (result.user.isDeveloper || ENABLE_ANONYMOUS_MERGE)
+        ) {
           try {
             await mergeAnonymousUserActivity(currentUserId, userId);
           } catch (error) {
@@ -871,10 +879,6 @@ app.post(
         }
       }
 
-      const result = await getUserAndNewSession(userId);
-      if ("error" in result) {
-        return c.json({ error: result.error }, result.status as any);
-      }
 
       return c.json(result);
     } catch (error) {
