@@ -10,6 +10,7 @@ import type { Session, User } from "./types.tsx";
 import { Hono } from "npm:hono";
 import { saveDebateRoom } from "./debate-api.tsx";
 import { getMagicLinkEmail } from "./email-templates.tsx";
+import { mergeAnonymousUserActivity, shouldMergeAnonymousActivity } from "./anonymous-merge-utils.tsx";
 
 const app = new Hono();
 
@@ -833,7 +834,7 @@ app.post(
   "/make-server-f1a393b4/auth/verify-magic-link",
   async (c: any) => {
     try {
-      const { token } = await c.req.json();
+      const { token, currentSessionId } = await c.req.json();
 
       if (!token) {
         return c.json({ error: "Token is required" }, 400);
@@ -853,6 +854,25 @@ app.post(
       }
 
       await deleteMagicLink(token);
+
+      let currentUserId: string | null = null;
+      if (currentSessionId) {
+        const sessionValidation = await validateSessionId(currentSessionId);
+        if (sessionValidation.valid && sessionValidation.userId) {
+          currentUserId = sessionValidation.userId;
+        }
+      }
+
+      const mergeCheck = await shouldMergeAnonymousActivity(currentUserId);
+      if (mergeCheck.shouldMerge && mergeCheck.anonymousUserId) {
+        console.log(`Attempting to merge anonymous user ${mergeCheck.anonymousUserId} into ${userId}`);
+        const mergeResult = await mergeAnonymousUserActivity(mergeCheck.anonymousUserId, userId);
+        if (!mergeResult.success) {
+          console.error(`Failed to merge anonymous activity: ${mergeResult.error}`);
+        } else {
+          console.log(`Successfully merged anonymous user activity`);
+        }
+      }
 
       const result = await getUserAndNewSession(userId);
       if ("error" in result) {

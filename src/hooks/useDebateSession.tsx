@@ -185,7 +185,8 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
   }, [safelyMakeApiCall]);
 
   const verifyMagicLink = useCallback(async (code: string) => {
-    const response = await safelyMakeApiCall<UserSessionResponse>(() => api.verifyMagicLink(code));
+    const currentSessionId = getSessionId();
+    const response = await safelyMakeApiCall<UserSessionResponse>(() => api.verifyMagicLink(code, currentSessionId || undefined));
     if (response && response.success && response.data) {
       setUserAndSession(response.data.user, response.data.sessionId);
     }

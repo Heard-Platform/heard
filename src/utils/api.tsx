@@ -52,10 +52,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async verifyMagicLink(token: string) {
+  async verifyMagicLink(token: string, currentSessionId?: string) {
     return this.request<UserSessionResponse>("/auth/verify-magic-link", {
       method: "POST",
-      body: JSON.stringify({ token }),
+      body: JSON.stringify({ token, currentSessionId }),
     });
   }
 

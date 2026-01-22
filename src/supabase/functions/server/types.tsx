@@ -54,6 +54,7 @@ export interface Statement {
   timestamp: number;
   round: number;
   voters: { [userId: string]: VoteType };
+  anonymousUserId?: string;
 }
 
 export interface Vote {
@@ -63,6 +64,7 @@ export interface Vote {
   voteType: VoteType;
   timestamp: number;
   flyerId?: string;
+  anonymousUserId?: string;
 }
 
 export type Phase =
