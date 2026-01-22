@@ -55,15 +55,17 @@ export function StatementCard({
         </div>
         {isTopCard && (
           <div className="flex items-center gap-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onSuperAgree();
-              }}
-              className="w-7 h-7 rounded-full bg-amber-400 hover:bg-amber-500 transition-colors flex items-center justify-center flex-shrink-0"
-            >
-              <Star className="w-4 h-4 text-white" />
-            </button>
+            {false && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSuperAgree();
+                }}
+                className="w-7 h-7 rounded-full bg-amber-400 hover:bg-amber-500 transition-colors flex items-center justify-center flex-shrink-0"
+              >
+                <Star className="w-4 h-4 text-white" />
+              </button>
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation();

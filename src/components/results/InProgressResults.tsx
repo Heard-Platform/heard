@@ -26,11 +26,11 @@ export function InProgressResults({
   onChangeVote,
 }: InProgressResultsProps) {
   const totalVotes = statements.reduce(
-    (sum, s) => sum + s.agrees + s.disagrees + s.passes,
+    (sum, s) => sum + s.agrees + s.superAgrees + s.disagrees + s.passes,
     0,
   );
   const maxVotes = Math.max(
-    ...statements.map((s) => s.agrees),
+    ...statements.map((s) => s.agrees + s.superAgrees),
     1,
   );
 
@@ -103,12 +103,12 @@ export function InProgressResults({
             </div>
 
             {[...statements]
-              .sort((a, b) => b.agrees - a.agrees)
+              .sort((a, b) => (b.agrees + b.superAgrees) - (a.agrees + a.superAgrees))
               .slice(0, 3)
-              .map((statement, index) => {
+              .map((s, index) => {
                 const percentage =
                   maxVotes > 0
-                    ? (statement.agrees / maxVotes) * 100
+                    ? ((s.agrees + s.superAgrees) / maxVotes) * 100
                     : 0;
 
                 // Gradient colors for each position
@@ -129,7 +129,7 @@ export function InProgressResults({
 
                 return (
                   <motion.div
-                    key={statement.id}
+                    key={s.id}
                     initial={{ x: -50, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: index * 0.05 }}
@@ -145,16 +145,16 @@ export function InProgressResults({
                               : "🥉"}
                         </span>
                         <p className="text-[10px] sm:text-xs truncate">
-                          {statement.text}
+                          {s.text}
                         </p>
                       </div>
                       <motion.div
-                        key={statement.agrees}
+                        key={s.id}
                         initial={{ scale: 1.5 }}
                         animate={{ scale: 1 }}
                         className={`px-1.5 sm:px-2 py-0.5 rounded-full text-xs sm:text-sm font-medium shrink-0 bg-gradient-to-r ${gradients[index].badge} text-white`}
                       >
-                        {statement.agrees}
+                        {s.agrees + s.superAgrees}
                       </motion.div>
                     </div>
 
