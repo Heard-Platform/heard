@@ -1,4 +1,4 @@
-import { getVotesForUser, saveVote, deleteVote, getStatement, saveStatement, getVote } from "./kv-utils.tsx";
+import { getVotesForUser, saveVote, deleteVote, getStatement, saveStatement, getVote, getUser, saveUser } from "./kv-utils.tsx";
 import { getAllStatements } from "./kv-utils.tsx";
 import type { Vote, Statement, AnonCreatableRecords } from "./types.tsx";
 
@@ -52,9 +52,24 @@ const mergeStatements = async (anonymousUserId: string, targetUserId: string) =>
   }
 }
 
+const mergeScore = async (anonymousUserId: string, targetUserId: string) => {
+  const anonymousUser = await getUser(anonymousUserId);
+  const targetUser = await getUser(targetUserId);
+
+  if (!anonymousUser || !targetUser) {
+    console.error(`Could not find users for score merge`);
+    return;
+  }
+
+  targetUser.score = (targetUser.score || 0) + (anonymousUser.score || 0);
+  
+  await saveUser(targetUser);
+}
+
 const mergeHandlers: MergeHandlers = {
   votes: mergeVotes,
   statements: mergeStatements,
+  score: mergeScore,
 };
 
 export const mergeAnonymousUserActivity = async (

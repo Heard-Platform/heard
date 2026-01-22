@@ -833,13 +833,9 @@ app.post(
 app.post(
   "/make-server-f1a393b4/auth/verify-magic-link",
   async (c: Context) => {
-    type Params = {
-      token: string;
-      userId?: string;
-    };
-
     try {
-      const { token, userId: currentUserId } = await c.req.json<Params>();
+      const currentUserId = c.get("userId");
+      const { token } = await c.req.json();
 
       if (!token) {
         return c.json({ error: "Token is required" }, 400);
@@ -867,10 +863,7 @@ app.post(
 
       if (currentUserId) {
         const currentUser = await getUser(currentUserId);
-        if (
-          currentUser?.isAnonymous &&
-          (result.user.isDeveloper || ENABLE_ANONYMOUS_MERGE)
-        ) {
+        if (currentUser?.isAnonymous) {
           try {
             await mergeAnonymousUserActivity(currentUserId, userId);
           } catch (error) {

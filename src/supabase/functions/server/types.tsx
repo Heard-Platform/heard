@@ -103,7 +103,7 @@ export interface DebateRoom {
   youtubeCardSwiped?: boolean;
 }
 
-export type AnonCreatableRecords = "votes" | "statements";
+export type AnonCreatableRecords = "votes" | "statements" | "score";
 
 export interface Rant {
   id: string;
