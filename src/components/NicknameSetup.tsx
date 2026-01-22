@@ -66,7 +66,7 @@ export function NicknameSetup({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="heard-page-bg flex items-center justify-center p-4">
       <button
         onClick={onBack}
         disabled={loading}
@@ -86,7 +86,7 @@ export function NicknameSetup({
             <motion.div
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center"
+              className="heard-icon-circle"
             >
               <Mail className="w-8 h-8 text-white" />
             </motion.div>

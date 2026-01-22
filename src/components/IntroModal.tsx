@@ -199,7 +199,7 @@ export function IntroModal({
             </h3>
 
             {/* Demo Swipe Card */}
-            <Card className="relative bg-gradient-to-br from-purple-50 via-white to-blue-50 border-2 border-purple-200 shadow-xl">
+            <Card className="heard-card-bg">
               <div className="p-4 space-y-3">
                 <div className="flex items-start gap-2">
                   <MessageCircle className="w-4 h-4 text-purple-600 flex-shrink-0 mt-1" />

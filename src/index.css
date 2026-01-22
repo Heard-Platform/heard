@@ -5978,6 +5978,47 @@
   .pt-15 {
     padding-top: 3.75rem;
   }
+
+  .heard-page-bg {
+    background: linear-gradient(to bottom right, #faf5ff, #eff6ff);
+    min-height: 100vh;
+  }
+
+  .heard-card-bg {
+    background: linear-gradient(to bottom right, #faf5ff, #fff, #eff6ff);
+    border: 2px solid #e9d5ff;
+    position: relative;
+    box-shadow: 0 25px 50px -12px #00000040;
+  }
+
+  .heard-icon-circle {
+    background: linear-gradient(to bottom right, #a855f7, #3b82f6);
+    border-radius: 9999px;
+    justify-content: center;
+    align-items: center;
+    width: 4rem;
+    height: 4rem;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+  }
+
+  .heard-badge-circle {
+    color: #fff;
+    background: linear-gradient(to bottom right, #a855f7, #3b82f6);
+    border-radius: 9999px;
+    justify-content: center;
+    align-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: .75rem;
+    line-height: 1rem;
+    display: flex;
+  }
+
+  .heard-primary-gradient {
+    background: linear-gradient(to bottom right, #a855f7, #3b82f6);
+  }
 }
 
 :root {

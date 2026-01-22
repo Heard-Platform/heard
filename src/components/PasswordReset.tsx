@@ -77,7 +77,7 @@ export function PasswordReset({ onBack, initialToken }: PasswordResetProps) {
 
   if (success && mode === "request") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="heard-page-bg flex items-center justify-center p-4">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -132,7 +132,7 @@ export function PasswordReset({ onBack, initialToken }: PasswordResetProps) {
 
   if (success && mode === "reset") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="heard-page-bg flex items-center justify-center p-4">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -170,7 +170,7 @@ export function PasswordReset({ onBack, initialToken }: PasswordResetProps) {
 
   if (mode === "request") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="heard-page-bg flex items-center justify-center p-4">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -181,7 +181,7 @@ export function PasswordReset({ onBack, initialToken }: PasswordResetProps) {
               <motion.div
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center"
+                className="heard-icon-circle"
               >
                 <Mail className="w-8 h-8 text-white" />
               </motion.div>
@@ -254,7 +254,7 @@ export function PasswordReset({ onBack, initialToken }: PasswordResetProps) {
 
   // Reset mode
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="heard-page-bg flex items-center justify-center p-4">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -265,7 +265,7 @@ export function PasswordReset({ onBack, initialToken }: PasswordResetProps) {
             <motion.div
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center"
+              className="heard-icon-circle"
             >
               <KeyRound className="w-8 h-8 text-white" />
             </motion.div>

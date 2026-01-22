@@ -369,7 +369,7 @@ function AppContent() {
 
   if (loading || isJoiningAnonymously) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
+      <div className="heard-page-bg flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{
