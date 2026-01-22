@@ -8,12 +8,16 @@ import {
   type YouTubeCard,
   type DemographicsCard,
   DemographicQuestion,
+  type Comment,
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
 import { NewStatementInput } from "../NewStatementInput";
+import { CommentingModal } from "../CommentingModal";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
+
+const SHOW_COMMENTS_FEATURE = false;
 
 interface SwipeableStatementStackProps {
   statements: Statement[];
@@ -25,6 +29,7 @@ interface SwipeableStatementStackProps {
   youtubeCardSwiped: boolean;
   demographicQuestions?: DemographicQuestion[];
   demographicsAnswered?: Set<string>;
+  showCommentsFeature?: boolean;
   onVote: (
     id: string,
     voteType: VoteType,
@@ -48,6 +53,7 @@ export function SwipeableStatementStack({
   youtubeCardSwiped,
   demographicQuestions,
   demographicsAnswered,
+  showCommentsFeature,
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
@@ -67,6 +73,9 @@ export function SwipeableStatementStack({
     "left" | "right" | "down" | "up" | null
   >(null);
   const [demographicsAnsweredInternal, setDemographicsAnsweredInternal] = useState<Set<string>>(new Set());
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const [selectedStatement, setSelectedStatement] = useState<Statement | null>(null);
+  const [mockComments, setMockComments] = useState<Comment[]>([]);
 
   const unvotedStatements = statements.filter((statement) => {
     const hasVotedBefore =
@@ -402,6 +411,14 @@ export function SwipeableStatementStack({
                     handleVote(card.statement.id, "pass", "down");
                   }
                 }}
+                commentCount={mockComments.length}
+                onOpenComments={() => {
+                  if (card.type === "statement") {
+                    setSelectedStatement(card.statement);
+                    setCommentModalOpen(true);
+                  }
+                }}
+                showComments={SHOW_COMMENTS_FEATURE}
                 onSuperAgree={() => {
                   if (card.type === "statement") {
                     handleVote(card.statement.id, "super_agree", "up");
@@ -418,6 +435,30 @@ export function SwipeableStatementStack({
           allowAnonymous={allowAnonymous}
           isAnonymous={isAnonymous}
           onShowAccountSetupModal={onShowAccountSetupModal}
+        />
+      )}
+
+      {selectedStatement && (
+        <CommentingModal
+          isOpen={commentModalOpen}
+          statement={selectedStatement}
+          roomTopic="Current Debate"
+          comments={mockComments}
+          currentUserId={currentUserId || "anonymous"}
+          onClose={() => {
+            setCommentModalOpen(false);
+            setSelectedStatement(null);
+          }}
+          onSubmitComment={(text: string) => {
+            const newComment: Comment = {
+              id: `comment-${Date.now()}`,
+              statementId: selectedStatement.id,
+              userId: currentUserId || "anonymous",
+              text,
+              timestamp: Date.now(),
+            };
+            setMockComments([...mockComments, newComment]);
+          }}
         />
       )}
     </div>

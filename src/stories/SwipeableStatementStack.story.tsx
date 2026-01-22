@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { SwipeableStatementStack } from "../components/room/SwipeableStatementStack";
 import { ChanceCard } from "../components/room/ChanceCard";
-import { Statement, VoteType } from "../types";
+import { Statement, VoteType, Comment } from "../types";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Toaster } from "../components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Badge } from "../components/ui/badge";
 
 const mockStatements: Statement[] = [
   {
@@ -162,6 +163,12 @@ export function SwipeableStatementStackStory() {
           <div className="space-y-6">
             <Card>
               <CardContent className="space-y-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="secondary">
+                    Comments Feature Demo
+                  </Badge>
+                </div>
+
                 <div className="flex gap-2">
                   <Button onClick={handleReset} variant="outline" size="sm">
                     Reset Story
@@ -169,17 +176,21 @@ export function SwipeableStatementStackStory() {
                   <Button
                     onClick={() => setChanceCardSwiped(!chanceCardSwiped)}
                     variant="outline"
-                    size="sm"
-                  >
+                    size="sm">
                     {chanceCardSwiped ? "Show Chance Card" : "Hide Chance Card"}
                   </Button>
                 </div>
 
                 <div className="p-4 rounded-lg border bg-muted/30">
-                  <span className="text-muted-foreground">Chance Card:</span>{" "}
-                  <span className="font-medium">
-                    {chanceCardSwiped ? "Swiped" : "Not Swiped"}
-                  </span>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-muted-foreground">Chance Card:</span>{" "}
+                    <span className="font-medium">
+                      {chanceCardSwiped ? "Swiped" : "Not Swiped"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    💡 The comment button appears at the bottom right of statement cards, above the "Posted by" row. Try clicking it to open the comment dialog!
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -192,6 +203,7 @@ export function SwipeableStatementStackStory() {
                 isAnonymous={false}
                 chanceCardSwiped={chanceCardSwiped}
                 youtubeCardSwiped={false}
+                showCommentsFeature={true}
                 onVote={handleVote}
                 onSubmitStatement={handleSubmitStatement}
                 onShowAccountSetupModal={() => {}}

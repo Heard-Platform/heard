@@ -21,7 +21,10 @@ interface SwipeableCardProps {
   totalStatements: number;
   allowAnonymous: boolean;
   isAnonymous: boolean;
+  commentCount: number;
+  showComments: boolean;
   getTypeIcon: (type?: string) => string | null;
+  onOpenComments: () => void;
   onDragEnd: (
     event: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo,
@@ -42,7 +45,10 @@ export function SwipeableCard({
   totalStatements,
   allowAnonymous,
   isAnonymous,
+  commentCount,
+  showComments,
   getTypeIcon,
+  onOpenComments,
   onDragEnd,
   onSubmitStatement,
   onShowAccountSetupModal,
@@ -175,8 +181,11 @@ export function SwipeableCard({
             agreeOpacity={agreeOpacity}
             superAgreeOpacity={superAgreeOpacity}
             passOpacity={passOpacity}
-            onSuperAgree={onSuperAgree}
+            commentCount={commentCount}
+            showComments={showComments}
+            onOpenComments={onOpenComments}
             onSkip={onSkip}
+            onSuperAgree={onSuperAgree}
           />
         ) : null}
       </div>

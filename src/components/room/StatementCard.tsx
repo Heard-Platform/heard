@@ -2,7 +2,7 @@ import type { Statement } from "../../types";
 import { SwipeInstructions } from "../SwipeInstructions";
 import { SwipeIndicator } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
-import { X, Star } from "lucide-react";
+import { X, MessageCircle, Star } from "lucide-react";
 import moment from "moment";
 
 interface StatementCardProps {
@@ -14,7 +14,10 @@ interface StatementCardProps {
   agreeOpacity: MotionValue<number>;
   superAgreeOpacity: MotionValue<number>;
   passOpacity: MotionValue<number>;
+  commentCount: number;
+  showComments: boolean;
   getTypeIcon: (type?: string) => string | null;
+  onOpenComments: () => void;
   onSuperAgree: () => void;
   onSkip: () => void;
 }
@@ -29,6 +32,9 @@ export function StatementCard({
   superAgreeOpacity,
   passOpacity,
   getTypeIcon,
+  commentCount,
+  showComments,
+  onOpenComments,
   onSuperAgree,
   onSkip,
 }: StatementCardProps) {
@@ -82,6 +88,21 @@ export function StatementCard({
           {statement.text}
         </p>
       </div>
+
+      {showComments && isTopCard && (
+        <div className="flex justify-end">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenComments();
+            }}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            {commentCount === 0 ? "Be the first to comment" : `${commentCount} comment${commentCount === 1 ? "" : "s"}`}
+          </button>
+        </div>
+      )}
 
       <div className="flex items-end justify-between">
         <span className="text-xs text-muted-foreground">
