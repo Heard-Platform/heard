@@ -198,7 +198,7 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
         to run multiple times.
       </p>
       <div className="space-y-3">
-        <div className="heard-between p-4 border rounded-lg bg-purple-50">
+        <div className="heard-between p-4 border rounded-lg">
           <div className="flex-1">
             <h3 className="font-medium">
               Set All Rooms to Active

@@ -5976,7 +5976,7 @@
   }
 
   .heard-page-bg {
-    background: linear-gradient(to bottom right, #faf5ff, #eff6ff);
+    background: var(--page-bg-gradient);
     min-height: 100vh;
   }
 
@@ -6080,6 +6080,7 @@
   --sidebar-accent-foreground: oklch(.205 0 0);
   --sidebar-border: oklch(.922 0 0);
   --sidebar-ring: oklch(.708 0 0);
+  --page-bg-gradient: linear-gradient(to bottom right, #faf5ff, #eff6ff);
 }
 
 .dark {
@@ -6117,6 +6118,7 @@
   --sidebar-accent-foreground: oklch(.985 0 0);
   --sidebar-border: oklch(.269 0 0);
   --sidebar-ring: oklch(.439 0 0);
+  --page-bg-gradient: linear-gradient(to bottom right, #1e1b2b, #181f2f);
 }
 
 html {
