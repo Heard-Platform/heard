@@ -1,8 +1,9 @@
 import { Sparkles, Zap, MessageCircle, Heart, Users } from "lucide-react";
 import { NicknameSetup } from "../components/NicknameSetup";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "motion/react";
 import { Button } from "../components/ui/button";
+import { useDebateSession } from "../hooks/useDebateSession";
 
 interface LandingPageProps {
   loading: boolean;
@@ -25,6 +26,30 @@ export function LandingPage({
   onMagicLinkSuccess,
 }: LandingPageProps) {
   const [showSignup, setShowSignup] = useState(false);
+  const { createAnonymousUser } = useDebateSession();
+  const [tapCount, setTapCount] = useState(0);
+  const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMagicIconTap = async () => {
+    const newTapCount = tapCount + 1;
+    setTapCount(newTapCount);
+
+    if (tapTimeoutRef.current) {
+      clearTimeout(tapTimeoutRef.current);
+    }
+
+    tapTimeoutRef.current = setTimeout(() => {
+      setTapCount(0);
+    }, 1000);
+
+    if (newTapCount === 3) {
+      setTapCount(0);
+      const response = await createAnonymousUser();
+      if (response && response.success) {
+        onMagicLinkSuccess();
+      }
+    }
+  };
 
   if (showSignup) {
     return (
@@ -77,6 +102,7 @@ export function LandingPage({
                 scale: [1, 1.05, 1]
               }}
               transition={{ duration: 3, repeat: Infinity }}
+              onClick={handleMagicIconTap}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 via-pink-300 to-purple-300 rounded-full blur-xl opacity-60 animate-pulse" />
               <div className="relative w-full h-full bg-white rounded-full flex items-center justify-center shadow-2xl">
