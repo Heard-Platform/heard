@@ -25,6 +25,50 @@ export interface ClusterConsensus {
   clusters: Cluster[];
 }
 
+export function calcBestClusterStatements(statements: Statement[], usersInCluster: string[]) {
+  const clusterStatements: ClusterConsensusStatement[] = [];
+
+  statements.forEach((statement) => {
+    let agreeCount = 0;
+    let totalVoteCount = 0;
+
+    for (const userId of usersInCluster) {
+      const voteType = statement.voters?.[userId];
+      if (voteType) {
+        totalVoteCount++;
+        if (
+          voteType === "agree" ||
+          voteType === "super_agree"
+        ) {
+          agreeCount++;
+        }
+      }
+    }
+
+    const consensusScore =
+      totalVoteCount > 0
+        ? (agreeCount / totalVoteCount) * 100
+        : 0;
+
+    clusterStatements.push({
+      id: statement.id,
+      text: statement.text,
+      agreeVotes: agreeCount,
+      totalVotes: totalVoteCount,
+      consensusScore,
+    });
+  });
+
+  clusterStatements.sort((a, b) => {
+    if (b.consensusScore !== a.consensusScore) {
+      return b.consensusScore - a.consensusScore;
+    }
+    return b.totalVotes - a.totalVotes;
+  });
+
+  return clusterStatements;
+}
+
 export function calculateClusterConsensus(
   statements: Statement[],
   clusterMetadata: ClusterMetadata,
@@ -55,44 +99,8 @@ export function calculateClusterConsensus(
     clusterId++
   ) {
     const usersInCluster = usersByCluster[clusterId];
-    const clusterStatements: ClusterConsensusStatement[] = [];
 
-    statements.forEach((statement) => {
-      let agreeCount = 0;
-      let totalVoteCount = 0;
-
-      for (const userId of usersInCluster) {
-        const voteType = statement.voters?.[userId];
-        if (voteType) {
-          totalVoteCount++;
-          if (
-            voteType === "agree" ||
-            voteType === "super_agree"
-          ) {
-            agreeCount++;
-          }
-        }
-      }
-
-      const consensusScore =
-        totalVoteCount > 0
-          ? (agreeCount / totalVoteCount) * 100
-          : 0;
-      clusterStatements.push({
-        id: statement.id,
-        text: statement.text,
-        agreeVotes: agreeCount,
-        totalVotes: totalVoteCount,
-        consensusScore,
-      });
-    });
-
-    clusterStatements.sort((a, b) => {
-      if (b.consensusScore !== a.consensusScore) {
-        return b.consensusScore - a.consensusScore;
-      }
-      return b.totalVotes - a.totalVotes;
-    });
+    const clusterStatements = calcBestClusterStatements(statements, usersInCluster);
 
     clusters.push({
       id: clusterId,
