@@ -294,14 +294,13 @@ export function LobbyScreen({
             <div
               className="flex flex-col"
               onClick={() => {
+                roomScrollerRef.current?.scrollToTop();
                 if (user.isDeveloper) {
                   setShowDebugPanel(!showDebugPanel);
                 }
               }}
               style={{
-                cursor: user.isDeveloper
-                  ? "pointer"
-                  : "default",
+                cursor: "pointer",
               }}
             >
               <p className="text-[10px] text-purple-400/80 tracking-wide uppercase mb-[-2px]">
