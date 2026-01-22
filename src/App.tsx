@@ -23,6 +23,7 @@ import {
   updateUrlForRoom
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
+import { AnonAccountSetupModal } from "./components/AnonAccountSetupModal";
 import { safelyGetStorageItem } from "./utils/localStorage";
 
 // @ts-ignore
@@ -51,6 +52,10 @@ function AppContent() {
   );
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
+  const [showAccountSetupModal, setShowAccountSetupModal] =
+    useState(false);
+  const [accountSetupContext, setAccountSetupContext] =
+    useState("");
 
   const {
     user,
@@ -429,12 +434,23 @@ function AppContent() {
           passPercent={qrScanResult.passPercent}
           userVote={qrScanResult.userVote}
           isOpen={true}
+          onFollowConversation={() => {
+            setShowAccountSetupModal(true);
+            setAccountSetupContext("following this conversation");
+          }}
           onJoinDiscussion={() => {
             setTargetRoomId(qrScanResult.room.id);
             updateUrlForRoom(qrScanResult.room.id);
             setQrScanResult(null);
           }}
           onClose={() => setQrScanResult(null)}
+        />
+      )}
+      {showAccountSetupModal && (
+        <AnonAccountSetupModal
+          featureText={accountSetupContext}
+          isOpen={showAccountSetupModal}
+          onClose={() => setShowAccountSetupModal(false)}
         />
       )}
     </>

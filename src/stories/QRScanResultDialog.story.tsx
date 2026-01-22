@@ -141,6 +141,10 @@ export function QRScanResultDialogStory() {
         passPercent={currentScenario.passPercent}
         userVote={currentScenario.userVote}
         isOpen={dialogOpen}
+        onFollowConversation={() => {
+          setDialogOpen(false);
+          alert("User would open the account setup dialog to follow this conversation!");
+        }}
         onJoinDiscussion={() => {
           setDialogOpen(false);
           alert("User would be redirected to the debate room!");

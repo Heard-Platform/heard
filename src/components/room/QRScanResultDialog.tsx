@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { MessageSquare, Sparkles, X } from "lucide-react";
+import { Sparkles, X, Bell } from "lucide-react";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { DebateRoom } from "../../types";
 import { VoteType } from "../../types";
 
@@ -16,6 +16,7 @@ export type QRScanResult = {
 
 interface QRScanResultDialogProps extends QRScanResult {
   isOpen: boolean;
+  onFollowConversation: () => void;
   onJoinDiscussion: () => void;
   onClose: () => void;
 }
@@ -27,6 +28,7 @@ export function QRScanResultDialog({
   passPercent,
   userVote,
   isOpen,
+  onFollowConversation,
   onJoinDiscussion,
   onClose,
 }: QRScanResultDialogProps) {
@@ -69,6 +71,7 @@ export function QRScanResultDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md p-0 bg-transparent border-0 shadow-none [&>button]:hidden">
+        <DialogTitle className="sr-only">Vote Results</DialogTitle>
         <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -193,24 +196,23 @@ export function QRScanResultDialog({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.5 }}
+              className="space-y-3"
             >
               <Button
-                onClick={onJoinDiscussion}
+                onClick={onFollowConversation}
                 className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
               >
-                <MessageSquare className="w-5 h-5" />
-                Join the Discussion
+                <Bell className="w-5 h-5" />
+                Follow Conversation
               </Button>
-            </motion.div>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.6 }}
-              className="text-center text-xs text-slate-400"
-            >
-              Share your own take and vote on what others said
-            </motion.p>
+              <button
+                onClick={onJoinDiscussion}
+                className="w-full text-sm text-slate-300 hover:text-white transition-colors underline"
+              >
+                Vote on other posts in this discussion
+              </button>
+            </motion.div>
 
             <motion.div
               initial={{ opacity: 0 }}
