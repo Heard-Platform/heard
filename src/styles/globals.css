@@ -200,6 +200,18 @@
   .heard-primary-gradient {
     background: linear-gradient(to bottom right, rgb(168 85 247), rgb(59 130 246));
   }
+
+  .heard-spinner {
+    border: 2px solid rgb(147 51 234);
+    border-top-color: transparent;
+    border-radius: 9999px;
+  }
+
+  .heard-spinner-white {
+    border: 2px solid white;
+    border-top-color: transparent;
+    border-radius: 9999px;
+  }
 }
 
 /**

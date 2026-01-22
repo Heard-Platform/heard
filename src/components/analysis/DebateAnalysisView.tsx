@@ -78,7 +78,7 @@ export function DebateAnalysisView({
 
         <div className="h-full overflow-y-auto bg-white">
           {loading && (
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 flex items-center justify-center">
+            <div className="heard-page-bg p-4 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
                 <p className="text-sm text-muted-foreground">
@@ -89,7 +89,7 @@ export function DebateAnalysisView({
           )}
 
           {error && (
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 flex items-center justify-center">
+            <div className="heard-page-bg p-4 flex items-center justify-center">
               <div className="text-center">
                 <p className="text-sm text-red-600">{error}</p>
                 <Button onClick={onClose} className="mt-4">

@@ -21,7 +21,7 @@ export function TopAgreedPosts({ topPosts }: TopAgreedPostsProps) {
       <div className="space-y-3">
         {topPosts.slice(0, 3).map((post, index) => (
           <Card key={post.id} className="p-4 hover:shadow-md transition-shadow relative">
-            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs">
+            <div className="heard-badge-circle absolute top-2 right-2">
               {index + 1}
             </div>
             <p className="text-sm mb-3 pr-8">{post.text}</p>

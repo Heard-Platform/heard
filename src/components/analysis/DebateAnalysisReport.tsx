@@ -36,7 +36,7 @@ export function DebateAnalysisReport({
   onRegenerateClusters,
 }: DebateAnalysisReportProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
+    <div className="heard-page-bg p-4">
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl">Debate Analysis</h1>

@@ -2124,10 +2124,6 @@
     border-color: var(--color-yellow-400);
   }
 
-  .border-t-transparent {
-    border-top-color: #0000;
-  }
-
   .bg-amber-100 {
     background-color: var(--color-amber-100);
   }
@@ -6018,6 +6014,18 @@
 
   .heard-primary-gradient {
     background: linear-gradient(to bottom right, #a855f7, #3b82f6);
+  }
+
+  .heard-spinner {
+    border: 2px solid #9333ea;
+    border-top-color: #0000;
+    border-radius: 9999px;
+  }
+
+  .heard-spinner-white {
+    border: 2px solid #fff;
+    border-top-color: #0000;
+    border-radius: 9999px;
   }
 }
 

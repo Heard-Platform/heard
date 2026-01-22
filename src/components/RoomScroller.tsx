@@ -232,7 +232,7 @@ export const RoomScroller = forwardRef<
               repeat: Infinity,
               ease: "linear",
             }}
-            className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full"
+            className="w-8 h-8 heard-spinner"
           />
         </div>
       );
