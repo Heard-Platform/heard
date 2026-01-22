@@ -183,7 +183,7 @@ export function ReviewExtractionStep({
       {/* Extracted Statements */}
       <FunSheetCard delay={0.25}>
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="heard-between">
             <Label className="text-base text-slate-700 flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-blue-500" />
               Seed Statements ({statements.length})

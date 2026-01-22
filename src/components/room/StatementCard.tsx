@@ -37,7 +37,7 @@ export function StatementCard({
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div className="heard-between">
         <div className="flex items-center gap-2">
           {statement.isSpicy && (
             <span className="text-lg">🌶️</span>

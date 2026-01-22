@@ -153,7 +153,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="heard-between">
         <h3>Email Previews</h3>
         <div className="flex items-center gap-3">
           {digestType !== "admin_daily_digest" && (
@@ -215,7 +215,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
 
       {!useMockData && countData && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
+          <div className="heard-between">
             <div className="flex-1">
               <p className="text-blue-900">
                 <span className="font-semibold">{countData.eligibleCount} of {countData.totalCount}</span> users would receive an email for this timeframe

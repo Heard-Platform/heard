@@ -23,7 +23,7 @@ export function UsersTable({ users, adminKey, onUserUpdate }: UsersTableProps) {
 
   return (
     <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="heard-between mb-4">
         <h2 className="text-xl">All Users ({filteredUsers.length})</h2>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">

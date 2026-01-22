@@ -43,7 +43,7 @@ export function ControversialCard({
             </div>
             <div className="flex items-center gap-4">
               <div className="flex-1 space-y-2">
-                <div className="flex items-center justify-between text-xs">
+                <div className="heard-between text-xs">
                   <span className="text-green-600 font-medium">
                     {statement.agrees} agreed
                   </span>

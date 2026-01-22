@@ -17,7 +17,7 @@ export function ChanceCard({
 }: ChanceCardProps) {
   return (
     <>
-      <div className="flex items-center justify-between mb-2">
+      <div className="heard-between mb-2">
         <div className="flex items-center gap-2">
           <span className="text-2xl">🎲</span>
           <span className="text-sm text-orange-700">Chance Card!</span>

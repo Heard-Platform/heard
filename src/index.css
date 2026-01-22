@@ -6033,6 +6033,12 @@
     align-items: center;
     display: flex;
   }
+
+  .heard-between {
+    justify-content: space-between;
+    align-items: center;
+    display: flex;
+  }
 }
 
 :root {

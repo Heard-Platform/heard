@@ -23,7 +23,7 @@ export function ClusterConsensusBox({
 
   return (
     <div className={`border ${colors.border} rounded-lg p-4 ${colors.bg}`}>
-      <div className="flex items-center justify-between mb-3">
+      <div className="heard-between mb-3">
         <div className="flex items-center gap-2">
           <h3 className={`font-medium ${colors.text}`}>
             Cluster {clusterNumber}

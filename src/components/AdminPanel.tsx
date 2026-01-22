@@ -334,7 +334,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     return (
       <div className="heard-page-bg flex items-center justify-center p-4">
         <Card className="w-full max-w-md p-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="heard-between mb-6">
             <div className="flex items-center gap-2">
               <Shield className="w-8 h-8 text-purple-600" />
               <h1 className="text-2xl">Dev Admin Panel</h1>
@@ -381,7 +381,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     <div className="heard-page-bg p-4">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="heard-between">
           <div className="flex items-center gap-2">
             <Shield className="w-8 h-8 text-purple-600" />
             <h1 className="text-3xl">Dev Admin Panel</h1>
@@ -460,7 +460,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
               {subHeards.map((subHeard) => (
                 <div
                   key={subHeard.name}
-                  className="border rounded-lg p-4 flex items-center justify-between"
+                  className="border rounded-lg p-4 heard-between"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">

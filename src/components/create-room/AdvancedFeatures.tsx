@@ -77,7 +77,7 @@ export function AdvancedFeatures({
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-100/50 transition-colors rounded-lg"
+        className="w-full px-4 py-3 heard-between hover:bg-slate-100/50 transition-colors rounded-lg"
       >
         <span className="text-sm text-slate-500 font-medium">
           Advanced Features
@@ -127,7 +127,7 @@ export function AdvancedFeatures({
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="heard-between">
               <Label className="text-xs font-medium text-slate-600 uppercase tracking-wide">
                 Custom Questions
               </Label>
