@@ -724,7 +724,7 @@ app.post(
           Authorization: `Bearer ${resendApiKey}`,
         },
         body: JSON.stringify({
-          from: "Heard <noreply@heard-now.com>",
+          from: "Heard <alex@heard-now.com>",
           to: [normalizedEmail],
           subject: "Log in to Heard",
           html,
@@ -807,7 +807,7 @@ app.post(
           Authorization: `Bearer ${resendApiKey}`,
         },
         body: JSON.stringify({
-          from: "Heard <noreply@heard-now.com>",
+          from: "Heard <alex@heard-now.com>",
           to: [normalizedEmail],
           subject: "Log in to Heard",
           html,
