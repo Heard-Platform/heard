@@ -26,6 +26,17 @@ export interface ClusterConsensus {
   clusters: Cluster[];
 }
 
+export function calcConsensusScore(agreeCount: number, disagreeCount: number, totalVoteCount: number): number {
+  const opinionatedVoteCount = agreeCount + disagreeCount;
+  if (opinionatedVoteCount === 0) {
+    return 0;
+  }
+
+  const percentageAgree = agreeCount / opinionatedVoteCount;
+  const confidence = Math.sqrt(opinionatedVoteCount);
+  return percentageAgree * confidence;
+}
+
 export function calcBestClusterStatements(statements: Statement[], usersInCluster: string[]) {
   const clusterStatements: ClusterConsensusStatement[] = [];
 
@@ -55,15 +66,8 @@ export function calcBestClusterStatements(statements: Statement[], usersInCluste
     //     ? (agreeCount / totalVoteCount) * 100
     //     : 0;
 
-    const opinionatedVoteCount = agreeCount + disagreeCount;
-    let consensusScore = 0;
-    if (opinionatedVoteCount > 0) {
-      const percentageAgree = (agreeCount / opinionatedVoteCount);
-      // const confidence = Math.sqrt(totalVoteCount);
-      const confidence = Math.sqrt(opinionatedVoteCount);
-      consensusScore = percentageAgree * confidence;
-      console.log(`Statement ${statement.id}: agreeCount=${agreeCount}, disagreeCount=${disagreeCount}, totalVoteCount=${totalVoteCount}, percentageAgree=${percentageAgree.toFixed(2)}, confidence=${confidence.toFixed(2)}, consensusScore=${consensusScore.toFixed(2)}`);
-    }
+    const consensusScore = calcConsensusScore(agreeCount, disagreeCount, totalVoteCount);
+    console.log(`Statement ${statement.id}: agreeCount=${agreeCount}, disagreeCount=${disagreeCount}, totalVoteCount=${totalVoteCount}, consensusScore=${consensusScore.toFixed(2)}`);
 
     clusterStatements.push({
       id: statement.id,
