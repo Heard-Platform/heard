@@ -25,11 +25,20 @@ export interface ClusterConsensus {
   clusters: Cluster[];
 }
 
+export function calcConsensusScore(agreeCount: number, disagreeCount: number): number {
+  const opinionatedVoteCount = agreeCount + disagreeCount;
+  const diff = Math.abs(agreeCount - disagreeCount);
+  const consensusScore = (diff * Math.log(opinionatedVoteCount)) / (opinionatedVoteCount);
+  console.log(`agreeCount=${agreeCount}, disagreeCount=${disagreeCount}, totalVoteCount=${opinionatedVoteCount}, consensusScore=${consensusScore.toFixed(2)}`);
+  return consensusScore;
+}
+
 export function calcBestClusterStatements(statements: Statement[], usersInCluster: string[]) {
   const clusterStatements: ClusterConsensusStatement[] = [];
 
   statements.forEach((statement) => {
     let agreeCount = 0;
+    let disagreeCount = 0;
     let totalVoteCount = 0;
 
     for (const userId of usersInCluster) {
@@ -41,14 +50,13 @@ export function calcBestClusterStatements(statements: Statement[], usersInCluste
           voteType === "super_agree"
         ) {
           agreeCount++;
+        } else if (voteType === "disagree") {
+          disagreeCount++;
         }
       }
     }
 
-    const consensusScore =
-      totalVoteCount > 0
-        ? (agreeCount / totalVoteCount) * 100
-        : 0;
+    const consensusScore = calcConsensusScore(agreeCount, disagreeCount);
 
     clusterStatements.push({
       id: statement.id,
