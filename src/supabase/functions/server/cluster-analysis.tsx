@@ -10,7 +10,6 @@ interface ClusterConsensusStatement {
   id: string;
   text: string;
   agreeVotes: number;
-  disagreeVotes: number;
   totalVotes: number;
   consensusScore: number;
 }
@@ -39,29 +38,20 @@ export function calcBestClusterStatements(statements: Statement[], usersInCluste
 
   statements.forEach((statement) => {
     let agreeCount = 0;
-    let disagreeCount = 0;
     let totalVoteCount = 0;
 
     for (const userId of usersInCluster) {
       const voteType = statement.voters?.[userId];
       if (voteType) {
         totalVoteCount++;
-        if (voteType === "agree") {
+        if (
+          voteType === "agree" ||
+          voteType === "super_agree"
+        ) {
           agreeCount++;
-        }
-        else if (voteType === "super_agree") {
-          agreeCount += 1;
-        }
-        else if (voteType === "disagree") {
-          disagreeCount++;
         }
       }
     }
-
-    // const consensusScore =
-    //   totalVoteCount > 0
-    //     ? (agreeCount / totalVoteCount) * 100
-    //     : 0;
 
     const consensusScore = calcConsensusScore(agreeCount, disagreeCount);
 
@@ -69,7 +59,6 @@ export function calcBestClusterStatements(statements: Statement[], usersInCluste
       id: statement.id,
       text: statement.text,
       agreeVotes: agreeCount,
-      disagreeVotes: disagreeCount,
       totalVotes: totalVoteCount,
       consensusScore,
     });
