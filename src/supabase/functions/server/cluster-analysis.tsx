@@ -26,15 +26,12 @@ export interface ClusterConsensus {
   clusters: Cluster[];
 }
 
-export function calcConsensusScore(agreeCount: number, disagreeCount: number, totalVoteCount: number): number {
+export function calcConsensusScore(agreeCount: number, disagreeCount: number): number {
   const opinionatedVoteCount = agreeCount + disagreeCount;
-  if (opinionatedVoteCount === 0) {
-    return 0;
-  }
-
-  const percentageAgree = agreeCount / opinionatedVoteCount;
-  const confidence = Math.sqrt(opinionatedVoteCount);
-  return percentageAgree * confidence;
+  const diff = Math.abs(agreeCount - disagreeCount);
+  const consensusScore = (diff * Math.log(opinionatedVoteCount)) / (opinionatedVoteCount);
+  console.log(`agreeCount=${agreeCount}, disagreeCount=${disagreeCount}, totalVoteCount=${opinionatedVoteCount}, consensusScore=${consensusScore.toFixed(2)}`);
+  return consensusScore;
 }
 
 export function calcBestClusterStatements(statements: Statement[], usersInCluster: string[]) {
@@ -66,8 +63,7 @@ export function calcBestClusterStatements(statements: Statement[], usersInCluste
     //     ? (agreeCount / totalVoteCount) * 100
     //     : 0;
 
-    const consensusScore = calcConsensusScore(agreeCount, disagreeCount, totalVoteCount);
-    console.log(`Statement ${statement.id}: agreeCount=${agreeCount}, disagreeCount=${disagreeCount}, totalVoteCount=${totalVoteCount}, consensusScore=${consensusScore.toFixed(2)}`);
+    const consensusScore = calcConsensusScore(agreeCount, disagreeCount);
 
     clusterStatements.push({
       id: statement.id,

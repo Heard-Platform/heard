@@ -54,13 +54,11 @@ Deno.test("calcBestClusterStatements", () => {
   assertEquals(stmt1?.agreeVotes, 3);
   assertEquals(stmt1?.disagreeVotes, 0);
   assertEquals(stmt1?.totalVotes, 3);
-  assertEquals(stmt1?.consensusScore, (3 / 3) * Math.sqrt(3));
 
   const stmt2 = result.find((s) => s.id === "stmt2");
   assertEquals(stmt2?.agreeVotes, 2);
   assertEquals(stmt2?.disagreeVotes, 1);
   assertEquals(stmt2?.totalVotes, 3);
-  assertEquals(stmt2?.consensusScore, (2 / 3) * Math.sqrt(3));
 });
 
 Deno.test("calcBestClusterStatements prioritizes total votes", () => {
@@ -126,8 +124,90 @@ Deno.test("calcBestClusterStatements prioritizes total votes", () => {
 Deno.test("calcConsensusScore basic case", () => {
   const agreeCount = 3;
   const disagreeCount = 1;
-  const totalVoteCount = 4;
 
-  const score = calcConsensusScore(agreeCount, disagreeCount, totalVoteCount);
+  const score = calcConsensusScore(agreeCount, disagreeCount);
   assertGreaterOrEqual(score, 0.5);
+});
+
+Deno.test("calcConsensusScore large total, mixed consensus", () => {
+  const agreeCount = 25;
+  const disagreeCount = 12;
+
+  const score = calcConsensusScore(agreeCount, disagreeCount);
+  assertGreaterOrEqual(score, 0);
+});
+
+Deno.test("calcConsensusScore very large total, mixed consensus", () => {
+  const agreeCount = 300;
+  const disagreeCount = 300;
+
+  const score = calcConsensusScore(agreeCount, disagreeCount);
+  assertGreaterOrEqual(score, 0);
+});
+
+Deno.test("calcConsensusScore extremely large total, mixed consensus", () => {
+  const agreeCount = 1500;
+  const disagreeCount = 1000;
+
+  const score = calcConsensusScore(agreeCount, disagreeCount);
+  assertGreaterOrEqual(score, 0);
+});
+
+Deno.test("calcConsensusScore extremely large total, mixed consensus", () => {
+  const agreeCount = 500;
+  const disagreeCount = 2000;
+
+  const score = calcConsensusScore(agreeCount, disagreeCount);
+  assertGreaterOrEqual(score, 0);
+});
+
+type UnindexedCase = {
+  agreeCount: number;
+  disagreeCount: number;
+};
+
+type Case = UnindexedCase & {
+  index: number;
+};
+
+function scoreAndAssertOrder(cases: UnindexedCase[]) {
+  const indexedCases: Case[] = cases.map((c, index) => ({
+    ...c,
+    index,
+  }));
+  
+  const scoredCases = indexedCases.map((c) => ({
+    ...c,
+    score: calcConsensusScore(c.agreeCount, c.disagreeCount),
+  }));
+
+  const sortedCases = scoredCases.slice().sort((a, b) => b.score - a.score);
+  const expectedOrder = sortedCases.map((c) => c.index);
+  assertEquals(expectedOrder, indexedCases.map((c) => c.index))
+};
+
+Deno.test("calcConsensusScore ranking multiple cases", () => {
+  const cases = [
+    { agreeCount: 5, disagreeCount: 1000 },
+    { agreeCount: 501, disagreeCount: 1 },
+    { agreeCount: 500, disagreeCount: 1000 },
+    { agreeCount: 5, disagreeCount: 20 },
+    { agreeCount: 1500, disagreeCount: 1000 },
+    { agreeCount: 10500, disagreeCount: 10000 },
+    { agreeCount: 1000, disagreeCount: 1000 },
+  ]
+
+  scoreAndAssertOrder(cases);
+});
+
+Deno.test("calcConsensusScore ranking same diff at different scales", () => {
+  const cases = [
+    { agreeCount: 1_000_000, disagreeCount: 4_000_000 },
+    { agreeCount: 1_000, disagreeCount: 4_000 },
+    { agreeCount: 100, disagreeCount: 400 },
+    { agreeCount: 10, disagreeCount: 40 },
+    { agreeCount: 1, disagreeCount: 4 },
+  ]
+
+  scoreAndAssertOrder(cases);
 });
