@@ -38,6 +38,7 @@ export function calcBestClusterStatements(statements: Statement[], usersInCluste
 
   statements.forEach((statement) => {
     let agreeCount = 0;
+    let disagreeCount = 0;
     let totalVoteCount = 0;
 
     for (const userId of usersInCluster) {
@@ -49,6 +50,8 @@ export function calcBestClusterStatements(statements: Statement[], usersInCluste
           voteType === "super_agree"
         ) {
           agreeCount++;
+        } else if (voteType === "disagree") {
+          disagreeCount++;
         }
       }
     }

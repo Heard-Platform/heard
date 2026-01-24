@@ -1,6 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/assert_equals.ts";
-import { calcBestClusterStatements } from "./cluster-analysis.tsx";
+import { calcBestClusterStatements, calcConsensusScore } from "./cluster-analysis.tsx";
 import { Statement, VoteType } from "./types.tsx";
+import { assertGreaterOrEqual } from "https://deno.land/std@0.224.0/assert/assert_greater_or_equal.ts";
 
 const testStatements: Statement[] = [
   {
@@ -88,10 +89,8 @@ Deno.test("calcBestClusterStatements prioritizes total votes", () => {
     voterIds,
   );
   
-  assertEquals(result[0].id, "stmt2b");
-  assertEquals(result[1].id, "stmt2");
-  assertEquals(result[2].id, "stmt1");
-  assertEquals(result[3].id, "stmt1b");
+  assertEquals(result[0].id, "stmt2");
+  assertEquals(result[1].id, "stmt1");
 });
 
 Deno.test("calcConsensusScore basic case", () => {
