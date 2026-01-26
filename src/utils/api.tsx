@@ -59,6 +59,20 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async sendSmsCode(phone: string) {
+    return this.request<undefined>("/auth/send-sms-code", {
+      method: "POST",
+      body: JSON.stringify({ phone }),
+    });
+  }
+
+  async verifySmsCode(phone: string, code: string) {
+    return this.request<UserSessionResponse>("/auth/verify-sms-code", {
+      method: "POST",
+      body: JSON.stringify({ phone, code }),
+    });
+  }
+
   async setupAnonymousUser(
     userId: string,
     nickname: string,

@@ -9,8 +9,7 @@ import { getFrontendUrl } from "./utils.tsx";
 import type { Session, User } from "./types.tsx";
 import { Context, Hono } from "npm:hono";
 import { getMagicLinkEmail } from "./email-templates.tsx";
-import { mergeAnonymousUserActivity } from "./anonymous-merge-utils.tsx";
-import { ENABLE_ANONYMOUS_MERGE } from "./constants.tsx";
+import { loginUserWithMerge } from "./auth-login-api.ts";
 
 const app = new Hono();
 
@@ -63,7 +62,7 @@ export const validateSessionId = async (sessionId: string): Promise<{ valid: boo
   }
 };
 
-const getUserAndNewSession = async (userId: string) => {
+export const getUserAndNewSession = async (userId: string) => {
   const user = await getUser(userId);
 
   if (!user) {
@@ -856,22 +855,10 @@ app.post(
 
       await deleteMagicLink(token);
       
-      const result = await getUserAndNewSession(userId);
+      const result = await loginUserWithMerge(userId, currentUserId);
       if ("error" in result) {
         return c.json({ error: result.error }, result.status as any);
       }
-
-      if (currentUserId) {
-        const currentUser = await getUser(currentUserId);
-        if (currentUser?.isAnonymous) {
-          try {
-            await mergeAnonymousUserActivity(currentUserId, userId);
-          } catch (error) {
-            console.error("Error during anonymous activity merge:", error);
-          }
-        }
-      }
-
 
       return c.json(result);
     } catch (error) {

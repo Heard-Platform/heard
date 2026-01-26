@@ -4,6 +4,7 @@ import { logger } from "npm:hono/logger";
 import { debateApi } from "./debate-api.tsx";
 import { adminApi } from "./admin-api.tsx";
 import { authApi } from "./auth-api.tsx";
+import { smsAuthApi } from "./auth-login-api.ts";
 import { redditApi } from "./reddit-api.tsx";
 import { oneTimeFixesApi } from "./one-time-fixes.tsx";
 import { feedbackApi } from "./feedback-api.tsx";
@@ -74,6 +75,7 @@ app.get("/make-server-f1a393b4/health", (c) => {
 app.route("/", debateApi);
 app.route("/", adminApi);
 app.route("/", authApi);
+app.route("/", smsAuthApi);
 app.route("/", redditApi);
 app.route("/", oneTimeFixesApi);
 app.route("/", feedbackApi);
