@@ -28,6 +28,8 @@ interface DebateSessionContextType {
   error: string | null;
   sendMagicLink: (email: string) => Promise<ApiResponse | null>;
   verifyMagicLink: (code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
+  sendSmsCode: (phone: string, requireExisting?: boolean) => Promise<ApiResponse | null>;
+  addPhoneToAccount: (userId: string, phone: string, code: string) => Promise<ApiResponse<{ success: boolean }> | null>;
   createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
   createRoom: (
     newDebate: NewDebateRoom,
@@ -190,6 +192,18 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     }
     return response;
   }, [safelyMakeApiCall, setUserAndSession]);
+
+  const sendSmsCode = useCallback(async (phone: string, requireExisting?: boolean) => {
+    return safelyMakeApiCall<undefined>(() => api.sendSmsCode(phone, requireExisting));
+  }, [safelyMakeApiCall]);
+
+  const addPhoneToAccount = useCallback(async (userId: string, phone: string, code: string) => {
+    const response = await safelyMakeApiCall<{ success: boolean }>(() => api.addPhoneToAccount(userId, phone, code));
+    if (response && response.success && response.data) {
+      // Optionally refresh user data here if needed
+    }
+    return response;
+  }, [safelyMakeApiCall]);
 
   const createAnonymousUser = useCallback(async () => {
     const response = await safelyMakeApiCall<UserSessionResponse>(() => api.createAnonymousUser());
@@ -631,6 +645,8 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     error,
     sendMagicLink,
     verifyMagicLink,
+    sendSmsCode,
+    addPhoneToAccount,
     createAnonymousUser,
     createRoom,
     joinRoom,

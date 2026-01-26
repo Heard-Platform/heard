@@ -19,6 +19,9 @@ export interface User {
   isAnonymous?: boolean;
   flyerId?: string;
   convertedFromAnonAt?: number;
+  phoneNumber?: string;
+  phoneVerified?: boolean;
+  phoneVerifiedAt?: number;
 }
 
 export type MagicLinkRecord = {

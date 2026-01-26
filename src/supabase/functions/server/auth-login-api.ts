@@ -1,6 +1,6 @@
 import { Context, Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
-import { getUser } from "./kv-utils.tsx";
+import { getUser, saveUser, saveUserPhone } from "./kv-utils.tsx";
 import { mergeAnonymousUserActivity } from "./anonymous-merge-utils.tsx";
 import { getUserAndNewSession } from "./auth-api.tsx";
 import { startVerification, checkVerification } from "./twilio-service.tsx";
@@ -37,7 +37,7 @@ app.post(
   "/make-server-f1a393b4/auth/send-sms-code",
   async (c: any) => {
     try {
-      const { phone } = await c.req.json();
+      const { phone, requireExisting } = await c.req.json();
 
       if (!phone) {
         return c.json({ error: "Phone number is required" }, 400);
@@ -51,7 +51,7 @@ app.post(
 
       const user = await getUserByPhone(normalizedPhone);
 
-      if (!user) {
+      if (requireExisting && !user) {
         return c.json(
           { error: "No account found with this phone number" },
           404,
@@ -112,4 +112,44 @@ app.post(
   },
 );
 
-export { app as smsAuthApi };
+app.post(
+  "/make-server-f1a393b4/auth/add-phone-to-account",
+  async (c: Context) => {
+    try {
+      const { userId, phone, code } = await c.req.json();
+
+      if (!userId || !phone || !code) {
+        return c.json({ error: "userId, phone, and code are required" }, 400);
+      }
+
+      const normalizedPhone = phone.replace(/\D/g, "");
+      const verificationResult = await checkVerification(normalizedPhone, code);
+
+      if (!verificationResult.success) {
+        return c.json({ error: verificationResult.error || "Invalid or expired code" }, 401);
+      }
+
+      const existingUser = await getUserByPhone(normalizedPhone);
+      if (existingUser) {
+        return c.json({ error: "This phone number is already registered to another account" }, 409);
+      }
+
+      const user = await getUser(userId);
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      await saveUserPhone(normalizedPhone, userId);
+      
+      const updatedUser = { ...user, phoneNumber: normalizedPhone, phoneVerified: true, phoneVerifiedAt: Date.now() };
+      await saveUser(updatedUser);
+
+      return c.json({ success: true });
+    } catch (error) {
+      console.error("Error adding phone to account:", error);
+      return c.json({ error: "Failed to add phone to account" }, 500);
+    }
+  },
+);
+
+export { app as loginApi };

@@ -1,4 +1,4 @@
-import twilio from "twilio";
+import twilio from "npm:twilio";
 
 const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
@@ -11,6 +11,18 @@ const getClient = () => {
   return twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 };
 
+const normalizePhoneNumber = (phone: string): string => {
+  let normalizedPhone = phone;
+
+  if (phone.length === 10) {
+    normalizedPhone = `+1${phone}`;
+  } else if (phone.length === 11) {
+    normalizedPhone = `+${phone}`;
+  }
+
+  return normalizedPhone;
+};
+
 export const startVerification = async (phone: string): Promise<{ success: boolean; error?: string }> => {
   const client = getClient();
   if (!client || !TWILIO_VERIFY_SERVICE_SID) {
@@ -18,8 +30,8 @@ export const startVerification = async (phone: string): Promise<{ success: boole
     return { success: false, error: "SMS verification service not configured" };
   }
 
-  const normalizedPhone = phone.startsWith("+") ? phone : `+${phone}`;
-
+  const normalizedPhone = normalizePhoneNumber(phone);
+  
   try {
     const verification = await client.verify.v2
       .services(TWILIO_VERIFY_SERVICE_SID)
@@ -43,8 +55,8 @@ export const checkVerification = async (phone: string, code: string): Promise<{ 
     return { success: false, error: "SMS verification service not configured" };
   }
 
-  const normalizedPhone = phone.startsWith("+") ? phone : `+${phone}`;
-
+  const normalizedPhone = normalizePhoneNumber(phone);
+  
   try {
     const verificationCheck = await client.verify.v2
       .services(TWILIO_VERIFY_SERVICE_SID)
