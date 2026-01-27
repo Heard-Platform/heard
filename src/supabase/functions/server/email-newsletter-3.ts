@@ -22,7 +22,7 @@ export const getNewsletter3Email = (): string => {
           🙏 First GoFundMe contribution!
         </h2>
         <p style="${styles.paragraph}">
-          I just launched my GoFundMe and the first contribution is in! Big thanks to Robbie for that! 🙏
+          I recently launched my GoFundMe and the first contribution is in! Big thanks to Robbie for that! 🙏
         </p>
         <a href="https://www.gofundme.com/f/support-heard-making-democracy-fun-and-engaging">
           <img src="https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-3-gfm-2.png" 
