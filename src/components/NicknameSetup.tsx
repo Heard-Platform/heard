@@ -13,7 +13,6 @@ import {
 import { isValidEmail } from "../utils/validation";
 import { isValidPhone, formatPhone } from "../utils/validation";
 import { useDebateSession } from "../hooks/useDebateSession";
-import { api } from "../utils/api";
 
 interface NicknameSetupProps {
   loading: boolean;
@@ -30,7 +29,7 @@ export function NicknameSetup({
   onBack,
   onMagicLinkSuccess,
 }: NicknameSetupProps) {
-  const { sendMagicLink, verifyMagicLink } = useDebateSession();
+  const { sendMagicLink, verifyMagicLink, sendSmsCode, verifySmsCode } = useDebateSession();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [sendingMagicLink, setSendingMagicLink] = useState(false);
@@ -69,8 +68,8 @@ export function NicknameSetup({
 
     setSendingMagicLink(true);
     try {
-      const response = await api.sendSmsCode(formatPhone(phone));
-      if (response.success) {
+      const response = await sendSmsCode(formatPhone(phone));
+      if (response && response.success) {
         setSmsSent(true);
       }
     } catch (error) {
@@ -87,8 +86,8 @@ export function NicknameSetup({
     setVerifyingCode(true);
     if (smsSent) {
       try {
-        const response = await api.verifySmsCode(formatPhone(phone), magicCode);
-        if (response.success) {
+        const response = await verifySmsCode(formatPhone(phone), magicCode);
+        if (response && response.success) {
           onMagicLinkSuccess();
         }
       } catch (error) {
