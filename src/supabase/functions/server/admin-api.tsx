@@ -48,7 +48,12 @@ app.get("/make-server-f1a393b4/admin/newsletter-eligible-count", async (c) => {
   try {
     const edition = c.req.query("edition") || "1";
     const users = await getAllRealUsers();
-    const eligibleUsers = users.filter(u => !u.isTestUser && !u.isAnonymous && u.email);
+    const eligibleUsers = users.filter(
+      u => !u.isTestUser
+        && !u.isAnonymous
+        && u.email
+        && !u.isUnsubbedFromUpdates
+    );
     
     const newsletterSentKey = `newsletter:edition${edition}:sent-users`;
     const alreadySent = await kv.get(newsletterSentKey) || [];
@@ -364,6 +369,41 @@ app.patch(
   },
 );
 
+app.patch(
+  "/make-server-f1a393b4/admin/user/:userId/unsub-status",
+  async (c) => {
+    try {
+      const userId = c.req.param("userId");
+      const { isUnsubbedFromUpdates } = await c.req.json();
+
+      if (typeof isUnsubbedFromUpdates !== "boolean") {
+        return c.json({ error: "isUnsubbedFromUpdates must be a boolean" }, 400);
+      }
+
+      const user = await getUser(userId);
+
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      user.isUnsubbedFromUpdates = isUnsubbedFromUpdates;
+
+      await saveUser(user);
+
+      return c.json({
+        success: true,
+        user: user,
+      });
+    } catch (error) {
+      console.error("Error updating user unsub status:", error);
+      return c.json(
+        { error: "Failed to update user unsub status" },
+        500,
+      );
+    }
+  },
+);
+
 app.get(
   "/make-server-f1a393b4/admin/user-history/:userId",
   async (c) => {
@@ -515,6 +555,7 @@ app.post(
         eligibleUsers = users.filter(
           u => !u.isTestUser && !u.isAnonymous && u.email
             && !alreadySent.includes(u.id)
+            && !u.isUnsubbedFromUpdates
         );
         console.log(`Found ${eligibleUsers.length} eligible users for newsletter #${newsletterEdition}`);
       }

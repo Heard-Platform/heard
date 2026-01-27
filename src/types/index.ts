@@ -114,6 +114,7 @@ export interface UserSession {
   isAnonymous?: boolean;
   flyerId?: string;
   convertedFromAnonAt?: number;
+  isUnsubbedFromUpdates?: boolean;
 }
 
 export type DebateMode = "realtime" | "host-controlled";
