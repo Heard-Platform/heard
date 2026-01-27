@@ -9,6 +9,7 @@ import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
+import { getNewsletter3Email } from "./email-newsletter-3.ts";
 
 const app = new Hono();
 
@@ -525,12 +526,13 @@ app.post(
       let failed = 0;
       const newlySent: string[] = [];
 
-      const getNewsletterHtml = newsletterEdition === 2 ? getNewsletter2Email : getNewsletterEmail;
+      const getNewsletterHtml = newsletterEdition === 2 ? getNewsletter2Email : newsletterEdition === 3 ? getNewsletter3Email : getNewsletterEmail;
       const newsletterSubjects = {
         1: "The 1st Heard Newsletter! Cold showers, live streams, and QR codes - oh my!",
         2: "The 2nd Heard Newsletter! Heard in the news, broken strings, and getting closer to 100 users!",
+        3: "Heard Newsletter #3! GoFundMe, rickrolls, and roadmap"
       };
-      const subject = newsletterSubjects[newsletterEdition as 1 | 2] || newsletterSubjects[1];
+      const subject = newsletterSubjects[newsletterEdition as 1 | 2 | 3] || newsletterSubjects[1];
 
       for (const user of eligibleUsers) {
         try {

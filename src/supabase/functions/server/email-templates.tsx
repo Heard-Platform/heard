@@ -53,7 +53,7 @@ export const getMagicLinkEmail = (magicLinkUrl: string, code: string): string =>
   `;
 };
 
-const styles = {
+export const styles = {
   body: "margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;",
   container: "max-width: 600px; margin: 0 auto; padding: 40px 20px;",
   header: "text-align: center; margin-bottom: 40px;",
@@ -104,7 +104,7 @@ const getOrdinalSuffix = (num: number): string => {
   }
 };
 
-const getNewsletterHeader = (editionNumber: number) => `
+export const getNewsletterHeader = (editionNumber: number) => `
   <div style="${styles.header}">
     <h1 style="${styles.headerTitle}">
       Ya' Heard?
@@ -113,7 +113,7 @@ const getNewsletterHeader = (editionNumber: number) => `
   </div>
 `;
 
-const getSupportSection = () => `
+export const getSupportSection = () => `
   <div style="${styles.section}">
     <h2 style="${styles.helpSectionTitle}">
     💜 Thanks to everyone supporting Heard!
@@ -165,7 +165,7 @@ const getSupportSection = () => `
   </div>
 `;
 
-const getNewsletterFooter = () => `
+export const getNewsletterFooter = () => `
   <div style="${styles.footer}">
     <p>You're receiving this because you have an account on Heard</p>
     <p>If you don't want to receive newsletters anymore, just respond to this email and let me know. Thanks!</p>
