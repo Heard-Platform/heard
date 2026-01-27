@@ -9,7 +9,7 @@ import { getFrontendUrl } from "./utils.tsx";
 import type { Session, User } from "./types.tsx";
 import { Context, Hono } from "npm:hono";
 import { getMagicLinkEmail } from "./email-templates.tsx";
-import { loginUserWithMerge } from "./auth-login-api.ts";
+import { loginUserWithMerge } from "./auth-utils.ts";
 
 const app = new Hono();
 
