@@ -1,9 +1,8 @@
 import { Context, Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getUser, saveUser, saveUserPhone } from "./kv-utils.tsx";
-import { mergeAnonymousUserActivity } from "./anonymous-merge-utils.tsx";
-import { getUserAndNewSession } from "./auth-api.tsx";
 import { startVerification, checkVerification } from "./twilio-service.tsx";
+import { loginUserWithMerge, normalizePhoneNumber } from "./auth-utils.ts";
 
 const app = new Hono();
 
@@ -11,26 +10,6 @@ const getUserByPhone = async (phone: string) => {
   const userId = await kv.get(`user_phone:${phone}`);
   if (!userId) return null;
   return await getUser(userId);
-};
-
-export const loginUserWithMerge = async (userId: string, currentUserId: string | undefined) => {
-  const result = await getUserAndNewSession(userId);
-  if ("error" in result) {
-    return result;
-  }
-
-  if (currentUserId) {
-    const currentUser = await getUser(currentUserId);
-    if (currentUser?.isAnonymous) {
-      try {
-        await mergeAnonymousUserActivity(currentUserId, userId);
-      } catch (error) {
-        console.error("Error during anonymous activity merge:", error);
-      }
-    }
-  }
-
-  return result;
 };
 
 app.post(
@@ -43,7 +22,7 @@ app.post(
         return c.json({ error: "Phone number is required" }, 400);
       }
 
-      const normalizedPhone = phone.replace(/\D/g, "");
+      const normalizedPhone = normalizePhoneNumber(phone);
 
       if (normalizedPhone.length < 10 || normalizedPhone.length > 15) {
         return c.json({ error: "Invalid phone number" }, 400);
@@ -86,7 +65,7 @@ app.post(
         return c.json({ error: "Phone and code are required" }, 400);
       }
 
-      const normalizedPhone = phone.replace(/\D/g, "");
+      const normalizedPhone = normalizePhoneNumber(phone);
       const verificationResult = await checkVerification(normalizedPhone, code);
 
       if (!verificationResult.success) {
@@ -122,7 +101,7 @@ app.post(
         return c.json({ error: "userId, phone, and code are required" }, 400);
       }
 
-      const normalizedPhone = phone.replace(/\D/g, "");
+      const normalizedPhone = normalizePhoneNumber(phone);
       const verificationResult = await checkVerification(normalizedPhone, code);
 
       if (!verificationResult.success) {
