@@ -23,6 +23,7 @@ import { EditAnswersModalStory } from "../stories/EditAnswersModal.story";
 import { DataPrivacyModalStory } from "../stories/DataPrivacyModal.story";
 import { CustomDemographicQuestionStory } from "../stories/CustomDemographicQuestion.story";
 import { AdvancedFeaturesStory } from "../stories/AdvancedFeatures.story";
+import SidePanelMenuStory from "../stories/SidePanelMenu.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 
@@ -102,6 +103,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="data-privacy-modal">Data Privacy Modal</TabsTrigger>
               <TabsTrigger value="custom-demographic-question">Custom Demographic Question</TabsTrigger>
               <TabsTrigger value="advanced-features">Advanced Features</TabsTrigger>
+              <TabsTrigger value="side-panel-menu">Side Panel Menu</TabsTrigger>
             </TabsList>
 
             <TabsContent value="results">
@@ -175,6 +177,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="advanced-features">
               <AdvancedFeaturesStory />
+            </TabsContent>
+            <TabsContent value="side-panel-menu">
+              <SidePanelMenuStory />
             </TabsContent>
           </Tabs>
         </div>
