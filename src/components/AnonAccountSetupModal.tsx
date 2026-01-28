@@ -8,6 +8,9 @@ import { Sparkles, Users, Award, Mail, Phone } from "lucide-react";
 import { isValidEmail, isValidPhone, formatPhone } from "../utils/validation";
 import { useDebateSession } from "../hooks/useDebateSession";
 
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+
 interface AnonAccountSetupModalProps {
   featureText: string;
   isOpen: boolean;
@@ -82,7 +85,8 @@ export function AnonAccountSetupModal({
       try {
         const response = await verifySmsCode(formatPhone(phone), magicCode);
         if (response && response.success) {
-          window.location.reload();
+          toast.success("Successfully signed in!");
+          onClose();
         } else {
           setError(response?.error || "Invalid or expired code");
         }
@@ -93,7 +97,8 @@ export function AnonAccountSetupModal({
     } else {
       const response = await verifyMagicLink(magicCode.toUpperCase());
       if (response && response.success) {
-        window.location.reload();
+        toast.success("Successfully signed in!");
+        onClose();
       } else {
         setError(response?.error || "Invalid or expired code");
       }
