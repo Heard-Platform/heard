@@ -47,7 +47,7 @@ class ApiClient extends BaseApiClient {
   }
 
   async sendMagicLink(email: string) {
-    return this.request<undefined>("/auth/send-magic-link-auto", {
+    return this.request<undefined>("/auth/send-magic-link", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
