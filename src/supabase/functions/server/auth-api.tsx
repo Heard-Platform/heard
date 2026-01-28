@@ -623,5 +623,47 @@ app.post(
   },
 );
 
+app.post(
+  "/make-server-f1a393b4/auth/add-email-to-account",
+  async (c: any) => {
+    try {
+      const { userId, email } = await c.req.json();
+
+      if (!userId || !email) {
+        return c.json({ error: "userId and email are required" }, 400);
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return c.json({ error: "Valid email address is required" }, 400);
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      const existingUser = await getUserByEmail(normalizedEmail);
+      if (existingUser && existingUser.id !== userId) {
+        return c.json({ error: "This email is already registered to another account" }, 409);
+      }
+
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      user.email = normalizedEmail;
+      user.emailDigestsEnabled = true;
+      await saveUserAndEmail(user);
+
+      sendWelcomeEmail(normalizedEmail, user.nickname).catch((error) => {
+        console.error("Welcome email failed:", error);
+      });
+
+      return c.json({ user: sanitizeUser(user) });
+    } catch (error) {
+      console.error("Error adding email to account:", error);
+      return c.json({ error: "Failed to add email to account" }, 500);
+    }
+  },
+);
+
 export { app as authApi };
 export { updateUserLastActive };

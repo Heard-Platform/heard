@@ -31,6 +31,7 @@ interface DebateSessionContextType {
   sendSmsCode: (phone: string, requireExisting?: boolean) => Promise<ApiResponse | null>;
   verifySmsCode: (phone: string, code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
   addPhoneToAccount: (userId: string, phone: string, code: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
+  addEmailToAccount: (email: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
   createRoom: (
     newDebate: NewDebateRoom,
@@ -213,6 +214,14 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     }
     return response;
   }, [safelyMakeApiCall]);
+
+  const addEmailToAccount = useCallback(async (email: string) => {
+    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.addEmailToAccount(user!.id, email));
+    if (response?.data?.user) {
+      setUser(response.data.user);
+    }
+    return response;
+  }, [safelyMakeApiCall, user?.id]);
 
   const createAnonymousUser = useCallback(async () => {
     const response = await safelyMakeApiCall<UserSessionResponse>(() => api.createAnonymousUser());
@@ -657,6 +666,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     sendSmsCode,
     verifySmsCode,
     addPhoneToAccount,
+    addEmailToAccount,
     createAnonymousUser,
     createRoom,
     joinRoom,
@@ -699,6 +709,10 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       },
       addPhoneToAccount: async (userId: string, phone: string, code: string) => {
         console.log("[Showcase] addPhoneToAccount called");
+        return { success: true };
+      },
+      addEmailToAccount: async (email: string) => {
+        console.log("[Showcase] addEmailToAccount called");
         return { success: true };
       },
       createAnonymousUser: async () => {

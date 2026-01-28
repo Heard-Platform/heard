@@ -66,6 +66,13 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async addEmailToAccount(userId: string, email: string) {
+    return this.request<{ user: UserSession }>("/auth/add-email-to-account", {
+      method: "POST",
+      body: JSON.stringify({ userId, email }),
+    });
+  }
+
   async forgotPassword(email: string) {
     return this.request("/auth/forgot-password", {
       method: "POST",
