@@ -19,6 +19,7 @@ import { unsubscribeApi } from "./unsubscribe.tsx";
 import { devApi } from "./dev-api.tsx";
 import { flyerApi } from "./flyer-api.tsx";
 import { validateSessionId } from "./auth-api.tsx";
+import { loginApi } from "./auth-login-api.ts";
 
 type Variables = {
   userId?: string;
@@ -74,6 +75,7 @@ app.get("/make-server-f1a393b4/health", (c) => {
 app.route("/", debateApi);
 app.route("/", adminApi);
 app.route("/", authApi);
+app.route("/", loginApi);
 app.route("/", redditApi);
 app.route("/", oneTimeFixesApi);
 app.route("/", feedbackApi);

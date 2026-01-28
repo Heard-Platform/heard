@@ -28,6 +28,9 @@ interface DebateSessionContextType {
   error: string | null;
   sendMagicLink: (email: string) => Promise<ApiResponse | null>;
   verifyMagicLink: (code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
+  sendSmsCode: (phone: string, requireExisting?: boolean) => Promise<ApiResponse | null>;
+  verifySmsCode: (phone: string, code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
+  addPhoneToAccount: (userId: string, phone: string, code: string) => Promise<ApiResponse<{ success: boolean }> | null>;
   createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
   createRoom: (
     newDebate: NewDebateRoom,
@@ -190,6 +193,26 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     }
     return response;
   }, [safelyMakeApiCall, setUserAndSession]);
+
+  const sendSmsCode = useCallback(async (phone: string, requireExisting?: boolean) => {
+    return safelyMakeApiCall<undefined>(() => api.sendSmsCode(phone, requireExisting));
+  }, [safelyMakeApiCall]);
+
+  const verifySmsCode = useCallback(async (phone: string, code: string) => {
+    const response = await safelyMakeApiCall<UserSessionResponse>(() => api.verifySmsCode(phone, code));
+    if (response && response.success && response.data) {
+      setUserAndSession(response.data.user, response.data.sessionId);
+    }
+    return response;
+  }, [safelyMakeApiCall, setUserAndSession]);
+
+  const addPhoneToAccount = useCallback(async (userId: string, phone: string, code: string) => {
+    const response = await safelyMakeApiCall<{ success: boolean }>(() => api.addPhoneToAccount(userId, phone, code));
+    if (response && response.success && response.data) {
+      // Optionally refresh user data here if needed
+    }
+    return response;
+  }, [safelyMakeApiCall]);
 
   const createAnonymousUser = useCallback(async () => {
     const response = await safelyMakeApiCall<UserSessionResponse>(() => api.createAnonymousUser());
@@ -631,6 +654,9 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     error,
     sendMagicLink,
     verifyMagicLink,
+    sendSmsCode,
+    verifySmsCode,
+    addPhoneToAccount,
     createAnonymousUser,
     createRoom,
     joinRoom,
@@ -661,6 +687,18 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       },
       verifyMagicLink: async (code: string) => { 
         console.log("[Showcase] verifyMagicLink called"); 
+        return { success: true };
+      },
+      sendSmsCode: async (phone: string, requireExisting?: boolean) => { 
+        console.log("[Showcase] sendSmsCode called"); 
+        return { success: true };
+      },
+      verifySmsCode: async (phone: string, code: string) => { 
+        console.log("[Showcase] verifySmsCode called"); 
+        return { success: true };
+      },
+      addPhoneToAccount: async (userId: string, phone: string, code: string) => {
+        console.log("[Showcase] addPhoneToAccount called");
         return { success: true };
       },
       createAnonymousUser: async () => {

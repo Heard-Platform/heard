@@ -1,0 +1,1 @@
+export const VERIFY_TEXT = "Add your phone number to verify your account and prove you're a real human and not a bot. (Or a monkey)";

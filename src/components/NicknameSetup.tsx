@@ -8,8 +8,10 @@ import {
   Mail,
   ArrowLeft,
   Sparkles,
+  Phone,
 } from "lucide-react";
 import { isValidEmail } from "../utils/validation";
+import { isValidPhone, formatPhone } from "../utils/validation";
 import { useDebateSession } from "../hooks/useDebateSession";
 
 interface NicknameSetupProps {
@@ -27,15 +29,21 @@ export function NicknameSetup({
   onBack,
   onMagicLinkSuccess,
 }: NicknameSetupProps) {
-  const { sendMagicLink, verifyMagicLink } = useDebateSession();
+  const { sendMagicLink, verifyMagicLink, sendSmsCode, verifySmsCode } = useDebateSession();
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [sendingMagicLink, setSendingMagicLink] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [smsSent, setSmsSent] = useState(false);
   const [magicCode, setMagicCode] = useState("");
   const [verifyingCode, setVerifyingCode] = useState(false);
 
   const handleEmailChange = (value: string) => {
     setEmail(value);
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setPhone(value);
   };
 
   const handleSendMagicLink = async () => {
@@ -52,18 +60,49 @@ export function NicknameSetup({
     setSendingMagicLink(false);
   };
 
+  const handleSendSMS = async () => {
+    const phoneValid = isValidPhone(phone);
+    if (!phoneValid) {
+      return;
+    }
+
+    setSendingMagicLink(true);
+    try {
+      const response = await sendSmsCode(formatPhone(phone));
+      if (response && response.success) {
+        setSmsSent(true);
+      }
+    } catch (error) {
+      console.error("Failed to send SMS:", error);
+    }
+    setSendingMagicLink(false);
+  };
+
   const handleVerifyCode = async () => {
     if (magicCode.length !== 6) {
       return;
     }
 
     setVerifyingCode(true);
-    const response = await verifyMagicLink(magicCode.toUpperCase());
-    if (response && response.success) {
-      onMagicLinkSuccess();
+    if (smsSent) {
+      try {
+        const response = await verifySmsCode(formatPhone(phone), magicCode);
+        if (response && response.success) {
+          onMagicLinkSuccess();
+        }
+      } catch (error) {
+        console.error("Failed to verify SMS code:", error);
+      }
+    } else {
+      const response = await verifyMagicLink(magicCode.toUpperCase());
+      if (response && response.success) {
+        onMagicLinkSuccess();
+      }
     }
     setVerifyingCode(false);
   };
+
+  const canSubmit = isValidEmail(email.trim()) || isValidPhone(phone);
 
   return (
     <div className="heard-page-bg heard-center p-4">
@@ -98,20 +137,19 @@ export function NicknameSetup({
             </h1>
             <p className="text-muted-foreground text-sm">
               {joiningRoom
-                ? "Enter your email to join this debate!"
-                : "Enter your email to get started!"}
+                ? "Sign in with email or phone to join!"
+                : "Sign in with email or phone to get started!"}
             </p>
             <div className="p-3 bg-purple-50 border border-purple-200 rounded-md">
               <p className="text-xs text-purple-900 leading-relaxed">
-                We'll email you a magic link to sign in or create your account.
-                You can also copy the code from the email and paste it here to continue.
+                Enter your email or phone number. We'll send you a code to verify it's you.
               </p>
             </div>
           </div>
 
           <div className="mt-2 space-y-3">
             <div className="space-y-2">
-              <Label htmlFor="email">Your Email</Label>
+              <Label htmlFor="email">Email Address</Label>
               <Input
                 id="email"
                 type="email"
@@ -119,9 +157,30 @@ export function NicknameSetup({
                 onChange={(e) =>
                   handleEmailChange(e.target.value)
                 }
-                placeholder="Enter your email..."
-                disabled={loading || magicLinkSent}
+                placeholder="you@example.com"
+                disabled={loading || magicLinkSent || smsSent}
                 autoComplete="email"
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex-1 border-t border-gray-300"></div>
+              <span className="text-xs text-gray-500 font-medium">OR</span>
+              <div className="flex-1 border-t border-gray-300"></div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) =>
+                  handlePhoneChange(e.target.value)
+                }
+                placeholder="+1 (555) 123-4567"
+                disabled={loading || magicLinkSent || smsSent}
+                autoComplete="tel"
               />
             </div>
 
@@ -135,33 +194,45 @@ export function NicknameSetup({
               </motion.div>
             )}
 
-            {magicLinkSent ? (
+            {(magicLinkSent || smsSent) ? (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-3"
               >
                 <div className="p-4 bg-green-50 border border-green-200 rounded-md text-center">
-                  <Mail className="w-8 h-8 mx-auto text-green-600 mb-2" />
+                  {magicLinkSent ? (
+                    <Mail className="w-8 h-8 mx-auto text-green-600 mb-2" />
+                  ) : (
+                    <Phone className="w-8 h-8 mx-auto text-green-600 mb-2" />
+                  )}
                   <p className="text-sm font-medium text-green-900">
-                    Magic link sent!
+                    {magicLinkSent ? "Code sent to your email!" : "Code sent via SMS!"}
                   </p>
                   <p className="text-xs text-green-700 mt-1">
-                    Check your email and click the link to sign in
+                    {magicLinkSent
+                      ? "Check your email for the 6-character code"
+                      : "Check your phone for the 6-character code"}
                   </p>
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="magicCode" className="text-xs text-center block">
-                    Or enter the 6-character code from your email:
+                    Enter the 6-character code:
                   </Label>
                   <div className="flex gap-2">
                     <Input
                       id="magicCode"
                       type="text"
                       value={magicCode}
-                      onChange={(e) => setMagicCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 6))}
-                      placeholder="ABC123"
+                      onChange={(e) => {
+                        if (smsSent) {
+                          setMagicCode(e.target.value.replace(/[^0-9]/g, "").substring(0, 6));
+                        } else {
+                          setMagicCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 6));
+                        }
+                      }}
+                      placeholder={smsSent ? "123456" : "ABC123"}
                       disabled={verifyingCode}
                       className="text-center font-mono text-lg tracking-widest uppercase"
                       maxLength={6}
@@ -194,11 +265,11 @@ export function NicknameSetup({
                 type="button"
                 className="w-full"
                 disabled={
-                  !isValidEmail(email.trim()) ||
+                  !canSubmit ||
                   loading ||
                   sendingMagicLink
                 }
-                onClick={handleSendMagicLink}
+                onClick={canSubmit ? (isValidEmail(email.trim()) ? handleSendMagicLink : handleSendSMS) : undefined}
               >
                 {sendingMagicLink ? (
                   <>
@@ -211,14 +282,22 @@ export function NicknameSetup({
                       }}
                       className="w-4 h-4 mr-2"
                     >
-                      <Mail className="w-4 h-4" />
+                      {isValidEmail(email.trim()) ? (
+                        <Mail className="w-4 h-4" />
+                      ) : (
+                        <Phone className="w-4 h-4" />
+                      )}
                     </motion.div>
-                    Sending Magic Link...
+                    Sending Code...
                   </>
                 ) : (
                   <>
-                    <Mail className="w-4 h-4 mr-2" />
-                    {joiningRoom ? "Send Magic Link & Join!" : "Send Me a Magic Link"}
+                    {isValidEmail(email.trim()) ? (
+                      <Mail className="w-4 h-4 mr-2" />
+                    ) : (
+                      <Phone className="w-4 h-4 mr-2" />
+                    )}
+                    {joiningRoom ? "Send Code & Join!" : "Send Me a Code"}
                   </>
                 )}
               </Button>

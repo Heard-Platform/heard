@@ -112,9 +112,10 @@ export interface UserSession {
   isDeveloper?: boolean;
   createdAt: number;
   isAnonymous?: boolean;
+  isUnsubbedFromUpdates?: boolean;
+  phoneVerified?: boolean;
   flyerId?: string;
   convertedFromAnonAt?: number;
-  isUnsubbedFromUpdates?: boolean;
 }
 
 export type DebateMode = "realtime" | "host-controlled";
