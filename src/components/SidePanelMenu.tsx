@@ -145,7 +145,7 @@ export function SidePanelMenu({
         userId={user.id}
         onClose={() => setPhoneVerificationOpen(false)}
         onSuccess={() => {
-          window.location.reload();
+          setPhoneVerificationOpen(false);
         }}
       />
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>

@@ -3,6 +3,7 @@ import * as kv from "./kv_store.tsx";
 import { getUser, saveUser, saveUserPhone } from "./kv-utils.tsx";
 import { startVerification, checkVerification } from "./twilio-service.tsx";
 import { loginUserWithMerge, normalizePhoneNumber } from "./auth-utils.ts";
+import { sanitizeUser } from "./user-utils.ts";
 
 const app = new Hono();
 
@@ -123,7 +124,9 @@ app.post(
       const updatedUser = { ...user, phoneNumber: normalizedPhone, phoneVerified: true, phoneVerifiedAt: Date.now() };
       await saveUser(updatedUser);
 
-      return c.json({ success: true });
+      return c.json({ 
+        user: sanitizeUser(updatedUser)
+      });
     } catch (error) {
       console.error("Error adding phone to account:", error);
       return c.json({ error: "Failed to add phone to account" }, 500);

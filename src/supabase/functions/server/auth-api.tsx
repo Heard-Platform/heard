@@ -10,6 +10,7 @@ import type { Session, User } from "./types.tsx";
 import { Context, Hono } from "npm:hono";
 import { getMagicLinkEmail } from "./email-templates.tsx";
 import { loginUserWithMerge } from "./auth-utils.ts";
+import { sanitizeUser } from "./user-utils.ts";
 
 const app = new Hono();
 
@@ -74,8 +75,7 @@ export const getUserAndNewSession = async (userId: string) => {
 
   const session = await createSession(user.id);
 
-  const { passwordHash: _, ...userWithoutPassword } = user;
-  return { user: userWithoutPassword, sessionId: session.id };
+  return { user: sanitizeUser(user), sessionId: session.id };
 };
 
 const updateUserLastActive = async (userId: string) => {
@@ -88,8 +88,7 @@ const updateUserLastActive = async (userId: string) => {
   user.lastActive = Date.now();
   await saveUserAndEmail(user);
 
-  const { passwordHash: _, ...userWithoutPassword } = user;
-  return { user: userWithoutPassword };
+  return { user: sanitizeUser(user) };
 };
 
 export const getUserSession = async (
@@ -215,8 +214,7 @@ const processAccountSetup = async (
     console.error("Welcome email failed:", error);
   });
 
-  const { passwordHash: _, ...userWithoutPassword } = userSession;
-  return { user: userWithoutPassword };
+  return { user: sanitizeUser(userSession) };
 };
 
 export const createUserAccount = async (

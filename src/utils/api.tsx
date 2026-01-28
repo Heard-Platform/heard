@@ -74,7 +74,7 @@ class ApiClient extends BaseApiClient {
   }
 
   async addPhoneToAccount(userId: string, phone: string, code: string) {
-    return this.request<{ success: boolean }>("/auth/add-phone-to-account", {
+    return this.request<{ user: UserSession }>("/auth/add-phone-to-account", {
       method: "POST",
       body: JSON.stringify({ userId, phone, code }),
     });

@@ -10,6 +10,7 @@ import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 // @ts-ignore
 import { Hono } from "npm:hono";
 import { getNewsletter3Email } from "./email-newsletter-3.ts";
+import { sanitizeUser } from "./user-utils.ts";
 
 const app = new Hono();
 
@@ -35,7 +36,7 @@ app.use("/make-server-f1a393b4/admin/*", verifyAdminKey);
 app.get("/make-server-f1a393b4/admin/users", async (c) => {
   try {
     let users = await getAllRealUsers();
-    users = users.map(({passwordHash, ...rest}) => rest);
+    users = users.map(sanitizeUser);
     users.sort((a, b) => b.lastActive - a.lastActive);
     return c.json({ users });
   } catch (error) {

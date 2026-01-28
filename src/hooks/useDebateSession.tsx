@@ -30,7 +30,7 @@ interface DebateSessionContextType {
   verifyMagicLink: (code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
   sendSmsCode: (phone: string, requireExisting?: boolean) => Promise<ApiResponse | null>;
   verifySmsCode: (phone: string, code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
-  addPhoneToAccount: (userId: string, phone: string, code: string) => Promise<ApiResponse<{ success: boolean }> | null>;
+  addPhoneToAccount: (userId: string, phone: string, code: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
   createRoom: (
     newDebate: NewDebateRoom,
@@ -207,9 +207,9 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
   }, [safelyMakeApiCall, setUserAndSession]);
 
   const addPhoneToAccount = useCallback(async (userId: string, phone: string, code: string) => {
-    const response = await safelyMakeApiCall<{ success: boolean }>(() => api.addPhoneToAccount(userId, phone, code));
-    if (response && response.success && response.data) {
-      // Optionally refresh user data here if needed
+    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.addPhoneToAccount(userId, phone, code));
+    if (response?.data?.user) {
+      setUser(response.data.user);
     }
     return response;
   }, [safelyMakeApiCall]);
