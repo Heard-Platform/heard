@@ -294,8 +294,11 @@ export interface RetentionStatsData {
 
 export interface FeatureResults {
   phoneVerifiedUsers: number;
+  phoneVerifiedSince: number;
   convertedFromAnonUsers: number;
+  convertedFromAnonSince: number;
   flyerUsers: number;
+  flyerUsersSince: number;
 }
 
 export interface UserHistoryData {

@@ -1,12 +1,22 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { X, TrendingUp, Smartphone, UserPlus, Tag } from "lucide-react";
+import { X, TrendingUp, Smartphone, UserPlus, Tag, LucideIcon } from "lucide-react";
 import { api } from "../utils/api";
 import type { FeatureResults } from "../types";
 
 interface FeatureResultsTrackerProps {
   onExit: () => void;
+}
+
+interface FeatureCardData {
+  icon: LucideIcon;
+  iconColor: string;
+  bgColor: string;
+  title: string;
+  description: string;
+  getValue: (stats: FeatureResults) => number;
+  getDate: (stats: FeatureResults) => number;
 }
 
 export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
@@ -30,6 +40,45 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       setLoading(false);
     }
   };
+
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString("en-US", { 
+      year: "numeric", 
+      month: "short", 
+      day: "numeric" 
+    });
+  };
+
+  const featureCards: FeatureCardData[] = [
+    {
+      icon: Smartphone,
+      iconColor: "text-green-600",
+      bgColor: "bg-green-100",
+      title: "Phone Verified Users",
+      description: "Non-anonymous users who have verified their phone number",
+      getValue: (s) => s.phoneVerifiedUsers,
+      getDate: (s) => s.phoneVerifiedSince,
+    },
+    {
+      icon: UserPlus,
+      iconColor: "text-blue-600",
+      bgColor: "bg-blue-100",
+      title: "Converted from Anonymous",
+      description: "Users who started anonymous and later created an account",
+      getValue: (s) => s.convertedFromAnonUsers,
+      getDate: (s) => s.convertedFromAnonSince,
+    },
+    {
+      icon: Tag,
+      iconColor: "text-purple-600",
+      bgColor: "bg-purple-100",
+      title: "Users from Flyers",
+      description: "Users who signed up via a QR code flyer",
+      getValue: (s) => s.flyerUsers,
+      getDate: (s) => s.flyerUsersSince,
+    },
+  ];
 
   if (loading) {
     return (
@@ -59,50 +108,27 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
         </div>
 
         <div className="space-y-4">
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <Smartphone className="w-8 h-8 text-green-600" />
+          {featureCards.map((card) => (
+            <Card className="p-6" key={card.title}>
+              <div className="flex items-center gap-4">
+                <div className={`p-3 ${card.bgColor} rounded-lg`}>
+                  <card.icon className={`w-8 h-8 ${card.iconColor}`} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground mb-1">{card.title}</p>
+                  <p className="text-3xl font-bold">{stats ? card.getValue(stats) : 0}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {card.description}
+                  </p>
+                  {stats && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Feature released on {formatDate(card.getDate(stats))}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground mb-1">Phone Verified Users</p>
-                <p className="text-3xl font-bold">{stats?.phoneVerifiedUsers ?? 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Non-anonymous users who have verified their phone number
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <UserPlus className="w-8 h-8 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground mb-1">Converted from Anonymous</p>
-                <p className="text-3xl font-bold">{stats?.convertedFromAnonUsers ?? 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Users who started anonymous and later created an account
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <Tag className="w-8 h-8 text-purple-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground mb-1">Users from Flyers</p>
-                <p className="text-3xl font-bold">{stats?.flyerUsers ?? 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Users who signed up via a QR code flyer
-                </p>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          ))}
         </div>
       </div>
     </div>

@@ -19,10 +19,17 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       u => u.flyerId
     ).length;
     
+    const phoneVerifiedSince = new Date("2026-01-26").getTime();
+    const convertedFromAnonSince = new Date("2026-01-22").getTime();
+    const flyerUsersSince = new Date("2026-01-05").getTime();
+    
     return c.json({
       phoneVerifiedUsers,
+      phoneVerifiedSince,
       convertedFromAnonUsers,
+      convertedFromAnonSince,
       flyerUsers,
+      flyerUsersSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);
