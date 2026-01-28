@@ -9,6 +9,7 @@ import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
+import { getNewsletter3Email } from "./email-newsletter-3.ts";
 
 const app = new Hono();
 
@@ -47,7 +48,12 @@ app.get("/make-server-f1a393b4/admin/newsletter-eligible-count", async (c) => {
   try {
     const edition = c.req.query("edition") || "1";
     const users = await getAllRealUsers();
-    const eligibleUsers = users.filter(u => !u.isTestUser && !u.isAnonymous && u.email);
+    const eligibleUsers = users.filter(
+      u => !u.isTestUser
+        && !u.isAnonymous
+        && u.email
+        && !u.isUnsubbedFromUpdates
+    );
     
     const newsletterSentKey = `newsletter:edition${edition}:sent-users`;
     const alreadySent = await kv.get(newsletterSentKey) || [];
@@ -363,6 +369,41 @@ app.patch(
   },
 );
 
+app.patch(
+  "/make-server-f1a393b4/admin/user/:userId/unsub-status",
+  async (c) => {
+    try {
+      const userId = c.req.param("userId");
+      const { isUnsubbedFromUpdates } = await c.req.json();
+
+      if (typeof isUnsubbedFromUpdates !== "boolean") {
+        return c.json({ error: "isUnsubbedFromUpdates must be a boolean" }, 400);
+      }
+
+      const user = await getUser(userId);
+
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      user.isUnsubbedFromUpdates = isUnsubbedFromUpdates;
+
+      await saveUser(user);
+
+      return c.json({
+        success: true,
+        user: user,
+      });
+    } catch (error) {
+      console.error("Error updating user unsub status:", error);
+      return c.json(
+        { error: "Failed to update user unsub status" },
+        500,
+      );
+    }
+  },
+);
+
 app.get(
   "/make-server-f1a393b4/admin/user-history/:userId",
   async (c) => {
@@ -514,6 +555,7 @@ app.post(
         eligibleUsers = users.filter(
           u => !u.isTestUser && !u.isAnonymous && u.email
             && !alreadySent.includes(u.id)
+            && !u.isUnsubbedFromUpdates
         );
         console.log(`Found ${eligibleUsers.length} eligible users for newsletter #${newsletterEdition}`);
       }
@@ -525,12 +567,13 @@ app.post(
       let failed = 0;
       const newlySent: string[] = [];
 
-      const getNewsletterHtml = newsletterEdition === 2 ? getNewsletter2Email : getNewsletterEmail;
+      const getNewsletterHtml = newsletterEdition === 2 ? getNewsletter2Email : newsletterEdition === 3 ? getNewsletter3Email : getNewsletterEmail;
       const newsletterSubjects = {
         1: "The 1st Heard Newsletter! Cold showers, live streams, and QR codes - oh my!",
         2: "The 2nd Heard Newsletter! Heard in the news, broken strings, and getting closer to 100 users!",
+        3: "Heard Newsletter #3! GoFundMe, rickrolls, and roadmap"
       };
-      const subject = newsletterSubjects[newsletterEdition as 1 | 2] || newsletterSubjects[1];
+      const subject = newsletterSubjects[newsletterEdition as 1 | 2 | 3] || newsletterSubjects[1];
 
       for (const user of eligibleUsers) {
         try {

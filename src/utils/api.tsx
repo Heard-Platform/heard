@@ -481,6 +481,20 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async adminUpdateUserUnsubStatus(
+    userId: string,
+    isUnsubbedFromUpdates: boolean,
+    adminKey: string,
+  ) {
+    return this.request(`/admin/user/${userId}/unsub-status`, {
+      method: "PATCH",
+      body: JSON.stringify({ isUnsubbedFromUpdates }),
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
+
   async adminUpdateDebateSubHeard(
     debateId: string,
     newSubHeard: string | null,

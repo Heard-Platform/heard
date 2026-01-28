@@ -9,9 +9,10 @@ interface UsersTableProps {
   users: UserSession[];
   adminKey: string;
   onUserUpdate: (userId: string, isTestUser: boolean) => void;
+  onUserUnsubUpdate: (userId: string, isUnsubbedFromUpdates: boolean) => void;
 }
 
-export function UsersTable({ users, adminKey, onUserUpdate }: UsersTableProps) {
+export function UsersTable({ users, adminKey, onUserUpdate, onUserUnsubUpdate }: UsersTableProps) {
   const [hideTestUsers, setHideTestUsers] = useState(false);
   const [hideAnonUsers, setHideAnonUsers] = useState(false);
 
@@ -58,6 +59,7 @@ export function UsersTable({ users, adminKey, onUserUpdate }: UsersTableProps) {
               <th className="text-left p-3 font-medium">Created At</th>
               <th className="text-center p-3 font-medium">Anonymous</th>
               <th className="text-center p-3 font-medium">Test User</th>
+              <th className="text-center p-3 font-medium">Unsubbed from Updates</th>
             </tr>
           </thead>
           <tbody>
@@ -84,6 +86,12 @@ export function UsersTable({ users, adminKey, onUserUpdate }: UsersTableProps) {
                   <Checkbox
                     checked={user.isTestUser || false}
                     onCheckedChange={(checked: boolean) => onUserUpdate(user.id, checked)}
+                  />
+                </td>
+                <td className="p-3 text-center">
+                  <Checkbox
+                    checked={user.isUnsubbedFromUpdates || false}
+                    onCheckedChange={(checked: boolean) => onUserUnsubUpdate(user.id, checked)}
                   />
                 </td>
               </tr>

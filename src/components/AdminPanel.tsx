@@ -286,6 +286,24 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
+  const handleUpdateUserUnsubStatus = async (userId: string, isUnsubbedFromUpdates: boolean) => {
+    try {
+      const res = await api.adminUpdateUserUnsubStatus(userId, isUnsubbedFromUpdates, adminKey);
+      if (res.success) {
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === userId ? { ...u, isUnsubbedFromUpdates } : u
+          )
+        );
+      } else {
+        alert(`Failed to update user unsub status: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error updating user unsub status:", error);
+      alert("Failed to update user unsub status");
+    }
+  };
+
   const handleCreateRedditRoom = async () => {
     if (!redditUrl.trim()) {
       alert("Please enter a Reddit post URL");
@@ -724,6 +742,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             users={users} 
             adminKey={adminKey}
             onUserUpdate={handleUpdateUserTestStatus}
+            onUserUnsubUpdate={handleUpdateUserUnsubStatus}
           />
         )}
 

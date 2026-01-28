@@ -5,6 +5,7 @@ export interface User {
   id: string;
   nickname: string;
   email: string;
+  phoneNumber?: string;
   score: number;
   streak: number;
   currentRoomId?: string;
@@ -12,16 +13,16 @@ export interface User {
   isTestUser?: boolean;
   isDeveloper?: boolean;
   emailDigestsEnabled: boolean;
+  isUnsubbedFromUpdates?: boolean;
   passwordHash?: string;
   supabaseAuthId?: string;
+  phoneVerified?: boolean;
+  phoneVerifiedAt?: number;
   migratedToSupabaseAt?: number;
   createdAt: number;
   isAnonymous?: boolean;
   flyerId?: string;
   convertedFromAnonAt?: number;
-  phoneNumber?: string;
-  phoneVerified?: boolean;
-  phoneVerifiedAt?: number;
 }
 
 export type MagicLinkRecord = {
