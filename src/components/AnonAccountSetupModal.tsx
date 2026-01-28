@@ -106,7 +106,7 @@ export function AnonAccountSetupModal({
                 transition={{ delay: 0.2 }}
                 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
               >
-                Set up your account ✨
+                Signup or Login ✨
               </motion.h2>
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
@@ -114,7 +114,7 @@ export function AnonAccountSetupModal({
                 transition={{ delay: 0.3 }}
                 className="text-muted-foreground"
               >
-                Hey there, new friend! To start {featureText}, just set up your account below.
+                Hey there, new friend! To start {featureText}, just enter your email below.
               </motion.p>
             </div>
 

@@ -221,7 +221,7 @@ export function SidePanelMenu({
                   size="sm"
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                 >
-                  Login or Signup
+                  Signup or Login
                 </Button>
               </div>
             )}
