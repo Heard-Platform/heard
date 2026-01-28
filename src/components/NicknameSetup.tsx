@@ -30,6 +30,7 @@ export function NicknameSetup({
   onMagicLinkSuccess,
 }: NicknameSetupProps) {
   const { sendMagicLink, verifyMagicLink, sendSmsCode, verifySmsCode } = useDebateSession();
+  const [showEmailFlow, setShowEmailFlow] = useState(false);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [sendingMagicLink, setSendingMagicLink] = useState(false);
@@ -102,12 +103,25 @@ export function NicknameSetup({
     setVerifyingCode(false);
   };
 
-  const canSubmit = isValidEmail(email.trim()) || isValidPhone(phone);
+  const handleBackClick = () => {
+    if (showEmailFlow) {
+      setShowEmailFlow(false);
+      setEmail("");
+      setMagicLinkSent(false);
+      setMagicCode("");
+    } else {
+      onBack();
+    }
+  };
+
+  const canSubmit = showEmailFlow ? isValidEmail(email.trim()) : isValidPhone(phone);
+  const codeSent = showEmailFlow ? magicLinkSent : smsSent;
+  const IconComponent = showEmailFlow ? Mail : Phone;
 
   return (
     <div className="heard-page-bg heard-center p-4">
       <button
-        onClick={onBack}
+        onClick={handleBackClick}
         disabled={loading}
         className="fixed top-4 left-4 z-10 p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
         aria-label="Go back"
@@ -127,61 +141,58 @@ export function NicknameSetup({
               transition={{ duration: 2, repeat: Infinity }}
               className="heard-icon-circle"
             >
-              <Mail className="w-8 h-8 text-white" />
+              <IconComponent className="w-8 h-8 text-white" />
             </motion.div>
 
             <h1 className="text-2xl font-bold">
-              {joiningRoom
-                ? "Join the Debate!"
-                : "Welcome to Heard!"}
+              {showEmailFlow 
+                ? "Legacy Email Sign In"
+                : joiningRoom
+                  ? "Join the Debate!"
+                  : "Welcome to Heard!"}
             </h1>
             <p className="text-muted-foreground text-sm">
-              {joiningRoom
-                ? "Sign in with email or phone to join!"
-                : "Sign in with email or phone to get started!"}
+              {showEmailFlow 
+                ? "For existing users who signed up with email"
+                : joiningRoom
+                  ? "Sign in with your phone to join!"
+                  : "Sign in with your phone to get started!"}
             </p>
             <div className="p-3 bg-purple-50 border border-purple-200 rounded-md">
               <p className="text-xs text-purple-900 leading-relaxed">
-                Enter your email or phone number. We'll send you a code to verify it's you.
+                {showEmailFlow
+                  ? "Enter your email. We'll send you a code to verify it's you."
+                  : "Enter your phone number. We'll send you a code to verify it's you."}
               </p>
             </div>
           </div>
 
           <div className="mt-2 space-y-3">
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) =>
-                  handleEmailChange(e.target.value)
-                }
-                placeholder="you@example.com"
-                disabled={loading || magicLinkSent || smsSent}
-                autoComplete="email"
-              />
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="flex-1 border-t border-gray-300"></div>
-              <span className="text-xs text-gray-500 font-medium">OR</span>
-              <div className="flex-1 border-t border-gray-300"></div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) =>
-                  handlePhoneChange(e.target.value)
-                }
-                placeholder="+1 (555) 123-4567"
-                disabled={loading || magicLinkSent || smsSent}
-                autoComplete="tel"
-              />
+              <Label htmlFor={showEmailFlow ? "email" : "phone"}>
+                {showEmailFlow ? "Email Address" : "Phone Number"}
+              </Label>
+              {showEmailFlow ? (
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  placeholder="you@example.com"
+                  disabled={loading || codeSent}
+                  autoComplete="email"
+                />
+              ) : (
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  placeholder="+1 (555) 123-4567"
+                  disabled={loading || codeSent}
+                  autoComplete="tel"
+                />
+              )}
             </div>
 
             {error && (
@@ -194,23 +205,19 @@ export function NicknameSetup({
               </motion.div>
             )}
 
-            {(magicLinkSent || smsSent) ? (
+            {codeSent ? (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-3"
               >
                 <div className="p-4 bg-green-50 border border-green-200 rounded-md text-center">
-                  {magicLinkSent ? (
-                    <Mail className="w-8 h-8 mx-auto text-green-600 mb-2" />
-                  ) : (
-                    <Phone className="w-8 h-8 mx-auto text-green-600 mb-2" />
-                  )}
+                  <IconComponent className="w-8 h-8 mx-auto text-green-600 mb-2" />
                   <p className="text-sm font-medium text-green-900">
-                    {magicLinkSent ? "Code sent to your email!" : "Code sent via SMS!"}
+                    {showEmailFlow ? "Code sent to your email!" : "Code sent via SMS!"}
                   </p>
                   <p className="text-xs text-green-700 mt-1">
-                    {magicLinkSent
+                    {showEmailFlow
                       ? "Check your email for the 6-character code"
                       : "Check your phone for the 6-character code"}
                   </p>
@@ -226,13 +233,13 @@ export function NicknameSetup({
                       type="text"
                       value={magicCode}
                       onChange={(e) => {
-                        if (smsSent) {
-                          setMagicCode(e.target.value.replace(/[^0-9]/g, "").substring(0, 6));
-                        } else {
+                        if (showEmailFlow) {
                           setMagicCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 6));
+                        } else {
+                          setMagicCode(e.target.value.replace(/[^0-9]/g, "").substring(0, 6));
                         }
                       }}
-                      placeholder={smsSent ? "123456" : "ABC123"}
+                      placeholder={showEmailFlow ? "ABC123" : "123456"}
                       disabled={verifyingCode}
                       className="text-center font-mono text-lg tracking-widest uppercase"
                       maxLength={6}
@@ -261,46 +268,50 @@ export function NicknameSetup({
                 </div>
               </motion.div>
             ) : (
-              <Button
-                type="button"
-                className="w-full"
-                disabled={
-                  !canSubmit ||
-                  loading ||
-                  sendingMagicLink
-                }
-                onClick={canSubmit ? (isValidEmail(email.trim()) ? handleSendMagicLink : handleSendSMS) : undefined}
-              >
-                {sendingMagicLink ? (
-                  <>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 1,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                      className="w-4 h-4 mr-2"
-                    >
-                      {isValidEmail(email.trim()) ? (
-                        <Mail className="w-4 h-4" />
-                      ) : (
-                        <Phone className="w-4 h-4" />
-                      )}
-                    </motion.div>
-                    Sending Code...
-                  </>
-                ) : (
-                  <>
-                    {isValidEmail(email.trim()) ? (
-                      <Mail className="w-4 h-4 mr-2" />
-                    ) : (
-                      <Phone className="w-4 h-4 mr-2" />
-                    )}
-                    {joiningRoom ? "Send Code & Join!" : "Send Me a Code"}
-                  </>
+              <>
+                <Button
+                  type="button"
+                  className="w-full"
+                  disabled={!canSubmit || loading || sendingMagicLink}
+                  onClick={showEmailFlow ? handleSendMagicLink : handleSendSMS}
+                >
+                  {sendingMagicLink ? (
+                    <>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
+                        className="w-4 h-4 mr-2"
+                      >
+                        <IconComponent className="w-4 h-4" />
+                      </motion.div>
+                      Sending Code...
+                    </>
+                  ) : (
+                    <>
+                      <IconComponent className="w-4 h-4 mr-2" />
+                      {showEmailFlow
+                        ? "Send Me a Code"
+                        : joiningRoom
+                          ? "Send Code & Join!"
+                          : "Send Me a Code"}
+                    </>
+                  )}
+                </Button>
+                
+                {!showEmailFlow && (
+                  <button
+                    type="button"
+                    onClick={() => setShowEmailFlow(true)}
+                    className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+                  >
+                    Sign in with email (legacy users)
+                  </button>
                 )}
-              </Button>
+              </>
             )}
           </div>
         </Card>
