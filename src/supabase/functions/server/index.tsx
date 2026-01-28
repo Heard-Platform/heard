@@ -20,6 +20,7 @@ import { devApi } from "./dev-api.tsx";
 import { flyerApi } from "./flyer-api.tsx";
 import { validateSessionId } from "./auth-api.tsx";
 import { loginApi } from "./auth-login-api.ts";
+import { featuresResultsTrackerApi } from "./features-results-tracker-api.ts";
 
 type Variables = {
   userId?: string;
@@ -82,6 +83,7 @@ app.route("/", feedbackApi);
 app.route("/", imageApi);
 app.route("/", activityApi);
 app.route("/", statsApi);
+app.route("/", featuresResultsTrackerApi);
 app.route("/", polisImportApi);
 app.route("/", analysisApi);
 app.route("/", vineApi);

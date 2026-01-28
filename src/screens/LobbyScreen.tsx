@@ -49,6 +49,7 @@ interface LobbyScreenProps {
   onOpenShowcase?: () => void;
   onOpenAdminPanel?: () => void;
   onOpenAdminDashboard?: () => void;
+  onOpenFeatureTracker: () => void;
   onOpenDevTools?: () => void;
   onSubHeardChange?: (subHeard: string | null) => void;
 }
@@ -69,6 +70,7 @@ export function LobbyScreen({
   onOpenShowcase,
   onOpenAdminPanel,
   onOpenAdminDashboard,
+  onOpenFeatureTracker,
   onOpenDevTools,
   currentSubHeard,
   onSubHeardChange,
@@ -392,6 +394,7 @@ export function LobbyScreen({
                 onOpenHelp={() => setHelpModalOpen(true)}
                 onOpenShowcase={onOpenShowcase}
                 onOpenAdminDashboard={onOpenAdminDashboard}
+                onOpenFeatureTracker={onOpenFeatureTracker}
                 onOpenDevTools={onOpenDevTools}
                 onOpenAdminPanel={onOpenAdminPanel}
                 onJumpToFinalResults={onJumpToFinalResults}

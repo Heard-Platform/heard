@@ -292,6 +292,12 @@ export interface RetentionStatsData {
   d30Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
 }
 
+export interface FeatureResults {
+  phoneVerifiedUsers: number;
+  convertedFromAnonUsers: number;
+  flyerUsers: number;
+}
+
 export interface UserHistoryData {
   rooms: any[];
   statements: any[];

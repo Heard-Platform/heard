@@ -4,7 +4,7 @@ import {
   getAllRealUsers,
   getAllRealDebates
 } from "./kv-utils.tsx";
-import type { UserSession } from "./types.tsx";
+import type { User } from "./types.tsx";
 
 const app = new Hono();
 
@@ -56,7 +56,7 @@ function calculateRetention({
   activityStartDays,
   activityEndDays,
 }: {
-  allUsers: UserSession[];
+  allUsers: User[];
   activitiesByUser: Map<string, Set<string>>;
   now: number;
   minAgeDays: number;

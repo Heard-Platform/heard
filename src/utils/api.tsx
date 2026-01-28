@@ -4,6 +4,7 @@ import {
   DevAnonDebate,
   DryRunResult,
   Feedback,
+  FeatureResults,
   PublicStatsData,
   RetentionStatsData,
   Statement,
@@ -580,7 +581,15 @@ class ApiClient extends BaseApiClient {
   }
 
   async getRetentionStats() {
-    return this.request<RetentionStatsData>("/retention-stats");
+    return this.request<RetentionStatsData>("/stats/retention", {
+      method: "GET",
+    });
+  }
+
+  async getFeatureStats() {
+    return this.request<FeatureResults>("/stats/features", {
+      method: "GET",
+    });
   }
 
   async importPolisData(data: {

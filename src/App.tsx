@@ -7,6 +7,7 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
+import { FeatureResultsTracker } from "./components/FeatureResultsTracker";
 import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
@@ -43,6 +44,7 @@ function AppContent() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] =
     useState(safelyGetStorageItem<boolean>("showAdminDashboard", false));
+  const [showFeatureTracker, setShowFeatureTracker] = useState(false);
   const [showDevTools, setShowDevTools] = useState(false);
   const [showPasswordReset, setShowPasswordReset] =
     useState(false);
@@ -305,6 +307,16 @@ function AppContent() {
     window.history.pushState({}, "", "/");
   };
 
+  const handleOpenFeatureTracker = () => {
+    setShowFeatureTracker(true);
+    window.history.pushState({}, "", "/features");
+  };
+
+  const handleExitFeatureTracker = () => {
+    setShowFeatureTracker(false);
+    window.history.pushState({}, "", "/");
+  };
+
   const handleOpenDevTools = () => {
     setShowDevTools(true);
     updateUrlForDevTools("clustering");
@@ -331,6 +343,15 @@ function AppContent() {
           onExit={handleExitAdminDashboard}
           currentUserId={user.id}
         />
+        <Toaster />
+      </>
+    );
+  }
+
+  if (showFeatureTracker) {
+    return (
+      <>
+        <FeatureResultsTracker onExit={handleExitFeatureTracker} />
         <Toaster />
       </>
     );
@@ -422,6 +443,7 @@ function AppContent() {
         onOpenShowcase={handleOpenShowcase}
         onOpenAdminPanel={handleOpenAdminPanel}
         onOpenAdminDashboard={handleOpenAdminDashboard}
+        onOpenFeatureTracker={handleOpenFeatureTracker}
         onOpenDevTools={handleOpenDevTools}
         onSubHeardChange={handleSubHeardChange}
       />

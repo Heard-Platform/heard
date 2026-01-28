@@ -30,6 +30,7 @@ import {
   Smartphone,
   ShieldCheck,
   ShieldAlert,
+  TrendingUp,
 } from "lucide-react";
 import type { UserSession } from "../types";
 import { useDebateSession } from "../hooks/useDebateSession";
@@ -65,6 +66,7 @@ interface SidePanelMenuProps {
   onOpenHelp: () => void;
   onOpenShowcase?: () => void;
   onOpenAdminDashboard?: () => void;
+  onOpenFeatureTracker: () => void;
   onOpenDevTools?: () => void;
   onOpenAdminPanel?: () => void;
   onJumpToFinalResults?: () => void;
@@ -78,6 +80,7 @@ export function SidePanelMenu({
   onOpenHelp,
   onOpenShowcase,
   onOpenAdminDashboard,
+  onOpenFeatureTracker,
   onOpenDevTools,
   onOpenAdminPanel,
   onJumpToFinalResults,
@@ -287,6 +290,17 @@ export function SidePanelMenu({
               >
                 <Code2 className="w-4 h-4 mr-2" />
                 Component Showcase
+              </Button>
+            )}
+
+            {user.isDeveloper && (
+              <Button
+                onClick={() => closeMenuAndRun(onOpenFeatureTracker)}
+                variant="outline"
+                className="w-full bg-gradient-to-r from-green-50 to-emerald-50 border-green-200"
+              >
+                <TrendingUp className="w-4 h-4 mr-2 text-green-600" />
+                Feature Results Tracker
               </Button>
             )}
 
