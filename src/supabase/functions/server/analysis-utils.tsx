@@ -33,35 +33,67 @@ export interface AnalysisMetrics {
   spiciestPosts: TopPost[];
 }
 
+// a "high consensus" statement has a majority of agrees or disagrees
 function getHighConsensusStatements(statements: Statement[]) {
   return statements.filter((statement) => {
-    const agreeCount = 
-      statement.agrees + 
+    const agreeCount =
+      statement.agrees +
       statement.superAgrees;
 
+    // consensus is calculated using only "opinionated" votes, disregarding passes
+    const opinionatedVoteCount = agreeCount + statement.disagrees
     const totalVoteCount = getTotalVoteCount(statement);
-    
-    if (totalVoteCount > 0) {
-      const agreePercentage = agreeCount / totalVoteCount;
-      return agreePercentage > 0.7;
+
+    if (totalVoteCount === 0) {
+      return false;
+    }
+    // Require at least 50% of voters to have an opinion
+    const opinionatedRate = opinionatedVoteCount / totalVoteCount;
+    if (opinionatedRate < 0.5) {
+      return false; // Too many passes, not engaging enough
+    }
+
+    const MIN_VOTES = 3;
+    // if there are 3 or more opinionated votes, this statement will be considered for consensus
+    if (opinionatedVoteCount >= MIN_VOTES) {
+      const agreePercentage = agreeCount / opinionatedVoteCount;
+      const disagreePercentage = statement.disagrees / opinionatedVoteCount;
+      // console.log(`Agrees: ${agreeCount} - Disagrees: ${statement.disagrees} - Passes: ${statement.passes} - Agree Percentage: ${agreePercentage} - Disagree Percentage: ${disagreePercentage}`);
+      // if we have greater than 70% agreement or disagreement, this is a high consensus statement
+      return agreePercentage > 0.7 || disagreePercentage > 0.7;
     }
     return false;
   });
 }
 
+// a "low consensus" statement is one where agrees almost equal disagrees
 function getLowConsensusStatements(statements: Statement[]) {
   return statements.filter((statement) => {
-    const agreeCount = 
-      statement.agrees + 
+    const agreeCount =
+      statement.agrees +
       statement.superAgrees;
 
-    const totalVotes =
+    // consensus is calculated disregarding pass votes
+    const opinionatedVoteCount =
       agreeCount +
       statement.disagrees;
-    
-    if (totalVotes > 0) {
-      const agreePercentage = agreeCount / totalVotes;
-      return agreePercentage < 0.25;
+    const totalVoteCount = getTotalVoteCount(statement);
+
+    if (totalVoteCount === 0) {
+      return false;
+    }
+    // Require at least 50% of voters to have an opinion
+    const opinionatedRate = opinionatedVoteCount / totalVoteCount;
+    if (opinionatedRate < 0.5) {
+      return false; // Too many passes, not engaging enough
+    }
+
+    const MIN_VOTES = 3;
+    // if this statement has 3 or more opinionated votes, it will be considered for spiciness
+    if (opinionatedVoteCount >= MIN_VOTES) {
+      const agreePercentage = agreeCount / opinionatedVoteCount;
+      // if this statement has between 40% and 60% agree votes, we call it low consensus or "spicy"
+      return agreePercentage > 0.4 && agreePercentage < 0.6;
     }
     return false;
   });
@@ -77,7 +109,8 @@ export function calcConsensus(
     ? (highConsensusPostCount / statements.length)
     : 0;
 
-  const normalizedConsensus = Math.min(consensusPercentage * 1/0.3, 1);
+  // normalize consensus - any consensusPercentage at or above 25% will normalize to a 100% normalizedConsensus
+  const normalizedConsensus = Math.min(consensusPercentage * 1 / 0.25, 1);
 
   return {
     highConsensusPostCount,
@@ -95,7 +128,8 @@ export function calcSpiciness(
     ? (lowConsensusPostCount / statements.length)
     : 0;
 
-  const normalizedSpiciness = Math.min(spicinessPercentage * 1/0.2, 1);
+  // normalize the spiciness - any raw spicinessPercentage above 25% will normalize to a 100% normalizedSpiciness
+  const normalizedSpiciness = Math.min(spicinessPercentage * 1 / 0.25, 1);
 
   return {
     lowConsensusPostCount,
@@ -126,8 +160,8 @@ export function calculateAnalysisMetrics(
       statement.passes;
   });
 
-  const participation = uniqueVoters.size > 0 
-    ? Math.min(uniquePosters.size / uniqueVoters.size, 1) 
+  const participation = uniqueVoters.size > 0
+    ? Math.min(uniquePosters.size / uniqueVoters.size, 1)
     : 0;
 
   const consensusData = calcConsensus(statements);
