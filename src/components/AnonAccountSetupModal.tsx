@@ -247,6 +247,18 @@ export function AnonAccountSetupModal({
                         )}
                       </Button>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMagicLinkSent(false);
+                        setSmsSent(false);
+                        setMagicCode("");
+                        setError("");
+                      }}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors underline w-full text-center"
+                    >
+                      Go back
+                    </button>
                   </div>
                 </motion.div>
               ) : (
