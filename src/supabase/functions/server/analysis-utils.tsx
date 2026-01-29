@@ -33,64 +33,47 @@ export interface AnalysisMetrics {
   spiciestPosts: TopPost[];
 }
 
+function statementQualifiesForConsensus(statement: Statement) {
+  const opinionatedVoteCount = getTotalOpinionatedVoteCount(statement);
+  const totalVoteCount = getTotalVoteCount(statement);
+  const opinionatedRate = opinionatedVoteCount / totalVoteCount;
+  const MIN_VOTES = 3;
+
+  return totalVoteCount > 0 && 
+    opinionatedVoteCount >= MIN_VOTES && 
+    opinionatedRate >= 0.5;
+}
+
+function statementIsHighConsensus(statement: Statement) {
+  const agreeCount = getTotalAgreeVoteCount(statement);
+  const disagreeCount = statement.disagrees;
+  const opinionatedVoteCount = getTotalOpinionatedVoteCount(statement);
+  const agreePercentage = agreeCount / opinionatedVoteCount;
+  const disagreePercentage = disagreeCount / opinionatedVoteCount;
+  
+  return agreePercentage > 0.7 || disagreePercentage > 0.7;
+}
+
+function statementIsLowConsensus(statement: Statement) {
+  const agreeCount = getTotalAgreeVoteCount(statement);
+  const opinionatedVoteCount = getTotalOpinionatedVoteCount(statement);
+  const agreePercentage = agreeCount / opinionatedVoteCount;
+  
+  return agreePercentage > 0.4 && agreePercentage < 0.6;
+}
+
 // a "high consensus" statement has a majority of agrees or disagrees
 function getHighConsensusStatements(statements: Statement[]) {
-  return statements.filter((statement) => {
-    const agreeCount = getTotalAgreeVoteCount(statement);
-
-    // consensus is calculated using only "opinionated" votes, disregarding passes
-    const opinionatedVoteCount = getTotalOpinionatedVoteCount(statement);
-    const totalVoteCount = getTotalVoteCount(statement);
-
-    if (totalVoteCount === 0) {
-      return false;
-    }
-    // Require at least 50% of voters to have an opinion
-    const opinionatedRate = opinionatedVoteCount / totalVoteCount;
-    if (opinionatedRate < 0.5) {
-      return false; // Too many passes, not engaging enough
-    }
-
-    const MIN_VOTES = 3;
-    // if there are 3 or more opinionated votes, this statement will be considered for consensus
-    if (opinionatedVoteCount >= MIN_VOTES) {
-      const agreePercentage = agreeCount / opinionatedVoteCount;
-      const disagreePercentage = statement.disagrees / opinionatedVoteCount;
-      // console.log(`Agrees: ${agreeCount} - Disagrees: ${statement.disagrees} - Passes: ${statement.passes} - Agree Percentage: ${agreePercentage} - Disagree Percentage: ${disagreePercentage}`);
-      // if we have greater than 70% agreement or disagreement, this is a high consensus statement
-      return agreePercentage > 0.7 || disagreePercentage > 0.7;
-    }
-    return false;
-  });
+  return statements.filter((statement) => 
+    statementQualifiesForConsensus(statement) && statementIsHighConsensus(statement)
+  );
 }
 
 // a "low consensus" statement is one where agrees almost equal disagrees
 function getLowConsensusStatements(statements: Statement[]) {
-  return statements.filter((statement) => {
-    const agreeCount = getTotalAgreeVoteCount(statement);
-
-    // consensus is calculated disregarding pass votes
-    const opinionatedVoteCount = getTotalOpinionatedVoteCount(statement);
-    const totalVoteCount = getTotalVoteCount(statement);
-
-    if (totalVoteCount === 0) {
-      return false;
-    }
-    // Require at least 50% of voters to have an opinion
-    const opinionatedRate = opinionatedVoteCount / totalVoteCount;
-    if (opinionatedRate < 0.5) {
-      return false; // Too many passes, not engaging enough
-    }
-
-    const MIN_VOTES = 3;
-    // if this statement has 3 or more opinionated votes, it will be considered for spiciness
-    if (opinionatedVoteCount >= MIN_VOTES) {
-      const agreePercentage = agreeCount / opinionatedVoteCount;
-      // if this statement has between 40% and 60% agree votes, we call it low consensus or "spicy"
-      return agreePercentage > 0.4 && agreePercentage < 0.6;
-    }
-    return false;
-  });
+  return statements.filter((statement) =>
+    statementQualifiesForConsensus(statement) && statementIsLowConsensus(statement)
+  );
 }
 
 export function calcConsensus(
