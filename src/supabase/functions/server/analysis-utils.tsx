@@ -1,5 +1,5 @@
 import { Statement } from "./types.tsx";
-import { getTotalVoteCount, serializeStatement } from "./utils.tsx";
+import { getTotalAgreeVoteCount, getTotalOpinionatedVoteCount, getTotalVoteCount, serializeStatement } from "./utils.tsx";
 
 export interface TopPost {
   id: string;
@@ -36,12 +36,10 @@ export interface AnalysisMetrics {
 // a "high consensus" statement has a majority of agrees or disagrees
 function getHighConsensusStatements(statements: Statement[]) {
   return statements.filter((statement) => {
-    const agreeCount =
-      statement.agrees +
-      statement.superAgrees;
+    const agreeCount = getTotalAgreeVoteCount(statement);
 
     // consensus is calculated using only "opinionated" votes, disregarding passes
-    const opinionatedVoteCount = agreeCount + statement.disagrees
+    const opinionatedVoteCount = getTotalOpinionatedVoteCount(statement);
     const totalVoteCount = getTotalVoteCount(statement);
 
     if (totalVoteCount === 0) {
@@ -69,14 +67,10 @@ function getHighConsensusStatements(statements: Statement[]) {
 // a "low consensus" statement is one where agrees almost equal disagrees
 function getLowConsensusStatements(statements: Statement[]) {
   return statements.filter((statement) => {
-    const agreeCount =
-      statement.agrees +
-      statement.superAgrees;
+    const agreeCount = getTotalAgreeVoteCount(statement);
 
     // consensus is calculated disregarding pass votes
-    const opinionatedVoteCount =
-      agreeCount +
-      statement.disagrees;
+    const opinionatedVoteCount = getTotalOpinionatedVoteCount(statement);
     const totalVoteCount = getTotalVoteCount(statement);
 
     if (totalVoteCount === 0) {

@@ -11,6 +11,13 @@ export const getFrontendUrl = (): string => {
   );
 };
 
+export function getTotalAgreeVoteCount(statement: Statement) {
+  return statement.agrees + statement.superAgrees;
+}
+
+export function getTotalOpinionatedVoteCount(statement: Statement) {
+  return statement.agrees + statement.superAgrees + statement.disagrees;
+}
 
 export function getTotalVoteCount(statement: Statement) {
   return statement.agrees +

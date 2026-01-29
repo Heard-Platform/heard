@@ -58,11 +58,6 @@ export function calcBestClusterStatements(statements: Statement[], usersInCluste
       }
     }
 
-    // const consensusScore =
-    //   totalVoteCount > 0
-    //     ? (agreeCount / totalVoteCount) * 100
-    //     : 0;
-
     const consensusScore = calcConsensusScore(agreeCount, disagreeCount);
 
     clusterStatements.push({

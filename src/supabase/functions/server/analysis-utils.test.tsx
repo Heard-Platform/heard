@@ -5,22 +5,18 @@ import { calcConsensus, calcSpiciness } from "./analysis-utils.tsx";
 
 // ***** EDGE CASES *****
 Deno.test(
-  "consensus - no statements",
+  "consensus - no statements fails to qualify",
   () => {
     const statements = [] as Statement[];
 
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 0);
-    assertEquals(consensusData.consensus, 0);
-
-    const spicinessData = calcSpiciness(statements);
-    assertEquals(spicinessData.lowConsensusPostCount, 0);
-    assertEquals(spicinessData.spiciness, 0);
+    assertEquals(consensusData.consensus, 0.0);
   },
 );
 
 Deno.test(
-  "consensus - statement with zero total votes",
+  "consensus - one statement with zero total votes fails to qualify",
   () => {
     const statements = [
       {
@@ -39,7 +35,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - statement with only pass votes",
+  "consensus - one statement with only pass votes fails to qualify",
   () => {
     const statements = [
       {
@@ -60,7 +56,7 @@ Deno.test(
 
 // ***** MINIMUM VOTE THRESHOLD *****
 Deno.test(
-  "consensus - 2 votes (below MIN_VOTES) excluded despite high agreement",
+  "consensus - one statement with high agreement but votes less than MIN_VOTES fails to qualify",
   () => {
     const statements = [
       {
@@ -75,11 +71,12 @@ Deno.test(
 
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 0);
+    assertEquals(consensusData.consensus, 0.0);
   },
 );
 
 Deno.test(
-  "consensus - exactly 3 votes (MIN_VOTES) qualifies with high agreement",
+  "consensus - one statement with high agreement and exactly MIN_VOTES qualifies",
   () => {
     const statements = [
       {
@@ -94,13 +91,14 @@ Deno.test(
 
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 1);
+    assertEquals(consensusData.consensus, 1.0);
   },
 );
 
 
 // ***** OPINIONATED RATE THRESHOLD *****
 Deno.test(
-  "consensus - 49% opinionated rate excluded",
+  "consensus - one statement with 49% opinionated rate fails to qualify",
   () => {
     const statements = [
       {
@@ -115,11 +113,12 @@ Deno.test(
 
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 0);
+    assertEquals(consensusData.consensus, 0.0);
   },
 );
 
 Deno.test(
-  "consensus - exactly 50% opinionated rate",
+  "consensus - one statement with exactly 50% opinionated rate qualifies",
   () => {
     const statements = [
       {
@@ -134,11 +133,12 @@ Deno.test(
 
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 1);
+    assertEquals(consensusData.consensus, 1.0);
   },
 );
 
 Deno.test(
-  "consensus - statement with 100% agreement and 1000 passes",
+  "consensus - one statement with more than MIN_VOTES and 100% agreement, but opinionatedRate below minimum fails to qualify",
   () => {
     const statements = [
       {
@@ -154,15 +154,11 @@ Deno.test(
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 0);
     assertEquals(consensusData.consensus, 0.0);
-
-    const spicinessData = calcSpiciness(statements);
-    assertEquals(spicinessData.lowConsensusPostCount, 0);
-    assertEquals(spicinessData.spiciness, 0.0);
   },
 );
 
 Deno.test(
-  "consensus - statement with 16 agrees, 2 disagrees, 6 passes",
+  "consensus - statement with 16 agrees, 2 disagrees, 6 passes (the farmer's market poll) qualifies as high consensus",
   () => {
     const statements = [
       {
@@ -178,17 +174,13 @@ Deno.test(
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 1);
     assertEquals(consensusData.consensus, 1.0);
-
-    const spicinessData = calcSpiciness(statements);
-    assertEquals(spicinessData.lowConsensusPostCount, 0);
-    assertEquals(spicinessData.spiciness, 0.0);
   },
 );
 
 
 // ***** CONSENSUS PERCENTAGE BOUNDARY *****
 Deno.test(
-  "consensus - statement with 70% agreement (at threshold, excluded)",
+  "consensus - statement with 70% agreement (at threshold): not high consensus",
   () => {
     const statements = [
       {
@@ -204,15 +196,11 @@ Deno.test(
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 0);
     assertEquals(consensusData.consensus, 0.0);
-
-    const spicinessData = calcSpiciness(statements);
-    assertEquals(spicinessData.lowConsensusPostCount, 0);
-    assertEquals(spicinessData.spiciness, 0.0);
   },
 );
 
 Deno.test(
-  "consensus - statement with 71% agreement (above threshold)",
+  "consensus - statement with 71% agreement (above threshold): high consensus",
   () => {
     const statements = [
       {
@@ -228,15 +216,11 @@ Deno.test(
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 1);
     assertEquals(consensusData.consensus, 1.0);
-
-    const spicinessData = calcSpiciness(statements);
-    assertEquals(spicinessData.lowConsensusPostCount, 0);
-    assertEquals(spicinessData.spiciness, 0.0);
   },
 );
 
 Deno.test(
-  "consensus - statement with 70% disagreement (at threshold, excluded)",
+  "consensus - statement with 70% disagreement (at threshold): not high consensus",
   () => {
     const statements = [
       {
@@ -252,15 +236,11 @@ Deno.test(
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 0);
     assertEquals(consensusData.consensus, 0.0);
-
-    const spicinessData = calcSpiciness(statements);
-    assertEquals(spicinessData.lowConsensusPostCount, 0);
-    assertEquals(spicinessData.spiciness, 0.0);
   },
 );
 
 Deno.test(
-  "consensus - statement with 71% disagreement (above threshold)",
+  "consensus - statement with 71% disagreement (above threshold): high consensus",
   () => {
     const statements = [
       {
@@ -276,15 +256,11 @@ Deno.test(
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 1);
     assertEquals(consensusData.consensus, 1.0);
-
-    const spicinessData = calcSpiciness(statements);
-    assertEquals(spicinessData.lowConsensusPostCount, 0);
-    assertEquals(spicinessData.spiciness, 0.0);
   },
 );
 
 Deno.test(
-  "consensus - all superAgrees, no regular agrees",
+  "consensus - one statement with all superAgrees: high consensus",
   () => {
     const statements = [
       {
@@ -299,11 +275,12 @@ Deno.test(
 
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 1);
+    assertEquals(consensusData.consensus, 1.0);
   },
 );
 
 Deno.test(
-  "consensus - large vote counts maintain precision",
+  "consensus - large vote count, 70.1% agrees (just above threshold): high consensus",
   () => {
     const statements = [
       {
@@ -318,13 +295,14 @@ Deno.test(
 
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 1);
+    assertEquals(consensusData.consensus, 1.0);
   },
 );
 
 
 // ***** SPICINESS PERCENTAGE BOUNDARY *****
 Deno.test(
-  "spiciness - 40% agreement excluded (at lower boundary)",
+  "spiciness - 40% agreement (at lower boundary): not spicy",
   () => {
     const statements = [
       {
@@ -339,11 +317,12 @@ Deno.test(
 
     const spicinessData = calcSpiciness(statements);
     assertEquals(spicinessData.lowConsensusPostCount, 0);
+    assertEquals(spicinessData.spiciness, 0.0);
   },
 );
 
 Deno.test(
-  "spiciness - 41% agreement qualifies as spicy (just above 40% threshold)",
+  "spiciness - 41% agreement (just above lower threshold): spicy",
   () => {
     const statements = [
       {
@@ -358,11 +337,12 @@ Deno.test(
 
     const spicinessData = calcSpiciness(statements);
     assertEquals(spicinessData.lowConsensusPostCount, 1);
+    assertEquals(spicinessData.spiciness, 1.0);
   },
 );
 
 Deno.test(
-  "spiciness - 59% agreement qualifies as spicy (just below 60% threshold)",
+  "spiciness - 59% agreement (just below upper boundary): spicy",
   () => {
     const statements = [
       {
@@ -375,10 +355,6 @@ Deno.test(
       },
     ] as Statement[];
 
-    const consensusData = calcConsensus(statements);
-    assertEquals(consensusData.highConsensusPostCount, 0);
-    assertEquals(consensusData.consensus, 0.0);
-
     const spicinessData = calcSpiciness(statements);
     assertEquals(spicinessData.lowConsensusPostCount, 1);
     assertEquals(spicinessData.spiciness, 1.0);
@@ -386,7 +362,7 @@ Deno.test(
 );
 
 Deno.test(
-  "spiciness - 60% agreement excluded (at upper boundary)",
+  "spiciness - 60% agreement (at upper boundary): not spicy",
   () => {
     const statements = [
       {
@@ -399,10 +375,6 @@ Deno.test(
       },
     ] as Statement[];
 
-    const consensusData = calcConsensus(statements);
-    assertEquals(consensusData.highConsensusPostCount, 0);
-    assertEquals(consensusData.consensus, 0.0);
-
     const spicinessData = calcSpiciness(statements);
     assertEquals(spicinessData.lowConsensusPostCount, 0);
     assertEquals(spicinessData.spiciness, 0.0);
@@ -412,7 +384,7 @@ Deno.test(
 
 // ***** MULTIPLE STATEMENT SCENARIOS *****
 Deno.test(
-  "consensus - all statements 100% agree consensus",
+  "consensus - all statements 100% consensus: 100% high consensus, 0% spiciness",
   () => {
     const statements = [
       {
@@ -444,7 +416,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - two thirds of statements have high consensus",
+  "consensus - 2/3 statements have high consensus, one is spicy",
   () => {
     const statements = [
       {
@@ -484,7 +456,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - one third of statements have high consensus",
+  "consensus - 33% statements have high consensus, 67% are spicy",
   () => {
     const statements = [
       {
@@ -620,7 +592,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - mix of qualifying and non-qualifying statements",
+  "consensus - only 1/4 statements has MIN_VOTES still reaches 100% normalized consensus",
   () => {
     const statements = [
       {
@@ -664,7 +636,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - all statements below minimum votes",
+  "consensus - all statements below MIN_VOTES: fails to qualify",
   () => {
     const statements = [
       {
@@ -690,7 +662,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - multiple statements with mix of consensus and non-consensus",
+  "consensus - 50% of statements high consensus: reaches 100% normalized consensus",
   () => {
     const statements = [
       {
@@ -730,9 +702,5 @@ Deno.test(
     const consensusData = calcConsensus(statements);
     assertEquals(consensusData.highConsensusPostCount, 2)
     assertEquals(consensusData.consensus, 1.0);
-
-    const spicinessData = calcSpiciness(statements);
-    assertEquals(spicinessData.lowConsensusPostCount, 0);
-    assertEquals(spicinessData.spiciness, 0.0);
   },
 );
