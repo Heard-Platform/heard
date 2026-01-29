@@ -31,23 +31,8 @@ class ApiClient extends BaseApiClient {
     return this.request<{ user: UserSession }>(`/user/${userId}`);
   }
 
-  // Authentication
-  async signUp(nickname: string, email: string, password: string) {
-    return this.request<UserSessionResponse>("/auth/signup", {
-      method: "POST",
-      body: JSON.stringify({ nickname, email, password }),
-    });
-  }
-
-  async signIn(email: string, password: string) {
-    return this.request<UserSessionResponse>("/auth/signin", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
-  }
-
   async sendMagicLink(email: string) {
-    return this.request<undefined>("/auth/send-magic-link-auto", {
+    return this.request<undefined>("/auth/send-magic-link", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
@@ -81,15 +66,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async setupAnonymousUser(
-    userId: string,
-    nickname: string,
-    email: string,
-    password: string,
-  ) {
-    return this.request<UserSessionResponse>("/auth/setup-anon", {
+  async addEmailToAccount(userId: string, email: string) {
+    return this.request<{ user: UserSession }>("/auth/add-email-to-account", {
       method: "POST",
-      body: JSON.stringify({ userId, nickname, email, password }),
+      body: JSON.stringify({ userId, email }),
     });
   }
 

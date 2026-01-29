@@ -168,55 +168,6 @@ const validateAccountCredentials = (
   return null;
 };
 
-const processAccountSetup = async (
-  nickname: string,
-  email: string,
-  password: string,
-  existingUserId?: string,
-): Promise<{ user: Omit<User, "passwordHash">; error?: never, status?: never } | { error: string; status: number; user?: never }> => {
-  const normalizedEmail = email.trim().toLowerCase();
-  
-  const existingUser = await getUserByEmail(normalizedEmail);
-  if (existingUser && existingUser.id !== existingUserId) {
-    return {
-      error: "An account with this email already exists",
-      status: 409,
-    };
-  }
-
-  const passwordHash = await hashPassword(password);
-
-  let userSession: User;
-  
-  if (existingUserId) {
-    const user = await getUserSession(existingUserId);
-    if (!user) {
-      return { error: "User not found", status: 404 };
-    }
-    if (!user.isAnonymous) {
-      return { error: "User is already a full account", status: 400 };
-    }
-    
-    user.nickname = nickname.substring(0, 20);
-    user.email = normalizedEmail;
-    user.passwordHash = passwordHash;
-    user.isAnonymous = false;
-    user.convertedFromAnonAt = Date.now();
-    user.lastActive = Date.now();
-    await saveUserAndEmail(user);
-    userSession = user;
-  } else {
-    console.log(`Creating new user with password for email ${normalizedEmail}`);
-    userSession = await createUserAccount(nickname, normalizedEmail, passwordHash);
-  }
-
-  sendWelcomeEmail(userSession.email, userSession.nickname).catch((error) => {
-    console.error("Welcome email failed:", error);
-  });
-
-  return { user: sanitizeUser(userSession) };
-};
-
 export const createUserAccount = async (
   nickname: string,
   email: string,
@@ -395,140 +346,6 @@ const sendPasswordResetEmail = async (
     html: resetHtml,
   });
 };
-
-app.post(
-  "/make-server-f1a393b4/auth/signup",
-  async (c: any) => {
-    try {
-      const { nickname, email, password } = await c.req.json();
-
-      const validationError = validateAccountCredentials(nickname, email, password);
-      if (validationError) {
-        return c.json({ error: validationError.error }, validationError.status);
-      }
-
-      const setupResult = await processAccountSetup(nickname, email, password);
-      if ("error" in setupResult) {
-        return c.json({ error: setupResult.error }, setupResult.status);
-      }
-
-      const userResult = await getUserAndNewSession(setupResult.user.id);
-      if ("error" in userResult) {
-        return c.json({ error: userResult.error }, userResult.status);
-      }
-
-      return c.json({
-        user: userResult.user,
-        sessionId: userResult.sessionId,
-        isReturningUser: false,
-      });
-    } catch (error) {
-      console.error("Error signing up user:", error);
-      return c.json({ error: "Failed to create account" }, 500);
-    }
-  },
-);
-
-app.post(
-  "/make-server-f1a393b4/auth/signin",
-  async (c: any) => {
-    try {
-      const { email, password } = await c.req.json();
-
-      if (!email || !password) {
-        return c.json(
-          { error: "Email and password are required" },
-          400,
-        );
-      }
-
-      const normalizedEmail = email.trim().toLowerCase();
-
-      const user = await getUserByEmail(normalizedEmail);
-
-      if (!user) {
-        return c.json(
-          { error: "Invalid email or password" },
-          401,
-        );
-      }
-
-      if (!user.passwordHash) {
-        return c.json(
-          {
-            error:
-              "This account needs to set a password. Please use password reset.",
-          },
-          401,
-        );
-      }
-
-      const isValid = await verifyPassword(
-        password,
-        user.passwordHash,
-      );
-
-      if (!isValid) {
-        return c.json(
-          { error: "Invalid email or password" },
-          401,
-        );
-      }
-
-      const result = await getUserAndNewSession(user.id);
-      if ("error" in result) {
-        return c.json({ error: result.error }, result.status);
-      }
-
-      return c.json({
-        ...result,
-        isReturningUser: true,
-      });
-    } catch (error) {
-      console.error("Error signing in user:", error);
-      return c.json({ error: "Failed to sign in" }, 500);
-    }
-  },
-);
-
-app.post(
-  "/make-server-f1a393b4/auth/setup-anon",
-  async (c: any) => {
-    try {
-      const { userId, nickname, email, password } = await c.req.json();
-
-      if (!userId) {
-        return c.json(
-          { error: "User ID is required" },
-          400,
-        );
-      }
-
-      const validationError = validateAccountCredentials(nickname, email, password);
-      if (validationError) {
-        return c.json({ error: validationError.error }, validationError.status);
-      }
-
-      const result = await processAccountSetup(nickname, email, password, userId);
-      if ("error" in result) {
-        return c.json({ error: result.error }, result.status);
-      }
-
-      const userResult = await getUserAndNewSession(result.user.id);
-      if ("error" in userResult) {
-        return c.json({ error: userResult.error }, userResult.status);
-      }
-
-      return c.json({
-        user: userResult.user,
-        sessionId: userResult.sessionId,
-      });
-    } catch (error) {
-      console.error("Error setting up anonymous user account:", error);
-      return c.json({ error: "Failed to setup account" }, 500);
-    }
-  },
-);
 
 app.post(
   "/make-server-f1a393b4/auth/forgot-password",
@@ -745,89 +562,6 @@ app.post(
 );
 
 app.post(
-  "/make-server-f1a393b4/auth/send-magic-link-auto",
-  async (c: any) => {
-    try {
-      const { email } = await c.req.json();
-
-      if (!email) {
-        return c.json({ error: "Email is required" }, 400);
-      }
-
-      const normalizedEmail = email.trim().toLowerCase();
-
-      let user = await getUserByEmail(normalizedEmail);
-
-      if (!user) {
-        console.log(`No account found for ${normalizedEmail}, creating new account`);
-        
-        const emailPrefix = normalizedEmail.split('@')[0];
-        const randomSuffix = Math.floor(Math.random() * 10000);
-        const generatedNickname = `${emailPrefix}${randomSuffix}`;
-        
-        const randomPassword = generateId();
-        const passwordHash = await hashPassword(randomPassword);
-        
-        user = await createUserAccount(
-          generatedNickname,
-          normalizedEmail,
-          passwordHash,
-          false,
-        );
-        
-        console.log(`Created new account for ${normalizedEmail} with nickname ${generatedNickname}`);
-      }
-
-      const token = generateMagicLinkCode();
-      const expiresAt = Date.now() + 15 * 60 * 1000;
-
-      await saveMagicLink(token, {
-        userId: user.id,
-        email: normalizedEmail,
-        expiresAt,
-      });
-
-      const resendApiKey = Deno.env.get("RESEND_API_KEY");
-      if (!resendApiKey) {
-        console.error("RESEND_API_KEY not configured");
-        return c.json({ error: "Email service not configured" }, 500);
-      }
-
-      const magicLinkUrl = `https://heard-now.com/magic-link?token=${token}`;
-
-      const html = getMagicLinkEmail(magicLinkUrl, token);
-
-      const response = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${resendApiKey}`,
-        },
-        body: JSON.stringify({
-          from: "Heard <alex@heard-now.com>",
-          to: [normalizedEmail],
-          subject: "Log in to Heard",
-          html,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Failed to send magic link email:", errorText);
-        return c.json({ error: "Failed to send email" }, 500);
-      }
-
-      console.log(`Magic link sent to ${normalizedEmail}`);
-
-      return c.json({ success: true });
-    } catch (error) {
-      console.error("Error sending magic link auto:", error);
-      return c.json({ error: "Failed to send magic link" }, 500);
-    }
-  },
-);
-
-app.post(
   "/make-server-f1a393b4/auth/verify-magic-link",
   async (c: Context) => {
     try {
@@ -885,6 +619,48 @@ app.post(
     } catch (error) {
       console.error("Error migrating session:", error);
       return c.json({ error: "Failed to migrate session" }, 500);
+    }
+  },
+);
+
+app.post(
+  "/make-server-f1a393b4/auth/add-email-to-account",
+  async (c: any) => {
+    try {
+      const { userId, email } = await c.req.json();
+
+      if (!userId || !email) {
+        return c.json({ error: "userId and email are required" }, 400);
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return c.json({ error: "Valid email address is required" }, 400);
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      const existingUser = await getUserByEmail(normalizedEmail);
+      if (existingUser && existingUser.id !== userId) {
+        return c.json({ error: "This email is already registered to another account" }, 409);
+      }
+
+      const user = await getUserSession(userId);
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      user.email = normalizedEmail;
+      user.emailDigestsEnabled = true;
+      await saveUserAndEmail(user);
+
+      sendWelcomeEmail(normalizedEmail, user.nickname).catch((error) => {
+        console.error("Welcome email failed:", error);
+      });
+
+      return c.json({ user: sanitizeUser(user) });
+    } catch (error) {
+      console.error("Error adding email to account:", error);
+      return c.json({ error: "Failed to add email to account" }, 500);
     }
   },
 );

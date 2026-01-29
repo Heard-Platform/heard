@@ -7,6 +7,10 @@ import { useState } from "react";
 import { Sparkles, Users, Award, Mail, Phone } from "lucide-react";
 import { isValidEmail, isValidPhone, formatPhone } from "../utils/validation";
 import { useDebateSession } from "../hooks/useDebateSession";
+import { PhoneCollectionStep } from "./onboarding/PhoneCollectionStep";
+
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
 
 interface AnonAccountSetupModalProps {
   featureText: string;
@@ -19,7 +23,7 @@ export function AnonAccountSetupModal({
   isOpen,
   onClose,
 }: AnonAccountSetupModalProps) {
-  const { sendMagicLink, verifyMagicLink, sendSmsCode, verifySmsCode } = useDebateSession();
+  const { sendMagicLink, verifyMagicLink, sendSmsCode, verifySmsCode, addEmailToAccount } = useDebateSession();
   const [showEmailFlow, setShowEmailFlow] = useState(false);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -29,6 +33,10 @@ export function AnonAccountSetupModal({
   const [smsSent, setSmsSent] = useState(false);
   const [magicCode, setMagicCode] = useState("");
   const [verifyingCode, setVerifyingCode] = useState(false);
+  const [showOptionalEmailScreen, setShowOptionalEmailScreen] = useState(false);
+  const [optionalEmail, setOptionalEmail] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [showOptionalPhoneScreen, setShowOptionalPhoneScreen] = useState(false);
 
   const handleSendMagicLink = async () => {
     const emailValid = isValidEmail(email.trim());
@@ -82,7 +90,7 @@ export function AnonAccountSetupModal({
       try {
         const response = await verifySmsCode(formatPhone(phone), magicCode);
         if (response && response.success) {
-          window.location.reload();
+          setShowOptionalEmailScreen(true);
         } else {
           setError(response?.error || "Invalid or expired code");
         }
@@ -93,7 +101,12 @@ export function AnonAccountSetupModal({
     } else {
       const response = await verifyMagicLink(magicCode.toUpperCase());
       if (response && response.success) {
-        window.location.reload();
+        const userHasPhone = response.data?.user?.phoneVerified;
+        if (!userHasPhone) {
+          setShowOptionalPhoneScreen(true);
+        } else {
+          handleSuccessfulLogin();
+        }
       } else {
         setError(response?.error || "Invalid or expired code");
       }
@@ -101,9 +114,119 @@ export function AnonAccountSetupModal({
     setVerifyingCode(false);
   };
 
+  const handleSuccessfulLogin = () => {
+    toast.success("Successfully signed in!");
+    onClose();
+  };
+
+  const handleSaveEmail = async () => {
+    const emailValid = isValidEmail(optionalEmail.trim());
+    if (!emailValid) {
+      setError("Please enter a valid email");
+      return;
+    }
+
+    setSavingEmail(true);
+    setError("");
+    const response = await addEmailToAccount(optionalEmail.trim());
+    if (response && response.success) {
+      handleSuccessfulLogin();
+    } else {
+      setError(response?.error || "Failed to add email");
+    }
+    setSavingEmail(false);
+  };
+
   const canSubmit = showEmailFlow ? isValidEmail(email.trim()) : isValidPhone(phone);
   const codeSent = showEmailFlow ? magicLinkSent : smsSent;
   const IconComponent = showEmailFlow ? Mail : Phone;
+
+  const renderOptionalEmailScreen = () => (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-4"
+    >
+      <div className="p-4 bg-green-50 border border-green-200 rounded-md text-center">
+        <div className="w-12 h-12 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-3">
+          <Mail className="w-6 h-6 text-green-600" />
+        </div>
+        <p className="text-lg font-semibold text-green-900 mb-1">
+          You're in! 🎉
+        </p>
+        <p className="text-sm text-green-800">
+          Want to get updates about discussions you're involved in?
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="optionalEmail" className="text-sm">
+          Email (Optional)
+        </Label>
+        <Input
+          id="optionalEmail"
+          type="email"
+          value={optionalEmail}
+          onChange={(e) => setOptionalEmail(e.target.value)}
+          placeholder="you@example.com"
+          disabled={savingEmail}
+          className="bg-white dark:bg-gray-900"
+        />
+        <p className="text-xs text-muted-foreground">
+          We'll only send you updates about discussions you participate in
+        </p>
+      </div>
+
+      {error && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-sm text-red-600 dark:text-red-400"
+        >
+          {error}
+        </motion.p>
+      )}
+
+      <div className="flex gap-3 pt-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleSuccessfulLogin}
+          disabled={savingEmail}
+          className="flex-1"
+        >
+          Skip
+        </Button>
+        <Button
+          type="submit"
+          disabled={!isValidEmail(optionalEmail.trim()) || savingEmail}
+          className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+        >
+          {savingEmail ? (
+            <>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                className="w-4 h-4 mr-2"
+              >
+                <Mail className="w-4 h-4" />
+              </motion.div>
+              Saving...
+            </>
+          ) : (
+            <>
+              <Mail className="w-4 h-4 mr-2" />
+              Save Email
+            </>
+          )}
+        </Button>
+      </div>
+    </motion.div>
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -119,59 +242,63 @@ export function AnonAccountSetupModal({
           className="relative bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 p-1 rounded-lg"
         >
           <div className="bg-white dark:bg-gray-950 rounded-lg p-6 space-y-6">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-              className="relative flex justify-center"
-            >
-              <div className="relative">
+            {!showOptionalEmailScreen && !showOptionalPhoneScreen && (
+              <>
                 <motion.div
-                  animate={{
-                    rotate: [0, 360],
-                  }}
-                  transition={{
-                    duration: 20,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                  className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 rounded-full blur-lg opacity-50"
-                />
-                <div className="relative w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-10 h-10 text-white" />
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+                  className="relative flex justify-center"
+                >
+                  <div className="relative">
+                    <motion.div
+                      animate={{
+                        rotate: [0, 360],
+                      }}
+                      transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                      className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 rounded-full blur-lg opacity-50"
+                    />
+                    <div className="relative w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                      <Sparkles className="w-10 h-10 text-white" />
+                    </div>
+                  </div>
+                </motion.div>
+
+                <div className="text-center space-y-2">
+                  <motion.h2
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+                  >
+                    Signup or Login ✨
+                  </motion.h2>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-muted-foreground"
+                  >
+                    Hey there, new friend! To start {featureText}, just enter your {showEmailFlow ? "email" : "phone number"} below.
+                  </motion.p>
                 </div>
-              </div>
-            </motion.div>
 
-            <div className="text-center space-y-2">
-              <motion.h2
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
-              >
-                Signup or Login ✨
-              </motion.h2>
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-muted-foreground"
-              >
-                Hey there, new friend! To start {featureText}, just enter your {showEmailFlow ? "email" : "phone number"} below.
-              </motion.p>
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="grid grid-cols-3 gap-4"
-            >
-              <FeatureBadge icon={Sparkles} label="Start Discussions" />
-              <FeatureBadge icon={Users} label="Explore Communities" />
-              <FeatureBadge icon={Award} label="Get Recognized" />
-            </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="grid grid-cols-3 gap-4"
+                >
+                  <FeatureBadge icon={Sparkles} label="Start Discussions" />
+                  <FeatureBadge icon={Users} label="Explore Communities" />
+                  <FeatureBadge icon={Award} label="Get Recognized" />
+                </motion.div>
+              </>
+            )}
 
             <motion.form
               initial={{ opacity: 0, y: 10 }}
@@ -179,7 +306,9 @@ export function AnonAccountSetupModal({
               transition={{ delay: 0.5 }}
               onSubmit={(e) => {
                 e.preventDefault();
-                if (showEmailFlow) {
+                if (showOptionalEmailScreen) {
+                  handleSaveEmail();
+                } else if (showEmailFlow) {
                   handleSendMagicLink();
                 } else {
                   handleSendSMS();
@@ -187,7 +316,14 @@ export function AnonAccountSetupModal({
               }}
               className="space-y-4"
             >
-              {codeSent ? (
+              {showOptionalEmailScreen ? (
+                renderOptionalEmailScreen()
+              ) : showOptionalPhoneScreen ? (
+                <PhoneCollectionStep
+                  onSuccess={handleSuccessfulLogin}
+                  onSkip={handleSuccessfulLogin}
+                />
+              ) : codeSent ? (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
