@@ -1,5 +1,5 @@
 import { Statement } from "./types.tsx";
-import { getTotalAgreeVoteCount, getTotalOpinionatedVoteCount, getTotalVoteCount, serializeStatement } from "./utils.tsx";
+import { getStatementMetrics, getTotalAgreeVoteCount, getTotalOpinionatedVoteCount, getTotalVoteCount, serializeStatement } from "./utils.tsx";
 
 export interface TopPost {
   id: string;
@@ -33,44 +33,41 @@ export interface AnalysisMetrics {
   spiciestPosts: TopPost[];
 }
 
-function statementQualifiesForConsensus(statement: Statement) {
-  const opinionatedVoteCount = getTotalOpinionatedVoteCount(statement);
-  const totalVoteCount = getTotalVoteCount(statement);
-  const opinionatedRate = opinionatedVoteCount / totalVoteCount;
+function statementQualifiesForConsensus(
+  statement: Statement
+) {
   const MIN_VOTES = 3;
-
-  return totalVoteCount > 0 && 
-    opinionatedVoteCount >= MIN_VOTES && 
-    opinionatedRate >= 0.5;
+  const statementMetrics = getStatementMetrics(statement);
+  return statementMetrics.totalVoteCount > 0 && 
+    statementMetrics.totalOpinionatedVoteCount >= MIN_VOTES && 
+    statementMetrics.opinionatedRate >= 0.5;
 }
 
-function statementIsHighConsensus(statement: Statement) {
-  const agreeCount = getTotalAgreeVoteCount(statement);
-  const disagreeCount = statement.disagrees;
-  const opinionatedVoteCount = getTotalOpinionatedVoteCount(statement);
-  const agreePercentage = agreeCount / opinionatedVoteCount;
-  const disagreePercentage = disagreeCount / opinionatedVoteCount;
-  
-  return agreePercentage > 0.7 || disagreePercentage > 0.7;
+function statementIsHighConsensus(
+  statement: Statement
+) {
+  const statementMetrics = getStatementMetrics(statement);
+  return statementMetrics.agreePercentage > 0.7 || statementMetrics.disagreePercentage > 0.7;
 }
 
-function statementIsLowConsensus(statement: Statement) {
-  const agreeCount = getTotalAgreeVoteCount(statement);
-  const opinionatedVoteCount = getTotalOpinionatedVoteCount(statement);
-  const agreePercentage = agreeCount / opinionatedVoteCount;
-  
-  return agreePercentage > 0.4 && agreePercentage < 0.6;
+function statementIsLowConsensus(
+  statement: Statement
+) {
+  const statementMetrics = getStatementMetrics(statement);
+  return statementMetrics.agreePercentage > 0.4 && statementMetrics.agreePercentage < 0.6;
 }
 
-// a "high consensus" statement has a majority of agrees or disagrees
-function getHighConsensusStatements(statements: Statement[]) {
+function getHighConsensusStatements(
+  statements: Statement[]
+) {
   return statements.filter((statement) => 
     statementQualifiesForConsensus(statement) && statementIsHighConsensus(statement)
   );
 }
 
-// a "low consensus" statement is one where agrees almost equal disagrees
-function getLowConsensusStatements(statements: Statement[]) {
+function getLowConsensusStatements(
+  statements: Statement[]
+) {
   return statements.filter((statement) =>
     statementQualifiesForConsensus(statement) && statementIsLowConsensus(statement)
   );
