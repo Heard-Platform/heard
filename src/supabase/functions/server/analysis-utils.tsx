@@ -1,5 +1,5 @@
 import { Statement } from "./types.tsx";
-import { getStatementMetrics, getTotalAgreeVoteCount, getTotalOpinionatedVoteCount, getTotalVoteCount, serializeStatement } from "./utils.tsx";
+import { getStatementMetrics, serializeStatement } from "./utils.tsx";
 
 export interface TopPost {
   id: string;
