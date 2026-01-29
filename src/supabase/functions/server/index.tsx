@@ -21,6 +21,7 @@ import { flyerApi } from "./flyer-api.tsx";
 import { validateSessionId } from "./auth-api.tsx";
 import { loginApi } from "./auth-login-api.ts";
 import { featuresResultsTrackerApi } from "./features-results-tracker-api.ts";
+import { cronApi } from "./cron-api.tsx";
 
 type Variables = {
   userId?: string;
@@ -92,5 +93,6 @@ app.route("/", digestEmailOrchestratorApi);
 app.route("/", unsubscribeApi);
 app.route("/", devApi);
 app.route("/", flyerApi);
+app.route("/", cronApi);
 
 Deno.serve(app.fetch);

@@ -63,3 +63,27 @@ export const checkVerification = async (normalizedPhone: string, code: string): 
     return { success: false, error: error.message || "Failed to verify code" };
   }
 };
+
+export const sendSms = async (to: string, body: string): Promise<{ success: boolean; error?: string }> => {
+  const client = getClient();
+  if (!client) {
+    console.error("Missing Twilio credentials");
+    return { success: false, error: "SMS service not configured" };
+  }
+
+  const TWILIO_PHONE_NUMBER = Deno.env.get("TWILIO_PHONE_NUMBER") || "+15017122661";
+
+  try {
+    const message = await client.messages.create({
+      body: body,
+      from: TWILIO_PHONE_NUMBER,
+      to: normalizePhoneNumber(to),
+    });
+
+    console.log("SMS sent successfully:", message.sid);
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending SMS via Twilio:", error);
+    return { success: false, error: error.message || "Failed to send SMS" };
+  }
+};
