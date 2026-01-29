@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Sparkles, Users, Award, Mail, Phone } from "lucide-react";
 import { isValidEmail, isValidPhone, formatPhone } from "../utils/validation";
 import { useDebateSession } from "../hooks/useDebateSession";
+import { PhoneCollectionStep } from "./onboarding/PhoneCollectionStep";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -35,6 +36,7 @@ export function AnonAccountSetupModal({
   const [showOptionalEmailScreen, setShowOptionalEmailScreen] = useState(false);
   const [optionalEmail, setOptionalEmail] = useState("");
   const [savingEmail, setSavingEmail] = useState(false);
+  const [showOptionalPhoneScreen, setShowOptionalPhoneScreen] = useState(false);
 
   const handleSendMagicLink = async () => {
     const emailValid = isValidEmail(email.trim());
@@ -99,8 +101,12 @@ export function AnonAccountSetupModal({
     } else {
       const response = await verifyMagicLink(magicCode.toUpperCase());
       if (response && response.success) {
-        toast.success("Successfully signed in!");
-        onClose();
+        const userHasPhone = response.data?.user?.phoneVerified;
+        if (!userHasPhone) {
+          setShowOptionalPhoneScreen(true);
+        } else {
+          handleSuccessfulLogin();
+        }
       } else {
         setError(response?.error || "Invalid or expired code");
       }
@@ -111,7 +117,7 @@ export function AnonAccountSetupModal({
   const handleSuccessfulLogin = () => {
     toast.success("Successfully signed in!");
     onClose();
-  }
+  };
 
   const handleSaveEmail = async () => {
     const emailValid = isValidEmail(optionalEmail.trim());
@@ -236,7 +242,7 @@ export function AnonAccountSetupModal({
           className="relative bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 p-1 rounded-lg"
         >
           <div className="bg-white dark:bg-gray-950 rounded-lg p-6 space-y-6">
-            {!showOptionalEmailScreen && (
+            {!showOptionalEmailScreen && !showOptionalPhoneScreen && (
               <>
                 <motion.div
                   initial={{ scale: 0 }}
@@ -312,6 +318,11 @@ export function AnonAccountSetupModal({
             >
               {showOptionalEmailScreen ? (
                 renderOptionalEmailScreen()
+              ) : showOptionalPhoneScreen ? (
+                <PhoneCollectionStep
+                  onSuccess={handleSuccessfulLogin}
+                  onSkip={handleSuccessfulLogin}
+                />
               ) : codeSent ? (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
