@@ -4,7 +4,6 @@ import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
-import { Switch } from "./ui/switch";
 import {
   Sheet,
   SheetContent,
@@ -13,19 +12,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "./ui/popover";
-import { Home, Hash, Plus, ChevronDown, Lock, Settings, Share2, Check, Crown } from "lucide-react";
+import { Home, Hash, Plus, ChevronDown, Lock, Settings, Crown } from "lucide-react";
 import { api } from "../utils/api";
 import type { SubHeard, UserSession } from "../types";
-import { createSubHeardLink } from "../utils/url";
-import { share } from "../utils/share";
 
 // @ts-ignore
-import { toast } from "sonner@2.0.3";
+import { CommunityAdminDialog } from "./CommunityAdminDialog";
+import { formatSubHeardDisplay } from "../utils/subheard";
 
 interface SubHeardBrowserProps {
   currentSubHeard?: string;
@@ -51,7 +44,7 @@ export function SubHeardBrowser({
   const [newSubHeardName, setNewSubHeardName] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [copiedSubHeard, setCopiedSubHeard] = useState<string | null>(null);
+  const [managingSubHeard, setManagingSubHeard] = useState<SubHeard | null>(null);
 
     // Load sub-heards on mount, when sheet opens, or when user changes
   useEffect(() => {
@@ -76,13 +69,6 @@ export function SubHeardBrowser({
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatSubHeardDisplay = (name: string) => {
-    return name
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
   };
 
   const handleSelectSubHeard = (subHeard: string | null) => {
@@ -119,43 +105,6 @@ export function SubHeardBrowser({
     }
   };
 
-  const handleTogglePrivacy = async (subHeard: SubHeard, newPrivacy: boolean) => {
-    if (!onUpdateSubHeard) return;
-
-    // Optimistic update - immediately update UI
-    setSubHeards(prev => 
-      prev.map(sh => 
-        sh.name === subHeard.name 
-          ? { ...sh, isPrivate: newPrivacy }
-          : sh
-      )
-    );
-
-    try {
-      const success = await onUpdateSubHeard(subHeard.name, user.id, newPrivacy);
-      if (!success) {
-        // Revert on failure
-        setSubHeards(prev => 
-          prev.map(sh => 
-            sh.name === subHeard.name 
-              ? { ...sh, isPrivate: !newPrivacy }
-              : sh
-          )
-        );
-      }
-    } catch (error) {
-      console.error("Failed to update sub-heard privacy:", error);
-      // Revert on error
-      setSubHeards(prev => 
-        prev.map(sh => 
-          sh.name === subHeard.name 
-            ? { ...sh, isPrivate: !newPrivacy }
-            : sh
-        )
-      );
-    }
-  };
-
   const handleSheetOpenChange = (isOpen: boolean) => {
     setSheetOpen(isOpen);
     if (!isOpen) {
@@ -166,24 +115,6 @@ export function SubHeardBrowser({
     }
   };
 
-  const handleShareLink = async (subHeard: SubHeard) => {
-    const url = createSubHeardLink(subHeard);
-    
-    await share({
-      title: `Join ${formatSubHeardDisplay(subHeard.name)} on HEARD!`,
-      text: "Check out this community on HEARD!",
-      url,
-      onSuccess: () => {
-        setCopiedSubHeard(subHeard.name);
-        toast.success("Link shared successfully!");
-        setTimeout(() => setCopiedSubHeard(null), 2000);
-      },
-      onError: (error) => {
-        toast.error("Could not share link. Please manually copy the URL.");
-      },
-    });
-  };
-
   const displayText = currentSubHeard
     ? formatSubHeardDisplay(currentSubHeard)
     : "All";
@@ -191,226 +122,208 @@ export function SubHeardBrowser({
   const currentSubHeardData = subHeards.find(sh => sh.name === currentSubHeard);
   const isCurrentAdmin = currentSubHeardData?.adminId === user.id;
 
+  const handleManagementDialogUpdate = async (name: string, userId: string, isPrivate: boolean) => {
+    if (!onUpdateSubHeard) return false;
+    
+    setSubHeards(prev => 
+      prev.map(sh => 
+        sh.name === name 
+          ? { ...sh, isPrivate: isPrivate }
+          : sh
+      )
+    );
+    
+    const success = await onUpdateSubHeard(name, userId, isPrivate);
+    if (!success) {
+      setSubHeards(prev => 
+        prev.map(sh => 
+          sh.name === name 
+            ? { ...sh, isPrivate: !isPrivate }
+            : sh
+        )
+      );
+    }
+    return success;
+  };
+
   return (
-    <Sheet open={sheetOpen} onOpenChange={handleSheetOpenChange}>
-      <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="controls-layer bg-white/90 backdrop-blur-sm shadow-lg max-w-[160px] h-[42px]"
-        >
-          {currentSubHeard ? (
-            <Hash className="w-4 h-4 mr-1 flex-shrink-0" />
-          ) : (
-            <Home className="w-4 h-4 mr-1 flex-shrink-0" />
-          )}
-          <span className="truncate">{displayText}</span>
-          {isCurrentAdmin && <Crown className="w-3 h-3 ml-1 text-yellow-500 flex-shrink-0" />}
-          <ChevronDown className="w-3 h-3 ml-1 flex-shrink-0" />
-        </Button>
-      </SheetTrigger>
-
-      <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Browse Communities</SheetTitle>
-          <SheetDescription>
-            Select a community to filter debates by topic
-          </SheetDescription>
-        </SheetHeader>
-
-        <div className="space-y-4 mt-6">
-          {/* All option */}
+    <>
+      <Sheet open={sheetOpen} onOpenChange={handleSheetOpenChange}>
+        <SheetTrigger asChild>
           <Button
-            variant={!currentSubHeard ? "default" : "outline"}
-            className="w-full justify-start"
-            onClick={() => handleSelectSubHeard(null)}
+            variant="outline"
+            size="sm"
+            className="controls-layer bg-white/90 backdrop-blur-sm shadow-lg max-w-[160px] h-[42px]"
           >
-            <Home className="w-4 h-4 mr-2" />
-            All Debates
+            {currentSubHeard ? (
+              <Hash className="w-4 h-4 mr-1 flex-shrink-0" />
+            ) : (
+              <Home className="w-4 h-4 mr-1 flex-shrink-0" />
+            )}
+            <span className="truncate">{displayText}</span>
+            {isCurrentAdmin && <Crown className="w-3 h-3 ml-1 text-yellow-500 flex-shrink-0" />}
+            <ChevronDown className="w-3 h-3 ml-1 flex-shrink-0" />
           </Button>
+        </SheetTrigger>
 
-          {/* Existing sub-heards */}
-          {loading ? (
-            <div className="space-y-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="h-12 bg-gray-200 rounded-lg animate-pulse"
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {subHeards.map((subHeard) => {
-                const isAdmin = subHeard.adminId === user.id;
-                const isSelected = currentSubHeard === subHeard.name;
-                
-                return (
-                  <div 
-                    key={subHeard.name}
-                    className={`flex items-center gap-2 w-full p-3 rounded-lg border ${
-                      isSelected 
-                        ? 'bg-primary text-primary-foreground border-primary' 
-                        : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
-                    }`}
-                  >
-                    <button
-                      onClick={() => handleSelectSubHeard(subHeard.name)}
-                      className="flex-1 flex items-center gap-2 text-left"
-                    >
-                      <Hash className="w-4 h-4 flex-shrink-0" />
-                      <span>{formatSubHeardDisplay(subHeard.name)}</span>
-                      {subHeard.isPrivate && (
-                        <Lock className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                      )}
-                      {isAdmin && (
-                        <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />
-                      )}
-                    </button>
-                    
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {isAdmin && (
-                        <Popover modal={false}>
-                          <PopoverTrigger asChild>
-                            <button className="h-7 w-7 inline-flex items-center justify-center rounded-md hover:bg-black/10">
-                              <Settings className="w-4 h-4" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-80">
-                            <div className="space-y-4">
-                              <div>
-                                <h4 className="font-medium mb-2">Community Settings</h4>
-                                <p className="text-sm text-muted-foreground">
-                                  {formatSubHeardDisplay(subHeard.name)}
-                                </p>
-                              </div>
-                              
-                              <div className="space-y-3">
-                                <div>
-                                  <Label className="text-sm mb-1.5 block">Share Link</Label>
-                                  <div className="flex gap-2">
-                                    <Input
-                                      readOnly
-                                      value={createSubHeardLink(subHeard)}
-                                      className="text-xs"
-                                    />
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleShareLink(subHeard)}
-                                      className="flex-shrink-0"
-                                    >
-                                      {copiedSubHeard === subHeard.name ? (
-                                        <Check className="w-4 h-4" />
-                                      ) : (
-                                        <Share2 className="w-4 h-4" />
-                                      )}
-                                    </Button>
-                                  </div>
-                                </div>
+        <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Browse Communities</SheetTitle>
+            <SheetDescription>
+              Select a community to filter debates by topic
+            </SheetDescription>
+          </SheetHeader>
 
-                                <div className="heard-between">
-                                  <div className="space-y-0.5">
-                                    <Label htmlFor={`private-${subHeard.name}`}>
-                                      Private
-                                    </Label>
-                                    <p className="text-xs text-muted-foreground">
-                                      Members join when they visit the link
-                                    </p>
-                                  </div>
-                                  <Switch
-                                    id={`private-${subHeard.name}`}
-                                    checked={subHeard.isPrivate || false}
-                                    onCheckedChange={(checked: boolean) => {
-                                      handleTogglePrivacy(subHeard, checked);
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      )}
-                      <Badge variant="secondary">{subHeard.count}</Badge>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Create new option */}
-          {!showCreateNew ? (
+          <div className="space-y-4 mt-6">
+            {/* All option */}
             <Button
-              variant="outline"
-              className="w-full justify-start border-dashed"
-              onClick={() => {
-                if (user.isAnonymous) {
-                  onShowAccountSetupModal("creating communities");
-                } else {
-                  setShowCreateNew(true);
-                }
-              }}
+              variant={!currentSubHeard ? "default" : "outline"}
+              className="w-full justify-start"
+              onClick={() => handleSelectSubHeard(null)}
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Create New Community
+              <Home className="w-4 h-4 mr-2" />
+              All Debates
             </Button>
-          ) : (
-            <div className="space-y-3 p-4 border-2 border-dashed rounded-lg">
+
+            {/* Existing sub-heards */}
+            {loading ? (
               <div className="space-y-2">
-                <Label htmlFor="new-subheard">New Community Name</Label>
-                <Input
-                  id="new-subheard"
-                  placeholder="e.g., politics, technology..."
-                  value={newSubHeardName}
-                  onChange={(e) => setNewSubHeardName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !isPrivate) {
-                      handleCreateNew();
-                    }
-                  }}
-                />
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="h-12 bg-gray-200 rounded-lg animate-pulse"
+                  />
+                ))}
               </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="private-subheard"
-                  checked={isPrivate}
-                  onCheckedChange={(checked: boolean) => setIsPrivate(checked)}
-                />
-                <Label
-                  htmlFor="private-subheard"
-                  className="text-sm cursor-pointer flex items-center gap-2"
-                >
-                  <Lock className="w-3 h-3" />
-                  Make private (only accessible via link)
-                </Label>
+            ) : (
+              <div className="space-y-2">
+                {subHeards.map((subHeard) => {
+                  const isAdmin = subHeard.adminId === user.id;
+                  const isSelected = currentSubHeard === subHeard.name;
+                  
+                  return (
+                    <div 
+                      key={subHeard.name}
+                      className={`flex items-center gap-2 w-full p-3 rounded-lg border ${
+                        isSelected 
+                          ? 'bg-primary text-primary-foreground border-primary' 
+                          : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
+                      }`}
+                    >
+                      <button
+                        onClick={() => handleSelectSubHeard(subHeard.name)}
+                        className="flex-1 flex items-center gap-2 text-left"
+                      >
+                        <Hash className="w-4 h-4 flex-shrink-0" />
+                        <span>{formatSubHeardDisplay(subHeard.name)}</span>
+                        {subHeard.isPrivate && (
+                          <Lock className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                        )}
+                        {isAdmin && (
+                          <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />
+                        )}
+                      </button>
+                      
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {isAdmin && (
+                          <button 
+                            className="h-7 w-7 inline-flex items-center justify-center rounded-md hover:bg-black/10"
+                            onClick={() => setManagingSubHeard(subHeard)}
+                          >
+                            <Settings className="w-4 h-4" />
+                          </button>
+                        )}
+                        <Badge variant="secondary">{subHeard.count}</Badge>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleCreateNew}
-                  disabled={!newSubHeardName.trim() || isCreating}
-                  className="flex-1"
-                >
-                  {isCreating ? "Creating..." : "Create"}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowCreateNew(false);
-                    setNewSubHeardName("");
-                    setIsPrivate(false);
-                  }}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
+            )}
+
+            {/* Create new option */}
+            {!showCreateNew ? (
+              <Button
+                variant="outline"
+                className="w-full justify-start border-dashed"
+                onClick={() => {
+                  if (user.isAnonymous) {
+                    onShowAccountSetupModal("creating communities");
+                  } else {
+                    setShowCreateNew(true);
+                  }
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Community
+              </Button>
+            ) : (
+              <div className="space-y-3 p-4 border-2 border-dashed rounded-lg">
+                <div className="space-y-2">
+                  <Label htmlFor="new-subheard">New Community Name</Label>
+                  <Input
+                    id="new-subheard"
+                    placeholder="e.g., politics, technology..."
+                    value={newSubHeardName}
+                    onChange={(e) => setNewSubHeardName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !isPrivate) {
+                        handleCreateNew();
+                      }
+                    }}
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="private-subheard"
+                    checked={isPrivate}
+                    onCheckedChange={(checked: boolean) => setIsPrivate(checked)}
+                  />
+                  <Label
+                    htmlFor="private-subheard"
+                    className="text-sm cursor-pointer flex items-center gap-2"
+                  >
+                    <Lock className="w-3 h-3" />
+                    Make private (only accessible via link)
+                  </Label>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleCreateNew}
+                    disabled={!newSubHeardName.trim() || isCreating}
+                    className="flex-1"
+                  >
+                    {isCreating ? "Creating..." : "Create"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowCreateNew(false);
+                      setNewSubHeardName("");
+                      setIsPrivate(false);
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {managingSubHeard && (
+        <CommunityAdminDialog
+          community={managingSubHeard}
+          isOpen={true}
+          onClose={() => setManagingSubHeard(null)}
+          onUpdateSubHeard={handleManagementDialogUpdate}
+          userId={user.id}
+        />
+      )}
+    </>
   );
 }
