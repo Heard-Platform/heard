@@ -11,7 +11,7 @@ export const getFrontendUrl = (): string => {
   );
 };
 
-export function getStatementMetrics(statement: Statement) {
+export function calcStatementMetrics(statement: Statement) {
   const totalAgreeVoteCount = statement.agrees + statement.superAgrees;
   const totalDisagreeVoteCount = statement.disagrees;
   const totalOpinionatedVoteCount = statement.agrees + statement.superAgrees + statement.disagrees;
@@ -20,13 +20,13 @@ export function getStatementMetrics(statement: Statement) {
   const agreePercentage = totalAgreeVoteCount / totalOpinionatedVoteCount;
   const disagreePercentage = totalDisagreeVoteCount / totalOpinionatedVoteCount;
   return {
-    totalAgreeVoteCount: totalAgreeVoteCount,
-    totalDisagreeVoteCount: totalDisagreeVoteCount,
-    totalOpinionatedVoteCount: totalOpinionatedVoteCount,
-    totalVoteCount: totalVoteCount,
-    opinionatedRate: opinionatedRate,
-    agreePercentage: agreePercentage,
-    disagreePercentage: disagreePercentage
+    totalAgreeVoteCount,
+    totalDisagreeVoteCount,
+    totalOpinionatedVoteCount,
+    totalVoteCount,
+    opinionatedRate,
+    agreePercentage,
+    disagreePercentage
   }
 }
 

@@ -5,7 +5,7 @@ import { calcConsensus, calcSpiciness } from "./analysis-utils.tsx";
 
 // ***** EDGE CASES *****
 Deno.test(
-  "consensus - no statements fails to qualify",
+  "consensus - no statements",
   () => {
     const statements = [] as Statement[];
 
@@ -16,7 +16,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - one statement with zero total votes fails to qualify",
+  "consensus - not enough opinionated votes to be considered",
   () => {
     const statements = [
       {
@@ -35,7 +35,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - one statement with only pass votes fails to qualify",
+  "consensus - only pass votes are not considered",
   () => {
     const statements = [
       {
@@ -56,7 +56,7 @@ Deno.test(
 
 // ***** MINIMUM VOTE THRESHOLD *****
 Deno.test(
-  "consensus - one statement with high agreement but votes less than MIN_VOTES fails to qualify",
+  "consensus - high agreement but too few votes to be considered",
   () => {
     const statements = [
       {
@@ -65,7 +65,6 @@ Deno.test(
         agrees: 2,
         disagrees: 0,
         passes: 0,
-        // Only 2 opinionated votes, 100% agreement but below threshold
       },
     ] as Statement[];
 
@@ -76,7 +75,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - one statement with high agreement and exactly MIN_VOTES qualifies",
+  "consensus - 3 agree votes is high consensus",
   () => {
     const statements = [
       {
@@ -85,7 +84,6 @@ Deno.test(
         agrees: 3,
         disagrees: 0,
         passes: 0,
-        // Exactly 3 opinionated votes, 100% agreement consensus
       },
     ] as Statement[];
 
@@ -98,7 +96,7 @@ Deno.test(
 
 // ***** OPINIONATED RATE THRESHOLD *****
 Deno.test(
-  "consensus - one statement with 49% opinionated rate fails to qualify",
+  "consensus - 49% opinionated rate is not considered for consensus",
   () => {
     const statements = [
       {
@@ -107,7 +105,6 @@ Deno.test(
         agrees: 49,
         disagrees: 0,
         passes: 51,
-        // 49 opinionated / 100 total = 49% < 50%
       },
     ] as Statement[];
 
@@ -118,7 +115,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - one statement with exactly 50% opinionated rate qualifies",
+  "consensus - exactly 50% opinionated rate is considered for consensus",
   () => {
     const statements = [
       {
@@ -127,7 +124,6 @@ Deno.test(
         agrees: 4,
         disagrees: 1,
         passes: 5,
-        // 5 opinionated / 10 total = exactly 50%
       },
     ] as Statement[];
 
@@ -138,7 +134,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - one statement with more than MIN_VOTES and 100% agreement, but opinionatedRate below minimum fails to qualify",
+  "consensus - 100% agreement, sufficient opinionated votes, but opinionatedRate below minimum so not considered",
   () => {
     const statements = [
       {
@@ -147,7 +143,6 @@ Deno.test(
         agrees: 5,
         disagrees: 0,
         passes: 1000,
-        // 5/5 agrees = 100%, but only 5/1005 = 0.5% doesn't hit 50% threshold, not consensus
       },
     ] as Statement[];
 
@@ -158,7 +153,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - statement with 16 agrees, 2 disagrees, 6 passes (the farmer's market poll) qualifies as high consensus",
+  "consensus - (the 'farmers market poll') statement with 16 agrees, 2 disagrees, 6 passes qualifies as high consensus",
   () => {
     const statements = [
       {
@@ -167,7 +162,7 @@ Deno.test(
         agrees: 16,
         disagrees: 2,
         passes: 6,
-        // 16/18 agrees = 88.9%, consensus
+        // 16/18 = 88.9%
       },
     ] as Statement[];
 
@@ -180,7 +175,7 @@ Deno.test(
 
 // ***** CONSENSUS PERCENTAGE BOUNDARY *****
 Deno.test(
-  "consensus - statement with 70% agreement (at threshold): not high consensus",
+  "consensus - 70% agreement (at threshold): not high consensus",
   () => {
     const statements = [
       {
@@ -189,7 +184,6 @@ Deno.test(
         agrees: 70,
         disagrees: 30,
         passes: 0,
-        // 70/100 agrees = 70%, exactly at threshold, not consensus
       },
     ] as Statement[];
 
@@ -200,7 +194,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - statement with 71% agreement (above threshold): high consensus",
+  "consensus - 71% agreement (above threshold): high consensus",
   () => {
     const statements = [
       {
@@ -209,7 +203,6 @@ Deno.test(
         agrees: 71,
         disagrees: 29,
         passes: 0,
-        // 71/100 agrees = 71%, consensus
       },
     ] as Statement[];
 
@@ -220,7 +213,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - statement with 70% disagreement (at threshold): not high consensus",
+  "consensus - 70% disagreement (at threshold): not high consensus",
   () => {
     const statements = [
       {
@@ -240,7 +233,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - statement with 71% disagreement (above threshold): high consensus",
+  "consensus - 71% disagreement (above threshold): high consensus",
   () => {
     const statements = [
       {
@@ -260,7 +253,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - one statement with all superAgrees: high consensus",
+  "consensus - all superAgrees, no agrees: high consensus",
   () => {
     const statements = [
       {
@@ -289,7 +282,7 @@ Deno.test(
         agrees: 701,
         disagrees: 299,
         passes: 0,
-        // 701/1000 = 70.1% - should qualify
+        // 701/1000 = 70.1%
       },
     ] as Statement[];
 
@@ -311,7 +304,6 @@ Deno.test(
         agrees: 40,
         disagrees: 60,
         passes: 0,
-        // 40% - not in spicy range
       },
     ] as Statement[];
 
@@ -393,7 +385,6 @@ Deno.test(
         agrees: 2,
         disagrees: 0,
         passes: 0,
-        // 10/10 agrees = 100%, consensus
       },
       {
         id: "stmt2",
@@ -401,7 +392,6 @@ Deno.test(
         agrees: 3,
         disagrees: 0,
         passes: 0,
-        // 10/10 agrees = 100%, consensus
       },
     ] as Statement[];
 
@@ -496,7 +486,7 @@ Deno.test(
 );
 
 Deno.test(
-  "spiciness - 10% spicy statements results in 0.4 normalized score",
+  "spiciness - 10% spicy statements results in 0.4 normalized spiciness",
   () => {
     const statements = [
       {
@@ -505,7 +495,6 @@ Deno.test(
         agrees: 10,
         disagrees: 0,
         passes: 0,
-        // 10/10 agrees = 100%, consensus
       },
       {
         id: "stmt2",
@@ -513,7 +502,6 @@ Deno.test(
         agrees: 10,
         disagrees: 0,
         passes: 0,
-        // 10/10 agrees = 100%, consensus
       },
       {
         id: "stmt3",
@@ -521,7 +509,6 @@ Deno.test(
         agrees: 10,
         disagrees: 0,
         passes: 0,
-        // 10/10 agrees = 100%, consensus
       },
       {
         id: "stmt4",
@@ -529,7 +516,6 @@ Deno.test(
         agrees: 10,
         disagrees: 0,
         passes: 0,
-        // 10/10 agrees = 100%, consensus
       },
       {
         id: "stmt5",
@@ -537,7 +523,6 @@ Deno.test(
         agrees: 10,
         disagrees: 0,
         passes: 0,
-        // 10/10 agrees = 100%, consensus
       },
       {
         id: "stmt6",
@@ -545,7 +530,6 @@ Deno.test(
         agrees: 10,
         disagrees: 0,
         passes: 0,
-        // 10/10 agrees = 100%, consensus
       },
       {
         id: "stmt7",
@@ -553,7 +537,6 @@ Deno.test(
         agrees: 10,
         disagrees: 0,
         passes: 0,
-        // 10/10 agrees = 100%, consensus
       },
       {
         id: "stmt8",
@@ -561,7 +544,6 @@ Deno.test(
         agrees: 10,
         disagrees: 0,
         passes: 0,
-        // 10/10 agrees = 100%, consensus
       },
       {
         id: "stmt9",
@@ -569,7 +551,6 @@ Deno.test(
         agrees: 10,
         disagrees: 0,
         passes: 0,
-        // 10/10 agrees = 100%, consensus
       },
       {
         id: "stmt10",
@@ -577,7 +558,6 @@ Deno.test(
         agrees: 5,
         disagrees: 5,
         passes: 0,
-        // 5/10 agrees = 50%, spicy
       }
     ] as Statement[];
 
@@ -592,7 +572,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - only 1/4 statements has MIN_VOTES still reaches 100% normalized consensus",
+  "consensus - 1/4 statements has enough opinionated votes, reaches 100% normalized consensus",
   () => {
     const statements = [
       {
@@ -636,7 +616,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - all statements below MIN_VOTES: fails to qualify",
+  "consensus - 2 statements with not enough votes are not considered",
   () => {
     const statements = [
       {
@@ -662,7 +642,7 @@ Deno.test(
 );
 
 Deno.test(
-  "consensus - 50% of statements high consensus: reaches 100% normalized consensus",
+  "consensus - 2/4 statements high consensus: reaches 100% normalized consensus",
   () => {
     const statements = [
       {
