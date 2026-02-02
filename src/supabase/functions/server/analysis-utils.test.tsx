@@ -3,101 +3,69 @@ import { Statement } from "./types.tsx";
 import { calcConsensus, calcSpiciness } from "./analysis-utils.tsx";
 import { describe, it } from "@std/testing/bdd";
 
+const ZERO_VOTES_STMT = {
+  id: "stmt0",
+  superAgrees: 0,
+  agrees: 0,
+  disagrees: 0,
+  passes: 0,
+} as Statement;
 
-describe("consensus", () => {
-
-  describe("edge cases", () => {
-
-    it("should ignore zero statements", () => {
+describe("Consensus", () => {
+  describe("Edge cases", () => {
+    it("ignores empty statements array", () => {
       const statements = [] as Statement[];
 
-      const consensusData = calcConsensus(statements);
-      assertEquals(consensusData.highConsensusPostCount, 0);
-      assertEquals(consensusData.consensus, 0.0);
+      const result = calcConsensus(statements);
+      assertEquals(result.highConsensusPostCount, 0);
+      assertEquals(result.consensus, 0.0);
     });
 
-    it("should ignore a statement with zero votes", () => {
-      const statements = [
-        {
-          id: "stmt1",
-          superAgrees: 0,
-          agrees: 0,
-          disagrees: 0,
-          passes: 0,
-        },
-      ] as Statement[];
+    it("ignores statement with zero votes", () => {
+      const statements = [ZERO_VOTES_STMT];
 
-      const consensusData = calcConsensus(statements);
-      assertEquals(consensusData.highConsensusPostCount, 0);
-      assertEquals(consensusData.consensus, 0.0);
+      const result = calcConsensus(statements);
+      assertEquals(result.highConsensusPostCount, 0);
+      assertEquals(result.consensus, 0.0);
     });
 
-    it("should ignore a statement with only pass votes", () => {
-      const statements = [
-        {
-          id: "stmt1",
-          superAgrees: 0,
-          agrees: 0,
-          disagrees: 0,
-          passes: 100,
-        },
-      ] as Statement[];
-
-      const consensusData = calcConsensus(statements);
-      assertEquals(consensusData.highConsensusPostCount, 0);
-      assertEquals(consensusData.consensus, 0.0);
+    it("ignores statement with only passes", () => {
+      const statements = [{...ZERO_VOTES_STMT, passes: 100}];
+      const result = calcConsensus(statements);
+      assertEquals(result.highConsensusPostCount, 0);
+      assertEquals(result.consensus, 0.0);
     });
   });
 
-  describe("minimum vote threshold", () => {
-    it("should ignore too few votes even with high agreement", () => {
-      const statements = [
-        {
-          id: "stmt1",
-          superAgrees: 0,
-          agrees: 2,
-          disagrees: 0,
-          passes: 0,
-        },
-      ] as Statement[];
-
-      const consensusData = calcConsensus(statements);
-      assertEquals(consensusData.highConsensusPostCount, 0);
-      assertEquals(consensusData.consensus, 0.0);
+  describe("Minimum vote threshold", () => {
+    it("ignores too few votes even with high agreement", () => {
+      const statements = [{...ZERO_VOTES_STMT, agrees: 2}];
+      const result = calcConsensus(statements);
+      assertEquals(result.highConsensusPostCount, 0);
+      assertEquals(result.consensus, 0.0);
     });
 
-    it("should calc high consensus with minimum agree votes", () => {
-      const statements = [
-        {
-          id: "stmt1",
-          superAgrees: 0,
-          agrees: 3,
-          disagrees: 0,
-          passes: 0,
-        },
-      ] as Statement[];
-
-      const consensusData = calcConsensus(statements);
-      assertEquals(consensusData.highConsensusPostCount, 1);
-      assertEquals(consensusData.consensus, 1.0);
+    it("calcs high consensus with minimum agree votes", () => {
+      const statements = [{...ZERO_VOTES_STMT, agrees: 3}];
+      const result = calcConsensus(statements);
+      assertEquals(result.highConsensusPostCount, 1);
+      assertEquals(result.consensus, 1.0);
     });
   });
 
-  describe("opinionated rate threshold", () => {
-    it("should ignore when opinionated rate just under threshold", () => {
+  describe("Opinionated rate threshold", () => {
+    it("ignores when not enough opinionated votes", () => {
       const statements = [
         {
-          id: "stmt1",
-          superAgrees: 0,
+          ...ZERO_VOTES_STMT,
           agrees: 49,
-          disagrees: 0,
           passes: 51,
         },
-      ] as Statement[];
+      ]
 
-      const consensusData = calcConsensus(statements);
-      assertEquals(consensusData.highConsensusPostCount, 0);
-      assertEquals(consensusData.consensus, 0.0);
+      const result = calcConsensus(statements);
+      assertEquals(result.highConsensusPostCount, 0);
+      assertEquals(result.consensus, 0.0);
     });
 
     it("should calc high consensus when sufficient opinionated rate", () => {
@@ -322,24 +290,20 @@ describe("consensus", () => {
     });
   });
 
-  describe("multiple statements", () => {
-    it("should calc 100% high consensus and 0% spiciness when all high consensus", () => {
+  describe("Multiple statements", () => {
+    it("calcs 100% high consensus and 0% spiciness", () => {
       const statements = [
         {
-          id: "stmt1",
+          ...ZERO_VOTES_STMT,
           superAgrees: 8,
           agrees: 2,
-          disagrees: 0,
-          passes: 0,
         },
         {
-          id: "stmt2",
+          ...ZERO_VOTES_STMT,
           superAgrees: 7,
           agrees: 3,
-          disagrees: 0,
-          passes: 0,
         },
-      ] as Statement[];
+      ];
 
       const consensusData = calcConsensus(statements);
       assertEquals(consensusData.highConsensusPostCount, 2);
@@ -424,128 +388,55 @@ describe("consensus", () => {
       assertEquals(spicinessData.spiciness, 1.0);
     });
 
-    it("should calc 40% normalized spiciness when 1/10 spicy", () => {
+    it("scales up consensus and spiciness properly", () => {
+      const agreeStmt = {
+        ...ZERO_VOTES_STMT,
+        agrees: 10,
+      }
+
       const statements = [
+        ...Array(8).fill(agreeStmt),
         {
-          id: "stmt1",
-          superAgrees: 0,
-          agrees: 10,
-          disagrees: 0,
-          passes: 0,
-        },
-        {
-          id: "stmt2",
-          superAgrees: 0,
-          agrees: 10,
-          disagrees: 0,
-          passes: 0,
-        },
-        {
-          id: "stmt3",
-          superAgrees: 0,
-          agrees: 10,
-          disagrees: 0,
-          passes: 0,
-        },
-        {
-          id: "stmt4",
-          superAgrees: 0,
-          agrees: 10,
-          disagrees: 0,
-          passes: 0,
-        },
-        {
-          id: "stmt5",
-          superAgrees: 0,
-          agrees: 10,
-          disagrees: 0,
-          passes: 0,
-        },
-        {
-          id: "stmt6",
-          superAgrees: 0,
-          agrees: 10,
-          disagrees: 0,
-          passes: 0,
-        },
-        {
-          id: "stmt7",
-          superAgrees: 0,
-          agrees: 10,
-          disagrees: 0,
-          passes: 0,
-        },
-        {
-          id: "stmt8",
-          superAgrees: 0,
-          agrees: 10,
-          disagrees: 0,
-          passes: 0,
-        },
-        {
-          id: "stmt9",
-          superAgrees: 0,
-          agrees: 10,
-          disagrees: 0,
-          passes: 0,
-        },
-        {
-          id: "stmt10",
-          superAgrees: 0,
+          ...ZERO_VOTES_STMT,
           agrees: 5,
           disagrees: 5,
-          passes: 0,
         }
-      ] as Statement[];
+      ]
 
-      const consensusData = calcConsensus(statements);
-      assertEquals(consensusData.highConsensusPostCount, 9);
-      assertEquals(consensusData.consensus, 1.0);
+      const result = calcConsensus(statements);
+      assertEquals(result.highConsensusPostCount, 9);
+      assertEquals(result.consensus, 1.0);
 
       const spicinessData = calcSpiciness(statements);
       assertEquals(spicinessData.lowConsensusPostCount, 1);
       assertEquals(spicinessData.spiciness, 0.4);
     });
 
-    it("should calc 100% normalized consensus when 1/4 have enough opinionated votes and high consensus", () => {
+    it("calcs 100% normalized consensus when only minority of stmts qualify", () => {
       const statements = [
         {
-          id: "stmt1",
-          superAgrees: 0,
-          agrees: 10,
-          disagrees: 0,
-          passes: 0,
-          // Qualifies: enough votes, high consensus
+          ...ZERO_VOTES_STMT,
+          agrees: 10, // Qualifies: enough votes, high consensus
         },
         {
-          id: "stmt2",
-          superAgrees: 0,
-          agrees: 2,
-          disagrees: 0,
-          passes: 0,
-          // Doesn't qualify: not enough votes
+          ...ZERO_VOTES_STMT,
+          agrees: 2, // Doesn't qualify: not enough votes
         },
         {
-          id: "stmt3",
-          superAgrees: 0,
+          ...ZERO_VOTES_STMT,
           agrees: 5,
-          disagrees: 0,
-          passes: 100,
-          // Doesn't qualify: too many passes
+          passes: 100, // Doesn't qualify: too many passes
         },
         {
-          id: "stmt4",
-          superAgrees: 0,
+          ...ZERO_VOTES_STMT,
           agrees: 5,
-          disagrees: 5,
-          passes: 0,
-          // Doesn't qualify: split vote (not consensus)
+          disagrees: 5, // Doesn't qualify: not consensus
         },
-      ] as Statement[];
+      ]
 
       const consensusData = calcConsensus(statements);
       assertEquals(consensusData.highConsensusPostCount, 1);
-      assertEquals(consensusData.consensus, 1.0); // 1/4 = 0.25, normalized by 0.25
+      assertEquals(consensusData.consensus, 1.0);
     });
 
     it("should not calc consensus when not enough votes", () => {
@@ -571,7 +462,7 @@ describe("consensus", () => {
       assertEquals(consensusData.consensus, 0.0);
     });
 
-    it("should calc 100% normalized high consensus when 2/4 high consensus", () => {
+    it("calcs 100% normalized consensus when half high consensus", () => {
       const statements = [
         {
           id: "stmt1",
