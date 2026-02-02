@@ -527,7 +527,7 @@ app.post(
         return c.json({ error: "Email service not configured" }, 500);
       }
 
-      const magicLinkUrl = `https://heard-now.com/magic-link?token=${token}`;
+      const magicLinkUrl = `https://heard.vote/magic-link?token=${token}`;
 
       const html = getMagicLinkEmail(magicLinkUrl, token);
 
