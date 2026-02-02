@@ -139,7 +139,7 @@ export function CommunityAdminDialog({
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Share this link to invite others to your community
+              Share this link to let others participate in your community.
             </p>
           </div>
         </div>
