@@ -12,6 +12,7 @@ import {
   type YouTubeCardStatus,
   MagicLinkRecord,
   Session,
+  Community,
 } from "./types.tsx";
 
 /**
@@ -173,6 +174,15 @@ export const saveSession = async (
 ) => {
   await kv.set(sessionKeyFn(session), session);
 };
+
+export const getCommunities = async () => {
+  const comms = await getByPrefixParsed<Community>("subheard:");
+  return comms.map(c => ({
+    ...c,
+    isPrivate: c.isPrivate || false,
+    hostOnlyPosting: c.hostOnlyPosting || false,
+  }));
+}
 
 export const voteKeyFn = (vote: Vote) =>
   `vote:${vote.statementId}:${vote.userId}`;

@@ -5,6 +5,7 @@ import { getUserMemberships } from "./membership-utils.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
+import { getCommunities } from "./kv-utils.tsx";
 
 const app = new Hono();
 
@@ -31,46 +32,22 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
 
     const subheardJsons = await kv.getByPrefix("subheard:");
 
-    let subHeards: Array<{
-      name: string;
-      isPrivate: boolean;
-      adminId?: string;
-    }> = [];
-
-    subheardJsons.forEach((sh) => {
-      try {
-        const data = JSON.parse(sh);
-        if (data.name) {
-          subHeards.push({
-            name: data.name,
-            isPrivate: data.isPrivate || false,
-            adminId: data.adminId,
-          });
-        }
-      } catch (error) {
-        console.error("Error parsing sub-heard:", sh, error);
-      }
-    });
+    let subHeards = await getCommunities();
 
     subHeards = subHeards
-      // Filter out private sub-heards unless user is admin or member
-      .filter((data) => {
-        if (!data.isPrivate) return true; // Show if not private
-        // Show if user is admin of this sub-heard
-        if (userId && data.adminId === userId) return true;
-        // Show if user is a member
-        if (userId && userMemberships.has(data.name))
+      .filter((comm) => {
+        if (!comm.isPrivate) return true;
+        if (userId && comm.adminId === userId) return true;
+        if (userId && userMemberships.has(comm.name))
           return true;
         return false;
       })
-      .map((data) => {
-        const count = roomCounts[data.name] || 0;
+      .map((comm) => {
+        const count = roomCounts[comm.name] || 0;
 
         return {
-          name: data.name,
+          ...comm,
           count,
-          isPrivate: data.isPrivate,
-          adminId: data.adminId,
         };
       });
 

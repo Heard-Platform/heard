@@ -226,13 +226,12 @@ class ApiClient extends BaseApiClient {
   }
 
   async updateSubHeardSettings(
-    name: string,
+    community: SubHeard,
     userId: string,
-    isPrivate: boolean,
   ) {
-    return this.request(`/subheard/${name}/settings`, {
+    return this.request(`/subheard/${community.name}/settings`, {
       method: "PATCH",
-      body: JSON.stringify({ userId, isPrivate }),
+      body: JSON.stringify({ userId, settings: community }),
     });
   }
 

@@ -38,6 +38,13 @@ export interface Session {
   expiresAt: number;
 }
 
+export type Community = {
+  name: string;
+  adminId: string;
+  isPrivate: boolean;
+  hostOnlyPosting: boolean;
+}
+
 export type VoteType =
   | "agree"
   | "disagree"
