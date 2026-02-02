@@ -433,12 +433,12 @@ export function generateEmailHtml(data: EmailData, userId: string): string {
         </div>
         
         <div style="padding: 24px; text-align: center; color: #717182; font-size: 14px; background-color: #f8f9fa;">
-          <a href="https://heard-now.com/" style="display: inline-block; ${GRADIENTS.purple} color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin-bottom: 24px;">
+          <a href="https://heard.vote/" style="display: inline-block; ${GRADIENTS.purple} color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin-bottom: 24px;">
             Jump Back Into Heard 🎯
           </a>
           <p style="margin: 0 0 8px 0;">Heard - Conversation made fun</p>
           <p style="margin: 0; font-size: 12px;">
-            <a href="https://heard-now.com/unsubscribe?userId=${userId}" style="color: #667eea; text-decoration: none;">Unsubscribe</a>
+            <a href="https://heard.vote/unsubscribe?userId=${userId}" style="color: #667eea; text-decoration: none;">Unsubscribe</a>
           </p>
         </div>
       </div>

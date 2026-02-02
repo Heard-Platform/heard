@@ -228,7 +228,7 @@ export const getNewsletterEmail = (): string => {
         <img src="https://i.ibb.co/n8qVSKqN/Screenshot-2026-01-14-at-11-07-06-AM.png" 
              alt="Music livestream" 
              style="${styles.image}; margin-bottom: 20px;" />
-        ${getMusicLivestreamButtons("https://www.youtube.com/@AlexLongHeard", "https://heard-now.com/room/ycrrn2a3ijgmk7qj2c8")}
+        ${getMusicLivestreamButtons("https://www.youtube.com/@AlexLongHeard", "https://heard.vote/room/ycrrn2a3ijgmk7qj2c8")}
       </div>
 
       <div style="${styles.section}">
@@ -296,7 +296,7 @@ export const getNewsletter2Email = (): string => {
         <img src="https://i.postimg.cc/9Xk3N2rc/Copy-of-string-break-gif.gif" 
              alt="Breaking guitar string" 
              style="${styles.image}" />
-        ${getMusicLivestreamButtons("https://youtube.com/live/-okUoAoYLFQ", "https://heard-now.com/room/7zsnxx6po4fmkhlz7r6")}
+        ${getMusicLivestreamButtons("https://youtube.com/live/-okUoAoYLFQ", "https://heard.vote/room/7zsnxx6po4fmkhlz7r6")}
       </div>
 
       <div style="${styles.section}">
