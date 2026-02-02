@@ -39,6 +39,7 @@ export function StoryContainer({
         </div>
       </CardHeader>
       <CardContent>
+        {variants.length !== 1 ? (
         <Tabs value={activeVariant} onValueChange={setActiveVariant} className="w-full">
           <TabsList className="mb-6">
             {variants.map((variant) => (
@@ -54,6 +55,9 @@ export function StoryContainer({
             </TabsContent>
           ))}
         </Tabs>
+        ) : (
+          variants[0].children
+        )}
       </CardContent>
     </Card>
   );
