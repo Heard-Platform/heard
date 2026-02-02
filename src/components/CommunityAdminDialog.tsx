@@ -42,7 +42,7 @@ export function CommunityAdminDialog({
     try {
       const success = await onUpdateSubHeard(community.name, userId, newPrivacy);
       if (success) {
-        toast.success(`Community is now ${newPrivacy ? 'private' : 'public'}`);
+        toast.success(`Community is now ${newPrivacy ? 'unlisted' : 'public'}`);
       } else {
         toast.error("Failed to update community settings");
       }
@@ -87,6 +87,37 @@ export function CommunityAdminDialog({
 
         <div className="space-y-6 py-4">
           <div className="space-y-2">
+            <Label className="text-sm font-medium">Stats</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-2xl font-bold">{community.count}</p>
+                <p className="text-xs text-muted-foreground">Total Debates</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-2xl font-bold">{community.isPrivate ? 'Unlisted' : 'Public'}</p>
+                <p className="text-xs text-muted-foreground">Visibility</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="privacy-toggle" className="font-medium">
+                Unlisted Community
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Won't appear in public list. Only people with the link can see it
+              </p>
+            </div>
+            <Switch
+              id="privacy-toggle"
+              checked={community.isPrivate || false}
+              onCheckedChange={handleTogglePrivacy}
+              disabled={isUpdating}
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label className="text-sm font-medium">Share Link</Label>
             <div className="flex gap-2">
               <Input
@@ -110,37 +141,6 @@ export function CommunityAdminDialog({
             <p className="text-xs text-muted-foreground">
               Share this link to invite others to your community
             </p>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="privacy-toggle" className="font-medium">
-                Private Community
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Members can only join when they visit the link
-              </p>
-            </div>
-            <Switch
-              id="privacy-toggle"
-              checked={community.isPrivate || false}
-              onCheckedChange={handleTogglePrivacy}
-              disabled={isUpdating}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Stats</Label>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">{community.count}</p>
-                <p className="text-xs text-muted-foreground">Total Debates</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">{community.isPrivate ? 'Private' : 'Public'}</p>
-                <p className="text-xs text-muted-foreground">Visibility</p>
-              </div>
-            </div>
           </div>
         </div>
 

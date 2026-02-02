@@ -285,7 +285,7 @@ export function SubHeardBrowser({
                     className="text-sm cursor-pointer flex items-center gap-2"
                   >
                     <Lock className="w-3 h-3" />
-                    Make private (only accessible via link)
+                    Make unlisted (won't appear in public list)
                   </Label>
                 </div>
                 
