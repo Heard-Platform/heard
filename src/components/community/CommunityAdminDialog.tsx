@@ -1,38 +1,38 @@
 import { useState } from "react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Switch } from "./ui/switch";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Switch } from "../ui/switch";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "./ui/dialog";
+} from "../ui/dialog";
 import { Share2, Check, Crown } from "lucide-react";
-import type { SubHeard } from "../types";
-import { createSubHeardLink } from "../utils/url";
-import { share } from "../utils/share";
+import type { SubHeard } from "../../types";
+import { createSubHeardLink } from "../../utils/url";
+import { share } from "../../utils/share";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
-import { formatSubHeardDisplay } from "../utils/subheard";
+import { formatSubHeardDisplay } from "../../utils/subheard";
 
 interface CommunityAdminDialogProps {
   community: SubHeard;
   userId: string;
   isOpen: boolean;
-  onClose: () => void;
   onUpdateSubHeard: (name: string, userId: string, isPrivate: boolean) => Promise<boolean>;
+  onClose: () => void;
 }
 
 export function CommunityAdminDialog({
   community,
   userId,
   isOpen,
-  onClose,
   onUpdateSubHeard,
+  onClose,
 }: CommunityAdminDialogProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [copied, setCopied] = useState(false);

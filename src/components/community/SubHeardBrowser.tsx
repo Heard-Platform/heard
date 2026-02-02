@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Checkbox } from "./ui/checkbox";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Checkbox } from "../ui/checkbox";
 import {
   Sheet,
   SheetContent,
@@ -11,14 +11,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "./ui/sheet";
+} from "../ui/sheet";
 import { Home, Hash, Plus, ChevronDown, Lock, Settings, Crown } from "lucide-react";
-import { api } from "../utils/api";
-import type { SubHeard, UserSession } from "../types";
+import { api } from "../../utils/api";
+import type { SubHeard, UserSession } from "../../types";
 
 // @ts-ignore
 import { CommunityAdminDialog } from "./CommunityAdminDialog";
-import { formatSubHeardDisplay } from "../utils/subheard";
+import { formatSubHeardDisplay } from "../../utils/subheard";
 
 interface SubHeardBrowserProps {
   currentSubHeard?: string;

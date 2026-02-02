@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "../components/ui/button";
-import { CommunityAdminDialog } from "../components/CommunityAdminDialog";
+import { CommunityAdminDialog } from "../components/community/CommunityAdminDialog";
 import { StoryContainer } from "./StoryContainer";
 import type { SubHeard } from "../types";
 
@@ -23,25 +23,32 @@ export function CommunityAdminDialogStory() {
     return true;
   };
 
+  const variants = [
+    {
+      id: "base",
+      label: "Base",
+      children:
+        <>
+          <Button onClick={() => setIsOpen(true)}>
+            Open Admin Dialog
+          </Button>
+
+          <CommunityAdminDialog
+            community={mockCommunity}
+            userId="demo-user-123"
+            isOpen={isOpen}
+            onUpdateSubHeard={handleUpdateSubHeard}
+            onClose={() => setIsOpen(false)}
+          />
+        </>
+    },
+  ];
+
   return (
     <StoryContainer
       title="Community Admin Dialog"
       description="Management interface for community admins to control visibility and share links"
-      variants={[{id: "base", label: "Base"}]}
-      activeVariant="base"
-      onVariantChange={() => {}}
-    >
-      <Button onClick={() => setIsOpen(true)}>
-        Open Admin Dialog
-      </Button>
-
-      <CommunityAdminDialog
-        community={mockCommunity}
-        userId="demo-user-123"
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        onUpdateSubHeard={handleUpdateSubHeard}
-      />
-    </StoryContainer>
+      variants={variants}
+    />
   );
 }

@@ -11,7 +11,7 @@ import {
   RoomScrollerRef,
 } from "../components/RoomScroller";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
-import { SubHeardBrowser } from "../components/SubHeardBrowser";
+import { SubHeardBrowser } from "../components/community/SubHeardBrowser";
 import { IntroModal } from "../components/IntroModal";
 import { FloatingCreateButton } from "../components/FloatingCreateButton";
 import { FloatingFeedbackButton } from "../components/FloatingFeedbackButton";

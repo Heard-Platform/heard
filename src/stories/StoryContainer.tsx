@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Badge } from "../components/ui/badge";
@@ -6,27 +6,23 @@ import { Badge } from "../components/ui/badge";
 interface Variant {
   id: string;
   label: string;
+  children: ReactNode;
 }
 
 interface StoryContainerProps {
   title: string;
   description?: string;
   variants: Variant[];
-  activeVariant: string;
-  onVariantChange: (variant: any) => void;
   debugInfo?: ReactNode;
-  children: ReactNode;
 }
 
 export function StoryContainer({
   title,
   description,
   variants,
-  activeVariant,
-  onVariantChange,
   debugInfo,
-  children,
 }: StoryContainerProps) {
+  const [activeVariant, setActiveVariant] = useState(variants[0].id);
   return (
     <Card>
       <CardHeader>
@@ -43,7 +39,7 @@ export function StoryContainer({
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs value={activeVariant} onValueChange={onVariantChange} className="w-full">
+        <Tabs value={activeVariant} onValueChange={setActiveVariant} className="w-full">
           <TabsList className="mb-6">
             {variants.map((variant) => (
               <TabsTrigger key={variant.id} value={variant.id}>
@@ -54,7 +50,7 @@ export function StoryContainer({
           
           {variants.map((variant) => (
             <TabsContent key={variant.id} value={variant.id}>
-              {children}
+              {variant.children}
             </TabsContent>
           ))}
         </Tabs>
