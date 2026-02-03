@@ -43,6 +43,7 @@ import {
   Mail,
 } from "lucide-react";
 import { api } from "../utils/api";
+import { adminApi } from "../utils/admin-api";
 import type { DebateRoom, SubHeard, UserSession } from "../types";
 import { PolisImporter } from "./PolisImporter";
 import { UserHistory } from "./admin/UserHistory";
@@ -321,7 +322,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     if (!confirmed) return;
 
     try {
-      const res = await api.adminClearPhoneVerification(userId, adminKey);
+      const res = await adminApi.clearPhoneVerification(adminKey, userId);
       if (res.success) {
         fetchAdminData();
         alert("Phone verification data cleared successfully");

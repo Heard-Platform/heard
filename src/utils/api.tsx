@@ -476,18 +476,6 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async adminClearPhoneVerification(
-    userId: string,
-    adminKey: string,
-  ) {
-    return this.request(`/admin/user/${userId}/clear-phone`, {
-      method: "DELETE",
-      headers: {
-        "X-Admin-Key": adminKey,
-      },
-    });
-  }
-
   async adminUpdateDebateSubHeard(
     debateId: string,
     newSubHeard: string | null,

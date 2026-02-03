@@ -87,6 +87,18 @@ class AdminApiClient extends BaseApiClient {
       },
     );
   }
+
+  async clearPhoneVerification(
+    adminKey: string,
+    userId: string,
+  ) {
+    return this.request(`/admin/user/${userId}/clear-phone`, {
+      method: "DELETE",
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
 }
 
 export const adminApi = new AdminApiClient();
