@@ -43,6 +43,7 @@ import {
   Mail,
 } from "lucide-react";
 import { api } from "../utils/api";
+import { adminApi } from "../utils/admin-api";
 import type { DebateRoom, SubHeard, UserSession } from "../types";
 import { PolisImporter } from "./PolisImporter";
 import { UserHistory } from "./admin/UserHistory";
@@ -301,6 +302,36 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     } catch (error) {
       console.error("Error updating user unsub status:", error);
       alert("Failed to update user unsub status");
+    }
+  };
+
+  const handleClearPhoneVerification = async (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    const confirmed = window.confirm(
+      `Are you sure you want to clear phone verification for ${user.nickname}?\n\n` +
+      `This will:\n` +
+      `- Delete the user_phone KV record\n` +
+      `- Reset phoneNumber to null\n` +
+      `- Reset isPhoneVerified to false\n` +
+      `- Reset phoneVerifiedAt to null\n\n` +
+      `This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const res = await adminApi.clearPhoneVerification(adminKey, userId);
+      if (res.success) {
+        fetchAdminData();
+        alert("Phone verification data cleared successfully");
+      } else {
+        alert(`Failed to clear phone verification: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error clearing phone verification:", error);
+      alert("Failed to clear phone verification");
     }
   };
 
@@ -743,6 +774,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             adminKey={adminKey}
             onUserUpdate={handleUpdateUserTestStatus}
             onUserUnsubUpdate={handleUpdateUserUnsubStatus}
+            onClearPhoneVerification={handleClearPhoneVerification}
           />
         )}
 

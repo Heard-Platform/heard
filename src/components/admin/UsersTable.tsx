@@ -2,17 +2,26 @@ import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
+import { Button } from "../ui/button";
 import type { UserSession } from "../../types";
 import { useState } from "react";
+import { Phone } from "lucide-react";
 
 interface UsersTableProps {
   users: UserSession[];
   adminKey: string;
+  onClearPhoneVerification: (userId: string) => void;
   onUserUpdate: (userId: string, isTestUser: boolean) => void;
   onUserUnsubUpdate: (userId: string, isUnsubbedFromUpdates: boolean) => void;
 }
 
-export function UsersTable({ users, adminKey, onUserUpdate, onUserUnsubUpdate }: UsersTableProps) {
+export function UsersTable({
+  users,
+  adminKey,
+  onClearPhoneVerification,
+  onUserUpdate,
+  onUserUnsubUpdate,
+}: UsersTableProps) {
   const [hideTestUsers, setHideTestUsers] = useState(false);
   const [hideAnonUsers, setHideAnonUsers] = useState(false);
 
@@ -60,6 +69,7 @@ export function UsersTable({ users, adminKey, onUserUpdate, onUserUnsubUpdate }:
               <th className="text-center p-3 font-medium">Anonymous</th>
               <th className="text-center p-3 font-medium">Test User</th>
               <th className="text-center p-3 font-medium">Unsubbed from Updates</th>
+              <th className="text-center p-3 font-medium">Clear Phone Verification</th>
             </tr>
           </thead>
           <tbody>
@@ -93,6 +103,21 @@ export function UsersTable({ users, adminKey, onUserUpdate, onUserUnsubUpdate }:
                     checked={user.isUnsubbedFromUpdates || false}
                     onCheckedChange={(checked: boolean) => onUserUnsubUpdate(user.id, checked)}
                   />
+                </td>
+                <td className="p-3 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    {user.phoneVerified ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onClearPhoneVerification(user.id)}
+                      >
+                        <Phone className="w-4 h-4" />
+                      </Button>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

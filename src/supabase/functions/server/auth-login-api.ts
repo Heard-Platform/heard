@@ -4,6 +4,7 @@ import { getUser, saveUser, saveUserPhone } from "./kv-utils.tsx";
 import { startVerification, checkVerification } from "./twilio-service.tsx";
 import { loginUserWithMerge, normalizePhoneNumber } from "./auth-utils.ts";
 import { sanitizeUser } from "./user-utils.ts";
+import { createUserAccount } from "./auth-api.tsx";
 
 const app = new Hono();
 
@@ -73,10 +74,16 @@ app.post(
         return c.json({ error: verificationResult.error || "Invalid or expired code" }, 401);
       }
 
-      const user = await getUserByPhone(normalizedPhone);
+      let user = await getUserByPhone(normalizedPhone);
 
       if (!user) {
-        return c.json({ error: "No account found with this phone number" }, 404);
+        user = await createUserAccount({
+          phoneNumber: normalizedPhone,
+          phoneVerified: true,
+          phoneVerifiedAt: Date.now(),
+        })
+
+        await saveUserPhone(normalizedPhone, user.id);
       }
 
       const result = await loginUserWithMerge(user.id, currentUserId);
