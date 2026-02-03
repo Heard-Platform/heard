@@ -109,13 +109,13 @@ export function PhoneVerificationDialog({
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="+1234567890"
+                  placeholder="(555) 123-4567"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   disabled={loading}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Include country code (e.g., +1 for US)
+                  Only US phone numbers are supported currently.
                 </p>
               </div>
 

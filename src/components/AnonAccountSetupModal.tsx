@@ -419,7 +419,7 @@ export function AnonAccountSetupModal({
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+1 (555) 123-4567"
+                        placeholder="(555) 123-4567"
                         disabled={loading}
                         className="bg-white dark:bg-gray-900"
                       />
