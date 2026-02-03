@@ -11,7 +11,6 @@ export const getFrontendUrl = (): string => {
   );
 };
 
-
 export function getTotalVoteCount(statement: Statement) {
   return statement.agrees +
     statement.superAgrees +
