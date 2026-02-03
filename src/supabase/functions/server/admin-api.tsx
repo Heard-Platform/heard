@@ -9,6 +9,7 @@ import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 import { getNewsletter3Email } from "./email-newsletter-3.ts";
 import { getNewsletter4Email } from "./email-newsletter-4.ts";
 import { sanitizeUser } from "./user-utils.ts";
+import { sendDebateCompletionCelebration } from "./cron-api.tsx";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
@@ -675,6 +676,52 @@ app.post(
       console.error("Error sending newsletter:", error);
       return c.json(
         { error: "Failed to send newsletter" },
+        500,
+      );
+    }
+  },
+);
+
+app.post(
+  "/make-server-f1a393b4/admin/send-test-celebration-sms",
+  async (c) => {
+    try {
+      const { userId, roomId } = await c.req.json();
+
+      if (!userId) {
+        return c.json({ error: "User ID is required" }, 400);
+      }
+
+      if (!roomId) {
+        return c.json({ error: "Room ID is required" }, 400);
+      }
+
+      const user = await getUser(userId);
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      if (!user.phoneNumber || !user.phoneVerified) {
+        return c.json({ 
+          error: "User does not have a verified phone number" 
+        }, 400);
+      }
+
+      const room = await getDebate(roomId);
+      if (!room) {
+        return c.json({ error: "Room not found" }, 404);
+      }
+
+      await sendDebateCompletionCelebration(room);
+
+      return c.json({
+        success: true,
+        message: "Test celebration SMS sent successfully",
+      });
+    } catch (error) {
+      console.error("Error sending test celebration SMS:", error);
+      return c.json(
+        { error: "Failed to send test celebration SMS" },
         500,
       );
     }

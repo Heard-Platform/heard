@@ -8,7 +8,7 @@ import { getStatements } from "./debate-api.tsx";
 
 const app = new Hono();
 
-async function sendDebateCompletionCelebration(room: DebateRoom) {
+export async function sendDebateCompletionCelebration(room: DebateRoom) {
   try {
     const host = await getUser(room.hostId);
     if (!host || !host.phoneNumber || !host.phoneVerified) {
@@ -26,8 +26,12 @@ async function sendDebateCompletionCelebration(room: DebateRoom) {
 
     const celebrationMessage = `🎉 Your debate "${topic}" just wrapped! ${participantCount} debater${participantCount !== 1 ? 's' : ''} cast ${totalVotes} vote${totalVotes !== 1 ? 's' : ''}. Check the results at ${getFrontendUrl()}/room/${room.id}`;
 
-    await sendSms(host.phoneNumber, celebrationMessage);
-    console.log(`Celebration SMS sent to host ${host.id} for room ${room.id}`);
+    const { success } = await sendSms(host.phoneNumber, celebrationMessage);
+    if (success) {
+      console.log(`Celebration SMS sent to host ${host.id} for room ${room.id}`);
+    } else {
+      console.error(`Failed to send celebration SMS to host ${host.id} for room ${room.id}`);
+    }
   } catch (error) {
     console.error("Error sending celebration SMS:", error);
   }
@@ -49,7 +53,6 @@ app.post(
 
       const allRooms = await getAllDebates();
       const recentlyEndedRooms = allRooms.filter(room => 
-        !room.isActive && 
         room.endTime && 
         room.endTime >= twentyMinutesAgo && 
         room.endTime <= now

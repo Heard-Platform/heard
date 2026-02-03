@@ -41,6 +41,7 @@ import {
   TestTube,
   History,
   Mail,
+  MessageSquare,
 } from "lucide-react";
 import { api } from "../utils/api";
 import { adminApi } from "../utils/admin-api";
@@ -50,6 +51,7 @@ import { UserHistory } from "./admin/UserHistory";
 import { UsersTable } from "./admin/UsersTable";
 import { DataFixes } from "./admin/DataFixes";
 import { Newsletter } from "./admin/Newsletter";
+import { SmsNotifications } from "./admin/SmsNotifications";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 
 interface AdminPanelProps {
@@ -500,6 +502,13 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             <History className="w-4 h-4 mr-2" />
             User History
           </Button>
+          <Button
+            variant={activeTab === "sms" ? "default" : "ghost"}
+            onClick={() => handleTabChange("sms")}
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            SMS Notifications
+          </Button>
         </div>
 
         {activeTab === "subheards" && (
@@ -798,6 +807,14 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         {activeTab === "newsletter" && (
           <Newsletter
             adminKey={adminKey}
+          />
+        )}
+
+        {activeTab === "sms" && (
+          <SmsNotifications
+            adminKey={adminKey}
+            currentUserId={users[0]?.id || ""}
+            debates={debates}
           />
         )}
       </div>
