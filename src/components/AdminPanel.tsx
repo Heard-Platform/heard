@@ -304,6 +304,36 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
+  const handleClearPhoneVerification = async (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    const confirmed = window.confirm(
+      `Are you sure you want to clear phone verification for ${user.nickname}?\n\n` +
+      `This will:\n` +
+      `- Delete the user_phone KV record\n` +
+      `- Reset phoneNumber to null\n` +
+      `- Reset isPhoneVerified to false\n` +
+      `- Reset phoneVerifiedAt to null\n\n` +
+      `This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const res = await api.adminClearPhoneVerification(userId, adminKey);
+      if (res.success) {
+        fetchAdminData();
+        alert("Phone verification data cleared successfully");
+      } else {
+        alert(`Failed to clear phone verification: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error clearing phone verification:", error);
+      alert("Failed to clear phone verification");
+    }
+  };
+
   const handleCreateRedditRoom = async () => {
     if (!redditUrl.trim()) {
       alert("Please enter a Reddit post URL");
@@ -743,6 +773,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             adminKey={adminKey}
             onUserUpdate={handleUpdateUserTestStatus}
             onUserUnsubUpdate={handleUpdateUserUnsubStatus}
+            onClearPhoneVerification={handleClearPhoneVerification}
           />
         )}
 
