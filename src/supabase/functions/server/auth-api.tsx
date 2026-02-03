@@ -168,26 +168,21 @@ const validateAccountCredentials = (
   return null;
 };
 
-export const createUserAccount = async (
-  nickname: string,
-  email: string,
-  passwordHash: string,
-  isAnonymous: boolean = false,
-): Promise<User> => {
+export const createUserAccount = async (newUser: Partial<User>): Promise<User> => {
   const userId = generateId();
   const user: User = {
     id: userId,
-    nickname: nickname.substring(0, 20),
-    email: email.trim().toLowerCase(),
+    nickname: "",
+    email: "",
     score: 0,
     streak: 0,
     lastActive: Date.now(),
     isTestUser: false,
     isDeveloper: false,
-    emailDigestsEnabled: !isAnonymous,
-    passwordHash,
+    emailDigestsEnabled: !newUser.isAnonymous,
+    passwordHash: undefined,
     createdAt: Date.now(),
-    isAnonymous,
+    ...newUser,
   };
 
   await saveUserAndEmail(user);
@@ -195,20 +190,7 @@ export const createUserAccount = async (
 };
 
 export const createAnonymousUser = async (): Promise<User> => {
-  const anonymousNickname = "Anonymous User";
-  const anonymousEmail = `anon-${generateId()}@heard.anonymous`;
-
-  const randomPassword = generateId();
-  const passwordHash = await hashPassword(randomPassword);
-
-  const user = await createUserAccount(
-    anonymousNickname,
-    anonymousEmail,
-    passwordHash,
-    true,
-  );
-
-  return user;
+  return createUserAccount({ isAnonymous: true });
 };
 
 const sendEmail = async ({
