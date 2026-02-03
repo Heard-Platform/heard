@@ -96,7 +96,7 @@ export function PhoneVerificationDialog({
           </DialogTitle>
           <DialogDescription>
             {step === "enter-phone"
-              ? {VERIFY_TEXT}
+              ? VERIFY_TEXT
               : "Enter the verification code sent to your phone."}
           </DialogDescription>
         </DialogHeader>
