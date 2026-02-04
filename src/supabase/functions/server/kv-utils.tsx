@@ -150,15 +150,19 @@ export const deleteMagicLink = async (
   await kv.del(magicLinkKeyFn(token));
 };
 
-export const usePhoneKvKeyFn = (phone: string) =>
+export const phoneKvKeyFn = (phone: string) =>
   `user_phone:${phone}`;
 
 export const saveUserPhone = async (
   phone: string,
   userId: string,
 ) => {
-  await kv.set(usePhoneKvKeyFn(phone), userId);
+  await kv.set(phoneKvKeyFn(phone), userId);
 };
+
+export const deletePhone = async (phone: string) => {
+  await kv.del(phoneKvKeyFn(phone));
+}
 
 const sessionKeyFn = (session: Session) =>
   `session:${session.id}`;

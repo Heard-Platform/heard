@@ -71,7 +71,11 @@ export const sendSms = async (to: string, body: string): Promise<{ success: bool
     return { success: false, error: "SMS service not configured" };
   }
 
-  const TWILIO_PHONE_NUMBER = Deno.env.get("TWILIO_PHONE_NUMBER") || "+15017122661";
+  const TWILIO_PHONE_NUMBER = Deno.env.get("TWILIO_PHONE_NUMBER");
+  if (!TWILIO_PHONE_NUMBER) {
+    console.error("Missing Twilio phone number");
+    return { success: false, error: "SMS service not configured" };
+  }
 
   try {
     const message = await client.messages.create({

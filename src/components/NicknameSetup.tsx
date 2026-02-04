@@ -188,7 +188,7 @@ export function NicknameSetup({
                   type="tel"
                   value={phone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
-                  placeholder="+1 (555) 123-4567"
+                  placeholder="(555) 123-4567"
                   disabled={loading || codeSent}
                   autoComplete="tel"
                 />

@@ -41,14 +41,17 @@ import {
   TestTube,
   History,
   Mail,
+  MessageSquare,
 } from "lucide-react";
 import { api } from "../utils/api";
+import { adminApi } from "../utils/admin-api";
 import type { DebateRoom, SubHeard, UserSession } from "../types";
 import { PolisImporter } from "./PolisImporter";
 import { UserHistory } from "./admin/UserHistory";
 import { UsersTable } from "./admin/UsersTable";
 import { DataFixes } from "./admin/DataFixes";
 import { Newsletter } from "./admin/Newsletter";
+import { SmsNotifications } from "./admin/SmsNotifications";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 
 interface AdminPanelProps {
@@ -304,6 +307,36 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
+  const handleClearPhoneVerification = async (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    const confirmed = window.confirm(
+      `Are you sure you want to clear phone verification for ${user.nickname}?\n\n` +
+      `This will:\n` +
+      `- Delete the user_phone KV record\n` +
+      `- Reset phoneNumber to null\n` +
+      `- Reset isPhoneVerified to false\n` +
+      `- Reset phoneVerifiedAt to null\n\n` +
+      `This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const res = await adminApi.clearPhoneVerification(adminKey, userId);
+      if (res.success) {
+        fetchAdminData();
+        alert("Phone verification data cleared successfully");
+      } else {
+        alert(`Failed to clear phone verification: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error clearing phone verification:", error);
+      alert("Failed to clear phone verification");
+    }
+  };
+
   const handleCreateRedditRoom = async () => {
     if (!redditUrl.trim()) {
       alert("Please enter a Reddit post URL");
@@ -468,6 +501,13 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
           >
             <History className="w-4 h-4 mr-2" />
             User History
+          </Button>
+          <Button
+            variant={activeTab === "sms" ? "default" : "ghost"}
+            onClick={() => handleTabChange("sms")}
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            SMS Notifications
           </Button>
         </div>
 
@@ -743,6 +783,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             adminKey={adminKey}
             onUserUpdate={handleUpdateUserTestStatus}
             onUserUnsubUpdate={handleUpdateUserUnsubStatus}
+            onClearPhoneVerification={handleClearPhoneVerification}
           />
         )}
 
@@ -766,6 +807,14 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         {activeTab === "newsletter" && (
           <Newsletter
             adminKey={adminKey}
+          />
+        )}
+
+        {activeTab === "sms" && (
+          <SmsNotifications
+            adminKey={adminKey}
+            currentUserId={users[0]?.id || ""}
+            debates={debates}
           />
         )}
       </div>

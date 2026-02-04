@@ -7,10 +7,9 @@ export const generateId = () =>
 
 export const getFrontendUrl = (): string => {
   return (
-    Deno.env.get("FRONTEND_URL") || "https://heard-now.com"
+    Deno.env.get("FRONTEND_URL") || "https://heard.vote"
   );
 };
-
 
 export function getTotalVoteCount(statement: Statement) {
   return statement.agrees +

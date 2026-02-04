@@ -1,16 +1,18 @@
 import { getNewsletterEmail, getNewsletter2Email } from "./email-templates.tsx";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
-import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, getUser, saveDebate } from "./kv-utils.tsx";
+import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, getUser, saveDebate, phoneKvKeyFn, deletePhone } from "./kv-utils.tsx";
 import { getVotesForUser, getUserActivityRecords } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
 import { saveUser } from "./kv-utils.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
+import { getNewsletter3Email } from "./email-newsletter-3.ts";
+import { getNewsletter4Email } from "./email-newsletter-4.ts";
+import { sanitizeUser } from "./user-utils.ts";
+import { sendDebateCompletionCelebration } from "./cron-api.tsx";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
-import { getNewsletter3Email } from "./email-newsletter-3.ts";
-import { sanitizeUser } from "./user-utils.ts";
 
 const app = new Hono();
 
@@ -405,6 +407,44 @@ app.patch(
   },
 );
 
+app.delete(
+  "/make-server-f1a393b4/admin/user/:userId/clear-phone",
+  async (c) => {
+    try {
+      const userId = c.req.param("userId");
+
+      const user = await getUser(userId);
+
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      const phoneNumber = user.phoneNumber;
+
+      user.phoneNumber = undefined;
+      user.phoneVerified = false;
+      user.phoneVerifiedAt = undefined;
+
+      await saveUser(user);
+
+      if (phoneNumber) {
+        await deletePhone(phoneNumber);
+      }
+
+      return c.json({
+        success: true,
+        user: user,
+      });
+    } catch (error) {
+      console.error("Error clearing phone verification:", error);
+      return c.json(
+        { error: "Failed to clear phone verification" },
+        500,
+      );
+    }
+  },
+);
+
 app.get(
   "/make-server-f1a393b4/admin/user-history/:userId",
   async (c) => {
@@ -568,13 +608,23 @@ app.post(
       let failed = 0;
       const newlySent: string[] = [];
 
-      const getNewsletterHtml = newsletterEdition === 2 ? getNewsletter2Email : newsletterEdition === 3 ? getNewsletter3Email : getNewsletterEmail;
-      const newsletterSubjects = {
-        1: "The 1st Heard Newsletter! Cold showers, live streams, and QR codes - oh my!",
-        2: "The 2nd Heard Newsletter! Heard in the news, broken strings, and getting closer to 100 users!",
-        3: "Heard Newsletter #3! GoFundMe, rickrolls, and roadmap"
-      };
-      const subject = newsletterSubjects[newsletterEdition as 1 | 2 | 3] || newsletterSubjects[1];
+      let subject: string;
+      let getNewsletterHtml: () => string;
+
+      if (newsletterEdition === 4) {
+        const newsletter4 = getNewsletter4Email();
+        subject = newsletter4.subject;
+        getNewsletterHtml = () => newsletter4.html;
+      } else {
+        const getNewsletterHtmlFn = newsletterEdition === 2 ? getNewsletter2Email : newsletterEdition === 3 ? getNewsletter3Email : getNewsletterEmail;
+        const newsletterSubjects = {
+          1: "The 1st Heard Newsletter! Cold showers, live streams, and QR codes - oh my!",
+          2: "The 2nd Heard Newsletter! Heard in the news, broken strings, and getting closer to 100 users!",
+          3: "Heard Newsletter #3! GoFundMe, rickrolls, and roadmap"
+        };
+        subject = newsletterSubjects[newsletterEdition as 1 | 2 | 3] || newsletterSubjects[1];
+        getNewsletterHtml = getNewsletterHtmlFn;
+      }
 
       for (const user of eligibleUsers) {
         try {
@@ -626,6 +676,52 @@ app.post(
       console.error("Error sending newsletter:", error);
       return c.json(
         { error: "Failed to send newsletter" },
+        500,
+      );
+    }
+  },
+);
+
+app.post(
+  "/make-server-f1a393b4/admin/send-test-celebration-sms",
+  async (c) => {
+    try {
+      const { userId, roomId } = await c.req.json();
+
+      if (!userId) {
+        return c.json({ error: "User ID is required" }, 400);
+      }
+
+      if (!roomId) {
+        return c.json({ error: "Room ID is required" }, 400);
+      }
+
+      const user = await getUser(userId);
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      if (!user.phoneNumber || !user.phoneVerified) {
+        return c.json({ 
+          error: "User does not have a verified phone number" 
+        }, 400);
+      }
+
+      const room = await getDebate(roomId);
+      if (!room) {
+        return c.json({ error: "Room not found" }, 404);
+      }
+
+      await sendDebateCompletionCelebration(room);
+
+      return c.json({
+        success: true,
+        message: "Test celebration SMS sent successfully",
+      });
+    } catch (error) {
+      console.error("Error sending test celebration SMS:", error);
+      return c.json(
+        { error: "Failed to send test celebration SMS" },
         500,
       );
     }

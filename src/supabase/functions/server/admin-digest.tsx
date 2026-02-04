@@ -97,7 +97,7 @@ export function generateAdminDigestHtml(stats: AdminDailyStats): string {
           </div>
 
           <div style="text-align: center; padding-top: 24px; border-top: 1px solid #e2e8f0;">
-            <a href="https://heard-now.com/admin" style="display: inline-block; ${GRADIENTS.purple} color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin-bottom: 24px;">
+            <a href="https://heard.vote/admin" style="display: inline-block; ${GRADIENTS.purple} color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin-bottom: 24px;">
               View Admin Panel 🔧
             </a>
             <p style="margin: 0 0 8px 0;">Heard - Admin Dashboard</p>

@@ -1387,7 +1387,7 @@ app.post(
       }
 
       const origin =
-        c.req.header("origin") || "https://heard-now.com";
+        c.req.header("origin") || "https://heard.vote";
       const inviteLink = `${origin}/room/${roomId}`;
 
       // Create the email content
