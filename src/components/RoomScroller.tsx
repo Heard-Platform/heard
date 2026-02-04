@@ -17,7 +17,7 @@ import type {
   UserSession,
 } from "../types";
 import { RoomCard } from "./RoomCard";
-import { VineNavigator } from "./VineNavigator";
+import { VineNavigator } from "./monkey/VineNavigator";
 import { useDebateSession } from "../hooks/useDebateSession";
 
 interface RoomScrollerProps {
