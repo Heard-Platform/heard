@@ -38,6 +38,15 @@ export interface Session {
   expiresAt: number;
 }
 
+export interface UserReport {
+  id: string;
+  responseId: string;
+  reportingUserId: string;
+  createdAt: string;
+}
+
+export type NewUserReport = Omit<UserReport, "id" | "createdAt">;
+
 export type Community = {
   name: string;
   adminId: string;

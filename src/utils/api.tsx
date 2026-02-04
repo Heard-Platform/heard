@@ -310,6 +310,13 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async flagStatement(statementId: string, roomId: string) {
+    return this.request(`/statement/${statementId}/flag`, {
+      method: "POST",
+      body: JSON.stringify({ userId: getUserId(), roomId }),
+    });
+  }
+
   // Invite management
   async sendInvites(
     roomId: string,

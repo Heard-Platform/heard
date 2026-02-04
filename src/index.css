@@ -1457,6 +1457,10 @@
     max-width: 160px;
   }
 
+  .max-w-\[calc\(100\%-2rem\)\] {
+    max-width: calc(100% - 2rem);
+  }
+
   .max-w-\[calc\(100\%-3rem\)\] {
     max-width: calc(100% - 3rem);
   }
@@ -3960,6 +3964,10 @@
 
   .text-red-400 {
     color: var(--color-red-400);
+  }
+
+  .text-red-500 {
+    color: var(--color-red-500);
   }
 
   .text-red-600 {

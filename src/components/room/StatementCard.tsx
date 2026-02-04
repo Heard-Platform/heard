@@ -2,7 +2,7 @@ import type { Statement } from "../../types";
 import { SwipeInstructions } from "../SwipeInstructions";
 import { SwipeIndicator } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
-import { X, Star } from "lucide-react";
+import { X, Star, Flag } from "lucide-react";
 import moment from "moment";
 
 interface StatementCardProps {
@@ -17,6 +17,7 @@ interface StatementCardProps {
   getTypeIcon: (type?: string) => string | null;
   onSuperAgree: () => void;
   onSkip: () => void;
+  onFlag: () => void;
 }
 
 export function StatementCard({
@@ -31,6 +32,7 @@ export function StatementCard({
   getTypeIcon,
   onSuperAgree,
   onSkip,
+  onFlag,
 }: StatementCardProps) {
   const timeAgo = moment(statement.timestamp).fromNow();
   const authorName = "Anonymous";
@@ -66,6 +68,15 @@ export function StatementCard({
                 <Star className="w-4 h-4 text-white" />
               </button>
             )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onFlag();
+              }}
+              className="w-7 h-7 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center flex-shrink-0"
+            >
+              <Flag className="w-3.5 h-3.5 text-red-500" />
+            </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();

@@ -31,6 +31,7 @@ interface SwipeableCardProps {
   onDemographicsAnswer?: (id: string, answer: string) => void;
   onSuperAgree: () => void;
   onSkip: () => void;
+  onFlag: () => void;
 }
 
 export function SwipeableCard({
@@ -49,6 +50,7 @@ export function SwipeableCard({
   onDemographicsAnswer,
   onSuperAgree,
   onSkip,
+  onFlag,
 }: SwipeableCardProps) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -177,6 +179,7 @@ export function SwipeableCard({
             passOpacity={passOpacity}
             onSuperAgree={onSuperAgree}
             onSkip={onSkip}
+            onFlag={onFlag}
           />
         ) : null}
       </div>

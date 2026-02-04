@@ -11,6 +11,8 @@ import {
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
 import { NewStatementInput } from "../NewStatementInput";
+import { FlagStatementDialog } from "./FlagStatementDialog";
+import { useDebateSession } from "../../hooks/useDebateSession";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -55,6 +57,7 @@ export function SwipeableStatementStack({
   onYouTubeCardSwiped,
   onDemographicsAnswer,
 }: SwipeableStatementStackProps) {
+  const { flagStatement } = useDebateSession();
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
   >(new Set());
@@ -67,6 +70,8 @@ export function SwipeableStatementStack({
     "left" | "right" | "down" | "up" | null
   >(null);
   const [demographicsAnsweredInternal, setDemographicsAnsweredInternal] = useState<Set<string>>(new Set());
+  const [showFlagDialog, setShowFlagDialog] = useState(false);
+  const [statementToFlag, setStatementToFlag] = useState<Statement | null>(null);
 
   const unvotedStatements = statements.filter((statement) => {
     const hasVotedBefore =
@@ -304,6 +309,23 @@ export function SwipeableStatementStack({
     }, 500);
   };
 
+  const handleFlagClick = (statement: Statement) => {
+    setStatementToFlag(statement);
+    setShowFlagDialog(true);
+  };
+
+  const handleConfirmFlag = async () => {
+    if (!statementToFlag) return;
+
+    setShowFlagDialog(false);
+    handleVote(statementToFlag.id, "pass", "down");
+
+    await flagStatement(statementToFlag.id, statementToFlag.roomId);
+    toast.success("🙏 Thank you for reporting. Our team will review this shortly.");
+
+    setStatementToFlag(null);
+  };
+
   if (!hasMoreCards) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4">
@@ -407,6 +429,11 @@ export function SwipeableStatementStack({
                     handleVote(card.statement.id, "super_agree", "up");
                   }
                 }}
+                onFlag={() => {
+                  if (card.type === "statement") {
+                    handleFlagClick(card.statement);
+                  }
+                }}
               />
             );
           })}
@@ -420,6 +447,13 @@ export function SwipeableStatementStack({
           onShowAccountSetupModal={onShowAccountSetupModal}
         />
       )}
+
+      <FlagStatementDialog
+        statement={statementToFlag}
+        open={showFlagDialog}
+        onOpenChange={setShowFlagDialog}
+        onConfirm={handleConfirmFlag}
+      />
     </div>
   );
 }
