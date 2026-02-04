@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { motion } from "motion/react";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../ui/dialog";
 import { useState, useEffect } from "react";
 
 // @ts-ignore

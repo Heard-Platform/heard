@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { UserPresence } from "../types";
-import { MonkeyInfoModal } from "./MonkeyInfoModal";
+import { MonkeyInfoModal } from "./monkey/MonkeyInfoModal";
 import { TalkBubble } from "./TalkBubble";
 import { ScreenTimeWarningDialog } from "./ScreenTimeWarningDialog";
 
