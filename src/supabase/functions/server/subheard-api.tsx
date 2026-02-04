@@ -1,11 +1,13 @@
-// @ts-ignore
-import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
-import { getCommunities } from "./kv-utils.tsx";
+import { getCommunities, getCommunity, saveCommunity } from "./kv-utils.tsx";
+import { Community } from "./types.tsx";
+
+// @ts-ignore
+import { Context, Hono } from "npm:hono";
 
 const app = new Hono();
 
@@ -29,8 +31,6 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
     if (userId) {
       userMemberships = await getUserMemberships(userId);
     }
-
-    const subheardJsons = await kv.getByPrefix("subheard:");
 
     let subHeards = await getCommunities();
 
@@ -210,33 +210,30 @@ app.post(
 // Update sub-heard settings (admin only)
 app.patch(
   "/make-server-f1a393b4/subheard/:name/settings",
-  async (c: any) => {
+  async (c: Context) => {
     try {
       const name = c.req.param("name");
-      const { userId, isPrivate } = await c.req.json();
+      const { userId, update } = await c.req.json();
 
       if (!userId || typeof userId !== "string") {
         return c.json({ error: "User ID is required" }, 400);
       }
 
-      // Get existing sub-heard data
-      const subHeardKey = `subheard:${name}`;
-      const existingData = await kv.get(subHeardKey);
-
-      if (!existingData) {
-        return c.json({ error: "Sub-heard not found" }, 404);
+      if (!update || typeof update !== "object") {
+        return c.json(
+          { error: "Update data is required" },
+          400,
+        );
       }
 
-      let subHeardData;
-      try {
-        subHeardData = JSON.parse(existingData);
-      } catch (error) {
-        console.error("Error parsing sub-heard data:", error);
-        return c.json({ error: "Invalid sub-heard data" }, 500);
+      const community = await getCommunity(name);
+
+      if (!community) {
+        return c.json({ error: "Community not found" }, 404);
       }
 
       // Verify user is admin
-      if (subHeardData.adminId !== userId) {
+      if (community.adminId !== userId) {
         return c.json(
           {
             error:
@@ -246,22 +243,16 @@ app.patch(
         );
       }
 
-      // Update settings
-      if (typeof isPrivate === "boolean") {
-        subHeardData.isPrivate = isPrivate;
-      }
+      const updatedCommunity = { ...community, ...update};
 
-      // Save updated data
-      await kv.set(subHeardKey, JSON.stringify(subHeardData));
+      await saveCommunity(updatedCommunity);
 
-      return c.json({
-        success: true,
-        subHeard: {
-          name: subHeardData.name,
-          isPrivate: subHeardData.isPrivate,
-          adminId: subHeardData.adminId,
+      return c.json<{ success: boolean; subHeard: Community }>(
+        {
+          success: true,
+          subHeard: updatedCommunity,
         },
-      });
+      );
     } catch (error) {
       console.error(
         "Error updating sub-heard settings:",

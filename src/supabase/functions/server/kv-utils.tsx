@@ -179,6 +179,10 @@ export const saveSession = async (
   await kv.set(sessionKeyFn(session), session);
 };
 
+export const getCommunity = async (name: string) => {
+  return getParsedKvData<Community>(`subheard:${name}`);
+};
+
 export const getCommunities = async () => {
   const comms = await getByPrefixParsed<Community>("subheard:");
   return comms.map(c => ({
@@ -187,6 +191,10 @@ export const getCommunities = async () => {
     hostOnlyPosting: c.hostOnlyPosting || false,
   }));
 }
+
+export const saveCommunity = async (community: Community) => {
+  await kv.set(`subheard:${community.name}`, community);
+};
 
 export const voteKeyFn = (vote: Vote) =>
   `vote:${vote.statementId}:${vote.userId}`;
