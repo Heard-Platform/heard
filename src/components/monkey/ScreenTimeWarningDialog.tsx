@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../ui/dialog";
 import { AlertTriangle } from "lucide-react";
 
 interface ScreenTimeWarningDialogProps {
