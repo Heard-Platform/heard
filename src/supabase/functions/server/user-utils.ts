@@ -1,4 +1,13 @@
 export const sanitizeUser = (user: any) => {
-  const { password, passwordHash, ...userWithoutPassword } = user;
-  return userWithoutPassword;
+  const { password, passwordHash, phoneNumber, ...userWithoutSensitiveData } = user;
+  
+  const sanitized: any = {
+    ...userWithoutSensitiveData
+  };
+  
+  if (phoneNumber && typeof phoneNumber === 'string' && phoneNumber.length >= 4) {
+    sanitized.phone = phoneNumber.slice(-4);
+  }
+  
+  return sanitized;
 };
