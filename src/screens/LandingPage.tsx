@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { motion } from "motion/react";
 import { Button } from "../components/ui/button";
 import { useDebateSession } from "../hooks/useDebateSession";
+import { FloatingFeedbackButton } from "../components/FloatingFeedbackButton";
 
 interface LandingPageProps {
   loading: boolean;
@@ -53,21 +54,25 @@ export function LandingPage({
 
   if (showSignup) {
     return (
-      <NicknameSetup
-        loading={loading}
-        error={error}
-        joiningRoom={joiningRoom}
-        onBack={() => setShowSignup(false)}
-        onMagicLinkSuccess={onMagicLinkSuccess}
-      />
+      <>
+        <NicknameSetup
+          loading={loading}
+          error={error}
+          joiningRoom={joiningRoom}
+          onBack={() => setShowSignup(false)}
+          onMagicLinkSuccess={onMagicLinkSuccess}
+        />
+        <FloatingFeedbackButton />
+      </>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-orange-500 relative overflow-hidden">
+      <FloatingFeedbackButton />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.2)_0%,transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.15)_0%,transparent_50%)]" />
-      
+
       <motion.div
         className="absolute top-10 left-10 w-32 h-32 bg-yellow-300 rounded-full opacity-20 blur-2xl"
         animate={{
@@ -97,7 +102,7 @@ export function LandingPage({
           <div className="space-y-4">
             <motion.div
               className="relative w-20 h-20 mx-auto"
-              animate={{ 
+              animate={{
                 rotate: [0, 5, -5, 0],
                 scale: [1, 1.05, 1]
               }}
@@ -118,9 +123,9 @@ export function LandingPage({
               <h1 className="text-4xl font-black text-white drop-shadow-lg tracking-tight">
                 Welcome to
               </h1>
-              <motion.h1 
+              <motion.h1
                 className="text-5xl font-black bg-gradient-to-r from-yellow-200 via-pink-200 to-white bg-clip-text text-transparent drop-shadow-2xl mt-2"
-                animate={{ 
+                animate={{
                   backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"]
                 }}
                 transition={{ duration: 5, repeat: Infinity }}

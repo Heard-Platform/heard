@@ -13,7 +13,7 @@ import { api } from "../utils/api";
 import { FunSheet, FunSheetCard } from "./FunSheet";
 
 interface FeedbackSheetProps {
-  userId: string;
+  userId?: string;
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
