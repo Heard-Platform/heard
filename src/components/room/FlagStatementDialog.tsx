@@ -10,30 +10,30 @@ import {
 } from "../ui/alert-dialog";
 import type { Statement } from "../../types";
 
-interface FlagStatementDialogProps {
+interface FlagResponseDialogProps {
   statement: Statement | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
 }
 
-export function FlagStatementDialog({
+export function FlagResponseDialog({
   open,
   onOpenChange,
   statement,
   onConfirm,
-}: FlagStatementDialogProps) {
+}: FlagResponseDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Report this statement?</AlertDialogTitle>
+          <AlertDialogTitle>Report this response?</AlertDialogTitle>
           <AlertDialogDescription className="space-y-3">
             <div className="p-3 bg-muted rounded-md text-foreground">
               "{statement?.text}"
             </div>
             <div>
-              This will flag the statement for our team to review. The statement will be skipped in your voting.
+              This will flag the response for our team to review and skip it
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

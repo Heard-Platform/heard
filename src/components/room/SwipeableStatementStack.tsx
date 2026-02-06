@@ -11,7 +11,7 @@ import {
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
 import { NewStatementInput } from "../NewStatementInput";
-import { FlagStatementDialog } from "./FlagStatementDialog";
+import { FlagResponseDialog } from "./FlagStatementDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
 
 // @ts-ignore
@@ -448,7 +448,7 @@ export function SwipeableStatementStack({
         />
       )}
 
-      <FlagStatementDialog
+      <FlagResponseDialog
         statement={statementToFlag}
         open={showFlagDialog}
         onOpenChange={setShowFlagDialog}
