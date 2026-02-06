@@ -18,9 +18,9 @@ interface FlagResponseDialogProps {
 }
 
 export function FlagResponseDialog({
+  statement,
   open,
   onOpenChange,
-  statement,
   onConfirm,
 }: FlagResponseDialogProps) {
   return (

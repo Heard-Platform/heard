@@ -36,6 +36,8 @@ export function StatementCard({
 }: StatementCardProps) {
   const timeAgo = moment(statement.timestamp).fromNow();
   const authorName = "Anonymous";
+  
+  const actionButtonBase = "w-7 h-7 rounded-full transition-colors flex items-center justify-center flex-shrink-0";
 
   return (
     <>
@@ -63,7 +65,7 @@ export function StatementCard({
                   e.stopPropagation();
                   onSuperAgree();
                 }}
-                className="w-7 h-7 rounded-full bg-amber-400 hover:bg-amber-500 transition-colors flex items-center justify-center flex-shrink-0"
+                className={`${actionButtonBase} bg-amber-400 hover:bg-amber-500`}
               >
                 <Star className="w-4 h-4 text-white" />
               </button>
@@ -73,7 +75,7 @@ export function StatementCard({
                 e.stopPropagation();
                 onFlag();
               }}
-              className="w-7 h-7 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center flex-shrink-0"
+              className={`${actionButtonBase} hover:bg-gray-100`}
             >
               <Flag className="w-3.5 h-3.5 text-red-500" />
             </button>
@@ -82,7 +84,7 @@ export function StatementCard({
                 e.stopPropagation();
                 onSkip();
               }}
-              className="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors flex items-center justify-center flex-shrink-0"
+              className={`${actionButtonBase} bg-gray-200 hover:bg-gray-300`}
             >
               <X className="w-4 h-4 text-gray-700" />
             </button>
