@@ -227,7 +227,7 @@ export function DebateAnalysisReportDemo({
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl mb-2">Debate Analysis Report</h1>
+            <h1 className="text-3xl mb-2">Conversation Analysis Report</h1>
             <p className="text-muted-foreground">{debateTopic}</p>
             <Badge
               variant="outline"

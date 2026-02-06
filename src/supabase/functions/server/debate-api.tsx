@@ -9,7 +9,8 @@ import {
   getUsersChanceCardStatuses,
   saveYouTubeCardStatus,
   getUsersYouTubeCardStatuses,
-  getVotesForStatement
+  getVotesForStatement,
+  getCommunities
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
@@ -1283,17 +1284,10 @@ app.get(
           await getUserMemberships(userId);
 
         // Get all sub-heard data once
-        const subHeardData = await kv.getByPrefix("subheard:");
+        const communities = await getCommunities();
         const subHeardMap = new Map();
-        subHeardData.forEach((sh) => {
-          try {
-            const data = JSON.parse(sh);
-            if (data.name) {
-              subHeardMap.set(data.name, data);
-            }
-          } catch (error) {
-            console.error("Error parsing sub-heard:", error);
-          }
+        communities.forEach((c) => {
+          subHeardMap.set(c.name, c);
         });
 
         // Filter rooms based on memberships

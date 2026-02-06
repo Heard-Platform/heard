@@ -168,7 +168,7 @@ export function CreateRoomSheet({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to create debate. Please try again.",
+          : "Failed to create post. Please try again.",
       );
     } finally {
       setIsCreating(false);
@@ -248,10 +248,10 @@ export function CreateRoomSheet({
       case "select-community":
         return {
           title: "Pick a Community",
-          description: "Where should this debate live?",
+          description: "Where should this post live?",
           leftIcon: Hash,
           theme: "purple" as const,
-          buttonText: "Create Debate! 🚀",
+          buttonText: "Create Post! 🚀",
           buttonLoadingText: "Creating...",
           buttonIcon: Plus,
           onButtonClick: handleCreateRoom,
@@ -267,8 +267,8 @@ export function CreateRoomSheet({
         };
       case "share":
         return {
-          title: "Share Your Debate",
-          description: "Spread the word about your new debate!",
+          title: "Share Your Conversation",
+          description: "Spread the word about your new post!",
           leftIcon: PartyPopper,
           theme: "orange" as const,
           buttonText: "Let's Go! 🔥",

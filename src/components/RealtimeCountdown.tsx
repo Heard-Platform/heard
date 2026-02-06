@@ -4,7 +4,7 @@ import { Clock, Zap, AlertCircle } from "lucide-react";
 
 interface RealtimeCountdownProps {
   endTime: number;
-  startTime?: number; // When the debate started (createdAt timestamp)
+  startTime?: number; // When the conversation started (createdAt timestamp)
   onTimeUp?: () => void;
 }
 

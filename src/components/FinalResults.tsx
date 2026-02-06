@@ -473,9 +473,9 @@ export function FinalResults({
                 <Home className="w-6 h-6 text-orange-600" />
               </div>
               <div className="space-y-2">
-                <h3>Browse Other Debates</h3>
+                <h3>Browse Other Posts</h3>
                 <p className="text-sm text-muted-foreground">
-                  See what other debates are happening now
+                  See what other conversations are happening now
                 </p>
               </div>
               <Button onClick={onBackToLobby} variant="outline" className="w-full">
@@ -489,7 +489,7 @@ export function FinalResults({
                 <Calendar className="w-6 h-6 text-green-600" />
               </div>
               <div className="space-y-2">
-                <h3>Join Scheduled Debates</h3>
+                <h3>Join Scheduled Conversations</h3>
                 <p className="text-sm text-muted-foreground">
                   Get notified about upcoming discussions
                 </p>

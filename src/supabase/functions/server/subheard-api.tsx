@@ -154,27 +154,18 @@ app.post(
       }
 
       // Check if sub-heard exists
-      const subHeardKey = `subheard:${name}`;
-      const existingData = await kv.get(subHeardKey);
+      const community = await getCommunity(name);
 
-      if (!existingData) {
+      if (!community) {
         return c.json({ error: "Sub-heard not found" }, 404);
       }
 
-      let subHeardData;
-      try {
-        subHeardData = JSON.parse(existingData);
-      } catch (error) {
-        console.error("Error parsing sub-heard data:", error);
-        return c.json({ error: "Invalid sub-heard data" }, 500);
-      }
-
       // For public sub-heards, just return success (no membership needed)
-      if (!subHeardData.isPrivate) {
+      if (!community.isPrivate) {
         return c.json({
           success: true,
           subHeard: {
-            name: subHeardData.name,
+            name: community.name,
             isPrivate: false,
           },
         });
@@ -196,7 +187,7 @@ app.post(
       return c.json({
         success: true,
         subHeard: {
-          name: subHeardData.name,
+          name: community.name,
           isPrivate: true,
         },
       });

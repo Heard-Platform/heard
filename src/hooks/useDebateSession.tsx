@@ -483,7 +483,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     return null;
   }, [user, getActiveRooms]);
 
-  // Create test room with Q Street debate topic and players (no posts/votes)
+  // Create test room with Q Street topic and players (no posts/votes)
   const createTestRoom = useCallback(async () => {
     if (!user) return null;
 
@@ -508,7 +508,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     return null;
   }, [user, getActiveRooms]);
 
-  // Create rant test room with Q Street debate topic and pre-filled rants
+  // Create rant test room with Q Street topic and pre-filled rants
   const createRantTestRoom = useCallback(async () => {
     if (!user) return null;
 

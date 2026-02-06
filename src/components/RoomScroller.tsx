@@ -17,7 +17,7 @@ import type {
   UserSession,
 } from "../types";
 import { RoomCard } from "./RoomCard";
-import { VineNavigator } from "./VineNavigator";
+import { VineNavigator } from "./monkey/VineNavigator";
 import { useDebateSession } from "../hooks/useDebateSession";
 
 interface RoomScrollerProps {
@@ -333,7 +333,7 @@ function CreateRoomCard({
 
           <div className="space-y-2">
             <h2 className="text-3xl font-bold text-foreground">
-              Start a New Debate
+              Start a New Conversation
             </h2>
             <p className="text-muted-foreground">
               Create your own room and invite others to join the

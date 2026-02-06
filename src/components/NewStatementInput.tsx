@@ -24,7 +24,7 @@ export function NewStatementInput({
 
   const handleInputChange = (value: string) => {
     if (!allowAnonymous && isAnonymous && value.length > 0) {
-      onShowAccountSetupModal("posting statements in this debate");
+      onShowAccountSetupModal("responding to this post");
       return;
     }
     setNewStatementText(value);
