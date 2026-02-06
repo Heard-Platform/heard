@@ -29,6 +29,22 @@ export const insert = async <T extends Record<string, any>>(
   return { success: true };
 };
 
+export const selectAll = async <T>(
+  tableName: string,
+): Promise<T[]> => {
+  const supabase = createClientFromEnv();
+  const { data, error } = await supabase
+    .from(tableName)
+    .select("*");
+
+  if (error) {
+    console.error(`Error selecting from ${tableName} table:`, error);
+    throw new Error(error.message);
+  }
+
+  return data as T[];
+}
+
 export const getStatementsForUser = async (
   userId: string,
 ): Promise<Statement[]> => {
