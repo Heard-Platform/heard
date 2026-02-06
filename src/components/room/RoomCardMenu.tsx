@@ -68,8 +68,8 @@ export function RoomCardMenu({
             const link = createShareableLink(room.id);
             await share({
               url: link,
-              title: "Join this debate on Heard",
-              text: "Check out this debate!",
+              title: "Join this conversation on Heard",
+              text: "Check out this conversation!",
               onSuccess: () => {
                 toast.success("Link copied to clipboard!");
               },

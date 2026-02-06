@@ -230,11 +230,11 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
           ),
         );
       } else {
-        alert(`Failed to toggle debate status: ${res.error}`);
+        alert(`Failed to toggle post status: ${res.error}`);
       }
     } catch (error) {
-      console.error("Error toggling debate status:", error);
-      alert("Failed to toggle debate status");
+      console.error("Error toggling post status:", error);
+      alert("Failed to toggle post status");
     } finally {
       setTogglingDebateId(null);
     }
@@ -251,7 +251,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
       );
 
       if (res.success) {
-        alert(`Community updated successfully for debate!`);
+        alert(`Community updated successfully for post!`);
         // Update local state
         setDebates((prev) =>
           prev.map((d) =>
@@ -266,8 +266,8 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         alert(`Failed to update community: ${res.error}`);
       }
     } catch (error) {
-      console.error("Error updating debate community:", error);
-      alert("Failed to update debate community");
+      console.error("Error updating post community:", error);
+      alert("Failed to update post community");
     }
   };
 

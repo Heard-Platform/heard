@@ -96,7 +96,7 @@ export function WriteRantStep({
           <div className="flex items-start gap-2 px-3 py-2 bg-teal-50/50 border border-teal-100 rounded-lg">
             <span className="text-xs">🔒</span>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Your rant is private — it's just used to draft the debate topic and won't be visible to other users.
+              Your rant is private — it's just used to draft the post topic and won't be visible to other users.
             </p>
           </div>
         </div>

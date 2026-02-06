@@ -223,8 +223,8 @@ export function LobbyScreen({
         );
       }
     } catch (error) {
-      console.error("Error creating anon debate:", error);
-      alert("Failed to create anon-enabled debate");
+      console.error("Error creating anon post:", error);
+      alert("Failed to create anon-enabled post");
     }
   };
 
@@ -235,7 +235,7 @@ export function LobbyScreen({
   const handleOpenCreateSheet = () => {
     if (user.isAnonymous) {
       setShowAccountSetupAnonModal(true);
-      setAccountSetupFeatureText("creating debates");
+      setAccountSetupFeatureText("creating a post");
     } else {
       setDiscussTopic(undefined);
       setDiscussSubHeard(undefined);

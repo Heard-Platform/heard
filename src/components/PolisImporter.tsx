@@ -32,7 +32,7 @@ export function PolisImporter({
 
   const handleDryRun = async () => {
     if (!debateName.trim()) {
-      toast.error("Please enter a debate name");
+      toast.error("Please enter a post name");
       return;
     }
 
@@ -77,7 +77,7 @@ export function PolisImporter({
 
   const handleImport = async () => {
     if (!debateName.trim()) {
-      toast.error("Please enter a debate name");
+      toast.error("Please enter a post name");
       return;
     }
 
@@ -107,7 +107,7 @@ export function PolisImporter({
       }) as any;
 
       if (response.success) {
-        toast.success(`Successfully imported debate with ${response.data?.userCount} users and ${response.data?.statementCount} statements!`);
+        toast.success(`Successfully imported post with ${response.data?.userCount} users and ${response.data?.statementCount} statements!`);
         setDebateName("");
         setSelectedSubHeard("");
         setStatementsFile(null);
@@ -143,12 +143,12 @@ export function PolisImporter({
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="debate-name">Debate Name</Label>
+            <Label htmlFor="post-name">Post Name</Label>
             <Input
-              id="debate-name"
+              id="post-name"
               value={debateName}
               onChange={(e) => setDebateName(e.target.value)}
-              placeholder="Enter debate topic..."
+              placeholder="Enter post topic..."
               disabled={isImporting}
             />
           </div>
