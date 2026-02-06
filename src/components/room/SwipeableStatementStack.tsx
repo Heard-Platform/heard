@@ -11,7 +11,7 @@ import {
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
 import { NewStatementInput } from "../NewStatementInput";
-import { FlagResponseDialog } from "./FlagStatementDialog";
+import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
 
 // @ts-ignore
