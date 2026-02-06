@@ -25,6 +25,7 @@ import {
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { AnonAccountSetupModal } from "./components/AnonAccountSetupModal";
+import { FloatingFeedbackButton } from "./components/FloatingFeedbackButton";
 import { safelyGetStorageItem } from "./utils/localStorage";
 
 // @ts-ignore
@@ -85,7 +86,7 @@ function AppContent() {
   const handleFlyerJoin = async (flyerData: { flyerId: string; statementId: string; vote: VoteType }) => {
     setIsJoiningAnonymously(true);
     const existingUserId = getUserId();
-    
+
     const response = await voteViaFlyer(
       flyerData.flyerId,
       flyerData.statementId,
@@ -417,6 +418,7 @@ function AppContent() {
           joiningRoom={!!targetRoomId}
           onMagicLinkSuccess={handleMagicLinkSuccess}
         />
+        <FloatingFeedbackButton />
         <Toaster />
       </>
     );
