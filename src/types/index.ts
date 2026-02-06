@@ -157,10 +157,11 @@ export type NewDebateRoom = Pick<
 
 export interface SubHeard {
   name: string;
-  count?: number; // Number of active debates (used in browser)
-  createdAt?: number; // Timestamp when created (used in admin panel)
-  isPrivate?: boolean;
-  adminId?: string; // User ID of the creator/admin
+  count?: number;
+  adminId: string;
+  isPrivate: boolean;
+  hostOnlyPosting: boolean;
+  createdAt?: number;
 }
 
 export interface Rant {

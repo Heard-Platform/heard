@@ -2,9 +2,9 @@ import type {
   UserSession,
   DebateRoom, NewDebateRoom,
   VoteType,
-  UserPresence
+  UserPresence, SubHeard
 } from "../types";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import {
   RoomScroller,
@@ -331,13 +331,11 @@ export function LobbyScreen({
                 onCreateSubHeard={async (
                   name: string,
                   userId: string,
-                  isPrivate?: boolean,
                 ) => {
                   try {
                     const response = await api.createSubHeard(
                       name,
                       userId,
-                      isPrivate,
                     );
                     if (response.success) {
                       return true;
@@ -356,16 +354,14 @@ export function LobbyScreen({
                   }
                 }}
                 onUpdateSubHeard={async (
-                  name: string,
+                  community: SubHeard,
                   userId: string,
-                  isPrivate: boolean,
                 ) => {
                   try {
                     const response =
                       await api.updateSubHeardSettings(
-                        name,
+                        community,
                         userId,
-                        isPrivate,
                       );
                     if (response.success) {
                       return true;

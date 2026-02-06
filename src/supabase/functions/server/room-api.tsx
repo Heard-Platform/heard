@@ -6,10 +6,12 @@ import {
 } from "./auth-api.tsx";
 import { generateId, saveDebateRoom } from "./debate-api.tsx";
 import type {
+Community,
   DebateRoom,
   Statement
 } from "./types.tsx";
 import { ONE_WEEK_MS } from "./time-utils.ts";
+import { getCommunity, saveCommunity } from "./kv-utils.tsx";
 
 const app = new Hono();
 
@@ -21,7 +23,7 @@ app.post(
       const {
         topic,
         userId,
-        subHeard,
+        subHeard: communityName,
         seedStatements,
         imageUrl,
         youtubeUrl,
@@ -48,30 +50,30 @@ app.post(
         );
       }
 
+      let normalizedCommunityName = "";
       // If creating a room in a sub-heard, create it if it doesn't exist or check membership if private
-      if (subHeard) {
-        const normalizedSubHeard = subHeard
+      if (communityName) {
+        normalizedCommunityName = communityName
           .trim()
           .toLowerCase()
           .replace(/\s+/g, "-");
-        const subHeardKey = `subheard:${normalizedSubHeard}`;
-        const subHeardData = await kv.get(subHeardKey);
+        const community = await getCommunity(normalizedCommunityName);
 
-        if (!subHeardData) {
-          // Sub-heard doesn't exist - create it as a public sub-heard with this user as admin
-          console.log(
-            `Creating new public sub-heard: ${normalizedSubHeard}`,
-          );
-          const newSubHeardData = {
-            name: normalizedSubHeard,
-            createdAt: Date.now(),
+        if (!community) {
+          const newCommunity: Community = {
+            name: normalizedCommunityName,
             isPrivate: false,
             adminId: userId,
+            hostOnlyPosting: false,
           };
-          await kv.set(
-            subHeardKey,
-            JSON.stringify(newSubHeardData),
-          );
+          await saveCommunity(newCommunity);
+        } else {
+          if (community.hostOnlyPosting && community.adminId !== userId) {
+            return c.json(
+              { error: "Only the community host can create debates in this community" },
+              403,
+            );
+          }
         }
       }
 
@@ -93,9 +95,7 @@ app.post(
         createdAt: Date.now(),
         mode: "realtime",
         rantFirst: true,
-        subHeard: subHeard
-          ? subHeard.trim().toLowerCase().replace(/\s+/g, "-")
-          : undefined,
+        subHeard: normalizedCommunityName || undefined,
         endTime: Date.now() + debateLengthMs,
         imageUrl,
         youtubeUrl,

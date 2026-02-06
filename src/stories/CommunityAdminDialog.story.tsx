@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { CommunityAdminDialog } from "../components/community/CommunityAdminDialog";
 import { StoryContainer } from "./StoryContainer";
-import type { SubHeard } from "../types";
+import type { SubHeard, CommunityUpdate } from "../types";
 
 export function CommunityAdminDialogStory() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,13 +11,14 @@ export function CommunityAdminDialogStory() {
     count: 42,
     isPrivate: false,
     adminId: "demo-user-123",
+    hostOnlyPosting: false,
   });
 
-  const handleUpdateSubHeard = async (name: string, userId: string, isPrivate: boolean) => {
-    console.log("Update called:", { name, userId, isPrivate });
+  const handleUpdateSubHeard = async (update: SubHeard, userId: string): Promise<boolean> => {
+    console.log("Update called:", { update, userId });
     setMockCommunity(prev => ({
       ...prev,
-      isPrivate,
+      ...update,
     }));
     await new Promise(resolve => setTimeout(resolve, 500));
     return true;
