@@ -337,6 +337,32 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
+  const handleToggleHostOnlyPosting = async (subHeard: SubHeard) => {
+    try {
+      const newHostOnlyPosting = !subHeard.hostOnlyPosting;
+      const res = await adminApi.updateSubHeard(
+        subHeard.name,
+        { hostOnlyPosting: newHostOnlyPosting },
+        adminKey,
+      );
+
+      if (res.success) {
+        setSubHeards((prev) =>
+          prev.map((sh) =>
+            sh.name === subHeard.name
+              ? { ...sh, hostOnlyPosting: newHostOnlyPosting }
+              : sh,
+          ),
+        );
+      } else {
+        alert(`Failed to update host-only posting: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error updating host-only posting:", error);
+      alert("Failed to update host-only posting");
+    }
+  };
+
   const handleCreateRedditRoom = async () => {
     if (!redditUrl.trim()) {
       alert("Please enter a Reddit post URL");
@@ -528,6 +554,11 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                       {subHeard.isPrivate && (
                         <Lock className="w-4 h-4 text-muted-foreground" />
                       )}
+                      {subHeard.hostOnlyPosting && (
+                        <Badge variant="outline" className="text-xs">
+                          Host-Only
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Crown className="w-3 h-3" />
@@ -564,6 +595,13 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                       }}
                     >
                       Change Admin
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleToggleHostOnlyPosting(subHeard)}
+                    >
+                      {subHeard.hostOnlyPosting ? "Disable" : "Enable"} Host-Only Posting
                     </Button>
                   </div>
                 </div>

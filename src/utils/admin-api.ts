@@ -1,3 +1,4 @@
+import { SubHeard } from "../types";
 import { BaseApiClient } from "./api-client";
 
 interface MigrationStats {
@@ -54,6 +55,20 @@ class AdminApiClient extends BaseApiClient {
         headers: { "X-Admin-Key": adminKey },
       },
     );
+  }
+
+  async updateSubHeard(
+    subHeardName: string,
+    update: Partial<SubHeard>,
+    adminKey: string,
+  ) {
+    return this.request(`/admin/subheard/${subHeardName}/update`, {
+      method: "PATCH",
+      body: JSON.stringify({ update }),
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
   }
 
   async migrateUsersToSupabase(adminKey: string, dryRun: boolean) {
