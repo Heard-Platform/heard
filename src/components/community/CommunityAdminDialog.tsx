@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Share2, Check, Crown } from "lucide-react";
-import type { CommunityUpdate, SubHeard } from "../../types";
+import type { SubHeard } from "../../types";
 import { createSubHeardLink } from "../../utils/url";
 import { share } from "../../utils/share";
 

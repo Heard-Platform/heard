@@ -104,6 +104,7 @@ export interface UserSession {
   id: string;
   nickname: string;
   email: string;
+  phoneSuffix?: string;
   score: number;
   streak: number;
   currentRoomId?: string;

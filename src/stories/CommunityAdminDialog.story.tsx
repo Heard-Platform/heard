@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { CommunityAdminDialog } from "../components/community/CommunityAdminDialog";
 import { StoryContainer } from "./StoryContainer";
-import type { SubHeard, CommunityUpdate } from "../types";
+import type { SubHeard } from "../types";
 
 export function CommunityAdminDialogStory() {
   const [isOpen, setIsOpen] = useState(false);

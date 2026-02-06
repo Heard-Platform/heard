@@ -1,4 +1,4 @@
-import type { SubHeard, UserSession, CommunityUpdate } from "../../types";
+import type { SubHeard, UserSession } from "../../types";
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";

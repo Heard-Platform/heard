@@ -6,13 +6,14 @@ import { Badge } from "../components/ui/badge";
 interface Variant {
   id: string;
   label: string;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 interface StoryContainerProps {
   title: string;
   description?: string;
   variants: Variant[];
+  children?: ReactNode;
   debugInfo?: ReactNode;
 }
 
@@ -20,6 +21,7 @@ export function StoryContainer({
   title,
   description,
   variants,
+  children,
   debugInfo,
 }: StoryContainerProps) {
   const [activeVariant, setActiveVariant] = useState(variants[0].id);
@@ -58,6 +60,7 @@ export function StoryContainer({
         ) : (
           variants[0].children
         )}
+        {children}
       </CardContent>
     </Card>
   );
