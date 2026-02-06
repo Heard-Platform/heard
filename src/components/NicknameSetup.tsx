@@ -148,7 +148,7 @@ export function NicknameSetup({
               {showEmailFlow 
                 ? "Legacy Email Sign In"
                 : joiningRoom
-                  ? "Join the Debate!"
+                  ? "Join the Conversation!"
                   : "Welcome to Heard!"}
             </h1>
             <p className="text-muted-foreground text-sm">

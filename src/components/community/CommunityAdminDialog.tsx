@@ -91,7 +91,7 @@ export function CommunityAdminDialog({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-2xl font-bold">{community.count}</p>
-                <p className="text-xs text-muted-foreground">Total Debates</p>
+                <p className="text-xs text-muted-foreground">Total Posts</p>
               </div>
               <div className="space-y-1">
                 <p className="text-2xl font-bold">{community.isPrivate ? 'Unlisted' : 'Public'}</p>

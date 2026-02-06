@@ -17,8 +17,8 @@ export function ShareButton({ roomId }: ShareButtonProps) {
     
     await share({
       url: link,
-      title: "Join this debate on Heard",
-      text: "Check out this debate!",
+      title: "Join this conversation on Heard",
+      text: "Check out this conversation!",
       onSuccess: () => {
         toast.success("Link copied to clipboard!");
       },

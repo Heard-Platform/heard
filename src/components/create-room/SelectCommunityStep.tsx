@@ -143,7 +143,7 @@ export function SelectCommunityStep({
                               )}
                             </div>
                             <div className="text-xs mt-1 text-slate-500">
-                              {sh.count} {sh.count === 1 ? "debate" : "debates"}
+                              {sh.count} {sh.count === 1 ? "post" : "posts"}
                             </div>
                           </div>
                         </div>
