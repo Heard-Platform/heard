@@ -2,7 +2,6 @@ import { ArrowLeft, Code2 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { RealTimeResultsStory } from "../stories/RealTimeResults.story";
 import { ResultsCardsStory } from "../stories/ResultsCards.story";
 import { CreateRoomSheetStory } from "../stories/CreateRoomSheet.story";
 import { VotesDrawerStory } from "../stories/VotesDrawer.story";
@@ -107,10 +106,6 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="side-panel-menu">Side Panel Menu</TabsTrigger>
               <TabsTrigger value="community-admin-dialog">Community Admin Dialog</TabsTrigger>
             </TabsList>
-
-            <TabsContent value="results">
-              <RealTimeResultsStory />
-            </TabsContent>
 
             <TabsContent value="results-cards">
               <ResultsCardsStory />

@@ -18,8 +18,6 @@ const mockUser: UserSession = {
 };
 
 export default function SidePanelMenuStory() {
-  const [activeVariant, setActiveVariant] = useState<string>("unverified");
-
   const variants = [
     { id: "unverified", label: "Unverified User" },
   ];
@@ -45,8 +43,6 @@ export default function SidePanelMenuStory() {
         title="SidePanelMenu"
         description="Side panel menu showing unverified user with verification prompt"
         variants={variants}
-        activeVariant={activeVariant}
-        onVariantChange={setActiveVariant}
       >
         <div className="flex items-center justify-center p-12">
           <SidePanelMenu
@@ -54,6 +50,7 @@ export default function SidePanelMenuStory() {
             onLogout={handleLogout}
             onOpenHelp={handleOpenHelp}
             onShowAccountSetupModal={handleShowAccountSetupModal}
+            onOpenFeatureTracker={() => alert("Open Feature Tracker clicked")}
           />
         </div>
       </StoryContainer>
