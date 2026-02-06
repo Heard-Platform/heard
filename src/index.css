@@ -5654,18 +5654,6 @@
   }
 
   @media (width >= 48rem) {
-    .md\:h-2 {
-      height: calc(var(--spacing) * 2);
-    }
-  }
-
-  @media (width >= 48rem) {
-    .md\:w-2 {
-      width: calc(var(--spacing) * 2);
-    }
-  }
-
-  @media (width >= 48rem) {
     .md\:grid-cols-2 {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
