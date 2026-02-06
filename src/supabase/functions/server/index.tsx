@@ -22,6 +22,7 @@ import { validateSessionId } from "./auth-api.tsx";
 import { loginApi } from "./auth-login-api.ts";
 import { featuresResultsTrackerApi } from "./features-results-tracker-api.ts";
 import { cronApi } from "./cron-api.tsx";
+import { reportingApi } from "./reporting-api.tsx";
 
 type Variables = {
   userId?: string;
@@ -94,5 +95,6 @@ app.route("/", unsubscribeApi);
 app.route("/", devApi);
 app.route("/", flyerApi);
 app.route("/", cronApi);
+app.route("/", reportingApi);
 
 Deno.serve(app.fetch);

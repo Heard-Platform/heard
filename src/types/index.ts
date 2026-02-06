@@ -294,6 +294,8 @@ export interface RetentionStatsData {
 }
 
 export interface FeatureResults {
+  userReports: number;
+  userReportsSince: number;
   phoneVerifiedUsers: number;
   phoneVerifiedSince: number;
   convertedFromAnonUsers: number;

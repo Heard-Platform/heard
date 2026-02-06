@@ -2,7 +2,7 @@ import type { Statement } from "../../types";
 import { SwipeInstructions } from "../SwipeInstructions";
 import { SwipeIndicator } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
-import { X, Star } from "lucide-react";
+import { X, Star, Flag } from "lucide-react";
 import moment from "moment";
 
 interface StatementCardProps {
@@ -17,6 +17,7 @@ interface StatementCardProps {
   getTypeIcon: (type?: string) => string | null;
   onSuperAgree: () => void;
   onSkip: () => void;
+  onFlag: () => void;
 }
 
 export function StatementCard({
@@ -31,9 +32,12 @@ export function StatementCard({
   getTypeIcon,
   onSuperAgree,
   onSkip,
+  onFlag,
 }: StatementCardProps) {
   const timeAgo = moment(statement.timestamp).fromNow();
   const authorName = "Anonymous";
+  
+  const actionButtonBase = "w-7 h-7 rounded-full transition-colors flex items-center justify-center flex-shrink-0";
 
   return (
     <>
@@ -61,7 +65,7 @@ export function StatementCard({
                   e.stopPropagation();
                   onSuperAgree();
                 }}
-                className="w-7 h-7 rounded-full bg-amber-400 hover:bg-amber-500 transition-colors flex items-center justify-center flex-shrink-0"
+                className={`${actionButtonBase} bg-amber-400 hover:bg-amber-500`}
               >
                 <Star className="w-4 h-4 text-white" />
               </button>
@@ -69,9 +73,18 @@ export function StatementCard({
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                onFlag();
+              }}
+              className={`${actionButtonBase} hover:bg-gray-100`}
+            >
+              <Flag className="w-3.5 h-3.5 text-red-500" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
                 onSkip();
               }}
-              className="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors flex items-center justify-center flex-shrink-0"
+              className={`${actionButtonBase} bg-gray-200 hover:bg-gray-300`}
             >
               <X className="w-4 h-4 text-gray-700" />
             </button>
