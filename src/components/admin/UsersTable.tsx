@@ -64,6 +64,7 @@ export function UsersTable({
             <tr className="border-b bg-muted/50">
               <th className="text-left p-3 font-medium">Nickname</th>
               <th className="text-left p-3 font-medium">Email</th>
+              <th className="text-left p-3 font-medium">Phone</th>
               <th className="text-left p-3 font-medium">ID</th>
               <th className="text-left p-3 font-medium">Created At</th>
               <th className="text-center p-3 font-medium">Anonymous</th>
@@ -77,6 +78,7 @@ export function UsersTable({
               <tr key={user.id} className="border-b hover:bg-muted/30">
                 <td className="p-3">{user.nickname}</td>
                 <td className="p-3 text-sm">{user.email}</td>
+                <td className="p-3 text-sm">{user.phone}</td>
                 <td className="p-3 font-mono text-xs text-muted-foreground">
                   {user.id.substring(0, 12)}...
                 </td>

@@ -61,12 +61,12 @@ export function ReviewExtractionStep({
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-blue-500" />
             <Label htmlFor="topic-input" className="text-base text-slate-700">
-              Debate Topic
+              Conversation Topic
             </Label>
           </div>
           <Textarea
             id="topic-input"
-            placeholder="Edit the debate topic..."
+            placeholder="Edit the conversation topic..."
             maxLength={200}
             value={topic}
             onChange={(e) => onTopicChange(e.target.value)}
@@ -94,7 +94,7 @@ export function ReviewExtractionStep({
             
             <input
               type="file"
-              id="debate-image"
+              id="conversation-image"
               accept="image/*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -109,7 +109,7 @@ export function ReviewExtractionStep({
             <Button
               type="button"
               variant="outline"
-              onClick={() => document.getElementById("debate-image")?.click()}
+              onClick={() => document.getElementById("conversation-image")?.click()}
               disabled={isUploadingImage}
               className="w-full h-auto py-4 border-2 border-dashed border-blue-300 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 hover:border-blue-400"
             >
@@ -147,7 +147,7 @@ export function ReviewExtractionStep({
             )}
             
             <p className="text-xs text-slate-500 text-center">
-              Make your debate stand out with a cover image
+              Make your post stand out with a cover image
             </p>
           </div>
         </FunSheetCard>
@@ -174,7 +174,7 @@ export function ReviewExtractionStep({
             />
             
             <p className="text-xs text-slate-500 text-center">
-              Add a YouTube video to enhance your debate
+              Add a YouTube video to enhance your post
             </p>
           </div>
         </FunSheetCard>
@@ -189,7 +189,7 @@ export function ReviewExtractionStep({
               Seed Statements ({statements.length})
             </Label>
             <span className="text-xs text-slate-500">
-              These will kickstart the debate
+              These will kickstart the conversation
             </span>
           </div>
 
@@ -275,7 +275,7 @@ export function ReviewExtractionStep({
         </div>
       </FunSheetCard>
 
-      {/* Debate Length */}
+      {/* Conversation Length */}
       <FunSheetCard delay={0.3}>
         <div className="space-y-3">
           <div className="flex items-center gap-2">

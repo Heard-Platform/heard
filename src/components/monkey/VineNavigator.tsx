@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { UserPresence } from "../types";
+import { UserPresence } from "../../types";
 import { MonkeyInfoModal } from "./MonkeyInfoModal";
-import { TalkBubble } from "./TalkBubble";
+import { TalkBubble } from "../TalkBubble";
+import { ScreenTimeWarningDialog } from "./ScreenTimeWarningDialog";
 
 // @ts-ignore
 import monkeyImg from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
@@ -40,6 +41,8 @@ export function VineNavigator({
   const [showMonkeyInfo, setShowMonkeyInfo] = useState(false);
   const [isEating, setIsEating] = useState(false);
   const [showSpeechBubble, setShowSpeechBubble] = useState(false);
+  const [screenTimeExceeded, setScreenTimeExceeded] = useState(false);
+  const [showScreenTimeDialog, setShowScreenTimeDialog] = useState(false);
 
   const vineHeight = totalCards * window.innerHeight;
 
@@ -56,6 +59,40 @@ export function VineNavigator({
       setShowSpeechBubble(false);
     }, 4000);
   };
+
+  useEffect(() => {
+    const checkScreenTime = () => {
+      const endTime = localStorage.getItem("screenTimeEnd");
+      
+      if (endTime) {
+        const remaining = Number(endTime) - Date.now();
+        
+        if (remaining <= 0) {
+          setScreenTimeExceeded(true);
+          localStorage.removeItem("screenTimeEnd");
+        } else {
+          setScreenTimeExceeded(false);
+        }
+      } else {
+        setScreenTimeExceeded(false);
+      }
+    };
+
+    checkScreenTime();
+    const interval = setInterval(checkScreenTime, 10000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (screenTimeExceeded) {
+      const timer = setTimeout(() => {
+        setShowScreenTimeDialog(true);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [screenTimeExceeded]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -264,6 +301,15 @@ export function VineNavigator({
             }}
             whileTap={{ scale: 0.95 }}
           />
+          {screenTimeExceeded && (
+            <TalkBubble
+              text="⚠️"
+              isVisible={true}
+              color="text-yellow-600"
+              borderColor="border-yellow-400"
+              position="top"
+            />
+          )}
           <TalkBubble
             text="Yum!"
             isVisible={showSpeechBubble}
@@ -337,6 +383,16 @@ export function VineNavigator({
           isOpen={showMonkeyInfo}
           onClose={() => setShowMonkeyInfo(false)}
           onFeedMonkey={handleFeedMonkey}
+        />
+      )}
+
+      {showScreenTimeDialog && (
+        <ScreenTimeWarningDialog
+          isOpen={showScreenTimeDialog}
+          onClose={() => {
+            setShowScreenTimeDialog(false);
+            setScreenTimeExceeded(false);
+          }}
         />
       )}
     </div>

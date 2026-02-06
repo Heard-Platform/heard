@@ -175,7 +175,7 @@ export function SubHeardBrowser({
           <SheetHeader>
             <SheetTitle>Browse Communities</SheetTitle>
             <SheetDescription>
-              Select a community to filter debates by topic
+              Select a community to filter posts by topic
             </SheetDescription>
           </SheetHeader>
 
@@ -187,7 +187,7 @@ export function SubHeardBrowser({
               onClick={() => handleSelectSubHeard(null)}
             >
               <Home className="w-4 h-4 mr-2" />
-              All Debates
+              All Posts
             </Button>
 
             {/* Existing sub-heards */}

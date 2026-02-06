@@ -16,7 +16,7 @@ export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
   const [copied, setCopied] = useState(false);
   
   if (!debateId) {
-    return <div>Error: No debate ID available</div>;
+    return <div>Error: No post ID available</div>;
   }
   
   const shareLink = createShareableLink(debateId);
@@ -36,8 +36,8 @@ export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
   const handleShare = async () => {
     await share({
       url: shareLink,
-      title: `Join this debate on Heard`,
-      text: `Check out this debate: "${topic}"`,
+      title: `Join this conversation on Heard`,
+      text: `Check out this conversation: "${topic}"`,
       onSuccess: () => {
         toast.success("Link shared!");
       },
@@ -57,7 +57,7 @@ export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
         </div>
         <div>
           <h3 className="font-medium text-lg text-green-900">
-            Debate Created! 🎉
+            Conversation Created! 🎉
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
             Share it with friends to get the conversation started
@@ -108,7 +108,7 @@ export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
         <ul className="text-xs text-blue-800 space-y-1.5">
           <li>• Share in group chats for instant engagement</li>
           <li>• Post on social media to reach a wider audience</li>
-          <li>• Your debate is live right now!</li>
+          <li>• Your post is live right now!</li>
         </ul>
       </div>
     </div>
