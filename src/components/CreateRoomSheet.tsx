@@ -17,6 +17,7 @@ import {
 } from "./create-room";
 import { normalizeSubHeardName } from "../utils/subheard";
 import { api } from "../utils/api";
+import { convertImageToJPEG, shouldConvertImage } from "../utils/image-converter";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -178,7 +179,13 @@ export function CreateRoomSheet({
   const handleImageUpload = async (file: File) => {
     setIsUploadingImage(true);
     try {
-      const result = await api.uploadDebateImage(file);
+      let fileToUpload = file;
+      
+      if (shouldConvertImage(file)) {
+        fileToUpload = await convertImageToJPEG(file);
+      }
+      
+      const result = await api.uploadDebateImage(fileToUpload);
       if (result.success && result.data?.imageUrl) {
         setUploadedImageUrl(result.data.imageUrl);
         toast.success("Image uploaded!");
