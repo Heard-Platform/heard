@@ -110,13 +110,9 @@ export function ReviewExtractionStep({
   };
 
   const initializeCustomDateTime = () => {
-    let date;
-    if (debateLength) {
-      date = new Date(Date.now() + debateLength * 60 * 1000);
-    } else {
-      const defaultLength = 60;
-      date = new Date(Date.now() + defaultLength * 60 * 1000);
-    }
+    const lengthInMins = debateLength || 60;
+    const lengthInMs = lengthInMins * 60 * 1000;
+    const date = new Date(Date.now() + lengthInMs);
     setCustomDate(date.toISOString().split('T')[0]);
     setCustomTime(date.toTimeString().slice(0, 5));
   };
