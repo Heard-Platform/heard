@@ -1,0 +1,3 @@
+export const FEATURE_FLAGS = {
+  ONLY_JOINED_COMMUNITIES: true,
+}

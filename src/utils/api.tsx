@@ -22,6 +22,7 @@ import {
   API_BASE_URL,
   ApiResponse,
 } from "./api-client";
+import { FEATURE_FLAGS } from "./constants/feature-flags";
 import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { publicAnonKey } from "./supabase/info";
 export { getSessionId, setSessionId, clearSessionId } from "./api-client";
@@ -210,6 +211,7 @@ class ApiClient extends BaseApiClient {
   ): Promise<ApiResponse<{ subHeards: SubHeard[] }>> {
     const params = new URLSearchParams();
     params.append("userId", userId);
+    params.append("onlyJoined", FEATURE_FLAGS.ONLY_JOINED_COMMUNITIES.toString());
     const queryString = params.toString();
     return this.request(`/subheards${queryString ? `?${queryString}` : ""}`);
   }

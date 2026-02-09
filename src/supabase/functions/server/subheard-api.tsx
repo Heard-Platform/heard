@@ -14,6 +14,7 @@ const app = new Hono();
 app.get("/make-server-f1a393b4/subheards", async (c: any) => {
   try {
     const userId = c.req.query("userId");
+    const onlyJoined = c.req.query("onlyJoined") === "true";
 
     const allRooms = await getActiveRooms();
     const rooms = allRooms.filter((r) => r.subHeard);
@@ -35,7 +36,7 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
 
     subHeards = subHeards
       .filter((comm) => {
-        if (userId) {
+        if (userId && onlyJoined) {
           if (comm.adminId === userId) return true;
           if (userMemberships.has(comm.name)) return true;
           return false;
