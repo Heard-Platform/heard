@@ -92,7 +92,6 @@ export function FloatingFeedbackButton({ userId }: FloatingFeedbackButtonProps) 
 
       <FeedbackSheet 
         userId={userId} 
-        trigger={null}
         open={isOpen}
         onOpenChange={setIsOpen}
       />
