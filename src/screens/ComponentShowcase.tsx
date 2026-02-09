@@ -24,6 +24,7 @@ import { CustomDemographicQuestionStory } from "../stories/CustomDemographicQues
 import { AdvancedFeaturesStory } from "../stories/AdvancedFeatures.story";
 import SidePanelMenuStory from "../stories/SidePanelMenu.story";
 import { CommunityAdminDialogStory } from "../stories/CommunityAdminDialog.story";
+import { FeedbackSheetStory } from "../stories/FeedbackSheet.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 
@@ -105,6 +106,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="advanced-features">Advanced Features</TabsTrigger>
               <TabsTrigger value="side-panel-menu">Side Panel Menu</TabsTrigger>
               <TabsTrigger value="community-admin-dialog">Community Admin Dialog</TabsTrigger>
+              <TabsTrigger value="feedback-sheet">Feedback Sheet</TabsTrigger>
             </TabsList>
 
             <TabsContent value="results-cards">
@@ -180,6 +182,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="community-admin-dialog">
               <CommunityAdminDialogStory />
+            </TabsContent>
+            <TabsContent value="feedback-sheet">
+              <FeedbackSheetStory />
             </TabsContent>
           </Tabs>
         </div>
