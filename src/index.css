@@ -1019,6 +1019,10 @@
     margin-bottom: -2px;
   }
 
+  .mb-\[-10px\] {
+    margin-bottom: -10px;
+  }
+
   .-ml-2 {
     margin-left: calc(var(--spacing) * -2);
   }

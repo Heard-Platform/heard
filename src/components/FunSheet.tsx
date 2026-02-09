@@ -78,6 +78,7 @@ interface FunSheetProps {
   title: string;
   description: string;
   avatar?: string;
+  socialButtons?: ReactNode;
   leftIcon: LucideIcon;
   rightIcon?: LucideIcon;
   theme: keyof typeof themes;
@@ -100,6 +101,7 @@ export function FunSheet({
   title,
   description,
   avatar,
+  socialButtons,
   leftIcon: LeftIcon,
   rightIcon: RightIcon,
   theme: themeKey,
@@ -232,6 +234,11 @@ export function FunSheet({
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
+          )}
+          {socialButtons && (
+            <div className="flex justify-center pt-2">
+              {socialButtons}
             </div>
           )}
         </SheetHeader>

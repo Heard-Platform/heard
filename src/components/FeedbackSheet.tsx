@@ -1,27 +1,34 @@
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { Textarea } from "./ui/textarea";
+import { Label } from "./ui/label";
+import { MessageSquare, Heart, Phone, Linkedin, Instagram, Youtube, LucideIcon } from "lucide-react";
+import { motion } from "motion/react";
+import { api } from "../utils/api";
+import { FunSheet, FunSheetCard } from "./FunSheet";
+
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 // @ts-ignore
 import alexAvatar from "figma:asset/666a1c47b00c0b4dbc630b8672610dd57a571842.png";
 
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { Textarea } from "./ui/textarea";
-import { Label } from "./ui/label";
-import { MessageSquare, Heart, Phone } from "lucide-react";
-import { motion } from "motion/react";
-import { api } from "../utils/api";
-import { FunSheet, FunSheetCard } from "./FunSheet";
-
 interface FeedbackSheetProps {
   userId: string;
-  trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
+const socialIconButtonClass = "p-2 rounded-full bg-purple-50 hover:bg-purple-100 transition-colors";
+const socialIconClass = "w-5 h-5 text-purple-600";
+
+const socials: Array<{ href: string; Icon: LucideIcon; label: string }> = [
+  { href: "https://www.linkedin.com/in/alex-long-89b9a815/", Icon: Linkedin, label: "LinkedIn" },
+  { href: "https://www.instagram.com/alexmasonlong/", Icon: Instagram, label: "Instagram" },
+  { href: "https://www.youtube.com/@AlexLongHeard/", Icon: Youtube, label: "YouTube" },
+];
+
 export function FeedbackSheet({
   userId,
-  trigger,
   open: controlledOpen,
   onOpenChange,
 }: FeedbackSheetProps) {
@@ -78,22 +85,34 @@ export function FeedbackSheet({
       open={open}
       onOpenChange={setOpen}
       trigger={
-        trigger !== null
-          ? trigger || (
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
-                <MessageSquare className="w-4 h-4" />
-                Talk to Alex
-              </Button>
-            )
-          : undefined
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+        >
+          <MessageSquare className="w-4 h-4" />
+          Talk to Alex
+        </Button>
       }
       title="Talk to Alex"
       description="Hey! I'm Alex, the creator of Heard 👋"
       avatar={alexAvatar}
+      socialButtons={
+        <div className="flex items-center gap-2 mb-[-10px]">
+          {socials.map(({ href, Icon, label }) => (
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={socialIconButtonClass}
+              aria-label={label}
+            >
+              <Icon className={socialIconClass} />
+            </a>
+          ))}
+        </div>
+      }
       leftIcon={Heart}
       rightIcon={Phone}
       theme="purple"
