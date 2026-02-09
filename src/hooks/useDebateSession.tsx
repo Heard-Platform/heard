@@ -15,6 +15,7 @@ import type {
   Statement,
   VoteType,
   AnalysisData,
+  SubHeard,
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
@@ -72,6 +73,8 @@ interface DebateSessionContextType {
   roomStatements: Record<string, Statement[]>;
   getRoomStatements: (roomId: string) => Promise<Statement[]>;
   getRoomAnalysis: (roomId: string) => Promise<AnalysisData | null>;
+  getSubHeards: (userId: string) => Promise<ApiResponse<{ subHeards: SubHeard[] }> | null>;
+  leaveSubHeard: (subHeardName: string, userId: string) => Promise<ApiResponse<undefined> | null>;
 }
 
 const DebateSessionContext = createContext<DebateSessionContextType | null>(null);
@@ -640,6 +643,15 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     return null;
   }, []);
 
+  const getSubHeards = useCallback(async (userId: string) => {
+    type Response = { subHeards: SubHeard[]; };
+    return safelyMakeApiCall<Response>(() => api.getSubHeards(userId));
+  }, []);
+
+  const leaveSubHeard = useCallback(async (subHeardName: string, userId: string) => {
+    return safelyMakeApiCall<undefined>(() => api.leaveSubHeard(subHeardName, userId))
+  }, []);
+
   // Reset session (full logout)
   const resetSession = useCallback(() => {
     setUser(null);
@@ -707,6 +719,8 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     getRoomAnalysis,
     markChanceCardSwiped,
     markYouTubeCardSwiped,
+    getSubHeards,
+    leaveSubHeard,
   };
 
   if (showcase) {
@@ -776,6 +790,14 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       },
       markYouTubeCardSwiped: async (userId: string, roomId: string) => {
         console.log("[Showcase] markYouTubeCardSwiped called");
+      },
+      getSubHeards: async (userId: string) => {
+        console.log("[Showcase] getSubHeards called");
+        return { success: true  };
+      },
+      leaveSubHeard: async (subHeardName: string, userId: string) => {
+        console.log("[Showcase] leaveSubHeard called");
+        return { success: true };
       },
     };
   }
