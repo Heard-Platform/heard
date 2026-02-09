@@ -84,16 +84,6 @@ export function FeedbackSheet({
     <FunSheet
       open={open}
       onOpenChange={setOpen}
-      trigger={
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
-        >
-          <MessageSquare className="w-4 h-4" />
-          Talk to Alex
-        </Button>
-      }
       title="Talk to Alex"
       description="Hey! I'm Alex, the creator of Heard 👋"
       avatar={alexAvatar}
