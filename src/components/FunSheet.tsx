@@ -5,24 +5,11 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "motion/react";
 import { LucideIcon, Sparkles, ArrowLeft } from "lucide-react";
 import { useState, useRef } from "react";
-
-interface FunSheetTheme {
-  bgGradient: string;
-  titleGradient: string;
-  borderColor: string;
-  buttonGradient: string;
-  buttonHoverGradient: string;
-  shadowColor: string;
-  iconColor: string;
-  leftIconColor?: string;
-  rightIconColor?: string;
-}
 
 export const themes = {
   green: {
@@ -74,7 +61,6 @@ export const themes = {
 interface FunSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  trigger?: ReactNode;
   title: string;
   description: string;
   avatar?: string;
@@ -97,7 +83,6 @@ interface FunSheetProps {
 export function FunSheet({
   open,
   onOpenChange,
-  trigger,
   title,
   description,
   avatar,
@@ -166,9 +151,6 @@ export function FunSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      {trigger !== null && trigger !== undefined && (
-        <SheetTrigger asChild>{trigger}</SheetTrigger>
-      )}
       <SheetContent
         side="bottom"
         className={`h-[90vh] overflow-y-auto rounded-t-3xl bg-gradient-to-br ${theme.bgGradient} border-0 px-5`}

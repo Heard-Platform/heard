@@ -19,7 +19,7 @@ app.post("/make-server-f1a393b4/feedback/submit", async (c) => {
 
     const feedback = {
       id: feedbackId,
-      userId: userId || "anonymous",
+      userId: userId || "no-account",
       text: feedbackText.trim(),
       timestamp,
       createdAt: new Date(timestamp).toISOString(),

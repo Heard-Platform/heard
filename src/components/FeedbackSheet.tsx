@@ -13,7 +13,7 @@ import { toast } from "sonner@2.0.3";
 import alexAvatar from "figma:asset/666a1c47b00c0b4dbc630b8672610dd57a571842.png";
 
 interface FeedbackSheetProps {
-  userId: string;
+  userId?: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
@@ -84,16 +84,6 @@ export function FeedbackSheet({
     <FunSheet
       open={open}
       onOpenChange={setOpen}
-      trigger={
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
-        >
-          <MessageSquare className="w-4 h-4" />
-          Talk to Alex
-        </Button>
-      }
       title="Talk to Alex"
       description="Hey! I'm Alex, the creator of Heard 👋"
       avatar={alexAvatar}
