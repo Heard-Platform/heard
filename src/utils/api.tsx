@@ -206,12 +206,12 @@ class ApiClient extends BaseApiClient {
   }
 
   async getSubHeards(
-    userId?: string,
+    userId: string,
   ): Promise<ApiResponse<{ subHeards: SubHeard[] }>> {
-    const params = userId
-      ? `?userId=${encodeURIComponent(userId)}`
-      : "";
-    return this.request(`/subheards${params}`);
+    const params = new URLSearchParams();
+    params.append("userId", userId);
+    const queryString = params.toString();
+    return this.request(`/subheards${queryString ? `?${queryString}` : ""}`);
   }
 
   async createSubHeard(
@@ -238,6 +238,13 @@ class ApiClient extends BaseApiClient {
   async joinSubHeard(name: string, userId: string) {
     return this.request(`/subheard/${name}/join`, {
       method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
+
+  async leaveSubHeard(name: string, userId: string) {
+    return this.request<undefined>(`/subheard/${name}/leave`, {
+      method: "DELETE",
       body: JSON.stringify({ userId }),
     });
   }

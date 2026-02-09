@@ -13,10 +13,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import { Home, Hash, Plus, ChevronDown, Lock, Settings, Crown } from "lucide-react";
-import { api } from "../../utils/api";
-
-// @ts-ignore
+import { Home, Hash, Plus, ChevronDown, Lock, Settings, Crown, LogOut } from "lucide-react";
+import { useDebateSession } from "../../hooks/useDebateSession";
 import { CommunityAdminDialog } from "./CommunityAdminDialog";
 import { formatSubHeardDisplay } from "../../utils/subheard";
 
@@ -40,6 +38,7 @@ export function SubHeardBrowser({
   onUpdateSubHeard,
   onShowAccountSetupModal,
 }: SubHeardBrowserProps) {
+  const { getSubHeards, leaveSubHeard } = useDebateSession();
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -49,7 +48,6 @@ export function SubHeardBrowser({
   const [isCreating, setIsCreating] = useState(false);
   const [managingSubHeard, setManagingSubHeard] = useState<SubHeard | null>(null);
 
-    // Load sub-heards on mount, when sheet opens, or when user changes
   useEffect(() => {
     loadSubHeards();
   }, [user.id]);
@@ -63,9 +61,9 @@ export function SubHeardBrowser({
   const loadSubHeards = async () => {
     try {
       setLoading(true);
-      const response = await api.getSubHeards(user.id);
-      if (response.success && response.data) {
-        setSubHeards(response.data.subHeards || []);
+      const response = await getSubHeards(user.id);
+      if (response?.success && response.data) {
+        setSubHeards(response.data.subHeards);
       }
     } catch (error) {
       console.error("Failed to load sub-heards:", error);
@@ -149,6 +147,16 @@ export function SubHeardBrowser({
       );
     }
     return success;
+  };
+
+  const handleLeaveSubHeard = async (subHeardName: string) => {
+    const response = await leaveSubHeard(subHeardName, user.id);
+    if (response?.success) {
+      await loadSubHeards();
+      if (currentSubHeard === subHeardName) {
+        onSubHeardChange(null);
+      }
+    }
   };
 
   return (
@@ -236,6 +244,17 @@ export function SubHeardBrowser({
                             onClick={() => setManagingSubHeard(subHeard)}
                           >
                             <Settings className="w-4 h-4" />
+                          </button>
+                        )}
+                        {!isAdmin && (
+                          <button 
+                            className="h-7 w-7 inline-flex items-center justify-center rounded-md hover:bg-red-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleLeaveSubHeard(subHeard.name);
+                            }}
+                          >
+                            <LogOut className="w-4 h-4 text-red-600" />
                           </button>
                         )}
                         <Badge variant="secondary">{subHeard.count}</Badge>
