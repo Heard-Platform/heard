@@ -22,6 +22,7 @@ import {
   API_BASE_URL,
   ApiResponse,
 } from "./api-client";
+import { FEATURE_FLAGS } from "./constants/feature-flags";
 import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { publicAnonKey } from "./supabase/info";
 export { getSessionId, setSessionId, clearSessionId } from "./api-client";
@@ -206,12 +207,13 @@ class ApiClient extends BaseApiClient {
   }
 
   async getSubHeards(
-    userId?: string,
+    userId: string,
   ): Promise<ApiResponse<{ subHeards: SubHeard[] }>> {
-    const params = userId
-      ? `?userId=${encodeURIComponent(userId)}`
-      : "";
-    return this.request(`/subheards${params}`);
+    const params = new URLSearchParams();
+    params.append("userId", userId);
+    params.append("onlyJoined", FEATURE_FLAGS.ONLY_JOINED_COMMUNITIES.toString());
+    const queryString = params.toString();
+    return this.request(`/subheards${queryString ? `?${queryString}` : ""}`);
   }
 
   async createSubHeard(
@@ -238,6 +240,13 @@ class ApiClient extends BaseApiClient {
   async joinSubHeard(name: string, userId: string) {
     return this.request(`/subheard/${name}/join`, {
       method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
+
+  async leaveSubHeard(name: string, userId: string) {
+    return this.request<undefined>(`/subheard/${name}/leave`, {
+      method: "DELETE",
       body: JSON.stringify({ userId }),
     });
   }

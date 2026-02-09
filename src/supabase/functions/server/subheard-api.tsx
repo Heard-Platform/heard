@@ -3,7 +3,7 @@ import { getUserMemberships } from "./membership-utils.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
-import { getCommunities, getCommunity, saveCommunity } from "./kv-utils.tsx";
+import { getCommunities, getCommunity, saveCommunity, deleteMembership } from "./kv-utils.tsx";
 import { Community } from "./types.tsx";
 
 // @ts-ignore
@@ -13,9 +13,9 @@ const app = new Hono();
 
 app.get("/make-server-f1a393b4/subheards", async (c: any) => {
   try {
-    const userId = c.req.query("userId"); // Optional: if provided, show private sub-heards where user is admin or member
+    const userId = c.req.query("userId");
+    const onlyJoined = c.req.query("onlyJoined") === "true";
 
-    // Get all active rooms using helper function
     const allRooms = await getActiveRooms();
     const rooms = allRooms.filter((r) => r.subHeard);
 
@@ -36,10 +36,13 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
 
     subHeards = subHeards
       .filter((comm) => {
+        if (userId && onlyJoined) {
+          if (comm.adminId === userId) return true;
+          if (userMemberships.has(comm.name)) return true;
+          return false;
+        }
+        
         if (!comm.isPrivate) return true;
-        if (userId && comm.adminId === userId) return true;
-        if (userId && userMemberships.has(comm.name))
-          return true;
         return false;
       })
       .map((comm) => {
@@ -253,6 +256,40 @@ app.patch(
         { error: "Failed to update sub-heard settings" },
         500,
       );
+    }
+  },
+);
+
+app.delete(
+  "/make-server-f1a393b4/subheard/:name/leave",
+  async (c: any) => {
+    try {
+      const name = c.req.param("name");
+      const { userId } = await c.req.json();
+
+      if (!userId || typeof userId !== "string") {
+        return c.json({ error: "User ID is required" }, 400);
+      }
+
+      const community = await getCommunity(name);
+
+      if (!community) {
+        return c.json({ error: "Community not found" }, 404);
+      }
+
+      if (community.adminId === userId) {
+        return c.json(
+          { error: "Admins cannot leave their own community" },
+          403,
+        );
+      }
+
+      await deleteMembership(userId, name);
+
+      return c.json({ success: true });
+    } catch (error) {
+      console.error("Error leaving sub-heard:", error);
+      return c.json({ error: "Failed to leave sub-heard" }, 500);
     }
   },
 );

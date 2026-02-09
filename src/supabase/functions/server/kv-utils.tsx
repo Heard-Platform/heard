@@ -196,6 +196,11 @@ export const saveCommunity = async (community: Community) => {
   await kv.set(`subheard:${community.name}`, community);
 };
 
+export const deleteMembership = async (userId: string, subHeardName: string) => {
+  const membershipKey = `subheard_member:${userId}:${subHeardName}`;
+  await kv.del(membershipKey);
+};
+
 export const voteKeyFn = (vote: Vote) =>
   `vote:${vote.statementId}:${vote.userId}`;
 
