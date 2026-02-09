@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { X, TrendingUp, Smartphone, UserPlus, Tag, LucideIcon } from "lucide-react";
+import { X, TrendingUp, Smartphone, UserPlus, Tag, Flag, LucideIcon } from "lucide-react";
 import { api } from "../utils/api";
 import type { FeatureResults } from "../types";
 
@@ -51,6 +51,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
   };
 
   const featureCards: FeatureCardData[] = [
+    {
+      icon: Flag,
+      iconColor: "text-red-600",
+      bgColor: "bg-red-100",
+      title: "User Reports",
+      description: "Total number of statements flagged by users",
+      getValue: (s) => s.userReports,
+      getDate: (s) => s.userReportsSince,
+    },
     {
       icon: Smartphone,
       iconColor: "text-green-600",

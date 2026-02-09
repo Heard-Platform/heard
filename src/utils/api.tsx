@@ -226,13 +226,12 @@ class ApiClient extends BaseApiClient {
   }
 
   async updateSubHeardSettings(
-    name: string,
+    community: SubHeard,
     userId: string,
-    isPrivate: boolean,
   ) {
-    return this.request(`/subheard/${name}/settings`, {
+    return this.request(`/subheard/${community.name}/settings`, {
       method: "PATCH",
-      body: JSON.stringify({ userId, isPrivate }),
+      body: JSON.stringify({ userId, settings: community }),
     });
   }
 
@@ -308,6 +307,13 @@ class ApiClient extends BaseApiClient {
     return this.request("/youtube-card/mark-swiped", {
       method: "POST",
       body: JSON.stringify({ userId, roomId }),
+    });
+  }
+
+  async flagStatement(statementId: string, roomId: string) {
+    return this.request(`/statement/${statementId}/flag`, {
+      method: "POST",
+      body: JSON.stringify({ userId: getUserId(), roomId }),
     });
   }
 

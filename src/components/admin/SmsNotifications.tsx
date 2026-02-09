@@ -24,7 +24,7 @@ export function SmsNotifications({ adminKey, currentUserId, debates }: SmsNotifi
     }
 
     if (!selectedRoomId) {
-      alert("Please select a debate room");
+      alert("Please select a post");
       return;
     }
 
@@ -58,21 +58,21 @@ export function SmsNotifications({ adminKey, currentUserId, debates }: SmsNotifi
             🎉 Test Celebration SMS
           </h3>
           <p className="text-sm text-purple-800 mb-4">
-            Send a test celebration SMS to the current user using data from a real debate room.
+            Send a test celebration SMS to the current user using data from a real post.
           </p>
           
           <div className="mb-4">
-            <Label htmlFor="roomSelect">Select Debate Room</Label>
+            <Label htmlFor="roomSelect">Select Post</Label>
             <Select
               value={selectedRoomId}
               onValueChange={setSelectedRoomId}
             >
               <SelectTrigger id="roomSelect">
-                <SelectValue placeholder="Choose a debate..." />
+                <SelectValue placeholder="Choose a post..." />
               </SelectTrigger>
               <SelectContent>
                 {debates.length === 0 && (
-                  <SelectItem value="none" disabled>No debates available</SelectItem>
+                  <SelectItem value="none" disabled>No posts available</SelectItem>
                 )}
                 {debates.map((debate) => (
                   <SelectItem key={debate.id} value={debate.id}>

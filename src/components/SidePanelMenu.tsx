@@ -381,7 +381,7 @@ export function SidePanelMenu({
                         className="w-full bg-teal-50 border-teal-200 text-teal-800"
                       >
                         <Link2 className="w-3 h-3 mr-2" />
-                        Create Anon Debate
+                        Create Anon Post
                       </Button>
                     )}
                     <Button

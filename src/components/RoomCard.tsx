@@ -138,7 +138,7 @@ export function RoomCard({
       );
     } catch (error: any) {
       if (error.message === ANONYMOUS_ACTION_NOT_ALLOWED_ERROR) {
-        onShowAccountSetupModal("voting in this debate");
+        onShowAccountSetupModal("voting in this conversation");
         toast.error("⚠️ This discussion requires an account.");
       } else {
         toast.error(
@@ -371,7 +371,7 @@ export function RoomCard({
                 <>
                   <div className="text-center py-4">
                     <p className="text-muted-foreground">
-                      No statements yet in this debate
+                      No responses yet to this post
                     </p>
                   </div>
                   {!isCompleted && (
@@ -391,8 +391,8 @@ export function RoomCard({
                     className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
                   >
                     {isCompleted
-                      ? "Debate Ended"
-                      : "Join to Add Statements"}
+                      ? "Conversation Ended"
+                      : "Join to Add Responses"}
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </>

@@ -11,13 +11,14 @@ export function CommunityAdminDialogStory() {
     count: 42,
     isPrivate: false,
     adminId: "demo-user-123",
+    hostOnlyPosting: false,
   });
 
-  const handleUpdateSubHeard = async (name: string, userId: string, isPrivate: boolean) => {
-    console.log("Update called:", { name, userId, isPrivate });
+  const handleUpdateSubHeard = async (update: SubHeard, userId: string): Promise<boolean> => {
+    console.log("Update called:", { update, userId });
     setMockCommunity(prev => ({
       ...prev,
-      isPrivate,
+      ...update,
     }));
     await new Promise(resolve => setTimeout(resolve, 500));
     return true;

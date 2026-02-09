@@ -1,3 +1,4 @@
+import type { SubHeard, UserSession } from "../../types";
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -14,7 +15,6 @@ import {
 } from "../ui/sheet";
 import { Home, Hash, Plus, ChevronDown, Lock, Settings, Crown } from "lucide-react";
 import { api } from "../../utils/api";
-import type { SubHeard, UserSession } from "../../types";
 
 // @ts-ignore
 import { CommunityAdminDialog } from "./CommunityAdminDialog";
@@ -24,8 +24,11 @@ interface SubHeardBrowserProps {
   currentSubHeard?: string;
   user: UserSession;
   onSubHeardChange: (subHeard: string | null) => void;
-  onCreateSubHeard?: (name: string, userId: string, isPrivate?: boolean) => Promise<boolean>;
-  onUpdateSubHeard?: (name: string, userId: string, isPrivate: boolean) => Promise<boolean>;
+  onCreateSubHeard: (name: string, userId: string, isPrivate?: boolean) => Promise<boolean>;
+  onUpdateSubHeard: (
+    update: SubHeard,
+    userId: string,
+  ) => Promise<boolean>;
   onShowAccountSetupModal: (featureText: string) => void;
 }
 
@@ -87,7 +90,7 @@ export function SubHeardBrowser({
     setIsCreating(true);
     try {
       if (onCreateSubHeard) {
-        const success = await onCreateSubHeard(normalized, user.id, isPrivate);
+        const success = await onCreateSubHeard(normalized, user.id);
         if (success) {
           // Reload sub-heards to show the newly created one
           await loadSubHeards();
@@ -122,23 +125,25 @@ export function SubHeardBrowser({
   const currentSubHeardData = subHeards.find(sh => sh.name === currentSubHeard);
   const isCurrentAdmin = currentSubHeardData?.adminId === user.id;
 
-  const handleManagementDialogUpdate = async (name: string, userId: string, isPrivate: boolean) => {
+  const handleCommunityUpdate = async (update: SubHeard, userId: string) => {
     if (!onUpdateSubHeard) return false;
     
+    const oldCommunity = subHeards.find(sh => sh.name === update.name);
+
     setSubHeards(prev => 
       prev.map(sh => 
-        sh.name === name 
-          ? { ...sh, isPrivate: isPrivate }
+        sh.name === update.name 
+          ? { ...sh, ...update }
           : sh
       )
     );
     
-    const success = await onUpdateSubHeard(name, userId, isPrivate);
+    const success = await onUpdateSubHeard(update, userId);
     if (!success) {
       setSubHeards(prev => 
         prev.map(sh => 
-          sh.name === name 
-            ? { ...sh, isPrivate: !isPrivate }
+          sh.name === update.name 
+            ? oldCommunity!
             : sh
         )
       );
@@ -170,7 +175,7 @@ export function SubHeardBrowser({
           <SheetHeader>
             <SheetTitle>Browse Communities</SheetTitle>
             <SheetDescription>
-              Select a community to filter debates by topic
+              Select a community to filter posts by topic
             </SheetDescription>
           </SheetHeader>
 
@@ -182,7 +187,7 @@ export function SubHeardBrowser({
               onClick={() => handleSelectSubHeard(null)}
             >
               <Home className="w-4 h-4 mr-2" />
-              All Debates
+              All Posts
             </Button>
 
             {/* Existing sub-heards */}
@@ -320,7 +325,7 @@ export function SubHeardBrowser({
           community={managingSubHeard}
           isOpen={true}
           onClose={() => setManagingSubHeard(null)}
-          onUpdateSubHeard={handleManagementDialogUpdate}
+          onUpdateSubHeard={handleCommunityUpdate}
           userId={user.id}
         />
       )}

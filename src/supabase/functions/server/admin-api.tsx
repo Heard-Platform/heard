@@ -1,7 +1,7 @@
 import { getNewsletterEmail, getNewsletter2Email } from "./email-templates.tsx";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
-import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, getUser, saveDebate, phoneKvKeyFn, deletePhone } from "./kv-utils.tsx";
+import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, getUser, saveDebate, phoneKvKeyFn, deletePhone, getCommunity, saveCommunity } from "./kv-utils.tsx";
 import { getVotesForUser, getUserActivityRecords } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
 import { saveUser } from "./kv-utils.tsx";
@@ -140,6 +140,47 @@ app.patch(
       console.error("Error updating sub-heard admin:", error);
       return c.json(
         { error: "Failed to update sub-heard admin" },
+        500,
+      );
+    }
+  },
+);
+
+// Update subheard
+app.patch(
+  "/make-server-f1a393b4/admin/subheard/:name/update",
+  async (c) => {
+    try {
+      const name = c.req.param("name");
+      const { update } = await c.req.json();
+
+      if (!update || typeof update !== "object") {
+        return c.json(
+          { error: "update object is required" },
+          400,
+        );
+      }
+
+      const community = await getCommunity(name);
+
+      if (!community) {
+        return c.json({ error: "Community not found" }, 404);
+      }
+
+      Object.assign(community, update);
+      await saveCommunity(community);
+
+      return c.json({
+        success: true,
+        subHeard: community,
+      });
+    } catch (error) {
+      console.error(
+        "Error updating community:",
+        error,
+      );
+      return c.json(
+        { error: "Failed to update community" },
         500,
       );
     }

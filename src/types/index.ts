@@ -104,6 +104,7 @@ export interface UserSession {
   id: string;
   nickname: string;
   email: string;
+  phoneSuffix?: string;
   score: number;
   streak: number;
   currentRoomId?: string;
@@ -157,10 +158,11 @@ export type NewDebateRoom = Pick<
 
 export interface SubHeard {
   name: string;
-  count?: number; // Number of active debates (used in browser)
-  createdAt?: number; // Timestamp when created (used in admin panel)
-  isPrivate?: boolean;
-  adminId?: string; // User ID of the creator/admin
+  count?: number;
+  adminId: string;
+  isPrivate: boolean;
+  hostOnlyPosting: boolean;
+  createdAt?: number;
 }
 
 export interface Rant {
@@ -293,6 +295,8 @@ export interface RetentionStatsData {
 }
 
 export interface FeatureResults {
+  userReports: number;
+  userReportsSince: number;
   phoneVerifiedUsers: number;
   phoneVerifiedSince: number;
   convertedFromAnonUsers: number;

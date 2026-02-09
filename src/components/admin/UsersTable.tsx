@@ -78,7 +78,7 @@ export function UsersTable({
               <tr key={user.id} className="border-b hover:bg-muted/30">
                 <td className="p-3">{user.nickname}</td>
                 <td className="p-3 text-sm">{user.email}</td>
-                <td className="p-3 text-sm">{user.phone}</td>
+                <td className="p-3 text-sm">{user.phoneSuffix}</td>
                 <td className="p-3 font-mono text-xs text-muted-foreground">
                   {user.id.substring(0, 12)}...
                 </td>

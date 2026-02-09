@@ -23,7 +23,10 @@ interface CommunityAdminDialogProps {
   community: SubHeard;
   userId: string;
   isOpen: boolean;
-  onUpdateSubHeard: (name: string, userId: string, isPrivate: boolean) => Promise<boolean>;
+  onUpdateSubHeard: (
+    updatedCommunity: SubHeard,
+    userId: string,
+  ) => Promise<boolean>;
   onClose: () => void;
 }
 
@@ -37,17 +40,21 @@ export function CommunityAdminDialog({
   const [isUpdating, setIsUpdating] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const handleTogglePrivacy = async (newPrivacy: boolean) => {
+  const handleUpdate = async (update: Partial<SubHeard>) => {
     setIsUpdating(true);
+    const updatedCommunity = {
+      ...community,
+      ...update,
+    };
     try {
-      const success = await onUpdateSubHeard(community.name, userId, newPrivacy);
+      const success = await onUpdateSubHeard(updatedCommunity, userId);
       if (success) {
-        toast.success(`Community is now ${newPrivacy ? 'unlisted' : 'public'}`);
+        toast.success("Community settings updated");
       } else {
         toast.error("Failed to update community settings");
       }
     } catch (error) {
-      console.error("Failed to update sub-heard privacy:", error);
+      console.error("Failed to update sub-heard:", error);
       toast.error("Failed to update community settings");
     } finally {
       setIsUpdating(false);
@@ -91,7 +98,7 @@ export function CommunityAdminDialog({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-2xl font-bold">{community.count}</p>
-                <p className="text-xs text-muted-foreground">Total Debates</p>
+                <p className="text-xs text-muted-foreground">Total Posts</p>
               </div>
               <div className="space-y-1">
                 <p className="text-2xl font-bold">{community.isPrivate ? 'Unlisted' : 'Public'}</p>
@@ -112,8 +119,25 @@ export function CommunityAdminDialog({
             <Switch
               id="privacy-toggle"
               checked={community.isPrivate || false}
-              onCheckedChange={handleTogglePrivacy}
               disabled={isUpdating}
+              onCheckedChange={(v: boolean) => handleUpdate({ isPrivate: v })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="posting-permissions-toggle" className="font-medium">
+                Host-Only Posting
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Only community hosts can create debates
+              </p>
+            </div>
+            <Switch
+              id="posting-permissions-toggle"
+              checked={community.hostOnlyPosting || false}
+              disabled={isUpdating}
+              onCheckedChange={(v: boolean) => handleUpdate({ hostOnlyPosting: v })}
             />
           </div>
 

@@ -52,7 +52,7 @@ export function ActionsCard({
                 </div>
               </div>
               <Button onClick={onShare} className="w-full">
-                Share Debate
+                Share Conversation
               </Button>
             </Card>
           </motion.div>
@@ -71,7 +71,7 @@ export function ActionsCard({
                   <MessageCircle className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium">Continue Debating</h3>
+                  <h3 className="font-medium">Continue the Conversation</h3>
                   <p className="text-xs text-muted-foreground">
                     Dive deeper into the top statement
                   </p>
@@ -101,7 +101,7 @@ export function ActionsCard({
                   <Home className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium">Browse Debates</h3>
+                  <h3 className="font-medium">Browse Posts</h3>
                   <p className="text-xs text-muted-foreground">
                     Find other active discussions
                   </p>

@@ -35,7 +35,7 @@ export function DebateAnalysisReport({
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl">Debate Analysis</h1>
+          <h1 className="text-3xl">Conversation Analysis</h1>
           <p className="text-muted-foreground mt-1">{debateTopic}</p>
         </div>
 
@@ -88,7 +88,7 @@ export function DebateAnalysisReport({
               <div>
                 <h2 className="text-xl text-yellow-900">No Cluster Data Available</h2>
                 <p className="text-sm text-yellow-700 mt-1">
-                  Cluster consensus analysis is not available for this debate.
+                  Cluster consensus analysis is not available for this post.
                 </p>
               </div>
             </div>

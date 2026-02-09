@@ -43,6 +43,10 @@ interface DebateSessionContextType {
     statementId: string,
     voteType: VoteType,
   ) => Promise<any>;
+  flagStatement: (
+    statementId: string,
+    roomId: string,
+  ) => Promise<void>;
   voteViaFlyer: (
     flyerId: string,
     statementId: string,
@@ -367,6 +371,22 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     [user, updateUserScoreFromResponse],
   );
 
+  const flagStatement = useCallback(
+    async (statementId: string, roomId: string) => {
+      try {
+        const response = await api.flagStatement(statementId, roomId);
+        if (!response.success) {
+          throw new Error(response.error || "Failed to flag statement");
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error("Failed to flag statement:", errorMsg);
+      }
+    }, [],
+  );
+
   const voteViaFlyer = useCallback(
     async (
       flyerId: string,
@@ -463,7 +483,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     return null;
   }, [user, getActiveRooms]);
 
-  // Create test room with Q Street debate topic and players (no posts/votes)
+  // Create test room with Q Street topic and players (no posts/votes)
   const createTestRoom = useCallback(async () => {
     if (!user) return null;
 
@@ -488,7 +508,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     return null;
   }, [user, getActiveRooms]);
 
-  // Create rant test room with Q Street debate topic and pre-filled rants
+  // Create rant test room with Q Street topic and pre-filled rants
   const createRantTestRoom = useCallback(async () => {
     if (!user) return null;
 
@@ -672,6 +692,7 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     joinRoom,
     submitStatement,
     voteOnStatement,
+    flagStatement,
     voteViaFlyer,
     getActiveRooms,
     setCurrentSubHeard,
@@ -726,6 +747,9 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
       getRoomStatements: async () => { 
         console.log("[Showcase] getRoomStatements called"); 
         return [];
+      },
+      flagStatement: async (statementId: string, roomId: string) => {
+        console.log("[Showcase] flagStatement called");
       },
       getRoomAnalysis: async () => { 
         console.log("[Showcase] getRoomAnalysis called"); 

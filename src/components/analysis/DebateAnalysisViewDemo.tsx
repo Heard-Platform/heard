@@ -17,7 +17,7 @@ export function DebateAnalysisViewDemo({
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="p-0 border-0 shadow-2xl max-w-7xl h-[95vh] overflow-hidden">
-        <DialogTitle className="sr-only">Debate Analysis Demo</DialogTitle>
+        <DialogTitle className="sr-only">Conversation Analysis Demo</DialogTitle>
         <div className="absolute top-4 right-4 z-10">
           <Button
             variant="ghost"

@@ -1,14 +1,49 @@
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
+import type { SupabaseClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { Statement } from "./types.tsx";
 import { parseKvDataArray } from "./kv-utils.tsx";
 
 export const TABLE_NAME = "kv_store_f1a393b4";
 
-export const createClientFromEnv = () =>
+export const createClientFromEnv = (): SupabaseClient =>
   createClient(
     Deno.env.get("SUPABASE_URL") as string,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string,
   );
+
+export const insert = async <T extends Record<string, any>>(
+  tableName: string,
+  data: T,
+): Promise<{ success: boolean; error?: string }> => {
+  const supabase = createClientFromEnv();
+  
+  const { error } = await supabase
+    .from(tableName)
+    .insert(data);
+
+  if (error) {
+    console.error(`Error inserting into ${tableName} table:`, error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+};
+
+export const selectAll = async <T>(
+  tableName: string,
+): Promise<T[]> => {
+  const supabase = createClientFromEnv();
+  const { data, error } = await supabase
+    .from(tableName)
+    .select("*");
+
+  if (error) {
+    console.error(`Error selecting from ${tableName} table:`, error);
+    throw new Error(error.message);
+  }
+
+  return data as T[];
+}
 
 export const getStatementsForUser = async (
   userId: string,

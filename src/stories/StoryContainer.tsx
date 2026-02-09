@@ -6,13 +6,14 @@ import { Badge } from "../components/ui/badge";
 interface Variant {
   id: string;
   label: string;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 interface StoryContainerProps {
   title: string;
   description?: string;
   variants: Variant[];
+  children?: ReactNode;
   debugInfo?: ReactNode;
 }
 
@@ -20,6 +21,7 @@ export function StoryContainer({
   title,
   description,
   variants,
+  children,
   debugInfo,
 }: StoryContainerProps) {
   const [activeVariant, setActiveVariant] = useState(variants[0].id);
@@ -39,6 +41,7 @@ export function StoryContainer({
         </div>
       </CardHeader>
       <CardContent>
+        {variants.length !== 1 ? (
         <Tabs value={activeVariant} onValueChange={setActiveVariant} className="w-full">
           <TabsList className="mb-6">
             {variants.map((variant) => (
@@ -54,6 +57,10 @@ export function StoryContainer({
             </TabsContent>
           ))}
         </Tabs>
+        ) : (
+          variants[0].children
+        )}
+        {children}
       </CardContent>
     </Card>
   );

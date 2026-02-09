@@ -2,9 +2,9 @@ import type {
   UserSession,
   DebateRoom, NewDebateRoom,
   VoteType,
-  UserPresence
+  UserPresence, SubHeard
 } from "../types";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import {
   RoomScroller,
@@ -223,8 +223,8 @@ export function LobbyScreen({
         );
       }
     } catch (error) {
-      console.error("Error creating anon debate:", error);
-      alert("Failed to create anon-enabled debate");
+      console.error("Error creating anon post:", error);
+      alert("Failed to create anon-enabled post");
     }
   };
 
@@ -235,7 +235,7 @@ export function LobbyScreen({
   const handleOpenCreateSheet = () => {
     if (user.isAnonymous) {
       setShowAccountSetupAnonModal(true);
-      setAccountSetupFeatureText("creating debates");
+      setAccountSetupFeatureText("creating a post");
     } else {
       setDiscussTopic(undefined);
       setDiscussSubHeard(undefined);
@@ -331,13 +331,11 @@ export function LobbyScreen({
                 onCreateSubHeard={async (
                   name: string,
                   userId: string,
-                  isPrivate?: boolean,
                 ) => {
                   try {
                     const response = await api.createSubHeard(
                       name,
                       userId,
-                      isPrivate,
                     );
                     if (response.success) {
                       return true;
@@ -356,16 +354,14 @@ export function LobbyScreen({
                   }
                 }}
                 onUpdateSubHeard={async (
-                  name: string,
+                  community: SubHeard,
                   userId: string,
-                  isPrivate: boolean,
                 ) => {
                   try {
                     const response =
                       await api.updateSubHeardSettings(
-                        name,
+                        community,
                         userId,
-                        isPrivate,
                       );
                     if (response.success) {
                       return true;

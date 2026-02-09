@@ -230,11 +230,11 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
           ),
         );
       } else {
-        alert(`Failed to toggle debate status: ${res.error}`);
+        alert(`Failed to toggle post status: ${res.error}`);
       }
     } catch (error) {
-      console.error("Error toggling debate status:", error);
-      alert("Failed to toggle debate status");
+      console.error("Error toggling post status:", error);
+      alert("Failed to toggle post status");
     } finally {
       setTogglingDebateId(null);
     }
@@ -251,7 +251,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
       );
 
       if (res.success) {
-        alert(`Community updated successfully for debate!`);
+        alert(`Community updated successfully for post!`);
         // Update local state
         setDebates((prev) =>
           prev.map((d) =>
@@ -266,8 +266,8 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         alert(`Failed to update community: ${res.error}`);
       }
     } catch (error) {
-      console.error("Error updating debate community:", error);
-      alert("Failed to update debate community");
+      console.error("Error updating post community:", error);
+      alert("Failed to update post community");
     }
   };
 
@@ -334,6 +334,32 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     } catch (error) {
       console.error("Error clearing phone verification:", error);
       alert("Failed to clear phone verification");
+    }
+  };
+
+  const handleToggleHostOnlyPosting = async (subHeard: SubHeard) => {
+    try {
+      const newHostOnlyPosting = !subHeard.hostOnlyPosting;
+      const res = await adminApi.updateSubHeard(
+        subHeard.name,
+        { hostOnlyPosting: newHostOnlyPosting },
+        adminKey,
+      );
+
+      if (res.success) {
+        setSubHeards((prev) =>
+          prev.map((sh) =>
+            sh.name === subHeard.name
+              ? { ...sh, hostOnlyPosting: newHostOnlyPosting }
+              : sh,
+          ),
+        );
+      } else {
+        alert(`Failed to update host-only posting: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error updating host-only posting:", error);
+      alert("Failed to update host-only posting");
     }
   };
 
@@ -528,6 +554,11 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                       {subHeard.isPrivate && (
                         <Lock className="w-4 h-4 text-muted-foreground" />
                       )}
+                      {subHeard.hostOnlyPosting && (
+                        <Badge variant="outline" className="text-xs">
+                          Host-Only
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Crown className="w-3 h-3" />
@@ -564,6 +595,13 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                       }}
                     >
                       Change Admin
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleToggleHostOnlyPosting(subHeard)}
+                    >
+                      {subHeard.hostOnlyPosting ? "Disable" : "Enable"} Host-Only Posting
                     </Button>
                   </div>
                 </div>

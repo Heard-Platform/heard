@@ -1,4 +1,4 @@
-// URL parsing utilities for shareable debate links and sub-heards
+// URL parsing utilities for shareable post links and sub-heards
 import type { SubHeard, VoteType } from '../types';
 
 /**

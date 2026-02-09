@@ -6,7 +6,7 @@ export const sanitizeUser = (user: any) => {
   };
   
   if (phoneNumber && typeof phoneNumber === 'string' && phoneNumber.length >= 4) {
-    sanitized.phone = phoneNumber.slice(-4);
+    sanitized.phoneSuffix = phoneNumber.slice(-4);
   }
   
   return sanitized;
