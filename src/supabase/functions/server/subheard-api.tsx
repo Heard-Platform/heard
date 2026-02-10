@@ -182,7 +182,6 @@ app.post(
         return c.json({ error: "User ID is required" }, 400);
       }
 
-      // Check if sub-heard exists
       const community = await getCommunity(name);
 
       if (!community) {
@@ -190,6 +189,14 @@ app.post(
       }
 
       const membershipKey = `subheard_member:${userId}:${name}`;
+      
+      const existingMembership = await kv.get(membershipKey);
+      if (existingMembership) {
+        return c.json({
+          success: true,
+        });
+      }
+
       const membershipData = {
         userId,
         subHeard: name,
