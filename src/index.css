@@ -3843,6 +3843,10 @@
     color: var(--foreground);
   }
 
+  .text-gray-300 {
+    color: var(--color-gray-300);
+  }
+
   .text-gray-400 {
     color: var(--color-gray-400);
   }
@@ -3863,8 +3867,16 @@
     color: var(--color-gray-900);
   }
 
+  .text-green-100 {
+    color: var(--color-green-100);
+  }
+
   .text-green-400 {
     color: var(--color-green-400);
+  }
+
+  .text-green-500 {
+    color: var(--color-green-500);
   }
 
   .text-green-600 {
@@ -4307,6 +4319,16 @@
     }
   }
 
+  .shadow-green-100 {
+    --tw-shadow-color: oklch(.962 .044 156.743);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .shadow-green-100 {
+      --tw-shadow-color: color-mix(in oklab, var(--color-green-100) var(--tw-shadow-alpha), transparent);
+    }
+  }
+
   .shadow-green-500\/50 {
     --tw-shadow-color: color-mix(in srgb, oklch(.723 .219 149.579) 50%, transparent);
   }
@@ -4620,6 +4642,18 @@
   }
 
   @media (hover: hover) {
+    .hover\:border-green-300:hover {
+      border-color: var(--color-green-300);
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:border-green-400:hover {
+      border-color: var(--color-green-400);
+    }
+  }
+
+  @media (hover: hover) {
     .hover\:border-purple-300:hover {
       border-color: var(--color-purple-300);
     }
@@ -4734,8 +4768,20 @@
   }
 
   @media (hover: hover) {
+    .hover\:bg-green-100:hover {
+      background-color: var(--color-green-100);
+    }
+  }
+
+  @media (hover: hover) {
     .hover\:bg-green-600:hover {
       background-color: var(--color-green-600);
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:bg-green-700:hover {
+      background-color: var(--color-green-700);
     }
   }
 

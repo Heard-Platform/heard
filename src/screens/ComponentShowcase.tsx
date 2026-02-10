@@ -26,6 +26,7 @@ import SidePanelMenuStory from "../stories/SidePanelMenu.story";
 import { CommunityAdminDialogStory } from "../stories/CommunityAdminDialog.story";
 import { FeedCustomizationModalStory } from "../stories/FeedCustomizationModal.story";
 import { FeedbackSheetStory } from "../stories/FeedbackSheet.story";
+import { CommunityExplorerDialogStory } from "../stories/CommunityExplorerDialog.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 
@@ -109,6 +110,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="community-admin-dialog">Community Admin Dialog</TabsTrigger>
               <TabsTrigger value="feed-customization-modal">Feed Customization Modal</TabsTrigger>
               <TabsTrigger value="feedback-sheet">Feedback Sheet</TabsTrigger>
+              <TabsTrigger value="community-explorer-dialog">Community Explorer Dialog</TabsTrigger>
             </TabsList>
 
             <TabsContent value="results-cards">
@@ -190,6 +192,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="feedback-sheet">
               <FeedbackSheetStory />
+            </TabsContent>
+            <TabsContent value="community-explorer-dialog">
+              <CommunityExplorerDialogStory />
             </TabsContent>
           </Tabs>
         </div>

@@ -11,21 +11,31 @@ import { Context, Hono } from "npm:hono";
 
 const app = new Hono();
 
+async function addCountsAndSort(communities: Community[]) {
+  const allRooms = await getActiveRooms();
+  const rooms = allRooms.filter((r) => r.subHeard);
+  
+  const roomCounts: { [key: string]: number } = {};
+  rooms.forEach((room) => {
+    if (room.subHeard) {
+      roomCounts[room.subHeard] = (roomCounts[room.subHeard] || 0) + 1;
+    }
+  });
+  
+  const withCounts = communities.map((comm) => ({
+    ...comm,
+    count: roomCounts[comm.name] || 0,
+  }));
+  
+  withCounts.sort((a, b) => b.count - a.count);
+  
+  return withCounts;
+}
+
 app.get("/make-server-f1a393b4/subheards", async (c: any) => {
   try {
     const userId = c.req.query("userId");
     const onlyJoined = c.req.query("onlyJoined") === "true";
-
-    const allRooms = await getActiveRooms();
-    const rooms = allRooms.filter((r) => r.subHeard);
-
-    const roomCounts: { [key: string]: number } = {};
-    rooms.forEach((room) => {
-      if (room.subHeard) {
-        roomCounts[room.subHeard] =
-          (roomCounts[room.subHeard] || 0) + 1;
-      }
-    });
 
     let userMemberships: Set<string> = new Set();
     if (userId) {
@@ -34,34 +44,50 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
 
     let subHeards = await getCommunities();
 
-    subHeards = subHeards
-      .filter((comm) => {
-        if (userId && onlyJoined) {
-          if (comm.adminId === userId) return true;
-          if (userMemberships.has(comm.name)) return true;
-          return false;
-        }
-        
-        if (!comm.isPrivate) return true;
+    subHeards = subHeards.filter((comm) => {
+      if (userId && onlyJoined) {
+        if (comm.adminId === userId) return true;
+        if (userMemberships.has(comm.name)) return true;
         return false;
-      })
-      .map((comm) => {
-        const count = roomCounts[comm.name] || 0;
-
-        return {
-          ...comm,
-          count,
-        };
-      });
-
-    subHeards.sort((a, b) => {
-      return a.name.localeCompare(b.name);
+      }
+      
+      if (!comm.isPrivate) return true;
+      return false;
     });
 
-    return c.json({ subHeards });
+    const result = await addCountsAndSort(subHeards);
+
+    return c.json({ subHeards: result });
   } catch (error) {
     console.error("Error fetching sub-heards:", error);
     return c.json({ error: "Failed to fetch sub-heards" }, 500);
+  }
+});
+
+app.get("/make-server-f1a393b4/subheards/explorable", async (c: any) => {
+  try {
+    const userId = c.req.query("userId");
+
+    if (!userId) {
+      return c.json({ error: "User ID is required" }, 400);
+    }
+
+    const userMemberships = await getUserMemberships(userId);
+    let subHeards = await getCommunities();
+
+    subHeards = subHeards.filter((comm) => {
+      if (comm.isPrivate) return false;
+      if (comm.adminId === userId) return false;
+      if (userMemberships.has(comm.name)) return false;
+      return true;
+    });
+
+    const result = await addCountsAndSort(subHeards);
+
+    return c.json(result);
+  } catch (error) {
+    console.error("Error fetching explorable sub-heards:", error);
+    return c.json({ error: "Failed to fetch explorable sub-heards" }, 500);
   }
 });
 
@@ -163,19 +189,6 @@ app.post(
         return c.json({ error: "Sub-heard not found" }, 404);
       }
 
-      // For public sub-heards, just return success (no membership needed)
-      if (!community.isPrivate) {
-        return c.json({
-          success: true,
-          subHeard: {
-            name: community.name,
-            isPrivate: false,
-          },
-        });
-      }
-
-      // For private sub-heards, auto-join by creating membership
-      // No access token validation - if you have the link, you can join
       const membershipKey = `subheard_member:${userId}:${name}`;
       const membershipData = {
         userId,
@@ -189,10 +202,6 @@ app.post(
 
       return c.json({
         success: true,
-        subHeard: {
-          name: community.name,
-          isPrivate: true,
-        },
       });
     } catch (error) {
       console.error("Error joining sub-heard:", error);

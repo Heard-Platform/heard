@@ -74,12 +74,19 @@ interface DebateSessionContextType {
   getRoomStatements: (roomId: string) => Promise<Statement[]>;
   getRoomAnalysis: (roomId: string) => Promise<AnalysisData | null>;
   getSubHeards: (userId: string) => Promise<ApiResponse<{ subHeards: SubHeard[] }> | null>;
+  getExplorableSubHeards: (userId: string) => Promise<ApiResponse<SubHeard[]> | null>;
+  joinSubHeard: (subHeardName: string, userId: string) => Promise<ApiResponse<undefined> | null>;
   leaveSubHeard: (subHeardName: string, userId: string) => Promise<ApiResponse<undefined> | null>;
 }
 
+export type OverridableApiMethods = Pick<DebateSessionContextType, "getExplorableSubHeards">;
+
 const DebateSessionContext = createContext<DebateSessionContextType | null>(null);
 
-export function DebateSessionProvider({ children, showcase }: { children: ReactNode; showcase?: boolean }) {
+export function DebateSessionProvider(
+  { children, showcase, showcaseOverrides }:
+  { children: ReactNode; showcase?: boolean, showcaseOverrides?: Partial<OverridableApiMethods> }
+) {
   const [user, setUser] = useState<UserSession | null>(null);
   const [activeRooms, setActiveRooms] = useState<DebateRoom[]>(
     [],
@@ -648,6 +655,14 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     return safelyMakeApiCall<Response>(() => api.getSubHeards(userId));
   }, []);
 
+  const getExplorableSubHeards = useCallback(async (userId: string) => {
+    return safelyMakeApiCall<SubHeard[]>(() => api.getExplorableSubHeards(userId));
+  }, []);
+
+  const joinSubHeard = useCallback(async (subHeardName: string, userId: string) => {
+    return safelyMakeApiCall<undefined>(() => api.joinSubHeard(subHeardName, userId))
+  }, []);
+
   const leaveSubHeard = useCallback(async (subHeardName: string, userId: string) => {
     return safelyMakeApiCall<undefined>(() => api.leaveSubHeard(subHeardName, userId))
   }, []);
@@ -720,10 +735,12 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
     markChanceCardSwiped,
     markYouTubeCardSwiped,
     getSubHeards,
+    getExplorableSubHeards,
+    joinSubHeard,
     leaveSubHeard,
   };
 
-  if (showcase) {
+  if (showcase || showcaseOverrides) {
     returnObj = {
       ...returnObj,
       sendMagicLink: async (email: string) => { 
@@ -795,10 +812,19 @@ export function DebateSessionProvider({ children, showcase }: { children: ReactN
         console.log("[Showcase] getSubHeards called");
         return { success: true  };
       },
+      getExplorableSubHeards: async (userId: string) => {
+        console.log("[Showcase] getExplorableSubHeards called");
+        return { success: true  };
+      },
+      joinSubHeard: async (subHeardName: string, userId: string) => {
+        console.log("[Showcase] joinSubHeard called");
+        return { success: true };
+      },
       leaveSubHeard: async (subHeardName: string, userId: string) => {
         console.log("[Showcase] leaveSubHeard called");
         return { success: true };
       },
+      ...showcaseOverrides,
     };
   }
 

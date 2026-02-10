@@ -1,4 +1,4 @@
-import { DebateRoom, Statement } from "../types";
+import { DebateRoom, Statement, SubHeard } from "../types";
 
 export const mockRooms: DebateRoom[] = [
   {
@@ -115,3 +115,76 @@ export const mockStatements: Record<string, Statement[]> = {
     },
   ],
 };
+
+export const mockCommunities: SubHeard[] = [
+  {
+    name: "politics",
+    count: 45230,
+    adminId: "admin1",
+    isPrivate: false,
+    hostOnlyPosting: false,
+  },
+  {
+    name: "technology",
+    count: 38940,
+    adminId: "admin2",
+    isPrivate: false,
+    hostOnlyPosting: false,
+  },
+  {
+    name: "climate",
+    count: 28150,
+    adminId: "admin3",
+    isPrivate: false,
+    hostOnlyPosting: false,
+  },
+  {
+    name: "education",
+    count: 22470,
+    adminId: "admin4",
+    isPrivate: false,
+    hostOnlyPosting: false,
+  },
+  {
+    name: "healthcare",
+    count: 19830,
+    adminId: "admin5",
+    isPrivate: false,
+    hostOnlyPosting: false,
+  },
+  {
+    name: "economics",
+    count: 17650,
+    adminId: "admin6",
+    isPrivate: false,
+    hostOnlyPosting: false,
+  },
+  {
+    name: "sports",
+    count: 31290,
+    adminId: "admin7",
+    isPrivate: false,
+    hostOnlyPosting: false,
+  },
+  {
+    name: "entertainment",
+    count: 42180,
+    adminId: "admin8",
+    isPrivate: false,
+    hostOnlyPosting: false,
+  },
+  {
+    name: "science",
+    count: 24560,
+    adminId: "admin9",
+    isPrivate: false,
+    hostOnlyPosting: false,
+  },
+  {
+    name: "philosophy",
+    count: 15320,
+    adminId: "admin10",
+    isPrivate: false,
+    hostOnlyPosting: false,
+  },
+];

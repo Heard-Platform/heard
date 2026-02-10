@@ -13,10 +13,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import { Home, Hash, Plus, ChevronDown, Lock, Settings, Crown, LogOut } from "lucide-react";
+import { Home, Hash, Plus, ChevronDown, Lock, Settings, Crown, LogOut, Compass } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { CommunityAdminDialog } from "./CommunityAdminDialog";
+import { CommunityExplorerDialog } from "./CommunityExplorerDialog";
 import { formatSubHeardDisplay } from "../../utils/subheard";
+import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 
 interface SubHeardBrowserProps {
   currentSubHeard?: string;
@@ -38,7 +41,7 @@ export function SubHeardBrowser({
   onUpdateSubHeard,
   onShowAccountSetupModal,
 }: SubHeardBrowserProps) {
-  const { getSubHeards, leaveSubHeard } = useDebateSession();
+  const { getSubHeards, leaveSubHeard, getActiveRooms } = useDebateSession();
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -47,6 +50,7 @@ export function SubHeardBrowser({
   const [isPrivate, setIsPrivate] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [managingSubHeard, setManagingSubHeard] = useState<SubHeard | null>(null);
+  const [explorerOpen, setExplorerOpen] = useState(false);
 
   useEffect(() => {
     loadSubHeards();
@@ -188,6 +192,20 @@ export function SubHeardBrowser({
           </SheetHeader>
 
           <div className="space-y-4 mt-6">
+            {isFeatureEnabled(FeatureFlags.ONLY_JOINED_COMMUNITIES) && (
+              <Button
+                variant="outline"
+                className="w-full justify-start bg-green-50 border-green-300 hover:bg-green-100 hover:border-green-400"
+                onClick={() => {
+                  setSheetOpen(false);
+                  setExplorerOpen(true);
+                }}
+              >
+                <Compass className="w-4 h-4 mr-2 text-green-600" />
+                <span className="text-green-700">Discover New Communities</span>
+              </Button>
+            )}
+
             {/* All option */}
             <Button
               variant={!currentSubHeard ? "default" : "outline"}
@@ -257,7 +275,10 @@ export function SubHeardBrowser({
                             <LogOut className="w-4 h-4 text-red-600" />
                           </button>
                         )}
-                        <Badge variant="secondary">{subHeard.count}</Badge>
+                        <Badge variant="secondary" className="flex items-center gap-1">
+                          {subHeard.count}
+                          <MessageSquare className="w-3 h-3" />
+                        </Badge>
                       </div>
                     </div>
                   );
@@ -267,20 +288,22 @@ export function SubHeardBrowser({
 
             {/* Create new option */}
             {!showCreateNew ? (
-              <Button
-                variant="outline"
-                className="w-full justify-start border-dashed"
-                onClick={() => {
-                  if (user.isAnonymous) {
-                    onShowAccountSetupModal("creating communities");
-                  } else {
-                    setShowCreateNew(true);
-                  }
-                }}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create New Community
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start border-dashed"
+                  onClick={() => {
+                    if (user.isAnonymous) {
+                      onShowAccountSetupModal("creating communities");
+                    } else {
+                      setShowCreateNew(true);
+                    }
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create New Community
+                </Button>
+              </>
             ) : (
               <div className="space-y-3 p-4 border-2 border-dashed rounded-lg">
                 <div className="space-y-2">
@@ -348,6 +371,16 @@ export function SubHeardBrowser({
           userId={user.id}
         />
       )}
+
+      <CommunityExplorerDialog
+        isOpen={explorerOpen}
+        userId={user.id}
+        onClose={() => setExplorerOpen(false)}
+        onCommunitiesJoined={() => {
+          loadSubHeards();
+          getActiveRooms();
+        }}
+      />
     </>
   );
 }
