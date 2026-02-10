@@ -2,12 +2,13 @@ import { motion, AnimatePresence } from "motion/react";
 import { Check, MessageSquare } from "lucide-react";
 import { getPastelColor } from "../../utils/colors";
 import { SubHeard } from "../../types";
+import { formatSubHeardDisplay } from "../../utils/subheard";
 
 interface CommunityListingProps {
   community: SubHeard;
-  isSelected: boolean;
   index: number;
   accentColor: "blue" | "green";
+  isSelected: boolean;
   onToggle: (communityName: string) => void;
 }
 
@@ -16,13 +17,13 @@ const textMuted = "text-slate-500 text-xs";
 
 export function CommunityListing({
   community,
-  isSelected,
   index,
   accentColor,
+  isSelected,
   onToggle,
 }: CommunityListingProps) {
   const communityColor = getPastelColor(community.name);
-  const displayName = community.name.charAt(0).toUpperCase() + community.name.slice(1);
+  const displayName = formatSubHeardDisplay(community.name);
   const postCount = community.count || 0;
 
   const selectedBorder = accentColor === "blue" 
