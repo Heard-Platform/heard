@@ -223,13 +223,13 @@ app.patch(
   async (c: Context) => {
     try {
       const name = c.req.param("name");
-      const { userId, update } = await c.req.json();
+      const { userId, settings } = await c.req.json();
 
       if (!userId || typeof userId !== "string") {
         return c.json({ error: "User ID is required" }, 400);
       }
 
-      if (!update || typeof update !== "object") {
+      if (!settings || typeof settings !== "object") {
         return c.json(
           { error: "Update data is required" },
           400,
@@ -253,7 +253,7 @@ app.patch(
         );
       }
 
-      const updatedCommunity = { ...community, ...update};
+      const updatedCommunity = { ...community, ...settings};
 
       await saveCommunity(updatedCommunity);
 
