@@ -3,7 +3,7 @@ import { X, Hash, TrendingUp } from "lucide-react";
 import { Button } from "../ui/button";
 import { motion, AnimatePresence } from "motion/react";
 import { SubHeard } from "../../types";
-import { CommunityListing } from "../community/CommunityCard";
+import { CommunityListing } from "../community/CommunityListing";
 
 interface FeedCustomizationModalProps {
   open: boolean;

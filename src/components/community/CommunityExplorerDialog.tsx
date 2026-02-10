@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { motion, AnimatePresence } from "motion/react";
 import { SubHeard } from "../../types";
 import { useDebateSession } from "../../hooks/useDebateSession";
-import { CommunityListing } from "./CommunityCard";
+import { CommunityListing } from "./CommunityListing";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
