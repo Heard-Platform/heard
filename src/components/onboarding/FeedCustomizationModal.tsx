@@ -82,9 +82,9 @@ export function FeedCustomizationModal({
                   <CommunityListing
                     key={community.name}
                     community={community}
-                    isSelected={isSelected}
                     index={index}
                     accentColor="blue"
+                    isSelected={isSelected}
                     onToggle={toggleCommunity}
                   />
                 );

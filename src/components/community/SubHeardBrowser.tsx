@@ -288,22 +288,20 @@ export function SubHeardBrowser({
 
             {/* Create new option */}
             {!showCreateNew ? (
-              <>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start border-dashed"
-                  onClick={() => {
-                    if (user.isAnonymous) {
-                      onShowAccountSetupModal("creating communities");
-                    } else {
-                      setShowCreateNew(true);
-                    }
-                  }}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create New Community
-                </Button>
-              </>
+              <Button
+                variant="outline"
+                className="w-full justify-start border-dashed"
+                onClick={() => {
+                  if (user.isAnonymous) {
+                    onShowAccountSetupModal("creating communities");
+                  } else {
+                    setShowCreateNew(true);
+                  }
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Community
+              </Button>
             ) : (
               <div className="space-y-3 p-4 border-2 border-dashed rounded-lg">
                 <div className="space-y-2">
@@ -373,13 +371,13 @@ export function SubHeardBrowser({
       )}
 
       <CommunityExplorerDialog
-        isOpen={explorerOpen}
         userId={user.id}
-        onClose={() => setExplorerOpen(false)}
+        isOpen={explorerOpen}
         onCommunitiesJoined={() => {
           loadSubHeards();
           getActiveRooms();
         }}
+        onClose={() => setExplorerOpen(false)}
       />
     </>
   );

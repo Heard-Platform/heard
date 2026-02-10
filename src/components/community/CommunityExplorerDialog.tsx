@@ -10,10 +10,10 @@ import { CommunityListing } from "./CommunityListing";
 import { toast } from "sonner@2.0.3";
 
 interface CommunityExplorerDialogProps {
-  isOpen: boolean;
   userId: string;
-  onClose: () => void;
+  isOpen: boolean;
   onCommunitiesJoined: () => void;
+  onClose: () => void;
 }
 
 const primaryButton = "bg-green-600 hover:bg-green-700 text-white";
@@ -40,19 +40,13 @@ export function CommunityExplorerDialog({
   }, [isOpen, userId]);
 
   const loadExplorableCommunities = async () => {
-    try {
-      setLoading(true);
-      const response = await getExplorableSubHeards(userId);
-      console.log("Explorable communities response:", response);
-      if (response?.success && response.data) {
-        setCommunities(response.data);
-      }
-    } catch (error) {
-      console.error("Failed to load explorable communities:", error);
-      toast.error("Failed to load communities");
-    } finally {
-      setLoading(false);
+    setLoading(true);
+    const response = await getExplorableSubHeards(userId);
+    console.log("Explorable communities response:", response);
+    if (response?.success && response.data) {
+      setCommunities(response.data);
     }
+    setLoading(false);
   };
 
   const toggleCommunity = (communityName: string) => {
@@ -153,9 +147,9 @@ export function CommunityExplorerDialog({
                     <CommunityListing
                       key={community.name}
                       community={community}
-                      isSelected={isSelected}
                       index={index}
                       accentColor="green"
+                      isSelected={isSelected}
                       onToggle={toggleCommunity}
                     />
                   );
