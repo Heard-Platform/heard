@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Plus, Compass } from "lucide-react";
+import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
 
 interface CreateRoomCardProps {
   onCreateRoom: () => void;
@@ -49,15 +50,17 @@ export function CreateRoomCard({
               <Plus className="w-5 h-5 ml-2" />
             </Button>
             
-            <Button
-              onClick={onOpenExplorer}
-              size="lg"
-              variant="outline"
-              className="border-2 border-green-500 text-green-700 hover:bg-green-50 text-lg py-6 px-8"
-            >
-              Join New Communities
-              <Compass className="w-5 h-5 ml-2" />
-            </Button>
+            {isFeatureEnabled(FeatureFlags.ONLY_JOINED_COMMUNITIES) && 
+              <Button
+                onClick={onOpenExplorer}
+                size="lg"
+                variant="outline"
+                className="border-2 border-green-500 text-green-700 hover:bg-green-50 text-lg py-6 px-8"
+              >
+                Join New Communities
+                <Compass className="w-5 h-5 ml-2" />
+              </Button>
+            }
           </div>
         </div>
       </Card>
