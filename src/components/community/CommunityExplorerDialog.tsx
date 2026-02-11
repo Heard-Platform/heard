@@ -12,6 +12,7 @@ import { toast } from "sonner@2.0.3";
 interface CommunityExplorerDialogProps {
   userId: string;
   isOpen: boolean;
+  cancelButtonText: string;
   onCommunitiesJoined: () => void;
   onClose: () => void;
 }
@@ -26,6 +27,7 @@ export function CommunityExplorerDialog({
   userId,
   onClose,
   onCommunitiesJoined,
+  cancelButtonText,
 }: CommunityExplorerDialogProps) {
   const { getExplorableSubHeards, joinSubHeard } = useDebateSession();
   const [communities, setCommunities] = useState<SubHeard[]>([]);
@@ -182,7 +184,7 @@ export function CommunityExplorerDialog({
               variant="outline"
               className="flex-1 border-slate-300 hover:bg-slate-100"
             >
-              Cancel
+              {cancelButtonText}
             </Button>
             <Button
               onClick={handleJoinCommunities}

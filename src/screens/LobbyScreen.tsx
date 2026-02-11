@@ -21,6 +21,7 @@ import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api } from "../utils/api";
 import { INTRO_SEEN_KEY } from "../utils/localStorage";
+import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
 
 interface LobbyScreenProps {
   user: UserSession;
@@ -103,6 +104,8 @@ export function LobbyScreen({
   const [showAccountSetupAnonModal, setShowAccountSetupAnonModal] = useState(false);
   const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
   const [explorerOpen, setExplorerOpen] = useState(false);
+  type Steps = "tutorial" | "explorer" | "complete";
+  const [introStep, setIntroStep] = useState<Steps>("complete");
 
   // Sort rooms: target room first, then newest first
   const filteredRooms = activeRooms.sort((a, b) => {
@@ -120,6 +123,7 @@ export function LobbyScreen({
     if (!hasSeenIntro && !hasQrScanResult) {
       localStorage.setItem(INTRO_SEEN_KEY, "true");
       setTimeout(() => {
+        setIntroStep("tutorial");
         setHelpModalOpen(true);
       }, 500);
     }
@@ -280,12 +284,40 @@ export function LobbyScreen({
     setShowAccountSetupAnonModal(true);
   };
 
+  const handleCloseIntroModal = () => {
+    setHelpModalOpen(false);
+    if (introStep === "tutorial") {
+      if (isFeatureEnabled(FeatureFlags.ONLY_JOINED_COMMUNITIES)) {
+        setIntroStep("explorer");
+        setExplorerOpen(true);
+      } else {
+        setIntroStep("complete");
+      }
+    }
+  };
+
+  const advanceFromExplorerStep = () => {
+    if (introStep === "explorer") {
+      setIntroStep("complete");
+    }
+  };
+  
+  const handleExplorerCommunitiesJoined = () => {
+    onRefreshRooms(currentSubHeard);
+    setExplorerOpen(false);
+    advanceFromExplorerStep();
+  };
+
+  const handleCloseExplorer = () => {
+    setExplorerOpen(false);
+    advanceFromExplorerStep();
+  };
+
   return (
     <>
-      {/* Intro Modal - controlled externally */}
       <IntroModal
         isOpen={helpModalOpen}
-        onClose={() => setHelpModalOpen(false)}
+        onClose={handleCloseIntroModal}
       />
 
       {/* Main TikTok-style scroller */}
@@ -491,10 +523,9 @@ export function LobbyScreen({
       <CommunityExplorerDialog
         isOpen={explorerOpen}
         userId={user.id}
-        onCommunitiesJoined={() => {
-          onRefreshRooms(currentSubHeard);
-        }}
-        onClose={() => setExplorerOpen(false)}
+        cancelButtonText={introStep === "explorer" ? "Skip for now" : "Cancel"}
+        onCommunitiesJoined={handleExplorerCommunitiesJoined}
+        onClose={handleCloseExplorer}
       />
     </>
   );
