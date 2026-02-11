@@ -12,6 +12,7 @@ import {
 } from "../components/RoomScroller";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
 import { SubHeardBrowser } from "../components/community/SubHeardBrowser";
+import { CommunityExplorerDialog } from "../components/community/CommunityExplorerDialog";
 import { IntroModal } from "../components/IntroModal";
 import { FloatingCreateButton } from "../components/FloatingCreateButton";
 import { FloatingFeedbackButton } from "../components/FloatingFeedbackButton";
@@ -101,6 +102,7 @@ export function LobbyScreen({
   );
   const [showAccountSetupAnonModal, setShowAccountSetupAnonModal] = useState(false);
   const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
+  const [explorerOpen, setExplorerOpen] = useState(false);
 
   // Sort rooms: target room first, then newest first
   const filteredRooms = activeRooms.sort((a, b) => {
@@ -380,6 +382,7 @@ export function LobbyScreen({
                   }
                 }}
                 onShowAccountSetupModal={handleShowAccountSetupModal}
+                onOpenExplorer={() => setExplorerOpen(true)}
               />
             )}
 
@@ -419,6 +422,7 @@ export function LobbyScreen({
           onDiscussStatement={handleDiscussStatement}
           onUpdatePresence={handleUpdatePresence}
           onShowAccountSetupModal={handleShowAccountSetupModal}
+          onOpenExplorer={() => setExplorerOpen(true)}
         />
       </div>
 
@@ -481,6 +485,16 @@ export function LobbyScreen({
         featureText={accountSetupFeatureText}
         isOpen={showAccountSetupAnonModal}
         onClose={() => setShowAccountSetupAnonModal(false)}
+      />
+
+      {/* Community Explorer Dialog */}
+      <CommunityExplorerDialog
+        isOpen={explorerOpen}
+        userId={user.id}
+        onCommunitiesJoined={() => {
+          onRefreshRooms(currentSubHeard);
+        }}
+        onClose={() => setExplorerOpen(false)}
       />
     </>
   );

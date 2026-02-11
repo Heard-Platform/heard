@@ -4,6 +4,7 @@ import { Badge } from "../components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { ResultsCardsStory } from "../stories/ResultsCards.story";
 import { CreateRoomSheetStory } from "../stories/CreateRoomSheet.story";
+import { CreateRoomCardStory } from "../stories/CreateRoomCard.story";
 import { VotesDrawerStory } from "../stories/VotesDrawer.story";
 import { DebateScrollerStory } from "../stories/DebateScroller.story";
 import { DebateAnalysisReportStory } from "../stories/DebateAnalysisReport.story";
@@ -119,6 +120,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
 
             <TabsContent value="create-room">
               <CreateRoomSheetStory />
+              <CreateRoomCardStory />
             </TabsContent>
 
             <TabsContent value="votes-drawer">

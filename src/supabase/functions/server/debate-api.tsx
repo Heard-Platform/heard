@@ -1264,61 +1264,45 @@ app.get(
     try {
       const subHeard = c.req.query("subHeard");
       const userId = c.req.query("userId");
+      const onlyJoined = c.req.query("onlyJoined") === "true";
 
-      // Get all active rooms using helper function
       let rooms = await getActiveRooms();
 
-      // Filter by sub-heard if specified
-      if (subHeard) {
-        rooms = rooms.filter((r) => r.subHeard === subHeard);
-      } else {
-        rooms = rooms
-          .sort((a, b) => b.createdAt - a.createdAt)
-          .slice(0, 20);
-      }
-
-      // Filter out rooms from private sub-heards where user is not a member
       if (userId) {
-        // Get all user's memberships once
-        const userMemberships =
-          await getUserMemberships(userId);
+        const userMemberships = await getUserMemberships(userId);
 
-        // Get all sub-heard data once
         const communities = await getCommunities();
         const subHeardMap = new Map();
         communities.forEach((c) => {
           subHeardMap.set(c.name, c);
         });
 
-        // Filter rooms based on memberships
         rooms = rooms.filter((room) => {
-          const shData = subHeardMap.get(room.subHeard);
-          if (!shData) {
+          if (subHeard) {
+            return room.subHeard === subHeard;
+          }
+
+          const roomSubheard = subHeardMap.get(room.subHeard);
+          if (!room.subHeard || !roomSubheard) {
             return false;
           }
 
-          if (!shData.isPrivate) {
+          if (!onlyJoined && !roomSubheard.isPrivate) {
             return true;
+          } else {
+            const isAdmin = roomSubheard.adminId === userId;
+            const isMember = userMemberships.has(room.subHeard);
+            return isAdmin || isMember;
           }
-
-          const isAdmin = shData.adminId === userId;
-
-          // @ts-ignore
-          const isMember = userMemberships.has(room.subHeard);
-          return isAdmin || isMember;
         });
 
-        const statuses = await getUsersChanceCardStatuses(
-          userId,
-        );
+        const statuses = await getUsersChanceCardStatuses(userId);
         
         const swipedRoomIds = new Set(
             statuses.map(status => status.roomId)
         );
 
-        const youtubeStatuses = await getUsersYouTubeCardStatuses(
-          userId,
-        );
+        const youtubeStatuses = await getUsersYouTubeCardStatuses(userId);
         
         const swipedYoutubeRoomIds = new Set(
             youtubeStatuses.map(status => status.roomId)
@@ -1330,6 +1314,8 @@ app.get(
           youtubeCardSwiped: swipedYoutubeRoomIds.has(room.id),
         }));
       }
+
+      rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
 
       return c.json({ rooms });
     } catch (error) {
