@@ -10,7 +10,7 @@ type Environment = "production" | "development";
 
 export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
   production: {
-    ONLY_JOINED_COMMUNITIES: false,
+    ONLY_JOINED_COMMUNITIES: true,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
