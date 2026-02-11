@@ -21,6 +21,7 @@ import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api } from "../utils/api";
 import { INTRO_SEEN_KEY } from "../utils/localStorage";
+import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
 
 interface LobbyScreenProps {
   user: UserSession;
@@ -286,8 +287,12 @@ export function LobbyScreen({
   const handleCloseIntroModal = () => {
     setHelpModalOpen(false);
     if (introStep === "tutorial") {
-      setIntroStep("explorer");
-      setExplorerOpen(true);
+      if (isFeatureEnabled(FeatureFlags.ONLY_JOINED_COMMUNITIES)) {
+        setIntroStep("explorer");
+        setExplorerOpen(true);
+      } else {
+        setIntroStep("complete");
+      }
     }
   };
   
