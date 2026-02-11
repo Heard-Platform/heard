@@ -54,6 +54,7 @@ interface DebateSessionContextType {
     vote: VoteType,
     userId?: string,
   ) => Promise<FlyerVoteResponse | null>;
+  submitFlyerEmail: (email: string) => Promise<ApiResponse | null>;
   markChanceCardSwiped: (
     userId: string,
     roomId: string,
@@ -418,6 +419,15 @@ export function DebateSessionProvider(
     [safelyMakeApiCall, setUserAndSession],
   );
 
+  const submitFlyerEmail = useCallback(
+    async (email: string) => {
+      return safelyMakeApiCall(() =>
+        api.submitFlyerEmail(email),
+      );
+    },
+    [safelyMakeApiCall],
+  );
+
   const markChanceCardSwiped = useCallback(
     async (userId: string, roomId: string) => {
       try {
@@ -721,6 +731,7 @@ export function DebateSessionProvider(
     voteOnStatement,
     flagStatement,
     voteViaFlyer,
+    submitFlyerEmail,
     getActiveRooms,
     setCurrentSubHeard,
     resetSession,
@@ -765,6 +776,10 @@ export function DebateSessionProvider(
       },
       addEmailToAccount: async (email: string) => {
         console.log("[Showcase] addEmailToAccount called");
+        return { success: true };
+      },
+      submitFlyerEmail: async (email: string) => {
+        console.log("[Showcase] submitFlyerEmail called");
         return { success: true };
       },
       createAnonymousUser: async () => {

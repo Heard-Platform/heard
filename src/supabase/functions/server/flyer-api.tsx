@@ -3,6 +3,7 @@ import { getUser, saveUser, getDebate } from "./kv-utils.tsx";
 import type { User, VoteType } from "./types.tsx";
 import { processVote } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
+import { insertFlyerEmail } from "./model-utils.ts";
 
 export const flyerApi = new Hono();
 
@@ -118,6 +119,32 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c) => {
         success: false,
         error:
           error instanceof Error ? error.message : "Unknown error",
+      },
+      500,
+    );
+  }
+});
+
+flyerApi.post("/make-server-f1a393b4/flyer/submit-email", async (c) => {
+  try {
+    const { email } = await c.req.json();
+
+    if (!email) {
+      return c.json(
+        { success: false, error: "Email is required" },
+        400,
+      );
+    }
+
+    await insertFlyerEmail(email);
+
+    return c.json({ success: true }, 200);
+  } catch (error) {
+    console.error("Error submitting flyer email:", error);
+    return c.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       500,
     );

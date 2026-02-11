@@ -314,6 +314,16 @@ class ApiClient extends BaseApiClient {
     );
   }
 
+  async submitFlyerEmail(email: string) {
+    return this.request<undefined>(
+      "/flyer/submit-email",
+      {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      },
+    );
+  }
+
   async markChanceCardSwiped(userId: string, roomId: string) {
     return this.request("/chance-card/mark-swiped", {
       method: "POST",

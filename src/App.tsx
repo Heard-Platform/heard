@@ -77,7 +77,7 @@ function AppContent() {
     setCurrentSubHeard,
     resetSession,
     roomStatements,
-    addEmailToAccount,
+    submitFlyerEmail,
   } = useDebateSession();
 
   const handleMagicLinkSuccess = async () => {
@@ -124,8 +124,8 @@ function AppContent() {
   };
 
   const handleQrEmailSubmit = async (email: string) => {
-    const response = await addEmailToAccount(email);
-    if (response && response.success) {
+    const response = await submitFlyerEmail(email);
+    if (response?.success) {
       setTargetRoomId(qrScanResult!.room.id);
       updateUrlForRoom(qrScanResult!.room.id);
       setQrScanResult(null);
