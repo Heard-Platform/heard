@@ -1287,15 +1287,9 @@ app.get(
             return false;
           }
 
-          if (onlyJoined) {
-            const isAdmin = roomSubheard.adminId === userId;
-            const isMember = userMemberships.has(room.subHeard);
-            return isAdmin || isMember;
+          if (!onlyJoined && !roomSubheard.isPrivate) {
+            return true;
           } else {
-            if (!roomSubheard.isPrivate) {
-              return true;
-            }
-
             const isAdmin = roomSubheard.adminId === userId;
             const isMember = userMemberships.has(room.subHeard);
             return isAdmin || isMember;
