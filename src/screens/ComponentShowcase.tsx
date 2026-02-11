@@ -25,7 +25,6 @@ import { CustomDemographicQuestionStory } from "../stories/CustomDemographicQues
 import { AdvancedFeaturesStory } from "../stories/AdvancedFeatures.story";
 import SidePanelMenuStory from "../stories/SidePanelMenu.story";
 import { CommunityAdminDialogStory } from "../stories/CommunityAdminDialog.story";
-import { FeedCustomizationModalStory } from "../stories/FeedCustomizationModal.story";
 import { FeedbackSheetStory } from "../stories/FeedbackSheet.story";
 import { CommunityExplorerDialogStory } from "../stories/CommunityExplorerDialog.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
@@ -188,9 +187,6 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="community-admin-dialog">
               <CommunityAdminDialogStory />
-            </TabsContent>
-            <TabsContent value="feed-customization-modal">
-              <FeedCustomizationModalStory />
             </TabsContent>
             <TabsContent value="feedback-sheet">
               <FeedbackSheetStory />
