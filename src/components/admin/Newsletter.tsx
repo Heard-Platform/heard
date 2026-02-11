@@ -112,6 +112,7 @@ export function Newsletter({ adminKey }: NewsletterProps) {
               <SelectItem value="2">Newsletter #2 - News Feature & Broken Strings</SelectItem>
               <SelectItem value="3">Newsletter #3 - GoFundMe, AI Rickroll & Roadmap</SelectItem>
               <SelectItem value="4">Newsletter #4 - New Features & Updates</SelectItem>
+              <SelectItem value="5">Newsletter #5 - Community Features, Mom Test & Dupont</SelectItem>
             </SelectContent>
           </Select>
         </div>

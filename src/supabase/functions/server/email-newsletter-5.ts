@@ -1,20 +1,5 @@
+import { NewsletterParams } from "./email-newsletter-4.ts";
 import { getNewsletterFooter, getNewsletterHeader, getSupportSection, styles } from "./email-templates.tsx";
-
-interface NewsletterSection {
-  title: string;
-  text: string;
-  imageUrl: string;
-  imageAlt: string;
-  imageLink?: string;
-}
-
-export interface NewsletterParams {
-  subject: string;
-  editionNumber: number;
-  section1: NewsletterSection;
-  section2: NewsletterSection;
-  section3: NewsletterSection;
-}
 
 export const GFM_URL = "https://www.gofundme.com/f/support-heard-making-democracy-fun-and-engaging"
 
@@ -91,30 +76,28 @@ export const getParameterizedNewsletter = (params: NewsletterParams): { subject:
   };
 };
 
-export const getNewsletter4Email = (): { subject: string; html: string } => {
+export const getNewsletter5Email = (): { subject: string; html: string } => {
   return getParameterizedNewsletter({
-    subject: "Heard Newsletter #4: New Domain, 30 Days of Cold Showers & $100 Milestone!",
-    editionNumber: 4,
+    subject: "Heard Newsletter #5: New Community Features, The Mom Test & Taking Heard to the Streets!",
+    editionNumber: 5,
     section1: {
-      title: "🌐 Domain changed to heard.vote!",
-      text: "Big news! We've got a shiny new domain at <strong>heard.vote</strong>. Plus, you can now sign up and log in using just your phone number with SMS verification.",
-      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-4-new-domain.png",
-      imageLink: "https://heard.vote",
-      imageAlt: "New domain and SMS verification",
+      title: "🛠️ New community features",
+      text: "We're ramping up the community management tools to make Heard more organizer-friendly! Admins can now enable <strong>host-only posting</strong> to control who creates new conversations, add <strong>more seed statements</strong> to diversify the initial arguments, and <strong>flag problematic responses</strong> to keep communities healthy.",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-5-community-features.gif",
+      imageAlt: "New community management features",
     },
     section2: {
-      title: "🥶 Day 30 of cold showers and the water's not getting any warmer",
-      text: "We're up to 63 users out of 100 before I can end my cold shower challenge! If you know anyone who might be interested in trying out Heard, please let them know. I think my neighbors are starting to get worried about all the screams coming from my apartment every morning.",
-      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-4-cold-showers.png",
-      imageLink: "https://youtube.com/shorts/4MhRE8Gc8Wc?feature=share",
-      imageAlt: "Coming soon placeholder",
+      title: "📖 Lessons from \"The Mom Test\"",
+      text: "As part of my <a href=\"https://www.youtube.com/watch?v=JM0WUrFkYZc\">goals to read 3 startup books</a> by July 4th, I'm reading \"The Mom Test\" (or \"The Mum Test\" as my British accountability coach calls it). It's a good read on all the inherent issues with asking your mom, \"Do you think my idea is good?\" and how to ask questions that get at what people really think and need.",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-5-mom-test.png",
+      imageLink: "https://www.youtube.com/shorts/kOVOh_wqNA4",
+      imageAlt: "The Mom Test book cover",
     },
     section3: {
-      title: "🎯 GoFundMe hits $100!",
-      text: "We hit our first milestone! The GoFundMe passed $100 in donations. A huge thanks to my latest donor (who encouraged me to set this up in the first place)!",
-      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-4-100-dollar-gfm.png",
-      imageLink: GFM_URL,
-      imageAlt: "GoFundMe exceeds $100",
+      title: "🚧 Guerrilla marketing: Taking Heard to the Streets!",
+      text: "Last time we got 15 strangers at a farmers market to vote on closing an intersection! This week we're gonna ask people about an upcoming city proposal to pedestrianize a few blocks near Dupont Circle.",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-5-guerilla-marketing.jpeg",
+      imageAlt: "Dupont Circle pedestrianization concept",
     },
   });
 };

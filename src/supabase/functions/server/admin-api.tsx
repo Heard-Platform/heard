@@ -8,6 +8,7 @@ import { saveUser } from "./kv-utils.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 import { getNewsletter3Email } from "./email-newsletter-3.ts";
 import { getNewsletter4Email } from "./email-newsletter-4.ts";
+import { getNewsletter5Email } from "./email-newsletter-5.ts";
 import { sanitizeUser } from "./user-utils.ts";
 import { sendDebateCompletionCelebration } from "./cron-api.tsx";
 
@@ -656,6 +657,10 @@ app.post(
         const newsletter4 = getNewsletter4Email();
         subject = newsletter4.subject;
         getNewsletterHtml = () => newsletter4.html;
+      } else if (newsletterEdition === 5) {
+        const newsletter5 = getNewsletter5Email();
+        subject = newsletter5.subject;
+        getNewsletterHtml = () => newsletter5.html;
       } else {
         const getNewsletterHtmlFn = newsletterEdition === 2 ? getNewsletter2Email : newsletterEdition === 3 ? getNewsletter3Email : getNewsletterEmail;
         const newsletterSubjects = {
