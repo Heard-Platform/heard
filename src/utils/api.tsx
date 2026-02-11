@@ -200,6 +200,7 @@ class ApiClient extends BaseApiClient {
     const params = new URLSearchParams();
     if (subHeard) params.append("subHeard", subHeard);
     if (userId) params.append("userId", userId);
+    params.append("onlyJoined", isFeatureEnabled(FeatureFlags.ONLY_JOINED_COMMUNITIES).toString());
     const queryString = params.toString();
     return this.request<{ rooms: DebateRoom[] }>(
       `/rooms/active${queryString ? `?${queryString}` : ""}`,
