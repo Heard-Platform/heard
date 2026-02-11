@@ -1,11 +1,13 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers } from "./kv-utils.tsx";
-import { getUserReports } from "./model-utils.ts";
+import { getUserReports, getFlyerEmails } from "./model-utils.ts";
 
 const app = new Hono();
 
 app.get("/make-server-f1a393b4/stats/features", async (c) => {
   try {
+    const flyerEmails = (await getFlyerEmails()).length;
+
     const users = await getAllRealUsers();
     
     const userReports = (await getUserReports()).length;
@@ -22,12 +24,15 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       u => u.flyerId
     ).length;
     
+    const flyerEmailsSince = new Date("2026-02-11").getTime();
     const userReportsSince = new Date("2026-02-04").getTime();
     const phoneVerifiedSince = new Date("2026-01-26").getTime();
     const convertedFromAnonSince = new Date("2026-01-22").getTime();
     const flyerUsersSince = new Date("2026-01-05").getTime();
     
     return c.json({
+      flyerEmails,
+      flyerEmailsSince,
       userReports,
       userReportsSince,
       phoneVerifiedUsers,

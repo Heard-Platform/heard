@@ -12,3 +12,7 @@ export const getUserReports = async () => {
 export const insertFlyerEmail = async (email: string) => {
   return insert<{ email: string }>("flyer_emails", { email });
 };
+
+export const getFlyerEmails = async () => {
+  return selectAll<{ email: string }>("flyer_emails");
+};
