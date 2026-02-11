@@ -139,16 +139,20 @@ export function SubHeardBrowser({
           : sh
       )
     );
+
+    setManagingSubHeard(update);
     
     const success = await onUpdateSubHeard(update, userId);
-    if (!success) {
+    if (!success && oldCommunity) {
       setSubHeards(prev => 
         prev.map(sh => 
           sh.name === update.name 
-            ? oldCommunity!
+            ? oldCommunity
             : sh
         )
       );
+
+      setManagingSubHeard(oldCommunity);
     }
     return success;
   };
