@@ -283,6 +283,14 @@ export function LobbyScreen({
     setShowAccountSetupAnonModal(true);
   };
 
+  const handleCloseIntroModal = () => {
+    setHelpModalOpen(false);
+    if (introStep === "tutorial") {
+      setIntroStep("explorer");
+      setExplorerOpen(true);
+    }
+  };
+  
   const handleExplorerCommunitiesJoined = () => {
     onRefreshRooms(currentSubHeard);
     setExplorerOpen(false);
@@ -290,14 +298,6 @@ export function LobbyScreen({
 
   const handleCloseExplorer = () => {
     setExplorerOpen(false);
-  };
-
-  const handleCloseIntroModal = () => {
-    setHelpModalOpen(false);
-    if (introStep === "tutorial") {
-      setIntroStep("explorer");
-      setExplorerOpen(true);
-    }
   };
 
   return (
