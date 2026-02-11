@@ -17,7 +17,6 @@ import { Home, Hash, Plus, ChevronDown, Lock, Settings, Crown, LogOut, Compass }
 import { MessageSquare } from "lucide-react";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { CommunityAdminDialog } from "./CommunityAdminDialog";
-import { CommunityExplorerDialog } from "./CommunityExplorerDialog";
 import { formatSubHeardDisplay } from "../../utils/subheard";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 
@@ -31,6 +30,7 @@ interface SubHeardBrowserProps {
     userId: string,
   ) => Promise<boolean>;
   onShowAccountSetupModal: (featureText: string) => void;
+  onOpenExplorer: () => void;
 }
 
 export function SubHeardBrowser({
@@ -40,6 +40,7 @@ export function SubHeardBrowser({
   onCreateSubHeard,
   onUpdateSubHeard,
   onShowAccountSetupModal,
+  onOpenExplorer,
 }: SubHeardBrowserProps) {
   const { getSubHeards, leaveSubHeard, getActiveRooms } = useDebateSession();
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
@@ -50,7 +51,6 @@ export function SubHeardBrowser({
   const [isPrivate, setIsPrivate] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [managingSubHeard, setManagingSubHeard] = useState<SubHeard | null>(null);
-  const [explorerOpen, setExplorerOpen] = useState(false);
 
   useEffect(() => {
     loadSubHeards();
@@ -202,7 +202,7 @@ export function SubHeardBrowser({
                 className="w-full justify-start bg-green-50 border-green-300 hover:bg-green-100 hover:border-green-400"
                 onClick={() => {
                   setSheetOpen(false);
-                  setExplorerOpen(true);
+                  onOpenExplorer();
                 }}
               >
                 <Compass className="w-4 h-4 mr-2 text-green-600" />
@@ -373,16 +373,6 @@ export function SubHeardBrowser({
           userId={user.id}
         />
       )}
-
-      <CommunityExplorerDialog
-        userId={user.id}
-        isOpen={explorerOpen}
-        onCommunitiesJoined={() => {
-          loadSubHeards();
-          getActiveRooms();
-        }}
-        onClose={() => setExplorerOpen(false)}
-      />
     </>
   );
 }
