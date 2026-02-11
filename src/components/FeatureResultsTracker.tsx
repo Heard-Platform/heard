@@ -52,6 +52,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
 
   const featureCards: FeatureCardData[] = [
     {
+      icon: Tag,
+      iconColor: "text-orange-600",
+      bgColor: "bg-orange-100",
+      title: "Flyer Email Submissions",
+      description: "Emails collected from QR code flyer voting flows",
+      getValue: (s) => s.flyerEmails,
+      getDate: (s) => s.flyerEmailsSince,
+    },
+    {
       icon: Flag,
       iconColor: "text-red-600",
       bgColor: "bg-red-100",

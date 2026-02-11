@@ -8,3 +8,11 @@ export const insertUserReport = async (report: NewUserReport) => {
 export const getUserReports = async () => {
   return selectAll<UserReport>("user_reports");
 };
+
+export const insertFlyerEmail = async (email: string) => {
+  return insert<{ email: string }>("flyer_emails", { email });
+};
+
+export const getFlyerEmails = async () => {
+  return selectAll<{ email: string }>("flyer_emails");
+};
