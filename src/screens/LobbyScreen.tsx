@@ -283,11 +283,6 @@ export function LobbyScreen({
     setShowAccountSetupAnonModal(true);
   };
 
-  const advanceToExplorerStep = () => {
-    setIntroStep("explorer");
-    setExplorerOpen(true);
-  };
-
   const handleExplorerCommunitiesJoined = () => {
     onRefreshRooms(currentSubHeard);
     setExplorerOpen(false);
