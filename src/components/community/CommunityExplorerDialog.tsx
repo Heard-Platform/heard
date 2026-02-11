@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { X, TrendingUp, Compass } from "lucide-react";
+import { TrendingUp, Compass } from "lucide-react";
 import { Button } from "../ui/button";
-import { motion, AnimatePresence } from "motion/react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
+import { motion } from "motion/react";
 import { SubHeard } from "../../types";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { CommunityListing } from "./CommunityListing";
@@ -91,114 +92,94 @@ export function CommunityExplorerDialog({
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          onClick={(e) => e.stopPropagation()}
-          className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
-        >
-          <div className="bg-linear-to-r from-green-500 to-emerald-600 text-white p-6 relative">
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-white/20 rounded-xl">
-                <Compass className="w-6 h-6" />
-              </div>
-              <h2 className="text-2xl font-bold">Discover Communities</h2>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-white/20 rounded-xl">
+              <Compass className="w-6 h-6" />
             </div>
-            <p className="text-green-100">
-              Explore and join public communities to expand your feed
-            </p>
+            <DialogTitle className="text-2xl font-bold">Discover Communities</DialogTitle>
           </div>
+          <DialogDescription className="text-green-100">
+            Explore and join public communities to expand your feed
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-6">
-            {loading ? (
-              <div className="space-y-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="h-24 bg-gray-200 rounded-2xl animate-pulse"
+        <div className="flex-1 overflow-y-auto p-6">
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="h-24 bg-gray-200 rounded-2xl animate-pulse"
+                />
+              ))}
+            </div>
+          ) : communities.length === 0 ? (
+            <div className="text-center py-12">
+              <Compass className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">
+                No new communities to explore right now
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {communities.map((community, index) => {
+                const isSelected = selectedCommunities.includes(community.name);
+                return (
+                  <CommunityListing
+                    key={community.name}
+                    community={community}
+                    index={index}
+                    accentColor="green"
+                    isSelected={isSelected}
+                    onToggle={toggleCommunity}
                   />
-                ))}
-              </div>
-            ) : communities.length === 0 ? (
-              <div className="text-center py-12">
-                <Compass className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">
-                  No new communities to explore right now
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {communities.map((community, index) => {
-                  const isSelected = selectedCommunities.includes(community.name);
-                  return (
-                    <CommunityListing
-                      key={community.name}
-                      community={community}
-                      index={index}
-                      accentColor="green"
-                      isSelected={isSelected}
-                      onToggle={toggleCommunity}
-                    />
-                  );
-                })}
-              </div>
-            )}
+                );
+              })}
+            </div>
+          )}
 
-            {selectedCommunities.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-6 p-4 bg-green-50 border-2 border-green-200 rounded-xl"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className={iconGreen} />
-                  <span className={textPrimary}>
-                    {selectedCommunities.length} {selectedCommunities.length === 1 ? 'community' : 'communities'} selected
-                  </span>
-                </div>
-                <p className={textMuted}>
-                  You'll see content from these communities in your feed
-                </p>
-              </motion.div>
-            )}
-          </div>
+          {selectedCommunities.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 p-4 bg-green-50 border-2 border-green-200 rounded-xl"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className={iconGreen} />
+                <span className={textPrimary}>
+                  {selectedCommunities.length} {selectedCommunities.length === 1 ? 'community' : 'communities'} selected
+                </span>
+              </div>
+              <p className={textMuted}>
+                You'll see content from these communities in your feed
+              </p>
+            </motion.div>
+          )}
+        </div>
 
-          <div className="p-6 border-t border-slate-200 bg-slate-50 flex gap-3">
-            <Button
-              onClick={onClose}
-              variant="outline"
-              className="flex-1 border-slate-300 hover:bg-slate-100"
-            >
-              {cancelButtonText}
-            </Button>
-            <Button
-              onClick={handleJoinCommunities}
-              disabled={selectedCommunities.length === 0 || joining}
-              className={`flex-1 ${primaryButton}`}
-            >
-              {joining 
-                ? "Joining..." 
-                : `Join ${selectedCommunities.length} ${selectedCommunities.length === 1 ? "community" : "communities"}`
-              }
-            </Button>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        <div className="p-6 border-t border-slate-200 bg-slate-50 flex gap-3">
+          <Button
+            onClick={onClose}
+            variant="outline"
+            className="flex-1 border-slate-300 hover:bg-slate-100"
+          >
+            {cancelButtonText}
+          </Button>
+          <Button
+            onClick={handleJoinCommunities}
+            disabled={selectedCommunities.length === 0 || joining}
+            className={`flex-1 ${primaryButton}`}
+          >
+            {joining 
+              ? "Joining..." 
+              : `Join ${selectedCommunities.length} ${selectedCommunities.length === 1 ? "community" : "communities"}`
+            }
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
