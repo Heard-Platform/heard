@@ -295,14 +295,22 @@ export function LobbyScreen({
       }
     }
   };
+
+  const advanceFromExplorerStep = () => {
+    if (introStep === "explorer") {
+      setIntroStep("complete");
+    }
+  };
   
   const handleExplorerCommunitiesJoined = () => {
     onRefreshRooms(currentSubHeard);
     setExplorerOpen(false);
+    advanceFromExplorerStep();
   };
 
   const handleCloseExplorer = () => {
     setExplorerOpen(false);
+    advanceFromExplorerStep();
   };
 
   return (
