@@ -8,7 +8,7 @@ interface NewsletterSection {
   imageLink?: string;
 }
 
-interface NewsletterParams {
+export interface NewsletterParams {
   subject: string;
   editionNumber: number;
   section1: NewsletterSection;
