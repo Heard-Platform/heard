@@ -295,7 +295,7 @@ export function LobbyScreen({
   const handleCloseIntroModal = () => {
     setHelpModalOpen(false);
     if (introStep === "tutorial") {
-      setIntroStep("complete");
+      setIntroStep("explorer");
       setExplorerOpen(true);
     }
   };
