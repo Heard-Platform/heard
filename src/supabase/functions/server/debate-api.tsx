@@ -1278,6 +1278,10 @@ app.get(
         });
 
         rooms = rooms.filter((room) => {
+          if (subHeard) {
+            return room.subHeard === subHeard;
+          }
+
           const roomSubheard = subHeardMap.get(room.subHeard);
           if (!room.subHeard || !roomSubheard) {
             return false;
@@ -1315,10 +1319,6 @@ app.get(
           chanceCardSwiped: swipedRoomIds.has(room.id),
           youtubeCardSwiped: swipedYoutubeRoomIds.has(room.id),
         }));
-      }
-
-      if (subHeard) {
-        rooms = rooms.filter((r) => r.subHeard === subHeard);
       }
 
       rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
