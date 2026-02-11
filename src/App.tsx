@@ -77,6 +77,7 @@ function AppContent() {
     setCurrentSubHeard,
     resetSession,
     roomStatements,
+    addEmailToAccount,
   } = useDebateSession();
 
   const handleMagicLinkSuccess = async () => {
@@ -120,6 +121,16 @@ function AppContent() {
   const handleSubHeardChange = (subHeard: string | null) => {
     setCurrentSubHeard(subHeard);
     updateUrlForSubHeard(subHeard);
+  };
+
+  const handleQrEmailSubmit = async (email: string) => {
+    const response = await addEmailToAccount(email);
+    if (response && response.success) {
+      setTargetRoomId(qrScanResult!.room.id);
+      updateUrlForRoom(qrScanResult!.room.id);
+      setQrScanResult(null);
+      toast.success("Welcome to Heard! 🎉");
+    }
   };
 
   const handleLogout = () => {
@@ -458,15 +469,7 @@ function AppContent() {
           passPercent={qrScanResult.passPercent}
           userVote={qrScanResult.userVote}
           isOpen={true}
-          onFollowConversation={() => {
-            setShowAccountSetupModal(true);
-            setAccountSetupContext("following this conversation");
-          }}
-          onJoinDiscussion={() => {
-            setTargetRoomId(qrScanResult.room.id);
-            updateUrlForRoom(qrScanResult.room.id);
-            setQrScanResult(null);
-          }}
+          onEmailSubmit={handleQrEmailSubmit}
           onClose={() => setQrScanResult(null)}
         />
       )}

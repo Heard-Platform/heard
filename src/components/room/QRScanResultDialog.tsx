@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { Sparkles, X, Bell } from "lucide-react";
+import { Sparkles, X, Mail, ArrowRight } from "lucide-react";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { DebateRoom } from "../../types";
 import { VoteType } from "../../types";
+import { isValidEmail } from "../../utils/validation";
 
 export type QRScanResult = {
   room: DebateRoom;
@@ -16,8 +18,7 @@ export type QRScanResult = {
 
 interface QRScanResultDialogProps extends QRScanResult {
   isOpen: boolean;
-  onFollowConversation: () => void;
-  onJoinDiscussion: () => void;
+  onEmailSubmit: (email: string) => Promise<void>;
   onClose: () => void;
 }
 
@@ -28,17 +29,21 @@ export function QRScanResultDialog({
   passPercent,
   userVote,
   isOpen,
-  onFollowConversation,
-  onJoinDiscussion,
+  onEmailSubmit,
   onClose,
 }: QRScanResultDialogProps) {
   const [showBars, setShowBars] = useState(false);
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => setShowBars(true), 300);
     } else {
       setShowBars(false);
+      setEmail("");
+      setError("");
     }
   }, [isOpen]);
 
@@ -67,6 +72,30 @@ export function QRScanResultDialog({
       isUserVote: userVote === "pass",
     },
   ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email.trim()) {
+      setError("Please enter your email to join the discussion");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email");
+      return;
+    }
+
+    setSubmitting(true);
+    setError("");
+    
+    try {
+      await onEmailSubmit(email);
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+      setSubmitting(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -196,22 +225,46 @@ export function QRScanResultDialog({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.5 }}
-              className="space-y-3"
+              className="space-y-4"
             >
-              <Button
-                onClick={onFollowConversation}
-                className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
-              >
-                <Bell className="w-5 h-5" />
-                Follow Conversation
-              </Button>
+              <div className="text-center space-y-2">
+                <p className="text-base font-semibold text-white">
+                  Get updates on this discussion
+                </p>
+              </div>
 
-              <button
-                onClick={onJoinDiscussion}
-                className="w-full text-sm text-slate-300 hover:text-white transition-colors underline"
-              >
-                Vote on other posts in this discussion
-              </button>
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    disabled={submitting}
+                    className="pl-12 h-14 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500 rounded-xl text-base"
+                  />
+                </div>
+                
+                {error && (
+                  <p className="text-sm text-red-400 text-center">{error}</p>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                  {submitting ? (
+                    "Joining discussion..."
+                  ) : (
+                    <>
+                      Join Discussion
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </Button>
+              </form>
             </motion.div>
 
             <motion.div

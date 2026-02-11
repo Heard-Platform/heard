@@ -632,6 +632,7 @@ app.post(
       }
 
       user.email = normalizedEmail;
+      user.isAnonymous = false;
       user.emailDigestsEnabled = true;
       await saveUserAndEmail(user);
 
