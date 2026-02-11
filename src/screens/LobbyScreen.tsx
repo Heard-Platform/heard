@@ -103,6 +103,8 @@ export function LobbyScreen({
   const [showAccountSetupAnonModal, setShowAccountSetupAnonModal] = useState(false);
   const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
   const [explorerOpen, setExplorerOpen] = useState(false);
+  type Steps = "tutorial" | "explorer" | "complete";
+  const [introStep, setIntroStep] = useState<Steps>("complete");
 
   // Sort rooms: target room first, then newest first
   const filteredRooms = activeRooms.sort((a, b) => {
@@ -120,6 +122,7 @@ export function LobbyScreen({
     if (!hasSeenIntro && !hasQrScanResult) {
       localStorage.setItem(INTRO_SEEN_KEY, "true");
       setTimeout(() => {
+        setIntroStep("tutorial");
         setHelpModalOpen(true);
       }, 500);
     }
@@ -280,12 +283,33 @@ export function LobbyScreen({
     setShowAccountSetupAnonModal(true);
   };
 
+  const advanceToExplorerStep = () => {
+    setIntroStep("explorer");
+    setExplorerOpen(true);
+  };
+
+  const handleExplorerCommunitiesJoined = () => {
+    onRefreshRooms(currentSubHeard);
+    setExplorerOpen(false);
+  };
+
+  const handleCloseExplorer = () => {
+    setExplorerOpen(false);
+  };
+
+  const handleCloseIntroModal = () => {
+    setHelpModalOpen(false);
+    if (introStep === "tutorial") {
+      setIntroStep("complete");
+      setExplorerOpen(true);
+    }
+  };
+
   return (
     <>
-      {/* Intro Modal - controlled externally */}
       <IntroModal
         isOpen={helpModalOpen}
-        onClose={() => setHelpModalOpen(false)}
+        onClose={handleCloseIntroModal}
       />
 
       {/* Main TikTok-style scroller */}
@@ -491,10 +515,9 @@ export function LobbyScreen({
       <CommunityExplorerDialog
         isOpen={explorerOpen}
         userId={user.id}
-        onCommunitiesJoined={() => {
-          onRefreshRooms(currentSubHeard);
-        }}
-        onClose={() => setExplorerOpen(false)}
+        cancelButtonText={introStep === "explorer" ? "Skip for now" : "Cancel"}
+        onCommunitiesJoined={handleExplorerCommunitiesJoined}
+        onClose={handleCloseExplorer}
       />
     </>
   );
