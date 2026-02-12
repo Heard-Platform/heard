@@ -153,7 +153,7 @@ export function LandingPage({
               transition={{ delay: 0.6 }}
               className="text-xl text-white/95 max-w-2xl mx-auto leading-relaxed font-medium drop-shadow-md px-4"
             >
-              Heard is an app for making conversations, debates, and decision making fun.
+              Heard is an app for making conversations, debates, and decision-making fun.
             </motion.p>
           </div>
 
