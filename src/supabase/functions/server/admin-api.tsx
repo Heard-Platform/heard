@@ -17,8 +17,7 @@ import { Hono } from "npm:hono";
 
 const app = new Hono();
 
-// Middleware to verify admin key
-const verifyAdminKey = async (c: any, next: any) => {
+export const verifyAdminKey = async (c: any, next: any) => {
   const adminKey = c.req.header("X-Admin-Key");
   const validKey = Deno.env.get("DEV_ADMIN_KEY");
 
@@ -32,7 +31,6 @@ const verifyAdminKey = async (c: any, next: any) => {
   await next();
 };
 
-// Apply middleware to all admin routes
 app.use("/make-server-f1a393b4/admin/*", verifyAdminKey);
 
 // Get all users
