@@ -57,6 +57,25 @@ class AdminApiClient extends BaseApiClient {
     );
   }
 
+  async backfillMemberships(adminKey: string, dryRun: boolean) {
+    interface Result {
+      totalUsers: number;
+      usersNeedingMemberships: number;
+      totalMembershipsToCreate: number;
+      totalMembershipsAlreadyExist: number;
+      dryRun: boolean;
+    }
+
+    return this.request<Result>(
+      "/one-time-fixes/backfill-community-memberships",
+      {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+        body: JSON.stringify({ dryRun }),
+      },
+    );
+  }
+
   async updateSubHeard(
     subHeardName: string,
     update: Partial<SubHeard>,

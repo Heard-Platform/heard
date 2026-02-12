@@ -54,6 +54,12 @@ export type Community = {
   hostOnlyPosting: boolean;
 }
 
+export type CommunityMembership = {
+  userId: string;
+  subHeard: string;
+  joinedAt: number;
+}
+
 export type VoteType =
   | "agree"
   | "disagree"

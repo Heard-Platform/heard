@@ -12,11 +12,55 @@ interface DataFixesProps {
   fetchAdminData: () => Promise<void>;
 }
 
+interface ScriptConfig {
+  id: string;
+  title: string;
+  description: string;
+  dryRunMessage: string;
+  liveRunMessage: string;
+  successMessageDryRun: (stats: any) => string;
+  successMessageLive: (stats: any) => string;
+  statsDisplay: (stats: any) => string;
+  apiCall: (adminKey: string, dryRun: boolean) => Promise<any>;
+  bgColor: string;
+}
+
+const SCRIPTS: ScriptConfig[] = [
+  {
+    id: "backfill-memberships",
+    title: "Backfill Community Memberships",
+    description: "Create membership records for all non-anonymous users based on their room participation. Required after enabling the \"only joined communities\" feature. Safe to run multiple times.",
+    dryRunMessage: "Run DRY RUN?\n\nThis will preview what would happen without making any changes.\n\n- Shows how many users need memberships backfilled\n- No database changes will be made\n- Safe to run anytime\n\nContinue?",
+    liveRunMessage: "Run LIVE SCRIPT?\n\nThis will create membership records for all non-anonymous users based on their room participation.\n\n- Scans all rooms and participants\n- Creates memberships for communities users have participated in\n- Safe to run multiple times (idempotent)\n\nNOTE: This may take a few minutes depending on data size.\n\nContinue?",
+    successMessageDryRun: (stats) => 
+      `DRY RUN complete!\n\n` +
+      `Total users: ${stats.totalUsers}\n` +
+      `Users needing memberships: ${stats.usersNeedingMemberships}\n` +
+      `Memberships to create: ${stats.totalMembershipsToCreate}\n` +
+      `Memberships already exist: ${stats.totalMembershipsAlreadyExist}\n\n` +
+      `No changes were made.`,
+    successMessageLive: (stats) =>
+      `Backfill complete!\n\n` +
+      `Total users: ${stats.totalUsers}\n` +
+      `Users processed: ${stats.usersNeedingMemberships}\n` +
+      `Memberships created: ${stats.totalMembershipsToCreate}\n` +
+      `Memberships already existed: ${stats.totalMembershipsAlreadyExist}`,
+    statsDisplay: (stats) =>
+      `Last run: ${stats.totalUsers} total users, ${stats.usersNeedingMemberships} users needing memberships, ${stats.totalMembershipsToCreate} memberships to create, ${stats.totalMembershipsAlreadyExist} already exist`,
+    apiCall: (adminKey, dryRun) => adminApi.backfillMemberships(adminKey, dryRun),
+    bgColor: "bg-purple-50",
+  },
+];
+
 export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
   const [dataFixLoading, setDataFixLoading] = useState<string | null>(null);
   const [migrationStats, setMigrationStats] = useState<any>(null);
   const [isMigrating, setIsMigrating] = useState(false);
   const [migrationDryRun, setMigrationDryRun] = useState(true);
+  const [scriptStats, setScriptStats] = useState<any>(null);
+  const [isRunningScript, setIsRunningScript] = useState(false);
+  const [scriptDryRun, setScriptDryRun] = useState(true);
+  const [currentScript, setCurrentScript] = useState<string>(SCRIPTS[0]?.id || "");
 
   const handleDataFixNormalizeDupontCircle = async () => {
     if (
@@ -187,6 +231,46 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
     }
   };
 
+  const handleRunScript = async () => {
+    const script = SCRIPTS.find(s => s.id === currentScript);
+    if (!script) {
+      alert("Please select a script to run.");
+      return;
+    }
+
+    const confirmMessage = scriptDryRun
+      ? script.dryRunMessage
+      : script.liveRunMessage;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    setIsRunningScript(true);
+    setScriptStats(null);
+    try {
+      const res = await script.apiCall(adminKey, scriptDryRun);
+
+      if (res.success && res.data) {
+        setScriptStats(res.data);
+        const stats = res.data;
+        const resultMessage = scriptDryRun
+          ? script.successMessageDryRun(stats)
+          : script.successMessageLive(stats);
+
+        alert(resultMessage);
+        await fetchAdminData();
+      } else {
+        alert(`Failed to run script: ${res.error}`);
+      }
+    } catch (error) {
+      console.error(`Error running script ${script.title}:`, error);
+      alert(`Failed to run script: ${error}`);
+    } finally {
+      setIsRunningScript(false);
+    }
+  };
+
   return (
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-4">
@@ -198,6 +282,55 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
         to run multiple times.
       </p>
       <div className="space-y-3">
+        {SCRIPTS.map(script => {
+          const isCurrentScript = currentScript === script.id;
+          return (
+            <div key={script.id} className={`flex items-center justify-between p-4 border rounded-lg ${script.bgColor}`}>
+              <div className="flex-1">
+                <h3 className="font-medium">
+                  {script.title}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {script.description}
+                </p>
+                <div className="flex items-center gap-2 mt-3">
+                  <Checkbox
+                    id={`script-dry-run-${script.id}`}
+                    checked={scriptDryRun}
+                    onCheckedChange={setScriptDryRun}
+                    disabled={isRunningScript}
+                  />
+                  <Label
+                    htmlFor={`script-dry-run-${script.id}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {scriptDryRun ? "Dry Run Mode (preview only)" : "Live Script Mode"}
+                  </Label>
+                </div>
+                {scriptStats && isCurrentScript && (
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    {script.statsDisplay(scriptStats)}
+                  </div>
+                )}
+              </div>
+              <Button
+                onClick={() => {
+                  setCurrentScript(script.id);
+                  handleRunScript();
+                }}
+                disabled={isRunningScript}
+                variant="outline"
+                size="sm"
+              >
+                {isRunningScript && isCurrentScript
+                  ? "Running..."
+                  : scriptDryRun
+                  ? "Run Dry Run"
+                  : "Run"}
+              </Button>
+            </div>
+          );
+        })}
         <div className="heard-between p-4 border rounded-lg">
           <div className="flex-1">
             <h3 className="font-medium">

@@ -3,22 +3,10 @@ import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getByPrefixParsed } from "./kv-utils.tsx";
 import { backfillUserCreatedAtApi } from "./backfill-user-created-at.tsx";
+import { backfillMembershipsApi } from "./script-backfill-memberships.tsx";
+import { verifyAdminKey } from "./admin-api.tsx";
 
 const app = new Hono();
-
-const verifyAdminKey = async (c: any, next: any) => {
-  const adminKey = c.req.header("X-Admin-Key");
-  const validKey = Deno.env.get("DEV_ADMIN_KEY");
-
-  if (!adminKey || !validKey || adminKey !== validKey) {
-    return c.json(
-      { error: "Unauthorized - Invalid admin key" },
-      401,
-    );
-  }
-
-  await next();
-};
 
 app.use("/make-server-f1a393b4/one-time-fixes/*", verifyAdminKey);
 
@@ -121,5 +109,6 @@ app.post(
 );
 
 app.route("/", backfillUserCreatedAtApi);
+app.route("/", backfillMembershipsApi);
 
 export { app as oneTimeFixesApi };

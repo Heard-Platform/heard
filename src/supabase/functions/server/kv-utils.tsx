@@ -13,6 +13,7 @@ import {
   MagicLinkRecord,
   Session,
   Community,
+  CommunityMembership,
 } from "./types.tsx";
 
 /**
@@ -196,8 +197,21 @@ export const saveCommunity = async (community: Community) => {
   await kv.set(`subheard:${community.name}`, community);
 };
 
+export const membershipKeyFn = (userId: string, subHeardName: string) =>
+  `subheard_member:${userId}:${subHeardName}`;
+
+export const getMembership = async (userId: string, subHeardName: string) =>
+  getParsedKvData<CommunityMembership>(membershipKeyFn(userId, subHeardName));
+
+export const saveMembership = async (membership: CommunityMembership) => {
+  await kv.set(
+    membershipKeyFn(membership.userId, membership.subHeard),
+    JSON.stringify(membership),
+  );
+}
+
 export const deleteMembership = async (userId: string, subHeardName: string) => {
-  const membershipKey = `subheard_member:${userId}:${subHeardName}`;
+  const membershipKey = membershipKeyFn(userId, subHeardName);
   await kv.del(membershipKey);
 };
 
