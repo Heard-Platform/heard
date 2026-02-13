@@ -95,7 +95,7 @@ export function SelectCommunityStep({
               ))}
             </div>
           ) : (
-            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 scrollbar-hide">
               {sortedSubHeards.map((sh, index) => {
                 const isSelected = subHeard === sh.name;
                 const isDefault = sh.name === defaultSubHeard;

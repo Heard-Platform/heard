@@ -4,10 +4,11 @@ import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
-import { Sparkles, MessageCircle, Edit2, Trash2, CheckCircle2, Image as ImageIcon, Loader2, Check, UserCheck, Clock, Youtube, Plus, AlertCircle } from "lucide-react";
+import { Sparkles, Check, UserCheck, Clock, Youtube, AlertCircle, Image as ImageIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
 import { AdvancedFeatures } from "./AdvancedFeatures";
+import { SeedStatements } from "./SeedStatements";
 import type { DemographicQuestion } from "../../types";
 
 interface ReviewExtractionStepProps {
@@ -20,6 +21,7 @@ interface ReviewExtractionStepProps {
   allowAnonymousVoting: boolean;
   demographicQuestions: DemographicQuestion[];
   showAdvancedFeatures?: boolean;
+  hideTopicAndStatements?: boolean;
   onTopicChange: (topic: string) => void;
   onStatementsChange: (statements: string[]) => void;
   onImageUpload: (file: File) => void;
@@ -39,6 +41,7 @@ export function ReviewExtractionStep({
   allowAnonymousVoting,
   demographicQuestions,
   showAdvancedFeatures = false,
+  hideTopicAndStatements = false,
   onTopicChange,
   onStatementsChange,
   onImageUpload,
@@ -47,9 +50,6 @@ export function ReviewExtractionStep({
   onAllowAnonymousVotingChange,
   onDemographicQuestionsChange,
 }: ReviewExtractionStepProps) {
-  const [editingStatementIndex, setEditingStatementIndex] = useState<number | null>(null);
-  const [isAddingNew, setIsAddingNew] = useState(false);
-  const [newStatementText, setNewStatementText] = useState("");
   const [showCustomDateTime, setShowCustomDateTime] = useState(false);
   const [customDate, setCustomDate] = useState("");
   const [customTime, setCustomTime] = useState("");
@@ -62,23 +62,7 @@ export function ReviewExtractionStep({
   const labelText = "text-base text-slate-700";
   const helperText = "text-xs text-slate-500";
   const helperTextCenter = "text-xs text-slate-500 text-center";
-  const textareaWhite = "w-full min-h-[80px] resize-none bg-white border-blue-200";
   const primaryButton = "bg-blue-600 hover:bg-blue-700";
-  const iconButtonBase = "h-8 w-8 p-0 bg-white/80";
-  const smallIcon = "w-3.5 h-3.5";
-
-  const handleDeleteStatement = (index: number) => {
-    onStatementsChange(statements.filter((_, i) => i !== index));
-  };
-
-  const handleAddNewStatement = () => {
-    const trimmedText = newStatementText.trim();
-    if (trimmedText) {
-      onStatementsChange([...statements, trimmedText]);
-      setNewStatementText("");
-      setIsAddingNew(false);
-    }
-  };
 
   const handleDateOrTimeChange = (date: string, time: string) => {
     const dateTimeStr = `${date}T${time}`;
@@ -127,33 +111,33 @@ export function ReviewExtractionStep({
 
   return (
     <>
-      {/* Topic */}
-      <FunSheetCard delay={0.15}>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className={iconBlue} />
-            <Label htmlFor="topic-input" className={labelText}>
-              Conversation Topic
-            </Label>
+      {!hideTopicAndStatements && (
+        <FunSheetCard delay={0.15}>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className={iconBlue} />
+              <Label htmlFor="topic-input" className={labelText}>
+                Conversation Topic
+              </Label>
+            </div>
+            <Textarea
+              id="topic-input"
+              placeholder="Edit the conversation topic..."
+              maxLength={200}
+              value={topic}
+              onChange={(e) => onTopicChange(e.target.value)}
+              className="min-h-[60px] resize-none bg-white border-blue-200 hover:border-blue-300 focus:border-blue-400 transition-colors placeholder:text-slate-400"
+              rows={2}
+            />
+            <div className="flex justify-end">
+              <span className={helperText}>
+                {topic.length}/200
+              </span>
+            </div>
           </div>
-          <Textarea
-            id="topic-input"
-            placeholder="Edit the conversation topic..."
-            maxLength={200}
-            value={topic}
-            onChange={(e) => onTopicChange(e.target.value)}
-            className="min-h-[60px] resize-none bg-white border-blue-200 hover:border-blue-300 focus:border-blue-400 transition-colors placeholder:text-slate-400"
-            rows={2}
-          />
-          <div className="flex justify-end">
-            <span className={helperText}>
-              {topic.length}/200
-            </span>
-          </div>
-        </div>
-      </FunSheetCard>
+        </FunSheetCard>
+      )}
 
-      {/* Image Upload Section */}
       {onImageUpload && (
         <FunSheetCard delay={0.2}>
           <div className="space-y-3">
@@ -203,7 +187,6 @@ export function ReviewExtractionStep({
               )}
             </Button>
             
-            {/* Thumbnail Preview */}
             {uploadedImageUrl && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -225,7 +208,6 @@ export function ReviewExtractionStep({
         </FunSheetCard>
       )}
 
-      {/* YouTube URL Section */}
       {onYoutubeUrlChange && (
         <FunSheetCard delay={0.25}>
           <div className="space-y-3">
@@ -252,143 +234,14 @@ export function ReviewExtractionStep({
         </FunSheetCard>
       )}
 
-      {/* Extracted Statements */}
-      <FunSheetCard delay={0.25}>
-        <div className="space-y-4">
-          <div className="heard-between">
-            <Label className={`${labelText} flex items-center gap-2`}>
-              <MessageCircle className={iconBlue} />
-              Seed Statements ({statements.length})
-            </Label>
-            <span className={helperText}>
-              These will kickstart the conversation
-            </span>
-          </div>
+      {!hideTopicAndStatements && (
+        <SeedStatements
+          statements={statements}
+          onStatementsChange={onStatementsChange}
+          variant="blue"
+        />
+      )}
 
-          <div className="space-y-3">
-            {statements.map((stmt, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="relative group"
-              >
-                <div className={statementCardBg}>
-                  {editingStatementIndex === index ? (
-                    <div className="space-y-2">
-                      <Textarea
-                        value={stmt}
-                        onChange={(e) => {
-                          const newStatements = [...statements];
-                          newStatements[index] = e.target.value;
-                          onStatementsChange(newStatements);
-                        }}
-                        className={textareaWhite}
-                        autoFocus
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => setEditingStatementIndex(null)}
-                          className={primaryButton}
-                        >
-                          <CheckCircle2 className={smallIcon} />
-                          Save
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setEditingStatementIndex(null)}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <p className="text-sm text-slate-700 leading-relaxed pr-20">
-                        {stmt}
-                      </p>
-                      <div className="absolute top-2 right-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex gap-1">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingStatementIndex(index)}
-                          className={`${iconButtonBase} hover:bg-blue-100 border border-blue-200`}
-                        >
-                          <Edit2 className={smallIcon} />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteStatement(index)}
-                          className={`${iconButtonBase} hover:bg-red-100 border border-red-200`}
-                        >
-                          <Trash2 className={smallIcon} />
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {statements.length === 0 && (
-            <div className="text-center py-8 text-slate-500 border-2 border-dashed border-slate-200 rounded-xl">
-              <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No statements yet</p>
-            </div>
-          )}
-
-          {/* Add New Statement */}
-          {isAddingNew ? (
-            <div className="relative group">
-              <div className={statementCardBg}>
-                <Textarea
-                  value={newStatementText}
-                  onChange={(e) => setNewStatementText(e.target.value)}
-                  className={`${textareaWhite} mb-3`}
-                  autoFocus
-                />
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={handleAddNewStatement}
-                    className={primaryButton}
-                  >
-                    <CheckCircle2 className={smallIcon} />
-                    Add
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setIsAddingNew(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsAddingNew(true)}
-              className={`${uploadButtonBase} ${blueGradientBg} ${dashedBlueBorder}`}
-            >
-              <Plus className="w-5 h-5 text-blue-600" />
-              Add New Statement
-            </Button>
-          )}
-        </div>
-      </FunSheetCard>
-
-      {/* Conversation Length */}
       <FunSheetCard delay={0.3}>
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -495,7 +348,6 @@ export function ReviewExtractionStep({
         </div>
       </FunSheetCard>
 
-      {/* Allow Anonymous Voting */}
       <FunSheetCard delay={0.35}>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
@@ -518,7 +370,6 @@ export function ReviewExtractionStep({
         </div>
       </FunSheetCard>
 
-      {/* Advanced Features */}
       {showAdvancedFeatures && (
         <AdvancedFeatures
           demographicQuestions={demographicQuestions}
