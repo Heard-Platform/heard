@@ -1,6 +1,6 @@
 import { Hono } from "npm:hono";
-import { getUser, saveUser, getDebate } from "./kv-utils.tsx";
-import type { User, VoteType } from "./types.tsx";
+import { getDebate } from "./kv-utils.tsx";
+import type { DebateRoom, User, VoteType } from "./types.tsx";
 import { processVote } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
 import { insertFlyerEmail } from "./model-utils.ts";
@@ -10,7 +10,7 @@ export const flyerApi = new Hono();
 type FlyerVoteResponse = {
   user: User;
   sessionId: string;
-  room: any;
+  room: DebateRoom;
   agreePercent: number;
   disagreePercent: number;
   passPercent: number;
@@ -37,19 +37,10 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c) => {
       );
     }
 
-    let userId = "";
-
-    if (providedUserId) {
-      const existingUser = await getUser(providedUserId);
-      if (existingUser) {
-        userId = providedUserId;
-      }
-    }
+    let userId = providedUserId;
 
     if (!userId) {
-      const newUser = await createAnonymousUser();
-      newUser.flyerId = flyerId;
-      await saveUser(newUser);
+      const newUser = await createAnonymousUser({flyerId});
       userId = newUser.id;
     }
 
@@ -71,7 +62,11 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c) => {
         400,
       );
     } else {
-      const room = await getDebate(result.statement.roomId);
+      const [room, session] = await Promise.all([
+        getDebate(result.statement.roomId),
+        createSession(userId),
+      ]);
+
       if (!room) {
         return c.json(
           { success: false, error: "Room not found" },
@@ -97,8 +92,6 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c) => {
         totalVotes > 0
           ? Math.round((result.statement.passes / totalVotes) * 100)
           : 0;
-
-      const session = await createSession(userId);
 
       const response: FlyerVoteResponse = {
         user: result.user,
