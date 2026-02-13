@@ -9,7 +9,7 @@ import {
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "motion/react";
 import { LucideIcon, Sparkles, ArrowLeft } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useImperativeHandle, forwardRef } from "react";
 
 export const themes = {
   green: {
@@ -70,7 +70,7 @@ interface FunSheetProps {
   theme: keyof typeof themes;
   children: ReactNode;
   buttonText: string;
-  buttonLoadingText: string;
+  buttonLoadingText?: string;
   buttonIcon: LucideIcon;
   buttonDisabled?: boolean;
   isLoading?: boolean;
@@ -78,9 +78,14 @@ interface FunSheetProps {
   backButtonText?: string;
   onButtonClick: () => void;
   onBackClick?: () => void;
+  onTitleClick?: () => void;
 }
 
-export function FunSheet({
+export interface FunSheetRef {
+  scrollToTop: () => void;
+}
+
+export const FunSheet = forwardRef<FunSheetRef, FunSheetProps>(({
   open,
   onOpenChange,
   title,
@@ -92,7 +97,7 @@ export function FunSheet({
   theme: themeKey,
   children,
   buttonText,
-  buttonLoadingText,
+  buttonLoadingText = "Loading...",
   buttonIcon: ButtonIcon,
   buttonDisabled = false,
   isLoading = false,
@@ -100,13 +105,23 @@ export function FunSheet({
   backButtonText = "Back",
   onButtonClick,
   onBackClick,
-}: FunSheetProps) {
+  onTitleClick,
+}, ref) => {
   const theme = themes[themeKey];
   const [showGreeting, setShowGreeting] = useState(false);
   const [greeting, setGreeting] = useState("");
   const [jiggleKey, setJiggleKey] = useState(0);
   const [clickCount, setClickCount] = useState(0);
   const timeoutRef = useRef<number | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    scrollToTop: () => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0;
+      }
+    },
+  }));
 
   const greetings = [
     "Hey!",
@@ -153,144 +168,147 @@ export function FunSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className={`h-[90vh] overflow-y-auto rounded-t-3xl bg-gradient-to-br ${theme.bgGradient} border-0 px-5`}
+        className={`h-[90vh] rounded-t-3xl bg-gradient-to-br ${theme.bgGradient} border-0 px-5 overflow-hidden flex flex-col`}
       >
-        <SheetHeader className="space-y-2 pt-4">
-          <div className="flex items-center justify-center gap-2">
-            <motion.div
-              initial={{ rotate: 0 }}
-              animate={{ rotate: [0, 10, -10, 10, 0] }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <LeftIcon
-                // @ts-ignore
-                className={`w-6 h-6 ${theme.leftIconColor || theme.iconColor}`}
-              />
-            </motion.div>
-            <SheetTitle
-              className={`text-3xl bg-gradient-to-r ${theme.titleGradient} bg-clip-text text-transparent`}
-            >
-              {title}
-            </SheetTitle>
-          </div>
-          <SheetDescription className="text-center text-sm text-slate-600">
-            {description}
-          </SheetDescription>
-          {avatar && (
-            <div className="flex justify-center pt-2 relative">
-              <motion.button
-                key={jiggleKey}
-                animate={{
-                  rotate:
-                    jiggleKey > 0
-                      ? [0, -10, 10, -10, 10, 0]
-                      : 0,
-                }}
-                transition={{
-                  rotate: { duration: 0.5 },
-                }}
-                onClick={handleAvatarClick}
-                className="cursor-pointer focus:outline-none"
-                type="button"
+        <div ref={scrollRef} className="overflow-y-auto flex-1 scrollbar-hide">
+          <SheetHeader className="space-y-2 pt-4">
+            <div className="flex items-center justify-center gap-2">
+              <motion.div
+                initial={{ rotate: 0 }}
+                animate={{ rotate: [0, 10, -10, 10, 0] }}
+                transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <img
-                  src={avatar}
-                  alt="Avatar"
-                  className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
+                <LeftIcon
+                  // @ts-ignore
+                  className={`w-6 h-6 ${theme.leftIconColor || theme.iconColor}`}
                 />
-              </motion.button>
-
-              <AnimatePresence>
-                {showGreeting && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.8 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.8 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white px-4 py-2 rounded-full shadow-lg border-2 border-purple-200"
-                  >
-                    <span className="text-purple-600 whitespace-nowrap">
-                      {greeting}
-                    </span>
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r-2 border-b-2 border-purple-200 rotate-45" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              </motion.div>
+              <SheetTitle
+                className={`text-3xl bg-gradient-to-r ${theme.titleGradient} bg-clip-text text-transparent`}
+                onClick={onTitleClick}
+              >
+                {title}
+              </SheetTitle>
             </div>
-          )}
-          {socialButtons && (
-            <div className="flex justify-center pt-2">
-              {socialButtons}
-            </div>
-          )}
-        </SheetHeader>
+            <SheetDescription className="text-center text-sm text-slate-600">
+              {description}
+            </SheetDescription>
+            {avatar && (
+              <div className="flex justify-center pt-2 relative">
+                <motion.button
+                  key={jiggleKey}
+                  animate={{
+                    rotate:
+                      jiggleKey > 0
+                        ? [0, -10, 10, -10, 10, 0]
+                        : 0,
+                  }}
+                  transition={{
+                    rotate: { duration: 0.5 },
+                  }}
+                  onClick={handleAvatarClick}
+                  className="cursor-pointer focus:outline-none"
+                  type="button"
+                >
+                  <img
+                    src={avatar}
+                    alt="Avatar"
+                    className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
+                  />
+                </motion.button>
 
-        <div className="space-y-5 pb-32">
-          {children}
+                <AnimatePresence>
+                  {showGreeting && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.8 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white px-4 py-2 rounded-full shadow-lg border-2 border-purple-200"
+                    >
+                      <span className="text-purple-600 whitespace-nowrap">
+                        {greeting}
+                      </span>
+                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r-2 border-b-2 border-purple-200 rotate-45" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+            {socialButtons && (
+              <div className="flex justify-center pt-2">
+                {socialButtons}
+              </div>
+            )}
+          </SheetHeader>
 
-          {/* Submit Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Button
-              onClick={onButtonClick}
-              disabled={buttonDisabled || isLoading}
-              className={`w-full h-14 bg-gradient-to-r ${theme.buttonGradient} hover:${theme.buttonHoverGradient} text-white shadow-lg ${theme.shadowColor} disabled:opacity-50 disabled:shadow-none transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]`}
-              size="lg"
-            >
-              {isLoading ? (
-                <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    className="mr-2"
-                  >
-                    <Sparkles className="w-5 h-5" />
-                  </motion.div>
-                  <span className="text-base">
-                    {buttonLoadingText}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <ButtonIcon className="w-5 h-5 mr-2" />
-                  <span className="text-base">
-                    {buttonText}
-                  </span>
-                </>
-              )}
-            </Button>
-          </motion.div>
+          <div className="space-y-5 pb-32">
+            {children}
 
-          {/* Back Button */}
-          {showBackButton && onBackClick && (
+            {/* Submit Button */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45 }}
+              transition={{ delay: 0.4 }}
             >
               <Button
-                type="button"
-                variant="outline"
-                onClick={onBackClick}
-                className="w-full h-12 flex items-center justify-center gap-2 border-slate-300 hover:border-slate-400 bg-white"
+                onClick={onButtonClick}
+                disabled={buttonDisabled || isLoading}
+                className={`w-full h-14 bg-gradient-to-r ${theme.buttonGradient} hover:${theme.buttonHoverGradient} text-white shadow-lg ${theme.shadowColor} disabled:opacity-50 disabled:shadow-none transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]`}
+                size="lg"
               >
-                <ArrowLeft className="w-4 h-4" />
-                {backButtonText}
+                {isLoading ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                      className="mr-2"
+                    >
+                      <Sparkles className="w-5 h-5" />
+                    </motion.div>
+                    <span className="text-base">
+                      {buttonLoadingText}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <ButtonIcon className="w-5 h-5 mr-2" />
+                    <span className="text-base">
+                      {buttonText}
+                    </span>
+                  </>
+                )}
               </Button>
             </motion.div>
-          )}
+
+            {/* Back Button */}
+            {showBackButton && onBackClick && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+              >
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onBackClick}
+                  className="w-full h-12 flex items-center justify-center gap-2 border-slate-300 hover:border-slate-400 bg-white"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  {backButtonText}
+                </Button>
+              </motion.div>
+            )}
+          </div>
         </div>
       </SheetContent>
     </Sheet>
   );
-}
+});
 
 interface FunSheetCardProps {
   children: ReactNode;
