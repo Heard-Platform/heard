@@ -168,7 +168,7 @@ const validateAccountCredentials = (
   return null;
 };
 
-export const createUserAccount = async (newUser: Partial<User>): Promise<User> => {
+export const createUserAccount = async (userProps: Partial<User>): Promise<User> => {
   const userId = generateId();
   const user: User = {
     id: userId,
@@ -179,18 +179,25 @@ export const createUserAccount = async (newUser: Partial<User>): Promise<User> =
     lastActive: Date.now(),
     isTestUser: false,
     isDeveloper: false,
-    emailDigestsEnabled: !newUser.isAnonymous,
+    emailDigestsEnabled: true,
     passwordHash: undefined,
     createdAt: Date.now(),
-    ...newUser,
+    ...userProps,
   };
 
   await saveUserAndEmail(user);
   return user;
 };
 
-export const createAnonymousUser = async (): Promise<User> => {
-  return createUserAccount({ isAnonymous: true });
+
+export const createAnonymousUser = async (
+  userProps?: Partial<User>,
+): Promise<User> => {
+  return createUserAccount({
+    isAnonymous: true,
+    emailDigestsEnabled: false,
+    ...userProps,
+  });
 };
 
 const sendEmail = async ({

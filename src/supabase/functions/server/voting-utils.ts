@@ -1,7 +1,7 @@
 import type { Vote, Statement, User, VoteType } from "./types.tsx";
-import { saveStatement, saveVote, getVotesForStatement, deleteVote } from "./kv-utils.tsx";
+import { saveStatement, saveVote, getVotesForStatement, deleteVote, saveUser } from "./kv-utils.tsx";
 import { getByPrefixParsed } from "./kv-utils.tsx";
-import { getUserSession, saveUserAndEmail } from "./auth-api.tsx";
+import { getUserSession } from "./auth-api.tsx";
 import { generateId, getDebateRoom, getStatementById, saveDebateRoom } from "./debate-api.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 
@@ -153,14 +153,14 @@ export const processVote = async (
 
     if (statementAuthorUser && statementAuthorUser.id !== userId) {
       statementAuthorUser.score += 3;
-      await saveUserAndEmail(statementAuthorUser);
+      await saveUser(statementAuthorUser);
     }
 
     if (room && room.hostId && room.hostId !== userId) {
       const roomCreator = await getUserSession(room.hostId);
       if (roomCreator) {
         roomCreator.score += 1;
-        await saveUserAndEmail(roomCreator);
+        await saveUser(roomCreator);
       }
     }
   }
@@ -184,13 +184,10 @@ export const processVote = async (
     `Final vote count for statement ${statementId}: ${voteStats.agrees} agree, ${voteStats.disagrees} disagree, ${voteStats.passes} pass (${updatedVotes.length} total votes)`,
   );
 
-  // Update user points
   if (pointsEarned > 0) {
     user.score += pointsEarned;
-    await saveUserAndEmail(user);
+    await saveUser(user);
   }
-
-  // Clustering is now calculated lazily when analysis is requested
 
   return {
     success: true,
