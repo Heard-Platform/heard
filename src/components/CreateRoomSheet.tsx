@@ -230,7 +230,7 @@ export function CreateRoomSheet({
   };
 
   const handleComposePostProceed = () => {
-    if (!editedTopic.trim() || editedStatements.length < 3) {
+    if (!editedTopic.trim() || editedStatements.length < 1) {
       setShowComposeError(true);
       return;
     }
@@ -337,7 +337,7 @@ export function CreateRoomSheet({
             isCreating,
           isLoading: isCreating,
           showBackButton: true,
-          backButtonText: "← Back to Details",
+          backButtonText: "Back to Details",
           onBackClick: handleBackToReview,
         };
       case "share":

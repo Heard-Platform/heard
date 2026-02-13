@@ -50,9 +50,6 @@ export function ReviewExtractionStep({
   onAllowAnonymousVotingChange,
   onDemographicQuestionsChange,
 }: ReviewExtractionStepProps) {
-  const [editingStatementIndex, setEditingStatementIndex] = useState<number | null>(null);
-  const [isAddingNew, setIsAddingNew] = useState(false);
-  const [newStatementText, setNewStatementText] = useState("");
   const [showCustomDateTime, setShowCustomDateTime] = useState(false);
   const [customDate, setCustomDate] = useState("");
   const [customTime, setCustomTime] = useState("");
@@ -65,23 +62,7 @@ export function ReviewExtractionStep({
   const labelText = "text-base text-slate-700";
   const helperText = "text-xs text-slate-500";
   const helperTextCenter = "text-xs text-slate-500 text-center";
-  const textareaWhite = "w-full min-h-[80px] resize-none bg-white border-blue-200";
   const primaryButton = "bg-blue-600 hover:bg-blue-700";
-  const iconButtonBase = "h-8 w-8 p-0 bg-white/80";
-  const smallIcon = "w-3.5 h-3.5";
-
-  const handleDeleteStatement = (index: number) => {
-    onStatementsChange(statements.filter((_, i) => i !== index));
-  };
-
-  const handleAddNewStatement = () => {
-    const trimmedText = newStatementText.trim();
-    if (trimmedText) {
-      onStatementsChange([...statements, trimmedText]);
-      setNewStatementText("");
-      setIsAddingNew(false);
-    }
-  };
 
   const handleDateOrTimeChange = (date: string, time: string) => {
     const dateTimeStr = `${date}T${time}`;
@@ -130,7 +111,6 @@ export function ReviewExtractionStep({
 
   return (
     <>
-      {/* Topic */}
       {!hideTopicAndStatements && (
         <FunSheetCard delay={0.15}>
           <div className="space-y-3">
@@ -158,7 +138,6 @@ export function ReviewExtractionStep({
         </FunSheetCard>
       )}
 
-      {/* Image Upload Section */}
       {onImageUpload && (
         <FunSheetCard delay={0.2}>
           <div className="space-y-3">
@@ -208,7 +187,6 @@ export function ReviewExtractionStep({
               )}
             </Button>
             
-            {/* Thumbnail Preview */}
             {uploadedImageUrl && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -230,7 +208,6 @@ export function ReviewExtractionStep({
         </FunSheetCard>
       )}
 
-      {/* YouTube URL Section */}
       {onYoutubeUrlChange && (
         <FunSheetCard delay={0.25}>
           <div className="space-y-3">
@@ -257,18 +234,14 @@ export function ReviewExtractionStep({
         </FunSheetCard>
       )}
 
-      {/* Extracted Statements */}
       {!hideTopicAndStatements && (
-        <FunSheetCard delay={0.25}>
-          <SeedStatements
-            statements={statements}
-            onStatementsChange={onStatementsChange}
-            variant="blue"
-          />
-        </FunSheetCard>
+        <SeedStatements
+          statements={statements}
+          onStatementsChange={onStatementsChange}
+          variant="blue"
+        />
       )}
 
-      {/* Conversation Length */}
       <FunSheetCard delay={0.3}>
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -375,7 +348,6 @@ export function ReviewExtractionStep({
         </div>
       </FunSheetCard>
 
-      {/* Allow Anonymous Voting */}
       <FunSheetCard delay={0.35}>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
@@ -398,7 +370,6 @@ export function ReviewExtractionStep({
         </div>
       </FunSheetCard>
 
-      {/* Advanced Features */}
       {showAdvancedFeatures && (
         <AdvancedFeatures
           demographicQuestions={demographicQuestions}

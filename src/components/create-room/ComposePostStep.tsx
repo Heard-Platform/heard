@@ -73,32 +73,12 @@ export function ComposePostStep({
         </div>
       </FunSheetCard>
 
-      <FunSheetCard delay={0.2}>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className={iconGreen} />
-            <Label className={labelText}>
-              Seed Statements
-            </Label>
-          </div>
-          <p className={helperText}>
-            People will vote on these statements (agree or disagree). Add at least 3 to kickstart the conversation.
-          </p>
-          <SeedStatements
-            statements={statements}
-            onStatementsChange={onStatementsChange}
-            variant="green"
-          />
-          {showError && statements.length < 3 && (
-            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 flex items-start gap-2">
-              <span className="text-red-600 font-semibold text-sm">⚠️</span>
-              <p className="text-sm text-red-700">
-                Please add at least 3 seed statements to continue.
-              </p>
-            </div>
-          )}
-        </div>
-      </FunSheetCard>
+      <SeedStatements
+        statements={statements}
+        onStatementsChange={onStatementsChange}
+        variant="green"
+        showError={showError}
+      />
 
       <FunSheetCard delay={0.25}>
         <div className="text-center space-y-3">
