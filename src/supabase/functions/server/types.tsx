@@ -38,6 +38,12 @@ export interface Session {
   expiresAt: number;
 }
 
+export interface UserPresence {
+  userId: string;
+  currentRoomIndex: number;
+  lastUpdated: number;
+}
+
 export interface UserReport {
   id: string;
   responseId: string;

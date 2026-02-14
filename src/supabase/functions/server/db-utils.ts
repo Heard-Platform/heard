@@ -31,11 +31,16 @@ export const insert = async <T extends Record<string, any>>(
 
 export const selectAll = async <T>(
   tableName: string,
+  modifiers?: (query: any) => any,
 ): Promise<T[]> => {
   const supabase = createClientFromEnv();
   const { data, error } = await supabase
     .from(tableName)
-    .select("*");
+    .select("*")
+
+  if (modifiers) {
+    modifiers(data);
+  }
 
   if (error) {
     console.error(`Error selecting from ${tableName} table:`, error);
