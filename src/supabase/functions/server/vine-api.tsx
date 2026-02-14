@@ -34,17 +34,7 @@ app.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
 app.get("/make-server-f1a393b4/vine/presences", async (c: Context) => {
   try {
     const presences = await getRecentPresences();
-    const now = Date.now();
-    
-    const activePresences = presences
-      .filter((p: UserPresence) => now - p.lastUpdated < PRESENCE_TTL)
-      .map((p: UserPresence) => ({
-        userId: p.userId,
-        currentRoomIndex: p.currentRoomIndex,
-        lastUpdated: p.lastUpdated,
-      }));
-
-    return c.json({ success: true, data: activePresences });
+    return c.json({ success: true, data: presences });
   } catch (error) {
     console.error("Error getting active presences:", error);
     return c.json({ success: false, error: String(error) }, 500);

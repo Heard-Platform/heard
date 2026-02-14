@@ -1,4 +1,4 @@
-import { insert, selectAll, update } from "./db-utils.ts";
+import { insert, selectAll, upsert } from "./db-utils.ts";
 import { NewUserReport, UserPresence, UserReport } from "./types.tsx";
 
 const PRESENCE_TTL = 10_000;
@@ -7,16 +7,16 @@ export const updatePresence = async (
   userId: string,
   currentRoomIndex: number,
 ) =>
-  update(
+  upsert(
     "presences",
     { userId },
-    { currentRoomIndex, lastUpdated: Date.now() },
+    { userId, currentRoomIndex, lastUpdated: new Date().toISOString() },
   );
 
 export const getRecentPresences = async () =>
   selectAll<UserPresence>(
     "presences",
-    (q) => q.gt("lastUpdated", Date.now() - PRESENCE_TTL)
+    (q) => q.gte("lastUpdated", new Date(Date.now() - PRESENCE_TTL).toISOString())
   );
 
 export const insertUserReport = async (report: NewUserReport) => {

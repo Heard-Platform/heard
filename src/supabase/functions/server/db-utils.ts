@@ -29,7 +29,7 @@ export const insert = async <T extends Record<string, any>>(
   return { success: true };
 };
 
-export const update = async (
+export const upsert = async (
   tableName: string,
   conditions: Record<string, any>,
   data: Record<string, any>,
@@ -38,11 +38,11 @@ export const update = async (
 
   const { error } = await supabase
     .from(tableName)
-    .update(data)
+    .upsert(data)
     .match(conditions);
 
   if (error) {
-    console.error(`Error updating ${tableName} table:`, error);
+    console.error(`Error upserting ${tableName} table:`, error);
     return { success: false, error: error.message };
   }
 
@@ -51,23 +51,22 @@ export const update = async (
 
 export const selectAll = async <T>(
   tableName: string,
-  modifiers?: (query: any) => any,
+  modifier?: (query: any) => any,
 ): Promise<T[]> => {
   const supabase = createClientFromEnv();
-  const { data, error } = await supabase
-    .from(tableName)
-    .select("*")
 
-  if (modifiers) {
-    modifiers(data);
-  }
+  let q = supabase.from(tableName).select("*");
+
+  if (modifier) q = modifier(q);
+
+  const { data, error } = await q;
 
   if (error) {
     console.error(`Error selecting from ${tableName} table:`, error);
     throw new Error(error.message);
   }
 
-  return data as T[];
+  return (data ?? []) as T[];
 };
 
 export const getStatementsForUser = async (
