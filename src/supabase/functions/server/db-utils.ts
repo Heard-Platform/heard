@@ -29,21 +29,44 @@ export const insert = async <T extends Record<string, any>>(
   return { success: true };
 };
 
+export const upsert = async (
+  tableName: string,
+  data: Record<string, any>,
+  onConflictField: string,
+) => {
+  const supabase = createClientFromEnv();
+
+  const { error } = await supabase
+    .from(tableName)
+    .upsert(data, { onConflict: onConflictField });
+
+  if (error) {
+    console.error(`Error upserting ${tableName} table:`, error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+};
+
 export const selectAll = async <T>(
   tableName: string,
+  modifier?: (query: any) => any,
 ): Promise<T[]> => {
   const supabase = createClientFromEnv();
-  const { data, error } = await supabase
-    .from(tableName)
-    .select("*");
+
+  let q = supabase.from(tableName).select("*");
+
+  if (modifier) q = modifier(q);
+
+  const { data, error } = await q;
 
   if (error) {
     console.error(`Error selecting from ${tableName} table:`, error);
     throw new Error(error.message);
   }
 
-  return data as T[];
-}
+  return (data ?? []) as T[];
+};
 
 export const getStatementsForUser = async (
   userId: string,
