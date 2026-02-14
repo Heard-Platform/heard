@@ -22,7 +22,6 @@ interface SubHeardBrowserProps {
   currentSubHeard?: string;
   user: UserSession;
   onSubHeardChange: (subHeard: string | null) => void;
-  onCreateSubHeard: (community: Partial<SubHeard>, userId: string) => Promise<boolean>;
   onUpdateSubHeard: (
     update: SubHeard,
     userId: string,
@@ -35,7 +34,6 @@ export function SubHeardBrowser({
   currentSubHeard,
   user,
   onSubHeardChange,
-  onCreateSubHeard,
   onUpdateSubHeard,
   onShowAccountSetupModal,
   onOpenExplorer,
@@ -78,15 +76,6 @@ export function SubHeardBrowser({
 
   const handleSheetOpenChange = (isOpen: boolean) => {
     setSheetOpen(isOpen);
-  };
-
-  const handleCreateCommunity = async (community: Partial<SubHeard>, userId: string) => {
-    const success = await onCreateSubHeard(community, userId);
-    if (success) {
-      await loadSubHeards();
-      handleSelectSubHeard(community.name || "");
-    }
-    return success;
   };
 
   const handleCommunityCreated = async (communityName: string) => {
