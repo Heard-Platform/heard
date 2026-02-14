@@ -8,14 +8,14 @@ export const updatePresence = async (
   currentRoomIndex: number,
 ) =>
   update(
-    "presence",
+    "presences",
     { userId },
     { currentRoomIndex, lastUpdated: Date.now() },
   );
 
 export const getRecentPresences = async () =>
   selectAll<UserPresence>(
-    "presence",
+    "presences",
     (q) => q.gt("lastUpdated", Date.now() - PRESENCE_TTL)
   );
 
