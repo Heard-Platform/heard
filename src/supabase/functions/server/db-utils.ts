@@ -31,15 +31,14 @@ export const insert = async <T extends Record<string, any>>(
 
 export const upsert = async (
   tableName: string,
-  conditions: Record<string, any>,
   data: Record<string, any>,
+  onConflictField: string,
 ) => {
   const supabase = createClientFromEnv();
 
   const { error } = await supabase
     .from(tableName)
-    .upsert(data)
-    .match(conditions);
+    .upsert(data, { onConflict: onConflictField });
 
   if (error) {
     console.error(`Error upserting ${tableName} table:`, error);

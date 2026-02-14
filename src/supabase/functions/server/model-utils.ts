@@ -9,8 +9,8 @@ export const updatePresence = async (
 ) =>
   upsert(
     "presences",
-    { userId },
     { userId, currentRoomIndex, lastUpdated: new Date().toISOString() },
+    "userId"
   );
 
 export const getRecentPresences = async () =>
