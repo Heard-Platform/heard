@@ -304,7 +304,7 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
                     htmlFor={`script-dry-run-${script.id}`}
                     className="text-sm font-normal cursor-pointer"
                   >
-                    {scriptDryRun ? "Dry Run Mode (preview only)" : "Live Script Mode"}
+                    Dry Run Mode (preview only)
                   </Label>
                 </div>
                 {scriptStats && isCurrentScript && (
