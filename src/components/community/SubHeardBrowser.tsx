@@ -13,7 +13,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import { Home, Hash, Plus, ChevronDown, Lock, Settings, Crown, LogOut, Compass } from "lucide-react";
+import {
+  Home,
+  Hash,
+  Plus,
+  ChevronDown,
+  EyeOff,
+  Settings,
+  Crown,
+  LogOut,
+  Compass,
+} from "lucide-react";
 import { MessageSquare } from "lucide-react";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { CommunityAdminDialog } from "./CommunityAdminDialog";
@@ -94,13 +104,10 @@ export function SubHeardBrowser({
       if (onCreateSubHeard) {
         const success = await onCreateSubHeard(normalized, user.id);
         if (success) {
-          // Reload sub-heards to show the newly created one
           await loadSubHeards();
-          // Select the new sub-heard
           handleSelectSubHeard(normalized);
         }
       } else {
-        // Fallback: just select it without backend creation
         handleSelectSubHeard(normalized);
       }
     } catch (error) {
@@ -113,7 +120,6 @@ export function SubHeardBrowser({
   const handleSheetOpenChange = (isOpen: boolean) => {
     setSheetOpen(isOpen);
     if (!isOpen) {
-      // Reset form when closing
       setShowCreateNew(false);
       setNewSubHeardName("");
       setIsPrivate(false);
@@ -210,7 +216,6 @@ export function SubHeardBrowser({
               </Button>
             )}
 
-            {/* All option */}
             <Button
               variant={!currentSubHeard ? "default" : "outline"}
               className="w-full justify-start"
@@ -220,7 +225,6 @@ export function SubHeardBrowser({
               All Posts
             </Button>
 
-            {/* Existing sub-heards */}
             {loading ? (
               <div className="space-y-2">
                 {[1, 2, 3, 4].map((i) => (
@@ -252,7 +256,7 @@ export function SubHeardBrowser({
                         <Hash className="w-4 h-4 flex-shrink-0" />
                         <span>{formatSubHeardDisplay(subHeard.name)}</span>
                         {subHeard.isPrivate && (
-                          <Lock className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                          <EyeOff className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                         )}
                         {isAdmin && (
                           <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />
@@ -290,7 +294,6 @@ export function SubHeardBrowser({
               </div>
             )}
 
-            {/* Create new option */}
             {!showCreateNew ? (
               <Button
                 variant="outline"
@@ -333,7 +336,7 @@ export function SubHeardBrowser({
                     htmlFor="private-subheard"
                     className="text-sm cursor-pointer flex items-center gap-2"
                   >
-                    <Lock className="w-3 h-3" />
+                    <EyeOff className="w-3 h-3" />
                     Make unlisted (won't appear in public list)
                   </Label>
                 </div>

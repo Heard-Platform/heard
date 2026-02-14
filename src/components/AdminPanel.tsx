@@ -32,7 +32,7 @@ import {
 } from "./ui/dialog";
 import {
   Shield,
-  Lock,
+  EyeOff,
   User,
   Crown,
   X,
@@ -552,7 +552,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
                         {subHeard.name}
                       </span>
                       {subHeard.isPrivate && (
-                        <Lock className="w-4 h-4 text-muted-foreground" />
+                        <EyeOff className="w-4 h-4 text-muted-foreground" />
                       )}
                       {subHeard.hostOnlyPosting && (
                         <Badge variant="outline" className="text-xs">
