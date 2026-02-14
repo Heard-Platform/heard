@@ -423,16 +423,11 @@ export function CreateRoomSheet({
       {currentStep === "select-community" && (
         <SelectCommunityStep
           subHeard={subHeard}
-          newSubHeardName={newSubHeardName}
           defaultSubHeard={defaultSubHeard}
           userId={userId}
           onSubHeardChange={(value) => {
             setSubHeard(value);
-            if (value !== "create-new") {
-              setNewSubHeardName("");
-            }
           }}
-          onNewSubHeardNameChange={setNewSubHeardName}
         />
       )}
 

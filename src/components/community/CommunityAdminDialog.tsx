@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { Switch } from "../ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,7 @@ import { Share2, Check, Crown } from "lucide-react";
 import type { SubHeard } from "../../types";
 import { createSubHeardLink } from "../../utils/url";
 import { share } from "../../utils/share";
+import { CommunitySettingsPanel } from "./CommunitySettingsPanel";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -107,39 +107,11 @@ export function CommunityAdminDialog({
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="privacy-toggle" className="font-medium">
-                Unlisted Community
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Won't appear in public list. Only people with the link can see it
-              </p>
-            </div>
-            <Switch
-              id="privacy-toggle"
-              checked={community.isPrivate || false}
-              disabled={isUpdating}
-              onCheckedChange={(v: boolean) => handleUpdate({ isPrivate: v })}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="posting-permissions-toggle" className="font-medium">
-                Host-Only Posting
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Only community hosts can create debates
-              </p>
-            </div>
-            <Switch
-              id="posting-permissions-toggle"
-              checked={community.hostOnlyPosting || false}
-              disabled={isUpdating}
-              onCheckedChange={(v: boolean) => handleUpdate({ hostOnlyPosting: v })}
-            />
-          </div>
+          <CommunitySettingsPanel
+            community={community}
+            isUpdating={isUpdating}
+            onChange={handleUpdate}
+          />
 
           <div className="space-y-2">
             <Label className="text-sm font-medium">Share Link</Label>

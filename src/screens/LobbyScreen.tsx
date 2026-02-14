@@ -362,31 +362,6 @@ export function LobbyScreen({
                 currentSubHeard={currentSubHeard}
                 user={user}
                 onSubHeardChange={onSubHeardChange}
-                onCreateSubHeard={async (
-                  name: string,
-                  userId: string,
-                ) => {
-                  try {
-                    const response = await api.createSubHeard(
-                      name,
-                      userId,
-                    );
-                    if (response.success) {
-                      return true;
-                    }
-                    console.error(
-                      "Failed to create sub-heard:",
-                      response.error,
-                    );
-                    return false;
-                  } catch (error) {
-                    console.error(
-                      "Error creating sub-heard:",
-                      error,
-                    );
-                    return false;
-                  }
-                }}
                 onUpdateSubHeard={async (
                   community: SubHeard,
                   userId: string,

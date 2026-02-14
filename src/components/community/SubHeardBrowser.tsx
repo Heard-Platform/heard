@@ -2,9 +2,6 @@ import type { SubHeard, UserSession } from "../../types";
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Checkbox } from "../ui/checkbox";
 import {
   Sheet,
   SheetContent,
@@ -13,20 +10,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import {
-  Home,
-  Hash,
-  Plus,
-  ChevronDown,
-  EyeOff,
-  Settings,
-  Crown,
-  LogOut,
-  Compass,
-} from "lucide-react";
+import { Home, Hash, Plus, ChevronDown, EyeOff, Settings, Crown, LogOut, Compass } from "lucide-react";
 import { MessageSquare } from "lucide-react";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { CommunityAdminDialog } from "./CommunityAdminDialog";
+import { CreateCommunityDialog } from "./CreateCommunityDialog";
 import { formatSubHeardDisplay } from "../../utils/subheard";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 
@@ -34,7 +22,6 @@ interface SubHeardBrowserProps {
   currentSubHeard?: string;
   user: UserSession;
   onSubHeardChange: (subHeard: string | null) => void;
-  onCreateSubHeard: (name: string, userId: string, isPrivate?: boolean) => Promise<boolean>;
   onUpdateSubHeard: (
     update: SubHeard,
     userId: string,
@@ -47,19 +34,15 @@ export function SubHeardBrowser({
   currentSubHeard,
   user,
   onSubHeardChange,
-  onCreateSubHeard,
   onUpdateSubHeard,
   onShowAccountSetupModal,
   onOpenExplorer,
 }: SubHeardBrowserProps) {
-  const { getSubHeards, leaveSubHeard, getActiveRooms } = useDebateSession();
+  const { getSubHeards, leaveSubHeard } = useDebateSession();
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [showCreateNew, setShowCreateNew] = useState(false);
-  const [newSubHeardName, setNewSubHeardName] = useState("");
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [managingSubHeard, setManagingSubHeard] = useState<SubHeard | null>(null);
 
   useEffect(() => {
@@ -89,41 +72,15 @@ export function SubHeardBrowser({
   const handleSelectSubHeard = (subHeard: string | null) => {
     onSubHeardChange(subHeard);
     setSheetOpen(false);
-    setShowCreateNew(false);
-    setNewSubHeardName("");
-    setIsPrivate(false);
-  };
-
-  const handleCreateNew = async () => {
-    if (!newSubHeardName.trim() || isCreating) return;
-
-    const normalized = newSubHeardName.trim().toLowerCase().replace(/\s+/g, '-');
-    
-    setIsCreating(true);
-    try {
-      if (onCreateSubHeard) {
-        const success = await onCreateSubHeard(normalized, user.id);
-        if (success) {
-          await loadSubHeards();
-          handleSelectSubHeard(normalized);
-        }
-      } else {
-        handleSelectSubHeard(normalized);
-      }
-    } catch (error) {
-      console.error("Failed to create sub-heard:", error);
-    } finally {
-      setIsCreating(false);
-    }
   };
 
   const handleSheetOpenChange = (isOpen: boolean) => {
     setSheetOpen(isOpen);
-    if (!isOpen) {
-      setShowCreateNew(false);
-      setNewSubHeardName("");
-      setIsPrivate(false);
-    }
+  };
+
+  const handleCommunityCreated = async (communityName: string) => {
+    await loadSubHeards();
+    handleSelectSubHeard(communityName);
   };
 
   const displayText = currentSubHeard
@@ -294,78 +251,32 @@ export function SubHeardBrowser({
               </div>
             )}
 
-            {!showCreateNew ? (
+            <div className="pt-4 pb-8">
               <Button
                 variant="outline"
-                className="w-full justify-start border-dashed"
+                className="w-full justify-start p-3 bg-green-50 border-green-300 hover:bg-green-100 hover:border-green-400"
                 onClick={() => {
                   if (user.isAnonymous) {
                     onShowAccountSetupModal("creating communities");
                   } else {
-                    setShowCreateNew(true);
+                    setShowCreateDialog(true);
                   }
                 }}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Create New Community
+                <Plus className="w-4 h-4 mr-2 text-green-600" />
+                <span className="text-green-700">Create New Community</span>
               </Button>
-            ) : (
-              <div className="space-y-3 p-4 border-2 border-dashed rounded-lg">
-                <div className="space-y-2">
-                  <Label htmlFor="new-subheard">New Community Name</Label>
-                  <Input
-                    id="new-subheard"
-                    placeholder="e.g., politics, technology..."
-                    value={newSubHeardName}
-                    onChange={(e) => setNewSubHeardName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !isPrivate) {
-                        handleCreateNew();
-                      }
-                    }}
-                  />
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="private-subheard"
-                    checked={isPrivate}
-                    onCheckedChange={(checked: boolean) => setIsPrivate(checked)}
-                  />
-                  <Label
-                    htmlFor="private-subheard"
-                    className="text-sm cursor-pointer flex items-center gap-2"
-                  >
-                    <EyeOff className="w-3 h-3" />
-                    Make unlisted (won't appear in public list)
-                  </Label>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleCreateNew}
-                    disabled={!newSubHeardName.trim() || isCreating}
-                    className="flex-1"
-                  >
-                    {isCreating ? "Creating..." : "Create"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowCreateNew(false);
-                      setNewSubHeardName("");
-                      setIsPrivate(false);
-                    }}
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </SheetContent>
       </Sheet>
+
+      <CreateCommunityDialog
+        isOpen={showCreateDialog}
+        userId={user.id}
+        onCreated={handleCommunityCreated}
+        onClose={() => setShowCreateDialog(false)}
+      />
 
       {managingSubHeard && (
         <CommunityAdminDialog
