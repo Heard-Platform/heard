@@ -1,34 +1,30 @@
 import { useState, useEffect } from "react";
-import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Hash, Plus, Check } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
 import { api } from "../../utils/api";
 import { formatSubHeardDisplay } from "../../utils/subheard";
 import type { SubHeard } from "../../types";
+import { CreateCommunityDialog } from "../community/CreateCommunityDialog";
 
 interface SelectCommunityStepProps {
   subHeard: string;
-  newSubHeardName: string;
   defaultSubHeard?: string;
   userId: string;
   onSubHeardChange: (subHeard: string) => void;
-  onNewSubHeardNameChange: (name: string) => void;
 }
 
 export function SelectCommunityStep({
   subHeard,
-  newSubHeardName,
   defaultSubHeard,
   userId,
   onSubHeardChange,
-  onNewSubHeardNameChange,
 }: SelectCommunityStepProps) {
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [loadingSubHeards, setLoadingSubHeards] = useState(true);
-  const [showCreateNew, setShowCreateNew] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   useEffect(() => {
     loadSubHeards();
@@ -36,7 +32,6 @@ export function SelectCommunityStep({
 
   useEffect(() => {
     if (defaultSubHeard && !subHeard) {
-      // Only auto-select if nothing is currently selected
       onSubHeardChange(defaultSubHeard);
     }
   }, [defaultSubHeard, subHeard, onSubHeardChange]);
@@ -57,21 +52,18 @@ export function SelectCommunityStep({
 
   const handleSelectSubHeard = (name: string) => {
     onSubHeardChange(name);
-    setShowCreateNew(false);
-    onNewSubHeardNameChange("");
   };
 
-  const handleCreateNewClick = () => {
-    setShowCreateNew(true);
-    onSubHeardChange("create-new");
+  const handleCommunityCreated = async (communityName: string) => {
+    await loadSubHeards();
+    onSubHeardChange(communityName);
   };
 
-  // Sort communities with defaultSubHeard at the top if it exists
   const sortedSubHeards = [...subHeards].sort((a, b) => {
     if (a.name === defaultSubHeard) return -1;
     if (b.name === defaultSubHeard) return 1;
     // @ts-ignore
-    return b.count - a.count; // Otherwise sort by count
+    return b.count - a.count;
   });
 
   return (
@@ -153,7 +145,6 @@ export function SelectCommunityStep({
                 );
               })}
 
-              {/* Create New Button */}
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -161,32 +152,14 @@ export function SelectCommunityStep({
               >
                 <Button
                   variant="outline"
-                  onClick={handleCreateNewClick}
-                  className={`w-full h-auto py-3 px-4 heard-between transition-all ${
-                    showCreateNew
-                      ? "bg-purple-100 border-purple-400 border-2 hover:bg-purple-100"
-                      : "bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 border-dashed border-2 hover:border-purple-400 hover:from-purple-100 hover:to-pink-100"
-                  }`}
+                  onClick={() => setShowCreateDialog(true)}
+                  className="w-full h-auto py-3 px-4 heard-between transition-all bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 border-dashed border-2 hover:border-purple-400 hover:from-purple-100 hover:to-pink-100"
                 >
                   <div className="flex items-center gap-3">
-                    <div
-                      className={`flex items-center justify-center w-8 h-8 rounded-lg ${
-                        showCreateNew
-                          ? "bg-purple-500 text-white"
-                          : "bg-purple-500/20 text-purple-600"
-                      }`}
-                    >
-                      {showCreateNew ? (
-                        <Check className="w-4 h-4" />
-                      ) : (
-                        <Plus className="w-4 h-4" />
-                      )}
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-500/20 text-purple-600">
+                      <Plus className="w-4 h-4" />
                     </div>
-                    <span
-                      className={
-                        showCreateNew ? "text-purple-900" : "text-purple-700"
-                      }
-                    >
+                    <span className="text-purple-700">
                       Create New Community
                     </span>
                   </div>
@@ -195,38 +168,15 @@ export function SelectCommunityStep({
               </motion.div>
             </div>
           )}
-
-          {/* Create new sub-heard input */}
-          <AnimatePresence>
-            {showCreateNew && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl space-y-2">
-                  <Label htmlFor="new-subheard-name" className="text-sm text-purple-800">
-                    New Community Name
-                  </Label>
-                  <Input
-                    id="new-subheard-name"
-                    placeholder="e.g., politics, technology, food..."
-                    value={newSubHeardName}
-                    onChange={(e) => onNewSubHeardNameChange(e.target.value)}
-                    maxLength={50}
-                    className="bg-white border-purple-300"
-                    autoFocus
-                  />
-                  <p className="text-xs text-purple-700">
-                    Choose a clear, concise name for your community
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </FunSheetCard>
+
+      <CreateCommunityDialog
+        isOpen={showCreateDialog}
+        userId={userId}
+        onCreated={handleCommunityCreated}
+        onClose={() => setShowCreateDialog(false)}
+      />
     </>
   );
 }

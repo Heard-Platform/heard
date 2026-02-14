@@ -227,13 +227,12 @@ class ApiClient extends BaseApiClient {
   }
 
   async createSubHeard(
-    name: string,
+    community: Partial<SubHeard>,
     userId: string,
-    isPrivate?: boolean,
   ) {
     return this.request("/subheard/create", {
       method: "POST",
-      body: JSON.stringify({ name, userId, isPrivate }),
+      body: JSON.stringify({ community, userId }),
     });
   }
 

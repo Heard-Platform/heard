@@ -96,14 +96,16 @@ app.post(
   "/make-server-f1a393b4/subheard/create",
   async (c: any) => {
     try {
-      const { name, isPrivate, userId } = await c.req.json();
+      const { community, userId } = await c.req.json();
 
-      if (!name || typeof name !== "string") {
+      if (!community) {
         return c.json(
-          { error: "Sub-heard name is required" },
+          { error: "Community data is required" },
           400,
         );
       }
+
+      const { name, isPrivate, hostOnlyPosting } = community;
 
       if (!userId || typeof userId !== "string") {
         return c.json({ error: "User ID is required" }, 400);
@@ -139,23 +141,21 @@ app.post(
         );
       }
 
-      const subHeardKey = `subheard:${normalized}`;
-      const subHeardData = {
+      const newCommunity = {
         name: normalized,
         createdAt: Date.now(),
         isPrivate: isPrivate || false,
+        hostOnlyPosting: hostOnlyPosting || false,
         adminId: userId,
       };
 
-      await kv.set(subHeardKey, JSON.stringify(subHeardData));
+      await saveCommunity(newCommunity);
 
       return c.json({
         success: true,
         subHeard: {
-          name: normalized,
+          ...newCommunity,
           count: 0,
-          isPrivate: isPrivate || false,
-          adminId: userId,
         },
       });
     } catch (error) {
