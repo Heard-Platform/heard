@@ -87,7 +87,6 @@ export function DebateScrollerStory() {
 
   const handleUpdatePresence = useCallback(
     (userId: string, currentRoomIndex: number) => {
-      console.log("Update presence:", userId, currentRoomIndex);
       setPresences((prev) => {
         const filtered = prev.filter(
           (p) => p.userId !== userId,
