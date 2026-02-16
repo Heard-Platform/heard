@@ -5,8 +5,21 @@ import { getFrontendUrl } from "./utils.tsx";
 import { sendSms } from "./twilio-service.tsx";
 import type { DebateRoom } from "./types.tsx";
 import { getStatements } from "./debate-api.tsx";
+import { getAutopopulatorConfig } from "./internal-config-api.tsx";
+import { withErrorHandling } from "./route-wrapper.tsx";
 
 const app = new Hono();
+
+async function validateCronAuth(c: any, next: any) {
+  const authHeader = c.req.header("Authorization");
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+  
+  await next();
+}
 
 export async function sendDebateCompletionCelebration(room: DebateRoom) {
   try {
@@ -39,15 +52,10 @@ export async function sendDebateCompletionCelebration(room: DebateRoom) {
 
 app.post(
   "/make-server-f1a393b4/cron/send-completion-celebrations",
-  async (c: any) => {
-    try {
-      const authHeader = c.req.header("Authorization");
-      const cronSecret = Deno.env.get("CRON_SECRET");
-      
-      if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
-
+  validateCronAuth,
+  withErrorHandling(
+    {},
+    async () => {
       const now = Date.now();
       const twentyMinutesAgo = now - (20 * 60 * 1000);
 
@@ -82,18 +90,56 @@ app.post(
         }
       }
 
-      return c.json({ 
+      return { 
         processed: results.length,
         results: results
-      });
-    } catch (error) {
-      console.error("Error in celebration cron job:", error);
-      return c.json(
-        { error: "Failed to process celebration cron job" },
-        500,
-      );
-    }
-  },
+      };
+    },
+    "Failed to process celebration cron job"
+  ),
+);
+
+app.post(
+  "/make-server-f1a393b4/cron/auto-populate-feed",
+  validateCronAuth,
+  withErrorHandling(
+    {},
+    async () => {
+      console.log("Auto-populate feed cron job triggered");
+
+      const config = await getAutopopulatorConfig();
+      
+      if (!config.enabled) {
+        console.log("Autopopulator is disabled");
+        return { 
+          skipped: true,
+          message: "Autopopulator is disabled"
+        };
+      }
+
+      const probability = 1 / config.averageIntervalMins;
+      const randomValue = Math.random();
+      
+      if (randomValue >= probability) {
+        console.log(`Skipping this run (random: ${randomValue.toFixed(3)}, probability: ${probability})`);
+        return { 
+          skipped: true,
+          message: "Skipped based on probability",
+          probability,
+          randomValue
+        };
+      }
+
+      console.log(`Proceeding with autopopulation (random: ${randomValue.toFixed(3)}, probability: ${probability})`);
+
+      return { 
+        message: "Auto-populate feed placeholder - not yet implemented",
+        probability,
+        randomValue
+      };
+    },
+    "Failed to process auto-populate feed cron job"
+  ),
 );
 
 export { app as cronApi };

@@ -169,3 +169,13 @@ export interface SentEmail {
   sentAt: number;
   emailType: string;
 }
+
+export enum InternalVarKey {
+  AUTO_POPULATOR_ON = "AUTO_POPULATOR_ON",
+  AUTO_POPULATE_AVG_INTERVAL_MINS = "AUTO_POPULATE_AVG_INTERVAL_MINS",
+}
+
+export interface InternalVar {
+  key: InternalVarKey;
+  value: string;
+}

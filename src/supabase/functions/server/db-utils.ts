@@ -50,11 +50,15 @@ export const upsert = async (
 
 export const selectAll = async <T>(
   tableName: string,
+  conditions?: Record<string, any>,
   modifier?: (query: any) => any,
 ): Promise<T[]> => {
   const supabase = createClientFromEnv();
 
-  let q = supabase.from(tableName).select("*");
+  let q = supabase
+    .from(tableName)
+    .select("*")
+    .match(conditions || {});
 
   if (modifier) q = modifier(q);
 
