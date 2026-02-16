@@ -22,6 +22,7 @@ export const updatePresence = async (
 export const getRecentPresences = async () =>
   selectAll<UserPresence>(
     "presences",
+    {},
     (q: any) => q.gte("lastUpdated", new Date(Date.now() - PRESENCE_TTL).toISOString())
   );
 
