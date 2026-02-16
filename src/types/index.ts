@@ -319,3 +319,8 @@ export interface DevAnonDebate extends DebateRoom {
   invitePath: string;
   anonymousLinkId: Required<DebateRoom>["anonymousLinkId"];
 }
+
+export interface AutopopulatorConfig {
+  enabled: boolean;
+  averageIntervalMins: number;
+}

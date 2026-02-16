@@ -179,3 +179,8 @@ export interface InternalVar {
   key: InternalVarKey;
   value: string;
 }
+
+export interface AutopopulatorConfig {
+  enabled: boolean;
+  averageIntervalMins: number;
+}

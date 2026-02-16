@@ -5,7 +5,7 @@ interface ParamConfig {
   errorMessage?: string;
 }
 
-export function withErrorHandling<TInput extends Record<string, any>, TOutput>(
+export function defineRoute<TInput extends Record<string, any>, TOutput>(
   schema: Record<keyof TInput, ParamConfig>,
   handler: (params: TInput) => Promise<TOutput>,
   errorMessage: string
@@ -40,7 +40,7 @@ export function withErrorHandling<TInput extends Record<string, any>, TOutput>(
       }
       
       const result = await handler(validatedParams as TInput);
-      return c.json({ success: true, data: result });
+      return c.json({ success: true, ...result });
     } catch (error) {
       console.error(`${errorMessage}:`, error);
       return c.json({ success: false, error: errorMessage }, 500);

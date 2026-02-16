@@ -1,7 +1,8 @@
-import { Hono } from "npm:hono";
 import { getInternalVar, setInternalVar } from "./model-utils.ts";
 import { InternalVarKey } from "./types.tsx";
-import { withErrorHandling } from "./route-wrapper.tsx";
+import { defineRoute } from "./route-wrapper.tsx";
+import { Hono } from "npm:hono";
+import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
 
@@ -34,21 +35,10 @@ export async function setAutopopulatorConfig(config: AutopopulatorConfig): Promi
   await setInternalVar(InternalVarKey.AUTO_POPULATE_AVG_INTERVAL_MINS, config.averageIntervalMins);
 }
 
-async function validateInternalAuth(c: any, next: any) {
-  const internalKey = c.req.header("X-Admin-Key");
-  const devAdminKey = Deno.env.get("DEV_ADMIN_KEY");
-
-  if (!devAdminKey || internalKey !== devAdminKey) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
-  
-  await next();
-}
-
 app.get(
   "/make-server-f1a393b4/internal/config/autopopulator",
-  validateInternalAuth,
-  withErrorHandling(
+  validateDeveloper,
+  defineRoute(
     {},
     async () => {
       const config = await getAutopopulatorConfig();
@@ -60,8 +50,8 @@ app.get(
 
 app.post(
   "/make-server-f1a393b4/internal/config/autopopulator",
-  validateInternalAuth,
-  withErrorHandling(
+  validateDeveloper,
+  defineRoute(
     {
       enabled: {
         type: 'boolean',

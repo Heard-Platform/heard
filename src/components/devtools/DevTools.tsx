@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { X, Wrench } from "lucide-react";
 import { EmailPreviews } from "./EmailPreviews";
+import { AutoPopulatorTab } from "./AutoPopulatorTab";
+import { TabButton } from "./TabButton";
 import {
   parseDevToolsTabFromUrl,
   updateUrlForDevTools,
@@ -13,7 +15,7 @@ interface DevToolsProps {
   onExit?: () => void;
 }
 
-type TabType = "clustering" | "email";
+type TabType = "clustering" | "email" | "autopopulator";
 
 export function DevTools({ user, onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
@@ -49,26 +51,21 @@ export function DevTools({ user, onExit }: DevToolsProps) {
 
           <div className="border-b">
             <div className="flex gap-1 px-6">
-              <button
+              <TabButton
+                active={activeTab === "clustering"}
+                label="Clustering"
                 onClick={() => handleTabChange("clustering")}
-                className={`px-4 py-3 border-b-2 transition-colors ${
-                  activeTab === "clustering"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Clustering
-              </button>
-              <button
+              />
+              <TabButton
+                active={activeTab === "email"}
+                label="Email"
                 onClick={() => handleTabChange("email")}
-                className={`px-4 py-3 border-b-2 transition-colors ${
-                  activeTab === "email"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Email
-              </button>
+              />
+              <TabButton
+                active={activeTab === "autopopulator"}
+                label="Auto Populator"
+                onClick={() => handleTabChange("autopopulator")}
+              />
             </div>
           </div>
 
@@ -82,6 +79,7 @@ export function DevTools({ user, onExit }: DevToolsProps) {
               </div>
             )}
             {activeTab === "email" && <EmailPreviews user={user} />}
+            {activeTab === "autopopulator" && <AutoPopulatorTab />}
           </div>
         </div>
       </div>
