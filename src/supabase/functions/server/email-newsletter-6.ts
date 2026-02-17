@@ -6,7 +6,7 @@ export const getNewsletter6Email = (): { subject: string; html: string } => {
     editionNumber: 6,
     section1: {
       title: "🎉 102 users and the end of cold showers!",
-      text: "We did it! 102 people have now voted, posted, or browsed on Heard! 🎉 This means the end of cold shower videos (I know you're disappointed). <a href=\"https://www.youtube.com/shorts/OXHx9-6bzBY\">I did make one final video though if you're curious.</a> A big shoutout to everyone who made up that 102 people. What challenge should I commit to for the 200 user milestone? 🤔",
+      text: "We did it! 102 people have now voted, posted, or browsed on Heard! 🎉 This means the end of cold shower videos (I know you're disappointed). <a href=\"https://www.youtube.com/shorts/OXHx9-6bzBY\">I did make one final video below if you're curious.</a> A big shoutout to everyone who made up that 102. What challenge should I commit to for the 200 user milestone? 🤔",
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-6-cold-shower.png",
       imageLink: "https://www.youtube.com/shorts/OXHx9-6bzBY",
       imageAlt: "Celebrating 100 users milestone",
@@ -22,6 +22,7 @@ export const getNewsletter6Email = (): { subject: string; html: string } => {
       title: "📰 Someone wrote a substack article about us!",
       text: "A big thanks to Paul Spinrad for covering us in his latest Substack post. If you're curious about the civic tech world that Heard comes from, it's a great (& quick) read! Check it out here: <a href='https://substack.com/home/post/p-186845070'>https://substack.com/home/post/p-186845070</a>",
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-6-main-street.jpeg",
+      imageLink: "https://substack.com/home/post/p-186845070",
       imageAlt: "Heard featured in Substack article",
     },
   });

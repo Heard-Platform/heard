@@ -1,7 +1,7 @@
 import { getNewsletterEmail, getNewsletter2Email } from "./email-templates.tsx";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
-import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, getUser, saveDebate, phoneKvKeyFn, deletePhone, getCommunity, saveCommunity } from "././kv-utils.tsx";
+import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, getUser, saveDebate, phoneKvKeyFn, deletePhone, getCommunity, saveCommunity } from "./kv-utils.tsx";
 import { getVotesForUser, getUserActivityRecords } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
 import { saveUser } from "./kv-utils.tsx";
@@ -12,6 +12,7 @@ import { getNewsletter5Email } from "./email-newsletter-5.ts";
 import { getNewsletter6Email } from "./email-newsletter-6.ts";
 import { sanitizeUser } from "./user-utils.ts";
 import { sendDebateCompletionCelebration } from "./cron-api.tsx";
+import { getNewsletterRecipients, getNewsletterSentKey } from "./newsletter-utils.ts";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
@@ -50,23 +51,12 @@ app.get("/make-server-f1a393b4/admin/users", async (c) => {
 app.get("/make-server-f1a393b4/admin/newsletter-eligible-count", async (c) => {
   try {
     const edition = c.req.query("edition") || "1";
-    const users = await getAllRealUsers();
-    const eligibleUsers = users.filter(
-      u => !u.isTestUser
-        && !u.isAnonymous
-        && u.email
-        && !u.isUnsubbedFromUpdates
-    );
-    
-    const newsletterSentKey = `newsletter:edition${edition}:sent-users`;
-    const alreadySent = await kv.get(newsletterSentKey) || [];
-    
-    const remainingUsers = eligibleUsers.filter(u => !alreadySent.includes(u.id));
+    const { eligibleUsers, alreadySent } =
+      await getNewsletterRecipients(parseInt(edition), false, "");
     
     return c.json({ 
-      eligible: remainingUsers.length,
+      eligible: eligibleUsers.length,
       alreadySent: alreadySent.length,
-      total: eligibleUsers.length,
     });
   } catch (error) {
     console.error("Error fetching newsletter eligible count:", error);
@@ -624,26 +614,10 @@ app.post(
         );
       }
 
-      const newsletterSentKey = `newsletter:edition${newsletterEdition}:sent-users`;
-      const alreadySent = await kv.get(newsletterSentKey) || [];
+      const { eligibleUsers, alreadySent } = await getNewsletterRecipients(newsletterEdition, testMode, testEmail);
       console.log(`Already sent to ${alreadySent.length} users`);
 
-      let eligibleUsers;
-      if (testMode && testEmail) {
-        eligibleUsers = [{ email: testEmail, id: 'test' }];
-        console.log(`Sending test newsletter #${newsletterEdition} to ${testEmail}`);
-      } else {
-        const users = await getAllRealUsers();
-        eligibleUsers = users.filter(
-          u => !u.isTestUser && !u.isAnonymous && u.email
-            && !alreadySent.includes(u.id)
-            && !u.isUnsubbedFromUpdates
-        );
-        console.log(`Found ${eligibleUsers.length} eligible users for newsletter #${newsletterEdition}`);
-      }
-
-
-      console.log(`Sending to ${eligibleUsers.length} users`);
+      console.log(`Sending to ${eligibleUsers.length} recipients`);
 
       let sent = 0;
       let failed = 0;
@@ -702,7 +676,8 @@ app.post(
             sent++;
             newlySent.push(user.id);
             
-            await kv.set(newsletterSentKey, [...alreadySent, ...newlySent]);
+            const sentKey = getNewsletterSentKey(newsletterEdition);
+            await kv.set(sentKey, [...alreadySent, ...newlySent]);
           }
         } catch (error) {
           console.error(`Error sending to ${user.email}:`, error);
