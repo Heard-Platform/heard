@@ -22,18 +22,16 @@ export function AutoPopulatorTab() {
   const [running, setRunning] = useState(false);
 
   const fetchConfig = async () => {
-    try {
-      setLoading(true);
-      const response = await getAutopopulatorConfig();
-      if (response?.success && response.data) {
-        setConfig(response.data);
-      }
-    } catch (error) {
-      console.error("Error fetching config:", error);
+    setLoading(true);
+    const response = await getAutopopulatorConfig();
+    if (response?.success && response.data) {
+      setConfig(response.data);
+    } else {
+      console.error("Error fetching config:", response?.error);
       toast.error("Failed to load configuration");
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -41,38 +39,28 @@ export function AutoPopulatorTab() {
   }, []);
 
   const handleSaveConfig = async () => {
-    try {
-      setSaving(true);
-      const response = await setAutopopulatorConfig(config);
-      if (response?.success && response.data) {
-        toast.success("Configuration saved");
-        setConfig(response.data);
-      } else {
-        throw new Error(response?.error || "Failed to save");
-      }
-    } catch (error) {
-      console.error("Error saving config:", error);
+    setSaving(true);
+    const response = await setAutopopulatorConfig(config);
+    if (response?.success && response.data) {
+      toast.success("Configuration saved");
+      setConfig(response.data);
+    } else {
+      console.error("Error saving config:", response?.error);
       toast.error("Failed to save configuration");
-    } finally {
-      setSaving(false);
     }
+    setSaving(false);
   };
 
   const handleRunNow = async () => {
-    try {
-      setRunning(true);
-      const response = await runAutopopulatorNow();
-      if (response?.success && response.data) {
-        toast.success(`Post created! Room ID: ${response.data.roomId}`);
-      } else {
-        throw new Error(response?.error || "Failed to run");
-      }
-    } catch (error) {
-      console.error("Error running autopopulator:", error);
+    setRunning(true);
+    const response = await runAutopopulatorNow();
+    if (response?.success && response.data) {
+      toast.success(`Post created! Room ID: ${response.data.roomId}`);
+    } else {
+      console.error("Error running autopopulator:", response?.error);
       toast.error("Failed to run autopopulator");
-    } finally {
-      setRunning(false);
     }
+    setRunning(false);
   };
 
   if (loading) {
