@@ -16,6 +16,7 @@ import type {
   VoteType,
   AnalysisData,
   SubHeard,
+  AutopopulatorConfig,
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
@@ -78,6 +79,14 @@ interface DebateSessionContextType {
   getExplorableSubHeards: (userId: string) => Promise<ApiResponse<SubHeard[]> | null>;
   joinSubHeard: (subHeardName: string, userId: string) => Promise<ApiResponse<undefined> | null>;
   leaveSubHeard: (subHeardName: string, userId: string) => Promise<ApiResponse<undefined> | null>;
+  getAutopopulatorConfig: () => Promise<ApiResponse<AutopopulatorConfig> | null>;
+  setAutopopulatorConfig: (
+    config: AutopopulatorConfig,
+  ) => Promise<ApiResponse<AutopopulatorConfig> | null>;
+  runAutopopulatorNow: () => Promise<ApiResponse<{
+    roomId: string;
+    statementIds: string[];
+  }> | null>;
 }
 
 export type OverridableApiMethods = Pick<DebateSessionContextType, "getExplorableSubHeards">;
@@ -677,6 +686,28 @@ export function DebateSessionProvider(
     return safelyMakeApiCall<undefined>(() => api.leaveSubHeard(subHeardName, userId))
   }, []);
 
+  const getAutopopulatorConfig = useCallback(async () => {
+    return safelyMakeApiCall<AutopopulatorConfig>(() =>
+      api.getAutopopulatorConfig(),
+    );
+  }, []);
+
+  const setAutopopulatorConfig = useCallback(
+    async (config: AutopopulatorConfig) => {
+      return safelyMakeApiCall<AutopopulatorConfig>(() =>
+        api.setAutopopulatorConfig(config),
+      );
+    },
+    [],
+  );
+
+  const runAutopopulatorNow = useCallback(async () => {
+    return safelyMakeApiCall<{
+      roomId: string;
+      statementIds: string[];
+    }>(() => api.runAutopopulatorNow());
+  }, []);
+
   // Reset session (full logout)
   const resetSession = useCallback(() => {
     setUser(null);
@@ -749,6 +780,9 @@ export function DebateSessionProvider(
     getExplorableSubHeards,
     joinSubHeard,
     leaveSubHeard,
+    getAutopopulatorConfig,
+    setAutopopulatorConfig,
+    runAutopopulatorNow,
   };
 
   if (showcase || showcaseOverrides) {
@@ -837,6 +871,18 @@ export function DebateSessionProvider(
       },
       leaveSubHeard: async (subHeardName: string, userId: string) => {
         console.log("[Showcase] leaveSubHeard called");
+        return { success: true };
+      },
+      getAutopopulatorConfig: async () => {
+        console.log("[Showcase] getAutopopulatorConfig called");
+        return { success: true };
+      },
+      setAutopopulatorConfig: async (config: AutopopulatorConfig) => {
+        console.log("[Showcase] setAutopopulatorConfig called");
+        return { success: true };
+      },
+      runAutopopulatorNow: async () => {
+        console.log("[Showcase] runAutopopulatorNow called");
         return { success: true };
       },
       ...showcaseOverrides,

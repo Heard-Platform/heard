@@ -15,6 +15,7 @@ import {
   type DebateRoom,
   type NewDebateRoom,
   type VoteType,
+  AutopopulatorConfig,
 } from "../types";
 import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
@@ -707,6 +708,24 @@ class ApiClient extends BaseApiClient {
     return this.request("/unsubscribe", {
       method: "POST",
       body: JSON.stringify({ userId }),
+    });
+  }
+
+  async getAutopopulatorConfig() {
+    return this.request<AutopopulatorConfig>("/internal/config/autopopulator");
+  }
+
+  async setAutopopulatorConfig(config: AutopopulatorConfig) {
+    return this.request<AutopopulatorConfig>("/internal/config/autopopulator", {
+      method: "POST",
+      body: JSON.stringify(config),
+    });
+  }
+
+  async runAutopopulatorNow() {
+    return this.request<{ roomId: string; statementIds: string[] }>("/cron/auto-populate-feed", {
+      method: "POST",
+      body: JSON.stringify({ forceRun: true }),
     });
   }
 }

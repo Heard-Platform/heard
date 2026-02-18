@@ -373,7 +373,12 @@ function AppContent() {
     if (!user) {
       return null;
     }
-    return <DevTools user={user} onExit={handleExitDevTools} />;
+    return (
+      <>
+        <DevTools user={user} onExit={handleExitDevTools} />
+        <Toaster />
+      </>
+    );
   }
 
   if (showComponentShowcase) {
