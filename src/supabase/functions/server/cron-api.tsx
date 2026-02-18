@@ -19,9 +19,9 @@ async function validateCronAuth(c: any, next: any) {
   if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
     await next();
     return;
+  } else {
+    return validateDeveloper(c, next);
   }
-  
-  return validateDeveloper(c, next);
 }
 
 export async function sendDebateCompletionCelebration(room: DebateRoom) {
