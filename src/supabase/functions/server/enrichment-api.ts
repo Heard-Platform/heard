@@ -40,6 +40,18 @@ app.post(
       }
 
       if (!params.forceRun) {
+        const now = new Date();
+        const hour = now.getUTCHours() - 4;
+        const ET_CUTOFF_HOUR_START = 3;
+        const ET_CUTOFF_HOUR_END = 7;
+        if (hour >= ET_CUTOFF_HOUR_START && hour < ET_CUTOFF_HOUR_END) {
+          console.log(`Skipping enrichment between 3am and 7am ET (current hour: ${hour})`);
+          return { 
+            skipped: true,
+            message: "Skipped due to time window restrictions"
+          };
+        }
+
         const probability = 1 / config.averageIntervalMins;
         const randomValue = Math.random();
         
