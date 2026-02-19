@@ -1,37 +1,23 @@
 import { scrapeRssToXml as scrapeRssAsXml } from "./scraper-utils.ts";
 import Parser from 'npm:rss-parser';
+import { RedditFeedItem, RedditPost, RedditScrapeCriteria } from "./types.tsx";
 
-type FeedItem = {
-    title: string;
-    link: string;
-    pubDate: string;
-    contentSnippet: string;
-    isoDate: string;
-};
-
-type RedditPost = {
-    subredditDescription: string,
-    title: string,
-    selfText: string,
-};
-
-export async function getRedditPosts(criteria: {
-    subredditName: string,
-    maxPostAgeMins: number,
-}): Promise<RedditPost[]> {
+export async function getRedditPosts(
+  criteria: RedditScrapeCriteria,
+): Promise<RedditPost[]> {
     const parser = new Parser({
         customFields: {
             feed: ['subtitle'],
         }
     });
     const xml = await scrapeRssAsXml(`https://www.reddit.com/r/${criteria.subredditName}/new.rss`);
-    const feed = await parser.parseString(xml);
+    const feed = await parser.parseString(xml) as { items: RedditFeedItem[], subtitle: string };
 
     const cutoffTime = new Date();
-    cutoffTime.setMinutes(cutoffTime.getMinutes() - criteria.maxPostAgeMins)
+    cutoffTime.setMinutes(cutoffTime.getMinutes() - criteria.maxPostAgeMins);
 
     const posts: RedditPost[] = [];
-    feed.items.forEach((item: FeedItem) => {
+    feed.items.forEach((item: RedditFeedItem) => {
         const postTime = new Date(item.isoDate);
         const subredditDescription = feed.subtitle.trim();
         const title = item.title.trim();
@@ -40,8 +26,18 @@ export async function getRedditPosts(criteria: {
             subredditDescription,
             title,
             selfText,
+            pubDate: item.pubDate,
+            subreddit: criteria.subredditName,
         });
     });
+
+    posts.sort((a, b) => {
+        const aTime = new Date(a.pubDate).getTime();
+        const bTime = new Date(b.pubDate).getTime();
+        return bTime - aTime;
+    });
+
+    posts.splice(criteria.postLimit);
 
     return posts;
 }

@@ -59,10 +59,7 @@ app.post(
       }
 
       const redditImporter = new RedditImporter();
-      await redditImporter.createPostsFromSubreddit({
-        subredditName: "AskReddit",
-        maxPostAgeMins: 10 * 24,
-      });
+      await redditImporter.runOnce();
 
       return { 
         message: "Successfully created mock debate post",

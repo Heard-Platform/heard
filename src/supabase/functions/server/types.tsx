@@ -185,8 +185,22 @@ export interface EnrichmentConfig {
   averageIntervalMins: number;
 }
 
-export interface RedditPost {
-  subredditDescription: string;
-  title: string;
-  selfText: string;
+export interface RedditScrapeCriteria {
+  subredditName: string;
+  maxPostAgeMins: number;
+  postLimit: number;
 }
+
+export type RedditFeedItem = {
+    title: string;
+    link: string;
+    pubDate: string;
+    contentSnippet: string;
+    isoDate: string;
+};
+
+export type RedditPost = Pick<RedditFeedItem, "title" | "pubDate"> & {
+    subredditDescription: string,
+    selfText: string,
+    subreddit: string,
+};

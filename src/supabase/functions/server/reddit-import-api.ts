@@ -2,6 +2,7 @@ import { Context, Hono } from "npm:hono";
 import { RedditImporter } from "./reddit-import-service.ts";
 import { verifyAdminKey } from "./admin-api.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
+import { RedditScrapeCriteria } from "./types.tsx";
 
 
 export const app = new Hono();
@@ -17,9 +18,7 @@ app.post(
       userId: { type: "string", required: true },
       subHeard: { type: "boolean", required: false },
     },
-    async (params: {
-      subredditName: string;
-      maxPostAgeMins: number;
+    async (params: Omit<RedditScrapeCriteria, "postLimit"> & {
       userId: string;
       subHeard?: boolean;
     }) => {
@@ -27,6 +26,7 @@ app.post(
       await redditImportService.createPostsFromSubreddit({
         subredditName: params.subredditName,
         maxPostAgeMins: params.maxPostAgeMins,
+        postLimit: 1,
       });
     },
     "Failed to seed from Reddit",

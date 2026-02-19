@@ -1,14 +1,14 @@
 import { getRedditPosts } from "./reddit-scraper-utils.ts";
 import { makeTransformPromptFromRedditPost } from "./ai-prompt-utils.ts";
 import { EnrichmentService } from "./enrichment-service.ts";
-import { RedditPost } from "./types.tsx";
+import { RedditPost, RedditScrapeCriteria } from "./types.tsx";
 import { createRoom } from "./kv-utils.tsx";
 import { createNewRoomData } from "./room-utils.ts";
-import { ONE_WEEK_MIN, ONE_WEEK_MS } from "./time-utils.ts";
+import { ONE_HOUR_MIN, ONE_WEEK_MS } from "./time-utils.ts";
 import { generateId } from "./utils.tsx";
 import { saveStatement } from "./kv-utils.tsx";
 
-export const subredditsToHerds = {
+export const subredditsToHerds: { [key: string]: string } = {
   "ChangeMyView": "change-my-mind",
   "UnpopularOpinion": "spicy-opinions",
   "washingtondc": "washington-dc",
@@ -60,12 +60,14 @@ Post self-text: ${redditPost.selfText}
     msg += `\n---------------------------------------------`;
     console.log(msg);
 
+    const subHeard = subredditsToHerds[redditPost.subreddit] || "test";
+
     const newPost = createNewRoomData({
       id: generateId(),
       topic: conversationTopic,
       participants: [],
       hostId: "enrichment-service",
-      subHeard: "test",
+      subHeard,
       endTime: Date.now() + ONE_WEEK_MS,
     });
     await createRoom(newPost);
@@ -89,17 +91,30 @@ Post self-text: ${redditPost.selfText}
     return true;
   }
 
-  async createPostsFromSubreddit(criteria: {
-    subredditName: string;
-    maxPostAgeMins: number;
-  }): Promise<boolean> {
-    const posts = await getRedditPosts(criteria);
+  async createPostsFromSubreddit(
+    criteria: RedditScrapeCriteria,
+  ): Promise<boolean> {
+    let posts = await getRedditPosts(criteria);
 
     let succeeded = true;
-    for (const postData of posts) {
-      const r = await this.createPostFromRedditPost(postData);
+    for (const post of posts) {
+      const r = await this.createPostFromRedditPost(post);
       if (!r) succeeded = false;
     }
     return succeeded;
+  }
+
+  async runOnce() {
+    const subredditNames = Object.keys(subredditsToHerds);
+    const randomIndex = Math.floor(
+      Math.random() * subredditNames.length,
+    );
+    const randomSubredditName = subredditNames[randomIndex];
+
+    await this.createPostsFromSubreddit({
+      subredditName: randomSubredditName,
+      maxPostAgeMins: ONE_HOUR_MIN,
+      postLimit: 1,
+    });
   }
 }
