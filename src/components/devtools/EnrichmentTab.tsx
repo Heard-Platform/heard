@@ -169,7 +169,7 @@ export function EnrichmentTab() {
 
       <div className="text-xs text-slate-500 space-y-1">
         <p>
-          <strong>Note:</strong> The enrichment service creates mock debate posts in the "Test" community
+          <strong>Note:</strong> The enrichment service will creates posts based on Reddit content from selected subreddits.
         </p>
         <p>Each post includes a topic and 3 sample statements</p>
         <p>Probability: 1 / averageIntervalMins (checked every cron run)</p>
