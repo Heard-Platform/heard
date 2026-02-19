@@ -3,11 +3,9 @@ import * as kv from "./kv_store.tsx";
 import { getAllDebates, getUser } from "./kv-utils.tsx";
 import { getFrontendUrl } from "./utils.tsx";
 import { sendSms } from "./twilio-service.tsx";
-import type { DebateRoom, Statement } from "./types.tsx";
-import { getStatements, generateId, saveDebateRoom } from "./debate-api.tsx";
-import { getEnrichmentConfig } from "./internal-config-api.tsx";
+import type { DebateRoom } from "./types.tsx";
+import { getStatements } from "./debate-api.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
-import { getCommunity, saveCommunity, saveStatement } from "./kv-utils.tsx";
 import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
@@ -101,73 +99,5 @@ app.post(
     "Failed to process celebration cron job"
   ),
 );
-
-async function ensureTestCommunityExists() {
-  const testCommunity = await getCommunity("test");
-  if (!testCommunity) {
-    await saveCommunity({
-      name: "test",
-      isPrivate: false,
-      adminId: "system",
-      hostOnlyPosting: false,
-    });
-  }
-}
-
-async function createMockDebatePost(): Promise<{ roomId: string; statementIds: string[] }> {
-  await ensureTestCommunityExists();
-
-  const roomId = generateId();
-  const mockUserId = "enrichment-service";
-
-  const debateRoom: DebateRoom = {
-    id: roomId,
-    topic: "What's the best way to spend a lazy Sunday afternoon?",
-    phase: "round1",
-    subPhase: "posting",
-    gameNumber: 1,
-    roundStartTime: Date.now(),
-    participants: [mockUserId],
-    hostId: mockUserId,
-    isActive: true,
-    createdAt: Date.now(),
-    mode: "realtime",
-    rantFirst: true,
-    subHeard: "test",
-    endTime: Date.now() + (7 * 24 * 60 * 60 * 1000),
-    allowAnonymous: false,
-  };
-
-  await saveDebateRoom(debateRoom);
-
-  const mockStatements = [
-    "Reading a good book while sipping on coffee",
-    "Binge-watching your favorite TV series",
-    "Going for a nature walk or hike",
-  ];
-
-  const statementIds: string[] = [];
-
-  for (const text of mockStatements) {
-    const statementId = generateId();
-    const statement: Statement = {
-      id: statementId,
-      roomId: roomId,
-      text: text,
-      author: mockUserId,
-      timestamp: Date.now(),
-      superAgrees: 0,
-      agrees: 0,
-      disagrees: 0,
-      passes: 0,
-      voters: {},
-      round: 1,
-    };
-    await saveStatement(statement);
-    statementIds.push(statementId);
-  }
-
-  return { roomId, statementIds };
-}
 
 export { app as cronApi };
