@@ -171,8 +171,8 @@ export interface SentEmail {
 }
 
 export enum InternalVarKey {
-  AUTO_POPULATOR_ON = "AUTO_POPULATOR_ON",
-  AUTO_POPULATE_AVG_INTERVAL_MINS = "AUTO_POPULATE_AVG_INTERVAL_MINS",
+  ENRICHMENT_ON = "ENRICHMENT_ON",
+  ENRICHMENT_AVG_INTERVAL_MINS = "ENRICHMENT_AVG_INTERVAL_MINS",
 }
 
 export interface InternalVar {
@@ -180,7 +180,13 @@ export interface InternalVar {
   value: string;
 }
 
-export interface AutopopulatorConfig {
+export interface EnrichmentConfig {
   enabled: boolean;
   averageIntervalMins: number;
+}
+
+export interface RedditPost {
+  subredditDescription: string;
+  title: string;
+  selfText: string;
 }

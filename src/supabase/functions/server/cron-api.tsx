@@ -5,14 +5,14 @@ import { getFrontendUrl } from "./utils.tsx";
 import { sendSms } from "./twilio-service.tsx";
 import type { DebateRoom, Statement } from "./types.tsx";
 import { getStatements, generateId, saveDebateRoom } from "./debate-api.tsx";
-import { getAutopopulatorConfig } from "./internal-config-api.tsx";
+import { getEnrichmentConfig } from "./internal-config-api.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 import { getCommunity, saveCommunity, saveStatement } from "./kv-utils.tsx";
 import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
 
-async function validateCronAuth(c: any, next: any) {
+export async function validateCronAuth(c: any, next: any) {
   const authHeader = c.req.header("Authorization");
   const cronSecret = Deno.env.get("CRON_SECRET");
   
@@ -118,7 +118,7 @@ async function createMockDebatePost(): Promise<{ roomId: string; statementIds: s
   await ensureTestCommunityExists();
 
   const roomId = generateId();
-  const mockUserId = "auto-populator-bot";
+  const mockUserId = "enrichment-service";
 
   const debateRoom: DebateRoom = {
     id: roomId,
@@ -169,55 +169,5 @@ async function createMockDebatePost(): Promise<{ roomId: string; statementIds: s
 
   return { roomId, statementIds };
 }
-
-app.post(
-  "/make-server-f1a393b4/cron/auto-populate-feed",
-  validateCronAuth,
-  defineRoute(
-    { forceRun: { type: 'boolean', required: false } },
-    async (params: { forceRun?: boolean }) => {
-      console.log("Auto-populate feed cron job triggered");
-
-      const config = await getAutopopulatorConfig();
-      
-      if (!config.enabled && !params.forceRun) {
-        console.log("Autopopulator is disabled");
-        return { 
-          skipped: true,
-          message: "Autopopulator is disabled"
-        };
-      }
-
-      if (!params.forceRun) {
-        const probability = 1 / config.averageIntervalMins;
-        const randomValue = Math.random();
-        
-        if (randomValue >= probability) {
-          console.log(`Skipping this run (random: ${randomValue.toFixed(3)}, probability: ${probability})`);
-          return { 
-            skipped: true,
-            message: "Skipped based on probability",
-            probability,
-            randomValue
-          };
-        }
-
-        console.log(`Proceeding with autopopulation (random: ${randomValue.toFixed(3)}, probability: ${probability})`);
-      } else {
-        console.log("Force run enabled, bypassing probability check");
-      }
-
-      const { roomId, statementIds } = await createMockDebatePost();
-
-      return { 
-        message: "Successfully created mock debate post",
-        roomId,
-        statementIds,
-        forceRun: params.forceRun || false,
-      };
-    },
-    "Failed to process auto-populate feed cron job"
-  ),
-);
 
 export { app as cronApi };

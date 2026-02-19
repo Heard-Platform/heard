@@ -320,7 +320,7 @@ export interface DevAnonDebate extends DebateRoom {
   anonymousLinkId: Required<DebateRoom>["anonymousLinkId"];
 }
 
-export interface AutopopulatorConfig {
+export interface EnrichmentConfig {
   enabled: boolean;
   averageIntervalMins: number;
 }

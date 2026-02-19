@@ -6,22 +6,22 @@ import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
 
-interface AutopopulatorConfig {
+interface EnrichmentConfig {
   enabled: boolean;
   averageIntervalMins: number;
 }
 
-const DEFAULT_AUTOPOPULATOR_CONFIG: AutopopulatorConfig = {
+const DEFAULT_ENRICHMENT_CONFIG: EnrichmentConfig = {
   enabled: false,
   averageIntervalMins: 5,
 };
 
-export async function getAutopopulatorConfig(): Promise<AutopopulatorConfig> {
-  const enabled = await getInternalVar<boolean>(InternalVarKey.AUTO_POPULATOR_ON);
-  const avgInterval = await getInternalVar<number>(InternalVarKey.AUTO_POPULATE_AVG_INTERVAL_MINS);
+export async function getEnrichmentConfig(): Promise<EnrichmentConfig> {
+  const enabled = await getInternalVar<boolean>(InternalVarKey.ENRICHMENT_ON);
+  const avgInterval = await getInternalVar<number>(InternalVarKey.ENRICHMENT_AVG_INTERVAL_MINS);
 
   if (enabled === null || avgInterval === null) {
-    return DEFAULT_AUTOPOPULATOR_CONFIG;
+    return DEFAULT_ENRICHMENT_CONFIG;
   }
 
   return {
@@ -30,26 +30,26 @@ export async function getAutopopulatorConfig(): Promise<AutopopulatorConfig> {
   };
 }
 
-export async function setAutopopulatorConfig(config: AutopopulatorConfig): Promise<void> {
-  await setInternalVar(InternalVarKey.AUTO_POPULATOR_ON, config.enabled);
-  await setInternalVar(InternalVarKey.AUTO_POPULATE_AVG_INTERVAL_MINS, config.averageIntervalMins);
+export async function setEnrichmentConfig(config: EnrichmentConfig): Promise<void> {
+  await setInternalVar(InternalVarKey.ENRICHMENT_ON, config.enabled);
+  await setInternalVar(InternalVarKey.ENRICHMENT_AVG_INTERVAL_MINS, config.averageIntervalMins);
 }
 
 app.get(
-  "/make-server-f1a393b4/internal/config/autopopulator",
+  "/make-server-f1a393b4/internal/config/enrichment",
   validateDeveloper,
   defineRoute(
     {},
     async () => {
-      const config = await getAutopopulatorConfig();
+      const config = await getEnrichmentConfig();
       return config;
     },
-    "Failed to get autopopulator config"
+    "Failed to get enrichment config"
   ),
 );
 
 app.post(
-  "/make-server-f1a393b4/internal/config/autopopulator",
+  "/make-server-f1a393b4/internal/config/enrichment",
   validateDeveloper,
   defineRoute(
     {
@@ -65,16 +65,16 @@ app.post(
       },
     },
     async (params: { enabled: boolean; averageIntervalMins: number }) => {
-      const config: AutopopulatorConfig = {
+      const config: EnrichmentConfig = {
         enabled: params.enabled,
         averageIntervalMins: params.averageIntervalMins,
       };
 
-      await setAutopopulatorConfig(config);
+      await setEnrichmentConfig(config);
 
       return config;
     },
-    "Failed to set autopopulator config"
+    "Failed to set enrichment config"
   ),
 );
 

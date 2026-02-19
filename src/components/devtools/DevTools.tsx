@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { X, Wrench } from "lucide-react";
 import { EmailPreviews } from "./EmailPreviews";
-import { AutoPopulatorTab } from "./AutoPopulatorTab";
+import { EnrichmentTab } from "./EnrichmentTab";
 import { TabButton } from "./TabButton";
 import {
   parseDevToolsTabFromUrl,
@@ -15,7 +15,7 @@ interface DevToolsProps {
   onExit?: () => void;
 }
 
-type TabType = "clustering" | "email" | "autopopulator";
+type TabType = "clustering" | "email" | "enrichment";
 
 export function DevTools({ user, onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
@@ -62,9 +62,9 @@ export function DevTools({ user, onExit }: DevToolsProps) {
                 onClick={() => handleTabChange("email")}
               />
               <TabButton
-                active={activeTab === "autopopulator"}
-                label="Auto Populator"
-                onClick={() => handleTabChange("autopopulator")}
+                active={activeTab === "enrichment"}
+                label="Enrichment Service"
+                onClick={() => handleTabChange("enrichment")}
               />
             </div>
           </div>
@@ -79,7 +79,7 @@ export function DevTools({ user, onExit }: DevToolsProps) {
               </div>
             )}
             {activeTab === "email" && <EmailPreviews user={user} />}
-            {activeTab === "autopopulator" && <AutoPopulatorTab />}
+            {activeTab === "enrichment" && <EnrichmentTab />}
           </div>
         </div>
       </div>

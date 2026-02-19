@@ -12,6 +12,7 @@ Community,
 } from "./types.tsx";
 import { ONE_WEEK_MS } from "./time-utils.ts";
 import { getCommunity, saveCommunity } from "./kv-utils.tsx";
+import { createNewRoomData } from "./room-utils.ts";
 
 const app = new Hono();
 
@@ -82,25 +83,17 @@ app.post(
         ? debateLength * 60 * 1000
         : ONE_WEEK_MS; // CN-1 (BC)
 
-      const debateRoom: DebateRoom = {
+      const debateRoom = createNewRoomData({
         id: roomId,
         topic: topic.substring(0, 500),
-        phase: "round1",
-        subPhase: "posting",
-        gameNumber: 1,
-        roundStartTime: Date.now(),
         participants: [userId],
         hostId: userId,
-        isActive: true,
-        createdAt: Date.now(),
-        mode: "realtime",
-        rantFirst: true,
         subHeard: normalizedCommunityName || undefined,
         endTime: Date.now() + debateLengthMs,
         imageUrl,
         youtubeUrl,
         allowAnonymous: !!allowAnonymous,
-      };
+      });
 
       await saveDebateRoom(debateRoom);
 

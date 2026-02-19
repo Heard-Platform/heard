@@ -1,5 +1,5 @@
-import { scrapeRssToXml as scrapeRssAsXml } from "./scraper.tsx";
-import Parser from 'rss-parser';
+import { scrapeRssToXml as scrapeRssAsXml } from "./scraper-utils.ts";
+import Parser from 'npm:rss-parser';
 
 type FeedItem = {
     title: string;
