@@ -32,3 +32,5 @@ app.post(
     "Failed to seed from Reddit",
   ),
 );
+
+export { app as redditApi };
