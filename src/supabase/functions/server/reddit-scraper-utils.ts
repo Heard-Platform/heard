@@ -21,14 +21,17 @@ export async function getRedditPosts(
         const postTime = new Date(item.isoDate);
         const subredditDescription = feed.subtitle.trim();
         const title = item.title.trim();
-        const selfText = item.contentSnippet.slice(0, item.contentSnippet.indexOf('submitted by    ')).trim();
-        if (criteria.maxPostAgeMins === -1 || postTime > cutoffTime) posts.push({
+        const selfText = item.contentSnippet
+          .slice(0, item.contentSnippet.indexOf("submitted by    "))
+          .trim();
+        if (criteria.maxPostAgeMins === -1 || postTime > cutoffTime)
+          posts.push({
             subredditDescription,
             title,
             selfText,
             pubDate: item.pubDate,
             subreddit: criteria.subredditName,
-        });
+          });
     });
 
     posts.sort((a, b) => {

@@ -1,25 +1,10 @@
 import { Hono } from "npm:hono";
-import type { DebateRoom, Statement } from "./types.tsx";
-import { generateId, saveDebateRoom } from "./debate-api.tsx";
 import { getEnrichmentConfig } from "./internal-config-api.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
-import { getCommunity, saveCommunity, saveStatement } from "./kv-utils.tsx";
 import { validateCronAuth } from "./cron-api.tsx";
 import { RedditImporter } from "./reddit-import-service.ts";
 
 const app = new Hono();
-
-async function ensureTestCommunityExists() {
-  const testCommunity = await getCommunity("test");
-  if (!testCommunity) {
-    await saveCommunity({
-      name: "test",
-      isPrivate: false,
-      adminId: "system",
-      hostOnlyPosting: false,
-    });
-  }
-}
 
 app.post(
   "/make-server-f1a393b4/enrichment/run",

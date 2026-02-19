@@ -5,7 +5,6 @@ export class OpenAiClient {
 
   constructor() {
     this.openAiApiKey = process.env.OPENAI_API_KEY;
-    // this.openAiApiKey = Deno.env.get("OPENAI_API_KEY");
     if (!this.openAiApiKey) {
       throw new Error(
         "OPENAI_API_KEY must be set in environment variables",

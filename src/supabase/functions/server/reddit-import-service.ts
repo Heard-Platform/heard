@@ -38,7 +38,7 @@ export class RedditImporter extends EnrichmentService {
     });
 
     if (aiResponse.trim() === "Error") {
-      console.log(`Error creating Heard convo from Reddit post:
+      console.error(`Error creating Heard convo from Reddit post:
 Post title: ${redditPost.title}
 Post self-text: ${redditPost.selfText}
 ---------------------------------------------`);
@@ -58,7 +58,7 @@ Post self-text: ${redditPost.selfText}
       msg += `\nHeard response statement ${index + 1}: ${stmt}`;
     });
     msg += `\n---------------------------------------------`;
-    console.log(msg);
+    console.debug(msg);
 
     const subHeard = subredditsToHerds[redditPost.subreddit] || "test";
 
