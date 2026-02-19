@@ -16,7 +16,7 @@ import type {
   VoteType,
   AnalysisData,
   SubHeard,
-  AutopopulatorConfig,
+  EnrichmentConfig,
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
@@ -79,11 +79,11 @@ interface DebateSessionContextType {
   getExplorableSubHeards: (userId: string) => Promise<ApiResponse<SubHeard[]> | null>;
   joinSubHeard: (subHeardName: string, userId: string) => Promise<ApiResponse<undefined> | null>;
   leaveSubHeard: (subHeardName: string, userId: string) => Promise<ApiResponse<undefined> | null>;
-  getAutopopulatorConfig: () => Promise<ApiResponse<AutopopulatorConfig> | null>;
-  setAutopopulatorConfig: (
-    config: AutopopulatorConfig,
-  ) => Promise<ApiResponse<AutopopulatorConfig> | null>;
-  runAutopopulatorNow: () => Promise<ApiResponse<{
+  getEnrichmentConfig: () => Promise<ApiResponse<EnrichmentConfig> | null>;
+  setEnrichmentConfig: (
+    config: EnrichmentConfig,
+  ) => Promise<ApiResponse<EnrichmentConfig> | null>;
+  runEnrichmentNow: () => Promise<ApiResponse<{
     roomId: string;
     statementIds: string[];
   }> | null>;
@@ -686,26 +686,26 @@ export function DebateSessionProvider(
     return safelyMakeApiCall<undefined>(() => api.leaveSubHeard(subHeardName, userId))
   }, []);
 
-  const getAutopopulatorConfig = useCallback(async () => {
-    return safelyMakeApiCall<AutopopulatorConfig>(() =>
-      api.getAutopopulatorConfig(),
+  const getEnrichmentConfig = useCallback(async () => {
+    return safelyMakeApiCall<EnrichmentConfig>(() =>
+      api.getEnrichmentConfig(),
     );
   }, []);
 
-  const setAutopopulatorConfig = useCallback(
-    async (config: AutopopulatorConfig) => {
-      return safelyMakeApiCall<AutopopulatorConfig>(() =>
-        api.setAutopopulatorConfig(config),
+  const setEnrichmentConfig = useCallback(
+    async (config: EnrichmentConfig) => {
+      return safelyMakeApiCall<EnrichmentConfig>(() =>
+        api.setEnrichmentConfig(config),
       );
     },
     [],
   );
 
-  const runAutopopulatorNow = useCallback(async () => {
+  const runEnrichmentNow = useCallback(async () => {
     return safelyMakeApiCall<{
       roomId: string;
       statementIds: string[];
-    }>(() => api.runAutopopulatorNow());
+    }>(() => api.runEnrichmentNow());
   }, []);
 
   // Reset session (full logout)
@@ -780,9 +780,9 @@ export function DebateSessionProvider(
     getExplorableSubHeards,
     joinSubHeard,
     leaveSubHeard,
-    getAutopopulatorConfig,
-    setAutopopulatorConfig,
-    runAutopopulatorNow,
+    getEnrichmentConfig,
+    setEnrichmentConfig,
+    runEnrichmentNow,
   };
 
   if (showcase || showcaseOverrides) {
@@ -873,16 +873,16 @@ export function DebateSessionProvider(
         console.log("[Showcase] leaveSubHeard called");
         return { success: true };
       },
-      getAutopopulatorConfig: async () => {
-        console.log("[Showcase] getAutopopulatorConfig called");
+      getEnrichmentConfig: async () => {
+        console.log("[Showcase] getEnrichmentConfig called");
         return { success: true };
       },
-      setAutopopulatorConfig: async (config: AutopopulatorConfig) => {
-        console.log("[Showcase] setAutopopulatorConfig called");
+      setEnrichmentConfig: async (config: EnrichmentConfig) => {
+        console.log("[Showcase] setEnrichmentConfig called");
         return { success: true };
       },
-      runAutopopulatorNow: async () => {
-        console.log("[Showcase] runAutopopulatorNow called");
+      runEnrichmentNow: async () => {
+        console.log("[Showcase] runEnrichmentNow called");
         return { success: true };
       },
       ...showcaseOverrides,

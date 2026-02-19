@@ -15,7 +15,7 @@ import {
   type DebateRoom,
   type NewDebateRoom,
   type VoteType,
-  AutopopulatorConfig,
+  EnrichmentConfig,
 } from "../types";
 import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
@@ -711,19 +711,19 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async getAutopopulatorConfig() {
-    return this.request<AutopopulatorConfig>("/internal/config/autopopulator");
+  async getEnrichmentConfig() {
+    return this.request<EnrichmentConfig>("/internal/config/enrichment");
   }
 
-  async setAutopopulatorConfig(config: AutopopulatorConfig) {
-    return this.request<AutopopulatorConfig>("/internal/config/autopopulator", {
+  async setEnrichmentConfig(config: EnrichmentConfig) {
+    return this.request<EnrichmentConfig>("/internal/config/enrichment", {
       method: "POST",
       body: JSON.stringify(config),
     });
   }
 
-  async runAutopopulatorNow() {
-    return this.request<{ roomId: string; statementIds: string[] }>("/cron/auto-populate-feed", {
+  async runEnrichmentNow() {
+    return this.request<{ roomId: string; statementIds: string[] }>("/enrichment/run", {
       method: "POST",
       body: JSON.stringify({ forceRun: true }),
     });

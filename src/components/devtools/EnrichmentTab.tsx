@@ -2,18 +2,18 @@ import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Play, Loader2 } from "lucide-react";
 import { useDebateSession } from "../../hooks/useDebateSession";
-import { AutopopulatorConfig } from "../../types";
+import { EnrichmentConfig } from "../../types";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
-export function AutoPopulatorTab() {
+export function EnrichmentTab() {
   const {
-    getAutopopulatorConfig,
-    setAutopopulatorConfig,
-    runAutopopulatorNow,
+    getEnrichmentConfig,
+    setEnrichmentConfig,
+    runEnrichmentNow,
   } = useDebateSession();
-  const [config, setConfig] = useState<AutopopulatorConfig>({
+  const [config, setConfig] = useState<EnrichmentConfig>({
     enabled: false,
     averageIntervalMins: 5,
   });
@@ -23,7 +23,7 @@ export function AutoPopulatorTab() {
 
   const fetchConfig = async () => {
     setLoading(true);
-    const response = await getAutopopulatorConfig();
+    const response = await getEnrichmentConfig();
     if (response?.success && response.data) {
       setConfig(response.data);
     } else {
@@ -40,7 +40,7 @@ export function AutoPopulatorTab() {
 
   const handleSaveConfig = async () => {
     setSaving(true);
-    const response = await setAutopopulatorConfig(config);
+    const response = await setEnrichmentConfig(config);
     if (response?.success && response.data) {
       toast.success("Configuration saved");
       setConfig(response.data);
@@ -53,12 +53,12 @@ export function AutoPopulatorTab() {
 
   const handleRunNow = async () => {
     setRunning(true);
-    const response = await runAutopopulatorNow();
+    const response = await runEnrichmentNow();
     if (response?.success && response.data) {
       toast.success(`Post created! Room ID: ${response.data.roomId}`);
     } else {
-      console.error("Error running autopopulator:", response?.error);
-      toast.error("Failed to run autopopulator");
+      console.error("Error running enrichment:", response?.error);
+      toast.error("Failed to run enrichment");
     }
     setRunning(false);
   };
@@ -74,9 +74,9 @@ export function AutoPopulatorTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold mb-2">Auto-populator Configuration</h2>
+        <h2 className="text-xl font-semibold mb-2">Enrichment Service Configuration</h2>
         <p className="text-sm text-slate-600">
-          Control the automatic feed population in the Test community
+          Control the enrichment service in the Test community
         </p>
       </div>
 
@@ -85,7 +85,7 @@ export function AutoPopulatorTab() {
           <div>
             <label className="font-medium">Enabled</label>
             <p className="text-sm text-slate-600">
-              Turn on/off automatic population
+              Turn on/off enrichment service
             </p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
@@ -143,7 +143,7 @@ export function AutoPopulatorTab() {
         <div>
           <h3 className="font-medium text-blue-900 mb-1">Manual Trigger</h3>
           <p className="text-sm text-blue-700">
-            Run the autopopulator immediately with 100% probability
+            Run the enrichment service immediately with 100% probability
           </p>
         </div>
 
@@ -169,7 +169,7 @@ export function AutoPopulatorTab() {
 
       <div className="text-xs text-slate-500 space-y-1">
         <p>
-          <strong>Note:</strong> The autopopulator creates mock debate posts in the "Test" community
+          <strong>Note:</strong> The enrichment service will creates posts based on Reddit content from selected subreddits.
         </p>
         <p>Each post includes a topic and 3 sample statements</p>
         <p>Probability: 1 / averageIntervalMins (checked every cron run)</p>

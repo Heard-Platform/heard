@@ -171,8 +171,8 @@ export interface SentEmail {
 }
 
 export enum InternalVarKey {
-  AUTO_POPULATOR_ON = "AUTO_POPULATOR_ON",
-  AUTO_POPULATE_AVG_INTERVAL_MINS = "AUTO_POPULATE_AVG_INTERVAL_MINS",
+  ENRICHMENT_ON = "ENRICHMENT_ON",
+  ENRICHMENT_AVG_INTERVAL_MINS = "ENRICHMENT_AVG_INTERVAL_MINS",
 }
 
 export interface InternalVar {
@@ -180,7 +180,27 @@ export interface InternalVar {
   value: string;
 }
 
-export interface AutopopulatorConfig {
+export interface EnrichmentConfig {
   enabled: boolean;
   averageIntervalMins: number;
 }
+
+export interface RedditScrapeCriteria {
+  subredditName: string;
+  maxPostAgeMins: number;
+  postLimit: number;
+}
+
+export type RedditFeedItem = {
+    title: string;
+    link: string;
+    pubDate: string;
+    contentSnippet: string;
+    isoDate: string;
+};
+
+export type RedditPost = Pick<RedditFeedItem, "title" | "pubDate"> & {
+    subredditDescription: string,
+    selfText: string,
+    subreddit: string,
+};
