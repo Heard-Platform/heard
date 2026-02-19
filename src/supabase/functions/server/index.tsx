@@ -4,7 +4,7 @@ import { logger } from "npm:hono/logger";
 import { debateApi } from "./debate-api.tsx";
 import { adminApi } from "./admin-api.tsx";
 import { authApi } from "./auth-api.tsx";
-import { redditApi } from "./reddit-api.tsx";
+import { redditApi } from "./reddit-import-api.ts";
 import { oneTimeFixesApi } from "./one-time-fixes.tsx";
 import { feedbackApi } from "./feedback-api.tsx";
 import { imageApi } from "./image-api.tsx";
