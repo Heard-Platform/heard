@@ -6,7 +6,7 @@ import { TalkBubble } from "../TalkBubble";
 import { ScreenTimeWarningDialog } from "./ScreenTimeWarningDialog";
 
 // @ts-ignore
-import monkeyImg from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
+import baseMonkey from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
 // @ts-ignore
 import monkeyWithWrench from "figma:asset/monkey-with-wrench.png";
 // @ts-ignore
@@ -179,11 +179,11 @@ export function VineNavigator({
     return path;
   };
 
-  const monkeyImgToUse = isEating
+  const currentUserImg = isEating
     ? monkeyEatGif
     : currentUser.isTestUser
       ? monkeyWithWrench
-      : monkeyImg;
+      : baseMonkey;
 
   return (
     <div
@@ -283,7 +283,7 @@ export function VineNavigator({
           }}
         >
           <motion.img
-            src={monkeyImgToUse}
+            src={currentUserImg}
             alt="Monkey Avatar"
             className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
             style={{ scaleX: -1, opacity: 1 }}
@@ -370,7 +370,7 @@ export function VineNavigator({
               >
                 <div className="relative group">
                   <motion.img
-                    src={monkeyImgToUse}
+                    src={baseMonkey}
                     alt={`${presence.userId} monkey`}
                     className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
                     style={{ scaleX: -1 }}

@@ -9,7 +9,7 @@ import {
 } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Zap, Heart, Users } from "lucide-react";
 import { getPastelColor } from "../utils/colors";
 import { SwipeIndicatorCompact } from "./SwipeIndicators";
 import { SwipeInstructions } from "./SwipeInstructions";
@@ -38,6 +38,13 @@ const DEMO_STATEMENTS = [
     id: "demo-4",
     text: "Mushrooms are underrated! They'll grow on you.",
   },
+];
+
+const animatedIcons = [
+  { Icon: MessageCircle, color: "text-yellow-200", delay: 0 },
+  { Icon: Zap, color: "text-pink-200", delay: 0.3 },
+  { Icon: Heart, color: "text-red-200", delay: 0.6 },
+  { Icon: Users, color: "text-blue-200", delay: 0.9 },
 ];
 
 function DemoSwipeCard() {
@@ -156,87 +163,117 @@ export function IntroModal({
 }: IntroModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 border-2 border-purple-300">
-        <DialogHeader>
-          <DialogTitle className="text-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{
-                type: "spring",
-                stiffness: 260,
-                damping: 20,
-              }}
-              className="space-y-2"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-4xl">👋</span>
-                <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  Welcome to Heard
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground font-normal max-w-sm mx-auto">
-                Heard helps you connect with your community by
-                making public discourse fun, fast, and fair.
-              </p>
-            </motion.div>
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            Learn how to use Heard by swiping on statements
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-6 py-4">
-          {/* How to Play - Visual Demo */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="space-y-3"
-          >
-            <h3 className="text-sm font-medium text-center text-muted-foreground">
-              How to Play
-            </h3>
-
-            {/* Demo Swipe Card */}
-            <Card className="heard-card-bg">
-              <div className="p-4 space-y-3">
-                <div className="flex items-start gap-2">
-                  <MessageCircle className="w-4 h-4 text-purple-600 flex-shrink-0 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-xs text-muted-foreground mb-1">
-                      Conversation topic
-                    </p>
-                    <h2 className="font-bold text-foreground text-sm">
-                      {DEMO_TOPIC}
-                    </h2>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    4 responses
+      <DialogContent className="max-w-md bg-gradient-to-br from-purple-600 via-pink-500 to-orange-500 border-2 border-purple-300 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.2)_0%,transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.15)_0%,transparent_50%)]" />
+        
+        <div className="relative z-10">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 20,
+                }}
+                className="space-y-2"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-4xl">👋</span>
+                  <span className="text-3xl font-bold bg-gradient-to-r from-yellow-200 via-pink-200 to-white bg-clip-text text-transparent drop-shadow-lg">
+                    Welcome to Heard
                   </span>
                 </div>
+                
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex items-center justify-center gap-2 flex-wrap py-2"
+                >
+                  {animatedIcons.map(({ Icon, color, delay }) => (
+                    <motion.div
+                      key={delay}
+                      animate={{ y: [0, -6, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, delay }}
+                    >
+                      <Icon className={`w-5 h-5 ${color}`} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+                
+                <p className="text-base text-white/95 font-medium drop-shadow-md max-w-sm mx-auto leading-relaxed">
+                  Heard is an app for making conversations, debates, and decision-making fun.
+                </p>
+                
+                <p className="text-sm text-white/90">
+                  <a
+                    href="https://amasonlong.notion.site/About-Heard-2cc4ab4bf00380a9b63ce3b83234ae02?pvs=73"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-black text-yellow-200 hover:text-yellow-100 underline decoration-2 decoration-yellow-300/50 underline-offset-4 transition-colors"
+                  >
+                    Learn more
+                  </a>
+                </p>
+              </motion.div>
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Learn how to use Heard by swiping on statements
+            </DialogDescription>
+          </DialogHeader>
 
-                <DemoSwipeCard />
-              </div>
-            </Card>
-          </motion.div>
-
-          {/* CTA Button */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Button
-              onClick={onClose}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+          <div className="space-y-6 py-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-3"
             >
-              Let's Go! 🚀
-            </Button>
-          </motion.div>
+              <h3 className="text-sm font-medium text-center text-white/90">
+                How to Play
+              </h3>
+
+              <Card className="heard-card-bg">
+                <div className="p-4 space-y-3">
+                  <div className="flex items-start gap-2">
+                    <MessageCircle className="w-4 h-4 text-purple-600 flex-shrink-0 mt-1" />
+                    <div className="flex-1">
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Conversation topic
+                      </p>
+                      <h2 className="font-bold text-foreground text-sm">
+                        {DEMO_TOPIC}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      4 responses
+                    </span>
+                  </div>
+
+                  <DemoSwipeCard />
+                </div>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Button
+                onClick={onClose}
+                className="w-full bg-white text-purple-600 hover:bg-white/90 font-bold shadow-lg"
+              >
+                Let's Go! 🚀
+              </Button>
+            </motion.div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
