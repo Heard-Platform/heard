@@ -24,6 +24,7 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c) => {
       statementId,
       vote,
       userId: providedUserId,
+      environment,
     } = await c.req.json();
 
     if (!flyerId || !statementId || !vote) {
@@ -40,7 +41,12 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c) => {
     let userId = providedUserId;
 
     if (!userId) {
-      const newUser = await createAnonymousUser({flyerId});
+      const isTestUser = environment !== "production";
+      const newUser = await createAnonymousUser({
+        flyerId,
+        createdInEnvironment: environment || "unknown", // CN-3
+        isTestUser,
+      });
       userId = newUser.id;
     }
 

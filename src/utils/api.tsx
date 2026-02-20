@@ -24,6 +24,7 @@ import {
   ApiResponse,
 } from "./api-client";
 import { FeatureFlags, isFeatureEnabled } from "./constants/feature-flags";
+import { getEnvironment } from "./constants/general";
 import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { publicAnonKey } from "./supabase/info";
 export { getSessionId, setSessionId, clearSessionId } from "./api-client";
@@ -179,9 +180,11 @@ class ApiClient extends BaseApiClient {
   }
 
   async createAnonymousUser() {
+    const environment = getEnvironment();
+    console.log("Creating anonymous user in environment:", environment);
     return this.request<UserSessionResponse>("/user/anonymous", {
       method: "POST",
-      body: JSON.stringify({}),
+      body: JSON.stringify({ environment }),
     });
   }
 
@@ -306,13 +309,17 @@ class ApiClient extends BaseApiClient {
     vote: VoteType,
     userId?: string,
   ) {
-    return this.request<FlyerVoteResponse>(
-      "/flyer/vote",
-      {
-        method: "POST",
-        body: JSON.stringify({ flyerId, statementId, vote, userId }),
-      },
-    );
+    const environment = getEnvironment();
+    return this.request<FlyerVoteResponse>("/flyer/vote", {
+      method: "POST",
+      body: JSON.stringify({
+        flyerId,
+        statementId,
+        vote,
+        userId,
+        environment,
+      }),
+    });
   }
 
   async submitFlyerEmail(email: string) {
