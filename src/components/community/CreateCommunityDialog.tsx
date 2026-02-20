@@ -14,6 +14,7 @@ import { CommunitySettingsPanel } from "./CommunitySettingsPanel";
 import type { SubHeard } from "../../types";
 import { api } from "../../utils/api";
 import { toast } from "sonner";
+import { normalizeSubHeardName } from "../../utils/subheard";
 
 interface CreateCommunityDialogProps {
   isOpen: boolean;
@@ -43,15 +44,15 @@ export function CreateCommunityDialog({
       const response = await api.createSubHeard(community, userId);
       
       if (response?.success) {
-        const createdName = community.name || "";
+        const normalizedName = normalizeSubHeardName(community.name);
         setCommunity({
           name: "",
           isPrivate: false,
           hostOnlyPosting: false,
         });
-        onCreated(createdName);
+        onCreated(normalizedName);
         onClose();
-        toast.success(`Community created: ${createdName}`);
+        toast.success(`Community created: ${community.name}`);
       } else {
         throw new Error(response?.error || "Failed to create community");
       }

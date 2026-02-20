@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Hash, Plus, Check } from "lucide-react";
@@ -25,6 +25,8 @@ export function SelectCommunityStep({
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [loadingSubHeards, setLoadingSubHeards] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newlyCreatedCommunity, setNewlyCreatedCommunity] = useState<string>("");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadSubHeards();
@@ -35,6 +37,16 @@ export function SelectCommunityStep({
       onSubHeardChange(defaultSubHeard);
     }
   }, [defaultSubHeard, subHeard, onSubHeardChange]);
+
+  useEffect(() => {
+    if (newlyCreatedCommunity && scrollContainerRef.current) {
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = 0;
+        }
+      }, 100);
+    }
+  }, [newlyCreatedCommunity, subHeards]);
 
   const loadSubHeards = async () => {
     try {
@@ -55,11 +67,14 @@ export function SelectCommunityStep({
   };
 
   const handleCommunityCreated = async (communityName: string) => {
+    setNewlyCreatedCommunity(communityName);
     await loadSubHeards();
     onSubHeardChange(communityName);
   };
 
   const sortedSubHeards = [...subHeards].sort((a, b) => {
+    if (a.name === newlyCreatedCommunity) return -1;
+    if (b.name === newlyCreatedCommunity) return 1;
     if (a.name === defaultSubHeard) return -1;
     if (b.name === defaultSubHeard) return 1;
     // @ts-ignore
@@ -87,7 +102,10 @@ export function SelectCommunityStep({
               ))}
             </div>
           ) : (
-            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 scrollbar-hide">
+            <div
+              className="space-y-2 max-h-[300px] overflow-y-auto pr-1 scrollbar-hide"
+              ref={scrollContainerRef}
+            >
               {sortedSubHeards.map((sh, index) => {
                 const isSelected = subHeard === sh.name;
                 const isDefault = sh.name === defaultSubHeard;
