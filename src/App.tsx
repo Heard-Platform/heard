@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { LandingPage } from "./screens/LandingPage";
-import { PasswordReset } from "./components/PasswordReset";
 import { UnsubscribePage } from "./components/UnsubscribePage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
@@ -24,8 +22,6 @@ import {
   updateUrlForRoom
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
-import { AnonAccountSetupModal } from "./components/AnonAccountSetupModal";
-import { FloatingFeedbackButton } from "./components/FloatingFeedbackButton";
 import { safelyGetStorageItem } from "./utils/localStorage";
 
 // @ts-ignore
@@ -47,18 +43,9 @@ function AppContent() {
     useState(safelyGetStorageItem<boolean>("showAdminDashboard", false));
   const [showFeatureTracker, setShowFeatureTracker] = useState(false);
   const [showDevTools, setShowDevTools] = useState(false);
-  const [showPasswordReset, setShowPasswordReset] =
-    useState(false);
   const [showUnsubscribe, setShowUnsubscribe] = useState(false);
-  const [resetToken, setResetToken] = useState<string | null>(
-    null,
-  );
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
-  const [showAccountSetupModal, setShowAccountSetupModal] =
-    useState(false);
-  const [accountSetupContext, setAccountSetupContext] =
-    useState("");
 
   const {
     user,
@@ -186,7 +173,6 @@ function AppContent() {
       const urlParams = new URLSearchParams(
         window.location.search,
       );
-      const resetTokenFromUrl = urlParams.get("resetToken");
       const magicTokenFromUrl = urlParams.get("token");
       const isMagicLinkRoute =
         window.location.pathname.startsWith("/magic-link");
@@ -206,10 +192,7 @@ function AppContent() {
         setAnalysisRoomId(analysisRoomIdFromUrl);
       }
 
-      if (resetTokenFromUrl) {
-        setResetToken(resetTokenFromUrl);
-        setShowPasswordReset(true);
-      } else if (isMagicLinkRoute && magicTokenFromUrl) {
+      if (isMagicLinkRoute && magicTokenFromUrl) {
         loginViaMagicTokenInUrl(magicTokenFromUrl);
       } else if (isUnsubscribeRoute) {
         setShowUnsubscribe(true);
@@ -236,7 +219,6 @@ function AppContent() {
     if (
       !user &&
       hasCheckedUrl &&
-      !showPasswordReset &&
       !showUnsubscribe &&
       !showAdminPanel &&
       !showDevTools &&
@@ -252,7 +234,6 @@ function AppContent() {
   }, [
     user,
     hasCheckedUrl,
-    showPasswordReset,
     showUnsubscribe,
     showAdminPanel,
     showDevTools,
@@ -413,31 +394,11 @@ function AppContent() {
     return <ComponentShowcase onExit={handleExitShowcase} />;
   }
 
-  if (showPasswordReset) {
-    return (
-      <>
-        <PasswordReset
-          onBack={() => {
-            setShowPasswordReset(false);
-            setResetToken(null);
-            const url = new URL(window.location.href);
-            url.searchParams.delete("resetToken");
-            window.history.replaceState({}, "", url.toString());
-          }}
-          initialToken={resetToken || undefined}
-        />
-        <Toaster />
-      </>
-    );
-  }
-
   if (showUnsubscribe) {
     return <UnsubscribePage />;
   }
 
-  const showNicknameSetup = !user;
-
-  if (loading || isJoiningAnonymously) {
+  if (!user || loading || isJoiningAnonymously) {
     return (
       <div className="heard-page-bg heard-center">
         <motion.div
@@ -450,21 +411,6 @@ function AppContent() {
           className="w-8 h-8 heard-spinner"
         />
       </div>
-    );
-  }
-
-  if (showNicknameSetup) {
-    return (
-      <>
-        <LandingPage
-          loading={loading}
-          error={error || ""}
-          joiningRoom={!!targetRoomId}
-          onMagicLinkSuccess={handleMagicLinkSuccess}
-        />
-        <FloatingFeedbackButton />
-        <Toaster />
-      </>
     );
   }
 
@@ -504,13 +450,6 @@ function AppContent() {
           isOpen={true}
           onEmailSubmit={handleQrEmailSubmit}
           onClose={() => setQrScanResult(null)}
-        />
-      )}
-      {showAccountSetupModal && (
-        <AnonAccountSetupModal
-          featureText={accountSetupContext}
-          isOpen={showAccountSetupModal}
-          onClose={() => setShowAccountSetupModal(false)}
         />
       )}
     </>
