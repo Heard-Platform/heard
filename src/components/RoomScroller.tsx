@@ -6,9 +6,6 @@ import {
   useImperativeHandle,
 } from "react";
 import { motion } from "motion/react";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Plus, Compass } from "lucide-react";
 import type {
   DebateRoom,
   Statement,
@@ -257,7 +254,7 @@ export const RoomScroller = forwardRef<
           <VineNavigator
             totalCards={allCards.length}
             currentIndex={currentIndex}
-            currentUserId={user.id}
+            currentUser={user}
             presences={
               presences?.filter(
                 (p) => p.userId !== user.id,

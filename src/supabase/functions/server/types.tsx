@@ -23,6 +23,7 @@ export interface User {
   isAnonymous?: boolean;
   flyerId?: string;
   convertedFromAnonAt?: number;
+  createdInEnvironment?: string;
 }
 
 export type MagicLinkRecord = {

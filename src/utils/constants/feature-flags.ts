@@ -1,3 +1,6 @@
+import { Environment } from "../../types";
+import { getEnvironment } from "./general";
+
 export enum FeatureFlags {
   ONLY_JOINED_COMMUNITIES = "ONLY_JOINED_COMMUNITIES",
 }
@@ -5,8 +8,6 @@ export enum FeatureFlags {
 export interface FeatureFlagsConfig {
   [FeatureFlags.ONLY_JOINED_COMMUNITIES]: boolean;
 }
-
-type Environment = "production" | "development";
 
 export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
   production: {
@@ -18,6 +19,6 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
 }
 
 export const isFeatureEnabled = (flag: FeatureFlags): boolean => {
-  const env = process.env.NODE_ENV as Environment;
+  const env = getEnvironment();
   return FEATURE_FLAGS[env][flag];
 }

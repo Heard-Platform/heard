@@ -1,19 +1,22 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { UserPresence } from "../../types";
+import { UserPresence, UserSession } from "../../types";
 import { MonkeyInfoModal } from "./MonkeyInfoModal";
 import { TalkBubble } from "../TalkBubble";
 import { ScreenTimeWarningDialog } from "./ScreenTimeWarningDialog";
 
 // @ts-ignore
-import monkeyImg from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
+import baseMonkey from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
+// @ts-ignore
+import monkeyWithWrench from "figma:asset/monkey-with-wrench.png";
 // @ts-ignore
 import monkeyEatGif from "figma:asset/416642fb93a66e81fcfc63265a8ca59b7901788e.png";
+
 
 interface VineNavigatorProps {
   totalCards: number;
   currentIndex: number;
-  currentUserId: string;
+  currentUser: UserSession;
   presences: UserPresence[];
   onUpdatePresence: (
     userId: string,
@@ -28,11 +31,11 @@ const VINE_WIDTH = 16;
 export function VineNavigator({
   totalCards,
   currentIndex,
-  currentUserId,
+  currentUser,
   presences,
   onUpdatePresence,
 }: VineNavigatorProps) {
-  const [monkeyPosition, setMonkeyPosition] =
+    const [monkeyPosition, setMonkeyPosition] =
     useState(currentIndex);
   const [monkeyOffset, setMonkeyOffset] = useState(0);
   const [otherMonkeyOffsets, setOtherMonkeyOffsets] = useState<
@@ -105,14 +108,14 @@ export function VineNavigator({
   useEffect(() => {
     if (!onUpdatePresence) return;
 
-    onUpdatePresence(currentUserId, currentIndex);
+    onUpdatePresence(currentUser.id, currentIndex);
 
     const presenceInterval = setInterval(() => {
-      onUpdatePresence(currentUserId, currentIndex);
+      onUpdatePresence(currentUser.id, currentIndex);
     }, 3000);
 
     return () => clearInterval(presenceInterval);
-  }, [currentUserId, currentIndex]);
+  }, [currentUser.id, currentIndex]);
 
   useEffect(() => {
     const newOffsets: Record<string, number> = {};
@@ -175,6 +178,12 @@ export function VineNavigator({
 
     return path;
   };
+
+  const currentUserImg = isEating
+    ? monkeyEatGif
+    : currentUser.isTestUser
+      ? monkeyWithWrench
+      : baseMonkey;
 
   return (
     <div
@@ -274,23 +283,27 @@ export function VineNavigator({
           }}
         >
           <motion.img
-            src={isEating ? monkeyEatGif : monkeyImg}
+            src={currentUserImg}
             alt="Monkey Avatar"
             className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
             style={{ scaleX: -1, opacity: 1 }}
-            animate={isEating ? {
-              filter: [
-                "drop-shadow(0 0 20px rgba(255, 183, 0, 1))",
-                "drop-shadow(0 0 30px rgba(255, 183, 0, 1))",
-                "drop-shadow(0 0 20px rgba(255, 183, 0, 1))",
-              ],
-            } : {
-              filter: [
-                "drop-shadow(0 0 0px rgba(16, 185, 129, 0))",
-                "drop-shadow(0 0 12px rgba(16, 185, 129, 0.9))",
-                "drop-shadow(0 0 0px rgba(16, 185, 129, 0))",
-              ],
-            }}
+            animate={
+              isEating
+                ? {
+                    filter: [
+                      "drop-shadow(0 0 20px rgba(255, 183, 0, 1))",
+                      "drop-shadow(0 0 30px rgba(255, 183, 0, 1))",
+                      "drop-shadow(0 0 20px rgba(255, 183, 0, 1))",
+                    ],
+                  }
+                : {
+                    filter: [
+                      "drop-shadow(0 0 0px rgba(16, 185, 129, 0))",
+                      "drop-shadow(0 0 12px rgba(16, 185, 129, 0.9))",
+                      "drop-shadow(0 0 0px rgba(16, 185, 129, 0))",
+                    ],
+                  }
+            }
             transition={{
               duration: 2,
               repeat: Infinity,
@@ -357,7 +370,7 @@ export function VineNavigator({
               >
                 <div className="relative group">
                   <motion.img
-                    src={monkeyImg}
+                    src={baseMonkey}
                     alt={`${presence.userId} monkey`}
                     className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
                     style={{ scaleX: -1 }}

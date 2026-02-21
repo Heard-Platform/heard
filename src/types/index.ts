@@ -117,6 +117,7 @@ export interface UserSession {
   phoneVerified?: boolean;
   flyerId?: string;
   convertedFromAnonAt?: number;
+  createdInEnvironment?: string;
 }
 
 export type DebateMode = "realtime" | "host-controlled";
@@ -324,3 +325,5 @@ export interface EnrichmentConfig {
   enabled: boolean;
   averageIntervalMins: number;
 }
+
+export type Environment = "production" | "development";

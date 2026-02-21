@@ -462,7 +462,13 @@ app.post(
   "/make-server-f1a393b4/user/anonymous",
   async (c: any) => {
     try {
-      const user = await createAnonymousUser();
+      const { environment } = await c.req.json();
+      const isTestUser = environment !== "production";
+      
+      const user = await createAnonymousUser({
+        createdInEnvironment: environment || "unknown", // CN-3
+        isTestUser,
+      });
 
       const userResult = await getUserAndNewSession(user.id);
       if ("error" in userResult) {

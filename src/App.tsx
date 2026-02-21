@@ -233,6 +233,34 @@ function AppContent() {
   }, [hasCheckedUrl, setCurrentSubHeard, user, loading]);
 
   useEffect(() => {
+    if (
+      !user &&
+      hasCheckedUrl &&
+      !showPasswordReset &&
+      !showUnsubscribe &&
+      !showAdminPanel &&
+      !showDevTools &&
+      !isJoiningAnonymously
+    ) {
+      const autoCreateAnonymousUser = async () => {
+        setIsJoiningAnonymously(true);
+        await createAnonymousUser();
+        setIsJoiningAnonymously(false);
+      };
+      autoCreateAnonymousUser();
+    }
+  }, [
+    user,
+    hasCheckedUrl,
+    showPasswordReset,
+    showUnsubscribe,
+    showAdminPanel,
+    showDevTools,
+    isJoiningAnonymously,
+    createAnonymousUser,
+  ]);
+
+  useEffect(() => {
     const autoJoinSubHeard = async () => {
       if (user && currentSubHeard && hasCheckedUrl) {
         try {
