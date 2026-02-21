@@ -181,7 +181,6 @@ class ApiClient extends BaseApiClient {
 
   async createAnonymousUser() {
     const environment = getEnvironment();
-    console.log("Creating anonymous user in environment:", environment);
     return this.request<UserSessionResponse>("/user/anonymous", {
       method: "POST",
       body: JSON.stringify({ environment }),
