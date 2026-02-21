@@ -7,8 +7,10 @@ import { ScreenTimeWarningDialog } from "./ScreenTimeWarningDialog";
 
 // @ts-ignore
 import baseMonkey from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
+
 // @ts-ignore
-import monkeyWithWrench from "figma:asset/monkey-with-wrench.png";
+import monkeyWithWrench from "figma:asset/ab06931b1dc1dfba1d9cf4a9e389e4b87471b96c.png";
+
 // @ts-ignore
 import monkeyEatGif from "figma:asset/416642fb93a66e81fcfc63265a8ca59b7901788e.png";
 
