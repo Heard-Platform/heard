@@ -36,6 +36,7 @@ import type { UserSession } from "../types";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { PhoneVerificationDialog } from "./onboarding/PhoneVerificationDialog";
 import { VERIFY_TEXT } from "../utils/constants/text";
+import { UserRankDisplay } from "./side-panel/UserRankDisplay";
 
 const learnMoreLinks = [
   {
@@ -194,6 +195,8 @@ export function SidePanelMenu({
           </SheetHeader>
 
           <div className="space-y-4 mt-6 overflow-y-auto flex-1 px-1">
+            <UserRankDisplay user={user} />
+
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-sm text-green-600 mt-1">
                 Score: {user.score}
