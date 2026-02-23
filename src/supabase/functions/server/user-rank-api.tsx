@@ -1,19 +1,19 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getUser } from "./kv-utils.tsx";
+import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
 
-app.post("/make-server-f1a393b4/user-rank", async (c) => {
-  try {
-    const { userId } = await c.req.json();
-
-    if (!userId) {
-      return c.json({ error: "userId is required" }, 400);
-    }
+app.post("/make-server-f1a393b4/user-rank",
+  defineRoute(
+    {
+      userId: { type: "string", required: true },
+    },
+    async ({ userId }: { userId: string }) => {
 
     const user = await getUser(userId);
     if (!user) {
-      return c.json({ error: "User not found" }, 404);
+      throw new Error("User not found");
     }
 
     const allUsers = await getAllRealUsers();
@@ -30,19 +30,17 @@ app.post("/make-server-f1a393b4/user-rank", async (c) => {
     const userIndex = sortedUsers.findIndex(u => u.id === userId);
 
     if (userIndex === -1) {
-      return c.json({ error: "User not found in ranking" }, 404);
+      throw new Error("User not found in eligible users");
     }
 
     const rank = userIndex + 1;
 
-    return c.json({
+    return {
       rank,
       totalUsers: sortedUsers.length,
-    });
-  } catch (error) {
-    console.error("Error calculating user rank:", error);
-    return c.json({ error: "Failed to calculate rank" }, 500);
-  }
-});
+    };
+  },
+  "Failed to calculate user rank"
+));
 
 export { app as userRankApi };
