@@ -216,7 +216,7 @@ export function SidePanelMenu({
                 <Button
                   onClick={() => {
                     setMenuOpen(false);
-                    onShowAccountSetupModal("saving your progress");
+                    onShowAccountSetupModal("save your progress");
                   }}
                   size="sm"
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white"

@@ -8,6 +8,7 @@ import { Sparkles, Users, Award, Mail, Phone } from "lucide-react";
 import { isValidEmail, isValidPhone, formatPhone } from "../utils/validation";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { PhoneCollectionStep } from "./onboarding/PhoneCollectionStep";
+import { TOSText } from "./onboarding/TOSText";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -283,7 +284,7 @@ export function AnonAccountSetupModal({
                     transition={{ delay: 0.3 }}
                     className="text-muted-foreground"
                   >
-                    Hey there, new friend! To start {featureText}, just enter your {showEmailFlow ? "email" : "phone number"} below.
+                    Hey there, new friend! To {featureText}, just enter your {showEmailFlow ? "email" : "phone number"} below.
                   </motion.p>
                 </div>
 
@@ -429,6 +430,7 @@ export function AnonAccountSetupModal({
                         ? "We'll send you a code to verify your email"
                         : "We'll send you a code to verify your phone"}
                     </p>
+                    <TOSText />
                     {showEmailFlow ? (
                       <button
                         type="button"

@@ -61,6 +61,14 @@ export class BaseApiClient {
 
       if (!response.ok) {
         console.error(`API Error (${response.status}):`, data);
+        
+        if (response.status === 401 && data.error?.includes("session")) {
+          return {
+            success: false,
+            error: "SESSION_EXPIRED",
+          };
+        }
+        
         return {
           success: false,
           error: data.error || `HTTP ${response.status}`,

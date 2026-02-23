@@ -118,6 +118,11 @@ export function DebateSessionProvider(
         const user = response.data.user;
         setUser(user);
         return user;
+      } else if (response.error === "SESSION_EXPIRED") {
+        console.log("Session expired, clearing local data");
+        clearUserId();
+        clearSessionId();
+        return null;
       }
     } catch (err) {
       const errorMsg =
@@ -136,6 +141,11 @@ export function DebateSessionProvider(
       if (migrationResponse.success && migrationResponse.data) {
         setSessionId(migrationResponse.data.sessionId);
         console.log("Session initialization successful");
+      } else if (migrationResponse.error === "SESSION_EXPIRED") {
+        console.log("Session expired during migration, clearing local data");
+        clearUserId();
+        clearSessionId();
+        return null;
       } else {
         throw new Error(
           migrationResponse.error || "Failed to initialize session for legacy user",
@@ -725,15 +735,19 @@ export function DebateSessionProvider(
 
       const storedUserId = getUserId();
       if (storedUserId) {
-        await loadUserUsingStoredId(storedUserId);
+        const loadedUser = await loadUserUsingStoredId(storedUserId);
   
-        const sessionId = getSessionId();
-        if (!sessionId) {
-          await initializeSessionForLegacyUser(storedUserId);
+        if (loadedUser) {
+          const sessionId = getSessionId();
+          if (!sessionId) {
+            await initializeSessionForLegacyUser(storedUserId);
+          }
+          api.trackActivity(storedUserId).catch((err) => {
+            console.error("Failed to track activity on init:", err);
+          });
+        } else {
+          console.log("User session expired or invalid");
         }
-        api.trackActivity(storedUserId).catch((err) => {
-          console.error("Failed to track activity on init:", err);
-        });
       }
 
 

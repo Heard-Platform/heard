@@ -61,7 +61,7 @@ app.post(
   async (c: Context) => {
     try {
       const currentUserId = c.get("userId");
-      const { phone, code } = await c.req.json();
+      const { phone, code, tosAcknowledged } = await c.req.json();
 
       if (!phone || !code) {
         return c.json({ error: "Phone and code are required" }, 400);
@@ -85,6 +85,13 @@ app.post(
 
         await saveUserPhone(normalizedPhone, user.id);
       }
+
+      if (!user.tosAgreedToAt && tosAcknowledged) {
+        user.tosAgreedToAt = Date.now();
+        user.tosVersion = "1.0";
+        await saveUser(user);
+      }
+
 
       const result = await loginUserWithMerge(user.id, currentUserId);
       if ("error" in result) {
@@ -128,7 +135,12 @@ app.post(
 
       await saveUserPhone(normalizedPhone, userId);
       
-      const updatedUser = { ...user, phoneNumber: normalizedPhone, phoneVerified: true, phoneVerifiedAt: Date.now() };
+      const updatedUser = { 
+        ...user, 
+        phoneNumber: normalizedPhone, 
+        phoneVerified: true, 
+        phoneVerifiedAt: Date.now() 
+      };
       await saveUser(updatedUser);
 
       return c.json({ 
