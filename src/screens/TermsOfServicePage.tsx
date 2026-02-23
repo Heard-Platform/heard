@@ -1,7 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import { TOS } from "../utils/constants/terms-of-service";
 
-export function TermsOfServicePage({ onExit }: { onExit: () => void }) {
+export function TermsOfServicePage() {
   return (
     <div className="min-h-screen p-2">
       <ReactMarkdown

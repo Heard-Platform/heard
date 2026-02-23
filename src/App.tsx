@@ -354,11 +354,6 @@ function AppContent() {
     updateUrlForDevTools(null);
   };
 
-  const handleExitTerms = () => {
-    setShowTerms(false);
-    window.history.pushState({}, "", "/");
-  };
-
   if (showAdminPanel) {
     return (
       <>
@@ -410,7 +405,7 @@ function AppContent() {
   }
 
   if (showTerms) {
-    return <TermsOfServicePage onExit={handleExitTerms} />;
+    return <TermsOfServicePage />;
   }
 
   if (!user || loading || isJoiningAnonymously) {
