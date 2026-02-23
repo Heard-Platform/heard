@@ -193,15 +193,20 @@ export interface RedditScrapeCriteria {
 }
 
 export type RedditFeedItem = {
-    title: string;
-    link: string;
-    pubDate: string;
-    contentSnippet: string;
-    isoDate: string;
+  title: string;
+  link: string;
+  pubDate: string;
+  contentSnippet: string;
+  isoDate: string;
 };
 
 export type RedditPost = Pick<RedditFeedItem, "title" | "pubDate"> & {
-    subredditDescription: string,
-    selfText: string,
-    subreddit: string,
+  subredditDescription: string,
+  selfText: string,
+  subreddit: string,
+};
+
+export type AiPrompt = {
+  systemPrompt: string;
+  userPrompt: string;
 };

@@ -30,12 +30,9 @@ export class RedditImporter extends EnrichmentService {
   async createPostFromRedditPost(
     redditPost: RedditPost,
   ): Promise<boolean> {
-    const aiPrompts = makeTransformPromptFromRedditPost(redditPost);
+    const aiPrompt = makeTransformPromptFromRedditPost(redditPost);
 
-    const aiResponse = await this.aiClient.complete({
-      systemPrompt: aiPrompts.systemPrompt,
-      userPrompt: aiPrompts.userPrompt,
-    });
+    const aiResponse = await this.aiClient.complete(aiPrompt);
 
     if (aiResponse.trim() === "Error") {
       console.error(`Error creating Heard convo from Reddit post:
@@ -94,7 +91,7 @@ Post self-text: ${redditPost.selfText}
   async createPostsFromSubreddit(
     criteria: RedditScrapeCriteria,
   ): Promise<boolean> {
-    let posts = await getRedditPosts(criteria);
+    const posts = await getRedditPosts(criteria);
 
     let succeeded = true;
     for (const post of posts) {

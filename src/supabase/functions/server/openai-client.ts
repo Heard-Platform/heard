@@ -1,4 +1,5 @@
 import process from "node:process";
+import { AiPrompt } from "./types.tsx";
 
 export class OpenAiClient {
   private openAiApiKey?;
@@ -12,10 +13,7 @@ export class OpenAiClient {
     }
   }
 
-  async complete(prompts: {
-    systemPrompt: string;
-    userPrompt: string;
-  }): Promise<string> {
+  async complete(prompt: AiPrompt): Promise<string> {
     const response = await fetch(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -29,11 +27,11 @@ export class OpenAiClient {
           messages: [
             {
               role: "system",
-              content: prompts.systemPrompt,
+              content: prompt.systemPrompt,
             },
             {
               role: "user",
-              content: prompts.userPrompt,
+              content: prompt.userPrompt,
             },
           ],
           temperature: 0.7,
