@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Trophy, AlertCircle } from "lucide-react";
+import { Trophy } from "lucide-react";
 import type { UserSession } from "../../types";
-import { projectId, publicAnonKey } from "../../utils/supabase/info";
+import { api, safelyMakeApiCall } from "../../utils/api";
 
 interface UserRankDisplayProps {
   user: UserSession;
@@ -14,29 +14,13 @@ export function UserRankDisplay({ user }: UserRankDisplayProps) {
 
   useEffect(() => {
     const fetchRank = async () => {
-      try {
-        const response = await fetch(
-          `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4/user-rank`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${publicAnonKey}`,
-            },
-            body: JSON.stringify({ userId: user.id }),
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setRank(data.rank);
-          setTotalUsers(data.totalUsers);
-        }
-      } catch (error) {
-        console.error("Failed to fetch user rank:", error);
-      } finally {
-        setLoading(false);
+      setLoading(true);
+      const response = await safelyMakeApiCall(() => api.getUserRank(user.id));
+      if (response?.data) {
+        setRank(response.data.rank);
+        setTotalUsers(response.data.totalUsers);
       }
+      setLoading(false);
     };
 
     fetchRank();
