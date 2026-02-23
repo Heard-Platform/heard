@@ -10,6 +10,7 @@ import { feedbackApi } from "./feedback-api.tsx";
 import { imageApi } from "./image-api.tsx";
 import { activityApi } from "./activity-api.tsx";
 import { statsApi } from "./stats-api.tsx";
+import { featuresResultsTrackerApi } from "./features-results-tracker-api.ts";
 import { polisImportApi } from "./polis-import-api.tsx";
 import { analysisApi } from "./analysis-api.tsx";
 import { vineApi } from "./vine-api.tsx";
@@ -20,11 +21,11 @@ import { devApi } from "./dev-api.tsx";
 import { flyerApi } from "./flyer-api.tsx";
 import { validateSessionId } from "./auth-api.tsx";
 import { loginApi } from "./auth-login-api.ts";
-import { featuresResultsTrackerApi } from "./features-results-tracker-api.ts";
 import { cronApi } from "./cron-api.tsx";
 import { reportingApi } from "./reporting-api.tsx";
 import { internalConfigApi } from "./internal-config-api.tsx";
 import { enrichmentApi } from "./enrichment-api.ts";
+import { userRankApi } from "./user-rank-api.tsx";
 
 type Variables = {
   userId?: string;
@@ -100,5 +101,6 @@ app.route("/", cronApi);
 app.route("/", reportingApi);
 app.route("/", internalConfigApi);
 app.route("/", enrichmentApi);
+app.route("/", userRankApi);
 
 Deno.serve(app.fetch);

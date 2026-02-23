@@ -7,6 +7,7 @@ import {
   getSessionId,
   setSessionId,
   clearSessionId,
+  safelyMakeApiCall,
 } from "../utils/api";
 import type {
   UserSession,
@@ -191,27 +192,6 @@ export function DebateSessionProvider(
             ? { ...prev, score: responseData.userScore }
             : prev,
         );
-      }
-    },
-    [],
-  );
-
-  const safelyMakeApiCall = useCallback(
-    async <T,>(callFn: () => Promise<ApiResponse<T>>): Promise<ApiResponse<T> | null> => {
-      setError(null);
-      try {
-        const response = await callFn();
-        if (response.success) {
-          return response;
-        } else {
-          throw new Error(response.error || "Unknown error");
-        }
-      } catch (err) {
-        const errorMsg =
-          err instanceof Error ? err.message : "Unknown error";
-        setError(errorMsg);
-        console.error("API call failed:", errorMsg);
-        return null;
       }
     },
     [],
