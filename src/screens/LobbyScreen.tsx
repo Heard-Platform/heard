@@ -241,7 +241,7 @@ export function LobbyScreen({
   const handleOpenCreateSheet = () => {
     if (user.isAnonymous) {
       setShowAccountSetupAnonModal(true);
-      setAccountSetupFeatureText("creating a post");
+      setAccountSetupFeatureText("make a post");
     } else {
       setDiscussTopic(undefined);
       setDiscussSubHeard(undefined);

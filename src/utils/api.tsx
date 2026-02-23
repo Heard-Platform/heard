@@ -55,10 +55,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async verifySmsCode(phone: string, code: string) {
+  async verifySmsCode(phone: string, code: string, tosAcknowledged: boolean = true) {
     return this.request<UserSessionResponse>("/auth/verify-sms-code", {
       method: "POST",
-      body: JSON.stringify({ phone, code }),
+      body: JSON.stringify({ phone, code, tosAcknowledged }),
     });
   }
 

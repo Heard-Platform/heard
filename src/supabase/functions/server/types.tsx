@@ -24,6 +24,8 @@ export interface User {
   flyerId?: string;
   convertedFromAnonAt?: number;
   createdInEnvironment?: string;
+  tosAgreedToAt?: number;
+  tosVersion?: string;
 }
 
 export type MagicLinkRecord = {
