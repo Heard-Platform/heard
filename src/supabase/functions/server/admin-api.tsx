@@ -1,4 +1,9 @@
-import { getNewsletterEmail, getNewsletter2Email } from "./email-templates.tsx";
+import { getNewsletter3Email } from "./email-newsletter-3.ts";
+import { getNewsletter4Email } from "./email-newsletter-4.ts";
+import { getNewsletter5Email } from "./email-newsletter-5.ts";
+import { getNewsletter6Email } from "./email-newsletter-6.ts";
+import { getNewsletter7Email } from "./email-newsletter-7.ts";
+import { sanitizeUser } from "./user-utils.ts";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, getUser, saveDebate, phoneKvKeyFn, deletePhone, getCommunity, saveCommunity } from "./kv-utils.tsx";
@@ -6,16 +11,12 @@ import { getVotesForUser, getUserActivityRecords } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
 import { saveUser } from "./kv-utils.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
-import { getNewsletter3Email } from "./email-newsletter-3.ts";
-import { getNewsletter4Email } from "./email-newsletter-4.ts";
-import { getNewsletter5Email } from "./email-newsletter-5.ts";
-import { getNewsletter6Email } from "./email-newsletter-6.ts";
-import { sanitizeUser } from "./user-utils.ts";
 import { sendDebateCompletionCelebration } from "./cron-api.tsx";
 import { getNewsletterRecipients, getNewsletterSentKey } from "./newsletter-utils.ts";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
+import { getNewsletter2Email, getNewsletterEmail } from "./email-templates.tsx";
 
 const app = new Hono();
 
@@ -638,6 +639,10 @@ app.post(
         const newsletter6 = getNewsletter6Email();
         subject = newsletter6.subject;
         getNewsletterHtml = () => newsletter6.html;
+      } else if (newsletterEdition === 7) {
+        const newsletter7 = getNewsletter7Email();
+        subject = newsletter7.subject;
+        getNewsletterHtml = () => newsletter7.html;
       } else {
         const getNewsletterHtmlFn = newsletterEdition === 2 ? getNewsletter2Email : newsletterEdition === 3 ? getNewsletter3Email : getNewsletterEmail;
         const newsletterSubjects = {

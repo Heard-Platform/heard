@@ -18,7 +18,7 @@ export function Newsletter({ adminKey }: NewsletterProps) {
   const [eligibleCount, setEligibleCount] = useState<number | null>(null);
   const [alreadySentCount, setAlreadySentCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedNewsletter, setSelectedNewsletter] = useState<number>(6);
+  const [selectedNewsletter, setSelectedNewsletter] = useState<number>(7);
 
   const fetchEligibleCount = async () => {
     try {
@@ -114,6 +114,7 @@ export function Newsletter({ adminKey }: NewsletterProps) {
               <SelectItem value="4">Newsletter #4 - New Features & Updates</SelectItem>
               <SelectItem value="5">Newsletter #5 - Community Features, Mom Test & Dupont</SelectItem>
               <SelectItem value="6">Newsletter #6 - Breaking 100 Users, Guerrilla Marketing</SelectItem>
+              <SelectItem value="7">Newsletter #7 - Public Benefit Corp, Custom Feeds & March Outreach Blitz</SelectItem>
             </SelectContent>
           </Select>
         </div>
