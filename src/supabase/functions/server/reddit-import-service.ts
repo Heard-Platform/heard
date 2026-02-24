@@ -46,7 +46,8 @@ Post self-text: ${redditPost.selfText}
     }
 
     const lines = aiResponse.split("\n");
-    const trimmedLines = lines.map((str: string) => str.trim());
+    const cleanedLines = lines.filter(s => s.trim() !== '');
+    const trimmedLines = cleanedLines.map((str: string) => str.trim());
     const conversationTopic = trimmedLines[0];
     const stmtTexts = trimmedLines.slice(1);
 
