@@ -296,6 +296,8 @@ export interface RetentionStatsData {
 }
 
 export interface FeatureResults {
+  tosAgreedUsers: number;
+  tosAgreedSince: number;
   flyerEmails: number;
   flyerEmailsSince: number;
   userReports: number;

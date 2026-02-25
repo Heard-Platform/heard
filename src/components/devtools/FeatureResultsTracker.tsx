@@ -1,9 +1,18 @@
 import { useState, useEffect } from "react";
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
-import { X, TrendingUp, Smartphone, UserPlus, Tag, Flag, LucideIcon } from "lucide-react";
-import { api } from "../utils/api";
-import type { FeatureResults } from "../types";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
+import {
+  X,
+  TrendingUp,
+  Smartphone,
+  UserPlus,
+  Tag,
+  Flag,
+  FileCheck,
+  LucideIcon,
+} from "lucide-react";
+import { api } from "../../utils/api";
+import type { FeatureResults } from "../../types";
 
 interface FeatureResultsTrackerProps {
   onExit: () => void;
@@ -51,6 +60,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
   };
 
   const featureCards: FeatureCardData[] = [
+    {
+      icon: FileCheck,
+      iconColor: "text-indigo-600",
+      bgColor: "bg-indigo-100",
+      title: "TOS Agreements",
+      description: "Users who have agreed to the Terms of Service",
+      getValue: (s) => s.tosAgreedUsers,
+      getDate: (s) => s.tosAgreedSince,
+    },
     {
       icon: Tag,
       iconColor: "text-orange-600",

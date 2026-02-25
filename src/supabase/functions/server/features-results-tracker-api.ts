@@ -6,9 +6,13 @@ const app = new Hono();
 
 app.get("/make-server-f1a393b4/stats/features", async (c) => {
   try {
-    const flyerEmails = (await getFlyerEmails()).length;
-
     const users = await getAllRealUsers();
+    
+    const tosAgreedUsers = users.filter(
+      u => u.tosAgreedToAt
+    ).length;
+    
+    const flyerEmails = (await getFlyerEmails()).length;
     
     const userReports = (await getUserReports()).length;
     
@@ -24,6 +28,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       u => u.flyerId
     ).length;
     
+    const tosAgreedSince = new Date("2026-02-25").getTime();
     const flyerEmailsSince = new Date("2026-02-11").getTime();
     const userReportsSince = new Date("2026-02-04").getTime();
     const phoneVerifiedSince = new Date("2026-01-26").getTime();
@@ -31,6 +36,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const flyerUsersSince = new Date("2026-01-05").getTime();
     
     return c.json({
+      tosAgreedUsers,
+      tosAgreedSince,
       flyerEmails,
       flyerEmailsSince,
       userReports,
