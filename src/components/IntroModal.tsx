@@ -54,7 +54,7 @@ function DemoSwipeCard() {
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right"
   >("left");
-  const { isDarkMode } = useDarkMode();
+  const { darkModeOn } = useDarkMode();
 
   // Trigger animation after modal loads
   useEffect(() => {
@@ -100,7 +100,7 @@ function DemoSwipeCard() {
       {/* Background card */}
       <motion.div
         key={`bg-${nextStatement.id}`}
-        className={`absolute top-0 left-0 w-full p-4 rounded-xl border-2 shadow-lg ${getPastelColor(nextStatement.id, isDarkMode)}`}
+        className={`absolute top-0 left-0 w-full p-4 rounded-xl border-2 shadow-lg ${getPastelColor(nextStatement.id, darkModeOn)}`}
         style={{
           scale: 0.95,
           y: 5,
@@ -116,7 +116,7 @@ function DemoSwipeCard() {
       {/* Top card with animation */}
       <motion.div
         key={`top-${currentStatement.id}`}
-        className={`absolute top-0 left-0 w-full p-4 rounded-xl border-2 shadow-xl ${getPastelColor(currentStatement.id, isDarkMode)}`}
+        className={`absolute top-0 left-0 w-full p-4 rounded-xl border-2 shadow-xl ${getPastelColor(currentStatement.id, darkModeOn)}`}
         animate={
           shouldAnimate
             ? {

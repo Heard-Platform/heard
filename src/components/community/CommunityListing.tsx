@@ -31,8 +31,8 @@ export function CommunityListing({
     : "border-slate-200 hover:border-green-300";
   const checkBg = accentColor === "blue" ? "bg-blue-500" : "bg-green-500";
 
-  const { isDarkMode } = useDarkMode();
-  const communityColor = getPastelColor(community.name, isDarkMode);
+  const { darkModeOn } = useDarkMode();
+  const communityColor = getPastelColor(community.name, darkModeOn);
 
   const displayName = formatSubHeardDisplay(community.name);
   const postCount = community.count || 0;

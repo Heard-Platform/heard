@@ -52,8 +52,8 @@ function hashString(str: string): number {
  * Generate a consistent pastel color based on a string ID
  * Uses a simple hash to ensure the same ID always gets the same color
  */
-export function getPastelColor(id: string, isDarkMode: boolean = false): string {
-  const colors = isDarkMode ? darkPastelColors : lightPastelColors;
+export function getPastelColor(id: string, darkModeOn: boolean = false): string {
+  const colors = darkModeOn ? darkPastelColors : lightPastelColors;
   const index = hashString(id) % colors.length;
   return colors[index];
 }

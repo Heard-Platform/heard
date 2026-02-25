@@ -39,6 +39,7 @@ import { useDebateSession } from "../hooks/useDebateSession";
 import { PhoneVerificationDialog } from "./onboarding/PhoneVerificationDialog";
 import { VERIFY_TEXT } from "../utils/constants/text";
 import { UserRankDisplay } from "./side-panel/UserRankDisplay";
+import { useDarkMode } from "../contexts/DarkModeContext";
 
 const learnMoreLinks = [
   {
@@ -98,6 +99,8 @@ export function SidePanelMenu({
     createRantTestRoom,
     createRealtimeTestRoom,
   } = useDebateSession();
+
+  const { darkModeOn, toggleDarkMode } = useDarkMode();
 
   const closeMenuAndRun = (action: () => void) => {
     setMenuOpen(false);
@@ -279,16 +282,16 @@ export function SidePanelMenu({
             </Button>
 
             <Button
-              onClick={onToggleDarkMode}
+              onClick={toggleDarkMode}
               variant="outline"
               className="w-full"
             >
-              {darkMode ? (
+              {darkModeOn ? (
                 <Sun className="w-4 h-4 mr-2" />
               ) : (
                 <Moon className="w-4 h-4 mr-2" />
               )}
-              {darkMode ? "Light Mode" : "Dark Mode"}
+              {darkModeOn ? "Light Mode" : "Dark Mode"}
             </Button>
 
             <Button

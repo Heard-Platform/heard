@@ -18,10 +18,11 @@ import { FloatingCreateButton } from "../components/FloatingCreateButton";
 import { FloatingFeedbackButton } from "../components/FloatingFeedbackButton";
 import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
 import { SidePanelMenu } from "../components/SidePanelMenu";
+import { useDarkMode } from "../contexts/DarkModeContext";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api } from "../utils/api";
+import { isFeatureEnabled, FeatureFlags } from "../utils/constants/feature-flags";
 import { INTRO_SEEN_KEY } from "../utils/localStorage";
-import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
 
 interface LobbyScreenProps {
   user: UserSession;
@@ -313,6 +314,16 @@ export function LobbyScreen({
     advanceFromExplorerStep();
   };
 
+  const { darkModeOn } = useDarkMode();
+
+  const backgroundGradient = darkModeOn
+    ? "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
+    : "bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50";
+
+  const logoGradient = darkModeOn
+    ? "bg-gradient-to-r from-purple-400 to-blue-400"
+    : "bg-gradient-to-r from-purple-600 to-blue-600";
+
   return (
     <>
       <IntroModal
@@ -320,8 +331,7 @@ export function LobbyScreen({
         onClose={handleCloseIntroModal}
       />
 
-      {/* Main TikTok-style scroller */}
-      <div className="relative">
+      <div className={`relative min-h-screen ${backgroundGradient}`}>
         {/* Floating header with user info and menu */}
         <div className="absolute top-0 left-0 right-0 controls-layer pt-[5px] px-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -341,7 +351,7 @@ export function LobbyScreen({
                 A place to be
               </p>
               <motion.h1
-                className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
+                className={`text-2xl font-bold bg-clip-text text-transparent drop-shadow-lg ${logoGradient}`}
                 style={{
                   WebkitTextStroke:
                     "0.6px rgba(255,255,255,0.8)",

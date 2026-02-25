@@ -92,7 +92,7 @@ export function SwipeableCard({
     }
   };
 
-  const { isDarkMode } = useDarkMode();
+  const { darkModeOn } = useDarkMode();
 
   return (
     <motion.div
@@ -140,7 +140,7 @@ export function SwipeableCard({
             : card.type === "demographics"
             ? "border-transparent p-0"
             : card.type === "statement"
-            ? getPastelColor(card.statement.id, isDarkMode)
+            ? getPastelColor(card.statement.id, darkModeOn)
             : ""
         } ${
           isTopCard && !card.isUnswipeable
