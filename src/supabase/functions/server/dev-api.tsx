@@ -5,9 +5,10 @@ import {
 } from "./auth-api.tsx";
 import { saveDebateRoom } from "./debate-api.tsx";
 import { DebateRoom } from "./types.tsx";
-import { generateId, getFrontendUrl } from "./utils.tsx";
+import { generateId } from "./utils.tsx";
 import { API_URL_PREFIX } from "./constants.tsx";
 import { getAllDebates } from "./kv-utils.tsx";
+import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
 
@@ -148,6 +149,22 @@ app.get(
       );
     }
   },
+);
+
+app.get(
+  `${API_URL_PREFIX}/dev/posts`,
+  defineRoute(
+    {},
+    async () => {
+      const posts = await getAllDebates();
+      
+      const sortedPosts = posts
+        .sort((a, b) => b.createdAt - a.createdAt)
+
+      return sortedPosts;
+    },
+    "Failed to fetch posts"
+  )
 );
 
 export { app as devApi };

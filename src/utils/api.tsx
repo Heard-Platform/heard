@@ -744,6 +744,10 @@ class ApiClient extends BaseApiClient {
       body: JSON.stringify({ userId }),
     });
   }
+
+  async getAllPosts() {
+    return this.request<DebateRoom[]>("/dev/posts");
+  }
 }
 
 export const api = new ApiClient();
