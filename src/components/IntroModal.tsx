@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
@@ -13,6 +13,7 @@ import { MessageCircle, Zap, Heart, Users } from "lucide-react";
 import { getPastelColor } from "../utils/colors";
 import { SwipeIndicatorCompact } from "./SwipeIndicators";
 import { SwipeInstructions } from "./SwipeInstructions";
+import { useDarkMode } from "../contexts/DarkModeContext";
 
 interface IntroModalProps {
   isOpen: boolean;
@@ -53,6 +54,7 @@ function DemoSwipeCard() {
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right"
   >("left");
+  const { isDarkMode } = useDarkMode();
 
   // Trigger animation after modal loads
   useEffect(() => {
@@ -98,7 +100,7 @@ function DemoSwipeCard() {
       {/* Background card */}
       <motion.div
         key={`bg-${nextStatement.id}`}
-        className={`absolute top-0 left-0 w-full p-4 rounded-xl border-2 shadow-lg ${getPastelColor(nextStatement.id)}`}
+        className={`absolute top-0 left-0 w-full p-4 rounded-xl border-2 shadow-lg ${getPastelColor(nextStatement.id, isDarkMode)}`}
         style={{
           scale: 0.95,
           y: 5,
@@ -114,7 +116,7 @@ function DemoSwipeCard() {
       {/* Top card with animation */}
       <motion.div
         key={`top-${currentStatement.id}`}
-        className={`absolute top-0 left-0 w-full p-4 rounded-xl border-2 shadow-xl ${getPastelColor(currentStatement.id)}`}
+        className={`absolute top-0 left-0 w-full p-4 rounded-xl border-2 shadow-xl ${getPastelColor(currentStatement.id, isDarkMode)}`}
         animate={
           shouldAnimate
             ? {

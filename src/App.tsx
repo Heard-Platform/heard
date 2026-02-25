@@ -24,6 +24,7 @@ import {
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { safelyGetStorageItem } from "./utils/localStorage";
+import { DarkModeProvider, useDarkMode } from "./contexts/DarkModeContext";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -48,6 +49,8 @@ function AppContent() {
   const [showTerms, setShowTerms] = useState(false);
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
+
+  const { toggleDarkMode } = useDarkMode();
 
   const {
     user,
@@ -448,6 +451,7 @@ function AppContent() {
         onOpenFeatureTracker={handleOpenFeatureTracker}
         onOpenDevTools={handleOpenDevTools}
         onSubHeardChange={handleSubHeardChange}
+        onToggleDarkMode={toggleDarkMode}
       />
       <Toaster />
       {qrScanResult && (
@@ -469,7 +473,9 @@ function AppContent() {
 export default function App() {
   return (
     <DebateSessionProvider>
-      <AppContent />
+      <DarkModeProvider>
+        <AppContent />
+      </DarkModeProvider>
     </DebateSessionProvider>
   );
 }

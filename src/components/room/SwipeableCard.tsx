@@ -11,6 +11,7 @@ import { ChanceCard } from "./ChanceCard";
 import { YouTubeCard } from "./YouTubeCard";
 import { DemographicsCard } from "./DemographicsCard";
 import { StatementCard } from "./StatementCard";
+import { useDarkMode } from "../../contexts/DarkModeContext";
 
 interface SwipeableCardProps {
   card: Card;
@@ -91,6 +92,8 @@ export function SwipeableCard({
     }
   };
 
+  const { isDarkMode } = useDarkMode();
+
   return (
     <motion.div
       className="absolute top-0 left-0 w-full"
@@ -137,7 +140,7 @@ export function SwipeableCard({
             : card.type === "demographics"
             ? "border-transparent p-0"
             : card.type === "statement"
-            ? getPastelColor(card.statement.id)
+            ? getPastelColor(card.statement.id, isDarkMode)
             : ""
         } ${
           isTopCard && !card.isUnswipeable

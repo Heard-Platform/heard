@@ -3,6 +3,7 @@ import { Check, MessageSquare } from "lucide-react";
 import { getPastelColor } from "../../utils/colors";
 import { SubHeard } from "../../types";
 import { formatSubHeardDisplay } from "../../utils/subheard";
+import { useDarkMode } from "../../contexts/DarkModeContext";
 
 interface CommunityListingProps {
   community: SubHeard;
@@ -22,10 +23,6 @@ export function CommunityListing({
   isSelected,
   onToggle,
 }: CommunityListingProps) {
-  const communityColor = getPastelColor(community.name);
-  const displayName = formatSubHeardDisplay(community.name);
-  const postCount = community.count || 0;
-
   const selectedBorder = accentColor === "blue" 
     ? "border-blue-500 shadow-lg shadow-blue-100"
     : "border-green-500 shadow-lg shadow-green-100";
@@ -33,6 +30,12 @@ export function CommunityListing({
     ? "border-slate-200 hover:border-blue-300"
     : "border-slate-200 hover:border-green-300";
   const checkBg = accentColor === "blue" ? "bg-blue-500" : "bg-green-500";
+
+  const { isDarkMode } = useDarkMode();
+  const communityColor = getPastelColor(community.name, isDarkMode);
+
+  const displayName = formatSubHeardDisplay(community.name);
+  const postCount = community.count || 0;
 
   return (
     <motion.button

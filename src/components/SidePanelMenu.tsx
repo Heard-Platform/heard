@@ -31,6 +31,8 @@ import {
   ShieldCheck,
   ShieldAlert,
   TrendingUp,
+  Moon,
+  Sun,
 } from "lucide-react";
 import type { UserSession } from "../types";
 import { useDebateSession } from "../hooks/useDebateSession";
@@ -274,6 +276,19 @@ export function SidePanelMenu({
             >
               <HelpCircle className="w-4 h-4 mr-2" />
               Help
+            </Button>
+
+            <Button
+              onClick={onToggleDarkMode}
+              variant="outline"
+              className="w-full"
+            >
+              {darkMode ? (
+                <Sun className="w-4 h-4 mr-2" />
+              ) : (
+                <Moon className="w-4 h-4 mr-2" />
+              )}
+              {darkMode ? "Light Mode" : "Dark Mode"}
             </Button>
 
             <Button
