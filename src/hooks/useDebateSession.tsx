@@ -7,6 +7,7 @@ import {
   getSessionId,
   setSessionId,
   clearSessionId,
+  safelyMakeApiCall,
 } from "../utils/api";
 import type {
   UserSession,
@@ -118,6 +119,11 @@ export function DebateSessionProvider(
         const user = response.data.user;
         setUser(user);
         return user;
+      } else if (response.error === "SESSION_EXPIRED") {
+        console.log("Session expired, clearing local data");
+        clearUserId();
+        clearSessionId();
+        return null;
       }
     } catch (err) {
       const errorMsg =
@@ -136,6 +142,11 @@ export function DebateSessionProvider(
       if (migrationResponse.success && migrationResponse.data) {
         setSessionId(migrationResponse.data.sessionId);
         console.log("Session initialization successful");
+      } else if (migrationResponse.error === "SESSION_EXPIRED") {
+        console.log("Session expired during migration, clearing local data");
+        clearUserId();
+        clearSessionId();
+        return null;
       } else {
         throw new Error(
           migrationResponse.error || "Failed to initialize session for legacy user",
@@ -181,27 +192,6 @@ export function DebateSessionProvider(
             ? { ...prev, score: responseData.userScore }
             : prev,
         );
-      }
-    },
-    [],
-  );
-
-  const safelyMakeApiCall = useCallback(
-    async <T,>(callFn: () => Promise<ApiResponse<T>>): Promise<ApiResponse<T> | null> => {
-      setError(null);
-      try {
-        const response = await callFn();
-        if (response.success) {
-          return response;
-        } else {
-          throw new Error(response.error || "Unknown error");
-        }
-      } catch (err) {
-        const errorMsg =
-          err instanceof Error ? err.message : "Unknown error";
-        setError(errorMsg);
-        console.error("API call failed:", errorMsg);
-        return null;
       }
     },
     [],
@@ -725,15 +715,19 @@ export function DebateSessionProvider(
 
       const storedUserId = getUserId();
       if (storedUserId) {
-        await loadUserUsingStoredId(storedUserId);
+        const loadedUser = await loadUserUsingStoredId(storedUserId);
   
-        const sessionId = getSessionId();
-        if (!sessionId) {
-          await initializeSessionForLegacyUser(storedUserId);
+        if (loadedUser) {
+          const sessionId = getSessionId();
+          if (!sessionId) {
+            await initializeSessionForLegacyUser(storedUserId);
+          }
+          api.trackActivity(storedUserId).catch((err) => {
+            console.error("Failed to track activity on init:", err);
+          });
+        } else {
+          console.log("User session expired or invalid");
         }
-        api.trackActivity(storedUserId).catch((err) => {
-          console.error("Failed to track activity on init:", err);
-        });
       }
 
 

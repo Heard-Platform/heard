@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { UnsubscribePage } from "./components/UnsubscribePage";
+import { TermsOfServicePage } from "./screens/TermsOfServicePage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
-import { FeatureResultsTracker } from "./components/FeatureResultsTracker";
+import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTracker";
 import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
@@ -44,6 +45,7 @@ function AppContent() {
   const [showFeatureTracker, setShowFeatureTracker] = useState(false);
   const [showDevTools, setShowDevTools] = useState(false);
   const [showUnsubscribe, setShowUnsubscribe] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
 
@@ -182,6 +184,8 @@ function AppContent() {
         window.location.pathname.startsWith("/devtools");
       const isUnsubscribeRoute =
         window.location.pathname.startsWith("/unsubscribe");
+      const isTermsRoute =
+        window.location.pathname.startsWith("/terms");
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl =
@@ -210,6 +214,8 @@ function AppContent() {
         }
       } else if (subHeardFromUrl) {
         setCurrentSubHeard(subHeardFromUrl);
+      } else if (isTermsRoute) {
+        setShowTerms(true);
       }
       setHasCheckedUrl(true);
     }
@@ -396,6 +402,10 @@ function AppContent() {
 
   if (showUnsubscribe) {
     return <UnsubscribePage />;
+  }
+
+  if (showTerms) {
+    return <TermsOfServicePage />;
   }
 
   if (!user || loading || isJoiningAnonymously) {

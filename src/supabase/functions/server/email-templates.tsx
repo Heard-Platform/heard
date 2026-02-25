@@ -1,3 +1,5 @@
+export const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@AlexLongHeard";
+
 export const getMagicLinkEmail = (magicLinkUrl: string, code: string): string => {
   return `
 <!DOCTYPE html>

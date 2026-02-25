@@ -29,6 +29,23 @@ import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { publicAnonKey } from "./supabase/info";
 export { getSessionId, setSessionId, clearSessionId } from "./api-client";
 
+export async function safelyMakeApiCall<T>(
+  callFn: () => Promise<ApiResponse<T>>
+): Promise<ApiResponse<T> | null> {
+  try {
+    const response = await callFn();
+    if (response.success) {
+      return response;
+    } else {
+      throw new Error(response.error || "Unknown error");
+    }
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : "Unknown error";
+    console.error("API call failed:", errorMsg);
+    return null;
+  }
+}
+
 class ApiClient extends BaseApiClient {
   async getUser(userId: string) {
     return this.request<{ user: UserSession }>(`/user/${userId}`);
@@ -55,10 +72,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async verifySmsCode(phone: string, code: string) {
+  async verifySmsCode(phone: string, code: string, tosAcknowledged: boolean = true) {
     return this.request<UserSessionResponse>("/auth/verify-sms-code", {
       method: "POST",
-      body: JSON.stringify({ phone, code }),
+      body: JSON.stringify({ phone, code, tosAcknowledged }),
     });
   }
 
@@ -718,6 +735,13 @@ class ApiClient extends BaseApiClient {
     return this.request<{ roomId: string; statementIds: string[] }>("/enrichment/run", {
       method: "POST",
       body: JSON.stringify({ forceRun: true }),
+    });
+  }
+
+  async getUserRank(userId: string) {
+    return this.request<{ rank: number; totalUsers: number }>("/user-rank", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
     });
   }
 }
