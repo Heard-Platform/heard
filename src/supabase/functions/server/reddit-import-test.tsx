@@ -12,7 +12,7 @@ import { assertGreater } from "https://deno.land/std@0.208.0/assert/assert_great
 import { OpenAiClient } from "./openai-client.ts";
 
 const testCriteria = {
-  subredditName: "askreddit",
+  subredditName: "AskReddit",
   maxPostAgeMins: 10 * ONE_HOUR_MIN,
   postLimit: 100,
 } as RedditScrapeCriteria;
@@ -65,7 +65,7 @@ const testPrompt = {
     'If the Reddit post title and post content would not translate into a good conversation topic, please output only the word "Error" and nothing else.',
 } as AiPrompt;
 
-if (false) {
+if (true) {
   const aiClient = new OpenAiClient();
 
   describe("Reddit scraper", () => {
@@ -98,6 +98,7 @@ if (false) {
         posts[randomIndex],
       );
       const aiResponse = await aiClient.complete(aiPrompt);
+      console.log(aiResponse);
       assertGreater(aiResponse.length, 0);
     });
   });
