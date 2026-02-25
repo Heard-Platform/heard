@@ -1,4 +1,4 @@
-import { Context, Hono } from "npm:hono";
+import { Hono } from "npm:hono";
 import { RedditImporter } from "./reddit-import-service.ts";
 import { verifyAdminKey } from "./admin-api.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
