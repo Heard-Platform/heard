@@ -1,4 +1,4 @@
-import personas, { getRandomPersona } from "./personas.tsx";
+import { getRandomPersona } from "./personas.tsx";
 import { AiPrompt } from "./types.tsx";
 
 export function makeTransformPromptFromRedditPost(postData: {
@@ -9,7 +9,7 @@ export function makeTransformPromptFromRedditPost(postData: {
 ): AiPrompt {
     const personaPrompt = getRandomPersona();
 
-    const systemPrompt = `${personaPrompt}`;
+    const systemPrompt = personaPrompt;
 
     const userPrompt = `Consider a Reddit post with the following title and content:
 Subreddit description: "${postData.subredditDescription}"
@@ -39,5 +39,5 @@ If the Reddit post title and post content would not translate into a good conver
     return {
         systemPrompt,
         userPrompt,
-    } as AiPrompt;
+    };
 }
