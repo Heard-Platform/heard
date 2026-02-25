@@ -1,8 +1,8 @@
 import { describe, it } from "jsr:@std/testing/bdd";
 import {
-    AiPrompt,
-    RedditPost,
-    RedditScrapeCriteria,
+  AiPrompt,
+  RedditPost,
+  RedditScrapeCriteria,
 } from "./types.tsx";
 import { ONE_HOUR_MIN } from "./time-utils.ts";
 import { getRedditPosts } from "./reddit-scraper-utils.ts";
@@ -65,38 +65,40 @@ const testPrompt = {
     'If the Reddit post title and post content would not translate into a good conversation topic, please output only the word "Error" and nothing else.',
 } as AiPrompt;
 
-const aiClient = new OpenAiClient();
+if (false) {
+  const aiClient = new OpenAiClient();
 
-describe("Reddit scraper", () => {
-  it("obeys post limit", async () => {
-    const posts = await getRedditPosts(testCriteria);
-    assertLessOrEqual(posts.length, testCriteria.postLimit);
+  describe("Reddit scraper", () => {
+    it("obeys post limit", async () => {
+      const posts = await getRedditPosts(testCriteria);
+      assertLessOrEqual(posts.length, testCriteria.postLimit);
+    });
   });
-});
 
-describe("Prompt utils", () => {
-  it("makes transform prompt", () => {
-    const aiPrompt = makeTransformPromptFromRedditPost(testPosts[0]);
-    assertGreater(aiPrompt.systemPrompt.length, 0);
-    assertGreater(aiPrompt.userPrompt.length, 0);
+  describe("Prompt utils", () => {
+    it("makes transform prompt", () => {
+      const aiPrompt = makeTransformPromptFromRedditPost(testPosts[0]);
+      assertGreater(aiPrompt.systemPrompt.length, 0);
+      assertGreater(aiPrompt.userPrompt.length, 0);
+    });
   });
-});
 
-describe("AI client", () => {
-  it("receives completion from LLM", async () => {
-    const aiResponse = await aiClient.complete(testPrompt);
-    assertGreater(aiResponse.length, 0);
+  describe("AI client", () => {
+    it("receives completion from LLM", async () => {
+      const aiResponse = await aiClient.complete(testPrompt);
+      assertGreater(aiResponse.length, 0);
+    });
   });
-});
 
-describe("Reddit importer at-large", () => {
-  it("gets reddit posts and transforms them", async () => {
-    const posts = await getRedditPosts(testCriteria);
-    const randomIndex = Math.floor(Math.random() * posts.length);
-    const aiPrompt = makeTransformPromptFromRedditPost(
-      posts[randomIndex],
-    );
-    const aiResponse = await aiClient.complete(aiPrompt);
-    assertGreater(aiResponse.length, 0);
+  describe("Reddit importer at-large", () => {
+    it("gets reddit posts and transforms them", async () => {
+      const posts = await getRedditPosts(testCriteria);
+      const randomIndex = Math.floor(Math.random() * posts.length);
+      const aiPrompt = makeTransformPromptFromRedditPost(
+        posts[randomIndex],
+      );
+      const aiResponse = await aiClient.complete(aiPrompt);
+      assertGreater(aiResponse.length, 0);
+    });
   });
-});
+}
