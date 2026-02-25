@@ -161,7 +161,7 @@ app.get(
       const sortedPosts = posts
         .sort((a, b) => b.createdAt - a.createdAt)
 
-      return sortedPosts;
+      return { posts: sortedPosts };
     },
     "Failed to fetch posts"
   )

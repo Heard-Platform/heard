@@ -746,7 +746,7 @@ class ApiClient extends BaseApiClient {
   }
 
   async getAllPosts() {
-    return this.request<DebateRoom[]>("/dev/posts");
+    return this.request<{posts: DebateRoom[]}>("/dev/posts");
   }
 }
 

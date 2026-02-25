@@ -11,8 +11,8 @@ export function PostsTab() {
   const loadPosts = async () => {
     setLoading(true);
     const response = await safelyMakeApiCall(() => api.getAllPosts());
-    if (response?.success && response.data) {
-      setPosts(response.data);
+    if (response?.success && response.data?.posts) {
+      setPosts(response.data.posts);
     }
     setLoading(false);
   };
