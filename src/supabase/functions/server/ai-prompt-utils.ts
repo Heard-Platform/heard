@@ -13,9 +13,6 @@ export function makeTransformPromptFromRedditPost(postData: {
 whether the post is suitable. If the post meets any disqualifying condition, 
 your entire response must be only the word \"Error\" — no topic, no responses, nothing else.`;
 
-    console.debug('Reddit post title: ' + postData.title);
-    console.debug('Reddit post self-text: ' + postData.selfText);
-
     const userPrompt = `Convert the following Reddit post into a open-ended discussion question 
 and a set of response statements that represent distinct personal perspectives people might hold on that question. 
 

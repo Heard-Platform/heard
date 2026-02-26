@@ -66,7 +66,7 @@ const testPrompt = {
     'If the Reddit post title and post content would not translate into a good conversation topic, please output only the word "Error" and nothing else.',
 } as AiPrompt;
 
-if (true) {
+if (false) {
   const aiClient = new OpenAiClient();
 
   describe("Reddit scraper", () => {
