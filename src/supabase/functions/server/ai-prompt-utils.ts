@@ -41,12 +41,9 @@ Post content: "${postData.selfText}"
 
 Your task is to use this Reddit post as inspiration for a new Heard conversation topic, and come up with some appropriate response statements.
 
-If the Reddit post title and post content would not translate into a good Heard conversation topic, 
-please output only the word "Error" and nothing else. 
-
 If the Reddit post title and post content would translate into a good Heard conversation topic, please write: 
 1. A question that serves as the Heard conversation topic, which is a neutral question devoid of leading statements. 
-The potential answers to this question should be subjective, not objective. The question should not ask for a list of answers. 
+The question should not ask for a list of answers. 
 2. 3 Heard response statements that serve as distinct, meaningful, pointed responses to the Heard conversation topic. 
 The Heard response statements should be concise and to the point, and not include any statements which are "catch-all." 
 Heard response statements should never be written in the second-person or third-person. 
@@ -61,7 +58,9 @@ Each Heard response statement should have a 5% chance of containing a common mis
 The order of the Heard response statements should be randomized. 
 
 In your response, please write the Heard conversation topic question on the first line, and the Heard response statements on subsequent lines. 
-Do not output any blank lines.
+Do not output any blank lines. 
+If the Reddit post title and post content would not translate into a good Heard conversation topic, 
+please output only the word "Error" and nothing else. 
 Please do not offer ANY output other than the properly formatted Heard conversation topic question and the Heard response statements.`;
     
     return {
