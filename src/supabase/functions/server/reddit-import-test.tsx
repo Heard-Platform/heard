@@ -14,7 +14,7 @@ import { getRandomSubreddit } from "./reddit-import-service.ts";
 
 const testCriteria = {
   subredditName: getRandomSubreddit(),
-  maxPostAgeMins: 10 * ONE_HOUR_MIN,
+  maxPostAgeMins: 20 * ONE_HOUR_MIN,
   postLimit: 100,
 } as RedditScrapeCriteria;
 
