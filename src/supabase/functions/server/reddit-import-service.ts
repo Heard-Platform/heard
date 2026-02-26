@@ -26,6 +26,11 @@ export const subredditsToHerds: { [key: string]: string } = {
   "todayilearned": "learning",
 };
 
+export function getRandomSubreddit(): string {
+  const keys = Object.keys(subredditsToHerds);
+  return keys[Math.floor(Math.random() * keys.length)];
+}
+
 export class RedditImporter extends EnrichmentService {
   async createPostFromRedditPost(
     redditPost: RedditPost,
