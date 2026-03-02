@@ -58,16 +58,16 @@ describe("scoreRoom", () => {
   describe("Brand-new room", () => {
     it("scores near maximum recency with no statements", () => {
       const now = Date.now();
-      const room = makeRoom({ roundStartTime: now, createdAt: now });
+      const room = makeRoom({ createdAt: now });
       const score = scoreRoom(room, [], now);
-      // recencyScore(0)*60 + recencyScore(0)*20 = 80, no engagement bonus
+      // recencyScore(0)*80 = 80, no engagement bonus
       assertEquals(score, 80);
     });
 
     it("includes participant and statement bonuses", () => {
       const now = Date.now();
       const room = makeRoom({
-        roundStartTime: now,
+        createdAt: now,
         participants: ["a", "b", "c"],
       });
       const stmts = [makeStatement({ timestamp: now })];
@@ -80,7 +80,7 @@ describe("scoreRoom", () => {
   describe("Vote counts", () => {
     it("adds total votes across all vote types", () => {
       const now = Date.now();
-      const room = makeRoom({ roundStartTime: now });
+      const room = makeRoom({ createdAt: now });
       const stmt = makeStatement({
         timestamp: now,
         agrees: 5,
@@ -95,7 +95,7 @@ describe("scoreRoom", () => {
 
     it("sums votes across multiple statements", () => {
       const now = Date.now();
-      const room = makeRoom({ roundStartTime: now });
+      const room = makeRoom({ createdAt: now });
       const stmts = [
         makeStatement({ id: "s1", timestamp: now, agrees: 10 }),
         makeStatement({ id: "s2", timestamp: now, agrees: 5, disagrees: 5 }),
@@ -109,8 +109,8 @@ describe("scoreRoom", () => {
   describe("Recency decay", () => {
     it("scores lower for a room with older activity", () => {
       const now = Date.now();
-      const newRoom = makeRoom({ roundStartTime: now });
-      const oldRoom = makeRoom({ roundStartTime: now - 2 * HOUR });
+      const newRoom = makeRoom({ createdAt: now });
+      const oldRoom = makeRoom({ createdAt: now - 2 * HOUR });
 
       const newScore = scoreRoom(newRoom, [], now);
       const oldScore = scoreRoom(oldRoom, [], now);
@@ -118,28 +118,15 @@ describe("scoreRoom", () => {
       assertEquals(newScore > oldScore, true);
     });
 
-    it("uses latest statement time when more recent than roundStartTime", () => {
+    it("uses latest statement time when more recent than createdAt", () => {
       const now = Date.now();
-      const room = makeRoom({
-        roundStartTime: now - 2 * HOUR,
-      });
+      const room = makeRoom({ createdAt: now - 2 * HOUR });
       const recentStmt = makeStatement({ timestamp: now - 5 * MIN });
 
       const scoreWithRecentStmt = scoreRoom(room, [recentStmt], now);
       const scoreWithoutStmt = scoreRoom(room, [], now);
 
       assertEquals(scoreWithRecentStmt > scoreWithoutStmt, true);
-    });
-
-    it("uses roundStartTime when more recent than last statement", () => {
-      const now = Date.now();
-      const room = makeRoom({ roundStartTime: now }); // phase just advanced
-      const oldStmt = makeStatement({ timestamp: now - 3 * HOUR });
-
-      const score = scoreRoom(room, [oldStmt], now);
-      // minutesSinceActivity = min(180, 0) = 0 → recencyScore(0)*60 = 60
-      // minutesSinceLastStatement = 180 → recencyScore(180)*20 ≈ 3.08
-      assertEquals(score > 60, true);
     });
   });
 
@@ -149,13 +136,13 @@ describe("scoreRoom", () => {
 
       const newEmptyRoom = makeRoom({
         id: "new",
-        roundStartTime: now,
+        createdAt: now,
         participants: [],
       });
 
       const activeOldRoom = makeRoom({
         id: "old",
-        roundStartTime: now - 2 * HOUR,
+        createdAt: now - 2 * HOUR,
         participants: ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"],
       });
       const activeOldStatements = [
@@ -175,13 +162,13 @@ describe("scoreRoom", () => {
 
       const newRoom = makeRoom({
         id: "new",
-        roundStartTime: now,
+        createdAt: now,
         participants: [],
       });
 
       const staleRoom = makeRoom({
         id: "stale",
-        roundStartTime: now - 24 * HOUR,
+        createdAt: now - 24 * HOUR,
         participants: [],
       });
 
@@ -193,21 +180,18 @@ describe("scoreRoom", () => {
   });
 
   describe("Edge cases", () => {
-    it("handles room with no roundStartTime (falls back to createdAt)", () => {
+    it("falls back to createdAt when no statements posted", () => {
       const now = Date.now();
-      const room = makeRoom({
-        roundStartTime: 0,
-        createdAt: now - HOUR,
-      });
-      // Should not throw; uses createdAt as fallback
+      const room = makeRoom({ createdAt: now - HOUR });
       const score = scoreRoom(room, [], now);
+      // recencyScore(60) = 1/3, so 1/3 * 80 ≈ 26.67
       assertEquals(typeof score, "number");
       assertEquals(score > 0, true);
     });
 
     it("handles empty statements array without throwing", () => {
       const now = Date.now();
-      const room = makeRoom({ roundStartTime: now });
+      const room = makeRoom({ createdAt: now });
       const score = scoreRoom(room, [], now);
       assertEquals(typeof score, "number");
     });
@@ -215,7 +199,7 @@ describe("scoreRoom", () => {
     it("handles room with many participants", () => {
       const now = Date.now();
       const participants = Array.from({ length: 50 }, (_, i) => `user-${i}`);
-      const room = makeRoom({ roundStartTime: now, participants });
+      const room = makeRoom({ createdAt: now, participants });
       const score = scoreRoom(room, [], now);
       // 80 (recency) + 250 (50 participants × 5) = 330
       assertEquals(score, 330);

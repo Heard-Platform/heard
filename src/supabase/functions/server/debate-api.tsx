@@ -490,16 +490,9 @@ export const scoreRoom = (
     ? Math.max(...statements.map((s) => s.timestamp))
     : 0;
 
-  const minutesSinceLastStatement = latestStatementTime > 0
+  const minutesSinceLastActivity = latestStatementTime > 0
     ? (now - latestStatementTime) / ONE_MIN_MS
-    : (now - (room.roundStartTime || room.createdAt)) / ONE_MIN_MS;
-
-  const minutesSinceActivity = Math.min(
-    minutesSinceLastStatement,
-    room.roundStartTime > 0
-      ? (now - room.roundStartTime) / ONE_MIN_MS
-      : minutesSinceLastStatement,
-  );
+    : (now - room.createdAt) / ONE_MIN_MS;
 
   const totalVotes = statements.reduce(
     (sum, s) => sum + s.agrees + s.disagrees + s.passes + s.superAgrees,
@@ -507,8 +500,7 @@ export const scoreRoom = (
   );
 
   return (
-    recencyScore(minutesSinceActivity) * 60 +
-    recencyScore(minutesSinceLastStatement) * 20 +
+    recencyScore(minutesSinceLastActivity) * 80 +
     room.participants.length * 5 +
     statements.length * 3 +
     totalVotes * 1
