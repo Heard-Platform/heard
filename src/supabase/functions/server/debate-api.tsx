@@ -14,7 +14,6 @@ import {
   getStatementsForRoom,
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
-import { ONE_MIN_MS } from "./time-utils.ts";
 import { subheardApi } from "./subheard-api.tsx";
 import { roomApi } from "./room-api.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
@@ -478,34 +477,21 @@ export const getActiveRooms = async (): Promise<DebateRoom[]> => {
   return allRooms.filter((r) => r.isActive);
 };
 
-export const recencyScore = (minutesAgo: number): number =>
-  1 / (1 + minutesAgo / 30);
-
-export const scoreRoom = (
-  room: DebateRoom,
-  statements: Statement[],
-  now: number,
-): number => {
-  const latestStatementTime = statements.length > 0
-    ? Math.max(...statements.map((s) => s.timestamp))
-    : 0;
-
-  const minutesSinceLastActivity = latestStatementTime > 0
-    ? (now - latestStatementTime) / ONE_MIN_MS
-    : (now - room.createdAt) / ONE_MIN_MS;
-
-  const totalVotes = statements.reduce(
-    (sum, s) => sum + s.agrees + s.disagrees + s.passes + s.superAgrees,
-    0,
-  );
-
-  return (
-    recencyScore(minutesSinceLastActivity) * 80 +
-    room.participants.length * 5 +
-    statements.length * 3 +
-    totalVotes * 1
-  );
-};
+export const sortRoomsByActivity = (
+  rooms: DebateRoom[],
+  roomStatements: Statement[][],
+): DebateRoom[] =>
+  rooms
+    .map((room, i) => {
+      const stmts = roomStatements[i];
+      const lastActivity = stmts.length > 0
+        ? Math.max(...stmts.map((s) => s.timestamp))
+        : room.createdAt;
+      return { room, lastActivity };
+    })
+    .sort((a, b) => b.lastActivity - a.lastActivity)
+    .slice(0, 20)
+    .map(({ room }) => room);
 
 // Shared prompt rules for rant statement extraction
 const RANT_EXTRACTION_RULES = `STRICT Rules:
@@ -1346,15 +1332,10 @@ app.get(
         }));
       }
 
-      const now = Date.now();
       const roomStatements = await Promise.all(
         rooms.map((room) => getStatementsForRoom(room.id)),
       );
-      rooms = rooms
-        .map((room, i) => ({ room, score: scoreRoom(room, roomStatements[i], now) }))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 20)
-        .map(({ room }) => room);
+      rooms = sortRoomsByActivity(rooms, roomStatements);
 
       return c.json({ rooms });
     } catch (error) {
