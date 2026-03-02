@@ -478,35 +478,43 @@ export const getActiveRooms = async (): Promise<DebateRoom[]> => {
   return allRooms.filter((r) => r.isActive);
 };
 
+export const recencyScore = (minutesAgo: number): number =>
+  1 / (1 + minutesAgo / 30);
+
+const ACTIVITY_WEIGHT = 100;
+const CREATION_WEIGHT = 20;
+const VOTE_WEIGHT = 0.3;
+
+export const scoreRoom = (
+  room: DebateRoom,
+  statements: Statement[],
+  now: number,
+): number => {
+  const lastActivity = statements.length > 0
+    ? Math.max(...statements.map((s) => s.timestamp))
+    : room.createdAt;
+
+  const totalVotes = statements.reduce(
+    (sum, s) => sum + s.agrees + s.disagrees + s.passes + s.superAgrees,
+    0,
+  );
+
+  return (
+    recencyScore((now - lastActivity) / ONE_MIN_MS) * (ACTIVITY_WEIGHT + totalVotes * VOTE_WEIGHT) +
+    recencyScore((now - room.createdAt) / ONE_MIN_MS) * CREATION_WEIGHT
+  );
+};
+
 export const sortRoomsByActivity = (
   rooms: DebateRoom[],
   roomStatements: Statement[][],
   now: number = Date.now(),
-): DebateRoom[] => {
-  const recency = (minutesAgo: number) => 1 / (1 + minutesAgo / 30);
-
-  return rooms
-    .map((room, i) => {
-      const stmts = roomStatements[i];
-      const lastActivity = stmts.length > 0
-        ? Math.max(...stmts.map((s) => s.timestamp))
-        : room.createdAt;
-
-      const totalVotes = stmts.reduce(
-        (sum, s) => sum + s.agrees + s.disagrees + s.passes + s.superAgrees,
-        0,
-      );
-
-      const score =
-        recency((now - lastActivity) / ONE_MIN_MS) * (100 + totalVotes * 0.3) +
-        recency((now - room.createdAt) / ONE_MIN_MS) * 20;
-
-      return { room, score };
-    })
+): DebateRoom[] =>
+  rooms
+    .map((room, i) => ({ room, score: scoreRoom(room, roomStatements[i], now) }))
     .sort((a, b) => b.score - a.score)
     .slice(0, 20)
     .map(({ room }) => room);
-};
 
 // Shared prompt rules for rant statement extraction
 const RANT_EXTRACTION_RULES = `STRICT Rules:

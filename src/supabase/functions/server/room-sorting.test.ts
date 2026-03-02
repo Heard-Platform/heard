@@ -1,6 +1,6 @@
-import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import { assertEquals, assertAlmostEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { describe, it } from "@std/testing/bdd";
-import { sortRoomsByActivity } from "./debate-api.tsx";
+import { recencyScore, scoreRoom, sortRoomsByActivity } from "./debate-api.tsx";
 import { DebateRoom, Statement } from "./types.tsx";
 
 const MIN = 60_000;
@@ -33,6 +33,34 @@ const makeStatement = (overrides: Partial<Statement> = {}): Statement => ({
   round: 1,
   voters: {},
   ...overrides,
+});
+
+describe("recencyScore", () => {
+  it("returns 1 for zero minutes ago", () => {
+    assertEquals(recencyScore(0), 1);
+  });
+
+  it("returns 0.5 at the 30-minute half-life", () => {
+    assertEquals(recencyScore(30), 0.5);
+  });
+
+  it("returns 0.25 at 90 minutes", () => {
+    assertEquals(recencyScore(90), 0.25);
+  });
+
+  it("returns 1/3 at 60 minutes", () => {
+    assertEquals(recencyScore(60), 1 / 3);
+  });
+
+  it("decreases as time increases", () => {
+    assertEquals(recencyScore(10) > recencyScore(30), true);
+    assertEquals(recencyScore(30) > recencyScore(60), true);
+    assertEquals(recencyScore(60) > recencyScore(120), true);
+  });
+
+  it("approaches zero for very old activity", () => {
+    assertEquals(recencyScore(10_000) < 0.01, true);
+  });
 });
 
 describe("sortRoomsByActivity", () => {
@@ -235,5 +263,55 @@ describe("sortRoomsByActivity", () => {
       assertEquals(result[0].id, "room-0");
       assertEquals(result[19].id, "room-19");
     });
+  });
+});
+
+describe("scoreRoom", () => {
+  it("scores 120 for a brand-new empty room", () => {
+    const now = Date.now();
+    const room = makeRoom(now, { createdAt: now });
+    assertEquals(scoreRoom(room, [], now), 120);
+  });
+
+  it("scores 60 at the 30-minute half-life with no statements", () => {
+    const now = Date.now();
+    const room = makeRoom(now, { createdAt: now - 30 * MIN });
+    assertEquals(scoreRoom(room, [], now), 60);
+  });
+
+  it("adds votes to the activity weight", () => {
+    const now = Date.now();
+    const room = makeRoom(now, { createdAt: now });
+    const stmts = [makeStatement({ timestamp: now, agrees: 10 })];
+    // recencyScore(0) * (100 + 10 * 0.3) + recencyScore(0) * 20 = 103 + 20 = 123
+    assertEquals(scoreRoom(room, stmts, now), 123);
+  });
+
+  it("counts all four vote types toward the total", () => {
+    const now = Date.now();
+    const room = makeRoom(now, { createdAt: now });
+    // agrees:2 + disagrees:3 + passes:4 + superAgrees:1 = 10 total votes
+    const stmts = [makeStatement({ timestamp: now, agrees: 2, disagrees: 3, passes: 4, superAgrees: 1 })];
+    assertEquals(scoreRoom(room, stmts, now), 123);
+  });
+
+  it("uses the latest statement timestamp for activity recency", () => {
+    const now = Date.now();
+    const room = makeRoom(now, { createdAt: now - 60 * MIN });
+    const stmts = [
+      makeStatement({ id: "old", timestamp: now - 60 * MIN }),
+      makeStatement({ id: "new", timestamp: now }),
+    ];
+    // lastActivity = now → recencyScore(0) = 1; creation 60 min ago → recencyScore(60) = 1/3
+    // score = 1 * 100 + (1/3) * 20 ≈ 106.666...
+    const score = scoreRoom(room, stmts, now);
+    assertEquals(score > 106 && score < 107, true);
+  });
+
+  it("falls back to createdAt when there are no statements", () => {
+    const now = Date.now();
+    const room = makeRoom(now, { createdAt: now - 60 * MIN });
+    // lastActivity = createdAt, both signals at 60 min → (1/3)*100 + (1/3)*20 = 40
+    assertAlmostEquals(scoreRoom(room, [], now), 40, 1e-9);
   });
 });
