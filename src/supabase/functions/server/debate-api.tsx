@@ -486,24 +486,13 @@ const CREATION_WEIGHT = 20;
 const VOTE_WEIGHT = 0.3;
 
 export const scoreRoom = (
-  room: DebateRoom,
-  statements: Statement[],
+  createdAt: number,
+  lastActivity: number,
+  totalVotes: number,
   now: number,
-): number => {
-  const lastActivity = statements.length > 0
-    ? Math.max(...statements.map((s) => s.timestamp))
-    : room.createdAt;
-
-  const totalVotes = statements.reduce(
-    (sum, s) => sum + s.agrees + s.disagrees + s.passes + s.superAgrees,
-    0,
-  );
-
-  return (
-    recencyScore((now - lastActivity) / ONE_MIN_MS) * (ACTIVITY_WEIGHT + totalVotes * VOTE_WEIGHT) +
-    recencyScore((now - room.createdAt) / ONE_MIN_MS) * CREATION_WEIGHT
-  );
-};
+): number =>
+  recencyScore((now - lastActivity) / ONE_MIN_MS) * (ACTIVITY_WEIGHT + totalVotes * VOTE_WEIGHT) +
+  recencyScore((now - createdAt) / ONE_MIN_MS) * CREATION_WEIGHT;
 
 export const sortRoomsByActivity = (
   rooms: DebateRoom[],
@@ -511,7 +500,17 @@ export const sortRoomsByActivity = (
   now: number = Date.now(),
 ): DebateRoom[] =>
   rooms
-    .map((room, i) => ({ room, score: scoreRoom(room, roomStatements[i], now) }))
+    .map((room, i) => {
+      const stmts = roomStatements[i];
+      const lastActivity = stmts.length > 0
+        ? Math.max(...stmts.map((s) => s.timestamp))
+        : room.createdAt;
+      const totalVotes = stmts.reduce(
+        (sum, s) => sum + s.agrees + s.disagrees + s.passes + s.superAgrees,
+        0,
+      );
+      return { room, score: scoreRoom(room.createdAt, lastActivity, totalVotes, now) };
+    })
     .sort((a, b) => b.score - a.score)
     .slice(0, 20)
     .map(({ room }) => room);

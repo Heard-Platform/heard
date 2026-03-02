@@ -169,6 +169,24 @@ describe("sortRoomsByActivity", () => {
       assertEquals(result[1].id, "b");
     });
 
+    it("counts passes and superAgrees alongside agrees and disagrees", () => {
+      const now = Date.now();
+      const lastStmt = now - 5 * MIN;
+      const roomA = makeRoom(now, { id: "a", createdAt: now - 2 * HOUR });
+      const roomB = makeRoom(now, { id: "b", createdAt: now - 2 * HOUR });
+
+      const stmtsA = [
+        makeStatement({ timestamp: lastStmt, agrees: 2, disagrees: 2, passes: 2, superAgrees: 2 }), // 8 votes
+      ];
+      const stmtsB = [
+        makeStatement({ timestamp: lastStmt, agrees: 2, disagrees: 2 }), // 4 votes
+      ];
+
+      const result = sortRoomsByActivity([roomB, roomA], [stmtsB, stmtsA], now);
+      assertEquals(result[0].id, "a");
+      assertEquals(result[1].id, "b");
+    });
+
     it("votes do not rescue a dormant room from a new active room", () => {
       const now = Date.now();
       const dormantPopular = makeRoom(now, { id: "dormant", createdAt: now - 12 * HOUR });
@@ -267,51 +285,26 @@ describe("sortRoomsByActivity", () => {
 });
 
 describe("scoreRoom", () => {
-  it("scores 120 for a brand-new empty room", () => {
+  it("scores 120 when both signals are current", () => {
     const now = Date.now();
-    const room = makeRoom(now, { createdAt: now });
-    assertEquals(scoreRoom(room, [], now), 120);
+    assertEquals(scoreRoom(now, now, 0, now), 120);
   });
 
-  it("scores 60 at the 30-minute half-life with no statements", () => {
+  it("scores 60 at the 30-minute half-life", () => {
     const now = Date.now();
-    const room = makeRoom(now, { createdAt: now - 30 * MIN });
-    assertEquals(scoreRoom(room, [], now), 60);
+    assertEquals(scoreRoom(now - 30 * MIN, now - 30 * MIN, 0, now), 60);
   });
 
   it("adds votes to the activity weight", () => {
     const now = Date.now();
-    const room = makeRoom(now, { createdAt: now });
-    const stmts = [makeStatement({ timestamp: now, agrees: 10 })];
     // recencyScore(0) * (100 + 10 * 0.3) + recencyScore(0) * 20 = 103 + 20 = 123
-    assertEquals(scoreRoom(room, stmts, now), 123);
+    assertEquals(scoreRoom(now, now, 10, now), 123);
   });
 
-  it("counts all four vote types toward the total", () => {
+  it("treats lastActivity and createdAt as independent signals", () => {
     const now = Date.now();
-    const room = makeRoom(now, { createdAt: now });
-    // agrees:2 + disagrees:3 + passes:4 + superAgrees:1 = 10 total votes
-    const stmts = [makeStatement({ timestamp: now, agrees: 2, disagrees: 3, passes: 4, superAgrees: 1 })];
-    assertEquals(scoreRoom(room, stmts, now), 123);
-  });
-
-  it("uses the latest statement timestamp for activity recency", () => {
-    const now = Date.now();
-    const room = makeRoom(now, { createdAt: now - 60 * MIN });
-    const stmts = [
-      makeStatement({ id: "old", timestamp: now - 60 * MIN }),
-      makeStatement({ id: "new", timestamp: now }),
-    ];
-    // lastActivity = now → recencyScore(0) = 1; creation 60 min ago → recencyScore(60) = 1/3
+    // lastActivity = now → recencyScore(0) = 1; createdAt 60 min ago → recencyScore(60) = 1/3
     // score = 1 * 100 + (1/3) * 20 ≈ 106.666...
-    const score = scoreRoom(room, stmts, now);
-    assertEquals(score > 106 && score < 107, true);
-  });
-
-  it("falls back to createdAt when there are no statements", () => {
-    const now = Date.now();
-    const room = makeRoom(now, { createdAt: now - 60 * MIN });
-    // lastActivity = createdAt, both signals at 60 min → (1/3)*100 + (1/3)*20 = 40
-    assertAlmostEquals(scoreRoom(room, [], now), 40, 1e-9);
+    assertAlmostEquals(scoreRoom(now - 60 * MIN, now, 0, now), 106 + 2 / 3, 1e-9);
   });
 });
