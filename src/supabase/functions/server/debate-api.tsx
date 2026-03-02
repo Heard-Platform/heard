@@ -14,6 +14,7 @@ import {
   getStatementsForRoom,
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
+import { ONE_MIN_MS } from "./time-utils.ts";
 import { subheardApi } from "./subheard-api.tsx";
 import { roomApi } from "./room-api.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
@@ -480,18 +481,32 @@ export const getActiveRooms = async (): Promise<DebateRoom[]> => {
 export const sortRoomsByActivity = (
   rooms: DebateRoom[],
   roomStatements: Statement[][],
-): DebateRoom[] =>
-  rooms
+  now: number = Date.now(),
+): DebateRoom[] => {
+  const recency = (minutesAgo: number) => 1 / (1 + minutesAgo / 30);
+
+  return rooms
     .map((room, i) => {
       const stmts = roomStatements[i];
       const lastActivity = stmts.length > 0
         ? Math.max(...stmts.map((s) => s.timestamp))
         : room.createdAt;
-      return { room, lastActivity };
+
+      const totalVotes = stmts.reduce(
+        (sum, s) => sum + s.agrees + s.disagrees + s.passes + s.superAgrees,
+        0,
+      );
+
+      const score =
+        recency((now - lastActivity) / ONE_MIN_MS) * (100 + totalVotes * 0.3) +
+        recency((now - room.createdAt) / ONE_MIN_MS) * 20;
+
+      return { room, score };
     })
-    .sort((a, b) => b.lastActivity - a.lastActivity)
+    .sort((a, b) => b.score - a.score)
     .slice(0, 20)
     .map(({ room }) => room);
+};
 
 // Shared prompt rules for rant statement extraction
 const RANT_EXTRACTION_RULES = `STRICT Rules:
