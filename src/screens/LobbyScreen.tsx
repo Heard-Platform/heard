@@ -107,15 +107,12 @@ export function LobbyScreen({
   type Steps = "tutorial" | "explorer" | "complete";
   const [introStep, setIntroStep] = useState<Steps>("complete");
 
-  // Sort rooms: target room first, then newest first
-  const filteredRooms = activeRooms.sort((a, b) => {
-    // If there's a target room ID, put it first
+  const filteredRooms = [...activeRooms].sort((a, b) => {
     if (targetRoomId) {
       if (a.id === targetRoomId) return -1;
       if (b.id === targetRoomId) return 1;
     }
-    // Otherwise sort by newest first
-    return b.createdAt - a.createdAt;
+    return 0;
   });
 
   useEffect(() => {

@@ -10,9 +10,11 @@ import {
   saveYouTubeCardStatus,
   getUsersYouTubeCardStatuses,
   getVotesForStatement,
-  getCommunities
+  getCommunities,
+  getStatementsForRoom,
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
+import { ONE_MIN_MS } from "./time-utils.ts";
 import { subheardApi } from "./subheard-api.tsx";
 import { roomApi } from "./room-api.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
@@ -476,6 +478,43 @@ export const getActiveRooms = async (): Promise<DebateRoom[]> => {
   return allRooms.filter((r) => r.isActive);
 };
 
+export const recencyScore = (minutesAgo: number): number =>
+  1 / (1 + minutesAgo / 30);
+
+export const scoreRoom = (
+  room: DebateRoom,
+  statements: Statement[],
+  now: number,
+): number => {
+  const latestStatementTime = statements.length > 0
+    ? Math.max(...statements.map((s) => s.timestamp))
+    : 0;
+
+  const minutesSinceLastStatement = latestStatementTime > 0
+    ? (now - latestStatementTime) / ONE_MIN_MS
+    : (now - (room.roundStartTime || room.createdAt)) / ONE_MIN_MS;
+
+  const minutesSinceActivity = Math.min(
+    minutesSinceLastStatement,
+    room.roundStartTime > 0
+      ? (now - room.roundStartTime) / ONE_MIN_MS
+      : minutesSinceLastStatement,
+  );
+
+  const totalVotes = statements.reduce(
+    (sum, s) => sum + s.agrees + s.disagrees + s.passes + s.superAgrees,
+    0,
+  );
+
+  return (
+    recencyScore(minutesSinceActivity) * 60 +
+    recencyScore(minutesSinceLastStatement) * 20 +
+    room.participants.length * 5 +
+    statements.length * 3 +
+    totalVotes * 1
+  );
+};
+
 // Shared prompt rules for rant statement extraction
 const RANT_EXTRACTION_RULES = `STRICT Rules:
 - Use the author's actual words and phrases whenever possible
@@ -803,7 +842,7 @@ app.get(
       return c.json(
         {
           error: "Failed to fetch room status",
-          details: error.message,
+          details: error instanceof Error ? error.message : String(error),
         },
         500,
       );
@@ -1315,7 +1354,15 @@ app.get(
         }));
       }
 
-      rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
+      const now = Date.now();
+      const roomStatements = await Promise.all(
+        rooms.map((room) => getStatementsForRoom(room.id)),
+      );
+      rooms = rooms
+        .map((room, i) => ({ room, score: scoreRoom(room, roomStatements[i], now) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 20)
+        .map(({ room }) => room);
 
       return c.json({ rooms });
     } catch (error) {
