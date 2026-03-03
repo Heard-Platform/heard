@@ -27,6 +27,7 @@ import { FeatureFlags, isFeatureEnabled } from "./constants/feature-flags";
 import { getEnvironment } from "./constants/general";
 import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { publicAnonKey } from "./supabase/info";
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
 export { getSessionId, setSessionId, clearSessionId } from "./api-client";
 
 export async function safelyMakeApiCall<T>(
@@ -72,10 +73,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async verifySmsCode(phone: string, code: string, tosAcknowledged: boolean = true) {
+  async verifySmsCode(phone: string, code: string, tosAcknowledged: boolean = true, privacyPolicyAcknowledged: boolean = true) {
     return this.request<UserSessionResponse>("/auth/verify-sms-code", {
       method: "POST",
-      body: JSON.stringify({ phone, code, tosAcknowledged }),
+      body: JSON.stringify({ phone, code, tosAcknowledged, privacyPolicyAcknowledged }),
     });
   }
 
@@ -184,9 +185,22 @@ class ApiClient extends BaseApiClient {
 
   async createAnonymousUser() {
     const environment = getEnvironment();
+    
+    let fingerprint = "unknown";
+    try {
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+      fingerprint = result.visitorId;
+    } catch (error) {
+      console.error("Failed to generate fingerprint:", error);
+    }
+    
+    const userAgent = navigator.userAgent;
+    const webdriver = navigator.webdriver;
+    
     return this.request<UserSessionResponse>("/user/anonymous", {
       method: "POST",
-      body: JSON.stringify({ environment }),
+      body: JSON.stringify({ environment, fingerprint, userAgent, webdriver }),
     });
   }
 

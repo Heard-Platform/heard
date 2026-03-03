@@ -61,8 +61,13 @@ app.post(
   async (c: Context) => {
     try {
       const currentUserId = c.get("userId");
-      const { phone, code, tosAcknowledged } = await c.req.json();
-
+      const {
+        phone,
+        code,
+        tosAcknowledged,
+        privacyPolicyAcknowledged,
+      } = await c.req.json();
+      
       if (!phone || !code) {
         return c.json({ error: "Phone and code are required" }, 400);
       }
@@ -89,6 +94,12 @@ app.post(
       if (!user.tosAgreedToAt && tosAcknowledged) {
         user.tosAgreedToAt = Date.now();
         user.tosVersion = "1.0";
+        await saveUser(user);
+      }
+
+      if (!user.privacyPolicyAgreedToAt && privacyPolicyAcknowledged) {
+        user.privacyPolicyAgreedToAt = Date.now();
+        user.privacyPolicyVersion = "1.0";
         await saveUser(user);
       }
 

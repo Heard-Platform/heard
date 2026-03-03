@@ -228,6 +228,15 @@
     align-items: center;
     justify-content: space-between;
   }
+
+  .heard-link {
+    color: rgb(147 51 234);
+    transition: color 150ms;
+  }
+
+  .heard-link:hover {
+    color: rgb(126 34 206);
+  }
 }
 
 /**
