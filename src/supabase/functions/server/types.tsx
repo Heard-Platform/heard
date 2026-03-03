@@ -138,6 +138,11 @@ export interface DebateRoom {
   youtubeCardSwiped?: boolean;
 }
 
+export type RoomWithStatements = {
+  room: DebateRoom;
+  statements: Statement[];
+};
+
 export type AnonCreatableRecords = "votes" | "statements" | "score";
 
 export interface Rant {

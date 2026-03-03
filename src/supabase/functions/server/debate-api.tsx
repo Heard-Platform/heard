@@ -30,7 +30,8 @@ import type {
   Phase,
   SubPhase,
   DebateRoom,
-  Rant
+  Rant,
+  RoomWithStatements,
 } from "./types.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { calculateVoteStats, processVote } from "./voting-utils.ts";
@@ -495,25 +496,23 @@ export const scoreRoom = (
   recencyScore((now - createdAt) / ONE_MIN_MS) * CREATION_WEIGHT;
 
 export const sortRoomsByActivity = (
-  rooms: DebateRoom[],
-  roomStatements: Statement[][],
+  roomStatements: RoomWithStatements[],
   now: number = Date.now(),
-): DebateRoom[] =>
-  rooms
-    .map((room, i) => {
-      const stmts = roomStatements[i];
-      const lastActivity = stmts.length > 0
-        ? Math.max(...stmts.map((s) => s.timestamp))
-        : room.createdAt;
-      const totalVotes = stmts.reduce(
+): RoomWithStatements[] =>
+  roomStatements
+    .map((rs) => {
+      const lastActivity = rs.statements.length > 0
+        ? Math.max(...rs.statements.map((s) => s.timestamp))
+        : rs.room.createdAt;
+      const totalVotes = rs.statements.reduce(
         (sum, s) => sum + s.agrees + s.disagrees + s.passes + s.superAgrees,
         0,
       );
-      return { room, score: scoreRoom(room.createdAt, lastActivity, totalVotes, now) };
+      return { rs, score: scoreRoom(rs.room.createdAt, lastActivity, totalVotes, now) };
     })
     .sort((a, b) => b.score - a.score)
     .slice(0, 20)
-    .map(({ room }) => room);
+    .map(({ rs }) => rs);
 
 // Shared prompt rules for rant statement extraction
 const RANT_EXTRACTION_RULES = `STRICT Rules:
@@ -1354,10 +1353,13 @@ app.get(
         }));
       }
 
-      const roomStatements = await Promise.all(
-        rooms.map((room) => getStatementsForRoom(room.id)),
+      const roomsWithStatements = await Promise.all(
+        rooms.map(async (room) => ({
+          room,
+          statements: await getStatementsForRoom(room.id),
+        })),
       );
-      rooms = sortRoomsByActivity(rooms, roomStatements);
+      rooms = sortRoomsByActivity(roomsWithStatements).map(({ room }) => room);
 
       return c.json({ rooms });
     } catch (error) {
