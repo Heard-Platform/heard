@@ -296,6 +296,8 @@ export interface RetentionStatsData {
 }
 
 export interface FeatureResults {
+  webDriverUsers: number;
+  webDriverUsersSince: number;
   uniqueIpAddresses: number;
   uniqueIpAddressesSince: number;
   uniqueFingerprints: number;

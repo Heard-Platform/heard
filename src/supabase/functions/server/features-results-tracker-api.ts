@@ -8,6 +8,10 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
   try {
     const users = await getAllRealUsers();
     
+    const webDriverUsers = users.filter(
+      u => u.webdriver === true
+    ).length;
+
     const uniqueIpAddresses = new Set(
       users
         .map(u => u.ipAddress)
@@ -50,6 +54,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       u => u.flyerId
     ).length;
     
+    const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
     const uniqueUserAgentsSince = new Date("2026-03-03").getTime();
@@ -62,6 +67,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const flyerUsersSince = new Date("2026-01-05").getTime();
     
     return c.json({
+      webDriverUsers,
+      webDriverUsersSince,
       uniqueIpAddresses,
       uniqueIpAddressesSince,
       uniqueFingerprints,

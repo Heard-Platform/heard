@@ -14,6 +14,7 @@ import {
   Fingerprint,
   Monitor,
   Shield,
+  Bot,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -64,6 +65,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
   };
 
   const featureCards: FeatureCardData[] = [
+    {
+      icon: Bot,
+      iconColor: "text-amber-600",
+      bgColor: "bg-amber-100",
+      title: "WebDriver Detected",
+      description: "Users with WebDriver detected (potential bots/automation)",
+      getValue: (s) => s.webDriverUsers,
+      getDate: (s) => s.webDriverUsersSince,
+    },
     {
       icon: Globe,
       iconColor: "text-teal-600",
