@@ -21,7 +21,7 @@ const newsletters = [
     },
     section3: {
       title: "💬 The First Heard Substack Post",
-      text: "I published my first Substack post last week talking about the paradox of the American government and how I'm thinking Heard and other CivTech platforms could solve it.",
+      text: "I published my first Substack post last week talking about the paradox of the American government and how I'm thinking Heard and other CivTech platforms could help address it.",
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-8-substack.png",
       imageLink: "https://substack.com/home/post/p-188672969",
       imageAlt: "First substack post feature",
