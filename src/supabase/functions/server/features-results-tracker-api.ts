@@ -8,8 +8,30 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
   try {
     const users = await getAllRealUsers();
     
+    const uniqueIpAddresses = new Set(
+      users
+        .map(u => u.ipAddress)
+        .filter(ip => ip && ip !== "unknown")
+    ).size;
+    
+    const uniqueFingerprints = new Set(
+      users
+        .map(u => u.fingerprint)
+        .filter(fp => fp && fp !== "unknown")
+    ).size;
+    
+    const uniqueUserAgents = new Set(
+      users
+        .map(u => u.userAgent)
+        .filter(ua => ua && ua !== "unknown")
+    ).size;
+    
     const tosAgreedUsers = users.filter(
       u => u.tosAgreedToAt
+    ).length;
+    
+    const privacyPolicyAgreedUsers = users.filter(
+      u => u.privacyPolicyAgreedToAt
     ).length;
     
     const flyerEmails = (await getFlyerEmails()).length;
@@ -28,7 +50,11 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       u => u.flyerId
     ).length;
     
+    const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
+    const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
+    const uniqueUserAgentsSince = new Date("2026-03-03").getTime();
     const tosAgreedSince = new Date("2026-02-25").getTime();
+    const privacyPolicyAgreedSince = new Date("2026-03-03").getTime();
     const flyerEmailsSince = new Date("2026-02-11").getTime();
     const userReportsSince = new Date("2026-02-04").getTime();
     const phoneVerifiedSince = new Date("2026-01-26").getTime();
@@ -36,8 +62,16 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const flyerUsersSince = new Date("2026-01-05").getTime();
     
     return c.json({
+      uniqueIpAddresses,
+      uniqueIpAddressesSince,
+      uniqueFingerprints,
+      uniqueFingerprintsSince,
+      uniqueUserAgents,
+      uniqueUserAgentsSince,
       tosAgreedUsers,
       tosAgreedSince,
+      privacyPolicyAgreedUsers,
+      privacyPolicyAgreedSince,
       flyerEmails,
       flyerEmailsSince,
       userReports,

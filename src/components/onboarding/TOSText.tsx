@@ -8,6 +8,13 @@ export function TOSText() {
       >
         Terms of Service
       </a>
+      {" "}and{" "}
+      <a
+        href="/privacy"
+        className="text-purple-600 hover:text-purple-700 underline"
+      >
+        Privacy Policy
+      </a>
     </p>
   );
 }

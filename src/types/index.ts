@@ -296,8 +296,16 @@ export interface RetentionStatsData {
 }
 
 export interface FeatureResults {
+  uniqueIpAddresses: number;
+  uniqueIpAddressesSince: number;
+  uniqueFingerprints: number;
+  uniqueFingerprintsSince: number;
+  uniqueUserAgents: number;
+  uniqueUserAgentsSince: number;
   tosAgreedUsers: number;
   tosAgreedSince: number;
+  privacyPolicyAgreedUsers: number;
+  privacyPolicyAgreedSince: number;
   flyerEmails: number;
   flyerEmailsSince: number;
   userReports: number;

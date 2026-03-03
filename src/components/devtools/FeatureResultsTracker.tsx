@@ -10,6 +10,10 @@ import {
   Flag,
   FileCheck,
   LucideIcon,
+  Globe,
+  Fingerprint,
+  Monitor,
+  Shield,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -61,6 +65,33 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
 
   const featureCards: FeatureCardData[] = [
     {
+      icon: Globe,
+      iconColor: "text-teal-600",
+      bgColor: "bg-teal-100",
+      title: "Unique IP Addresses",
+      description: "Distinct IP addresses from all users",
+      getValue: (s) => s.uniqueIpAddresses,
+      getDate: (s) => s.uniqueIpAddressesSince,
+    },
+    {
+      icon: Fingerprint,
+      iconColor: "text-pink-600",
+      bgColor: "bg-pink-100",
+      title: "Unique Fingerprints",
+      description: "Distinct browser fingerprints captured",
+      getValue: (s) => s.uniqueFingerprints,
+      getDate: (s) => s.uniqueFingerprintsSince,
+    },
+    {
+      icon: Monitor,
+      iconColor: "text-cyan-600",
+      bgColor: "bg-cyan-100",
+      title: "Unique User Agents",
+      description: "Distinct browser/device user agents",
+      getValue: (s) => s.uniqueUserAgents,
+      getDate: (s) => s.uniqueUserAgentsSince,
+    },
+    {
       icon: FileCheck,
       iconColor: "text-indigo-600",
       bgColor: "bg-indigo-100",
@@ -68,6 +99,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       description: "Users who have agreed to the Terms of Service",
       getValue: (s) => s.tosAgreedUsers,
       getDate: (s) => s.tosAgreedSince,
+    },
+    {
+      icon: Shield,
+      iconColor: "text-violet-600",
+      bgColor: "bg-violet-100",
+      title: "Privacy Policy Agreements",
+      description: "Users who have agreed to the Privacy Policy",
+      getValue: (s) => s.privacyPolicyAgreedUsers,
+      getDate: (s) => s.privacyPolicyAgreedSince,
     },
     {
       icon: Tag,

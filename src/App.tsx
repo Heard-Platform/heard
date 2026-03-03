@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { UnsubscribePage } from "./components/UnsubscribePage";
 import { TermsOfServicePage } from "./screens/TermsOfServicePage";
+import { PrivacyPolicyPage } from "./screens/PrivacyPolicyPage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
@@ -46,6 +47,7 @@ function AppContent() {
   const [showDevTools, setShowDevTools] = useState(false);
   const [showUnsubscribe, setShowUnsubscribe] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
 
@@ -186,6 +188,8 @@ function AppContent() {
         window.location.pathname.startsWith("/unsubscribe");
       const isTermsRoute =
         window.location.pathname.startsWith("/terms");
+      const isPrivacyRoute =
+        window.location.pathname.startsWith("/privacy");
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl =
@@ -216,6 +220,8 @@ function AppContent() {
         setCurrentSubHeard(subHeardFromUrl);
       } else if (isTermsRoute) {
         setShowTerms(true);
+      } else if (isPrivacyRoute) {
+        setShowPrivacy(true);
       }
       setHasCheckedUrl(true);
     }
@@ -406,6 +412,10 @@ function AppContent() {
 
   if (showTerms) {
     return <TermsOfServicePage />;
+  }
+
+  if (showPrivacy) {
+    return <PrivacyPolicyPage />;
   }
 
   if (!user || loading || isJoiningAnonymously) {
