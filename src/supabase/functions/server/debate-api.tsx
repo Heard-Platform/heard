@@ -1353,6 +1353,7 @@ app.get(
         }));
       }
 
+      rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
       const roomsWithStatements = await Promise.all(
         rooms.map(async (room) => ({
           room,
