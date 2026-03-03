@@ -17,6 +17,7 @@ import { getNewsletterRecipients, getNewsletterSentKey } from "./newsletter-util
 // @ts-ignore
 import { Hono } from "npm:hono";
 import { getNewsletter2Email, getNewsletterEmail } from "./email-templates.tsx";
+import { getNewsletterEmailByEdition } from "./email-newsletters.ts";
 
 const app = new Hono();
 
@@ -643,6 +644,10 @@ app.post(
         const newsletter7 = getNewsletter7Email();
         subject = newsletter7.subject;
         getNewsletterHtml = () => newsletter7.html;
+      } else if (newsletterEdition > 7) {
+        const newsletter = getNewsletterEmailByEdition(newsletterEdition);
+        subject = newsletter.subject;
+        getNewsletterHtml = () => newsletter.html;
       } else {
         const getNewsletterHtmlFn = newsletterEdition === 2 ? getNewsletter2Email : newsletterEdition === 3 ? getNewsletter3Email : getNewsletterEmail;
         const newsletterSubjects = {
