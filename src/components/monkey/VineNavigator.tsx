@@ -6,7 +6,7 @@ import { TalkBubble } from "../TalkBubble";
 import { ScreenTimeWarningDialog } from "./ScreenTimeWarningDialog";
 
 // @ts-ignore
-import baseMonkey from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
+import baseMonkey from "../../assets/koala-generated.png";
 
 // @ts-ignore
 import monkeyWithWrench from "figma:asset/ab06931b1dc1dfba1d9cf4a9e389e4b87471b96c.png";
