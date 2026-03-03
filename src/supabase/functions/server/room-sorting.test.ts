@@ -20,8 +20,8 @@ const makeRoom = (createdAt: number, overrides: Partial<DebateRoom> = {}): Debat
   ...overrides,
 });
 
-const makeRoomWithStatements = (createdAt: number, statements: Statement[] = []): RoomWithStatements => ({
-  room: makeRoom(createdAt),
+const makeRoomWithStatements = (createdAt: number, statements: Statement[] = [], roomOverrides: Partial<DebateRoom> = {}): RoomWithStatements => ({
+  room: makeRoom(createdAt, roomOverrides),
   statements,
 });
 
@@ -129,6 +129,22 @@ describe("sortRoomsByActivity", () => {
       const result = sortRoomsByActivity([rwsNewer, rwsOld], now);
       assertEquals(result[0].room.createdAt, now - 4 * HOUR);
       assertEquals(result[1].room.createdAt, now - 20 * MIN);
+    });
+
+    it("uses lastVoteAt when more recent than statement timestamps", () => {
+      const now = Date.now();
+      // rwsA: old room, stale statement, but recent vote
+      const rwsA = makeRoomWithStatements(
+        now - 3 * HOUR,
+        [makeStatement({ timestamp: now - 30 * MIN })],
+        { lastVoteAt: now - 1 * MIN },
+      );
+      // rwsB: newer room, more recent statement, no votes
+      const rwsB = makeRoomWithStatements(now - 2 * HOUR, [makeStatement({ timestamp: now - 10 * MIN })]);
+
+      const result = sortRoomsByActivity([rwsB, rwsA], now);
+      assertEquals(result[0].room.createdAt, now - 3 * HOUR);
+      assertEquals(result[1].room.createdAt, now - 2 * HOUR);
     });
 
     it("inactive old room ranks below brand-new empty room", () => {

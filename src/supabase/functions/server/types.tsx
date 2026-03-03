@@ -136,6 +136,7 @@ export interface DebateRoom {
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
   youtubeCardSwiped?: boolean;
+  lastVoteAt?: number;
 }
 
 export type RoomWithStatements = {

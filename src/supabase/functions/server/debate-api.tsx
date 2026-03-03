@@ -501,9 +501,10 @@ export const sortRoomsByActivity = (
 ): RoomWithStatements[] =>
   roomStatements
     .map((rs) => {
-      const lastActivity = rs.statements.length > 0
+      const lastStatementAt = rs.statements.length > 0
         ? Math.max(...rs.statements.map((s) => s.timestamp))
-        : rs.room.createdAt;
+        : 0;
+      const lastActivity = Math.max(lastStatementAt, rs.room.lastVoteAt ?? 0) || rs.room.createdAt;
       const totalVotes = rs.statements.reduce((sum, s) => sum + countStatementVotes(s), 0);
       return { rs, score: scoreRoom(rs.room.createdAt, lastActivity, totalVotes, now) };
     })

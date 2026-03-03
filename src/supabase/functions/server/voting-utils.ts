@@ -168,6 +168,11 @@ export const processVote = async (
     }
   }
 
+  if (room) {
+    room.lastVoteAt = Date.now();
+    await saveDebateRoom(room);
+  }
+
   // Get updated vote data to return
   const updatedVotes = await getVotesForStatement(statementId);
   const voteStats = calculateVoteStats(updatedVotes);
