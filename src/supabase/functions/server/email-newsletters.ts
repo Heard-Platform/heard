@@ -14,9 +14,9 @@ const newsletters = [
     },
     section2: {
       title: "🦁 Pick the Next Heard Mascot!",
-      text: "We're adding a way for users to change their avatar on Heard to another animal once they've earned enough points. What animal do you want to see? Add your ideas here: <a href='https://heard.vote/room/sbrs1maf9kmmb6ujkwl'>https://heard.vote/room/sbrs1maf9kmmb6ujkwl</a>.",
+      text: "We're adding a way for users to change their avatar on Heard to another animal once they've earned enough points. What animal do you want to see? Add your ideas here: <a href='https://heard.vote/room/sbrs1maf9kmmb6ujkw'>https://heard.vote/room/sbrs1maf9kmmb6ujkw</a>.",
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-8-mascots.png",
-      imageLink: "https://heard.vote/room/sbrs1maf9kmmb6ujkwl",
+      imageLink: "https://heard.vote/room/sbrs1maf9kmmb6ujkw",
       imageAlt: "Mascot voting campaign",
     },
     section3: {
