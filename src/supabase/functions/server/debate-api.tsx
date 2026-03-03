@@ -34,7 +34,7 @@ import type {
   RoomWithStatements,
 } from "./types.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
-import { calculateVoteStats, processVote } from "./voting-utils.ts";
+import { calculateVoteStats, countStatementVotes, processVote } from "./voting-utils.ts";
 
 const app = new Hono();
 
@@ -504,10 +504,7 @@ export const sortRoomsByActivity = (
       const lastActivity = rs.statements.length > 0
         ? Math.max(...rs.statements.map((s) => s.timestamp))
         : rs.room.createdAt;
-      const totalVotes = rs.statements.reduce(
-        (sum, s) => sum + s.agrees + s.disagrees + s.passes + s.superAgrees,
-        0,
-      );
+      const totalVotes = rs.statements.reduce((sum, s) => sum + countStatementVotes(s), 0);
       return { rs, score: scoreRoom(rs.room.createdAt, lastActivity, totalVotes, now) };
     })
     .sort((a, b) => b.score - a.score)

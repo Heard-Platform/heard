@@ -5,6 +5,9 @@ import { getUserSession } from "./auth-api.tsx";
 import { generateId, getDebateRoom, getStatementById, saveDebateRoom } from "./debate-api.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 
+export const countStatementVotes = (statement: Statement): number =>
+  statement.agrees + statement.disagrees + statement.passes + statement.superAgrees;
+
 export const calculateVoteStats = (
   votes: Vote[],
 ): {
