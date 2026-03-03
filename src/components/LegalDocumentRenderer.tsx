@@ -25,6 +25,11 @@ export function LegalDocumentRenderer({ content }: LegalDocumentRendererProps) {
           li: ({ children }) => (
             <li className="text-base">{children}</li>
           ),
+          a: ({ children, href }) => (
+            <a href={href} className="heard-link underline">
+              {children}
+            </a>
+          ),
         }}
       >
         {content}
