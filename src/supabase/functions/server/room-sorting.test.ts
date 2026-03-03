@@ -250,24 +250,36 @@ describe("sortRoomsByActivity", () => {
 describe("scoreRoom", () => {
   it("scores 120 when both signals are current", () => {
     const now = Date.now();
-    assertEquals(scoreRoom(now, now, 0, now), 120);
+    const createdAt = now;
+    const lastActivity = now;
+    const totalVotes = 0;
+    assertEquals(scoreRoom(createdAt, lastActivity, totalVotes, now), 120);
   });
 
   it("scores 60 at the 30-minute half-life", () => {
     const now = Date.now();
-    assertEquals(scoreRoom(now - 30 * MIN, now - 30 * MIN, 0, now), 60);
+    const createdAt = now - 30 * MIN;
+    const lastActivity = now - 30 * MIN;
+    const totalVotes = 0;
+    assertEquals(scoreRoom(createdAt, lastActivity, totalVotes, now), 60);
   });
 
   it("adds votes to the activity weight", () => {
     const now = Date.now();
+    const createdAt = now;
+    const lastActivity = now;
+    const totalVotes = 10;
     // recencyScore(0) * (100 + 10 * 0.3) + recencyScore(0) * 20 = 103 + 20 = 123
-    assertEquals(scoreRoom(now, now, 10, now), 123);
+    assertEquals(scoreRoom(createdAt, lastActivity, totalVotes, now), 123);
   });
 
   it("treats lastActivity and createdAt as independent signals", () => {
     const now = Date.now();
+    const createdAt = now - 60 * MIN;
+    const lastActivity = now;
+    const totalVotes = 0;
     // lastActivity = now → recencyScore(0) = 1; createdAt 60 min ago → recencyScore(60) = 1/3
     // score = 1 * 100 + (1/3) * 20 ≈ 106.666...
-    assertAlmostEquals(scoreRoom(now - 60 * MIN, now, 0, now), 106 + 2 / 3, 1e-9);
+    assertAlmostEquals(scoreRoom(createdAt, lastActivity, totalVotes, now), 106 + 2 / 3, 1e-9);
   });
 });
