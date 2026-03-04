@@ -89,7 +89,12 @@ export const processVote = async (
   // Auto-join user to room if they're not already a participant
   const room = await getDebateRoom(statement.roomId);
 
-  if (user.isAnonymous && room && !room.allowAnonymous) {
+  if (!room) {
+    console.error(`Debate room not found with ID: ${statement.roomId}`);
+    return { success: false, error: "Debate room not found" };
+  }
+
+  if (user.isAnonymous && !room.allowAnonymous) {
     return {
       success: false,
       error: ANONYMOUS_ACTION_NOT_ALLOWED_ERROR,
@@ -97,7 +102,7 @@ export const processVote = async (
     };
   }
 
-  if (room && !room.participants.includes(userId)) {
+  if (!room.participants.includes(userId)) {
     room.participants.push(userId);
     await saveDebateRoom(room);
     console.log(
@@ -109,6 +114,7 @@ export const processVote = async (
   const currentVotes = await getVotesForStatement(statementId);
   const currentVote = currentVotes.find((v) => v.userId === userId);
   let pointsEarned = 0;
+  let voteCountChange = 0;
 
   let voteData = {
     voteType,
@@ -119,6 +125,8 @@ export const processVote = async (
   if (currentVote?.voteType === voteType && !allowIdempotent) {
     // Same vote type - undo vote (delete the vote record)
     await deleteVote(statementId, userId);
+    voteCountChange = -1;
+
     console.log(
       `Removed vote for user ${userId} on statement ${statementId}`,
     );
@@ -143,6 +151,8 @@ export const processVote = async (
       ...voteData,
     };
     await saveVote(newVote);
+    voteCountChange = 1;
+
     console.log(
       `Created new vote for user ${userId} on statement ${statementId}: ${voteType}`,
     );
@@ -159,7 +169,7 @@ export const processVote = async (
       await saveUser(statementAuthorUser);
     }
 
-    if (room && room.hostId && room.hostId !== userId) {
+    if (room.hostId && room.hostId !== userId) {
       const roomCreator = await getUserSession(room.hostId);
       if (roomCreator) {
         roomCreator.score += 1;
@@ -168,10 +178,9 @@ export const processVote = async (
     }
   }
 
-  if (room) {
-    room.lastVoteAt = Date.now();
-    await saveDebateRoom(room);
-  }
+  room.lastActivityAt = Date.now();
+  room.totalVotes = (room.totalVotes || 0) + voteCountChange;
+  await saveDebateRoom(room);
 
   // Get updated vote data to return
   const updatedVotes = await getVotesForStatement(statementId);

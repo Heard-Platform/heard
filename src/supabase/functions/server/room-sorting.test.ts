@@ -1,7 +1,7 @@
 import { assertEquals, assertAlmostEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { describe, it } from "@std/testing/bdd";
-import { recencyScore, scoreRoom, sortRoomsByActivity } from "./debate-api.tsx";
-import { DebateRoom, RoomWithStatements, Statement } from "./types.tsx";
+import { recencyScore, sortRoomsByActivity, scoreRoom } from "./feed-utils.ts";
+import { DebateRoom } from "./types.tsx";
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -17,26 +17,8 @@ const makeRoom = (createdAt: number, overrides: Partial<DebateRoom> = {}): Debat
   isActive: true,
   createdAt,
   mode: "realtime",
-  ...overrides,
-});
-
-const makeRoomWithStatements = (createdAt: number, statements: Statement[] = [], roomOverrides: Partial<DebateRoom> = {}): RoomWithStatements => ({
-  room: makeRoom(createdAt, roomOverrides),
-  statements,
-});
-
-const makeStatement = (overrides: Partial<Statement> = {}): Statement => ({
-  id: "stmt-1",
-  text: "Test statement",
-  author: "user-1",
-  agrees: 0,
-  disagrees: 0,
-  passes: 0,
-  superAgrees: 0,
-  roomId: "room-1",
-  timestamp: 0,
-  round: 1,
-  voters: {},
+  lastActivityAt: 0,
+  totalVotes: 0,
   ...overrides,
 });
 
@@ -77,188 +59,119 @@ describe("sortRoomsByActivity", () => {
 
     it("returns single room unchanged", () => {
       const now = Date.now();
-      const rws = makeRoomWithStatements(now);
-      const result = sortRoomsByActivity([rws], now);
+      const room = makeRoom(now);
+      const result = sortRoomsByActivity([room], now);
       assertEquals(result.length, 1);
-      assertEquals(result[0].room.createdAt, now);
+      assertEquals(result[0], room);
     });
   });
 
   describe("Ordering by last activity", () => {
-    it("sorts by most recent statement timestamp", () => {
+    it("favors new over old if some activity", () => {
       const now = Date.now();
-      const rwsA = makeRoomWithStatements(now - 2 * HOUR, [makeStatement({ timestamp: now - 1 * MIN })]);
-      const rwsB = makeRoomWithStatements(now - 1 * HOUR, [makeStatement({ timestamp: now - 10 * MIN })]);
+      const oldActive = makeRoom(now - 2 * HOUR, {lastActivityAt: now - 1 * MIN });
+      const newQuiet = makeRoom(now - 1 * HOUR, {lastActivityAt: now - 10 * MIN });
 
-      const result = sortRoomsByActivity([rwsB, rwsA], now);
-      assertEquals(result[0].room.createdAt, now - 2 * HOUR);
-      assertEquals(result[1].room.createdAt, now - 1 * HOUR);
+      const result = sortRoomsByActivity([newQuiet, oldActive], now);
+      assertEquals(result[0], oldActive);
+      assertEquals(result[1], newQuiet);
     });
 
-    it("falls back to createdAt when no statements", () => {
+    it("falls back to createdAt when no activity", () => {
       const now = Date.now();
-      const rwsOlder = makeRoomWithStatements(now - 2 * HOUR);
-      const rwsNewer = makeRoomWithStatements(now - 1 * HOUR);
+      const olderRoom = makeRoom(now - 2 * HOUR);
+      olderRoom.lastActivityAt = undefined;
+      const newerRoom = makeRoom(now - 1 * HOUR);
+      newerRoom.lastActivityAt = undefined;
 
-      const result = sortRoomsByActivity([rwsOlder, rwsNewer], now);
-      assertEquals(result[0].room.createdAt, now - 1 * HOUR);
-      assertEquals(result[1].room.createdAt, now - 2 * HOUR);
+      const result = sortRoomsByActivity([olderRoom, newerRoom], now);
+      assertEquals(result, [newerRoom, olderRoom]);
     });
 
-    it("uses latest statement when room has multiple", () => {
+    it("active old room outranks newer empty room", () => {
       const now = Date.now();
-      const rwsA = makeRoomWithStatements(now - 2 * HOUR, [
-        makeStatement({ id: "s1", timestamp: now - 30 * MIN }),
-        makeStatement({ id: "s2", timestamp: now - 5 * MIN }), // latest
-      ]);
-      const rwsB = makeRoomWithStatements(now - 2 * HOUR, [
-        makeStatement({ id: "s3", timestamp: now - 10 * MIN }),
-      ]);
+      const olderRoom = makeRoom(now - 4 * HOUR, { lastActivityAt: now - 1 * MIN });
+      const newerRoom = makeRoom(now - 20 * MIN);
 
-      const result = sortRoomsByActivity([rwsB, rwsA], now);
-      assertEquals(Math.max(...result[0].statements.map((s) => s.timestamp)), now - 5 * MIN);
-      assertEquals(Math.max(...result[1].statements.map((s) => s.timestamp)), now - 10 * MIN);
-    });
-
-    it("recent statement on old room outranks newer empty room", () => {
-      const now = Date.now();
-      // 20-min-old empty room: score ≈ 72. Old room with stmt 1 min ago: score ≈ 99.
-      const rwsOld = makeRoomWithStatements(now - 4 * HOUR, [makeStatement({ timestamp: now - 1 * MIN })]);
-      const rwsNewer = makeRoomWithStatements(now - 20 * MIN);
-
-      const result = sortRoomsByActivity([rwsNewer, rwsOld], now);
-      assertEquals(result[0].room.createdAt, now - 4 * HOUR);
-      assertEquals(result[1].room.createdAt, now - 20 * MIN);
-    });
-
-    it("uses lastVoteAt when more recent than statement timestamps", () => {
-      const now = Date.now();
-      // rwsA: old room, stale statement, but recent vote
-      const rwsA = makeRoomWithStatements(
-        now - 3 * HOUR,
-        [makeStatement({ timestamp: now - 30 * MIN })],
-        { lastVoteAt: now - 1 * MIN },
-      );
-      // rwsB: newer room, more recent statement, no votes
-      const rwsB = makeRoomWithStatements(now - 2 * HOUR, [makeStatement({ timestamp: now - 10 * MIN })]);
-
-      const result = sortRoomsByActivity([rwsB, rwsA], now);
-      assertEquals(result[0].room.createdAt, now - 3 * HOUR);
-      assertEquals(result[1].room.createdAt, now - 2 * HOUR);
+      const result = sortRoomsByActivity([newerRoom, olderRoom], now);
+      assertEquals(result, [olderRoom, newerRoom]);
     });
 
     it("inactive old room ranks below brand-new empty room", () => {
       const now = Date.now();
-      const rwsNew = makeRoomWithStatements(now);
-      const rwsStale = makeRoomWithStatements(now - 24 * HOUR);
+      const newRoom = makeRoom(now);
+      const olderRoom = makeRoom(now - 24 * HOUR);
 
-      const result = sortRoomsByActivity([rwsStale, rwsNew], now);
-      assertEquals(result[0].room.createdAt, now);
-      assertEquals(result[1].room.createdAt, now - 24 * HOUR);
+      const result = sortRoomsByActivity([olderRoom, newRoom], now);
+      assertEquals(result, [newRoom, olderRoom]);
     });
   });
 
   describe("Votes", () => {
     it("room with more votes ranks above room with equal activity but fewer votes", () => {
       const now = Date.now();
-      const lastStmt = now - 5 * MIN;
-      const rwsA = makeRoomWithStatements(now - 2 * HOUR, [
-        makeStatement({ timestamp: lastStmt, agrees: 50, disagrees: 20 }), // 70 votes
-      ]);
-      const rwsB = makeRoomWithStatements(now - 2 * HOUR, [
-        makeStatement({ timestamp: lastStmt, agrees: 5, disagrees: 2 }), // 7 votes
-      ]);
+      const lastActivityAt = now - 5 * MIN;
+      const manyVotesRoom = makeRoom(now - 2 * HOUR, {lastActivityAt, totalVotes: 70})
+      const fewVotesRoom = makeRoom(now - 2 * HOUR, {lastActivityAt, totalVotes: 7});
 
-      const result = sortRoomsByActivity([rwsB, rwsA], now);
-      assertEquals(result[0].statements[0].agrees, 50);
-      assertEquals(result[1].statements[0].agrees, 5);
-    });
-
-    it("counts passes and superAgrees alongside agrees and disagrees", () => {
-      const now = Date.now();
-      const lastStmt = now - 5 * MIN;
-      const rwsA = makeRoomWithStatements(now - 2 * HOUR, [
-        makeStatement({ timestamp: lastStmt, agrees: 2, disagrees: 2, passes: 2, superAgrees: 2 }), // 8 votes
-      ]);
-      const rwsB = makeRoomWithStatements(now - 2 * HOUR, [
-        makeStatement({ timestamp: lastStmt, agrees: 2, disagrees: 2 }), // 4 votes
-      ]);
-
-      const result = sortRoomsByActivity([rwsB, rwsA], now);
-      assertEquals(result[0].statements[0].passes, 2);
-      assertEquals(result[1].statements[0].passes, 0);
+      const result = sortRoomsByActivity([fewVotesRoom, manyVotesRoom], now);
+      assertEquals(result, [manyVotesRoom, fewVotesRoom]);
     });
 
     it("votes do not rescue a dormant room from a new active room", () => {
       const now = Date.now();
-      const rwsDormant = makeRoomWithStatements(now - 12 * HOUR, [
-        makeStatement({ timestamp: now - 3 * HOUR, agrees: 200, disagrees: 100 }), // 300 votes, 3 hrs ago
-      ]);
-      const rwsActive = makeRoomWithStatements(now - 30 * MIN, [
-        makeStatement({ timestamp: now - 2 * MIN }), // 0 votes, 2 min ago
-      ]);
+      const dormantRoom = makeRoom(now - 12 * HOUR, {lastActivityAt: now - 3 * HOUR, totalVotes: 300});
+      const activeRoom = makeRoom(now - 30 * MIN, {lastActivityAt: now - 2 * MIN, totalVotes: 0});
 
-      const result = sortRoomsByActivity([rwsDormant, rwsActive], now);
-      assertEquals(result[0].room.createdAt, now - 30 * MIN);
-      assertEquals(result[1].room.createdAt, now - 12 * HOUR);
+      const result = sortRoomsByActivity([dormantRoom, activeRoom], now);
+      assertEquals(result, [activeRoom, dormantRoom]);
     });
   });
 
   describe("Mixed scenarios", () => {
     it("ranks recently active > brand-new > dormant", () => {
       const now = Date.now();
-      // active: stmt 2 min ago (score ≈ 96)
-      // brandNew: no stmts, createdAt 10 min ago (score = 90)
-      // dormant: stmt 20 hrs ago (score ≈ 3)
-      const rwsActive = makeRoomWithStatements(now - 5 * HOUR, [makeStatement({ timestamp: now - 2 * MIN })]);
-      const rwsBrandNew = makeRoomWithStatements(now - 10 * MIN);
-      const rwsDormant = makeRoomWithStatements(now - 24 * HOUR, [makeStatement({ timestamp: now - 20 * HOUR })]);
+      const rwsActive = makeRoom(now - 5 * HOUR, { lastActivityAt: now - 2 * MIN });
+      const rwsBrandNew = makeRoom(now - 10 * MIN);
+      const rwsDormant = makeRoom(now - 24 * HOUR, { lastActivityAt: now - 20 * HOUR });
 
       const result = sortRoomsByActivity([rwsDormant, rwsBrandNew, rwsActive], now);
 
-      assertEquals(result[0].room.createdAt, now - 5 * HOUR);
-      assertEquals(result[1].room.createdAt, now - 10 * MIN);
-      assertEquals(result[2].room.createdAt, now - 24 * HOUR);
+      assertEquals(result, [rwsActive, rwsBrandNew, rwsDormant]);
     });
 
     it("revived old room jumps above newer inactive rooms", () => {
       const now = Date.now();
-      // revived: stmt 3 min ago (score ≈ 92)
-      // quietNewer: no stmts, 15 min old (score = 80)
-      // quietNew: no stmts, 30 min old (score = 60)
-      const rwsRevived = makeRoomWithStatements(now - 6 * HOUR, [makeStatement({ timestamp: now - 3 * MIN })]);
-      const rwsQuietNew = makeRoomWithStatements(now - 30 * MIN);
-      const rwsQuietNewer = makeRoomWithStatements(now - 15 * MIN);
+      const rwsRevived = makeRoom(now - 6 * HOUR, { lastActivityAt: now - 3 * MIN });
+      const rwsQuietNew = makeRoom(now - 30 * MIN);
+      const rwsQuietNewer = makeRoom(now - 15 * MIN);
 
       const result = sortRoomsByActivity([rwsQuietNew, rwsQuietNewer, rwsRevived], now);
 
-      assertEquals(result[0].room.createdAt, now - 6 * HOUR);
-      assertEquals(result[1].room.createdAt, now - 15 * MIN);
-      assertEquals(result[2].room.createdAt, now - 30 * MIN);
+      assertEquals(result, [rwsRevived, rwsQuietNewer, rwsQuietNew]);
     });
   });
 
   describe("Slicing", () => {
     it("caps output at 20 rooms", () => {
       const now = Date.now();
-      const rwsList = Array.from({ length: 25 }, (_, i) =>
-        makeRoomWithStatements(now - i * MIN)
+      const rooms = Array.from({ length: 25 }, (_, i) =>
+        makeRoom(now - i * MIN)
       );
 
-      const result = sortRoomsByActivity(rwsList, now);
+      const result = sortRoomsByActivity(rooms, now);
       assertEquals(result.length, 20);
     });
 
     it("returns the 20 most recently active when given more than 20", () => {
       const now = Date.now();
-      // index 0 most recent, index 24 oldest
-      const rwsList = Array.from({ length: 25 }, (_, i) =>
-        makeRoomWithStatements(now - i * MIN)
+      const rooms = Array.from({ length: 25 }, (_, i) =>
+        makeRoom(now - i * MIN)
       );
 
-      const result = sortRoomsByActivity(rwsList, now);
-      assertEquals(result[0].room.createdAt, now);
-      assertEquals(result[19].room.createdAt, now - 19 * MIN);
+      const result = sortRoomsByActivity(rooms, now);
+      assertEquals(result[0].createdAt, now);
+      assertEquals(result[19].createdAt, now - 19 * MIN);
     });
   });
 });
@@ -266,36 +179,34 @@ describe("sortRoomsByActivity", () => {
 describe("scoreRoom", () => {
   it("scores 120 when both signals are current", () => {
     const now = Date.now();
-    const createdAt = now;
-    const lastActivity = now;
-    const totalVotes = 0;
-    assertEquals(scoreRoom(createdAt, lastActivity, totalVotes, now), 120);
+    const room = makeRoom(now, { lastActivityAt: now, totalVotes: 0 });
+    assertEquals(scoreRoom(room, now), 120);
   });
 
   it("scores 60 at the 30-minute half-life", () => {
     const now = Date.now();
     const createdAt = now - 30 * MIN;
-    const lastActivity = now - 30 * MIN;
+    const lastActivityAt = now - 30 * MIN;
     const totalVotes = 0;
-    assertEquals(scoreRoom(createdAt, lastActivity, totalVotes, now), 60);
+    const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
+    assertEquals(scoreRoom(room, now), 60);
   });
 
   it("adds votes to the activity weight", () => {
     const now = Date.now();
     const createdAt = now;
-    const lastActivity = now;
+    const lastActivityAt = now;
     const totalVotes = 10;
-    // recencyScore(0) * (100 + 10 * 0.3) + recencyScore(0) * 20 = 103 + 20 = 123
-    assertEquals(scoreRoom(createdAt, lastActivity, totalVotes, now), 123);
+    const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
+    assertEquals(scoreRoom(room, now), 123);
   });
 
   it("treats lastActivity and createdAt as independent signals", () => {
     const now = Date.now();
     const createdAt = now - 60 * MIN;
-    const lastActivity = now;
+    const lastActivityAt = now;
     const totalVotes = 0;
-    // lastActivity = now → recencyScore(0) = 1; createdAt 60 min ago → recencyScore(60) = 1/3
-    // score = 1 * 100 + (1/3) * 20 ≈ 106.666...
-    assertAlmostEquals(scoreRoom(createdAt, lastActivity, totalVotes, now), 106 + 2 / 3, 1e-9);
+    const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
+    assertAlmostEquals(scoreRoom(room, now), 106 + 2 / 3, 1e-9);
   });
 });

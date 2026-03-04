@@ -136,13 +136,9 @@ export interface DebateRoom {
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
   youtubeCardSwiped?: boolean;
-  lastVoteAt?: number;
+  lastActivityAt?: number;
+  totalVotes?: number;
 }
-
-export type RoomWithStatements = {
-  room: DebateRoom;
-  statements: Statement[];
-};
 
 export type AnonCreatableRecords = "votes" | "statements" | "score";
 

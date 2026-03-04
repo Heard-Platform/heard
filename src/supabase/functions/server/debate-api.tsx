@@ -14,14 +14,11 @@ import {
   getStatementsForRoom,
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
-import { ONE_MIN_MS } from "./time-utils.ts";
 import { subheardApi } from "./subheard-api.tsx";
 import { roomApi } from "./room-api.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
 import {
-  getUserSession,
-  sendWelcomeEmail,
-  updateUserLastActive,
+  getUserSession, updateUserLastActive
 } from "./auth-api.tsx";
 import { generateId, getFrontendUrl } from "./utils.tsx";
 import type {
@@ -30,11 +27,11 @@ import type {
   Phase,
   SubPhase,
   DebateRoom,
-  Rant,
-  RoomWithStatements,
+  Rant
 } from "./types.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
-import { calculateVoteStats, countStatementVotes, processVote } from "./voting-utils.ts";
+import { calculateVoteStats, processVote } from "./voting-utils.ts";
+import { sortRoomsByActivity } from "./feed-utils.ts";
 
 const app = new Hono();
 
@@ -479,39 +476,6 @@ export const getActiveRooms = async (): Promise<DebateRoom[]> => {
   return allRooms.filter((r) => r.isActive);
 };
 
-export const recencyScore = (minutesAgo: number): number =>
-  1 / (1 + minutesAgo / 30);
-
-const ACTIVITY_WEIGHT = 100;
-const CREATION_WEIGHT = 20;
-const VOTE_WEIGHT = 0.3;
-
-export const scoreRoom = (
-  createdAt: number,
-  lastActivity: number,
-  totalVotes: number,
-  now: number,
-): number =>
-  recencyScore((now - lastActivity) / ONE_MIN_MS) * (ACTIVITY_WEIGHT + totalVotes * VOTE_WEIGHT) +
-  recencyScore((now - createdAt) / ONE_MIN_MS) * CREATION_WEIGHT;
-
-export const sortRoomsByActivity = (
-  roomStatements: RoomWithStatements[],
-  now: number = Date.now(),
-): RoomWithStatements[] =>
-  roomStatements
-    .map((rs) => {
-      const lastStatementAt = rs.statements.length > 0
-        ? Math.max(...rs.statements.map((s) => s.timestamp))
-        : 0;
-      const lastActivity = Math.max(lastStatementAt, rs.room.lastVoteAt ?? 0) || rs.room.createdAt;
-      const totalVotes = rs.statements.reduce((sum, s) => sum + countStatementVotes(s), 0);
-      return { rs, score: scoreRoom(rs.room.createdAt, lastActivity, totalVotes, now) };
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 20)
-    .map(({ rs }) => rs);
-
 // Shared prompt rules for rant statement extraction
 const RANT_EXTRACTION_RULES = `STRICT Rules:
 - Use the author's actual words and phrases whenever possible
@@ -885,14 +849,20 @@ app.post(
         );
       }
 
-      // Auto-join user to room if they're not already a participant
-      if (!room.participants.includes(userId)) {
-        room.participants.push(userId);
+      async function updateRoom(room: DebateRoom) {
+        // Auto-join user to room if they're not already a participant
+        if (!room.participants.includes(userId)) {
+          room.participants.push(userId);
+          console.log(
+            `Auto-added user ${userId} to room ${roomId} via statement submission`,
+          );
+        }
+        
+        room.lastActivityAt = Date.now();
         await saveDebateRoom(room);
-        console.log(
-          `Auto-added user ${userId} to room ${roomId} via statement submission`,
-        );
       }
+
+      await updateRoom(room);
 
       // Convert phase to round number
       const getRoundNumber = (phase: Phase): number => {
@@ -1351,14 +1321,8 @@ app.get(
         }));
       }
 
-      rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
-      const roomsWithStatements = await Promise.all(
-        rooms.map(async (room) => ({
-          room,
-          statements: await getStatementsForRoom(room.id),
-        })),
-      );
-      rooms = sortRoomsByActivity(roomsWithStatements).map(({ room }) => room);
+      rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 100);
+      rooms = sortRoomsByActivity(rooms);
 
       return c.json({ rooms });
     } catch (error) {
