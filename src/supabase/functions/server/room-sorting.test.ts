@@ -50,6 +50,41 @@ describe("recencyScore", () => {
   });
 });
 
+describe("scoreRoom", () => {
+  it("scores 120 when both signals are current", () => {
+    const now = Date.now();
+    const room = makeRoom(now, { lastActivityAt: now, totalVotes: 0 });
+    assertEquals(scoreRoom(room, now), 120);
+  });
+
+  it("scores 60 at the 30-minute half-life", () => {
+    const now = Date.now();
+    const createdAt = now - 30 * MIN;
+    const lastActivityAt = now - 30 * MIN;
+    const totalVotes = 0;
+    const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
+    assertEquals(scoreRoom(room, now), 60);
+  });
+
+  it("adds votes to the activity weight", () => {
+    const now = Date.now();
+    const createdAt = now;
+    const lastActivityAt = now;
+    const totalVotes = 10;
+    const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
+    assertEquals(scoreRoom(room, now), 123);
+  });
+
+  it("treats lastActivity and createdAt as independent signals", () => {
+    const now = Date.now();
+    const createdAt = now - 60 * MIN;
+    const lastActivityAt = now;
+    const totalVotes = 0;
+    const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
+    assertAlmostEquals(scoreRoom(room, now), 106 + 2 / 3, 1e-9);
+  });
+});
+
 describe("sortRoomsByActivity", () => {
   describe("Edge cases", () => {
     it("returns empty array for empty input", () => {
@@ -101,6 +136,15 @@ describe("sortRoomsByActivity", () => {
       const now = Date.now();
       const newRoom = makeRoom(now);
       const olderRoom = makeRoom(now - 24 * HOUR);
+
+      const result = sortRoomsByActivity([olderRoom, newRoom], now);
+      assertEquals(result, [newRoom, olderRoom]);
+    });
+
+    it("puts very new room above huge slightly dormant older room", () => {
+      const now = Date.now();
+      const newRoom = makeRoom(now - 5 * MIN);
+      const olderRoom = makeRoom(now - 48 * HOUR, { lastActivityAt: now - 3 * HOUR, totalVotes: 300 });
 
       const result = sortRoomsByActivity([olderRoom, newRoom], now);
       assertEquals(result, [newRoom, olderRoom]);
@@ -173,40 +217,5 @@ describe("sortRoomsByActivity", () => {
       assertEquals(result[0].createdAt, now);
       assertEquals(result[19].createdAt, now - 19 * MIN);
     });
-  });
-});
-
-describe("scoreRoom", () => {
-  it("scores 120 when both signals are current", () => {
-    const now = Date.now();
-    const room = makeRoom(now, { lastActivityAt: now, totalVotes: 0 });
-    assertEquals(scoreRoom(room, now), 120);
-  });
-
-  it("scores 60 at the 30-minute half-life", () => {
-    const now = Date.now();
-    const createdAt = now - 30 * MIN;
-    const lastActivityAt = now - 30 * MIN;
-    const totalVotes = 0;
-    const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
-    assertEquals(scoreRoom(room, now), 60);
-  });
-
-  it("adds votes to the activity weight", () => {
-    const now = Date.now();
-    const createdAt = now;
-    const lastActivityAt = now;
-    const totalVotes = 10;
-    const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
-    assertEquals(scoreRoom(room, now), 123);
-  });
-
-  it("treats lastActivity and createdAt as independent signals", () => {
-    const now = Date.now();
-    const createdAt = now - 60 * MIN;
-    const lastActivityAt = now;
-    const totalVotes = 0;
-    const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
-    assertAlmostEquals(scoreRoom(room, now), 106 + 2 / 3, 1e-9);
   });
 });
