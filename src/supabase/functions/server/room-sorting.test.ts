@@ -17,7 +17,6 @@ const makeRoom = (createdAt: number, overrides: Partial<DebateRoom> = {}): Debat
   isActive: true,
   createdAt,
   mode: "realtime",
-  lastActivityAt: 0,
   totalVotes: 0,
   ...overrides,
 });
@@ -115,9 +114,7 @@ describe("sortRoomsByActivity", () => {
     it("falls back to createdAt when no activity", () => {
       const now = Date.now();
       const olderRoom = makeRoom(now - 2 * HOUR);
-      olderRoom.lastActivityAt = undefined;
       const newerRoom = makeRoom(now - 1 * HOUR);
-      newerRoom.lastActivityAt = undefined;
 
       const result = sortRoomsByActivity([olderRoom, newerRoom], now);
       assertEquals(result, [newerRoom, olderRoom]);
