@@ -1,4 +1,4 @@
-import { DebateRoom, Statement, SubHeard } from "../types";
+import { DebateRoom, Statement, SubHeard, UserSession } from "../types";
 
 export const mockRooms: DebateRoom[] = [
   {
@@ -188,3 +188,13 @@ export const mockCommunities: SubHeard[] = [
     hostOnlyPosting: false,
   },
 ];
+
+export const mockUser: UserSession = {
+  id: "user1",
+  nickname: "Debater123",
+  email: "test@test.com",
+  score: 1500,
+  streak: 5,
+  lastActive: Date.now(),
+  createdAt: Date.now() - 30 * 24 * 60 * 60 * 1000,
+};
