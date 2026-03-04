@@ -318,7 +318,6 @@ export function RoomCard({
                   <div className="space-y-4">
                     <InProgressResults
                       statements={statements}
-                      currentUserId={user.id}
                       debateTitle={room.topic}
                       isAnonymous={!!user?.isAnonymous}
                       onFollowDiscussion={() =>
