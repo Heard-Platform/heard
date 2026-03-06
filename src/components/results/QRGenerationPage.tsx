@@ -20,69 +20,107 @@ export function QRGenerationPage({ statement, onClose }: QRGenerationPageProps) 
     { vote: "disagree", label: "Disagree", color: "bg-red-500", suffix: "d" },
   ] as const;
 
-  const getFlyerUrl = (vote: string) => {
-    return `${baseUrl}/flyer/${roomId}/${statement.id}/${vote}`;
+  const getFlyerUrl = (vote: string, flyerGroup: number) => {
+    return `${baseUrl}/flyer/${roomId}/${statement.id}/${vote}/${flyerGroup}`;
   };
 
   const getImagePath = (rowIndex: number, suffix: string) => {
     return `${baseImageUrl}/${rowIndex + 1}${suffix}.png`;
   };
 
-  const downloadQRCode = (rowIndex: number, vote: string, suffix: string) => {
-    const svg = document.getElementById(`qr-${rowIndex}-${vote}`);
-    if (!svg) return;
+  const downloadQRCodeAsBlob = async (rowIndex: number, vote: string, suffix: string): Promise<{ blob: Blob; filename: string } | null> => {
+    return new Promise((resolve) => {
+      const svg = document.getElementById(`qr-${rowIndex}-${vote}`);
+      if (!svg) {
+        resolve(null);
+        return;
+      }
 
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(null);
+        return;
+      }
 
-    canvas.width = 180;
-    canvas.height = 180;
+      canvas.width = 180;
+      canvas.height = 180;
 
-    const svgClone = svg.cloneNode(true) as SVGElement;
-    const imageElements = svgClone.querySelectorAll('image');
-    imageElements.forEach(img => img.remove());
+      const svgClone = svg.cloneNode(true) as SVGElement;
+      const imageElements = svgClone.querySelectorAll('image');
+      imageElements.forEach(img => img.remove());
 
-    const svgData = new XMLSerializer().serializeToString(svgClone);
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    const svgUrl = URL.createObjectURL(svgBlob);
+      const svgData = new XMLSerializer().serializeToString(svgClone);
+      const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+      const svgUrl = URL.createObjectURL(svgBlob);
 
-    const qrImg = new Image();
-    qrImg.crossOrigin = "anonymous";
+      const qrImg = new Image();
+      qrImg.crossOrigin = "anonymous";
 
-    qrImg.onload = () => {
-      ctx.drawImage(qrImg, 0, 0, 180, 180);
-      
-      const overlayImg = new Image();
-      overlayImg.crossOrigin = "anonymous";
-      
-      overlayImg.onload = () => {
-        const overlayWidth = 40;
-        const overlayHeight = 25;
-        const x = (180 - overlayWidth) / 2;
-        const y = (180 - overlayHeight) / 2;
+      qrImg.onload = () => {
+        ctx.drawImage(qrImg, 0, 0, 180, 180);
         
-        ctx.globalAlpha = 0.5;
-        ctx.drawImage(overlayImg, x, y, overlayWidth, overlayHeight);
-        ctx.globalAlpha = 1.0;
+        const overlayImg = new Image();
+        overlayImg.crossOrigin = "anonymous";
         
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const pngUrl = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = pngUrl;
-            link.download = `qr-group-${rowIndex + 1}${suffix}.png`;
-            link.click();
-            URL.revokeObjectURL(pngUrl);
+        overlayImg.onload = () => {
+          const overlayWidth = 40;
+          const overlayHeight = 25;
+          const x = (180 - overlayWidth) / 2;
+          const y = (180 - overlayHeight) / 2;
+          
+          ctx.globalAlpha = 0.5;
+          ctx.drawImage(overlayImg, x, y, overlayWidth, overlayHeight);
+          ctx.globalAlpha = 1.0;
+          
+          canvas.toBlob((blob) => {
             URL.revokeObjectURL(svgUrl);
-          }
-        });
-      };
-      
-      overlayImg.src = getImagePath(rowIndex, suffix);
-    };
+            if (blob) {
+              resolve({ blob, filename: `qr-group-${rowIndex + 1}-${suffix}.png` });
+            } else {
+              resolve(null);
+            }
+          });
+        };
 
-    qrImg.src = svgUrl;
+        overlayImg.onerror = () => {
+          URL.revokeObjectURL(svgUrl);
+          resolve(null);
+        };
+        
+        overlayImg.src = getImagePath(rowIndex, suffix);
+      };
+
+      qrImg.onerror = () => {
+        URL.revokeObjectURL(svgUrl);
+        resolve(null);
+      };
+
+      qrImg.src = svgUrl;
+    });
+  };
+
+  const downloadAllQRCodes = async () => {
+    const downloads: Promise<{ blob: Blob; filename: string } | null>[] = [];
+    
+    for (let rowIndex = 0; rowIndex < 6; rowIndex++) {
+      for (const { vote, suffix } of voteOptions) {
+        downloads.push(downloadQRCodeAsBlob(rowIndex, vote, suffix));
+      }
+    }
+
+    const results = await Promise.all(downloads);
+    
+    results.forEach((result) => {
+      if (result) {
+        const pngUrl = URL.createObjectURL(result.blob);
+        const link = document.createElement("a");
+        link.href = pngUrl;
+        link.download = result.filename;
+        link.click();
+        URL.revokeObjectURL(pngUrl);
+      }
+    });
   };
 
   return (
@@ -107,7 +145,19 @@ export function QRGenerationPage({ statement, onClose }: QRGenerationPageProps) 
           </Button>
         </div>
 
-        <div className="space-y-6">
+        <div className="mt-8 text-center text-gray-600">
+          <div className="flex flex-col items-center gap-4">
+            <Button
+              variant="default"
+              size="lg"
+              onClick={downloadAllQRCodes}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download All QR Codes
+            </Button>
+          </div>
+        </div>
+        <div className="hidden">
           {Array.from({ length: 6 }).map((_, rowIndex) => (
             <div key={rowIndex} className="space-y-3">
               <div className="text-xl font-bold text-gray-900">
@@ -115,7 +165,7 @@ export function QRGenerationPage({ statement, onClose }: QRGenerationPageProps) 
               </div>
               <div className="grid grid-cols-3 gap-6 pb-6 border-b-2 border-gray-200 last:border-b-0">
                 {voteOptions.map(({ vote, label, color, suffix }) => {
-                  const url = getFlyerUrl(vote);
+                  const url = getFlyerUrl(vote, rowIndex + 1);
                   const imagePath = getImagePath(rowIndex, suffix);
                   return (
                     <div
@@ -140,26 +190,12 @@ export function QRGenerationPage({ statement, onClose }: QRGenerationPageProps) 
                           }}
                         />
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => downloadQRCode(rowIndex, vote, suffix)}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download
-                      </Button>
                     </div>
                   );
                 })}
               </div>
             </div>
           ))}
-        </div>
-
-        <div className="mt-8 text-center text-gray-600">
-          <p className="text-sm">
-            Print this page to distribute QR codes for voting
-          </p>
         </div>
       </div>
     </div>

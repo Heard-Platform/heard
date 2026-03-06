@@ -196,8 +196,14 @@ function AppContent() {
         window.location.pathname.startsWith("/terms");
       const isPrivacyRoute =
         window.location.pathname.startsWith("/privacy");
+
       const isOsRoute =
         window.location.pathname.startsWith("/os");
+      const isPotomacRoute =
+        window.location.pathname.startsWith("/potomac");
+      const isMarketRoute =
+        window.location.pathname.startsWith("/market");
+
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl =
@@ -216,9 +222,18 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
-      } else if (isOsRoute) {
-        const hardcodedRoomId = "1m6smp6xd4jmme72uls";
-        if (user) {
+      } else if (isOsRoute || isPotomacRoute || isMarketRoute) {
+        const hardcodedRoomId = isOsRoute
+          ? "1m6smp6xd4jmme72uls"
+          : isPotomacRoute
+          ? "xyoogx17vkommec3f52"
+          : isMarketRoute
+          ? "o0tmjop3hdlmmebg3im"
+          : null;
+
+        if (!hardcodedRoomId) {
+          toast.error("Invalid route");
+        } else if (user) {
           setTargetRoomId(hardcodedRoomId);
         } else {
           autoJoinAsAnonymous(hardcodedRoomId);
