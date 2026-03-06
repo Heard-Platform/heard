@@ -25,11 +25,17 @@ export function UsersTable({
   const [hideTestUsers, setHideTestUsers] = useState(false);
   const [hideAnonUsers, setHideAnonUsers] = useState(false);
 
-  const filteredUsers = users.filter(user => {
-    if (hideTestUsers && user.isTestUser) return false;
-    if (hideAnonUsers && user.isAnonymous) return false;
-    return true;
-  });
+  const filteredUsers = users
+    .filter(user => {
+      if (hideTestUsers && user.isTestUser) return false;
+      if (hideAnonUsers && user.isAnonymous) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const aTime = a.createdAt || 0;
+      const bTime = b.createdAt || 0;
+      return bTime - aTime;
+    });
 
   return (
     <Card className="p-6">

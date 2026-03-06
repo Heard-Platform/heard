@@ -196,6 +196,8 @@ function AppContent() {
         window.location.pathname.startsWith("/terms");
       const isPrivacyRoute =
         window.location.pathname.startsWith("/privacy");
+      const isOsRoute =
+        window.location.pathname.startsWith("/os");
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl =
@@ -214,6 +216,13 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
+      } else if (isOsRoute) {
+        const hardcodedRoomId = "1m6smp6xd4jmme72uls";
+        if (user) {
+          setTargetRoomId(hardcodedRoomId);
+        } else {
+          autoJoinAsAnonymous(hardcodedRoomId);
+        }
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (roomIdFromUrl) {
