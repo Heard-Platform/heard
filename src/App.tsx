@@ -75,7 +75,12 @@ function AppContent() {
     toast.success("Signed in successfully!");
   };
 
-  const handleFlyerJoin = async (flyerData: { flyerId: string; statementId: string; vote: VoteType }) => {
+  const handleFlyerJoin = async (flyerData: {
+    flyerId: string;
+    statementId: string;
+    vote: VoteType;
+    flyerGroup?: number;
+  }) => {
     setIsJoiningAnonymously(true);
     const existingUserId = getUserId();
 
@@ -83,7 +88,8 @@ function AppContent() {
       flyerData.flyerId,
       flyerData.statementId,
       flyerData.vote,
-      existingUserId || undefined
+      existingUserId || undefined,
+      flyerData.flyerGroup,
     );
 
     if (!response || !response.user) {

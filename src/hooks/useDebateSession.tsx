@@ -56,6 +56,7 @@ interface DebateSessionContextType {
     statementId: string,
     vote: VoteType,
     userId?: string,
+    flyerGroup?: number,
   ) => Promise<FlyerVoteResponse | null>;
   submitFlyerEmail: (email: string) => Promise<ApiResponse | null>;
   markChanceCardSwiped: (
@@ -414,9 +415,10 @@ export function DebateSessionProvider(
       statementId: string,
       vote: VoteType,
       userId?: string,
+      flyerGroup?: number,
     ) => {
       const response = await safelyMakeApiCall<FlyerVoteResponse>(() =>
-        api.voteViaFlyer(flyerId, statementId, vote, userId),
+        api.voteViaFlyer(flyerId, statementId, vote, userId, flyerGroup),
       );
       if (response && response.success && response.data) {
         setUserAndSession(
