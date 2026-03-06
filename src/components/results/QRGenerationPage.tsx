@@ -2,6 +2,7 @@ import { X, Download } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "../ui/button";
 import type { Statement } from "../../types";
+import { useState } from "react";
 
 const baseImageUrl = "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/qr-keys";
 
@@ -13,6 +14,7 @@ interface QRGenerationPageProps {
 export function QRGenerationPage({ statement, onClose }: QRGenerationPageProps) {
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
   const roomId = statement.roomId;
+  const [currentGroupOffset, setCurrentGroupOffset] = useState(0);
 
   const voteOptions = [
     { vote: "agree", label: "Agree", color: "bg-green-500", suffix: "a" },
@@ -103,7 +105,10 @@ export function QRGenerationPage({ statement, onClose }: QRGenerationPageProps) 
   const downloadAllQRCodes = async () => {
     const downloads: Promise<{ blob: Blob; filename: string } | null>[] = [];
     
-    for (let rowIndex = 0; rowIndex < 6; rowIndex++) {
+    const startGroup = currentGroupOffset;
+    const endGroup = Math.min(startGroup + 3, 6);
+    
+    for (let rowIndex = startGroup; rowIndex < endGroup; rowIndex++) {
       for (const { vote, suffix } of voteOptions) {
         downloads.push(downloadQRCodeAsBlob(rowIndex, vote, suffix));
       }
@@ -121,6 +126,9 @@ export function QRGenerationPage({ statement, onClose }: QRGenerationPageProps) 
         URL.revokeObjectURL(pngUrl);
       }
     });
+
+    const nextOffset = endGroup >= 6 ? 0 : endGroup;
+    setCurrentGroupOffset(nextOffset);
   };
 
   return (
@@ -153,7 +161,7 @@ export function QRGenerationPage({ statement, onClose }: QRGenerationPageProps) 
               onClick={downloadAllQRCodes}
             >
               <Download className="w-4 h-4 mr-2" />
-              Download All QR Codes
+              Download Groups {currentGroupOffset + 1}-{Math.min(currentGroupOffset + 3, 6)} QR Codes
             </Button>
           </div>
         </div>
