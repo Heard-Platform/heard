@@ -20,8 +20,8 @@ import {
   SheetTrigger,
 } from "../ui/sheet";
 import type { Statement, VoteType, SortBy } from "../../types";
-import { QRFlyerDialog } from "./QRFlyerDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import { QRGenerationPage } from "./QRGenerationPage";
 
 interface VotesDrawerProps {
   statements: Statement[];
@@ -182,7 +182,18 @@ export function VotesDrawer({
     return 0;
   });
 
+  const handleOpenQrGenerator = (statement: Statement) => {
+    setIsSheetOpen(false);
+    setQrDialogStatement(statement);
+  };
+
+  const handleCloseQrGenerator = () => {
+    setIsSheetOpen(true);
+    setQrDialogStatement(null);
+  }
+
   return (
+    <>
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
       <SheetTrigger asChild>
         <Button
@@ -257,7 +268,7 @@ export function VotesDrawer({
                       size="sm"
                       variant="ghost"
                       className="absolute top-2 right-2 h-7 w-7 p-0"
-                      onClick={() => setQrDialogStatement(statement)}
+                      onClick={() => handleOpenQrGenerator(statement)}
                     >
                       <LinkIcon className="w-4 h-4" />
                     </Button>
@@ -315,13 +326,13 @@ export function VotesDrawer({
         </div>
       </SheetContent>
 
+      </Sheet>
       {qrDialogStatement &&
-        <QRFlyerDialog
+        <QRGenerationPage
           statement={qrDialogStatement}
-          isOpen={!!qrDialogStatement}
-          onClose={() => setQrDialogStatement(null)}
+          onClose={() => handleCloseQrGenerator()}
         />
       }
-    </Sheet>
+    </>
   );
 }

@@ -29,6 +29,7 @@ import { FeedbackSheetStory } from "../stories/FeedbackSheet.story";
 import { CommunityExplorerDialogStory } from "../stories/CommunityExplorerDialog.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
+import { Story as QRGeneratorPageStory } from "../stories/QRGenerationPage.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -96,6 +97,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="swipeable-statement-stack">Swipeable Statement Stack</TabsTrigger>
               <TabsTrigger value="metrics-circle">Metrics Circle</TabsTrigger>
               <TabsTrigger value="time-left-badge">Time Left Badge</TabsTrigger>
+              <TabsTrigger value="qr-generator">QR Generator Page</TabsTrigger>
               <TabsTrigger value="qr-scan-result-dialog">QR Scan Result Dialog</TabsTrigger>
               <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
               <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
@@ -151,6 +153,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="time-left-badge">
               <TimeLeftBadgeStory />
+            </TabsContent>
+            <TabsContent value="qr-generator">
+              <QRGeneratorPageStory />
             </TabsContent>
             <TabsContent value="qr-scan-result-dialog">
               <QRScanResultDialogStory />

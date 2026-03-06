@@ -324,6 +324,7 @@ class ApiClient extends BaseApiClient {
     statementId: string,
     vote: VoteType,
     userId?: string,
+    flyerGroup?: number,
   ) {
     const environment = getEnvironment();
     return this.request<FlyerVoteResponse>("/flyer/vote", {
@@ -334,6 +335,7 @@ class ApiClient extends BaseApiClient {
         vote,
         userId,
         environment,
+        flyerGroup,
       }),
     });
   }
