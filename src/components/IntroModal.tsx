@@ -205,7 +205,7 @@ export function IntroModal({
                 </motion.div>
                 
                 <p className="text-base text-white/95 font-medium drop-shadow-md max-w-sm mx-auto leading-relaxed">
-                  Heard is an app for making conversations, debates, and decision-making fun.
+                  Heard is a platform for communities to vote on ideas, topics, and questions, and have fun doing it!
                 </p>
                 
                 <p className="text-sm text-white/90">

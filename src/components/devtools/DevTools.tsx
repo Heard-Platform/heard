@@ -4,6 +4,7 @@ import { X, Wrench } from "lucide-react";
 import { EmailPreviews } from "./EmailPreviews";
 import { EnrichmentTab } from "./EnrichmentTab";
 import { PostsTab } from "./PostsTab";
+import { FlyersTab } from "./FlyersTab";
 import { TabButton } from "./TabButton";
 import {
   parseDevToolsTabFromUrl,
@@ -16,7 +17,7 @@ interface DevToolsProps {
   onExit?: () => void;
 }
 
-type TabType = "clustering" | "email" | "enrichment" | "posts";
+type TabType = "clustering" | "email" | "enrichment" | "posts" | "flyers";
 
 export function DevTools({ user, onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
@@ -72,6 +73,11 @@ export function DevTools({ user, onExit }: DevToolsProps) {
                 label="Posts"
                 onClick={() => handleTabChange("posts")}
               />
+              <TabButton
+                active={activeTab === "flyers"}
+                label="Flyers"
+                onClick={() => handleTabChange("flyers")}
+              />
             </div>
           </div>
 
@@ -87,6 +93,7 @@ export function DevTools({ user, onExit }: DevToolsProps) {
             {activeTab === "email" && <EmailPreviews user={user} />}
             {activeTab === "enrichment" && <EnrichmentTab />}
             {activeTab === "posts" && <PostsTab />}
+            {activeTab === "flyers" && <FlyersTab />}
           </div>
         </div>
       </div>

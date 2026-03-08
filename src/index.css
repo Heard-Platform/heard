@@ -149,6 +149,7 @@
     --color-cyan-100: oklch(.956 .045 203.388);
     --color-cyan-300: oklch(.865 .127 207.078);
     --color-cyan-500: oklch(.715 .143 215.221);
+    --color-cyan-600: oklch(.609 .126 221.723);
     --color-cyan-700: oklch(.52 .105 223.128);
     --color-sky-50: oklch(.977 .013 236.62);
     --color-sky-100: oklch(.951 .026 236.824);
@@ -170,6 +171,7 @@
     --color-indigo-700: oklch(.457 .24 277.023);
     --color-violet-50: oklch(.969 .016 293.756);
     --color-violet-100: oklch(.943 .029 294.588);
+    --color-violet-600: oklch(.541 .281 293.009);
     --color-violet-700: oklch(.491 .27 292.581);
     --color-purple-50: oklch(.977 .014 308.299);
     --color-purple-100: oklch(.946 .033 307.174);
@@ -224,7 +226,6 @@
     --container-md: 28rem;
     --container-lg: 32rem;
     --container-2xl: 42rem;
-    --container-3xl: 48rem;
     --container-4xl: 56rem;
     --container-6xl: 72rem;
     --container-7xl: 80rem;
@@ -1408,10 +1409,6 @@
     max-width: var(--container-2xl);
   }
 
-  .max-w-3xl {
-    max-width: var(--container-3xl);
-  }
-
   .max-w-4xl {
     max-width: var(--container-4xl);
   }
@@ -1430,6 +1427,10 @@
 
   .max-w-\[160px\] {
     max-width: 160px;
+  }
+
+  .max-w-\[1200px\] {
+    max-width: 1200px;
   }
 
   .max-w-\[calc\(100\%-2rem\)\] {
@@ -3671,10 +3672,6 @@
     overflow-wrap: break-word;
   }
 
-  .break-all {
-    word-break: break-all;
-  }
-
   .whitespace-normal {
     white-space: normal;
   }
@@ -3737,6 +3734,10 @@
 
   .text-cyan-300 {
     color: var(--color-cyan-300);
+  }
+
+  .text-cyan-600 {
+    color: var(--color-cyan-600);
   }
 
   .text-cyan-700 {
@@ -4007,6 +4008,10 @@
 
   .text-transparent {
     color: #0000;
+  }
+
+  .text-violet-600 {
+    color: var(--color-violet-600);
   }
 
   .text-violet-700 {
@@ -4617,6 +4622,11 @@
     border-color: var(--color-white);
   }
 
+  .last\:border-b-0:last-child {
+    border-bottom-style: var(--tw-border-style);
+    border-bottom-width: 0;
+  }
+
   @media (hover: hover) {
     .hover\:scale-\[1\.02\]:hover {
       scale: 1.02;
@@ -5112,12 +5122,6 @@
   @media (hover: hover) {
     .hover\:text-green-900:hover {
       color: var(--color-green-900);
-    }
-  }
-
-  @media (hover: hover) {
-    .hover\:text-purple-700:hover {
-      color: var(--color-purple-700);
     }
   }
 
@@ -6243,6 +6247,15 @@
     justify-content: space-between;
     align-items: center;
     display: flex;
+  }
+
+  .heard-link {
+    color: #9333ea;
+    transition: color .15s;
+  }
+
+  .heard-link:hover {
+    color: #7e22ce;
   }
 }
 

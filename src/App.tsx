@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { UnsubscribePage } from "./components/UnsubscribePage";
 import { TermsOfServicePage } from "./screens/TermsOfServicePage";
+import { PrivacyPolicyPage } from "./screens/PrivacyPolicyPage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
@@ -46,6 +47,7 @@ function AppContent() {
   const [showDevTools, setShowDevTools] = useState(false);
   const [showUnsubscribe, setShowUnsubscribe] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
 
@@ -73,7 +75,12 @@ function AppContent() {
     toast.success("Signed in successfully!");
   };
 
-  const handleFlyerJoin = async (flyerData: { flyerId: string; statementId: string; vote: VoteType }) => {
+  const handleFlyerJoin = async (flyerData: {
+    flyerId: string;
+    statementId: string;
+    vote: VoteType;
+    flyerGroup?: number;
+  }) => {
     setIsJoiningAnonymously(true);
     const existingUserId = getUserId();
 
@@ -81,7 +88,8 @@ function AppContent() {
       flyerData.flyerId,
       flyerData.statementId,
       flyerData.vote,
-      existingUserId || undefined
+      existingUserId || undefined,
+      flyerData.flyerGroup,
     );
 
     if (!response || !response.user) {
@@ -186,6 +194,16 @@ function AppContent() {
         window.location.pathname.startsWith("/unsubscribe");
       const isTermsRoute =
         window.location.pathname.startsWith("/terms");
+      const isPrivacyRoute =
+        window.location.pathname.startsWith("/privacy");
+
+      const isOsRoute =
+        window.location.pathname.startsWith("/os");
+      const isPotomacRoute =
+        window.location.pathname.startsWith("/potomac");
+      const isMarketRoute =
+        window.location.pathname.startsWith("/market");
+
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl =
@@ -204,6 +222,22 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
+      } else if (isOsRoute || isPotomacRoute || isMarketRoute) {
+        const hardcodedRoomId = isOsRoute
+          ? "1m6smp6xd4jmme72uls"
+          : isPotomacRoute
+          ? "xyoogx17vkommec3f52"
+          : isMarketRoute
+          ? "o0tmjop3hdlmmebg3im"
+          : null;
+
+        if (!hardcodedRoomId) {
+          toast.error("Invalid route");
+        } else if (user) {
+          setTargetRoomId(hardcodedRoomId);
+        } else {
+          autoJoinAsAnonymous(hardcodedRoomId);
+        }
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (roomIdFromUrl) {
@@ -216,6 +250,8 @@ function AppContent() {
         setCurrentSubHeard(subHeardFromUrl);
       } else if (isTermsRoute) {
         setShowTerms(true);
+      } else if (isPrivacyRoute) {
+        setShowPrivacy(true);
       }
       setHasCheckedUrl(true);
     }
@@ -406,6 +442,10 @@ function AppContent() {
 
   if (showTerms) {
     return <TermsOfServicePage />;
+  }
+
+  if (showPrivacy) {
+    return <PrivacyPolicyPage />;
   }
 
   if (!user || loading || isJoiningAnonymously) {

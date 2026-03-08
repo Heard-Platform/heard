@@ -374,11 +374,8 @@ export function VineNavigator({
                   <motion.img
                     src={baseMonkey}
                     alt={`${presence.userId} monkey`}
-                    className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
+                    className="w-full h-full object-contain drop-shadow-lg"
                     style={{ scaleX: -1 }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowMonkeyInfo(true)}
                   />
 
                   <div className="absolute -right-2 top-1/2 transform translate-x-full -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">

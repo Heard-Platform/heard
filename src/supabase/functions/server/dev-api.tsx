@@ -8,6 +8,7 @@ import { DebateRoom } from "./types.tsx";
 import { generateId } from "./utils.tsx";
 import { API_URL_PREFIX } from "./constants.tsx";
 import { getAllDebates } from "./kv-utils.tsx";
+import { getAllRealUsers, getDebate } from "./kv-utils.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
@@ -164,6 +165,44 @@ app.get(
       return { posts: sortedPosts };
     },
     "Failed to fetch posts"
+  )
+);
+
+app.get(
+  `${API_URL_PREFIX}/dev/flyer-stats`,
+  defineRoute(
+    {},
+    async () => {
+      const users = await getAllRealUsers();
+      
+      const flyerRoomData: Record<string, { topic: string; groups: Record<number, number>; lastUserCreated: number }> = {};
+      
+      for (const user of users) {
+        if (user.flyerId) {
+          if (!flyerRoomData[user.flyerId]) {
+            const room = await getDebate(user.flyerId);
+            flyerRoomData[user.flyerId] = {
+              topic: room?.topic || user.flyerId,
+              groups: {},
+              lastUserCreated: 0
+            };
+          }
+          
+          const group = user.flyerGroup || 0;
+          if (!flyerRoomData[user.flyerId].groups[group]) {
+            flyerRoomData[user.flyerId].groups[group] = 0;
+          }
+          flyerRoomData[user.flyerId].groups[group]++;
+          
+          if (user.createdAt && user.createdAt > flyerRoomData[user.flyerId].lastUserCreated) {
+            flyerRoomData[user.flyerId].lastUserCreated = user.createdAt;
+          }
+        }
+      }
+      
+      return { flyerRoomData };
+    },
+    "Failed to fetch flyer stats"
   )
 );
 

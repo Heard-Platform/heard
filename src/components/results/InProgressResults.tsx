@@ -7,7 +7,6 @@ import type { Statement, VoteType } from "../../types";
 
 interface InProgressResultsProps {
   statements: Statement[];
-  currentUserId?: string;
   debateTitle: string;
   isAnonymous?: boolean;
   onFollowDiscussion?: () => void;
@@ -19,7 +18,6 @@ interface InProgressResultsProps {
 
 export function InProgressResults({
   statements,
-  currentUserId,
   debateTitle,
   isAnonymous,
   onFollowDiscussion,
@@ -80,7 +78,6 @@ export function InProgressResults({
               </motion.div>
               <VotesDrawer
                 statements={statements}
-                currentUserId={currentUserId}
                 debateTitle={debateTitle}
                 onChangeVote={onChangeVote}
               />

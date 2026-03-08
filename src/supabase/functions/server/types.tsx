@@ -22,10 +22,17 @@ export interface User {
   createdAt: number;
   isAnonymous?: boolean;
   flyerId?: string;
+  flyerGroup?: number;
   convertedFromAnonAt?: number;
   createdInEnvironment?: string;
   tosAgreedToAt?: number;
   tosVersion?: string;
+  privacyPolicyAgreedToAt?: number;
+  privacyPolicyVersion?: string;
+  ipAddress?: string;
+  fingerprint?: string;
+  userAgent?: string;
+  webdriver?: boolean;
 }
 
 export type MagicLinkRecord = {

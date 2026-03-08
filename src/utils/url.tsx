@@ -39,7 +39,7 @@ export const parseAnonymousLinkIdFromUrl = (): string | null => {
   return parseFromUrl('join');
 }
 
-export const parseFlyerDataFromUrl = (): { flyerId: string; statementId: string; vote: VoteType } | null => {
+export const parseFlyerDataFromUrl = (): { flyerId: string; statementId: string; vote: VoteType; flyerGroup?: number } | null => {
   if (typeof window === 'undefined') return null
   
   const pathParts = window.location.pathname.split('/')
@@ -48,10 +48,12 @@ export const parseFlyerDataFromUrl = (): { flyerId: string; statementId: string;
     const vote = pathParts[4].toLowerCase()
     const validVotes: VoteType[] = ['agree', 'disagree', 'pass', 'super_agree']
     if (validVotes.includes(vote as VoteType)) {
+      const flyerGroup = pathParts[5] ? parseInt(pathParts[5]) : undefined // CN-6
       return {
-        flyerId: pathParts[2],
         statementId: pathParts[3],
-        vote: vote as VoteType
+        vote: vote as VoteType,
+        flyerId: pathParts[2],
+        flyerGroup,
       }
     }
   }
