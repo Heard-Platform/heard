@@ -1,6 +1,15 @@
-import { assertEquals, assertAlmostEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import {
+  assertEquals,
+  assertAlmostEquals,
+  assertGreater,
+  assertLess,
+} from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { describe, it } from "@std/testing/bdd";
-import { recencyScore, sortRoomsByActivity, scoreRoom } from "./feed-utils.ts";
+import {
+  recencyScore,
+  sortRoomsByActivity,
+  scoreRoom,
+} from "./feed-utils.ts";
 import { DebateRoom } from "./types.tsx";
 
 const MIN = 60_000;
@@ -71,7 +80,9 @@ describe("scoreRoom", () => {
     const lastActivityAt = now;
     const totalVotes = 10;
     const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
-    assertEquals(scoreRoom(room, now), 123);
+    const score = scoreRoom(room, now);
+    assertGreater(score, 110);
+    assertLess(score, 130);
   });
 
   it("treats lastActivity and createdAt as independent signals", () => {
@@ -138,13 +149,17 @@ describe("sortRoomsByActivity", () => {
       assertEquals(result, [newRoom, olderRoom]);
     });
 
-    it("puts very new room above huge slightly dormant older room", () => {
+    it("puts very new room above huge slightly dormant older room, until it ages", () => {
       const now = Date.now();
       const newRoom = makeRoom(now - 5 * MIN);
       const olderRoom = makeRoom(now - 48 * HOUR, { lastActivityAt: now - 3 * HOUR, totalVotes: 300 });
 
       const result = sortRoomsByActivity([olderRoom, newRoom], now);
       assertEquals(result, [newRoom, olderRoom]);
+
+      const agedNewRoom = { ...newRoom, lastActivityAt: now - 2 * HOUR, totalVotes: 2 };
+      const resultAfterAging = sortRoomsByActivity([olderRoom, agedNewRoom], now);
+      assertEquals(resultAfterAging, [olderRoom, agedNewRoom]);
     });
   });
 

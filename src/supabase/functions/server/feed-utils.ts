@@ -6,7 +6,7 @@ export const recencyScore = (minutesAgo: number): number =>
 
 const ACTIVITY_WEIGHT = 100;
 const CREATION_WEIGHT = 20;
-const VOTE_WEIGHT = 0.3;
+const VOTE_WEIGHT = 0.6;
 
 export const scoreRoom = (
   room: DebateRoom,
