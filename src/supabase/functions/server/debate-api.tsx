@@ -10,16 +10,15 @@ import {
   saveYouTubeCardStatus,
   getUsersYouTubeCardStatuses,
   getVotesForStatement,
-  getCommunities
+  getCommunities,
+  getStatementsForRoom,
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
 import { roomApi } from "./room-api.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
 import {
-  getUserSession,
-  sendWelcomeEmail,
-  updateUserLastActive,
+  getUserSession, updateUserLastActive
 } from "./auth-api.tsx";
 import { generateId, getFrontendUrl } from "./utils.tsx";
 import type {
@@ -32,6 +31,7 @@ import type {
 } from "./types.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { calculateVoteStats, processVote } from "./voting-utils.ts";
+import { sortRoomsByActivity } from "./feed-utils.ts";
 
 const app = new Hono();
 
@@ -803,7 +803,7 @@ app.get(
       return c.json(
         {
           error: "Failed to fetch room status",
-          details: error.message,
+          details: error instanceof Error ? error.message : String(error),
         },
         500,
       );
@@ -849,14 +849,20 @@ app.post(
         );
       }
 
-      // Auto-join user to room if they're not already a participant
-      if (!room.participants.includes(userId)) {
-        room.participants.push(userId);
+      async function updateRoom(room: DebateRoom) {
+        // Auto-join user to room if they're not already a participant
+        if (!room.participants.includes(userId)) {
+          room.participants.push(userId);
+          console.log(
+            `Auto-added user ${userId} to room ${roomId} via statement submission`,
+          );
+        }
+        
+        room.lastActivityAt = Date.now();
         await saveDebateRoom(room);
-        console.log(
-          `Auto-added user ${userId} to room ${roomId} via statement submission`,
-        );
       }
+
+      await updateRoom(room);
 
       // Convert phase to round number
       const getRoundNumber = (phase: Phase): number => {
@@ -1315,7 +1321,8 @@ app.get(
         }));
       }
 
-      rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
+      rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 100);
+      rooms = sortRoomsByActivity(rooms);
 
       return c.json({ rooms });
     } catch (error) {

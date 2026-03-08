@@ -143,6 +143,8 @@ export interface DebateRoom {
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
   youtubeCardSwiped?: boolean;
+  lastActivityAt?: number;
+  totalVotes?: number;
 }
 
 export type AnonCreatableRecords = "votes" | "statements" | "score";
