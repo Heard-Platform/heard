@@ -19,7 +19,7 @@ export async function getRedditPosts(
     const posts: RedditPost[] = [];
     feed.items.forEach((item: RedditFeedItem) => {
         const postTime = new Date(item.isoDate);
-        const subredditDescription = feed.subtitle.trim();
+        const subredditDescription = feed.subtitle?.trim();
         const title = item.title.trim();
         const selfText = item.contentSnippet
           .slice(0, item.contentSnippet.indexOf("submitted by    "))
