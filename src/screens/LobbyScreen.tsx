@@ -4,7 +4,7 @@ import type {
   VoteType,
   UserPresence, SubHeard
 } from "../types";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "motion/react";
 import {
   RoomScroller,
