@@ -1,5 +1,6 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
+import { validateSession } from "./internal-utils.ts";
 import * as kv from "./kv_store.tsx";
 import {
   saveStatement, getDebate,
@@ -726,11 +727,11 @@ app.get(
 // Join debate room
 app.post(
   "/make-server-f1a393b4/room/:roomId/join",
+  validateSession,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
       const userId = c.get("userId");
-      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const room = await getDebateRoom(roomId);
       if (!room) {
@@ -815,12 +816,12 @@ app.get(
 // Submit statement
 app.post(
   "/make-server-f1a393b4/room/:roomId/statement",
+  validateSession,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
       const { text } = await c.req.json();
       const userId = c.get("userId");
-      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       if (!text || text.length < 5 || text.length > 500) {
         return c.json(
@@ -1057,12 +1058,12 @@ Return ONLY in this exact JSON format:
 // Vote on statement
 app.post(
   "/make-server-f1a393b4/statement/:statementId/vote",
+  validateSession,
   async (c: any) => {
     try {
       const statementId = c.req.param("statementId");
       const { voteType } = await c.req.json();
       const userId = c.get("userId");
-      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const result = await processVote(statementId, userId, voteType);
 
@@ -1084,12 +1085,12 @@ app.post(
 // Update room phase
 app.post(
   "/make-server-f1a393b4/room/:roomId/phase",
+  validateSession,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
       const { phase, subPhase } = await c.req.json();
       const userId = c.get("userId");
-      if (!userId) return c.json({ error: "Authentication required" }, 401);
       console.log(
         `Phase update request: roomId=${roomId}, phase=${phase}, subPhase=${subPhase}, userId=${userId}`,
       );
@@ -1184,12 +1185,12 @@ app.post(
 // Update room description (host only)
 app.put(
   "/make-server-f1a393b4/room/:roomId/description",
+  validateSession,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
       const { description } = await c.req.json();
       const userId = c.get("userId");
-      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const room = await getDebateRoom(roomId);
       if (!room) {
@@ -1232,11 +1233,11 @@ app.put(
 // Mark room as inactive (dev tool)
 app.post(
   "/make-server-f1a393b4/room/:roomId/inactive",
+  validateSession,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
       const userId = c.get("userId");
-      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const room = await getDebateRoom(roomId);
       if (!room) {
@@ -1533,10 +1534,10 @@ No account needed - just click the link to get started!
 // Create seed data for testing
 app.post(
   "/make-server-f1a393b4/seed/create",
+  validateSession,
   async (c: any) => {
     try {
       const userId = c.get("userId");
-      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -1860,10 +1861,10 @@ app.post(
 // Create test room with Q Street debate topic and players (no posts/votes)
 app.post(
   "/make-server-f1a393b4/test-room/create",
+  validateSession,
   async (c: any) => {
     try {
       const userId = c.get("userId");
-      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -1969,10 +1970,10 @@ app.post(
 // Create rant test room with Q Street debate topic and pre-filled rants
 app.post(
   "/make-server-f1a393b4/rant-test-room/create",
+  validateSession,
   async (c: any) => {
     try {
       const userId = c.get("userId");
-      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -2331,10 +2332,10 @@ app.post(
 // Create realtime test room with 5-minute countdown and seed data
 app.post(
   "/make-server-f1a393b4/realtime-test-room/create",
+  validateSession,
   async (c: any) => {
     try {
       const userId = c.get("userId");
-      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -2564,11 +2565,11 @@ app.post(
 // Mark chance card as swiped
 app.post(
   "/make-server-f1a393b4/chance-card/mark-swiped",
+  validateSession,
   async (c: any) => {
     try {
       const { roomId } = await c.req.json();
       const userId = c.get("userId");
-      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       if (!roomId) {
         return c.json(
@@ -2592,11 +2593,11 @@ app.post(
 
 app.post(
   "/make-server-f1a393b4/youtube-card/mark-swiped",
+  validateSession,
   async (c: any) => {
     try {
       const { roomId } = await c.req.json();
       const userId = c.get("userId");
-      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       if (!roomId) {
         return c.json(
