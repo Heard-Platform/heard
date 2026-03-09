@@ -729,7 +729,8 @@ app.post(
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
+      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const room = await getDebateRoom(roomId);
       if (!room) {
@@ -817,7 +818,9 @@ app.post(
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
-      const { text, userId } = await c.req.json();
+      const { text } = await c.req.json();
+      const userId = c.get("userId");
+      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       if (!text || text.length < 5 || text.length > 500) {
         return c.json(
@@ -1057,7 +1060,9 @@ app.post(
   async (c: any) => {
     try {
       const statementId = c.req.param("statementId");
-      const { voteType, userId } = await c.req.json();
+      const { voteType } = await c.req.json();
+      const userId = c.get("userId");
+      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const result = await processVote(statementId, userId, voteType);
 
@@ -1082,7 +1087,9 @@ app.post(
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
-      const { phase, subPhase, userId } = await c.req.json();
+      const { phase, subPhase } = await c.req.json();
+      const userId = c.get("userId");
+      if (!userId) return c.json({ error: "Authentication required" }, 401);
       console.log(
         `Phase update request: roomId=${roomId}, phase=${phase}, subPhase=${subPhase}, userId=${userId}`,
       );
@@ -1180,7 +1187,9 @@ app.put(
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
-      const { description, userId } = await c.req.json();
+      const { description } = await c.req.json();
+      const userId = c.get("userId");
+      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const room = await getDebateRoom(roomId);
       if (!room) {
@@ -1226,7 +1235,8 @@ app.post(
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
+      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const room = await getDebateRoom(roomId);
       if (!room) {
@@ -1525,7 +1535,8 @@ app.post(
   "/make-server-f1a393b4/seed/create",
   async (c: any) => {
     try {
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
+      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -1851,7 +1862,8 @@ app.post(
   "/make-server-f1a393b4/test-room/create",
   async (c: any) => {
     try {
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
+      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -1959,7 +1971,8 @@ app.post(
   "/make-server-f1a393b4/rant-test-room/create",
   async (c: any) => {
     try {
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
+      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -2320,7 +2333,8 @@ app.post(
   "/make-server-f1a393b4/realtime-test-room/create",
   async (c: any) => {
     try {
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
+      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -2552,11 +2566,13 @@ app.post(
   "/make-server-f1a393b4/chance-card/mark-swiped",
   async (c: any) => {
     try {
-      const { userId, roomId } = await c.req.json();
+      const { roomId } = await c.req.json();
+      const userId = c.get("userId");
+      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
-      if (!userId || !roomId) {
+      if (!roomId) {
         return c.json(
-          { error: "userId and roomId are required" },
+          { error: "roomId is required" },
           400
         );
       }
@@ -2578,11 +2594,13 @@ app.post(
   "/make-server-f1a393b4/youtube-card/mark-swiped",
   async (c: any) => {
     try {
-      const { userId, roomId } = await c.req.json();
+      const { roomId } = await c.req.json();
+      const userId = c.get("userId");
+      if (!userId) return c.json({ error: "Authentication required" }, 401);
 
-      if (!userId || !roomId) {
+      if (!roomId) {
         return c.json(
-          { error: "userId and roomId are required" },
+          { error: "roomId is required" },
           400
         );
       }
