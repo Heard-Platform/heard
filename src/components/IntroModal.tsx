@@ -233,7 +233,7 @@ export function IntroModal({
               className="space-y-3"
             >
               <h3 className="text-sm font-medium text-left text-white/90">
-                How to Play
+                How to Use
               </h3>
 
               <Card className="heard-card-bg">

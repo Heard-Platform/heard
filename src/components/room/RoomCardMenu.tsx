@@ -86,7 +86,7 @@ export function RoomCardMenu({
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled>
           <Users className="w-4 h-4 mr-2" />
-          {participantCount} {participantCount === 1 ? 'player' : 'players'}
+          {participantCount} {participantCount === 1 ? 'person' : 'people'}
         </DropdownMenuItem>
         {isRealtime && room.endTime && !hasRealtimeEnded && (
           <DropdownMenuItem disabled>
