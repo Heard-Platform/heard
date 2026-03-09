@@ -35,7 +35,6 @@ export function StatementCard({
   onFlag,
 }: StatementCardProps) {
   const timeAgo = moment(statement.timestamp).fromNow();
-  const authorName = "Anonymous";
   
   const actionButtonBase = "w-7 h-7 rounded-full transition-colors flex items-center justify-center flex-shrink-0";
 
@@ -100,7 +99,7 @@ export function StatementCard({
 
       <div className="flex items-end justify-between">
         <span className="text-xs text-muted-foreground">
-          Posted by {authorName} {timeAgo}
+          Posted {timeAgo}
         </span>
         {isTopCard && (
           <span className="text-xs text-muted-foreground">

@@ -31,23 +31,25 @@ import {
   ShieldCheck,
   ShieldAlert,
   TrendingUp,
+  MessageCircle,
 } from "lucide-react";
 import type { UserSession } from "../types";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { PhoneVerificationDialog } from "./onboarding/PhoneVerificationDialog";
 import { VERIFY_TEXT } from "../utils/constants/text";
 import { UserRankDisplay } from "./side-panel/UserRankDisplay";
+import { FeedbackSheet } from "./FeedbackSheet";
 
 const learnMoreLinks = [
-  {
-    icon: Target,
-    label: "Alex's July 4th Goals",
-    url: "https://youtu.be/JM0WUrFkYZc",
-  },
   {
     icon: Info,
     label: "About Heard",
     url: "https://amasonlong.notion.site/About-Heard-2cc4ab4bf00380a9b63ce3b83234ae02?pvs=73",
+  },
+  {
+    icon: Target,
+    label: "Founder's July 4th Goals",
+    url: "https://youtu.be/JM0WUrFkYZc",
   },
   {
     icon: Heart,
@@ -90,6 +92,7 @@ export function SidePanelMenu({
 }: SidePanelMenuProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [phoneVerificationOpen, setPhoneVerificationOpen] = useState(false);
+  const [feedbackSheetOpen, setFeedbackSheetOpen] = useState(false);
   const {
     createSeedData,
     createTestRoom,
@@ -151,6 +154,11 @@ export function SidePanelMenu({
         onSuccess={() => {
           setPhoneVerificationOpen(false);
         }}
+      />
+      <FeedbackSheet
+        open={feedbackSheetOpen}
+        onOpenChange={setFeedbackSheetOpen}
+        userId={user.id}
       />
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetTrigger asChild>
@@ -321,6 +329,26 @@ export function SidePanelMenu({
             <div className="border-t pt-4">
               <h3 className="font-medium mb-3 text-sm text-muted-foreground">Learn More</h3>
               <div className="space-y-2">
+                <Button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setFeedbackSheetOpen(true);
+                  }}
+                  variant="outline"
+                  className="w-full justify-start h-auto py-4 bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 border-2 border-purple-300 hover:from-purple-100 hover:via-pink-100 hover:to-purple-100 hover:border-purple-400 transition-all shadow-sm"
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-full p-2">
+                      <MessageCircle className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex flex-col items-start flex-1">
+                      <span className="font-bold text-purple-900">Talk to Founder</span>
+                      <span className="text-xs text-purple-600">Chat with Alex!</span>
+                    </div>
+                    <span className="text-xl">💜</span>
+                  </div>
+                </Button>
+
                 {learnMoreLinks.map((link) => (
                   <Button
                     key={link.label}

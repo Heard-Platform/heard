@@ -174,6 +174,21 @@ export function SubHeardBrowser({
             )}
 
             <Button
+              variant="outline"
+              className="w-full justify-start p-3 bg-green-50 border-green-300 hover:bg-green-100 hover:border-green-400"
+              onClick={() => {
+                if (user.isAnonymous) {
+                  onShowAccountSetupModal("creating communities");
+                } else {
+                  setShowCreateDialog(true);
+                }
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2 text-green-600" />
+              <span className="text-green-700">Create New Community</span>
+            </Button>
+
+            <Button
               variant={!currentSubHeard ? "default" : "outline"}
               className="w-full justify-start"
               onClick={() => handleSelectSubHeard(null)}
@@ -250,23 +265,6 @@ export function SubHeardBrowser({
                 })}
               </div>
             )}
-
-            <div className="pt-4 pb-8">
-              <Button
-                variant="outline"
-                className="w-full justify-start p-3 bg-green-50 border-green-300 hover:bg-green-100 hover:border-green-400"
-                onClick={() => {
-                  if (user.isAnonymous) {
-                    onShowAccountSetupModal("creating communities");
-                  } else {
-                    setShowCreateDialog(true);
-                  }
-                }}
-              >
-                <Plus className="w-4 h-4 mr-2 text-green-600" />
-                <span className="text-green-700">Create New Community</span>
-              </Button>
-            </div>
           </div>
         </SheetContent>
       </Sheet>

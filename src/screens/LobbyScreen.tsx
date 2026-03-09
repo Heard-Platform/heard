@@ -15,7 +15,6 @@ import { SubHeardBrowser } from "../components/community/SubHeardBrowser";
 import { CommunityExplorerDialog } from "../components/community/CommunityExplorerDialog";
 import { IntroModal } from "../components/IntroModal";
 import { FloatingCreateButton } from "../components/FloatingCreateButton";
-import { FloatingFeedbackButton } from "../components/FloatingFeedbackButton";
 import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
 import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
@@ -336,9 +335,6 @@ export function LobbyScreen({
                 cursor: "pointer",
               }}
             >
-              <p className="text-[10px] text-purple-400/80 tracking-wide uppercase mb-[-2px]">
-                A place to be
-              </p>
               <motion.h1
                 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
                 style={{
@@ -437,11 +433,6 @@ export function LobbyScreen({
         <FloatingCreateButton
           onPress={handleOpenCreateSheet}
         />
-      )}
-
-      {/* Floating feedback button - hide when keyboard is open */}
-      {!isKeyboardOpen && (
-        <FloatingFeedbackButton userId={user.id} />
       )}
 
       {/* Create room sheet */}

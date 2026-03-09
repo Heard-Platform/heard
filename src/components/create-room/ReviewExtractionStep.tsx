@@ -352,18 +352,18 @@ export function ReviewExtractionStep({
         <div className="space-y-3">
           <div className="flex items-start gap-3">
             <Checkbox
-              id="allow-anon"
-              checked={allowAnonymousVoting}
-              onCheckedChange={(checked: boolean) => onAllowAnonymousVotingChange(checked === true)}
+              id="require-account"
+              checked={!allowAnonymousVoting}
+              onCheckedChange={(checked: boolean) => onAllowAnonymousVotingChange(!checked)}
               className="mt-1"
             />
             <div className="flex-1">
-              <Label htmlFor="allow-anon" className={`${labelText} flex items-center gap-2 cursor-pointer`}>
+              <Label htmlFor="require-account" className={`${labelText} flex items-center gap-2 cursor-pointer`}>
                 <UserCheck className={iconBlue} />
-                Allow Anonymous Participation
+                Require account to vote or respond
               </Label>
               <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                This encourages rapid participation by making it so people with the link can vote and post the moment they click the link, without being asked to create an account.
+                Remove this requirement to encourage more rapid participation and allow people with the link to vote and post immediately, without being asked to create an account. Only disable for trusted groups that won't attempt to double vote or post harmful content.
               </p>
             </div>
           </div>
