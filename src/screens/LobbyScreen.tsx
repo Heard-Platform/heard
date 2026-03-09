@@ -4,7 +4,7 @@ import type {
   VoteType,
   UserPresence, SubHeard
 } from "../types";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "motion/react";
 import {
   RoomScroller,
@@ -107,13 +107,15 @@ export function LobbyScreen({
   type Steps = "tutorial" | "explorer" | "complete";
   const [introStep, setIntroStep] = useState<Steps>("complete");
 
-  const filteredRooms = [...activeRooms].sort((a, b) => {
-    if (targetRoomId) {
-      if (a.id === targetRoomId) return -1;
-      if (b.id === targetRoomId) return 1;
-    }
-    return 0;
-  });
+  const filteredRooms = useMemo(() => {
+    return [...activeRooms].sort((a, b) => {
+      if (targetRoomId) {
+        if (a.id === targetRoomId) return -1;
+        if (b.id === targetRoomId) return 1;
+      }
+      return 0;
+    });
+  }, [activeRooms, targetRoomId]);
 
   useEffect(() => {
     const hasSeenIntro = localStorage.getItem(INTRO_SEEN_KEY);
