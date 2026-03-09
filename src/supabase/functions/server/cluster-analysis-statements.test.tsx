@@ -93,6 +93,14 @@ Deno.test("calcBestClusterStatements prioritizes total votes", () => {
   assertEquals(result[1].id, "stmt1");
 });
 
+Deno.test("calcConsensusScore zero votes", () => {
+  const agreeCount = 0;
+  const disagreeCount = 0;
+
+  const score = calcConsensusScore(agreeCount, disagreeCount);
+  assertGreaterOrEqual(score, 0);
+});
+
 Deno.test("calcConsensusScore basic case", () => {
   const agreeCount = 3;
   const disagreeCount = 1;
