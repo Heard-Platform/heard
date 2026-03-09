@@ -273,7 +273,7 @@ export function CreateRoomSheet({
     switch (currentStep) {
       case "compose-post":
         return {
-          title: "Create a New Post",
+          title: "New Conversation",
           description: "What do you want to talk about?",
           leftIcon: Sparkles,
           theme: "green" as const,

@@ -60,7 +60,7 @@ export function RoomCardMenu({
           }}
         >
           <BarChart3 className="w-4 h-4 mr-2" />
-          View Analysis
+          View Insights
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={async (e: React.MouseEvent) => {
