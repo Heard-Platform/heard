@@ -9,7 +9,7 @@ import { getRedditPosts } from "./reddit-scraper-utils.ts";
 import { assertLessOrEqual } from "https://deno.land/std@0.208.0/assert/assert_less_or_equal.ts";
 import { makeTransformPromptFromRedditPost } from "./ai-prompt-utils.ts";
 import { assertGreater } from "https://deno.land/std@0.208.0/assert/assert_greater.ts";
-import { OpenAiClient } from "./openai-client.ts";
+import { createLlmClient } from "./llm-provider.ts";
 import { getRandomSubreddit } from "./reddit-import-service.ts";
 
 const testCriteria = {
@@ -67,7 +67,7 @@ const testPrompt = {
 } as AiPrompt;
 
 if (false) {
-  const aiClient = new OpenAiClient();
+  const aiClient = createLlmClient();
 
   describe("Reddit scraper", () => {
     it("obeys post limit", async () => {
