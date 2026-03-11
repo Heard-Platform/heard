@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { UnsubscribePage } from "./components/UnsubscribePage";
 import { TermsOfServicePage } from "./screens/TermsOfServicePage";
 import { PrivacyPolicyPage } from "./screens/PrivacyPolicyPage";
+import { OrgsLanding } from "./screens/OrgsLanding";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
@@ -48,6 +49,7 @@ function AppContent() {
   const [showUnsubscribe, setShowUnsubscribe] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showOrgsPage, setShowOrgsPage] = useState(false);
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
 
@@ -196,6 +198,8 @@ function AppContent() {
         window.location.pathname.startsWith("/terms");
       const isPrivacyRoute =
         window.location.pathname.startsWith("/privacy");
+      const isOrgsRoute =
+        window.location.pathname.startsWith("/orgs");
 
       const isOsRoute =
         window.location.pathname.startsWith("/os");
@@ -252,6 +256,8 @@ function AppContent() {
         setShowTerms(true);
       } else if (isPrivacyRoute) {
         setShowPrivacy(true);
+      } else if (isOrgsRoute) {
+        setShowOrgsPage(true);
       }
       setHasCheckedUrl(true);
     }
@@ -390,6 +396,11 @@ function AppContent() {
     updateUrlForDevTools(null);
   };
 
+  const handleExitOrgs = () => {
+    setShowOrgsPage(false);
+    window.history.pushState({}, "", "/");
+  };
+
   if (showAdminPanel) {
     return (
       <>
@@ -446,6 +457,10 @@ function AppContent() {
 
   if (showPrivacy) {
     return <PrivacyPolicyPage />;
+  }
+
+  if (showOrgsPage) {
+    return <OrgsLanding onExit={handleExitOrgs} />;
   }
 
   if (!user || loading || isJoiningAnonymously) {

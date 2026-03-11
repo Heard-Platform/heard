@@ -27,6 +27,7 @@ import SidePanelMenuStory from "../stories/SidePanelMenu.story";
 import { CommunityAdminDialogStory } from "../stories/CommunityAdminDialog.story";
 import { FeedbackSheetStory } from "../stories/FeedbackSheet.story";
 import { CommunityExplorerDialogStory } from "../stories/CommunityExplorerDialog.story";
+import { OrgsLandingStory } from "../stories/OrgsLanding.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 import { Story as QRGeneratorPageStory } from "../stories/QRGenerationPage.story";
@@ -113,6 +114,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="feed-customization-modal">Feed Customization Modal</TabsTrigger>
               <TabsTrigger value="feedback-sheet">Feedback Sheet</TabsTrigger>
               <TabsTrigger value="community-explorer-dialog">Community Explorer Dialog</TabsTrigger>
+              <TabsTrigger value="orgs-landing">Orgs Landing</TabsTrigger>
             </TabsList>
 
             <TabsContent value="results-cards">
@@ -198,6 +200,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="community-explorer-dialog">
               <CommunityExplorerDialogStory />
+            </TabsContent>
+            <TabsContent value="orgs-landing">
+              <OrgsLandingStory />
             </TabsContent>
           </Tabs>
         </div>
