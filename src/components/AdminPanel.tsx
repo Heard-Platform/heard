@@ -52,6 +52,7 @@ import { UsersTable } from "./admin/UsersTable";
 import { DataFixes } from "./admin/DataFixes";
 import { Newsletter } from "./admin/Newsletter";
 import { SmsNotifications } from "./admin/SmsNotifications";
+import { Flyers } from "./admin/Flyers";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 
 interface AdminPanelProps {
@@ -535,6 +536,12 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             <MessageSquare className="w-4 h-4 mr-2" />
             SMS Notifications
           </Button>
+          <Button
+            variant={activeTab === "flyers" ? "default" : "ghost"}
+            onClick={() => handleTabChange("flyers")}
+          >
+            Flyers
+          </Button>
         </div>
 
         {activeTab === "subheards" && (
@@ -853,6 +860,12 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             adminKey={adminKey}
             currentUserId={users[0]?.id || ""}
             debates={debates}
+          />
+        )}
+
+        {activeTab === "flyers" && (
+          <Flyers
+            adminKey={adminKey}
           />
         )}
       </div>

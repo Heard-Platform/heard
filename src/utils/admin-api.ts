@@ -147,6 +147,16 @@ class AdminApiClient extends BaseApiClient {
       body: JSON.stringify({ userId, roomId }),
     });
   }
+
+  async getFlyerEmails(adminKey: string) {
+    return this.request<{ emails: { email: string }[] }>(
+      "/admin/flyer-emails",
+      {
+        method: "GET",
+        headers: { "X-Admin-Key": adminKey },
+      },
+    );
+  }
 }
 
 export const adminApi = new AdminApiClient();
