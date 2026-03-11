@@ -1,14 +1,5 @@
 import { getUser } from "./kv-utils.tsx";
-
-export async function validateSession(c: any, next: any) {
-  const userId = c.get("userId");
-
-  if (!userId) {
-    return c.json({ error: "Unauthorized - No session" }, 401);
-  }
-
-  await next();
-}
+import { validateSession } from "./auth-utils.ts";
 
 export async function validateDeveloper(c: any, next: any) {
   return validateSession(c, async () => {

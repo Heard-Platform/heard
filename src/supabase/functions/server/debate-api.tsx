@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
-import { validateSession } from "./internal-utils.ts";
+import { validateSession } from "./auth-utils.ts";
 import * as kv from "./kv_store.tsx";
 import {
   saveStatement, getDebate,
