@@ -764,6 +764,13 @@ class ApiClient extends BaseApiClient {
   async getAllPosts() {
     return this.request<{posts: DebateRoom[]}>("/dev/posts");
   }
+
+  async submitOrgEmail(email: string) {
+    return this.request<undefined>("/orgs/submit-email", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
 }
 
 export const api = new ApiClient();
