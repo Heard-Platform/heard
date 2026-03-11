@@ -370,7 +370,7 @@ export function VineNavigator({
                   marginTop: -monkeyHeight / 2,
                 }}
               >
-                <div className="relative group">
+                <div className="relative">
                   <motion.img
                     src={baseMonkey}
                     alt={`${presence.userId} monkey`}
@@ -378,11 +378,6 @@ export function VineNavigator({
                     style={{ scaleX: -1 }}
                   />
 
-                  <div className="absolute -right-2 top-1/2 transform translate-x-full -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                    <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap shadow-lg">
-                      {presence.userId}
-                    </div>
-                  </div>
                 </div>
               </motion.div>
             );
