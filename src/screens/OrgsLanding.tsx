@@ -27,7 +27,7 @@ interface SlideWrapperProps {
   hasScroll?: boolean;
 }
 
-export function SlideWrapper({ children, hasScroll = false }: SlideWrapperProps) {
+export function SlideWrapper({ children }: SlideWrapperProps) {
   return (
     <motion.div
       initial="enter"
@@ -35,15 +35,11 @@ export function SlideWrapper({ children, hasScroll = false }: SlideWrapperProps)
       exit="exit"
       variants={SLIDE_VARIANTS}
       transition={SLIDE_TRANSITION}
-      className={`absolute inset-0 px-6 ${hasScroll ? "overflow-y-auto" : "flex items-center justify-center"}`}
+      className="absolute inset-0 pt-20 px-6 overflow-y-auto"
     >
-      {hasScroll ? (
-        <div className="min-h-full flex items-center justify-center py-8">
-          {children}
-        </div>
-      ) : (
-        children
-      )}
+      <div className="min-h-full flex items-center justify-center py-8">
+        {children}
+      </div>
     </motion.div>
   );
 }
