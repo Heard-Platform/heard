@@ -1,9 +1,10 @@
-import { OpenAiClient } from "./openai-client.ts";
+import { LlmClient } from "./llm-client.ts";
+import { createLlmClient } from "./llm-provider.ts";
 
 export class EnrichmentService {
-  protected aiClient;
+  protected aiClient: LlmClient;
 
   constructor() {
-    this.aiClient = new OpenAiClient();
+    this.aiClient = createLlmClient();
   }
 }

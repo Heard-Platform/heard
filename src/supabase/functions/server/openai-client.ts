@@ -1,16 +1,18 @@
 import process from "node:process";
 import { AiPrompt } from "./types.tsx";
+import { LlmClient } from "./llm-client.ts";
 
-export class OpenAiClient {
-  private openAiApiKey?;
+export class OpenAiClient implements LlmClient {
+  private readonly openAiApiKey: string;
 
   constructor() {
-    this.openAiApiKey = process.env.OPENAI_API_KEY;
-    if (!this.openAiApiKey) {
+    const key = process.env.OPENAI_API_KEY;
+    if (!key) {
       throw new Error(
         "OPENAI_API_KEY must be set in environment variables",
       );
     }
+    this.openAiApiKey = key;
   }
 
   async complete(prompt: AiPrompt): Promise<string> {
