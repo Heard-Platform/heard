@@ -3539,6 +3539,10 @@
     padding-top: calc(var(--spacing) * 8);
   }
 
+  .pt-20 {
+    padding-top: calc(var(--spacing) * 20);
+  }
+
   .pt-\[5px\] {
     padding-top: 5px;
   }
