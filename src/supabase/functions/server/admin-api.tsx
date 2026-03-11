@@ -13,6 +13,7 @@ import { saveUser } from "./kv-utils.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 import { sendDebateCompletionCelebration } from "./cron-api.tsx";
 import { getNewsletterRecipients, getNewsletterSentKey } from "./newsletter-utils.ts";
+import { getFlyerEmails } from "./model-utils.ts";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
@@ -761,5 +762,15 @@ app.post(
     }
   },
 );
+
+app.get("/make-server-f1a393b4/admin/flyer-emails", async (c) => {
+  try {
+    const emails = await getFlyerEmails();
+    return c.json({ emails });
+  } catch (error) {
+    console.error("Error fetching flyer emails:", error);
+    return c.json({ error: "Failed to fetch flyer emails" }, 500);
+  }
+});
 
 export { app as adminApi };
