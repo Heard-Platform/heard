@@ -10,7 +10,8 @@ const app = new Hono();
 // Submit feedback
 app.post("/make-server-f1a393b4/feedback/submit", validateSession, async (c) => {
   try {
-    const { userId, feedbackText } = await c.req.json();
+    const { feedbackText } = await c.req.json();
+    const userId = c.get("userId");
 
     if (!feedbackText || !feedbackText.trim()) {
       return c.json({ error: "Feedback text is required" }, 400);
