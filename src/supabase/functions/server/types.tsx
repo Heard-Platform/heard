@@ -35,6 +35,12 @@ export interface User {
   webdriver?: boolean;
 }
 
+export type UserActivityRecord = {
+  date: string;
+  userId: string;
+  timestamp: number;
+};
+
 export type MagicLinkRecord = {
   userId: string;
   email: string;

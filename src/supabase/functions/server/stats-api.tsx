@@ -2,9 +2,11 @@ import { Hono } from "npm:hono";
 import {
   getAllSubHeards, getActivitiesForDate,
   getAllRealUsers,
-  getAllRealDebates
+  getAllRealDebates,
+  getAllActivityRecords
 } from "./kv-utils.tsx";
 import type { User } from "./types.tsx";
+import { getFlyerEmails } from "./model-utils.ts";
 
 const app = new Hono();
 
@@ -223,6 +225,58 @@ app.get("/make-server-f1a393b4/retention-stats", async (c) => {
     console.error("Error calculating retention stats:", error);
     return c.json(
       { error: "Failed to calculate retention stats" },
+      500,
+    );
+  }
+});
+
+app.get("/make-server-f1a393b4/stats/funnel", async (c) => {
+  try {
+    const allUsers = await getAllRealUsers();
+    const nonDevUsers = allUsers.filter(user => !user.isDeveloper);
+
+    const usersWithFlyers = nonDevUsers.filter(user => user.flyerId);
+    const usersWithFlyersAndAccounts = usersWithFlyers.filter(user => !user.isAnonymous);
+    const flyerEmails = await getFlyerEmails();
+
+    const usersWithAccounts = nonDevUsers.filter((user) => !user.isAnonymous);
+    const usersWithAccountsCount = usersWithAccounts.length;
+
+    const userActivityRecords = await getAllActivityRecords();
+    
+    let usersWhoTookAction = []
+    let usersWhoTookActionTwoDays = [];
+    let usersWhoTookActionTenDays = [];
+
+    for (const user of usersWithAccounts) {
+      const activities = userActivityRecords.filter(record => record.userId === user.id);
+      const uniqueDates = new Set(activities.map(a => a.date));
+      
+      if (uniqueDates.size >= 1) {
+        usersWhoTookAction.push(user.id);
+      }
+      if (uniqueDates.size >= 2) {
+        usersWhoTookActionTwoDays.push(user.id);
+      }
+      if (uniqueDates.size >= 10) {
+        usersWhoTookActionTenDays.push(user.id);
+      }
+    }
+
+    return c.json({
+      users: nonDevUsers.length,
+      flyerUsers: usersWithFlyers.length,
+      flyerEmails: flyerEmails.length,
+      flyerUsersWithAccounts: usersWithFlyersAndAccounts.length,
+      createdAccount: usersWithAccountsCount,
+      tookAction: usersWhoTookAction.length,
+      tookActionTwoDays: usersWhoTookActionTwoDays.length,
+      tookActionTenDays: usersWhoTookActionTenDays.length,
+    });
+  } catch (error) {
+    console.error("Error calculating funnel metrics:", error);
+    return c.json(
+      { error: "Failed to calculate funnel metrics" },
       500,
     );
   }
