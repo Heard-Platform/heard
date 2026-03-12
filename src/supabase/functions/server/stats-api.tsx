@@ -1,4 +1,5 @@
 import { Hono } from "npm:hono";
+import { validateDeveloper } from "./internal-utils.ts";
 import {
   getAllSubHeards, getActivitiesForDate,
   getAllRealUsers,
@@ -159,7 +160,7 @@ app.get("/make-server-f1a393b4/public-stats", async (c) => {
 });
 
 // Retention stats endpoint - user retention rates based on account creation
-app.get("/make-server-f1a393b4/retention-stats", async (c) => {
+app.get("/make-server-f1a393b4/retention-stats", validateDeveloper, async (c) => {
   try {
     const allUsers = await getAllRealUsers();
     const now = Date.now();

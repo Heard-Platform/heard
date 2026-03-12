@@ -6,10 +6,11 @@ import {
   importAllData,
 } from "./polis-utils.tsx";
 import { recalculateClustersForRoom } from "./clustering.tsx";
+import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
 
-app.post("/make-server-f1a393b4/import-polis", async (c) => {
+app.post("/make-server-f1a393b4/import-polis", validateDeveloper, async (c) => {
   try {
     const {
       debateName,
