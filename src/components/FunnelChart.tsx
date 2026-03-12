@@ -41,46 +41,43 @@ export function FunnelChart({ metrics }: FunnelChartProps) {
       { 
         source: 0,
         target: 2,
-        value: Math.max(flyerUsers, 0.1),
-        actualValue: flyerUsers
+        value: flyerUsers,
       },
       { 
         source: 2,
         target: 3,
-        value: Math.max(flyerEmails, 0.1),
-        actualValue: flyerEmails
+        value: flyerEmails,
       },
       { 
         source: 1,
         target: 4,
-        value: Math.max(otherUsersWithAccounts, 0.1),
-        actualValue: otherUsersWithAccounts
+        value: otherUsersWithAccounts,
       },
       { 
         source: 2,
         target: 4,
-        value: Math.max(flyerUsersWithAccounts, 0.1),
-        actualValue: flyerUsersWithAccounts
+        value: flyerUsersWithAccounts,
       },
       { 
         source: 4,
         target: 5,
-        value: Math.max(tookAction, 0.1),
-        actualValue: tookAction
+        value: tookAction,
       },
       { 
         source: 5,
         target: 6,
-        value: Math.max(tookActionTwoDays, 0.1),
-        actualValue: tookActionTwoDays
+        value: tookActionTwoDays,
       },
       { 
         source: 6,
         target: 7,
-        value: Math.max(tookActionTenDays, 0.1),
-        actualValue: tookActionTenDays
+        value: tookActionTenDays,
       },
-    ]
+    ].map(link => ({
+      ...link,
+      value: Math.max(link.value, 0.1),
+      actualValue: link.value,
+    }))
   };
 
   const counts = [
@@ -101,18 +98,42 @@ export function FunnelChart({ metrics }: FunnelChartProps) {
 
   const conversions = [
     { label: "Users (Total)", count: users },
-    { label: "Users (Flyers)", count: flyerUsers, rate: calculateConversion(flyerUsers, users) },
-    { label: "Flyer Conversion", count: flyerUsersWithAccounts, rate: calculateConversion(flyerUsersWithAccounts, flyerUsers) },
-    { label: "Created Account", count: createdAccount, rate: calculateConversion(createdAccount, users) },
-    { label: "Took Action", count: tookAction, rate: calculateConversion(tookAction, createdAccount) },
-    { label: "Active 2+ Days", count: tookActionTwoDays, rate: calculateConversion(tookActionTwoDays, tookAction) },
-    { label: "Active 10+ Days", count: tookActionTenDays, rate: calculateConversion(tookActionTenDays, tookActionTwoDays) }
+    {
+      label: "Users (Flyers)",
+      count: flyerUsers,
+      rate: calculateConversion(flyerUsers, users),
+    },
+    {
+      label: "Flyer Conversion",
+      count: flyerUsersWithAccounts,
+      rate: calculateConversion(flyerUsersWithAccounts, flyerUsers),
+    },
+    {
+      label: "Created Account",
+      count: createdAccount,
+      rate: calculateConversion(createdAccount, users),
+    },
+    {
+      label: "Took Action",
+      count: tookAction,
+      rate: calculateConversion(tookAction, createdAccount),
+    },
+    {
+      label: "Active 2+ Days",
+      count: tookActionTwoDays,
+      rate: calculateConversion(tookActionTwoDays, tookAction),
+    },
+    {
+      label: "Active 10+ Days",
+      count: tookActionTenDays,
+      rate: calculateConversion(tookActionTenDays, tookActionTwoDays),
+    },
   ];
 
   const CustomNode = (props: any) => {
     const { x, y, width, height, index, payload } = props;
     const count = counts[index];
-    
+
     return (
       <Layer key={`node-${index}`}>
         <Rectangle
