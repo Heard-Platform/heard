@@ -5,6 +5,7 @@ import {
   DryRunResult,
   Feedback,
   FeatureResults,
+  FunnelMetricsData,
   PublicStatsData,
   RetentionStatsData,
   Statement,
@@ -622,6 +623,12 @@ class ApiClient extends BaseApiClient {
 
   async getRetentionStats() {
     return this.request<RetentionStatsData>("/stats/retention", {
+      method: "GET",
+    });
+  }
+
+  async getFunnelMetrics() {
+    return this.request<FunnelMetricsData>("/stats/funnel", {
       method: "GET",
     });
   }

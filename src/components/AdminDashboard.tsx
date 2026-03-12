@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { X, User, BarChart3, MessageSquare } from "lucide-react";
+import { X, User, BarChart3, MessageSquare, TrendingUp } from "lucide-react";
 import { api } from "../utils/api";
 import type {
   DebateRoom,
@@ -11,10 +11,12 @@ import type {
   ActivityMetricsData,
   PublicStatsData,
   RetentionStatsData,
+  FunnelMetricsData,
 } from "../types";
 import { SparklineChart } from "./SparklineChart";
 import { ActivityMetrics } from "./ActivityMetrics";
 import { RetentionCard } from "./RetentionCard";
+import { FunnelChart } from "./FunnelChart";
 
 interface AdminDashboardProps {
   currentUserId: string;
@@ -29,6 +31,7 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
   const [activityMetrics, setActivityMetrics] = useState<ActivityMetricsData | null>(null);
   const [publicStats, setPublicStats] = useState<PublicStatsData | null>(null);
   const [retentionStats, setRetentionStats] = useState<RetentionStatsData | null>(null);
+  const [funnelMetrics, setFunnelMetrics] = useState<FunnelMetricsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -52,12 +55,20 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
 
         if (userIsAdmin) {
           // Fetch metrics data (these don't require auth)
-          const [debatesRes, feedbackRes, activityMetricsRes, publicStatsRes, retentionStatsRes] = await Promise.all([
+          const [
+            debatesRes,
+            feedbackRes,
+            activityMetricsRes,
+            publicStatsRes,
+            retentionStatsRes,
+            funnelMetricsRes,
+          ] = await Promise.all([
             api.getActiveRooms(undefined, currentUserId),
             api.getFeedbackList(),
             api.getPublicActivityMetrics(),
             api.getPublicStats(),
             api.getRetentionStats(),
+            api.getFunnelMetrics(),
           ]);
 
           if (debatesRes.success) {
@@ -74,6 +85,9 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
           }
           if (retentionStatsRes.success) {
             setRetentionStats(retentionStatsRes.data || null);
+          }
+          if (funnelMetricsRes.success) {
+            setFunnelMetrics(funnelMetricsRes.data || null);
           }
         }
       }
@@ -217,6 +231,17 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
                 colorScheme="green"
               />
             </div>
+          </Card>
+        )}
+
+        {/* Funnel Metrics Section */}
+        {funnelMetrics && (
+          <Card className="p-6">
+            <h2 className="text-xl mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-purple-600" />
+              User Funnel Metrics
+            </h2>
+            <FunnelChart metrics={funnelMetrics} />
           </Card>
         )}
 
