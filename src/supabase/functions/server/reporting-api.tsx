@@ -1,8 +1,8 @@
-import { Hono } from "npm:hono";
 import { insertUserReport } from "./model-utils.ts";
 import { NewUserReport } from "./types.tsx";
+import { AuthedHono } from "./hono-wrapper.ts";
 
-const app = new Hono();
+const app = new AuthedHono();
 
 app.post(
   "/make-server-f1a393b4/statement/:statementId/flag",

@@ -87,7 +87,6 @@ app.use(`${API_URL_PREFIX}/statement/*`, validateSession);
 app.use(`${API_URL_PREFIX}/subheards`, validateSession);
 app.use(`${API_URL_PREFIX}/subheards/*`, validateSession);
 app.use(`${API_URL_PREFIX}/subheard/*`, validateSession);
-app.use(`${API_URL_PREFIX}/vine`, validateSession);
 
 app.use(`${API_URL_PREFIX}/dev/*`, validateDeveloper);
 app.use(`${API_URL_PREFIX}/internal/*`, validateDeveloper);
