@@ -1,6 +1,7 @@
 import { Context } from "npm:hono";
 import { Hono } from "npm:hono";
 import { UserPresence } from "./types.tsx";
+import { validateSession } from "./auth-utils.ts";
 import { getRecentPresences, updatePresence } from "./model-utils.ts";
 
 const PRESENCE_TTL = 10000;
@@ -8,11 +9,12 @@ const PRESENCE_CLEANUP_INTERVAL = 30000;
 
 const app = new Hono();
 
-app.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
+app.post("/make-server-f1a393b4/vine/presence", validateSession, async (c: Context) => {
   try {
-    const { userId, currentRoomIndex } = await c.req.json();
+    const { currentRoomIndex } = await c.req.json();
+    const userId = c.get("userId");
 
-    if (!userId || currentRoomIndex === undefined) {
+    if (currentRoomIndex === undefined) {
       return c.json({ success: false, error: "Missing required fields" }, 400);
     }
 
@@ -31,7 +33,7 @@ app.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
   }
 });
 
-app.get("/make-server-f1a393b4/vine/presences", async (c: Context) => {
+app.get("/make-server-f1a393b4/vine/presences", validateSession, async (c: Context) => {
   try {
     const presences = await getRecentPresences();
     return c.json({ success: true, data: presences });

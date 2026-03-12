@@ -1,10 +1,12 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getUser } from "./kv-utils.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
+import { validateSession } from "./auth-utils.ts";
 
 const app = new Hono();
 
 app.post("/make-server-f1a393b4/user-rank",
+  validateSession,
   defineRoute(
     {
       userId: { type: "string", required: true },

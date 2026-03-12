@@ -1,5 +1,6 @@
 import { Hono } from "npm:hono";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { validateSession } from "./auth-utils.ts";
 
 export const imageApi = new Hono();
 
@@ -42,7 +43,7 @@ async function ensureBucketExists() {
 }
 
 // Upload debate image
-imageApi.post("/make-server-f1a393b4/upload-debate-image", async (c) => {
+imageApi.post("/make-server-f1a393b4/upload-debate-image", validateSession, async (c) => {
   try {
     await ensureBucketExists();
 

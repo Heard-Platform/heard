@@ -1,20 +1,23 @@
 import { Hono } from "npm:hono";
 import { insert } from "./db-utils.ts";
 import { insertUserReport } from "./model-utils.ts";
+import { validateSession } from "./auth-utils.ts";
 import { NewUserReport, UserReport } from "./types.tsx";
 
 const app = new Hono();
 
 app.post(
   "/make-server-f1a393b4/statement/:statementId/flag",
+  validateSession,
   async (c: any) => {
     try {
       const statementId = c.req.param("statementId");
-      const { userId, roomId } = await c.req.json();
+      const { roomId } = await c.req.json();
+      const userId = c.get("userId");
 
-      if (!userId || !roomId || !statementId) {
+      if (!roomId || !statementId) {
         return c.json(
-          { error: "userId, roomId, and statementId are required" },
+          { error: "roomId and statementId are required" },
           400,
         );
       }
