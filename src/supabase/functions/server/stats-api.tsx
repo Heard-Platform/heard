@@ -6,6 +6,7 @@ import {
   getAllRealDebates
 } from "./kv-utils.tsx";
 import type { User } from "./types.tsx";
+import { validateSession } from "./auth-utils.ts";
 
 const app = new Hono();
 
@@ -125,7 +126,7 @@ function calculateRetention({
 }
 
 // Public stats endpoint - platform-wide statistics with 7-day trends
-app.get("/make-server-f1a393b4/public-stats", async (c) => {
+app.get("/make-server-f1a393b4/public-stats", validateDeveloper, async (c) => {
   try {
     const users = await getAllRealUsers();
     const totalUsers = users.length;

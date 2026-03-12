@@ -80,17 +80,17 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async addPhoneToAccount(userId: string, phone: string, code: string) {
+  async addPhoneToAccount(phone: string, code: string) {
     return this.request<{ user: UserSession }>("/auth/add-phone-to-account", {
       method: "POST",
-      body: JSON.stringify({ userId, phone, code }),
+      body: JSON.stringify({ phone, code }),
     });
   }
 
-  async addEmailToAccount(userId: string, email: string) {
+  async addEmailToAccount(email: string) {
     return this.request<{ user: UserSession }>("/auth/add-email-to-account", {
       method: "POST",
-      body: JSON.stringify({ userId, email }),
+      body: JSON.stringify({ email }),
     });
   }
 
@@ -368,18 +368,6 @@ class ApiClient extends BaseApiClient {
     return this.request(`/statement/${statementId}/flag`, {
       method: "POST",
       body: JSON.stringify({ userId: getUserId(), roomId }),
-    });
-  }
-
-  // Invite management
-  async sendInvites(
-    roomId: string,
-    emails: string[],
-    customMessage?: string,
-  ) {
-    return this.request(`/room/${roomId}/invite`, {
-      method: "POST",
-      body: JSON.stringify({ emails, customMessage }),
     });
   }
 

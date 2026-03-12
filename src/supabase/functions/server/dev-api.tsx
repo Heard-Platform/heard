@@ -10,11 +10,10 @@ import { API_URL_PREFIX } from "./constants.tsx";
 import { getAllDebates } from "./kv-utils.tsx";
 import { getAllRealUsers, getDebate } from "./kv-utils.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
-import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
 
-app.get("/make-server-f1a393b4/dev/email-previews", validateDeveloper, async (c) => {
+app.get("/make-server-f1a393b4/dev/email-previews", async (c) => {
   const emailHtml = `
     <!DOCTYPE html>
     <html lang="en">
@@ -72,7 +71,6 @@ app.get("/make-server-f1a393b4/dev/email-previews", validateDeveloper, async (c)
 
 app.post(
   `${API_URL_PREFIX}/dev/create-anon-enabled-debate`,
-  validateDeveloper,
   async (c: any) => {
     try {
       const { userId } = await c.req.json();
@@ -127,7 +125,6 @@ app.post(
 
 app.get(
   `${API_URL_PREFIX}/dev/anon-debates`,
-  validateDeveloper,
   async (c: any) => {
     try {
       const allRooms = await getAllDebates();
@@ -157,7 +154,6 @@ app.get(
 
 app.get(
   `${API_URL_PREFIX}/dev/posts`,
-  validateDeveloper,
   defineRoute(
     {},
     async () => {
@@ -174,7 +170,6 @@ app.get(
 
 app.get(
   `${API_URL_PREFIX}/dev/flyer-stats`,
-  validateDeveloper,
   defineRoute(
     {},
     async () => {

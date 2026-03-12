@@ -34,7 +34,7 @@ interface DebateSessionContextType {
   verifyMagicLink: (code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
   sendSmsCode: (phone: string, requireExisting?: boolean) => Promise<ApiResponse | null>;
   verifySmsCode: (phone: string, code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
-  addPhoneToAccount: (userId: string, phone: string, code: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
+  addPhoneToAccount: (phone: string, code: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   addEmailToAccount: (email: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
   createRoom: (
@@ -233,8 +233,8 @@ export function DebateSessionProvider(
     return response;
   }, [safelyMakeApiCall, setUserAndSession]);
 
-  const addPhoneToAccount = useCallback(async (userId: string, phone: string, code: string) => {
-    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.addPhoneToAccount(userId, phone, code));
+  const addPhoneToAccount = useCallback(async (phone: string, code: string) => {
+    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.addPhoneToAccount(phone, code));
     if (response?.data?.user) {
       setUser(response.data.user);
     }
@@ -242,12 +242,12 @@ export function DebateSessionProvider(
   }, [safelyMakeApiCall]);
 
   const addEmailToAccount = useCallback(async (email: string) => {
-    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.addEmailToAccount(user!.id, email));
+    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.addEmailToAccount(email));
     if (response?.data?.user) {
       setUser(response.data.user);
     }
     return response;
-  }, [safelyMakeApiCall, user?.id]);
+  }, [safelyMakeApiCall]);
 
   const createAnonymousUser = useCallback(async () => {
     const response = await safelyMakeApiCall<UserSessionResponse>(() => api.createAnonymousUser());
@@ -812,7 +812,7 @@ export function DebateSessionProvider(
         console.log("[Showcase] verifySmsCode called"); 
         return { success: true };
       },
-      addPhoneToAccount: async (userId: string, phone: string, code: string) => {
+      addPhoneToAccount: async (phone: string, code: string) => {
         console.log("[Showcase] addPhoneToAccount called");
         return { success: true };
       },

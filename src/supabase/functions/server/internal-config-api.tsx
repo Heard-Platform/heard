@@ -2,7 +2,6 @@ import { getInternalVar, setInternalVar } from "./model-utils.ts";
 import { InternalVarKey } from "./types.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 import { Hono } from "npm:hono";
-import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
 
@@ -37,7 +36,6 @@ export async function setEnrichmentConfig(config: EnrichmentConfig): Promise<voi
 
 app.get(
   "/make-server-f1a393b4/internal/config/enrichment",
-  validateDeveloper,
   defineRoute(
     {},
     async () => {
@@ -50,7 +48,6 @@ app.get(
 
 app.post(
   "/make-server-f1a393b4/internal/config/enrichment",
-  validateDeveloper,
   defineRoute(
     {
       enabled: {

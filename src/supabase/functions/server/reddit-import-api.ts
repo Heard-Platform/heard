@@ -1,13 +1,10 @@
 import { Hono } from "npm:hono";
 import { RedditImporter } from "./reddit-import-service.ts";
-import { verifyAdminKey } from "./admin-api.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 import { RedditScrapeCriteria } from "./types.tsx";
 
 
 export const app = new Hono();
-
-app.use("/make-server-f1a393b4/reddit/*", verifyAdminKey);
 
 app.post(
   "/make-server-f1a393b4/reddit/seed",

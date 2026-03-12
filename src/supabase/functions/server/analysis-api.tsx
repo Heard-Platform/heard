@@ -1,7 +1,6 @@
 import { Hono } from "npm:hono";
 import { getDebateRoom, getStatements } from "./debate-api.tsx";
 import { validateSession } from "./auth-utils.ts";
-import { validateDeveloper } from "./internal-utils.ts";
 import { bulkGet } from "./kv-utils.tsx";
 import {
   ClusterAssignment,
@@ -12,12 +11,14 @@ import { calculateClusterConsensus } from "./cluster-analysis.tsx";
 import { getParsedKvData } from "./kv-utils.tsx";
 import { calculateAnalysisMetrics } from "./analysis-utils.tsx";
 import { AnalysisData } from "./types.tsx";
+import { API_URL_PREFIX } from "./constants.tsx";
 
 const app = new Hono();
 
+app.use(`${API_URL_PREFIX}/room`, validateSession);
+
 app.get(
-  "/make-server-f1a393b4/room/:roomId/analysis",
-  validateSession,
+  `${API_URL_PREFIX}/room/:roomId/analysis`,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
@@ -104,8 +105,7 @@ app.get(
 );
 
 app.post(
-  "/make-server-f1a393b4/room/:roomId/regenerate-clusters",
-  validateDeveloper,
+  `${API_URL_PREFIX}/room/:roomId/regenerate-clusters`,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");

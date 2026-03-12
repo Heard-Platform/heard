@@ -3,8 +3,9 @@ import { deleteMagicLink, getMagicLink, getParsedKvData, getSession, getUser, sa
 import type { Session, User } from "./types.tsx";
 import { Context, Hono } from "npm:hono";
 import { getMagicLinkEmail } from "./email-templates.tsx";
-import { loginUserWithMerge } from "./auth-utils.ts";
+import { loginUserWithMerge, validateSession } from "./auth-utils.ts";
 import { sanitizeUser } from "./user-utils.ts";
+import { API_URL_PREFIX } from "./constants.tsx";
 
 const app = new Hono();
 
@@ -413,7 +414,8 @@ app.post(
 );
 
 app.post(
-  "/make-server-f1a393b4/auth/migrate-session",
+  `${API_URL_PREFIX}/auth/migrate-session`,
+  validateSession,
   async (c: any) => {
     try {
       const { userId } = await c.req.json();
@@ -436,10 +438,12 @@ app.post(
 );
 
 app.post(
-  "/make-server-f1a393b4/auth/add-email-to-account",
+  `${API_URL_PREFIX}/auth/add-email-to-account`,
+  validateSession,
   async (c: any) => {
     try {
-      const { userId, email } = await c.req.json();
+      const { email } = await c.req.json();
+      const userId = c.get("userId");
 
       if (!userId || !email) {
         return c.json({ error: "userId and email are required" }, 400);

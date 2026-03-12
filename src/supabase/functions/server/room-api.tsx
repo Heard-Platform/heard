@@ -4,12 +4,9 @@ import {
   getUserSession,
   saveUserAndEmail,
 } from "./auth-api.tsx";
-import { validateSession } from "./auth-utils.ts";
 import { generateId, saveDebateRoom } from "./debate-api.tsx";
 import type {
-Community,
-  DebateRoom,
-  Statement
+  Community, Statement
 } from "./types.tsx";
 import { ONE_WEEK_MS } from "./time-utils.ts";
 import { getCommunity, saveCommunity } from "./kv-utils.tsx";
@@ -20,7 +17,6 @@ const app = new Hono();
 // Create debate room
 app.post(
   "/make-server-f1a393b4/room/create",
-  validateSession,
   async (c: any) => {
     try {
       const {

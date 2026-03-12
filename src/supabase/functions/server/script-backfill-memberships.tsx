@@ -1,11 +1,8 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import { getAllDebates, getAllRealUsers, getMembership, saveMembership } from "./kv-utils.tsx";
-import { verifyAdminKey } from "./admin-api.tsx";
 
 const app = new Hono();
-
-app.use("/make-server-f1a393b4/one-time-fixes/backfill-community-memberships", verifyAdminKey);
 
 app.post(
   "/make-server-f1a393b4/one-time-fixes/backfill-community-memberships",

@@ -1,14 +1,11 @@
 import { Hono } from "npm:hono";
-import { insert } from "./db-utils.ts";
 import { insertUserReport } from "./model-utils.ts";
-import { validateSession } from "./auth-utils.ts";
-import { NewUserReport, UserReport } from "./types.tsx";
+import { NewUserReport } from "./types.tsx";
 
 const app = new Hono();
 
 app.post(
   "/make-server-f1a393b4/statement/:statementId/flag",
-  validateSession,
   async (c: any) => {
     try {
       const statementId = c.req.param("statementId");

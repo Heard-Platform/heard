@@ -11,8 +11,7 @@ import {
   saveYouTubeCardStatus,
   getUsersYouTubeCardStatuses,
   getVotesForStatement,
-  getCommunities,
-  getStatementsForRoom,
+  getCommunities
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
@@ -33,6 +32,7 @@ import type {
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { calculateVoteStats, processVote } from "./voting-utils.ts";
 import { sortRoomsByActivity } from "./feed-utils.ts";
+import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
 
@@ -774,6 +774,7 @@ app.post(
 // Get room status
 app.get(
   "/make-server-f1a393b4/room/:roomId",
+  validateSession,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
@@ -940,6 +941,7 @@ app.post(
 // Extract topic and statements from a rant (for creation flow)
 app.post(
   "/make-server-f1a393b4/rant/extract",
+  validateSession,
   async (c: any) => {
     try {
       const { rant } = await c.req.json();
@@ -1277,10 +1279,11 @@ app.post(
 // Get active rooms
 app.get(
   "/make-server-f1a393b4/rooms/active",
+  validateSession,
   async (c: any) => {
     try {
+      const userId = c.get("userId");
       const subHeard = c.req.query("subHeard");
-      const userId = c.req.query("userId");
       const onlyJoined = c.req.query("onlyJoined") === "true";
 
       let rooms = await getActiveRooms();
@@ -1346,195 +1349,10 @@ app.get(
   },
 );
 
-// Send email invites to join a room
-app.post(
-  "/make-server-f1a393b4/room/:roomId/invite",
-  async (c: any) => {
-    try {
-      const { emails, customMessage } = await c.req.json();
-      const roomId = c.req.param("roomId");
-
-      if (
-        !emails ||
-        !Array.isArray(emails) ||
-        emails.length === 0
-      ) {
-        return c.json(
-          { error: "Valid email array is required" },
-          400,
-        );
-      }
-
-      // Get room details
-      const room = await getDebateRoom(roomId);
-      if (!room) {
-        return c.json({ error: "Room not found" }, 404);
-      }
-
-      if (!room.isActive) {
-        return c.json({ error: "Room is not active" }, 400);
-      }
-
-      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-      if (!RESEND_API_KEY) {
-        console.error("RESEND_API_KEY not configured");
-        return c.json(
-          { error: "Email service not configured" },
-          500,
-        );
-      }
-
-      const origin =
-        c.req.header("origin") || "https://heard.vote";
-      const inviteLink = `${origin}/room/${roomId}`;
-
-      // Create the email content
-      const getEmailHtml = (email: string) => `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Join a debate on HEARD!</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 2.5rem; font-weight: bold;">HEARD</h1>
-            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 1.1rem;">You're invited to a debate!</p>
-          </div>
-          
-          <div style="background: white; padding: 30px; border: 1px solid #e1e5e9; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #667eea; margin-top: 0;">Join this debate:</h2>
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
-              <p style="margin: 0; font-size: 1.1rem; font-weight: 500;">"${room.topic}"</p>
-            </div>
-            
-            ${
-              customMessage
-                ? `
-              <div style="margin: 20px 0;">
-                <h3 style="color: #495057; font-size: 1rem; margin-bottom: 10px;">Personal message:</h3>
-                <p style="font-style: italic; color: #6c757d; background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 0;">"${customMessage}"</p>
-              </div>
-            `
-                : ""
-            }
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${inviteLink}" 
-                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                        color: white; 
-                        text-decoration: none; 
-                        padding: 15px 30px; 
-                        border-radius: 25px; 
-                        font-weight: bold; 
-                        font-size: 1.1rem;
-                        display: inline-block;
-                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
-                🎯 Join the Debate
-              </a>
-            </div>
-            
-            <div style="border-top: 1px solid #e9ecef; padding-top: 20px; margin-top: 30px; color: #6c757d; font-size: 0.9rem;">
-              <h3 style="color: #495057; font-size: 1rem;">What is HEARD?</h3>
-              <p style="margin: 10px 0;">HEARD is a gamified debate app that makes arguing fun and educational. You'll:</p>
-              <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Submit statements on the debate topic</li>
-                <li>Vote on other players' contributions</li>
-                <li>Find bridges between different views</li>
-                <li>Earn points and build streaks!</li>
-              </ul>
-              <p style="margin: 10px 0;">No account needed - just click the link above to get started!</p>
-            </div>
-            
-            <div style="text-align: center; margin-top: 20px; color: #adb5bd; font-size: 0.8rem;">
-              <p>Can't click the button? Copy and paste this link: ${inviteLink}</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
-      const getEmailText = (email: string) => `
-You're invited to join a debate on HEARD!
-
-Topic: "${room.topic}"
-
-${customMessage ? `Personal message: "${customMessage}"` : ""}
-
-Join the debate: ${inviteLink}
-
-What is HEARD?
-HEARD is a gamified debate app that makes arguing fun and educational. You'll submit statements, vote on contributions, find bridges between views, and earn points!
-
-No account needed - just click the link to get started!
-    `;
-
-      // Send emails using reusable function
-      const emailPromises = emails.map(
-        async (email: string) => {
-          const success = await sendEmail({
-            to: email,
-            subject: `🎯 You're invited to debate: "${room.topic}"`,
-            html: getEmailHtml(email),
-            text: getEmailText(email),
-          });
-
-          if (!success) {
-            throw new Error(`Failed to send email to ${email}`);
-          }
-
-          return { email, success: true };
-        },
-      );
-
-      // Wait for all emails to be sent
-      const results = await Promise.allSettled(emailPromises);
-
-      const successful = results.filter(
-        (result) => result.status === "fulfilled",
-      ).length;
-      const failed = results.filter(
-        (result) => result.status === "rejected",
-      ).length;
-
-      if (failed > 0) {
-        console.error(
-          `Failed to send ${failed} out of ${emails.length} emails`,
-        );
-
-        // If some succeeded and some failed, return partial success
-        if (successful > 0) {
-          return c.json({
-            success: true,
-            message: `Sent ${successful} invites successfully, ${failed} failed`,
-            successful,
-            failed,
-          });
-        } else {
-          // All failed
-          return c.json(
-            { error: "Failed to send any invites" },
-            500,
-          );
-        }
-      }
-
-      return c.json({
-        success: true,
-        message: `Successfully sent invites to ${emails.length} email${emails.length === 1 ? "" : "s"}`,
-        count: emails.length,
-      });
-    } catch (error) {
-      console.error("Error in send invites:", error);
-      return c.json({ error: "Internal server error" }, 500);
-    }
-  },
-);
-
 // Create seed data for testing
 app.post(
   "/make-server-f1a393b4/seed/create",
-  validateSession,
+  validateDeveloper,
   async (c: any) => {
     try {
       const userId = c.get("userId");
@@ -1861,7 +1679,7 @@ app.post(
 // Create test room with Q Street debate topic and players (no posts/votes)
 app.post(
   "/make-server-f1a393b4/test-room/create",
-  validateSession,
+  validateDeveloper,
   async (c: any) => {
     try {
       const userId = c.get("userId");
@@ -1970,7 +1788,7 @@ app.post(
 // Create rant test room with Q Street debate topic and pre-filled rants
 app.post(
   "/make-server-f1a393b4/rant-test-room/create",
-  validateSession,
+  validateDeveloper,
   async (c: any) => {
     try {
       const userId = c.get("userId");
@@ -2332,7 +2150,7 @@ app.post(
 // Create realtime test room with 5-minute countdown and seed data
 app.post(
   "/make-server-f1a393b4/realtime-test-room/create",
-  validateSession,
+  validateDeveloper,
   async (c: any) => {
     try {
       const userId = c.get("userId");
@@ -2622,6 +2440,7 @@ app.post(
 // Dev endpoint: Get cluster data for a room
 app.get(
   "/make-server-f1a393b4/room/:roomId/clusters",
+  validateSession,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");

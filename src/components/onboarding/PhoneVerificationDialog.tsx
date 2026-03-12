@@ -61,7 +61,7 @@ export function PhoneVerificationDialog({
     setLoading(true);
 
     try {
-      const response = await addPhoneToAccount(userId, phoneNumber, code);
+      const response = await addPhoneToAccount(phoneNumber, code);
 
       if (!response || !response.success) {
         setError(response?.error || "Invalid code");

@@ -5,7 +5,7 @@ import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
 
-app.get("/make-server-f1a393b4/stats/features", validateDeveloper, async (c) => {
+app.get("/make-server-f1a393b4/stats/features", async (c) => {
   try {
     const users = await getAllRealUsers();
     

@@ -65,7 +65,7 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
   }
 });
 
-app.get("/make-server-f1a393b4/subheards/explorable", validateSession, async (c: any) => {
+app.get("/make-server-f1a393b4/subheards/explorable", async (c: any) => {
   try {
     const userId = c.get("userId");
 
@@ -91,7 +91,6 @@ app.get("/make-server-f1a393b4/subheards/explorable", validateSession, async (c:
 // Create a new sub-heard
 app.post(
   "/make-server-f1a393b4/subheard/create",
-  validateSession,
   async (c: any) => {
     try {
       const { community } = await c.req.json();
@@ -167,7 +166,6 @@ app.post(
 // Private sub-heards just need you to know the link
 app.post(
   "/make-server-f1a393b4/subheard/:name/join",
-  validateSession,
   async (c: any) => {
     try {
       const name = c.req.param("name");
@@ -211,7 +209,6 @@ app.post(
 // Update sub-heard settings (admin only)
 app.patch(
   "/make-server-f1a393b4/subheard/:name/settings",
-  validateSession,
   async (c: Context) => {
     try {
       const name = c.req.param("name");
@@ -267,7 +264,6 @@ app.patch(
 
 app.delete(
   "/make-server-f1a393b4/subheard/:name/leave",
-  validateSession,
   async (c: any) => {
     try {
       const name = c.req.param("name");

@@ -4,11 +4,8 @@ import * as kv from "./kv_store.tsx";
 import { getByPrefixParsed } from "./kv-utils.tsx";
 import { backfillUserCreatedAtApi } from "./backfill-user-created-at.tsx";
 import { backfillMembershipsApi } from "./script-backfill-memberships.tsx";
-import { verifyAdminKey } from "./admin-api.tsx";
 
 const app = new Hono();
-
-app.use("/make-server-f1a393b4/one-time-fixes/*", verifyAdminKey);
 
 app.post(
   "/make-server-f1a393b4/one-time-fixes/fix-active-room-pointers",

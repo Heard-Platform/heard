@@ -2,7 +2,7 @@ import { Hono } from "npm:hono";
 import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
 import { debateApi } from "./debate-api.tsx";
-import { adminApi } from "./admin-api.tsx";
+import { adminApi, verifyAdminKey } from "./admin-api.tsx";
 import { authApi } from "./auth-api.tsx";
 import { redditApi } from "./reddit-import-api.ts";
 import { oneTimeFixesApi } from "./one-time-fixes.tsx";
@@ -26,6 +26,10 @@ import { reportingApi } from "./reporting-api.tsx";
 import { internalConfigApi } from "./internal-config-api.tsx";
 import { enrichmentApi } from "./enrichment-api.ts";
 import { userRankApi } from "./user-rank-api.tsx";
+import { validateDeveloper } from "./internal-utils.ts";
+import { API_URL_PREFIX } from "./constants.tsx";
+import { validateCronAuth } from "./cron-utils.ts";
+import { validateSession } from "./auth-utils.ts";
 
 type Variables = {
   userId?: string;
@@ -77,6 +81,23 @@ app.use("*", async (c, next) => {
 app.get("/make-server-f1a393b4/health", (c) => {
   return c.json({ status: "ok" });
 });
+
+app.use(`${API_URL_PREFIX}/room/*`, validateSession);
+app.use(`${API_URL_PREFIX}/statement/*`, validateSession);
+app.use(`${API_URL_PREFIX}/subheards`, validateSession);
+app.use(`${API_URL_PREFIX}/subheards/*`, validateSession);
+app.use(`${API_URL_PREFIX}/subheard/*`, validateSession);
+app.use(`${API_URL_PREFIX}/vine`, validateSession);
+
+app.use(`${API_URL_PREFIX}/dev/*`, validateDeveloper);
+app.use(`${API_URL_PREFIX}/internal/*`, validateDeveloper);
+app.use(`${API_URL_PREFIX}/stats/*`, validateDeveloper);
+
+app.use(`${API_URL_PREFIX}/one-time-fixes/*`, verifyAdminKey);
+app.use(`${API_URL_PREFIX}/reddit/*`, verifyAdminKey);
+
+app.use(`${API_URL_PREFIX}/cron/*`, validateCronAuth);
+app.use(`${API_URL_PREFIX}/enrichment/*`, validateCronAuth);
 
 app.route("/", debateApi);
 app.route("/", adminApi);
