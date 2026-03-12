@@ -65,7 +65,7 @@ export function RoomCard({
   onDiscussStatement,
   onShowAccountSetupModal,
 }: RoomCardProps) {
-  const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
+  const [chanceCardSwiped, setChanceCardSwiped] = useState(true);
   const [youtubeCardSwiped, setYoutubeCardSwiped] = useState(room.youtubeCardSwiped || false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
