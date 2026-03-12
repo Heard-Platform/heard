@@ -1,5 +1,7 @@
 import { Hono } from "npm:hono";
 import { getDebateRoom, getStatements } from "./debate-api.tsx";
+import { validateSession } from "./auth-utils.ts";
+import { validateDeveloper } from "./internal-utils.ts";
 import { bulkGet } from "./kv-utils.tsx";
 import {
   ClusterAssignment,
@@ -15,6 +17,7 @@ const app = new Hono();
 
 app.get(
   "/make-server-f1a393b4/room/:roomId/analysis",
+  validateSession,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
@@ -102,6 +105,7 @@ app.get(
 
 app.post(
   "/make-server-f1a393b4/room/:roomId/regenerate-clusters",
+  validateDeveloper,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
