@@ -2,6 +2,7 @@ import * as kv from "./kv_store.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import { getUserSession } from "./auth-api.tsx";
+import { validateSession } from "./auth-utils.ts";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { getCommunities, getCommunity, saveCommunity, deleteMembership } from "./kv-utils.tsx";
 import { Community } from "./types.tsx";
@@ -64,13 +65,9 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
   }
 });
 
-app.get("/make-server-f1a393b4/subheards/explorable", async (c: any) => {
+app.get("/make-server-f1a393b4/subheards/explorable", validateSession, async (c: any) => {
   try {
-    const userId = c.req.query("userId");
-
-    if (!userId) {
-      return c.json({ error: "User ID is required" }, 400);
-    }
+    const userId = c.get("userId");
 
     const userMemberships = await getUserMemberships(userId);
     let subHeards = await getCommunities();
@@ -94,9 +91,11 @@ app.get("/make-server-f1a393b4/subheards/explorable", async (c: any) => {
 // Create a new sub-heard
 app.post(
   "/make-server-f1a393b4/subheard/create",
+  validateSession,
   async (c: any) => {
     try {
-      const { community, userId } = await c.req.json();
+      const { community } = await c.req.json();
+      const userId = c.get("userId");
 
       if (!community) {
         return c.json(
@@ -106,10 +105,6 @@ app.post(
       }
 
       const { name, isPrivate, hostOnlyPosting } = community;
-
-      if (!userId || typeof userId !== "string") {
-        return c.json({ error: "User ID is required" }, 400);
-      }
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -169,18 +164,14 @@ app.post(
 );
 
 // Join a sub-heard (become a member) - idempotent
-// Auto-join on visit - no access token validation needed
 // Private sub-heards just need you to know the link
 app.post(
   "/make-server-f1a393b4/subheard/:name/join",
+  validateSession,
   async (c: any) => {
     try {
       const name = c.req.param("name");
-      const { userId } = await c.req.json();
-
-      if (!userId || typeof userId !== "string") {
-        return c.json({ error: "User ID is required" }, 400);
-      }
+      const userId = c.get("userId");
 
       const community = await getCommunity(name);
 
@@ -220,14 +211,12 @@ app.post(
 // Update sub-heard settings (admin only)
 app.patch(
   "/make-server-f1a393b4/subheard/:name/settings",
+  validateSession,
   async (c: Context) => {
     try {
       const name = c.req.param("name");
-      const { userId, settings } = await c.req.json();
-
-      if (!userId || typeof userId !== "string") {
-        return c.json({ error: "User ID is required" }, 400);
-      }
+      const { settings } = await c.req.json();
+      const userId = c.get("userId");
 
       if (!settings || typeof settings !== "object") {
         return c.json(
@@ -278,14 +267,11 @@ app.patch(
 
 app.delete(
   "/make-server-f1a393b4/subheard/:name/leave",
+  validateSession,
   async (c: any) => {
     try {
       const name = c.req.param("name");
-      const { userId } = await c.req.json();
-
-      if (!userId || typeof userId !== "string") {
-        return c.json({ error: "User ID is required" }, 400);
-      }
+      const userId = c.get("userId");
 
       const community = await getCommunity(name);
 

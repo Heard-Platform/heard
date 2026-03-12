@@ -4,6 +4,7 @@ import {
   getUserSession,
   saveUserAndEmail,
 } from "./auth-api.tsx";
+import { validateSession } from "./auth-utils.ts";
 import { generateId, saveDebateRoom } from "./debate-api.tsx";
 import type {
 Community,
@@ -19,11 +20,11 @@ const app = new Hono();
 // Create debate room
 app.post(
   "/make-server-f1a393b4/room/create",
+  validateSession,
   async (c: any) => {
     try {
       const {
         topic,
-        userId,
         subHeard: communityName,
         seedStatements,
         imageUrl,
@@ -31,6 +32,7 @@ app.post(
         allowAnonymous,
         debateLength,
       } = await c.req.json();
+      const userId = c.get("userId");
 
       if (!topic || topic.length < 10) {
         return c.json(
