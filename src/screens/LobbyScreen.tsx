@@ -118,14 +118,14 @@ export function LobbyScreen({
 
   useEffect(() => {
     const hasSeenIntro = localStorage.getItem(INTRO_SEEN_KEY);
-    if (!hasSeenIntro && !hasQrScanResult) {
+    if (!hasSeenIntro && !hasQrScanResult && !targetRoomId) {
       localStorage.setItem(INTRO_SEEN_KEY, "true");
       setTimeout(() => {
         setIntroStep("tutorial");
         setHelpModalOpen(true);
       }, 500);
     }
-  }, [hasQrScanResult]);
+  }, [hasQrScanResult, targetRoomId]);
 
   // Detect mobile keyboard state
   useEffect(() => {
