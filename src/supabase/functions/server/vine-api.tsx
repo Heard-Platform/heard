@@ -1,5 +1,4 @@
 import { Context } from "npm:hono";
-import { UserPresence } from "./types.tsx";
 import { getRecentPresences, updatePresence } from "./model-utils.ts";
 import { AuthedHono } from "./hono-wrapper.ts";
 
@@ -16,12 +15,6 @@ app.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
     if (currentRoomIndex === undefined) {
       return c.json({ success: false, error: "Missing required fields" }, 400);
     }
-
-    const presence: UserPresence = {
-      userId,
-      currentRoomIndex,
-      lastUpdated: Date.now(),
-    };
 
     await updatePresence(userId, currentRoomIndex);
 
