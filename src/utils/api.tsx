@@ -778,6 +778,12 @@ class ApiClient extends BaseApiClient {
       body: JSON.stringify({ email }),
     });
   }
+
+  async getNewsletter(edition: number) {
+    return this.request<{ html: string }>(`/newsletter/${edition}`, {
+      method: "GET",
+    });
+  }
 }
 
 export const api = new ApiClient();

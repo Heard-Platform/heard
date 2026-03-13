@@ -1,8 +1,3 @@
-import { getNewsletter3Email } from "./email-newsletter-3.ts";
-import { getNewsletter4Email } from "./email-newsletter-4.ts";
-import { getNewsletter5Email } from "./email-newsletter-5.ts";
-import { getNewsletter6Email } from "./email-newsletter-6.ts";
-import { getNewsletter7Email } from "./email-newsletter-7.ts";
 import { sanitizeUser } from "./user-utils.ts";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
@@ -27,13 +22,12 @@ import { DebateRoom, Rant, Statement } from "./types.tsx";
 import { saveUser } from "./kv-utils.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 import { sendDebateCompletionCelebration } from "./cron-api.tsx";
-import { getNewsletterRecipients, getNewsletterSentKey } from "./newsletter-utils.ts";
+import { getNewsletterByEdition, getNewsletterRecipients, getNewsletterSentKey } from "./newsletter-utils.ts";
 import { getFlyerEmails } from "./model-utils.ts";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
-import { getNewsletter2Email, getNewsletterEmail } from "./email-templates.tsx";
-import { getNewsletterEmailByEdition } from "./email-newsletters.ts";
+import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
 
@@ -641,44 +635,10 @@ app.post(
       let failed = 0;
       const newlySent: string[] = [];
 
-      let subject: string;
-      let getNewsletterHtml: () => string;
-
-      if (newsletterEdition === 4) {
-        const newsletter4 = getNewsletter4Email();
-        subject = newsletter4.subject;
-        getNewsletterHtml = () => newsletter4.html;
-      } else if (newsletterEdition === 5) {
-        const newsletter5 = getNewsletter5Email();
-        subject = newsletter5.subject;
-        getNewsletterHtml = () => newsletter5.html;
-      } else if (newsletterEdition === 6) {
-        const newsletter6 = getNewsletter6Email();
-        subject = newsletter6.subject;
-        getNewsletterHtml = () => newsletter6.html;
-      } else if (newsletterEdition === 7) {
-        const newsletter7 = getNewsletter7Email();
-        subject = newsletter7.subject;
-        getNewsletterHtml = () => newsletter7.html;
-      } else if (newsletterEdition > 7) {
-        const newsletter = getNewsletterEmailByEdition(newsletterEdition);
-        subject = newsletter.subject;
-        getNewsletterHtml = () => newsletter.html;
-      } else {
-        const getNewsletterHtmlFn = newsletterEdition === 2 ? getNewsletter2Email : newsletterEdition === 3 ? getNewsletter3Email : getNewsletterEmail;
-        const newsletterSubjects = {
-          1: "The 1st Heard Newsletter! Cold showers, live streams, and QR codes - oh my!",
-          2: "The 2nd Heard Newsletter! Heard in the news, broken strings, and getting closer to 100 users!",
-          3: "Heard Newsletter #3! GoFundMe, rickrolls, and roadmap"
-        };
-        subject = newsletterSubjects[newsletterEdition as 1 | 2 | 3] || newsletterSubjects[1];
-        getNewsletterHtml = getNewsletterHtmlFn;
-      }
+      const { subject, html } = await getNewsletterByEdition(newsletterEdition);
 
       for (const user of eligibleUsers) {
         try {
-          const html = getNewsletterHtml();
-
           const response = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
@@ -816,5 +776,25 @@ app.get("/make-server-f1a393b4/admin/power-users", async (c) => {
     return c.json({ error: "Failed to fetch power users" }, 500);
   }
 });
+
+app.get(
+  "/make-server-f1a393b4/newsletter/:edition",
+  defineRoute(
+    {
+      edition: { required: true, type: "string" },
+    },
+    async ({ edition }: { edition: string }) => {
+      const editionInt = parseInt(edition);
+      if (isNaN(editionInt) || editionInt < 1) {
+        throw new Error("Invalid newsletter edition");
+      }
+
+      const { html } = await getNewsletterByEdition(editionInt);
+
+      return { html };
+    },
+    "Failed to fetch newsletter",
+  ),
+);
 
 export { app as adminApi };
