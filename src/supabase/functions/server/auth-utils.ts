@@ -14,6 +14,16 @@ export const normalizePhoneNumber = (phone: string): string => {
   return normalizedPhone;
 };
 
+export async function validateSession(c: any, next: any) {
+  const userId = c.get("userId");
+
+  if (!userId) {
+    return c.json({ error: "Unauthorized - No session" }, 401);
+  }
+
+  await next();
+}
+
 export const loginUserWithMerge = async (userId: string, currentUserId: string | undefined) => {
   const result = await getUserAndNewSession(userId);
   if ("error" in result) {
