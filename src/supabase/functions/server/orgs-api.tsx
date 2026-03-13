@@ -1,7 +1,7 @@
 import { Hono } from "npm:hono";
 import { insertOrgEmail } from "./model-utils.ts";
 import { sendEmailToDevs } from "./dev-utils.tsx";
-import { defineRoute } from "./route-wrapper.tsx";
+import { AuthType, defineRoute } from "./route-wrapper.tsx";
 import { isValidEmail } from "./validation-utils.ts";
 
 export const orgsApi = new Hono();
@@ -27,7 +27,8 @@ orgsApi.post(
 
       return {};
     },
-    "Failed to submit email"
+    "Failed to submit email",
+    AuthType.NONE
   )
 );
 

@@ -1,35 +1,45 @@
 import { Context } from "npm:hono";
-import { Hono } from "npm:hono";
 import { UserPresence } from "./types.tsx";
 import { getRecentPresences, updatePresence } from "./model-utils.ts";
+import { AuthedHono } from "./hono-wrapper.ts";
+import { AuthType, defineRoute } from "./route-wrapper.tsx";
 
 const PRESENCE_TTL = 10000;
 const PRESENCE_CLEANUP_INTERVAL = 30000;
 
-const app = new Hono();
+const app = new AuthedHono();
 
-app.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
-  try {
-    const { userId, currentRoomIndex } = await c.req.json();
+app.post(
+  "/make-server-f1a393b4/vine/presence",
+  defineRoute(
+    {
+      currentRoomIndex: {
+        type: "number",
+        required: true,
+      },
+    },
+    async ({ currentRoomIndex }: { currentRoomIndex: number }, userId) => {
+      userId = userId as string;
 
-    if (!userId || currentRoomIndex === undefined) {
-      return c.json({ success: false, error: "Missing required fields" }, 400);
-    }
+      if (currentRoomIndex === undefined) {
+        return { success: false, error: "Missing required fields" };
+      }
 
-    const presence: UserPresence = {
-      userId,
-      currentRoomIndex,
-      lastUpdated: Date.now(),
-    };
+      const presence: UserPresence = {
+        userId,
+        currentRoomIndex,
+        lastUpdated: Date.now(),
+      };
 
-    await updatePresence(userId, currentRoomIndex);
+      await updatePresence(userId, currentRoomIndex);
 
-    return c.json({ success: true });
-  } catch (error) {
-    console.error("Error updating user presence:", error);
-    return c.json({ success: false, error: String(error) }, 500);
-  }
-});
+      return { success: true };
+    },
+    "Failed to update presence",
+    AuthType.USER
+  )
+);
+
 
 app.get("/make-server-f1a393b4/vine/presences", async (c: Context) => {
   try {
