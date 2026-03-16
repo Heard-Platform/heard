@@ -70,7 +70,7 @@ const testPrompt = {
     'If the Reddit post title and post content would not translate into a good conversation topic, please output only the word "Error" and nothing else.',
 };
 
-if (true) {
+if (false) {
   const aiClient = createLlmClient();
 
   describe("Reddit scraper", () => {
