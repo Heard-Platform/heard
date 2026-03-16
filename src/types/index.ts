@@ -118,6 +118,7 @@ export interface UserSession {
   flyerId?: string;
   convertedFromAnonAt?: number;
   createdInEnvironment?: string;
+  avatarAnimal?: string;
 }
 
 export type DebateMode = "realtime" | "host-controlled";

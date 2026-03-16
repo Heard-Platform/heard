@@ -2,21 +2,27 @@ import { X } from "lucide-react";
 import { motion } from "motion/react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../ui/dialog";
 import { useState, useEffect } from "react";
-
-// @ts-ignore
-import monkeyImg from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
+import { AVATAR_OPTIONS, getAvatarImage, AvatarAnimal } from "../../utils/constants/avatars";
 
 interface MonkeyInfoModalProps {
   isOpen: boolean;
+  currentAvatar: AvatarAnimal;
+  isLoggedIn: boolean;
   onClose: () => void;
   onFeedMonkey: () => void;
+  onSelectAvatar: (avatar: AvatarAnimal) => void;
 }
 
 export function MonkeyInfoModal({
   isOpen,
   onClose,
   onFeedMonkey,
+  currentAvatar,
+  onSelectAvatar,
+  isLoggedIn,
 }: MonkeyInfoModalProps) {
+  const [selectedAvatar, setSelectedAvatar] = useState<AvatarAnimal>(currentAvatar);
+  useEffect(() => { setSelectedAvatar(currentAvatar); }, [currentAvatar]);
   const [screenTimeEnd, setScreenTimeEnd] = useState<number | null>(null);
   const [remainingMinutes, setRemainingMinutes] = useState<number>(0);
 
@@ -75,10 +81,10 @@ export function MonkeyInfoModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="p-0 border-0 shadow-2xl max-w-md overflow-hidden">
-        <DialogTitle className="sr-only">Your Monkey Friend</DialogTitle>
+      <DialogContent className="p-0 border-0 shadow-2xl max-w-md overflow-y-auto max-h-[90vh]" onPointerDownOutside={(e) => e.preventDefault()}>
+        <DialogTitle className="sr-only">Your Animal Friend</DialogTitle>
         <DialogDescription className="sr-only">
-          Learn about your monkey companion in Heard
+          Learn about your animal companion in Heard
         </DialogDescription>
         <div className="relative bg-gradient-to-br from-green-400 via-emerald-400 to-teal-500 pt-8 pb-6 px-6">
           <button
@@ -89,9 +95,9 @@ export function MonkeyInfoModal({
           </button>
           <div className="flex justify-center">
             <motion.img
-              src={monkeyImg}
-              alt="Monkey Friend"
-              className="w-24 h-28 object-contain drop-shadow-2xl"
+              src={getAvatarImage(selectedAvatar)}
+              alt="Your Animal Friend"
+              className="w-24 h-28 object-contain drop-shadow-2xl cursor-pointer"
               style={{ scaleX: -1 }}
               animate={{
                 rotate: [-5, 5, -5],
@@ -101,23 +107,58 @@ export function MonkeyInfoModal({
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
         </div>
         <div className="p-6 space-y-4 bg-white">
           <h2 className="text-center text-xl text-gray-900">
-            Your Monkey Friend 🐒
+            Your Animal Friend 🐒
           </h2>
           <p className="text-center text-sm text-gray-600 leading-relaxed">
-            We thought everyone could use a monkey friend to
+            We thought everyone could use an animal friend to
             help them navigate the twists and turns of
             healthy and sometimes challenging discourse.
           </p>
           <p className="text-center text-sm text-gray-600 leading-relaxed">
-            You can also see other people's monkeys to see who
+            You can also see other people's animals to see who
             else is "hanging" around! 🙈
           </p>
-          
+
+          <div className="pt-2 border-t border-gray-200">
+            <h3 className="text-sm text-gray-700 mb-2">Choose Your Avatar</h3>
+            {isLoggedIn ? (
+              <div className="grid grid-cols-3 gap-2">
+                {AVATAR_OPTIONS.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => {
+                      setSelectedAvatar(option.id);
+                      onSelectAvatar(option.id);
+                    }}
+                    className={`flex flex-col items-center p-2 rounded-lg border-2 transition-all ${
+                      selectedAvatar === option.id
+                        ? "border-emerald-500 bg-emerald-50"
+                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    <img
+                      src={option.img}
+                      alt={option.label}
+                      className="w-12 h-14 object-contain"
+                      style={{ transform: "scaleX(-1)" }}
+                    />
+                    <span className="text-xs text-gray-600 mt-1">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500 text-center py-2">
+                Log in with your phone or email to choose an avatar
+              </p>
+            )}
+          </div>
+
           <div className="pt-2 border-t border-gray-200">
             <h3 className="text-sm text-gray-700 mb-2">
               Screen Time Warning{" "}

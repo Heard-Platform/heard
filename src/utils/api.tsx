@@ -657,6 +657,13 @@ class ApiClient extends BaseApiClient {
     return this.request<{ data: UserPresence[] }>("/vine/presences");
   }
 
+  async updateAvatar(avatarAnimal: string) {
+    return this.request<{ user: UserSession }>("/vine/avatar", {
+      method: "POST",
+      body: JSON.stringify({ avatarAnimal }),
+    });
+  }
+
   async getEmailPreview(userId?: string, digestType?: string) {
     const params = new URLSearchParams();
     if (userId) params.append("userId", userId);

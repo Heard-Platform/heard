@@ -4,9 +4,7 @@ import { UserPresence, UserSession } from "../../types";
 import { MonkeyInfoModal } from "./MonkeyInfoModal";
 import { TalkBubble } from "../TalkBubble";
 import { ScreenTimeWarningDialog } from "./ScreenTimeWarningDialog";
-
-// @ts-ignore
-import baseMonkey from "../../assets/koala-generated.png";
+import { getAvatarImage, AvatarAnimal } from "../../utils/constants/avatars";
 
 // @ts-ignore
 import monkeyWithWrench from "figma:asset/ab06931b1dc1dfba1d9cf4a9e389e4b87471b96c.png";
@@ -24,6 +22,7 @@ interface VineNavigatorProps {
     userId: string,
     currentRoomIndex: number,
   ) => void;
+  onUpdateAvatar: (avatarAnimal: AvatarAnimal) => void;
 }
 
 const AVATAR_SIZE = 32;
@@ -36,7 +35,10 @@ export function VineNavigator({
   currentUser,
   presences,
   onUpdatePresence,
+  onUpdateAvatar,
 }: VineNavigatorProps) {
+  const baseMonkey = getAvatarImage(currentUser.avatarAnimal as AvatarAnimal);
+  const isLoggedIn = !currentUser.isAnonymous;
     const [monkeyPosition, setMonkeyPosition] =
     useState(currentIndex);
   const [monkeyOffset, setMonkeyOffset] = useState(0);
@@ -396,8 +398,11 @@ export function VineNavigator({
       {showMonkeyInfo && (
         <MonkeyInfoModal
           isOpen={showMonkeyInfo}
+          currentAvatar={(currentUser.avatarAnimal as AvatarAnimal) ?? "monkey"}
+          isLoggedIn={isLoggedIn}
           onClose={() => setShowMonkeyInfo(false)}
           onFeedMonkey={handleFeedMonkey}
+          onSelectAvatar={onUpdateAvatar}
         />
       )}
 

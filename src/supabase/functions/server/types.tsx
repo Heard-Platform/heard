@@ -26,6 +26,7 @@ export interface User {
   createdInEnvironment?: string;
   tosAgreedToAt?: number;
   tosVersion?: string;
+  avatarAnimal?: string;
 }
 
 export type MagicLinkRecord = {

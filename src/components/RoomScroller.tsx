@@ -85,7 +85,7 @@ export const RoomScroller = forwardRef<
     const [loadingRooms, setLoadingRooms] = useState<
       Record<string, boolean>
     >({});
-    const { getRoomStatements } = useDebateSession();
+    const { getRoomStatements, updateAvatar } = useDebateSession();
 
     // Function to refresh statements for a specific room
     const refreshRoomStatements = async (roomId: string) => {
@@ -261,6 +261,7 @@ export const RoomScroller = forwardRef<
               ) || []
             }
             onUpdatePresence={onUpdatePresence}
+            onUpdateAvatar={updateAvatar}
           />
 
           {allCards.map((card, index) => {
