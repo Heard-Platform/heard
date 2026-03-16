@@ -11,6 +11,9 @@ import { makeTransformPromptFromRedditPost } from "./ai-prompt-utils.ts";
 import { assertGreater } from "https://deno.land/std@0.208.0/assert/assert_greater.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { getRandomSubreddit } from "./reddit-import-service.ts";
+import { OpenAiClient } from "./openai-client.ts";
+import { AnthropicClient } from "./anthropic-client.ts";
+import { GeminiClient } from "./gemini-client.ts";
 
 const testCriteria = {
   subredditName: getRandomSubreddit(),
@@ -46,7 +49,7 @@ const testPosts = [
     pubDate: "2026-02-19T23:34:18.000Z",
     subreddit: "askreddit",
   },
-] as RedditPost[];
+];
 
 const testPrompt = {
   systemPrompt:
@@ -64,7 +67,7 @@ const testPrompt = {
     "In your response, please write the conversation topic question on the first line, and the response statements on subsequent lines.\n" +
     "Please do not offer ANY output other than the properly formatted conversation topic question and the response statements.\n" +
     'If the Reddit post title and post content would not translate into a good conversation topic, please output only the word "Error" and nothing else.',
-} as AiPrompt;
+};
 
 if (false) {
   const aiClient = createLlmClient();
@@ -101,6 +104,22 @@ if (false) {
       const aiResponse = await aiClient.complete(aiPrompt);
       console.log(aiResponse);
       assertGreater(aiResponse.length, 0);
+    });
+  });
+
+  describe("LLM provider switch", () => {
+    it("receives responses from all three providers", async () => {
+      const providers = [
+        { name: "OpenAI", client: new OpenAiClient() },
+        { name: "Anthropic", client: new AnthropicClient() },
+        { name: "Gemini", client: new GeminiClient() },
+      ];
+
+      for (const { name, client } of providers) {
+        console.log(`\n=== ${name} ===`);
+        const response = await client.complete(testPrompt);
+        console.log(response);
+      }
     });
   });
 }
