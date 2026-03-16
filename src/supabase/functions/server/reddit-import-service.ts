@@ -35,7 +35,7 @@ export class RedditImporter extends EnrichmentService {
   async createPostFromRedditPost(
     redditPost: RedditPost,
   ): Promise<boolean> {
-    const aiPrompt = makeTransformPromptFromRedditPost(redditPost);
+    const aiPrompt = makeTransformPromptFromRedditPost(redditPost, this.provider);
 
     const aiResponse = await this.aiClient.complete(aiPrompt);
 

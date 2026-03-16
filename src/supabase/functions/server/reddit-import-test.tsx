@@ -9,7 +9,8 @@ import { getRedditPosts } from "./reddit-scraper-utils.ts";
 import { assertLessOrEqual } from "https://deno.land/std@0.208.0/assert/assert_less_or_equal.ts";
 import { makeTransformPromptFromRedditPost } from "./ai-prompt-utils.ts";
 import { assertGreater } from "https://deno.land/std@0.208.0/assert/assert_greater.ts";
-import { createLlmClient } from "./llm-provider.ts";
+import { createLlmClient, LlmProvider } from "./llm-provider.ts";
+import { LlmClient } from "./llm-client.ts";
 import { getRandomSubreddit } from "./reddit-import-service.ts";
 import { OpenAiClient } from "./openai-client.ts";
 import { AnthropicClient } from "./anthropic-client.ts";
@@ -69,7 +70,7 @@ const testPrompt = {
     'If the Reddit post title and post content would not translate into a good conversation topic, please output only the word "Error" and nothing else.',
 };
 
-if (false) {
+if (true) {
   const aiClient = createLlmClient();
 
   describe("Reddit scraper", () => {
@@ -81,7 +82,7 @@ if (false) {
 
   describe("Prompt utils", () => {
     it("makes transform prompt", () => {
-      const aiPrompt = makeTransformPromptFromRedditPost(testPosts[0]);
+      const aiPrompt = makeTransformPromptFromRedditPost(testPosts[0], "openai");
       assertGreater(aiPrompt.systemPrompt.length, 0);
       assertGreater(aiPrompt.userPrompt.length, 0);
     });
@@ -100,6 +101,7 @@ if (false) {
       const randomIndex = Math.floor(Math.random() * posts.length);
       const aiPrompt = makeTransformPromptFromRedditPost(
         posts[randomIndex],
+        "openai",
       );
       const aiResponse = await aiClient.complete(aiPrompt);
       console.log(aiResponse);
@@ -108,16 +110,17 @@ if (false) {
   });
 
   describe("LLM provider switch", () => {
-    it("receives responses from all three providers", async () => {
-      const providers = [
-        { name: "OpenAI", client: new OpenAiClient() },
-        { name: "Anthropic", client: new AnthropicClient() },
-        { name: "Gemini", client: new GeminiClient() },
+    it("compares responses from all three providers", async () => {
+      const providers: { name: LlmProvider; client: LlmClient }[] = [
+        { name: "openai", client: new OpenAiClient() },
+        { name: "anthropic", client: new AnthropicClient() },
+        { name: "gemini", client: new GeminiClient() },
       ];
 
       for (const { name, client } of providers) {
+        const prompt = makeTransformPromptFromRedditPost(testPosts[1], name);
         console.log(`\n=== ${name} ===`);
-        const response = await client.complete(testPrompt);
+        const response = await client.complete(prompt);
         console.log(response);
       }
     });

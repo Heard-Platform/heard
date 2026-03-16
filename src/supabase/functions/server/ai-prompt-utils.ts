@@ -1,11 +1,13 @@
 import { getRandomPersona } from "./personas.tsx";
 import { AiPrompt } from "./types.tsx";
+import { LlmProvider } from "./llm-provider.ts";
 
 export function makeTransformPromptFromRedditPost(postData: {
     subredditDescription: string,
     title: string,
     selfText: string,
-}
+},
+    provider: LlmProvider,
 ): AiPrompt {
     const personaPrompt = getRandomPersona();
 
@@ -13,7 +15,7 @@ export function makeTransformPromptFromRedditPost(postData: {
 whether the post is suitable. If the post meets any disqualifying condition, 
 your entire response must be only the word \"Error\" — no topic, no responses, nothing else.`;
 
-    const userPrompt = `Convert the following Reddit post into a open-ended discussion question 
+    let userPrompt = `Convert the following Reddit post into a open-ended discussion question 
 and a set of response statements that represent distinct personal perspectives people might hold on that question. 
 
 Reddit Post: 
@@ -83,7 +85,17 @@ not "Endorsements can elevate a figure's relevance")
 - No quotation marks, no trailing punctuation of any kind — no periods, exclamation marks, or question marks 
 
 Format: topic on line 1, EXACTLY 2-3 responses on subsequent lines, no blank lines, nothing else.`;
-    
+
+    if (provider === "gemini") {
+        userPrompt += `
+
+CRITICAL REMINDERS — you MUST follow these exactly:
+- You MUST produce EXACTLY 2-3 response statements, not 1, not 0.
+- Each response MUST be a STRICT MAX of 8 words.
+- Each response must be on its own line after the topic question.
+- Do NOT combine responses into a single line.`;
+    }
+
     return {
         systemPrompt,
         userPrompt,

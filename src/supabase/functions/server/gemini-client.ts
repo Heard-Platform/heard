@@ -2,7 +2,7 @@ import process from "node:process";
 import { AiPrompt } from "./types.tsx";
 import { LlmClient } from "./llm-client.ts";
 
-const MODEL = "gemini-2.0-flash";
+const MODEL = "gemini-2.5-flash";
 
 export class GeminiClient implements LlmClient {
   private readonly apiKey: string;
@@ -38,6 +38,9 @@ export class GeminiClient implements LlmClient {
         generationConfig: {
           maxOutputTokens: 500,
           temperature: 0.7,
+          thinkingConfig: {
+            thinkingBudget: 0,
+          },
         },
       }),
     });
