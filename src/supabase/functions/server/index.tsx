@@ -76,11 +76,11 @@ app.use("*", async (c, next) => {
   await next();
 });
 
+app.use("/make-server-f1a393b4/dev/*", validateDeveloper);
+
 app.get("/make-server-f1a393b4/health", (c) => {
   return c.json({ status: "ok" });
 });
-
-app.use("/make-server-f1a393b4/dev/*", validateDeveloper);
 
 app.route("/", debateApi);
 app.route("/", adminApi);
