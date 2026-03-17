@@ -62,7 +62,7 @@ function assertValidResponse(response: string) {
   );
 }
 
-if (false) {
+if (true) {
   describe("Prompt construction", () => {
     it("includes post data in prompt for all providers", () => {
       const providers: LlmProvider[] = ["openai", "anthropic", "gemini"];
@@ -144,7 +144,7 @@ if (false) {
       const posts = await getRedditPosts(testCriteria);
       assertGreater(posts.length, 0, "Should find at least one post");
       const randomIndex = Math.floor(Math.random() * posts.length);
-      const prompt = makeTransformPromptFromRedditPost(posts[randomIndex], "openai");
+      const prompt = makeTransformPromptFromRedditPost(posts[randomIndex], "gemini");
       const client = new OpenAiClient();
       const response = await client.complete(prompt);
       console.log("\n=== End-to-end ===\n" + response);

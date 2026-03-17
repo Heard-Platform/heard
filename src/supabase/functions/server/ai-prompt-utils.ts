@@ -84,7 +84,7 @@ not "Endorsements can elevate a figure's relevance")
 - Responses must be complete thoughts — never trail off with ellipses or incomplete sentences 
 - No quotation marks, no trailing punctuation of any kind — no periods, exclamation marks, or question marks 
 
-Format: topic on line 1, EXACTLY 2-3 responses on subsequent lines, no blank lines, nothing else.`;
+Format: no blank lines, topic on line 1, EXACTLY 2-3 responses on subsequent lines, nothing else.`;
 
     if (provider === "gemini") {
         userPrompt += `
