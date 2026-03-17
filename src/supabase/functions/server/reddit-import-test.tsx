@@ -8,6 +8,7 @@ import { assertEquals } from "https://deno.land/std@0.208.0/assert/assert_equals
 import { assert } from "https://deno.land/std@0.208.0/assert/assert.ts";
 import { LlmProvider } from "./llm-provider.ts";
 import { getRandomSubreddit } from "./reddit-import-service.ts";
+import { getRandomPersona } from "./personas.tsx";
 import { OpenAiClient } from "./openai-client.ts";
 import { AnthropicClient } from "./anthropic-client.ts";
 import { GeminiClient } from "./gemini-client.ts";
@@ -63,41 +64,44 @@ function assertValidResponse(response: string) {
 }
 
 if (true) {
+
+  const testPostIndex = 2;
+  const testPersona = getRandomPersona();
+
   describe("Prompt construction", () => {
     it("includes post data in prompt for all providers", () => {
       const providers: LlmProvider[] = ["openai", "anthropic", "gemini"];
       for (const provider of providers) {
-        const prompt = makeTransformPromptFromRedditPost(testPosts[0], provider);
+        const prompt = makeTransformPromptFromRedditPost(testPosts[testPostIndex], provider, testPersona);
         assert(
-          prompt.userPrompt.includes(testPosts[0].title),
+          prompt.userPrompt.includes(testPosts[testPostIndex].title),
           `${provider} prompt should include post title`,
         );
         assert(
-          prompt.userPrompt.includes(testPosts[0].subredditDescription),
+          prompt.userPrompt.includes(testPosts[testPostIndex].subredditDescription),
           `${provider} prompt should include subreddit description`,
         );
         assertGreater(prompt.systemPrompt.length, 0);
       }
     });
 
-    it("adds extra instructions for gemini only", () => {
-      const geminiPrompt = makeTransformPromptFromRedditPost(testPosts[0], "gemini");
-      const openaiPrompt = makeTransformPromptFromRedditPost(testPosts[0], "openai");
-      const anthropicPrompt = makeTransformPromptFromRedditPost(testPosts[0], "anthropic");
+    it("adds extra instructions for gemini and anthropic only", () => {
+      const geminiPrompt = makeTransformPromptFromRedditPost(testPosts[testPostIndex], "gemini", testPersona);
+      const anthropicPrompt = makeTransformPromptFromRedditPost(testPosts[testPostIndex], "anthropic", testPersona);
+      const openaiPrompt = makeTransformPromptFromRedditPost(testPosts[testPostIndex], "openai", testPersona);
 
       assert(
         geminiPrompt.userPrompt.includes("CRITICAL REMINDERS"),
         "Gemini prompt should include critical reminders section",
       );
+      assert(
+        anthropicPrompt.userPrompt.includes("CRITICAL REMINDERS"),
+        "Anthropic prompt should include critical reminders section",
+      );
       assertEquals(
         openaiPrompt.userPrompt.includes("CRITICAL REMINDERS"),
         false,
         "OpenAI prompt should not include critical reminders section",
-      );
-      assertEquals(
-        anthropicPrompt.userPrompt.includes("CRITICAL REMINDERS"),
-        false,
-        "Anthropic prompt should not include critical reminders section",
       );
     });
   });
@@ -112,7 +116,7 @@ if (true) {
   describe("OpenAI completion", () => {
     it("returns a valid response", async () => {
       const client = new OpenAiClient();
-      const prompt = makeTransformPromptFromRedditPost(testPosts[0], "openai");
+      const prompt = makeTransformPromptFromRedditPost(testPosts[testPostIndex], "openai", testPersona);
       const response = await client.complete(prompt);
       console.log("\n=== OpenAI ===\n" + response);
       assertValidResponse(response);
@@ -122,7 +126,7 @@ if (true) {
   describe("Anthropic completion", () => {
     it("returns a valid response", async () => {
       const client = new AnthropicClient();
-      const prompt = makeTransformPromptFromRedditPost(testPosts[0], "anthropic");
+      const prompt = makeTransformPromptFromRedditPost(testPosts[testPostIndex], "anthropic", testPersona);
       const response = await client.complete(prompt);
       console.log("\n=== Anthropic ===\n" + response);
       assertValidResponse(response);
@@ -132,7 +136,7 @@ if (true) {
   describe("Gemini completion", () => {
     it("returns a valid response", async () => {
       const client = new GeminiClient();
-      const prompt = makeTransformPromptFromRedditPost(testPosts[0], "gemini");
+      const prompt = makeTransformPromptFromRedditPost(testPosts[testPostIndex], "gemini", testPersona);
       const response = await client.complete(prompt);
       console.log("\n=== Gemini ===\n" + response);
       assertValidResponse(response);
@@ -144,8 +148,8 @@ if (true) {
       const posts = await getRedditPosts(testCriteria);
       assertGreater(posts.length, 0, "Should find at least one post");
       const randomIndex = Math.floor(Math.random() * posts.length);
-      const prompt = makeTransformPromptFromRedditPost(posts[randomIndex], "gemini");
-      const client = new OpenAiClient();
+      const prompt = makeTransformPromptFromRedditPost(posts[randomIndex], "gemini", testPersona);
+      const client = new GeminiClient();
       const response = await client.complete(prompt);
       console.log("\n=== End-to-end ===\n" + response);
       assertValidResponse(response);
