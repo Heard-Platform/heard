@@ -1,8 +1,22 @@
-import { X } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../ui/dialog";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AVATAR_OPTIONS, getAvatarImage, AvatarAnimal } from "../../utils/constants/avatars";
+
+const VISIBLE_SLOTS = [-2, -1, 0, 1, 2] as const;
+
+const SLOT_SPACING = 70;
+
+const SLOT_STYLES: Record<number, { scale: number; opacity: number; zIndex: number }> = {
+  [-2]: { scale: 0.45, opacity: 0.25, zIndex: 1 },
+  [-1]: { scale: 0.65, opacity: 0.5, zIndex: 2 },
+  [0]: { scale: 1, opacity: 1, zIndex: 3 },
+  [1]: { scale: 0.65, opacity: 0.5, zIndex: 2 },
+  [2]: { scale: 0.45, opacity: 0.25, zIndex: 1 },
+};
+
+const SPRING_CONFIG = { type: "spring" as const, stiffness: 300, damping: 30 };
 
 interface MonkeyInfoModalProps {
   isOpen: boolean;
@@ -21,8 +35,33 @@ export function MonkeyInfoModal({
   onSelectAvatar,
   isLoggedIn,
 }: MonkeyInfoModalProps) {
-  const [selectedAvatar, setSelectedAvatar] = useState<AvatarAnimal>(currentAvatar);
-  useEffect(() => { setSelectedAvatar(currentAvatar); }, [currentAvatar]);
+  const [selectedIndex, setSelectedIndex] = useState(() =>
+    Math.max(0, AVATAR_OPTIONS.findIndex((o) => o.id === currentAvatar))
+  );
+  useEffect(() => {
+    const idx = AVATAR_OPTIONS.findIndex((o) => o.id === currentAvatar);
+    if (idx >= 0) setSelectedIndex(idx);
+  }, [currentAvatar]);
+
+  const selectedAvatar = AVATAR_OPTIONS[selectedIndex].id;
+
+  const wrapIndex = useCallback(
+    (i: number) => ((i % AVATAR_OPTIONS.length) + AVATAR_OPTIONS.length) % AVATAR_OPTIONS.length,
+    []
+  );
+
+  const handlePrev = useCallback(() => {
+    const newIndex = wrapIndex(selectedIndex - 1);
+    setSelectedIndex(newIndex);
+    onSelectAvatar(AVATAR_OPTIONS[newIndex].id);
+  }, [selectedIndex, wrapIndex, onSelectAvatar]);
+
+  const handleNext = useCallback(() => {
+    const newIndex = wrapIndex(selectedIndex + 1);
+    setSelectedIndex(newIndex);
+    onSelectAvatar(AVATAR_OPTIONS[newIndex].id);
+  }, [selectedIndex, wrapIndex, onSelectAvatar]);
+
   const [screenTimeEnd, setScreenTimeEnd] = useState<number | null>(null);
   const [remainingMinutes, setRemainingMinutes] = useState<number>(0);
 
@@ -81,7 +120,7 @@ export function MonkeyInfoModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="p-0 border-0 shadow-2xl max-w-md overflow-y-auto max-h-[90vh]" onPointerDownOutside={(e) => e.preventDefault()}>
+      <DialogContent className="p-0 border-0 shadow-2xl max-w-md overflow-y-auto max-h-[90vh]" onPointerDownOutside={(e: Event) => e.preventDefault()}>
         <DialogTitle className="sr-only">Your Animal Friend</DialogTitle>
         <DialogDescription className="sr-only">
           Learn about your animal companion in Heard
@@ -93,23 +132,65 @@ export function MonkeyInfoModal({
           >
             <X className="w-4 h-4 text-white" />
           </button>
-          <div className="flex justify-center">
-            <motion.img
-              src={getAvatarImage(selectedAvatar)}
-              alt="Your Animal Friend"
-              className="w-24 h-28 object-contain drop-shadow-2xl cursor-pointer"
-              style={{ scaleX: -1 }}
-              animate={{
-                rotate: [-5, 5, -5],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
+          {isLoggedIn ? (
+            <div className="relative flex items-center justify-center h-32">
+              <button
+                onClick={handlePrev}
+                className="absolute left-0 z-10 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 flex items-center justify-center transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 text-white" />
+              </button>
+              <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                {VISIBLE_SLOTS.map((offset) => {
+                  const idx = wrapIndex(selectedIndex + offset);
+                  const option = AVATAR_OPTIONS[idx];
+                  const style = SLOT_STYLES[offset];
+                  return (
+                    <motion.div
+                      key={`slot-${offset}`}
+                      className="absolute flex flex-col items-center"
+                      animate={{
+                        x: offset * SLOT_SPACING,
+                        scale: style.scale,
+                        opacity: style.opacity,
+                        zIndex: style.zIndex,
+                      }}
+                      transition={SPRING_CONFIG}
+                    >
+                      <img
+                        src={option.img}
+                        alt={option.label}
+                        className="w-20 h-24 object-contain drop-shadow-2xl"
+                        style={{ transform: "scaleX(-1)" }}
+                      />
+                      {offset === 0 && (
+                        <span className="text-xs text-white font-medium mt-1 drop-shadow">
+                          {option.label}
+                        </span>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+              <button
+                onClick={handleNext}
+                className="absolute right-0 z-10 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 flex items-center justify-center transition-colors"
+              >
+                <ChevronRight className="w-4 h-4 text-white" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <motion.img
+                src={getAvatarImage(selectedAvatar)}
+                alt="Your Animal Friend"
+                className="w-24 h-28 object-contain drop-shadow-2xl"
+                style={{ scaleX: -1 }}
+                animate={{ rotate: [-5, 5, -5] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+          )}
         </div>
         <div className="p-6 space-y-4 bg-white">
           <h2 className="text-center text-xl text-gray-900">
@@ -124,40 +205,6 @@ export function MonkeyInfoModal({
             You can also see other people's animals to see who
             else is "hanging" around! 🙈
           </p>
-
-          <div className="pt-2 border-t border-gray-200">
-            <h3 className="text-sm text-gray-700 mb-2">Choose Your Avatar</h3>
-            {isLoggedIn ? (
-              <div className="grid grid-cols-3 gap-2">
-                {AVATAR_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => {
-                      setSelectedAvatar(option.id);
-                      onSelectAvatar(option.id);
-                    }}
-                    className={`flex flex-col items-center p-2 rounded-lg border-2 transition-all ${
-                      selectedAvatar === option.id
-                        ? "border-emerald-500 bg-emerald-50"
-                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    <img
-                      src={option.img}
-                      alt={option.label}
-                      className="w-12 h-14 object-contain"
-                      style={{ transform: "scaleX(-1)" }}
-                    />
-                    <span className="text-xs text-gray-600 mt-1">{option.label}</span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-gray-500 text-center py-2">
-                Log in with your phone or email to choose an avatar
-              </p>
-            )}
-          </div>
 
           <div className="pt-2 border-t border-gray-200">
             <h3 className="text-sm text-gray-700 mb-2">

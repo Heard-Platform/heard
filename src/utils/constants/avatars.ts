@@ -13,9 +13,10 @@ import pandaImg from "../../assets/avatar-panda.png";
 
 // To add a new avatar:
 // 1. Add its PNG to src/assets/
-// 2. Import it above
-// 3. Add an entry to AVATAR_OPTIONS below
+// 2. Import it above with a // @ts-ignore
+// 3. Add an entry to AVATAR_OPTIONS_CONST below
 // 4. Add the id to VALID_AVATARS in src/supabase/functions/server/vine-api.tsx
+// The AvatarAnimal type, carousel, and getAvatarImage all derive from this array automatically.
 const AVATAR_OPTIONS_CONST = [
   { id: "monkey", label: "Monkey", img: monkeyImg },
   { id: "koala", label: "Koala", img: koalaImg },
@@ -30,8 +31,6 @@ export type AvatarAnimal = (typeof AVATAR_OPTIONS_CONST)[number]["id"];
 export const DEFAULT_AVATAR: AvatarAnimal = "monkey";
 
 export const AVATAR_OPTIONS: { id: AvatarAnimal; label: string; img: string }[] = [...AVATAR_OPTIONS_CONST];
-
-export const VALID_AVATAR_IDS: string[] = AVATAR_OPTIONS.map((a) => a.id);
 
 export const getAvatarImage = (animal: AvatarAnimal | undefined): string => {
   const option = AVATAR_OPTIONS.find((a) => a.id === animal);
