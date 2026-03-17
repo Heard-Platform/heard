@@ -5,9 +5,9 @@ import { AuthedHono } from "./hono-wrapper.ts";
 const PRESENCE_TTL = 10000;
 const PRESENCE_CLEANUP_INTERVAL = 30000;
 
-const app = new AuthedHono();
+const authedApp = new AuthedHono();
 
-app.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
+authedApp.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
   try {
     const { currentRoomIndex } = await c.req.json();
     const userId = c.get("userId");
@@ -25,7 +25,7 @@ app.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
   }
 });
 
-app.get("/make-server-f1a393b4/vine/presences", async (c: Context) => {
+authedApp.get("/make-server-f1a393b4/vine/presences", async (c: Context) => {
   try {
     const presences = await getRecentPresences();
     return c.json({ success: true, data: presences });
@@ -35,4 +35,4 @@ app.get("/make-server-f1a393b4/vine/presences", async (c: Context) => {
   }
 });
 
-export { app as vineApi };
+export { authedApp as vineApi };

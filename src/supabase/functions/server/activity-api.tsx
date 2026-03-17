@@ -2,7 +2,7 @@ import { Hono } from "npm:hono";
 import moment from "npm:moment@2.30.1";
 import * as kv from "./kv_store.tsx";
 
-const app = new Hono();
+const unauthedApp = new Hono();
 
 function getDateString(date: Date = new Date()): string {
   return moment(date).format('YYYY-MM-DD');
@@ -12,7 +12,7 @@ function getDaysAgo(days: number): string {
   return moment().subtract(days, 'days').format('YYYY-MM-DD');
 }
 
-app.post("/make-server-f1a393b4/activity/track", async (c) => {
+unauthedApp.post("/make-server-f1a393b4/activity/track", async (c) => {
   try {
     const body = await c.req.json();
     const { userId } = body;
@@ -41,7 +41,7 @@ app.post("/make-server-f1a393b4/activity/track", async (c) => {
 });
 
 // Get activity metrics (public for community admins)
-app.get("/make-server-f1a393b4/activity/public-metrics", async (c) => {
+unauthedApp.get("/make-server-f1a393b4/activity/public-metrics", async (c) => {
   try {
     const allRecords: Array<{ userId: string; date: string; timestamp: number }> = [];
     const dailyBreakdown: Array<{ date: string; activeUsers: number }> = [];
@@ -101,4 +101,4 @@ app.get("/make-server-f1a393b4/activity/public-metrics", async (c) => {
   }
 });
 
-export { app as activityApi };
+export { unauthedApp as activityApi };
