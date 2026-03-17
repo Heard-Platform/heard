@@ -27,6 +27,7 @@ import { reportingApi } from "./reporting-api.tsx";
 import { internalConfigApi } from "./internal-config-api.tsx";
 import { enrichmentApi } from "./enrichment-api.ts";
 import { userRankApi } from "./user-rank-api.tsx";
+import { validateDeveloper } from "./internal-utils.ts";
 
 type Variables = {
   userId?: string;
@@ -74,6 +75,8 @@ app.use("*", async (c, next) => {
   
   await next();
 });
+
+app.use("/make-server-f1a393b4/dev/*", validateDeveloper);
 
 app.get("/make-server-f1a393b4/health", (c) => {
   return c.json({ status: "ok" });
