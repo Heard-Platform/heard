@@ -6,17 +6,20 @@ import { AVATAR_OPTIONS, getAvatarImage, AvatarAnimal } from "../../utils/consta
 
 const VISIBLE_SLOTS = [-2, -1, 0, 1, 2] as const;
 
-const SLOT_SPACING = 70;
+const ARROW_OFFSET = 36;
 
-const SLOT_STYLES: Record<number, { scale: number; opacity: number; zIndex: number }> = {
-  [-2]: { scale: 0.45, opacity: 0.25, zIndex: 1 },
-  [-1]: { scale: 0.65, opacity: 0.5, zIndex: 2 },
-  [0]: { scale: 1, opacity: 1, zIndex: 3 },
-  [1]: { scale: 0.65, opacity: 0.5, zIndex: 2 },
-  [2]: { scale: 0.45, opacity: 0.25, zIndex: 1 },
+const SLOT_STYLES: Record<number, { x: number; scale: number; opacity: number; zIndex: number }> = {
+  [-2]: { x: -150, scale: 0.45, opacity: 0.25, zIndex: 1 },
+  [-1]: { x: -90, scale: 0.65, opacity: 0.5, zIndex: 2 },
+  [0]: { x: 0, scale: 1, opacity: 1, zIndex: 3 },
+  [1]: { x: 90, scale: 0.65, opacity: 0.5, zIndex: 2 },
+  [2]: { x: 150, scale: 0.45, opacity: 0.25, zIndex: 1 },
 };
 
 const SPRING_CONFIG = { type: "spring" as const, stiffness: 300, damping: 30 };
+
+const ARROW_BG = "rgba(255,255,255,0.55)";
+const ARROW_BG_HOVER = "rgba(255,255,255,0.7)";
 
 interface MonkeyInfoModalProps {
   isOpen: boolean;
@@ -134,12 +137,6 @@ export function MonkeyInfoModal({
           </button>
           {isLoggedIn ? (
             <div className="relative flex items-center justify-center h-32">
-              <button
-                onClick={handlePrev}
-                className="absolute left-0 z-10 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 flex items-center justify-center transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 text-white" />
-              </button>
               <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
                 {VISIBLE_SLOTS.map((offset) => {
                   const idx = wrapIndex(selectedIndex + offset);
@@ -150,7 +147,7 @@ export function MonkeyInfoModal({
                       key={`slot-${offset}`}
                       className="absolute flex flex-col items-center"
                       animate={{
-                        x: offset * SLOT_SPACING,
+                        x: style.x,
                         scale: style.scale,
                         opacity: style.opacity,
                         zIndex: style.zIndex,
@@ -171,13 +168,25 @@ export function MonkeyInfoModal({
                     </motion.div>
                   );
                 })}
+                <button
+                  onClick={handlePrev}
+                  className="absolute z-10 w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ right: `calc(50% + ${ARROW_OFFSET}px)`, backgroundColor: ARROW_BG }}
+                  onPointerEnter={(e) => { e.currentTarget.style.backgroundColor = ARROW_BG_HOVER; }}
+                  onPointerLeave={(e) => { e.currentTarget.style.backgroundColor = ARROW_BG; }}
+                >
+                  <ChevronLeft className="w-4 h-4 text-emerald-700" />
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="absolute z-10 w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ left: `calc(50% + ${ARROW_OFFSET}px)`, backgroundColor: ARROW_BG }}
+                  onPointerEnter={(e) => { e.currentTarget.style.backgroundColor = ARROW_BG_HOVER; }}
+                  onPointerLeave={(e) => { e.currentTarget.style.backgroundColor = ARROW_BG; }}
+                >
+                  <ChevronRight className="w-4 h-4 text-emerald-700" />
+                </button>
               </div>
-              <button
-                onClick={handleNext}
-                className="absolute right-0 z-10 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 flex items-center justify-center transition-colors"
-              >
-                <ChevronRight className="w-4 h-4 text-white" />
-              </button>
             </div>
           ) : (
             <div className="flex justify-center">
