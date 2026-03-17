@@ -1,7 +1,7 @@
 // @ts-ignore
 import * as kv from "./kv_store.tsx";
 import { DevAuthedHono } from "./hono-wrapper.ts";
-import { createClientFromEnv } from "./db-utils.js";
+import { createClientFromEnv } from "./db-utils.ts";
 
 const devAuthedApp = new DevAuthedHono();
 
