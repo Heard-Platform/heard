@@ -1,13 +1,16 @@
 // @ts-ignore
+import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
-import { DevAuthedHono } from "./hono-wrapper.ts";
-import { createClientFromEnv } from "./db-utils.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 
-const devAuthedApp = new DevAuthedHono();
+const app = new Hono();
 
-devAuthedApp.post("/make-server-f1a393b4/one-time-fixes/backfill-user-created-at", async (c) => {
+app.post("/make-server-f1a393b4/one-time-fixes/backfill-user-created-at", async (c) => {
   try {
-    const supabase = createClientFromEnv();
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL"),
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+    );
 
     const { data: userRecords, error } = await supabase
       .from("kv_store_f1a393b4")
@@ -78,4 +81,4 @@ devAuthedApp.post("/make-server-f1a393b4/one-time-fixes/backfill-user-created-at
   }
 });
 
-export { devAuthedApp as backfillUserCreatedAtApi };
+export { app as backfillUserCreatedAtApi };
