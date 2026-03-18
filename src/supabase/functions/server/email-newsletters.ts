@@ -52,9 +52,39 @@ const newsletters = [
       imageAlt: "Heard long form video in the woods",
     },
   }),
+  getParameterizedNewsletter({
+    subject: "Heard Newsletter #10: Alex Hits the Pavement",
+    editionNumber: 10,
+    section1: {
+      title: "🚶 Hitting the Pavement",
+      text: "Alex has been heads down on outreach these past few weeks. So far this month he has attended six events, twelve outreach meetings, and is actively in conversation with four organizations about running a pilot program with Heard. The use cases span an interesting mix, from a local community garden, to a business development board, to the local ANC, and we’re just gettin’ started.",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-10-garden.jpeg",
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard outreach efforts",
+    },
+    section2: {
+      title: "🏙️ Heard Around Town",
+      text: "Last week Heard was used live to end a civic tech event with a survey about which project attendees were most excited about. Watching results populate in real time on the big screen was a pretty cool moment.",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-10-meetup2.gif",
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard around town",
+    },
+    section3: {
+      title: "🤝 Know Someone Who Could Use Heard?",
+      text: "If you work with or know anyone who organizes people in any capacity (including yourself!), we'd love to talk. This could be someone running a neighborhood association, a local softball league, or a trivia night at the bar, as well as larger scale operations like political candidates looking to expand their reach or companies wanting to hear from their teams. We're offering free pilot programs right now and will work with you every step of the way to get it deployed and get people engaging. Just hit reply or reach out directly.",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-10-organizers.png",
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard organizers",
+    },
+  }),
 ]
 
 const offset = 8
 
-export const getNewsletterEmailByEdition = (newsletterEdition: number) =>
-  newsletters[newsletterEdition - offset];
+export const getNewsletterEmailByEdition = (newsletterEdition: number) => {
+  const newsletter = newsletters[newsletterEdition - offset];
+  if (!newsletter) {
+    throw new Error(`Newsletter edition ${newsletterEdition} not found`);
+  }
+  return newsletter;
+}
