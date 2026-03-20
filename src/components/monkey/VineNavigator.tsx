@@ -21,6 +21,7 @@ interface VineNavigatorProps {
   onUpdatePresence: (
     userId: string,
     currentRoomIndex: number,
+    avatarAnimal: string,
   ) => void;
   onUpdateAvatar: (avatarAnimal: AvatarAnimal) => void;
 }
@@ -37,7 +38,7 @@ export function VineNavigator({
   onUpdatePresence,
   onUpdateAvatar,
 }: VineNavigatorProps) {
-  const baseMonkey = getAvatarImage(currentUser.avatarAnimal as AvatarAnimal);
+  const baseMonkey = getAvatarImage(currentUser.avatarAnimal);
   const isLoggedIn = !currentUser.isAnonymous;
     const [monkeyPosition, setMonkeyPosition] =
     useState(currentIndex);
@@ -112,14 +113,15 @@ export function VineNavigator({
   useEffect(() => {
     if (!onUpdatePresence) return;
 
-    onUpdatePresence(currentUser.id, currentIndex);
+    const avatar = (currentUser.avatarAnimal as string) || "monkey";
+    onUpdatePresence(currentUser.id, currentIndex, avatar);
 
     const presenceInterval = setInterval(() => {
-      onUpdatePresence(currentUser.id, currentIndex);
+      onUpdatePresence(currentUser.id, currentIndex, avatar);
     }, 3000);
 
     return () => clearInterval(presenceInterval);
-  }, [currentUser.id, currentIndex]);
+  }, [currentUser.id, currentIndex, currentUser.avatarAnimal]);
 
   useEffect(() => {
     const newOffsets: Record<string, number> = {};
@@ -374,8 +376,8 @@ export function VineNavigator({
               >
                 <div className="relative group">
                   <motion.img
-                    src={baseMonkey}
-                    alt={`${presence.userId} monkey`}
+                    src={getAvatarImage(presence.avatarAnimal)}
+                    alt={`${presence.userId} avatar`}
                     className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
                     style={{ scaleX: -1 }}
                     whileHover={{ scale: 1.1 }}

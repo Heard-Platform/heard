@@ -12,10 +12,11 @@ const PRESENCE_TTL = 10_000;
 export const updatePresence = async (
   userId: string,
   currentRoomIndex: number,
+  avatarAnimal: string,
 ) =>
   upsert(
     "presences",
-    { userId, currentRoomIndex, lastUpdated: new Date().toISOString() },
+    { userId, currentRoomIndex, avatarAnimal, lastUpdated: new Date().toISOString() },
     "userId"
   );
 

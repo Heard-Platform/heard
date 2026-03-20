@@ -12,19 +12,13 @@ const app = new Hono();
 
 app.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
   try {
-    const { userId, currentRoomIndex } = await c.req.json();
+    const { userId, currentRoomIndex, avatarAnimal } = await c.req.json();
 
     if (!userId || currentRoomIndex === undefined) {
       return c.json({ success: false, error: "Missing required fields" }, 400);
     }
 
-    const presence: UserPresence = {
-      userId,
-      currentRoomIndex,
-      lastUpdated: Date.now(),
-    };
-
-    await updatePresence(userId, currentRoomIndex);
+    await updatePresence(userId, currentRoomIndex, avatarAnimal || "monkey");
 
     return c.json({ success: true });
   } catch (error) {

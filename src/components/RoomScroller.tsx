@@ -45,6 +45,7 @@ interface RoomScrollerProps {
   onUpdatePresence: (
     userId: string,
     currentRoomIndex: number,
+    avatarAnimal: string,
   ) => void;
   onShowAccountSetupModal: (featureText: string) => void;
 }

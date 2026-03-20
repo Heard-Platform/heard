@@ -236,6 +236,7 @@ export interface UserPresence {
   userId: string;
   currentRoomIndex: number;
   lastUpdated: number;
+  avatarAnimal: string;
 }
 
 export type DryRunResult = {

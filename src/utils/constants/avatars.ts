@@ -32,7 +32,7 @@ export const DEFAULT_AVATAR: AvatarAnimal = "monkey";
 
 export const AVATAR_OPTIONS: { id: AvatarAnimal; label: string; img: string }[] = [...AVATAR_OPTIONS_CONST];
 
-export const getAvatarImage = (animal: AvatarAnimal | undefined): string => {
+export const getAvatarImage = (animal: string | undefined): string => {
   const option = AVATAR_OPTIONS.find((a) => a.id === animal);
   return option?.img ?? monkeyImg;
 };

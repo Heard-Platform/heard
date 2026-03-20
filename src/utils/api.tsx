@@ -646,10 +646,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async updateUserPresence(userId: string, currentRoomIndex: number) {
+  async updateUserPresence(userId: string, currentRoomIndex: number, avatarAnimal: string) {
     return this.request("/vine/presence", {
       method: "POST",
-      body: JSON.stringify({ userId, currentRoomIndex }),
+      body: JSON.stringify({ userId, currentRoomIndex, avatarAnimal }),
     });
   }
 
