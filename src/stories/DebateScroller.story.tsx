@@ -97,12 +97,15 @@ export function DebateScrollerStory() {
     (userId: string, currentRoomIndex: number) => {
       setPresences((prev) => {
         const original = prev.find((p) => p.userId === userId);
-        const filtered = prev.filter(
-          (p) => p.userId !== userId,
-        );
+        const filtered = prev.filter((p) => p.userId !== userId);
         return [
           ...filtered,
-          { userId, currentRoomIndex, lastUpdated: Date.now(), avatarAnimal: original!.avatarAnimal },
+          {
+            userId,
+            currentRoomIndex,
+            lastUpdated: Date.now(),
+            avatarAnimal: original?.avatarAnimal || "monkey",
+          },
         ];
       });
     },
