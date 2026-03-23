@@ -205,7 +205,7 @@ export function LobbyScreen({
     };
 
     fetchPresences();
-    const pollInterval = setInterval(fetchPresences, 2000);
+    const pollInterval = setInterval(fetchPresences, 5000);
 
     return () => clearInterval(pollInterval);
   }, []);
