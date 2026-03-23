@@ -22,6 +22,7 @@ import type {
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
 import { ApiResponse } from "../utils/api-client";
+import { AvatarAnimal } from "../utils/constants/avatars";
 
 interface DebateSessionContextType {
   user: UserSession | null;
@@ -90,6 +91,7 @@ interface DebateSessionContextType {
     roomId: string;
     statementIds: string[];
   }> | null>;
+  updateAvatar: (avatarAnimal: AvatarAnimal) => Promise<void>;
 }
 
 export type OverridableApiMethods = Pick<
@@ -711,6 +713,13 @@ export function DebateSessionProvider(
     }>(() => api.runEnrichmentNow());
   }, []);
 
+  const updateAvatar = useCallback(async (avatarAnimal: AvatarAnimal) => {
+    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.updateAvatar(avatarAnimal));
+    if (response?.data?.user) {
+      setUser(response.data.user);
+    }
+  }, [safelyMakeApiCall]);
+
   // Reset session (full logout)
   const resetSession = useCallback(() => {
     setUser(null);
@@ -791,6 +800,7 @@ export function DebateSessionProvider(
     getEnrichmentConfig,
     setEnrichmentConfig,
     runEnrichmentNow,
+    updateAvatar,
   };
 
   if (showcase || showcaseOverrides) {
@@ -892,6 +902,9 @@ export function DebateSessionProvider(
       runEnrichmentNow: async () => {
         console.log("[Showcase] runEnrichmentNow called");
         return { success: true };
+      },
+      updateAvatar: async (avatarAnimal: AvatarAnimal) => {
+        console.log("[Showcase] updateAvatar called");
       },
       ...showcaseOverrides,
     };

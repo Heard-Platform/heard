@@ -1,21 +1,23 @@
 import { X } from "lucide-react";
-import { motion } from "motion/react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../ui/dialog";
 import { useState, useEffect } from "react";
-
-// @ts-ignore
-import monkeyImg from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
+import { AvatarCarousel } from "./AvatarCarousel";
+import { AvatarAnimal } from "../../utils/constants/avatars";
 
 interface MonkeyInfoModalProps {
+  currentAvatar: AvatarAnimal;
   isOpen: boolean;
-  onClose: () => void;
+  isLoggedIn: boolean;
   onFeedMonkey: () => void;
+  onClose: () => void;
 }
 
 export function MonkeyInfoModal({
+  currentAvatar,
   isOpen,
-  onClose,
+  isLoggedIn,
   onFeedMonkey,
+  onClose,
 }: MonkeyInfoModalProps) {
   const [screenTimeEnd, setScreenTimeEnd] = useState<number | null>(null);
   const [remainingMinutes, setRemainingMinutes] = useState<number>(0);
@@ -75,10 +77,15 @@ export function MonkeyInfoModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="p-0 border-0 shadow-2xl max-w-md overflow-hidden">
-        <DialogTitle className="sr-only">Your Monkey Friend</DialogTitle>
+      <DialogContent
+        className="p-0 border-0 shadow-2xl max-w-md overflow-y-auto max-h-[90vh]"
+        onPointerDownOutside={(e: Event) => e.preventDefault()}
+      >
+        <DialogTitle className="sr-only">
+          Your Animal Friend
+        </DialogTitle>
         <DialogDescription className="sr-only">
-          Learn about your monkey companion in Heard
+          Learn about your animal companion in Heard
         </DialogDescription>
         <div className="relative bg-gradient-to-br from-green-400 via-emerald-400 to-teal-500 pt-8 pb-6 px-6">
           <button
@@ -87,44 +94,35 @@ export function MonkeyInfoModal({
           >
             <X className="w-4 h-4 text-white" />
           </button>
-          <div className="flex justify-center">
-            <motion.img
-              src={monkeyImg}
-              alt="Monkey Friend"
-              className="w-24 h-28 object-contain drop-shadow-2xl"
-              style={{ scaleX: -1 }}
-              animate={{
-                rotate: [-5, 5, -5],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          </div>
+          <AvatarCarousel
+            isLoggedIn={isLoggedIn}
+            currentAvatar={currentAvatar}
+          />
         </div>
         <div className="p-6 space-y-4 bg-white">
           <h2 className="text-center text-xl text-gray-900">
-            Your Monkey Friend 🐒
+            Your Animal Friend 🐒
           </h2>
           <p className="text-center text-sm text-gray-600 leading-relaxed">
-            We thought everyone could use a monkey friend to
-            help them navigate the twists and turns of
-            healthy and sometimes challenging discourse.
+            We thought everyone could use an animal friend to help
+            them navigate the twists and turns of healthy and
+            sometimes challenging discourse.
           </p>
           <p className="text-center text-sm text-gray-600 leading-relaxed">
-            You can also see other people's monkeys to see who
-            else is "hanging" around! 🙈
+            You can also see other people's animals to see who else is
+            "hanging" around! 🙈
           </p>
-          
+
           <div className="pt-2 border-t border-gray-200">
             <h3 className="text-sm text-gray-700 mb-2">
               Screen Time Warning{" "}
               <span
                 onClick={() => {
                   const endTime = Date.now() + 10_000;
-                  localStorage.setItem("screenTimeEnd", String(endTime));
+                  localStorage.setItem(
+                    "screenTimeEnd",
+                    String(endTime),
+                  );
                   setScreenTimeEnd(endTime);
                 }}
               >
@@ -165,12 +163,6 @@ export function MonkeyInfoModal({
           </div>
 
           <div className="flex gap-2">
-            <button
-              onClick={handleFeedMonkey}
-              className="flex-1 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full hover:from-yellow-500 hover:to-orange-600 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              🍌 Feed Monkey
-            </button>
             <button
               onClick={onClose}
               className="flex-1 py-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full hover:from-green-500 hover:to-emerald-600 transition-all shadow-md"

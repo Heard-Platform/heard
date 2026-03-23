@@ -4,9 +4,7 @@ import { UserPresence, UserSession } from "../../types";
 import { MonkeyInfoModal } from "./MonkeyInfoModal";
 import { TalkBubble } from "../TalkBubble";
 import { ScreenTimeWarningDialog } from "./ScreenTimeWarningDialog";
-
-// @ts-ignore
-import baseMonkey from "figma:asset/2d97176b4315ac24d52cbfeff2724e17a34f84ad.png";
+import { getAvatarImage } from "../../utils/constants/avatars";
 
 // @ts-ignore
 import monkeyWithWrench from "figma:asset/ab06931b1dc1dfba1d9cf4a9e389e4b87471b96c.png";
@@ -37,7 +35,8 @@ export function VineNavigator({
   presences,
   onUpdatePresence,
 }: VineNavigatorProps) {
-    const [monkeyPosition, setMonkeyPosition] =
+  const isLoggedIn = !currentUser.isAnonymous;
+  const [monkeyPosition, setMonkeyPosition] =
     useState(currentIndex);
   const [monkeyOffset, setMonkeyOffset] = useState(0);
   const [otherMonkeyOffsets, setOtherMonkeyOffsets] = useState<
@@ -185,7 +184,7 @@ export function VineNavigator({
     ? monkeyEatGif
     : currentUser.isTestUser
       ? monkeyWithWrench
-      : baseMonkey;
+      : getAvatarImage(currentUser.avatarAnimal);
 
   return (
     <div
@@ -372,9 +371,9 @@ export function VineNavigator({
               >
                 <div className="relative">
                   <motion.img
-                    src={baseMonkey}
-                    alt={`${presence.userId} monkey`}
-                    className="w-full h-full object-contain drop-shadow-lg"
+                    src={getAvatarImage(presence.avatarAnimal)}
+                    alt={`${presence.userId} avatar`}
+                    className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
                     style={{ scaleX: -1 }}
                   />
 
@@ -388,6 +387,8 @@ export function VineNavigator({
       {showMonkeyInfo && (
         <MonkeyInfoModal
           isOpen={showMonkeyInfo}
+          currentAvatar={currentUser.avatarAnimal ?? "monkey"}
+          isLoggedIn={isLoggedIn}
           onClose={() => setShowMonkeyInfo(false)}
           onFeedMonkey={handleFeedMonkey}
         />

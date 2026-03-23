@@ -1,9 +1,7 @@
 import { Context } from "npm:hono";
 import { getRecentPresences, updatePresence } from "./model-utils.ts";
+import { getUser } from "./kv-utils.tsx";
 import { AuthedHono } from "./hono-wrapper.ts";
-
-const PRESENCE_TTL = 10000;
-const PRESENCE_CLEANUP_INTERVAL = 30000;
 
 const app = new AuthedHono();
 
@@ -16,7 +14,9 @@ app.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
       return c.json({ success: false, error: "Missing required fields" }, 400);
     }
 
-    await updatePresence(userId, currentRoomIndex);
+    const user = (await getUser(userId))!;
+
+    await updatePresence(userId, currentRoomIndex, user.avatarAnimal || "monkey");
 
     return c.json({ success: true });
   } catch (error) {

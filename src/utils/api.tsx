@@ -102,6 +102,13 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async updateAvatar(avatarAnimal: string) {
+    return this.request<{ user: UserSession }>("/account/avatar", {
+      method: "POST",
+      body: JSON.stringify({ avatarAnimal }),
+    });
+  }
+
   // Room management
   async createRoom(
     newDebate: NewDebateRoom,
