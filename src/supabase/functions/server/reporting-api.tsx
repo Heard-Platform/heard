@@ -1,11 +1,10 @@
-import { Hono } from "npm:hono";
-import { insert } from "./db-utils.ts";
 import { insertUserReport } from "./model-utils.ts";
-import { NewUserReport, UserReport } from "./types.tsx";
+import { NewUserReport } from "./types.tsx";
+import { AuthedHono } from "./hono-wrapper.ts";
 
-const app = new Hono();
+const authedApp = new AuthedHono();
 
-app.post(
+authedApp.post(
   "/make-server-f1a393b4/statement/:statementId/flag",
   async (c: any) => {
     try {
@@ -44,4 +43,4 @@ app.post(
   },
 );
 
-export { app as reportingApi };
+export { authedApp as reportingApi };

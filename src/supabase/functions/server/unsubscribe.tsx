@@ -1,12 +1,12 @@
-import { Hono } from "npm:hono@4";
 import { cors } from "npm:hono/cors";
 import { getUser, saveUser } from "./kv-utils.tsx";
+import { AuthedHono } from "./hono-wrapper.ts";
 
-const app = new Hono();
+const authedApp = new AuthedHono();
 
-app.use("*", cors());
+authedApp.use("*", cors());
 
-app.post("/make-server-f1a393b4/unsubscribe", async (c) => {
+authedApp.post("/make-server-f1a393b4/unsubscribe", async (c) => {
   try {
     const { userId } = await c.req.json();
 
@@ -39,4 +39,4 @@ app.post("/make-server-f1a393b4/unsubscribe", async (c) => {
   }
 });
 
-export { app as unsubscribeApi };
+export { authedApp as unsubscribeApi };

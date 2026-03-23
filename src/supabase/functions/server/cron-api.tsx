@@ -6,21 +6,8 @@ import { sendSms } from "./twilio-service.tsx";
 import type { DebateRoom } from "./types.tsx";
 import { getStatements } from "./debate-api.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
-import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
-
-export async function validateCronAuth(c: any, next: any) {
-  const headerSecret = c.req.header("x-cron-secret");
-  const cronSecret = Deno.env.get("CRON_SECRET");
-  
-  if (cronSecret && headerSecret === cronSecret) {
-    await next();
-    return;
-  } else {
-    return validateDeveloper(c, next);
-  }
-}
 
 export async function sendDebateCompletionCelebration(room: DebateRoom) {
   try {
@@ -53,7 +40,6 @@ export async function sendDebateCompletionCelebration(room: DebateRoom) {
 
 app.post(
   "/make-server-f1a393b4/cron/send-completion-celebrations",
-  validateCronAuth,
   defineRoute(
     {},
     async () => {

@@ -7,9 +7,10 @@ import { getCommunities, getCommunity, saveCommunity, deleteMembership } from ".
 import { Community } from "./types.tsx";
 
 // @ts-ignore
-import { Context, Hono } from "npm:hono";
+import { Context } from "npm:hono";
+import { AuthedHono } from "./hono-wrapper.ts";
 
-const app = new Hono();
+const authedApp = new AuthedHono();
 
 async function addCountsAndSort(communities: Community[]) {
   const allRooms = await getActiveRooms();
@@ -32,7 +33,7 @@ async function addCountsAndSort(communities: Community[]) {
   return withCounts;
 }
 
-app.get("/make-server-f1a393b4/subheards", async (c: any) => {
+authedApp.get("/make-server-f1a393b4/subheards", async (c: any) => {
   try {
     const userId = c.req.query("userId");
     const onlyJoined = c.req.query("onlyJoined") === "true";
@@ -64,7 +65,7 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
   }
 });
 
-app.get("/make-server-f1a393b4/subheards/explorable", async (c: any) => {
+authedApp.get("/make-server-f1a393b4/subheards/explorable", async (c: any) => {
   try {
     const userId = c.req.query("userId");
 
@@ -92,7 +93,7 @@ app.get("/make-server-f1a393b4/subheards/explorable", async (c: any) => {
 });
 
 // Create a new sub-heard
-app.post(
+authedApp.post(
   "/make-server-f1a393b4/subheard/create",
   async (c: any) => {
     try {
@@ -171,7 +172,7 @@ app.post(
 // Join a sub-heard (become a member) - idempotent
 // Auto-join on visit - no access token validation needed
 // Private sub-heards just need you to know the link
-app.post(
+authedApp.post(
   "/make-server-f1a393b4/subheard/:name/join",
   async (c: any) => {
     try {
@@ -218,7 +219,7 @@ app.post(
 );
 
 // Update sub-heard settings (admin only)
-app.patch(
+authedApp.patch(
   "/make-server-f1a393b4/subheard/:name/settings",
   async (c: Context) => {
     try {
@@ -276,7 +277,7 @@ app.patch(
   },
 );
 
-app.delete(
+authedApp.delete(
   "/make-server-f1a393b4/subheard/:name/leave",
   async (c: any) => {
     try {
@@ -310,4 +311,4 @@ app.delete(
   },
 );
 
-export { app as subheardApi };
+export { authedApp as subheardApi };

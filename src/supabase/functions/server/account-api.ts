@@ -1,16 +1,15 @@
-import { Context, Hono } from "npm:hono";
-import { validateSession } from "./auth-utils.ts";
+import { Context } from "npm:hono";
 import { defineRoute } from "./route-wrapper.tsx";
 import { VALID_AVATARS } from "./constants.tsx";
 import { getUser, saveUser } from "./kv-utils.tsx";
 import { AvatarAnimal } from "./types.tsx";
 import { sanitizeUser } from "./user-utils.ts";
+import { AuthedHono } from "./hono-wrapper.ts";
 
-const app = new Hono();
+const authedApp = new AuthedHono();
 
-app.post(
+authedApp.post(
   "/make-server-f1a393b4/account/avatar",
-  validateSession,
   defineRoute(
     {
       avatarAnimal: {
@@ -37,4 +36,4 @@ app.post(
   ),
 );
 
-export { app as accountApi };
+export { authedApp as accountApi };

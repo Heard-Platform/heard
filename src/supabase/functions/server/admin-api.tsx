@@ -37,22 +37,6 @@ import { getNewsletterEmailByEdition } from "./email-newsletters.ts";
 
 const app = new Hono();
 
-export const verifyAdminKey = async (c: any, next: any) => {
-  const adminKey = c.req.header("X-Admin-Key");
-  const validKey = Deno.env.get("DEV_ADMIN_KEY");
-
-  if (!adminKey || !validKey || adminKey !== validKey) {
-    return c.json(
-      { error: "Unauthorized - Invalid admin key" },
-      401,
-    );
-  }
-
-  await next();
-};
-
-app.use("/make-server-f1a393b4/admin/*", verifyAdminKey);
-
 // Get all users
 app.get("/make-server-f1a393b4/admin/users", async (c) => {
   try {

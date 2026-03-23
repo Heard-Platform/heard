@@ -37,7 +37,6 @@ export async function setEnrichmentConfig(config: EnrichmentConfig): Promise<voi
 
 app.get(
   "/make-server-f1a393b4/internal/config/enrichment",
-  validateDeveloper,
   defineRoute(
     {},
     async () => {
@@ -50,7 +49,6 @@ app.get(
 
 app.post(
   "/make-server-f1a393b4/internal/config/enrichment",
-  validateDeveloper,
   defineRoute(
     {
       enabled: {

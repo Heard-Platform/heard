@@ -1,4 +1,3 @@
-import { Hono } from "npm:hono";
 import { getDebateRoom, getStatements } from "./debate-api.tsx";
 import { bulkGet } from "./kv-utils.tsx";
 import {
@@ -10,10 +9,11 @@ import { calculateClusterConsensus } from "./cluster-analysis.tsx";
 import { getParsedKvData } from "./kv-utils.tsx";
 import { calculateAnalysisMetrics } from "./analysis-utils.tsx";
 import { AnalysisData } from "./types.tsx";
+import { AuthedHono } from "./hono-wrapper.ts";
 
-const app = new Hono();
+const authedApp = new AuthedHono();
 
-app.get(
+authedApp.get(
   "/make-server-f1a393b4/room/:roomId/analysis",
   async (c: any) => {
     try {
@@ -100,7 +100,7 @@ app.get(
   },
 );
 
-app.post(
+authedApp.post(
   "/make-server-f1a393b4/room/:roomId/regenerate-clusters",
   async (c: any) => {
     try {
@@ -135,4 +135,4 @@ app.post(
   },
 );
 
-export { app as analysisApi };
+export { authedApp as analysisApi };

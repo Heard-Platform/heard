@@ -1,10 +1,10 @@
-import { Hono } from "npm:hono";
 import { getAllRealUsers, getUser } from "./kv-utils.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
+import { AuthedHono } from "./hono-wrapper.ts";
 
-const app = new Hono();
+const authedApp = new AuthedHono();
 
-app.post("/make-server-f1a393b4/user-rank",
+authedApp.post("/make-server-f1a393b4/user-rank",
   defineRoute(
     {
       userId: { type: "string", required: true },
@@ -43,4 +43,4 @@ app.post("/make-server-f1a393b4/user-rank",
   "Failed to calculate user rank"
 ));
 
-export { app as userRankApi };
+export { authedApp as userRankApi };

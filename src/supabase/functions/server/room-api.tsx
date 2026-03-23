@@ -1,4 +1,3 @@
-import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import {
   getUserSession,
@@ -6,18 +5,17 @@ import {
 } from "./auth-api.tsx";
 import { generateId, saveDebateRoom } from "./debate-api.tsx";
 import type {
-Community,
-  DebateRoom,
-  Statement
+  Community, Statement
 } from "./types.tsx";
 import { ONE_WEEK_MS } from "./time-utils.ts";
 import { getCommunity, saveCommunity } from "./kv-utils.tsx";
 import { createNewRoomData } from "./room-utils.ts";
+import { AuthedHono } from "./hono-wrapper.ts";
 
-const app = new Hono();
+const authedApp = new AuthedHono();
 
 // Create debate room
-app.post(
+authedApp.post(
   "/make-server-f1a393b4/room/create",
   async (c: any) => {
     try {
@@ -141,4 +139,4 @@ app.post(
   },
 );
 
-export { app as roomApi };
+export { authedApp as roomApi };

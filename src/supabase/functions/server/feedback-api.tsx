@@ -1,12 +1,12 @@
 // @ts-ignore
-import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { sendEmailToDevs } from "./dev-utils.tsx";
+import { AuthedHono } from "./hono-wrapper.ts";
 
-const app = new Hono();
+const unauthedApp = new AuthedHono();
 
 // Submit feedback
-app.post("/make-server-f1a393b4/feedback/submit", async (c) => {
+unauthedApp.post("/make-server-f1a393b4/feedback/submit", async (c) => {
   try {
     const { userId, feedbackText } = await c.req.json();
 
@@ -48,7 +48,7 @@ app.post("/make-server-f1a393b4/feedback/submit", async (c) => {
   }
 });
 
-app.get("/make-server-f1a393b4/feedback/list", async (c) => {
+unauthedApp.get("/make-server-f1a393b4/feedback/list", async (c) => {
   try {
     const feedbackKeys = await kv.getByPrefix("feedback:");
 
@@ -121,4 +121,4 @@ async function sendFeedbackEmail(feedback: any) {
   });
 }
 
-export { app as feedbackApi };
+export { unauthedApp as feedbackApi };

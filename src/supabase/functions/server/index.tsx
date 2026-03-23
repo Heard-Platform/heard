@@ -28,7 +28,7 @@ import { internalConfigApi } from "./internal-config-api.tsx";
 import { enrichmentApi } from "./enrichment-api.ts";
 import { userRankApi } from "./user-rank-api.tsx";
 import { accountApi } from "./account-api.ts";
-import { validateDeveloper } from "./internal-utils.ts";
+import { validateAdmin, validateCronAuth, validateDeveloper } from "./internal-utils.ts";
 
 type Variables = {
   userId?: string;
@@ -78,6 +78,12 @@ app.use("*", async (c, next) => {
 });
 
 app.use("/make-server-f1a393b4/dev/*", validateDeveloper);
+app.use("/make-server-f1a393b4/stats/*", validateDeveloper);
+app.use("/make-server-f1a393b4/internal/*", validateDeveloper);
+app.use("/make-server-f1a393b4/admin/*", validateAdmin);
+app.use("/make-server-f1a393b4/one-time-fixes/*", validateAdmin);
+app.use("/make-server-f1a393b4/cron/*", validateCronAuth);
+app.use("/make-server-f1a393b4/enrichment/*", validateCronAuth);
 
 app.get("/make-server-f1a393b4/health", (c) => {
   return c.json({ status: "ok" });
