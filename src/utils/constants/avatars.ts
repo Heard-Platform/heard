@@ -11,28 +11,36 @@ import slothImg from "../../assets/avatar-sloth.png";
 // @ts-ignore
 import pandaImg from "../../assets/avatar-panda.png";
 
-// To add a new avatar:
-// 1. Add its PNG to src/assets/
-// 2. Import it above with a // @ts-ignore
-// 3. Add an entry to AVATAR_OPTIONS_CONST below
-// 4. Add the id to VALID_AVATARS in src/supabase/functions/server/vine-api.tsx
-// The AvatarAnimal type, carousel, and getAvatarImage all derive from this array automatically.
-const AVATAR_OPTIONS_CONST = [
-  { id: "monkey", label: "Monkey", img: monkeyImg },
-  { id: "koala", label: "Koala", img: koalaImg },
-  { id: "rhino", label: "Rhino", img: rhinoImg },
-  { id: "elephant", label: "Elephant", img: elephantImg },
-  { id: "sloth", label: "Sloth", img: slothImg },
-  { id: "panda", label: "Panda", img: pandaImg },
-] as const;
+// See CN-7 for how to add new avatars
+export type AvatarAnimal = "monkey" | "koala" | "rhino" | "elephant" | "sloth" | "panda";
 
-export type AvatarAnimal = (typeof AVATAR_OPTIONS_CONST)[number]["id"];
+export const AVATAR_OPTIONS: {
+  value: AvatarAnimal;
+  label: string;
+  img: string;
+}[] = [
+  { value: "monkey", label: "Monkey", img: monkeyImg },
+  { value: "koala", label: "Koala", img: koalaImg },
+  { value: "rhino", label: "Rhino", img: rhinoImg },
+  { value: "elephant", label: "Elephant", img: elephantImg },
+  { value: "sloth", label: "Sloth", img: slothImg },
+  { value: "panda", label: "Panda", img: pandaImg },
+];
 
 export const DEFAULT_AVATAR: AvatarAnimal = "monkey";
 
-export const AVATAR_OPTIONS: { id: AvatarAnimal; label: string; img: string }[] = [...AVATAR_OPTIONS_CONST];
+export const getAvatarImage = (
+  animal: AvatarAnimal | undefined,
+): string => {
+  if (!animal) {
+    return monkeyImg;
+  }
 
-export const getAvatarImage = (animal: string | undefined): string => {
-  const option = AVATAR_OPTIONS.find((a) => a.id === animal);
-  return option?.img ?? monkeyImg;
+  const option = AVATAR_OPTIONS.find((a) => a.value === animal);
+  if (!option) {
+    console.error(`Invalid avatar animal: ${animal}, defaulting to monkey`);
+    return monkeyImg;
+  } else {
+    return option.img;
+  }
 };

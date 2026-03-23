@@ -1,10 +1,11 @@
 import { insert, selectAll, upsert } from "./db-utils.ts";
 import {
+  AvatarAnimal,
   InternalVar,
   InternalVarKey,
   NewUserReport,
   UserPresence,
-  UserReport,
+  UserReport
 } from "./types.tsx";
 
 const PRESENCE_TTL = 10_000;
@@ -12,7 +13,7 @@ const PRESENCE_TTL = 10_000;
 export const updatePresence = async (
   userId: string,
   currentRoomIndex: number,
-  avatarAnimal: string,
+  avatarAnimal: AvatarAnimal
 ) =>
   upsert(
     "presences",

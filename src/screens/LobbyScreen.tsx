@@ -215,9 +215,8 @@ export function LobbyScreen({
   const handleUpdatePresence = async (
     userId: string,
     currentRoomIndex: number,
-    avatarAnimal: string,
   ) => {
-    await api.updateUserPresence(userId, currentRoomIndex, avatarAnimal);
+    await api.updateUserPresence(userId, currentRoomIndex);
   };
 
   const handleCreateAnonDebate = async () => {

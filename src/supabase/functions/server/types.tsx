@@ -1,5 +1,6 @@
 import { AnalysisMetrics } from "./analysis-utils.tsx";
 import { ClusterConsensus } from "./cluster-analysis.tsx";
+import { VALID_AVATARS } from "./constants.tsx";
 
 export interface User {
   id: string;
@@ -26,8 +27,10 @@ export interface User {
   createdInEnvironment?: string;
   tosAgreedToAt?: number;
   tosVersion?: string;
-  avatarAnimal?: string;
+  avatarAnimal?: AvatarAnimal;
 }
+
+export type AvatarAnimal = (typeof VALID_AVATARS)[number];
 
 export type MagicLinkRecord = {
   userId: string;
@@ -46,7 +49,7 @@ export interface UserPresence {
   userId: string;
   currentRoomIndex: number;
   lastUpdated: number;
-  avatarAnimal: string;
+  avatarAnimal: AvatarAnimal;
 }
 
 export interface UserReport {

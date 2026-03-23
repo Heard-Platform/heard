@@ -4,7 +4,7 @@ import { UserPresence, UserSession } from "../../types";
 import { MonkeyInfoModal } from "./MonkeyInfoModal";
 import { TalkBubble } from "../TalkBubble";
 import { ScreenTimeWarningDialog } from "./ScreenTimeWarningDialog";
-import { getAvatarImage, AvatarAnimal } from "../../utils/constants/avatars";
+import { getAvatarImage } from "../../utils/constants/avatars";
 
 // @ts-ignore
 import monkeyWithWrench from "figma:asset/ab06931b1dc1dfba1d9cf4a9e389e4b87471b96c.png";
@@ -21,9 +21,7 @@ interface VineNavigatorProps {
   onUpdatePresence: (
     userId: string,
     currentRoomIndex: number,
-    avatarAnimal: string,
   ) => void;
-  onUpdateAvatar: (avatarAnimal: AvatarAnimal) => void;
 }
 
 const AVATAR_SIZE = 32;
@@ -36,11 +34,9 @@ export function VineNavigator({
   currentUser,
   presences,
   onUpdatePresence,
-  onUpdateAvatar,
 }: VineNavigatorProps) {
-  const baseMonkey = getAvatarImage(currentUser.avatarAnimal);
   const isLoggedIn = !currentUser.isAnonymous;
-    const [monkeyPosition, setMonkeyPosition] =
+  const [monkeyPosition, setMonkeyPosition] =
     useState(currentIndex);
   const [monkeyOffset, setMonkeyOffset] = useState(0);
   const [otherMonkeyOffsets, setOtherMonkeyOffsets] = useState<
@@ -113,15 +109,14 @@ export function VineNavigator({
   useEffect(() => {
     if (!onUpdatePresence) return;
 
-    const avatar = (currentUser.avatarAnimal as string) || "monkey";
-    onUpdatePresence(currentUser.id, currentIndex, avatar);
+    onUpdatePresence(currentUser.id, currentIndex);
 
     const presenceInterval = setInterval(() => {
-      onUpdatePresence(currentUser.id, currentIndex, avatar);
+      onUpdatePresence(currentUser.id, currentIndex);
     }, 3000);
 
     return () => clearInterval(presenceInterval);
-  }, [currentUser.id, currentIndex, currentUser.avatarAnimal]);
+  }, [currentUser.id, currentIndex]);
 
   useEffect(() => {
     const newOffsets: Record<string, number> = {};
@@ -189,7 +184,7 @@ export function VineNavigator({
     ? monkeyEatGif
     : currentUser.isTestUser
       ? monkeyWithWrench
-      : baseMonkey;
+      : getAvatarImage(currentUser.avatarAnimal);
 
   return (
     <div
@@ -400,11 +395,10 @@ export function VineNavigator({
       {showMonkeyInfo && (
         <MonkeyInfoModal
           isOpen={showMonkeyInfo}
-          currentAvatar={(currentUser.avatarAnimal as AvatarAnimal) ?? "monkey"}
+          currentAvatar={currentUser.avatarAnimal ?? "monkey"}
           isLoggedIn={isLoggedIn}
           onClose={() => setShowMonkeyInfo(false)}
           onFeedMonkey={handleFeedMonkey}
-          onSelectAvatar={onUpdateAvatar}
         />
       )}
 

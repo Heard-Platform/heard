@@ -26,6 +26,7 @@ import { reportingApi } from "./reporting-api.tsx";
 import { internalConfigApi } from "./internal-config-api.tsx";
 import { enrichmentApi } from "./enrichment-api.ts";
 import { userRankApi } from "./user-rank-api.tsx";
+import { accountApi } from "./account-api.ts";
 
 type Variables = {
   userId?: string;
@@ -81,6 +82,7 @@ app.get("/make-server-f1a393b4/health", (c) => {
 app.route("/", debateApi);
 app.route("/", adminApi);
 app.route("/", authApi);
+app.route("/", accountApi);
 app.route("/", loginApi);
 app.route("/", redditApi);
 app.route("/", oneTimeFixesApi);

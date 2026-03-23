@@ -22,6 +22,7 @@ import type {
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
 import { ApiResponse } from "../utils/api-client";
+import { AvatarAnimal } from "../utils/constants/avatars";
 
 interface DebateSessionContextType {
   user: UserSession | null;
@@ -88,7 +89,7 @@ interface DebateSessionContextType {
     roomId: string;
     statementIds: string[];
   }> | null>;
-  updateAvatar: (avatarAnimal: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
+  updateAvatar: (avatarAnimal: AvatarAnimal) => Promise<void>;
 }
 
 export type OverridableApiMethods = Pick<DebateSessionContextType, "getExplorableSubHeards">;
@@ -118,14 +119,6 @@ export function DebateSessionProvider(
       const response = await api.getUser(userId);
       if (response.success && response.data) {
         const user = response.data.user;
-        if (user.avatarAnimal) {
-          localStorage.setItem("heard_avatar", user.avatarAnimal);
-        } else {
-          const savedAvatar = localStorage.getItem("heard_avatar");
-          if (savedAvatar) {
-            user.avatarAnimal = savedAvatar;
-          }
-        }
         setUser(user);
         return user;
       } else if (response.error === "SESSION_EXPIRED") {
@@ -707,15 +700,11 @@ export function DebateSessionProvider(
     }>(() => api.runEnrichmentNow());
   }, []);
 
-  const updateAvatar = useCallback(async (avatarAnimal: string) => {
-    setUser((prev) => prev ? { ...prev, avatarAnimal } : prev);
-    localStorage.setItem("heard_avatar", avatarAnimal);
-
+  const updateAvatar = useCallback(async (avatarAnimal: AvatarAnimal) => {
     const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.updateAvatar(avatarAnimal));
     if (response?.data?.user) {
       setUser(response.data.user);
     }
-    return response;
   }, [safelyMakeApiCall]);
 
   // Reset session (full logout)
@@ -726,7 +715,6 @@ export function DebateSessionProvider(
     setError(null);
     clearUserId();
     clearSessionId();
-    localStorage.removeItem("heard_avatar");
   }, []);
 
   // Initialize on mount
@@ -901,9 +889,8 @@ export function DebateSessionProvider(
         console.log("[Showcase] runEnrichmentNow called");
         return { success: true };
       },
-      updateAvatar: async (avatarAnimal: string) => {
+      updateAvatar: async (avatarAnimal: AvatarAnimal) => {
         console.log("[Showcase] updateAvatar called");
-        return { success: true };
       },
       ...showcaseOverrides,
     };

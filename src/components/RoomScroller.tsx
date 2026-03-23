@@ -45,7 +45,6 @@ interface RoomScrollerProps {
   onUpdatePresence: (
     userId: string,
     currentRoomIndex: number,
-    avatarAnimal: string,
   ) => void;
   onShowAccountSetupModal: (featureText: string) => void;
 }
@@ -86,7 +85,7 @@ export const RoomScroller = forwardRef<
     const [loadingRooms, setLoadingRooms] = useState<
       Record<string, boolean>
     >({});
-    const { getRoomStatements, updateAvatar } = useDebateSession();
+    const { getRoomStatements } = useDebateSession();
 
     // Function to refresh statements for a specific room
     const refreshRoomStatements = async (roomId: string) => {
@@ -262,7 +261,6 @@ export const RoomScroller = forwardRef<
               ) || []
             }
             onUpdatePresence={onUpdatePresence}
-            onUpdateAvatar={updateAvatar}
           />
 
           {allCards.map((card, index) => {

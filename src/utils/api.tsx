@@ -100,6 +100,13 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async updateAvatar(avatarAnimal: string) {
+    return this.request<{ user: UserSession }>("/account/avatar", {
+      method: "POST",
+      body: JSON.stringify({ avatarAnimal }),
+    });
+  }
+
   // Room management
   async createRoom(
     newDebate: NewDebateRoom,
@@ -646,22 +653,15 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async updateUserPresence(userId: string, currentRoomIndex: number, avatarAnimal: string) {
+  async updateUserPresence(userId: string, currentRoomIndex: number) {
     return this.request("/vine/presence", {
       method: "POST",
-      body: JSON.stringify({ userId, currentRoomIndex, avatarAnimal }),
+      body: JSON.stringify({ userId, currentRoomIndex }),
     });
   }
 
   async getActivePresences() {
     return this.request<{ data: UserPresence[] }>("/vine/presences");
-  }
-
-  async updateAvatar(avatarAnimal: string) {
-    return this.request<{ user: UserSession }>("/vine/avatar", {
-      method: "POST",
-      body: JSON.stringify({ avatarAnimal }),
-    });
   }
 
   async getEmailPreview(userId?: string, digestType?: string) {

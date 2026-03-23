@@ -1,3 +1,5 @@
+import { AvatarAnimal } from "../utils/constants/avatars";
+
 export type Phase =
   | "lobby"
   | "round1"
@@ -118,7 +120,7 @@ export interface UserSession {
   flyerId?: string;
   convertedFromAnonAt?: number;
   createdInEnvironment?: string;
-  avatarAnimal?: string;
+  avatarAnimal?: AvatarAnimal;
 }
 
 export type DebateMode = "realtime" | "host-controlled";
@@ -236,7 +238,7 @@ export interface UserPresence {
   userId: string;
   currentRoomIndex: number;
   lastUpdated: number;
-  avatarAnimal: string;
+  avatarAnimal: AvatarAnimal;
 }
 
 export type DryRunResult = {
