@@ -38,6 +38,7 @@ interface DebateSessionContextType {
   addPhoneToAccount: (userId: string, phone: string, code: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   addEmailToAccount: (email: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
+  updateAvatar: (avatarAnimal: AvatarAnimal) => Promise<void>;
   createRoom: (
     newDebate: NewDebateRoom,
     autoJoin?: boolean,
@@ -91,7 +92,6 @@ interface DebateSessionContextType {
     roomId: string;
     statementIds: string[];
   }> | null>;
-  updateAvatar: (avatarAnimal: AvatarAnimal) => Promise<void>;
 }
 
 export type OverridableApiMethods = Pick<
@@ -258,6 +258,13 @@ export function DebateSessionProvider(
     }
     return response;
   }, [safelyMakeApiCall, setUserAndSession]);
+
+  const updateAvatar = useCallback(async (avatarAnimal: AvatarAnimal) => {
+    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.updateAvatar(avatarAnimal));
+    if (response?.data?.user) {
+      setUser(response.data.user);
+    }
+  }, [safelyMakeApiCall]);
 
   // Create room (does not join)
   const createRoom = useCallback(
@@ -713,13 +720,6 @@ export function DebateSessionProvider(
     }>(() => api.runEnrichmentNow());
   }, []);
 
-  const updateAvatar = useCallback(async (avatarAnimal: AvatarAnimal) => {
-    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.updateAvatar(avatarAnimal));
-    if (response?.data?.user) {
-      setUser(response.data.user);
-    }
-  }, [safelyMakeApiCall]);
-
   // Reset session (full logout)
   const resetSession = useCallback(() => {
     setUser(null);
@@ -773,6 +773,7 @@ export function DebateSessionProvider(
     addPhoneToAccount,
     addEmailToAccount,
     createAnonymousUser,
+    updateAvatar,
     createRoom,
     joinRoom,
     submitStatement,
@@ -800,7 +801,6 @@ export function DebateSessionProvider(
     getEnrichmentConfig,
     setEnrichmentConfig,
     runEnrichmentNow,
-    updateAvatar,
   };
 
   if (showcase || showcaseOverrides) {
@@ -829,6 +829,9 @@ export function DebateSessionProvider(
       addEmailToAccount: async (email: string) => {
         console.log("[Showcase] addEmailToAccount called");
         return { success: true };
+      },
+      updateAvatar: async (avatarAnimal: AvatarAnimal) => {
+        console.log("[Showcase] updateAvatar called");
       },
       submitFlyerEmail: async (email: string) => {
         console.log("[Showcase] submitFlyerEmail called");
@@ -902,9 +905,6 @@ export function DebateSessionProvider(
       runEnrichmentNow: async () => {
         console.log("[Showcase] runEnrichmentNow called");
         return { success: true };
-      },
-      updateAvatar: async (avatarAnimal: AvatarAnimal) => {
-        console.log("[Showcase] updateAvatar called");
       },
       ...showcaseOverrides,
     };
