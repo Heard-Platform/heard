@@ -20,11 +20,11 @@ import {
   SheetTrigger,
 } from "../ui/sheet";
 import type { Statement, VoteType, SortBy } from "../../types";
-import { QRFlyerDialog } from "./QRFlyerDialog";
+import { useDebateSession } from "../../hooks/useDebateSession";
+import { QRGenerationPage } from "./QRGenerationPage";
 
 interface VotesDrawerProps {
   statements: Statement[];
-  currentUserId?: string;
   debateTitle: string;
   onChangeVote: (statementId: string, newVote: VoteType) => Promise<void>;
 }
@@ -91,7 +91,6 @@ interface VoteButtonProps {
   count: number;
   isUserVote: boolean;
   isChanging: boolean;
-  hasUser: boolean;
   onClick: () => void;
 }
 
@@ -100,7 +99,6 @@ function VoteButton({
   count, 
   isUserVote, 
   isChanging, 
-  hasUser,
   onClick 
 }: VoteButtonProps) {
   const config = voteTypeConfig[type];
@@ -113,7 +111,7 @@ function VoteButton({
       className={`h-8 px-2.5 flex items-center gap-1.5 flex-1 ${
         isUserVote ? config.activeColor : `${config.borderColor} ${config.hoverColor}`
       }`}
-      disabled={isChanging || !hasUser}
+      disabled={isChanging}
       onClick={onClick}
     >
       <Icon className="w-3.5 h-3.5" />
@@ -124,18 +122,20 @@ function VoteButton({
 
 export function VotesDrawer({
   statements,
-  currentUserId,
   debateTitle,
   onChangeVote,
 }: VotesDrawerProps) {
+  const { safelyGetUser } = useDebateSession();
+  const user = safelyGetUser();
+
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [changingVoteId, setChangingVoteId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("none");
   const [qrDialogStatement, setQrDialogStatement] = useState<Statement | null>(null);
 
   const getUserVote = (statement: Statement): VoteType | null => {
-    if (!currentUserId || !statement.voters?.[currentUserId]) return null;
-    return statement.voters[currentUserId];
+    if (!statement.voters?.[user.id]) return null;
+    return statement.voters[user.id];
   };
 
   const getVoteCounts = (statement: Statement) => {
@@ -182,7 +182,18 @@ export function VotesDrawer({
     return 0;
   });
 
+  const handleOpenQrGenerator = (statement: Statement) => {
+    setIsSheetOpen(false);
+    setQrDialogStatement(statement);
+  };
+
+  const handleCloseQrGenerator = () => {
+    setIsSheetOpen(true);
+    setQrDialogStatement(null);
+  }
+
   return (
+    <>
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
       <SheetTrigger asChild>
         <Button
@@ -252,14 +263,16 @@ export function VotesDrawer({
                   animate={{ opacity: 1, y: 0 }}
                   className="p-3 sm:p-4 bg-gradient-to-br from-white to-orange-50 border-2 border-orange-200 rounded-xl space-y-3 relative"
                 >
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="absolute top-2 right-2 h-7 w-7 p-0"
-                    onClick={() => setQrDialogStatement(statement)}
-                  >
-                    <LinkIcon className="w-4 h-4" />
-                  </Button>
+                  {user.isDeveloper && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="absolute top-2 right-2 h-7 w-7 p-0"
+                      onClick={() => handleOpenQrGenerator(statement)}
+                    >
+                      <LinkIcon className="w-4 h-4" />
+                    </Button>
+                  )}
 
                   <p className="text-sm leading-relaxed pr-8">
                     {statement.text}
@@ -271,8 +284,9 @@ export function VotesDrawer({
                       count={counts.agree}
                       isUserVote={userVote === "agree"}
                       isChanging={isChanging}
-                      hasUser={!!currentUserId}
-                      onClick={() => currentUserId && handleChangeVote(statement.id, "agree")}
+                      onClick={() =>
+                        handleChangeVote(statement.id, "agree")
+                      }
                     />
 
                     <VoteButton
@@ -280,8 +294,9 @@ export function VotesDrawer({
                       count={counts.disagree}
                       isUserVote={userVote === "disagree"}
                       isChanging={isChanging}
-                      hasUser={!!currentUserId}
-                      onClick={() => currentUserId && handleChangeVote(statement.id, "disagree")}
+                      onClick={() =>
+                        handleChangeVote(statement.id, "disagree")
+                      }
                     />
 
                     <VoteButton
@@ -289,8 +304,9 @@ export function VotesDrawer({
                       count={counts.super_agree}
                       isUserVote={userVote === "super_agree"}
                       isChanging={isChanging}
-                      hasUser={!!currentUserId}
-                      onClick={() => currentUserId && handleChangeVote(statement.id, "super_agree")}
+                      onClick={() =>
+                        handleChangeVote(statement.id, "super_agree")
+                      }
                     />
 
                     <VoteButton
@@ -298,8 +314,9 @@ export function VotesDrawer({
                       count={counts.pass}
                       isUserVote={userVote === "pass"}
                       isChanging={isChanging}
-                      hasUser={!!currentUserId}
-                      onClick={() => currentUserId && handleChangeVote(statement.id, "pass")}
+                      onClick={() =>
+                        handleChangeVote(statement.id, "pass")
+                      }
                     />
                   </div>
                 </motion.div>
@@ -309,13 +326,13 @@ export function VotesDrawer({
         </div>
       </SheetContent>
 
+      </Sheet>
       {qrDialogStatement &&
-        <QRFlyerDialog
+        <QRGenerationPage
           statement={qrDialogStatement}
-          isOpen={!!qrDialogStatement}
-          onClose={() => setQrDialogStatement(null)}
+          onClose={() => handleCloseQrGenerator()}
         />
       }
-    </Sheet>
+    </>
   );
 }

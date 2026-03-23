@@ -4,7 +4,7 @@ import type {
   VoteType,
   UserPresence, SubHeard
 } from "../types";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "motion/react";
 import {
   RoomScroller,
@@ -15,7 +15,6 @@ import { SubHeardBrowser } from "../components/community/SubHeardBrowser";
 import { CommunityExplorerDialog } from "../components/community/CommunityExplorerDialog";
 import { IntroModal } from "../components/IntroModal";
 import { FloatingCreateButton } from "../components/FloatingCreateButton";
-import { FloatingFeedbackButton } from "../components/FloatingFeedbackButton";
 import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
 import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
@@ -107,27 +106,26 @@ export function LobbyScreen({
   type Steps = "tutorial" | "explorer" | "complete";
   const [introStep, setIntroStep] = useState<Steps>("complete");
 
-  // Sort rooms: target room first, then newest first
-  const filteredRooms = activeRooms.sort((a, b) => {
-    // If there's a target room ID, put it first
-    if (targetRoomId) {
-      if (a.id === targetRoomId) return -1;
-      if (b.id === targetRoomId) return 1;
-    }
-    // Otherwise sort by newest first
-    return b.createdAt - a.createdAt;
-  });
+  const filteredRooms = useMemo(() => {
+    return [...activeRooms].sort((a, b) => {
+      if (targetRoomId) {
+        if (a.id === targetRoomId) return -1;
+        if (b.id === targetRoomId) return 1;
+      }
+      return 0;
+    });
+  }, [activeRooms, targetRoomId]);
 
   useEffect(() => {
     const hasSeenIntro = localStorage.getItem(INTRO_SEEN_KEY);
-    if (!hasSeenIntro && !hasQrScanResult) {
+    if (!hasSeenIntro && !hasQrScanResult && !targetRoomId) {
       localStorage.setItem(INTRO_SEEN_KEY, "true");
       setTimeout(() => {
         setIntroStep("tutorial");
         setHelpModalOpen(true);
       }, 500);
     }
-  }, [hasQrScanResult]);
+  }, [hasQrScanResult, targetRoomId]);
 
   // Detect mobile keyboard state
   useEffect(() => {
@@ -337,9 +335,6 @@ export function LobbyScreen({
                 cursor: "pointer",
               }}
             >
-              <p className="text-[10px] text-purple-400/80 tracking-wide uppercase mb-[-2px]">
-                A place to be
-              </p>
               <motion.h1
                 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
                 style={{
@@ -438,11 +433,6 @@ export function LobbyScreen({
         <FloatingCreateButton
           onPress={handleOpenCreateSheet}
         />
-      )}
-
-      {/* Floating feedback button - hide when keyboard is open */}
-      {!isKeyboardOpen && (
-        <FloatingFeedbackButton userId={user.id} />
       )}
 
       {/* Create room sheet */}

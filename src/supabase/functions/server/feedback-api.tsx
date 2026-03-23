@@ -1,7 +1,7 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
-import { getDevUsers } from "./kv-utils.tsx";
+import { sendEmailToDevs } from "./dev-utils.tsx";
 
 const app = new Hono();
 
@@ -33,7 +33,6 @@ app.post("/make-server-f1a393b4/feedback/submit", async (c) => {
       await sendFeedbackEmail(feedback);
     } catch (emailError) {
       console.error("Failed to send feedback email:", emailError);
-      // Don't fail the request if email fails
     }
 
     return c.json({
@@ -74,21 +73,6 @@ app.get("/make-server-f1a393b4/feedback/list", async (c) => {
 });
 
 async function sendFeedbackEmail(feedback: any) {
-  const resendApiKey = Deno.env.get("RESEND_API_KEY");
-  
-  if (!resendApiKey) {
-    console.error("RESEND_API_KEY not found in environment variables");
-    return;
-  }
-
-  // Get all dev users
-  const devEmails = await getDevEmails();
-  
-  if (devEmails.length === 0) {
-    console.log("No dev users found to send feedback email to");
-    return;
-  }
-
   const emailHtml = `
     <!DOCTYPE html>
     <html>
@@ -130,53 +114,11 @@ async function sendFeedbackEmail(feedback: any) {
     </html>
   `;
 
-  // Send email to all dev users
-  for (const devEmail of devEmails) {
-    try {
-      const response = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${resendApiKey}`,
-        },
-        body: JSON.stringify({
-          from: "Heard Feedback <feedback@heard-now.com>",
-          to: [devEmail],
-          subject: `💜 New Heard Feedback: "${feedback.text.substring(0, 50)}${feedback.text.length > 50 ? "..." : ""}"`,
-          html: emailHtml,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error(`Failed to send email to ${devEmail}:`, errorData);
-      } else {
-        console.log(`Feedback email sent successfully to ${devEmail}`);
-      }
-    } catch (error) {
-      console.error(`Error sending email to ${devEmail}:`, error);
-    }
-  }
-}
-
-async function getDevEmails(): Promise<string[]> {
-  try {
-    const devUsers = await getDevUsers();
-    const devEmails = devUsers
-      .filter(user => user.email)
-      .map(user => user.email);
-    
-    // If we found dev users, return their emails
-    if (devEmails.length > 0) {
-      return devEmails;
-    }
-    
-    // Default dev email if no developers found
-    return ["dev@heard-now.com"];
-  } catch (error) {
-    console.error("Error getting dev users:", error);
-    return ["dev@heard-now.com"];
-  }
+  await sendEmailToDevs({
+    from: "Heard Feedback <feedback@heard-now.com>",
+    subject: `💜 New Heard Feedback: "${feedback.text.substring(0, 50)}${feedback.text.length > 50 ? "..." : ""}"`,
+    html: emailHtml,
+  });
 }
 
 export { app as feedbackApi };

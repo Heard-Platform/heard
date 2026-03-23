@@ -1,6 +1,7 @@
 import { VotesDrawer } from "../components/results/VotesDrawer";
+import { DebateSessionProvider } from "../hooks/useDebateSession";
 import type { Statement } from "../types";
-import { mockStatements as baseMockStatements } from "./mockData";
+import { mockStatements as baseMockStatements, mockUser } from "./mockData";
 
 // Mock data with various vote distributions
 const mockStatements: Statement[] = [
@@ -167,21 +168,37 @@ const mockStatements: Statement[] = [
   ...baseMockStatements["debate-no-image"][0],
 }));
 
+const safelyGetUser = () => mockUser;
+const safelyGetDevUser = () => ({...mockUser, isDeveloper: true});
+
 export function VotesDrawerStory() {
-  const handleChangeVote = async (statementId: string, newVote: any) => {
+  const handleChangeVote = async (
+    statementId: string,
+    newVote: any,
+  ) => {
     console.log("Vote changed:", { statementId, newVote });
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  };
+
+  const props = {
+    statements: mockStatements,
+    currentUserId: "voter1",
+    debateTitle: "Is pineapple on pizza acceptable?",
+    onChangeVote: handleChangeVote,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 p-8">
-      <VotesDrawer
-        statements={mockStatements}
-        currentUserId="voter1"
-        debateTitle="Is pineapple on pizza acceptable?"
-        onChangeVote={handleChangeVote}
-      />
-    </div>
+    <>
+      <DebateSessionProvider showcaseOverrides={{ safelyGetUser }}>
+        <div><p>Regular User</p></div>
+        <VotesDrawer {...props} />
+      </DebateSessionProvider>
+      <DebateSessionProvider
+        showcaseOverrides={{ safelyGetUser: safelyGetDevUser }}
+        >
+        <div><p>Developer User</p></div>
+        <VotesDrawer {...props} />
+      </DebateSessionProvider>
+    </>
   );
 }

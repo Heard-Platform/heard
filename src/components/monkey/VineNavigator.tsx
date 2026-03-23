@@ -369,22 +369,14 @@ export function VineNavigator({
                   marginTop: -monkeyHeight / 2,
                 }}
               >
-                <div className="relative group">
+                <div className="relative">
                   <motion.img
                     src={getAvatarImage(presence.avatarAnimal)}
                     alt={`${presence.userId} avatar`}
                     className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
                     style={{ scaleX: -1 }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowMonkeyInfo(true)}
                   />
 
-                  <div className="absolute -right-2 top-1/2 transform translate-x-full -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                    <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap shadow-lg">
-                      {presence.userId}
-                    </div>
-                  </div>
                 </div>
               </motion.div>
             );

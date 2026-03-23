@@ -52,7 +52,9 @@ import { UsersTable } from "./admin/UsersTable";
 import { DataFixes } from "./admin/DataFixes";
 import { Newsletter } from "./admin/Newsletter";
 import { SmsNotifications } from "./admin/SmsNotifications";
+import { Flyers } from "./admin/Flyers";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
+import { PowerUsers } from "./admin/PowerUsers";
 
 interface AdminPanelProps {
   onExit?: () => void;
@@ -89,12 +91,21 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     const tab = url.searchParams.get("tab");
     return tab || "subheards";
   });
+  const [selectedHistoryUserId, setSelectedHistoryUserId] = useState<string>("");
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     const url = new URL(window.location.href);
     url.searchParams.set("tab", tab);
     window.history.pushState({}, "", url.toString());
+    if (tab !== "history") {
+      setSelectedHistoryUserId("");
+    }
+  };
+
+  const handlePowerUserClick = (userId: string) => {
+    setSelectedHistoryUserId(userId);
+    handleTabChange("history");
   };
 
   const fetchAdminData = async () => {
@@ -535,6 +546,18 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             <MessageSquare className="w-4 h-4 mr-2" />
             SMS Notifications
           </Button>
+          <Button
+            variant={activeTab === "flyers" ? "default" : "ghost"}
+            onClick={() => handleTabChange("flyers")}
+          >
+            Flyers
+          </Button>
+          <Button
+            variant={activeTab === "powerusers" ? "default" : "ghost"}
+            onClick={() => handleTabChange("powerusers")}
+          >
+            Power Users
+          </Button>
         </div>
 
         {activeTab === "subheards" && (
@@ -836,7 +859,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
               interactions.
             </p>
             <UserHistory
-              currentUserId={users[0]?.id || ""}
+              currentUserId={selectedHistoryUserId || users[0]?.id || ""}
               adminKey={adminKey}
             />
           </Card>
@@ -853,6 +876,19 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             adminKey={adminKey}
             currentUserId={users[0]?.id || ""}
             debates={debates}
+          />
+        )}
+
+        {activeTab === "flyers" && (
+          <Flyers
+            adminKey={adminKey}
+          />
+        )}
+
+        {activeTab === "powerusers" && (
+          <PowerUsers
+            adminKey={adminKey}
+            onPowerUserClick={handlePowerUserClick}
           />
         )}
       </div>

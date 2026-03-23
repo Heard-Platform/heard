@@ -30,6 +30,7 @@ interface DebateSessionContextType {
   currentSubHeard: string | null;
   loading: boolean;
   error: string | null;
+  safelyGetUser: () => UserSession;
   sendMagicLink: (email: string) => Promise<ApiResponse | null>;
   verifyMagicLink: (code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
   sendSmsCode: (phone: string, requireExisting?: boolean) => Promise<ApiResponse | null>;
@@ -56,6 +57,7 @@ interface DebateSessionContextType {
     statementId: string,
     vote: VoteType,
     userId?: string,
+    flyerGroup?: number,
   ) => Promise<FlyerVoteResponse | null>;
   submitFlyerEmail: (email: string) => Promise<ApiResponse | null>;
   markChanceCardSwiped: (
@@ -92,7 +94,10 @@ interface DebateSessionContextType {
   updateAvatar: (avatarAnimal: AvatarAnimal) => Promise<void>;
 }
 
-export type OverridableApiMethods = Pick<DebateSessionContextType, "getExplorableSubHeards">;
+export type OverridableApiMethods = Pick<
+  DebateSessionContextType,
+  "safelyGetUser" | "getExplorableSubHeards"
+>;
 
 const DebateSessionContext = createContext<DebateSessionContextType | null>(null);
 
@@ -112,6 +117,13 @@ export function DebateSessionProvider(
   const [roomStatements, setRoomStatements] = useState<
     Record<string, Statement[]>
   >({});
+
+  const safelyGetUser = useCallback(() => {
+    if (!user) {
+      throw new Error("User not loaded");
+    }
+    return user;
+  }, [user]);
 
   const loadUserUsingStoredId = useCallback(async (userId: string) => {
     try {
@@ -405,9 +417,10 @@ export function DebateSessionProvider(
       statementId: string,
       vote: VoteType,
       userId?: string,
+      flyerGroup?: number,
     ) => {
       const response = await safelyMakeApiCall<FlyerVoteResponse>(() =>
-        api.voteViaFlyer(flyerId, statementId, vote, userId),
+        api.voteViaFlyer(flyerId, statementId, vote, userId, flyerGroup),
       );
       if (response && response.success && response.data) {
         setUserAndSession(
@@ -752,6 +765,7 @@ export function DebateSessionProvider(
     currentSubHeard,
     loading,
     error,
+    safelyGetUser,
     sendMagicLink,
     verifyMagicLink,
     sendSmsCode,

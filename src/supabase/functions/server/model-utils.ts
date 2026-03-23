@@ -44,6 +44,14 @@ export const getFlyerEmails = async () => {
   return selectAll<{ email: string }>("flyer_emails");
 };
 
+export const insertOrgEmail = async (email: string) => {
+  return insert<{ email: string }>("org_signups", { email });
+};
+
+export const getOrgEmails = async () => {
+  return selectAll<{ email: string }>("org_signups");
+};
+
 export const setInternalVar = async (key: InternalVarKey, value: any) =>
   upsert(
     "internal_vars",

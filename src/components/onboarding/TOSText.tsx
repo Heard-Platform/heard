@@ -1,12 +1,19 @@
 export function TOSText() {
   return (
-    <p className="text-xs text-center text-muted-foreground">
+    <p className="text-xs text-muted-foreground">
       By using Heard, you agree to our{" "}
       <a
         href="/terms"
-        className="text-purple-600 hover:text-purple-700 underline"
+        className="heard-link underline"
       >
         Terms of Service
+      </a>
+      {" "}and{" "}
+      <a
+        href="/privacy"
+        className="heard-link underline"
+      >
+        Privacy Policy
       </a>
     </p>
   );

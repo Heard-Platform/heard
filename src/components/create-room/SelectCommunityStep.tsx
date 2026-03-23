@@ -106,6 +106,28 @@ export function SelectCommunityStep({
               className="space-y-2 max-h-[300px] overflow-y-auto pr-1 scrollbar-hide"
               ref={scrollContainerRef}
             >
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0 }}
+              >
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCreateDialog(true)}
+                  className="w-full h-auto py-3 px-4 heard-between transition-all bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 border-dashed border-2 hover:border-purple-400 hover:from-purple-100 hover:to-pink-100"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-500/20 text-purple-600">
+                      <Plus className="w-4 h-4" />
+                    </div>
+                    <span className="text-purple-700">
+                      Create New Community
+                    </span>
+                  </div>
+                  <span className="text-xl">✨</span>
+                </Button>
+              </motion.div>
+
               {sortedSubHeards.map((sh, index) => {
                 const isSelected = subHeard === sh.name;
                 const isDefault = sh.name === defaultSubHeard;
@@ -115,7 +137,7 @@ export function SelectCommunityStep({
                     key={sh.name}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.03 }}
+                    transition={{ delay: (index + 1) * 0.03 }}
                   >
                     <Button
                       variant="outline"
@@ -162,28 +184,6 @@ export function SelectCommunityStep({
                   </motion.div>
                 );
               })}
-
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: sortedSubHeards.length * 0.03 }}
-              >
-                <Button
-                  variant="outline"
-                  onClick={() => setShowCreateDialog(true)}
-                  className="w-full h-auto py-3 px-4 heard-between transition-all bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 border-dashed border-2 hover:border-purple-400 hover:from-purple-100 hover:to-pink-100"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-500/20 text-purple-600">
-                      <Plus className="w-4 h-4" />
-                    </div>
-                    <span className="text-purple-700">
-                      Create New Community
-                    </span>
-                  </div>
-                  <span className="text-xl">✨</span>
-                </Button>
-              </motion.div>
             </div>
           )}
         </div>

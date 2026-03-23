@@ -10,10 +10,11 @@ import { assertLessOrEqual } from "https://deno.land/std@0.208.0/assert/assert_l
 import { makeTransformPromptFromRedditPost } from "./ai-prompt-utils.ts";
 import { assertGreater } from "https://deno.land/std@0.208.0/assert/assert_greater.ts";
 import { OpenAiClient } from "./openai-client.ts";
+import { getRandomSubreddit } from "./reddit-import-service.ts";
 
 const testCriteria = {
-  subredditName: "askreddit",
-  maxPostAgeMins: 10 * ONE_HOUR_MIN,
+  subredditName: getRandomSubreddit(),
+  maxPostAgeMins: 20 * ONE_HOUR_MIN,
   postLimit: 100,
 } as RedditScrapeCriteria;
 
@@ -98,6 +99,7 @@ if (false) {
         posts[randomIndex],
       );
       const aiResponse = await aiClient.complete(aiPrompt);
+      console.log(aiResponse);
       assertGreater(aiResponse.length, 0);
     });
   });

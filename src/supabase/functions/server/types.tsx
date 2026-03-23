@@ -7,6 +7,7 @@ export interface User {
   nickname: string;
   email: string;
   phoneNumber?: string;
+  avatarAnimal?: AvatarAnimal;
   score: number;
   streak: number;
   currentRoomId?: string;
@@ -23,14 +24,26 @@ export interface User {
   createdAt: number;
   isAnonymous?: boolean;
   flyerId?: string;
+  flyerGroup?: number;
   convertedFromAnonAt?: number;
   createdInEnvironment?: string;
   tosAgreedToAt?: number;
   tosVersion?: string;
-  avatarAnimal?: AvatarAnimal;
+  privacyPolicyAgreedToAt?: number;
+  privacyPolicyVersion?: string;
+  ipAddress?: string;
+  fingerprint?: string;
+  userAgent?: string;
+  webdriver?: boolean;
 }
 
 export type AvatarAnimal = (typeof VALID_AVATARS)[number];
+
+export type UserActivityRecord = {
+  date: string;
+  userId: string;
+  timestamp: number;
+};
 
 export type MagicLinkRecord = {
   userId: string;
@@ -141,6 +154,8 @@ export interface DebateRoom {
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
   youtubeCardSwiped?: boolean;
+  lastActivityAt?: number;
+  totalVotes?: number;
 }
 
 export type AnonCreatableRecords = "votes" | "statements" | "score";

@@ -28,7 +28,9 @@ export interface ClusterConsensus {
 export function calcConsensusScore(agreeCount: number, disagreeCount: number): number {
   const opinionatedVoteCount = agreeCount + disagreeCount;
   const diff = Math.abs(agreeCount - disagreeCount);
-  const consensusScore = (diff * Math.log(opinionatedVoteCount)) / (opinionatedVoteCount);
+  const consensusScore = opinionatedVoteCount
+    ? (diff * Math.log(opinionatedVoteCount)) / opinionatedVoteCount
+    : 0;
   console.log(`agreeCount=${agreeCount}, disagreeCount=${disagreeCount}, totalVoteCount=${opinionatedVoteCount}, consensusScore=${consensusScore.toFixed(2)}`);
   return consensusScore;
 }

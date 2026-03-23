@@ -30,6 +30,13 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
     loadUsers();
   }, []);
 
+  useEffect(() => {
+    if (currentUserId && currentUserId !== selectedUserId) {
+      setSelectedUserId(currentUserId);
+      loadUserHistory(currentUserId);
+    }
+  }, [currentUserId]);
+
   const loadUsers = async () => {
     setIsLoadingUsers(true);
     setError(null);

@@ -18,7 +18,7 @@ export function Newsletter({ adminKey }: NewsletterProps) {
   const [eligibleCount, setEligibleCount] = useState<number | null>(null);
   const [alreadySentCount, setAlreadySentCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedNewsletter, setSelectedNewsletter] = useState<number>(7);
+  const [selectedNewsletter, setSelectedNewsletter] = useState<number>(9);
 
   const fetchEligibleCount = async () => {
     try {
@@ -48,10 +48,7 @@ export function Newsletter({ adminKey }: NewsletterProps) {
     if (!isTest && eligibleCount !== null) {
       const confirmed = confirm(
         `Send newsletter to ${eligibleCount} users?\n\n` +
-          `This will send the "Ya' Heard?" newsletter with:\n` +
-          `- Music livestream info\n` +
-          `- Community organizing update\n` +
-          `- How to support HEARD\n\n` +
+          `This will send the "Ya' Heard?" newsletter\n` +
           `Are you sure?`
       );
 
@@ -115,6 +112,11 @@ export function Newsletter({ adminKey }: NewsletterProps) {
               <SelectItem value="5">Newsletter #5 - Community Features, Mom Test & Dupont</SelectItem>
               <SelectItem value="6">Newsletter #6 - Breaking 100 Users, Guerrilla Marketing</SelectItem>
               <SelectItem value="7">Newsletter #7 - Public Benefit Corp, Custom Feeds & March Outreach Blitz</SelectItem>
+              {Array.from({ length: 2 }, (_, i) => i + 8).map((num) => (
+                <SelectItem key={num} value={num.toString()}>
+                  Newsletter #{num}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

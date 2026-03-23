@@ -205,15 +205,15 @@ export function IntroModal({
                 </motion.div>
                 
                 <p className="text-base text-white/95 font-medium drop-shadow-md max-w-sm mx-auto leading-relaxed">
-                  Heard is an app for making conversations, debates, and decision-making fun.
+                  Heard is a platform for communities to vote on ideas, topics, and questions, and have fun doing it!
                 </p>
                 
-                <p className="text-sm text-white/90">
+                <p className="text-xs text-white/70">
                   <a
                     href="https://amasonlong.notion.site/About-Heard-2cc4ab4bf00380a9b63ce3b83234ae02?pvs=73"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-black text-yellow-200 hover:text-yellow-100 underline decoration-2 decoration-yellow-300/50 underline-offset-4 transition-colors"
+                    className="hover:text-white/90 underline underline-offset-2 transition-colors"
                   >
                     Learn more
                   </a>
@@ -232,8 +232,8 @@ export function IntroModal({
               transition={{ delay: 0.2 }}
               className="space-y-3"
             >
-              <h3 className="text-sm font-medium text-center text-white/90">
-                How to Play
+              <h3 className="text-sm font-medium text-left text-white/90">
+                How to Use
               </h3>
 
               <Card className="heard-card-bg">

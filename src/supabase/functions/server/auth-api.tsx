@@ -266,12 +266,22 @@ app.post(
   "/make-server-f1a393b4/user/anonymous",
   async (c: any) => {
     try {
-      const { environment } = await c.req.json();
+      const { environment, fingerprint, userAgent, webdriver } =
+        await c.req.json();
       const isTestUser = environment !== "production";
-      
+
+      const ipAddress =
+        c.req.header("x-forwarded-for") ||
+        c.req.header("x-real-ip") ||
+        "unknown";
+
       const user = await createAnonymousUser({
         createdInEnvironment: environment || "unknown", // CN-3
         isTestUser,
+        ipAddress,
+        fingerprint: fingerprint || "unknown", // CN-5
+        userAgent: userAgent || "unknown", // CN-5
+        webdriver: webdriver || false, // CN-5
       });
 
       const userResult = await getUserAndNewSession(user.id);
@@ -285,7 +295,10 @@ app.post(
       });
     } catch (error) {
       console.error("Error creating anonymous user:", error);
-      return c.json({ error: "Failed to create anonymous user" }, 500);
+      return c.json(
+        { error: "Failed to create anonymous user" },
+        500,
+      );
     }
   },
 );

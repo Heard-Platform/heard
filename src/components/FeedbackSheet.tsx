@@ -125,7 +125,7 @@ export function FeedbackSheet({
             I'd love to hear from you! Text or call Alex at{" "}
             <a
               href="tel:916-234-3273"
-              className="font-bold text-purple-600 hover:text-purple-700 underline decoration-2 decoration-purple-300 underline-offset-2"
+              className="font-bold heard-link underline decoration-2 decoration-purple-300 underline-offset-2"
             >
               916-BE-HEARD (234-3273)
             </a>{" "}
@@ -138,7 +138,7 @@ export function FeedbackSheet({
               href="https://calendly.com/alexmasonlong/30-minute"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-bold text-purple-600 hover:text-purple-700 underline decoration-2 decoration-purple-300 underline-offset-2"
+              className="font-bold heard-link underline decoration-2 decoration-purple-300 underline-offset-2"
             >
               Book a time
             </a>

@@ -6,17 +6,34 @@ import { getNewsletter7Email } from "./email-newsletter-7.ts";
 import { sanitizeUser } from "./user-utils.ts";
 import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
-import { getAllRealDebates, getAllRealUsers, getAllStatements, getAllSubHeards, getByPrefixParsed, getDebate, getUser, saveDebate, phoneKvKeyFn, deletePhone, getCommunity, saveCommunity } from "./kv-utils.tsx";
-import { getVotesForUser, getUserActivityRecords } from "./kv-utils.tsx";
+import {
+  getAllRealDebates,
+  getAllRealUsers,
+  getAllStatements,
+  getAllSubHeards,
+  getByPrefixParsed,
+  getDebate,
+  getUser,
+  saveDebate, deletePhone,
+  getCommunity,
+  saveCommunity,
+  getAllActivityRecords
+} from "./kv-utils.tsx";
+import {
+  getVotesForUser,
+  getUserActivityRecords,
+} from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
 import { saveUser } from "./kv-utils.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 import { sendDebateCompletionCelebration } from "./cron-api.tsx";
 import { getNewsletterRecipients, getNewsletterSentKey } from "./newsletter-utils.ts";
+import { getFlyerEmails } from "./model-utils.ts";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
 import { getNewsletter2Email, getNewsletterEmail } from "./email-templates.tsx";
+import { getNewsletterEmailByEdition } from "./email-newsletters.ts";
 
 const app = new Hono();
 
@@ -643,6 +660,10 @@ app.post(
         const newsletter7 = getNewsletter7Email();
         subject = newsletter7.subject;
         getNewsletterHtml = () => newsletter7.html;
+      } else if (newsletterEdition > 7) {
+        const newsletter = getNewsletterEmailByEdition(newsletterEdition);
+        subject = newsletter.subject;
+        getNewsletterHtml = () => newsletter.html;
       } else {
         const getNewsletterHtmlFn = newsletterEdition === 2 ? getNewsletter2Email : newsletterEdition === 3 ? getNewsletter3Email : getNewsletterEmail;
         const newsletterSubjects = {
@@ -756,5 +777,44 @@ app.post(
     }
   },
 );
+
+app.get("/make-server-f1a393b4/admin/flyer-emails", async (c) => {
+  try {
+    const emails = await getFlyerEmails();
+    return c.json({ emails });
+  } catch (error) {
+    console.error("Error fetching flyer emails:", error);
+    return c.json({ error: "Failed to fetch flyer emails" }, 500);
+  }
+});
+
+app.get("/make-server-f1a393b4/admin/power-users", async (c) => {
+  try {
+    const allUsers = await getAllRealUsers();
+    const allActivities = await getAllActivityRecords();
+
+    const userActivityMap = new Map<string, Set<string>>();
+
+    for (const activity of allActivities) {
+      if (!userActivityMap.has(activity.userId)) {
+        userActivityMap.set(activity.userId, new Set());
+      }
+      userActivityMap.get(activity.userId)!.add(activity.date);
+    }
+
+    const powerUsers = allUsers
+      .map(user => ({
+        user: sanitizeUser(user),
+        uniqueDays: userActivityMap.get(user.id)?.size || 0,
+      }))
+      .filter(pu => pu.uniqueDays > 0)
+      .sort((a, b) => b.uniqueDays - a.uniqueDays);
+
+    return c.json({ powerUsers });
+  } catch (error) {
+    console.error("Error fetching power users:", error);
+    return c.json({ error: "Failed to fetch power users" }, 500);
+  }
+});
 
 export { app as adminApi };

@@ -299,9 +299,30 @@ export interface RetentionStatsData {
   d30Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
 }
 
+export interface FunnelMetricsData {
+  users: number;
+  flyerUsers: number;
+  flyerEmails: number;
+  flyerUsersWithAccounts: number;
+  createdAccount: number;
+  tookAction: number;
+  tookActionTwoDays: number;
+  tookActionTenDays: number;
+}
+
 export interface FeatureResults {
+  webDriverUsers: number;
+  webDriverUsersSince: number;
+  uniqueIpAddresses: number;
+  uniqueIpAddressesSince: number;
+  uniqueFingerprints: number;
+  uniqueFingerprintsSince: number;
+  uniqueUserAgents: number;
+  uniqueUserAgentsSince: number;
   tosAgreedUsers: number;
   tosAgreedSince: number;
+  privacyPolicyAgreedUsers: number;
+  privacyPolicyAgreedSince: number;
   flyerEmails: number;
   flyerEmailsSince: number;
   userReports: number;

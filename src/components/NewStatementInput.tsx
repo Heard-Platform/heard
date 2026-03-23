@@ -64,7 +64,7 @@ export function NewStatementInput({
         <Input
           value={newStatementText}
           onChange={(e) => handleInputChange(e.target.value)}
-          placeholder="Share your take here"
+          placeholder="Add your opinion here"
           disabled={isSubmitting}
           maxLength={500}
           onKeyDown={(e) => {
