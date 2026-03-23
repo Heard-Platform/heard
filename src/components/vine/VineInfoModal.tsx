@@ -4,21 +4,21 @@ import { useState, useEffect } from "react";
 import { AvatarCarousel } from "./AvatarCarousel";
 import { AvatarAnimal } from "../../utils/constants/avatars";
 
-interface MonkeyInfoModalProps {
+interface VineInfoModalProps {
   currentAvatar: AvatarAnimal;
   isOpen: boolean;
   isLoggedIn: boolean;
-  onFeedMonkey: () => void;
+  onFeed: () => void;
   onClose: () => void;
 }
 
-export function MonkeyInfoModal({
+export function VineInfoModal({
   currentAvatar,
   isOpen,
   isLoggedIn,
-  onFeedMonkey,
+  onFeed,
   onClose,
-}: MonkeyInfoModalProps) {
+}: VineInfoModalProps) {
   const [screenTimeEnd, setScreenTimeEnd] = useState<number | null>(null);
   const [remainingMinutes, setRemainingMinutes] = useState<number>(0);
 
@@ -68,10 +68,10 @@ export function MonkeyInfoModal({
     setRemainingMinutes(0);
   };
 
-  const handleFeedMonkey = () => {
+  const handleFeed = () => {
     onClose();
     setTimeout(() => {
-      onFeedMonkey();
+      onFeed();
     }, 300);
   };
 

@@ -14,7 +14,7 @@ import type {
   UserSession,
 } from "../types";
 import { RoomCard } from "./RoomCard";
-import { VineNavigator } from "./monkey/VineNavigator";
+import { VineNavigator } from "./vine/VineNavigator";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { CreateRoomCard } from "./CreateRoomCard";
 

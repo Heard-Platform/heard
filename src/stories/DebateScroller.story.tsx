@@ -5,6 +5,7 @@ import type {
 } from "../types";
 import { useState, useCallback, useEffect } from "react";
 import { mockStatements, mockRooms } from "./mockData";
+import { AvatarAnimal } from "../utils/constants/avatars";
 
 export function DebateScrollerStory() {
   const handleJoinRoom = (roomId: string) => {
@@ -93,14 +94,18 @@ export function DebateScrollerStory() {
   ]);
 
   const handleUpdatePresence = useCallback(
-    (userId: string, currentRoomIndex: number, avatarAnimal: string) => {
+    (userId: string, currentRoomIndex: number) => {
       setPresences((prev) => {
-        const filtered = prev.filter(
-          (p) => p.userId !== userId,
-        );
+        const original = prev.find((p) => p.userId === userId);
+        const filtered = prev.filter((p) => p.userId !== userId);
         return [
           ...filtered,
-          { userId, currentRoomIndex, lastUpdated: Date.now(), avatarAnimal },
+          {
+            userId,
+            currentRoomIndex,
+            lastUpdated: Date.now(),
+            avatarAnimal: original?.avatarAnimal || "monkey",
+          },
         ];
       });
     },
@@ -147,7 +152,7 @@ export function DebateScrollerStory() {
                   Math.random() * availableUsers.length,
                 )
               ];
-            const avatars = ["monkey", "koala", "rhino", "elephant", "sloth", "panda"];
+            const avatars: AvatarAnimal[] = ["monkey", "koala", "rhino", "elephant", "sloth", "panda"];
             return [
               ...prev,
               {

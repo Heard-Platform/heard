@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { UserPresence, UserSession } from "../../types";
-import { MonkeyInfoModal } from "./MonkeyInfoModal";
+import { VineInfoModal } from "./VineInfoModal";
 import { TalkBubble } from "../TalkBubble";
 import { ScreenTimeWarningDialog } from "./ScreenTimeWarningDialog";
 import { getAvatarImage } from "../../utils/constants/avatars";
@@ -25,7 +25,7 @@ interface VineNavigatorProps {
 }
 
 const AVATAR_SIZE = 32;
-const OTHER_MONKEY_SIZE = 24;
+const OTHER_AVATAR_SIZE = 24;
 const VINE_WIDTH = 16;
 
 export function VineNavigator({
@@ -36,13 +36,13 @@ export function VineNavigator({
   onUpdatePresence,
 }: VineNavigatorProps) {
   const isLoggedIn = !currentUser.isAnonymous;
-  const [monkeyPosition, setMonkeyPosition] =
+  const [avatarPosition, setAvatarPosition] =
     useState(currentIndex);
-  const [monkeyOffset, setMonkeyOffset] = useState(0);
-  const [otherMonkeyOffsets, setOtherMonkeyOffsets] = useState<
+  const [avatarOffset, setAvatarOffset] = useState(0);
+  const [otherAvatarOffsets, setOtherAvatarOffsets] = useState<
     Record<string, number>
   >({});
-  const [showMonkeyInfo, setShowMonkeyInfo] = useState(false);
+  const [showAvatarInfo, setShowAvatarInfo] = useState(false);
   const [isEating, setIsEating] = useState(false);
   const [showSpeechBubble, setShowSpeechBubble] = useState(false);
   const [screenTimeExceeded, setScreenTimeExceeded] = useState(false);
@@ -50,7 +50,7 @@ export function VineNavigator({
 
   const vineHeight = totalCards * window.innerHeight;
 
-  const handleFeedMonkey = () => {
+  const handleFeed = () => {
     setIsEating(true);
     setShowSpeechBubble(false);
     setTimeout(() => {
@@ -100,8 +100,8 @@ export function VineNavigator({
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setMonkeyPosition(currentIndex);
-      setMonkeyOffset((Math.random() - 0.5) * 300);
+      setAvatarPosition(currentIndex);
+      setAvatarOffset((Math.random() - 0.5) * 300);
     }, 300);
     return () => clearTimeout(timer);
   }, [currentIndex]);
@@ -122,13 +122,13 @@ export function VineNavigator({
     const newOffsets: Record<string, number> = {};
     presences.forEach((presence) => {
       const key = `${presence.userId}-${presence.currentRoomIndex}`;
-      if (!otherMonkeyOffsets[key]) {
+      if (!otherAvatarOffsets[key]) {
         newOffsets[key] = (Math.random() - 0.5) * 300;
       }
     });
 
     if (Object.keys(newOffsets).length > 0) {
-      setOtherMonkeyOffsets((prev) => ({
+      setOtherAvatarOffsets((prev) => ({
         ...prev,
         ...newOffsets,
       }));
@@ -266,8 +266,8 @@ export function VineNavigator({
         <motion.div
           animate={{
             top:
-              getAvatarPositionFromIndex(monkeyPosition) +
-              monkeyOffset,
+              getAvatarPositionFromIndex(avatarPosition) +
+              avatarOffset,
           }}
           transition={{
             type: "spring",
@@ -285,7 +285,7 @@ export function VineNavigator({
         >
           <motion.img
             src={currentUserImg}
-            alt="Monkey Avatar"
+            alt="Avatar"
             className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
             style={{ scaleX: -1, opacity: 1 }}
             animate={
@@ -311,7 +311,7 @@ export function VineNavigator({
             }}
             onClick={(e) => {
               e.stopPropagation();
-              setShowMonkeyInfo(true);
+              setShowAvatarInfo(true);
             }}
             whileTap={{ scale: 0.95 }}
           />
@@ -336,15 +336,15 @@ export function VineNavigator({
         <AnimatePresence>
           {presences.map((presence) => {
             const key = `${presence.userId}-${presence.currentRoomIndex}`;
-            const offset = otherMonkeyOffsets[key] || 0;
+            const offset = otherAvatarOffsets[key] || 0;
             const top =
               getAvatarPositionFromIndex(presence.currentRoomIndex) +
               offset;
             const isOnSameConvo =
               presence.currentRoomIndex === currentIndex;
 
-            const monkeyWidth = OTHER_MONKEY_SIZE * 0.857;
-            const monkeyHeight = OTHER_MONKEY_SIZE;
+            const avatarWidth = OTHER_AVATAR_SIZE * 0.857;
+            const avatarHeight = OTHER_AVATAR_SIZE;
 
             return (
               <motion.div
@@ -363,10 +363,10 @@ export function VineNavigator({
                 }}
                 className="absolute"
                 style={{
-                  width: monkeyWidth,
-                  height: monkeyHeight,
+                  width: avatarWidth,
+                  height: avatarHeight,
                   left: 4,
-                  marginTop: -monkeyHeight / 2,
+                  marginTop: -avatarHeight / 2,
                 }}
               >
                 <div className="relative">
@@ -384,13 +384,13 @@ export function VineNavigator({
         </AnimatePresence>
       </div>
 
-      {showMonkeyInfo && (
-        <MonkeyInfoModal
-          isOpen={showMonkeyInfo}
+      {showAvatarInfo && (
+        <VineInfoModal
+          isOpen={showAvatarInfo}
           currentAvatar={currentUser.avatarAnimal ?? "monkey"}
           isLoggedIn={isLoggedIn}
-          onClose={() => setShowMonkeyInfo(false)}
-          onFeedMonkey={handleFeedMonkey}
+          onClose={() => setShowAvatarInfo(false)}
+          onFeed={handleFeed}
         />
       )}
 
