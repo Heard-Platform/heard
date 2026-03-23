@@ -14,7 +14,13 @@ const clusterColors = [
   { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-600", badge: "bg-orange-100" },
 ];
 
-export function ClusterConsensusBox({ 
+function consensusPercent(statement: ClusterStatement): number {
+  if (statement.totalVotes === 0) return 0;
+  const dominant = Math.max(statement.agreeVotes ?? 0, statement.disagreeVotes ?? 0);
+  return Math.round((dominant / statement.totalVotes) * 100);
+}
+
+export function ClusterConsensusBox({
   clusterNumber, 
   clusterSize, 
   statements 
@@ -45,14 +51,14 @@ export function ClusterConsensusBox({
                       #{idx + 1}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      {statement.consensusScore.toFixed(0)}% agreement
+                      {consensusPercent(statement)}% consensus
                     </span>
                   </div>
                   <p className="text-sm">{statement.text}</p>
                 </div>
                 <div className="flex flex-col items-end text-xs text-muted-foreground">
-                  <span>{statement.agreeVotes}/{statement.totalVotes}</span>
-                  <span>votes</span>
+                  <span>{statement.agreeVotes ?? 0} agree</span>
+                  <span>{statement.disagreeVotes ?? 0} disagree</span>
                 </div>
               </div>
             </div>

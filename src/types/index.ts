@@ -188,6 +188,7 @@ export interface ClusterStatement {
   id: string;
   text: string;
   agreeVotes: number;
+  disagreeVotes: number;
   totalVotes: number;
   consensusScore: number;
 }
