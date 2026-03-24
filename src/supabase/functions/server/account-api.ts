@@ -3,8 +3,9 @@ import { validateSession } from "./auth-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { VALID_AVATARS } from "./constants.tsx";
 import { getUser, saveUser } from "./kv-utils.tsx";
-import { AvatarAnimal } from "./types.tsx";
+import { AvatarAnimal, UserPresence } from "./types.tsx";
 import { sanitizeUser } from "./user-utils.ts";
+import { selectAll, upsert } from "./db-utils.ts";
 
 const app = new Hono();
 
@@ -30,6 +31,14 @@ app.post(
 
       user.avatarAnimal = avatarAnimal;
       await saveUser(user);
+
+      const presence = await selectAll<UserPresence>("presences", {
+        userId,
+      });
+
+      if (presence.length > 0) {
+        await upsert("presences", { userId, avatarAnimal }, "userId");
+      }
 
       return { user: sanitizeUser(user) };
     },
