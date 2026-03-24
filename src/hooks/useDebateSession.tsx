@@ -1,12 +1,6 @@
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from "react";
 import {
   api,
-  getUserId,
-  setUserId,
-  clearUserId,
-  getSessionId,
-  setSessionId,
-  clearSessionId,
   safelyMakeApiCall,
 } from "../utils/api";
 import type {
@@ -21,7 +15,7 @@ import type {
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
-import { ApiResponse } from "../utils/api-client";
+import { ApiResponse, clearSessionId, setSessionId } from "../utils/api-client";
 import { AvatarAnimal } from "../utils/constants/avatars";
 
 interface DebateSessionContextType {
@@ -118,61 +112,10 @@ export function DebateSessionProvider(
     return user;
   }, [user]);
 
-  const loadUserUsingStoredId = useCallback(async (userId: string) => {
-    try {
-      setError(null);
-      const response = await api.getUser(userId);
-      if (response.success && response.data) {
-        const user = response.data.user;
-        setUser(user);
-        return user;
-      } else if (response.error === "SESSION_EXPIRED") {
-        console.log("Session expired, clearing local data");
-        clearUserId();
-        clearSessionId();
-        return null;
-      }
-    } catch (err) {
-      const errorMsg =
-        err instanceof Error ? err.message : "Unknown error";
-      setError(errorMsg);
-      console.error("Failed to load user from storage:", errorMsg);
-    }
-    return null;
-  }, []);
-
-  const initializeSessionForLegacyUser = useCallback(async (userId: string) => {
-    try {
-      setError(null);
-      console.log("Initializing session for legacy user:", userId);
-      const migrationResponse = await api.migrateSession(userId);
-      if (migrationResponse.success && migrationResponse.data) {
-        setSessionId(migrationResponse.data.sessionId);
-        console.log("Session initialization successful");
-      } else if (migrationResponse.error === "SESSION_EXPIRED") {
-        console.log("Session expired during migration, clearing local data");
-        clearUserId();
-        clearSessionId();
-        return null;
-      } else {
-        throw new Error(
-          migrationResponse.error || "Failed to initialize session for legacy user",
-        );
-      }
-    } catch (err) {
-      const errorMsg =
-        err instanceof Error ? err.message : "Unknown error";
-      setError(errorMsg);
-      console.error("Failed to initialize session for legacy user:", errorMsg);
-    }
-    return null;
-  }, []);
-
   const setUserAndSession = useCallback((providedUser: UserSession, sessionId: string) => {
     try {
       setError(null);
       setUser(providedUser);
-      setUserId(providedUser.id);
       setSessionId(sessionId);
       api.trackActivity().catch((err) => {
         console.error("Failed to track activity:", err);
@@ -701,7 +644,6 @@ export function DebateSessionProvider(
     setActiveRooms([]);
     setRoomStatements({});
     setError(null);
-    clearUserId();
     clearSessionId();
   }, []);
 
@@ -710,29 +652,24 @@ export function DebateSessionProvider(
     const init = async () => {
       setLoading(true);
 
-      const storedUserId = getUserId();
-      if (storedUserId) {
-        const loadedUser = await loadUserUsingStoredId(storedUserId);
-  
-        if (loadedUser) {
-          const sessionId = getSessionId();
-          if (!sessionId) {
-            await initializeSessionForLegacyUser(storedUserId);
-          }
-          api.trackActivity().catch((err) => {
-            console.error("Failed to track activity on init:", err);
-          });
-        } else {
-          console.log("User session expired or invalid");
-        }
+      const response = await api.getUser();
+      if (response.success && response.data) {
+        const user = response.data.user;
+        setUser(user);
+        api.trackActivity().catch((err) => {
+          console.error("Failed to track activity on init:", err);
+        });
+      } else if (response.error === "SESSION_EXPIRED") {
+        console.error("Session expired, clearing local data");
+        clearSessionId();
+        return null;
       }
-
 
       setLoading(false);
     };
 
     init();
-  }, [loadUserUsingStoredId, initializeSessionForLegacyUser]);
+  }, []);
 
   let returnObj = {
     user,

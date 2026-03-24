@@ -29,7 +29,6 @@ import { getEnvironment } from "./constants/general";
 import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { publicAnonKey } from "./supabase/info";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
-export { getSessionId, setSessionId, clearSessionId } from "./api-client";
 
 export async function safelyMakeApiCall<T>(
   callFn: () => Promise<ApiResponse<T>>
@@ -49,8 +48,8 @@ export async function safelyMakeApiCall<T>(
 }
 
 class ApiClient extends BaseApiClient {
-  async getUser(userId: string) {
-    return this.request<{ user: UserSession }>(`/user/${userId}`);
+  async getUser() {
+    return this.request<{ user: UserSession }>("/user/me");
   }
 
   async sendMagicLink(email: string) {
@@ -92,13 +91,6 @@ class ApiClient extends BaseApiClient {
     return this.request<{ user: UserSession }>("/auth/add-email-to-account", {
       method: "POST",
       body: JSON.stringify({ email }),
-    });
-  }
-
-  async migrateSession(userId: string) {
-    return this.request<UserSessionResponse>("/auth/migrate-session", {
-      method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 
@@ -736,22 +728,6 @@ class ApiClient extends BaseApiClient {
 }
 
 export const api = new ApiClient();
-
-// Local storage helpers for user session
-export const getUserId = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return safelyGetStorageItem<string | null>("heard_user_id", null);
-};
-
-export const setUserId = (userId: string) => {
-  if (typeof window === "undefined") return;
-  safelySetStorageItem("heard_user_id", userId);
-};
-
-export const clearUserId = () => {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem("heard_user_id");
-};
 
 export const getRoomId = (): string | null => {
   if (typeof window === "undefined") return null;

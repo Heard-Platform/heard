@@ -682,10 +682,10 @@ const parseStatements = (content: string): string[] => {
 
 // Get user session
 app.get(
-  "/make-server-f1a393b4/user/:userId",
+  "/make-server-f1a393b4/user/me",
   async (c: Context) => {
     try {
-      const userId = c.req.param("userId") as string;
+      const userId = c.get("userId");
       
       const result = await updateUserLastActive(userId);
       if ("error" in result) {
