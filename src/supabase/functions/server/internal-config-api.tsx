@@ -2,7 +2,6 @@ import { getInternalVar, setInternalVar } from "./model-utils.ts";
 import { InternalVarKey } from "./types.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 import { Hono } from "npm:hono";
-import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
 

@@ -2,13 +2,15 @@
 import * as kv from "./kv_store.tsx";
 import { sendEmailToDevs } from "./dev-utils.tsx";
 import { AuthedHono } from "./hono-wrapper.ts";
+import { Context } from "npm:hono";
 
-const unauthedApp = new AuthedHono();
+const authedApp = new AuthedHono();
 
 // Submit feedback
-unauthedApp.post("/make-server-f1a393b4/feedback/submit", async (c) => {
+authedApp.post("/make-server-f1a393b4/feedback/submit", async (c: Context) => {
   try {
-    const { userId, feedbackText } = await c.req.json();
+    const { feedbackText } = await c.req.json();
+    const userId = c.get("userId");
 
     if (!feedbackText || !feedbackText.trim()) {
       return c.json({ error: "Feedback text is required" }, 400);
@@ -48,7 +50,7 @@ unauthedApp.post("/make-server-f1a393b4/feedback/submit", async (c) => {
   }
 });
 
-unauthedApp.get("/make-server-f1a393b4/feedback/list", async (c) => {
+authedApp.get("/make-server-f1a393b4/feedback/list", async (c) => {
   try {
     const feedbackKeys = await kv.getByPrefix("feedback:");
 
@@ -121,4 +123,4 @@ async function sendFeedbackEmail(feedback: any) {
   });
 }
 
-export { unauthedApp as feedbackApi };
+export { authedApp as feedbackApi };

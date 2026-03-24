@@ -35,8 +35,8 @@ async function addCountsAndSort(communities: Community[]) {
 
 authedApp.get("/make-server-f1a393b4/subheards", async (c: any) => {
   try {
-    const userId = c.req.query("userId");
     const onlyJoined = c.req.query("onlyJoined") === "true";
+    const userId = c.get("userId");
 
     let userMemberships: Set<string> = new Set();
     if (userId) {
@@ -67,7 +67,7 @@ authedApp.get("/make-server-f1a393b4/subheards", async (c: any) => {
 
 authedApp.get("/make-server-f1a393b4/subheards/explorable", async (c: any) => {
   try {
-    const userId = c.req.query("userId");
+    const userId = c.get("userId");
 
     if (!userId) {
       return c.json({ error: "User ID is required" }, 400);
@@ -97,7 +97,8 @@ authedApp.post(
   "/make-server-f1a393b4/subheard/create",
   async (c: any) => {
     try {
-      const { community, userId } = await c.req.json();
+      const { community } = await c.req.json();
+      const userId = c.get("userId");
 
       if (!community) {
         return c.json(
@@ -177,7 +178,7 @@ authedApp.post(
   async (c: any) => {
     try {
       const name = c.req.param("name");
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
 
       if (!userId || typeof userId !== "string") {
         return c.json({ error: "User ID is required" }, 400);
@@ -223,8 +224,9 @@ authedApp.patch(
   "/make-server-f1a393b4/subheard/:name/settings",
   async (c: Context) => {
     try {
-      const name = c.req.param("name");
-      const { userId, settings } = await c.req.json();
+      const name = (c.req.param("name"))!;
+      const { settings } = await c.req.json();
+      const userId = c.get("userId");
 
       if (!userId || typeof userId !== "string") {
         return c.json({ error: "User ID is required" }, 400);
@@ -282,7 +284,7 @@ authedApp.delete(
   async (c: any) => {
     try {
       const name = c.req.param("name");
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
 
       if (!userId || typeof userId !== "string") {
         return c.json({ error: "User ID is required" }, 400);

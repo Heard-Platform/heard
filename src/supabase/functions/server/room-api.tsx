@@ -21,7 +21,6 @@ authedApp.post(
     try {
       const {
         topic,
-        userId,
         subHeard: communityName,
         seedStatements,
         imageUrl,
@@ -29,6 +28,8 @@ authedApp.post(
         allowAnonymous,
         debateLength,
       } = await c.req.json();
+
+      const userId = c.get("userId");
 
       if (!topic || topic.length < 10) {
         return c.json(

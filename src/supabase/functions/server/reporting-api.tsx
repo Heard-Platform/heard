@@ -9,7 +9,8 @@ authedApp.post(
   async (c: any) => {
     try {
       const statementId = c.req.param("statementId");
-      const { userId, roomId } = await c.req.json();
+      const { roomId } = await c.req.json();
+      const userId = c.get("userId");
 
       if (!userId || !roomId || !statementId) {
         return c.json(

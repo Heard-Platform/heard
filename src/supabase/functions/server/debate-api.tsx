@@ -32,6 +32,7 @@ import type {
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { calculateVoteStats, processVote } from "./voting-utils.ts";
 import { sortRoomsByActivity } from "./feed-utils.ts";
+import { validateSession } from "./auth-utils.ts";
 
 const app = new Hono();
 
@@ -814,10 +815,12 @@ app.get(
 // Submit statement
 app.post(
   "/make-server-f1a393b4/room/:roomId/statement",
+  validateSession,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");
-      const { text, userId } = await c.req.json();
+      const { text } = await c.req.json();
+      const userId = c.get("userId");
 
       if (!text || text.length < 5 || text.length > 500) {
         return c.json(
@@ -1054,10 +1057,12 @@ Return ONLY in this exact JSON format:
 // Vote on statement
 app.post(
   "/make-server-f1a393b4/statement/:statementId/vote",
+  validateSession,
   async (c: any) => {
     try {
       const statementId = c.req.param("statementId");
-      const { voteType, userId } = await c.req.json();
+      const { voteType } = await c.req.json();
+      const userId = c.get("userId");
 
       const result = await processVote(statementId, userId, voteType);
 
