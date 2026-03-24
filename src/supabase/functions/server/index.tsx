@@ -85,14 +85,14 @@ const protect = (middleware: Parameters<typeof app.use>[1], paths: string[]) => 
 
 // Public
 const dontValidate = async (_c: any, next: any) => next();
-protect(dontValidate, ["orgs/*"]);
+protect(dontValidate, ["orgs/*", "user/*",]);
 
 // Account
 protect(validateSession, [
   "account/*", "activity/*", "chance-card/*", "feedback/*", "flyer/*",
   "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
   "statement/*", "stats/*", "subheard/*", "subheards", "subheards/*",
-  "upload-debate-image", "user/*", "user-rank", "vine/*", "youtube-card/*",
+  "upload-debate-image", "user-rank", "vine/*", "youtube-card/*",
 ]);
 
 // Developer
