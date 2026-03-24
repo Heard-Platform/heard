@@ -437,12 +437,13 @@ app.post(
 
 app.post(
   "/make-server-f1a393b4/auth/add-email-to-account",
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const { userId, email } = await c.req.json();
+      const userId = c.get("userId");
+      const { email } = await c.req.json();
 
-      if (!userId || !email) {
-        return c.json({ error: "userId and email are required" }, 400);
+      if (!email) {
+        return c.json({ error: "Email is required" }, 400);
       }
 
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
