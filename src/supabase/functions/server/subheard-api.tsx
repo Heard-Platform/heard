@@ -39,14 +39,12 @@ authedApp.get("/make-server-f1a393b4/subheards", async (c: any) => {
     const userId = c.get("userId");
 
     let userMemberships: Set<string> = new Set();
-    if (userId) {
-      userMemberships = await getUserMemberships(userId);
-    }
+    userMemberships = await getUserMemberships(userId);
 
     let subHeards = await getCommunities();
 
     subHeards = subHeards.filter((comm) => {
-      if (userId && onlyJoined) {
+      if (onlyJoined) {
         if (comm.adminId === userId) return true;
         if (userMemberships.has(comm.name)) return true;
         return false;
@@ -68,10 +66,6 @@ authedApp.get("/make-server-f1a393b4/subheards", async (c: any) => {
 authedApp.get("/make-server-f1a393b4/subheards/explorable", async (c: any) => {
   try {
     const userId = c.get("userId");
-
-    if (!userId) {
-      return c.json({ error: "User ID is required" }, 400);
-    }
 
     const userMemberships = await getUserMemberships(userId);
     let subHeards = await getCommunities();
@@ -108,10 +102,6 @@ authedApp.post(
       }
 
       const { name, isPrivate, hostOnlyPosting } = community;
-
-      if (!userId || typeof userId !== "string") {
-        return c.json({ error: "User ID is required" }, 400);
-      }
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -180,10 +170,6 @@ authedApp.post(
       const name = c.req.param("name");
       const userId = c.get("userId");
 
-      if (!userId || typeof userId !== "string") {
-        return c.json({ error: "User ID is required" }, 400);
-      }
-
       const community = await getCommunity(name);
 
       if (!community) {
@@ -227,10 +213,6 @@ authedApp.patch(
       const name = (c.req.param("name"))!;
       const { settings } = await c.req.json();
       const userId = c.get("userId");
-
-      if (!userId || typeof userId !== "string") {
-        return c.json({ error: "User ID is required" }, 400);
-      }
 
       if (!settings || typeof settings !== "object") {
         return c.json(
@@ -285,10 +267,6 @@ authedApp.delete(
     try {
       const name = c.req.param("name");
       const userId = c.get("userId");
-
-      if (!userId || typeof userId !== "string") {
-        return c.json({ error: "User ID is required" }, 400);
-      }
 
       const community = await getCommunity(name);
 
