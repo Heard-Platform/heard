@@ -3,7 +3,7 @@ import { deleteMagicLink, getMagicLink, getParsedKvData, getSession, getUser, sa
 import type { Session, User } from "./types.tsx";
 import { Context, Hono } from "npm:hono";
 import { getMagicLinkEmail } from "./email-templates.tsx";
-import { loginUserWithMerge } from "./auth-utils.ts";
+import { loginUserWithMerge, validateSession } from "./auth-utils.ts";
 import { sanitizeUser } from "./user-utils.ts";
 
 const app = new Hono();
@@ -437,6 +437,7 @@ app.post(
 
 app.post(
   "/make-server-f1a393b4/auth/add-email-to-account",
+  validateSession,
   async (c: Context) => {
     try {
       const userId = c.get("userId");
