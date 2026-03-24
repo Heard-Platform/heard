@@ -153,12 +153,12 @@ export function RoomCard({
 
   const handleSwipeChanceCard = async () => {
     setChanceCardSwiped(true);
-    await markChanceCardSwiped(user.id, room.id);
+    await markChanceCardSwiped(room.id);
   }
 
   const handleSwipeYouTubeCard = async () => {
     setYoutubeCardSwiped(true);
-    await markYouTubeCardSwiped(user.id, room.id);
+    await markYouTubeCardSwiped(room.id);
   }
 
   // Handle statement submission

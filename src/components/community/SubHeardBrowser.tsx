@@ -58,7 +58,7 @@ export function SubHeardBrowser({
   const loadSubHeards = async () => {
     try {
       setLoading(true);
-      const response = await getSubHeards(user.id);
+      const response = await getSubHeards();
       if (response?.success && response.data) {
         setSubHeards(response.data.subHeards);
       }
@@ -121,7 +121,7 @@ export function SubHeardBrowser({
   };
 
   const handleLeaveSubHeard = async (subHeardName: string) => {
-    const response = await leaveSubHeard(subHeardName, user.id);
+    const response = await leaveSubHeard(subHeardName);
     if (response?.success) {
       await loadSubHeards();
       if (currentSubHeard === subHeardName) {

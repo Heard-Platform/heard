@@ -1,4 +1,4 @@
-import { Hono } from "npm:hono";
+import { Context, Hono } from "npm:hono";
 import {
   getUserSession,
   saveUserAndEmail,
@@ -71,9 +71,9 @@ app.get("/make-server-f1a393b4/dev/email-previews", async (c) => {
 
 app.post(
   `${API_URL_PREFIX}/dev/create-anon-enabled-debate`,
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -125,7 +125,7 @@ app.post(
 
 app.get(
   `${API_URL_PREFIX}/dev/anon-debates`,
-  async (c: any) => {
+  async (c: Context) => {
     try {
       const allRooms = await getAllDebates();
 

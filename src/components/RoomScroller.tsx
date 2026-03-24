@@ -43,7 +43,6 @@ interface RoomScrollerProps {
     subHeard?: string,
   ) => void;
   onUpdatePresence: (
-    userId: string,
     currentRoomIndex: number,
   ) => void;
   onShowAccountSetupModal: (featureText: string) => void;

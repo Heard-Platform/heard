@@ -43,7 +43,7 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
     setLoading(true);
     try {
       // First fetch sub-heards to check if user is admin
-      const subHeardsRes = await api.getSubHeards(currentUserId);
+      const subHeardsRes = await api.getSubHeards();
       
       if (subHeardsRes.success) {
         const allSubHeards = subHeardsRes.data?.subHeards || [];
@@ -63,7 +63,7 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
             retentionStatsRes,
             funnelMetricsRes,
           ] = await Promise.all([
-            api.getActiveRooms(undefined, currentUserId),
+            api.getActiveRooms(),
             api.getFeedbackList(),
             api.getPublicActivityMetrics(),
             api.getPublicStats(),

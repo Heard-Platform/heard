@@ -44,7 +44,7 @@ export function CommunityExplorerDialog({
 
   const loadExplorableCommunities = async () => {
     setLoading(true);
-    const response = await getExplorableSubHeards(userId);
+    const response = await getExplorableSubHeards();
     console.log("Explorable communities response:", response);
     if (response?.success && response.data) {
       setCommunities(response.data);
@@ -66,7 +66,7 @@ export function CommunityExplorerDialog({
     try {
       setJoining(true);
       const joinPromises = selectedCommunities.map((communityName) =>
-        joinSubHeard(communityName, userId)
+        joinSubHeard(communityName)
       );
 
       const results = await Promise.all(joinPromises);
