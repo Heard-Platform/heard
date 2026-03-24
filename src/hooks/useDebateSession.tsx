@@ -423,11 +423,10 @@ export function DebateSessionProvider(
       flyerId: string,
       statementId: string,
       vote: VoteType,
-      userId?: string,
       flyerGroup?: number,
     ) => {
       const response = await safelyMakeApiCall<FlyerVoteResponse>(() =>
-        api.voteViaFlyer(flyerId, statementId, vote, userId, flyerGroup),
+        api.voteViaFlyer(flyerId, statementId, vote, flyerGroup),
       );
       if (response && response.success && response.data) {
         setUserAndSession(
