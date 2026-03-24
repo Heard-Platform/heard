@@ -1,5 +1,5 @@
 // @ts-ignore
-import { Hono } from "npm:hono";
+import { Context, Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import {
   saveStatement, getDebate,
@@ -10,8 +10,7 @@ import {
   saveYouTubeCardStatus,
   getUsersYouTubeCardStatuses,
   getVotesForStatement,
-  getCommunities,
-  getStatementsForRoom,
+  getCommunities
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
@@ -32,6 +31,7 @@ import type {
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { calculateVoteStats, processVote } from "./voting-utils.ts";
 import { sortRoomsByActivity } from "./feed-utils.ts";
+import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
 
@@ -1174,59 +1174,18 @@ app.post(
   },
 );
 
-// Update room description (host only)
-app.put(
-  "/make-server-f1a393b4/room/:roomId/description",
-  async (c: any) => {
-    try {
-      const roomId = c.req.param("roomId");
-      const { description, userId } = await c.req.json();
-
-      const room = await getDebateRoom(roomId);
-      if (!room) {
-        return c.json({ error: "Room not found" }, 404);
-      }
-
-      const user = await getUserSession(userId);
-      if (!user) {
-        return c.json({ error: "User session not found" }, 404);
-      }
-
-      // Only the host can update the description
-      if (room.hostId !== userId) {
-        return c.json(
-          {
-            error:
-              "Only the room host can update the description",
-          },
-          403,
-        );
-      }
-
-      // Update the room description
-      room.description = description
-        ? description.substring(0, 2000)
-        : undefined;
-      await saveDebateRoom(room);
-
-      return c.json({ room });
-    } catch (error) {
-      console.error("Error updating room description:", error);
-      return c.json(
-        { error: "Failed to update room description" },
-        500,
-      );
-    }
-  },
-);
-
 // Mark room as inactive (dev tool)
 app.post(
   "/make-server-f1a393b4/room/:roomId/inactive",
-  async (c: any) => {
+  validateDeveloper,
+  async (c: Context) => {
     try {
+      const userId = c.get("userId");
       const roomId = c.req.param("roomId");
-      const { userId } = await c.req.json();
+
+      if (!roomId || typeof roomId !== "string") {
+        return c.json({ error: "Room ID is required" }, 400);
+      }
 
       const room = await getDebateRoom(roomId);
       if (!room) {

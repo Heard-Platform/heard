@@ -615,10 +615,7 @@ export function DebateSessionProvider(
 
       try {
         setError(null);
-        const response = await api.setRoomInactive(
-          roomId,
-          user.id,
-        );
+        const response = await api.setRoomInactive(roomId);
         if (response.success) {
           // Refresh active rooms to remove the inactive room
           await getActiveRooms();
