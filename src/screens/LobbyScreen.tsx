@@ -211,15 +211,14 @@ export function LobbyScreen({
   }, []);
 
   const handleUpdatePresence = async (
-    userId: string,
     currentRoomIndex: number,
   ) => {
-    await api.updateUserPresence(userId, currentRoomIndex);
+    await api.updateUserPresence(currentRoomIndex);
   };
 
   const handleCreateAnonDebate = async () => {
     try {
-      const response = await api.createAnonDebate(user.id);
+      const response = await api.createAnonDebate();
       if (response.success && response.data) {
         await onRefreshRooms();
         alert(
@@ -359,14 +358,10 @@ export function LobbyScreen({
                 onSubHeardChange={onSubHeardChange}
                 onUpdateSubHeard={async (
                   community: SubHeard,
-                  userId: string,
                 ) => {
                   try {
                     const response =
-                      await api.updateSubHeardSettings(
-                        community,
-                        userId,
-                      );
+                      await api.updateSubHeardSettings(community);
                     if (response.success) {
                       return true;
                     }

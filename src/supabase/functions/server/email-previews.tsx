@@ -1,13 +1,13 @@
-import { Hono } from "npm:hono@4";
+import { Context, Hono } from "npm:hono@4";
 import * as kvUtils from "./kv-utils.tsx";
 import { generateRealEmailData, hasEmailContent } from "./email-digest-data-generator.tsx";
-import type { UserSession } from "./types.tsx";
 import {
   EmailData
 } from "./email-types.ts";
 import { generateEmailHtml, generateFakeData } from "./email-digest-template.tsx";
 import { sendEmailViaResend, getUsersToEmailDigest } from "./email-sender-utils.tsx";
 import { getAdminDailyStats, generateAdminDigestHtml } from "./admin-digest.tsx";
+import { User } from "./types.tsx";
 
 const app = new Hono();
 
@@ -76,20 +76,17 @@ app.get(
 
 app.post(
   "/make-server-f1a393b4/dev/email-previews/send",
-  async (c) => {
+  async (c: Context) => {
     try {
+      const userId = c.get("userId");
       const body = await c.req.json();
-      const { userId, useMockData, digestType } = body;
-
-      if (!userId) {
-        return c.json({ error: "User ID is required" }, 400);
-      }
+      const { useMockData, digestType } = body;
 
       if (!digestType) {
         return c.json({ error: "digestType is required" }, 400);
       }
 
-      const user = await kvUtils.getParsedKvData<UserSession>(
+      const user = await kvUtils.getParsedKvData<User>(
         `user:${userId}`,
       );
       if (!user || !user.email) {

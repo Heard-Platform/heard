@@ -281,10 +281,7 @@ function AppContent() {
     const autoJoinSubHeard = async () => {
       if (user && currentSubHeard && hasCheckedUrl) {
         try {
-          const response = await api.joinSubHeard(
-            currentSubHeard,
-            user.id,
-          );
+          const response = await api.joinSubHeard(currentSubHeard);
 
           if (!response.success) {
             toast.error("Unable to join this community");

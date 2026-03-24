@@ -94,8 +94,9 @@ export function DebateScrollerStory() {
   ]);
 
   const handleUpdatePresence = useCallback(
-    (userId: string, currentRoomIndex: number) => {
+    (currentRoomIndex: number) => {
       setPresences((prev) => {
+        const userId = "user2";
         const original = prev.find((p) => p.userId === userId);
         const filtered = prev.filter((p) => p.userId !== userId);
         return [
