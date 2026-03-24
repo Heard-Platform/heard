@@ -57,7 +57,6 @@ interface DebateSessionContextType {
     flyerId: string,
     statementId: string,
     vote: VoteType,
-    userId?: string,
     flyerGroup?: number,
   ) => Promise<FlyerVoteResponse | null>;
   submitFlyerEmail: (email: string) => Promise<ApiResponse | null>;
