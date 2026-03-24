@@ -7,9 +7,9 @@ import { AvatarAnimal, UserPresence } from "./types.tsx";
 import { sanitizeUser } from "./user-utils.ts";
 import { selectAll, upsert } from "./db-utils.ts";
 
-const accountApp = new Hono();
+const app = new Hono();
 
-accountApp.post(
+app.post(
   "/make-server-f1a393b4/account/avatar",
   defineRoute(
     {
@@ -45,4 +45,4 @@ accountApp.post(
   ),
 );
 
-export { accountApp as accountApi };
+export { app as accountApi };
