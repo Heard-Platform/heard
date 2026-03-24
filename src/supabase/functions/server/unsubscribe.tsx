@@ -1,14 +1,15 @@
 import { cors } from "npm:hono/cors";
 import { getUser, saveUser } from "./kv-utils.tsx";
 import { AuthedHono } from "./hono-wrapper.ts";
+import { Context } from "npm:hono";
 
 const authedApp = new AuthedHono();
 
 authedApp.use("*", cors());
 
-authedApp.post("/make-server-f1a393b4/unsubscribe", async (c) => {
+authedApp.post("/make-server-f1a393b4/unsubscribe", async (c: Context) => {
   try {
-    const { userId } = await c.req.json();
+    const userId = c.get("userId");
 
     if (!userId) {
       return c.json({ error: "userId is required" }, 400);

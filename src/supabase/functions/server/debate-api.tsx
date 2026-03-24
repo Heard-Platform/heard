@@ -33,6 +33,7 @@ import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { calculateVoteStats, processVote } from "./voting-utils.ts";
 import { sortRoomsByActivity } from "./feed-utils.ts";
 import { validateSession } from "./auth-utils.ts";
+import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
 
@@ -1179,55 +1180,10 @@ app.post(
   },
 );
 
-// Update room description (host only)
-app.put(
-  "/make-server-f1a393b4/room/:roomId/description",
-  async (c: any) => {
-    try {
-      const roomId = c.req.param("roomId");
-      const { description, userId } = await c.req.json();
-
-      const room = await getDebateRoom(roomId);
-      if (!room) {
-        return c.json({ error: "Room not found" }, 404);
-      }
-
-      const user = await getUserSession(userId);
-      if (!user) {
-        return c.json({ error: "User session not found" }, 404);
-      }
-
-      // Only the host can update the description
-      if (room.hostId !== userId) {
-        return c.json(
-          {
-            error:
-              "Only the room host can update the description",
-          },
-          403,
-        );
-      }
-
-      // Update the room description
-      room.description = description
-        ? description.substring(0, 2000)
-        : undefined;
-      await saveDebateRoom(room);
-
-      return c.json({ room });
-    } catch (error) {
-      console.error("Error updating room description:", error);
-      return c.json(
-        { error: "Failed to update room description" },
-        500,
-      );
-    }
-  },
-);
-
 // Mark room as inactive (dev tool)
 app.post(
   "/make-server-f1a393b4/room/:roomId/inactive",
+  validateDeveloper,
   async (c: any) => {
     try {
       const roomId = c.req.param("roomId");

@@ -161,28 +161,15 @@ class ApiClient extends BaseApiClient {
     }
   }
 
-  async updateRoomDescription(
-    roomId: string,
-    description: string,
-    userId: string,
-  ) {
-    return this.request(`/room/${roomId}/description`, {
-      method: "PUT",
-      body: JSON.stringify({ description, userId }),
-    });
-  }
-
-  async setRoomInactive(roomId: string, userId: string) {
+  async setRoomInactive(roomId: string) {
     return this.request(`/room/${roomId}/inactive`, {
       method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 
-  async joinRoom(roomId: string, userId: string) {
+  async joinRoom(roomId: string) {
     return this.request(`/room/${roomId}/join`, {
       method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 
