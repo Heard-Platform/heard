@@ -149,7 +149,6 @@ export function SidePanelMenu({
     <>
       <PhoneVerificationDialog
         open={phoneVerificationOpen}
-        userId={user.id}
         onClose={() => setPhoneVerificationOpen(false)}
         onSuccess={() => {
           setPhoneVerificationOpen(false);

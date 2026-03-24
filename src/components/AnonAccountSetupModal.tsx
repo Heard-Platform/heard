@@ -91,7 +91,11 @@ export function AnonAccountSetupModal({
       try {
         const response = await verifySmsCode(formatPhone(phone), magicCode);
         if (response && response.success) {
-          setShowOptionalEmailScreen(true);
+          if (response.data?.user.email) {
+            handleSuccessfulLogin();
+          } else {
+            setShowOptionalEmailScreen(true);
+          }
         } else {
           setError(response?.error || "Invalid or expired code");
         }

@@ -1,4 +1,4 @@
-import { Hono } from "npm:hono";
+import { Context, Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import {
   getUserSession,
@@ -19,11 +19,11 @@ const app = new Hono();
 // Create debate room
 app.post(
   "/make-server-f1a393b4/room/create",
-  async (c: any) => {
+  async (c: Context) => {
     try {
+      const userId = c.get("userId");
       const {
         topic,
-        userId,
         subHeard: communityName,
         seedStatements,
         imageUrl,
