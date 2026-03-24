@@ -1,9 +1,8 @@
-import { Context } from "npm:hono";
+import { Context, Hono } from "npm:hono";
 import { getRecentPresences, updatePresence } from "./model-utils.ts";
 import { getUser } from "./kv-utils.tsx";
-import { AuthedHono } from "./hono-wrapper.ts";
 
-const app = new AuthedHono();
+const app = new Hono();
 
 app.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
   try {

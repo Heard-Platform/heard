@@ -1,5 +1,4 @@
 import { Context, Hono } from "npm:hono";
-import { validateSession } from "./auth-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { VALID_AVATARS } from "./constants.tsx";
 import { getUser, saveUser } from "./kv-utils.tsx";

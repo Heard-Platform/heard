@@ -70,6 +70,7 @@ app.use("*", async (c, next) => {
     const validation = await validateSessionId(sessionId);
     
     if (!validation.valid) {
+      console.warn(`Unauthorized account access attempt with invalid session`);
       return c.json({ error: validation.error || "Invalid session" }, 401);
     }
     

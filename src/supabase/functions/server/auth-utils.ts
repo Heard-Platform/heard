@@ -6,6 +6,7 @@ export async function validateSession(c: any, next: any) {
   const userId = c.get("userId");
   
   if (!userId) {
+    console.warn("Unauthorized account access attempt with no session");
     return c.json({ error: "Unauthorized - No session" }, 401);
   }
 
