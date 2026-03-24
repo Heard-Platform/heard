@@ -11,7 +11,6 @@ const app = new Hono();
 
 app.post(
   "/make-server-f1a393b4/account/avatar",
-  validateSession,
   defineRoute(
     {
       avatarAnimal: {

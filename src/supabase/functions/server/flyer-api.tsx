@@ -1,4 +1,4 @@
-import { Hono } from "npm:hono";
+import { Context, Hono } from "npm:hono";
 import { getDebate } from "./kv-utils.tsx";
 import type { DebateRoom, User, VoteType } from "./types.tsx";
 import { processVote } from "./voting-utils.ts";
@@ -17,16 +17,17 @@ type FlyerVoteResponse = {
   userVote: VoteType;
 };
 
-flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c) => {
+flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
   try {
     const {
       flyerId,
       statementId,
       vote,
-      userId: providedUserId,
       environment,
       flyerGroup,
     } = await c.req.json();
+
+    let userId = c.get("userId");
 
     if (!flyerId || !statementId || !vote) {
       return c.json(
@@ -38,8 +39,6 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c) => {
         400,
       );
     }
-
-    let userId = providedUserId;
 
     if (!userId) {
       const isTestUser = environment !== "production";

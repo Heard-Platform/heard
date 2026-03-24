@@ -331,7 +331,6 @@ class ApiClient extends BaseApiClient {
     flyerId: string,
     statementId: string,
     vote: VoteType,
-    userId?: string,
     flyerGroup?: number,
   ) {
     const environment = getEnvironment();
@@ -341,7 +340,6 @@ class ApiClient extends BaseApiClient {
         flyerId,
         statementId,
         vote,
-        userId,
         environment,
         flyerGroup,
       }),

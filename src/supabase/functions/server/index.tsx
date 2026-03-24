@@ -28,7 +28,9 @@ import { internalConfigApi } from "./internal-config-api.tsx";
 import { enrichmentApi } from "./enrichment-api.ts";
 import { userRankApi } from "./user-rank-api.tsx";
 import { accountApi } from "./account-api.ts";
-import { validateDeveloper } from "./internal-utils.ts";
+import { validateAdmin, validateCronAuth, validateDeveloper } from "./internal-utils.ts";
+import { validateSession } from "./auth-utils.ts";
+import { API_URL_PREFIX } from "./constants.tsx";
 
 type Variables = {
   userId?: string;
@@ -77,7 +79,34 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-app.use("/make-server-f1a393b4/dev/*", validateDeveloper);
+const protect = (middleware: Parameters<typeof app.use>[1], paths: string[]) => {
+  for (const path of paths) app.use(`${API_URL_PREFIX}/${path}`, middleware);
+};
+
+// Public
+const dontValidate = async (_c: any, next: any) => next();
+protect(dontValidate, ["orgs/*", "user/*",]);
+
+// Account
+protect(validateSession, [
+  "account/*", "activity/*", "chance-card/*", "feedback/*", "flyer/*",
+  "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
+  "statement/*", "stats/*", "subheard/*", "subheards", "subheards/*",
+  "upload-debate-image", "user-rank", "vine/*", "youtube-card/*",
+]);
+
+// Developer
+protect(validateDeveloper, [
+  "dev/*", "internal/*", "retention-stats", "reddit/*",
+  "test-room/*", "rant-test-room/*", "realtime-test-room/*", "seed/*",
+]);
+
+// Admin
+protect(validateAdmin, ["admin/*", "one-time-fixes/*"]);
+
+// Cron
+protect(validateCronAuth, ["enrichment/*", "cron/*"]);
+
 
 app.get("/make-server-f1a393b4/health", (c) => {
   return c.json({ status: "ok" });
