@@ -726,11 +726,15 @@ app.get(
 // Join debate room
 app.post(
   "/make-server-f1a393b4/room/:roomId/join",
-  async (c: any) => {
+  async (c: Context) => {
     try {
+      const userId = c.get("userId");
       const roomId = c.req.param("roomId");
-      const { userId } = await c.req.json();
 
+      if (!roomId || typeof roomId !== "string") {
+        return c.json({ error: "Room ID is required" }, 400);
+      }
+      
       const room = await getDebateRoom(roomId);
       if (!room) {
         return c.json({ error: "Room not found" }, 404);

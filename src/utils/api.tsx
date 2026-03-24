@@ -167,10 +167,9 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async joinRoom(roomId: string, userId: string) {
+  async joinRoom(roomId: string) {
     return this.request(`/room/${roomId}/join`, {
       method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 

@@ -288,7 +288,7 @@ export function DebateSessionProvider(
         updateUserScoreFromResponse(roomData);
 
         if (autoJoin) {
-          await api.joinRoom(roomData.id, user.id);
+          await api.joinRoom(roomData.id);
         }
 
         return roomData;
@@ -309,7 +309,7 @@ export function DebateSessionProvider(
 
       try {
         setError(null);
-        const response = await api.joinRoom(roomId, user.id) as any;
+        const response = await api.joinRoom(roomId) as any;
         if (response.success && response.data) {
           return response.data.room;
         } else {
