@@ -198,18 +198,6 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async updateRoomPhase(
-    roomId: string,
-    phase: string,
-    userId: string,
-    subPhase?: string,
-  ) {
-    return this.request(`/room/${roomId}/phase`, {
-      method: "POST",
-      body: JSON.stringify({ phase, subPhase, userId }),
-    });
-  }
-
   async getActiveRooms(subHeard?: string, userId?: string) {
     const params = new URLSearchParams();
     if (subHeard) params.append("subHeard", subHeard);
