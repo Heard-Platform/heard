@@ -81,10 +81,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async addPhoneToAccount(userId: string, phone: string, code: string) {
+  async addPhoneToAccount(phone: string, code: string) {
     return this.request<{ user: UserSession }>("/auth/add-phone-to-account", {
       method: "POST",
-      body: JSON.stringify({ userId, phone, code }),
+      body: JSON.stringify({ phone, code }),
     });
   }
 

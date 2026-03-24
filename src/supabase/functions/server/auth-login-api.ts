@@ -2,7 +2,7 @@ import { Context, Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { getUser, saveUser, saveUserPhone } from "./kv-utils.tsx";
 import { startVerification, checkVerification } from "./twilio-service.tsx";
-import { loginUserWithMerge, normalizePhoneNumber } from "./auth-utils.ts";
+import { loginUserWithMerge, normalizePhoneNumber, validateSession } from "./auth-utils.ts";
 import { sanitizeUser } from "./user-utils.ts";
 import { createUserAccount } from "./auth-api.tsx";
 
@@ -119,12 +119,14 @@ app.post(
 
 app.post(
   "/make-server-f1a393b4/auth/add-phone-to-account",
+  validateSession,
   async (c: Context) => {
     try {
-      const { userId, phone, code } = await c.req.json();
+      const userId = c.get("userId");
+      const { phone, code } = await c.req.json();
 
-      if (!userId || !phone || !code) {
-        return c.json({ error: "userId, phone, and code are required" }, 400);
+      if (!phone || !code) {
+        return c.json({ error: "Phone and code are required" }, 400);
       }
 
       const normalizedPhone = normalizePhoneNumber(phone);
