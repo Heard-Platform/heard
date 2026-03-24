@@ -280,7 +280,7 @@ export function DebateSessionProvider(
       }
 
       setError(null);
-      const response = await api.createRoom(newDebate, user.id);
+      const response = await api.createRoom(newDebate);
 
       if (response.success && response.data) {
         const roomData = response.data;

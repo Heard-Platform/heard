@@ -112,11 +112,10 @@ class ApiClient extends BaseApiClient {
   // Room management
   async createRoom(
     newDebate: NewDebateRoom,
-    userId: string,
   ): Promise<ApiResponse<DebateRoom>> {
     return this.request<DebateRoom>("/room/create", {
       method: "POST",
-      body: JSON.stringify({ ...newDebate, userId }),
+      body: JSON.stringify(newDebate),
     });
   }
 
