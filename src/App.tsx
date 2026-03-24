@@ -26,6 +26,7 @@ import {
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { safelyGetStorageItem } from "./utils/localStorage";
+import { projectId, PROD_PROJECT_ID } from "./utils/supabase/info";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -506,9 +507,22 @@ function AppContent() {
   );
 }
 
+const IS_STAGING = projectId !== PROD_PROJECT_ID;
+
 export default function App() {
   return (
     <DebateSessionProvider>
+      {IS_STAGING && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-[9999] text-black text-center text-xs font-bold py-0.5 pointer-events-none"
+          style={{
+            background: "repeating-linear-gradient(45deg, #facc15, #facc15 10px, #dc2626 10px, #dc2626 20px)",
+            textShadow: "-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white",
+          }}
+        >
+          STAGING
+        </div>
+      )}
       <AppContent />
     </DebateSessionProvider>
   );
