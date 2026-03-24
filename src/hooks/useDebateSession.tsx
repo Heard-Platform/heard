@@ -243,7 +243,9 @@ export function DebateSessionProvider(
   }, [safelyMakeApiCall]);
 
   const addEmailToAccount = useCallback(async (email: string) => {
-    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.addEmailToAccount(user!.id, email));
+    const response = await safelyMakeApiCall<{ user: UserSession }>(
+      () => api.addEmailToAccount(email),
+    );
     if (response?.data?.user) {
       setUser(response.data.user);
     }

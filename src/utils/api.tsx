@@ -88,10 +88,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async addEmailToAccount(userId: string, email: string) {
+  async addEmailToAccount(email: string) {
     return this.request<{ user: UserSession }>("/auth/add-email-to-account", {
       method: "POST",
-      body: JSON.stringify({ userId, email }),
+      body: JSON.stringify({ email }),
     });
   }
 
