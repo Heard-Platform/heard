@@ -214,6 +214,7 @@ export function DebateScrollerStory() {
           currentSubHeard="food"
           onDiscussStatement={handleDiscussStatement}
           onShowAccountSetupModal={() => {}}
+          onOpenExplorer={() => console.log("Open community explorer")}
         />
       </div>
     </div>

@@ -23,8 +23,11 @@ export function CommunityExplorerDialogStory() {
       <CommunityExplorerDialog
         isOpen={open}
         userId="demo-user-123"
+        cancelButtonText={"Cancel"}
+        onCommunitiesJoined={() =>
+          console.log("Communities joined callback triggered")
+        }
         onClose={() => setOpen(false)}
-        onCommunitiesJoined={() => console.log("Communities joined callback triggered")}
       />
     </DebateSessionProvider>
   );
