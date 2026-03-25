@@ -35,8 +35,7 @@ export function CreateRoomCard({
               Start a New Conversation
             </h2>
             <p className="text-muted-foreground">
-              Create your own room and invite others to join the
-              discussion
+              Create your own conversation and invite others to join
             </p>
           </div>
 
@@ -46,7 +45,7 @@ export function CreateRoomCard({
               size="lg"
               className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-lg py-6 px-8"
             >
-              Create New Room
+              New Conversation
               <Plus className="w-5 h-5 ml-2" />
             </Button>
             
@@ -57,7 +56,7 @@ export function CreateRoomCard({
                 variant="outline"
                 className="border-2 border-green-500 text-green-700 hover:bg-green-50 text-lg py-6 px-8"
               >
-                Join New Communities
+                Browse Communities
                 <Compass className="w-5 h-5 ml-2" />
               </Button>
             }
