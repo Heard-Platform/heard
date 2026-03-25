@@ -405,7 +405,7 @@ export function SwipeableStatementStack({
   };
 
   const topCard = cards[0];
-  const isSpecialCardOnTop = topCard?.type === "chance" || topCard?.type === "certify";
+  const isSpecialCardOnTop = topCard?.type === "certify" || topCard?.type === "chance";
 
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
