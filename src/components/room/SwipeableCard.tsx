@@ -135,10 +135,10 @@ export function SwipeableCard({
             ? "p-0"
             : "p-6"
         } rounded-xl border-2 shadow-xl ${
-          card.type === "chance"
+          card.type === "certify"
+          ? "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-300"
+            : card.type === "chance"
             ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-orange-300"
-            : card.type === "certify"
-            ? "bg-linear-to-br from-emerald-50 to-teal-50 border-emerald-300"
             : card.type === "youtube"
             ? "bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300"
             : card.type === "demographics"

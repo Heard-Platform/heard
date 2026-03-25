@@ -5,6 +5,7 @@ import { Shield, CheckCircle, Send } from "lucide-react";
 import { motion } from "motion/react";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { isValidPhone, formatPhone } from "../../utils/validation";
+import { TOSText } from "../onboarding/TOSText";
 
 type Step = "phone" | "code" | "success";
 
@@ -69,7 +70,7 @@ export function CertifyCard({ onDismiss, onSuccess }: CertifyCardProps) {
       {/* Header */}
       <div className="flex items-center gap-2 mb-2">
         <Shield className="w-5 h-5 text-emerald-600" />
-        <span className="text-sm text-emerald-700">Security Check</span>
+        <span className="text-lg text-emerald-700">Certify Your Votes</span>
       </div>
 
       {step === "phone" && (
@@ -80,7 +81,6 @@ export function CertifyCard({ onDismiss, onSuccess }: CertifyCardProps) {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="mb-4 min-h-[100px] flex flex-col items-center justify-center space-y-3">
-            <h3 className="text-2xl text-center">Certify your votes</h3>
             <p className="text-base text-center text-muted-foreground max-w-sm">
               Add your phone number to verify your votes came from a real person — without revealing who you are.
             </p>
@@ -104,12 +104,8 @@ export function CertifyCard({ onDismiss, onSuccess }: CertifyCardProps) {
             {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
           </div>
 
-          <div className="pt-2 border-t border-emerald-200">
-            <p className="text-xs text-center text-emerald-700">
-              <button className="hover:text-emerald-900 transition-colors" onClick={onDismiss}>
-                Swipe away to skip
-              </button>
-            </p>
+          <div className="pt-2 border-t border-emerald-200 space-y-2">
+            <div className="text-center"><TOSText /></div>
           </div>
         </motion.div>
       )}
