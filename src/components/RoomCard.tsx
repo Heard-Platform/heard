@@ -325,7 +325,7 @@ export function RoomCard({
                       isAnonymous={!!user?.isAnonymous}
                       onFollowDiscussion={() =>
                         onShowAccountSetupModal(
-                          "follow this discussion",
+                          "certify your votes",
                         )
                       }
                       onChangeVote={handleVote}
