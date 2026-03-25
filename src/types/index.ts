@@ -48,6 +48,10 @@ export type StatementCard = {
   statement: Statement;
 }
 
+export type CertifyCard = {
+  type: "certify";
+}
+
 export type ChanceCard = {
   type: "chance";
 }
@@ -76,7 +80,7 @@ export type DemographicsCard = {
   isUnswipeable: true;
 }
 
-export type Card = (StatementCard | ChanceCard | YouTubeCard | DemographicsCard)
+export type Card = (StatementCard | CertifyCard | ChanceCard | YouTubeCard | DemographicsCard)
   & { isUnswipeable?: boolean };
 
 export const isStatementCard = (card: Card): card is StatementCard => {

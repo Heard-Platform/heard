@@ -65,6 +65,7 @@ export function RoomCard({
   onDiscussStatement,
   onShowAccountSetupModal,
 }: RoomCardProps) {
+  const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [youtubeCardSwiped, setYoutubeCardSwiped] = useState(room.youtubeCardSwiped || false);
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -309,7 +310,9 @@ export function RoomCard({
                 statements.every(
                   (statement) =>
                     statement.voters && statement.voters[user.id],
-                ) && chanceCardSwiped
+                )
+                && (!user.isAnonymous || certifyCardDismissed)
+                && chanceCardSwiped
                 && (!room.youtubeUrl || youtubeCardSwiped);
 
               // If user has voted on all statements, show InProgressResults + input
@@ -322,7 +325,7 @@ export function RoomCard({
                       isAnonymous={!!user?.isAnonymous}
                       onFollowDiscussion={() =>
                         onShowAccountSetupModal(
-                          "follow this discussion",
+                          "certify your votes",
                         )
                       }
                       onChangeVote={handleVote}
@@ -351,6 +354,7 @@ export function RoomCard({
                     youtubeCardSwiped={youtubeCardSwiped}
                     onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
+                    onCertifyDone={() => setCertifyCardDismissed(true)}
                     onChanceCardSwiped={handleSwipeChanceCard}
                     onYouTubeCardSwiped={handleSwipeYouTubeCard}
                   />
