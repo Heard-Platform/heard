@@ -11,6 +11,7 @@ import { ChanceCard } from "./ChanceCard";
 import { YouTubeCard } from "./YouTubeCard";
 import { DemographicsCard } from "./DemographicsCard";
 import { StatementCard } from "./StatementCard";
+import { CertifyCard } from "./CertifyCard";
 
 interface SwipeableCardProps {
   card: Card;
@@ -29,6 +30,8 @@ interface SwipeableCardProps {
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
   onDemographicsAnswer?: (id: string, answer: string) => void;
+  onCertifyDismiss: () => void;
+  onCertifySuccess: () => void;
   onSuperAgree: () => void;
   onSkip: () => void;
   onFlag: () => void;
@@ -48,6 +51,8 @@ export function SwipeableCard({
   onSubmitStatement,
   onShowAccountSetupModal,
   onDemographicsAnswer,
+  onCertifyDismiss,
+  onCertifySuccess,
   onSuperAgree,
   onSkip,
   onFlag,
@@ -132,6 +137,8 @@ export function SwipeableCard({
         } rounded-xl border-2 shadow-xl ${
           card.type === "chance"
             ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-orange-300"
+            : card.type === "certify"
+            ? "bg-linear-to-br from-emerald-50 to-teal-50 border-emerald-300"
             : card.type === "youtube"
             ? "bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300"
             : card.type === "demographics"
@@ -165,6 +172,11 @@ export function SwipeableCard({
             onAnswer={(answer) => {
               onDemographicsAnswer && onDemographicsAnswer(card.question.id, answer);
             }}
+          />
+        ) : card.type === "certify" ? (
+          <CertifyCard
+            onDismiss={onCertifyDismiss}
+            onSuccess={onCertifySuccess}
           />
         ) : card.type === "statement" ? (
           <StatementCard
