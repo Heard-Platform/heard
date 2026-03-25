@@ -804,9 +804,9 @@ app.post(
       const roomId = c.req.param("roomId") as string;
       const { text } = await c.req.json();
 
-      if (!text || text.length < 5 || text.length > 500) {
+      if (!text || text.length < 1 || text.length > 500) {
         return c.json(
-          { error: "Statement must be 5-500 characters" },
+          { error: "Statement must be 1-500 characters" },
           400,
         );
       }
