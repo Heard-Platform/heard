@@ -36,7 +36,7 @@ const DEMO_STATEMENTS = [
   },
   {
     id: "demo-4",
-    text: "Mushrooms are underrated! They'll grow on you.",
+    text: "Mushrooms are underrated! They'll 'grow' on you.",
   },
 ];
 
@@ -47,51 +47,48 @@ const animatedIcons = [
   { Icon: Users, color: "text-blue-200", delay: 0.9 },
 ];
 
-function DemoSwipeCard() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [shouldAnimate, setShouldAnimate] = useState(false);
-  const [swipeDirection, setSwipeDirection] = useState<
-    "left" | "right"
-  >("left");
+// Match SwipeInstructions
+const CYCLE_MS = 5000;
+const AGREE_TRIGGER_MS = 0.26 * CYCLE_MS;
+const DISAGREE_TRIGGER_MS = 0.82 * CYCLE_MS;
+const CARD_EXIT_MS = 500;
 
-  // Trigger animation after modal loads
+function DemoSwipeCard() {
+  const [cardIndex, setCardIndex] = useState(0);
+  const [animating, setAnimating] = useState<"left" | "right" | null>(null);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShouldAnimate(true);
-    }, 1125); // Reduced from 1500 (25% faster)
-    return () => clearTimeout(timer);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    const runCycle = () => {
+      timers.push(setTimeout(() => {
+        setAnimating("right");
+        timers.push(setTimeout(() => {
+          setCardIndex(prev => (prev + 1) % DEMO_STATEMENTS.length);
+          setAnimating(null);
+        }, CARD_EXIT_MS));
+      }, AGREE_TRIGGER_MS));
+
+      timers.push(setTimeout(() => {
+        setAnimating("left");
+        timers.push(setTimeout(() => {
+          setCardIndex(prev => (prev + 1) % DEMO_STATEMENTS.length);
+          setAnimating(null);
+        }, CARD_EXIT_MS));
+      }, DISAGREE_TRIGGER_MS));
+    };
+
+    runCycle();
+    const interval = setInterval(runCycle, CYCLE_MS);
+
+    return () => {
+      timers.forEach(clearTimeout);
+      clearInterval(interval);
+    };
   }, []);
 
-  // Move to next card after swipe animation
-  useEffect(() => {
-    if (shouldAnimate) {
-      const timer = setTimeout(() => {
-        setCurrentIndex(
-          (prev) => (prev + 1) % DEMO_STATEMENTS.length,
-        );
-        setShouldAnimate(false);
-
-        // Alternate swipe direction
-        setSwipeDirection((prev) =>
-          prev === "left" ? "right" : "left",
-        );
-
-        // Start the cycle again
-        const restartTimer = setTimeout(() => {
-          setShouldAnimate(true);
-        }, 1500); // Reduced from 2000 (25% faster)
-
-        return () => clearTimeout(restartTimer);
-      }, 750); // Reduced from 1000 (25% faster)
-      return () => clearTimeout(timer);
-    }
-  }, [shouldAnimate, currentIndex]);
-
-  const currentStatement = DEMO_STATEMENTS[currentIndex];
-  const nextStatement =
-    DEMO_STATEMENTS[
-      (currentIndex + 1) % DEMO_STATEMENTS.length
-    ];
+  const currentStatement = DEMO_STATEMENTS[cardIndex];
+  const nextStatement = DEMO_STATEMENTS[(cardIndex + 1) % DEMO_STATEMENTS.length];
 
   return (
     <div className="relative w-full h-[180px] pb-12">
@@ -99,10 +96,7 @@ function DemoSwipeCard() {
       <motion.div
         key={`bg-${nextStatement.id}`}
         className={`absolute top-0 left-0 w-full p-4 rounded-xl border-2 shadow-lg ${getPastelColor(nextStatement.id)}`}
-        style={{
-          scale: 0.95,
-          y: 5,
-        }}
+        style={{ scale: 0.95, y: 5 }}
       >
         <div className="flex items-center justify-center min-h-[140px]">
           <p className="text-sm text-center leading-relaxed">
@@ -116,15 +110,11 @@ function DemoSwipeCard() {
         key={`top-${currentStatement.id}`}
         className={`absolute top-0 left-0 w-full p-4 rounded-xl border-2 shadow-xl ${getPastelColor(currentStatement.id)}`}
         animate={
-          shouldAnimate
-            ? {
-                x: swipeDirection === "left" ? -400 : 400,
-                rotate: swipeDirection === "left" ? -25 : 25,
-                opacity: 0,
-              }
+          animating
+            ? { x: animating === "left" ? -400 : 400, rotate: animating === "left" ? -25 : 25, opacity: 0 }
             : { x: 0, rotate: 0, opacity: 1 }
         }
-        transition={{ duration: 0.6, ease: "easeInOut" }}
+        transition={{ duration: CARD_EXIT_MS / 1000, ease: "easeInOut" }}
       >
         <div className="flex items-center justify-center min-h-[140px]">
           <p className="text-sm text-center leading-relaxed">
@@ -132,20 +122,11 @@ function DemoSwipeCard() {
           </p>
         </div>
 
-        {/* Disagree indicator (swipe left) */}
-        {swipeDirection === "left" && (
-          <SwipeIndicatorCompact
-            direction="disagree"
-            opacity={shouldAnimate ? 1 : 0}
-          />
+        {animating === "left" && (
+          <SwipeIndicatorCompact direction="disagree" opacity={1} />
         )}
-
-        {/* Agree indicator (swipe right) */}
-        {swipeDirection === "right" && (
-          <SwipeIndicatorCompact
-            direction="agree"
-            opacity={shouldAnimate ? 1 : 0}
-          />
+        {animating === "right" && (
+          <SwipeIndicatorCompact direction="agree" opacity={1} />
         )}
       </motion.div>
 
