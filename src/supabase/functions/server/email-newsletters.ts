@@ -79,41 +79,6 @@ const newsletters = [
       imageAlt: "Heard organizers",
     },
   }),
-//   section 1 - open source
-
-// title: Heard is now officially open source!
-
-// text: It took a little longer than expected but the source code for Heard is now publicly available on GitHub. We wanted to make sure we were doing our due dilligence in shoring up the app’s security before releasing it, as we do have people’s emails and phone numbers in our database, and we wanted to make sure those were being kept safe. Fair warning, it’s startup code, so it isn’t all great, but it’s out there!
-
-// link in text: github
-
-// image: github
-
-// link: github
-
-// section 2 - choose your own mascot
-
-// title: Choose Your Own Mascot
-
-// text: You can now tap the monkey in the app and switch to a bunch of other animal choices, such as elephant and panda, which were two of the highest voted choices.
-
-// no link in text
-
-// image: mascot gif
-
-// link: home
-
-// section 3 - So ends the first quarter of 2026
-
-// title: A Moment of Reflection
-
-// text: We’re 3 months into 2026 now, which means we’re halfway through my runway for Heard. It’s been a big 3 months, with hundreds of people now having tried the app, and a lot of promising irons in the fire for upcoming partnerships. No newsletter next week as I will be taking a few days to reflect and plan the next steps so we come out swinging in April. 🥊
-
-// link in text: orig yt vid
-
-// image: yt vid still
-
-// link: orig yt vid
   getParameterizedNewsletter({
     subject: "Heard Newsletter #11: Open Sourcing, New Avatars, and Midway Reflections",
     editionNumber: 11,
