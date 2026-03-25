@@ -58,6 +58,16 @@ export function KeyboardDebugPanel({
           </div>
         )}
       </div>
+      <div className="pt-1 border-t border-gray-700 mt-1">
+        <div className="font-bold text-green-400 mb-2">Local Storage</div>
+
+        <button
+          className="w-full text-left text-orange-400 hover:text-orange-300 active:text-orange-200"
+          onClick={() => localStorage.removeItem("heard_swipe_count")}
+        >
+          ↺ reset swipe tutorial
+        </button>
+      </div>
     </div>
   );
 }

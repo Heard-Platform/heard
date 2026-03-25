@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PanInfo } from "motion/react";
+import { useSwipeTutorial } from "../../hooks/useSwipeTutorial";
 import {
   type Statement,
   type VoteType,
@@ -10,6 +11,7 @@ import {
   DemographicQuestion,
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
+import { SwipeInstructions } from "../SwipeInstructions";
 import { NewStatementInput } from "../NewStatementInput";
 import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
@@ -58,6 +60,7 @@ export function SwipeableStatementStack({
   onDemographicsAnswer,
 }: SwipeableStatementStackProps) {
   const { flagStatement } = useDebateSession();
+  const { showTutorial, recordSwipe } = useSwipeTutorial();
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
   >(new Set());
@@ -130,6 +133,8 @@ export function SwipeableStatementStack({
     setVotedStatementIds((prev) =>
       new Set(prev).add(statementId),
     );
+
+    recordSwipe();
 
     const statement = statements.find(
       (s) => s.id === statementId,
@@ -374,6 +379,11 @@ export function SwipeableStatementStack({
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
       <div className="relative min-h-[320px]">
+        {showTutorial && (
+          <div className="absolute inset-0 z-20 pointer-events-none">
+            <SwipeInstructions />
+          </div>
+        )}
         {cards
           .slice(0, 3)
           .map((card, index) => {
