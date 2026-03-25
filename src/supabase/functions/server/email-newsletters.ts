@@ -1,5 +1,7 @@
 import { getParameterizedNewsletter } from "./email-newsletter-4.ts";
-import { YT_SHORTS_URL } from "./email-templates.tsx";
+import { GITHUB_URL, YT_SHORTS_URL } from "./email-templates.tsx";
+
+const YT_FIRST_VID_URL = "https://youtu.be/JM0WUrFkYZc";
 
 const newsletters = [
   getParameterizedNewsletter({
@@ -75,6 +77,66 @@ const newsletters = [
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-10-organizers.png",
       imageLink: "https://heard.vote",
       imageAlt: "Heard organizers",
+    },
+  }),
+//   section 1 - open source
+
+// title: Heard is now officially open source!
+
+// text: It took a little longer than expected but the source code for Heard is now publicly available on GitHub. We wanted to make sure we were doing our due dilligence in shoring up the app’s security before releasing it, as we do have people’s emails and phone numbers in our database, and we wanted to make sure those were being kept safe. Fair warning, it’s startup code, so it isn’t all great, but it’s out there!
+
+// link in text: github
+
+// image: github
+
+// link: github
+
+// section 2 - choose your own mascot
+
+// title: Choose Your Own Mascot
+
+// text: You can now tap the monkey in the app and switch to a bunch of other animal choices, such as elephant and panda, which were two of the highest voted choices.
+
+// no link in text
+
+// image: mascot gif
+
+// link: home
+
+// section 3 - So ends the first quarter of 2026
+
+// title: A Moment of Reflection
+
+// text: We’re 3 months into 2026 now, which means we’re halfway through my runway for Heard. It’s been a big 3 months, with hundreds of people now having tried the app, and a lot of promising irons in the fire for upcoming partnerships. No newsletter next week as I will be taking a few days to reflect and plan the next steps so we come out swinging in April. 🥊
+
+// link in text: orig yt vid
+
+// image: yt vid still
+
+// link: orig yt vid
+  getParameterizedNewsletter({
+    subject: "Heard Newsletter #11: Open Sourcing, New Avatars, and Midway Reflections",
+    editionNumber: 11,
+    section1: {
+      title: "🎉 Heard is now officially open source!",
+      text: `It took a little longer than expected but the source code for Heard is now <a href='${GITHUB_URL}'>publicly available on GitHub</a>. We wanted to make sure we were doing our due dilligence in shoring up the app’s security before releasing it, as we do have people’s emails and phone numbers in our database, and we wanted to make sure those were being kept safe. Fair warning, it’s startup code, so it isn’t all great, but it’s out there! Check out the code and contribute if you’re interested in helping out!`,
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-11-github.png",
+      imageLink: GITHUB_URL,
+      imageAlt: "Heard open source on GitHub",
+    },
+    section2: {
+      title: "🐘 Choose Your Own Mascot",
+      text: "You can now tap the monkey in the app and switch to a bunch of other animal choices, such as elephant and panda, which were two of the highest voted choices.",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-11-avatar.gif",
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard new mascot options",
+    },
+    section3: {
+      title: "⏳ A Moment of Reflection",
+      text: `We’re 3 months into 2026 now, which means <a href='${YT_FIRST_VID_URL}'>we’re halfway through my runway for Heard</a>. It’s been a big 3 months, with hundreds of people now having tried the app, and a lot of promising irons in the fire for upcoming partnerships. No newsletter next week as I will be taking a few days to reflect and plan the next steps so we come out swinging in April. 🥊`,
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-11-yt.png",
+      imageLink: YT_FIRST_VID_URL,
+      imageAlt: "Heard reflection video still",
     },
   }),
 ]
