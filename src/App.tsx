@@ -250,7 +250,8 @@ function AppContent() {
       } else if (isOrgsRoute) {
         setShowOrgsPage(true);
       } else if (newsletterMatch) {
-        setNewsletterEdition(parseInt(newsletterMatch[1], 10));
+        const edition = parseInt(newsletterMatch[1]);
+        setNewsletterEdition(edition);
       }
       setHasCheckedUrl(true);
     }
