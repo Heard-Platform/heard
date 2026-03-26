@@ -338,6 +338,9 @@ export interface FeatureResults {
   convertedFromAnonSince: number;
   flyerUsers: number;
   flyerUsersSince: number;
+  avatarAnimalUsers: number;
+  avatarAnimalUsersSince: number;
+  avatarAnimalData: { counts: Record<string, number> };
 }
 
 export interface UserHistoryData {

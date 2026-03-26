@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { ReactNode } from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import {
@@ -15,9 +16,11 @@ import {
   Monitor,
   Shield,
   Bot,
+  Rabbit,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
+import { AvatarAnimalChart } from "./feature-tracker/AvatarAnimalChart";
 
 interface FeatureResultsTrackerProps {
   onExit: () => void;
@@ -31,6 +34,7 @@ interface FeatureCardData {
   description: string;
   getValue: (stats: FeatureResults) => number;
   getDate: (stats: FeatureResults) => number;
+  renderExtra?: (stats: FeatureResults) => ReactNode;
 }
 
 export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
@@ -64,7 +68,7 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
     });
   };
 
-  const featureCards: FeatureCardData[] = [
+  let featureCards: FeatureCardData[] = [
     {
       icon: Bot,
       iconColor: "text-amber-600",
@@ -164,7 +168,21 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.flyerUsers,
       getDate: (s) => s.flyerUsersSince,
     },
-  ];
+    {
+      icon: Rabbit,
+      iconColor: "text-lime-600",
+      bgColor: "bg-lime-100",
+      title: "Avatar Animal Chosen",
+      description: "Users who have selected an avatar animal",
+      getValue: (s) => s.avatarAnimalUsers,
+      getDate: (s) => s.avatarAnimalUsersSince,
+      renderExtra: (s) => <AvatarAnimalChart {...s.avatarAnimalData} />
+    },
+  ]
+
+  featureCards.sort((a, b) =>
+    stats ? b.getDate(stats) - a.getDate(stats) : 0,
+  );
 
   if (loading) {
     return (
@@ -212,6 +230,11 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
                     </p>
                   )}
                 </div>
+                {stats && card.renderExtra && (
+                  <div className="shrink-0">
+                    {card.renderExtra(stats)}
+                  </div>
+                )}
               </div>
             </Card>
           ))}

@@ -53,7 +53,21 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const flyerUsers = users.filter(
       u => u.flyerId
     ).length;
-    
+
+    const avatarAnimalUsers = users.filter(
+      u => u.avatarAnimal
+    ).length;
+
+    const avatarAnimalCounts: Record<string, number> = {};
+    for (const u of users) {
+      if (u.avatarAnimal) {
+        const currentCount = avatarAnimalCounts[u.avatarAnimal] ?? 0;
+        avatarAnimalCounts[u.avatarAnimal] = currentCount + 1;
+      }
+    }
+
+    const avatarAnimalData = { counts: avatarAnimalCounts };
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -65,6 +79,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const phoneVerifiedSince = new Date("2026-01-26").getTime();
     const convertedFromAnonSince = new Date("2026-01-22").getTime();
     const flyerUsersSince = new Date("2026-01-05").getTime();
+    const avatarAnimalUsersSince = new Date("2026-03-26").getTime();
     
     return c.json({
       webDriverUsers,
@@ -89,6 +104,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       convertedFromAnonSince,
       flyerUsers,
       flyerUsersSince,
+      avatarAnimalUsers,
+      avatarAnimalUsersSince,
+      avatarAnimalData,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);
