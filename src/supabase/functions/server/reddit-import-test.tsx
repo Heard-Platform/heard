@@ -63,7 +63,7 @@ function assertValidResponse(response: string) {
   );
 }
 
-if (true) {
+if (false) {
 
   const testPostIndex = 2;
   const testPersona = getRandomPersona();

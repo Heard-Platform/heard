@@ -18,12 +18,13 @@ export class GeminiClient implements LlmClient {
   }
 
   async complete(prompt: AiPrompt): Promise<string> {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${this.apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-goog-api-key": this.apiKey,
       },
       body: JSON.stringify({
         system_instruction: {
