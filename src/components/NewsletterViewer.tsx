@@ -15,15 +15,17 @@ export function NewsletterViewer({ edition }: NewsletterViewerProps) {
     const fetchNewsletter = async () => {
       setLoading(true);
       setError(null);
-      try {
-        const response = await safelyMakeApiCall(() => api.getNewsletter(edition));
-        setHtml(response?.data?.html || "<p>Newsletter content is unavailable.</p>");
-      } catch (err) {
-        console.error("Error fetching newsletter:", err);
+      const response = await safelyMakeApiCall(() => api.getNewsletter(edition));
+
+      if (response?.success && response.data?.html) {
+        setHtml(response.data.html);
+      } else {
+        console.error("Error fetching newsletter:", response?.error);
+        setHtml("<p>Newsletter content is unavailable.</p>");
         setError("Failed to load newsletter");
-      } finally {
-        setLoading(false);
       }
+
+      setLoading(false);
     };
 
     fetchNewsletter();
