@@ -75,8 +75,8 @@ Post self-text: ${redditPost.selfText}
     });
     await createRoom(newPost);
 
-    stmtTexts.forEach(async (stmtText) => {
-      await saveStatement({
+    await Promise.all(stmtTexts.map((stmtText) =>
+      saveStatement({
         id: generateId(),
         text: stmtText,
         author: "enrichment-service",
@@ -88,8 +88,8 @@ Post self-text: ${redditPost.selfText}
         timestamp: Date.now(),
         round: 1,
         voters: {},
-      });
-    });
+      })
+    ));
 
     return true;
   }
