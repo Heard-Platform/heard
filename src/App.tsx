@@ -12,7 +12,7 @@ import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTrack
 import { DevTools } from "./components/devtools/DevTools";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-import { api, getUserId } from "./utils/api";
+import { api } from "./utils/api";
 import type { NewDebateRoom, DebateRoom, VoteType } from "./types";
 import {
   parseRoomIdFromUrl,
@@ -84,13 +84,11 @@ function AppContent() {
     flyerGroup?: number;
   }) => {
     setIsJoiningAnonymously(true);
-    const existingUserId = getUserId();
 
     const response = await voteViaFlyer(
       flyerData.flyerId,
       flyerData.statementId,
       flyerData.vote,
-      existingUserId || undefined,
       flyerData.flyerGroup,
     );
 
@@ -283,10 +281,7 @@ function AppContent() {
     const autoJoinSubHeard = async () => {
       if (user && currentSubHeard && hasCheckedUrl) {
         try {
-          const response = await api.joinSubHeard(
-            currentSubHeard,
-            user.id,
-          );
+          const response = await api.joinSubHeard(currentSubHeard);
 
           if (!response.success) {
             toast.error("Unable to join this community");

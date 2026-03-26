@@ -75,10 +75,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
     setError(null);
 
     try {
-      const html = await api.getEmailPreview(
-        useMockData ? undefined : user.id,
-        digestType,
-      );
+      const html = await api.getEmailPreview(digestType);
       setEmailHtml(html);
     } catch (err) {
       console.error("Error fetching email preview:", err);
@@ -99,7 +96,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
     setError(null);
 
     try {
-      const result = await api.sendTestEmail(user.id, useMockData, digestType);
+      const result = await api.sendTestEmail(useMockData, digestType);
       
       if (!result.success) {
         throw new Error(result.error || "Failed to send email");

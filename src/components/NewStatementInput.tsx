@@ -35,8 +35,8 @@ export function NewStatementInput({
     
     if (!trimmedText) return;
 
-    if (trimmedText.length < 5) {
-      toast.error("Statement must be at least 5 characters");
+    if (trimmedText.length < 1) {
+      toast.error("Statement must be at least 1 character");
       return;
     }
 

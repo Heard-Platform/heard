@@ -2,6 +2,17 @@ import { mergeAnonymousUserActivity } from "./anonymous-merge-utils.tsx";
 import { getUserAndNewSession } from "./auth-api.tsx";
 import { getUser } from "./kv-utils.tsx";
 
+export async function validateSession(c: any, next: any) {
+  const userId = c.get("userId");
+  
+  if (!userId) {
+    console.warn("Unauthorized account access attempt with no session");
+    return c.json({ error: "Unauthorized - No session" }, 401);
+  }
+
+  await next();
+}
+
 export const normalizePhoneNumber = (phone: string): string => {
   let normalizedPhone = phone.replace(/\D/g, "");
 
@@ -13,16 +24,6 @@ export const normalizePhoneNumber = (phone: string): string => {
 
   return normalizedPhone;
 };
-
-export async function validateSession(c: any, next: any) {
-  const userId = c.get("userId");
-
-  if (!userId) {
-    return c.json({ error: "Unauthorized - No session" }, 401);
-  }
-
-  await next();
-}
 
 export const loginUserWithMerge = async (userId: string, currentUserId: string | undefined) => {
   const result = await getUserAndNewSession(userId);

@@ -5,6 +5,7 @@ import type {
 } from "../types";
 import { useState, useCallback, useEffect } from "react";
 import { mockStatements, mockRooms } from "./mockData";
+import { AvatarAnimal } from "../utils/constants/avatars";
 
 export function DebateScrollerStory() {
   const handleJoinRoom = (roomId: string) => {
@@ -52,48 +53,60 @@ export function DebateScrollerStory() {
       userId: "user2",
       currentRoomIndex: 1,
       lastUpdated: Date.now(),
+      avatarAnimal: "koala",
     },
     {
       userId: "user3",
       currentRoomIndex: 2,
       lastUpdated: Date.now(),
+      avatarAnimal: "rhino",
     },
     {
       userId: "user4",
       currentRoomIndex: 0,
       lastUpdated: Date.now(),
+      avatarAnimal: "elephant",
     },
     {
       userId: "user5",
       currentRoomIndex: 3,
       lastUpdated: Date.now(),
+      avatarAnimal: "sloth",
     },
     {
       userId: "user6",
       currentRoomIndex: 1,
       lastUpdated: Date.now(),
+      avatarAnimal: "panda",
     },
     {
       userId: "user7",
       currentRoomIndex: 2,
       lastUpdated: Date.now(),
+      avatarAnimal: "monkey",
     },
     {
       userId: "user8",
       currentRoomIndex: 0,
       lastUpdated: Date.now(),
+      avatarAnimal: "koala",
     },
   ]);
 
   const handleUpdatePresence = useCallback(
-    (userId: string, currentRoomIndex: number) => {
+    (currentRoomIndex: number) => {
       setPresences((prev) => {
-        const filtered = prev.filter(
-          (p) => p.userId !== userId,
-        );
+        const userId = "user2";
+        const original = prev.find((p) => p.userId === userId);
+        const filtered = prev.filter((p) => p.userId !== userId);
         return [
           ...filtered,
-          { userId, currentRoomIndex, lastUpdated: Date.now() },
+          {
+            userId,
+            currentRoomIndex,
+            lastUpdated: Date.now(),
+            avatarAnimal: original?.avatarAnimal || "monkey",
+          },
         ];
       });
     },
@@ -140,6 +153,7 @@ export function DebateScrollerStory() {
                   Math.random() * availableUsers.length,
                 )
               ];
+            const avatars: AvatarAnimal[] = ["monkey", "koala", "rhino", "elephant", "sloth", "panda"];
             return [
               ...prev,
               {
@@ -148,6 +162,7 @@ export function DebateScrollerStory() {
                   Math.random() * mockRooms.length,
                 ),
                 lastUpdated: Date.now(),
+                avatarAnimal: avatars[Math.floor(Math.random() * avatars.length)],
               },
             ];
           }
@@ -200,6 +215,7 @@ export function DebateScrollerStory() {
           currentSubHeard="food"
           onDiscussStatement={handleDiscussStatement}
           onShowAccountSetupModal={() => {}}
+          onOpenExplorer={() => console.log("Open community explorer")}
         />
       </div>
     </div>

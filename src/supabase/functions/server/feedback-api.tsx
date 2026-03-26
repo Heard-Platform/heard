@@ -1,14 +1,15 @@
 // @ts-ignore
-import { Hono } from "npm:hono";
+import { Context, Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import { sendEmailToDevs } from "./dev-utils.tsx";
 
 const app = new Hono();
 
 // Submit feedback
-app.post("/make-server-f1a393b4/feedback/submit", async (c) => {
+app.post("/make-server-f1a393b4/feedback/submit", async (c: Context) => {
   try {
-    const { userId, feedbackText } = await c.req.json();
+    const userId = c.get("userId");
+    const { feedbackText } = await c.req.json();
 
     if (!feedbackText || !feedbackText.trim()) {
       return c.json({ error: "Feedback text is required" }, 400);
@@ -48,7 +49,7 @@ app.post("/make-server-f1a393b4/feedback/submit", async (c) => {
   }
 });
 
-app.get("/make-server-f1a393b4/feedback/list", async (c) => {
+app.get("/make-server-f1a393b4/feedback/list", async (c: Context) => {
   try {
     const feedbackKeys = await kv.getByPrefix("feedback:");
 

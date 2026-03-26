@@ -1,11 +1,13 @@
 import { AnalysisMetrics } from "./analysis-utils.tsx";
 import { ClusterConsensus } from "./cluster-analysis.tsx";
+import { VALID_AVATARS } from "./constants.tsx";
 
 export interface User {
   id: string;
   nickname: string;
   email: string;
   phoneNumber?: string;
+  avatarAnimal?: AvatarAnimal;
   score: number;
   streak: number;
   currentRoomId?: string;
@@ -35,6 +37,8 @@ export interface User {
   webdriver?: boolean;
 }
 
+export type AvatarAnimal = (typeof VALID_AVATARS)[number];
+
 export type UserActivityRecord = {
   date: string;
   userId: string;
@@ -58,6 +62,7 @@ export interface UserPresence {
   userId: string;
   currentRoomIndex: number;
   lastUpdated: number;
+  avatarAnimal: AvatarAnimal;
 }
 
 export interface UserReport {

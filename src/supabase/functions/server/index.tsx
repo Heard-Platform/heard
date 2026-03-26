@@ -27,7 +27,10 @@ import { reportingApi } from "./reporting-api.tsx";
 import { internalConfigApi } from "./internal-config-api.tsx";
 import { enrichmentApi } from "./enrichment-api.ts";
 import { userRankApi } from "./user-rank-api.tsx";
-import { validateDeveloper } from "./internal-utils.ts";
+import { accountApi } from "./account-api.ts";
+import { validateAdmin, validateCronAuth, validateDeveloper } from "./internal-utils.ts";
+import { validateSession } from "./auth-utils.ts";
+import { API_URL_PREFIX } from "./constants.tsx";
 
 type Variables = {
   userId?: string;
@@ -45,6 +48,7 @@ app.use(
       "Content-Type",
       "Authorization",
       "X-Admin-Key",
+      "X-API-Key",
       "X-Session-Id",
     ],
     allowMethods: [
@@ -61,12 +65,25 @@ app.use(
 );
 
 app.use("*", async (c, next) => {
+  const apiKey = c.req.header("X-API-Key");
+  const validKey = Deno.env.get("HEARD_API_SECRET");
+
+  if (!validKey || apiKey !== validKey) {
+    console.warn("Unauthorized API access attempt with invalid API key");
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  await next();
+});
+
+app.use("*", async (c, next) => {
   const sessionId = c.req.header("X-Session-Id");
   
   if (sessionId) {
     const validation = await validateSessionId(sessionId);
     
     if (!validation.valid) {
+      console.warn(`Unauthorized account access attempt with invalid session`);
       return c.json({ error: validation.error || "Invalid session" }, 401);
     }
     
@@ -76,7 +93,34 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-app.use("/make-server-f1a393b4/dev/*", validateDeveloper);
+const protect = (middleware: Parameters<typeof app.use>[1], paths: string[]) => {
+  for (const path of paths) app.use(`${API_URL_PREFIX}/${path}`, middleware);
+};
+
+// Public
+const dontValidate = async (_c: any, next: any) => next();
+protect(dontValidate, ["orgs/*", "user/*",]);
+
+// Account
+protect(validateSession, [
+  "account/*", "activity/*", "chance-card/*", "feedback/*", "flyer/*",
+  "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
+  "statement/*", "stats/*", "subheard/*", "subheards", "subheards/*",
+  "upload-debate-image", "user-rank", "vine/*", "youtube-card/*",
+]);
+
+// Developer
+protect(validateDeveloper, [
+  "dev/*", "internal/*", "retention-stats", "reddit/*",
+  "test-room/*", "rant-test-room/*", "realtime-test-room/*", "seed/*",
+]);
+
+// Admin
+protect(validateAdmin, ["admin/*", "one-time-fixes/*"]);
+
+// Cron
+protect(validateCronAuth, ["enrichment/*", "cron/*"]);
+
 
 app.get("/make-server-f1a393b4/health", (c) => {
   return c.json({ status: "ok" });
@@ -85,6 +129,7 @@ app.get("/make-server-f1a393b4/health", (c) => {
 app.route("/", debateApi);
 app.route("/", adminApi);
 app.route("/", authApi);
+app.route("/", accountApi);
 app.route("/", loginApi);
 app.route("/", redditApi);
 app.route("/", oneTimeFixesApi);
