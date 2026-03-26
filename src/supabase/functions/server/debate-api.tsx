@@ -836,7 +836,15 @@ app.post(
         return c.json({ error: "No content generated" }, 500);
       }
 
-      const extracted = JSON.parse(stripMarkdownFences(content));
+      let extracted;
+      try {
+        extracted = JSON.parse(stripMarkdownFences(content));
+      } catch {
+        return c.json(
+          { error: "Failed to parse AI response as JSON" },
+          500,
+        );
+      }
 
       if (
         !extracted.topic ||
