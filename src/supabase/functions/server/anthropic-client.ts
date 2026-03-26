@@ -16,6 +16,15 @@ export class AnthropicClient implements LlmClient {
   }
 
   async complete(prompt: AiPrompt): Promise<string> {
+    return this.request(prompt);
+  }
+
+  async completeJson(prompt: AiPrompt): Promise<string> {
+    // Anthropic has no native JSON mode — rely on prompt instructions
+    return this.request(prompt);
+  }
+
+  private async request(prompt: AiPrompt): Promise<string> {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {

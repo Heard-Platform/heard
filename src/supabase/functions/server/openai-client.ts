@@ -16,6 +16,34 @@ export class OpenAiClient implements LlmClient {
   }
 
   async complete(prompt: AiPrompt): Promise<string> {
+    return this.request(prompt, false);
+  }
+
+  async completeJson(prompt: AiPrompt): Promise<string> {
+    return this.request(prompt, true);
+  }
+
+  private async request(prompt: AiPrompt, json: boolean): Promise<string> {
+    const body: Record<string, unknown> = {
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: prompt.systemPrompt,
+        },
+        {
+          role: "user",
+          content: prompt.userPrompt,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 500,
+    };
+
+    if (json) {
+      body.response_format = { type: "json_object" };
+    }
+
     const response = await fetch(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -24,21 +52,7 @@ export class OpenAiClient implements LlmClient {
           Authorization: `Bearer ${this.openAiApiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            {
-              role: "system",
-              content: prompt.systemPrompt,
-            },
-            {
-              role: "user",
-              content: prompt.userPrompt,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 500,
-        }),
+        body: JSON.stringify(body),
       },
     );
 

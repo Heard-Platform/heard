@@ -830,7 +830,7 @@ app.post(
 
       const aiClient = createLlmClient();
       const prompt = makeRantExtractionPrompt(rant);
-      const content = await aiClient.complete(prompt);
+      const content = await aiClient.completeJson(prompt);
 
       if (!content) {
         return c.json({ error: "No content generated" }, 500);

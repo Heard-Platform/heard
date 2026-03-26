@@ -54,7 +54,7 @@ function assertValidRantExtraction(response: string, label: string) {
 async function runRantTest(client: LlmClient, providerName: string) {
   for (const rant of testRants) {
     const prompt = makeRantExtractionPrompt(rant.text);
-    const response = await client.complete(prompt);
+    const response = await client.completeJson(prompt);
     console.log(`\n=== ${providerName} - ${rant.label} ===`);
     console.log(`Rant: ${rant.text}`);
     console.log(`Result: ${response}`);

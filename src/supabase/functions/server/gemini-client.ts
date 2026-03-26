@@ -18,7 +18,27 @@ export class GeminiClient implements LlmClient {
   }
 
   async complete(prompt: AiPrompt): Promise<string> {
+    return this.request(prompt, false);
+  }
+
+  async completeJson(prompt: AiPrompt): Promise<string> {
+    return this.request(prompt, true);
+  }
+
+  private async request(prompt: AiPrompt, json: boolean): Promise<string> {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+
+    const generationConfig: Record<string, unknown> = {
+      maxOutputTokens: 500,
+      temperature: 0.7,
+      thinkingConfig: {
+        thinkingBudget: 0,
+      },
+    };
+
+    if (json) {
+      generationConfig.responseMimeType = "application/json";
+    }
 
     const response = await fetch(url, {
       method: "POST",
@@ -36,13 +56,7 @@ export class GeminiClient implements LlmClient {
             parts: [{ text: prompt.userPrompt }],
           },
         ],
-        generationConfig: {
-          maxOutputTokens: 500,
-          temperature: 0.7,
-          thinkingConfig: {
-            thinkingBudget: 0,
-          },
-        },
+        generationConfig,
       }),
     });
 
