@@ -781,14 +781,17 @@ app.get(
   "/make-server-f1a393b4/newsletter/:edition",
   defineRoute(
     {
-      edition: { required: true, type: "string" },
+      edition: {
+        required: true,
+        type: "string",
+        validate: (v) => {
+          const editionInt = parseInt(v);
+          return !isNaN(editionInt) && editionInt > 0;
+        },
+      },
     },
     async ({ edition }: { edition: string }) => {
       const editionInt = parseInt(edition);
-      if (isNaN(editionInt) || editionInt < 1) {
-        throw new Error("Invalid newsletter edition");
-      }
-
       const { html } = await getNewsletterByEdition(editionInt);
 
       return { html };
