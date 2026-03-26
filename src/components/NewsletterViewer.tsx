@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
 import { api, safelyMakeApiCall } from "../utils/api";
+import { Loader } from "./widgets/Loader";
 
 interface NewsletterViewerProps {
   edition: number;
@@ -34,7 +34,7 @@ export function NewsletterViewer({ edition }: NewsletterViewerProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        <Loader />
       </div>
     );
   }
