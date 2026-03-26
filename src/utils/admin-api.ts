@@ -157,6 +157,16 @@ class AdminApiClient extends BaseApiClient {
       },
     );
   }
+
+  async getPowerUsers(adminKey: string) {
+    return this.request<{ powerUsers: Array<{ user: any; uniqueDays: number }> }>(
+      "/admin/power-users",
+      {
+        method: "GET",
+        headers: { "X-Admin-Key": adminKey },
+      },
+    );
+  }
 }
 
 export const adminApi = new AdminApiClient();

@@ -1,20 +1,20 @@
-import { Hono } from "npm:hono";
-import { insert } from "./db-utils.ts";
+import { Context, Hono } from "npm:hono";
 import { insertUserReport } from "./model-utils.ts";
-import { NewUserReport, UserReport } from "./types.tsx";
+import { NewUserReport } from "./types.tsx";
 
 const app = new Hono();
 
 app.post(
   "/make-server-f1a393b4/statement/:statementId/flag",
-  async (c: any) => {
+  async (c: Context) => {
     try {
+      const userId = c.get("userId");
       const statementId = c.req.param("statementId");
-      const { userId, roomId } = await c.req.json();
+      const { roomId } = await c.req.json();
 
-      if (!userId || !roomId || !statementId) {
+      if (!roomId || !statementId) {
         return c.json(
-          { error: "userId, roomId, and statementId are required" },
+          { error: "roomId and statementId are required" },
           400,
         );
       }

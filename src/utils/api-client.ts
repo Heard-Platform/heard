@@ -33,6 +33,7 @@ const buildHeaders = (extraHeaders?: HeadersDict): HeadersDict => {
   const headers: HeadersDict = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${publicAnonKey}`,
+    "X-API-Key": import.meta.env.VITE_HEARD_API_SECRET,
     ...extraHeaders,
   };
   

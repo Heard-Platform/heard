@@ -1,28 +1,21 @@
-import { Context } from "npm:hono";
-import { Hono } from "npm:hono";
-import { UserPresence } from "./types.tsx";
+import { Context, Hono } from "npm:hono";
 import { getRecentPresences, updatePresence } from "./model-utils.ts";
-
-const PRESENCE_TTL = 10000;
-const PRESENCE_CLEANUP_INTERVAL = 30000;
+import { getUser } from "./kv-utils.tsx";
 
 const app = new Hono();
 
 app.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
   try {
-    const { userId, currentRoomIndex } = await c.req.json();
+    const userId = c.get("userId");
+    const { currentRoomIndex } = await c.req.json();
 
-    if (!userId || currentRoomIndex === undefined) {
+    if (currentRoomIndex === undefined) {
       return c.json({ success: false, error: "Missing required fields" }, 400);
     }
 
-    const presence: UserPresence = {
-      userId,
-      currentRoomIndex,
-      lastUpdated: Date.now(),
-    };
+    const user = (await getUser(userId))!;
 
-    await updatePresence(userId, currentRoomIndex);
+    await updatePresence(userId, currentRoomIndex, user.avatarAnimal || "monkey");
 
     return c.json({ success: true });
   } catch (error) {

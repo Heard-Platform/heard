@@ -217,6 +217,12 @@
     border-radius: 9999px;
   }
 
+  .heard-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
   .heard-center {
     display: flex;
     align-items: center;

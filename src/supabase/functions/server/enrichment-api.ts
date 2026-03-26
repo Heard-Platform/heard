@@ -1,14 +1,12 @@
 import { Hono } from "npm:hono";
 import { getEnrichmentConfig } from "./internal-config-api.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
-import { validateCronAuth } from "./cron-api.tsx";
 import { RedditImporter } from "./reddit-import-service.ts";
 
 const app = new Hono();
 
 app.post(
   "/make-server-f1a393b4/enrichment/run",
-  validateCronAuth,
   defineRoute(
     { forceRun: { type: 'boolean', required: false } },
     async (params: { forceRun?: boolean }) => {

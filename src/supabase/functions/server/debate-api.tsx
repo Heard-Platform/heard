@@ -1,5 +1,5 @@
 // @ts-ignore
-import { Hono } from "npm:hono";
+import { Context, Hono } from "npm:hono";
 import * as kv from "./kv_store.tsx";
 import {
   saveStatement, getDebate,
@@ -10,8 +10,7 @@ import {
   saveYouTubeCardStatus,
   getUsersYouTubeCardStatuses,
   getVotesForStatement,
-  getCommunities,
-  getStatementsForRoom,
+  getCommunities
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
@@ -34,6 +33,7 @@ import { calculateVoteStats, processVote } from "./voting-utils.ts";
 import { sortRoomsByActivity } from "./feed-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
+import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
 
@@ -429,26 +429,6 @@ const saveUserSession = async (session: User) => {
   await kv.set(`user_email:${session.email}`, session.id);
 };
 
-const getUserByEmail = async (
-  email: string,
-): Promise<User | null> => {
-  try {
-    const normalizedEmail = email.trim().toLowerCase();
-    const userId = await kv.get(
-      `user_email:${normalizedEmail}`,
-    );
-    if (!userId) return null;
-
-    return await getUserSession(userId);
-  } catch (error) {
-    console.error(
-      `Error fetching user by email ${email}:`,
-      error,
-    );
-    return null;
-  }
-};
-
 const getDebateRoom = async (
   roomId: string,
 ): Promise<DebateRoom | null> => {
@@ -598,14 +578,14 @@ const getRantsForRoom = async (
 
 // Get user session
 app.get(
-  "/make-server-f1a393b4/user/:userId",
-  async (c: any) => {
+  "/make-server-f1a393b4/user/me",
+  async (c: Context) => {
     try {
-      const userId = c.req.param("userId");
+      const userId = c.get("userId");
       
       const result = await updateUserLastActive(userId);
       if ("error" in result) {
-        return c.json({ error: result.error }, result.status);
+        return c.json({ error: result.error }, result.status as any);
       }
 
       return c.json(result);
@@ -622,11 +602,15 @@ app.get(
 // Join debate room
 app.post(
   "/make-server-f1a393b4/room/:roomId/join",
-  async (c: any) => {
+  async (c: Context) => {
     try {
+      const userId = c.get("userId");
       const roomId = c.req.param("roomId");
-      const { userId } = await c.req.json();
 
+      if (!roomId || typeof roomId !== "string") {
+        return c.json({ error: "Room ID is required" }, 400);
+      }
+      
       const room = await getDebateRoom(roomId);
       if (!room) {
         return c.json({ error: "Room not found" }, 404);
@@ -668,7 +652,7 @@ app.post(
 // Get room status
 app.get(
   "/make-server-f1a393b4/room/:roomId",
-  async (c: any) => {
+  async (c: Context) => {
     try {
       const roomId = c.req.param("roomId");
 
@@ -710,14 +694,15 @@ app.get(
 // Submit statement
 app.post(
   "/make-server-f1a393b4/room/:roomId/statement",
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const roomId = c.req.param("roomId");
-      const { text, userId } = await c.req.json();
+      const userId = c.get("userId");
+      const roomId = c.req.param("roomId") as string;
+      const { text } = await c.req.json();
 
-      if (!text || text.length < 5 || text.length > 500) {
+      if (!text || text.length < 1 || text.length > 500) {
         return c.json(
-          { error: "Statement must be 5-500 characters" },
+          { error: "Statement must be 1-500 characters" },
           400,
         );
       }
@@ -832,7 +817,7 @@ app.post(
 // Extract topic and statements from a rant (for creation flow)
 app.post(
   "/make-server-f1a393b4/rant/extract",
-  async (c: any) => {
+  async (c: Context) => {
     try {
       const { rant } = await c.req.json();
 
@@ -881,10 +866,11 @@ app.post(
 // Vote on statement
 app.post(
   "/make-server-f1a393b4/statement/:statementId/vote",
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const statementId = c.req.param("statementId");
-      const { voteType, userId } = await c.req.json();
+      const userId = c.get("userId");
+      const statementId = c.req.param("statementId") as string;
+      const { voteType } = await c.req.json();
 
       const result = await processVote(statementId, userId, voteType);
 
@@ -903,157 +889,18 @@ app.post(
   },
 );
 
-// Update room phase
-app.post(
-  "/make-server-f1a393b4/room/:roomId/phase",
-  async (c: any) => {
-    try {
-      const roomId = c.req.param("roomId");
-      const { phase, subPhase, userId } = await c.req.json();
-      console.log(
-        `Phase update request: roomId=${roomId}, phase=${phase}, subPhase=${subPhase}, userId=${userId}`,
-      );
-
-      const validPhases = [
-        "lobby",
-        "round1",
-        "round2",
-        "round3",
-        "results",
-      ];
-      const validSubPhases: SubPhase[] = [
-        "posting",
-        "voting",
-        "review",
-      ];
-
-      if (!validPhases.includes(phase)) {
-        console.log(
-          `Invalid phase received: ${phase}. Valid phases:`,
-          validPhases,
-        );
-        return c.json(
-          {
-            error: `Invalid phase: ${phase}. Valid phases: ${validPhases.join(", ")}`,
-          },
-          400,
-        );
-      }
-
-      if (subPhase && !validSubPhases.includes(subPhase)) {
-        return c.json({ error: "Invalid subPhase" }, 400);
-      }
-
-      const room = await getDebateRoom(roomId);
-      if (!room) {
-        return c.json({ error: "Room not found" }, 404);
-      }
-
-      const user = await getUserSession(userId);
-      if (!user || !room.participants.includes(userId)) {
-        return c.json({ error: "Unauthorized" }, 403);
-      }
-
-      // Only the host can change phases
-      if (room.hostId !== userId) {
-        return c.json(
-          {
-            error:
-              "Only the room host can control the debate phases",
-          },
-          403,
-        );
-      }
-
-      // Update room phase and subphase
-      room.phase = phase as Phase;
-      room.subPhase = subPhase;
-      room.roundStartTime = Date.now();
-
-      // If moving to results, increment game number
-      if (phase === "results") {
-        room.gameNumber += 1;
-      }
-
-      await saveDebateRoom(room);
-
-      // Send email notifications for host-controlled rooms only
-      if (room.mode === "host-controlled") {
-        console.log(
-          `Sending phase change notifications for host-controlled room ${roomId}`,
-        );
-        await sendPhaseChangeNotifications(
-          room,
-          phase,
-          subPhase,
-          userId,
-        );
-      }
-
-      return c.json({ room });
-    } catch (error) {
-      console.error("Error updating room phase:", error);
-      return c.json(
-        { error: "Failed to update room phase" },
-        500,
-      );
-    }
-  },
-);
-
-// Update room description (host only)
-app.put(
-  "/make-server-f1a393b4/room/:roomId/description",
-  async (c: any) => {
-    try {
-      const roomId = c.req.param("roomId");
-      const { description, userId } = await c.req.json();
-
-      const room = await getDebateRoom(roomId);
-      if (!room) {
-        return c.json({ error: "Room not found" }, 404);
-      }
-
-      const user = await getUserSession(userId);
-      if (!user) {
-        return c.json({ error: "User session not found" }, 404);
-      }
-
-      // Only the host can update the description
-      if (room.hostId !== userId) {
-        return c.json(
-          {
-            error:
-              "Only the room host can update the description",
-          },
-          403,
-        );
-      }
-
-      // Update the room description
-      room.description = description
-        ? description.substring(0, 2000)
-        : undefined;
-      await saveDebateRoom(room);
-
-      return c.json({ room });
-    } catch (error) {
-      console.error("Error updating room description:", error);
-      return c.json(
-        { error: "Failed to update room description" },
-        500,
-      );
-    }
-  },
-);
-
 // Mark room as inactive (dev tool)
 app.post(
   "/make-server-f1a393b4/room/:roomId/inactive",
-  async (c: any) => {
+  validateDeveloper,
+  async (c: Context) => {
     try {
+      const userId = c.get("userId");
       const roomId = c.req.param("roomId");
-      const { userId } = await c.req.json();
+
+      if (!roomId || typeof roomId !== "string") {
+        return c.json({ error: "Room ID is required" }, 400);
+      }
 
       const room = await getDebateRoom(roomId);
       if (!room) {
@@ -1093,10 +940,10 @@ app.post(
 // Get active rooms
 app.get(
   "/make-server-f1a393b4/rooms/active",
-  async (c: any) => {
+  async (c: Context) => {
     try {
+      const userId = c.get("userId");
       const subHeard = c.req.query("subHeard");
-      const userId = c.req.query("userId");
       const onlyJoined = c.req.query("onlyJoined") === "true";
 
       let rooms = await getActiveRooms();
@@ -1350,9 +1197,9 @@ No account needed - just click the link to get started!
 // Create seed data for testing
 app.post(
   "/make-server-f1a393b4/seed/create",
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -1676,9 +1523,9 @@ app.post(
 // Create test room with Q Street debate topic and players (no posts/votes)
 app.post(
   "/make-server-f1a393b4/test-room/create",
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -1784,9 +1631,9 @@ app.post(
 // Create rant test room with Q Street debate topic and pre-filled rants
 app.post(
   "/make-server-f1a393b4/rant-test-room/create",
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -2145,9 +1992,9 @@ app.post(
 // Create realtime test room with 5-minute countdown and seed data
 app.post(
   "/make-server-f1a393b4/realtime-test-room/create",
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const { userId } = await c.req.json();
+      const userId = c.get("userId");
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -2377,13 +2224,14 @@ app.post(
 // Mark chance card as swiped
 app.post(
   "/make-server-f1a393b4/chance-card/mark-swiped",
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const { userId, roomId } = await c.req.json();
+      const userId = c.get("userId");
+      const { roomId } = await c.req.json();
 
-      if (!userId || !roomId) {
+      if (!roomId) {
         return c.json(
-          { error: "userId and roomId are required" },
+          { error: "roomId is required" },
           400
         );
       }
@@ -2403,13 +2251,14 @@ app.post(
 
 app.post(
   "/make-server-f1a393b4/youtube-card/mark-swiped",
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const { userId, roomId } = await c.req.json();
+      const userId = c.get("userId");
+      const { roomId } = await c.req.json();
 
-      if (!userId || !roomId) {
+      if (!roomId) {
         return c.json(
-          { error: "userId and roomId are required" },
+          { error: "roomId is required" },
           400
         );
       }

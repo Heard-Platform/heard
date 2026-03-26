@@ -1,5 +1,6 @@
 export const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@AlexLongHeard";
 export const YT_SHORTS_URL = `${YOUTUBE_CHANNEL_URL}/shorts`;
+export const GITHUB_URL = "https://github.com/Heard-Platform/heard";
 
 export const getMagicLinkEmail = (magicLinkUrl: string, code: string): string => {
   return `

@@ -1,3 +1,5 @@
+import { AvatarAnimal } from "../utils/constants/avatars";
+
 export type Phase =
   | "lobby"
   | "round1"
@@ -46,6 +48,10 @@ export type StatementCard = {
   statement: Statement;
 }
 
+export type CertifyCard = {
+  type: "certify";
+}
+
 export type ChanceCard = {
   type: "chance";
 }
@@ -74,7 +80,7 @@ export type DemographicsCard = {
   isUnswipeable: true;
 }
 
-export type Card = (StatementCard | ChanceCard | YouTubeCard | DemographicsCard)
+export type Card = (StatementCard | CertifyCard | ChanceCard | YouTubeCard | DemographicsCard)
   & { isUnswipeable?: boolean };
 
 export const isStatementCard = (card: Card): card is StatementCard => {
@@ -118,6 +124,7 @@ export interface UserSession {
   flyerId?: string;
   convertedFromAnonAt?: number;
   createdInEnvironment?: string;
+  avatarAnimal?: AvatarAnimal;
 }
 
 export type DebateMode = "realtime" | "host-controlled";
@@ -235,6 +242,7 @@ export interface UserPresence {
   userId: string;
   currentRoomIndex: number;
   lastUpdated: number;
+  avatarAnimal: AvatarAnimal;
 }
 
 export type DryRunResult = {
@@ -293,6 +301,17 @@ export interface RetentionStatsData {
   d1Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
   d7Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
   d30Retention: { rate: number; eligible: number; retained: number; totalInCohort: number };
+}
+
+export interface FunnelMetricsData {
+  users: number;
+  flyerUsers: number;
+  flyerEmails: number;
+  flyerUsersWithAccounts: number;
+  createdAccount: number;
+  tookAction: number;
+  tookActionTwoDays: number;
+  tookActionTenDays: number;
 }
 
 export interface FeatureResults {

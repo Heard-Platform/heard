@@ -14,6 +14,7 @@ import {
   Session,
   Community,
   CommunityMembership,
+  UserActivityRecord,
 } from "./types.tsx";
 
 /**
@@ -305,17 +306,16 @@ export const getAllSubHeards = async <T = any,>(): Promise<
   return getByPrefixParsed<T>("subheard:");
 };
 
-export const getUserActivityRecords = async <T = any,>(
-  userId: string,
-): Promise<T[]> => {
-  return getByPrefixParsed<T>(`activity:daily:${userId}:`);
-};
+export const activityPrefix = "user_activity:";
 
-export const getActivitiesForDate = async <T = any,>(
-  dateStr: string,
-): Promise<T[]> => {
-  return getByPrefixParsed<T>(`user_activity:${dateStr}:`);
-};
+export const getAllActivityRecords = async () =>
+  getByPrefixParsed<UserActivityRecord>(activityPrefix);
+
+export const getUserActivityRecords = async (userId: string) =>
+  getByPrefixParsed<UserActivityRecord>(`${activityPrefix}:%:${userId}:`);
+
+export const getActivitiesForDate = async (dateStr: string) =>
+  getByPrefixParsed<UserActivityRecord>(`${activityPrefix}:${dateStr}:`);
 
 export const chanceCardStatusKeyFn = (status: ChanceCardStatus) =>
   `chance_card_status:${status.userId}:${status.roomId}`;

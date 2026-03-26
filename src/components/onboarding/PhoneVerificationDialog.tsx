@@ -15,7 +15,6 @@ import { VERIFY_TEXT } from "../../utils/constants/text";
 
 interface PhoneVerificationDialogProps {
   open: boolean;
-  userId: string;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -24,7 +23,6 @@ type Step = "enter-phone" | "verify-code";
 
 export function PhoneVerificationDialog({
   open,
-  userId,
   onClose,
   onSuccess,
 }: PhoneVerificationDialogProps) {
@@ -61,7 +59,7 @@ export function PhoneVerificationDialog({
     setLoading(true);
 
     try {
-      const response = await addPhoneToAccount(userId, phoneNumber, code);
+      const response = await addPhoneToAccount(phoneNumber, code);
 
       if (!response || !response.success) {
         setError(response?.error || "Invalid code");

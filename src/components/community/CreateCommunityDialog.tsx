@@ -41,7 +41,7 @@ export function CreateCommunityDialog({
 
     setIsCreating(true);
     try {
-      const response = await api.createSubHeard(community, userId);
+      const response = await api.createSubHeard(community);
       
       if (response?.success) {
         const normalizedName = normalizeSubHeardName(community.name);
