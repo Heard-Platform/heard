@@ -13,7 +13,7 @@ import { DevTools } from "./components/devtools/DevTools";
 import { NewsletterViewer } from "./components/NewsletterViewer";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
-import { api, getUserId } from "./utils/api";
+import { api } from "./utils/api";
 import type { NewDebateRoom, DebateRoom, VoteType } from "./types";
 import {
   parseRoomIdFromUrl,
@@ -86,13 +86,11 @@ function AppContent() {
     flyerGroup?: number;
   }) => {
     setIsJoiningAnonymously(true);
-    const existingUserId = getUserId();
 
     const response = await voteViaFlyer(
       flyerData.flyerId,
       flyerData.statementId,
       flyerData.vote,
-      existingUserId || undefined,
       flyerData.flyerGroup,
     );
 
@@ -204,13 +202,8 @@ function AppContent() {
         window.location.pathname.startsWith("/orgs");
 
       const newsletterMatch = window.location.pathname.match(/^\/newsletter\/(\d+)$/);
-
-      const isOsRoute =
-        window.location.pathname.startsWith("/os");
-      const isPotomacRoute =
-        window.location.pathname.startsWith("/potomac");
-      const isMarketRoute =
-        window.location.pathname.startsWith("/market");
+      const isParkletRoute =
+        window.location.pathname.startsWith("/parklet");
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
@@ -230,14 +223,8 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
-      } else if (isOsRoute || isPotomacRoute || isMarketRoute) {
-        const hardcodedRoomId = isOsRoute
-          ? "1m6smp6xd4jmme72uls"
-          : isPotomacRoute
-          ? "xyoogx17vkommec3f52"
-          : isMarketRoute
-          ? "o0tmjop3hdlmmebg3im"
-          : null;
+      } else if (isParkletRoute) {
+        const hardcodedRoomId = "aocxafg7tnpmmv7j6sh";
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
@@ -301,10 +288,7 @@ function AppContent() {
     const autoJoinSubHeard = async () => {
       if (user && currentSubHeard && hasCheckedUrl) {
         try {
-          const response = await api.joinSubHeard(
-            currentSubHeard,
-            user.id,
-          );
+          const response = await api.joinSubHeard(currentSubHeard);
 
           if (!response.success) {
             toast.error("Unable to join this community");

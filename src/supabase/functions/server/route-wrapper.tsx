@@ -1,3 +1,5 @@
+import { Context } from "npm:hono";
+
 interface ParamConfig {
   type: 'string' | 'number' | 'boolean' | 'object' | 'array';
   required?: boolean;
@@ -7,10 +9,10 @@ interface ParamConfig {
 
 export function defineRoute<TInput extends Record<string, any>, TOutput>(
   schema: Record<keyof TInput, ParamConfig>,
-  handler: (params: TInput) => Promise<TOutput>,
+  handler: (params: TInput, c: Context) => Promise<TOutput>,
   errorMessage: string
 ) {
-  return async (c: any) => {
+  return async (c: Context) => {
     try {
       const body = c.req.method === 'GET' ? c.req.param() : await c.req.json().catch(() => ({}));
       const validatedParams: any = {};
@@ -39,7 +41,7 @@ export function defineRoute<TInput extends Record<string, any>, TOutput>(
         validatedParams[key] = value;
       }
       
-      const result = await handler(validatedParams as TInput);
+      const result = await handler(validatedParams as TInput, c);
       return c.json({ success: true, ...result });
     } catch (error) {
       console.error(`${errorMessage}:`, error);

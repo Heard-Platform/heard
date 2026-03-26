@@ -51,7 +51,7 @@ export function SelectCommunityStep({
   const loadSubHeards = async () => {
     try {
       setLoadingSubHeards(true);
-      const response = await api.getSubHeards(userId);
+      const response = await api.getSubHeards();
       if (response.success && response.data) {
         setSubHeards(response.data.subHeards || []);
       }

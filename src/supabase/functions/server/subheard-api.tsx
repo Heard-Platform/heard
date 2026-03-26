@@ -32,20 +32,18 @@ async function addCountsAndSort(communities: Community[]) {
   return withCounts;
 }
 
-app.get("/make-server-f1a393b4/subheards", async (c: any) => {
+app.get("/make-server-f1a393b4/subheards", async (c: Context) => {
   try {
-    const userId = c.req.query("userId");
+    const userId = c.get("userId");
     const onlyJoined = c.req.query("onlyJoined") === "true";
 
     let userMemberships: Set<string> = new Set();
-    if (userId) {
-      userMemberships = await getUserMemberships(userId);
-    }
+    userMemberships = await getUserMemberships(userId);
 
     let subHeards = await getCommunities();
 
     subHeards = subHeards.filter((comm) => {
-      if (userId && onlyJoined) {
+      if (onlyJoined) {
         if (comm.adminId === userId) return true;
         if (userMemberships.has(comm.name)) return true;
         return false;
@@ -64,13 +62,9 @@ app.get("/make-server-f1a393b4/subheards", async (c: any) => {
   }
 });
 
-app.get("/make-server-f1a393b4/subheards/explorable", async (c: any) => {
+app.get("/make-server-f1a393b4/subheards/explorable", async (c: Context) => {
   try {
-    const userId = c.req.query("userId");
-
-    if (!userId) {
-      return c.json({ error: "User ID is required" }, 400);
-    }
+    const userId = c.get("userId");
 
     const userMemberships = await getUserMemberships(userId);
     let subHeards = await getCommunities();
@@ -94,9 +88,10 @@ app.get("/make-server-f1a393b4/subheards/explorable", async (c: any) => {
 // Create a new sub-heard
 app.post(
   "/make-server-f1a393b4/subheard/create",
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const { community, userId } = await c.req.json();
+      const userId = c.get("userId");
+      const { community } = await c.req.json();
 
       if (!community) {
         return c.json(
@@ -106,10 +101,6 @@ app.post(
       }
 
       const { name, isPrivate, hostOnlyPosting } = community;
-
-      if (!userId || typeof userId !== "string") {
-        return c.json({ error: "User ID is required" }, 400);
-      }
 
       const user = await getUserSession(userId);
       if (!user) {
@@ -173,14 +164,10 @@ app.post(
 // Private sub-heards just need you to know the link
 app.post(
   "/make-server-f1a393b4/subheard/:name/join",
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const name = c.req.param("name");
-      const { userId } = await c.req.json();
-
-      if (!userId || typeof userId !== "string") {
-        return c.json({ error: "User ID is required" }, 400);
-      }
+      const userId = c.get("userId");
+      const name = c.req.param("name") as string;
 
       const community = await getCommunity(name);
 
@@ -222,12 +209,9 @@ app.patch(
   "/make-server-f1a393b4/subheard/:name/settings",
   async (c: Context) => {
     try {
-      const name = c.req.param("name");
-      const { userId, settings } = await c.req.json();
-
-      if (!userId || typeof userId !== "string") {
-        return c.json({ error: "User ID is required" }, 400);
-      }
+      const userId = c.get("userId");
+      const name = c.req.param("name") as string;
+      const { settings } = await c.req.json();
 
       if (!settings || typeof settings !== "object") {
         return c.json(
@@ -278,14 +262,10 @@ app.patch(
 
 app.delete(
   "/make-server-f1a393b4/subheard/:name/leave",
-  async (c: any) => {
+  async (c: Context) => {
     try {
-      const name = c.req.param("name");
-      const { userId } = await c.req.json();
-
-      if (!userId || typeof userId !== "string") {
-        return c.json({ error: "User ID is required" }, 400);
-      }
+      const userId = c.get("userId");
+      const name = c.req.param("name") as string;
 
       const community = await getCommunity(name);
 

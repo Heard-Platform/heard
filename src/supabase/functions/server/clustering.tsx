@@ -3,7 +3,7 @@
  * Uses k-means clustering on user-statement voting matrix
  */
 
-import { getByPrefixParsed } from "./kv-utils.tsx";
+import { getByPrefixParsed, getStatementsForRoom } from "./kv-utils.tsx";
 import { getDebate } from "./kv-utils.tsx";
 import * as kv from "./kv_store.tsx";
 import type { Vote, Statement, VoteType } from "./types.tsx";
@@ -53,7 +53,7 @@ export function buildVotingMatrix(
       );
       if (!vote || vote.voteType === "pass") {
         row.push(0);
-      } else if (vote.voteType === "agree") {
+      } else if (vote.voteType === "agree" || vote.voteType === "super_agree") {
         row.push(1);
       } else {
         row.push(-1);
@@ -406,17 +406,7 @@ export async function recalculateClustersForRoom(
       return null;
     }
 
-    // Get all statements for this room
-    const allStatements = await kv.getByPrefix("statement:");
-    const roomStatements: Statement[] = allStatements
-      .map((s) => {
-        try {
-          return JSON.parse(s);
-        } catch {
-          return null;
-        }
-      })
-      .filter((s) => s && s.roomId === roomId);
+    const roomStatements = await getStatementsForRoom(roomId);
 
     if (roomStatements.length === 0) {
       console.log(

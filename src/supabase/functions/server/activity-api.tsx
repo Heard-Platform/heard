@@ -1,4 +1,4 @@
-import { Hono } from "npm:hono";
+import { Context, Hono } from "npm:hono";
 import moment from "npm:moment@2.30.1";
 import * as kv from "./kv_store.tsx";
 
@@ -12,15 +12,9 @@ function getDaysAgo(days: number): string {
   return moment().subtract(days, 'days').format('YYYY-MM-DD');
 }
 
-app.post("/make-server-f1a393b4/activity/track", async (c) => {
+app.post("/make-server-f1a393b4/activity/track", async (c: Context) => {
   try {
-    const body = await c.req.json();
-    const { userId } = body;
-
-    if (!userId) {
-      return c.json({ error: "userId is required" }, 400);
-    }
-
+    const userId = c.get("userId");
     const today = getDateString();
     const key = `user_activity:${today}:${userId}`;
     

@@ -87,7 +87,7 @@ export function PowerUsers({ adminKey, onPowerUserClick }: PowerUsersProps) {
               </div>
               <div className="space-y-1">
                 <div className="font-medium">
-                  {powerUser.user.name || "Anonymous"}
+                  {powerUser.user.email || "Anonymous"}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   ID: {powerUser.user.id.slice(0, 8)}...
