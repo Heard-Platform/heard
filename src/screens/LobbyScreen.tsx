@@ -303,17 +303,17 @@ export function LobbyScreen({
               }}
             >
               <motion.h1
-                className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
+                className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg flex items-baseline gap-0.5"
                 style={{
                   WebkitTextStroke:
                     "0.6px rgba(255,255,255,0.8)",
                 }}
               >
                 HEARD
+                <span className="text-xs font-normal tracking-widest" style={{ WebkitTextStroke: "0" }}>
+                  .vote
+                </span>
               </motion.h1>
-              <p className="text-[9px] text-purple-400/60 tracking-widest uppercase mt-[-4px]">
-                BETA
-              </p>
             </div>
           </div>
 

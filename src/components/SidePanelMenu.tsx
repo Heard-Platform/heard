@@ -145,6 +145,11 @@ export function SidePanelMenu({
     }
   };
 
+  const formattedScore = new Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(user.score);
+
   return (
     <>
       <PhoneVerificationDialog
@@ -177,7 +182,7 @@ export function SidePanelMenu({
               className="controls-layer bg-white/90 backdrop-blur-sm shadow-lg px-3 py-2 h-[42px] gap-2 border-2"
             >
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm">{user.score}</span>
+                <span className="font-semibold text-sm">{formattedScore}</span>
                 <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
                   <User className="w-4 h-4 text-white" />
                   {!user.phoneVerified && (
