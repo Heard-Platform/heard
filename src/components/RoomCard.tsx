@@ -127,6 +127,7 @@ export function RoomCard({
     }
     return engaged.size;
   })();
+  
   const isRantFirst = room.rantFirst;
   const isRealtime = room.mode === "realtime";
 
