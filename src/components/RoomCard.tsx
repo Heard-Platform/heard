@@ -114,7 +114,20 @@ export function RoomCard({
     updateUrlForAnalysis(null);
   };
 
-  const participantCount = room.participants?.length || 0;
+  const participantCount = (() => {
+    const engaged = new Set<string>();
+    engaged.add(room.hostId);
+    for (const statement of statements) {
+      engaged.add(statement.author);
+      if (statement.voters) {
+        for (const userId of Object.keys(statement.voters)) {
+          engaged.add(userId);
+        }
+      }
+    }
+    return engaged.size;
+  })();
+  
   const isRantFirst = room.rantFirst;
   const isRealtime = room.mode === "realtime";
 
