@@ -94,8 +94,9 @@ export function DebateScrollerStory() {
   ]);
 
   const handleUpdatePresence = useCallback(
-    (userId: string, currentRoomIndex: number) => {
+    (currentRoomIndex: number) => {
       setPresences((prev) => {
+        const userId = "user2";
         const original = prev.find((p) => p.userId === userId);
         const filtered = prev.filter((p) => p.userId !== userId);
         return [
@@ -214,6 +215,7 @@ export function DebateScrollerStory() {
           currentSubHeard="food"
           onDiscussStatement={handleDiscussStatement}
           onShowAccountSetupModal={() => {}}
+          onOpenExplorer={() => console.log("Open community explorer")}
         />
       </div>
     </div>

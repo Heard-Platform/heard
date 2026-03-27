@@ -204,7 +204,7 @@ export function InProgressResults({
                   repeat: Infinity,
                 }}
               >
-                Follow this discussion
+                Certify your vote
               </motion.span>
             </motion.button>
           ) : (

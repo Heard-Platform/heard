@@ -104,7 +104,6 @@ export function LobbyScreen({
   const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
   const [explorerOpen, setExplorerOpen] = useState(false);
   type Steps = "tutorial" | "explorer" | "complete";
-  const [introStep, setIntroStep] = useState<Steps>("complete");
 
   const filteredRooms = useMemo(() => {
     return [...activeRooms].sort((a, b) => {
@@ -115,17 +114,6 @@ export function LobbyScreen({
       return 0;
     });
   }, [activeRooms, targetRoomId]);
-
-  useEffect(() => {
-    const hasSeenIntro = localStorage.getItem(INTRO_SEEN_KEY);
-    if (!hasSeenIntro && !hasQrScanResult && !targetRoomId) {
-      localStorage.setItem(INTRO_SEEN_KEY, "true");
-      setTimeout(() => {
-        setIntroStep("tutorial");
-        setHelpModalOpen(true);
-      }, 500);
-    }
-  }, [hasQrScanResult, targetRoomId]);
 
   // Detect mobile keyboard state
   useEffect(() => {
@@ -211,15 +199,14 @@ export function LobbyScreen({
   }, []);
 
   const handleUpdatePresence = async (
-    userId: string,
     currentRoomIndex: number,
   ) => {
-    await api.updateUserPresence(userId, currentRoomIndex);
+    await api.updateUserPresence(currentRoomIndex);
   };
 
   const handleCreateAnonDebate = async () => {
     try {
-      const response = await api.createAnonDebate(user.id);
+      const response = await api.createAnonDebate();
       if (response.success && response.data) {
         await onRefreshRooms();
         alert(
@@ -282,40 +269,20 @@ export function LobbyScreen({
     setShowAccountSetupAnonModal(true);
   };
 
-  const handleCloseIntroModal = () => {
-    setHelpModalOpen(false);
-    if (introStep === "tutorial") {
-      if (isFeatureEnabled(FeatureFlags.ONLY_JOINED_COMMUNITIES)) {
-        setIntroStep("explorer");
-        setExplorerOpen(true);
-      } else {
-        setIntroStep("complete");
-      }
-    }
-  };
-
-  const advanceFromExplorerStep = () => {
-    if (introStep === "explorer") {
-      setIntroStep("complete");
-    }
-  };
-  
   const handleExplorerCommunitiesJoined = () => {
     onRefreshRooms(currentSubHeard);
     setExplorerOpen(false);
-    advanceFromExplorerStep();
   };
 
   const handleCloseExplorer = () => {
     setExplorerOpen(false);
-    advanceFromExplorerStep();
   };
 
   return (
     <>
       <IntroModal
         isOpen={helpModalOpen}
-        onClose={handleCloseIntroModal}
+        onClose={() => setHelpModalOpen(false)}
       />
 
       {/* Main TikTok-style scroller */}
@@ -359,14 +326,10 @@ export function LobbyScreen({
                 onSubHeardChange={onSubHeardChange}
                 onUpdateSubHeard={async (
                   community: SubHeard,
-                  userId: string,
                 ) => {
                   try {
                     const response =
-                      await api.updateSubHeardSettings(
-                        community,
-                        userId,
-                      );
+                      await api.updateSubHeardSettings(community);
                     if (response.success) {
                       return true;
                     }
@@ -488,7 +451,7 @@ export function LobbyScreen({
       <CommunityExplorerDialog
         isOpen={explorerOpen}
         userId={user.id}
-        cancelButtonText={introStep === "explorer" ? "Skip for now" : "Cancel"}
+        cancelButtonText={"Close"}
         onCommunitiesJoined={handleExplorerCommunitiesJoined}
         onClose={handleCloseExplorer}
       />

@@ -19,7 +19,6 @@ interface VineNavigatorProps {
   currentUser: UserSession;
   presences: UserPresence[];
   onUpdatePresence: (
-    userId: string,
     currentRoomIndex: number,
   ) => void;
 }
@@ -109,14 +108,14 @@ export function VineNavigator({
   useEffect(() => {
     if (!onUpdatePresence) return;
 
-    onUpdatePresence(currentUser.id, currentIndex);
+    onUpdatePresence(currentIndex);
 
     const presenceInterval = setInterval(() => {
-      onUpdatePresence(currentUser.id, currentIndex);
+      onUpdatePresence(currentIndex);
     }, 3000);
 
     return () => clearInterval(presenceInterval);
-  }, [currentUser.id, currentIndex]);
+  }, [currentIndex]);
 
   useEffect(() => {
     const newOffsets: Record<string, number> = {};

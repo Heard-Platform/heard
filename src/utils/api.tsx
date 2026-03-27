@@ -29,7 +29,6 @@ import { getEnvironment } from "./constants/general";
 import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { publicAnonKey } from "./supabase/info";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
-export { getSessionId, setSessionId, clearSessionId } from "./api-client";
 
 export async function safelyMakeApiCall<T>(
   callFn: () => Promise<ApiResponse<T>>
@@ -49,8 +48,8 @@ export async function safelyMakeApiCall<T>(
 }
 
 class ApiClient extends BaseApiClient {
-  async getUser(userId: string) {
-    return this.request<{ user: UserSession }>(`/user/${userId}`);
+  async getUser() {
+    return this.request<{ user: UserSession }>("/user/me");
   }
 
   async sendMagicLink(email: string) {
@@ -81,24 +80,17 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async addPhoneToAccount(userId: string, phone: string, code: string) {
+  async addPhoneToAccount(phone: string, code: string) {
     return this.request<{ user: UserSession }>("/auth/add-phone-to-account", {
       method: "POST",
-      body: JSON.stringify({ userId, phone, code }),
+      body: JSON.stringify({ phone, code }),
     });
   }
 
-  async addEmailToAccount(userId: string, email: string) {
+  async addEmailToAccount(email: string) {
     return this.request<{ user: UserSession }>("/auth/add-email-to-account", {
       method: "POST",
-      body: JSON.stringify({ userId, email }),
-    });
-  }
-
-  async migrateSession(userId: string) {
-    return this.request<UserSessionResponse>("/auth/migrate-session", {
-      method: "POST",
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ email }),
     });
   }
 
@@ -112,11 +104,10 @@ class ApiClient extends BaseApiClient {
   // Room management
   async createRoom(
     newDebate: NewDebateRoom,
-    userId: string,
   ): Promise<ApiResponse<DebateRoom>> {
     return this.request<DebateRoom>("/room/create", {
       method: "POST",
-      body: JSON.stringify({ ...newDebate, userId }),
+      body: JSON.stringify(newDebate),
     });
   }
 
@@ -162,28 +153,15 @@ class ApiClient extends BaseApiClient {
     }
   }
 
-  async updateRoomDescription(
-    roomId: string,
-    description: string,
-    userId: string,
-  ) {
-    return this.request(`/room/${roomId}/description`, {
-      method: "PUT",
-      body: JSON.stringify({ description, userId }),
-    });
-  }
-
-  async setRoomInactive(roomId: string, userId: string) {
+  async setRoomInactive(roomId: string) {
     return this.request(`/room/${roomId}/inactive`, {
       method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 
-  async joinRoom(roomId: string, userId: string) {
+  async joinRoom(roomId: string) {
     return this.request(`/room/${roomId}/join`, {
       method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 
@@ -212,22 +190,9 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async updateRoomPhase(
-    roomId: string,
-    phase: string,
-    userId: string,
-    subPhase?: string,
-  ) {
-    return this.request(`/room/${roomId}/phase`, {
-      method: "POST",
-      body: JSON.stringify({ phase, subPhase, userId }),
-    });
-  }
-
-  async getActiveRooms(subHeard?: string, userId?: string) {
+  async getActiveRooms(subHeard?: string) {
     const params = new URLSearchParams();
     if (subHeard) params.append("subHeard", subHeard);
-    if (userId) params.append("userId", userId);
     params.append("onlyJoined", isFeatureEnabled(FeatureFlags.ONLY_JOINED_COMMUNITIES).toString());
     const queryString = params.toString();
     return this.request<{ rooms: DebateRoom[] }>(
@@ -235,56 +200,44 @@ class ApiClient extends BaseApiClient {
     );
   }
 
-  async getSubHeards(
-    userId: string,
-  ): Promise<ApiResponse<{ subHeards: SubHeard[] }>> {
+  async getSubHeards(): Promise<
+    ApiResponse<{ subHeards: SubHeard[] }>
+  > {
     const params = new URLSearchParams();
-    params.append("userId", userId);
     params.append("onlyJoined", isFeatureEnabled(FeatureFlags.ONLY_JOINED_COMMUNITIES).toString());
     const queryString = params.toString();
     return this.request(`/subheards${queryString ? `?${queryString}` : ""}`);
   }
 
-  async getExplorableSubHeards(
-    userId: string,
-  ): Promise<ApiResponse<SubHeard[]>> {
+  async getExplorableSubHeards(): Promise<ApiResponse<SubHeard[]>> {
     const params = new URLSearchParams();
-    params.append("userId", userId);
     const queryString = params.toString();
     return this.request(`/subheards/explorable${queryString ? `?${queryString}` : ""}`);
   }
 
-  async createSubHeard(
-    community: Partial<SubHeard>,
-    userId: string,
-  ) {
+  async createSubHeard(community: Partial<SubHeard>) {
     return this.request("/subheard/create", {
       method: "POST",
-      body: JSON.stringify({ community, userId }),
+      body: JSON.stringify({ community }),
     });
   }
 
-  async updateSubHeardSettings(
-    community: SubHeard,
-    userId: string,
-  ) {
+  async updateSubHeardSettings(community: SubHeard) {
     return this.request(`/subheard/${community.name}/settings`, {
       method: "PATCH",
-      body: JSON.stringify({ userId, settings: community }),
+      body: JSON.stringify({ settings: community }),
     });
   }
 
-  async joinSubHeard(name: string, userId: string) {
+  async joinSubHeard(name: string) {
     return this.request<undefined>(`/subheard/${name}/join`, {
       method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 
-  async leaveSubHeard(name: string, userId: string) {
+  async leaveSubHeard(name: string) {
     return this.request<undefined>(`/subheard/${name}/leave`, {
       method: "DELETE",
-      body: JSON.stringify({ userId }),
     });
   }
 
@@ -292,11 +245,10 @@ class ApiClient extends BaseApiClient {
   async submitStatement(
     roomId: string,
     text: string,
-    userId: string,
   ) {
     return this.request(`/room/${roomId}/statement`, {
       method: "POST",
-      body: JSON.stringify({ text, userId }),
+      body: JSON.stringify({ text }),
     });
   }
 
@@ -313,7 +265,6 @@ class ApiClient extends BaseApiClient {
   async voteOnStatement(
     statementId: string,
     voteType: "agree" | "disagree" | "pass" | "super_agree",
-    userId: string,
   ) {
     type VoteResponse = {
       statement: Statement;
@@ -323,7 +274,7 @@ class ApiClient extends BaseApiClient {
     };
     return this.request<VoteResponse>(`/statement/${statementId}/vote`, {
       method: "POST",
-      body: JSON.stringify({ voteType, userId }),
+      body: JSON.stringify({ voteType }),
     });
   }
 
@@ -356,24 +307,24 @@ class ApiClient extends BaseApiClient {
     );
   }
 
-  async markChanceCardSwiped(userId: string, roomId: string) {
+  async markChanceCardSwiped(roomId: string) {
     return this.request("/chance-card/mark-swiped", {
       method: "POST",
-      body: JSON.stringify({ userId, roomId }),
+      body: JSON.stringify({ roomId }),
     });
   }
 
-  async markYouTubeCardSwiped(userId: string, roomId: string) {
+  async markYouTubeCardSwiped(roomId: string) {
     return this.request("/youtube-card/mark-swiped", {
       method: "POST",
-      body: JSON.stringify({ userId, roomId }),
+      body: JSON.stringify({ roomId }),
     });
   }
 
   async flagStatement(statementId: string, roomId: string) {
     return this.request(`/statement/${statementId}/flag`, {
       method: "POST",
-      body: JSON.stringify({ userId: getUserId(), roomId }),
+      body: JSON.stringify({ roomId }),
     });
   }
 
@@ -390,40 +341,35 @@ class ApiClient extends BaseApiClient {
   }
 
   // Development helpers
-  async createSeedData(userId: string) {
+  async createSeedData() {
     return this.request("/seed/create", {
       method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 
-  async createTestRoom(userId: string) {
+  async createTestRoom() {
     return this.request("/test-room/create", {
       method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 
-  async createRantTestRoom(userId: string) {
+  async createRantTestRoom() {
     return this.request("/rant-test-room/create", {
       method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 
-  async createRealtimeTestRoom(userId: string) {
+  async createRealtimeTestRoom() {
     return this.request("/realtime-test-room/create", {
       method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 
-  async createAnonDebate(userId: string) {
+  async createAnonDebate() {
     return this.request<DevAnonDebate>(
       "/dev/create-anon-enabled-debate",
       {
         method: "POST",
-        body: JSON.stringify({ userId }),
       },
     );
   }
@@ -597,10 +543,10 @@ class ApiClient extends BaseApiClient {
   }
 
   // Feedback
-  async submitFeedback(feedbackText: string, userId?: string) {
+  async submitFeedback(feedbackText: string) {
     return this.request("/feedback/submit", {
       method: "POST",
-      body: JSON.stringify({ feedbackText, userId }),
+      body: JSON.stringify({ feedbackText }),
     });
   }
 
@@ -609,10 +555,9 @@ class ApiClient extends BaseApiClient {
   }
 
   // Activity tracking
-  async trackActivity(userId: string) {
+  async trackActivity() {
     return this.request("/activity/track", {
       method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 
@@ -674,10 +619,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async updateUserPresence(userId: string, currentRoomIndex: number) {
+  async updateUserPresence(currentRoomIndex: number) {
     return this.request("/vine/presence", {
       method: "POST",
-      body: JSON.stringify({ userId, currentRoomIndex }),
+      body: JSON.stringify({ currentRoomIndex }),
     });
   }
 
@@ -685,9 +630,8 @@ class ApiClient extends BaseApiClient {
     return this.request<{ data: UserPresence[] }>("/vine/presences");
   }
 
-  async getEmailPreview(userId?: string, digestType?: string) {
+  async getEmailPreview(digestType?: string) {
     const params = new URLSearchParams();
-    if (userId) params.append("userId", userId);
     if (digestType) params.append("digestType", digestType);
 
     const queryString = params.toString();
@@ -710,13 +654,12 @@ class ApiClient extends BaseApiClient {
   }
 
   async sendTestEmail(
-    userId: string,
     useMockData: boolean,
     digestType?: string,
   ) {
     return this.request("/dev/email-previews/send", {
       method: "POST",
-      body: JSON.stringify({ userId, useMockData, digestType }),
+      body: JSON.stringify({ useMockData, digestType }),
     });
   }
 
@@ -766,10 +709,9 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async getUserRank(userId: string) {
+  async getUserRank() {
     return this.request<{ rank: number; totalUsers: number }>("/user-rank", {
       method: "POST",
-      body: JSON.stringify({ userId }),
     });
   }
 
@@ -783,25 +725,15 @@ class ApiClient extends BaseApiClient {
       body: JSON.stringify({ email }),
     });
   }
+
+  async getNewsletter(edition: number) {
+    return this.request<{ html: string }>(`/newsletter/${edition}`, {
+      method: "GET",
+    });
+  }
 }
 
 export const api = new ApiClient();
-
-// Local storage helpers for user session
-export const getUserId = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return safelyGetStorageItem<string | null>("heard_user_id", null);
-};
-
-export const setUserId = (userId: string) => {
-  if (typeof window === "undefined") return;
-  safelySetStorageItem("heard_user_id", userId);
-};
-
-export const clearUserId = () => {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem("heard_user_id");
-};
 
 export const getRoomId = (): string | null => {
   if (typeof window === "undefined") return null;

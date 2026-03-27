@@ -1,12 +1,6 @@
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from "react";
 import {
   api,
-  getUserId,
-  setUserId,
-  clearUserId,
-  getSessionId,
-  setSessionId,
-  clearSessionId,
   safelyMakeApiCall,
 } from "../utils/api";
 import type {
@@ -21,7 +15,7 @@ import type {
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
-import { ApiResponse } from "../utils/api-client";
+import { ApiResponse, clearSessionId, setSessionId } from "../utils/api-client";
 import { AvatarAnimal } from "../utils/constants/avatars";
 
 interface DebateSessionContextType {
@@ -35,7 +29,7 @@ interface DebateSessionContextType {
   verifyMagicLink: (code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
   sendSmsCode: (phone: string, requireExisting?: boolean) => Promise<ApiResponse | null>;
   verifySmsCode: (phone: string, code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
-  addPhoneToAccount: (userId: string, phone: string, code: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
+  addPhoneToAccount: (phone: string, code: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   addEmailToAccount: (email: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
   updateAvatar: (avatarAnimal: AvatarAnimal) => Promise<void>;
@@ -57,18 +51,11 @@ interface DebateSessionContextType {
     flyerId: string,
     statementId: string,
     vote: VoteType,
-    userId?: string,
     flyerGroup?: number,
   ) => Promise<FlyerVoteResponse | null>;
   submitFlyerEmail: (email: string) => Promise<ApiResponse | null>;
-  markChanceCardSwiped: (
-    userId: string,
-    roomId: string,
-  ) => Promise<void>;
-  markYouTubeCardSwiped: (
-    userId: string,
-    roomId: string,
-  ) => Promise<void>;
+  markChanceCardSwiped: (roomId: string) => Promise<void>;
+  markYouTubeCardSwiped: (roomId: string) => Promise<void>;
   getActiveRooms: () => Promise<DebateRoom[]>;
   setCurrentSubHeard: (subHeard: string | null) => void;
   resetSession: () => void;
@@ -80,10 +67,10 @@ interface DebateSessionContextType {
   roomStatements: Record<string, Statement[]>;
   getRoomStatements: (roomId: string) => Promise<Statement[]>;
   getRoomAnalysis: (roomId: string) => Promise<AnalysisData | null>;
-  getSubHeards: (userId: string) => Promise<ApiResponse<{ subHeards: SubHeard[] }> | null>;
-  getExplorableSubHeards: (userId: string) => Promise<ApiResponse<SubHeard[]> | null>;
-  joinSubHeard: (subHeardName: string, userId: string) => Promise<ApiResponse<undefined> | null>;
-  leaveSubHeard: (subHeardName: string, userId: string) => Promise<ApiResponse<undefined> | null>;
+  getSubHeards: () => Promise<ApiResponse<{ subHeards: SubHeard[] }> | null>;
+  getExplorableSubHeards: () => Promise<ApiResponse<SubHeard[]> | null>;
+  joinSubHeard: (subHeardName: string) => Promise<ApiResponse<undefined> | null>;
+  leaveSubHeard: (subHeardName: string) => Promise<ApiResponse<undefined> | null>;
   getEnrichmentConfig: () => Promise<ApiResponse<EnrichmentConfig> | null>;
   setEnrichmentConfig: (
     config: EnrichmentConfig,
@@ -125,63 +112,12 @@ export function DebateSessionProvider(
     return user;
   }, [user]);
 
-  const loadUserUsingStoredId = useCallback(async (userId: string) => {
-    try {
-      setError(null);
-      const response = await api.getUser(userId);
-      if (response.success && response.data) {
-        const user = response.data.user;
-        setUser(user);
-        return user;
-      } else if (response.error === "SESSION_EXPIRED") {
-        console.log("Session expired, clearing local data");
-        clearUserId();
-        clearSessionId();
-        return null;
-      }
-    } catch (err) {
-      const errorMsg =
-        err instanceof Error ? err.message : "Unknown error";
-      setError(errorMsg);
-      console.error("Failed to load user from storage:", errorMsg);
-    }
-    return null;
-  }, []);
-
-  const initializeSessionForLegacyUser = useCallback(async (userId: string) => {
-    try {
-      setError(null);
-      console.log("Initializing session for legacy user:", userId);
-      const migrationResponse = await api.migrateSession(userId);
-      if (migrationResponse.success && migrationResponse.data) {
-        setSessionId(migrationResponse.data.sessionId);
-        console.log("Session initialization successful");
-      } else if (migrationResponse.error === "SESSION_EXPIRED") {
-        console.log("Session expired during migration, clearing local data");
-        clearUserId();
-        clearSessionId();
-        return null;
-      } else {
-        throw new Error(
-          migrationResponse.error || "Failed to initialize session for legacy user",
-        );
-      }
-    } catch (err) {
-      const errorMsg =
-        err instanceof Error ? err.message : "Unknown error";
-      setError(errorMsg);
-      console.error("Failed to initialize session for legacy user:", errorMsg);
-    }
-    return null;
-  }, []);
-
   const setUserAndSession = useCallback((providedUser: UserSession, sessionId: string) => {
     try {
       setError(null);
       setUser(providedUser);
-      setUserId(providedUser.id);
       setSessionId(sessionId);
-      api.trackActivity(providedUser.id).catch((err) => {
+      api.trackActivity().catch((err) => {
         console.error("Failed to track activity:", err);
       });
       
@@ -235,8 +171,8 @@ export function DebateSessionProvider(
     return response;
   }, [safelyMakeApiCall, setUserAndSession]);
 
-  const addPhoneToAccount = useCallback(async (userId: string, phone: string, code: string) => {
-    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.addPhoneToAccount(userId, phone, code));
+  const addPhoneToAccount = useCallback(async (phone: string, code: string) => {
+    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.addPhoneToAccount(phone, code));
     if (response?.data?.user) {
       setUser(response.data.user);
     }
@@ -244,7 +180,9 @@ export function DebateSessionProvider(
   }, [safelyMakeApiCall]);
 
   const addEmailToAccount = useCallback(async (email: string) => {
-    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.addEmailToAccount(user!.id, email));
+    const response = await safelyMakeApiCall<{ user: UserSession }>(
+      () => api.addEmailToAccount(email),
+    );
     if (response?.data?.user) {
       setUser(response.data.user);
     }
@@ -279,7 +217,7 @@ export function DebateSessionProvider(
       }
 
       setError(null);
-      const response = await api.createRoom(newDebate, user.id);
+      const response = await api.createRoom(newDebate);
 
       if (response.success && response.data) {
         const roomData = response.data;
@@ -287,7 +225,7 @@ export function DebateSessionProvider(
         updateUserScoreFromResponse(roomData);
 
         if (autoJoin) {
-          await api.joinRoom(roomData.id, user.id);
+          await api.joinRoom(roomData.id);
         }
 
         return roomData;
@@ -308,7 +246,7 @@ export function DebateSessionProvider(
 
       try {
         setError(null);
-        const response = await api.joinRoom(roomId, user.id) as any;
+        const response = await api.joinRoom(roomId) as any;
         if (response.success && response.data) {
           return response.data.room;
         } else {
@@ -340,7 +278,6 @@ export function DebateSessionProvider(
       const response = await api.submitStatement(
         roomId,
         text,
-        user.id,
       );
 
       if (response.success && response.data) {
@@ -370,7 +307,6 @@ export function DebateSessionProvider(
       const response = await api.voteOnStatement(
         statementId,
         voteType,
-        user.id,
       );
 
       if (response.success && response.data) {
@@ -449,9 +385,9 @@ export function DebateSessionProvider(
   );
 
   const markChanceCardSwiped = useCallback(
-    async (userId: string, roomId: string) => {
+    async (roomId: string) => {
       try {
-        const response = await api.markChanceCardSwiped(userId, roomId);
+        const response = await api.markChanceCardSwiped(roomId);
         if (!response.success) {
           throw new Error(response.error || "Failed to mark chance card as swiped");
         }
@@ -465,9 +401,9 @@ export function DebateSessionProvider(
   );
 
   const markYouTubeCardSwiped = useCallback(
-    async (userId: string, roomId: string) => {
+    async (roomId: string) => {
       try {
-        const response = await api.markYouTubeCardSwiped(userId, roomId);
+        const response = await api.markYouTubeCardSwiped(roomId);
         if (!response.success) {
           throw new Error(response.error || "Failed to mark YouTube card as swiped");
         }
@@ -483,10 +419,8 @@ export function DebateSessionProvider(
   // Get active rooms - uses currentSubHeard from state
   const getActiveRooms = useCallback(async () => {
     try {
-      const userId = user?.id;
       const response = await api.getActiveRooms(
         currentSubHeard || undefined,
-        userId,
       ) as any;
       if (response.success && response.data) {
         setActiveRooms(response.data.rooms || []);
@@ -496,15 +430,13 @@ export function DebateSessionProvider(
       console.error("Failed to fetch active rooms:", err);
     }
     return [];
-  }, [user?.id, currentSubHeard]);
+  }, [currentSubHeard]);
 
   // Create seed data for testing
   const createSeedData = useCallback(async () => {
-    if (!user) return null;
-
     try {
       setError(null);
-      const response = await api.createSeedData(user.id);
+      const response = await api.createSeedData();
       if (response.success && response.data) {
         // Refresh active rooms to show the new test room
         await getActiveRooms();
@@ -521,15 +453,13 @@ export function DebateSessionProvider(
       console.error("Failed to create seed data:", errorMsg);
     }
     return null;
-  }, [user, getActiveRooms]);
+  }, [getActiveRooms]);
 
   // Create test room with Q Street topic and players (no posts/votes)
   const createTestRoom = useCallback(async () => {
-    if (!user) return null;
-
     try {
       setError(null);
-      const response = await api.createTestRoom(user.id);
+      const response = await api.createTestRoom();
       if (response.success && response.data) {
         // Refresh active rooms to show the new test room
         await getActiveRooms();
@@ -546,15 +476,13 @@ export function DebateSessionProvider(
       console.error("Failed to create test room:", errorMsg);
     }
     return null;
-  }, [user, getActiveRooms]);
+  }, [getActiveRooms]);
 
   // Create rant test room with Q Street topic and pre-filled rants
   const createRantTestRoom = useCallback(async () => {
-    if (!user) return null;
-
     try {
       setError(null);
-      const response = await api.createRantTestRoom(user.id);
+      const response = await api.createRantTestRoom();
       if (response.success && response.data) {
         // Refresh active rooms to show the new test room
         await getActiveRooms();
@@ -574,17 +502,13 @@ export function DebateSessionProvider(
       );
     }
     return null;
-  }, [user, getActiveRooms]);
+  }, [getActiveRooms]);
 
   // Create realtime test room with seed data and 5-minute timer
   const createRealtimeTestRoom = useCallback(async () => {
-    if (!user) return null;
-
     try {
       setError(null);
-      const response = await api.createRealtimeTestRoom(
-        user.id,
-      );
+      const response = await api.createRealtimeTestRoom();
       if (response.success && response.data) {
         // Refresh active rooms to show the new test room
         await getActiveRooms();
@@ -605,19 +529,14 @@ export function DebateSessionProvider(
       );
     }
     return null;
-  }, [user, getActiveRooms]);
+  }, [getActiveRooms]);
 
   // Mark room as inactive (dev tool)
   const setRoomInactive = useCallback(
     async (roomId: string) => {
-      if (!user) return false;
-
       try {
         setError(null);
-        const response = await api.setRoomInactive(
-          roomId,
-          user.id,
-        );
+        const response = await api.setRoomInactive(roomId);
         if (response.success) {
           // Refresh active rooms to remove the inactive room
           await getActiveRooms();
@@ -638,7 +557,7 @@ export function DebateSessionProvider(
       }
       return false;
     },
-    [user, getActiveRooms],
+    [getActiveRooms],
   );
 
   // Fetch statements for a specific room
@@ -680,21 +599,21 @@ export function DebateSessionProvider(
     return null;
   }, []);
 
-  const getSubHeards = useCallback(async (userId: string) => {
+  const getSubHeards = useCallback(async () => {
     type Response = { subHeards: SubHeard[]; };
-    return safelyMakeApiCall<Response>(() => api.getSubHeards(userId));
+    return safelyMakeApiCall<Response>(() => api.getSubHeards());
   }, []);
 
-  const getExplorableSubHeards = useCallback(async (userId: string) => {
-    return safelyMakeApiCall<SubHeard[]>(() => api.getExplorableSubHeards(userId));
+  const getExplorableSubHeards = useCallback(async () => {
+    return safelyMakeApiCall<SubHeard[]>(() => api.getExplorableSubHeards());
   }, []);
 
-  const joinSubHeard = useCallback(async (subHeardName: string, userId: string) => {
-    return safelyMakeApiCall<undefined>(() => api.joinSubHeard(subHeardName, userId))
+  const joinSubHeard = useCallback(async (subHeardName: string) => {
+    return safelyMakeApiCall<undefined>(() => api.joinSubHeard(subHeardName))
   }, []);
 
-  const leaveSubHeard = useCallback(async (subHeardName: string, userId: string) => {
-    return safelyMakeApiCall<undefined>(() => api.leaveSubHeard(subHeardName, userId))
+  const leaveSubHeard = useCallback(async (subHeardName: string) => {
+    return safelyMakeApiCall<undefined>(() => api.leaveSubHeard(subHeardName))
   }, []);
 
   const getEnrichmentConfig = useCallback(async () => {
@@ -725,7 +644,6 @@ export function DebateSessionProvider(
     setActiveRooms([]);
     setRoomStatements({});
     setError(null);
-    clearUserId();
     clearSessionId();
   }, []);
 
@@ -734,29 +652,24 @@ export function DebateSessionProvider(
     const init = async () => {
       setLoading(true);
 
-      const storedUserId = getUserId();
-      if (storedUserId) {
-        const loadedUser = await loadUserUsingStoredId(storedUserId);
-  
-        if (loadedUser) {
-          const sessionId = getSessionId();
-          if (!sessionId) {
-            await initializeSessionForLegacyUser(storedUserId);
-          }
-          api.trackActivity(storedUserId).catch((err) => {
-            console.error("Failed to track activity on init:", err);
-          });
-        } else {
-          console.log("User session expired or invalid");
-        }
+      const response = await api.getUser();
+      if (response.success && response.data) {
+        const user = response.data.user;
+        setUser(user);
+        api.trackActivity().catch((err) => {
+          console.error("Failed to track activity on init:", err);
+        });
+      } else if (response.error === "SESSION_EXPIRED") {
+        console.error("Session expired, clearing local data");
+        clearSessionId();
+        return null;
       }
-
 
       setLoading(false);
     };
 
     init();
-  }, [loadUserUsingStoredId, initializeSessionForLegacyUser]);
+  }, []);
 
   let returnObj = {
     user,
@@ -821,7 +734,7 @@ export function DebateSessionProvider(
         console.log("[Showcase] verifySmsCode called"); 
         return { success: true };
       },
-      addPhoneToAccount: async (userId: string, phone: string, code: string) => {
+      addPhoneToAccount: async (phone: string, code: string) => {
         console.log("[Showcase] addPhoneToAccount called");
         return { success: true };
       },
@@ -871,25 +784,25 @@ export function DebateSessionProvider(
         console.log("[Showcase] createRealtimeTestRoom called");
         return { success: true };
       },
-      markChanceCardSwiped: async (userId: string, roomId: string) => {
+      markChanceCardSwiped: async () => {
         console.log("[Showcase] markChanceCardSwiped called");
       },
-      markYouTubeCardSwiped: async (userId: string, roomId: string) => {
+      markYouTubeCardSwiped: async () => {
         console.log("[Showcase] markYouTubeCardSwiped called");
       },
-      getSubHeards: async (userId: string) => {
+      getSubHeards: async () => {
         console.log("[Showcase] getSubHeards called");
         return { success: true  };
       },
-      getExplorableSubHeards: async (userId: string) => {
+      getExplorableSubHeards: async () => {
         console.log("[Showcase] getExplorableSubHeards called");
         return { success: true  };
       },
-      joinSubHeard: async (subHeardName: string, userId: string) => {
+      joinSubHeard: async (subHeardName: string) => {
         console.log("[Showcase] joinSubHeard called");
         return { success: true };
       },
-      leaveSubHeard: async (subHeardName: string, userId: string) => {
+      leaveSubHeard: async (subHeardName: string) => {
         console.log("[Showcase] leaveSubHeard called");
         return { success: true };
       },

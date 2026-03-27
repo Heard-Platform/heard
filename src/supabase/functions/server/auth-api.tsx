@@ -3,7 +3,7 @@ import { deleteMagicLink, getMagicLink, getParsedKvData, getSession, getUser, sa
 import type { Session, User } from "./types.tsx";
 import { Context, Hono } from "npm:hono";
 import { getMagicLinkEmail } from "./email-templates.tsx";
-import { loginUserWithMerge } from "./auth-utils.ts";
+import { loginUserWithMerge, validateSession } from "./auth-utils.ts";
 import { sanitizeUser } from "./user-utils.ts";
 
 const app = new Hono();
@@ -375,6 +375,7 @@ app.post(
 
 app.post(
   "/make-server-f1a393b4/auth/verify-magic-link",
+  validateSession,
   async (c: Context) => {
     try {
       const currentUserId = c.get("userId");
@@ -413,36 +414,15 @@ app.post(
 );
 
 app.post(
-  "/make-server-f1a393b4/auth/migrate-session",
-  async (c: any) => {
-    try {
-      const { userId } = await c.req.json();
-
-      if (!userId) {
-        return c.json({ error: "User ID is required" }, 400);
-      }
-
-      const result = await getUserAndNewSession(userId);
-      if ("error" in result) {
-        return c.json({ error: result.error }, result.status);
-      }
-
-      return c.json(result);
-    } catch (error) {
-      console.error("Error migrating session:", error);
-      return c.json({ error: "Failed to migrate session" }, 500);
-    }
-  },
-);
-
-app.post(
   "/make-server-f1a393b4/auth/add-email-to-account",
-  async (c: any) => {
+  validateSession,
+  async (c: Context) => {
     try {
-      const { userId, email } = await c.req.json();
+      const userId = c.get("userId");
+      const { email } = await c.req.json();
 
-      if (!userId || !email) {
-        return c.json({ error: "userId and email are required" }, 400);
+      if (!email) {
+        return c.json({ error: "Email is required" }, 400);
       }
 
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {

@@ -52,10 +52,7 @@ export function FeedbackSheet({
     setSubmitting(true);
 
     try {
-      const response = await api.submitFeedback(
-        feedbackText,
-        userId,
-      );
+      const response = await api.submitFeedback(feedbackText);
 
       if (response.success) {
         toast.success(

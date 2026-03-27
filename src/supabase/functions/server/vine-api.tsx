@@ -6,8 +6,8 @@ const app = new Hono();
 
 app.post("/make-server-f1a393b4/vine/presence", async (c: Context) => {
   try {
-    const { currentRoomIndex } = await c.req.json();
     const userId = c.get("userId");
+    const { currentRoomIndex } = await c.req.json();
 
     if (currentRoomIndex === undefined) {
       return c.json({ success: false, error: "Missing required fields" }, 400);

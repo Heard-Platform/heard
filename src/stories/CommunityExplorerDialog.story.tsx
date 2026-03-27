@@ -4,8 +4,8 @@ import { Button } from "../components/ui/button";
 import { DebateSessionProvider, OverridableApiMethods } from "../hooks/useDebateSession";
 import { mockCommunities } from "./mockData";
 
-const getExplorableSubHeards: OverridableApiMethods["getExplorableSubHeards"] = async (userId: string) => {
-  console.log("[Showcase] getExplorableSubHeards called with userId:", userId);
+const getExplorableSubHeards: OverridableApiMethods["getExplorableSubHeards"] = async () => {
+  console.log("[Showcase] getExplorableSubHeards called");
   return {
     success: true,
     data: mockCommunities
@@ -23,8 +23,11 @@ export function CommunityExplorerDialogStory() {
       <CommunityExplorerDialog
         isOpen={open}
         userId="demo-user-123"
+        cancelButtonText={"Cancel"}
+        onCommunitiesJoined={() =>
+          console.log("Communities joined callback triggered")
+        }
         onClose={() => setOpen(false)}
-        onCommunitiesJoined={() => console.log("Communities joined callback triggered")}
       />
     </DebateSessionProvider>
   );

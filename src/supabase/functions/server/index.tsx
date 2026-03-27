@@ -48,6 +48,7 @@ app.use(
       "Content-Type",
       "Authorization",
       "X-Admin-Key",
+      "X-API-Key",
       "X-Session-Id",
     ],
     allowMethods: [
@@ -62,6 +63,18 @@ app.use(
     maxAge: 600,
   }),
 );
+
+app.use("*", async (c, next) => {
+  const apiKey = c.req.header("X-API-Key");
+  const validKey = Deno.env.get("HEARD_API_SECRET");
+
+  if (!validKey || apiKey !== validKey) {
+    console.warn("Unauthorized API access attempt with invalid API key");
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  await next();
+});
 
 app.use("*", async (c, next) => {
   const sessionId = c.req.header("X-Session-Id");
