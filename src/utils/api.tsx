@@ -117,14 +117,13 @@ class ApiClient extends BaseApiClient {
     const formData = new FormData();
     formData.append("image", imageFile);
 
-    const response = await this.request<{
+    return await this.request<{
       imageUrl: string;
       filename: string;
     }>("/upload-debate-image", {
       method: "POST",
       body: formData,
     });
-    return response;
   }
 
   async setRoomInactive(roomId: string) {
