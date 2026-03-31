@@ -204,6 +204,8 @@ function AppContent() {
       const newsletterMatch = window.location.pathname.match(/^\/newsletter\/(\d+)$/);
       const isParkletRoute =
         window.location.pathname.startsWith("/parklet");
+      const is2b04Route =
+        window.location.pathname.startsWith("/2b04");
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
@@ -223,8 +225,12 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
-      } else if (isParkletRoute) {
-        const hardcodedRoomId = "aocxafg7tnpmmv7j6sh";
+      } else if (isParkletRoute || is2b04Route) {
+        const hardcodedRoomId = isParkletRoute
+          ? "aocxafg7tnpmmv7j6sh"
+          : is2b04Route
+            ? "5zagvhpy4iamnf18dh5"
+            : undefined;
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
