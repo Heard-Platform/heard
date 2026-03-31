@@ -117,40 +117,13 @@ class ApiClient extends BaseApiClient {
     const formData = new FormData();
     formData.append("image", imageFile);
 
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/upload-debate-image`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${publicAnonKey}`,
-          },
-          body: formData,
-        },
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error(
-          `Image Upload Error (${response.status}):`,
-          data,
-        );
-        return {
-          success: false,
-          error: data.error || `HTTP ${response.status}`,
-        };
-      }
-
-      return { success: true, data };
-    } catch (error) {
-      console.error("Image upload failed:", error);
-      return {
-        success: false,
-        error:
-          error instanceof Error ? error.message : "Network error",
-      };
-    }
+    return await this.request<{
+      imageUrl: string;
+      filename: string;
+    }>("/upload-debate-image", {
+      method: "POST",
+      body: formData,
+    });
   }
 
   async setRoomInactive(roomId: string) {

@@ -152,6 +152,9 @@ export function ReviewExtractionStep({
               type="file"
               id="conversation-image"
               accept="image/*"
+              onClick={(e) => {
+                (e.target as HTMLInputElement).value = "";
+              }}
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
