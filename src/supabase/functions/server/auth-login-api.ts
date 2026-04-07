@@ -58,6 +58,7 @@ app.post(
 
 app.post(
   "/make-server-f1a393b4/auth/verify-sms-code",
+  validateSession,
   async (c: Context) => {
     try {
       const currentUserId = c.get("userId");

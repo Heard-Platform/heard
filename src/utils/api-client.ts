@@ -33,6 +33,7 @@ const buildHeaders = (extraHeaders?: HeadersDict): HeadersDict => {
   const headers: HeadersDict = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${publicAnonKey}`,
+    "X-API-Key": import.meta.env.VITE_HEARD_API_SECRET,
     ...extraHeaders,
   };
   
@@ -49,11 +50,16 @@ export class BaseApiClient {
     options: RequestInit = {},
   ): Promise<ApiResponse<T>> {
     try {
+      const isFormData = options.body instanceof FormData;
+      const headers = buildHeaders(options.headers as HeadersDict);
+      if (isFormData) {
+        delete headers["Content-Type"];
+      }
       const response = await fetch(
         `${API_BASE_URL}${endpoint}`,
         {
           ...options,
-          headers: buildHeaders(options.headers as HeadersDict),
+          headers,
         },
       );
 

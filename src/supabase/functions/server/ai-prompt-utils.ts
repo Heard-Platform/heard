@@ -1,19 +1,22 @@
 import { getRandomPersona } from "./personas.tsx";
 import { AiPrompt } from "./types.tsx";
+import { LlmProvider } from "./llm-provider.ts";
 
 export function makeTransformPromptFromRedditPost(postData: {
     subredditDescription: string,
     title: string,
     selfText: string,
-}
+},
+    provider: LlmProvider,
+    persona?: string,
 ): AiPrompt {
-    const personaPrompt = getRandomPersona();
+    const personaPrompt = persona ?? getRandomPersona();
 
     const systemPrompt = personaPrompt + ` You write concisely. Before attempting any conversion, you must first check 
 whether the post is suitable. If the post meets any disqualifying condition, 
 your entire response must be only the word \"Error\" — no topic, no responses, nothing else.`;
 
-    const userPrompt = `Convert the following Reddit post into a open-ended discussion question 
+    let userPrompt = `Convert the following Reddit post into a open-ended discussion question 
 and a set of response statements that represent distinct personal perspectives people might hold on that question. 
 
 Reddit Post: 
@@ -26,7 +29,7 @@ BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only 
 an interpersonal or emotional situation, or a post describing a specific situation in the poster's life 
 and asking for others' opinions on it (including posts that end with questions like "am I overreacting?", "is this normal?", 
 or "what should I do?") 
-- The Reddit post is too vague or broad to yield a focused discussion question 
+- The Reddit post is too vague or broad to yield a focused discussion question (this means the post has no discernible topic — a broad but clear question like "What's the biggest red flag in workplace culture?" is NOT too vague)
 - The Reddit post is a call to action, is urging others to think, feel, or behave in a particular way, 
 or is telling others how they should respond to a situation (e.g. "please call your representative", "sign this petition", 
 "we have to rise above", "share this post", "never consider fighting fire with fire") 
@@ -44,7 +47,8 @@ award show results
 - The Reddit post makes or comments on allegations or claims about named real people 
 
 Topic rules: 
-- A single open-ended question anyone could answer, not just the poster 
+- A single open-ended question anyone could answer, not just the poster
+- Never end the topic with "to you", "for you", or "in your opinion" — the question format already implies it's personal
 - For debate-style posts, focus the topic on the personal experience or feeling behind the debate rather than the debate itself. 
 For example, a CMV post about partisan morality should yield "What do you think shapes your own sense of right and wrong?" not 
 "What do you think about the relationship between moral reasoning and democracy?" 
@@ -73,6 +77,9 @@ Response rules:
 write what that person would say out loud to a friend — not what they would write in an essay. 
 STRICT MAX 8 WORDS — cut mercilessly. (e.g. "I never realized how important flossing was" or "Too many people take it way too seriously" — 
 not "Endorsements can elevate a figure's relevance")
+- Never start with "I think", "I feel", "I believe", "In my opinion", "Honestly", "I notice", or any similar preamble — jump straight to the point
+- Never end with filler qualifiers like "like mine", "to me", "more than anything", "so that needs fixing first" — end on the core idea, not a personal tag
+- If the core idea can be expressed in fewer words, use fewer words — don't pad short ideas to fill the word limit
 - Never use "everyone", "some people", "most people", "we", or any other generalization — speak only for yourself
 - Must directly answer the topic question 
 - Never reference specific details, objects, or situations from the Reddit post — responses must make sense without any knowledge of the source material 
@@ -82,8 +89,33 @@ not "Endorsements can elevate a figure's relevance")
 - Responses must be complete thoughts — never trail off with ellipses or incomplete sentences 
 - No quotation marks, no trailing punctuation of any kind — no periods, exclamation marks, or question marks 
 
-Format: topic on line 1, EXACTLY 2-3 responses on subsequent lines, no blank lines, nothing else.`;
-    
+Format: no blank lines, topic on line 1, EXACTLY 2-3 responses on subsequent lines, nothing else.`;
+
+    if (provider === "gemini") {
+        userPrompt += `
+
+CRITICAL REMINDERS — you MUST follow these exactly:
+- You MUST produce EXACTLY 2-3 response statements, not 1, not 0.
+- Each response MUST be a STRICT MAX of 8 words.
+- Each response must be on its own line after the topic question.
+- Do NOT combine responses into a single line.
+- ABSOLUTELY NO trailing punctuation — no periods, no exclamation marks, no question marks.
+- NO filler expressions like "ugh", "really", "honestly", "huge" — be direct and concise.
+- NO personal tags like "bothers me", "I hate", "drives me crazy" — state the idea, not your reaction to it.`;
+    }
+
+    if (provider === "anthropic") {
+        userPrompt += `
+
+CRITICAL REMINDERS — you MUST follow these exactly:
+- You MUST produce EXACTLY 2-3 response statements — not 1, not 4, not 5.
+- Each response MUST be a STRICT MAX of 8 words — count them. Cut mercilessly.
+- No ellipses (...) — every response must be a complete thought.
+- No setup phrases like "Most of my friends think" or "People just don't see" — jump straight to the opinion.
+- No trailing qualifiers like "like I do", "what they think", "than buying cheap stuff" — end on the core idea.
+- No blank lines between the topic and responses or between responses.`;
+    }
+
     return {
         systemPrompt,
         userPrompt,

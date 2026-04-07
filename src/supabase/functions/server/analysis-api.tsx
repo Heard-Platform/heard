@@ -1,6 +1,5 @@
 import { Hono } from "npm:hono";
 import { getDebateRoom, getStatements } from "./debate-api.tsx";
-import { bulkGet } from "./kv-utils.tsx";
 import {
   ClusterAssignment,
   ClusterMetadata,
@@ -68,11 +67,13 @@ app.get(
         room.participants &&
         room.participants.length > 0
       ) {
-        const assignmentKeys = room.participants.map(
-          (userId) => `cluster_assignment:${roomId}:${userId}`,
+        const assignments = await Promise.all(
+          room.participants.map((userId) =>
+            getParsedKvData<ClusterAssignment>(
+              `cluster_assignment:${roomId}:${userId}`,
+            ),
+          ),
         );
-        const assignments =
-          await bulkGet<ClusterAssignment>(assignmentKeys);
 
         clusterConsensus = calculateClusterConsensus(
           statements,

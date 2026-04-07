@@ -35,7 +35,7 @@ export class RedditImporter extends EnrichmentService {
   async createPostFromRedditPost(
     redditPost: RedditPost,
   ): Promise<boolean> {
-    const aiPrompt = makeTransformPromptFromRedditPost(redditPost);
+    const aiPrompt = makeTransformPromptFromRedditPost(redditPost, this.provider);
 
     const aiResponse = await this.aiClient.complete(aiPrompt);
 
@@ -75,8 +75,8 @@ Post self-text: ${redditPost.selfText}
     });
     await createRoom(newPost);
 
-    stmtTexts.forEach(async (stmtText) => {
-      await saveStatement({
+    await Promise.all(stmtTexts.map((stmtText) =>
+      saveStatement({
         id: generateId(),
         text: stmtText,
         author: "enrichment-service",
@@ -88,8 +88,8 @@ Post self-text: ${redditPost.selfText}
         timestamp: Date.now(),
         round: 1,
         voters: {},
-      });
-    });
+      })
+    ));
 
     return true;
   }

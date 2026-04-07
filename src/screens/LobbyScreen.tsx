@@ -104,7 +104,6 @@ export function LobbyScreen({
   const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
   const [explorerOpen, setExplorerOpen] = useState(false);
   type Steps = "tutorial" | "explorer" | "complete";
-  const [introStep, setIntroStep] = useState<Steps>("complete");
 
   const filteredRooms = useMemo(() => {
     return [...activeRooms].sort((a, b) => {
@@ -115,17 +114,6 @@ export function LobbyScreen({
       return 0;
     });
   }, [activeRooms, targetRoomId]);
-
-  useEffect(() => {
-    const hasSeenIntro = localStorage.getItem(INTRO_SEEN_KEY);
-    if (!hasSeenIntro && !hasQrScanResult && !targetRoomId) {
-      localStorage.setItem(INTRO_SEEN_KEY, "true");
-      setTimeout(() => {
-        setIntroStep("tutorial");
-        setHelpModalOpen(true);
-      }, 500);
-    }
-  }, [hasQrScanResult, targetRoomId]);
 
   // Detect mobile keyboard state
   useEffect(() => {
@@ -281,40 +269,20 @@ export function LobbyScreen({
     setShowAccountSetupAnonModal(true);
   };
 
-  const handleCloseIntroModal = () => {
-    setHelpModalOpen(false);
-    if (introStep === "tutorial") {
-      if (isFeatureEnabled(FeatureFlags.ONLY_JOINED_COMMUNITIES)) {
-        setIntroStep("explorer");
-        setExplorerOpen(true);
-      } else {
-        setIntroStep("complete");
-      }
-    }
-  };
-
-  const advanceFromExplorerStep = () => {
-    if (introStep === "explorer") {
-      setIntroStep("complete");
-    }
-  };
-  
   const handleExplorerCommunitiesJoined = () => {
     onRefreshRooms(currentSubHeard);
     setExplorerOpen(false);
-    advanceFromExplorerStep();
   };
 
   const handleCloseExplorer = () => {
     setExplorerOpen(false);
-    advanceFromExplorerStep();
   };
 
   return (
     <>
       <IntroModal
         isOpen={helpModalOpen}
-        onClose={handleCloseIntroModal}
+        onClose={() => setHelpModalOpen(false)}
       />
 
       {/* Main TikTok-style scroller */}
@@ -335,17 +303,17 @@ export function LobbyScreen({
               }}
             >
               <motion.h1
-                className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
+                className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg flex items-baseline gap-0.5"
                 style={{
                   WebkitTextStroke:
                     "0.6px rgba(255,255,255,0.8)",
                 }}
               >
                 HEARD
+                <span className="text-xs font-normal tracking-widest" style={{ WebkitTextStroke: "0" }}>
+                  .vote
+                </span>
               </motion.h1>
-              <p className="text-[9px] text-purple-400/60 tracking-widest uppercase mt-[-4px]">
-                BETA
-              </p>
             </div>
           </div>
 
@@ -483,7 +451,7 @@ export function LobbyScreen({
       <CommunityExplorerDialog
         isOpen={explorerOpen}
         userId={user.id}
-        cancelButtonText={introStep === "explorer" ? "Skip for now" : "Cancel"}
+        cancelButtonText={"Close"}
         onCommunitiesJoined={handleExplorerCommunitiesJoined}
         onClose={handleCloseExplorer}
       />

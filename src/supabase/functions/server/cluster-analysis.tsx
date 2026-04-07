@@ -10,6 +10,7 @@ interface ClusterConsensusStatement {
   id: string;
   text: string;
   agreeVotes: number;
+  disagreeVotes: number;
   totalVotes: number;
   consensusScore: number;
 }
@@ -64,6 +65,7 @@ export function calcBestClusterStatements(statements: Statement[], usersInCluste
       id: statement.id,
       text: statement.text,
       agreeVotes: agreeCount,
+      disagreeVotes: disagreeCount,
       totalVotes: totalVoteCount,
       consensusScore,
     });

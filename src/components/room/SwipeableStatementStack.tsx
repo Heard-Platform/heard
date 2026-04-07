@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PanInfo } from "motion/react";
+import { useSwipeTutorial } from "../../hooks/useSwipeTutorial";
 import {
   type Statement,
   type VoteType,
@@ -7,9 +8,11 @@ import {
   type ChanceCard,
   type YouTubeCard,
   type DemographicsCard,
+  type CertifyCard,
   DemographicQuestion,
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
+import { SwipeInstructions } from "../SwipeInstructions";
 import { NewStatementInput } from "../NewStatementInput";
 import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
@@ -33,6 +36,7 @@ interface SwipeableStatementStackProps {
   ) => Promise<void>;
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
+  onCertifyDone: () => void;
   onChanceCardSwiped: () => Promise<void>;
   onYouTubeCardSwiped: () => Promise<void>;
   onDemographicsAnswer?: (questionId: string, answer: string) => void;
@@ -53,11 +57,14 @@ export function SwipeableStatementStack({
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
+  onCertifyDone,
   onChanceCardSwiped,
   onYouTubeCardSwiped,
   onDemographicsAnswer,
 }: SwipeableStatementStackProps) {
   const { flagStatement } = useDebateSession();
+  const { showTutorial, recordSwipe } = useSwipeTutorial();
+  const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
   >(new Set());
@@ -65,7 +72,7 @@ export function SwipeableStatementStack({
   const [swipedCardId, setSwipedCardId] = useState<
     string | null
   >(null);
-  const [swipedNoopCard, setSwipedNoopCard] = useState<"chance" | "youtube" | null>(null);
+  const [swipedNoopCard, setSwipedNoopCard] = useState<"certify" | "chance" | "youtube" | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
@@ -114,6 +121,11 @@ export function SwipeableStatementStack({
     cards.unshift(youtubeCard);
   }
 
+  if (isAnonymous && !certifyCardDismissed) {
+    const certifyCard: CertifyCard = { type: "certify" };
+    cards.push(certifyCard);
+  }
+
   const hasMoreCards = cards.length > 0;
 
   const handleVote = async (
@@ -130,6 +142,8 @@ export function SwipeableStatementStack({
     setVotedStatementIds((prev) =>
       new Set(prev).add(statementId),
     );
+
+    recordSwipe();
 
     const statement = statements.find(
       (s) => s.id === statementId,
@@ -256,18 +270,21 @@ export function SwipeableStatementStack({
     const swipingLeft = swipeX < -SWIPE_THRESHOLD || velocityX < -500;
     const swipingRight = swipeX > SWIPE_THRESHOLD || velocityX > 500;
 
-    if (card.type === "chance" || card.type === "youtube") {
+    if (card.type === "certify" || card.type === "chance" || card.type === "youtube") {
       if (swipingLeft || swipingRight) {
         setIsVoting(true);
         setSwipedNoopCard(card.type);
         setSwipeDirection(swipingLeft ? "left" : "right");
-        
-        if (card.type === "chance") {
+
+        if (card.type === "certify") {
+          setCertifyCardDismissed(true);
+          onCertifyDone();
+        } else if (card.type === "chance") {
           onChanceCardSwiped();
         } else if (card.type === "youtube") {
           onYouTubeCardSwiped && onYouTubeCardSwiped();
         }
-        
+
         setTimeout(() => {
           setSwipedNoopCard(null);
           setSwipeDirection(null);
@@ -285,6 +302,25 @@ export function SwipeableStatementStack({
         handleVote(statementId, "disagree", "left");
       }
     }
+  };
+
+  const swipeCertifyCard = (direction: "left" | "right") => {
+    setSwipedNoopCard("certify");
+    setSwipeDirection(direction);
+    setTimeout(() => {
+      setCertifyCardDismissed(true);
+      setSwipedNoopCard(null);
+      setSwipeDirection(null);
+      onCertifyDone();
+    }, 300);
+  }
+
+  const handleDismissCertifyCard = () => {
+    swipeCertifyCard("left");
+  };
+
+  const handleSuccessCertifyCard = () => {
+    swipeCertifyCard("right");
   };
 
   const handleSubmitFromChanceCard = async (text: string) => {
@@ -369,11 +405,16 @@ export function SwipeableStatementStack({
   };
 
   const topCard = cards[0];
-  const isChanceCardOnTop = topCard?.type === "chance";
+  const isSpecialCardOnTop = topCard?.type === "certify" || topCard?.type === "chance";
 
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
       <div className="relative min-h-[320px]">
+        {showTutorial && (
+          <div className="absolute inset-0 z-20 pointer-events-none">
+            <SwipeInstructions />
+          </div>
+        )}
         {cards
           .slice(0, 3)
           .map((card, index) => {
@@ -389,6 +430,7 @@ export function SwipeableStatementStack({
 
             const getCardKey = () => {
               if (card.type === "statement") return card.statement.id;
+              if (card.type === "certify") return "certify";
               if (card.type === "chance") return "chance";
               if (card.type === "youtube") return "youtube";
               if (card.type === "demographics") return `demographics-${card.question.id}`;
@@ -419,6 +461,8 @@ export function SwipeableStatementStack({
                 onSubmitStatement={handleSubmitFromChanceCard}
                 onShowAccountSetupModal={onShowAccountSetupModal}
                 onDemographicsAnswer={handleDemographicsAnswer}
+                onCertifyDismiss={handleDismissCertifyCard}
+                onCertifySuccess={handleSuccessCertifyCard}
                 onSkip={() => {
                   if (card.type === "statement") {
                     handleVote(card.statement.id, "pass", "down");
@@ -439,7 +483,7 @@ export function SwipeableStatementStack({
           })}
       </div>
 
-      {!isChanceCardOnTop && (
+      {!isSpecialCardOnTop && (
         <NewStatementInput
           onSubmitStatement={onSubmitStatement}
           allowAnonymous={allowAnonymous}

@@ -31,6 +31,8 @@ import type {
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { calculateVoteStats, processVote } from "./voting-utils.ts";
 import { sortRoomsByActivity } from "./feed-utils.ts";
+import { createLlmClient } from "./llm-provider.ts";
+import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
 import { validateDeveloper } from "./internal-utils.ts";
 
 const app = new Hono();
@@ -456,20 +458,6 @@ export const getActiveRooms = async (): Promise<DebateRoom[]> => {
   return allRooms.filter((r) => r.isActive);
 };
 
-// Shared prompt rules for rant statement extraction
-const RANT_EXTRACTION_RULES = `STRICT Rules:
-- Use the author's actual words and phrases whenever possible
-- Do NOT add interpretations, implications, or extra meaning
-- Do NOT extrapolate beyond what they explicitly said
-- Stay faithful to their tone (casual, formal, emotional, etc.)
-- Only create statements for arguments they actually made
-- Keep their specific examples and concerns intact
-- If they used simple language, keep it simple
-- If they were emotional, preserve that emotion
-- Each statement MUST be a complete, well-formed sentence
-- Capitalize the first letter of each statement
-- Add minimal wording ONLY if needed to make incomplete thoughts into complete sentences
-- Ensure each statement stands alone as something people can vote on`;
 
 const getVotesForStatements = async (
   statementIds: string[],
@@ -588,104 +576,12 @@ const getRantsForRoom = async (
   }
 };
 
-// Generate 3-5 statements for a single rant
-const generateStatementsFromRant = async (
-  rant: Rant,
-  topic: string,
-  apiKey: string,
-  index: number,
-): Promise<{
-  statements: string[];
-  author: string;
-}> => {
-  const truncatedText = rant.text.substring(0, 400); // Slightly more context for better statements
-
-  const prompt = `Topic: "${topic}"
-Author: ${rant.author}
-Rant: ${truncatedText}
-
-Generate 3-5 debate statements based on this person's rant.
-
-${RANT_EXTRACTION_RULES}
-
-Return only the statements, one per line. Don't include any explanations, extra text, or prefixes.`;
-
-  try {
-    const response = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are a faithful content editor. Transform raw rants into clean debate statements while preserving the author's exact words, tone, and meaning. Do not add interpretations or extrapolate beyond what was actually said.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          max_tokens: 400,
-          temperature: 0.1,
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const content = data.choices[0]?.message?.content;
-
-    if (!content) {
-      throw new Error("No content generated");
-    }
-
-    const statements = parseStatements(content);
-    console.log(
-      `Rant ${index + 1}/${rant.author}: Generated ${statements.length} statements`,
-    );
-
-    return { statements, author: rant.author };
-  } catch (error) {
-    console.error(
-      `Error processing rant ${index + 1} (${rant.author}):`,
-      error,
-    );
-    // Return fallback to avoid breaking the entire compilation
-    return {
-      statements: [
-        `The ${topic} debate raises important questions about community priorities.`,
-      ],
-      author: rant.author,
-    };
-  }
-};
-
-// Parse statements from AI response
-const parseStatements = (content: string): string[] => {
-  const lines = content
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
-
-  return lines;
-};
-
 // Get user session
 app.get(
-  "/make-server-f1a393b4/user/:userId",
+  "/make-server-f1a393b4/user/me",
   async (c: Context) => {
     try {
-      const userId = c.req.param("userId") as string;
+      const userId = c.get("userId");
       
       const result = await updateUserLastActive(userId);
       if ("error" in result) {
@@ -804,9 +700,9 @@ app.post(
       const roomId = c.req.param("roomId") as string;
       const { text } = await c.req.json();
 
-      if (!text || text.length < 5 || text.length > 500) {
+      if (!text || text.length < 1 || text.length > 500) {
         return c.json(
-          { error: "Statement must be 5-500 characters" },
+          { error: "Statement must be 1-500 characters" },
           400,
         );
       }
@@ -932,84 +828,23 @@ app.post(
         );
       }
 
-      const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
-
-      if (!openaiApiKey) {
-        console.error(
-          "OPENAI_API_KEY not found in environment",
-        );
-        return c.json(
-          { error: "AI service not configured" },
-          500,
-        );
-      }
-
-      // Extract topic and statements using OpenAI
-      const prompt = `You are analyzing a user's rant to extract a debate topic and key arguments.
-
-Rant:
-${rant.trim()}
-
-Please extract:
-1. A clear, concise debate topic (as a question if possible)
-2. 3-5 key debate statements that represent the main arguments in the rant
-
-${RANT_EXTRACTION_RULES}
-
-Return ONLY in this exact JSON format:
-{
-  "topic": "the debate topic here",
-  "statements": [
-    "first statement",
-    "second statement",
-    "third statement"
-  ]
-}`;
-
-      const response = await fetch(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${openaiApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [
-              {
-                role: "system",
-                content:
-                  "You are a debate topic extractor. You analyze rants and extract clear debate topics and faithful statements. Always return valid JSON.",
-              },
-              {
-                role: "user",
-                content: prompt,
-              },
-            ],
-            max_tokens: 500,
-            temperature: 0.3,
-            response_format: { type: "json_object" },
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(
-          `OpenAI API error: ${response.status} - ${errorText}`,
-        );
-        return c.json({ error: "AI extraction failed" }, 500);
-      }
-
-      const data = await response.json();
-      const content = data.choices[0]?.message?.content;
+      const aiClient = createLlmClient();
+      const prompt = makeRantExtractionPrompt(rant);
+      const content = await aiClient.completeJson(prompt);
 
       if (!content) {
         return c.json({ error: "No content generated" }, 500);
       }
 
-      const extracted = JSON.parse(content);
+      let extracted;
+      try {
+        extracted = JSON.parse(stripMarkdownFences(content));
+      } catch {
+        return c.json(
+          { error: "Failed to parse AI response as JSON" },
+          500,
+        );
+      }
 
       if (
         !extracted.topic ||

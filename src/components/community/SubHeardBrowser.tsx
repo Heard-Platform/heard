@@ -137,15 +137,13 @@ export function SubHeardBrowser({
           <Button
             variant="outline"
             size="sm"
-            className="controls-layer bg-white/90 backdrop-blur-sm shadow-lg max-w-[160px] h-[42px]"
+            className="controls-layer bg-white/90 backdrop-blur-sm shadow-lg h-[42px]"
+            style={{ maxWidth: "120px" }}
           >
-            {currentSubHeard ? (
-              <Hash className="w-4 h-4 mr-1 flex-shrink-0" />
-            ) : (
+            {!currentSubHeard && (
               <Home className="w-4 h-4 mr-1 flex-shrink-0" />
             )}
             <span className="truncate">{displayText}</span>
-            {isCurrentAdmin && <Crown className="w-3 h-3 ml-1 text-yellow-500 flex-shrink-0" />}
             <ChevronDown className="w-3 h-3 ml-1 flex-shrink-0" />
           </Button>
         </SheetTrigger>

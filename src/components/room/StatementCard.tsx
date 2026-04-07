@@ -1,5 +1,4 @@
 import type { Statement } from "../../types";
-import { SwipeInstructions } from "../SwipeInstructions";
 import { SwipeIndicator } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
 import { X, Star, Flag } from "lucide-react";
@@ -108,9 +107,6 @@ export function StatementCard({
         )}
       </div>
 
-      {isTopCard && (
-        <SwipeInstructions className="pt-2 border-t border-border/50" />
-      )}
 
       {isTopCard && (
         <>

@@ -29,7 +29,6 @@ import { getEnvironment } from "./constants/general";
 import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { publicAnonKey } from "./supabase/info";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
-export { getSessionId, setSessionId, clearSessionId } from "./api-client";
 
 export async function safelyMakeApiCall<T>(
   callFn: () => Promise<ApiResponse<T>>
@@ -49,8 +48,8 @@ export async function safelyMakeApiCall<T>(
 }
 
 class ApiClient extends BaseApiClient {
-  async getUser(userId: string) {
-    return this.request<{ user: UserSession }>(`/user/${userId}`);
+  async getUser() {
+    return this.request<{ user: UserSession }>("/user/me");
   }
 
   async sendMagicLink(email: string) {
@@ -95,13 +94,6 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async migrateSession(userId: string) {
-    return this.request<UserSessionResponse>("/auth/migrate-session", {
-      method: "POST",
-      body: JSON.stringify({ userId }),
-    });
-  }
-
   async updateAvatar(avatarAnimal: string) {
     return this.request<{ user: UserSession }>("/account/avatar", {
       method: "POST",
@@ -125,40 +117,13 @@ class ApiClient extends BaseApiClient {
     const formData = new FormData();
     formData.append("image", imageFile);
 
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/upload-debate-image`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${publicAnonKey}`,
-          },
-          body: formData,
-        },
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error(
-          `Image Upload Error (${response.status}):`,
-          data,
-        );
-        return {
-          success: false,
-          error: data.error || `HTTP ${response.status}`,
-        };
-      }
-
-      return { success: true, data };
-    } catch (error) {
-      console.error("Image upload failed:", error);
-      return {
-        success: false,
-        error:
-          error instanceof Error ? error.message : "Network error",
-      };
-    }
+    return await this.request<{
+      imageUrl: string;
+      filename: string;
+    }>("/upload-debate-image", {
+      method: "POST",
+      body: formData,
+    });
   }
 
   async setRoomInactive(roomId: string) {
@@ -733,25 +698,15 @@ class ApiClient extends BaseApiClient {
       body: JSON.stringify({ email }),
     });
   }
+
+  async getNewsletter(edition: number) {
+    return this.request<{ html: string }>(`/newsletter/${edition}`, {
+      method: "GET",
+    });
+  }
 }
 
 export const api = new ApiClient();
-
-// Local storage helpers for user session
-export const getUserId = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return safelyGetStorageItem<string | null>("heard_user_id", null);
-};
-
-export const setUserId = (userId: string) => {
-  if (typeof window === "undefined") return;
-  safelySetStorageItem("heard_user_id", userId);
-};
-
-export const clearUserId = () => {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem("heard_user_id");
-};
 
 export const getRoomId = (): string | null => {
   if (typeof window === "undefined") return null;

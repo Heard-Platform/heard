@@ -14,7 +14,10 @@ export function defineRoute<TInput extends Record<string, any>, TOutput>(
 ) {
   return async (c: Context) => {
     try {
-      const body = await c.req.json().catch(() => ({}));
+      const body =
+        c.req.method === "GET"
+          ? c.req.param()
+          : await c.req.json().catch(() => ({}));
       const validatedParams: any = {};
       
       for (const [key, config] of Object.entries(schema) as [string, ParamConfig][]) {

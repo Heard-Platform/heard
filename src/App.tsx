@@ -10,6 +10,7 @@ import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTracker";
 import { DevTools } from "./components/devtools/DevTools";
+import { NewsletterViewer } from "./components/NewsletterViewer";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { api } from "./utils/api";
@@ -51,6 +52,7 @@ function AppContent() {
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showOrgsPage, setShowOrgsPage] = useState(false);
+  const [newsletterEdition, setNewsletterEdition] = useState<number | null>(null);
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
 
@@ -200,8 +202,11 @@ function AppContent() {
       const isOrgsRoute =
         window.location.pathname.startsWith("/orgs");
 
+      const newsletterMatch = window.location.pathname.match(/^\/newsletter\/(\d+)$/);
       const isParkletRoute =
         window.location.pathname.startsWith("/parklet");
+      const is2b04Route =
+        window.location.pathname.startsWith("/2b04");
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
@@ -221,8 +226,12 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
-      } else if (isParkletRoute) {
-        const hardcodedRoomId = "aocxafg7tnpmmv7j6sh";
+      } else if (isParkletRoute || is2b04Route) {
+        const hardcodedRoomId = isParkletRoute
+          ? "aocxafg7tnpmmv7j6sh"
+          : is2b04Route
+            ? "5zagvhpy4iamnf18dh5"
+            : undefined;
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
@@ -247,6 +256,9 @@ function AppContent() {
         setShowPrivacy(true);
       } else if (isOrgsRoute) {
         setShowOrgsPage(true);
+      } else if (newsletterMatch) {
+        const edition = parseInt(newsletterMatch[1]);
+        setNewsletterEdition(edition);
       }
       setHasCheckedUrl(true);
     }
@@ -259,6 +271,7 @@ function AppContent() {
       !showUnsubscribe &&
       !showAdminPanel &&
       !showDevTools &&
+      !newsletterEdition &&
       !isJoiningAnonymously
     ) {
       const autoCreateAnonymousUser = async () => {
@@ -274,6 +287,7 @@ function AppContent() {
     showUnsubscribe,
     showAdminPanel,
     showDevTools,
+    newsletterEdition,
     isJoiningAnonymously,
     createAnonymousUser,
   ]);
@@ -447,6 +461,10 @@ function AppContent() {
 
   if (showOrgsPage) {
     return <OrgsLanding onExit={handleExitOrgs} />;
+  }
+
+  if (newsletterEdition) {
+    return <NewsletterViewer edition={newsletterEdition} />;
   }
 
   if (!user || loading || isJoiningAnonymously) {
