@@ -2,6 +2,9 @@ import { getParameterizedNewsletter } from "./email-newsletter-4.ts";
 import { GITHUB_URL, YT_SHORTS_URL } from "./email-templates.tsx";
 
 const YT_FIRST_VID_URL = "https://youtu.be/JM0WUrFkYZc";
+const YT_FLYERING_URL_NL12 = "https://www.youtube.com/shorts/wnFjDv0S4Bo";
+const YT_PUSHUPS_URL_NL12 = "https://www.youtube.com/shorts/JWv-IaL2jh4";
+const GITHUB_AI_PR_URL = "https://github.com/Heard-Platform/heard/pull/94";
 
 const newsletters = [
   getParameterizedNewsletter({
@@ -102,6 +105,31 @@ const newsletters = [
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-11-yt.png",
       imageLink: YT_FIRST_VID_URL,
       imageAlt: "Heard reflection video still",
+    },
+  }),
+  getParameterizedNewsletter({
+    subject: "Ya' Heard #12: Flyering, pushups, and AI provider autonomy",
+    editionNumber: 12,
+    section1: {
+      title: "🔖 Let the flyering resume!",
+      text: `Heard is going hyper local! <a href='${YT_FLYERING_URL_NL12}'>We put up some flyers</a> for the next commissioner of a Dupont sub-neighborhood and have more flyering campaigns planned for April.`,
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-12-flyer.jpeg",
+      imageLink: YT_FLYERING_URL_NL12,
+      imageAlt: "Heard open source on GitHub",
+    },
+    section2: {
+      title: "💪 New challenge! An extra pushup per day til 200 signups",
+      text: `I’ll be doing 1 pushup for every day it takes to get to 200 signups, <a href='${YT_PUSHUPS_URL_NL12}'>follow along here.</a> And if you know anyone please send Heard their way to spare my arms 💪`,
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-12-pushups.png",
+      imageLink: YT_PUSHUPS_URL_NL12,
+      imageAlt: "Heard pushup challenge video",
+    },
+    section3: {
+      title: "🔄 Switching our AI provider",
+      text: `Before going on break last week <a href='${GITHUB_AI_PR_URL}'>we overhauled our AI integration</a> so that we aren't locked in to OpenAI, our previous AI provider, and then switched to Google’s Gemini instead. This flexibility will allow us to choose the platform offering the best service that’s also most aligned with our principles and mission.`,
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-12-ai.png",
+      imageLink: GITHUB_AI_PR_URL,
+      imageAlt: "Heard AI provider switch GitHub PR",
     },
   }),
 ]
