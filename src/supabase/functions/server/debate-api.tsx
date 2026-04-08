@@ -462,24 +462,25 @@ export const getActiveRooms = async (): Promise<DebateRoom[]> => {
 const getVotesForStatements = async (
   statementIds: string[],
 ): Promise<{ [statementId: string]: Vote[] }> => {
-  const allVotes: { [statementId: string]: Vote[] } = {};
+  const votePromises = statementIds.map((statementId) =>
+    getVotesForStatement(statementId)
+      .then((votes) => ({ statementId, votes }))
+      .catch((error) => {
+        console.error(
+          `Error fetching votes for statement ${statementId}:`,
+          error,
+        );
+        return { statementId, votes: [] };
+      }),
+  );
 
-  // Fetch votes for each statement individually to avoid hitting 1000-item limits
-  // This is more efficient than fetching all votes and filtering
-  for (const statementId of statementIds) {
-    try {
-      const votes = await getVotesForStatement(statementId);
-      allVotes[statementId] = votes;
-    } catch (error) {
-      console.error(
-        `Error fetching votes for statement ${statementId}:`,
-        error,
-      );
-      allVotes[statementId] = []; // Ensure we have an empty array
-    }
+  const results = await Promise.all(votePromises);
+
+  const voteMap: { [statementId: string]: Vote[] } = {};
+  for (const { statementId, votes } of results) {
+    voteMap[statementId] = votes;
   }
-
-  return allVotes;
+  return voteMap;
 };
 
 const getStatements = async (

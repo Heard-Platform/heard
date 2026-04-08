@@ -174,11 +174,6 @@ export function LobbyScreen({
     };
   }, []);
 
-  // Refresh rooms on mount and when sub-heard changes
-  useEffect(() => {
-    onRefreshRooms(currentSubHeard);
-  }, [currentSubHeard]);
-
   // Poll for user presences
   useEffect(() => {
     const fetchPresences = async () => {
