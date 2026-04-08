@@ -23,6 +23,7 @@ interface DebateSessionContextType {
   activeRooms: DebateRoom[];
   currentSubHeard: string | null;
   loading: boolean;
+  roomsLoading: boolean;
   error: string | null;
   safelyGetUser: () => UserSession;
   sendMagicLink: (email: string) => Promise<ApiResponse | null>;
@@ -100,6 +101,7 @@ export function DebateSessionProvider(
     string | null
   >(null);
   const [loading, setLoading] = useState(true);
+  const [roomsLoading, setRoomsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [roomStatements, setRoomStatements] = useState<
     Record<string, Statement[]>
@@ -418,17 +420,20 @@ export function DebateSessionProvider(
 
   // Get active rooms - uses currentSubHeard from state
   const getActiveRooms = useCallback(async () => {
+    setRoomsLoading(true);
     try {
       const response = await api.getActiveRooms(
         currentSubHeard || undefined,
       ) as any;
       if (response.success && response.data) {
         setActiveRooms(response.data.rooms || []);
+        setRoomsLoading(false);
         return response.data.rooms || [];
       }
     } catch (err) {
       console.error("Failed to fetch active rooms:", err);
     }
+    setRoomsLoading(false);
     return [];
   }, [currentSubHeard]);
 
@@ -676,6 +681,7 @@ export function DebateSessionProvider(
     activeRooms,
     currentSubHeard,
     loading,
+    roomsLoading,
     error,
     safelyGetUser,
     sendMagicLink,

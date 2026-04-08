@@ -60,6 +60,7 @@ function AppContent() {
     activeRooms,
     currentSubHeard,
     loading,
+    roomsLoading,
     error,
     verifyMagicLink,
     createAnonymousUser,
@@ -341,7 +342,7 @@ function AppContent() {
     if (user && hasCheckedUrl) {
       getActiveRooms();
     }
-  }, [user, currentSubHeard, getActiveRooms, hasCheckedUrl]);
+  }, [user?.id, currentSubHeard, getActiveRooms, hasCheckedUrl]);
 
   const handleOpenShowcase = () => {
     setShowComponentShowcase(true);
@@ -487,7 +488,7 @@ function AppContent() {
       <LobbyScreen
         user={user}
         activeRooms={activeRooms}
-        loading={loading}
+        roomsLoading={roomsLoading}
         error={error}
         currentSubHeard={currentSubHeard || undefined}
         roomStatements={roomStatements}
