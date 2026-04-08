@@ -662,11 +662,6 @@ export function DebateSessionProvider(
       } else if (response.error === "SESSION_EXPIRED") {
         console.error("Session expired, clearing local data");
         clearSessionId();
-        const newSession = await api.createAnonymousUser();
-        if (newSession.success && newSession.data) {
-          setUserAndSession(newSession.data.user, newSession.data.sessionId);
-        }
-        setLoading(false);
         return null;
       }
 

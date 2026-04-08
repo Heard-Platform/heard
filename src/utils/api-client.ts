@@ -71,8 +71,7 @@ export class BaseApiClient {
         if (
           response.status === 401 &&
           (data.error === "Invalid session" ||
-            data.error === "Session expired" ||
-            data.error === "Session not found")
+            data.error === "Session expired")
         ) {
           return {
             success: false,
