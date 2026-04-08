@@ -19,13 +19,11 @@ import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
 import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api } from "../utils/api";
-import { INTRO_SEEN_KEY } from "../utils/localStorage";
-import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
 
 interface LobbyScreenProps {
   user: UserSession;
   activeRooms: DebateRoom[];
-  loading: boolean;
+  roomsLoading: boolean;
   error: string | null;
   currentSubHeard?: string;
   roomStatements: Record<string, any[]>;
@@ -58,7 +56,7 @@ interface LobbyScreenProps {
 export function LobbyScreen({
   user,
   activeRooms,
-  loading,
+  roomsLoading,
   error,
   hasQrScanResult,
   onCreateRoom,
@@ -369,7 +367,7 @@ export function LobbyScreen({
           ref={roomScrollerRef}
           rooms={filteredRooms}
           isDeveloper={user.isDeveloper || false}
-          loading={loading}
+          loading={roomsLoading}
           user={user}
           currentSubHeard={currentSubHeard}
           roomStatements={roomStatements}
