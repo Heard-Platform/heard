@@ -28,7 +28,6 @@ export const sortRoomsByActivity = (
   rooms
     .map((room) => ({ room, score: scoreRoom(room, now) }))
     .sort((a, b) => b.score - a.score)
-    .slice(0, 20)
     .map(({ room }) => room);
 
 export const filterFeedRooms = (

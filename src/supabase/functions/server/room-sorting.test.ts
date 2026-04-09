@@ -210,28 +210,6 @@ describe("sortRoomsByActivity", () => {
     });
   });
 
-  describe("Slicing", () => {
-    it("caps output at 20 rooms", () => {
-      const now = Date.now();
-      const rooms = Array.from({ length: 25 }, (_, i) =>
-        makeRoom(now - i * MIN)
-      );
-
-      const result = sortRoomsByActivity(rooms, now);
-      assertEquals(result.length, 20);
-    });
-
-    it("returns the 20 most recently active when given more than 20", () => {
-      const now = Date.now();
-      const rooms = Array.from({ length: 25 }, (_, i) =>
-        makeRoom(now - i * MIN)
-      );
-
-      const result = sortRoomsByActivity(rooms, now);
-      assertEquals(result[0].createdAt, now);
-      assertEquals(result[19].createdAt, now - 19 * MIN);
-    });
-  });
 });
 
 describe("sortRoomsForFeed", () => {
