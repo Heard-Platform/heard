@@ -78,7 +78,10 @@ export function WriteRantStep({
     recognition.onresult = (event) => {
       let transcript = "";
       for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
+        const part = event.results[i][0].transcript.trim();
+        if (!part) continue;
+        if (transcript) transcript += " ";
+        transcript += part;
       }
       onRantChangeRef.current(baseRantRef.current + transcript);
     };
