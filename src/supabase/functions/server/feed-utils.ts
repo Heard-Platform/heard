@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { ONE_MIN_MS } from "./time-utils.ts";
 import { DebateRoom } from "./types.tsx";
 
@@ -29,3 +30,18 @@ export const sortRoomsByActivity = (
     .sort((a, b) => b.score - a.score)
     .slice(0, 20)
     .map(({ room }) => room);
+
+export const sortRoomsForFeed = (
+  rooms: DebateRoom[],
+  memberships: Set<string>,
+  now: number = Date.now(),
+): DebateRoom[] => {
+  const [joined, other] = _.partition(
+    rooms,
+    (r: DebateRoom) => !!r.subHeard && memberships.has(r.subHeard),
+  );
+  return [
+    ...sortRoomsByActivity(joined, now),
+    ...sortRoomsByActivity(other, now),
+  ];
+};

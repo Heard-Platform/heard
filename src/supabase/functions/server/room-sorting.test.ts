@@ -8,6 +8,7 @@ import { describe, it } from "@std/testing/bdd";
 import {
   recencyScore,
   sortRoomsByActivity,
+  sortRoomsForFeed,
   scoreRoom,
 } from "./feed-utils.ts";
 import { DebateRoom } from "./types.tsx";
@@ -229,5 +230,89 @@ describe("sortRoomsByActivity", () => {
       assertEquals(result[0].createdAt, now);
       assertEquals(result[19].createdAt, now - 19 * MIN);
     });
+  });
+});
+
+describe("sortRoomsForFeed", () => {
+  it("bubbles joined community rooms above higher-scoring non-joined rooms", () => {
+    const now = Date.now();
+    const joinedRoom = makeRoom(now - 2 * HOUR, {
+      subHeard: "politics",
+    });
+    const betterRoom = makeRoom(now - 1 * MIN, {
+      subHeard: "sports",
+    });
+
+    const result = sortRoomsForFeed(
+      [betterRoom, joinedRoom],
+      new Set(["politics"]),
+      now,
+    );
+
+    assertEquals(result[0], joinedRoom);
+    assertEquals(result[1], betterRoom);
+  });
+
+  it("preserves activity order within joined group", () => {
+    const now = Date.now();
+    const joinedActive = makeRoom(now - 1 * HOUR, {
+      subHeard: "music",
+      lastActivityAt: now - 1 * MIN,
+    });
+    const joinedDormant = makeRoom(now - 30 * MIN, {
+      subHeard: "music",
+    });
+
+    const result = sortRoomsForFeed(
+      [joinedDormant, joinedActive],
+      new Set(["music"]),
+      now,
+    );
+
+    assertEquals(result[0], joinedActive);
+    assertEquals(result[1], joinedDormant);
+  });
+
+  it("preserves activity order within non-joined group", () => {
+    const now = Date.now();
+    const joinedRoom = makeRoom(now - 3 * HOUR, {
+      subHeard: "politics",
+    });
+    const otherActive = makeRoom(now - 1 * HOUR, {
+      subHeard: "sports",
+      lastActivityAt: now - 2 * MIN,
+    });
+    const otherDormant = makeRoom(now - 30 * MIN, {
+      subHeard: "tech",
+    });
+
+    const result = sortRoomsForFeed(
+      [otherDormant, otherActive, joinedRoom],
+      new Set(["politics"]),
+      now,
+    );
+
+    assertEquals(result[0], joinedRoom);
+    assertEquals(result[1], otherActive);
+    assertEquals(result[2], otherDormant);
+  });
+
+  it("without memberships, sorts purely by activity score", () => {
+    const now = Date.now();
+    const olderJoined = makeRoom(now - 2 * HOUR, {
+      subHeard: "politics",
+    });
+    const newerOther = makeRoom(now - 1 * MIN, {
+      subHeard: "sports",
+    });
+
+    const result = sortRoomsForFeed(
+      [olderJoined, newerOther],
+      new Set(),
+      now,
+    );
+
+    assertEquals(result[0], newerOther);
+    assertEquals(result[1], olderJoined);
   });
 });

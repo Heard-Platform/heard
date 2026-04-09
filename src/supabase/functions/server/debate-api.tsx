@@ -30,7 +30,7 @@ import type {
 } from "./types.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { calculateVoteStats, processVote } from "./voting-utils.ts";
-import { sortRoomsByActivity } from "./feed-utils.ts";
+import { sortRoomsForFeed } from "./feed-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
 import { validateDeveloper } from "./internal-utils.ts";
@@ -956,9 +956,10 @@ app.get(
       const onlyJoined = c.req.query("onlyJoined") === "true";
 
       let rooms = await getActiveRooms();
+      let userMemberships = new Set<string>();
 
       if (userId) {
-        const userMemberships = await getUserMemberships(userId);
+        userMemberships = await getUserMemberships(userId);
 
         const communities = await getCommunities();
         const subHeardMap = new Map();
@@ -1005,7 +1006,7 @@ app.get(
       }
 
       rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 100);
-      rooms = sortRoomsByActivity(rooms);
+      rooms = sortRoomsForFeed(rooms, userMemberships);
 
       return c.json({ rooms });
     } catch (error) {
