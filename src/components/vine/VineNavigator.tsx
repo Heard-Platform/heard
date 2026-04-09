@@ -159,7 +159,7 @@ export function VineNavigator({
   };
 
   const getVineXPosition = (y: number) => {
-    return VINE_WIDTH / 2 + Math.sin(y / 150) * 4;
+    return VINE_WIDTH / 2 + 4;
   };
 
   const generateVinePath = () => {
