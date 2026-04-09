@@ -167,7 +167,7 @@ export function SubHeardBrowser({
                 }}
               >
                 <Compass className="w-4 h-4 mr-2 text-green-600" />
-                <span className="text-green-700">Discover New Communities</span>
+                <span className="text-green-700">Browse New Communities</span>
               </Button>
             )}
 
