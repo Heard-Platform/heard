@@ -9,9 +9,10 @@ import {
   recencyScore,
   sortRoomsByActivity,
   sortRoomsForFeed,
+  filterFeedRooms,
   scoreRoom,
 } from "./feed-utils.ts";
-import { DebateRoom } from "./types.tsx";
+import { Community, DebateRoom } from "./types.tsx";
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -314,5 +315,91 @@ describe("sortRoomsForFeed", () => {
 
     assertEquals(result[0], newerOther);
     assertEquals(result[1], olderJoined);
+  });
+});
+
+const makeCommunity = (
+  name: string,
+  overrides: Partial<Community> = {},
+): Community => ({
+  name,
+  adminId: "admin-1",
+  isPrivate: false,
+  hostOnlyPosting: false,
+  ...overrides,
+});
+
+describe("filterFeedRooms", () => {
+  it("shows public rooms to anyone", () => {
+    const rooms = [makeRoom(Date.now(), { subHeard: "politics" })];
+    const communities = [makeCommunity("politics")];
+    const memberships = new Set<string>();
+    const userId = "user-1";
+
+    const result = filterFeedRooms(rooms, communities, memberships, userId);
+
+    assertEquals(result, rooms);
+  });
+
+  it("hides private rooms from non-members", () => {
+    const rooms = [makeRoom(Date.now(), { subHeard: "private-club" })];
+    const communities = [makeCommunity("private-club", { isPrivate: true })];
+    const memberships = new Set<string>();
+    const userId = "user-1";
+
+    const result = filterFeedRooms(rooms, communities, memberships, userId);
+
+    assertEquals(result, []);
+  });
+
+  it("shows private rooms to members", () => {
+    const rooms = [makeRoom(Date.now(), { subHeard: "private-club" })];
+    const communities = [makeCommunity("private-club", { isPrivate: true })];
+    const memberships = new Set(["private-club"]);
+    const userId = "user-1";
+
+    const result = filterFeedRooms(rooms, communities, memberships, userId);
+
+    assertEquals(result, rooms);
+  });
+
+  it("shows private rooms to the admin", () => {
+    const rooms = [makeRoom(Date.now(), { subHeard: "private-club" })];
+    const communities = [
+      makeCommunity("private-club", {
+        isPrivate: true,
+        adminId: "admin-1",
+      }),
+    ];
+    const memberships = new Set<string>();
+    const userId = "admin-1";
+
+    const result = filterFeedRooms(rooms, communities, memberships, userId);
+
+    assertEquals(result, rooms);
+  });
+
+  it("filters to a specific subHeard when provided", () => {
+    const rooms = [
+      makeRoom(Date.now(), { subHeard: "politics" }),
+      makeRoom(Date.now(), { subHeard: "sports" }),
+    ];
+    const communities = [
+      makeCommunity("politics"),
+      makeCommunity("sports"),
+    ];
+    const memberships = new Set<string>();
+    const userId = "user-1";
+    const selectedSubheard = "politics";
+
+    const result = filterFeedRooms(
+      rooms,
+      communities,
+      memberships,
+      userId,
+      selectedSubheard,
+    );
+
+    assertEquals(result, [rooms[0]]);
   });
 });
