@@ -8,9 +8,11 @@ import { describe, it } from "@std/testing/bdd";
 import {
   recencyScore,
   sortRoomsByActivity,
+  sortRoomsForFeed,
+  filterFeedRooms,
   scoreRoom,
 } from "./feed-utils.ts";
-import { DebateRoom } from "./types.tsx";
+import { Community, DebateRoom } from "./types.tsx";
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -208,26 +210,174 @@ describe("sortRoomsByActivity", () => {
     });
   });
 
-  describe("Slicing", () => {
-    it("caps output at 20 rooms", () => {
-      const now = Date.now();
-      const rooms = Array.from({ length: 25 }, (_, i) =>
-        makeRoom(now - i * MIN)
-      );
+});
 
-      const result = sortRoomsByActivity(rooms, now);
-      assertEquals(result.length, 20);
+describe("sortRoomsForFeed", () => {
+  it("bubbles joined community rooms above higher-scoring non-joined rooms", () => {
+    const now = Date.now();
+    const joinedRoom = makeRoom(now - 2 * HOUR, {
+      subHeard: "politics",
+    });
+    const betterRoom = makeRoom(now - 1 * MIN, {
+      subHeard: "sports",
     });
 
-    it("returns the 20 most recently active when given more than 20", () => {
-      const now = Date.now();
-      const rooms = Array.from({ length: 25 }, (_, i) =>
-        makeRoom(now - i * MIN)
-      );
+    const result = sortRoomsForFeed(
+      [betterRoom, joinedRoom],
+      new Set(["politics"]),
+      now,
+    );
 
-      const result = sortRoomsByActivity(rooms, now);
-      assertEquals(result[0].createdAt, now);
-      assertEquals(result[19].createdAt, now - 19 * MIN);
+    assertEquals(result[0], joinedRoom);
+    assertEquals(result[1], betterRoom);
+  });
+
+  it("preserves activity order within joined group", () => {
+    const now = Date.now();
+    const joinedActive = makeRoom(now - 1 * HOUR, {
+      subHeard: "music",
+      lastActivityAt: now - 1 * MIN,
     });
+    const joinedDormant = makeRoom(now - 30 * MIN, {
+      subHeard: "music",
+    });
+
+    const result = sortRoomsForFeed(
+      [joinedDormant, joinedActive],
+      new Set(["music"]),
+      now,
+    );
+
+    assertEquals(result[0], joinedActive);
+    assertEquals(result[1], joinedDormant);
+  });
+
+  it("preserves activity order within non-joined group", () => {
+    const now = Date.now();
+    const joinedRoom = makeRoom(now - 3 * HOUR, {
+      subHeard: "politics",
+    });
+    const otherActive = makeRoom(now - 1 * HOUR, {
+      subHeard: "sports",
+      lastActivityAt: now - 2 * MIN,
+    });
+    const otherDormant = makeRoom(now - 30 * MIN, {
+      subHeard: "tech",
+    });
+
+    const result = sortRoomsForFeed(
+      [otherDormant, otherActive, joinedRoom],
+      new Set(["politics"]),
+      now,
+    );
+
+    assertEquals(result[0], joinedRoom);
+    assertEquals(result[1], otherActive);
+    assertEquals(result[2], otherDormant);
+  });
+
+  it("without memberships, sorts purely by activity score", () => {
+    const now = Date.now();
+    const olderJoined = makeRoom(now - 2 * HOUR, {
+      subHeard: "politics",
+    });
+    const newerOther = makeRoom(now - 1 * MIN, {
+      subHeard: "sports",
+    });
+
+    const result = sortRoomsForFeed(
+      [olderJoined, newerOther],
+      new Set(),
+      now,
+    );
+
+    assertEquals(result[0], newerOther);
+    assertEquals(result[1], olderJoined);
+  });
+});
+
+const makeCommunity = (
+  name: string,
+  overrides: Partial<Community> = {},
+): Community => ({
+  name,
+  adminId: "admin-1",
+  isPrivate: false,
+  hostOnlyPosting: false,
+  ...overrides,
+});
+
+describe("filterFeedRooms", () => {
+  it("shows public rooms to anyone", () => {
+    const rooms = [makeRoom(Date.now(), { subHeard: "politics" })];
+    const communities = [makeCommunity("politics")];
+    const memberships = new Set<string>();
+    const userId = "user-1";
+
+    const result = filterFeedRooms(rooms, communities, memberships, userId);
+
+    assertEquals(result, rooms);
+  });
+
+  it("hides private rooms from non-members", () => {
+    const rooms = [makeRoom(Date.now(), { subHeard: "private-club" })];
+    const communities = [makeCommunity("private-club", { isPrivate: true })];
+    const memberships = new Set<string>();
+    const userId = "user-1";
+
+    const result = filterFeedRooms(rooms, communities, memberships, userId);
+
+    assertEquals(result, []);
+  });
+
+  it("shows private rooms to members", () => {
+    const rooms = [makeRoom(Date.now(), { subHeard: "private-club" })];
+    const communities = [makeCommunity("private-club", { isPrivate: true })];
+    const memberships = new Set(["private-club"]);
+    const userId = "user-1";
+
+    const result = filterFeedRooms(rooms, communities, memberships, userId);
+
+    assertEquals(result, rooms);
+  });
+
+  it("shows private rooms to the admin", () => {
+    const rooms = [makeRoom(Date.now(), { subHeard: "private-club" })];
+    const communities = [
+      makeCommunity("private-club", {
+        isPrivate: true,
+        adminId: "admin-1",
+      }),
+    ];
+    const memberships = new Set<string>();
+    const userId = "admin-1";
+
+    const result = filterFeedRooms(rooms, communities, memberships, userId);
+
+    assertEquals(result, rooms);
+  });
+
+  it("filters to a specific subHeard when provided", () => {
+    const rooms = [
+      makeRoom(Date.now(), { subHeard: "politics" }),
+      makeRoom(Date.now(), { subHeard: "sports" }),
+    ];
+    const communities = [
+      makeCommunity("politics"),
+      makeCommunity("sports"),
+    ];
+    const memberships = new Set<string>();
+    const userId = "user-1";
+    const selectedSubheard = "politics";
+
+    const result = filterFeedRooms(
+      rooms,
+      communities,
+      memberships,
+      userId,
+      selectedSubheard,
+    );
+
+    assertEquals(result, [rooms[0]]);
   });
 });

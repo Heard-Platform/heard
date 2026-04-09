@@ -99,7 +99,7 @@ export function CommunityExplorerDialog({
             <div className="p-2 bg-white/20 rounded-xl">
               <Compass className="w-6 h-6" />
             </div>
-            <DialogTitle className="text-2xl font-bold">Discover Communities</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">Browse Communities</DialogTitle>
           </div>
           <DialogDescription className="text-green-100">
             Explore and join public communities to expand your feed

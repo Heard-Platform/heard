@@ -26,11 +26,11 @@ import type {
   Phase,
   SubPhase,
   DebateRoom,
-  Rant
+  Rant,
 } from "./types.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { calculateVoteStats, processVote } from "./voting-utils.ts";
-import { sortRoomsByActivity } from "./feed-utils.ts";
+import { filterFeedRooms, sortRoomsForFeed } from "./feed-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
 import { validateDeveloper } from "./internal-utils.ts";
@@ -953,37 +953,20 @@ app.get(
     try {
       const userId = c.get("userId");
       const subHeard = c.req.query("subHeard");
-      const onlyJoined = c.req.query("onlyJoined") === "true";
 
       let rooms = await getActiveRooms();
-
+      let userMemberships = new Set<string>();
       if (userId) {
-        const userMemberships = await getUserMemberships(userId);
+        userMemberships = await getUserMemberships(userId);
 
         const communities = await getCommunities();
-        const subHeardMap = new Map();
-        communities.forEach((c) => {
-          subHeardMap.set(c.name, c);
-        });
-
-        rooms = rooms.filter((room) => {
-          if (subHeard) {
-            return room.subHeard === subHeard;
-          }
-
-          const roomSubheard = subHeardMap.get(room.subHeard);
-          if (!room.subHeard || !roomSubheard) {
-            return false;
-          }
-
-          if (!onlyJoined && !roomSubheard.isPrivate) {
-            return true;
-          } else {
-            const isAdmin = roomSubheard.adminId === userId;
-            const isMember = userMemberships.has(room.subHeard);
-            return isAdmin || isMember;
-          }
-        });
+        rooms = filterFeedRooms(
+          rooms,
+          communities,
+          userMemberships,
+          userId,
+          subHeard,
+        );
 
         const statuses = await getUsersChanceCardStatuses(userId);
         
@@ -1005,7 +988,8 @@ app.get(
       }
 
       rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 100);
-      rooms = sortRoomsByActivity(rooms);
+      rooms = sortRoomsForFeed(rooms, userMemberships);
+      rooms = rooms.slice(0, 20);
 
       return c.json({ rooms });
     } catch (error) {
