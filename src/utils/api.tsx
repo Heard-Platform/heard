@@ -235,6 +235,13 @@ class ApiClient extends BaseApiClient {
     );
   }
 
+  async getAssemblyAIToken() {
+    return this.request<{ token: string }>(
+      "/rant/assemblyai-token",
+      { method: "POST" },
+    );
+  }
+
   async voteOnStatement(
     statementId: string,
     voteType: "agree" | "disagree" | "pass" | "super_agree",

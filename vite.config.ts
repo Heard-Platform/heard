@@ -1,10 +1,40 @@
 
-  import { defineConfig } from 'vite';
+  import { defineConfig, loadEnv } from 'vite';
   import react from '@vitejs/plugin-react-swc';
   import path from 'path';
 
-  export default defineConfig({
-    plugins: [react()],
+  export default defineConfig(({ mode }) => {
+    const env = loadEnv(mode, process.cwd(), '');
+
+    return {
+    plugins: [
+      react(),
+      {
+        name: 'assemblyai-token-proxy',
+        configureServer(server) {
+          server.middlewares.use('/api/assemblyai-token', async (_req, res) => {
+            const apiKey = env.VITE_ASSEMBLYAI_API_KEY;
+            if (!apiKey) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'VITE_ASSEMBLYAI_API_KEY not set in .env' }));
+              return;
+            }
+            try {
+              const response = await fetch(
+                'https://streaming.assemblyai.com/v3/token?expires_in_seconds=480',
+                { headers: { Authorization: apiKey } },
+              );
+              const data = await response.json();
+              res.writeHead(response.ok ? 200 : 502, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify(data));
+            } catch {
+              res.writeHead(502, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Failed to fetch token' }));
+            }
+          });
+        },
+      },
+    ],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
@@ -65,5 +95,7 @@
     server: {
       port: 3000,
       open: true,
+      allowedHosts: ['.trycloudflare.com'],
     },
+  };
   });

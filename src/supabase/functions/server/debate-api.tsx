@@ -872,6 +872,39 @@ app.post(
   },
 );
 
+// Generate a temporary AssemblyAI token for real-time transcription
+app.post(
+  "/make-server-f1a393b4/rant/assemblyai-token",
+  async (c: Context) => {
+    try {
+      const apiKey = process.env.ASSEMBLYAI_API_KEY;
+      if (!apiKey) {
+        return c.json({ error: "AssemblyAI not configured" }, 500);
+      }
+
+      const response = await fetch(
+        "https://streaming.assemblyai.com/v3/token?expires_in_seconds=480",
+        {
+          method: "GET",
+          headers: { Authorization: apiKey },
+        },
+      );
+
+      if (!response.ok) {
+        const body = await response.text();
+        console.error("AssemblyAI token error:", body);
+        return c.json({ error: "Failed to generate token" }, 502);
+      }
+
+      const data = await response.json();
+      return c.json({ token: data.token });
+    } catch (error) {
+      console.error("AssemblyAI token error:", error);
+      return c.json({ error: "Failed to generate token" }, 500);
+    }
+  },
+);
+
 // Vote on statement
 app.post(
   "/make-server-f1a393b4/statement/:statementId/vote",
