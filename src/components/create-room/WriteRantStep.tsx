@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { MessageCircle, Lightbulb, Mic, Square } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
+import { api } from "../../utils/api";
 import _ from "lodash";
 
 const topicExamples = _.shuffle([
@@ -19,10 +20,6 @@ const topicExamples = _.shuffle([
 ]);
 
 type EntryMode = "initial" | "text";
-
-const SPEECH_RECOGNITION_SUPPORTED =
-  typeof window !== "undefined" &&
-  !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
 // CN-10
 const MIC_BUTTON_SIZE_PX = 128;
@@ -43,11 +40,12 @@ export function WriteRantStep({
 }: WriteRantStepProps) {
   const [showExamples, setShowExamples] = useState(false);
   const [mode, setMode] = useState<EntryMode>(() =>
-    !SPEECH_RECOGNITION_SUPPORTED || rant.length > 0 ? "text" : "initial",
+    rant.length > 0 ? "text" : "initial",
   );
   const [isRecording, setIsRecording] = useState(false);
 
   const baseRantRef = useRef<string>("");
+  const finalizedRef = useRef<string[]>([]);
   const onRantChangeRef = useRef(onRantChange);
 
   useEffect(() => {
@@ -57,58 +55,141 @@ export function WriteRantStep({
   useEffect(() => {
     if (!isRecording) return;
 
-    const SpeechRecognitionCtor =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognitionCtor) {
-      setIsRecording(false);
-      return;
-    }
-
-    const recognition = new SpeechRecognitionCtor();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "en-US";
+    let ws: WebSocket | null = null;
+    let audioContext: AudioContext | null = null;
+    let mediaStream: MediaStream | null = null;
+    let cancelled = false;
 
     baseRantRef.current = rant
       ? rant.endsWith(" ")
         ? rant
         : rant + " "
       : "";
+    finalizedRef.current = [];
 
-    recognition.onresult = (event) => {
-      let transcript = "";
-      for (let i = 0; i < event.results.length; i++) {
-        const part = event.results[i][0].transcript.trim();
-        if (!part) continue;
-        if (transcript) transcript += " ";
-        transcript += part;
-      }
-      onRantChangeRef.current(baseRantRef.current + transcript);
-    };
-
-    recognition.onerror = () => {
-      setIsRecording(false);
-    };
-
-    recognition.onend = () => {
-      setIsRecording(false);
-    };
-
-    try {
-      recognition.start();
-    } catch {
-      setIsRecording(false);
-      return;
+    function updateText(partial: string) {
+      const finalized = finalizedRef.current.join(" ");
+      const separator =
+        finalized && partial ? " " : "";
+      onRantChangeRef.current(
+        baseRantRef.current + finalized + separator + partial,
+      );
     }
 
+    async function getToken(): Promise<string | null> {
+      if (import.meta.env.DEV) {
+        try {
+          const res = await fetch("/api/assemblyai-token");
+          if (res.ok) {
+            const data = await res.json();
+            return data.token;
+          }
+        } catch {}
+      }
+      const response = await api.getAssemblyAIToken();
+      if (response.success && response.data) return response.data.token;
+      return null;
+    }
+
+    function floatToPcm16(input: Float32Array): ArrayBuffer {
+      const pcm16 = new Int16Array(input.length);
+      for (let i = 0; i < input.length; i++) {
+        pcm16[i] = Math.max(-32768, Math.min(32767, input[i] * 32768));
+      }
+      return pcm16.buffer;
+    }
+
+    async function start() {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+      if (cancelled) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+      mediaStream = stream;
+
+      audioContext = new AudioContext();
+      await audioContext.resume();
+      const sampleRate = audioContext.sampleRate;
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+      const audioBuffer: ArrayBuffer[] = [];
+      let wsReady = false;
+
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+
+      processor.onaudioprocess = (event) => {
+        const chunk = floatToPcm16(event.inputBuffer.getChannelData(0));
+        if (wsReady && ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(chunk);
+        } else {
+          audioBuffer.push(chunk);
+        }
+      };
+
+      if (cancelled) return;
+
+      const token = await getToken();
+      if (cancelled || !token) {
+        if (!cancelled) setIsRecording(false);
+        return;
+      }
+
+      ws = new WebSocket(
+        `wss://streaming.assemblyai.com/v3/ws?speech_model=u3-rt-pro&sample_rate=${sampleRate}&token=${token}`,
+      );
+      ws.binaryType = "arraybuffer";
+
+      ws.onopen = () => {
+        for (const chunk of audioBuffer) {
+          ws!.send(chunk);
+        }
+        audioBuffer.length = 0;
+        wsReady = true;
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === "Turn") {
+          const text = (data.transcript || "")
+            .replace(/[—–]/g, "-")
+            .trim();
+          if (data.end_of_turn && text) {
+            finalizedRef.current.push(text);
+            updateText("");
+          } else if (text) {
+            updateText(text);
+          }
+        }
+      };
+
+      ws.onerror = () => {
+        if (!cancelled) setIsRecording(false);
+      };
+
+      ws.onclose = () => {
+        if (!cancelled) setIsRecording(false);
+      };
+    }
+
+    start().catch(() => {
+      if (!cancelled) setIsRecording(false);
+    });
+
     return () => {
-      recognition.onresult = null;
-      recognition.onerror = null;
-      recognition.onend = null;
-      try {
-        recognition.stop();
-      } catch {
-        /* noop */
+      cancelled = true;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ terminate_session: true }));
+        ws.close();
+      }
+      if (audioContext) {
+        audioContext.close().catch(() => {});
+      }
+      if (mediaStream) {
+        mediaStream.getTracks().forEach((t) => t.stop());
       }
     };
     // CN-11
@@ -161,7 +242,7 @@ export function WriteRantStep({
                 What's got you fired up?
               </Label>
             </div>
-            {SPEECH_RECOGNITION_SUPPORTED && mode === "text" && (
+            {mode === "text" && (
               <Button
                 type="button"
                 variant="outline"
@@ -185,18 +266,18 @@ export function WriteRantStep({
 
           {mode === "initial" ? (
             <div className="flex flex-col items-center gap-4 pt-2 pb-2">
-              <Button
+              <button
                 type="button"
                 onClick={handleStartRecording}
                 aria-label="Start recording"
                 style={{ width: MIC_BUTTON_SIZE_PX, height: MIC_BUTTON_SIZE_PX }}
-                className="rounded-full bg-gradient-to-br from-red-500 to-red-600 hover:opacity-90 shadow-lg shadow-red-500/50 flex items-center justify-center p-0"
+                className="rounded-full bg-gradient-to-br from-red-500 to-red-600 hover:opacity-90 shadow-lg shadow-red-500/50 flex items-center justify-center p-0 cursor-pointer"
               >
                 <Mic
                   className="text-white"
                   style={{ width: MIC_ICON_SIZE_PX, height: MIC_ICON_SIZE_PX }}
                 />
-              </Button>
+              </button>
               <Button
                 type="button"
                 variant="outline"
@@ -207,21 +288,45 @@ export function WriteRantStep({
               </Button>
             </div>
           ) : (
-            <Textarea
-              id="rant-input"
-              placeholder="Let it all out... tell us what you really think! 🔥"
-              maxLength={2000}
-              value={rant}
-              onChange={(e) => onRantChange(e.target.value)}
-              onClick={isRecording ? () => setIsRecording(false) : undefined}
-              readOnly={isRecording}
-              className={`w-full min-h-[200px] resize-none bg-white placeholder:text-slate-400 ${
+            <motion.div
+              animate={
                 isRecording
-                  ? "border-2 border-red-400 shadow-lg shadow-red-500/50"
-                  : "border-teal-200 hover:border-teal-300 transition-colors"
-              }`}
-              rows={8}
-            />
+                  ? {
+                      boxShadow: [
+                        "0 8px 20px -3px rgba(239, 68, 68, 0.25)",
+                        "0 8px 30px -3px rgba(239, 68, 68, 0.6)",
+                      ],
+                    }
+                  : { boxShadow: "0 0 0 0 rgba(0,0,0,0)" }
+              }
+              transition={
+                isRecording
+                  ? {
+                      duration: 1.5,
+                      repeat: Infinity,
+                      repeatType: "reverse" as const,
+                      ease: "easeInOut",
+                    }
+                  : { duration: 0.3 }
+              }
+              className="rounded-md"
+            >
+              <Textarea
+                id="rant-input"
+                placeholder="Let it all out... tell us what you really think! 🔥"
+                maxLength={2000}
+                value={rant}
+                onChange={(e) => onRantChange(e.target.value)}
+                onClick={isRecording ? () => setIsRecording(false) : undefined}
+                readOnly={isRecording}
+                className={`w-full min-h-[200px] resize-none bg-white placeholder:text-slate-400 ${
+                  isRecording
+                    ? "border-2 border-red-400"
+                    : "border-teal-200 hover:border-teal-300 transition-colors"
+                }`}
+                rows={8}
+              />
+            </motion.div>
           )}
 
           <div className="flex justify-between items-center text-xs">
