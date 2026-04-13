@@ -28,8 +28,8 @@ interface SwipeableStatementStackProps {
   chanceCardSwiped: boolean;
   youtubeUrl?: string;
   youtubeCardSwiped: boolean;
-  demographicQuestions?: DemographicQuestion[];
-  demographicsAnswered?: Set<string>;
+  demographicQuestions: DemographicQuestion[];
+  answeredQuestionIds: Set<string>;
   onVote: (
     id: string,
     voteType: VoteType,
@@ -39,7 +39,7 @@ interface SwipeableStatementStackProps {
   onCertifyDone: () => void;
   onChanceCardSwiped: () => Promise<void>;
   onYouTubeCardSwiped: () => Promise<void>;
-  onDemographicsAnswer?: (questionId: string, answer: string) => void;
+  onDemographicsAnswered: (questionId: string) => void;
 }
 
 const SWIPE_THRESHOLD = 100;
@@ -53,16 +53,17 @@ export function SwipeableStatementStack({
   youtubeUrl,
   youtubeCardSwiped,
   demographicQuestions,
-  demographicsAnswered,
+  answeredQuestionIds,
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
   onCertifyDone,
   onChanceCardSwiped,
   onYouTubeCardSwiped,
-  onDemographicsAnswer,
+  onDemographicsAnswered,
 }: SwipeableStatementStackProps) {
   const { flagStatement } = useDebateSession();
+
   const { showTutorial, recordSwipe } = useSwipeTutorial();
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [votedStatementIds, setVotedStatementIds] = useState<
@@ -76,7 +77,6 @@ export function SwipeableStatementStack({
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
-  const [demographicsAnsweredInternal, setDemographicsAnsweredInternal] = useState<Set<string>>(new Set());
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [statementToFlag, setStatementToFlag] = useState<Statement | null>(null);
 
@@ -92,27 +92,27 @@ export function SwipeableStatementStack({
     statement,
   }));
 
+  let demogEndIndex = 0;
   if (demographicQuestions) {
     const unansweredDemos = demographicQuestions.filter(
-      (q) =>
-        !demographicsAnswered ||
-        (!demographicsAnswered.has(q.id) &&
-        !demographicsAnsweredInternal.has(q.id)),
+      (q) => !answeredQuestionIds.has(q.id),
     );
 
-    const demoCards: DemographicsCard[] =
-      unansweredDemos.map((question) => ({
-        type: "demographics",
-        question,
-        isUnswipeable: true,
-      }));
+    const demoCards: DemographicsCard[] = unansweredDemos.map((question) => ({
+      type: "demographics",
+      question,
+      isUnswipeable: true,
+    }));
 
-    cards.unshift(...demoCards);
+    const insertAt = Math.min(3, cards.length);
+    cards.splice(insertAt, 0, ...demoCards);
+    demogEndIndex = insertAt + demoCards.length;
   }
-  
+
   if (!chanceCardSwiped) {
     const chanceCard: ChanceCard = { type: "chance" };
-    const chanceCardIndex = Math.min(5, statements.length) - votedStatementIds.size;
+    const naturalIndex = Math.min(5, statements.length) - votedStatementIds.size;
+    const chanceCardIndex = Math.max(naturalIndex, demogEndIndex);
     cards.splice(chanceCardIndex, 0, chanceCard);
   }
 
@@ -332,14 +332,9 @@ export function SwipeableStatementStack({
     const direction = answer === "skip" ? "left" : "right";
     setSwipeDirection(direction);
     setSwipedCardId(`demographics-${questionId}`);
-    
+
     setTimeout(() => {
-      setDemographicsAnsweredInternal((prev) => {
-        const newSet = new Set(prev);
-        newSet.add(questionId);
-        return newSet;
-      });
-      onDemographicsAnswer!(questionId, answer);
+      onDemographicsAnswered(questionId);
       setSwipedCardId(null);
       setSwipeDirection(null);
     }, 500);
@@ -405,7 +400,11 @@ export function SwipeableStatementStack({
   };
 
   const topCard = cards[0];
-  const isSpecialCardOnTop = topCard?.type === "certify" || topCard?.type === "chance";
+  const isSpecialCardOnTop =
+    !topCard ||
+    (topCard.type === "certify" ||
+    topCard.type === "chance" ||
+    topCard.type === "demographics");
 
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">

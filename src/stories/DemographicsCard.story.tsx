@@ -83,13 +83,13 @@ export function DemographicsCardStory() {
 }
 
 function DemographicsSwipeableStack() {
-  const [demographicsAnswered, setDemographicsAnswered] = useState<Set<string>>(new Set());
+  const [questionIds, setQuestionIds] = useState<Set<string>>(new Set());
 
-  const handleAnswer = (index: string, answer: string) => {
-    console.log(`Question ${index} answered:`, answer);
-    setDemographicsAnswered((prev) => {
+  const handleAnswer = (questionId: string) => {
+    console.log(`Question ${questionId} answered`);
+    setQuestionIds((prev) => {
       const newSet = new Set(prev);
-      newSet.add(answer);
+      newSet.add(questionId);
       return newSet;
     });
   };
@@ -104,14 +104,14 @@ function DemographicsSwipeableStack() {
         chanceCardSwiped={true}
         youtubeCardSwiped={true}
         demographicQuestions={questions}
-        demographicsAnswered={demographicsAnswered}
+        answeredQuestionIds={questionIds}
         onVote={async () => { } }
         onSubmitStatement={async () => { } }
         onShowAccountSetupModal={() => { } }
         onCertifyDone={async () => { } }
         onChanceCardSwiped={async () => { } }
         onYouTubeCardSwiped={async () => { } }
-        onDemographicsAnswer={handleAnswer}
+        onDemographicsAnswered={handleAnswer}
       />
     </div>
   );

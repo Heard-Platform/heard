@@ -2,7 +2,6 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } f
 import { Button } from "../../ui/button";
 import { Shield, Eye, Lock, DollarSign } from "lucide-react";
 import { LucideIcon } from "lucide-react";
-import { YOUR_DATA_YOUTUBE_ID } from "../../../utils/constants/links";
 
 interface DataPrivacyModalProps {
   variant: "decision" | "learn more";
@@ -99,8 +98,7 @@ export function DataPrivacyModal({
             <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
               <h4 className="font-semibold text-purple-900 mb-2">How your answers help</h4>
               <p className="text-sm text-purple-800 leading-relaxed">
-                Answers around demographics like gender, age, and occupation help the community understand which voices are being represented in this discussion. 
-                It's valuable context that helps make conversations more meaningful and inclusive.
+                Demographics like gender, age, and occupation help the community understand which voices are being represented in this discussion. 
               </p>
             </div>
 
@@ -117,13 +115,6 @@ export function DataPrivacyModal({
                 title="Always anonymized"
                 description="Your answers are never shared in a way that can link them back to you."
                 colorScheme="blue"
-              />
-
-              <InfoBlock
-                icon={Shield}
-                title="You're in control"
-                description="Your answers are only used for this specific conversation, and you can edit or delete them at any time."
-                colorScheme="purple"
               />
 
               <InfoBlock

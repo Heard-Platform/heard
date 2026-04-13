@@ -134,6 +134,14 @@ export interface DemographicQuestion {
   options?: string[];
 };
 
+export interface DemographicAnswer {
+  id: number;
+  userId: string;
+  questionId: string;
+  answer: string;
+  createdAt: number;
+};
+
 export type Phase =
   | "lobby"
   | "round1"

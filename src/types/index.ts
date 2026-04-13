@@ -159,6 +159,7 @@ export interface DebateRoom {
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
   youtubeCardSwiped?: boolean;
+  demographicQuestions: DemographicQuestion[];
 }
 
 export type NewDebateRoom = Pick<

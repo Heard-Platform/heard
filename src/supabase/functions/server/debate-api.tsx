@@ -20,6 +20,10 @@ import {
   getUserSession, updateUserLastActive
 } from "./auth-api.tsx";
 import { generateId, getFrontendUrl } from "./utils.tsx";
+import {
+  getDemographicQuestionsForRooms,
+  getAnsweredDemographicQuestionIds,
+} from "./model-utils.ts";
 import type {
   User, Statement,
   Vote,
@@ -991,7 +995,27 @@ app.get(
       rooms = sortRoomsForFeed(rooms, userMemberships);
       rooms = rooms.slice(0, 20);
 
-      return c.json({ rooms });
+      // Attach demographic questions to each room
+      const roomIds = rooms.map((r) => r.id);
+      const [allDemogQuestions, answeredQuestionIds] = await Promise.all([
+        getDemographicQuestionsForRooms(roomIds),
+        userId ? getAnsweredDemographicQuestionIds(userId) : Promise.resolve([]),
+      ]);
+      const answeredSet = new Set(answeredQuestionIds);
+      const questionsByRoom = allDemogQuestions.reduce((acc, q) => {
+        if (!acc[q.roomId]) acc[q.roomId] = [];
+        acc[q.roomId].push(q);
+        return acc;
+      }, {} as Record<string, typeof allDemogQuestions>);
+
+      const roomsWithDemog = rooms.map((room) => ({
+        ...room,
+        demographicQuestions: (questionsByRoom[room.id] || []).filter(
+          (q) => !answeredSet.has(q.id),
+        ),
+      }));
+
+      return c.json({ rooms: roomsWithDemog });
     } catch (error) {
       console.error("Error fetching active rooms:", error);
       return c.json(

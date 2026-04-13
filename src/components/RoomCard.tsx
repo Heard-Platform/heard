@@ -68,6 +68,8 @@ export function RoomCard({
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [youtubeCardSwiped, setYoutubeCardSwiped] = useState(room.youtubeCardSwiped || false);
+  const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
+
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [showMetricsModal, setShowMetricsModal] = useState(false);
@@ -173,6 +175,10 @@ export function RoomCard({
   const handleSwipeYouTubeCard = async () => {
     setYoutubeCardSwiped(true);
     await markYouTubeCardSwiped(room.id);
+  }
+
+  const handleDemographicsAnswered = (questionId: string) => {
+    setAnsweredQuestionIds((prev) => new Set(prev).add(questionId));
   }
 
   // Handle statement submission
@@ -323,10 +329,14 @@ export function RoomCard({
                 statements.every(
                   (statement) =>
                     statement.voters && statement.voters[user.id],
-                )
-                && (!user.isAnonymous || certifyCardDismissed)
-                && chanceCardSwiped
-                && (!room.youtubeUrl || youtubeCardSwiped);
+                ) &&
+                (!user.isAnonymous || certifyCardDismissed) &&
+                chanceCardSwiped &&
+                (!room.youtubeUrl || youtubeCardSwiped) &&
+                (!room.demographicQuestions?.length ||
+                  room.demographicQuestions.every((q) =>
+                    answeredQuestionIds.has(q.id),
+                  ));
 
               // If user has voted on all statements, show InProgressResults + input
               if (hasSwipedAll) {
@@ -365,11 +375,14 @@ export function RoomCard({
                     chanceCardSwiped={chanceCardSwiped}
                     youtubeUrl={room.youtubeUrl}
                     youtubeCardSwiped={youtubeCardSwiped}
+                    demographicQuestions={room.demographicQuestions}
+                    answeredQuestionIds={answeredQuestionIds}
                     onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
                     onCertifyDone={() => setCertifyCardDismissed(true)}
                     onChanceCardSwiped={handleSwipeChanceCard}
                     onYouTubeCardSwiped={handleSwipeYouTubeCard}
+                    onDemographicsAnswered={handleDemographicsAnswered}
                   />
                 );
               }
