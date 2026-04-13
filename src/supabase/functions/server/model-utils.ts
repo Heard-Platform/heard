@@ -55,9 +55,13 @@ export const getDemographicQuestionsForRooms = async (roomIds: string[]) => {
   );
 };
 
+export const saveDemographicAnswer = async (answer: NewDemographicAnswer) => {
+  return upsert("demographic_answers", answer, "userId,questionId");
+};
+
 export const getAnsweredDemographicQuestionIds = async (
   userId: string,
-): Promise<string[]> => {
+): Promise<number[]> => {
   const answers = await selectAll<DemographicAnswer>(
     "demographic_answers",
     { userId },

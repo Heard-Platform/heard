@@ -62,7 +62,7 @@ export function SwipeableStatementStack({
   onYouTubeCardSwiped,
   onDemographicsAnswered,
 }: SwipeableStatementStackProps) {
-  const { flagStatement } = useDebateSession();
+  const { flagStatement, saveDemographicAnswer } = useDebateSession();
 
   const { showTutorial, recordSwipe } = useSwipeTutorial();
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
@@ -332,6 +332,7 @@ export function SwipeableStatementStack({
     const direction = answer === "skip" ? "left" : "right";
     setSwipeDirection(direction);
     setSwipedCardId(`demographics-${questionId}`);
+    saveDemographicAnswer(questionId, answer);
 
     setTimeout(() => {
       onDemographicsAnswered(questionId);

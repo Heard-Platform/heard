@@ -127,7 +127,7 @@ export type DemographicQuestionType =
   | "custom";
 
 export interface DemographicQuestion {
-  id: string;
+  id: number;
   roomId: string;
   type: DemographicQuestionType;
   text?: string;
@@ -137,10 +137,13 @@ export interface DemographicQuestion {
 export interface DemographicAnswer {
   id: number;
   userId: string;
-  questionId: string;
+  questionId: number;
   answer: string;
   createdAt: number;
 };
+
+export type NewDemographicAnswer =
+  Omit<DemographicAnswer, "id" | "createdAt">;
 
 export type Phase =
   | "lobby"

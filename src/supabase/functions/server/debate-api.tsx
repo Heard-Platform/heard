@@ -23,6 +23,7 @@ import { generateId, getFrontendUrl } from "./utils.tsx";
 import {
   getDemographicQuestionsForRooms,
   getAnsweredDemographicQuestionIds,
+  saveDemographicAnswer,
 } from "./model-utils.ts";
 import type {
   User, Statement,
@@ -38,6 +39,8 @@ import { filterFeedRooms, sortRoomsForFeed } from "./feed-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
 import { validateDeveloper } from "./internal-utils.ts";
+import { defineRoute } from "./route-wrapper.tsx";
+import { validateSession } from "./auth-utils.ts";
 
 const app = new Hono();
 
@@ -957,6 +960,7 @@ app.get(
     try {
       const userId = c.get("userId");
       const subHeard = c.req.query("subHeard");
+      const includeDemographics = c.req.query("includeDemographics") === "true";
 
       let rooms = await getActiveRooms();
       let userMemberships = new Set<string>();
@@ -996,26 +1000,28 @@ app.get(
       rooms = rooms.slice(0, 20);
 
       // Attach demographic questions to each room
-      const roomIds = rooms.map((r) => r.id);
-      const [allDemogQuestions, answeredQuestionIds] = await Promise.all([
-        getDemographicQuestionsForRooms(roomIds),
-        userId ? getAnsweredDemographicQuestionIds(userId) : Promise.resolve([]),
-      ]);
-      const answeredSet = new Set(answeredQuestionIds);
-      const questionsByRoom = allDemogQuestions.reduce((acc, q) => {
-        if (!acc[q.roomId]) acc[q.roomId] = [];
-        acc[q.roomId].push(q);
-        return acc;
-      }, {} as Record<string, typeof allDemogQuestions>);
+      if (includeDemographics) {
+        const roomIds = rooms.map((r) => r.id);
+        const [allDemogQuestions, answeredQuestionIds] = await Promise.all([
+          getDemographicQuestionsForRooms(roomIds),
+          userId ? getAnsweredDemographicQuestionIds(userId) : Promise.resolve([]),
+        ]);
+        const answeredSet = new Set(answeredQuestionIds);
+        const questionsByRoom = allDemogQuestions.reduce((acc, q) => {
+          if (!acc[q.roomId]) acc[q.roomId] = [];
+          acc[q.roomId].push(q);
+          return acc;
+        }, {} as Record<string, typeof allDemogQuestions>);
+  
+        rooms = rooms.map((room) => ({
+          ...room,
+          demographicQuestions: (questionsByRoom[room.id] || []).filter(
+            (q) => !answeredSet.has(q.id),
+          ),
+        }));
+      }
 
-      const roomsWithDemog = rooms.map((room) => ({
-        ...room,
-        demographicQuestions: (questionsByRoom[room.id] || []).filter(
-          (q) => !answeredSet.has(q.id),
-        ),
-      }));
-
-      return c.json({ rooms: roomsWithDemog });
+      return c.json({ rooms });
     } catch (error) {
       console.error("Error fetching active rooms:", error);
       return c.json(
@@ -2236,6 +2242,30 @@ app.post(
       );
     }
   },
+);
+
+// Save demographic answer
+app.post(
+  "/make-server-f1a393b4/demographic-answer",
+  validateSession,
+  defineRoute(
+    {
+      questionId: {
+        type: "number",
+      },
+      answer: {
+        type: "string",
+      },
+    },
+    async (
+      { questionId, answer }: { questionId: number; answer: string },
+      c: Context,
+    ) => {
+      const userId = c.get("userId");
+      await saveDemographicAnswer({ userId, questionId, answer });
+    },
+    "Saving demographic answer failed",
+  ),
 );
 
 // Mark chance card as swiped
