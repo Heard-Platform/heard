@@ -67,12 +67,16 @@ export type DemographicQuestionType =
   | "occupation"
   | "custom";
 
-export type DemographicQuestion = {
+export interface DemographicQuestion {
   id: string;
+  roomId: string;
   type: DemographicQuestionType;
   text?: string;
   options?: string[];
-}
+};
+
+export type NewDemographicQuestion =
+  Omit<DemographicQuestion, "id" | "roomId">
 
 export type DemographicsCard = {
   type: "demographics";
@@ -162,6 +166,7 @@ export type NewDebateRoom = Pick<
   imageUrl?: string;
   youtubeUrl?: string;
   debateLength: number;
+  demographicQuestions: NewDemographicQuestion[];
 };
 
 export interface SubHeard {

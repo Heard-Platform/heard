@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { AdvancedFeatures } from "../components/create-room/AdvancedFeatures";
-import type { DemographicQuestion } from "../types";
+import type { NewDemographicQuestion } from "../types";
 
 export function AdvancedFeaturesStory() {
-  const [demographicQuestions, setDemographicQuestions] = useState<DemographicQuestion[]>([]);
+  const [demographicQuestions, setDemographicQuestions] = useState<NewDemographicQuestion[]>([]);
 
   return (
     <div className="p-8 max-w-2xl mx-auto space-y-8">

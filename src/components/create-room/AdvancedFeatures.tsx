@@ -4,11 +4,11 @@ import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { ChevronDown, ChevronUp, Plus, Users } from "lucide-react";
 import { CustomDemographicQuestion } from "./CustomDemographicQuestion";
-import type { DemographicQuestion } from "../../types";
+import type { NewDemographicQuestion } from "../../types";
 
 interface AdvancedFeaturesProps {
-  demographicQuestions: DemographicQuestion[];
-  onDemographicQuestionsChange: (questions: DemographicQuestion[]) => void;
+  demographicQuestions: NewDemographicQuestion[];
+  onDemographicQuestionsChange: (questions: NewDemographicQuestion[]) => void;
 }
 
 const STANDARD_QUESTIONS: Array<{
@@ -39,7 +39,6 @@ export function AdvancedFeatures({
       onDemographicQuestionsChange([
         ...demographicQuestions,
         {
-          id: `${type}-${Date.now()}`,
           type,
         },
       ]);
@@ -47,8 +46,7 @@ export function AdvancedFeatures({
   };
 
   const handleAddCustomQuestion = () => {
-    const newQuestion: DemographicQuestion = {
-      id: `custom-${Date.now()}`,
+    const newQuestion: NewDemographicQuestion = {
       type: "custom",
       text: "",
       options: [],
@@ -56,17 +54,17 @@ export function AdvancedFeatures({
     onDemographicQuestionsChange([...demographicQuestions, newQuestion]);
   };
 
-  const handleUpdateCustomQuestion = (id: string, text: string, options: string[]) => {
+  const handleUpdateCustomQuestion = (idx: number, text: string, options: string[]) => {
     onDemographicQuestionsChange(
-      demographicQuestions.map((q) =>
-        q.id === id ? { ...q, text, options } : q
+      demographicQuestions.map((q, i) =>
+        i === idx ? { ...q, text, options } : q
       )
     );
   };
 
-  const handleRemoveCustomQuestion = (id: string) => {
+  const handleRemoveCustomQuestion = (idx: number) => {
     onDemographicQuestionsChange(
-      demographicQuestions.filter((q) => q.id !== id)
+      demographicQuestions.filter((_, i) => i !== idx)
     );
   };
 
@@ -145,18 +143,18 @@ export function AdvancedFeatures({
 
             {customQuestions.length > 0 && (
               <div className="space-y-3">
-                {customQuestions.map((question) => (
+                {customQuestions.map((question, idx) => (
                   <CustomDemographicQuestion
-                    key={question.id}
+                    key={idx}
                     questionText={question.text || ""}
                     options={question.options || []}
                     onQuestionTextChange={(text) =>
-                      handleUpdateCustomQuestion(question.id, text, question.options || [])
+                      handleUpdateCustomQuestion(idx, text, question.options || [])
                     }
                     onOptionsChange={(options) =>
-                      handleUpdateCustomQuestion(question.id, question.text || "", options)
+                      handleUpdateCustomQuestion(idx, question.text || "", options)
                     }
-                    onRemove={() => handleRemoveCustomQuestion(question.id)}
+                    onRemove={() => handleRemoveCustomQuestion(idx)}
                   />
                 ))}
               </div>

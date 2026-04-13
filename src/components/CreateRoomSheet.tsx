@@ -7,7 +7,7 @@ import {
   CheckCircle2,
   PartyPopper,
 } from "lucide-react";
-import type { NewDebateRoom, DebateRoom } from "../types";
+import type { NewDebateRoom, DebateRoom, NewDemographicQuestion } from "../types";
 import { FunSheet, FunSheetRef } from "./FunSheet";
 import {
   WriteRantStep,
@@ -80,6 +80,7 @@ export function CreateRoomSheet({
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState<string>("");
   const [allowAnonymousVoting, setAllowAnonymousVoting] = useState(false);
+  const [demographicQuestions, setDemographicQuestions] = useState<NewDemographicQuestion[]>([]);
   const [debateLength, setDebateLength] = useState(ONE_WEEK_MIN);
   const [showComposeError, setShowComposeError] = useState(false);
   const [titleClickCount, setTitleClickCount] = useState(0);
@@ -175,6 +176,7 @@ export function CreateRoomSheet({
         youtubeUrl: youtubeUrl.trim() || undefined,
         allowAnonymous: allowAnonymousVoting,
         debateLength,
+        demographicQuestions,
       });
 
       setDebateId(result.id);
@@ -408,7 +410,7 @@ export function CreateRoomSheet({
           youtubeUrl={youtubeUrl}
           debateLength={debateLength}
           allowAnonymousVoting={allowAnonymousVoting}
-          demographicQuestions={[]}
+          demographicQuestions={demographicQuestions}
           hideTopicAndStatements={!cameFromRantMode}
           onTopicChange={setEditedTopic}
           onStatementsChange={setEditedStatements}
@@ -416,7 +418,7 @@ export function CreateRoomSheet({
           onYoutubeUrlChange={setYoutubeUrl}
           onDebateLengthChange={setDebateLength}
           onAllowAnonymousVotingChange={setAllowAnonymousVoting}
-          onDemographicQuestionsChange={() => {}}
+          onDemographicQuestionsChange={setDemographicQuestions}
         />
       )}
 
