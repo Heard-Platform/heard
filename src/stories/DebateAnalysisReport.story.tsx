@@ -154,6 +154,35 @@ const mockClusterConsensus: ClusterConsensus = {
   ],
 };
 
+const mockDemographics: Record<string, { [option: string]: number }> = {
+  "What is your gender?": {
+    "Male": 98,
+    "Female": 112,
+    "Non-binary": 21,
+    "Prefer not to say": 16,
+  },
+  "What is your age range?": {
+    "18–24": 34,
+    "25–34": 71,
+    "35–44": 63,
+    "45–54": 48,
+    "55–64": 22,
+    "65+": 9,
+  },
+  "What best describes your political leaning?": {
+    "Liberal": 74,
+    "Moderate": 89,
+    "Conservative": 61,
+    "Independent": 23,
+  },
+  "How long have you lived in this city?": {
+    "Less than 1 year": 18,
+    "1–5 years": 52,
+    "5–10 years": 61,
+    "More than 10 years": 116,
+  },
+};
+
 const defaultAnalysisData: AnalysisData = {
   debateTopic: "What should our city prioritize in the next budget?",
   totalParticipants: 247,
@@ -168,6 +197,7 @@ const defaultAnalysisData: AnalysisData = {
   topPosts: mockTopPosts,
   spiciestPosts: mockSpiciestPosts,
   clusterConsensus: mockClusterConsensus,
+  demographics: {},
 };
 
 export const WithClusters = () => {
@@ -176,6 +206,17 @@ export const WithClusters = () => {
       {...defaultAnalysisData}
       debateId="demo-debate-123"
       debateTopic="What should our city prioritize in the next budget?"
+    />
+  );
+};
+
+export const WithDemographics = () => {
+  return (
+    <DebateAnalysisReport
+      {...defaultAnalysisData}
+      debateId="demo-debate-789"
+      debateTopic="What should our city prioritize in the next budget?"
+      demographics={mockDemographics}
     />
   );
 };
@@ -236,10 +277,11 @@ export function DebateAnalysisReportStory() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="with-clusters" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="with-demographics" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="with-clusters">With Clusters</TabsTrigger>
             <TabsTrigger value="no-clusters">No Clusters</TabsTrigger>
+            <TabsTrigger value="with-demographics">With Demographics</TabsTrigger>
           </TabsList>
           
           <TabsContent value="with-clusters">
@@ -248,6 +290,10 @@ export function DebateAnalysisReportStory() {
           
           <TabsContent value="no-clusters">
             <NoClusters />
+          </TabsContent>
+
+          <TabsContent value="with-demographics">
+            <WithDemographics />
           </TabsContent>
         </Tabs>
       </CardContent>

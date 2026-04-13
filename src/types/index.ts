@@ -240,6 +240,7 @@ export interface AnalysisMetrics {
   };
   topPosts: TopPost[];
   spiciestPosts: TopPost[];
+  demographics: Record<string, { [option: string]: number }>;
 }
 
 export interface AnalysisData extends AnalysisMetrics {
