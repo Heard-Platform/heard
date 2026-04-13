@@ -19,9 +19,8 @@ const topicExamples = _.shuffle([
   "Breakfast foods are superior to all other meals and should be eaten at any time",
 ]);
 
-type EntryMode = "initial" | "text";
+type EntryMode = "voice" | "text";
 
-// CN-10
 const MIC_BUTTON_SIZE_PX = 128;
 const MIC_ICON_SIZE_PX = 80;
 
@@ -40,7 +39,7 @@ export function WriteRantStep({
 }: WriteRantStepProps) {
   const [showExamples, setShowExamples] = useState(false);
   const [mode, setMode] = useState<EntryMode>(() =>
-    rant.length > 0 ? "text" : "initial",
+    rant.length > 0 ? "text" : "voice",
   );
   const [isRecording, setIsRecording] = useState(false);
 
@@ -192,8 +191,10 @@ export function WriteRantStep({
         mediaStream.getTracks().forEach((t) => t.stop());
       }
     };
-    // CN-11
-  }, [isRecording]);
+  }, [
+    // "rant" is excluded as a dependency so transcripts append correctly.
+    isRecording,
+  ]);
 
   const handleStartRecording = () => {
     setMode("text");
@@ -210,11 +211,6 @@ export function WriteRantStep({
   };
 
   const handleNeedInspirationClick = () => {
-    if (mode === "initial") {
-      setMode("text");
-      setShowExamples(true);
-      return;
-    }
     setShowExamples((prev) => !prev);
   };
 
@@ -230,7 +226,7 @@ export function WriteRantStep({
         <div className="space-y-3">
           <div
             className={`flex items-center gap-2${
-              mode === "initial" ? " justify-center" : ""
+              mode === "voice" ? " justify-center" : ""
             }`}
           >
             <div className="flex items-center gap-2">
@@ -264,7 +260,7 @@ export function WriteRantStep({
             )}
           </div>
 
-          {mode === "initial" ? (
+          {mode === "voice" ? (
             <div className="flex flex-col items-center gap-4 pt-2 pb-2">
               <button
                 type="button"
@@ -330,16 +326,18 @@ export function WriteRantStep({
           )}
 
           <div className="flex justify-between items-center text-xs">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleNeedInspirationClick}
-              className="text-xs text-teal-700 hover:text-teal-900 hover:bg-teal-100/50 flex items-center gap-1 h-auto px-2 py-1 -ml-2"
-            >
-              <Lightbulb className="w-3.5 h-3.5" />
-              {showExamples ? "Hide" : "Need inspiration?"}
-            </Button>
+            {mode === "text" && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleNeedInspirationClick}
+                className="text-xs text-teal-700 hover:text-teal-900 hover:bg-teal-100/50 flex items-center gap-1 h-auto px-2 py-1 -ml-2"
+              >
+                <Lightbulb className="w-3.5 h-3.5" />
+                {showExamples ? "Hide" : "Need inspiration?"}
+              </Button>
+            )}
             {mode === "text" &&
               rant.trim().length > 0 &&
               !isRantValid && (
