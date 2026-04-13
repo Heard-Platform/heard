@@ -59,7 +59,7 @@ interface DebateSessionContextType {
   markYouTubeCardSwiped: (roomId: string) => Promise<void>;
   saveDemographicAnswer: (
     questionId: string,
-    answer: string,
+    answer: string | null,
   ) => Promise<ApiResponse | null>;
   getActiveRooms: () => Promise<DebateRoom[]>;
   setCurrentSubHeard: (subHeard: string | null) => void;
@@ -423,7 +423,7 @@ export function DebateSessionProvider(
   );
 
   const saveDemographicAnswer = useCallback(
-    async (questionId: string, answer: string) =>
+    async (questionId: string, answer: string | null) =>
       safelyMakeApiCall<undefined>(() => api.saveDemographicAnswer(questionId, answer)),
     [safelyMakeApiCall],
   );      
@@ -807,7 +807,7 @@ export function DebateSessionProvider(
       markYouTubeCardSwiped: async () => {
         console.log("[Showcase] markYouTubeCardSwiped called");
       },
-      saveDemographicAnswer: async (questionId: string, answer: string) => {
+      saveDemographicAnswer: async (questionId: string, answer: string | null) => {
         console.log("[Showcase] saveDemographicAnswer called");
         return { success: true };
       },

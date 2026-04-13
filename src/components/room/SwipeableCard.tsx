@@ -29,7 +29,7 @@ interface SwipeableCardProps {
   ) => void;
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
-  onDemographicsAnswer?: (id: string, answer: string) => void;
+  onDemographicsAnswer?: (id: string, answer: string | null) => void;
   onCertifyDismiss: () => void;
   onCertifySuccess: () => void;
   onSuperAgree: () => void;

@@ -328,8 +328,11 @@ export function SwipeableStatementStack({
     await onSubmitStatement(text);
   };
 
-  const handleDemographicsAnswer = (questionId: string, answer: string) => {
-    const direction = answer === "skip" ? "left" : "right";
+  const handleDemographicsAnswer = (
+    questionId: string,
+    answer: string | null,
+  ) => {
+    const direction = answer === null ? "left" : "right";
     setSwipeDirection(direction);
     setSwipedCardId(`demographics-${questionId}`);
     saveDemographicAnswer(questionId, answer);

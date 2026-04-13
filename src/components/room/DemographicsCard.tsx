@@ -38,7 +38,7 @@ const standardQuestionsByType: Record<
 
 interface DemographicsCardProps {
   question: DemographicQuestion;
-  onAnswer: (answer: string) => void;
+  onAnswer: (answer: string | null) => void;
 }
 
 export function DemographicsCard({
@@ -121,7 +121,7 @@ export function DemographicsCard({
               >
                 <button
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors underline decoration-dotted underline-offset-2"
-                  onClick={() => onAnswer("skip")}
+                  onClick={() => onAnswer(null)}
                 >
                   I prefer not to answer
                 </button>

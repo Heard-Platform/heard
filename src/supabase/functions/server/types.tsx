@@ -138,7 +138,7 @@ export interface DemographicAnswer {
   id: number;
   userId: string;
   questionId: number;
-  answer: string;
+  answer: string | null;
   createdAt: number;
 };
 

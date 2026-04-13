@@ -2250,19 +2250,15 @@ app.post(
   validateSession,
   defineRoute(
     {
-      questionId: {
-        type: "number",
-      },
-      answer: {
-        type: "string",
-      },
+      questionId: { type: "number", required: true },
+      answer: { type: "string" },
     },
     async (
-      { questionId, answer }: { questionId: number; answer: string },
+      { questionId, answer }: { questionId: number; answer?: string },
       c: Context,
     ) => {
       const userId = c.get("userId");
-      await saveDemographicAnswer({ userId, questionId, answer });
+      await saveDemographicAnswer({ userId, questionId, answer: answer ?? null });
     },
     "Saving demographic answer failed",
   ),
