@@ -96,19 +96,6 @@ export function DataPrivacyModal({
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto px-6 space-y-6 min-h-0 relative">
-            <div className="rounded-lg overflow-hidden border border-border">
-              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                <iframe
-                  className="absolute top-0 left-0 w-full h-full"
-                  src={`https://www.youtube.com/embed/${YOUR_DATA_YOUTUBE_ID}`}
-                  title="Data Privacy Explanation"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-
             <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
               <h4 className="font-semibold text-purple-900 mb-2">How your answers help</h4>
               <p className="text-sm text-purple-800 leading-relaxed">
