@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { MessageCircle, Lightbulb, Mic, Square } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
-import { api } from "../../utils/api";
+import { useVoiceTranscription } from "../../hooks/useVoiceTranscription";
 import _ from "lodash";
 
 const topicExamples = _.shuffle([
@@ -41,165 +41,14 @@ export function WriteRantStep({
   const [mode, setMode] = useState<EntryMode>(() =>
     rant.length > 0 ? "text" : "voice",
   );
-  const [isRecording, setIsRecording] = useState(false);
 
-  const baseRantRef = useRef<string>("");
-  const finalizedRef = useRef<string[]>([]);
-  const onRantChangeRef = useRef(onRantChange);
-
-  useEffect(() => {
-    onRantChangeRef.current = onRantChange;
-  }, [onRantChange]);
-
-  useEffect(() => {
-    if (!isRecording) return;
-
-    let ws: WebSocket | null = null;
-    let audioContext: AudioContext | null = null;
-    let mediaStream: MediaStream | null = null;
-    let cancelled = false;
-
-    baseRantRef.current = rant
-      ? rant.endsWith(" ")
-        ? rant
-        : rant + " "
-      : "";
-    finalizedRef.current = [];
-
-    function updateText(partial: string) {
-      const finalized = finalizedRef.current.join(" ");
-      const separator =
-        finalized && partial ? " " : "";
-      onRantChangeRef.current(
-        baseRantRef.current + finalized + separator + partial,
-      );
-    }
-
-    async function getToken(): Promise<string | null> {
-      if (import.meta.env.DEV) {
-        try {
-          const res = await fetch("/api/assemblyai-token");
-          if (res.ok) {
-            const data = await res.json();
-            return data.token;
-          }
-        } catch {}
-      }
-      const response = await api.getAssemblyAIToken();
-      if (response.success && response.data) return response.data.token;
-      return null;
-    }
-
-    function floatToPcm16(input: Float32Array): ArrayBuffer {
-      const pcm16 = new Int16Array(input.length);
-      for (let i = 0; i < input.length; i++) {
-        pcm16[i] = Math.max(-32768, Math.min(32767, input[i] * 32768));
-      }
-      return pcm16.buffer;
-    }
-
-    async function start() {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
-      if (cancelled) {
-        stream.getTracks().forEach((t) => t.stop());
-        return;
-      }
-      mediaStream = stream;
-
-      audioContext = new AudioContext();
-      await audioContext.resume();
-      const sampleRate = audioContext.sampleRate;
-      const source = audioContext.createMediaStreamSource(stream);
-      const processor = audioContext.createScriptProcessor(4096, 1, 1);
-
-      const audioBuffer: ArrayBuffer[] = [];
-      let wsReady = false;
-
-      source.connect(processor);
-      processor.connect(audioContext.destination);
-
-      processor.onaudioprocess = (event) => {
-        const chunk = floatToPcm16(event.inputBuffer.getChannelData(0));
-        if (wsReady && ws && ws.readyState === WebSocket.OPEN) {
-          ws.send(chunk);
-        } else {
-          audioBuffer.push(chunk);
-        }
-      };
-
-      if (cancelled) return;
-
-      const token = await getToken();
-      if (cancelled || !token) {
-        if (!cancelled) setIsRecording(false);
-        return;
-      }
-
-      ws = new WebSocket(
-        `wss://streaming.assemblyai.com/v3/ws?speech_model=u3-rt-pro&sample_rate=${sampleRate}&token=${token}`,
-      );
-      ws.binaryType = "arraybuffer";
-
-      ws.onopen = () => {
-        for (const chunk of audioBuffer) {
-          ws!.send(chunk);
-        }
-        audioBuffer.length = 0;
-        wsReady = true;
-      };
-
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === "Turn") {
-          const text = (data.transcript || "")
-            .replace(/[—–]/g, "-")
-            .trim();
-          if (data.end_of_turn && text) {
-            finalizedRef.current.push(text);
-            updateText("");
-          } else if (text) {
-            updateText(text);
-          }
-        }
-      };
-
-      ws.onerror = () => {
-        if (!cancelled) setIsRecording(false);
-      };
-
-      ws.onclose = () => {
-        if (!cancelled) setIsRecording(false);
-      };
-    }
-
-    start().catch(() => {
-      if (!cancelled) setIsRecording(false);
-    });
-
-    return () => {
-      cancelled = true;
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ terminate_session: true }));
-        ws.close();
-      }
-      if (audioContext) {
-        audioContext.close().catch(() => {});
-      }
-      if (mediaStream) {
-        mediaStream.getTracks().forEach((t) => t.stop());
-      }
-    };
-  }, [
-    // "rant" is excluded as a dependency so transcripts append correctly.
-    isRecording,
-  ]);
+  const { isRecording, startRecording, stopRecording } =
+    useVoiceTranscription(onRantChange);
 
   const handleStartRecording = () => {
     setMode("text");
     setShowExamples(false);
-    setIsRecording(true);
+    startRecording(rant);
   };
 
   const handleSwitchToText = () => {
@@ -207,7 +56,11 @@ export function WriteRantStep({
   };
 
   const handleToggleRecording = () => {
-    setIsRecording((prev) => !prev);
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording(rant);
+    }
   };
 
   const handleNeedInspirationClick = () => {
@@ -313,7 +166,7 @@ export function WriteRantStep({
                 maxLength={2000}
                 value={rant}
                 onChange={(e) => onRantChange(e.target.value)}
-                onClick={isRecording ? () => setIsRecording(false) : undefined}
+                onClick={isRecording ? stopRecording : undefined}
                 readOnly={isRecording}
                 className={`w-full min-h-[200px] resize-none bg-white placeholder:text-slate-400 ${
                   isRecording
