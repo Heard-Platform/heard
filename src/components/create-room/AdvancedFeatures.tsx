@@ -4,7 +4,7 @@ import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { ChevronDown, ChevronUp, Plus, Users } from "lucide-react";
 import { CustomDemographicQuestion } from "./CustomDemographicQuestion";
-import type { NewDemographicQuestion } from "../../types";
+import type { NewCustomDemographicQuestion, NewDemographicQuestion, StandardDemographicQuestionType } from "../../types";
 
 interface AdvancedFeaturesProps {
   demographicQuestions: NewDemographicQuestion[];
@@ -12,7 +12,7 @@ interface AdvancedFeaturesProps {
 }
 
 const STANDARD_QUESTIONS: Array<{
-  type: "gender" | "age_range" | "occupation";
+  type: StandardDemographicQuestionType;
   label: string;
 }> = [
   { type: "gender", label: "Gender" },
@@ -26,49 +26,60 @@ export function AdvancedFeatures({
 }: AdvancedFeaturesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const isStandardQuestionSelected = (type: "gender" | "age_range" | "occupation") => {
-    return demographicQuestions.some((q) => q.type === type);
-  };
+  const isStandardQuestionSelected = (
+    type: StandardDemographicQuestionType,
+  ) => demographicQuestions.some((q) => q.type === type);
 
-  const handleToggleStandardQuestion = (type: "gender" | "age_range" | "occupation") => {
+  const handleToggleStandardQuestion = (
+    type: StandardDemographicQuestionType,
+  ) => {
     if (isStandardQuestionSelected(type)) {
       onDemographicQuestionsChange(
-        demographicQuestions.filter((q) => q.type !== type)
+        demographicQuestions.filter((q) => q.type !== type),
       );
     } else {
       onDemographicQuestionsChange([
         ...demographicQuestions,
-        {
-          type,
-        },
+        { draftId: crypto.randomUUID(), type },
       ]);
     }
   };
 
   const handleAddCustomQuestion = () => {
-    const newQuestion: NewDemographicQuestion = {
-      type: "custom",
-      text: "",
-      options: [],
-    };
-    onDemographicQuestionsChange([...demographicQuestions, newQuestion]);
+    onDemographicQuestionsChange([
+      ...demographicQuestions,
+      {
+        type: "custom",
+        text: "",
+        options: [],
+        draftId: crypto.randomUUID(),
+      },
+    ]);
   };
 
-  const handleUpdateCustomQuestion = (idx: number, text: string, options: string[]) => {
+  const handleUpdateCustomQuestion = (
+    draftId: string,
+    text: string,
+    options: string[],
+  ) => {
     onDemographicQuestionsChange(
-      demographicQuestions.map((q, i) =>
-        i === idx ? { ...q, text, options } : q
-      )
+      demographicQuestions.map((q) =>
+        q.draftId === draftId ? { ...q, text, options } : q,
+      ),
     );
   };
 
-  const handleRemoveCustomQuestion = (idx: number) => {
+  const handleRemoveCustomQuestion = (draftId: string) => {
     onDemographicQuestionsChange(
-      demographicQuestions.filter((_, i) => i !== idx)
+      demographicQuestions.filter((q) => q.draftId !== draftId)
     );
   };
 
-  const customQuestions = demographicQuestions.filter((q) => q.type === "custom");
+  const isCustomQuestion = (q: NewDemographicQuestion): q is NewCustomDemographicQuestion => {
+    return q.type === "custom";
+  };
+
+  const customQuestions = demographicQuestions.filter(isCustomQuestion);
 
   return (
     <div className="border border-slate-200 rounded-lg bg-slate-50/50">
@@ -143,18 +154,18 @@ export function AdvancedFeatures({
 
             {customQuestions.length > 0 && (
               <div className="space-y-3">
-                {customQuestions.map((question, idx) => (
+                {customQuestions.map((question) => (
                   <CustomDemographicQuestion
-                    key={idx}
-                    questionText={question.text || ""}
-                    options={question.options || []}
+                    key={question.draftId}
+                    questionText={question.text}
+                    options={question.options}
                     onQuestionTextChange={(text) =>
-                      handleUpdateCustomQuestion(idx, text, question.options || [])
+                      handleUpdateCustomQuestion(question.draftId, text, question.options)
                     }
                     onOptionsChange={(options) =>
-                      handleUpdateCustomQuestion(idx, question.text || "", options)
+                      handleUpdateCustomQuestion(question.draftId, question.text, options)
                     }
-                    onRemove={() => handleRemoveCustomQuestion(idx)}
+                    onRemove={() => handleRemoveCustomQuestion(question.draftId)}
                   />
                 ))}
               </div>

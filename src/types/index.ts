@@ -61,11 +61,11 @@ export type YouTubeCard = {
   url: string;
 }
 
+export type StandardDemographicQuestionType =
+  "gender" | "age_range" | "occupation";
+
 export type DemographicQuestionType =
-  | "gender"
-  | "age_range"
-  | "occupation"
-  | "custom";
+  StandardDemographicQuestionType | "custom";
 
 export interface DemographicQuestion {
   id: string;
@@ -76,7 +76,10 @@ export interface DemographicQuestion {
 };
 
 export type NewDemographicQuestion =
-  Omit<DemographicQuestion, "id" | "roomId">
+  Omit<DemographicQuestion, "id" | "roomId"> & { draftId: string }
+
+export type NewCustomDemographicQuestion = NewDemographicQuestion &
+  Required<Pick<DemographicQuestion, "text" | "options">>;
 
 export type DemographicsCard = {
   type: "demographics";
