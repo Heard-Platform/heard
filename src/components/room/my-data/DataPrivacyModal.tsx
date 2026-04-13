@@ -112,7 +112,7 @@ export function DataPrivacyModal({
             <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
               <h4 className="font-semibold text-purple-900 mb-2">How your answers help</h4>
               <p className="text-sm text-purple-800 leading-relaxed">
-                When you create a discussion on Heard you can choose to add questions such as age, gender, or neighborhood into the mix. These answers help the community understand which voices are being represented in this discussion. 
+                Answers around demographics like gender, age, and occupation help the community understand which voices are being represented in this discussion. 
                 It's valuable context that helps make conversations more meaningful and inclusive.
               </p>
             </div>
@@ -142,7 +142,7 @@ export function DataPrivacyModal({
               <InfoBlock
                 icon={DollarSign}
                 title="We don't sell your data"
-                description="Heard does not sell user data and currently has no plans to do so. As a startup we are, of course, still figuring out ways to bring in revenue though. If our thinking around data usage changes, we will make users aware in advance and will only use an opt-in approach. This means that by default your data won't be sold in any manner, and your explicit consent will always be required."
+                description="Heard does not sell user data. Read our Privacy Policy at heard.vote/privacy to learn more."
                 colorScheme="orange"
               />
             </div>

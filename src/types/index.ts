@@ -61,18 +61,25 @@ export type YouTubeCard = {
   url: string;
 }
 
-export type DemographicQuestionType =
-  | "gender"
-  | "age_range"
-  | "occupation"
-  | "custom";
+export type StandardDemographicQuestionType =
+  "gender" | "age_range" | "occupation";
 
-export type DemographicQuestion = {
+export type DemographicQuestionType =
+  StandardDemographicQuestionType | "custom";
+
+export interface DemographicQuestion {
   id: string;
+  roomId: string;
   type: DemographicQuestionType;
   text?: string;
   options?: string[];
-}
+};
+
+export type NewDemographicQuestion =
+  Omit<DemographicQuestion, "id" | "roomId"> & { draftId: string }
+
+export type NewCustomDemographicQuestion = NewDemographicQuestion &
+  Required<Pick<DemographicQuestion, "text" | "options">>;
 
 export type DemographicsCard = {
   type: "demographics";
@@ -162,6 +169,7 @@ export type NewDebateRoom = Pick<
   imageUrl?: string;
   youtubeUrl?: string;
   debateLength: number;
+  demographicQuestions: NewDemographicQuestion[];
 };
 
 export interface SubHeard {

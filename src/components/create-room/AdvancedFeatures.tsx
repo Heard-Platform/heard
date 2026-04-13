@@ -4,15 +4,15 @@ import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { ChevronDown, ChevronUp, Plus, Users } from "lucide-react";
 import { CustomDemographicQuestion } from "./CustomDemographicQuestion";
-import type { DemographicQuestion } from "../../types";
+import { NewCustomDemographicQuestion, type NewDemographicQuestion, type StandardDemographicQuestionType } from "../../types";
 
 interface AdvancedFeaturesProps {
-  demographicQuestions: DemographicQuestion[];
-  onDemographicQuestionsChange: (questions: DemographicQuestion[]) => void;
+  demographicQuestions: NewDemographicQuestion[];
+  onDemographicQuestionsChange: (questions: NewDemographicQuestion[]) => void;
 }
 
 const STANDARD_QUESTIONS: Array<{
-  type: "gender" | "age_range" | "occupation";
+  type: StandardDemographicQuestionType;
   label: string;
 }> = [
   { type: "gender", label: "Gender" },
@@ -26,51 +26,62 @@ export function AdvancedFeatures({
 }: AdvancedFeaturesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const isStandardQuestionSelected = (type: "gender" | "age_range" | "occupation") => {
-    return demographicQuestions.some((q) => q.type === type);
-  };
+  const isStandardQuestionSelected = (
+    type: StandardDemographicQuestionType,
+  ) => demographicQuestions.some((q) => q.type === type);
 
-  const handleToggleStandardQuestion = (type: "gender" | "age_range" | "occupation") => {
+  const handleToggleStandardQuestion = (
+    type: StandardDemographicQuestionType,
+  ) => {
     if (isStandardQuestionSelected(type)) {
       onDemographicQuestionsChange(
-        demographicQuestions.filter((q) => q.type !== type)
+        demographicQuestions.filter((q) => q.type !== type),
       );
     } else {
       onDemographicQuestionsChange([
         ...demographicQuestions,
-        {
-          id: `${type}-${Date.now()}`,
-          type,
-        },
+        { draftId: crypto.randomUUID(), type },
       ]);
     }
   };
 
   const handleAddCustomQuestion = () => {
-    const newQuestion: DemographicQuestion = {
-      id: `custom-${Date.now()}`,
-      type: "custom",
-      text: "",
-      options: [],
-    };
-    onDemographicQuestionsChange([...demographicQuestions, newQuestion]);
+    onDemographicQuestionsChange([
+      ...demographicQuestions,
+      {
+        type: "custom",
+        text: "",
+        options: [],
+        draftId: crypto.randomUUID(),
+      },
+    ]);
   };
 
-  const handleUpdateCustomQuestion = (id: string, text: string, options: string[]) => {
+  const handleUpdateCustomQuestion = (
+    draftId: string,
+    text: string,
+    options: string[],
+  ) => {
     onDemographicQuestionsChange(
       demographicQuestions.map((q) =>
-        q.id === id ? { ...q, text, options } : q
-      )
+        q.draftId === draftId ? { ...q, text, options } : q,
+      ),
     );
   };
 
-  const handleRemoveCustomQuestion = (id: string) => {
+  const handleRemoveCustomQuestion = (draftId: string) => {
     onDemographicQuestionsChange(
-      demographicQuestions.filter((q) => q.id !== id)
+      demographicQuestions.filter((q) => q.draftId !== draftId)
     );
   };
 
-  const customQuestions = demographicQuestions.filter((q) => q.type === "custom");
+  const isCustomQuestion = (
+    q: NewDemographicQuestion,
+  ): q is NewCustomDemographicQuestion => {
+    return q.type === "custom";
+  };
+
+  const customQuestions = demographicQuestions.filter(isCustomQuestion);
 
   return (
     <div className="border border-slate-200 rounded-lg bg-slate-50/50">
@@ -99,7 +110,7 @@ export function AdvancedFeatures({
               </Label>
             </div>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Add questions to understand who's participating in this conversation. All responses are shown in aggregate only.
+              Add questions to understand who's participating in this conversation. These questions will be interspersed throughout the conversation deck and are optional for participants to answer.
             </p>
           </div>
 
@@ -147,16 +158,16 @@ export function AdvancedFeatures({
               <div className="space-y-3">
                 {customQuestions.map((question) => (
                   <CustomDemographicQuestion
-                    key={question.id}
-                    questionText={question.text || ""}
-                    options={question.options || []}
+                    key={question.draftId}
+                    questionText={question.text}
+                    options={question.options}
                     onQuestionTextChange={(text) =>
-                      handleUpdateCustomQuestion(question.id, text, question.options || [])
+                      handleUpdateCustomQuestion(question.draftId, text, question.options)
                     }
                     onOptionsChange={(options) =>
-                      handleUpdateCustomQuestion(question.id, question.text || "", options)
+                      handleUpdateCustomQuestion(question.draftId, question.text, options)
                     }
-                    onRemove={() => handleRemoveCustomQuestion(question.id)}
+                    onRemove={() => handleRemoveCustomQuestion(question.draftId)}
                   />
                 ))}
               </div>

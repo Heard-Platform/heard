@@ -9,7 +9,8 @@ import { motion } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
 import { AdvancedFeatures } from "./AdvancedFeatures";
 import { SeedStatements } from "./SeedStatements";
-import type { DemographicQuestion } from "../../types";
+import type { NewDemographicQuestion } from "../../types";
+import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 
 interface ReviewExtractionStepProps {
   topic: string;
@@ -19,8 +20,7 @@ interface ReviewExtractionStepProps {
   youtubeUrl?: string;
   debateLength: number;
   allowAnonymousVoting: boolean;
-  demographicQuestions: DemographicQuestion[];
-  showAdvancedFeatures?: boolean;
+  demographicQuestions: NewDemographicQuestion[];
   hideTopicAndStatements?: boolean;
   onTopicChange: (topic: string) => void;
   onStatementsChange: (statements: string[]) => void;
@@ -28,7 +28,7 @@ interface ReviewExtractionStepProps {
   onYoutubeUrlChange: (url: string) => void;
   onDebateLengthChange: (length: number) => void;
   onAllowAnonymousVotingChange: (value: boolean) => void;
-  onDemographicQuestionsChange: (questions: DemographicQuestion[]) => void;
+  onDemographicQuestionsChange: (questions: NewDemographicQuestion[]) => void;
 }
 
 export function ReviewExtractionStep({
@@ -40,7 +40,6 @@ export function ReviewExtractionStep({
   debateLength,
   allowAnonymousVoting,
   demographicQuestions,
-  showAdvancedFeatures = false,
   hideTopicAndStatements = false,
   onTopicChange,
   onStatementsChange,
@@ -50,6 +49,8 @@ export function ReviewExtractionStep({
   onAllowAnonymousVotingChange,
   onDemographicQuestionsChange,
 }: ReviewExtractionStepProps) {
+  const showAdvancedFeatures = isFeatureEnabled(FeatureFlags.DEMOGRAPHICS);
+  
   const [showCustomDateTime, setShowCustomDateTime] = useState(false);
   const [customDate, setCustomDate] = useState("");
   const [customTime, setCustomTime] = useState("");

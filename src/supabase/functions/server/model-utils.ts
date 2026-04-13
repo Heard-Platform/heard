@@ -1,6 +1,7 @@
 import { insert, selectAll, upsert } from "./db-utils.ts";
 import {
   AvatarAnimal,
+  DemographicQuestion,
   InternalVar,
   InternalVarKey,
   NewUserReport,
@@ -34,6 +35,14 @@ export const insertUserReport = async (report: NewUserReport) => {
 
 export const getUserReports = async () => {
   return selectAll<UserReport>("user_reports");
+};
+
+export const insertDemographicQuestion = async (question: DemographicQuestion) => {
+  return insert<DemographicQuestion>("demographic_questions", question);
+};
+
+export const getDemographicQuestionsForRoom = async (roomId: string) => {
+  return selectAll<DemographicQuestion>("demographic_questions", { roomId });
 };
 
 export const insertFlyerEmail = async (email: string) => {

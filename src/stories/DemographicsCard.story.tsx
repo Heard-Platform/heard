@@ -15,18 +15,22 @@ const questions: DemographicQuestion[] = [
   {
     id: "1",
     type: "gender",
+    roomId: "room1",
   },
   {
     id: "2",
     type: "age_range",
+    roomId: "room1",
   },
   {
     id: "3",
     type: "occupation",
+    roomId: "room1",
   },
   {
     id: "4",
     type: "custom",
+    roomId: "room1",
     text: "Do you currently live in Washington, DC?",
     options: ["Yes", "No"],
   },
@@ -101,11 +105,12 @@ function DemographicsSwipeableStack() {
         youtubeCardSwiped={true}
         demographicQuestions={questions}
         demographicsAnswered={demographicsAnswered}
-        onVote={async () => {}}
-        onSubmitStatement={async () => {}}
-        onShowAccountSetupModal={() => {}}
-        onChanceCardSwiped={async () => {}}
-        onYouTubeCardSwiped={async () => {}}
+        onVote={async () => { } }
+        onSubmitStatement={async () => { } }
+        onShowAccountSetupModal={() => { } }
+        onCertifyDone={async () => { } }
+        onChanceCardSwiped={async () => { } }
+        onYouTubeCardSwiped={async () => { } }
         onDemographicsAnswer={handleAnswer}
       />
     </div>

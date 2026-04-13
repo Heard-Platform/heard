@@ -6,13 +6,13 @@ import {
 } from "./auth-api.tsx";
 import { generateId, saveDebateRoom } from "./debate-api.tsx";
 import type {
-Community,
-  DebateRoom,
+  Community, DemographicQuestion,
   Statement
 } from "./types.tsx";
 import { ONE_WEEK_MS } from "./time-utils.ts";
 import { getCommunity, saveCommunity } from "./kv-utils.tsx";
 import { createNewRoomData } from "./room-utils.ts";
+import { insertDemographicQuestion } from "./model-utils.ts";
 
 const app = new Hono();
 
@@ -30,6 +30,7 @@ app.post(
         youtubeUrl,
         allowAnonymous,
         debateLength,
+        demographicQuestions,
       } = await c.req.json();
 
       if (!topic || topic.length < 10) {
@@ -124,6 +125,23 @@ app.post(
         }
 
         console.log(`Created ${statements.length} seed statements for room ${roomId}`);
+      }
+
+      // Save demographic questions if provided
+      if (demographicQuestions && Array.isArray(demographicQuestions) && demographicQuestions.length > 0) {
+        await Promise.all(
+          demographicQuestions.map((question: DemographicQuestion) =>
+            insertDemographicQuestion({
+              id: question.id,
+              roomId,
+              type: question.type,
+              text: question.text,
+              options: question.options?.filter(
+                (o: string) => o.trim() !== "",
+              ),
+            }),
+          ),
+        );
       }
 
       // Update user's current room
