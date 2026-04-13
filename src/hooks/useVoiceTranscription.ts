@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../utils/api";
 
+const NO_AUDIO_TIMEOUT_MS = 5000;
+const NO_AUDIO_WARNING =
+  "Hmmm... We can't hear you! Please make sure you have your system audio input device set to your microphone.";
+
 function floatToPcm16(input: Float32Array): ArrayBuffer {
   const pcm16 = new Int16Array(input.length);
   for (let i = 0; i < input.length; i++) {
@@ -28,9 +32,12 @@ export function useVoiceTranscription(
   onTranscriptChange: (text: string) => void,
 ) {
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingError, setRecordingError] = useState<string | null>(null);
+  const [recordingWarning, setRecordingWarning] = useState<string | null>(null);
   const baseTextRef = useRef("");
   const finalizedRef = useRef<string[]>([]);
   const onChangeRef = useRef(onTranscriptChange);
+  const hadTranscriptRef = useRef(false);
 
   useEffect(() => {
     onChangeRef.current = onTranscriptChange;
@@ -44,7 +51,17 @@ export function useVoiceTranscription(
     let mediaStream: MediaStream | null = null;
     let cancelled = false;
 
+    const noAudioTimer = setTimeout(() => {
+      if (!cancelled && !hadTranscriptRef.current) {
+        setRecordingWarning(NO_AUDIO_WARNING);
+      }
+    }, NO_AUDIO_TIMEOUT_MS);
+
     function updateText(partial: string) {
+      if (!hadTranscriptRef.current) {
+        hadTranscriptRef.current = true;
+        setRecordingWarning(null);
+      }
       const finalized = finalizedRef.current.join(" ");
       const separator = finalized && partial ? " " : "";
       onChangeRef.current(
@@ -85,7 +102,10 @@ export function useVoiceTranscription(
 
       const token = await fetchAssemblyAIToken();
       if (cancelled || !token) {
-        if (!cancelled) setIsRecording(false);
+        if (!cancelled) {
+          setRecordingError("Failed to start recording. Please try again.");
+          setIsRecording(false);
+        }
         return;
       }
 
@@ -117,21 +137,35 @@ export function useVoiceTranscription(
         }
       };
 
+      let wsError = false;
+
       ws.onerror = () => {
-        if (!cancelled) setIsRecording(false);
+        wsError = true;
+        if (!cancelled) {
+          setRecordingError("Something went wrong with the recording. Please try again.");
+          setIsRecording(false);
+        }
       };
 
       ws.onclose = () => {
-        if (!cancelled) setIsRecording(false);
+        if (!cancelled) {
+          if (!wsError) setRecordingError("Recording was disconnected. Please try again.");
+          setIsRecording(false);
+        }
       };
     }
 
     start().catch(() => {
-      if (!cancelled) setIsRecording(false);
+      if (!cancelled) {
+        setRecordingError("Couldn't access your microphone. Please check your browser permissions.");
+        setIsRecording(false);
+      }
     });
 
     return () => {
       cancelled = true;
+      clearTimeout(noAudioTimer);
+      setRecordingWarning(null);
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ terminate_session: true }));
         ws.close();
@@ -146,6 +180,8 @@ export function useVoiceTranscription(
   }, [isRecording]);
 
   const startRecording = (baseText: string) => {
+    setRecordingError(null);
+    hadTranscriptRef.current = false;
     baseTextRef.current = baseText
       ? baseText.endsWith(" ")
         ? baseText
@@ -157,5 +193,5 @@ export function useVoiceTranscription(
 
   const stopRecording = () => setIsRecording(false);
 
-  return { isRecording, startRecording, stopRecording };
+  return { isRecording, recordingError, recordingWarning, startRecording, stopRecording };
 }

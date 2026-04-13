@@ -42,7 +42,7 @@ export function WriteRantStep({
     rant.length > 0 ? "text" : "voice",
   );
 
-  const { isRecording, startRecording, stopRecording } =
+  const { isRecording, recordingError, recordingWarning, startRecording, stopRecording } =
     useVoiceTranscription(onRantChange);
 
   const handleStartRecording = () => {
@@ -176,6 +176,13 @@ export function WriteRantStep({
                 rows={8}
               />
             </motion.div>
+          )}
+
+          {recordingError && (
+            <p className="text-xs text-red-600">{recordingError}</p>
+          )}
+          {recordingWarning && (
+            <p className="text-xs text-yellow-600">{recordingWarning}</p>
           )}
 
           <div className="flex justify-between items-center text-xs">
