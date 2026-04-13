@@ -6,8 +6,7 @@ import {
 } from "./auth-api.tsx";
 import { generateId, saveDebateRoom } from "./debate-api.tsx";
 import type {
-Community,
-  DebateRoom,
+  Community, DemographicQuestion,
   Statement
 } from "./types.tsx";
 import { ONE_WEEK_MS } from "./time-utils.ts";
@@ -131,15 +130,17 @@ app.post(
       // Save demographic questions if provided
       if (demographicQuestions && Array.isArray(demographicQuestions) && demographicQuestions.length > 0) {
         await Promise.all(
-          demographicQuestions.map((question: any) =>
+          demographicQuestions.map((question: DemographicQuestion) =>
             insertDemographicQuestion({
               id: question.id,
               roomId,
               type: question.type,
               text: question.text,
-              options: question.options,
-            })
-          )
+              options: question.options?.filter(
+                (o: string) => o.trim() !== "",
+              ),
+            }),
+          ),
         );
       }
 

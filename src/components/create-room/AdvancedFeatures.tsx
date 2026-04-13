@@ -4,7 +4,7 @@ import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { ChevronDown, ChevronUp, Plus, Users } from "lucide-react";
 import { CustomDemographicQuestion } from "./CustomDemographicQuestion";
-import type { NewCustomDemographicQuestion, NewDemographicQuestion, StandardDemographicQuestionType } from "../../types";
+import { NewCustomDemographicQuestion, type NewDemographicQuestion, type StandardDemographicQuestionType } from "../../types";
 
 interface AdvancedFeaturesProps {
   demographicQuestions: NewDemographicQuestion[];
@@ -75,7 +75,9 @@ export function AdvancedFeatures({
     );
   };
 
-  const isCustomQuestion = (q: NewDemographicQuestion): q is NewCustomDemographicQuestion => {
+  const isCustomQuestion = (
+    q: NewDemographicQuestion,
+  ): q is NewCustomDemographicQuestion => {
     return q.type === "custom";
   };
 

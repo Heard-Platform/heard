@@ -7,7 +7,11 @@ import {
   CheckCircle2,
   PartyPopper,
 } from "lucide-react";
-import type { NewDebateRoom, DebateRoom, NewDemographicQuestion } from "../types";
+import {
+  type NewDebateRoom,
+  type DebateRoom,
+  type NewDemographicQuestion,
+} from "../types";
 import { FunSheet, FunSheetRef } from "./FunSheet";
 import {
   WriteRantStep,
