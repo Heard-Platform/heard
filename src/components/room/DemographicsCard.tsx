@@ -72,7 +72,7 @@ export function DemographicsCard({
   }
 
   return (
-    <div className="w-full bg-gradient-to-br from-purple-100 via-white to-blue-100 border-2 border-purple-300 shadow-xl overflow-hidden">
+    <div className="w-full rounded-xl bg-gradient-to-br from-purple-100 via-white to-blue-100 border-2 border-purple-300 shadow-xl overflow-hidden">
       <div className="h-full flex flex-col p-5">
         <div className="mb-4 flex items-start gap-2">
           <HelpCircle className="w-3.5 h-3.5 text-purple-600 flex-shrink-0 mt-0.5" />
