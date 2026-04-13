@@ -99,7 +99,7 @@ export function AdvancedFeatures({
               </Label>
             </div>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Add questions to understand who's participating in this conversation. All responses are shown in aggregate only.
+              Add questions to understand who's participating in this conversation. These questions will be interspersed throughout the conversation deck and are optional for participants to answer.
             </p>
           </div>
 
