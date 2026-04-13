@@ -84,7 +84,6 @@ export type NewCustomDemographicQuestion = NewDemographicQuestion &
 export type DemographicsCard = {
   type: "demographics";
   question: DemographicQuestion;
-  isUnswipeable: true;
 }
 
 export type Card = (StatementCard | CertifyCard | ChanceCard | YouTubeCard | DemographicsCard)

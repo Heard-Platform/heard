@@ -101,7 +101,6 @@ export function SwipeableStatementStack({
     const demoCards: DemographicsCard[] = unansweredDemos.map((question) => ({
       type: "demographics",
       question,
-      isUnswipeable: true,
     }));
 
     const insertAt = Math.min(3, cards.length);
@@ -270,7 +269,12 @@ export function SwipeableStatementStack({
     const swipingLeft = swipeX < -SWIPE_THRESHOLD || velocityX < -500;
     const swipingRight = swipeX > SWIPE_THRESHOLD || velocityX > 500;
 
-    if (card.type === "certify" || card.type === "chance" || card.type === "youtube") {
+    if (card.type === "demographics") {
+      if (swipingLeft || swipingRight) {
+        handleDemographicsAnswer(card.question.id, null);
+      }
+      return;
+    } else if (card.type === "certify" || card.type === "chance" || card.type === "youtube") {
       if (swipingLeft || swipingRight) {
         setIsVoting(true);
         setSwipedNoopCard(card.type);
