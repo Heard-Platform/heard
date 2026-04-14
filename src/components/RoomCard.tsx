@@ -6,7 +6,7 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
-  MessageCircle, ArrowRight,
+  Globe, UserCircle, ArrowRight,
   BarChart3,
   Loader2
 } from "lucide-react";
@@ -18,13 +18,11 @@ import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
 import { useState, useEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
-import { DebateRoom, Statement, VoteType, UserSession, AnalysisData } from "../types";
-import { MetricsCircle } from "./analysis/MetricsCircle";
+import { DebateRoom, Statement, VoteType, UserSession } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
-import { MetricsExplainerModal } from "./analysis/MetricsExplainerModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
-import moment from "moment";
+import { timeAgoShort } from "../utils/time";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -69,9 +67,7 @@ export function RoomCard({
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [youtubeCardSwiped, setYoutubeCardSwiped] = useState(room.youtubeCardSwiped || false);
   const [showAnalysis, setShowAnalysis] = useState(false);
-  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
-  const [showMetricsModal, setShowMetricsModal] = useState(false);
-  const { getRoomAnalysis, markChanceCardSwiped, markYouTubeCardSwiped } = useDebateSession();
+  const { markChanceCardSwiped, markYouTubeCardSwiped } = useDebateSession();
 
   useEffect(() => {
     if (analysisRoomId === room.id) {
@@ -87,23 +83,6 @@ export function RoomCard({
     setYoutubeCardSwiped(room.youtubeCardSwiped || false);
   }, [room.youtubeCardSwiped]);
 
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      if (isActive && statements.length > 0) {
-        try {
-          const data = await getRoomAnalysis(room.id);
-          if (data) {
-            setAnalysisData(data);
-          }
-        } catch (error) {
-          console.error('Error fetching room metrics:', error);
-        }
-      }
-    };
-
-    fetchMetrics();
-  }, [isActive, room.id, statements.length, getRoomAnalysis]);
-  
   const handleOpenAnalysis = () => {
     setShowAnalysis(true);
     updateUrlForAnalysis(room.id);
@@ -204,11 +183,64 @@ export function RoomCard({
             transition={{ delay: 0.1 }}
             className="space-y-2"
           >
-            {/* Title row with hamburger menu */}
+            {/* Top row: community + time | menu */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm min-w-0">
+                {currentSubHeard ? (
+                  <>
+                    <UserCircle className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    <span className="font-medium text-foreground truncate">Anonymous</span>
+                  </>
+                ) : (
+                  <>
+                    <Globe className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    {room.subHeard && (
+                      <span className="font-medium text-foreground truncate">
+                        {"h/" + room.subHeard
+                          .split("-")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() +
+                              word.slice(1),
+                          )
+                          .join("")}
+                      </span>
+                    )}
+                  </>
+                )}
+                <span className="text-muted-foreground shrink-0">
+                  {timeAgoShort(room.createdAt)} ago
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {isCompleted ? (
+                  <Badge className="bg-gray-600 text-white">Done</Badge>
+                ) : isActive_status ? (
+                  <TimeLeftBadge
+                    endTime={room.endTime}
+                    createdAt={room.createdAt}
+                    isRealtime={isRealtime}
+                  />
+                ) : (
+                  <Badge className="bg-blue-600 text-white">Waiting</Badge>
+                )}
+                <RoomCardMenu
+                  room={room}
+                  participantCount={participantCount}
+                  isRealtime={isRealtime}
+                  hasRealtimeEnded={hasRealtimeEnded}
+                  isDeveloper={isDeveloper}
+                  handleOpenAnalysis={handleOpenAnalysis}
+                />
+              </div>
+            </div>
+
+            {/* Title row */}
             <div className="flex items-start gap-2">
-              {room.imageUrl ? (
+              {room.imageUrl && (
                 <div
-                  className="w-10 h-10 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-2 border-purple-300 flex-shrink-0"
+                  className="w-10 h-10 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-2 border-purple-300 shrink-0"
                   onClick={() => {
                     const fullScreenDiv =
                       document.createElement("div");
@@ -232,78 +264,12 @@ export function RoomCard({
                     className="w-full h-full object-cover"
                   />
                 </div>
-              ) : (
-                <MessageCircle className="w-4 h-4 text-purple-600 flex-shrink-0 mt-1" />
               )}
               <h2 className="font-bold text-foreground flex-1">
                 {room.topic}
               </h2>
             </div>
 
-            <div className="flex items-center justify-between gap-2">
-              <div className="space-y-0.5 flex-1 min-w-0">
-                {room.subHeard && !currentSubHeard && (
-                  <p className="text-xs text-muted-foreground truncate">
-                    {room.subHeard
-                      .split("-")
-                      .map(
-                        (word) =>
-                          word.charAt(0).toUpperCase() +
-                          word.slice(1),
-                      )
-                      .join(" ")}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Posted {moment(room.createdAt).fromNow()}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 flex-shrink-0">
-                {analysisData && (
-                  <div
-                    className="cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowMetricsModal(true);
-                    }}
-                  >
-                    <MetricsCircle
-                      participation={analysisData.participation}
-                      consensus={analysisData.consensusData.consensus}
-                      spiciness={analysisData.spicinessData.spiciness}
-                      reach={analysisData.reachData.reach}
-                      size={25}
-                    />
-                  </div>
-                )}
-
-                {isCompleted ? (
-                  <Badge className="bg-gray-600 text-white">
-                    Done
-                  </Badge>
-                ) : isActive_status ? (
-                  <TimeLeftBadge
-                    endTime={room.endTime}
-                    createdAt={room.createdAt}
-                    isRealtime={isRealtime}
-                  />
-                ) : (
-                  <Badge className="bg-blue-600 text-white">
-                    Waiting
-                  </Badge>
-                )}
-                
-                <RoomCardMenu
-                  room={room}
-                  participantCount={participantCount}
-                  isRealtime={isRealtime}
-                  hasRealtimeEnded={hasRealtimeEnded}
-                  isDeveloper={isDeveloper}
-                  handleOpenAnalysis={handleOpenAnalysis}
-                />
-              </div>
-            </div>
           </motion.div>
 
           {/* Statement Stack or Results */}
@@ -446,12 +412,6 @@ export function RoomCard({
         />
       )}
 
-      {showMetricsModal && analysisData && (
-        <MetricsExplainerModal
-          analysisData={analysisData}
-          onClose={() => setShowMetricsModal(false)}
-        />
-      )}
     </motion.div>
   );
 }
