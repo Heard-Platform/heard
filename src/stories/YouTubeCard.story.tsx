@@ -2,6 +2,7 @@ import { useState } from "react";
 import { SwipeableStatementStack } from "../components/room/SwipeableStatementStack";
 import { Statement, VoteType, YouTubeCard } from "../types";
 import { Card, CardContent } from "../components/ui/card";
+import { mockRooms } from "./mockData";
 
 const mockStatements: Statement[] = [
   {
@@ -68,6 +69,7 @@ export function YouTubeCardStory() {
     <div className="space-y-6">
       <div className="bg-slate-100 rounded-lg p-8 flex items-center justify-center">
         <SwipeableStatementStack
+          room={mockRooms[0]}
           statements={mockStatements}
           currentUserId="story-user"
           allowAnonymous={true}
@@ -80,6 +82,7 @@ export function YouTubeCardStory() {
           onShowAccountSetupModal={() => {}}
           onChanceCardSwiped={async () => {}}
           onYouTubeCardSwiped={handleYouTubeCardSwiped}
+          onCertifyDone={async () => {}}
         />
       </div>
     </div>
