@@ -1189,6 +1189,10 @@
     height: 1.15rem;
   }
 
+  .h-\[30px\] {
+    height: 30px;
+  }
+
   .h-\[42px\] {
     height: 42px;
   }
@@ -1411,6 +1415,10 @@
 
   .w-\[95\%\] {
     width: 95%;
+  }
+
+  .w-\[30px\] {
+    width: 30px;
   }
 
   .w-fit {
