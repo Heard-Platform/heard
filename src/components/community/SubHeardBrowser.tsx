@@ -142,7 +142,7 @@ export function SubHeardBrowser({
           >
             <div
               className="flex items-center justify-center shrink-0 p-[5px] pl-[6px]"
-              style={{ width: 48, height: 40 }}
+              style={{ width: 40, height: 40 }}
               onClick={(e) => { e.stopPropagation(); onLogoClick(); }}
             >
               <img src={monkeyImg} alt="Heard" className="w-full h-full rounded-full object-cover" />
