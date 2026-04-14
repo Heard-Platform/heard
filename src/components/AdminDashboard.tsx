@@ -17,6 +17,7 @@ import { SparklineChart } from "./SparklineChart";
 import { ActivityMetrics } from "./ActivityMetrics";
 import { RetentionCard } from "./RetentionCard";
 import { FunnelChart } from "./FunnelChart";
+import { LiveActivityFeed } from "./LiveActivityFeed";
 
 interface AdminDashboardProps {
   currentUserId: string;
@@ -283,6 +284,7 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
             )}
           </div>
         </Card>
+        <LiveActivityFeed />
       </div>
     </div>
   );

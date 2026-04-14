@@ -3,9 +3,11 @@ import {
   getAllSubHeards, getActivitiesForDate,
   getAllRealUsers,
   getAllRealDebates,
-  getAllActivityRecords
+  getAllActivityRecords,
+  getAllStatements,
 } from "./kv-utils.tsx";
-import type { User } from "./types.tsx";
+import { getAllRecords } from "./db-utils.ts";
+import type { User, Vote, Session } from "./types.tsx";
 import { getFlyerEmails } from "./model-utils.ts";
 
 const app = new Hono();
@@ -279,6 +281,108 @@ app.get("/make-server-f1a393b4/stats/funnel", async (c) => {
       { error: "Failed to calculate funnel metrics" },
       500,
     );
+  }
+});
+
+app.get("/make-server-f1a393b4/stats/live-activity", async (c) => {
+  try {
+    const now = Date.now();
+    const tenMinutesAgo = now - 10 * 60 * 1000;
+    console.log(`[LiveActivity] Fetching live activity since ${new Date(tenMinutesAgo).toISOString()}...`);
+
+    const [users, statements, votes, subHeards, sessions] = await Promise.all([
+      getAllRealUsers(),
+      getAllStatements(),
+      getAllRecords<Vote>("vote:"),
+      getAllSubHeards(),
+      getAllRecords<Session>("session:"),
+    ]);
+
+    type EventType = "vote" | "statement" | "user" | "community" | "session";
+    type ActivityEvent = {
+      type: EventType;
+      timestamp: number;
+      id: string;
+      label: string;
+      meta?: Record<string, string>;
+    };
+
+    const events: ActivityEvent[] = [];
+
+    const ts = (val: number | string | undefined): number => {
+      if (!val) return 0;
+      const n = Number(val);
+      return isNaN(n) ? new Date(val).getTime() : n;
+    };
+
+    for (const user of users) {
+      const t = ts(user.createdAt);
+      if (t > tenMinutesAgo) {
+        events.push({
+          type: "user",
+          timestamp: t,
+          id: user.id,
+          label: user.nickname || user.id.substring(0, 8),
+        });
+      }
+    }
+
+    for (const statement of statements) {
+      const t = ts(statement.timestamp);
+      if (t > tenMinutesAgo) {
+        events.push({
+          type: "statement",
+          timestamp: t,
+          id: statement.id,
+          label: statement.text.length > 100 ? statement.text.substring(0, 100) + "…" : statement.text,
+          meta: { roomId: statement.roomId },
+        });
+      }
+    }
+
+    for (const vote of votes) {
+      const t = ts(vote.timestamp);
+      if (t > tenMinutesAgo) {
+        events.push({
+          type: "vote",
+          timestamp: t,
+          id: vote.id,
+          label: vote.voteType,
+          meta: { statementId: vote.statementId },
+        });
+      }
+    }
+
+    for (const subHeard of subHeards) {
+      const t = ts(subHeard.createdAt);
+      if (t > tenMinutesAgo) {
+        events.push({
+          type: "community",
+          timestamp: t,
+          id: subHeard.name,
+          label: subHeard.name,
+        });
+      }
+    }
+
+    for (const session of sessions) {
+      const t = ts(session.createdAt);
+      if (t > tenMinutesAgo) {
+        events.push({
+          type: "session",
+          timestamp: t,
+          id: session.id,
+          label: session.userId.substring(0, 8),
+        });
+      }
+    }
+
+    events.sort((a, b) => b.timestamp - a.timestamp);
+
+    return c.json({ events, fetchedAt: now });
+  } catch (error) {
+    console.error("Error fetching live activity:", error);
+    return c.json({ error: "Failed to fetch live activity" }, 500);
   }
 });
 
