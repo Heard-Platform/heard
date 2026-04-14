@@ -14,8 +14,8 @@ import { CreateRoomSheet } from "../components/CreateRoomSheet";
 import { SubHeardBrowser } from "../components/community/SubHeardBrowser";
 import { CommunityExplorerDialog } from "../components/community/CommunityExplorerDialog";
 import { IntroModal } from "../components/IntroModal";
-import { FloatingCreateButton } from "../components/FloatingCreateButton";
 import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
+import { SquarePlus } from "lucide-react";
 import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api } from "../utils/api";
@@ -281,16 +281,22 @@ export function LobbyScreen({
       {/* Main TikTok-style scroller */}
       <div className="relative">
         {/* Floating header with user info and menu */}
-        <div className="absolute top-0 left-0 right-0 controls-layer pt-[5px] px-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
+        <div className="absolute top-0 left-0 right-0 controls-layer pt-[6px] px-2 flex justify-between items-center">
+          <div
+            className="flex items-center gap-3"
+            style={{
+              width: "100%",
+              justifyContent: "space-around",
+              marginTop: 8,
+              alignItems: "center",
+            }}
+          >
             {onSubHeardChange && (
               <SubHeardBrowser
                 currentSubHeard={currentSubHeard}
                 user={user}
                 onSubHeardChange={onSubHeardChange}
-                onUpdateSubHeard={async (
-                  community: SubHeard,
-                ) => {
+                onUpdateSubHeard={async (community: SubHeard) => {
                   try {
                     const response =
                       await api.updateSubHeardSettings(community);
@@ -303,10 +309,7 @@ export function LobbyScreen({
                     );
                     return false;
                   } catch (error) {
-                    console.error(
-                      "Error updating sub-heard:",
-                      error,
-                    );
+                    console.error("Error updating sub-heard:", error);
                     return false;
                   }
                 }}
@@ -320,9 +323,18 @@ export function LobbyScreen({
                 }}
               />
             )}
-          </div>
 
-          <div className="flex items-center gap-2">
+            <button
+              onClick={handleOpenCreateSheet}
+              style={{ height: 30 }}
+              className="flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-gray-200 px-3 controls-layer"
+            >
+              <SquarePlus className="w-4 h-4 text-gray-600 shrink-0" />
+              <span className="text-gray-700 text-sm font-medium">
+                New
+              </span>
+            </button>
+
             {onLogout && (
               <SidePanelMenu
                 user={user}
@@ -363,13 +375,6 @@ export function LobbyScreen({
         />
       </div>
 
-      {/* Floating create button - hide when keyboard is open */}
-      {!isKeyboardOpen && (
-        <FloatingCreateButton
-          onPress={handleOpenCreateSheet}
-        />
-      )}
-
       {/* Create room sheet */}
       <CreateRoomSheet
         open={createRoomSheetOpen}
@@ -377,8 +382,7 @@ export function LobbyScreen({
         onOpenChange={handleCreateRoomSheetChange}
         onCreateRoom={handleCreateRoom}
         onExtractTopicAndStatements={async (rant) => {
-          const response =
-            await api.extractTopicAndStatements(rant);
+          const response = await api.extractTopicAndStatements(rant);
           if (!response.success || !response.data) {
             throw new Error(
               response.error ||

@@ -138,18 +138,18 @@ export function SubHeardBrowser({
       <Sheet open={sheetOpen} onOpenChange={handleSheetOpenChange}>
         <SheetTrigger asChild>
           <button
-            className="flex items-center rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-gray-200 overflow-hidden h-[48px] controls-layer"
+            className="flex items-center rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-gray-200 overflow-hidden h-[36px] controls-layer"
           >
             <div
-              className="flex items-center justify-center shrink-0 p-[5px] pl-[6px]"
-              style={{ width: 40, height: 40 }}
+              className="flex items-center justify-center shrink-0 p-[3px] pl-[4px]"
+              style={{ width: 30, height: 30 }}
               onClick={(e) => { e.stopPropagation(); onLogoClick(); }}
             >
               <img src={monkeyImg} alt="Heard" className="w-full h-full rounded-full object-cover" />
             </div>
-            <div className="w-px h-6 bg-gray-200 shrink-0" />
-            <div className="flex items-center gap-1 px-3">
-              <span className="text-gray-800 text-sm font-medium truncate max-w-[110px]">{displayText}</span>
+            <div className="w-px h-4 bg-gray-200 shrink-0" />
+            <div className="flex items-center gap-1 px-2.5 min-w-0 overflow-hidden">
+              <span className="text-gray-800 text-sm font-medium truncate">{displayText}</span>
               <ChevronDown className="w-4 h-4 text-gray-500 shrink-0" />
             </div>
           </button>

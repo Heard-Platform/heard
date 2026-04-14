@@ -169,8 +169,9 @@ export function SidePanelMenu({
           {user.isAnonymous ? (
             <Button
               variant="outline"
-              className="controls-layer bg-gradient-to-r from-orange-500 to-amber-500 backdrop-blur-sm shadow-lg px-4 py-2 h-[42px] gap-2 border-2 border-orange-400 hover:from-orange-600 hover:to-amber-600 transition-all"
-            >
+              style={{ height: 30 }}
+              className="controls-layer rounded-full bg-gradient-to-r from-orange-500 to-amber-500 backdrop-blur-sm shadow-lg px-4 gap-2 border border-orange-400 hover:from-orange-600 hover:to-amber-600 transition-all"
+              >
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-white" />
                 <span className="font-bold text-sm text-white">Sign Up</span>
@@ -179,11 +180,12 @@ export function SidePanelMenu({
           ) : (
             <Button
               variant="outline"
-              className="controls-layer bg-white/90 backdrop-blur-sm shadow-lg px-3 py-2 h-[42px] gap-2 border-2"
+              style={{ height: 30 }}
+              className="controls-layer rounded-full bg-white/90 backdrop-blur-sm shadow-lg px-3 h-[36px] gap-2 border border-gray-200"
             >
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm">{formattedScore}</span>
-                <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
+                <span className="text-sm">{formattedScore}</span>
+                <div className="relative w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
                   <User className="w-4 h-4 text-white" />
                   {!user.phoneVerified && (
                     <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center">
