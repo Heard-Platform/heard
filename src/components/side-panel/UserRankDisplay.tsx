@@ -15,7 +15,7 @@ export function UserRankDisplay({ user }: UserRankDisplayProps) {
   useEffect(() => {
     const fetchRank = async () => {
       setLoading(true);
-      const response = await safelyMakeApiCall(api.getUserRank);
+      const response = await safelyMakeApiCall(() => api.getUserRank());
       if (response?.data) {
         setRank(response.data.rank);
         setTotalUsers(response.data.totalUsers);
