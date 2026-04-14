@@ -283,40 +283,42 @@ export function LobbyScreen({
         {/* Floating header with user info and menu */}
         <div className="absolute top-0 left-0 right-0 controls-layer pt-[6px] px-2 flex justify-center items-center">
           <div
-            className="flex items-center justify-between w-full max-w-2xl"
+            className="flex items-center justify-between gap-2 w-full max-w-2xl"
             style={{ marginTop: 8 }}
           >
             {onSubHeardChange && (
-              <SubHeardBrowser
-                currentSubHeard={currentSubHeard}
-                user={user}
-                onSubHeardChange={onSubHeardChange}
-                onUpdateSubHeard={async (community: SubHeard) => {
-                  try {
-                    const response =
-                      await api.updateSubHeardSettings(community);
-                    if (response.success) {
-                      return true;
+              <div className="flex-1 min-w-0 mr-3">
+                <SubHeardBrowser
+                  currentSubHeard={currentSubHeard}
+                  user={user}
+                  onSubHeardChange={onSubHeardChange}
+                  onUpdateSubHeard={async (community: SubHeard) => {
+                    try {
+                      const response =
+                        await api.updateSubHeardSettings(community);
+                      if (response.success) {
+                        return true;
+                      }
+                      console.error(
+                        "Failed to update sub-heard:",
+                        response.error,
+                      );
+                      return false;
+                    } catch (error) {
+                      console.error("Error updating sub-heard:", error);
+                      return false;
                     }
-                    console.error(
-                      "Failed to update sub-heard:",
-                      response.error,
-                    );
-                    return false;
-                  } catch (error) {
-                    console.error("Error updating sub-heard:", error);
-                    return false;
-                  }
-                }}
-                onShowAccountSetupModal={handleShowAccountSetupModal}
-                onOpenExplorer={() => setExplorerOpen(true)}
-                onLogoClick={() => {
-                  roomScrollerRef.current?.scrollToTop();
-                  if (user.isDeveloper) {
-                    setShowDebugPanel(!showDebugPanel);
-                  }
-                }}
-              />
+                  }}
+                  onShowAccountSetupModal={handleShowAccountSetupModal}
+                  onOpenExplorer={() => setExplorerOpen(true)}
+                  onLogoClick={() => {
+                    roomScrollerRef.current?.scrollToTop();
+                    if (user.isDeveloper) {
+                      setShowDebugPanel(!showDebugPanel);
+                    }
+                  }}
+                />
+              </div>
             )}
 
             <button

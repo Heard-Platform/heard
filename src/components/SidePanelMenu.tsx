@@ -169,8 +169,7 @@ export function SidePanelMenu({
           {user.isAnonymous ? (
             <Button
               variant="outline"
-              style={{ height: 30 }}
-              className="controls-layer rounded-full bg-gradient-to-r from-orange-500 to-amber-500 backdrop-blur-sm shadow-lg px-4 gap-2 border border-orange-400 hover:from-orange-600 hover:to-amber-600 transition-all"
+              className="controls-layer rounded-full bg-gradient-to-r from-orange-500 to-amber-500 backdrop-blur-sm shadow-lg h-[30px] px-4 gap-2 border border-orange-400 hover:from-orange-600 hover:to-amber-600 transition-all"
               >
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-white" />
@@ -180,8 +179,7 @@ export function SidePanelMenu({
           ) : (
             <Button
               variant="outline"
-              style={{ height: 30 }}
-              className="controls-layer rounded-full bg-white/90 backdrop-blur-sm shadow-lg px-3 h-[36px] gap-2 border border-gray-200"
+              className="controls-layer rounded-full bg-white/90 backdrop-blur-sm shadow-lg px-3 h-[30px] gap-2 border border-gray-200"
             >
               <div className="flex items-center gap-2">
                 <span className="text-sm">{formattedScore}</span>

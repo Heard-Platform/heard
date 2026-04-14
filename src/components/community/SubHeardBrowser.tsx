@@ -138,11 +138,10 @@ export function SubHeardBrowser({
       <Sheet open={sheetOpen} onOpenChange={handleSheetOpenChange}>
         <SheetTrigger asChild>
           <button
-            className="flex items-center rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-gray-200 overflow-hidden h-[36px] controls-layer"
+            className="flex items-center rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-gray-200 overflow-hidden h-[30px] controls-layer w-full"
           >
             <div
-              className="flex items-center justify-center shrink-0 p-[3px] pl-[4px]"
-              style={{ width: 30, height: 30 }}
+              className="flex items-center justify-center shrink-0 h-[30px] w-[30px] p-[3px] pl-[4px]"
               onClick={(e) => { e.stopPropagation(); onLogoClick(); }}
             >
               <img src={monkeyImg} alt="Heard" className="w-full h-full rounded-full object-cover" />
