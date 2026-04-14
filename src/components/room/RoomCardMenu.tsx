@@ -7,7 +7,7 @@ import {
   XCircle,
   BarChart3,
   Link2,
-  Menu
+  MoreHorizontal
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -49,7 +49,7 @@ export function RoomCardMenu({
           className="w-6 h-6 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-0 flex-shrink-0"
           onClick={(e: React.MouseEvent) => e.stopPropagation()}
         >
-          <Menu className="w-4 h-4" />
+          <MoreHorizontal className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
