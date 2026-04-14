@@ -14,13 +14,11 @@ import {
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
 import { SwipeInstructions } from "../SwipeInstructions";
-import { AddResponseModal } from "./AddResponseModal";
 import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
-import { AddResponseButton } from "../widgets/AddResponseButton";
 
 interface SwipeableStatementStackProps {
   room: DebateRoom;
@@ -80,7 +78,6 @@ export function SwipeableStatementStack({
   const [demographicsAnsweredInternal, setDemographicsAnsweredInternal] = useState<Set<string>>(new Set());
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [statementToFlag, setStatementToFlag] = useState<Statement | null>(null);
-  const [showAddResponseModal, setShowAddResponseModal] = useState(false);
 
   const unvotedStatements = statements.filter((statement) => {
     const hasVotedBefore =
@@ -406,9 +403,6 @@ export function SwipeableStatementStack({
     }
   };
 
-  const topCard = cards[0];
-  const isSpecialCardOnTop = topCard?.type === "certify" || topCard?.type === "chance";
-
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
       <div className="relative" style={{ minHeight: "290px" }}>
@@ -485,20 +479,6 @@ export function SwipeableStatementStack({
             );
           })}
       </div>
-
-      {!isSpecialCardOnTop && (
-        <AddResponseButton onClick={() => setShowAddResponseModal(true)} />
-      )}
-
-      <AddResponseModal
-        room={room}
-        open={showAddResponseModal}
-        allowAnonymous={allowAnonymous}
-        isAnonymous={isAnonymous}
-        onOpenChange={setShowAddResponseModal}
-        onSubmitStatement={onSubmitStatement}
-        onShowAccountSetupModal={onShowAccountSetupModal}
-      />
 
       <FlagResponseDialog
         statement={statementToFlag}

@@ -24,6 +24,7 @@ import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { timeAgoShort } from "../utils/time";
 import { AddResponseButton } from "./widgets/AddResponseButton";
+import { formatSubHeardDisplay } from "../utils/subheard";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -198,14 +199,7 @@ export function RoomCard({
                     <Globe className="w-3.5 h-3.5 text-purple-600 shrink-0" />
                     {room.subHeard && (
                       <span className="font-medium text-foreground truncate">
-                        {"h/" + room.subHeard
-                          .split("-")
-                          .map(
-                            (word) =>
-                              word.charAt(0).toUpperCase() +
-                              word.slice(1),
-                          )
-                          .join("")}
+                        {formatSubHeardDisplay(room.subHeard)}
                       </span>
                     )}
                   </>
@@ -215,18 +209,7 @@ export function RoomCard({
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                {isCompleted ? (
-                  <Badge className="bg-gray-600 text-white">Done</Badge>
-                ) : isActive_status ? (
-                  <TimeLeftBadge
-                    endTime={room.endTime}
-                    createdAt={room.createdAt}
-                    isRealtime={isRealtime}
-                  />
-                ) : (
-                  <Badge className="bg-blue-600 text-white">Waiting</Badge>
-                )}
+              <div className="shrink-0">
                 <RoomCardMenu
                   room={room}
                   participantCount={participantCount}
@@ -299,20 +282,17 @@ export function RoomCard({
               // If user has voted on all statements, show InProgressResults + input
               if (hasSwipedAll) {
                 return (
-                  <div className="space-y-4">
-                    <InProgressResults
-                      statements={statements}
-                      debateTitle={room.topic}
-                      isAnonymous={!!user?.isAnonymous}
-                      onFollowDiscussion={() =>
-                        onShowAccountSetupModal(
-                          "certify your votes",
-                        )
-                      }
-                      onChangeVote={handleVote}
-                    />
-                    <AddResponseButton onClick={() => setShowAddResponseModal(true)} />
-                  </div>
+                  <InProgressResults
+                    statements={statements}
+                    debateTitle={room.topic}
+                    isAnonymous={!!user?.isAnonymous}
+                    onFollowDiscussion={() =>
+                      onShowAccountSetupModal(
+                        "certify your votes",
+                      )
+                    }
+                    onChangeVote={handleVote}
+                  />
                 );
               } else {
                 // Otherwise show the swipeable stack
@@ -352,9 +332,6 @@ export function RoomCard({
                       No responses yet to this post
                     </p>
                   </div>
-                  {!isCompleted && (
-                    <AddResponseButton onClick={() => setShowAddResponseModal(true)} />
-                  )}
                   <Button
                     onClick={onJoin}
                     disabled={isCompleted}
@@ -371,23 +348,40 @@ export function RoomCard({
             </div>
           )}
 
-          {isCompleted && (
-            <div className="mt-4">
+          <div className="flex items-center gap-2">
+            {!isCompleted && (
+              <AddResponseButton onClick={() => setShowAddResponseModal(true)} />
+            )}
+            {isCompleted && (
               <Button
                 onClick={handleOpenAnalysis}
-                size="sm"
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                variant="secondary"
+                className="heard-pill"
               >
                 {showAnalysis ? "Hide Analysis" : "Show Analysis"}
-                <BarChart3 className="w-5 h-5 ml-2" />
+                <BarChart3 className="w-4 h-4" />
               </Button>
-              {showAnalysis && (
-                <DebateAnalysisView
-                  roomId={room.id}
-                  isDeveloper={isDeveloper}
-                  onClose={handleCloseAnalysis}
-                />
-              )}
+            )}
+            {isCompleted ? (
+              <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>
+            ) : isActive_status ? (
+              <TimeLeftBadge
+                endTime={room.endTime}
+                createdAt={room.createdAt}
+                isRealtime={isRealtime}
+              />
+            ) : (
+              <Badge className="heard-pill bg-blue-600 text-white">Waiting</Badge>
+            )}
+          </div>
+
+          {isCompleted && showAnalysis && (
+            <div>
+              <DebateAnalysisView
+                roomId={room.id}
+                isDeveloper={isDeveloper}
+                onClose={handleCloseAnalysis}
+              />
             </div>
           )}
         </div>
