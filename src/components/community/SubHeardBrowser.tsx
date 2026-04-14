@@ -12,6 +12,7 @@ import {
 } from "../ui/sheet";
 import { Home, Hash, Plus, ChevronDown, EyeOff, Settings, Crown, LogOut, Compass } from "lucide-react";
 import { MessageSquare } from "lucide-react";
+import monkeyImg from "/monkey.png";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { CommunityAdminDialog } from "./CommunityAdminDialog";
 import { CreateCommunityDialog } from "./CreateCommunityDialog";
@@ -28,6 +29,7 @@ interface SubHeardBrowserProps {
   ) => Promise<boolean>;
   onShowAccountSetupModal: (featureText: string) => void;
   onOpenExplorer: () => void;
+  onLogoClick: () => void;
 }
 
 export function SubHeardBrowser({
@@ -37,6 +39,7 @@ export function SubHeardBrowser({
   onUpdateSubHeard,
   onShowAccountSetupModal,
   onOpenExplorer,
+  onLogoClick,
 }: SubHeardBrowserProps) {
   const { getSubHeards, leaveSubHeard } = useDebateSession();
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
@@ -85,7 +88,7 @@ export function SubHeardBrowser({
 
   const displayText = currentSubHeard
     ? formatSubHeardDisplay(currentSubHeard)
-    : "All";
+    : "All Posts";
 
   const currentSubHeardData = subHeards.find(sh => sh.name === currentSubHeard);
   const isCurrentAdmin = currentSubHeardData?.adminId === user.id;
@@ -134,18 +137,22 @@ export function SubHeardBrowser({
     <>
       <Sheet open={sheetOpen} onOpenChange={handleSheetOpenChange}>
         <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="controls-layer bg-white/90 backdrop-blur-sm shadow-lg h-[42px]"
-            style={{ maxWidth: "120px" }}
+          <button
+            className="flex items-center rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-gray-200 overflow-hidden h-[48px] controls-layer"
           >
-            {!currentSubHeard && (
-              <Home className="w-4 h-4 mr-1 flex-shrink-0" />
-            )}
-            <span className="truncate">{displayText}</span>
-            <ChevronDown className="w-3 h-3 ml-1 flex-shrink-0" />
-          </Button>
+            <div
+              className="flex items-center justify-center shrink-0 p-[5px] pl-[6px]"
+              style={{ width: 48, height: 40 }}
+              onClick={(e) => { e.stopPropagation(); onLogoClick(); }}
+            >
+              <img src={monkeyImg} alt="Heard" className="w-full h-full rounded-full object-cover" />
+            </div>
+            <div className="w-px h-6 bg-gray-200 shrink-0" />
+            <div className="flex items-center gap-1 px-3">
+              <span className="text-gray-800 text-sm font-medium truncate max-w-[110px]">{displayText}</span>
+              <ChevronDown className="w-4 h-4 text-gray-500 shrink-0" />
+            </div>
+          </button>
         </SheetTrigger>
 
         <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">

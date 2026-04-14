@@ -283,35 +283,6 @@ export function LobbyScreen({
         {/* Floating header with user info and menu */}
         <div className="absolute top-0 left-0 right-0 controls-layer pt-[5px] px-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div
-              className="flex flex-col"
-              onClick={() => {
-                roomScrollerRef.current?.scrollToTop();
-                if (user.isDeveloper) {
-                  setShowDebugPanel(!showDebugPanel);
-                }
-              }}
-              style={{
-                cursor: "pointer",
-              }}
-            >
-              <motion.h1
-                className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg flex items-baseline gap-0.5"
-                style={{
-                  WebkitTextStroke:
-                    "0.6px rgba(255,255,255,0.8)",
-                }}
-              >
-                HEARD
-                <span className="text-xs font-normal tracking-widest" style={{ WebkitTextStroke: "0" }}>
-                  .vote
-                </span>
-              </motion.h1>
-            </div>
-          </div>
-
-          {/* Sub-Heard Browser and User menu */}
-          <div className="flex items-center gap-2">
             {onSubHeardChange && (
               <SubHeardBrowser
                 currentSubHeard={currentSubHeard}
@@ -341,9 +312,17 @@ export function LobbyScreen({
                 }}
                 onShowAccountSetupModal={handleShowAccountSetupModal}
                 onOpenExplorer={() => setExplorerOpen(true)}
+                onLogoClick={() => {
+                  roomScrollerRef.current?.scrollToTop();
+                  if (user.isDeveloper) {
+                    setShowDebugPanel(!showDebugPanel);
+                  }
+                }}
               />
             )}
+          </div>
 
+          <div className="flex items-center gap-2">
             {onLogout && (
               <SidePanelMenu
                 user={user}
