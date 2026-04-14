@@ -6,6 +6,7 @@ import {
   Feedback,
   FeatureResults,
   FunnelMetricsData,
+  LiveActivityData,
   PublicStatsData,
   RetentionStatsData,
   Statement,
@@ -554,6 +555,10 @@ class ApiClient extends BaseApiClient {
     return this.request<FunnelMetricsData>("/stats/funnel", {
       method: "GET",
     });
+  }
+
+  async getLiveActivity() {
+    return this.request<LiveActivityData>("/stats/live-activity");
   }
 
   async getFeatureStats() {
