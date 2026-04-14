@@ -281,15 +281,10 @@ export function LobbyScreen({
       {/* Main TikTok-style scroller */}
       <div className="relative">
         {/* Floating header with user info and menu */}
-        <div className="absolute top-0 left-0 right-0 controls-layer pt-[6px] px-2 flex justify-between items-center">
+        <div className="absolute top-0 left-0 right-0 controls-layer pt-[6px] px-2 flex justify-center items-center">
           <div
-            className="flex items-center gap-3"
-            style={{
-              width: "100%",
-              justifyContent: "space-around",
-              marginTop: 8,
-              alignItems: "center",
-            }}
+            className="flex items-center justify-between w-full max-w-2xl"
+            style={{ marginTop: 8 }}
           >
             {onSubHeardChange && (
               <SubHeardBrowser
