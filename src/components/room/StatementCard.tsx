@@ -98,7 +98,7 @@ export function StatementCard({
 
       <div className="flex items-end justify-between">
         <span className="text-xs text-muted-foreground">
-          Posted {timeAgo}
+          {timeAgo} ago
         </span>
         {isTopCard && (
           <span className="text-xs text-muted-foreground">
