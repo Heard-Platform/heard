@@ -1,20 +1,27 @@
-import { NewStatementInput } from "../NewStatementInput";
+import { useState } from "react";
+import { AddResponseModal } from "./AddResponseModal";
+import type { DebateRoom } from "../../types";
+import { AddResponseButton } from "../widgets/AddResponseButton";
 
 interface ChanceCardProps {
+  room: DebateRoom;
   isTopCard: boolean;
-  onSubmitStatement: (text: string) => Promise<void>;
   allowAnonymous: boolean;
   isAnonymous: boolean;
+  onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
 }
 
-export function ChanceCard({ 
+export function ChanceCard({
+  room,
   isTopCard,
-  onSubmitStatement,
   allowAnonymous,
   isAnonymous,
+  onSubmitStatement,
   onShowAccountSetupModal,
 }: ChanceCardProps) {
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <>
       <div className="heard-between mb-2">
@@ -24,22 +31,24 @@ export function ChanceCard({
         </div>
       </div>
 
-      <div className="mb-2 min-h-[120px] flex flex-col items-center justify-center space-y-4">
+      <div className="mb-4 min-h-[120px] flex flex-col items-center justify-center space-y-4">
         <div className="text-3xl mb-2">💬</div>
         <h3 className="text-2xl text-center">What do you think?</h3>
         <p className="text-base text-center text-muted-foreground max-w-sm">
-          Use the field below to share your takes on the topic.
+          Share your take on the topic.
         </p>
+        <AddResponseButton onClick={() => setShowModal(true)} />
       </div>
 
-      <div className="mb-4">
-        <NewStatementInput
-          onSubmitStatement={onSubmitStatement}
-          allowAnonymous={allowAnonymous}
-          isAnonymous={isAnonymous}
-          onShowAccountSetupModal={onShowAccountSetupModal}
-        />
-      </div>
+      <AddResponseModal
+        room={room}
+        open={showModal}
+        allowAnonymous={allowAnonymous}
+        isAnonymous={isAnonymous}
+        onOpenChange={setShowModal}
+        onSubmitStatement={onSubmitStatement}
+        onShowAccountSetupModal={onShowAccountSetupModal}
+      />
 
       {isTopCard && (
         <div className="pt-2 border-t border-orange-200">

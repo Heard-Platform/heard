@@ -10,6 +10,7 @@ import type {
   DemographicQuestion
 } from "../types";
 import { useState } from "react";
+import { mockRooms } from "./mockData";
 
 const questions: DemographicQuestion[] = [
   {
@@ -97,6 +98,7 @@ function DemographicsSwipeableStack() {
   return (
     <div className="space-y-8">
       <SwipeableStatementStack
+        room={mockRooms[0]}
         statements={[]}
         currentUserId="demo-user"
         allowAnonymous={true}

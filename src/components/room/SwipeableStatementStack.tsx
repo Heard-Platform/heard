@@ -9,18 +9,21 @@ import {
   type YouTubeCard,
   type DemographicsCard,
   type CertifyCard,
+  type DebateRoom,
   DemographicQuestion,
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
 import { SwipeInstructions } from "../SwipeInstructions";
-import { NewStatementInput } from "../NewStatementInput";
+import { AddResponseModal } from "./AddResponseModal";
 import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
+import { AddResponseButton } from "../widgets/AddResponseButton";
 
 interface SwipeableStatementStackProps {
+  room: DebateRoom;
   statements: Statement[];
   currentUserId?: string;
   allowAnonymous: boolean;
@@ -30,10 +33,7 @@ interface SwipeableStatementStackProps {
   youtubeCardSwiped: boolean;
   demographicQuestions?: DemographicQuestion[];
   demographicsAnswered?: Set<string>;
-  onVote: (
-    id: string,
-    voteType: VoteType,
-  ) => Promise<void>;
+  onVote: (id: string, voteType: VoteType) => Promise<void>;
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
   onCertifyDone: () => void;
@@ -45,6 +45,7 @@ interface SwipeableStatementStackProps {
 const SWIPE_THRESHOLD = 100;
 
 export function SwipeableStatementStack({
+  room,
   statements,
   currentUserId,
   allowAnonymous,
@@ -79,6 +80,7 @@ export function SwipeableStatementStack({
   const [demographicsAnsweredInternal, setDemographicsAnsweredInternal] = useState<Set<string>>(new Set());
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [statementToFlag, setStatementToFlag] = useState<Statement | null>(null);
+  const [showAddResponseModal, setShowAddResponseModal] = useState(false);
 
   const unvotedStatements = statements.filter((statement) => {
     const hasVotedBefore =
@@ -409,7 +411,7 @@ export function SwipeableStatementStack({
 
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
-      <div className="relative min-h-[320px]">
+      <div className="relative" style={{ minHeight: "290px" }}>
         {showTutorial && (
           <div className="absolute inset-0 z-20 pointer-events-none">
             <SwipeInstructions />
@@ -441,6 +443,7 @@ export function SwipeableStatementStack({
               <SwipeableCard
                 key={getCardKey()}
                 card={card}
+                room={room}
                 index={index}
                 isTopCard={isTopCard}
                 onDragEnd={(event, info) =>
@@ -484,13 +487,18 @@ export function SwipeableStatementStack({
       </div>
 
       {!isSpecialCardOnTop && (
-        <NewStatementInput
-          onSubmitStatement={onSubmitStatement}
-          allowAnonymous={allowAnonymous}
-          isAnonymous={isAnonymous}
-          onShowAccountSetupModal={onShowAccountSetupModal}
-        />
+        <AddResponseButton onClick={() => setShowAddResponseModal(true)} />
       )}
+
+      <AddResponseModal
+        room={room}
+        open={showAddResponseModal}
+        allowAnonymous={allowAnonymous}
+        isAnonymous={isAnonymous}
+        onOpenChange={setShowAddResponseModal}
+        onSubmitStatement={onSubmitStatement}
+        onShowAccountSetupModal={onShowAccountSetupModal}
+      />
 
       <FlagResponseDialog
         statement={statementToFlag}

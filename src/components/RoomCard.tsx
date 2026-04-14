@@ -13,7 +13,7 @@ import {
 import { SwipeableStatementStack } from "./room/SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
-import { NewStatementInput } from "./NewStatementInput";
+import { AddResponseModal } from "./room/AddResponseModal";
 import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
 import { useState, useEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
@@ -23,6 +23,7 @@ import { RoomCardMenu } from "./room/RoomCardMenu";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { timeAgoShort } from "../utils/time";
+import { AddResponseButton } from "./widgets/AddResponseButton";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -67,6 +68,7 @@ export function RoomCard({
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [youtubeCardSwiped, setYoutubeCardSwiped] = useState(room.youtubeCardSwiped || false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [showAddResponseModal, setShowAddResponseModal] = useState(false);
   const { markChanceCardSwiped, markYouTubeCardSwiped } = useDebateSession();
 
   useEffect(() => {
@@ -309,28 +311,22 @@ export function RoomCard({
                       }
                       onChangeVote={handleVote}
                     />
-                    <NewStatementInput
-                      onSubmitStatement={handleSubmitStatement}
-                      allowAnonymous={!!room.allowAnonymous}
-                      isAnonymous={!!user?.isAnonymous}
-                      onShowAccountSetupModal={
-                        onShowAccountSetupModal
-                      }
-                    />
+                    <AddResponseButton onClick={() => setShowAddResponseModal(true)} />
                   </div>
                 );
               } else {
                 // Otherwise show the swipeable stack
                 return (
                   <SwipeableStatementStack
+                    room={room}
                     statements={statements}
                     currentUserId={user.id}
                     allowAnonymous={!!room.allowAnonymous}
                     isAnonymous={!!user?.isAnonymous}
-                    onVote={handleVote}
                     chanceCardSwiped={chanceCardSwiped}
                     youtubeUrl={room.youtubeUrl}
                     youtubeCardSwiped={youtubeCardSwiped}
+                    onVote={handleVote}
                     onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
                     onCertifyDone={() => setCertifyCardDismissed(true)}
@@ -357,14 +353,7 @@ export function RoomCard({
                     </p>
                   </div>
                   {!isCompleted && (
-                    <NewStatementInput
-                      onSubmitStatement={handleSubmitStatement}
-                      allowAnonymous={!!room.allowAnonymous}
-                      isAnonymous={!!user?.isAnonymous}
-                      onShowAccountSetupModal={
-                        onShowAccountSetupModal
-                      }
-                    />
+                    <AddResponseButton onClick={() => setShowAddResponseModal(true)} />
                   )}
                   <Button
                     onClick={onJoin}
@@ -411,6 +400,16 @@ export function RoomCard({
           onClose={handleCloseAnalysis}
         />
       )}
+
+      <AddResponseModal
+        room={room}
+        open={showAddResponseModal}
+        allowAnonymous={!!room.allowAnonymous}
+        isAnonymous={!!user?.isAnonymous}
+        onOpenChange={setShowAddResponseModal}
+        onSubmitStatement={handleSubmitStatement}
+        onShowAccountSetupModal={onShowAccountSetupModal}
+      />
 
     </motion.div>
   );
