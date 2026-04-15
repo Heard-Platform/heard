@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { MessageSquare } from "lucide-react";
 import { motion } from "motion/react";
 import { Button } from "../ui/button";
@@ -35,17 +35,6 @@ export function AddResponseModal({
 }: AddResponseModalProps) {
   const [text, setText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const textareaContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const timer = setTimeout(() => {
-      const textarea = textareaContainerRef.current?.querySelector("textarea");
-      textarea?.focus();
-      textarea?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [open]);
 
   const handleTextChange = (value: string) => {
     if (!allowAnonymous && isAnonymous && value.length > 0) {
@@ -87,7 +76,10 @@ export function AddResponseModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-0 p-0 overflow-hidden">
+      <DialogContent
+        className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-0 p-0 overflow-hidden"
+        onOpenAutoFocus={(e: Event) => e.preventDefault()}
+      >
         <DialogHeader className="px-6 pt-6 pb-2">
           <div className="flex items-center justify-center gap-2 mb-1">
             <motion.div
@@ -114,7 +106,6 @@ export function AddResponseModal({
             <p className="text-sm text-slate-700 font-medium leading-snug">{room.topic}</p>
           </motion.div>
           <motion.div
-            ref={textareaContainerRef}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
