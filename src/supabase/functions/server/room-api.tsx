@@ -1,5 +1,4 @@
 import { Context, Hono } from "npm:hono";
-import * as kv from "./kv_store.tsx";
 import {
   getUserSession,
   saveUserAndEmail,
@@ -10,7 +9,7 @@ import type {
   Statement
 } from "./types.tsx";
 import { ONE_WEEK_MS } from "./time-utils.ts";
-import { getCommunity, saveCommunity } from "./kv-utils.tsx";
+import { getCommunity, saveCommunity, saveStatement } from "./kv-utils.tsx";
 import { createNewRoomData } from "./room-utils.ts";
 import { insertDemographicQuestion } from "./model-utils.ts";
 
@@ -118,10 +117,7 @@ app.post(
 
         // Save each statement individually
         for (const statement of statements) {
-          await kv.set(
-            `statement:${roomId}:${statement.id}`,
-            JSON.stringify(statement),
-          );
+          await saveStatement(statement);
         }
 
         console.log(`Created ${statements.length} seed statements for room ${roomId}`);

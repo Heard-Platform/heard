@@ -1,7 +1,6 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
-import * as kv from "./kv_store.tsx";
-import { getByPrefixParsed } from "./kv-utils.tsx";
+import { getByPrefixParsed, getActiveRoomValues, saveActiveRoomPointer, saveDebate } from "./kv-utils.tsx";
 import { backfillUserCreatedAtApi } from "./backfill-user-created-at.tsx";
 import { backfillMembershipsApi } from "./script-backfill-memberships.tsx";
 import { verifyAdminKey } from "./admin-api.tsx";
@@ -14,19 +13,19 @@ app.post(
   "/make-server-f1a393b4/one-time-fixes/fix-active-room-pointers",
   async (c) => {
     try {
-      const activeRoomKeys = await kv.getByPrefix("active_room:");
+      const activeRoomValues = await getActiveRoomValues();
       let migratedCount = 0;
       let skippedCount = 0;
       const migratedRoomIds: string[] = [];
 
-      for (const value of activeRoomKeys) {
+      for (const value of activeRoomValues) {
         try {
-          if (value.startsWith("{")) {
+          if (typeof value === "string" && value.startsWith("{")) {
             const roomData = JSON.parse(value);
             const roomId = roomData.id;
 
-            await kv.set(`room:${roomId}`, value);
-            await kv.set(`active_room:${roomId}`, roomId);
+            await saveDebate(roomData);
+            await saveActiveRoomPointer(roomId, roomId);
 
             migratedCount++;
             migratedRoomIds.push(roomId);
@@ -78,7 +77,7 @@ app.post(
 
           if (room.isActive !== true) {
             room.isActive = true;
-            await kv.set(`room:${roomId}`, room);
+            await saveDebate(room);
             updatedCount++;
             updatedRoomIds.push(roomId);
             console.log(`Set room ${roomId} to active`);

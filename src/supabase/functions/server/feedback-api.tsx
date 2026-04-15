@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Context, Hono } from "npm:hono";
-import * as kv from "./kv_store.tsx";
+import { saveFeedback, getFeedbackList } from "./kv-utils.tsx";
 import { sendEmailToDevs } from "./dev-utils.tsx";
 
 const app = new Hono();
@@ -27,7 +27,7 @@ app.post("/make-server-f1a393b4/feedback/submit", async (c: Context) => {
     };
 
     // Store in KV store
-    await kv.set(`feedback:${feedbackId}`, JSON.stringify(feedback));
+    await saveFeedback(feedback);
 
     // Send email to dev users
     try {
@@ -51,17 +51,7 @@ app.post("/make-server-f1a393b4/feedback/submit", async (c: Context) => {
 
 app.get("/make-server-f1a393b4/feedback/list", async (c: Context) => {
   try {
-    const feedbackKeys = await kv.getByPrefix("feedback:");
-
-    const feedbackList = feedbackKeys
-      .map((fb) => {
-        try {
-          return typeof fb === "string" ? JSON.parse(fb) : fb;
-        } catch (error) {
-          return null;
-        }
-      })
-      .filter((fb) => fb !== null);
+    const feedbackList = await getFeedbackList();
 
     // Sort by most recent
     feedbackList.sort((a, b) => b.timestamp - a.timestamp);

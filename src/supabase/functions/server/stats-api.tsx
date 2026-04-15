@@ -5,6 +5,7 @@ import {
   getAllRealDebates,
   getAllActivityRecords,
   getAllStatements,
+  getAllVotes,
 } from "./kv-utils.tsx";
 import { getAllRecords } from "./db-utils.ts";
 import type { User, Vote, Session } from "./types.tsx";
@@ -163,7 +164,7 @@ app.get("/make-server-f1a393b4/public-stats", async (c) => {
 });
 
 // Retention stats endpoint - user retention rates based on account creation
-app.get("/make-server-f1a393b4/retention-stats", async (c) => {
+app.get("/make-server-f1a393b4/stats/retention", async (c) => {
   try {
     const allUsers = await getAllRealUsers();
     const now = Date.now();
@@ -293,7 +294,7 @@ app.get("/make-server-f1a393b4/stats/live-activity", async (c) => {
     const [users, statements, votes, subHeards, sessions] = await Promise.all([
       getAllRealUsers(),
       getAllStatements(),
-      getAllRecords<Vote>("vote:"),
+      getAllVotes(),
       getAllSubHeards(),
       getAllRecords<Session>("session:"),
     ]);

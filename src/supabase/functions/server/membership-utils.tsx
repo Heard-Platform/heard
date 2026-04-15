@@ -1,4 +1,4 @@
-import * as kv from "./kv_store.tsx";
+import { getMembershipsForUser } from "./kv-utils.tsx";
 
 /**
  * Get all sub-heard memberships for a user
@@ -7,21 +7,14 @@ import * as kv from "./kv_store.tsx";
 export async function getUserMemberships(
   userId: string,
 ): Promise<Set<string>> {
-  const membershipKeys = await kv.getByPrefix(
-    `subheard_member:${userId}:`,
-  );
-  const memberships = new Set<string>();
+  const memberships = await getMembershipsForUser(userId);
+  const membershipSet = new Set<string>();
 
-  for (const key of membershipKeys) {
-    try {
-      const data = JSON.parse(key);
-      if (data.subHeard) {
-        memberships.add(data.subHeard);
-      }
-    } catch (error) {
-      console.error("Error parsing membership:", error);
+  for (const membership of memberships) {
+    if (membership.subHeard) {
+      membershipSet.add(membership.subHeard);
     }
   }
 
-  return memberships;
+  return membershipSet;
 }

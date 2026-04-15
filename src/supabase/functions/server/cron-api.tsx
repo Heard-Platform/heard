@@ -1,6 +1,5 @@
 import { Hono } from "npm:hono";
-import * as kv from "./kv_store.tsx";
-import { getAllDebates, getUser } from "./kv-utils.tsx";
+import { getAllDebates, getUser, getCelebrationSmsSent, saveCelebrationSmsSent } from "./kv-utils.tsx";
 import { getFrontendUrl } from "./utils.tsx";
 import { sendSms } from "./twilio-service.tsx";
 import type { DebateRoom } from "./types.tsx";
@@ -71,7 +70,7 @@ app.post(
 
       const results = [];
       for (const room of recentlyEndedRooms) {
-        const alreadySent = await kv.get(`celebration-sms-sent:${room.id}`);
+        const alreadySent = await getCelebrationSmsSent(room.id);
         if (alreadySent) {
           console.log(`Celebration SMS already sent for room ${room.id}`);
           continue;
@@ -79,9 +78,9 @@ app.post(
 
         try {
           await sendDebateCompletionCelebration(room);
-          await kv.set(`celebration-sms-sent:${room.id}`, "true");
+          await saveCelebrationSmsSent(room.id);
           results.push({ roomId: room.id, success: true });
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Failed to send celebration for room ${room.id}:`, error);
           results.push({ 
             roomId: room.id, 

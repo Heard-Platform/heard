@@ -1,8 +1,7 @@
 // @ts-ignore
 import { Context, Hono } from "npm:hono";
-import * as kv from "./kv_store.tsx";
 import {
-  saveStatement, getDebate,
+  saveStatement, getDebate, saveDebate,
   saveVote,
   getAllDebates,
   saveChanceCardStatus,
@@ -10,7 +9,14 @@ import {
   saveYouTubeCardStatus,
   getUsersYouTubeCardStatuses,
   getVotesForStatement,
-  getCommunities
+  getCommunities,
+  getStatementsForRoom,
+  saveRant,
+  getRantsForRoom,
+  bulkSaveStatements,
+  saveUserWithEmailIndex,
+  getClusterMetadataRecord,
+  getClusterAssignmentsBatch,
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
@@ -424,9 +430,7 @@ Don't want to miss future updates? HEARD will notify you when each phase begins 
 };
 
 const saveUserSession = async (session: User) => {
-  await kv.set(`user:${session.id}`, JSON.stringify(session));
-  // Also store by email for lookup
-  await kv.set(`user_email:${session.email}`, session.id);
+  await saveUserWithEmailIndex(session);
 };
 
 const getDebateRoom = async (
@@ -450,7 +454,7 @@ const getDebateRoom = async (
 };
 
 export const saveDebateRoom = async (room: DebateRoom) => {
-  await kv.set(`room:${room.id}`, JSON.stringify(room));
+  await saveDebate(room);
 };
 
 export const getActiveRooms = async (): Promise<DebateRoom[]> => {
@@ -487,19 +491,7 @@ const getStatements = async (
   roomId: string,
 ): Promise<Statement[]> => {
   try {
-    const statements = await kv.getByPrefix(
-      `statement:${roomId}:`,
-    );
-    const parsedStatements = statements
-      .map((s) => {
-        try {
-          return JSON.parse(s);
-        } catch (error) {
-          console.error("Error parsing statement:", s, error);
-          return null;
-        }
-      })
-      .filter((s) => s !== null);
+    const parsedStatements = await getStatementsForRoom(roomId);
 
     // Get all statement IDs
     const statementIds = parsedStatements.map((s) => s.id);
@@ -536,46 +528,6 @@ const getStatements = async (
   }
 };
 
-const bulkSaveStatements = async (statements: Statement[]) => {
-  const items = statements.map((statement) => ({
-    key: `statement:${statement.roomId}:${statement.id}`,
-    value: JSON.stringify(statement),
-  }));
-  await kv.bulkSet(items);
-};
-
-// Rant utility functions
-const saveRant = async (rant: Rant) => {
-  await kv.set(
-    `rant:${rant.roomId}:${rant.id}`,
-    JSON.stringify(rant),
-  );
-};
-
-const getRantsForRoom = async (
-  roomId: string,
-): Promise<Rant[]> => {
-  try {
-    const rants = await kv.getByPrefix(`rant:${roomId}:`);
-    return rants
-      .map((r) => {
-        try {
-          return JSON.parse(r);
-        } catch (error) {
-          console.error("Error parsing rant:", r, error);
-          return null;
-        }
-      })
-      .filter((r) => r !== null)
-      .sort((a, b) => a.timestamp - b.timestamp); // Chronological order
-  } catch (error) {
-    console.error(
-      `Error fetching rants for room ${roomId}:`,
-      error,
-    );
-    return [];
-  }
-};
 
 // Get user session
 app.get(
@@ -2282,35 +2234,21 @@ app.get(
       }
 
       // Get cluster metadata
-      const metadataKey = `cluster:${roomId}:metadata`;
-      const metadataValue = await kv.get(metadataKey);
-      const metadata = metadataValue
-        ? JSON.parse(metadataValue)
-        : null;
+      const metadata = await getClusterMetadataRecord(roomId);
 
       // Get all cluster assignments for participants
-      const clusterKeys = room.participants.map(
-        (userId) => `cluster_assignment:${roomId}:${userId}`,
-      );
-      const clusterValues = await kv.mget(clusterKeys);
+      const clusterMap = await getClusterAssignmentsBatch(roomId, room.participants);
 
-      const assignments = room.participants.map(
-        (userId, idx) => {
-          const value = clusterValues[idx];
-          if (!value) return { userId, cluster: null };
-          try {
-            const clusterData = JSON.parse(value);
-            return {
-              userId,
-              clusterId: clusterData.clusterId,
-              distance: clusterData.distance,
-              timestamp: clusterData.timestamp,
-            };
-          } catch {
-            return { userId, cluster: null };
-          }
-        },
-      );
+      const assignments = room.participants.map((userId) => {
+        const clusterData = clusterMap.get(userId);
+        if (!clusterData) return { userId, cluster: null };
+        return {
+          userId,
+          clusterId: clusterData.clusterId,
+          distance: clusterData.distance,
+          timestamp: clusterData.timestamp,
+        };
+      });
 
       return c.json({
         roomId,
