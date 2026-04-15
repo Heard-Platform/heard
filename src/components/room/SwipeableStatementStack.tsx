@@ -267,44 +267,45 @@ export function SwipeableStatementStack({
     const { offset, velocity } = info;
     const swipeX = offset.x;
     const velocityX = velocity.x;
+    const swipeDirection: "left" | "right" | null =
+      swipeX < -SWIPE_THRESHOLD || velocityX < -500 ? "left" :
+      swipeX > SWIPE_THRESHOLD || velocityX > 500 ? "right" :
+      null;
 
-    const swipingLeft = swipeX < -SWIPE_THRESHOLD || velocityX < -500;
-    const swipingRight = swipeX > SWIPE_THRESHOLD || velocityX > 500;
+    if (!swipeDirection) return;
 
     if (card.type === "demographics") {
-      if (swipingLeft || swipingRight) {
-        handleDemographicsAnswer(card.question.id, null);
-      }
+      handleDemographicsAnswer(
+        card.question.id,
+        null,
+        swipeDirection,
+      );
       return;
     } else if (card.type === "certify" || card.type === "chance" || card.type === "youtube") {
-      if (swipingLeft || swipingRight) {
-        setIsVoting(true);
-        setSwipedNoopCard(card.type);
-        setSwipeDirection(swipingLeft ? "left" : "right");
+      setIsVoting(true);
+      setSwipedNoopCard(card.type);
+      setSwipeDirection(swipeDirection);
 
-        if (card.type === "certify") {
-          setCertifyCardDismissed(true);
-          onCertifyDone();
-        } else if (card.type === "chance") {
-          onChanceCardSwiped();
-        } else if (card.type === "youtube") {
-          onYouTubeCardSwiped && onYouTubeCardSwiped();
-        }
-
-        setTimeout(() => {
-          setSwipedNoopCard(null);
-          setSwipeDirection(null);
-          setIsVoting(false);
-        }, 300);
+      if (card.type === "certify") {
+        setCertifyCardDismissed(true);
+        onCertifyDone();
+      } else if (card.type === "chance") {
+        onChanceCardSwiped();
+      } else if (card.type === "youtube") {
+        onYouTubeCardSwiped && onYouTubeCardSwiped();
       }
+
+      setTimeout(() => {
+        setSwipedNoopCard(null);
+        setSwipeDirection(null);
+        setIsVoting(false);
+      }, 300);
       return;
     } else if (card.type === "statement") {
       const statementId = card.statement.id;
-
-      if (swipingRight) {
+      if (swipeDirection === "right") {
         handleVote(statementId, "agree", "right");
-      }
-      else if (swipingLeft) {
+      } else if (swipeDirection === "left") {
         handleVote(statementId, "disagree", "left");
       }
     }
@@ -337,9 +338,11 @@ export function SwipeableStatementStack({
   const handleDemographicsAnswer = (
     questionId: string,
     answer: string | null,
+    direction?: "left" | "right",
   ) => {
-    const direction = answer === null ? "left" : "right";
-    setSwipeDirection(direction);
+    setSwipeDirection(
+      direction ?? (answer === null ? "left" : "right"),
+    );
     setSwipedCardId(`demographics-${questionId}`);
     saveDemographicAnswer(questionId, answer);
 
