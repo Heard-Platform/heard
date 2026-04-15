@@ -282,26 +282,30 @@ export function AnonAccountSetupModal({
                   >
                     Signup or Login ✨
                   </motion.h2>
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-muted-foreground"
-                  >
-                    Hey there, new friend! To {featureText}, just enter your {showEmailFlow ? "email" : "phone number"} below.
-                  </motion.p>
+                  {!codeSent && (
+                    <motion.p
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="text-muted-foreground"
+                    >
+                      Hey there, new friend! To {featureText}, just enter your {showEmailFlow ? "email" : "phone number"} below.
+                    </motion.p>
+                  )}
                 </div>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="grid grid-cols-3 gap-4"
-                >
-                  <FeatureBadge icon={Sparkles} label="Start Discussions" />
-                  <FeatureBadge icon={Users} label="Explore Communities" />
-                  <FeatureBadge icon={Award} label="Get Recognized" />
-                </motion.div>
+                {!codeSent && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="grid grid-cols-3 gap-4"
+                  >
+                    <FeatureBadge icon={Sparkles} label="Start Discussions" />
+                    <FeatureBadge icon={Users} label="Explore Communities" />
+                    <FeatureBadge icon={Award} label="Get Recognized" />
+                  </motion.div>
+                )}
               </>
             )}
 
@@ -395,6 +399,9 @@ export function AnonAccountSetupModal({
                         setSmsSent(false);
                         setMagicCode("");
                         setError("");
+                        setEmail("");
+                        setPhone("");
+                        setShowEmailFlow(false);
                       }}
                       className="text-xs text-muted-foreground hover:text-foreground transition-colors underline w-full text-center"
                     >
