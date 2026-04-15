@@ -3,8 +3,26 @@
   import react from '@vitejs/plugin-react-swc';
   import path from 'path';
 
-  export default defineConfig({
-    plugins: [react()],
+  export default defineConfig(() => {
+    return {
+    plugins: [
+      react(),
+      {
+        name: 'assemblyai-token-proxy',
+        configureServer(server) {
+          server.middlewares.use('/api/assemblyai-token', async (req, res) => {
+            const apiKey = req.headers['x-assemblyai-key'] as string;
+            const response = await fetch(
+              'https://streaming.assemblyai.com/v3/token?expires_in_seconds=480',
+              { headers: { Authorization: apiKey } },
+            );
+            const data = await response.json();
+            res.writeHead(response.ok ? 200 : 502, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(data));
+          });
+        },
+      },
+    ],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
@@ -65,5 +83,7 @@
     server: {
       port: 3000,
       open: true,
+      allowedHosts: ['.trycloudflare.com'],
     },
+  };
   });

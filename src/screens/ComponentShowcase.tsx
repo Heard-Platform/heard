@@ -32,6 +32,7 @@ import { OrgsLandingStory } from "../stories/OrgsLanding.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 import { Story as QRGeneratorPageStory } from "../stories/QRGenerationPage.story";
+import { WriteRantStepStory } from "../stories/WriteRantStep.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -117,6 +118,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsTrigger value="feedback-sheet">Feedback Sheet</TabsTrigger>
               <TabsTrigger value="community-explorer-dialog">Community Explorer Dialog</TabsTrigger>
               <TabsTrigger value="orgs-landing">Orgs Landing</TabsTrigger>
+              <TabsTrigger value="write-rant-step">Write Rant Step</TabsTrigger>
             </TabsList>
 
             <TabsContent value="results-cards">
@@ -208,6 +210,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
             </TabsContent>
             <TabsContent value="orgs-landing">
               <OrgsLandingStory />
+            </TabsContent>
+            <TabsContent value="write-rant-step">
+              <WriteRantStepStory />
             </TabsContent>
           </Tabs>
         </div>
