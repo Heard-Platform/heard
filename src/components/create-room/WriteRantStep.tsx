@@ -72,6 +72,79 @@ export function WriteRantStep({
     setShowExamples(false);
   };
 
+  const renderMicButton = () => (
+    <div className="flex flex-col items-center gap-4 pt-2 pb-2">
+      <button
+        type="button"
+        onClick={handleStartRecording}
+        aria-label="Start recording"
+        style={{
+          width: MIC_BUTTON_SIZE_PX,
+          height: MIC_BUTTON_SIZE_PX,
+        }}
+        className="rounded-full bg-gradient-to-br from-red-500 to-red-600 hover:opacity-90 shadow-lg shadow-red-500/50 flex items-center justify-center p-0 cursor-pointer"
+      >
+        <Mic
+          className="text-white"
+          style={{
+            width: MIC_ICON_SIZE_PX,
+            height: MIC_ICON_SIZE_PX,
+          }}
+        />
+      </button>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleSwitchToText}
+        className="text-slate-700 border-slate-300 hover:bg-slate-50"
+      >
+        Type it out instead
+      </Button>
+    </div>
+  );
+  
+  const renderTextArea = () => (
+    <motion.div
+      animate={
+        isRecording
+          ? {
+              boxShadow: [
+                "0 8px 20px -3px rgba(239, 68, 68, 0.25)",
+                "0 8px 30px -3px rgba(239, 68, 68, 0.6)",
+              ],
+            }
+          : { boxShadow: "0 0 0 0 rgba(0,0,0,0)" }
+      }
+      transition={
+        isRecording
+          ? {
+              duration: 1.5,
+              repeat: Infinity,
+              repeatType: "reverse" as const,
+              ease: "easeInOut",
+            }
+          : { duration: 0.3 }
+      }
+      className="rounded-md"
+    >
+      <Textarea
+        id="rant-input"
+        placeholder="Let it all out... tell us what you really think! 🔥"
+        maxLength={2000}
+        value={rant}
+        onChange={(e) => onRantChange(e.target.value)}
+        onClick={isRecording ? stopRecording : undefined}
+        readOnly={isRecording}
+        className={`w-full min-h-[200px] resize-none bg-white placeholder:text-slate-400 ${
+          isRecording
+            ? "border-2 border-red-400"
+            : "border-teal-200 hover:border-teal-300 transition-colors"
+        }`}
+        rows={8}
+      />
+    </motion.div>
+  );
+
   return (
     <>
       {/* Rant Input */}
@@ -113,76 +186,15 @@ export function WriteRantStep({
             )}
           </div>
 
-          {mode === "voice" ? (
-            <div className="flex flex-col items-center gap-4 pt-2 pb-2">
-              <button
-                type="button"
-                onClick={handleStartRecording}
-                aria-label="Start recording"
-                style={{ width: MIC_BUTTON_SIZE_PX, height: MIC_BUTTON_SIZE_PX }}
-                className="rounded-full bg-gradient-to-br from-red-500 to-red-600 hover:opacity-90 shadow-lg shadow-red-500/50 flex items-center justify-center p-0 cursor-pointer"
-              >
-                <Mic
-                  className="text-white"
-                  style={{ width: MIC_ICON_SIZE_PX, height: MIC_ICON_SIZE_PX }}
-                />
-              </button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSwitchToText}
-                className="text-slate-700 border-slate-300 hover:bg-slate-50"
-              >
-                Type it out instead
-              </Button>
-            </div>
-          ) : (
-            <motion.div
-              animate={
-                isRecording
-                  ? {
-                      boxShadow: [
-                        "0 8px 20px -3px rgba(239, 68, 68, 0.25)",
-                        "0 8px 30px -3px rgba(239, 68, 68, 0.6)",
-                      ],
-                    }
-                  : { boxShadow: "0 0 0 0 rgba(0,0,0,0)" }
-              }
-              transition={
-                isRecording
-                  ? {
-                      duration: 1.5,
-                      repeat: Infinity,
-                      repeatType: "reverse" as const,
-                      ease: "easeInOut",
-                    }
-                  : { duration: 0.3 }
-              }
-              className="rounded-md"
-            >
-              <Textarea
-                id="rant-input"
-                placeholder="Let it all out... tell us what you really think! 🔥"
-                maxLength={2000}
-                value={rant}
-                onChange={(e) => onRantChange(e.target.value)}
-                onClick={isRecording ? stopRecording : undefined}
-                readOnly={isRecording}
-                className={`w-full min-h-[200px] resize-none bg-white placeholder:text-slate-400 ${
-                  isRecording
-                    ? "border-2 border-red-400"
-                    : "border-teal-200 hover:border-teal-300 transition-colors"
-                }`}
-                rows={8}
-              />
-            </motion.div>
-          )}
+          {mode === "voice" ? renderMicButton() : renderTextArea()}
 
           {recordingError && (
             <p className="text-xs text-red-600">{recordingError}</p>
           )}
           {recordingWarning && (
-            <p className="text-xs text-yellow-600">{recordingWarning}</p>
+            <p className="text-xs text-yellow-600">
+              {recordingWarning}
+            </p>
           )}
 
           <div className="flex justify-between items-center text-xs">
@@ -229,7 +241,8 @@ export function WriteRantStep({
           <div className="flex items-start gap-2 px-3 py-2 bg-teal-50/50 border border-teal-100 rounded-lg">
             <span className="text-xs">🔒</span>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Your rant is private — it's just used to draft the post topic and won't be visible to other users.
+              Your rant is private — it's just used to draft the post
+              topic and won't be visible to other users.
             </p>
           </div>
         </div>
@@ -258,7 +271,9 @@ export function WriteRantStep({
                   className="w-full text-left justify-start h-auto py-3 px-4 bg-white/50 hover:bg-white border-slate-200 hover:border-teal-300 text-slate-700 hover:text-teal-900 transition-all whitespace-normal"
                 >
                   <span className="mr-2 flex-shrink-0">💡</span>
-                  <span className="text-sm line-clamp-2 break-words">{topic}</span>
+                  <span className="text-sm line-clamp-2 break-words">
+                    {topic}
+                  </span>
                 </Button>
               </motion.div>
             ))}
