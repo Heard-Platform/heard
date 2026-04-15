@@ -1,8 +1,7 @@
 // @ts-ignore
 import { Context, Hono } from "npm:hono";
-import * as kv from "./kv_store.tsx";
 import {
-  saveStatement, getDebate,
+  saveStatement, getDebate, saveDebate,
   saveVote,
   getAllDebates,
   saveChanceCardStatus,
@@ -10,7 +9,14 @@ import {
   saveYouTubeCardStatus,
   getUsersYouTubeCardStatuses,
   getVotesForStatement,
-  getCommunities
+  getCommunities,
+  getStatementsForRoom,
+  saveRant,
+  getRantsForRoom,
+  bulkSaveStatements,
+  saveUserWithEmailIndex,
+  getClusterMetadataRecord,
+  getClusterAssignmentsBatch,
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
@@ -20,6 +26,11 @@ import {
   getUserSession, updateUserLastActive
 } from "./auth-api.tsx";
 import { generateId, getFrontendUrl } from "./utils.tsx";
+import {
+  getDemographicQuestionsForRooms,
+  getAnsweredDemographicQuestionIds,
+  saveDemographicAnswer,
+} from "./model-utils.ts";
 import type {
   User, Statement,
   Vote,
@@ -34,6 +45,8 @@ import { filterFeedRooms, sortRoomsForFeed } from "./feed-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
 import { validateDeveloper } from "./internal-utils.ts";
+import { defineRoute } from "./route-wrapper.tsx";
+import { validateSession } from "./auth-utils.ts";
 
 const app = new Hono();
 
@@ -424,9 +437,7 @@ Don't want to miss future updates? HEARD will notify you when each phase begins 
 };
 
 const saveUserSession = async (session: User) => {
-  await kv.set(`user:${session.id}`, JSON.stringify(session));
-  // Also store by email for lookup
-  await kv.set(`user_email:${session.email}`, session.id);
+  await saveUserWithEmailIndex(session);
 };
 
 const getDebateRoom = async (
@@ -450,7 +461,7 @@ const getDebateRoom = async (
 };
 
 export const saveDebateRoom = async (room: DebateRoom) => {
-  await kv.set(`room:${room.id}`, JSON.stringify(room));
+  await saveDebate(room);
 };
 
 export const getActiveRooms = async (): Promise<DebateRoom[]> => {
@@ -487,19 +498,7 @@ const getStatements = async (
   roomId: string,
 ): Promise<Statement[]> => {
   try {
-    const statements = await kv.getByPrefix(
-      `statement:${roomId}:`,
-    );
-    const parsedStatements = statements
-      .map((s) => {
-        try {
-          return JSON.parse(s);
-        } catch (error) {
-          console.error("Error parsing statement:", s, error);
-          return null;
-        }
-      })
-      .filter((s) => s !== null);
+    const parsedStatements = await getStatementsForRoom(roomId);
 
     // Get all statement IDs
     const statementIds = parsedStatements.map((s) => s.id);
@@ -536,46 +535,6 @@ const getStatements = async (
   }
 };
 
-const bulkSaveStatements = async (statements: Statement[]) => {
-  const items = statements.map((statement) => ({
-    key: `statement:${statement.roomId}:${statement.id}`,
-    value: JSON.stringify(statement),
-  }));
-  await kv.bulkSet(items);
-};
-
-// Rant utility functions
-const saveRant = async (rant: Rant) => {
-  await kv.set(
-    `rant:${rant.roomId}:${rant.id}`,
-    JSON.stringify(rant),
-  );
-};
-
-const getRantsForRoom = async (
-  roomId: string,
-): Promise<Rant[]> => {
-  try {
-    const rants = await kv.getByPrefix(`rant:${roomId}:`);
-    return rants
-      .map((r) => {
-        try {
-          return JSON.parse(r);
-        } catch (error) {
-          console.error("Error parsing rant:", r, error);
-          return null;
-        }
-      })
-      .filter((r) => r !== null)
-      .sort((a, b) => a.timestamp - b.timestamp); // Chronological order
-  } catch (error) {
-    console.error(
-      `Error fetching rants for room ${roomId}:`,
-      error,
-    );
-    return [];
-  }
-};
 
 // Get user session
 app.get(
@@ -953,6 +912,7 @@ app.get(
     try {
       const userId = c.get("userId");
       const subHeard = c.req.query("subHeard");
+      const includeDemographics = c.req.query("includeDemographics") === "true";
 
       let rooms = await getActiveRooms();
       let userMemberships = new Set<string>();
@@ -990,6 +950,38 @@ app.get(
       rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 100);
       rooms = sortRoomsForFeed(rooms, userMemberships);
       rooms = rooms.slice(0, 20);
+
+      // Attach demographic questions to each room
+      if (includeDemographics) {
+        const roomIds = rooms.map((r) => r.id);
+        const [allQuestions, answeredQuestionIds] = await Promise.all([
+          getDemographicQuestionsForRooms(roomIds),
+          userId ? getAnsweredDemographicQuestionIds(userId) : Promise.resolve([]),
+        ]);
+        const answeredSet = new Set(answeredQuestionIds);
+
+        const questionsByRoom: Record<string, typeof allQuestions> = {};
+        for (const q of allQuestions) {
+          if (!questionsByRoom[q.roomId]) {
+            questionsByRoom[q.roomId] = [];
+          }
+          questionsByRoom[q.roomId].push(q);
+        }
+  
+        rooms = rooms.map((room) => {
+          const questions = questionsByRoom[room.id] || [];
+          const unanswered = questions.filter((q) => !answeredSet.has(q.id));
+          return {
+            ...room,
+            demographicQuestions: unanswered,
+          };
+        });
+      } else {
+        rooms = rooms.map((room) => ({
+          ...room,
+          demographicQuestions: [],
+        }));
+      }
 
       return c.json({ rooms });
     } catch (error) {
@@ -2214,6 +2206,26 @@ app.post(
   },
 );
 
+// Save demographic answer
+app.post(
+  "/make-server-f1a393b4/demographic-answer",
+  validateSession,
+  defineRoute(
+    {
+      questionId: { type: "number", required: true },
+      answer: { type: "string" },
+    },
+    async (
+      { questionId, answer }: { questionId: number; answer?: string },
+      c: Context,
+    ) => {
+      const userId = c.get("userId");
+      await saveDemographicAnswer({ userId, questionId, answer: answer ?? null });
+    },
+    "Saving demographic answer failed",
+  ),
+);
+
 // Mark chance card as swiped
 app.post(
   "/make-server-f1a393b4/chance-card/mark-swiped",
@@ -2282,35 +2294,21 @@ app.get(
       }
 
       // Get cluster metadata
-      const metadataKey = `cluster:${roomId}:metadata`;
-      const metadataValue = await kv.get(metadataKey);
-      const metadata = metadataValue
-        ? JSON.parse(metadataValue)
-        : null;
+      const metadata = await getClusterMetadataRecord(roomId);
 
       // Get all cluster assignments for participants
-      const clusterKeys = room.participants.map(
-        (userId) => `cluster_assignment:${roomId}:${userId}`,
-      );
-      const clusterValues = await kv.mget(clusterKeys);
+      const clusterMap = await getClusterAssignmentsBatch(roomId, room.participants);
 
-      const assignments = room.participants.map(
-        (userId, idx) => {
-          const value = clusterValues[idx];
-          if (!value) return { userId, cluster: null };
-          try {
-            const clusterData = JSON.parse(value);
-            return {
-              userId,
-              clusterId: clusterData.clusterId,
-              distance: clusterData.distance,
-              timestamp: clusterData.timestamp,
-            };
-          } catch {
-            return { userId, cluster: null };
-          }
-        },
-      );
+      const assignments = room.participants.map((userId) => {
+        const clusterData = clusterMap.get(userId);
+        if (!clusterData) return { userId, cluster: null };
+        return {
+          userId,
+          clusterId: clusterData.clusterId,
+          distance: clusterData.distance,
+          timestamp: clusterData.timestamp,
+        };
+      });
 
       return c.json({
         roomId,

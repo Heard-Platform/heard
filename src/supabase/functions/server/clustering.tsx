@@ -3,10 +3,8 @@
  * Uses k-means clustering on user-statement voting matrix
  */
 
-import { getByPrefixParsed, getStatementsForRoom } from "./kv-utils.tsx";
-import { getDebate } from "./kv-utils.tsx";
-import * as kv from "./kv_store.tsx";
-import type { Vote, Statement, VoteType } from "./types.tsx";
+import { getStatementsForRoom, getDebate, saveClusterData, getClusterAssignment, getClusterMetadataRecord, getClusterAssignmentsBatch } from "./kv-utils.tsx";
+import type { Vote } from "./types.tsx";
 
 export type StatementWithVotes = {
   id: string;
@@ -275,11 +273,10 @@ export async function clusterUsersAndSave(
   const metadataKey = `cluster:${roomId}:metadata`;
   const metadataValue = JSON.stringify(metadata);
 
-  // Batch save to database - mset takes two arrays: keys and values
   const allKeys = [...assignmentKeys, metadataKey];
   const allValues = [...assignmentValues, metadataValue];
 
-  await kv.mset(allKeys, allValues);
+  await saveClusterData(allKeys, allValues);
 
   console.log(
     `[Clustering] Saved ${clusterAssignments.length} cluster assignments and metadata for room ${roomId}`,
@@ -303,16 +300,7 @@ export async function getUserCluster(
   distance: number;
   timestamp: number;
 } | null> {
-  const key = `cluster_assignment:${roomId}:${userId}`;
-  const value = await kv.get(key);
-
-  if (!value) return null;
-
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
+  return getClusterAssignment(roomId, userId);
 }
 
 /**
@@ -321,16 +309,7 @@ export async function getUserCluster(
 export async function getClusterMetadata(
   roomId: string,
 ): Promise<ClusterMetadata | null> {
-  const key = `cluster:${roomId}:metadata`;
-  const value = await kv.get(key);
-
-  if (!value) return null;
-
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
+  return getClusterMetadataRecord(roomId);
 }
 
 /**
@@ -345,27 +324,7 @@ export async function getRoomClusters(
     { clusterId: number; distance: number; timestamp: number }
   >
 > {
-  const keys = userIds.map(
-    (userId) => `cluster_assignment:${roomId}:${userId}`,
-  );
-  const values = await kv.mget(keys);
-
-  const clusters = new Map<
-    string,
-    { clusterId: number; distance: number; timestamp: number }
-  >();
-
-  for (let i = 0; i < userIds.length; i++) {
-    if (values[i]) {
-      try {
-        clusters.set(userIds[i], JSON.parse(values[i]));
-      } catch {
-        // Skip invalid entries
-      }
-    }
-  }
-
-  return clusters;
+  return getClusterAssignmentsBatch(roomId, userIds);
 }
 
 /**
@@ -375,7 +334,7 @@ async function getVotesForStatement(
   statementId: string,
 ): Promise<Vote[]> {
   try {
-    return getByPrefixParsed(`vote:${statementId}:`);
+    return getVotesForStatement(statementId);
   } catch (error) {
     console.error(
       `[Clustering] Error fetching votes for statement ${statementId}:`,

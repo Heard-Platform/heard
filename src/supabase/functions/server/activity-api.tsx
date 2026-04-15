@@ -1,6 +1,6 @@
 import { Context, Hono } from "npm:hono";
 import moment from "npm:moment@2.30.1";
-import * as kv from "./kv_store.tsx";
+import { getActivitiesForDate, upsertUserActivity } from "./kv-utils.tsx";
 
 const app = new Hono();
 
@@ -16,9 +16,8 @@ app.post("/make-server-f1a393b4/activity/track", async (c: Context) => {
   try {
     const userId = c.get("userId");
     const today = getDateString();
-    const key = `user_activity:${today}:${userId}`;
     
-    await kv.set(key, {
+    await upsertUserActivity({
       userId,
       date: today,
       timestamp: Date.now(),
@@ -42,7 +41,7 @@ app.get("/make-server-f1a393b4/activity/public-metrics", async (c) => {
 
     for (let i = 0; i < 30; i++) {
       const dateStr = getDaysAgo(i);
-      const records = await kv.getByPrefix(`user_activity:${dateStr}:`);
+      const records = await getActivitiesForDate(dateStr);
       
       dailyBreakdown.unshift({
         date: dateStr,

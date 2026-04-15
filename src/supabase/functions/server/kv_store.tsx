@@ -101,18 +101,6 @@ export const mget = async (keys: string[]): Promise<any[]> => {
   return data?.map((d) => d.value) ?? [];
 };
 
-// Deletes multiple key-value pairs from the database.
-export const mdel = async (keys: string[]): Promise<void> => {
-  const supabase = client();
-  const { error } = await supabase
-    .from("kv_store_f1a393b4")
-    .delete()
-    .in("key", keys);
-  if (error) {
-    throw new Error(error.message);
-  }
-};
-
 // Search for key-value pairs by prefix.
 export const getByPrefix = async (
   prefix: string,

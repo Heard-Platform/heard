@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { generateSparklineData } from "./stats-api.tsx";
+import { generateSparklineData } from "./stats-utils.ts";
 
 Deno.test(
   "generateSparklineData - creates correct number of buckets",

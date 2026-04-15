@@ -1,5 +1,4 @@
-import * as kv from "./kv_store.tsx";
-import { getAllRealUsers } from "./kv-utils.tsx";
+import { getAllRealUsers, getNewsletterSentUsers } from "./kv-utils.tsx";
 import { getFlyerEmails } from "./model-utils.ts";
 import { getNewsletter5Email } from "./email-newsletter-5.ts";
 import { getNewsletter6Email } from "./email-newsletter-6.ts";
@@ -9,9 +8,6 @@ import { getNewsletter3Email } from "./email-newsletter-3.ts";
 import { getNewsletter7Email } from "./email-newsletter-7.ts";
 import { getNewsletter4Email } from "./email-newsletter-4.ts";
 
-export const getNewsletterSentKey = (edition: number): string => {
-  return `newsletter:edition${edition}:sent-users`;
-};
 
 export const getNewsletterByEdition = async (
   edition: number,
@@ -65,8 +61,7 @@ export const getNewsletterRecipients = async (
   testMode: boolean,
   testEmail: string,
 ) => {
-  const newsletterSentKey = getNewsletterSentKey(newsletterEdition);
-  const alreadySent = (await kv.get(newsletterSentKey)) || [];
+  const alreadySent = await getNewsletterSentUsers(newsletterEdition);
 
   if (testMode && testEmail) {
     return {

@@ -105,13 +105,13 @@ protect(dontValidate, ["orgs/*", "user/*",]);
 protect(validateSession, [
   "account/*", "activity/*", "chance-card/*", "feedback/*", "flyer/*",
   "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
-  "statement/*", "stats/*", "subheard/*", "subheards", "subheards/*",
+  "statement/*", "subheard/*", "subheards", "subheards/*",
   "upload-debate-image", "user-rank", "vine/*", "youtube-card/*",
 ]);
 
 // Developer
 protect(validateDeveloper, [
-  "dev/*", "internal/*", "retention-stats", "reddit/*",
+  "dev/*", "internal/*", "stats/*", "reddit/*",
   "test-room/*", "rant-test-room/*", "realtime-test-room/*", "seed/*",
 ]);
 

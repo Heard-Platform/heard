@@ -6,7 +6,7 @@ export const AddResponseButton = ({ onClick }: { onClick: () => void }) => {
     <div className="flex">
       <Button
         variant="secondary"
-        className="rounded-full h-8 px-4 text-sm"
+        className="heard-pill"
         onClick={onClick}
       >
         <MessageCirclePlus />

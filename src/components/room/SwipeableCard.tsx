@@ -30,7 +30,7 @@ interface SwipeableCardProps {
   ) => void;
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
-  onDemographicsAnswer?: (id: string, answer: string) => void;
+  onDemographicsAnswer?: (id: string, answer: string | null) => void;
   onCertifyDismiss: () => void;
   onCertifySuccess: () => void;
   onSuperAgree: () => void;
@@ -100,7 +100,7 @@ export function SwipeableCard({
 
   return (
     <motion.div
-      className="absolute top-0 left-0 w-full"
+      className={isTopCard ? "relative w-full" : "absolute top-0 left-0 w-full"}
       style={{
         x: isTopCard ? x : 0,
         y: isTopCard ? y : 0,
@@ -153,7 +153,12 @@ export function SwipeableCard({
             ? "cursor-grab active:cursor-grabbing"
             : "cursor-default"
         }`}
-        style={{ touchAction: isTopCard && !card.isUnswipeable ? "none" : "auto" }}
+        style={{
+          touchAction:
+            isTopCard && !card.isUnswipeable ? "none" : "auto",
+          height: !isTopCard ? "286px" : "auto",
+          overflow: !isTopCard ? "hidden" : "visible",
+        }}
       >
         {card.type === "chance" ? (
           <ChanceCard

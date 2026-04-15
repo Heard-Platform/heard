@@ -1,10 +1,9 @@
-import * as kv from "./kv_store.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
-import { getCommunities, getCommunity, saveCommunity, deleteMembership } from "./kv-utils.tsx";
-import { Community } from "./types.tsx";
+import { getCommunities, getCommunity, saveCommunity, deleteMembership, getMembership, saveMembership } from "./kv-utils.tsx";
+import { Community, CommunityMembership } from "./types.tsx";
 
 // @ts-ignore
 import { Context, Hono } from "npm:hono";
@@ -175,24 +174,19 @@ app.post(
         return c.json({ error: "Sub-heard not found" }, 404);
       }
 
-      const membershipKey = `subheard_member:${userId}:${name}`;
-      
-      const existingMembership = await kv.get(membershipKey);
+      const existingMembership = await getMembership(userId, name);
       if (existingMembership) {
         return c.json({
           success: true,
         });
       }
 
-      const membershipData = {
+      const newMembership: CommunityMembership = {
         userId,
         subHeard: name,
         joinedAt: Date.now(),
       };
-      await kv.set(
-        membershipKey,
-        JSON.stringify(membershipData),
-      );
+      await saveMembership(newMembership);
 
       return c.json({
         success: true,

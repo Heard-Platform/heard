@@ -1,10 +1,10 @@
 import { generateId } from "./utils.tsx";
 import type {
-  UserSession,
   VoteType,
   DebateRoom,
   Statement,
   Vote,
+  User,
 } from "./types.tsx";
 import Papa from "npm:papaparse@5.4.1";
 import {
@@ -26,7 +26,7 @@ export type PolisVoteRow = {
 };
 
 export type AssembledData = {
-  users: UserSession[];
+  users: User[];
   userIdMap: Map<number, string>;
   room: DebateRoom;
   roomIndex: {
@@ -105,8 +105,8 @@ export function parsePolisVotes(
 function assembleUsers(
   polisStatements: PolisStatement[],
   polisVotes: PolisVoteRow[],
-): { users: UserSession[]; userIdMap: Map<number, string> } {
-  const users: UserSession[] = [];
+): { users: User[]; userIdMap: Map<number, string> } {
+  const users: User[] = [];
   const userIdMap: Map<number, string> = new Map();
 
   const maxParticipantIndex = Math.max(
@@ -117,7 +117,7 @@ function assembleUsers(
   const now = Date.now();
   for (let i = 0; i <= maxParticipantIndex; i++) {
     const userId = generateId();
-    const user: UserSession = {
+    const user: User = {
       id: userId,
       nickname: `Polis User ${i + 1}`,
       email: `polis-${userId}@test-heard.com`,
@@ -127,6 +127,7 @@ function assembleUsers(
       isTestUser: true,
       isDeveloper: false,
       createdAt: now,
+      emailDigestsEnabled: false,
     };
 
     users.push(user);
