@@ -23,10 +23,10 @@ async function fetchAssemblyAIToken(): Promise<string | null> {
       return null;
     }
 
-    const res = await fetch(
-      "https://streaming.assemblyai.com/v3/token?expires_in_seconds=480",
-      { headers: { Authorization: apiKey } },
-    );
+    // Intercepted by Vite server middleware (see config file)
+    const res = await fetch("/api/assemblyai-token", {
+      headers: { "x-assemblyai-key": apiKey },
+    });
 
     if (res.ok) {
       const data = await res.json();
