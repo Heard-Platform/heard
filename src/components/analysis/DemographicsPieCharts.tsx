@@ -76,7 +76,6 @@ export function DemographicsPieCharts({ demographics }: DemographicsPieChartsPro
               <ResponsiveContainer
                 width="100%"
                 height={160}
-                className="sm:!h-[220px]"
               >
                 <PieChart>
                   <Pie
