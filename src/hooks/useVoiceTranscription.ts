@@ -14,18 +14,32 @@ function floatToPcm16(input: Float32Array): ArrayBuffer {
 }
 
 async function fetchAssemblyAIToken(): Promise<string | null> {
-  if (import.meta.env.DEV) {
-    try {
-      const res = await fetch("/api/assemblyai-token");
-      if (res.ok) {
-        const data = await res.json();
-        return data.token;
-      }
-    } catch {}
+  if (import.meta.env.VITE_HEARD_ENV === "development") {
+    const apiKey = import.meta.env.VITE_DEV_ASSEMBLYAI_API_KEY;
+    if (!apiKey) {
+      console.warn(
+        "No AssemblyAI API key found in environment variables.",
+      );
+      return null;
+    }
+
+    const res = await fetch(
+      "https://streaming.assemblyai.com/v3/token?expires_in_seconds=480",
+      { headers: { Authorization: apiKey } },
+    );
+
+    if (res.ok) {
+      const data = await res.json();
+      return data.token;
+    } else {
+      console.error("Failed to fetch AssemblyAI token:", res.statusText);
+      return null;
+    }
+  } else {
+    const response = await api.getAssemblyAIToken();
+    if (response.success && response.data) return response.data.token;
+    return null;
   }
-  const response = await api.getAssemblyAIToken();
-  if (response.success && response.data) return response.data.token;
-  return null;
 }
 
 export function useVoiceTranscription(
