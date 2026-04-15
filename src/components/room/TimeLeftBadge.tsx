@@ -43,8 +43,8 @@ export function TimeLeftBadge({ endTime, createdAt, isRealtime }: TimeLeftBadgeP
   };
 
   return (
-    <Badge className={`text-white ${getUrgencyStyles()}`}>
-      {getEmoji()} {timeRemaining.value}{timeRemaining.unit} left
+    <Badge className={`heard-pill text-white ${getUrgencyStyles()}`}>
+      {getEmoji()} {timeRemaining.formatted} left
     </Badge>
   );
 }

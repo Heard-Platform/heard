@@ -9,11 +9,11 @@ import {
   type YouTubeCard,
   type DemographicsCard,
   type CertifyCard,
+  type DebateRoom,
   DemographicQuestion,
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
 import { SwipeInstructions } from "../SwipeInstructions";
-import { NewStatementInput } from "../NewStatementInput";
 import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
 
@@ -21,6 +21,7 @@ import { useDebateSession } from "../../hooks/useDebateSession";
 import { toast } from "sonner@2.0.3";
 
 interface SwipeableStatementStackProps {
+  room: DebateRoom;
   statements: Statement[];
   currentUserId?: string;
   allowAnonymous: boolean;
@@ -45,6 +46,7 @@ interface SwipeableStatementStackProps {
 const SWIPE_THRESHOLD = 100;
 
 export function SwipeableStatementStack({
+  room,
   statements,
   currentUserId,
   allowAnonymous,
@@ -407,16 +409,9 @@ export function SwipeableStatementStack({
     }
   };
 
-  const topCard = cards[0];
-  const isSpecialCardOnTop =
-    !topCard ||
-    (topCard.type === "certify" ||
-    topCard.type === "chance" ||
-    topCard.type === "demographics");
-
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
-      <div className="relative min-h-[320px]">
+      <div className="relative" style={{ minHeight: "290px" }}>
         {showTutorial && (
           <div className="absolute inset-0 z-20 pointer-events-none">
             <SwipeInstructions />
@@ -448,6 +443,7 @@ export function SwipeableStatementStack({
               <SwipeableCard
                 key={getCardKey()}
                 card={card}
+                room={room}
                 index={index}
                 isTopCard={isTopCard}
                 onDragEnd={(event, info) =>
@@ -489,15 +485,6 @@ export function SwipeableStatementStack({
             );
           })}
       </div>
-
-      {!isSpecialCardOnTop && (
-        <NewStatementInput
-          onSubmitStatement={onSubmitStatement}
-          allowAnonymous={allowAnonymous}
-          isAnonymous={isAnonymous}
-          onShowAccountSetupModal={onShowAccountSetupModal}
-        />
-      )}
 
       <FlagResponseDialog
         statement={statementToFlag}

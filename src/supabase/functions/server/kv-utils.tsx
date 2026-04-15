@@ -113,8 +113,22 @@ export const getDevUsers = async (): Promise<User[]> => {
   return allUsers.filter(user => user.isDeveloper);
 };
 
+export const getUserIdByPhone = async (phone: string): Promise<string | null> => {
+  return kv.get(phoneKvKeyFn(phone));
+};
+
+export const getUserIdByEmail = async (email: string): Promise<string | null> => {
+  const normalizedEmail = email.trim().toLowerCase();
+  return kv.get(`user_email:${normalizedEmail}`);
+};
+
 export const saveUser = async (user: User) => {
   await kv.set(userKeyFn(user), JSON.stringify(user));
+};
+
+export const saveUserWithEmailIndex = async (user: User): Promise<void> => {
+  await kv.set(userKeyFn(user), JSON.stringify(user));
+  await kv.set(`user_email:${user.email}`, user.id);
 };
 
 export const updateUserField = async <K extends keyof User>(
@@ -198,11 +212,19 @@ export const saveCommunity = async (community: Community) => {
   await kv.set(`subheard:${community.name}`, community);
 };
 
+export const deleteCommunity = async (name: string): Promise<void> => {
+  await kv.del(`subheard:${name}`);
+};
+
 export const membershipKeyFn = (userId: string, subHeardName: string) =>
   `subheard_member:${userId}:${subHeardName}`;
 
 export const getMembership = async (userId: string, subHeardName: string) =>
   getParsedKvData<CommunityMembership>(membershipKeyFn(userId, subHeardName));
+
+export const getMembershipsForUser = async (userId: string): Promise<CommunityMembership[]> => {
+  return getByPrefixParsed<CommunityMembership>(`subheard_member:${userId}:`);
+};
 
 export const saveMembership = async (membership: CommunityMembership) => {
   await kv.set(
@@ -224,6 +246,10 @@ export const getVote = async (
   userId: string,
 ): Promise<Vote | null> => {
   return getParsedKvData<Vote>(`vote:${statementId}:${userId}`);
+};
+
+export const getAllVotes = async (): Promise<Vote[]> => {
+  return getAllRecords<Vote>("vote:");
 };
 
 export const getVotesForUser = async (
@@ -274,6 +300,10 @@ export const saveStatement = async (statement: Statement) => {
   await upsert(statement, statementKeyFn);
 };
 
+export const bulkSaveStatements = async (statements: Statement[]): Promise<void> => {
+  await bulkUpsert(statements, statementKeyFn);
+};
+
 export const createRoom = async (room: DebateRoom) => {
   await kv.set(`room:${room.id}`, JSON.stringify(room));
 };
@@ -300,6 +330,14 @@ export const saveDebate = async (debate: DebateRoom) => {
 export const rantKeyFn = (rant: Rant) =>
   `rant:${rant.roomId}:${rant.id}`;
 
+export const getRantsForRoom = async (roomId: string): Promise<Rant[]> => {
+  return getByPrefixParsed<Rant>(`rant:${roomId}:`);
+};
+
+export const saveRant = async (rant: Rant): Promise<void> => {
+  await kv.set(rantKeyFn(rant), JSON.stringify(rant));
+};
+
 export const getAllSubHeards = async <T = any,>(): Promise<
   T[]
 > => {
@@ -307,15 +345,21 @@ export const getAllSubHeards = async <T = any,>(): Promise<
 };
 
 export const activityPrefix = "user_activity:";
+export const activityKeyFn = (record: UserActivityRecord) =>
+  `${activityPrefix}${record.date}:${record.userId}`;
 
 export const getAllActivityRecords = async () =>
   getByPrefixParsed<UserActivityRecord>(activityPrefix);
 
 export const getUserActivityRecords = async (userId: string) =>
-  getByPrefixParsed<UserActivityRecord>(`${activityPrefix}:%:${userId}:`);
+  getByPrefixParsed<UserActivityRecord>(`${activityPrefix}%:${userId}`);
 
 export const getActivitiesForDate = async (dateStr: string) =>
-  getByPrefixParsed<UserActivityRecord>(`${activityPrefix}:${dateStr}:`);
+  getByPrefixParsed<UserActivityRecord>(`${activityPrefix}${dateStr}:`);
+
+export const upsertUserActivity = async (record: UserActivityRecord) => {
+  await upsert(record, activityKeyFn)
+}
 
 export const chanceCardStatusKeyFn = (status: ChanceCardStatus) =>
   `chance_card_status:${status.userId}:${status.roomId}`;
@@ -359,4 +403,86 @@ export const saveSentEmail = async (email: SentEmail) => {
 
 export const bulkSaveSentEmails = async (emails: SentEmail[]) => {
   await bulkUpsert(emails, (email) => `sent_email:${email.id}`);
+};
+
+export const feedbackKeyFn = (feedbackId: string) => `feedback:${feedbackId}`;
+
+export const saveFeedback = async (feedback: { id: string; [key: string]: any }): Promise<void> => {
+  await kv.set(feedbackKeyFn(feedback.id), JSON.stringify(feedback));
+};
+
+export const getFeedbackList = async (): Promise<any[]> => {
+  return getByPrefixParsed<any>("feedback:");
+};
+
+// Celebration SMS helpers
+
+export const getCelebrationSmsSent = async (roomId: string): Promise<boolean> => {
+  const value = await kv.get(`celebration-sms-sent:${roomId}`);
+  return !!value;
+};
+
+export const saveCelebrationSmsSent = async (roomId: string): Promise<void> => {
+  await kv.set(`celebration-sms-sent:${roomId}`, "true");
+};
+
+// Newsletter sent tracking
+
+export const newsletterSentKeyFn = (edition: number) =>
+  `newsletter:edition${edition}:sent-users`;
+
+export const getNewsletterSentUsers = async (edition: number): Promise<string[]> => {
+  return (await kv.get(newsletterSentKeyFn(edition))) || [];
+};
+
+export const saveNewsletterSentUsers = async (edition: number, users: string[]): Promise<void> => {
+  await kv.set(newsletterSentKeyFn(edition), users);
+};
+
+// Cluster data helpers
+
+export const getClusterAssignment = async (
+  roomId: string,
+  userId: string,
+): Promise<{ clusterId: number; distance: number; timestamp: number } | null> => {
+  return getParsedKvData<{ clusterId: number; distance: number; timestamp: number }>(
+    `cluster_assignment:${roomId}:${userId}`,
+  );
+};
+
+export const getClusterMetadataRecord = async (roomId: string): Promise<any | null> => {
+  return getParsedKvData<any>(`cluster:${roomId}:metadata`);
+};
+
+export const getClusterAssignmentsBatch = async (
+  roomId: string,
+  userIds: string[],
+): Promise<Map<string, { clusterId: number; distance: number; timestamp: number }>> => {
+  const keys = userIds.map((userId) => `cluster_assignment:${roomId}:${userId}`);
+  const values = await kv.mget(keys);
+
+  const clusters = new Map<string, { clusterId: number; distance: number; timestamp: number }>();
+  for (let i = 0; i < userIds.length; i++) {
+    if (values[i]) {
+      const parsed = parseKvData<{ clusterId: number; distance: number; timestamp: number }>(values[i]);
+      if (parsed) {
+        clusters.set(userIds[i], parsed);
+      }
+    }
+  }
+  return clusters;
+};
+
+export const saveClusterData = async (keys: string[], values: string[]): Promise<void> => {
+  await kv.mset(keys, values);
+};
+
+// Active room pointer helpers
+
+export const getActiveRoomValues = async (): Promise<any[]> => {
+  return kv.getByPrefix("active_room:");
+};
+
+export const saveActiveRoomPointer = async (roomId: string, value: string): Promise<void> => {
+  await kv.set(`active_room:${roomId}`, value);
 };

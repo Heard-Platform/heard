@@ -324,6 +324,21 @@ export interface FunnelMetricsData {
   tookActionTenDays: number;
 }
 
+export type ActivityEventType = "vote" | "statement" | "user" | "community" | "session";
+
+export interface ActivityEvent {
+  type: ActivityEventType;
+  timestamp: number;
+  id: string;
+  label: string;
+  meta?: Record<string, string>;
+}
+
+export interface LiveActivityData {
+  events: ActivityEvent[];
+  fetchedAt: number;
+}
+
 export interface FeatureResults {
   webDriverUsers: number;
   webDriverUsersSince: number;

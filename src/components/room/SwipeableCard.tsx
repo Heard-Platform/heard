@@ -5,7 +5,7 @@ import {
   useTransform,
   PanInfo,
 } from "motion/react";
-import type { Card } from "../../types";
+import type { Card, DebateRoom } from "../../types";
 import { getPastelColor } from "../../utils/colors";
 import { ChanceCard } from "./ChanceCard";
 import { YouTubeCard } from "./YouTubeCard";
@@ -15,6 +15,7 @@ import { CertifyCard } from "./CertifyCard";
 
 interface SwipeableCardProps {
   card: Card;
+  room: DebateRoom;
   index: number;
   isTopCard: boolean;
   direction: "left" | "right" | "down" | "up" | null;
@@ -39,6 +40,7 @@ interface SwipeableCardProps {
 
 export function SwipeableCard({
   card,
+  room,
   index,
   isTopCard,
   direction,
@@ -155,10 +157,11 @@ export function SwipeableCard({
       >
         {card.type === "chance" ? (
           <ChanceCard
+            room={room}
             isTopCard={isTopCard}
-            onSubmitStatement={onSubmitStatement}
             allowAnonymous={allowAnonymous}
             isAnonymous={isAnonymous}
+            onSubmitStatement={onSubmitStatement}
             onShowAccountSetupModal={onShowAccountSetupModal}
           />
         ) : card.type === "youtube" ? (
