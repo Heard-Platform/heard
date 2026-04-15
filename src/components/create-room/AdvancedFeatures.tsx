@@ -5,6 +5,7 @@ import { Label } from "../ui/label";
 import { ChevronDown, ChevronUp, Plus, Users } from "lucide-react";
 import { CustomDemographicQuestion } from "./CustomDemographicQuestion";
 import { NewCustomDemographicQuestion, type NewDemographicQuestion, type StandardDemographicQuestionType } from "../../types";
+import { hasDuplicates } from "../../utils/validation";
 
 interface AdvancedFeaturesProps {
   demographicQuestions: NewDemographicQuestion[];
@@ -168,6 +169,7 @@ export function AdvancedFeatures({
                       handleUpdateCustomQuestion(question.draftId, question.text, options)
                     }
                     onRemove={() => handleRemoveCustomQuestion(question.draftId)}
+                    isDuplicate={hasDuplicates(question.text, customQuestions.map(q => q.text))}
                   />
                 ))}
               </div>
