@@ -976,6 +976,11 @@ app.get(
             demographicQuestions: unanswered,
           };
         });
+      } else {
+        rooms = rooms.map((room) => ({
+          ...room,
+          demographicQuestions: [],
+        }));
       }
 
       return c.json({ rooms });
