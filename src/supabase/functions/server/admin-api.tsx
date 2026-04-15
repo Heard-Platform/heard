@@ -1,5 +1,4 @@
 import { sanitizeUser } from "./user-utils.ts";
-import * as kv from "./kv_store.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import {
   getAllRealDebates,
@@ -12,17 +11,19 @@ import {
   saveDebate, deletePhone,
   getCommunity,
   saveCommunity,
-  getAllActivityRecords
-} from "./kv-utils.tsx";
-import {
+  deleteCommunity,
+  deleteMembership,
+  saveMembership,
+  getAllActivityRecords,
   getVotesForUser,
   getUserActivityRecords,
+  saveUser,
+  saveNewsletterSentUsers,
 } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
-import { saveUser } from "./kv-utils.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 import { sendDebateCompletionCelebration } from "./cron-api.tsx";
-import { getNewsletterByEdition, getNewsletterRecipients, getNewsletterSentKey } from "./newsletter-utils.ts";
+import { getNewsletterByEdition, getNewsletterRecipients } from "./newsletter-utils.ts";
 import { getFlyerEmails } from "./model-utils.ts";
 
 // @ts-ignore
@@ -107,34 +108,23 @@ app.patch(
 
       // Get existing sub-heard data
       const subHeardKey = `subheard:${name}`;
-      const existingData = await kv.get(subHeardKey);
+      const subheard = await getCommunity(name);
 
-      if (!existingData) {
+      if (!subheard) {
         return c.json({ error: "Sub-heard not found" }, 404);
       }
 
-      let subHeardData;
-      try {
-        subHeardData = JSON.parse(existingData);
-      } catch (error) {
-        console.error("Error parsing sub-heard data:", error);
-        return c.json({ error: "Invalid sub-heard data" }, 500);
-      }
-
       // Update admin
-      const oldAdminId = subHeardData.adminId;
-      subHeardData.adminId = newAdminId;
-      subHeardData.adminUpdatedAt = Date.now();
+      const oldAdminId = subheard.adminId;
+      subheard.adminId = newAdminId;
 
       // Save updated data
-      await kv.set(subHeardKey, JSON.stringify(subHeardData));
+      await saveCommunity(subheard);
 
       return c.json({
         success: true,
         subHeard: {
-          name: subHeardData.name,
-          isPrivate: subHeardData.isPrivate,
-          adminId: subHeardData.adminId,
+          ...subheard,
           oldAdminId,
         },
       });
@@ -209,59 +199,39 @@ app.patch(
       }
 
       // Check if new name already exists
-      const newSubHeardKey = `subheard:${normalizedNewName}`;
-      const existingNewData = await kv.get(newSubHeardKey);
-      if (existingNewData) {
+      const newCommunity = await getCommunity(normalizedNewName);
+      if (newCommunity) {
         return c.json({ error: "A sub-heard with that name already exists" }, 409);
       }
 
       // Get existing sub-heard data
-      const oldSubHeardKey = `subheard:${oldName}`;
-      const existingData = await kv.get(oldSubHeardKey);
+      const oldCommunity = await getCommunity(oldName);
 
-      if (!existingData) {
+      if (!oldCommunity) {
         return c.json({ error: "Sub-heard not found" }, 404);
       }
 
-      let subHeardData;
-      try {
-        subHeardData = JSON.parse(existingData);
-      } catch (error) {
-        console.error("Error parsing sub-heard data:", error);
-        return c.json({ error: "Invalid sub-heard data" }, 500);
-      }
-
       // Update the name
-      subHeardData.name = normalizedNewName;
-      subHeardData.renamedAt = Date.now();
-      subHeardData.previousName = oldName;
+      oldCommunity.name = normalizedNewName;
 
       // Save under new key
-      await kv.set(newSubHeardKey, JSON.stringify(subHeardData));
-      
+      await saveCommunity(oldCommunity);
+
       // Delete old key
-      await kv.del(oldSubHeardKey);
+      await deleteCommunity(oldName);
 
       // Update all memberships
-      const memberships = await kv.getByPrefix("subheard_member:");
+      const memberships = await getByPrefixParsed<any>("subheard_member:");
       let updatedMemberships = 0;
-      
-      for (const membershipData of memberships) {
+
+      for (const membership of memberships) {
         try {
-          const membership = typeof membershipData === "string" 
-            ? JSON.parse(membershipData) 
-            : membershipData;
-          
           if (membership.subHeard === oldName) {
-            // Delete old membership key
-            const oldMembershipKey = `subheard_member:${membership.userId}:${oldName}`;
-            await kv.del(oldMembershipKey);
-            
-            // Create new membership key
-            const newMembershipKey = `subheard_member:${membership.userId}:${normalizedNewName}`;
+            // Delete old membership key and save under new key
+            await deleteMembership(membership.userId, oldName);
             membership.subHeard = normalizedNewName;
-            await kv.set(newMembershipKey, JSON.stringify(membership));
-            
+            await saveMembership(membership);
+
             updatedMemberships++;
           }
         } catch (error) {
@@ -272,13 +242,12 @@ app.patch(
       // Update all active rooms
       const rooms = await getActiveRooms();
       let updatedRooms = 0;
-      
+
       for (const room of rooms) {
         try {
           if (room.subHeard === oldName) {
             room.subHeard = normalizedNewName;
-            // Update the main room record
-            await kv.set(`room:${room.id}`, JSON.stringify(room));
+            await saveDebate(room);
             updatedRooms++;
           }
         } catch (error) {
@@ -564,7 +533,7 @@ app.post(
           if (room.subHeard === oldName) {
             room.subHeard = normalizedName;
             // Update the main room record
-            await kv.set(`room:${room.id}`, JSON.stringify(room));
+            await saveDebate(room);
             updatedRooms++;
             updatedRoomIds.push(room.id);
             console.log(`Updated room ${room.id} subheard from "${oldName}" to "${normalizedName}"`);
@@ -661,9 +630,8 @@ app.post(
             console.log(`Successfully sent to ${user.email}`);
             sent++;
             newlySent.push(user.id);
-            
-            const sentKey = getNewsletterSentKey(newsletterEdition);
-            await kv.set(sentKey, [...alreadySent, ...newlySent]);
+            const sentUsers = [...alreadySent, ...newlySent];
+            await saveNewsletterSentUsers(newsletterEdition, sentUsers);
           }
         } catch (error) {
           console.error(`Error sending to ${user.email}:`, error);

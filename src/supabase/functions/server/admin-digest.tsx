@@ -1,6 +1,5 @@
-import * as kv from "./kv_store.tsx";
 import { getAllRealUsers, getSentEmails } from "./kv-utils.tsx";
-import type { UserSession, Vote, Statement, DebateRoom } from "./types.tsx";
+import { User } from "./types.tsx";
 
 export interface AdminDailyStats {
   emailsSent: number;
@@ -39,7 +38,7 @@ async function getEmailsSentSince(cutoffTime: number): Promise<number> {
 async function getNewUsersSince(cutoffTime: number): Promise<number> {
   try {
     const allUsers = await getAllRealUsers();
-    return allUsers.filter((user: UserSession) => 
+    return allUsers.filter((user: User) => 
       user.createdAt && user.createdAt >= cutoffTime
     ).length;
   } catch (error) {
