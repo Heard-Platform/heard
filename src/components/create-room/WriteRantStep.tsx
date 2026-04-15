@@ -104,45 +104,62 @@ export function WriteRantStep({
   );
   
   const renderTextArea = () => (
-    <motion.div
-      animate={
-        isRecording
-          ? {
-              boxShadow: [
-                "0 8px 20px -3px rgba(239, 68, 68, 0.25)",
-                "0 8px 30px -3px rgba(239, 68, 68, 0.6)",
-              ],
-            }
-          : { boxShadow: "0 0 0 0 rgba(0,0,0,0)" }
-      }
-      transition={
-        isRecording
-          ? {
-              duration: 1.5,
-              repeat: Infinity,
-              repeatType: "reverse" as const,
-              ease: "easeInOut",
-            }
-          : { duration: 0.3 }
-      }
-      className="rounded-md"
-    >
-      <Textarea
-        id="rant-input"
-        placeholder="Let it all out... tell us what you really think! 🔥"
-        maxLength={2000}
-        value={rant}
-        onChange={(e) => onRantChange(e.target.value)}
-        onClick={isRecording ? stopRecording : undefined}
-        readOnly={isRecording}
-        className={`w-full min-h-[200px] resize-none bg-white placeholder:text-slate-400 ${
+    <div className="relative">
+      <motion.div
+        animate={
           isRecording
-            ? "border-2 border-red-400"
-            : "border-teal-200 hover:border-teal-300 transition-colors"
-        }`}
-        rows={8}
-      />
-    </motion.div>
+            ? {
+                boxShadow: [
+                  "0 8px 20px -3px rgba(239, 68, 68, 0.25)",
+                  "0 8px 30px -3px rgba(239, 68, 68, 0.6)",
+                ],
+              }
+            : { boxShadow: "0 0 0 0 rgba(0,0,0,0)" }
+        }
+        transition={
+          isRecording
+            ? {
+                duration: 1.5,
+                repeat: Infinity,
+                repeatType: "reverse" as const,
+                ease: "easeInOut",
+              }
+            : { duration: 0.3 }
+        }
+        className="rounded-md"
+      >
+        <Textarea
+          id="rant-input"
+          placeholder="Let it all out... tell us what you really think! 🔥"
+          maxLength={2000}
+          value={rant}
+          onChange={(e) => onRantChange(e.target.value)}
+          onClick={isRecording ? stopRecording : undefined}
+          readOnly={isRecording}
+          className={`w-full min-h-[200px] resize-none bg-white placeholder:text-slate-400 ${
+            isRecording
+              ? "border-2 border-red-400"
+              : "border-teal-200 hover:border-teal-300 transition-colors"
+          }`}
+          rows={8}
+        />
+      </motion.div>
+      <AnimatePresence>
+        {rant.length > 0 && (
+          <motion.button
+            type="button"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            onClick={() => onRantChange("")}
+            className="absolute bottom-3 right-3 text-xs text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+          >
+            Tap to start over
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
   );
 
   return (
