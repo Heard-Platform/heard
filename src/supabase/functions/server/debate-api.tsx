@@ -954,23 +954,28 @@ app.get(
       // Attach demographic questions to each room
       if (includeDemographics) {
         const roomIds = rooms.map((r) => r.id);
-        const [allDemogQuestions, answeredQuestionIds] = await Promise.all([
+        const [allQuestions, answeredQuestionIds] = await Promise.all([
           getDemographicQuestionsForRooms(roomIds),
           userId ? getAnsweredDemographicQuestionIds(userId) : Promise.resolve([]),
         ]);
         const answeredSet = new Set(answeredQuestionIds);
-        const questionsByRoom = allDemogQuestions.reduce((acc, q) => {
-          if (!acc[q.roomId]) acc[q.roomId] = [];
-          acc[q.roomId].push(q);
-          return acc;
-        }, {} as Record<string, typeof allDemogQuestions>);
+
+        const questionsByRoom: Record<string, typeof allQuestions> = {};
+        for (const q of allQuestions) {
+          if (!questionsByRoom[q.roomId]) {
+            questionsByRoom[q.roomId] = [];
+          }
+          questionsByRoom[q.roomId].push(q);
+        }
   
-        rooms = rooms.map((room) => ({
-          ...room,
-          demographicQuestions: (questionsByRoom[room.id] || []).filter(
-            (q) => !answeredSet.has(q.id),
-          ),
-        }));
+        rooms = rooms.map((room) => {
+          const questions = questionsByRoom[room.id] || [];
+          const unanswered = questions.filter((q) => !answeredSet.has(q.id));
+          return {
+            ...room,
+            demographicQuestions: unanswered,
+          };
+        });
       }
 
       return c.json({ rooms });
