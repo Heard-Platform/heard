@@ -41,7 +41,7 @@ export function CustomDemographicQuestion({
     ? "invalid-option"
     : "valid-option";
   
-    const optionBorderStyling = (isDuplicate: boolean) => {
+  const optionBorderStyling = (isDuplicate: boolean) => {
     return isDuplicate ? "invalid-option" : "valid-option";
   }
 
