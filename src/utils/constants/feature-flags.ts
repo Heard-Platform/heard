@@ -14,7 +14,7 @@ export interface FeatureFlagsConfig {
 export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
   production: {
     ONLY_JOINED_COMMUNITIES: true,
-    DEMOGRAPHICS: false,
+    DEMOGRAPHICS: true,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
