@@ -284,7 +284,7 @@ export function RoomCard({
                 (!user.isAnonymous || certifyCardDismissed) &&
                 chanceCardSwiped &&
                 (!room.youtubeUrl || youtubeCardSwiped) &&
-                (!room.demographicQuestions?.length ||
+                (!room.demographicQuestions.length ||
                   room.demographicQuestions.every((q) =>
                     answeredQuestionIds.has(q.id),
                   ));
