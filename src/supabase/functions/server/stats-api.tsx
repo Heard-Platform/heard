@@ -164,7 +164,7 @@ app.get("/make-server-f1a393b4/public-stats", async (c) => {
 });
 
 // Retention stats endpoint - user retention rates based on account creation
-app.get("/make-server-f1a393b4/retention-stats", async (c) => {
+app.get("/make-server-f1a393b4/stats/retention", async (c) => {
   try {
     const allUsers = await getAllRealUsers();
     const now = Date.now();
