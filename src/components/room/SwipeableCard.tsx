@@ -100,7 +100,7 @@ export function SwipeableCard({
 
   return (
     <motion.div
-      className="absolute top-0 left-0 w-full"
+      className={isTopCard ? "relative w-full" : "absolute top-0 left-0 w-full"}
       style={{
         x: isTopCard ? x : 0,
         y: isTopCard ? y : 0,

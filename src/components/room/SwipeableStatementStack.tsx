@@ -411,7 +411,7 @@ export function SwipeableStatementStack({
 
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
-      <div className="relative" style={{ minHeight: "290px" }}>
+      <div className="relative">
         {showTutorial && (
           <div className="absolute inset-0 z-20 pointer-events-none">
             <SwipeInstructions />
