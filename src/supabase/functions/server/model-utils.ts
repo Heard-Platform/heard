@@ -55,6 +55,16 @@ export const getDemographicQuestionsForRooms = async (roomIds: string[]) => {
   );
 };
 
+export const getDemographicAnswersForQuestionIds = async (
+  questionIds: number[],
+) => {
+  return selectAll<DemographicAnswer>(
+    "demographic_answers",
+    {},
+    (q: any) => q.in("questionId", questionIds),
+  );
+};
+
 export const saveDemographicAnswer = async (answer: NewDemographicAnswer) => {
   return upsert("demographic_answers", answer, "userId,questionId");
 };
