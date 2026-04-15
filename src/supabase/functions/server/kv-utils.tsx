@@ -352,10 +352,10 @@ export const getAllActivityRecords = async () =>
   getByPrefixParsed<UserActivityRecord>(activityPrefix);
 
 export const getUserActivityRecords = async (userId: string) =>
-  getByPrefixParsed<UserActivityRecord>(`${activityPrefix}:%:${userId}:`);
+  getByPrefixParsed<UserActivityRecord>(`${activityPrefix}%:${userId}`);
 
 export const getActivitiesForDate = async (dateStr: string) =>
-  getByPrefixParsed<UserActivityRecord>(`${activityPrefix}:${dateStr}:`);
+  getByPrefixParsed<UserActivityRecord>(`${activityPrefix}${dateStr}:`);
 
 export const upsertUserActivity = async (record: UserActivityRecord) => {
   await upsert(record, activityKeyFn)
