@@ -67,8 +67,17 @@ export function DemographicsPieCharts({ demographics }: DemographicsPieChartsPro
 
           return (
             <div key={question}>
-              <h3 className="text-xs sm:text-sm font-medium mb-3 text-center truncate" title={question}>{question}</h3>
-              <ResponsiveContainer width="100%" height={160} className="sm:!h-[220px]">
+              <h3
+                className="text-xs sm:text-sm font-medium mb-3 text-center truncate"
+                title={question}
+              >
+                {question}
+              </h3>
+              <ResponsiveContainer
+                width="100%"
+                height={160}
+                className="sm:!h-[220px]"
+              >
                 <PieChart>
                   <Pie
                     data={data}
@@ -89,7 +98,9 @@ export function DemographicsPieCharts({ demographics }: DemographicsPieChartsPro
                   <Tooltip content={<CustomTooltip />} />
                   <Legend
                     formatter={(value) => (
-                      <span className="text-xs text-slate-700">{value}</span>
+                      <span className="text-xs text-slate-700">
+                        {value}
+                      </span>
                     )}
                   />
                 </PieChart>
