@@ -153,7 +153,12 @@ export function SwipeableCard({
             ? "cursor-grab active:cursor-grabbing"
             : "cursor-default"
         }`}
-        style={{ touchAction: isTopCard && !card.isUnswipeable ? "none" : "auto" }}
+        style={{
+          touchAction:
+            isTopCard && !card.isUnswipeable ? "none" : "auto",
+          height: !isTopCard ? "286px" : "auto",
+          overflow: !isTopCard ? "hidden" : "visible",
+        }}
       >
         {card.type === "chance" ? (
           <ChanceCard
