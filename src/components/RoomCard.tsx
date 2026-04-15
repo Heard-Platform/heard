@@ -197,12 +197,12 @@ export function RoomCard({
               <div className="flex items-center gap-2 text-sm min-w-0">
                 {currentSubHeard ? (
                   <>
-                    <UserCircle className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    <UserCircle className="w-3.5 h-3.5 prefix-icon shrink-0" />
                     <span className="font-medium text-foreground truncate">Anonymous</span>
                   </>
                 ) : (
                   <>
-                    <Globe className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    <Globe className="w-3.5 h-3.5 prefix-icon shrink-0" />
                     {room.subHeard && (
                       <span className="font-medium text-foreground truncate">
                         {formatSubHeardDisplay(room.subHeard)}

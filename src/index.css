@@ -4166,6 +4166,30 @@
     color: var(--color-yellow-900);
   }
 
+  .invalid-text {
+    color: var(--color-red-600);
+  }
+
+  .valid-option {
+    border-color: var(--color-purple-200);
+  }
+
+  .valid-option:focus {
+    border-color: var(--color-purple-400);
+  }
+
+  .invalid-option {
+    border-color: var(--color-red-400);
+  }
+
+  .invalid-option:focus {
+    border-color: var(--color-red-500);
+  }
+
+  .prefix-icon {
+    color: var(--color-purple-600);
+  }
+
   .capitalize {
     text-transform: capitalize;
   }
