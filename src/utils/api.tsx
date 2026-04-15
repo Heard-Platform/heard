@@ -168,6 +168,7 @@ class ApiClient extends BaseApiClient {
     const params = new URLSearchParams();
     if (subHeard) params.append("subHeard", subHeard);
     params.append("onlyJoined", isFeatureEnabled(FeatureFlags.ONLY_JOINED_COMMUNITIES).toString());
+    params.append("includeDemographics", isFeatureEnabled(FeatureFlags.DEMOGRAPHICS).toString());
     const queryString = params.toString();
     return this.request<{ rooms: DebateRoom[] }>(
       `/rooms/active${queryString ? `?${queryString}` : ""}`,
@@ -292,6 +293,15 @@ class ApiClient extends BaseApiClient {
     return this.request("/youtube-card/mark-swiped", {
       method: "POST",
       body: JSON.stringify({ roomId }),
+    });
+  }
+
+  async saveDemographicAnswer(questionId: string, answer: string | null) {
+    return this.request<undefined>("/demographic-answer", {
+      method: "POST",
+      body: JSON.stringify(
+        answer ? { questionId, answer } : { questionId },
+      ),
     });
   }
 

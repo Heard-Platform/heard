@@ -26,6 +26,11 @@ import {
   getUserSession, updateUserLastActive
 } from "./auth-api.tsx";
 import { generateId, getFrontendUrl } from "./utils.tsx";
+import {
+  getDemographicQuestionsForRooms,
+  getAnsweredDemographicQuestionIds,
+  saveDemographicAnswer,
+} from "./model-utils.ts";
 import type {
   User, Statement,
   Vote,
@@ -40,6 +45,8 @@ import { filterFeedRooms, sortRoomsForFeed } from "./feed-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
 import { validateDeveloper } from "./internal-utils.ts";
+import { defineRoute } from "./route-wrapper.tsx";
+import { validateSession } from "./auth-utils.ts";
 
 const app = new Hono();
 
@@ -905,6 +912,7 @@ app.get(
     try {
       const userId = c.get("userId");
       const subHeard = c.req.query("subHeard");
+      const includeDemographics = c.req.query("includeDemographics") === "true";
 
       let rooms = await getActiveRooms();
       let userMemberships = new Set<string>();
@@ -942,6 +950,33 @@ app.get(
       rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 100);
       rooms = sortRoomsForFeed(rooms, userMemberships);
       rooms = rooms.slice(0, 20);
+
+      // Attach demographic questions to each room
+      if (includeDemographics) {
+        const roomIds = rooms.map((r) => r.id);
+        const [allQuestions, answeredQuestionIds] = await Promise.all([
+          getDemographicQuestionsForRooms(roomIds),
+          userId ? getAnsweredDemographicQuestionIds(userId) : Promise.resolve([]),
+        ]);
+        const answeredSet = new Set(answeredQuestionIds);
+
+        const questionsByRoom: Record<string, typeof allQuestions> = {};
+        for (const q of allQuestions) {
+          if (!questionsByRoom[q.roomId]) {
+            questionsByRoom[q.roomId] = [];
+          }
+          questionsByRoom[q.roomId].push(q);
+        }
+  
+        rooms = rooms.map((room) => {
+          const questions = questionsByRoom[room.id] || [];
+          const unanswered = questions.filter((q) => !answeredSet.has(q.id));
+          return {
+            ...room,
+            demographicQuestions: unanswered,
+          };
+        });
+      }
 
       return c.json({ rooms });
     } catch (error) {
@@ -2164,6 +2199,26 @@ app.post(
       );
     }
   },
+);
+
+// Save demographic answer
+app.post(
+  "/make-server-f1a393b4/demographic-answer",
+  validateSession,
+  defineRoute(
+    {
+      questionId: { type: "number", required: true },
+      answer: { type: "string" },
+    },
+    async (
+      { questionId, answer }: { questionId: number; answer?: string },
+      c: Context,
+    ) => {
+      const userId = c.get("userId");
+      await saveDemographicAnswer({ userId, questionId, answer: answer ?? null });
+    },
+    "Saving demographic answer failed",
+  ),
 );
 
 // Mark chance card as swiped

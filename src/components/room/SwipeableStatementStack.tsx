@@ -29,15 +29,18 @@ interface SwipeableStatementStackProps {
   chanceCardSwiped: boolean;
   youtubeUrl?: string;
   youtubeCardSwiped: boolean;
-  demographicQuestions?: DemographicQuestion[];
-  demographicsAnswered?: Set<string>;
-  onVote: (id: string, voteType: VoteType) => Promise<void>;
+  demographicQuestions: DemographicQuestion[];
+  answeredQuestionIds: Set<string>;
+  onVote: (
+    id: string,
+    voteType: VoteType,
+  ) => Promise<void>;
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
   onCertifyDone: () => void;
   onChanceCardSwiped: () => Promise<void>;
   onYouTubeCardSwiped: () => Promise<void>;
-  onDemographicsAnswer?: (questionId: string, answer: string) => void;
+  onDemographicsAnswered: (questionId: string) => void;
 }
 
 const SWIPE_THRESHOLD = 100;
@@ -52,16 +55,17 @@ export function SwipeableStatementStack({
   youtubeUrl,
   youtubeCardSwiped,
   demographicQuestions,
-  demographicsAnswered,
+  answeredQuestionIds,
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
   onCertifyDone,
   onChanceCardSwiped,
   onYouTubeCardSwiped,
-  onDemographicsAnswer,
+  onDemographicsAnswered,
 }: SwipeableStatementStackProps) {
-  const { flagStatement } = useDebateSession();
+  const { flagStatement, saveDemographicAnswer } = useDebateSession();
+
   const { showTutorial, recordSwipe } = useSwipeTutorial();
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [votedStatementIds, setVotedStatementIds] = useState<
@@ -75,7 +79,6 @@ export function SwipeableStatementStack({
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
-  const [demographicsAnsweredInternal, setDemographicsAnsweredInternal] = useState<Set<string>>(new Set());
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [statementToFlag, setStatementToFlag] = useState<Statement | null>(null);
 
@@ -91,27 +94,26 @@ export function SwipeableStatementStack({
     statement,
   }));
 
+  let demogEndIndex = 0;
   if (demographicQuestions) {
     const unansweredDemos = demographicQuestions.filter(
-      (q) =>
-        !demographicsAnswered ||
-        (!demographicsAnswered.has(q.id) &&
-        !demographicsAnsweredInternal.has(q.id)),
+      (q) => !answeredQuestionIds.has(q.id),
     );
 
-    const demoCards: DemographicsCard[] =
-      unansweredDemos.map((question) => ({
-        type: "demographics",
-        question,
-        isUnswipeable: true,
-      }));
+    const demoCards: DemographicsCard[] = unansweredDemos.map((question) => ({
+      type: "demographics",
+      question,
+    }));
 
-    cards.unshift(...demoCards);
+    const insertAt = Math.min(3, cards.length);
+    cards.splice(insertAt, 0, ...demoCards);
+    demogEndIndex = insertAt + demoCards.length;
   }
-  
+
   if (!chanceCardSwiped) {
     const chanceCard: ChanceCard = { type: "chance" };
-    const chanceCardIndex = Math.min(5, statements.length) - votedStatementIds.size;
+    const naturalIndex = Math.min(5, statements.length) - votedStatementIds.size;
+    const chanceCardIndex = Math.max(naturalIndex, demogEndIndex);
     cards.splice(chanceCardIndex, 0, chanceCard);
   }
 
@@ -265,39 +267,45 @@ export function SwipeableStatementStack({
     const { offset, velocity } = info;
     const swipeX = offset.x;
     const velocityX = velocity.x;
+    const swipeDirection: "left" | "right" | null =
+      swipeX < -SWIPE_THRESHOLD || velocityX < -500 ? "left" :
+      swipeX > SWIPE_THRESHOLD || velocityX > 500 ? "right" :
+      null;
 
-    const swipingLeft = swipeX < -SWIPE_THRESHOLD || velocityX < -500;
-    const swipingRight = swipeX > SWIPE_THRESHOLD || velocityX > 500;
+    if (!swipeDirection) return;
 
-    if (card.type === "certify" || card.type === "chance" || card.type === "youtube") {
-      if (swipingLeft || swipingRight) {
-        setIsVoting(true);
-        setSwipedNoopCard(card.type);
-        setSwipeDirection(swipingLeft ? "left" : "right");
+    if (card.type === "demographics") {
+      handleDemographicsAnswer(
+        card.question.id,
+        null,
+        swipeDirection,
+      );
+      return;
+    } else if (card.type === "certify" || card.type === "chance" || card.type === "youtube") {
+      setIsVoting(true);
+      setSwipedNoopCard(card.type);
+      setSwipeDirection(swipeDirection);
 
-        if (card.type === "certify") {
-          setCertifyCardDismissed(true);
-          onCertifyDone();
-        } else if (card.type === "chance") {
-          onChanceCardSwiped();
-        } else if (card.type === "youtube") {
-          onYouTubeCardSwiped && onYouTubeCardSwiped();
-        }
-
-        setTimeout(() => {
-          setSwipedNoopCard(null);
-          setSwipeDirection(null);
-          setIsVoting(false);
-        }, 300);
+      if (card.type === "certify") {
+        setCertifyCardDismissed(true);
+        onCertifyDone();
+      } else if (card.type === "chance") {
+        onChanceCardSwiped();
+      } else if (card.type === "youtube") {
+        onYouTubeCardSwiped && onYouTubeCardSwiped();
       }
+
+      setTimeout(() => {
+        setSwipedNoopCard(null);
+        setSwipeDirection(null);
+        setIsVoting(false);
+      }, 300);
       return;
     } else if (card.type === "statement") {
       const statementId = card.statement.id;
-
-      if (swipingRight) {
+      if (swipeDirection === "right") {
         handleVote(statementId, "agree", "right");
-      }
-      else if (swipingLeft) {
+      } else if (swipeDirection === "left") {
         handleVote(statementId, "disagree", "left");
       }
     }
@@ -327,18 +335,19 @@ export function SwipeableStatementStack({
     await onSubmitStatement(text);
   };
 
-  const handleDemographicsAnswer = (questionId: string, answer: string) => {
-    const direction = answer === "skip" ? "left" : "right";
-    setSwipeDirection(direction);
+  const handleDemographicsAnswer = (
+    questionId: string,
+    answer: string | null,
+    direction?: "left" | "right",
+  ) => {
+    setSwipeDirection(
+      direction ?? (answer === null ? "left" : "right"),
+    );
     setSwipedCardId(`demographics-${questionId}`);
-    
+    saveDemographicAnswer(questionId, answer);
+
     setTimeout(() => {
-      setDemographicsAnsweredInternal((prev) => {
-        const newSet = new Set(prev);
-        newSet.add(questionId);
-        return newSet;
-      });
-      onDemographicsAnswer!(questionId, answer);
+      onDemographicsAnswered(questionId);
       setSwipedCardId(null);
       setSwipeDirection(null);
     }, 500);
@@ -405,7 +414,7 @@ export function SwipeableStatementStack({
 
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
-      <div className="relative" style={{ minHeight: "290px" }}>
+      <div className="relative">
         {showTutorial && (
           <div className="absolute inset-0 z-20 pointer-events-none">
             <SwipeInstructions />

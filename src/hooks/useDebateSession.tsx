@@ -57,6 +57,10 @@ interface DebateSessionContextType {
   submitFlyerEmail: (email: string) => Promise<ApiResponse | null>;
   markChanceCardSwiped: (roomId: string) => Promise<void>;
   markYouTubeCardSwiped: (roomId: string) => Promise<void>;
+  saveDemographicAnswer: (
+    questionId: string,
+    answer: string | null,
+  ) => Promise<ApiResponse | null>;
   getActiveRooms: () => Promise<DebateRoom[]>;
   setCurrentSubHeard: (subHeard: string | null) => void;
   resetSession: () => void;
@@ -418,6 +422,12 @@ export function DebateSessionProvider(
     }, [],
   );
 
+  const saveDemographicAnswer = useCallback(
+    async (questionId: string, answer: string | null) =>
+      safelyMakeApiCall<undefined>(() => api.saveDemographicAnswer(questionId, answer)),
+    [safelyMakeApiCall],
+  );      
+
   // Get active rooms - uses currentSubHeard from state
   const getActiveRooms = useCallback(async () => {
     setRoomsLoading(true);
@@ -712,6 +722,7 @@ export function DebateSessionProvider(
     getRoomAnalysis,
     markChanceCardSwiped,
     markYouTubeCardSwiped,
+    saveDemographicAnswer,
     getSubHeards,
     getExplorableSubHeards,
     joinSubHeard,
@@ -795,6 +806,10 @@ export function DebateSessionProvider(
       },
       markYouTubeCardSwiped: async () => {
         console.log("[Showcase] markYouTubeCardSwiped called");
+      },
+      saveDemographicAnswer: async (questionId: string, answer: string | null) => {
+        console.log("[Showcase] saveDemographicAnswer called");
+        return { success: true };
       },
       getSubHeards: async () => {
         console.log("[Showcase] getSubHeards called");

@@ -84,7 +84,6 @@ export type NewCustomDemographicQuestion = NewDemographicQuestion &
 export type DemographicsCard = {
   type: "demographics";
   question: DemographicQuestion;
-  isUnswipeable: true;
 }
 
 export type Card = (StatementCard | CertifyCard | ChanceCard | YouTubeCard | DemographicsCard)
@@ -159,6 +158,7 @@ export interface DebateRoom {
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
   youtubeCardSwiped?: boolean;
+  demographicQuestions: DemographicQuestion[];
 }
 
 export type NewDebateRoom = Pick<
