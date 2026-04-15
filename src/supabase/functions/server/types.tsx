@@ -120,6 +120,31 @@ export interface Vote {
   anonymousUserId?: string;
 }
 
+export type DemographicQuestionType =
+  | "gender"
+  | "age_range"
+  | "occupation"
+  | "custom";
+
+export interface DemographicQuestion {
+  id: number;
+  roomId: string;
+  type: DemographicQuestionType;
+  text?: string;
+  options?: string[];
+};
+
+export interface DemographicAnswer {
+  id: number;
+  userId: string;
+  questionId: number;
+  answer: string | null;
+  createdAt: number;
+};
+
+export type NewDemographicAnswer =
+  Omit<DemographicAnswer, "id" | "createdAt">;
+
 export type Phase =
   | "lobby"
   | "round1"

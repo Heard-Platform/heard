@@ -6,6 +6,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Toaster } from "../components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { mockRooms } from "./mockData";
 
 const mockStatements: Statement[] = [
   {
@@ -186,6 +187,7 @@ export function SwipeableStatementStackStory() {
 
             <div className="bg-slate-100 rounded-lg p-8 min-h-[600px] flex items-center justify-center">
               <SwipeableStatementStack
+                room={mockRooms[0]}
                 statements={mockStatements}
                 currentUserId="story-user"
                 allowAnonymous={true}
@@ -197,6 +199,7 @@ export function SwipeableStatementStackStory() {
                 onShowAccountSetupModal={() => {}}
                 onChanceCardSwiped={handleChanceCardSwiped}
                 onYouTubeCardSwiped={async () => {}}
+                onCertifyDone={async () => {}}
               />
             </div>
           </div>
@@ -208,10 +211,11 @@ export function SwipeableStatementStackStory() {
               <div className="w-full max-w-md">
                 <div className="p-6 rounded-xl border-2 shadow-xl bg-gradient-to-br from-yellow-50 to-orange-50 border-orange-300">
                   <ChanceCard
+                    room={mockRooms[0]}
                     isTopCard={true}
-                    onSubmitStatement={handleSubmitStatement}
                     allowAnonymous={true}
                     isAnonymous={false}
+                    onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={() => {}}
                   />
                 </div>

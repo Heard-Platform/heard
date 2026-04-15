@@ -1,5 +1,4 @@
-import * as kv from "./kv_store.tsx";
-import { deleteMagicLink, getMagicLink, getParsedKvData, getSession, getUser, saveMagicLink, saveSession } from "./kv-utils.tsx";
+import { deleteMagicLink, getMagicLink, getParsedKvData, getSession, getUser, saveMagicLink, saveSession, saveUserWithEmailIndex, getUserIdByEmail } from "./kv-utils.tsx";
 import type { Session, User } from "./types.tsx";
 import { Context, Hono } from "npm:hono";
 import { getMagicLinkEmail } from "./email-templates.tsx";
@@ -109,18 +108,14 @@ export const getUserSession = async (
 };
 
 export const saveUserAndEmail = async (user: User) => {
-  await kv.set(`user:${user.id}`, JSON.stringify(user));
-  await kv.set(`user_email:${user.email}`, user.id);
+  await saveUserWithEmailIndex(user);
 };
 
 const getUserByEmail = async (
   email: string,
 ): Promise<User | null> => {
   try {
-    const normalizedEmail = email.trim().toLowerCase();
-    const userId = await kv.get(
-      `user_email:${normalizedEmail}`,
-    );
+    const userId = await getUserIdByEmail(email);
     if (!userId) return null;
 
     return await getUserSession(userId);

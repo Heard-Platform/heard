@@ -5,7 +5,7 @@ import {
   useTransform,
   PanInfo,
 } from "motion/react";
-import type { Card } from "../../types";
+import type { Card, DebateRoom } from "../../types";
 import { getPastelColor } from "../../utils/colors";
 import { ChanceCard } from "./ChanceCard";
 import { YouTubeCard } from "./YouTubeCard";
@@ -15,6 +15,7 @@ import { CertifyCard } from "./CertifyCard";
 
 interface SwipeableCardProps {
   card: Card;
+  room: DebateRoom;
   index: number;
   isTopCard: boolean;
   direction: "left" | "right" | "down" | "up" | null;
@@ -29,7 +30,7 @@ interface SwipeableCardProps {
   ) => void;
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
-  onDemographicsAnswer?: (id: string, answer: string) => void;
+  onDemographicsAnswer?: (id: string, answer: string | null) => void;
   onCertifyDismiss: () => void;
   onCertifySuccess: () => void;
   onSuperAgree: () => void;
@@ -39,6 +40,7 @@ interface SwipeableCardProps {
 
 export function SwipeableCard({
   card,
+  room,
   index,
   isTopCard,
   direction,
@@ -98,7 +100,7 @@ export function SwipeableCard({
 
   return (
     <motion.div
-      className="absolute top-0 left-0 w-full"
+      className={isTopCard ? "relative w-full" : "absolute top-0 left-0 w-full"}
       style={{
         x: isTopCard ? x : 0,
         y: isTopCard ? y : 0,
@@ -151,14 +153,20 @@ export function SwipeableCard({
             ? "cursor-grab active:cursor-grabbing"
             : "cursor-default"
         }`}
-        style={{ touchAction: isTopCard && !card.isUnswipeable ? "none" : "auto" }}
+        style={{
+          touchAction:
+            isTopCard && !card.isUnswipeable ? "none" : "auto",
+          height: !isTopCard ? "286px" : "auto",
+          overflow: !isTopCard ? "hidden" : "visible",
+        }}
       >
         {card.type === "chance" ? (
           <ChanceCard
+            room={room}
             isTopCard={isTopCard}
-            onSubmitStatement={onSubmitStatement}
             allowAnonymous={allowAnonymous}
             isAnonymous={isAnonymous}
+            onSubmitStatement={onSubmitStatement}
             onShowAccountSetupModal={onShowAccountSetupModal}
           />
         ) : card.type === "youtube" ? (

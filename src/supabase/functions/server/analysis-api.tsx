@@ -9,6 +9,7 @@ import { calculateClusterConsensus } from "./cluster-analysis.tsx";
 import { getParsedKvData } from "./kv-utils.tsx";
 import { calculateAnalysisMetrics } from "./analysis-utils.tsx";
 import { AnalysisData } from "./types.tsx";
+import { getDemographicAnswersForQuestionIds, getDemographicQuestionsForRoom } from "./model-utils.ts";
 
 const app = new Hono();
 
@@ -24,8 +25,11 @@ app.get(
       }
 
       const statements = await getStatements(roomId);
+      const questions = await getDemographicQuestionsForRoom(roomId);
+      const questionIds = questions.map((q) => q.id);
+      const answers = await getDemographicAnswersForQuestionIds(questionIds);
 
-      const metrics = calculateAnalysisMetrics(statements);
+      const metrics = calculateAnalysisMetrics(statements, questions, answers);
 
       const metadataKey = `cluster:${roomId}:metadata`;
       let clusterMetadata =

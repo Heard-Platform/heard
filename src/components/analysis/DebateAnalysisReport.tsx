@@ -5,10 +5,12 @@ import { StatBox } from "./StatBox";
 import { TopAgreedPosts } from "./TopAgreedPosts";
 import { SpiciestPosts } from "./SpiciestPosts";
 import { ClusterConsensusBox } from "./ClusterConsensusBox";
+import { DemographicsPieCharts } from "./DemographicsPieCharts";
 import { AnalysisData } from "../../types";
 import { scoreToWord } from "../../utils/analysis";
+import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 
-interface DebateAnalysisReportProps extends AnalysisData{
+interface DebateAnalysisReportProps extends AnalysisData {
   debateId: string;
   debateTopic: string;
   isDeveloper?: boolean;
@@ -31,6 +33,7 @@ export function DebateAnalysisReport({
   topPosts,
   spiciestPosts,
   clusterConsensus,
+  demographics,
   isDeveloper,
   regenerating,
   onRegenerateClusters,
@@ -66,6 +69,10 @@ export function DebateAnalysisReport({
             gradientTo="to-green-600"
           />
         </div>
+
+        {isFeatureEnabled(FeatureFlags.DEMOGRAPHICS) && (
+          <DemographicsPieCharts demographics={demographics} />
+        )}
 
         <div className="text-sm text-muted-foreground mb-2">
           Participation: {scoreToWord(participation)}

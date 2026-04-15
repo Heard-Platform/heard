@@ -1,6 +1,5 @@
 import { Context, Hono } from "npm:hono";
-import * as kv from "./kv_store.tsx";
-import { getUser, saveUser, saveUserPhone } from "./kv-utils.tsx";
+import { getUser, getUserIdByPhone, saveUser, saveUserPhone } from "./kv-utils.tsx";
 import { startVerification, checkVerification } from "./twilio-service.tsx";
 import { loginUserWithMerge, normalizePhoneNumber, validateSession } from "./auth-utils.ts";
 import { sanitizeUser } from "./user-utils.ts";
@@ -9,7 +8,7 @@ import { createUserAccount } from "./auth-api.tsx";
 const app = new Hono();
 
 const getUserByPhone = async (phone: string) => {
-  const userId = await kv.get(`user_phone:${phone}`);
+  const userId = await getUserIdByPhone(phone);
   if (!userId) return null;
   return await getUser(userId);
 };

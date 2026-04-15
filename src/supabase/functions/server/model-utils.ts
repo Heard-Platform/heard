@@ -1,8 +1,11 @@
 import { insert, selectAll, upsert } from "./db-utils.ts";
 import {
   AvatarAnimal,
+  DemographicAnswer,
+  DemographicQuestion,
   InternalVar,
   InternalVarKey,
+  NewDemographicAnswer,
   NewUserReport,
   UserPresence,
   UserReport
@@ -34,6 +37,46 @@ export const insertUserReport = async (report: NewUserReport) => {
 
 export const getUserReports = async () => {
   return selectAll<UserReport>("user_reports");
+};
+
+export const insertDemographicQuestion = async (question: DemographicQuestion) => {
+  return insert<DemographicQuestion>("demographic_questions", question);
+};
+
+export const getDemographicQuestionsForRoom = async (roomId: string) => {
+  return selectAll<DemographicQuestion>("demographic_questions", { roomId });
+};
+
+export const getDemographicQuestionsForRooms = async (roomIds: string[]) => {
+  return selectAll<DemographicQuestion>(
+    "demographic_questions",
+    {},
+    (q: any) => q.in("roomId", roomIds),
+  );
+};
+
+export const getDemographicAnswersForQuestionIds = async (
+  questionIds: number[],
+) => {
+  return selectAll<DemographicAnswer>(
+    "demographic_answers",
+    {},
+    (q: any) => q.in("questionId", questionIds),
+  );
+};
+
+export const saveDemographicAnswer = async (answer: NewDemographicAnswer) => {
+  return upsert("demographic_answers", answer, "userId,questionId");
+};
+
+export const getAnsweredDemographicQuestionIds = async (
+  userId: string,
+): Promise<number[]> => {
+  const answers = await selectAll<DemographicAnswer>(
+    "demographic_answers",
+    { userId },
+  );
+  return answers.map((a) => a.questionId);
 };
 
 export const insertFlyerEmail = async (email: string) => {

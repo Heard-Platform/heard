@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CertifyCard } from "../components/room/CertifyCard";
 import { SwipeableStatementStack } from "../components/room/SwipeableStatementStack";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { mockStatements } from "./mockData";
+import { mockRooms, mockStatements } from "./mockData";
 
 export function CertifyCardStory() {
   return (
@@ -81,6 +81,7 @@ function CertifyCardIsolated() {
 function CertifyCardInStack() {
   return (
     <SwipeableStatementStack
+      room={mockRooms[0]}
       statements={mockStatements["debate-with-image"]}
       currentUserId="demo-user"
       allowAnonymous={true}
@@ -92,6 +93,7 @@ function CertifyCardInStack() {
       onShowAccountSetupModal={() => {}}
       onChanceCardSwiped={async () => {}}
       onYouTubeCardSwiped={async () => {}}
+      onCertifyDone={async () => {}}
     />
   );
 }

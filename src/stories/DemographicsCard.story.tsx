@@ -10,23 +10,28 @@ import type {
   DemographicQuestion
 } from "../types";
 import { useState } from "react";
+import { mockRooms } from "./mockData";
 
 const questions: DemographicQuestion[] = [
   {
     id: "1",
     type: "gender",
+    roomId: "room1",
   },
   {
     id: "2",
     type: "age_range",
+    roomId: "room1",
   },
   {
     id: "3",
     type: "occupation",
+    roomId: "room1",
   },
   {
     id: "4",
     type: "custom",
+    roomId: "room1",
     text: "Do you currently live in Washington, DC?",
     options: ["Yes", "No"],
   },
@@ -79,13 +84,13 @@ export function DemographicsCardStory() {
 }
 
 function DemographicsSwipeableStack() {
-  const [demographicsAnswered, setDemographicsAnswered] = useState<Set<string>>(new Set());
+  const [questionIds, setQuestionIds] = useState<Set<string>>(new Set());
 
-  const handleAnswer = (index: string, answer: string) => {
-    console.log(`Question ${index} answered:`, answer);
-    setDemographicsAnswered((prev) => {
+  const handleAnswer = (questionId: string) => {
+    console.log(`Question ${questionId} answered`);
+    setQuestionIds((prev) => {
       const newSet = new Set(prev);
-      newSet.add(answer);
+      newSet.add(questionId);
       return newSet;
     });
   };
@@ -93,6 +98,7 @@ function DemographicsSwipeableStack() {
   return (
     <div className="space-y-8">
       <SwipeableStatementStack
+        room={mockRooms[0]}
         statements={[]}
         currentUserId="demo-user"
         allowAnonymous={true}
@@ -100,13 +106,14 @@ function DemographicsSwipeableStack() {
         chanceCardSwiped={true}
         youtubeCardSwiped={true}
         demographicQuestions={questions}
-        demographicsAnswered={demographicsAnswered}
-        onVote={async () => {}}
-        onSubmitStatement={async () => {}}
-        onShowAccountSetupModal={() => {}}
-        onChanceCardSwiped={async () => {}}
-        onYouTubeCardSwiped={async () => {}}
-        onDemographicsAnswer={handleAnswer}
+        answeredQuestionIds={questionIds}
+        onVote={async () => { } }
+        onSubmitStatement={async () => { } }
+        onShowAccountSetupModal={() => { } }
+        onCertifyDone={async () => { } }
+        onChanceCardSwiped={async () => { } }
+        onYouTubeCardSwiped={async () => { } }
+        onDemographicsAnswered={handleAnswer}
       />
     </div>
   );

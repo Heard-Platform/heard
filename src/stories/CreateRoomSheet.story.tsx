@@ -7,7 +7,7 @@ import { Card } from "../components/ui/card";
 import { Toaster } from "../components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { ONE_WEEK_MIN } from "../utils/time";
-import { DebateRoom, NewDebateRoom, DemographicQuestion } from "../types";
+import { DebateRoom, NewDebateRoom, NewDemographicQuestion } from "../types";
 import { mockRooms } from "./mockData";
 
 // @ts-ignore
@@ -29,7 +29,7 @@ export function CreateRoomSheetStory() {
   const [reviewStatements, setReviewStatements] = useState(mockStatements);
   const [reviewDebateLength, setReviewDebateLength] = useState(ONE_WEEK_MIN);
   const [reviewAllowAnonymous, setReviewAllowAnonymous] = useState(false);
-  const [reviewDemographicQuestions, setReviewDemographicQuestions] = useState<DemographicQuestion[]>([]);
+  const [reviewDemographicQuestions, setReviewDemographicQuestions] = useState<NewDemographicQuestion[]>([]);
 
   const handleCreateRoom = async (
     newDebate: NewDebateRoom
@@ -183,7 +183,6 @@ export function CreateRoomSheetStory() {
             debateLength={reviewDebateLength}
             allowAnonymousVoting={reviewAllowAnonymous}
             demographicQuestions={reviewDemographicQuestions}
-            showAdvancedFeatures={true}
             onTopicChange={setReviewTopic}
             onStatementsChange={setReviewStatements}
             onImageUpload={() => {}}

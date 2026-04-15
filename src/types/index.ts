@@ -61,23 +61,29 @@ export type YouTubeCard = {
   url: string;
 }
 
-export type DemographicQuestionType =
-  | "gender"
-  | "age_range"
-  | "occupation"
-  | "custom";
+export type StandardDemographicQuestionType =
+  "gender" | "age_range" | "occupation";
 
-export type DemographicQuestion = {
+export type DemographicQuestionType =
+  StandardDemographicQuestionType | "custom";
+
+export interface DemographicQuestion {
   id: string;
+  roomId: string;
   type: DemographicQuestionType;
   text?: string;
   options?: string[];
-}
+};
+
+export type NewDemographicQuestion =
+  Omit<DemographicQuestion, "id" | "roomId"> & { draftId: string }
+
+export type NewCustomDemographicQuestion = NewDemographicQuestion &
+  Required<Pick<DemographicQuestion, "text" | "options">>;
 
 export type DemographicsCard = {
   type: "demographics";
   question: DemographicQuestion;
-  isUnswipeable: true;
 }
 
 export type Card = (StatementCard | CertifyCard | ChanceCard | YouTubeCard | DemographicsCard)
@@ -152,6 +158,7 @@ export interface DebateRoom {
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
   youtubeCardSwiped?: boolean;
+  demographicQuestions: DemographicQuestion[];
 }
 
 export type NewDebateRoom = Pick<
@@ -162,6 +169,7 @@ export type NewDebateRoom = Pick<
   imageUrl?: string;
   youtubeUrl?: string;
   debateLength: number;
+  demographicQuestions: NewDemographicQuestion[];
 };
 
 export interface SubHeard {
@@ -211,11 +219,17 @@ export interface ClusterConsensus {
   clusters: Cluster[];
 }
 
+export type DemographicBreakdown = Record<
+  string,
+  { [option: string]: number }
+>;
+
 export interface AnalysisMetrics {
   totalParticipants: number;
   totalPosters: number;
   totalVoters: number;
   totalVotes: number;
+  demographics: DemographicBreakdown;
   participation: number;
   consensusData: {
     highConsensusPostCount: number;
@@ -313,6 +327,21 @@ export interface FunnelMetricsData {
   tookAction: number;
   tookActionTwoDays: number;
   tookActionTenDays: number;
+}
+
+export type ActivityEventType = "vote" | "statement" | "user" | "community" | "session";
+
+export interface ActivityEvent {
+  type: ActivityEventType;
+  timestamp: number;
+  id: string;
+  label: string;
+  meta?: Record<string, string>;
+}
+
+export interface LiveActivityData {
+  events: ActivityEvent[];
+  fetchedAt: number;
 }
 
 export interface FeatureResults {

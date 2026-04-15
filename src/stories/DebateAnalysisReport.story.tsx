@@ -78,6 +78,7 @@ const mockClusterConsensus: ClusterConsensus = {
           id: "cluster-0-statement-1",
           text: "Expanding public transit reduces traffic and makes the city more accessible for everyone.",
           agreeVotes: 76,
+          disagreeVotes: 12,
           totalVotes: 92,
           consensusScore: 82.6,
         },
@@ -85,6 +86,7 @@ const mockClusterConsensus: ClusterConsensus = {
           id: "cluster-0-statement-2",
           text: "Better bike lanes and pedestrian infrastructure encourage healthier transportation options.",
           agreeVotes: 71,
+          disagreeVotes: 14,
           totalVotes: 92,
           consensusScore: 77.2,
         },
@@ -92,6 +94,7 @@ const mockClusterConsensus: ClusterConsensus = {
           id: "cluster-0-statement-3",
           text: "Light rail connections to surrounding suburbs would reduce car dependency.",
           agreeVotes: 65,
+          disagreeVotes: 17,
           totalVotes: 92,
           consensusScore: 70.7,
         },
@@ -105,6 +108,7 @@ const mockClusterConsensus: ClusterConsensus = {
           id: "cluster-1-statement-1",
           text: "Renewable energy projects should be the top priority for long-term sustainability and economic growth.",
           agreeVotes: 68,
+          disagreeVotes: 17,
           totalVotes: 85,
           consensusScore: 80.0,
         },
@@ -112,6 +116,7 @@ const mockClusterConsensus: ClusterConsensus = {
           id: "cluster-1-statement-2",
           text: "Solar panel installations on public buildings would demonstrate our commitment to clean energy.",
           agreeVotes: 62,
+          disagreeVotes: 18,
           totalVotes: 85,
           consensusScore: 72.9,
         },
@@ -119,6 +124,7 @@ const mockClusterConsensus: ClusterConsensus = {
           id: "cluster-1-statement-3",
           text: "Wind energy farms could provide clean power while creating local jobs.",
           agreeVotes: 58,
+          disagreeVotes: 19,
           totalVotes: 85,
           consensusScore: 68.2,
         },
@@ -132,6 +138,7 @@ const mockClusterConsensus: ClusterConsensus = {
           id: "cluster-2-statement-1",
           text: "Community parks and green spaces improve mental health and quality of life for residents.",
           agreeVotes: 59,
+          disagreeVotes: 11,
           totalVotes: 70,
           consensusScore: 84.3,
         },
@@ -139,6 +146,7 @@ const mockClusterConsensus: ClusterConsensus = {
           id: "cluster-2-statement-2",
           text: "Neighborhood gardens foster community connections and provide fresh produce access.",
           agreeVotes: 54,
+          disagreeVotes: 12,
           totalVotes: 70,
           consensusScore: 77.1,
         },
@@ -146,12 +154,42 @@ const mockClusterConsensus: ClusterConsensus = {
           id: "cluster-2-statement-3",
           text: "Tree planting programs help combat urban heat islands and improve air quality.",
           agreeVotes: 51,
+          disagreeVotes: 13,
           totalVotes: 70,
           consensusScore: 72.9,
         },
       ],
     },
   ],
+};
+
+const mockDemographics: Record<string, { [option: string]: number }> = {
+  "What is your gender?": {
+    "Male": 98,
+    "Female": 112,
+    "Non-binary": 21,
+    "Prefer not to say": 16,
+  },
+  "What is your age range?": {
+    "18–24": 34,
+    "25–34": 71,
+    "35–44": 63,
+    "45–54": 48,
+    "55–64": 22,
+    "65+": 9,
+  },
+  "What best describes your political leaning?": {
+    "Liberal": 74,
+    "Moderate": 89,
+    "Conservative": 61,
+    "Independent": 23,
+  },
+  "How long have you lived in this city?": {
+    "Less than 1 year": 18,
+    "1–5 years": 52,
+    "5–10 years": 61,
+    "More than 10 years": 116,
+  },
 };
 
 const defaultAnalysisData: AnalysisData = {
@@ -161,6 +199,7 @@ const defaultAnalysisData: AnalysisData = {
   totalVotes: 1842,
   totalPosters: 156,
   totalVoters: 220,
+  demographics: {},
   participation: 0.71,
   consensusData: {consensus: 0.62, highConsensusPostCount: 48},
   spicinessData: {spiciness: 0.35, lowConsensusPostCount: 11},
@@ -176,6 +215,17 @@ export const WithClusters = () => {
       {...defaultAnalysisData}
       debateId="demo-debate-123"
       debateTopic="What should our city prioritize in the next budget?"
+    />
+  );
+};
+
+export const WithDemographics = () => {
+  return (
+    <DebateAnalysisReport
+      {...defaultAnalysisData}
+      debateId="demo-debate-789"
+      debateTopic="What should our city prioritize in the next budget?"
+      demographics={mockDemographics}
     />
   );
 };
@@ -236,10 +286,11 @@ export function DebateAnalysisReportStory() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="with-clusters" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="with-demographics" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="with-clusters">With Clusters</TabsTrigger>
             <TabsTrigger value="no-clusters">No Clusters</TabsTrigger>
+            <TabsTrigger value="with-demographics">With Demographics</TabsTrigger>
           </TabsList>
           
           <TabsContent value="with-clusters">
@@ -248,6 +299,10 @@ export function DebateAnalysisReportStory() {
           
           <TabsContent value="no-clusters">
             <NoClusters />
+          </TabsContent>
+
+          <TabsContent value="with-demographics">
+            <WithDemographics />
           </TabsContent>
         </Tabs>
       </CardContent>
