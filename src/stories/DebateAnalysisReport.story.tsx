@@ -199,6 +199,7 @@ const defaultAnalysisData: AnalysisData = {
   totalVotes: 1842,
   totalPosters: 156,
   totalVoters: 220,
+  demographics: {},
   participation: 0.71,
   consensusData: {consensus: 0.62, highConsensusPostCount: 48},
   spicinessData: {spiciness: 0.35, lowConsensusPostCount: 11},
@@ -206,7 +207,6 @@ const defaultAnalysisData: AnalysisData = {
   topPosts: mockTopPosts,
   spiciestPosts: mockSpiciestPosts,
   clusterConsensus: mockClusterConsensus,
-  demographics: {},
 };
 
 export const WithClusters = () => {

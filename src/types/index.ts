@@ -219,11 +219,17 @@ export interface ClusterConsensus {
   clusters: Cluster[];
 }
 
+export type DemographicBreakdown = Record<
+  string,
+  { [option: string]: number }
+>;
+
 export interface AnalysisMetrics {
   totalParticipants: number;
   totalPosters: number;
   totalVoters: number;
   totalVotes: number;
+  demographics: DemographicBreakdown;
   participation: number;
   consensusData: {
     highConsensusPostCount: number;
@@ -239,7 +245,6 @@ export interface AnalysisMetrics {
   };
   topPosts: TopPost[];
   spiciestPosts: TopPost[];
-  demographics: Record<string, { [option: string]: number }>;
 }
 
 export interface AnalysisData extends AnalysisMetrics {

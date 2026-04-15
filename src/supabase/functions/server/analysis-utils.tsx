@@ -1,4 +1,5 @@
-import { Statement } from "./types.tsx";
+import { calcDemographicBreakdown } from "./demographics-utils.ts";
+import { DemographicAnswer, DemographicQuestion, Statement } from "./types.tsx";
 import { serializeStatement } from "./utils.tsx";
 
 export interface TopPost {
@@ -11,11 +12,17 @@ export interface TopPost {
   totalVotes: number;
 }
 
+export type DemographicBreakdown = Record<
+  string,
+  { [option: string]: number }
+>;
+
 export interface AnalysisMetrics {
   totalParticipants: number;
   totalPosters: number;
   totalVoters: number;
   totalVotes: number;
+  demographics: DemographicBreakdown;
   participation: number;
   consensusData: {
     highConsensusPostCount: number;
@@ -143,7 +150,9 @@ export function calcSpiciness(
 }
 
 export function calculateAnalysisMetrics(
-  statements: Statement[]
+  statements: Statement[],
+  questions: DemographicQuestion[],
+  answers: DemographicAnswer[],
 ): AnalysisMetrics {
   const uniqueParticipants = new Set<string>();
   const uniquePosters = new Set<string>();
@@ -164,6 +173,8 @@ export function calculateAnalysisMetrics(
       statement.disagrees +
       statement.passes;
   });
+
+  const demographics = calcDemographicBreakdown(questions, answers);
 
   const participation = uniqueVoters.size > 0
     ? Math.min(uniquePosters.size / uniqueVoters.size, 1)
@@ -207,6 +218,7 @@ export function calculateAnalysisMetrics(
     totalPosters: uniquePosters.size,
     totalVoters: uniqueVoters.size,
     totalVotes,
+    demographics,
     participation,
     consensusData,
     spicinessData,
