@@ -4178,6 +4178,10 @@
     border-color: var(--color-red-500);
   }
 
+  .prefix-icon {
+    color: var(--color-purple-600);
+  }
+
   .capitalize {
     text-transform: capitalize;
   }

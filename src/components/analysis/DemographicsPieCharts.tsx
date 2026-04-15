@@ -44,17 +44,17 @@ export function DemographicsPieCharts({ demographics }: DemographicsPieChartsPro
     <Card className="p-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg bg-linear-to-br from-violet-500 to-violet-600 flex items-center justify-center">
-          <Users className="w-5 h-5 text-white" />
+          <Users className="w-5 h-5 prefix-icon" />
         </div>
         <div>
-          <h2 className="text-xl">Demographic Breakdown</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-xl text-left">Demographic Breakdown</h2>
+          <p className="text-sm text-muted-foreground text-left">
             Participant responses to demographic questions
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-2 gap-4 md:gap-8">
         {questions.map(([question, options]) => {
           const total = Object.values(options).reduce((sum, n) => sum + n, 0);
           const data = Object.entries(options)
@@ -67,15 +67,15 @@ export function DemographicsPieCharts({ demographics }: DemographicsPieChartsPro
 
           return (
             <div key={question}>
-              <h3 className="text-sm font-medium mb-3 text-center">{question}</h3>
-              <ResponsiveContainer width="100%" height={220}>
+              <h3 className="text-xs sm:text-sm font-medium mb-3 text-center truncate" title={question}>{question}</h3>
+              <ResponsiveContainer width="100%" height={160} className="sm:!h-[220px]">
                 <PieChart>
                   <Pie
                     data={data}
                     cx="50%"
                     cy="45%"
-                    innerRadius={50}
-                    outerRadius={80}
+                    innerRadius={35}
+                    outerRadius={55}
                     paddingAngle={2}
                     dataKey="value"
                   >
