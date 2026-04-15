@@ -157,19 +157,22 @@ export function AdvancedFeatures({
 
             {customQuestions.length > 0 && (
               <div className="space-y-3">
-                {customQuestions.map((question) => (
+                {customQuestions.map(({ draftId, text, options }) => (
                   <CustomDemographicQuestion
-                    key={question.draftId}
-                    questionText={question.text}
-                    options={question.options}
+                    key={draftId}
+                    questionText={text}
+                    options={options}
                     onQuestionTextChange={(text) =>
-                      handleUpdateCustomQuestion(question.draftId, text, question.options)
+                      handleUpdateCustomQuestion(draftId, text, options)
                     }
                     onOptionsChange={(options) =>
-                      handleUpdateCustomQuestion(question.draftId, question.text, options)
+                      handleUpdateCustomQuestion(draftId, text, options)
                     }
-                    onRemove={() => handleRemoveCustomQuestion(question.draftId)}
-                    isDuplicate={hasDuplicates(question.text, customQuestions.map(q => q.text))}
+                    onRemove={() => handleRemoveCustomQuestion(draftId)}
+                    isDuplicate={hasDuplicates(
+                      text,
+                      customQuestions.map((q) => q.text),
+                    )}
                   />
                 ))}
               </div>
