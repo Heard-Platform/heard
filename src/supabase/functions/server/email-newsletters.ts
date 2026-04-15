@@ -146,7 +146,7 @@ const newsletters = [
     section2: {
       title: "🍻 Heard at Happy Hour!",
       text: `We had <a href='${YT_HAPPY_HOUR_URL_NL13}'>18 people at a happy hour</a> weigh in about pedestrianizing a few nearby blocks on a <a href='https://heard.vote'>heard.vote</a> poll. The city is running a program to decide which areas to “pedestrianize”, i.e. close to personal vehicles, and we're hoping Dupont could be a candidate!`,
-      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-13-happy-hour.gif",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-13-happy-hour-2.gif",
       imageLink: YT_HAPPY_HOUR_URL_NL13,
       imageAlt: "Heard at Happy Hour",
     },
