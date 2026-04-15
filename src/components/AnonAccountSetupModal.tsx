@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useState } from "react";
+import { flushSync } from "react-dom";
 import { Sparkles, Users, Award, Mail, Phone } from "lucide-react";
 import { isValidEmail, isValidPhone, formatPhone } from "../utils/validation";
 import { useDebateSession } from "../hooks/useDebateSession";
@@ -46,13 +47,13 @@ export function AnonAccountSetupModal({
       return;
     }
 
-    setLoading(true);
     setError("");
+    flushSync(() => setMagicLinkSent(true));
+    setLoading(true);
     const response = await sendMagicLink(email.trim());
-    if (response && response.success) {
-      setMagicLinkSent(true);
-    } else {
+    if (!response?.success) {
       setError(response?.error || "Failed to send magic link");
+      setMagicLinkSent(false);
     }
     setLoading(false);
   };
@@ -64,18 +65,19 @@ export function AnonAccountSetupModal({
       return;
     }
 
-    setLoading(true);
     setError("");
+    flushSync(() => setSmsSent(true));
+    setLoading(true);
     try {
       const response = await sendSmsCode(formatPhone(phone));
-      if (response && response.success) {
-        setSmsSent(true);
-      } else {
+      if (!response?.success) {
         setError(response?.error || "Failed to send SMS code");
+        setSmsSent(false);
       }
     } catch (error) {
       console.error("Failed to send SMS:", error);
       setError("Failed to send SMS code");
+      setSmsSent(false);
     }
     setLoading(false);
   };
@@ -367,6 +369,7 @@ export function AnonAccountSetupModal({
                           }
                         }}
                         placeholder={showEmailFlow ? "ABC123" : "123456"}
+                        autoFocus
                         disabled={verifyingCode}
                         className="text-center font-mono text-lg tracking-widest uppercase"
                         maxLength={6}
