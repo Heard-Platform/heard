@@ -335,6 +335,7 @@ export const RoomScroller = forwardRef<
           key={nextRoom?.id}
           topic={nextRoom?.topic ?? ""}
           visible={showNudge}
+          subHeard={currentSubHeard ? undefined : nextRoom?.subHeard}
           onClick={() => scrollToIndex(currentIndex + 1)}
         />
       </div>

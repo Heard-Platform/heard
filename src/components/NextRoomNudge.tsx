@@ -1,14 +1,16 @@
 import { motion } from "motion/react";
+import { formatSubHeardDisplay } from "../utils/subheard";
 
 const ENTER_DELAY = 1;
 
 interface NextRoomNudgeProps {
   topic: string;
   visible: boolean;
+  subHeard?: string;
   onClick: () => void;
 }
 
-export function NextRoomNudge({ topic, visible, onClick }: NextRoomNudgeProps) {
+export function NextRoomNudge({ topic, visible, subHeard, onClick }: NextRoomNudgeProps) {
   return (
     <motion.button
       initial={{ opacity: 0, y: 20, scale: 0.85 }}
@@ -32,7 +34,7 @@ export function NextRoomNudge({ topic, visible, onClick }: NextRoomNudgeProps) {
           : { duration: 0.25 }
       }
       onClick={onClick}
-      className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-row items-center gap-1 px-2 py-2.5 rounded-full shadow-lg text-white select-none overflow-hidden"
+      className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-row items-center gap-1 pl-2 pr-4 py-2.5 rounded-full shadow-lg text-white select-none overflow-hidden"
       style={{
         width: "calc(100% - 2rem)",
         maxWidth: "calc(var(--room-card-max-width) - 2rem)",
@@ -46,8 +48,21 @@ export function NextRoomNudge({ topic, visible, onClick }: NextRoomNudgeProps) {
     >
       <span className="text-xl leading-none shrink-0">👇</span>
       <div className="flex flex-col items-start gap-0.5 min-w-0">
-        <span className="text-xs opacity-75 font-medium leading-none">next post</span>
-        <span className="w-full truncate text-sm font-semibold leading-snug">{topic}</span>
+        <span className="text-xs opacity-75 font-medium leading-none">
+          {subHeard ? (
+            <>
+              next post in{" "}
+              <span className="opacity-100 font-bold tracking-wide">
+                {formatSubHeardDisplay(subHeard)}
+              </span>
+            </>
+          ) : (
+            "next post"
+          )}
+        </span>
+        <span className="w-full truncate text-sm font-semibold leading-snug">
+          {topic}
+        </span>
       </div>
     </motion.button>
   );
