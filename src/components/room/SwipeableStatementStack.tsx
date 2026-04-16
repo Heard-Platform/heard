@@ -332,6 +332,7 @@ export function SwipeableStatementStack({
   };
 
   const handleSubmitFromChanceCard = async (text: string) => {
+    resetTutorialTimer();
     onChanceCardSwiped();
     await onSubmitStatement(text);
   };
@@ -416,7 +417,7 @@ export function SwipeableStatementStack({
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
       <div className="relative">
-        {showTutorial && (
+        {showTutorial && cards[0]?.type === "statement" && (
           <div className="absolute inset-0 z-20 pointer-events-none">
             <SwipeInstructions />
           </div>
