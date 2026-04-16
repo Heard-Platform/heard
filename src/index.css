@@ -1418,6 +1418,10 @@
     width: calc(var(--spacing) * 24);
   }
 
+  .w-46 {
+    width: calc(var(--spacing) * 46);
+  }
+
   .w-56 {
     width: calc(var(--spacing) * 56);
   }
@@ -2014,6 +2018,10 @@
 
   .border-emerald-300 {
     border-color: var(--color-emerald-300);
+  }
+
+  .border-gray-100 {
+    border-color: var(--color-gray-100);
   }
 
   .border-gray-200 {
@@ -4172,6 +4180,9 @@
   }
 
   /* Semantic classes */
+  .normal-text {
+    color: white;
+  }
 
   .invalid-text {
     color: var(--color-red-600);
@@ -4265,6 +4276,26 @@
   
   .mid-priority-bg:hover {
     background: linear-gradient(to right, #ca9b06, #ea6c0a);
+  }
+
+  .created-bg {
+    background-color: rgb(255 237 213);
+  }
+  
+  .created-button-bg {
+    background-color: rgb(249 115 22);
+  }
+
+  .created-button-bg:hover {
+    background-color: rgb(234 88 12);
+  }
+
+  .created-text {
+    color: rgb(234 88 12);
+  }
+
+  .created-text-strong {
+    color: rgb(124 45 18);
   }
 
   /* Formatting */
@@ -5022,6 +5053,12 @@
       .hover\:bg-muted\/50:hover {
         background-color: color-mix(in oklab, var(--muted) 50%, transparent);
       }
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:bg-emerald-50:hover {
+      background-color: var(--color-emerald-50);
     }
   }
 
