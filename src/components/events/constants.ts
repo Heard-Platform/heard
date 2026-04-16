@@ -40,9 +40,6 @@ export const THEME: Record<typeof COLOR_CYCLE[number], ThemeConfig> = {
   teal: { iconGradient: "from-teal-400 to-blue-400", cardBg: "from-teal-50 via-white to-blue-50", border: "border-teal-200", pillBg: "bg-teal-100", pillText: "text-teal-700", avatarRing: "ring-teal-200" },
 };
 
-export const AVATAR_EMOJIS: Record<AvatarAnimal, string> = {
-  monkey: "🐒", koala: "🐨", rhino: "🦏", elephant: "🐘", sloth: "🦥", panda: "🐼",
-};
 
 export function themeForIndex(index: number): ThemeConfig {
   return THEME[COLOR_CYCLE[index % COLOR_CYCLE.length]];

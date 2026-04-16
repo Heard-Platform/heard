@@ -4,10 +4,10 @@ import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import {
   themeForIndex,
-  AVATAR_EMOJIS,
   type EventRoomStatus,
   type Event,
 } from "./constants";
+import { AVATAR_EMOJIS } from "../../utils/constants/avatars";
 
 export function EventRoomListing({
   room,
