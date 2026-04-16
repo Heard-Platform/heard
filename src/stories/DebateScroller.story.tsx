@@ -1,51 +1,19 @@
 import { RoomScroller } from "../components/RoomScroller";
-import type {
-  UserPresence,
-  VoteType
-} from "../types";
+import type { UserPresence, VoteType } from "../types";
 import { useState, useCallback, useEffect } from "react";
 import { mockStatements, mockRooms } from "./mockData";
 import { AvatarAnimal } from "../utils/constants/avatars";
+import { StoryContainer } from "./StoryContainer";
 
 export function DebateScrollerStory() {
-  const handleJoinRoom = (roomId: string) => {
-    console.log("Join room:", roomId);
-  };
-
-  const handleCreateRoom = () => {
-    console.log("Create room");
-  };
-
-  const handleDiscussStatement = (
-    statementText: string,
-    subHeard?: string,
-  ) => {
-    console.log("Discuss statement:", statementText, subHeard);
-  };
-
-  const handleSubmitStatement = async (
-    roomId: string,
-    text: string,
-  ) => {
+  const handleSubmitStatement = async (roomId: string, text: string) => {
     console.log("Submit statement:", roomId, text);
     return { success: true };
   };
 
-  const handleVoteOnStatement = async (
-    statementId: string,
-    voteType: VoteType,
-  ) => {
+  const handleVoteOnStatement = async (statementId: string, voteType: VoteType) => {
     console.log("Vote on statement:", statementId, voteType);
     return { success: true };
-  };
-
-  const handleGetRoomStatements = async (roomId: string) => {
-    return mockStatements[roomId] || [];
-  };
-
-  const handleGetAllRoomStatements = async () => {
-    console.log("Get all room statements");
-    return mockStatements;
   };
 
   const [presences, setPresences] = useState<UserPresence[]>([
@@ -194,30 +162,82 @@ export function DebateScrollerStory() {
   }, [mockRooms.length]);
 
   return (
-    <div className="space-y-6">
-      {/* Mock scroller container */}
-      <div
-        className="bg-slate-100 rounded-lg overflow-hidden"
-        style={{ height: "600px" }}
-      >
-        <RoomScroller
-          user={{} as any}
-          rooms={mockRooms}
-          roomStatements={mockStatements}
-          presences={presences}
-          onJoinRoom={handleJoinRoom}
-          onCreateRoom={handleCreateRoom}
-          onSubmitStatement={handleSubmitStatement}
-          onVoteOnStatement={handleVoteOnStatement}
-          onUpdatePresence={handleUpdatePresence}
-          isDeveloper={true}
-          loading={false}
-          currentSubHeard="food"
-          onDiscussStatement={handleDiscussStatement}
-          onShowAccountSetupModal={() => {}}
-          onOpenExplorer={() => console.log("Open community explorer")}
-        />
-      </div>
-    </div>
+    <StoryContainer
+      title="Debate Scroller"
+      variants={[
+        {
+          id: "default",
+          label: "Default",
+          children: (
+            <RoomScroller
+              user={{} as any}
+              rooms={mockRooms}
+              roomStatements={mockStatements}
+              presences={presences}
+              loading={false}
+              currentSubHeard="food"
+              isDeveloper={true}
+              onJoinRoom={() => {}}
+              onCreateRoom={() => {}}
+              onSubmitStatement={handleSubmitStatement}
+              onVoteOnStatement={handleVoteOnStatement}
+              onUpdatePresence={handleUpdatePresence}
+              onDiscussStatement={() => {}}
+              onShowAccountSetupModal={() => {}}
+              onOpenExplorer={() => {}}
+            />
+          ),
+        },
+        {
+          id: "in-progress-results",
+          label: "In-progress results",
+          children: (
+            <RoomScroller
+              user={{ id: "user1" } as any}
+              rooms={mockRooms}
+              roomStatements={Object.fromEntries(
+                Object.entries(mockStatements).map(
+                  ([roomId, stmts]) => [
+                    roomId,
+                    stmts.map((s) => ({
+                      ...s,
+                      voters: {
+                        ...s.voters,
+                        user1: "agree" as const,
+                      },
+                    })),
+                  ],
+                ),
+              )}
+              presences={[
+                {
+                  userId: "user2",
+                  currentRoomIndex: 0,
+                  lastUpdated: Date.now(),
+                  avatarAnimal: "koala",
+                },
+                {
+                  userId: "user3",
+                  currentRoomIndex: 1,
+                  lastUpdated: Date.now(),
+                  avatarAnimal: "rhino",
+                },
+              ]}
+              currentSubHeard="food"
+              isDeveloper={true}
+              loading={false}
+              onJoinRoom={() => {}}
+              onCreateRoom={() => {}}
+              onSubmitStatement={handleSubmitStatement}
+              onVoteOnStatement={handleVoteOnStatement}
+              onUpdatePresence={() => {}}
+              onDiscussStatement={() => {}}
+              onShowAccountSetupModal={() => {}}
+              onOpenExplorer={() => {}}
+            />
+          ),
+        },
+      ]}
+    />
   );
 }

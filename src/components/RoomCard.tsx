@@ -44,6 +44,7 @@ interface RoomCardProps {
     statementId: string,
     voteType: VoteType,
   ) => Promise<any>;
+  onSwipedAllChange: (allSwiped: boolean) => void;
   onRefreshStatements: () => Promise<void>;
   onDiscussStatement: (statementText: string, subHeard?: string) => void;
   onShowAccountSetupModal: (featureText: string) => void;
@@ -61,6 +62,7 @@ export function RoomCard({
   onJoin,
   onSubmitStatement,
   onVoteOnStatement,
+  onSwipedAllChange,
   onRefreshStatements,
   onDiscussStatement,
   onShowAccountSetupModal,
@@ -112,6 +114,24 @@ export function RoomCard({
     return engaged.size;
   })();
   
+  const hasSwipedAll =
+    statements.length > 0 &&
+    statements.every(
+      (statement) =>
+        statement.voters && statement.voters[user.id],
+    ) &&
+    (!user.isAnonymous || certifyCardDismissed) &&
+    chanceCardSwiped &&
+    (!room.youtubeUrl || youtubeCardSwiped) &&
+    (!room.demographicQuestions.length ||
+      room.demographicQuestions.every((q) =>
+        answeredQuestionIds.has(q.id),
+      ));
+
+  useEffect(() => {
+    onSwipedAllChange(hasSwipedAll);
+  }, [hasSwipedAll]);
+
   const isRantFirst = room.rantFirst;
   const isRealtime = room.mode === "realtime";
 
@@ -181,7 +201,8 @@ export function RoomCard({
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: isActive ? 1 : 0.95, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="w-full max-w-2xl"
+      className="w-full"
+      style={{ maxWidth: "var(--room-card-max-width)" }}
     >
       <Card className="heard-card-bg">
         <div className="p-6 space-y-4">
@@ -275,20 +296,6 @@ export function RoomCard({
             />
           ) : statements.length > 0 ? (
             (() => {
-              // Check if user has voted on all statements
-              const hasSwipedAll =
-                statements.every(
-                  (statement) =>
-                    statement.voters && statement.voters[user.id],
-                ) &&
-                (!user.isAnonymous || certifyCardDismissed) &&
-                chanceCardSwiped &&
-                (!room.youtubeUrl || youtubeCardSwiped) &&
-                (!room.demographicQuestions.length ||
-                  room.demographicQuestions.every((q) =>
-                    answeredQuestionIds.has(q.id),
-                  ));
-
               // If user has voted on all statements, show InProgressResults + input
               if (hasSwipedAll) {
                 return (
