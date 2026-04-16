@@ -10,11 +10,11 @@ export function EventCreatedStep({ eventName, onGoToEvent }: EventCreatedStepPro
   return (
     <div className="space-y-6">
       <div className="text-center space-y-3">
-        <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
-          <Check className="w-8 h-8 text-orange-600" />
+        <div className="w-16 h-16 created-bg rounded-full flex items-center justify-center mx-auto">
+          <Check className="w-8 h-8 created-text" />
         </div>
         <div>
-          <h3 className="font-semibold text-lg text-orange-900">
+          <h3 className="font-semibold text-lg created-text-strong">
             {eventName}
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
@@ -24,7 +24,7 @@ export function EventCreatedStep({ eventName, onGoToEvent }: EventCreatedStepPro
       </div>
 
       <Button
-        className="w-full bg-orange-500 hover:bg-orange-600 text-white gap-2"
+        className="w-full created-button-bg hover:created-button-bg normal-text gap-2"
         onClick={onGoToEvent}
       >
         <MessageSquarePlus className="w-4 h-4" />

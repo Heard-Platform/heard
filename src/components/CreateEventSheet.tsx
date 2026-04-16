@@ -17,8 +17,8 @@ import { toast } from "sonner@2.0.3";
 
 interface CreateEventSheetProps {
   open: boolean;
-  userId: string;
   defaultSubHeard?: string;
+  userId: string;
   onOpenChange: (open: boolean) => void;
   onEventCreated?: (event: Event) => void;
   onGoToEvent?: (eventId: string) => void;
@@ -28,8 +28,8 @@ type Step = "event-details" | "select-community" | "done";
 
 export function CreateEventSheet({
   open,
-  userId,
   defaultSubHeard,
+  userId,
   onOpenChange,
   onEventCreated,
   onGoToEvent,
@@ -176,8 +176,8 @@ export function CreateEventSheet({
 
   return (
     <FunSheet
+      ref={funSheetRef}
       open={open}
-      onOpenChange={handleOpenChange}
       title={sheetProps.title}
       description={sheetProps.description}
       leftIcon={sheetProps.leftIcon}
@@ -185,21 +185,21 @@ export function CreateEventSheet({
       buttonText={sheetProps.buttonText}
       buttonLoadingText={(sheetProps as any).buttonLoadingText}
       buttonIcon={sheetProps.buttonIcon}
-      onButtonClick={sheetProps.onButtonClick}
       buttonDisabled={sheetProps.buttonDisabled}
       isLoading={(sheetProps as any).isLoading}
       showBackButton={sheetProps.showBackButton}
       backButtonText={(sheetProps as any).backButtonText}
+      onOpenChange={handleOpenChange}
+      onButtonClick={sheetProps.onButtonClick}
       onBackClick={(sheetProps as any).onBackClick}
-      ref={funSheetRef}
     >
       {currentStep === "event-details" && (
         <EventDetailsStep
           name={name}
           subtitle={subtitle}
+          showError={showNameError}
           onNameChange={setName}
           onSubtitleChange={setSubtitle}
-          showError={showNameError}
         />
       )}
 
