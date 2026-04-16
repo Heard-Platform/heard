@@ -1,3 +1,4 @@
+import { DebateRoom } from "../../types";
 import type { AvatarAnimal } from "../../utils/constants/avatars";
 
 export interface Event {
@@ -5,17 +6,14 @@ export interface Event {
   name: string;
   subtitle?: string;
   totalMembers: number;
-  rooms: EventRoom[];
+  rooms: EventRoomStatus[];
 }
 
-export interface EventRoom {
-  id: string;
-  topic: string;
-  emoji: string;
+export interface EventRoomStatus extends
+  Pick<DebateRoom, "id" | "topic" | "description" | "emoji" | "participants"> {
   status: RoomStatus;
   userHasVoted: boolean;
-  newStatementCount?: number;
-  participantCount: number;
+  newStatementCount: number;
   participantAvatars: AvatarAnimal[];
 }
 

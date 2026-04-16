@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
 import { Users, Sparkles } from "lucide-react";
 import { Card } from "../ui/card";
-import { RoomRow } from "./RoomRow";
-import type { Event, EventRoom } from "./constants";
+import { EventRoomListing } from "./EventRoomListing";
+import type { Event } from "./constants";
 
 const STATS = (
   needsInput: number,
@@ -131,7 +131,7 @@ export function EventPage({
                 <div className="flex-1 h-px bg-border" />
               </div>
               {group.map((room, i) => (
-                <RoomRow
+                <EventRoomListing
                   key={room.id}
                   room={room}
                   event={event}

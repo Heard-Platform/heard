@@ -5,17 +5,17 @@ import { Button } from "../ui/button";
 import {
   themeForIndex,
   AVATAR_EMOJIS,
-  type EventRoom,
+  type EventRoomStatus,
   type Event,
 } from "./constants";
 
-export function RoomRow({
+export function EventRoomListing({
   room,
   event,
   index,
   onCtaClick,
 }: {
-  room: EventRoom;
+  room: EventRoomStatus;
   event: Event;
   index: number;
   onCtaClick: () => void;
@@ -100,7 +100,7 @@ export function RoomRow({
             </div>
             <span className="text-xs text-muted-foreground font-medium">
               <span className="font-bold text-foreground">
-                {room.participantCount}
+                {room.participants.length}
               </span>{" "}
               of {event.totalMembers} voted
             </span>
