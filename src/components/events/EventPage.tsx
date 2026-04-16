@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Users, Sparkles } from "lucide-react";
+import { Users, Sparkles, CheckCheck } from "lucide-react";
 import { Card } from "../ui/card";
 import { AddConversationCard } from "./AddConversationCard";
 import { EventRoomListing } from "./EventRoomListing";
@@ -26,7 +26,7 @@ const STATS = (
   },
   {
     value: total,
-    label: "posts total",
+    label: "completed",
     g: "neutral-gradient",
     bg: "neutral-background",
     t: "neutral-text",
@@ -53,6 +53,7 @@ export function EventPage({
 
   const needsInput = rooms.filter((r) => r.status === "needs_input");
   const caughtUp = rooms.filter((r) => r.status === "caught_up");
+  const completed = rooms.filter((r) => r.status === "completed");
 
   return (
     <div className="w-full max-w-sm mx-auto space-y-4">
@@ -82,7 +83,7 @@ export function EventPage({
               {STATS(
                 needsInput.length,
                 caughtUp.length,
-                rooms.length,
+                completed.length,
               ).map(({ value, label, g, bg, t }) => (
                 <div
                   key={label}
@@ -120,6 +121,15 @@ export function EventPage({
           icon: null,
           delay: 0.25,
           offset: needsInput.length,
+        },
+        {
+          rooms: completed,
+          label: "Completed",
+          icon: (
+            <CheckCheck className="w-3 h-3 inline-block mr-1 text-muted-foreground" />
+          ),
+          delay: 0.35,
+          offset: needsInput.length + caughtUp.length,
         },
       ].map(
         ({ rooms: group, label, icon, delay, offset = 0 }) =>
