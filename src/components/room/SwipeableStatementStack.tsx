@@ -66,7 +66,7 @@ export function SwipeableStatementStack({
 }: SwipeableStatementStackProps) {
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
 
-  const { showTutorial, recordSwipe } = useSwipeTutorial();
+  const { showTutorial, recordSwipe, resetTutorialTimer } = useSwipeTutorial();
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
@@ -145,6 +145,7 @@ export function SwipeableStatementStack({
     );
 
     recordSwipe();
+    resetTutorialTimer();
 
     const statement = statements.find(
       (s) => s.id === statementId,

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 const STORAGE_KEY = "heard_swipe_count";
 const REQUIRED_SWIPES = 2;
@@ -13,28 +13,31 @@ export function useSwipeTutorial() {
     return stored ? parseInt(stored) : 0;
   });
   const [timerState, setTimerState] = useState<TimerState>("uninitiated");
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const startWaiting = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setTimerState("waiting");
+    timerRef.current = setTimeout(() => {
+      setTimerState("showing");
+      timerRef.current = setTimeout(() => {
+        setTimerState("waiting");
+        startWaiting();
+      }, REMINDER_SHOW_MS);
+    }, REMINDER_INTERVAL_MS);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (swipeCount >= REQUIRED_SWIPES && timerState === "uninitiated") {
-      setTimerState("waiting");
+      startWaiting();
     }
-  }, [swipeCount, timerState]);
-
-  useEffect(() => {
-    if (timerState === "waiting") {
-      const timer = setTimeout(
-        () => setTimerState("showing"),
-        REMINDER_INTERVAL_MS,
-      );
-      return () => clearTimeout(timer);
-    } else if (timerState === "showing") {
-      const timer = setTimeout(
-        () => setTimerState("waiting"),
-        REMINDER_SHOW_MS,
-      );
-      return () => clearTimeout(timer);
-    }
-  }, [timerState]);
+  }, [swipeCount, startWaiting]);
 
   const showTutorial =
     swipeCount < REQUIRED_SWIPES || timerState === "showing";
@@ -47,11 +50,19 @@ export function useSwipeTutorial() {
     });
   }, []);
 
+  const resetTutorialTimer = useCallback(() => {
+    if (timerRef.current !== null) {
+      startWaiting();
+    }
+  }, [startWaiting]);
+
   const resetSwipeTutorial = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = null;
     setSwipeCount(0);
     setTimerState("uninitiated");
   }, []);
 
-  return { showTutorial, recordSwipe, resetSwipeTutorial };
+  return { showTutorial, recordSwipe, resetTutorialTimer, resetSwipeTutorial };
 }
