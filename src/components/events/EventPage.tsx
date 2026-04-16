@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Users, Sparkles } from "lucide-react";
 import { Card } from "../ui/card";
 import { RoomRow } from "./RoomRow";
-import type { EventRoom } from "./constants";
+import type { Event, EventRoom } from "./constants";
 
 const STATS = (
   needsInput: number,
@@ -32,21 +32,17 @@ const STATS = (
   },
 ];
 
-export interface EventRoomListingProps {
-  eventName: string;
-  eventSubtitle?: string;
-  totalMembers: number;
-  rooms: EventRoom[];
+export interface EventPageProps {
+  event: Event;
   onOpenRoom: (roomId: string) => void;
 }
   
-export function EventRoomListing({
-  eventName,
-  eventSubtitle,
-  totalMembers,
-  rooms,
+export function EventPage({
+  event,
   onOpenRoom,
-}: EventRoomListingProps) {
+}: EventPageProps) {
+  const { name: eventName, subtitle: eventSubtitle, totalMembers, rooms } = event;
+  
   const needsInput = rooms.filter((r) => r.status === "needs_input");
   const caughtUp = rooms.filter((r) => r.status === "caught_up");
 
@@ -138,6 +134,7 @@ export function EventRoomListing({
                 <RoomRow
                   key={room.id}
                   room={room}
+                  event={event}
                   index={offset + i}
                   onCtaClick={() => onOpenRoom(room.id)}
                 />

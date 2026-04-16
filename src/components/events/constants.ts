@@ -1,6 +1,12 @@
 import type { AvatarAnimal } from "../../utils/constants/avatars";
 
-export type RoomStatus = "needs_input" | "caught_up";
+export interface Event {
+  id: string;
+  name: string;
+  subtitle?: string;
+  totalMembers: number;
+  rooms: EventRoom[];
+}
 
 export interface EventRoom {
   id: string;
@@ -10,9 +16,10 @@ export interface EventRoom {
   userHasVoted: boolean;
   newStatementCount?: number;
   participantCount: number;
-  totalMembers: number;
   participantAvatars: AvatarAnimal[];
 }
+
+export type RoomStatus = "needs_input" | "caught_up";
 
 export type ThemeConfig = {
   iconGradient: string;

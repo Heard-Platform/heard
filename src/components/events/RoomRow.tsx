@@ -6,14 +6,17 @@ import {
   themeForIndex,
   AVATAR_EMOJIS,
   type EventRoom,
+  type Event,
 } from "./constants";
 
 export function RoomRow({
   room,
+  event,
   index,
   onCtaClick,
 }: {
   room: EventRoom;
+  event: Event;
   index: number;
   onCtaClick: () => void;
 }) {
@@ -99,7 +102,7 @@ export function RoomRow({
               <span className="font-bold text-foreground">
                 {room.participantCount}
               </span>{" "}
-              of {room.totalMembers} voted
+              of {event.totalMembers} voted
             </span>
           </div>
         </div>
