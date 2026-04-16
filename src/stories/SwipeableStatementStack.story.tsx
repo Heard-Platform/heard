@@ -5,7 +5,12 @@ import { Statement, VoteType } from "../types";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Toaster } from "../components/ui/sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
 import { mockRooms } from "./mockData";
 
 const mockStatements: Statement[] = [
@@ -194,12 +199,15 @@ export function SwipeableStatementStackStory() {
                 isAnonymous={false}
                 chanceCardSwiped={chanceCardSwiped}
                 youtubeCardSwiped={false}
+                demographicQuestions={[]}
+                answeredQuestionIds={new Set()}
                 onVote={handleVote}
                 onSubmitStatement={handleSubmitStatement}
                 onShowAccountSetupModal={() => {}}
                 onChanceCardSwiped={handleChanceCardSwiped}
                 onYouTubeCardSwiped={async () => {}}
                 onCertifyDone={async () => {}}
+                onDemographicsAnswered={async () => {}}
               />
             </div>
           </div>

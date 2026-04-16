@@ -30,6 +30,7 @@ import { FeedbackSheetStory } from "../stories/FeedbackSheet.story";
 import { CommunityExplorerDialogStory } from "../stories/CommunityExplorerDialog.story";
 import { OrgsLandingStory } from "../stories/OrgsLanding.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
+import { SwipeTutorialProvider } from "../contexts/SwipeTutorialContext";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 import { Story as QRGeneratorPageStory } from "../stories/QRGenerationPage.story";
 import { WriteRantStepStory } from "../stories/WriteRantStep.story";
@@ -52,171 +53,173 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
   };
 
   return (
-    <DebateSessionProvider showcase={true}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="heard-between mb-8">
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={onExit}
-                variant="ghost"
-                size="sm"
-                className="gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Exit Showcase
-              </Button>
-              <div>
-                <h1 className="text-slate-900 flex items-center gap-2">
-                  <Code2 className="w-6 h-6" />
-                  Component Showcase
-                </h1>
-                <p className="text-sm text-slate-600">
-                  Interactive component testing with mock data
-                </p>
+    <SwipeTutorialProvider>
+      <DebateSessionProvider showcase={true}>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+          <div className="max-w-6xl mx-auto">
+            {/* Header */}
+            <div className="heard-between mb-8">
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={onExit}
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Exit Showcase
+                </Button>
+                <div>
+                  <h1 className="text-slate-900 flex items-center gap-2">
+                    <Code2 className="w-6 h-6" />
+                    Component Showcase
+                  </h1>
+                  <p className="text-sm text-slate-600">
+                    Interactive component testing with mock data
+                  </p>
+                </div>
               </div>
+              <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
+                Development Mode
+              </Badge>
             </div>
-            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
-              Development Mode
-            </Badge>
+
+            {/* Component Tabs */}
+            <Tabs 
+              defaultValue={getInitialTab()} 
+              className="w-full"
+              onValueChange={handleTabChange}
+            >
+              <TabsList className="mb-6">
+                <TabsTrigger value="results">Results</TabsTrigger>
+                <TabsTrigger value="results-cards">Results Cards</TabsTrigger>
+                <TabsTrigger value="create-room">Create Room</TabsTrigger>
+                <TabsTrigger value="votes-drawer">Votes Drawer</TabsTrigger>
+                <TabsTrigger value="debate-scroller">Debate Scroller</TabsTrigger>
+                <TabsTrigger value="debate-analysis-report">Debate Analysis Report</TabsTrigger>
+                <TabsTrigger value="debate-analysis-report-demo">Debate Analysis Report (Demo)</TabsTrigger>
+                <TabsTrigger value="unsubscribe-page">Unsubscribe Page</TabsTrigger>
+                <TabsTrigger value="swipeable-statement-stack">Swipeable Statement Stack</TabsTrigger>
+                <TabsTrigger value="metrics-circle">Metrics Circle</TabsTrigger>
+                <TabsTrigger value="time-left-badge">Time Left Badge</TabsTrigger>
+                <TabsTrigger value="qr-generator">QR Generator Page</TabsTrigger>
+                <TabsTrigger value="qr-scan-result-dialog">QR Scan Result Dialog</TabsTrigger>
+                <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
+                <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
+                <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
+                <TabsTrigger value="certify-card">Certify Card</TabsTrigger>
+                <TabsTrigger value="anon-account-setup-modal">Anon Account Setup Modal</TabsTrigger>
+                <TabsTrigger value="comment-modal">Comment Modal</TabsTrigger>
+                <TabsTrigger value="edit-answers-modal">Edit Answers Modal</TabsTrigger>
+                <TabsTrigger value="data-privacy-modal">Data Privacy Modal</TabsTrigger>
+                <TabsTrigger value="custom-demographic-question">Custom Demographic Question</TabsTrigger>
+                <TabsTrigger value="advanced-features">Advanced Features</TabsTrigger>
+                <TabsTrigger value="side-panel-menu">Side Panel Menu</TabsTrigger>
+                <TabsTrigger value="community-admin-dialog">Community Admin Dialog</TabsTrigger>
+                <TabsTrigger value="feed-customization-modal">Feed Customization Modal</TabsTrigger>
+                <TabsTrigger value="feedback-sheet">Feedback Sheet</TabsTrigger>
+                <TabsTrigger value="community-explorer-dialog">Community Explorer Dialog</TabsTrigger>
+                <TabsTrigger value="orgs-landing">Orgs Landing</TabsTrigger>
+                <TabsTrigger value="write-rant-step">Write Rant Step</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="results-cards">
+                <ResultsCardsStory />
+              </TabsContent>
+
+              <TabsContent value="create-room">
+                <CreateRoomSheetStory />
+                <CreateRoomCardStory />
+              </TabsContent>
+
+              <TabsContent value="votes-drawer">
+                <VotesDrawerStory />
+              </TabsContent>
+
+              <TabsContent value="debate-scroller">
+                <DebateScrollerStory />
+              </TabsContent>
+
+              <TabsContent value="debate-analysis-report">
+                <DebateAnalysisReportStory />
+              </TabsContent>
+
+              <TabsContent value="debate-analysis-report-demo">
+                <DebateAnalysisReportDemoStory />
+              </TabsContent>
+
+              <TabsContent value="unsubscribe-page">
+                <UnsubscribePageStory />
+              </TabsContent>
+
+              <TabsContent value="swipeable-statement-stack">
+                <SwipeableStatementStackStory />
+              </TabsContent>
+
+              <TabsContent value="metrics-circle">
+                <MetricsCircleStory />
+              </TabsContent>
+              <TabsContent value="time-left-badge">
+                <TimeLeftBadgeStory />
+              </TabsContent>
+              <TabsContent value="qr-generator">
+                <QRGeneratorPageStory />
+              </TabsContent>
+              <TabsContent value="qr-scan-result-dialog">
+                <QRScanResultDialogStory />
+              </TabsContent>
+              <TabsContent value="youtube-card">
+                <YouTubeCardStory />
+              </TabsContent>
+              <TabsContent value="intro-modal">
+                <IntroModalStory />
+              </TabsContent>
+              <TabsContent value="demographics-card">
+                <DemographicsCardStory />
+              </TabsContent>
+              <TabsContent value="certify-card">
+                <CertifyCardStory />
+              </TabsContent>
+              <TabsContent value="anon-account-setup-modal">
+                <AnonAccountSetupModalStory />
+              </TabsContent>
+              <TabsContent value="comment-modal">
+                <CommentingModalStory />
+              </TabsContent>
+              <TabsContent value="edit-answers-modal">
+                <EditAnswersModalStory />
+              </TabsContent>
+              <TabsContent value="data-privacy-modal">
+                <DataPrivacyModalStory />
+              </TabsContent>
+              <TabsContent value="custom-demographic-question">
+                <CustomDemographicQuestionStory />
+              </TabsContent>
+              <TabsContent value="advanced-features">
+                <AdvancedFeaturesStory />
+              </TabsContent>
+              <TabsContent value="side-panel-menu">
+                <SidePanelMenuStory />
+              </TabsContent>
+              <TabsContent value="community-admin-dialog">
+                <CommunityAdminDialogStory />
+              </TabsContent>
+              <TabsContent value="feedback-sheet">
+                <FeedbackSheetStory />
+              </TabsContent>
+              <TabsContent value="community-explorer-dialog">
+                <CommunityExplorerDialogStory />
+              </TabsContent>
+              <TabsContent value="orgs-landing">
+                <OrgsLandingStory />
+              </TabsContent>
+              <TabsContent value="write-rant-step">
+                <WriteRantStepStory />
+              </TabsContent>
+            </Tabs>
           </div>
-
-          {/* Component Tabs */}
-          <Tabs 
-            defaultValue={getInitialTab()} 
-            className="w-full"
-            onValueChange={handleTabChange}
-          >
-            <TabsList className="mb-6">
-              <TabsTrigger value="results">Results</TabsTrigger>
-              <TabsTrigger value="results-cards">Results Cards</TabsTrigger>
-              <TabsTrigger value="create-room">Create Room</TabsTrigger>
-              <TabsTrigger value="votes-drawer">Votes Drawer</TabsTrigger>
-              <TabsTrigger value="debate-scroller">Debate Scroller</TabsTrigger>
-              <TabsTrigger value="debate-analysis-report">Debate Analysis Report</TabsTrigger>
-              <TabsTrigger value="debate-analysis-report-demo">Debate Analysis Report (Demo)</TabsTrigger>
-              <TabsTrigger value="unsubscribe-page">Unsubscribe Page</TabsTrigger>
-              <TabsTrigger value="swipeable-statement-stack">Swipeable Statement Stack</TabsTrigger>
-              <TabsTrigger value="metrics-circle">Metrics Circle</TabsTrigger>
-              <TabsTrigger value="time-left-badge">Time Left Badge</TabsTrigger>
-              <TabsTrigger value="qr-generator">QR Generator Page</TabsTrigger>
-              <TabsTrigger value="qr-scan-result-dialog">QR Scan Result Dialog</TabsTrigger>
-              <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
-              <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
-              <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
-              <TabsTrigger value="certify-card">Certify Card</TabsTrigger>
-              <TabsTrigger value="anon-account-setup-modal">Anon Account Setup Modal</TabsTrigger>
-              <TabsTrigger value="comment-modal">Comment Modal</TabsTrigger>
-              <TabsTrigger value="edit-answers-modal">Edit Answers Modal</TabsTrigger>
-              <TabsTrigger value="data-privacy-modal">Data Privacy Modal</TabsTrigger>
-              <TabsTrigger value="custom-demographic-question">Custom Demographic Question</TabsTrigger>
-              <TabsTrigger value="advanced-features">Advanced Features</TabsTrigger>
-              <TabsTrigger value="side-panel-menu">Side Panel Menu</TabsTrigger>
-              <TabsTrigger value="community-admin-dialog">Community Admin Dialog</TabsTrigger>
-              <TabsTrigger value="feed-customization-modal">Feed Customization Modal</TabsTrigger>
-              <TabsTrigger value="feedback-sheet">Feedback Sheet</TabsTrigger>
-              <TabsTrigger value="community-explorer-dialog">Community Explorer Dialog</TabsTrigger>
-              <TabsTrigger value="orgs-landing">Orgs Landing</TabsTrigger>
-              <TabsTrigger value="write-rant-step">Write Rant Step</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="results-cards">
-              <ResultsCardsStory />
-            </TabsContent>
-
-            <TabsContent value="create-room">
-              <CreateRoomSheetStory />
-              <CreateRoomCardStory />
-            </TabsContent>
-
-            <TabsContent value="votes-drawer">
-              <VotesDrawerStory />
-            </TabsContent>
-
-            <TabsContent value="debate-scroller">
-              <DebateScrollerStory />
-            </TabsContent>
-
-            <TabsContent value="debate-analysis-report">
-              <DebateAnalysisReportStory />
-            </TabsContent>
-
-            <TabsContent value="debate-analysis-report-demo">
-              <DebateAnalysisReportDemoStory />
-            </TabsContent>
-
-            <TabsContent value="unsubscribe-page">
-              <UnsubscribePageStory />
-            </TabsContent>
-
-            <TabsContent value="swipeable-statement-stack">
-              <SwipeableStatementStackStory />
-            </TabsContent>
-
-            <TabsContent value="metrics-circle">
-              <MetricsCircleStory />
-            </TabsContent>
-            <TabsContent value="time-left-badge">
-              <TimeLeftBadgeStory />
-            </TabsContent>
-            <TabsContent value="qr-generator">
-              <QRGeneratorPageStory />
-            </TabsContent>
-            <TabsContent value="qr-scan-result-dialog">
-              <QRScanResultDialogStory />
-            </TabsContent>
-            <TabsContent value="youtube-card">
-              <YouTubeCardStory />
-            </TabsContent>
-            <TabsContent value="intro-modal">
-              <IntroModalStory />
-            </TabsContent>
-            <TabsContent value="demographics-card">
-              <DemographicsCardStory />
-            </TabsContent>
-            <TabsContent value="certify-card">
-              <CertifyCardStory />
-            </TabsContent>
-            <TabsContent value="anon-account-setup-modal">
-              <AnonAccountSetupModalStory />
-            </TabsContent>
-            <TabsContent value="comment-modal">
-              <CommentingModalStory />
-            </TabsContent>
-            <TabsContent value="edit-answers-modal">
-              <EditAnswersModalStory />
-            </TabsContent>
-            <TabsContent value="data-privacy-modal">
-              <DataPrivacyModalStory />
-            </TabsContent>
-            <TabsContent value="custom-demographic-question">
-              <CustomDemographicQuestionStory />
-            </TabsContent>
-            <TabsContent value="advanced-features">
-              <AdvancedFeaturesStory />
-            </TabsContent>
-            <TabsContent value="side-panel-menu">
-              <SidePanelMenuStory />
-            </TabsContent>
-            <TabsContent value="community-admin-dialog">
-              <CommunityAdminDialogStory />
-            </TabsContent>
-            <TabsContent value="feedback-sheet">
-              <FeedbackSheetStory />
-            </TabsContent>
-            <TabsContent value="community-explorer-dialog">
-              <CommunityExplorerDialogStory />
-            </TabsContent>
-            <TabsContent value="orgs-landing">
-              <OrgsLandingStory />
-            </TabsContent>
-            <TabsContent value="write-rant-step">
-              <WriteRantStepStory />
-            </TabsContent>
-          </Tabs>
         </div>
-      </div>
-    </DebateSessionProvider>
+      </DebateSessionProvider>
+    </SwipeTutorialProvider>
   );
 }
