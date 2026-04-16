@@ -4239,6 +4239,10 @@
     color: var(--color-blue-700);
   }
 
+  .get-started-bg {
+    background: linear-gradient(to bottom right, var(--color-green-100), var(--color-emerald-100), var(--color-teal-200));
+  }
+
   .high-priority-bg {
     background: linear-gradient(to right, #f97316, #f43f5e);
   }

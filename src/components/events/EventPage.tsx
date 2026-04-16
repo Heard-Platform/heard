@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Users, Sparkles } from "lucide-react";
 import { Card } from "../ui/card";
+import { AddConversationCard } from "./AddConversationCard";
 import { EventRoomListing } from "./EventRoomListing";
 import type { Event } from "./constants";
 
@@ -34,15 +35,22 @@ const STATS = (
 
 export interface EventPageProps {
   event: Event;
+  onAddRoom: () => void;
   onOpenRoom: (roomId: string) => void;
 }
-  
+
 export function EventPage({
   event,
+  onAddRoom,
   onOpenRoom,
 }: EventPageProps) {
-  const { name: eventName, subtitle: eventSubtitle, totalMembers, rooms } = event;
-  
+  const {
+    name: eventName,
+    subtitle: eventSubtitle,
+    totalMembers,
+    rooms,
+  } = event;
+
   const needsInput = rooms.filter((r) => r.status === "needs_input");
   const caughtUp = rooms.filter((r) => r.status === "caught_up");
 
@@ -142,6 +150,11 @@ export function EventPage({
             </motion.div>
           ),
       )}
+
+      <AddConversationCard
+        isEmpty={rooms.length === 0}
+        onAddRoom={onAddRoom}
+      />
     </div>
   );
 }

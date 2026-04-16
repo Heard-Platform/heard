@@ -2,13 +2,19 @@ import {
   EventPage,
   type EventPageProps,
 } from "../components/events/EventPage";
+import { StoryContainer } from "./StoryContainer";
 
-const DEMO_PROPS: EventPageProps = {
+const BASE_EVENT: EventPageProps["event"] = {
+  id: "adams-morgan-book-club",
+  name: "Adams Morgan Book Club",
+  subtitle: "April meetup",
+  totalMembers: 12,
+  rooms: [],
+};
+
+const WITH_POSTS_PROPS: EventPageProps = {
   event: {
-    id: "adams-morgan-book-club",
-    name: "Adams Morgan Book Club",
-    subtitle: "April meetup",
-    totalMembers: 12,
+    ...BASE_EVENT,
     rooms: [
       {
         id: "when-to-meet",
@@ -42,9 +48,33 @@ const DEMO_PROPS: EventPageProps = {
       },
     ],
   },
+  onAddRoom: () => console.log("add room"),
+  onOpenRoom: (id) => console.log("open room", id),
+};
+
+const EMPTY_PROPS: EventPageProps = {
+  event: BASE_EVENT,
+  onAddRoom: () => console.log("add room"),
   onOpenRoom: (id) => console.log("open room", id),
 };
 
 export function Story() {
-  return <EventPage {...DEMO_PROPS} />;
+  return (
+    <StoryContainer
+      title="Event Page"
+      description="Full event view with room listings"
+      variants={[
+        {
+          id: "with-posts",
+          label: "With posts",
+          children: <EventPage {...WITH_POSTS_PROPS} />,
+        },
+        {
+          id: "empty",
+          label: "Empty",
+          children: <EventPage {...EMPTY_PROPS} />,
+        },
+      ]}
+    />
+  );
 }
