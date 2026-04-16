@@ -392,3 +392,12 @@ export interface EnrichmentConfig {
 }
 
 export type Environment = "production" | "development";
+
+export interface Event {
+  id: string;
+  name: string;
+  subtitle: string;
+  communityName: string;
+  creatorId: string;
+  createdAt: number;
+}

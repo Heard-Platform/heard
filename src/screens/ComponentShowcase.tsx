@@ -35,6 +35,7 @@ import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorag
 import { Story as QRGeneratorPageStory } from "../stories/QRGenerationPage.story";
 import { WriteRantStepStory } from "../stories/WriteRantStep.story";
 import { Story } from "../stories/EventPage.story";
+import { CreateEventSheetStory } from "../stories/CreateEventSheet.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -122,6 +123,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="community-explorer-dialog">Community Explorer Dialog</TabsTrigger>
                 <TabsTrigger value="orgs-landing">Orgs Landing</TabsTrigger>
                 <TabsTrigger value="write-rant-step">Write Rant Step</TabsTrigger>
+                <TabsTrigger value="create-event-sheet">Create Event Sheet</TabsTrigger>
                 <TabsTrigger value="event-room-listing">Event Room Listing</TabsTrigger>
               </TabsList>
 
@@ -217,6 +219,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="write-rant-step">
                 <WriteRantStepStory />
+              </TabsContent>
+              <TabsContent value="create-event-sheet">
+                <CreateEventSheetStory />
               </TabsContent>
               <TabsContent value="event-room-listing">
                 <Story />

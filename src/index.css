@@ -1418,6 +1418,10 @@
     width: calc(var(--spacing) * 24);
   }
 
+  .w-46 {
+    width: calc(var(--spacing) * 46);
+  }
+
   .w-56 {
     width: calc(var(--spacing) * 56);
   }
@@ -2014,6 +2018,10 @@
 
   .border-emerald-300 {
     border-color: var(--color-emerald-300);
+  }
+
+  .border-gray-100 {
+    border-color: var(--color-gray-100);
   }
 
   .border-gray-200 {
@@ -5022,6 +5030,12 @@
       .hover\:bg-muted\/50:hover {
         background-color: color-mix(in oklab, var(--muted) 50%, transparent);
       }
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:bg-emerald-50:hover {
+      background-color: var(--color-emerald-50);
     }
   }
 
