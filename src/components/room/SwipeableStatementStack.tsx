@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PanInfo } from "motion/react";
-import { useSwipeTutorial } from "../../hooks/useSwipeTutorial";
+import { useSwipeTutorialContext } from "../../contexts/SwipeTutorialContext";
 import {
   type Statement,
   type VoteType,
@@ -66,7 +66,7 @@ export function SwipeableStatementStack({
 }: SwipeableStatementStackProps) {
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
 
-  const { showTutorial, recordSwipe, resetTutorialTimer } = useSwipeTutorial();
+  const { showTutorial, recordSwipe, resetTutorialTimer } = useSwipeTutorialContext();
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
@@ -332,7 +332,6 @@ export function SwipeableStatementStack({
   };
 
   const handleSubmitFromChanceCard = async (text: string) => {
-    resetTutorialTimer();
     onChanceCardSwiped();
     await onSubmitStatement(text);
   };

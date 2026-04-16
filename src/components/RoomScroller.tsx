@@ -17,6 +17,7 @@ import type {
 import { RoomCard } from "./RoomCard";
 import { VineNavigator } from "./vine/VineNavigator";
 import { useDebateSession } from "../hooks/useDebateSession";
+import { SwipeTutorialProvider, useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { CreateRoomCard } from "./CreateRoomCard";
 import { NextRoomNudge } from "./NextRoomNudge";
 
@@ -54,7 +55,7 @@ export interface RoomScrollerRef {
   scrollToTop: () => void;
 }
 
-export const RoomScroller = forwardRef<
+const RoomScrollerInner = forwardRef<
   RoomScrollerRef,
   RoomScrollerProps
 >(
@@ -93,6 +94,7 @@ export const RoomScroller = forwardRef<
       Record<string, boolean>
     >({});
     const { getRoomStatements } = useDebateSession();
+    const { resetTutorialTimer } = useSwipeTutorialContext();
 
     // Combine rooms with a "create new" card at the end
     const allCards = [
@@ -163,6 +165,7 @@ export const RoomScroller = forwardRef<
 
     const handleScroll = useCallback(() => {
       if (isScrolling.current) return;
+      resetTutorialTimer();
 
       clearTimeout(scrollTimeoutRef.current);
       scrollTimeoutRef.current = setTimeout(() => {
@@ -348,4 +351,12 @@ export const RoomScroller = forwardRef<
       </div>
     );
   },
+);
+
+export const RoomScroller = forwardRef<RoomScrollerRef, RoomScrollerProps>(
+  (props, ref) => (
+    <SwipeTutorialProvider>
+      <RoomScrollerInner {...props} ref={ref} />
+    </SwipeTutorialProvider>
+  ),
 );
