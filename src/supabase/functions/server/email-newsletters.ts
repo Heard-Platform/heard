@@ -5,6 +5,7 @@ const YT_FIRST_VID_URL = "https://youtu.be/JM0WUrFkYZc";
 const YT_FLYERING_URL_NL12 = "https://www.youtube.com/shorts/wnFjDv0S4Bo";
 const YT_PUSHUPS_URL_NL12 = "https://www.youtube.com/shorts/JWv-IaL2jh4";
 const GITHUB_AI_PR_URL = "https://github.com/Heard-Platform/heard/pull/94";
+const YT_HAPPY_HOUR_URL_NL13 = "https://www.youtube.com/shorts/hNqqqJBIkQs";
 
 const newsletters = [
   getParameterizedNewsletter({
@@ -130,6 +131,31 @@ const newsletters = [
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-12-ai.png",
       imageLink: GITHUB_AI_PR_URL,
       imageAlt: "Heard AI provider switch GitHub PR",
+    },
+  }),
+  getParameterizedNewsletter({
+    subject: "Ya' Heard #13: A Makeover, Happy Hour, and Demographics",
+    editionNumber: 13,
+    section1: {
+      title: "💋 Giving Heard a Makeover",
+      text: "We know Heard is a little weird (in a good way!), but we want to make it as easy and fun to use as possible. This week we cleaned up the UI to follow more common patterns to make you feel more at home!",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-13-makeover.gif",
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard homepage makeover",
+    },
+    section2: {
+      title: "🍻 Heard at Happy Hour!",
+      text: `We had <a href='${YT_HAPPY_HOUR_URL_NL13}'>18 people at a happy hour</a> weigh in about pedestrianizing a few nearby blocks on a <a href='https://heard.vote'>heard.vote</a> poll. The city is running a program to decide which areas to “pedestrianize”, i.e. close to personal vehicles, and we're hoping Dupont could be a candidate!`,
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-13-happy-hour-2.gif",
+      imageLink: YT_HAPPY_HOUR_URL_NL13,
+      imageAlt: "Heard at Happy Hour",
+    },
+    section3: {
+      title: "📊 New Feature: Demographics!",
+      text: "When creating conversations on Heard you can now mix demographic questions into the deck. This allows people to see a better breakdown of who's participating and what voices are being represented.",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-13-demographics.png",
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard demographics feature",
     },
   }),
 ]
