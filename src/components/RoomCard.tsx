@@ -25,6 +25,7 @@ import { useDebateSession } from "../hooks/useDebateSession";
 import { timeAgoShort } from "../utils/time";
 import { AddResponseButton } from "./widgets/AddResponseButton";
 import { formatSubHeardDisplay } from "../utils/subheard";
+import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -67,6 +68,8 @@ export function RoomCard({
   onDiscussStatement,
   onShowAccountSetupModal,
 }: RoomCardProps) {
+  const { resetTutorialTimer } = useSwipeTutorialContext();
+  
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [youtubeCardSwiped, setYoutubeCardSwiped] = useState(room.youtubeCardSwiped || false);
@@ -185,6 +188,8 @@ export function RoomCard({
 
   // Handle statement submission
   const handleSubmitStatement = async (text: string) => {
+    resetTutorialTimer();
+
     try {
       await onSubmitStatement(room.id, text);
       if (onRefreshStatements) {

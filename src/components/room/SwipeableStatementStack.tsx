@@ -332,7 +332,6 @@ export function SwipeableStatementStack({
   };
 
   const handleSubmitFromChanceCard = async (text: string) => {
-    resetTutorialTimer();
     onChanceCardSwiped();
     await onSubmitStatement(text);
   };
