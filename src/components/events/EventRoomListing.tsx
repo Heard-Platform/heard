@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { CheckCircle2 } from "lucide-react";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
+import { TimeLeftBadge } from "../room/TimeLeftBadge";
 import {
   themeForIndex,
   type EventRoomStatus,
@@ -22,14 +23,17 @@ export function EventRoomListing({
 }) {
   const t = themeForIndex(index);
   const isCaughtUp = room.status === "caught_up";
+  const isCompleted = room.status === "completed";
 
-  const actionDescription = isCaughtUp
-    ? "Nothing new since you voted"
-    : room.newStatementCount
-      ? `${room.newStatementCount} new statement${room.newStatementCount === 1 ? "" : "s"} to vote on`
-      : "You haven't voted yet";
+  const actionDescription = isCompleted
+    ? "Conversation ended"
+    : isCaughtUp
+      ? "Nothing new since you voted"
+      : room.newStatementCount
+        ? `${room.newStatementCount} new statement${room.newStatementCount === 1 ? "" : "s"} to vote on`
+        : "You haven't voted yet";
 
-  const userActivityPill = room.userHasVoted
+  const userActivityPill = !isCompleted && room.userHasVoted
     ? "initial votes added"
     : undefined;
   const ctaLabel = room.userHasVoted
@@ -56,9 +60,17 @@ export function EventRoomListing({
               {room.emoji}
             </div>
             <div className="flex-1 min-w-0 space-y-1.5">
-              <p className="font-bold text-foreground leading-snug">
-                {room.topic}
-              </p>
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-bold text-foreground leading-snug">
+                  {room.topic}
+                </p>
+                <TimeLeftBadge
+                  endTime={room.endTime}
+                  createdAt={room.createdAt}
+                  isRealtime={!isCompleted}
+                  variant="text"
+                />
+              </div>
               <p className="text-sm text-muted-foreground leading-snug">
                 {actionDescription}
               </p>
@@ -68,7 +80,16 @@ export function EventRoomListing({
                     ✓ {userActivityPill}
                   </span>
                 )}
-                {isCaughtUp ? (
+                {isCompleted ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={onCtaClick}
+                    className="text-xs px-4 h-8 rounded-full"
+                  >
+                    View results
+                  </Button>
+                ) : isCaughtUp ? (
                   <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full bg-green-100 text-green-700">
                     <CheckCircle2 className="w-3.5 h-3.5" /> caught up
                   </span>

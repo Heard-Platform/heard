@@ -9,15 +9,23 @@ export interface Event {
   rooms: EventRoomStatus[];
 }
 
-export interface EventRoomStatus extends
-  Pick<DebateRoom, "id" | "topic" | "description" | "emoji" | "participants"> {
+export interface EventRoomStatus extends Pick<
+  DebateRoom,
+  | "id"
+  | "topic"
+  | "description"
+  | "emoji"
+  | "participants"
+  | "createdAt"
+  | "endTime"
+> {
   status: RoomStatus;
   userHasVoted: boolean;
   newStatementCount: number;
   participantAvatars: AvatarAnimal[];
 }
 
-export type RoomStatus = "needs_input" | "caught_up";
+export type RoomStatus = "needs_input" | "caught_up" | "completed";
 
 export type ThemeConfig = {
   iconGradient: string;
