@@ -189,11 +189,12 @@ export function RoomCard({
   // Handle statement submission
   const handleSubmitStatement = async (text: string) => {
     resetTutorialTimer();
-
+    
     try {
       await onSubmitStatement(room.id, text);
       if (onRefreshStatements) {
         await onRefreshStatements();
+        resetTutorialTimer();
       }
     } catch (error) {
       console.error("Error submitting statement:", error);
