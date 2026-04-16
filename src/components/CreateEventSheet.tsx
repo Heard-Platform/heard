@@ -9,7 +9,7 @@ import { FunSheet, FunSheetRef } from "./FunSheet";
 import { SelectCommunityStep } from "./create-room";
 import { EventDetailsStep } from "./create-event/EventDetailsStep";
 import { EventCreatedStep } from "./create-event/EventCreatedStep";
-import { api } from "../utils/api";
+import { useDebateSession } from "../hooks/useDebateSession";
 import type { Event } from "../types";
 
 // @ts-ignore
@@ -20,8 +20,8 @@ interface CreateEventSheetProps {
   defaultSubHeard?: string;
   userId: string;
   onOpenChange: (open: boolean) => void;
-  onEventCreated?: (event: Event) => void;
-  onGoToEvent?: (eventId: string) => void;
+  onEventCreated: (event: Event) => void;
+  onGoToEvent: (eventId: string) => void;
 }
 
 type Step = "event-details" | "select-community" | "done";
@@ -34,11 +34,11 @@ export function CreateEventSheet({
   onEventCreated,
   onGoToEvent,
 }: CreateEventSheetProps) {
+  // const { createEvent } = useDebateSession();
   const [currentStep, setCurrentStep] = useState<Step>("event-details");
   const [name, setName] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [community, setCommunity] = useState(defaultSubHeard || "");
-  const [newCommunityName, setNewCommunityName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [showNameError, setShowNameError] = useState(false);
   const [createdEvent, setCreatedEvent] = useState<Event | null>(null);
@@ -60,7 +60,6 @@ export function CreateEventSheet({
       setName("");
       setSubtitle("");
       setCommunity(defaultSubHeard || "");
-      setNewCommunityName("");
       setCreatedEvent(null);
       setShowNameError(false);
     }
@@ -80,24 +79,16 @@ export function CreateEventSheet({
 
     setIsCreating(true);
     try {
-      const communityName =
-        community === "create-new" && newCommunityName.trim()
-          ? newCommunityName.trim().toLowerCase().replace(/\s+/g, "-")
-          : community;
+      // TODO
+      // const event = await createEvent({
+      //   name: name.trim(),
+      //   subtitle: subtitle.trim(),
+      //   communityName: community,
+      // });
 
-      const result = await api.createEvent({
-        name: name.trim(),
-        subtitle: subtitle.trim(),
-        communityName: communityName,
-      });
-
-      if (!result.success || !result.data) {
-        throw new Error(result.error || "Failed to create event");
-      }
-
-      setCreatedEvent(result.data.event);
-      onEventCreated?.(result.data.event);
-      setCurrentStep("done");
+      // setCreatedEvent(event);
+      // onEventCreated(event);
+      // setCurrentStep("done");
     } catch (error) {
       console.error("Failed to create event:", error);
       toast.error(
@@ -116,7 +107,6 @@ export function CreateEventSheet({
       setName("");
       setSubtitle("");
       setCommunity(defaultSubHeard || "");
-      setNewCommunityName("");
       setCreatedEvent(null);
       setShowNameError(false);
     }
@@ -133,9 +123,9 @@ export function CreateEventSheet({
           theme: "orange" as const,
           buttonText: "Choose Community →",
           buttonIcon: Hash,
-          onButtonClick: handleProceedToCommunity,
           buttonDisabled: false,
           showBackButton: false,
+          onButtonClick: handleProceedToCommunity,
         };
       case "select-community":
         return {
@@ -146,14 +136,11 @@ export function CreateEventSheet({
           buttonText: "Create Event! 🎉",
           buttonLoadingText: "Creating...",
           buttonIcon: Plus,
-          onButtonClick: handleCreateEvent,
-          buttonDisabled:
-            !community ||
-            (community === "create-new" && !newCommunityName.trim()) ||
-            isCreating,
+          buttonDisabled: !community || isCreating,
           isLoading: isCreating,
           showBackButton: true,
           backButtonText: "Back to Details",
+          onButtonClick: handleCreateEvent,
           onBackClick: () => setCurrentStep("event-details"),
         };
       case "done":
@@ -164,10 +151,10 @@ export function CreateEventSheet({
           theme: "orange" as const,
           buttonText: "Maybe later",
           buttonIcon: Plus,
-          onButtonClick: () => onOpenChange(false),
           buttonDisabled: false,
           isLoading: false,
           showBackButton: false,
+          onButtonClick: () => onOpenChange(false),
         };
     }
   };
@@ -217,7 +204,7 @@ export function CreateEventSheet({
           eventName={createdEvent.name}
           onGoToEvent={() => {
             onOpenChange(false);
-            onGoToEvent?.(createdEvent.id);
+            onGoToEvent(createdEvent.id);
           }}
         />
       )}

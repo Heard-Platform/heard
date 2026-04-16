@@ -5,9 +5,9 @@ import { FunSheetCard } from "../FunSheet";
 interface EventDetailsStepProps {
   name: string;
   subtitle: string;
+  showError: boolean;
   onNameChange: (value: string) => void;
   onSubtitleChange: (value: string) => void;
-  showError: boolean;
 }
 
 function Field({
