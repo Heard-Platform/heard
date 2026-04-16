@@ -1,4 +1,5 @@
 import { sanitizeUser } from "./user-utils.ts";
+import { normalizeCommunityName } from "./utils.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import {
   getAllRealDebates,
@@ -192,7 +193,7 @@ app.patch(
       }
 
       // Normalize the new name (lowercase, replace spaces with hyphens)
-      const normalizedNewName = newName.trim().toLowerCase().replace(/\s+/g, '-');
+      const normalizedNewName = normalizeCommunityName(newName);
 
       if (normalizedNewName.length < 2) {
         return c.json({ error: "Sub-heard name must be at least 2 characters" }, 400);
