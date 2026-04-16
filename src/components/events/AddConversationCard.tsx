@@ -32,9 +32,9 @@ export function AddConversationCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.15 }}
     >
-      <Card className="overflow-hidden get-started-bg border border-emerald-300 shadow-sm">
+      <Card className="overflow-hidden creation-bg border creation-border shadow-sm">
         <div className="p-6 flex flex-col items-center text-center gap-4">
-          <div className="w-16 h-16 rounded-3xl bg-linear-to-br from-green-400 to-teal-500 flex items-center justify-center text-3xl shadow-md">
+          <div className="w-16 h-16 rounded-3xl creation-icon-bg flex items-center justify-center text-3xl shadow-md">
             {emoji}
           </div>
           <div className="space-y-1">

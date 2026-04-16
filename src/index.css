@@ -4239,8 +4239,16 @@
     color: var(--color-blue-700);
   }
 
-  .get-started-bg {
+  .creation-bg {
     background: linear-gradient(to bottom right, var(--color-green-100), var(--color-emerald-100), var(--color-teal-200));
+  }
+
+  .creation-border {
+    border-color: var(--color-emerald-300);
+  }
+
+  .creation-icon-bg {
+    background: linear-gradient(to bottom right, var(--color-green-400), var(--color-teal-500));
   }
 
   .high-priority-bg {
