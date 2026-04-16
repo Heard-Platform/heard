@@ -4242,6 +4242,7 @@
   .high-priority-bg {
     background: linear-gradient(to right, #f97316, #f43f5e);
   }
+
   .high-priority-bg:hover {
     background: linear-gradient(to right, #ea6c0a, #e11d48);
   }
@@ -4249,6 +4250,7 @@
   .mid-priority-bg {
     background: linear-gradient(to right, #eab308, #f97316);
   }
+  
   .mid-priority-bg:hover {
     background: linear-gradient(to right, #ca9b06, #ea6c0a);
   }
