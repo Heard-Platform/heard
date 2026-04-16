@@ -18,14 +18,19 @@ export const AVATAR_OPTIONS: {
   value: AvatarAnimal;
   label: string;
   img: string;
+  emoji: string;
 }[] = [
-  { value: "monkey", label: "Monkey", img: monkeyImg },
-  { value: "koala", label: "Koala", img: koalaImg },
-  { value: "rhino", label: "Rhino", img: rhinoImg },
-  { value: "elephant", label: "Elephant", img: elephantImg },
-  { value: "sloth", label: "Sloth", img: slothImg },
-  { value: "panda", label: "Panda", img: pandaImg },
+  { value: "monkey", label: "Monkey", img: monkeyImg, emoji: "🐒" },
+  { value: "koala", label: "Koala", img: koalaImg, emoji: "🐨" },
+  { value: "rhino", label: "Rhino", img: rhinoImg, emoji: "🦏" },
+  { value: "elephant", label: "Elephant", img: elephantImg, emoji: "🐘" },
+  { value: "sloth", label: "Sloth", img: slothImg, emoji: "🦥" },
+  { value: "panda", label: "Panda", img: pandaImg, emoji: "🐼" },
 ];
+
+export const AVATAR_EMOJIS = Object.fromEntries(
+  AVATAR_OPTIONS.map((a) => [a.value, a.emoji]),
+)
 
 export const DEFAULT_AVATAR: AvatarAnimal = "monkey";
 

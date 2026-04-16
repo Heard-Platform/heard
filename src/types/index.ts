@@ -139,6 +139,7 @@ export interface DebateRoom {
   id: string;
   topic: string;
   description?: string;
+  emoji?: string;
   imageUrl?: string;
   youtubeUrl?: string;
   phase: Phase;
