@@ -17,6 +17,7 @@ import { RoomCard } from "./RoomCard";
 import { VineNavigator } from "./vine/VineNavigator";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { CreateRoomCard } from "./CreateRoomCard";
+import { NextRoomNudge } from "./NextRoomNudge";
 
 interface RoomScrollerProps {
   rooms: DebateRoom[];
@@ -78,6 +79,7 @@ export const RoomScroller = forwardRef<
     ref,
   ) => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [nudgeableRoomIds, setNudgeableRoomIds] = useState<Set<string>>(new Set());
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
     const isPolling = useRef(false);
@@ -217,6 +219,19 @@ export const RoomScroller = forwardRef<
       scrollToIndex(0);
     }, [rooms.length]);
 
+    const handleSwipedAllChange = (
+      roomId: string,
+      allSwiped: boolean,
+    ) => {
+      setNudgeableRoomIds((prev) => {
+        const newRoomIds = new Set(prev);
+        allSwiped
+          ? newRoomIds.add(roomId)
+          : newRoomIds.delete(roomId);
+        return newRoomIds;
+      });
+    };
+
     if (loading) {
       return (
         <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
@@ -232,6 +247,15 @@ export const RoomScroller = forwardRef<
         </div>
       );
     }
+
+    const currentRoom =
+      currentIndex < rooms.length ? rooms[currentIndex] : null;
+    const nextRoom =
+      currentIndex + 1 < rooms.length ? rooms[currentIndex + 1] : null;
+    const showNudge =
+      currentRoom !== null &&
+      nudgeableRoomIds.has(currentRoom.id) &&
+      nextRoom !== null;
 
     return (
       <div className="relative h-screen w-full overflow-hidden">
@@ -292,6 +316,9 @@ export const RoomScroller = forwardRef<
                     onJoin={() => onJoinRoom(room.id)}
                     onSubmitStatement={onSubmitStatement}
                     onVoteOnStatement={onVoteOnStatement}
+                    onSwipedAllChange={(allSwiped) =>
+                      handleSwipedAllChange(room.id, allSwiped)
+                    }
                     onRefreshStatements={() =>
                       refreshRoomStatements(room.id)
                     }
@@ -303,6 +330,13 @@ export const RoomScroller = forwardRef<
             );
           })}
         </div>
+
+        <NextRoomNudge
+          key={nextRoom?.id}
+          topic={nextRoom?.topic ?? ""}
+          visible={showNudge}
+          onClick={() => scrollToIndex(currentIndex + 1)}
+        />
       </div>
     );
   },

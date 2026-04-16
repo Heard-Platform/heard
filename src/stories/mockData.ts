@@ -19,6 +19,7 @@ export const mockRooms: DebateRoom[] = [
     subHeard: "food",
     imageUrl:
       "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80", // Pizza image
+    demographicQuestions: [],
   },
   {
     id: "debate-no-image",
@@ -35,6 +36,7 @@ export const mockRooms: DebateRoom[] = [
     rantFirst: true,
     endTime: Date.now() + 6 * 24 * 60 * 60 * 1000,
     subHeard: "work",
+    demographicQuestions: [],
   },
   {
     id: "debate-with-image-2",
@@ -53,6 +55,7 @@ export const mockRooms: DebateRoom[] = [
     subHeard: "pets",
     imageUrl:
       "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&q=80", // Cat image
+    demographicQuestions: [],
   },
   {
     id: "debate-with-image-3",
@@ -80,6 +83,7 @@ export const mockRooms: DebateRoom[] = [
     subHeard: "technology",
     imageUrl:
       "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800&q=80", // Electric car image
+    demographicQuestions: [],
   },
 ];
 

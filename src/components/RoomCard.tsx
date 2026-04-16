@@ -44,6 +44,7 @@ interface RoomCardProps {
     statementId: string,
     voteType: VoteType,
   ) => Promise<any>;
+  onSwipedAllChange: (allSwiped: boolean) => void;
   onRefreshStatements: () => Promise<void>;
   onDiscussStatement: (statementText: string, subHeard?: string) => void;
   onShowAccountSetupModal: (featureText: string) => void;
@@ -61,6 +62,7 @@ export function RoomCard({
   onJoin,
   onSubmitStatement,
   onVoteOnStatement,
+  onSwipedAllChange,
   onRefreshStatements,
   onDiscussStatement,
   onShowAccountSetupModal,
@@ -112,6 +114,25 @@ export function RoomCard({
     return engaged.size;
   })();
   
+  const hasSwipedAll =
+    statements.length > 0 &&
+    statements.every(
+      (statement) =>
+        statement.voters && statement.voters[user.id],
+    ) &&
+    (!user.isAnonymous || certifyCardDismissed) &&
+    chanceCardSwiped &&
+    (!room.youtubeUrl || youtubeCardSwiped) &&
+    (!room.demographicQuestions.length ||
+      room.demographicQuestions.every((q) =>
+        answeredQuestionIds.has(q.id),
+      ));
+
+  useEffect(() => {
+    // console.log(`User has swiped all statements: ${hasSwipedAll}`);
+    onSwipedAllChange(hasSwipedAll);
+  }, [hasSwipedAll]);
+
   const isRantFirst = room.rantFirst;
   const isRealtime = room.mode === "realtime";
 
@@ -275,20 +296,6 @@ export function RoomCard({
             />
           ) : statements.length > 0 ? (
             (() => {
-              // Check if user has voted on all statements
-              const hasSwipedAll =
-                statements.every(
-                  (statement) =>
-                    statement.voters && statement.voters[user.id],
-                ) &&
-                (!user.isAnonymous || certifyCardDismissed) &&
-                chanceCardSwiped &&
-                (!room.youtubeUrl || youtubeCardSwiped) &&
-                (!room.demographicQuestions.length ||
-                  room.demographicQuestions.every((q) =>
-                    answeredQuestionIds.has(q.id),
-                  ));
-
               // If user has voted on all statements, show InProgressResults + input
               if (hasSwipedAll) {
                 return (
