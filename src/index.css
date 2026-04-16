@@ -149,6 +149,7 @@
     --color-cyan-50: oklch(.984 .019 200.873);
     --color-cyan-100: oklch(.956 .045 203.388);
     --color-cyan-300: oklch(.865 .127 207.078);
+    --color-cyan-400: oklch(.77 .173 210.583);
     --color-cyan-500: oklch(.715 .143 215.221);
     --color-cyan-600: oklch(.609 .126 221.723);
     --color-cyan-700: oklch(.52 .105 223.128);
@@ -4170,6 +4171,8 @@
     color: var(--color-yellow-900);
   }
 
+  /* Semantic classes */
+
   .invalid-text {
     color: var(--color-red-600);
   }
@@ -4193,6 +4196,64 @@
   .prefix-icon {
     color: var(--color-purple-600);
   }
+
+  .attention-background {
+    background-color: var(--color-orange-50);
+  }
+
+  .attention-gradient {
+    --tw-gradient-from: var(--color-orange-400);
+    --tw-gradient-to: var(--color-red-400);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+
+  .attention-text {
+    color: var(--color-orange-700);
+  }
+
+  .resolved-background {
+    background-color: var(--color-green-50);
+  }
+
+  .resolved-gradient {
+    --tw-gradient-from: var(--color-green-400);
+    --tw-gradient-to: var(--color-emerald-500);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+
+  .resolved-text {
+    color: var(--color-green-700);
+  }
+
+  .neutral-background {
+    background-color: var(--color-blue-50);
+  }
+
+  .neutral-gradient {
+    --tw-gradient-from: var(--color-blue-600);
+    --tw-gradient-to: var(--color-cyan-700);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+
+  .neutral-text {
+    color: var(--color-blue-700);
+  }
+
+  .high-priority-bg {
+    background: linear-gradient(to right, #f97316, #f43f5e);
+  }
+  .high-priority-bg:hover {
+    background: linear-gradient(to right, #ea6c0a, #e11d48);
+  }
+
+  .mid-priority-bg {
+    background: linear-gradient(to right, #eab308, #f97316);
+  }
+  .mid-priority-bg:hover {
+    background: linear-gradient(to right, #ca9b06, #ea6c0a);
+  }
+
+  /* Formatting */
 
   .capitalize {
     text-transform: capitalize;
