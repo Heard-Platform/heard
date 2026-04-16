@@ -9,17 +9,9 @@ export interface EventRoom {
   status: RoomStatus;
   userHasVoted: boolean;
   newStatementCount?: number;
-  onCtaClick?: () => void;
   participantCount: number;
   totalMembers: number;
   participantAvatars: AvatarAnimal[];
-}
-
-export interface EventRoomListingProps {
-  eventName: string;
-  eventSubtitle?: string;
-  totalMembers: number;
-  rooms: EventRoom[];
 }
 
 export type ThemeConfig = {

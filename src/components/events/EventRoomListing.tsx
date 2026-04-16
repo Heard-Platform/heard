@@ -2,13 +2,7 @@ import { motion } from "motion/react";
 import { Users, Sparkles } from "lucide-react";
 import { Card } from "../ui/card";
 import { RoomRow } from "./RoomRow";
-import type { EventRoomListingProps } from "./constants";
-
-export type {
-  EventRoom,
-  EventRoomListingProps,
-  RoomStatus,
-} from "./constants";
+import type { EventRoom } from "./constants";
 
 const STATS = (
   needsInput: number,
@@ -38,11 +32,20 @@ const STATS = (
   },
 ];
 
+export interface EventRoomListingProps {
+  eventName: string;
+  eventSubtitle?: string;
+  totalMembers: number;
+  rooms: EventRoom[];
+  onOpenRoom: (roomId: string) => void;
+}
+  
 export function EventRoomListing({
   eventName,
   eventSubtitle,
   totalMembers,
   rooms,
+  onOpenRoom,
 }: EventRoomListingProps) {
   const needsInput = rooms.filter((r) => r.status === "needs_input");
   const caughtUp = rooms.filter((r) => r.status === "caught_up");
@@ -136,6 +139,7 @@ export function EventRoomListing({
                   key={room.id}
                   room={room}
                   index={offset + i}
+                  onCtaClick={() => onOpenRoom(room.id)}
                 />
               ))}
             </motion.div>
