@@ -129,7 +129,6 @@ export function RoomCard({
       ));
 
   useEffect(() => {
-    // console.log(`User has swiped all statements: ${hasSwipedAll}`);
     onSwipedAllChange(hasSwipedAll);
   }, [hasSwipedAll]);
 
