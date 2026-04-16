@@ -27,6 +27,13 @@ export interface AvailabilityExtraction {
   referenceDate: string;
 }
 
+const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_REGEX = /^\d{2}:\d{2}$/;
+const DEFAULT_LABEL = "availability extraction";
+
+const AVAILABILITY_UNION = AVAILABILITY_VALUES.map((v) => `"${v}"`).join(" | ");
+const CONFIDENCE_UNION = CONFIDENCE_VALUES.map((v) => `"${v}"`).join(" | ");
+
 export const AVAILABILITY_EXTRACTION_RULES = `STRICT Rules:
 - Extract only availability information the author explicitly mentioned. Do not invent or extrapolate.
 - Resolve relative dates ("next Tuesday", "this weekend") against the reference date. Include only dates you can resolve with confidence.
@@ -67,8 +74,8 @@ Return ONLY in this exact JSON format, with no other text before or after it:
     {
       "date": "YYYY-MM-DD",
       "timeRange": { "start": "HH:mm", "end": "HH:mm" },
-      "availability": "available" | "unavailable" | "preferred" | "tentative",
-      "confidence": "high" | "medium" | "low",
+      "availability": ${AVAILABILITY_UNION},
+      "confidence": ${CONFIDENCE_UNION},
       "sourceQuote": "verbatim substring of the rant"
     }
   ],
@@ -84,6 +91,84 @@ Return ONLY in this exact JSON format, with no other text before or after it:
   };
 }
 
-export function parseAvailabilityExtraction(raw: string): AvailabilityExtraction {
-  return JSON.parse(stripMarkdownFences(raw)) as AvailabilityExtraction;
+function ensure(condition: boolean, message: string): asserts condition {
+  if (!condition) throw new Error(message);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+export function validateAvailabilityExtraction(
+  value: unknown,
+  label: string = DEFAULT_LABEL,
+): AvailabilityExtraction {
+  ensure(isRecord(value), `[${label}] response must be an object`);
+  ensure(Array.isArray(value.resolved), `[${label}] resolved must be an array`);
+  ensure(Array.isArray(value.ambiguous), `[${label}] ambiguous must be an array`);
+  ensure(
+    typeof value.referenceDate === "string" && ISO_DATE_REGEX.test(value.referenceDate),
+    `[${label}] referenceDate must be YYYY-MM-DD, got "${String(value.referenceDate)}"`,
+  );
+
+  for (const item of value.resolved as unknown[]) {
+    ensure(isRecord(item), `[${label}] resolved entries must be objects`);
+    ensure(
+      typeof item.date === "string" && ISO_DATE_REGEX.test(item.date),
+      `[${label}] resolved.date must be YYYY-MM-DD, got "${String(item.date)}"`,
+    );
+    ensure(
+      typeof item.availability === "string" &&
+        (AVAILABILITY_VALUES as readonly string[]).includes(item.availability),
+      `[${label}] resolved.availability invalid: "${String(item.availability)}"`,
+    );
+    ensure(
+      typeof item.confidence === "string" &&
+        (CONFIDENCE_VALUES as readonly string[]).includes(item.confidence),
+      `[${label}] resolved.confidence invalid: "${String(item.confidence)}"`,
+    );
+    ensure(
+      typeof item.sourceQuote === "string" && item.sourceQuote.length > 0,
+      `[${label}] resolved.sourceQuote required`,
+    );
+    if (item.timeRange !== undefined) {
+      ensure(isRecord(item.timeRange), `[${label}] resolved.timeRange must be an object when present`);
+      ensure(
+        typeof item.timeRange.start === "string" && TIME_REGEX.test(item.timeRange.start) &&
+          typeof item.timeRange.end === "string" && TIME_REGEX.test(item.timeRange.end),
+        `[${label}] timeRange must use HH:mm, got ${JSON.stringify(item.timeRange)}`,
+      );
+    }
+  }
+
+  for (const item of value.ambiguous as unknown[]) {
+    ensure(isRecord(item), `[${label}] ambiguous entries must be objects`);
+    ensure(
+      typeof item.mention === "string" && item.mention.length > 0,
+      `[${label}] ambiguous.mention required`,
+    );
+    ensure(
+      typeof item.reason === "string" && item.reason.length > 0,
+      `[${label}] ambiguous.reason required`,
+    );
+    ensure(
+      typeof item.sourceQuote === "string" && item.sourceQuote.length > 0,
+      `[${label}] ambiguous.sourceQuote required`,
+    );
+  }
+
+  return value as unknown as AvailabilityExtraction;
+}
+
+export function parseAvailabilityExtraction(
+  raw: string,
+  label: string = DEFAULT_LABEL,
+): AvailabilityExtraction {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stripMarkdownFences(raw));
+  } catch {
+    throw new Error(`[${label}] response is not valid JSON:\n${raw}`);
+  }
+  return validateAvailabilityExtraction(parsed, label);
 }
