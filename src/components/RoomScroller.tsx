@@ -2,6 +2,7 @@ import {
   useState,
   useRef,
   useEffect,
+  useCallback,
   forwardRef,
   useImperativeHandle,
 } from "react";
@@ -81,10 +82,24 @@ export const RoomScroller = forwardRef<
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
     const isPolling = useRef(false);
+    const currentIndexRef = useRef(0);
+    const allCardsLengthRef = useRef(0);
+    const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(
+      undefined,
+    );
     const [loadingRooms, setLoadingRooms] = useState<
       Record<string, boolean>
     >({});
     const { getRoomStatements } = useDebateSession();
+
+    // Combine rooms with a "create new" card at the end
+    const allCards = [
+      ...rooms,
+      { id: "create-new", isCreateCard: true },
+    ] as Array<DebateRoom | { id: string; isCreateCard: true }>;
+
+    currentIndexRef.current = currentIndex;
+    allCardsLengthRef.current = allCards.length;
 
     // Function to refresh statements for a specific room
     const refreshRoomStatements = async (roomId: string) => {
@@ -116,12 +131,6 @@ export const RoomScroller = forwardRef<
       }
     }, [rooms, currentSubHeard]);
 
-    // Combine rooms with a "create new" card at the end
-    const allCards = [
-      ...rooms,
-      { id: "create-new", isCreateCard: true },
-    ] as Array<DebateRoom | { id: string; isCreateCard: true }>;
-
     // Poll for updates on the currently visible room
     useEffect(() => {
       if (currentIndex >= rooms.length) return;
@@ -150,42 +159,40 @@ export const RoomScroller = forwardRef<
       };
     }, [currentIndex, rooms]);
 
-    // Handle scroll events with debouncing
+    const handleScroll = useCallback(() => {
+      if (isScrolling.current) return;
+
+      clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = setTimeout(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const scrollPosition = container.scrollTop;
+        const cardHeight = container.clientHeight;
+        const newIndex = Math.round(scrollPosition / cardHeight);
+
+        if (
+          newIndex !== currentIndexRef.current &&
+          newIndex >= 0 &&
+          newIndex < allCardsLengthRef.current
+        ) {
+          setCurrentIndex(newIndex);
+        }
+      }, 150);
+    }, []);
+
     useEffect(() => {
+      if (loading) return;
+
       const container = scrollContainerRef.current;
       if (!container) return;
 
-      let scrollTimeout: NodeJS.Timeout;
-
-      const handleScroll = () => {
-        if (isScrolling.current) return;
-
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-          const scrollPosition = container.scrollTop;
-          const cardHeight = container.clientHeight;
-          const newIndex = Math.round(
-            scrollPosition / cardHeight,
-          );
-
-          if (
-            newIndex !== currentIndex &&
-            newIndex >= 0 &&
-            newIndex < allCards.length
-          ) {
-            setCurrentIndex(newIndex);
-          }
-        }, 150);
-      };
-
-      container.addEventListener("scroll", handleScroll, {
-        passive: true,
-      });
+      container.addEventListener("scroll", handleScroll, { passive: true });
       return () => {
         container.removeEventListener("scroll", handleScroll);
-        clearTimeout(scrollTimeout);
+        clearTimeout(scrollTimeoutRef.current);
       };
-    }, [currentIndex, allCards.length]);
+    }, [handleScroll, loading]);
 
     const scrollToIndex = (index: number) => {
       const container = scrollContainerRef.current;
@@ -212,10 +219,10 @@ export const RoomScroller = forwardRef<
       },
     }));
 
-    // Reset scroll to top when rooms change (e.g., when sub-heard changes)
+    // Reset scroll to top when sub-heard changes
     useEffect(() => {
       scrollToIndex(0);
-    }, [rooms.length]);
+    }, [currentSubHeard, rooms.length]);
 
     if (loading) {
       return (
