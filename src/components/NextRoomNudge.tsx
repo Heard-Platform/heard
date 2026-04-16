@@ -35,6 +35,7 @@ export function NextRoomNudge({ topic, visible, onClick }: NextRoomNudgeProps) {
       className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-row items-center gap-1 px-2 py-2.5 rounded-full shadow-lg text-white select-none overflow-hidden"
       style={{
         width: "calc(100% - 2rem)",
+        maxWidth: "calc(var(--room-card-max-width) - 2rem)",
         zIndex: 450,
         background:
           "linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f97316 100%)",

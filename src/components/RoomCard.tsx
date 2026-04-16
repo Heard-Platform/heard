@@ -201,7 +201,8 @@ export function RoomCard({
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: isActive ? 1 : 0.95, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="w-full max-w-2xl"
+      className="w-full"
+      style={{ maxWidth: "var(--room-card-max-width)" }}
     >
       <Card className="heard-card-bg">
         <div className="p-6 space-y-4">

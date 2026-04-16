@@ -6466,6 +6466,7 @@
 }
 
 :root {
+  --room-card-max-width: 672px;
   --font-size: 16px;
   --background: #fff;
   --foreground: oklch(.145 0 0);
