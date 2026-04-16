@@ -34,7 +34,7 @@ export class AnthropicClient implements LlmClient {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 500,
+        max_tokens: 4000,
         system: prompt.systemPrompt,
         messages: [
           {

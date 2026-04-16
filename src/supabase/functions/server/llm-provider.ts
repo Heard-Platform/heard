@@ -4,15 +4,13 @@ import { OpenAiClient } from "./openai-client.ts";
 import { AnthropicClient } from "./anthropic-client.ts";
 import { GeminiClient } from "./gemini-client.ts";
 
-// Set LLM_PROVIDER in .env to switch providers.
-// Accepted values: "gemini" (default) | "anthropic" | "openai"
 export type LlmProvider = "openai" | "anthropic" | "gemini";
 
-export function getLlmProvider(): LlmProvider {
-  const provider = process.env.LLM_PROVIDER ?? "gemini";
+export function getLlmProvider(envVarName: string = "LLM_PROVIDER"): LlmProvider {
+  const provider = process.env[envVarName] ?? "gemini";
   if (provider !== "openai" && provider !== "anthropic" && provider !== "gemini") {
     throw new Error(
-      `Unknown LLM_PROVIDER "${provider}". Valid values: "openai", "anthropic", "gemini"`,
+      `Unknown ${envVarName} "${provider}". Valid values: "openai", "anthropic", "gemini"`,
     );
   }
   return provider;
