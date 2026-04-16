@@ -105,6 +105,15 @@ export const isDemographicsCard = (card: Card): card is DemographicsCard => {
   return card.type === "demographics";
 };
 
+export interface Event {
+  id: string;
+  name: string;
+  subtitle: string;
+  communityName: string;
+  creatorId: string;
+  createdAt: number;
+}
+
 export interface Achievement {
   title: string;
   description: string;
@@ -392,12 +401,3 @@ export interface EnrichmentConfig {
 }
 
 export type Environment = "production" | "development";
-
-export interface Event {
-  id: string;
-  name: string;
-  subtitle: string;
-  communityName: string;
-  creatorId: string;
-  createdAt: number;
-}
