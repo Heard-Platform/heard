@@ -155,18 +155,23 @@ function AppContent() {
     updateUrlForEvent(null);
   };
 
+  const fetchEvent = async (eventId: string) => {
+    setEventLoading(true);
+    const response = await api.getEvent(eventId);
+    if (response.success && response.data) {
+      setCurrentEvent(response.data.event);
+    }
+    setEventLoading(false);
+  };
+
   useEffect(() => {
     if (!currentEventId) return;
-    const fetchEvent = async () => {
-      setEventLoading(true);
-      const response = await api.getEvent(currentEventId);
-      if (response.success && response.data) {
-        setCurrentEvent(response.data.event);
-      }
-      setEventLoading(false);
-    };
-    fetchEvent();
+    fetchEvent(currentEventId);
   }, [currentEventId]);
+
+  const handleRefreshEvent = () => {
+    if (currentEventId) fetchEvent(currentEventId);
+  };
 
   const loginViaMagicTokenInUrl = async (magicToken: string) => {
     const response = await verifyMagicLink(magicToken);
@@ -542,6 +547,7 @@ function AppContent() {
         onOpenDevTools={handleOpenDevTools}
         onSubHeardChange={handleSubHeardChange}
         onOpenEvent={handleOpenEvent}
+        onRefreshEvent={handleRefreshEvent}
         onExitEvent={handleExitEvent}
       />
       <Toaster />

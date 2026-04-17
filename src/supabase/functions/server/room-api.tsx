@@ -31,6 +31,7 @@ app.post(
         allowAnonymous,
         debateLength,
         demographicQuestions,
+        eventId,
       } = await c.req.json();
 
       if (!topic || topic.length < 10) {
@@ -91,6 +92,7 @@ app.post(
         imageUrl,
         youtubeUrl,
         allowAnonymous: !!allowAnonymous,
+        eventId: eventId || undefined,
       });
 
       await saveDebateRoom(debateRoom);

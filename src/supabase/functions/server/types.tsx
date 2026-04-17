@@ -147,7 +147,7 @@ export type NewDemographicAnswer =
 
 
 export type Event = {
-  id: string;
+  id: number;
   name: string;
   subtitle: string;
   communityName: string;
@@ -197,7 +197,7 @@ export interface DebateRoom {
   youtubeCardSwiped?: boolean;
   lastActivityAt?: number;
   totalVotes?: number;
-  eventId?: string;
+  eventId?: number;
 }
 
 export type AnonCreatableRecords = "votes" | "statements" | "score";

@@ -6,9 +6,7 @@ import type {
   EventSummary,
   Event,
 } from "../types";
-import { EventPage } from "../components/events/EventPage";
-import { motion } from "motion/react";
-import { ChevronLeft } from "lucide-react";
+import { EventView } from "../components/events/EventView";
 import { useState, useEffect, useRef, useMemo } from "react";
 import {
   RoomScroller,
@@ -25,7 +23,7 @@ import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api, safelyMakeApiCall } from "../utils/api";
 import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
-import { formatSubHeardDisplay } from "../utils/subheard";
+
 
 interface LobbyScreenProps {
   user: UserSession;
@@ -61,6 +59,7 @@ interface LobbyScreenProps {
   onOpenDevTools?: () => void;
   onSubHeardChange?: (subHeard: string | null) => void;
   onOpenEvent: (eventId: string) => void;
+  onRefreshEvent: () => void;
   onExitEvent: () => void;
 }
 
@@ -87,6 +86,7 @@ export function LobbyScreen({
   onOpenDevTools,
   onSubHeardChange,
   onOpenEvent,
+  onRefreshEvent,
   onExitEvent,
   roomStatements,
   targetRoomId,
@@ -315,50 +315,21 @@ export function LobbyScreen({
         onClose={() => setHelpModalOpen(false)}
       />
 
-      {/* Event page view — header in normal flow so it pushes content down */}
+      {/* Event view */}
       {(eventLoading || currentEvent) && (
-        <div className="flex flex-col h-screen heard-page-bg">
-          <div className="controls-layer pt-[6px] px-2 flex justify-center items-center shrink-0">
-            <div
-              className="flex items-center w-full max-w-2xl"
-              style={{ marginTop: 8, marginBottom: 8 }}
-            >
-              <button
-                onClick={onExitEvent}
-                className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-muted-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 shrink-0" />
-                <span className="truncate">
-                  Back to{" "}
-                  {formatSubHeardDisplay(
-                    currentEvent?.communityName ?? "feed",
-                  )}
-                </span>
-              </button>
-            </div>
-          </div>
-          {currentEvent ? (
-            <div className="flex-1 overflow-y-auto px-4 pb-8">
-              <EventPage
-                event={currentEvent}
-                onAddRoom={() => {}}
-                onOpenRoom={() => {}}
-              />
-            </div>
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-                className="w-8 h-8 heard-spinner"
-              />
-            </div>
-          )}
-        </div>
+        <EventView
+          event={currentEvent ?? null}
+          eventLoading={eventLoading}
+          user={user}
+          currentSubHeard={currentSubHeard}
+          onExitEvent={onExitEvent}
+          onJoinRoom={onJoinRoom}
+          onSubmitStatement={onSubmitStatement}
+          onVoteOnStatement={onVoteOnStatement}
+          onShowAccountSetupModal={handleShowAccountSetupModal}
+          onCreateRoom={onCreateRoom}
+          onRefreshEvent={onRefreshEvent}
+        />
       )}
 
       {/* Feed view — absolute floating header over snap-scroll */}

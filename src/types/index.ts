@@ -200,11 +200,12 @@ export interface DebateRoom {
   chanceCardSwiped?: boolean;
   youtubeCardSwiped?: boolean;
   demographicQuestions: DemographicQuestion[];
+  eventId?: number;
 }
 
 export type NewDebateRoom = Pick<
   DebateRoom,
-  "topic" | "subHeard" | "allowAnonymous"
+  "topic" | "subHeard" | "allowAnonymous" | "eventId"
 > & {
   seedStatements?: string[];
   imageUrl?: string;
