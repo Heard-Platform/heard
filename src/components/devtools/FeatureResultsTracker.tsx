@@ -18,6 +18,7 @@ import {
   Shield,
   Bot,
   Rabbit,
+  ScanLine,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -70,6 +71,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
   };
 
   let featureCards: FeatureCardData[] = [
+    {
+      icon: ScanLine,
+      iconColor: "text-yellow-600",
+      bgColor: "bg-yellow-100",
+      title: "Flyer Scans",
+      description: "Total scans recorded from flyer landing pages",
+      getValue: (s) => s.flyerScans,
+      getDate: (s) => s.flyerScansSince,
+    },
     {
       icon: Bell,
       iconColor: "text-emerald-600",
