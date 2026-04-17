@@ -92,10 +92,11 @@ app.get(
 app.get(
   "/make-server-f1a393b4/event/:eventId",
   defineRoute(
-    {
-      eventId: { type: "string", required: true },
-    },
-    async ({ eventId }: { eventId: string }, c: Context) => {
+    {},
+    async (_params, c: Context) => {
+      const eventIdStr = c.req.param("eventId");
+      if (!eventIdStr) throw new Error("Event ID is required");
+      const eventId = Number(eventIdStr);
       const userId = c.get("userId");
 
       const [eventRows] = await selectAll<Event>("events", { id: eventId });

@@ -33,6 +33,7 @@ interface CreateRoomSheetProps {
   defaultSubHeard?: string;
   defaultTopic?: string;
   userId: string;
+  eventId?: string;
   onOpenChange: (open: boolean) => void;
   onCreateRoom: (
     newDebate: NewDebateRoom,
@@ -60,6 +61,7 @@ export function CreateRoomSheet({
   defaultSubHeard,
   defaultTopic,
   userId,
+  eventId,
   onOpenChange,
   onCreateRoom,
   onExtractTopicAndStatements,
@@ -181,6 +183,7 @@ export function CreateRoomSheet({
         allowAnonymous: allowAnonymousVoting,
         debateLength,
         demographicQuestions,
+        eventId,
       });
 
       setDebateId(result.id);
@@ -311,17 +314,26 @@ export function CreateRoomSheet({
       case "review-details":
         return {
           title: cameFromRantMode ? "Review & Edit" : "Add Details",
-          description: cameFromRantMode 
+          description: cameFromRantMode
             ? "Look good? Edit anything that needs tweaking."
             : "Add any additional details to your post.",
           leftIcon: CheckCircle2,
           theme: "blue" as const,
-          buttonText: "Choose Community →",
-          buttonIcon: Hash,
-          onButtonClick: handleProceedToSubHeard,
+          ...(eventId ? {
+            buttonText: "Create Post! 🚀",
+            buttonLoadingText: "Creating...",
+            buttonIcon: Plus,
+            onButtonClick: handleCreateRoom,
+            isLoading: isCreating,
+          } : {
+            buttonText: "Choose Community →",
+            buttonIcon: Hash,
+            onButtonClick: handleProceedToSubHeard,
+          }),
           buttonDisabled:
             !editedTopic.trim() ||
-            editedStatements.length === 0,
+            editedStatements.length === 0 ||
+            (!!eventId && isCreating),
           showBackButton: true,
           backButtonText: cameFromRantMode ? "Back to Rant" : "Back to Compose",
           onBackClick: cameFromRantMode ? handleBackToRant : handleBackToCompose,

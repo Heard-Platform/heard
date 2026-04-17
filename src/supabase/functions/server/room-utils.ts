@@ -12,6 +12,7 @@ type RoomPartial = Pick<
   | "imageUrl"
   | "youtubeUrl"
   | "allowAnonymous"
+  | "eventId"
 >;
 
 export const createNewRoomData = (
@@ -35,5 +36,6 @@ export const createNewRoomData = (
     imageUrl: roomPartial.imageUrl,
     youtubeUrl: roomPartial.youtubeUrl,
     allowAnonymous: roomPartial.allowAnonymous,
+    eventId: roomPartial.eventId,
   };
 };
