@@ -14,7 +14,7 @@ import { NewsletterViewer } from "./components/NewsletterViewer";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { api } from "./utils/api";
-import type { NewDebateRoom, DebateRoom, VoteType } from "./types";
+import type { NewDebateRoom, DebateRoom, VoteType, Event } from "./types";
 import {
   parseRoomIdFromUrl,
   parseSubHeardFromUrl,
@@ -23,7 +23,9 @@ import {
   parseAnalysisRoomIdFromUrl,
   updateUrlForDevTools,
   parseFlyerDataFromUrl,
-  updateUrlForRoom
+  updateUrlForRoom,
+  parseEventIdFromUrl,
+  updateUrlForEvent,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { safelyGetStorageItem } from "./utils/localStorage";
@@ -54,6 +56,9 @@ function AppContent() {
   const [newsletterEdition, setNewsletterEdition] = useState<number | null>(null);
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
+  const [currentEventId, setCurrentEventId] = useState<string | null>(null);
+  const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
+  const [eventLoading, setEventLoading] = useState(false);
 
   const {
     user,
@@ -139,6 +144,30 @@ function AppContent() {
     clearRoomFromUrl();
   };
 
+  const handleOpenEvent = (eventId: string) => {
+    setCurrentEventId(eventId);
+    updateUrlForEvent(eventId);
+  };
+
+  const handleExitEvent = () => {
+    setCurrentEventId(null);
+    setCurrentEvent(null);
+    updateUrlForEvent(null);
+  };
+
+  useEffect(() => {
+    if (!currentEventId) return;
+    const fetchEvent = async () => {
+      setEventLoading(true);
+      const response = await api.getEvent(currentEventId);
+      if (response.success && response.data) {
+        setCurrentEvent(response.data.event);
+      }
+      setEventLoading(false);
+    };
+    fetchEvent();
+  }, [currentEventId]);
+
   const loginViaMagicTokenInUrl = async (magicToken: string) => {
     const response = await verifyMagicLink(magicToken);
     if (response && response.success) {
@@ -213,6 +242,7 @@ function AppContent() {
       const analysisRoomIdFromUrl =
         parseAnalysisRoomIdFromUrl();
       const flyerDataFromUrl = parseFlyerDataFromUrl();
+      const eventIdFromUrl = parseEventIdFromUrl();
 
       if (analysisRoomIdFromUrl) {
         setAnalysisRoomId(analysisRoomIdFromUrl);
@@ -242,6 +272,8 @@ function AppContent() {
         }
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
+      } else if (eventIdFromUrl) {
+        setCurrentEventId(eventIdFromUrl);
       } else if (roomIdFromUrl) {
         if (user) {
           setTargetRoomId(roomIdFromUrl);
@@ -495,6 +527,8 @@ function AppContent() {
         targetRoomId={targetRoomId || undefined}
         analysisRoomId={analysisRoomId || undefined}
         hasQrScanResult={!!qrScanResult}
+        eventLoading={eventLoading}
+        currentEvent={currentEvent}
         onCreateRoom={handleCreateRoom}
         onJoinRoom={handleJoinRoom}
         onRefreshRooms={getActiveRooms}
@@ -507,6 +541,8 @@ function AppContent() {
         onOpenFeatureTracker={handleOpenFeatureTracker}
         onOpenDevTools={handleOpenDevTools}
         onSubHeardChange={handleSubHeardChange}
+        onOpenEvent={handleOpenEvent}
+        onExitEvent={handleExitEvent}
       />
       <Toaster />
       {qrScanResult && (

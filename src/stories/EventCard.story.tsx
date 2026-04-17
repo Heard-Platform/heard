@@ -10,12 +10,27 @@ export function EventCardStory() {
         {
           id: "with-subtitle",
           label: "With subtitle",
-          children: <EventCard event={{ id: "book-club", name: "Adams Morgan Book Club", subtitle: "April meetup" }} />,
+          children: (
+            <EventCard
+              event={{
+                id: "book-club",
+                name: "Adams Morgan Book Club",
+                subtitle: "April meetup",
+                communityName: "adams-morgan",
+              }}
+              onOpen={() => {}}
+            />
+          ),
         },
         {
           id: "no-subtitle",
           label: "No subtitle",
-          children: <EventCard event={{ id: "trivia", name: "Trivia Night" }} />,
+          children: (
+            <EventCard
+              event={{ id: "trivia", name: "Trivia Night", communityName: "adams-morgan" }}
+              onOpen={() => {}}
+            />
+          ),
         },
       ]}
     />

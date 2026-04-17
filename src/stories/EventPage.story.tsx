@@ -11,7 +11,10 @@ const BASE_EVENT: EventPageProps["event"] = {
   name: "Adams Morgan Book Club",
   subtitle: "April meetup",
   totalMembers: 12,
+  communityName: "adams-morgan",
   rooms: [],
+  creatorId: "1",
+  createdAt: now - 30 * 24 * 60 * 60 * 1000,
 };
 
 const WITH_POSTS_PROPS: EventPageProps = {

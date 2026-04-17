@@ -1,38 +1,6 @@
 import { DebateRoom } from "../../types";
 import type { AvatarAnimal } from "../../utils/constants/avatars";
 
-export interface EventSummary {
-  id: string;
-  name: string;
-  subtitle?: string;
-}
-
-export interface Event {
-  id: string;
-  name: string;
-  subtitle?: string;
-  totalMembers: number;
-  rooms: EventRoomStatus[];
-}
-
-export interface EventRoomStatus extends Pick<
-  DebateRoom,
-  | "id"
-  | "topic"
-  | "description"
-  | "emoji"
-  | "participants"
-  | "createdAt"
-  | "endTime"
-> {
-  status: RoomStatus;
-  userHasVoted: boolean;
-  newStatementCount: number;
-  participantAvatars: AvatarAnimal[];
-}
-
-export type RoomStatus = "needs_input" | "caught_up" | "completed";
-
 export type ThemeConfig = {
   iconGradient: string;
   cardBg: string;

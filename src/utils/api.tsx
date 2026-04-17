@@ -20,8 +20,8 @@ import {
   EnrichmentConfig,
   type Event,
   type NewEvent,
+  EventSummary,
 } from "../types";
-import type { EventSummary, Event as FeedEvent } from "../components/events/constants";
 import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
   BaseApiClient,
@@ -146,6 +146,12 @@ class ApiClient extends BaseApiClient {
     return this.request<{ events: EventSummary[] }>(
       `/events${queryString ? `?${queryString}` : ""}`,
     );
+  }
+
+  async getEvent(
+    eventId: string,
+  ): Promise<ApiResponse<{ event: Event }>> {
+    return this.request<{ event: Event }>(`/event/${eventId}`);
   }
 
   async setRoomInactive(roomId: string) {

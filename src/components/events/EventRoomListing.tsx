@@ -5,10 +5,9 @@ import { Button } from "../ui/button";
 import { TimeLeftBadge } from "../room/TimeLeftBadge";
 import {
   themeForIndex,
-  type EventRoomStatus,
-  type Event,
 } from "./constants";
 import { AVATAR_EMOJIS } from "../../utils/constants/avatars";
+import { Event, EventRoomStatus } from "../../types";
 
 export function EventRoomListing({
   room,

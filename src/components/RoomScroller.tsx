@@ -13,6 +13,7 @@ import type {
   UserPresence,
   VoteType,
   UserSession,
+  EventSummary,
 } from "../types";
 import { RoomCard } from "./RoomCard";
 import { VineNavigator } from "./vine/VineNavigator";
@@ -21,7 +22,6 @@ import { SwipeTutorialProvider, useSwipeTutorialContext } from "../contexts/Swip
 import { CreateRoomCard } from "./CreateRoomCard";
 import { NextRoomNudge } from "./NextRoomNudge";
 import { EventCard } from "./events/EventCard";
-import type { EventSummary } from "./events/constants";
 
 interface RoomScrollerProps {
   rooms: DebateRoom[];
@@ -52,6 +52,7 @@ interface RoomScrollerProps {
     currentRoomIndex: number,
   ) => void;
   onShowAccountSetupModal: (featureText: string) => void;
+  onOpenEvent: (eventId: string) => void;
 }
 
 export interface RoomScrollerRef {
@@ -81,6 +82,7 @@ const RoomScrollerInner = forwardRef<
       presences,
       onUpdatePresence,
       onShowAccountSetupModal,
+      onOpenEvent,
     },
     ref,
   ) => {
@@ -326,7 +328,7 @@ const RoomScrollerInner = forwardRef<
                 {isCreateCard ? (
                   <CreateRoomCard onCreateRoom={onCreateRoom} onOpenExplorer={onOpenExplorer} />
                 ) : event ? (
-                  <EventCard event={event} />
+                  <EventCard event={event} onOpen={onOpenEvent} />
                 ) : room ? (
                   <RoomCard
                     room={room}

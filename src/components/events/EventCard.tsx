@@ -1,20 +1,22 @@
 import { CalendarDays, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 import { Card } from "../ui/card";
-import type { EventSummary } from "./constants";
 import { FEED_CARD_WIDTH } from "../../utils/constants/general";
+import { EventSummary } from "../../types";
 
 export interface EventCardProps {
   event: EventSummary;
+  onOpen: (eventId: string) => void;
 }
 
-export function EventCard({ event }: EventCardProps) {
+export function EventCard({ event, onOpen }: EventCardProps) {
   return (
     <motion.div
+      onClick={() => onOpen(event.id)}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className={FEED_CARD_WIDTH}
+      className={`${FEED_CARD_WIDTH} cursor-pointer`}
     >
       <Card className="heard-card-bg overflow-hidden">
         <div className="p-4 flex items-center gap-3">

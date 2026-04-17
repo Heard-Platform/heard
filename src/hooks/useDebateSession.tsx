@@ -857,6 +857,8 @@ export function DebateSessionProvider(
           name: newEvent.name,
           subtitle: newEvent.subtitle,
           communityName: newEvent.communityName,
+          totalMembers: 0,
+          rooms: [],
           creatorId: "showcase-user",
           createdAt: Date.now(),
         };
