@@ -50,6 +50,42 @@ const testRants = [
   },
 ];
 
+
+// Alex's trash code to try to explain the LLM grader idea:
+
+// const generatedStatements: string[] = generateStatementsFromRants(testRants, REFERENCE_DATE);
+// const generatedStatements = [
+//   "April 25 evening from 5pm to 7pm",
+//   "April 26 at 7pm",
+//   "Saturday April 30 at 4pm",
+// ]
+
+
+// const generateStatementsFromRants = (
+//   rants: Array<{ label: string; text: string }>,
+//   referenceDate: string,
+// ) => {
+//   // Call the LLM with the rants and ask it to generate statements as a JSON list
+// }
+
+// const expected =
+//   "These general dates are good: The weekend of April 25th and 26th, and the week after that. These suggestions would be bad: This Thursday, next Wednesday evening, and Friday of this week. The rest is too vague to be useful.";
+
+// gradeResults(testRants, generatedStatements, expected);
+
+// const gradeResults = (
+//   rants: Array<{ label: string; text: string }>,
+//   generated: Array<{ label: string; statement: string }>,
+//   expected: string,
+// ) => {
+//   // query LLM to grade the results, or just do it ourselves for now
+//   // and return feedback on where the model did well or struggled
+//   // and how to improve the prompt or parsing logic
+// }
+
+
+
+
 const providers: Array<{ name: string; make: () => LlmClient }> = [
   { name: "Gemini", make: () => new GeminiClient() },
   { name: "Anthropic", make: () => new AnthropicClient() },
