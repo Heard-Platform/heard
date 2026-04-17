@@ -100,6 +100,7 @@ export function PhoneCollectionStep({
           <Input
             id="phone"
             type="tel"
+            autoComplete="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="(555) 123-4567"
@@ -188,6 +189,7 @@ export function PhoneCollectionStep({
           <Input
             id="code"
             type="text"
+            autoComplete="one-time-code"
             value={code}
             onChange={(e) => {
               setCode(e.target.value.replace(/[^0-9]/g, "").substring(0, 6));

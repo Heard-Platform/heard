@@ -354,6 +354,7 @@ export function AnonAccountSetupModal({
                       <Input
                         id="magicCode"
                         type="text"
+                        autoComplete="one-time-code"
                         value={magicCode}
                         onChange={(e) => {
                           if (showEmailFlow) {
@@ -422,6 +423,7 @@ export function AnonAccountSetupModal({
                       <Input
                         id="phone"
                         type="tel"
+                        autoComplete="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="(555) 123-4567"
