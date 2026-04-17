@@ -1,3 +1,4 @@
+
 import { Environment } from "../../types";
 import { getEnvironment } from "./general";
 
@@ -17,7 +18,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
   production: {
     ONLY_JOINED_COMMUNITIES: true,
     DEMOGRAPHICS: true,
-    EVENTS: false,
+    EVENTS: true,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
