@@ -741,6 +741,13 @@ class ApiClient extends BaseApiClient {
     return this.request<{posts: DebateRoom[]}>("/dev/posts");
   }
 
+  async recordFlyerScan(flyer: string) {
+    return this.request("/flyer/scan", {
+      method: "POST",
+      body: JSON.stringify({ flyer }),
+    });
+  }
+
   async submitOrgEmail(email: string) {
     return this.request<undefined>("/orgs/submit-email", {
       method: "POST",

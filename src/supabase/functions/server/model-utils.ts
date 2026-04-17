@@ -83,6 +83,16 @@ export const insertFlyerEmail = async (email: string) => {
   return insert<{ email: string }>("flyer_emails", { email });
 };
 
+export const insertFlyerScan = async (
+  flyer: string,
+  userId?: string,
+) => {
+  return insert<{ flyer: string; userId?: string }>("flyer_scans", {
+    flyer,
+    ...(userId ? { userId } : {}),
+  });
+};
+
 export const getFlyerEmails = async () => {
   return selectAll<{ email: string }>("flyer_emails");
 };

@@ -33,10 +33,15 @@ import { safelyGetStorageItem } from "./utils/localStorage";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
+const KALORAMA_ROOM_ID = "xo38wmfkm7bmo35js4i";
+const KALORAMA_COMMUNITIES = ["kalorama-park", "dupont-circle-neighborhoods", "washington-dc"];
+
 function AppContent() {
   const [targetRoomId, setTargetRoomId] = useState<
     string | null
   >(null);
+  const [pendingCommunities, setPendingCommunities] = useState<string[]>([]);
+  const [pendingFlyerScan, setPendingFlyerScan] = useState<string | null>(null);
   const [analysisRoomId, setAnalysisRoomId] = useState<
     string | null
   >(null);
@@ -237,6 +242,8 @@ function AppContent() {
         window.location.pathname.startsWith("/orgs");
 
       const newsletterMatch = window.location.pathname.match(/^\/newsletter\/(\d+)$/);
+      const isKaloramaRoute =
+        window.location.pathname.startsWith("/kal");
       const isParkletRoute =
         window.location.pathname.startsWith("/parklet");
       const is2b04Route =
@@ -261,6 +268,14 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
+      } else if (isKaloramaRoute) {
+        setPendingFlyerScan("kalorama");
+        setPendingCommunities(KALORAMA_COMMUNITIES);
+        if (user) {
+          setTargetRoomId(KALORAMA_ROOM_ID);
+        } else {
+          autoJoinAsAnonymous(KALORAMA_ROOM_ID);
+        }
       } else if (isParkletRoute || is2b04Route) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
@@ -374,6 +389,17 @@ function AppContent() {
       autoJoinRoom();
     }
   }, [user, targetRoomId]);
+
+  useEffect(() => {
+    if (user && hasCheckedUrl && pendingCommunities.length > 0) {
+      if (pendingFlyerScan) {
+        api.recordFlyerScan(pendingFlyerScan);
+        setPendingFlyerScan(null);
+      }
+      Promise.all(pendingCommunities.map((community) => api.joinSubHeard(community)));
+      setPendingCommunities([]);
+    }
+  }, [user, hasCheckedUrl, pendingCommunities, pendingFlyerScan]);
 
   useEffect(() => {
     if (user && hasCheckedUrl) {
