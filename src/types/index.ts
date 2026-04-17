@@ -412,6 +412,8 @@ export interface FeatureResults {
   avatarAnimalUsers: number;
   avatarAnimalUsersSince: number;
   avatarAnimalData: { counts: Record<string, number> };
+  phoneSubmissions: number;
+  phoneSubmissionsSince: number;
 }
 
 export interface UserHistoryData {

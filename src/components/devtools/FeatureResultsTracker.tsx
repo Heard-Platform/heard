@@ -6,6 +6,7 @@ import {
   X,
   TrendingUp,
   Smartphone,
+  Bell,
   UserPlus,
   Tag,
   Flag,
@@ -69,6 +70,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
   };
 
   let featureCards: FeatureCardData[] = [
+    {
+      icon: Bell,
+      iconColor: "text-emerald-600",
+      bgColor: "bg-emerald-100",
+      title: "Phone Submissions",
+      description: "Phone numbers submitted via the sign up card (including unverified)",
+      getValue: (s) => s.phoneSubmissions,
+      getDate: (s) => s.phoneSubmissionsSince,
+    },
     {
       icon: Bot,
       iconColor: "text-amber-600",
