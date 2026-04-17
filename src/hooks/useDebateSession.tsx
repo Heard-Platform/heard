@@ -12,6 +12,8 @@ import type {
   AnalysisData,
   SubHeard,
   EnrichmentConfig,
+  Event,
+  NewEvent,
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
@@ -38,6 +40,7 @@ interface DebateSessionContextType {
     newDebate: NewDebateRoom,
     autoJoin?: boolean,
   ) => Promise<DebateRoom>;
+  createEvent: (newEvent: NewEvent) => Promise<Event>;
   joinRoom: (roomId: string) => Promise<any>;
   submitStatement: (roomId: string, text: string) => Promise<any>;
   voteOnStatement: (
@@ -88,7 +91,7 @@ interface DebateSessionContextType {
 
 export type OverridableApiMethods = Pick<
   DebateSessionContextType,
-  "safelyGetUser" | "getExplorableSubHeards"
+  "safelyGetUser" | "getExplorableSubHeards" | "createEvent"
 >;
 
 const DebateSessionContext = createContext<DebateSessionContextType | null>(null);
@@ -243,6 +246,25 @@ export function DebateSessionProvider(
       }
     },
     [user, updateUserScoreFromResponse],
+  );
+
+  // Create event
+  const createEvent = useCallback(
+    async (newEvent: NewEvent): Promise<Event> => {
+      setError(null);
+      const response = await safelyMakeApiCall(() =>
+        api.createEvent(newEvent),
+      );
+
+      if (response?.success && response.data) {
+        return response.data.event;
+      } else {
+        const errorMsg = response?.error || "Failed to create event";
+        setError(errorMsg);
+        throw new Error(errorMsg);
+      }
+    },
+    [user, safelyMakeApiCall],
   );
 
   // Join room (backend only - no local state)
@@ -703,6 +725,7 @@ export function DebateSessionProvider(
     createAnonymousUser,
     updateAvatar,
     createRoom,
+    createEvent,
     joinRoom,
     submitStatement,
     voteOnStatement,
@@ -826,6 +849,17 @@ export function DebateSessionProvider(
       leaveSubHeard: async (subHeardName: string) => {
         console.log("[Showcase] leaveSubHeard called");
         return { success: true };
+      },
+      createEvent: async (newEvent: NewEvent): Promise<Event> => {
+        console.log("[Showcase] createEvent called", newEvent);
+        return {
+          id: "showcase-event-123",
+          name: newEvent.name,
+          subtitle: newEvent.subtitle,
+          communityName: newEvent.communityName,
+          creatorId: "showcase-user",
+          createdAt: Date.now(),
+        };
       },
       getEnrichmentConfig: async () => {
         console.log("[Showcase] getEnrichmentConfig called");

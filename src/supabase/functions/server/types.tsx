@@ -145,6 +145,21 @@ export interface DemographicAnswer {
 export type NewDemographicAnswer =
   Omit<DemographicAnswer, "id" | "createdAt">;
 
+
+export type Event = {
+  id: string;
+  name: string;
+  subtitle: string;
+  communityName: string;
+  creatorId: string;
+  createdAt: number;
+};
+
+export type NewEvent = Pick<
+  Event,
+  "name" | "subtitle" | "communityName" | "creatorId"
+>;
+
 export type Phase =
   | "lobby"
   | "round1"

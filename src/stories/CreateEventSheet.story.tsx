@@ -38,6 +38,7 @@ export function CreateEventSheetStory() {
                   userId="story-user-123"
                   defaultSubHeard="general"
                   onOpenChange={setIsOpen}
+                  onGoToEvent={(id) => console.log("go to event", id)}
                 />
               </div>
             ),
@@ -102,10 +103,7 @@ export function CreateEventSheetStory() {
                 <p className="text-sm text-slate-500 mb-4">
                   Final step shown after the event is created.
                 </p>
-                <EventCreatedStep
-                  eventName="Adams Morgan Book Club"
-                  onGoToEvent={() => console.log("go to event")}
-                />
+                <EventCreatedStep eventName="Adams Morgan Book Club" />
               </Card>
             ),
           },

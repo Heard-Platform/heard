@@ -114,6 +114,11 @@ export interface Event {
   createdAt: number;
 }
 
+export type NewEvent = Pick<
+  Event,
+  "name" | "subtitle" | "communityName"
+>;
+
 export interface Achievement {
   title: string;
   description: string;

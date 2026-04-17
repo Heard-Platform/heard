@@ -18,6 +18,8 @@ import {
   type NewDebateRoom,
   type VoteType,
   EnrichmentConfig,
+  type Event,
+  type NewEvent,
 } from "../types";
 import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
@@ -124,6 +126,13 @@ class ApiClient extends BaseApiClient {
     }>("/upload-debate-image", {
       method: "POST",
       body: formData,
+    });
+  }
+
+  async createEvent(newEvent: NewEvent): Promise<ApiResponse<{ event: Event }>> {
+    return this.request<{ event: Event }>("/event/create", {
+      method: "POST",
+      body: JSON.stringify(newEvent),
     });
   }
 

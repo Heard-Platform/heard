@@ -2,7 +2,7 @@ import type {
   UserSession,
   DebateRoom, NewDebateRoom,
   VoteType,
-  UserPresence, SubHeard
+  UserPresence, SubHeard,
 } from "../types";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "motion/react";
@@ -11,11 +11,12 @@ import {
   RoomScrollerRef,
 } from "../components/RoomScroller";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
+import { CreateEventSheet } from "../components/CreateEventSheet";
 import { SubHeardBrowser } from "../components/community/SubHeardBrowser";
 import { CommunityExplorerDialog } from "../components/community/CommunityExplorerDialog";
 import { IntroModal } from "../components/IntroModal";
 import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
-import { SquarePlus } from "lucide-react";
+import { NewItemButton } from "../components/NewItemButton";
 import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api } from "../utils/api";
@@ -79,6 +80,9 @@ export function LobbyScreen({
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
     useState(false);
+  const [createEventSheetOpen, setCreateEventSheetOpen] =
+    useState(false);
+
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [discussTopic, setDiscussTopic] = useState<
     string | undefined
@@ -227,6 +231,10 @@ export function LobbyScreen({
     }
   };
 
+  const handleOpenCreateEventSheet = () => {
+    setCreateEventSheetOpen(true);
+  };
+
   const handleDiscussStatement = (
     statementText: string,
     subHeard?: string,
@@ -321,16 +329,10 @@ export function LobbyScreen({
               </div>
             )}
 
-            <button
-              onClick={handleOpenCreateSheet}
-              style={{ height: 30 }}
-              className="flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-gray-200 px-3 controls-layer"
-            >
-              <SquarePlus className="w-4 h-4 text-gray-600 shrink-0" />
-              <span className="text-gray-700 text-sm font-medium">
-                New
-              </span>
-            </button>
+            <NewItemButton
+              onNewConversation={handleOpenCreateSheet}
+              onNewEvent={handleOpenCreateEventSheet}
+            />
 
             {onLogout && (
               <SidePanelMenu
@@ -390,6 +392,15 @@ export function LobbyScreen({
         }}
         defaultSubHeard={discussSubHeard || currentSubHeard}
         defaultTopic={discussTopic}
+      />
+
+      {/* Create event sheet */}
+      <CreateEventSheet
+        open={createEventSheetOpen}
+        userId={user.id}
+        defaultSubHeard={currentSubHeard}
+        onOpenChange={setCreateEventSheetOpen}
+        onGoToEvent={() => setCreateEventSheetOpen(false)}
       />
 
       {/* Error notification */}

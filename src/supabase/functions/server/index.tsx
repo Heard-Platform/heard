@@ -28,6 +28,7 @@ import { internalConfigApi } from "./internal-config-api.tsx";
 import { enrichmentApi } from "./enrichment-api.ts";
 import { userRankApi } from "./user-rank-api.tsx";
 import { accountApi } from "./account-api.ts";
+import { eventApi } from "./event-api.tsx";
 import { validateAdmin, validateCronAuth, validateDeveloper } from "./internal-utils.ts";
 import { validateSession } from "./auth-utils.ts";
 import { API_URL_PREFIX } from "./constants.tsx";
@@ -103,7 +104,7 @@ protect(dontValidate, ["orgs/*", "user/*",]);
 
 // Account
 protect(validateSession, [
-  "account/*", "activity/*", "chance-card/*", "feedback/*", "flyer/*",
+  "account/*", "activity/*", "chance-card/*", "event/*", "feedback/*", "flyer/*",
   "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
   "statement/*", "subheard/*", "subheards", "subheards/*",
   "upload-debate-image", "user-rank", "vine/*", "youtube-card/*",
@@ -152,5 +153,6 @@ app.route("/", reportingApi);
 app.route("/", internalConfigApi);
 app.route("/", enrichmentApi);
 app.route("/", userRankApi);
+app.route("/", eventApi);
 
 Deno.serve(app.fetch);
