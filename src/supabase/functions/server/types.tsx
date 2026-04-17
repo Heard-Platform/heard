@@ -155,7 +155,10 @@ export type Event = {
   createdAt: number;
 };
 
-export type NewEvent = Omit<Event, "id" | "createdAt">;
+export type NewEvent = Pick<
+  Event,
+  "name" | "subtitle" | "communityName" | "creatorId"
+>;
 
 export type Phase =
   | "lobby"

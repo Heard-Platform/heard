@@ -251,10 +251,6 @@ export function DebateSessionProvider(
   // Create event
   const createEvent = useCallback(
     async (newEvent: NewEvent): Promise<Event> => {
-      if (!user) {
-        throw new Error("User must be logged in to create an event");
-      }
-
       setError(null);
       const response = await safelyMakeApiCall(() =>
         api.createEvent(newEvent),
@@ -268,7 +264,7 @@ export function DebateSessionProvider(
         throw new Error(errorMsg);
       }
     },
-    [user],
+    [user, safelyMakeApiCall],
   );
 
   // Join room (backend only - no local state)
