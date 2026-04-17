@@ -29,7 +29,7 @@ export class GeminiClient implements LlmClient {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
     const generationConfig: Record<string, unknown> = {
-      maxOutputTokens: 500,
+      maxOutputTokens: 4000,
       temperature: 0.7,
       thinkingConfig: {
         thinkingBudget: 0,

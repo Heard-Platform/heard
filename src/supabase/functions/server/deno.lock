@@ -17,7 +17,8 @@
     "npm:@supabase/node-fetch@2.6.15": "2.6.15",
     "npm:@supabase/postgrest-js@1.19.4": "1.19.4",
     "npm:@supabase/realtime-js@2.11.2": "2.11.2",
-    "npm:@supabase/storage-js@2.7.1": "2.7.1"
+    "npm:@supabase/storage-js@2.7.1": "2.7.1",
+    "npm:lodash@^4.17.21": "4.17.23"
   },
   "jsr": {
     "@std/assert@1.0.18": {
@@ -132,6 +133,9 @@
         "@types/node"
       ]
     },
+    "lodash@4.17.23": {
+      "integrity": "sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w=="
+    },
     "tr46@0.0.3": {
       "integrity": "sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw=="
     },
@@ -198,7 +202,8 @@
   "workspace": {
     "dependencies": [
       "jsr:@std/expect@^1.0.17",
-      "jsr:@std/testing@^1.0.17"
+      "jsr:@std/testing@^1.0.17",
+      "npm:lodash@^4.17.21"
     ]
   }
 }
