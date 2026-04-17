@@ -197,6 +197,7 @@ export interface DebateRoom {
   youtubeCardSwiped?: boolean;
   lastActivityAt?: number;
   totalVotes?: number;
+  eventId?: string;
 }
 
 export type AnonCreatableRecords = "votes" | "statements" | "score";

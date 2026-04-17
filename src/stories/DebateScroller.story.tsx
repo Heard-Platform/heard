@@ -186,6 +186,7 @@ export function DebateScrollerStory() {
               onDiscussStatement={() => {}}
               onShowAccountSetupModal={() => {}}
               onOpenExplorer={() => {}}
+              onOpenEvent={() => {}}
             />
           ),
         },
@@ -236,6 +237,7 @@ export function DebateScrollerStory() {
               onDiscussStatement={() => {}}
               onShowAccountSetupModal={() => {}}
               onOpenExplorer={() => {}}
+              onOpenEvent={() => {}}
             />
           ),
         },
