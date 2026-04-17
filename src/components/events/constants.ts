@@ -1,6 +1,12 @@
 import { DebateRoom } from "../../types";
 import type { AvatarAnimal } from "../../utils/constants/avatars";
 
+export interface EventSummary {
+  id: string;
+  name: string;
+  subtitle?: string;
+}
+
 export interface Event {
   id: string;
   name: string;

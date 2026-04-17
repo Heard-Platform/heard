@@ -3,9 +3,9 @@ import { Context, Hono } from "npm:hono";
 import { defineRoute } from "./route-wrapper.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { normalizeCommunityName } from "./utils.tsx";
-import { insert } from "./db-utils.ts";
+import { insert, selectAll } from "./db-utils.ts";
 import { getCommunity } from "./kv-utils.tsx";
-import type { NewEvent } from "./types.tsx";
+import type { NewEvent, Event } from "./types.tsx";
 
 const app = new Hono();
 
@@ -61,6 +61,30 @@ app.post(
       return { event };
     },
     "Failed to create event",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/events",
+  defineRoute(
+    {},
+    async (_params, c: Context) => {
+      const community = c.req.query("community");
+
+      const events = await selectAll<Event>(
+        "events",
+        community ? { communityName: community } : undefined,
+      );
+
+      const summaries = events.map((event) => ({
+        id: event.id,
+        name: event.name,
+        subtitle: event.subtitle,
+      }));
+
+      return { events: summaries };
+    },
+    "Failed to fetch events",
   ),
 );
 

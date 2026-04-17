@@ -175,6 +175,7 @@ export interface DebateRoom {
   id: string;
   topic: string;
   description?: string;
+  emoji?: string;
   phase: Phase;
   subPhase?: SubPhase;
   gameNumber: number;

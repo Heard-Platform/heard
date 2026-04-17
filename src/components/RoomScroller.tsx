@@ -20,9 +20,12 @@ import { useDebateSession } from "../hooks/useDebateSession";
 import { SwipeTutorialProvider, useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { CreateRoomCard } from "./CreateRoomCard";
 import { NextRoomNudge } from "./NextRoomNudge";
+import { EventCard } from "./events/EventCard";
+import type { EventSummary } from "./events/constants";
 
 interface RoomScrollerProps {
   rooms: DebateRoom[];
+  events: EventSummary[];
   isDeveloper: boolean;
   loading: boolean;
   user: UserSession;
@@ -62,6 +65,7 @@ const RoomScrollerInner = forwardRef<
   (
     {
       rooms,
+      events,
       onJoinRoom,
       onCreateRoom,
       onOpenExplorer,
@@ -96,11 +100,16 @@ const RoomScrollerInner = forwardRef<
     const { getRoomStatements } = useDebateSession();
     const { resetTutorialTimer } = useSwipeTutorialContext();
 
-    // Combine rooms with a "create new" card at the end
+    // Combine events (at top), rooms, and a "create new" card at the end
     const allCards = [
+      ...events.map((e) => ({ ...e, isEventCard: true as const })),
       ...rooms,
       { id: "create-new", isCreateCard: true },
-    ] as Array<DebateRoom | { id: string; isCreateCard: true }>;
+    ] as Array<
+      | (EventSummary & { isEventCard: true })
+      | DebateRoom
+      | { id: string; isCreateCard: true }
+    >;
 
     currentIndexRef.current = currentIndex;
     allCardsLengthRef.current = allCards.length;
@@ -299,9 +308,14 @@ const RoomScrollerInner = forwardRef<
           {allCards.map((card, index) => {
             const isCreateCard =
               "isCreateCard" in card && card.isCreateCard;
-            const room = isCreateCard
-              ? null
-              : (card as DebateRoom);
+            const isEventCard =
+              "isEventCard" in card && card.isEventCard;
+            const room =
+              isCreateCard || isEventCard ? null : (card as DebateRoom);
+
+            const event = isEventCard
+              ? (card as EventSummary & { isEventCard: true })
+              : null;
 
             return (
               <div
@@ -311,6 +325,8 @@ const RoomScrollerInner = forwardRef<
               >
                 {isCreateCard ? (
                   <CreateRoomCard onCreateRoom={onCreateRoom} onOpenExplorer={onOpenExplorer} />
+                ) : event ? (
+                  <EventCard event={event} />
                 ) : room ? (
                   <RoomCard
                     room={room}

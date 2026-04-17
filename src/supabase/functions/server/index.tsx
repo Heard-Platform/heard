@@ -104,7 +104,8 @@ protect(dontValidate, ["orgs/*", "user/*",]);
 
 // Account
 protect(validateSession, [
-  "account/*", "activity/*", "chance-card/*", "event/*", "feedback/*", "flyer/*",
+  "account/*", "activity/*", "chance-card/*", "event/*", "events",
+  "feedback/*", "flyer/*",
   "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
   "statement/*", "subheard/*", "subheards", "subheards/*",
   "upload-debate-image", "user-rank", "vine/*", "youtube-card/*",
