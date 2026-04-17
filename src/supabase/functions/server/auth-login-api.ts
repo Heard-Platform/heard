@@ -4,6 +4,7 @@ import { startVerification, checkVerification } from "./twilio-service.tsx";
 import { loginUserWithMerge, normalizePhoneNumber, validateSession } from "./auth-utils.ts";
 import { sanitizeUser } from "./user-utils.ts";
 import { createUserAccount } from "./auth-api.tsx";
+import { insert } from "./db-utils.ts";
 
 const app = new Hono();
 
@@ -39,11 +40,14 @@ app.post(
       }
 
       const verificationResult = await startVerification(normalizedPhone);
-      
+
       if (!verificationResult.success) {
         console.error(`Failed to start verification for ${normalizedPhone}:`, verificationResult.error);
         return c.json({ error: "Failed to send SMS code. Please try again." }, 500);
       }
+
+      insert("phone_submissions", { phone: normalizedPhone })
+        .catch((err) => console.error("Failed to save phone submission:", err));
 
       console.log(`Verification started successfully for ${normalizedPhone}`);
 
