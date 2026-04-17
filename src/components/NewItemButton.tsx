@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SquarePlus, MessageSquare, Calendar, ChevronDown, type LucideIcon } from "lucide-react";
+import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
 
 interface NewItemButtonProps {
   onNewConversation: () => void;
@@ -33,6 +34,8 @@ function MenuItemButton({ label, description, icon: Icon, iconClass, bgClass, ho
   );
 }
 
+const eventsEnabled = isFeatureEnabled(FeatureFlags.EVENTS);
+
 export function NewItemButton({ onNewConversation, onNewEvent }: NewItemButtonProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -62,7 +65,11 @@ export function NewItemButton({ onNewConversation, onNewEvent }: NewItemButtonPr
       <button
         style={{ height: 30 }}
         className="flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-gray-200 px-3 controls-layer"
-        onClick={() => setMenuOpen((prev) => !prev)}
+        onClick={() =>
+          eventsEnabled
+            ? setMenuOpen((prev) => !prev)
+            : onNewConversation()
+        }
       >
         <SquarePlus className="w-4 h-4 text-gray-600 shrink-0" />
         <span className="text-gray-700 text-sm font-medium">New</span>
