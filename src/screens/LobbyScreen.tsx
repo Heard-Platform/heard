@@ -4,8 +4,8 @@ import type {
   VoteType,
   UserPresence, SubHeard,
 } from "../types";
+import type { EventSummary } from "../components/events/constants";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { motion } from "motion/react";
 import {
   RoomScroller,
   RoomScrollerRef,
@@ -19,7 +19,8 @@ import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
 import { NewItemButton } from "../components/NewItemButton";
 import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
-import { api } from "../utils/api";
+import { api, safelyMakeApiCall } from "../utils/api";
+import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
 
 interface LobbyScreenProps {
   user: UserSession;
@@ -102,6 +103,7 @@ export function LobbyScreen({
   const [presences, setPresences] = useState<UserPresence[]>(
     [],
   );
+  const [events, setEvents] = useState<EventSummary[]>([]);
   const [showAccountSetupAnonModal, setShowAccountSetupAnonModal] = useState(false);
   const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
   const [explorerOpen, setExplorerOpen] = useState(false);
@@ -175,6 +177,20 @@ export function LobbyScreen({
       );
     };
   }, []);
+
+  // Fetch events for the current community (feature-flagged)
+  useEffect(() => {
+    if (!isFeatureEnabled(FeatureFlags.EVENTS)) return;
+    const fetchEvents = async () => {
+      const response = await safelyMakeApiCall(() =>
+        api.getEvents(currentSubHeard),
+      );
+      if (response?.data) {
+        setEvents(response.data.events);
+      }
+    };
+    fetchEvents();
+  }, [currentSubHeard]);
 
   // Poll for user presences
   useEffect(() => {
@@ -356,6 +372,7 @@ export function LobbyScreen({
         <RoomScroller
           ref={roomScrollerRef}
           rooms={filteredRooms}
+          events={events}
           isDeveloper={user.isDeveloper || false}
           loading={roomsLoading}
           user={user}

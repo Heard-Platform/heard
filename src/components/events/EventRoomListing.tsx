@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, MessageSquare } from "lucide-react";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { TimeLeftBadge } from "../room/TimeLeftBadge";
@@ -57,7 +57,7 @@ export function EventRoomListing({
             <div
               className={`shrink-0 w-11 h-11 rounded-2xl bg-gradient-to-br ${t.iconGradient} flex items-center justify-center text-xl shadow-md`}
             >
-              {room.emoji}
+              {room.emoji ?? <MessageSquare className="w-5 h-5 text-white/80" />}
             </div>
             <div className="flex-1 min-w-0 space-y-1.5">
               <div className="flex items-start justify-between gap-2">

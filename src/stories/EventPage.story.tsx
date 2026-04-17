@@ -130,6 +130,28 @@ const URGENCY_PROPS: EventPageProps = {
   onOpenRoom: (id) => console.log("open room", id),
 };
 
+const MISSING_EMOJI_PROPS: EventPageProps = {
+  event: {
+    ...BASE_EVENT,
+    rooms: [
+      {
+        id: "no-emoji",
+        topic: "Room without an emoji",
+        emoji: undefined,
+        participants: ["1", "2", "3"],
+        status: "needs_input",
+        userHasVoted: false,
+        newStatementCount: 2,
+        participantAvatars: ["monkey", "panda", "koala"],
+        createdAt: now - 1 * 24 * 60 * 60 * 1000,
+        endTime: now + 5 * 24 * 60 * 60 * 1000,
+      },
+    ],
+  },
+  onAddRoom: () => console.log("add room"),
+  onOpenRoom: (id) => console.log("open room", id),
+};
+
 const EMPTY_PROPS: EventPageProps = {
   event: BASE_EVENT,
   onAddRoom: () => console.log("add room"),
@@ -151,6 +173,11 @@ export function Story() {
           id: "urgency",
           label: "Urgency",
           children: <EventPage {...URGENCY_PROPS} />,
+        },
+        {
+          id: "missing-emoji",
+          label: "Missing emoji",
+          children: <EventPage {...MISSING_EMOJI_PROPS} />,
         },
         {
           id: "empty",

@@ -21,6 +21,7 @@ import {
   type Event,
   type NewEvent,
 } from "../types";
+import type { EventSummary, Event as FeedEvent } from "../components/events/constants";
 import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
   BaseApiClient,
@@ -134,6 +135,17 @@ class ApiClient extends BaseApiClient {
       method: "POST",
       body: JSON.stringify(newEvent),
     });
+  }
+
+  async getEvents(
+    community?: string,
+  ): Promise<ApiResponse<{ events: EventSummary[] }>> {
+    const params = new URLSearchParams();
+    if (community) params.append("community", community);
+    const queryString = params.toString();
+    return this.request<{ events: EventSummary[] }>(
+      `/events${queryString ? `?${queryString}` : ""}`,
+    );
   }
 
   async setRoomInactive(roomId: string) {
