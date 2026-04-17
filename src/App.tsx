@@ -207,11 +207,7 @@ function AppContent() {
       }
 
       const anonUserResponse = await createAnonymousUser();
-      if (anonUserResponse && anonUserResponse.success) {
-        if (room.subHeard) {
-          setCurrentSubHeard(room.subHeard);
-        }
-      } else {
+      if (!anonUserResponse?.success) {
         setIsJoiningAnonymously(false);
       }
     } catch (error) {
@@ -373,12 +369,6 @@ function AppContent() {
       const autoJoinRoom = async () => {
         const roomData = await joinRoom(targetRoomId);
         if (roomData) {
-          if (
-            roomData.subHeard &&
-            roomData.subHeard !== currentSubHeard
-          ) {
-            setCurrentSubHeard(roomData.subHeard);
-          }
           setIsJoiningAnonymously(false);
         } else {
           setTargetRoomId(null);
