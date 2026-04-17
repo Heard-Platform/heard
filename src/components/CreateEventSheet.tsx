@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import {
   Calendar,
   Hash,
-  Plus,
+  MessageSquarePlus,
   PartyPopper,
+  Plus,
 } from "lucide-react";
 import { FunSheet, FunSheetRef } from "./FunSheet";
 import { SelectCommunityStep } from "./create-room";
@@ -20,7 +21,6 @@ interface CreateEventSheetProps {
   defaultSubHeard?: string;
   userId: string;
   onOpenChange: (open: boolean) => void;
-  onEventCreated: (event: Event) => void;
   onGoToEvent: (eventId: string) => void;
 }
 
@@ -31,10 +31,9 @@ export function CreateEventSheet({
   defaultSubHeard,
   userId,
   onOpenChange,
-  onEventCreated,
   onGoToEvent,
 }: CreateEventSheetProps) {
-  // const { createEvent } = useDebateSession();
+  const { createEvent } = useDebateSession();
   const [currentStep, setCurrentStep] = useState<Step>("event-details");
   const [name, setName] = useState("");
   const [subtitle, setSubtitle] = useState("");
@@ -79,16 +78,14 @@ export function CreateEventSheet({
 
     setIsCreating(true);
     try {
-      // TODO
-      // const event = await createEvent({
-      //   name: name.trim(),
-      //   subtitle: subtitle.trim(),
-      //   communityName: community,
-      // });
+      const event = await createEvent({
+        name: name.trim(),
+        subtitle: subtitle.trim(),
+        communityName: community,
+      });
 
-      // setCreatedEvent(event);
-      // onEventCreated(event);
-      // setCurrentStep("done");
+      setCreatedEvent(event);
+      setCurrentStep("done");
     } catch (error) {
       console.error("Failed to create event:", error);
       toast.error(
@@ -149,12 +146,12 @@ export function CreateEventSheet({
           description: "Your event is live.",
           leftIcon: PartyPopper,
           theme: "orange" as const,
-          buttonText: "Maybe later",
-          buttonIcon: Plus,
+          buttonText: "Go to event page",
+          buttonIcon: MessageSquarePlus,
           buttonDisabled: false,
           isLoading: false,
           showBackButton: false,
-          onButtonClick: () => onOpenChange(false),
+          onButtonClick: () => onGoToEvent(createdEvent!.id),
         };
     }
   };
@@ -200,13 +197,7 @@ export function CreateEventSheet({
       )}
 
       {currentStep === "done" && createdEvent && (
-        <EventCreatedStep
-          eventName={createdEvent.name}
-          onGoToEvent={() => {
-            onOpenChange(false);
-            onGoToEvent(createdEvent.id);
-          }}
-        />
+        <EventCreatedStep eventName={createdEvent.name} />
       )}
     </FunSheet>
   );
