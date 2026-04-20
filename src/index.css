@@ -4236,6 +4236,10 @@
     color: white;
   }
 
+  .normal-bg {
+    background-color: var(--color-white);
+  }
+
   .invalid-text {
     color: var(--color-red-600);
   }
@@ -4314,6 +4318,26 @@
     color: var(--color-blue-700);
   }
 
+  .inactive-bg {
+    background-color: var(--color-slate-100);
+  }
+
+  .inactive-border {
+    border-color: var(--color-slate-200);
+  }
+
+  .inactive-text {
+    color: var(--color-slate-500);
+  }
+
+  .inactive-text-soft {
+    color: var(--color-slate-400);
+  }
+
+  .inactive-text-strong {
+    color: var(--color-slate-600);
+  }
+
   .info-bg {
     background-color: var(--color-violet-50);
   }
@@ -4357,6 +4381,23 @@
   .created-text-strong {
     color: rgb(124 45 18);
   }
+
+  .agree-bg {
+    background-color: var(--color-green-400);
+  }
+
+  .super-agree-bg {
+    background-color: var(--color-green-600);
+  }
+
+  .disagree-bg {
+    background-color: var(--color-red-400);
+  }
+
+  .pass-bg {
+    background-color: var(--color-slate-300);
+  }
+
 
   /* Formatting */
 

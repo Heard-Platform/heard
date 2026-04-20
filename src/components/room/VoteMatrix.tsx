@@ -2,10 +2,10 @@ import { ChevronRight, CheckSquare } from "lucide-react";
 import { Statement, StatementMerge, VoteType } from "../../types";
 
 const VOTE_COLORS: Record<VoteType, string> = {
-  agree: "bg-green-400",
-  super_agree: "bg-green-600",
-  disagree: "bg-red-400",
-  pass: "bg-slate-300",
+  agree: "agree-bg",
+  super_agree: "super-agree-bg",
+  disagree: "disagree-bg",
+  pass: "pass-bg",
 };
 
 const VOTE_LABELS: Record<VoteType, string> = {
@@ -15,22 +15,29 @@ const VOTE_LABELS: Record<VoteType, string> = {
   pass: "P",
 };
 
-function VoteCell({ vote, isAuthor }: { vote: VoteType | undefined; isAuthor: boolean }) {
-  const bgClass = vote ? VOTE_COLORS[vote] : "bg-slate-100";
-  const textClass = vote ? "text-white" : "text-slate-400";
-  const title = [isAuthor ? "author" : null, vote ?? null].filter(Boolean).join(" · ");
+function VoteCell({
+  vote,
+  isAuthor,
+}: {
+  vote: VoteType | undefined;
+  isAuthor: boolean;
+}) {
+  const bgClass = vote ? VOTE_COLORS[vote] : "inactive-bg";
+  const textClass = vote ? "normal-text" : "";
+  const title = [isAuthor ? "author" : null, vote ?? null]
+    .filter(Boolean)
+    .join(" · ");
 
-  if (!vote && !isAuthor) return <td className="border border-slate-200 w-8 h-6" />;
+  if (!vote && !isAuthor)
+    return <td className="border inactive-border w-8 h-6" />;
 
   return (
     <td
-      className={`border border-slate-200 w-8 h-6 text-center text-xs font-mono font-bold relative ${bgClass} ${textClass}`}
+      className={`border inactive-border w-8 h-6 text-center text-xs font-mono font-bold relative ${bgClass} ${textClass}`}
       title={title}
     >
       {vote ? VOTE_LABELS[vote] : ""}
-      {isAuthor && (
-        <AuthorBadge />
-      )}
+      {isAuthor && <AuthorBadge />}
     </td>
   );
 }
@@ -67,17 +74,29 @@ interface VoteMatrixProps {
   tableWrapperClassName?: string;
 }
 
-export function VoteMatrix({ statements, merges, phoneVerified = {}, tableWrapperClassName = "max-h-[calc(100vh-280px)]" }: VoteMatrixProps) {
+export function VoteMatrix({
+  statements,
+  merges,
+  phoneVerified = {},
+  tableWrapperClassName = "max-h-[calc(100vh-280px)]",
+}: VoteMatrixProps) {
   const mergeInfo = buildMergeInfo(merges);
 
   const allUserIds = Array.from(
     new Set(
-      statements.flatMap((s) => [s.author, ...Object.keys(s.voters ?? {})])
-    )
+      statements.flatMap((s) => [
+        s.author,
+        ...Object.keys(s.voters ?? {}),
+      ]),
+    ),
   ).sort();
 
   if (statements.length === 0) {
-    return <p className="text-slate-500 text-sm py-4">No statements in this room.</p>;
+    return (
+      <p className="inactive-text text-sm py-4">
+        No statements in this room.
+      </p>
+    );
   }
 
   const shortId = (id: string) => id.slice(-5);
@@ -89,25 +108,25 @@ export function VoteMatrix({ statements, merges, phoneVerified = {}, tableWrappe
         className={`overflow-auto w-full border rounded-t-lg flex-1 min-h-0 ${tableWrapperClassName}`}
       >
         <table className="border-collapse text-xs">
-          <thead className="sticky top-0 z-10 bg-white">
+          <thead className="sticky top-0 z-10 normal-bg">
             <tr>
-              <th className="sticky left-0 z-20 bg-white border border-slate-200 px-2 py-1 text-left font-medium text-slate-600 min-w-[220px]">
+              <th className="sticky left-0 z-20 normal-bg border inactive-border px-2 py-1 text-left font-medium inactive-text min-w-[220px]">
                 Statement
               </th>
               <th
-                className="border border-slate-200 px-1 py-1 text-center text-slate-500 font-mono w-8"
+                className="border inactive-border px-1 py-1 text-center inactive-text font-mono w-8"
                 title="Agrees"
               >
                 A
               </th>
               <th
-                className="border border-slate-200 px-1 py-1 text-center text-slate-500 font-mono w-8"
+                className="border inactive-border px-1 py-1 text-center inactive-text font-mono w-8"
                 title="Disagrees"
               >
                 D
               </th>
               <th
-                className="border border-slate-200 px-1 py-1 text-center text-slate-500 font-mono w-8"
+                className="border inactive-border px-1 py-1 text-center inactive-text font-mono w-8"
                 title="Passes"
               >
                 P
@@ -115,11 +134,11 @@ export function VoteMatrix({ statements, merges, phoneVerified = {}, tableWrappe
               {allUserIds.map((uid) => (
                 <th
                   key={uid}
-                  className="border border-slate-200 w-8 px-0"
+                  className="border inactive-border w-8 px-0"
                   title={uid}
                 >
                   <div
-                    className="text-slate-400 font-mono overflow-hidden relative"
+                    className="inactive-text-soft font-mono overflow-hidden relative"
                     style={{
                       writingMode: "vertical-rl",
                       transform: "rotate(180deg)",
@@ -165,7 +184,7 @@ export function VoteMatrix({ statements, merges, phoneVerified = {}, tableWrappe
                       : "hover:bg-slate-50"
                   }
                 >
-                  <td className="sticky left-0 z-10 border border-slate-200 px-2 py-1 max-w-[220px] bg-inherit">
+                  <td className="sticky left-0 z-10 border inactive-border px-2 py-1 max-w-[220px] bg-inherit">
                     <div className="flex items-start gap-1">
                       <span className="text-slate-400 font-mono shrink-0">
                         {idx}.
@@ -197,13 +216,13 @@ export function VoteMatrix({ statements, merges, phoneVerified = {}, tableWrappe
                       </div>
                     </div>
                   </td>
-                  <td className="border border-slate-200 text-center font-mono text-slate-600 w-8">
+                  <td className="border inactive-border text-center font-mono inactive-text-strong w-8">
                     {stmt.agrees + stmt.superAgrees}
                   </td>
-                  <td className="border border-slate-200 text-center font-mono text-slate-600 w-8">
+                  <td className="border inactive-border text-center font-mono inactive-text-strong w-8">
                     {stmt.disagrees}
                   </td>
-                  <td className="border border-slate-200 text-center font-mono text-slate-600 w-8">
+                  <td className="border inactive-border text-center font-mono inactive-text-strong w-8">
                     {stmt.passes}
                   </td>
                   {allUserIds.map((uid) => (
@@ -220,7 +239,7 @@ export function VoteMatrix({ statements, merges, phoneVerified = {}, tableWrappe
         </table>
       </div>
 
-      <div className="flex flex-wrap gap-4 px-3 py-2 border border-t-0 rounded-b-lg bg-slate-50 text-xs text-slate-500">
+      <div className="flex flex-wrap gap-4 px-3 py-2 border border-t-0 rounded-b-lg bg-slate-50 text-xs inactive-text">
         {(
           ["agree", "super_agree", "disagree", "pass"] as VoteType[]
         ).map((v) => (
@@ -238,12 +257,11 @@ export function VoteMatrix({ statements, merges, phoneVerified = {}, tableWrappe
           = author
         </span>
         <span className="flex items-center gap-1">
-          <CheckSquare className="w-3 h-3 resolved-text" />
-          = phone verified
+          <CheckSquare className="w-3 h-3 resolved-text" />= phone verified
         </span>
         {merges.length > 0 && (
           <span className="flex items-center gap-1">
-            <span className="inline-block w-4 h-4 rounded bg-orange-100 border border-orange-300" />
+            <span className="inline-block w-4 h-4 rounded attention-bg border attention-border" />
             dimmed = merged source
           </span>
         )}
