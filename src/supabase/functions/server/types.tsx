@@ -146,6 +146,15 @@ export type NewDemographicAnswer =
   Omit<DemographicAnswer, "id" | "createdAt">;
 
 
+export interface StatementMerge {
+  id: string;
+  roomId: string;
+  sourceStatementId: string;
+  targetStatementId: string;
+  creatorId: string;
+  createdAt: string;
+}
+
 export type Event = {
   id: number;
   name: string;

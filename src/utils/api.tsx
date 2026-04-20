@@ -21,6 +21,7 @@ import {
   type Event,
   type NewEvent,
   EventSummary,
+  StatementMerge,
 } from "../types";
 import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
@@ -758,6 +759,23 @@ class ApiClient extends BaseApiClient {
   async getNewsletter(edition: number) {
     return this.request<{ html: string }>(`/newsletter/${edition}`, {
       method: "GET",
+    });
+  }
+
+  async getStatementMerges(roomId: string) {
+    return this.request<{ merges: StatementMerge[] }>(`/room/${roomId}/mod/statement-merges`);
+  }
+
+  async createStatementMerge(roomId: string, sourceStatementId: string, targetStatementId: string) {
+    return this.request<undefined>(`/room/${roomId}/mod/statement-merges`, {
+      method: "POST",
+      body: JSON.stringify({ sourceStatementId, targetStatementId }),
+    });
+  }
+
+  async deleteStatementMerge(roomId: string, mergeId: string) {
+    return this.request<undefined>(`/room/${roomId}/mod/statement-merges/${mergeId}`, {
+      method: "DELETE",
     });
   }
 }

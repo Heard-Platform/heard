@@ -29,8 +29,9 @@ import { enrichmentApi } from "./enrichment-api.ts";
 import { userRankApi } from "./user-rank-api.tsx";
 import { accountApi } from "./account-api.ts";
 import { eventApi } from "./event-api.tsx";
+import { modApi } from "./mod-api.tsx";
 import { validateAdmin, validateCronAuth, validateDeveloper } from "./internal-utils.ts";
-import { validateSession } from "./auth-utils.ts";
+import { validateSession, validateHost } from "./auth-utils.ts";
 import { API_URL_PREFIX } from "./constants.tsx";
 
 type Variables = {
@@ -117,6 +118,9 @@ protect(validateDeveloper, [
   "test-room/*", "rant-test-room/*", "realtime-test-room/*", "seed/*",
 ]);
 
+// Host-only mod routes
+protect(validateHost, ["room/:roomId/mod/*"]);
+
 // Admin
 protect(validateAdmin, ["admin/*", "one-time-fixes/*"]);
 
@@ -142,6 +146,7 @@ app.route("/", statsApi);
 app.route("/", featuresResultsTrackerApi);
 app.route("/", polisImportApi);
 app.route("/", analysisApi);
+app.route("/", modApi);
 app.route("/", vineApi);
 app.route("/", emailPreviewsApi);
 app.route("/", digestEmailOrchestratorApi);

@@ -105,6 +105,15 @@ export const isDemographicsCard = (card: Card): card is DemographicsCard => {
   return card.type === "demographics";
 };
 
+export interface StatementMerge {
+  id: string;
+  roomId: string;
+  sourceStatementId: string;
+  targetStatementId: string;
+  creatorId: string;
+  createdAt: string;
+}
+
 export interface Event {
   id: string;
   name: string;

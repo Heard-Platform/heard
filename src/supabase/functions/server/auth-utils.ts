@@ -1,6 +1,19 @@
 import { mergeAnonymousUserActivity } from "./anonymous-merge-utils.tsx";
 import { getUserAndNewSession } from "./auth-api.tsx";
 import { getUser } from "./kv-utils.tsx";
+import { getDebateRoom } from "./debate-api.tsx";
+
+export async function validateHost(c: any, next: any) {
+  const userId = c.get("userId");
+  if (!userId) return c.json({ error: "Unauthorized" }, 401);
+
+  const roomId = c.req.param("roomId");
+  const room = await getDebateRoom(roomId);
+  if (!room) return c.json({ error: "Room not found" }, 404);
+  if (room.hostId !== userId) return c.json({ error: "Forbidden" }, 403);
+
+  await next();
+}
 
 export async function validateSession(c: any, next: any) {
   const userId = c.get("userId");

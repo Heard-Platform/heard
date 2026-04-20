@@ -1306,6 +1306,10 @@
     max-height: 600px;
   }
 
+  .max-h-\[calc\(100vh-4rem\)\] {
+    max-height: calc(100vh - 4rem);
+  }
+
   .max-h-full {
     max-height: 100%;
   }
@@ -4264,6 +4268,10 @@
 
   .neutral-text {
     color: var(--color-blue-700);
+  }
+
+  .info-bg {
+    background-color: var(--color-violet-50);
   }
 
   .creation-bg {

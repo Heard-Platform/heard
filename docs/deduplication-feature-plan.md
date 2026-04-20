@@ -72,3 +72,17 @@ This logic runs inside any endpoint that computes analysis or highlights (analys
 1. **Voter voted on both S and T** — handled by the dedup step: the voter is counted once regardless of how many statements in the merge group they voted on
 2. **Chain merge** (source is already someone else's target) — reject with 400; keep mappings one level deep
 3. **Anonymous votes** — dedup checks both `userId` and `anonymousUserId` as the voter key
+
+---
+
+## Testing
+
+1. Story will be added for the deduplication modal in the component showcase.
+2. Unit tests will be added for the merging logic.
+
+---
+
+## Code Organization Tips
+
+- Do not call API directly from deduplication modal, instead use the useDebateHook.
+- Use defineRoute wrapper for new endpoints.

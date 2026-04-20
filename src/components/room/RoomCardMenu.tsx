@@ -6,7 +6,8 @@ import {
   Users,
   XCircle,
   Link2,
-  MoreHorizontal
+  MoreHorizontal,
+  GitMerge,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,7 +27,8 @@ interface RoomCardMenuProps {
   isRealtime: boolean;
   hasRealtimeEnded: boolean | number | undefined;
   isDeveloper: boolean;
-  handleOpenAnalysis: () => void;
+  isHost: boolean;
+  handleOpenDeduplication: () => void;
 }
 
 export function RoomCardMenu({
@@ -35,7 +37,8 @@ export function RoomCardMenu({
   isRealtime,
   hasRealtimeEnded,
   isDeveloper,
-  handleOpenAnalysis,
+  isHost,
+  handleOpenDeduplication,
 }: RoomCardMenuProps) {
   const { setRoomInactive } = useDebateSession();
 
@@ -73,6 +76,20 @@ export function RoomCardMenu({
           <Link2 className="w-4 h-4 mr-2" />
           Share Link
         </DropdownMenuItem>
+        {isHost && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                handleOpenDeduplication();
+              }}
+            >
+              <GitMerge className="w-4 h-4 mr-2" />
+              Manage Duplicate Statements
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled>
           <Users className="w-4 h-4 mr-2" />

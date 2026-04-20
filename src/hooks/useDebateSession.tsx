@@ -8,6 +8,7 @@ import type {
   DebateRoom,
   NewDebateRoom,
   Statement,
+  StatementMerge,
   VoteType,
   AnalysisData,
   SubHeard,
@@ -75,6 +76,16 @@ interface DebateSessionContextType {
   roomStatements: Record<string, Statement[]>;
   getRoomStatements: (roomId: string) => Promise<Statement[]>;
   getRoomAnalysis: (roomId: string) => Promise<AnalysisData | null>;
+  getStatementMerges: ( roomId: string ) => Promise<StatementMerge[]>;
+  createStatementMerge: (
+    roomId: string,
+    sourceStatementId: string,
+    targetStatementId: string,
+  ) => Promise<ApiResponse<undefined> | null>;
+  deleteStatementMerge: (
+    roomId: string,
+    mergeId: string,
+  ) => Promise<ApiResponse<undefined> | null>;
   getSubHeards: () => Promise<ApiResponse<{ subHeards: SubHeard[] }> | null>;
   getExplorableSubHeards: () => Promise<ApiResponse<SubHeard[]> | null>;
   joinSubHeard: (subHeardName: string) => Promise<ApiResponse<undefined> | null>;
@@ -621,6 +632,28 @@ export function DebateSessionProvider(
     [],
   );
 
+  const getStatementMerges = useCallback(
+    async (roomId: string) => {
+      const response = await safelyMakeApiCall<{
+        merges: StatementMerge[];
+      }>(() => api.getStatementMerges(roomId))
+
+      return response?.data?.merges || [];
+    }
+  , [safelyMakeApiCall]);
+
+  const createStatementMerge = useCallback(
+    async (roomId: string, sourceStatementId: string, targetStatementId: string) =>
+      safelyMakeApiCall(
+        () => api.createStatementMerge(roomId, sourceStatementId, targetStatementId)
+      )
+  , [safelyMakeApiCall]);
+
+  const deleteStatementMerge = useCallback(
+    async (roomId: string, mergeId: string) =>
+      safelyMakeApiCall<undefined>(() => api.deleteStatementMerge(roomId, mergeId))
+  , [safelyMakeApiCall]);
+
   const getRoomAnalysis = useCallback(async (roomId: string) => {
     try {
       const response = (await api.getRoomAnalysis(roomId)) as any;
@@ -743,6 +776,9 @@ export function DebateSessionProvider(
     roomStatements,
     getRoomStatements,
     getRoomAnalysis,
+    getStatementMerges,
+    createStatementMerge,
+    deleteStatementMerge,
     markChanceCardSwiped,
     markYouTubeCardSwiped,
     saveDemographicAnswer,
@@ -804,9 +840,21 @@ export function DebateSessionProvider(
       flagStatement: async (statementId: string, roomId: string) => {
         console.log("[Showcase] flagStatement called");
       },
-      getRoomAnalysis: async () => { 
-        console.log("[Showcase] getRoomAnalysis called"); 
+      getRoomAnalysis: async () => {
+        console.log("[Showcase] getRoomAnalysis called");
         return null;
+      },
+      getStatementMerges: async () => {
+        console.log("[Showcase] getStatementMerges called");
+        return [];
+      },
+      createStatementMerge: async () => {
+        console.log("[Showcase] createStatementMerge called");
+        return { success: true };
+      },
+      deleteStatementMerge: async () => {
+        console.log("[Showcase] deleteStatementMerge called");
+        return { success: true };
       },
       createSeedData: async () => {
         console.log("[Showcase] createSeedData called");
