@@ -30,8 +30,8 @@ interface RoomCardMenuProps {
   hasRealtimeEnded: boolean | number | undefined;
   isDeveloper: boolean;
   isHost: boolean;
-  handleOpenDeduplication: () => void;
-  handleOpenVoteMatrix: () => void;
+  onOpenDeduplication: () => void;
+  onOpenVoteMatrix: () => void;
 }
 
 export function RoomCardMenu({
@@ -41,8 +41,8 @@ export function RoomCardMenu({
   hasRealtimeEnded,
   isDeveloper,
   isHost,
-  handleOpenDeduplication,
-  handleOpenVoteMatrix,
+  onOpenDeduplication,
+  onOpenVoteMatrix,
 }: RoomCardMenuProps) {
   const { setRoomInactive } = useDebateSession();
 
@@ -89,7 +89,7 @@ export function RoomCardMenu({
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
-                handleOpenDeduplication();
+                onOpenDeduplication();
               }}
             >
               <GitMerge className="w-4 h-4 mr-2" />
@@ -98,7 +98,7 @@ export function RoomCardMenu({
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
-                handleOpenVoteMatrix();
+                onOpenVoteMatrix();
               }}
             >
               <BarChart2 className="w-4 h-4 mr-2" />
@@ -143,6 +143,21 @@ export function RoomCardMenu({
               }
             })()}
           </DropdownMenuItem>
+        )}
+        {(isHost || isDeveloper) && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs text-muted-foreground px-2 py-1">Moderator Tools</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onOpenDeduplication();
+              }}
+            >
+              <GitMerge className="w-4 h-4 mr-2" />
+              Manage Duplicate Statements
+            </DropdownMenuItem>
+          </>
         )}
         {isDeveloper && (
           <>

@@ -48,7 +48,6 @@ export function DeduplicateModal({ roomId, onClose }: DeduplicateModalProps) {
   const sourceIds = new Set(merges.map((m) => m.sourceStatementId));
   const activeStatements = statements.filter((s) => !sourceIds.has(s.id));
 
-  // Group sources by target for the existing merges display
   const sourcesByTarget = new Map<string, StatementMerge[]>();
   for (const m of merges) {
     const group = sourcesByTarget.get(m.targetStatementId) ?? [];
@@ -157,7 +156,7 @@ export function DeduplicateModal({ roomId, onClose }: DeduplicateModalProps) {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDeleteMerge(m.id)}
-                            className="text-violet-400 hover:text-destructive shrink-0 w-8 h-8"
+                            className="hover:text-destructive shrink-0 w-8 h-8"
                             aria-label="Remove merge"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -195,19 +194,19 @@ export function DeduplicateModal({ roomId, onClose }: DeduplicateModalProps) {
                   className={[
                     "w-full text-left rounded-lg border px-4 py-3 text-sm transition-colors",
                     isSource
-                      ? "border-amber-400 bg-amber-50"
+                      ? "attention-border attention-bg"
                       : isTarget
-                      ? "border-green-400 bg-green-50"
+                      ? "resolved-border resolved-bg"
                       : "border-border bg-background hover:bg-muted",
                   ].join(" ")}
                 >
                   <p className="font-medium leading-snug">{s.text}</p>
                   <p className="text-xs text-muted-foreground mt-1">{voteSummary(s)}</p>
                   {isSource && (
-                    <p className="text-xs text-amber-600 mt-1 font-medium">Merging from this statement</p>
+                    <p className="text-xs attention-text mt-1 font-medium">Merging from this statement</p>
                   )}
                   {isTarget && (
-                    <p className="text-xs text-green-600 mt-1 font-medium">Merging into this statement</p>
+                    <p className="text-xs resolved-text mt-1 font-medium">Merging into this statement</p>
                   )}
                 </button>
               );

@@ -81,15 +81,15 @@ interface DebateSessionContextType {
     roomId: string,
     sourceStatementId: string,
     targetStatementId: string,
-  ) => Promise<ApiResponse<undefined> | null>;
+  ) => Promise<ApiResponse | null>;
   deleteStatementMerge: (
     roomId: string,
     mergeId: string,
-  ) => Promise<ApiResponse<undefined> | null>;
+  ) => Promise<ApiResponse | null>;
   getSubHeards: () => Promise<ApiResponse<{ subHeards: SubHeard[] }> | null>;
   getExplorableSubHeards: () => Promise<ApiResponse<SubHeard[]> | null>;
-  joinSubHeard: (subHeardName: string) => Promise<ApiResponse<undefined> | null>;
-  leaveSubHeard: (subHeardName: string) => Promise<ApiResponse<undefined> | null>;
+  joinSubHeard: (subHeardName: string) => Promise<ApiResponse | null>;
+  leaveSubHeard: (subHeardName: string) => Promise<ApiResponse | null>;
   getEnrichmentConfig: () => Promise<ApiResponse<EnrichmentConfig> | null>;
   setEnrichmentConfig: (
     config: EnrichmentConfig,

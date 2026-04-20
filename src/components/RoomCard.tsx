@@ -256,8 +256,8 @@ export function RoomCard({
                   hasRealtimeEnded={hasRealtimeEnded}
                   isDeveloper={isDeveloper}
                   isHost={isHost}
-                  handleOpenDeduplication={() => setShowDeduplication(true)}
-                  handleOpenVoteMatrix={() => setShowVoteMatrix(true)}
+                  onOpenDeduplication={() => setShowDeduplication(true)}
+                  onOpenVoteMatrix={() => setShowVoteMatrix(true)}
                 />
               </div>
             </div>
