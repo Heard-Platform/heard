@@ -780,9 +780,12 @@ class ApiClient extends BaseApiClient {
   }
 
   async getVoteMatrix(roomId: string) {
-    return this.request<{ statements: Statement[]; merges: StatementMerge[]; phoneVerified: Record<string, boolean> }>(`/dev/room/${roomId}/vote-matrix`);
-  }
-}
+    return this.request<{
+      statements: Statement[];
+      merges: StatementMerge[];
+      phoneVerified: Record<string, boolean>;
+    }>(`/room/${roomId}/mod/vote-matrix`);
+  }}
 
 export const api = new ApiClient();
 

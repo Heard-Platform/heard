@@ -237,6 +237,10 @@ export function VoteMatrix({ statements, merges, phoneVerified = {}, tableWrappe
           </span>
           = author
         </span>
+        <span className="flex items-center gap-1">
+          <CheckSquare className="w-3 h-3 resolved-text" />
+          = phone verified
+        </span>
         {merges.length > 0 && (
           <span className="flex items-center gap-1">
             <span className="inline-block w-4 h-4 rounded bg-orange-100 border border-orange-300" />

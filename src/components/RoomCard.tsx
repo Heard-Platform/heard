@@ -21,6 +21,7 @@ import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType, UserSession } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
 import { DeduplicateModal } from "./room/DeduplicateModal";
+import { VoteMatrixModal } from "./room/VoteMatrixModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { timeAgoShort } from "../utils/time";
@@ -79,6 +80,7 @@ export function RoomCard({
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showAddResponseModal, setShowAddResponseModal] = useState(false);
   const [showDeduplication, setShowDeduplication] = useState(false);
+  const [showVoteMatrix, setShowVoteMatrix] = useState(false);
   const { markChanceCardSwiped, markYouTubeCardSwiped } = useDebateSession();
 
   const isHost = user.id === room.hostId;
@@ -255,6 +257,7 @@ export function RoomCard({
                   isDeveloper={isDeveloper}
                   isHost={isHost}
                   handleOpenDeduplication={() => setShowDeduplication(true)}
+                  handleOpenVoteMatrix={() => setShowVoteMatrix(true)}
                 />
               </div>
             </div>
@@ -428,6 +431,15 @@ export function RoomCard({
         <DeduplicateModal
           roomId={room.id}
           onClose={() => setShowDeduplication(false)}
+        />
+      )}
+
+      {showVoteMatrix && (
+        <VoteMatrixModal
+          roomId={room.id}
+          roomTopic={room.topic}
+          participantCount={participantCount}
+          onClose={() => setShowVoteMatrix(false)}
         />
       )}
 
