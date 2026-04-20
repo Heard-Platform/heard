@@ -38,6 +38,7 @@ import { Story } from "../stories/EventPage.story";
 import { CreateEventSheetStory } from "../stories/CreateEventSheet.story";
 import { EventCardStory } from "../stories/EventCard.story";
 import { DeduplicateModalStory } from "../stories/DeduplicateModal.story";
+import { VoteMatrixStory } from "../stories/VoteMatrix.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -129,6 +130,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="event-room-listing">Event Room Listing</TabsTrigger>
                 <TabsTrigger value="event-card">Event Card</TabsTrigger>
                 <TabsTrigger value="deduplicate-modal">Deduplicate Modal</TabsTrigger>
+                <TabsTrigger value="vote-matrix">Vote Matrix</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -235,6 +237,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="deduplicate-modal">
                 <DeduplicateModalStory />
+              </TabsContent>
+              <TabsContent value="vote-matrix">
+                <VoteMatrixStory />
               </TabsContent>
             </Tabs>
           </div>

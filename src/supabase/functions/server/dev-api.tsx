@@ -3,13 +3,14 @@ import {
   getUserSession,
   saveUserAndEmail,
 } from "./auth-api.tsx";
-import { saveDebateRoom } from "./debate-api.tsx";
+import { saveDebateRoom, getStatements } from "./debate-api.tsx";
 import { DebateRoom } from "./types.tsx";
 import { generateId } from "./utils.tsx";
 import { API_URL_PREFIX } from "./constants.tsx";
 import { getAllDebates } from "./kv-utils.tsx";
-import { getAllRealUsers, getDebate } from "./kv-utils.tsx";
+import { getAllRealUsers, getDebate, getUser } from "./kv-utils.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
+import { getMergesForRoom } from "./model-utils.ts";
 
 const app = new Hono();
 
@@ -165,6 +166,29 @@ app.get(
       return { posts: sortedPosts };
     },
     "Failed to fetch posts"
+  )
+);
+
+app.get(
+  `${API_URL_PREFIX}/dev/room/:roomId/vote-matrix`,
+  defineRoute(
+    { roomId: { type: "string", required: true } },
+    async ({ roomId }) => {
+      const [statements, merges] = await Promise.all([
+        getStatements(roomId),
+        getMergesForRoom(roomId),
+      ]);
+      const userIds = Array.from(
+        new Set(statements.flatMap((s) => [s.author, ...Object.keys(s.voters ?? {})]))
+      );
+      const users = await Promise.all(userIds.map((id) => getUser(id)));
+      const phoneVerified: Record<string, boolean> = {};
+      for (let i = 0; i < userIds.length; i++) {
+        if (users[i]?.phoneVerified) phoneVerified[userIds[i]] = true;
+      }
+      return { statements, merges, phoneVerified };
+    },
+    "Failed to fetch vote matrix"
   )
 );
 
