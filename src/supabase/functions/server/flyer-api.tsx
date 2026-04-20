@@ -3,7 +3,8 @@ import { getDebate } from "./kv-utils.tsx";
 import type { DebateRoom, User, VoteType } from "./types.tsx";
 import { processVote } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
-import { insertFlyerEmail } from "./model-utils.ts";
+import { insertFlyerEmail, insertFlyerScan } from "./model-utils.ts";
+import { defineRoute } from "./route-wrapper.tsx";
 
 export const flyerApi = new Hono();
 
@@ -124,6 +125,18 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
     );
   }
 });
+
+flyerApi.post(
+  "/make-server-f1a393b4/flyer/scan",
+  defineRoute(
+    { flyer: { type: "string", required: true } },
+    async ({ flyer }: { flyer: string }, c: Context) => {
+      const userId = c.get("userId");
+      await insertFlyerScan(flyer, userId);
+    },
+    "Error recording flyer scan",
+  ),
+);
 
 flyerApi.post("/make-server-f1a393b4/flyer/submit-email", async (c) => {
   try {

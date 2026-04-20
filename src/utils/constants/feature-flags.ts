@@ -23,7 +23,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
   development: {
     ONLY_JOINED_COMMUNITIES: true,
     DEMOGRAPHICS: true,
-    EVENTS: true,
+    EVENTS: false,
   }
 }
 

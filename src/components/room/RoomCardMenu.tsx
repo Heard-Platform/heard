@@ -5,7 +5,6 @@ import { Button } from "../ui/button";
 import {
   Users,
   XCircle,
-  BarChart3,
   Link2,
   MoreHorizontal
 } from "lucide-react";
@@ -53,15 +52,6 @@ export function RoomCardMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={(e: React.MouseEvent) => {
-            e.stopPropagation();
-            handleOpenAnalysis();
-          }}
-        >
-          <BarChart3 className="w-4 h-4 mr-2" />
-          View Insights
-        </DropdownMenuItem>
         <DropdownMenuItem
           onClick={async (e: React.MouseEvent) => {
             e.stopPropagation();
