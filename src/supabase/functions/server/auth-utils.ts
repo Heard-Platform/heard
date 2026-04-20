@@ -7,6 +7,12 @@ export async function validateHost(c: any, next: any) {
   const userId = c.get("userId");
   if (!userId) return c.json({ error: "Unauthorized" }, 401);
 
+  const user = await getUser(userId);
+  if (user?.isDeveloper) {
+    await next();
+    return;
+  }
+
   const roomId = c.req.param("roomId");
   const room = await getDebateRoom(roomId);
   if (!room) return c.json({ error: "Room not found" }, 404);

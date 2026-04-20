@@ -13,6 +13,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
@@ -76,20 +77,6 @@ export function RoomCardMenu({
           <Link2 className="w-4 h-4 mr-2" />
           Share Link
         </DropdownMenuItem>
-        {isHost && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                handleOpenDeduplication();
-              }}
-            >
-              <GitMerge className="w-4 h-4 mr-2" />
-              Manage Duplicate Statements
-            </DropdownMenuItem>
-          </>
-        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled>
           <Users className="w-4 h-4 mr-2" />
@@ -127,6 +114,21 @@ export function RoomCardMenu({
               }
             })()}
           </DropdownMenuItem>
+        )}
+        {(isHost || isDeveloper) && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs text-muted-foreground px-2 py-1">Moderator Tools</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                handleOpenDeduplication();
+              }}
+            >
+              <GitMerge className="w-4 h-4 mr-2" />
+              Manage Duplicate Statements
+            </DropdownMenuItem>
+          </>
         )}
         {isDeveloper && (
           <>
