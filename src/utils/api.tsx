@@ -778,7 +778,14 @@ class ApiClient extends BaseApiClient {
       method: "DELETE",
     });
   }
-}
+
+  async getVoteMatrix(roomId: string) {
+    return this.request<{
+      statements: Statement[];
+      merges: StatementMerge[];
+      phoneVerified: Record<string, boolean>;
+    }>(`/room/${roomId}/mod/vote-matrix`);
+  }}
 
 export const api = new ApiClient();
 

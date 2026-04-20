@@ -8,6 +8,7 @@ import {
   Link2,
   MoreHorizontal,
   GitMerge,
+  BarChart2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -30,6 +31,7 @@ interface RoomCardMenuProps {
   isDeveloper: boolean;
   isHost: boolean;
   onOpenDeduplication: () => void;
+  onOpenVoteMatrix: () => void;
 }
 
 export function RoomCardMenu({
@@ -40,6 +42,7 @@ export function RoomCardMenu({
   isDeveloper,
   isHost,
   onOpenDeduplication,
+  onOpenVoteMatrix,
 }: RoomCardMenuProps) {
   const { setRoomInactive } = useDebateSession();
 
@@ -77,6 +80,32 @@ export function RoomCardMenu({
           <Link2 className="w-4 h-4 mr-2" />
           Share Link
         </DropdownMenuItem>
+        {(isHost || isDeveloper) && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs text-muted-foreground px-2 py-1">
+              Moderator Tools
+            </DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onOpenDeduplication();
+              }}
+            >
+              <GitMerge className="w-4 h-4 mr-2" />
+              Manage Duplicate Statements
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onOpenVoteMatrix();
+              }}
+            >
+              <BarChart2 className="w-4 h-4 mr-2" />
+              View Vote Matrix
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled>
           <Users className="w-4 h-4 mr-2" />

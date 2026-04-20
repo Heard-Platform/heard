@@ -604,6 +604,18 @@
 }
 
 @layer utilities {
+  .max-h-\[calc\(100vh-260px\)\] {
+    max-height: calc(100vh - 260px);
+  }
+
+  .max-h-\[calc\(100vh-280px\)\] {
+    max-height: calc(100vh - 280px);
+  }
+
+  .max-w-\[95vw\] {
+    max-width: 95vw;
+  }
+
   .\@container\/card-header {
     container: card-header / inline-size;
   }
@@ -679,7 +691,7 @@
   .-top-8 {
     top: calc(var(--spacing) * -8);
   }
-
+  
   .-top-\[52px\] {
     top: -52px;
   }
@@ -720,6 +732,10 @@
     top: 50%;
   }
 
+  .top-\[5px\] {
+    top: 5px;
+  }
+
   .-right-0\.5 {
     right: calc(var(--spacing) * -.5);
   }
@@ -758,6 +774,10 @@
 
   .right-8 {
     right: calc(var(--spacing) * 8);
+  }
+
+  .right-\[5px\] {
+    right: 5px;
   }
 
   .-bottom-1 {
@@ -1309,6 +1329,10 @@
   .max-h-\[calc\(100vh-4rem\)\] {
     max-height: calc(100vh - 4rem);
   }
+  
+  .max-h-\[calc\(100vh-280px\)\] {
+    max-height: calc(100vh - 280px);
+  }
 
   .max-h-full {
     max-height: 100%;
@@ -1478,6 +1502,10 @@
     max-width: 160px;
   }
 
+  .max-w-\[220px\] {
+    max-width: 220px;
+  }
+
   .max-w-\[1200px\] {
     max-width: 1200px;
   }
@@ -1524,6 +1552,10 @@
 
   .min-w-\[40px\] {
     min-width: 40px;
+  }
+
+  .min-w-\[220px\] {
+    min-width: 220px;
   }
 
   .min-w-\[var\(--radix-select-trigger-width\)\] {
@@ -4204,6 +4236,10 @@
     color: white;
   }
 
+  .normal-bg {
+    background-color: var(--color-white);
+  }
+
   .invalid-text {
     color: var(--color-red-600);
   }
@@ -4268,6 +4304,10 @@
     background-color: var(--color-blue-50);
   }
 
+  .strong-neutral-bg {
+    background-color: var(--color-blue-100);
+  }
+
   .neutral-gradient {
     --tw-gradient-from: var(--color-blue-600);
     --tw-gradient-to: var(--color-cyan-700);
@@ -4276,6 +4316,26 @@
 
   .neutral-text {
     color: var(--color-blue-700);
+  }
+
+  .inactive-bg {
+    background-color: var(--color-slate-100);
+  }
+
+  .inactive-border {
+    border-color: var(--color-slate-200);
+  }
+
+  .inactive-text {
+    color: var(--color-slate-500);
+  }
+
+  .inactive-text-soft {
+    color: var(--color-slate-400);
+  }
+
+  .inactive-text-strong {
+    color: var(--color-slate-600);
   }
 
   .info-bg {
@@ -4321,6 +4381,23 @@
   .created-text-strong {
     color: rgb(124 45 18);
   }
+
+  .agree-bg {
+    background-color: var(--color-green-400);
+  }
+
+  .super-agree-bg {
+    background-color: var(--color-green-600);
+  }
+
+  .disagree-bg {
+    background-color: var(--color-red-400);
+  }
+
+  .pass-bg {
+    background-color: var(--color-slate-300);
+  }
+
 
   /* Formatting */
 
