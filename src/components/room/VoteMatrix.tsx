@@ -15,6 +15,11 @@ const VOTE_LABELS: Record<VoteType, string> = {
   pass: "P",
 };
 
+const CELL = "border inactive-border w-8 h-6";
+const STATS_CELL = "text-center font-mono inactive-text-strong";
+const COL_HEADER =
+  "border inactive-border px-1 py-1 text-center inactive-text font-mono w-8";
+
 function VoteCell({
   vote,
   isAuthor,
@@ -28,12 +33,11 @@ function VoteCell({
     .filter(Boolean)
     .join(" · ");
 
-  if (!vote && !isAuthor)
-    return <td className="border inactive-border w-8 h-6" />;
+  if (!vote && !isAuthor) return <td className={CELL} />;
 
   return (
     <td
-      className={`border inactive-border w-8 h-6 text-center text-xs font-mono font-bold relative ${bgClass} ${textClass}`}
+      className={`${CELL} text-center text-xs font-mono font-bold relative ${bgClass} ${textClass}`}
       title={title}
     >
       {vote ? VOTE_LABELS[vote] : ""}
@@ -113,22 +117,13 @@ export function VoteMatrix({
               <th className="sticky left-0 z-20 normal-bg border inactive-border px-2 py-1 text-left font-medium inactive-text min-w-[220px]">
                 Statement
               </th>
-              <th
-                className="border inactive-border px-1 py-1 text-center inactive-text font-mono w-8"
-                title="Agrees"
-              >
+              <th className={COL_HEADER} title="Agrees">
                 A
               </th>
-              <th
-                className="border inactive-border px-1 py-1 text-center inactive-text font-mono w-8"
-                title="Disagrees"
-              >
+              <th className={COL_HEADER} title="Disagrees">
                 D
               </th>
-              <th
-                className="border inactive-border px-1 py-1 text-center inactive-text font-mono w-8"
-                title="Passes"
-              >
+              <th className={COL_HEADER} title="Passes">
                 P
               </th>
               {allUserIds.map((uid) => (
@@ -216,13 +211,19 @@ export function VoteMatrix({
                       </div>
                     </div>
                   </td>
-                  <td className="border inactive-border text-center font-mono inactive-text-strong w-8">
+                  <td
+                    className={`${CELL} ${STATS_CELL}`}
+                  >
                     {stmt.agrees + stmt.superAgrees}
                   </td>
-                  <td className="border inactive-border text-center font-mono inactive-text-strong w-8">
+                  <td
+                    className={`${CELL} ${STATS_CELL}`}
+                  >
                     {stmt.disagrees}
                   </td>
-                  <td className="border inactive-border text-center font-mono inactive-text-strong w-8">
+                  <td
+                    className={`${CELL} ${STATS_CELL}`}
+                  >
                     {stmt.passes}
                   </td>
                   {allUserIds.map((uid) => (
