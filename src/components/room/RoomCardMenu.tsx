@@ -29,7 +29,7 @@ interface RoomCardMenuProps {
   hasRealtimeEnded: boolean | number | undefined;
   isDeveloper: boolean;
   isHost: boolean;
-  handleOpenDeduplication: () => void;
+  onOpenDeduplication: () => void;
 }
 
 export function RoomCardMenu({
@@ -39,7 +39,7 @@ export function RoomCardMenu({
   hasRealtimeEnded,
   isDeveloper,
   isHost,
-  handleOpenDeduplication,
+  onOpenDeduplication,
 }: RoomCardMenuProps) {
   const { setRoomInactive } = useDebateSession();
 
@@ -122,7 +122,7 @@ export function RoomCardMenu({
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
-                handleOpenDeduplication();
+                onOpenDeduplication();
               }}
             >
               <GitMerge className="w-4 h-4 mr-2" />

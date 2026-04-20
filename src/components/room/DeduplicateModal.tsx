@@ -48,7 +48,6 @@ export function DeduplicateModal({ roomId, onClose }: DeduplicateModalProps) {
   const sourceIds = new Set(merges.map((m) => m.sourceStatementId));
   const activeStatements = statements.filter((s) => !sourceIds.has(s.id));
 
-  // Group sources by target for the existing merges display
   const sourcesByTarget = new Map<string, StatementMerge[]>();
   for (const m of merges) {
     const group = sourcesByTarget.get(m.targetStatementId) ?? [];

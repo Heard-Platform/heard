@@ -254,7 +254,7 @@ export function RoomCard({
                   hasRealtimeEnded={hasRealtimeEnded}
                   isDeveloper={isDeveloper}
                   isHost={isHost}
-                  handleOpenDeduplication={() => setShowDeduplication(true)}
+                  onOpenDeduplication={() => setShowDeduplication(true)}
                 />
               </div>
             </div>
