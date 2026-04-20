@@ -1,6 +1,9 @@
 import { TopPost } from "./analysis-utils.tsx";
 import { Statement } from "./types.tsx";
 
+export const normalizeCommunityName = (name: string): string =>
+  name.trim().toLowerCase().replace(/\s+/g, "-");
+
 export const generateId = () =>
   Math.random().toString(36).substring(2) +
   Date.now().toString(36);

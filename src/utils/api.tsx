@@ -18,6 +18,9 @@ import {
   type NewDebateRoom,
   type VoteType,
   EnrichmentConfig,
+  type Event,
+  type NewEvent,
+  EventSummary,
 } from "../types";
 import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
@@ -125,6 +128,30 @@ class ApiClient extends BaseApiClient {
       method: "POST",
       body: formData,
     });
+  }
+
+  async createEvent(newEvent: NewEvent): Promise<ApiResponse<{ event: Event }>> {
+    return this.request<{ event: Event }>("/event/create", {
+      method: "POST",
+      body: JSON.stringify(newEvent),
+    });
+  }
+
+  async getEvents(
+    community?: string,
+  ): Promise<ApiResponse<{ events: EventSummary[] }>> {
+    const params = new URLSearchParams();
+    if (community) params.append("community", community);
+    const queryString = params.toString();
+    return this.request<{ events: EventSummary[] }>(
+      `/events${queryString ? `?${queryString}` : ""}`,
+    );
+  }
+
+  async getEvent(
+    eventId: string,
+  ): Promise<ApiResponse<{ event: Event }>> {
+    return this.request<{ event: Event }>(`/event/${eventId}`);
   }
 
   async setRoomInactive(roomId: string) {
@@ -712,6 +739,13 @@ class ApiClient extends BaseApiClient {
 
   async getAllPosts() {
     return this.request<{posts: DebateRoom[]}>("/dev/posts");
+  }
+
+  async recordFlyerScan(flyer: string) {
+    return this.request("/flyer/scan", {
+      method: "POST",
+      body: JSON.stringify({ flyer }),
+    });
   }
 
   async submitOrgEmail(email: string) {

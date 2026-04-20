@@ -3,7 +3,7 @@ import { Users, Sparkles, CheckCheck } from "lucide-react";
 import { Card } from "../ui/card";
 import { AddConversationCard } from "./AddConversationCard";
 import { EventRoomListing } from "./EventRoomListing";
-import type { Event } from "./constants";
+import { Event } from "../../types";
 
 const STATS = (
   needsInput: number,

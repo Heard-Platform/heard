@@ -1,6 +1,7 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers } from "./kv-utils.tsx";
-import { getUserReports, getFlyerEmails } from "./model-utils.ts";
+import { getUserReports, getFlyerEmails, getFlyerScans } from "./model-utils.ts";
+import { selectAll } from "./db-utils.ts";
 
 const app = new Hono();
 
@@ -68,6 +69,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
 
     const avatarAnimalData = { counts: avatarAnimalCounts };
 
+    const phoneSubmissions = (await selectAll("phone_submissions")).length;
+    const flyerScans = (await getFlyerScans()).length;
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -80,7 +84,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const convertedFromAnonSince = new Date("2026-01-22").getTime();
     const flyerUsersSince = new Date("2026-01-05").getTime();
     const avatarAnimalUsersSince = new Date("2026-03-26").getTime();
-    
+    const phoneSubmissionsSince = new Date("2026-04-17").getTime();
+    const flyerScansSince = new Date("2026-04-17").getTime();
+
     return c.json({
       webDriverUsers,
       webDriverUsersSince,
@@ -107,6 +113,10 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       avatarAnimalUsers,
       avatarAnimalUsersSince,
       avatarAnimalData,
+      phoneSubmissions,
+      phoneSubmissionsSince,
+      flyerScans,
+      flyerScansSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);

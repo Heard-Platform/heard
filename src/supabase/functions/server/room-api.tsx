@@ -4,6 +4,7 @@ import {
   saveUserAndEmail,
 } from "./auth-api.tsx";
 import { generateId, saveDebateRoom } from "./debate-api.tsx";
+import { normalizeCommunityName } from "./utils.tsx";
 import type {
   Community, DemographicQuestion,
   Statement
@@ -30,6 +31,7 @@ app.post(
         allowAnonymous,
         debateLength,
         demographicQuestions,
+        eventId,
       } = await c.req.json();
 
       if (!topic || topic.length < 10) {
@@ -54,10 +56,7 @@ app.post(
       let normalizedCommunityName = "";
       // If creating a room in a sub-heard, create it if it doesn't exist or check membership if private
       if (communityName) {
-        normalizedCommunityName = communityName
-          .trim()
-          .toLowerCase()
-          .replace(/\s+/g, "-");
+        normalizedCommunityName = normalizeCommunityName(communityName);
         const community = await getCommunity(normalizedCommunityName);
 
         if (!community) {
@@ -93,6 +92,7 @@ app.post(
         imageUrl,
         youtubeUrl,
         allowAnonymous: !!allowAnonymous,
+        eventId: eventId || undefined,
       });
 
       await saveDebateRoom(debateRoom);

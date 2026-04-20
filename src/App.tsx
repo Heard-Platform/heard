@@ -14,7 +14,7 @@ import { NewsletterViewer } from "./components/NewsletterViewer";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
 import { api } from "./utils/api";
-import type { NewDebateRoom, DebateRoom, VoteType } from "./types";
+import type { NewDebateRoom, DebateRoom, VoteType, Event } from "./types";
 import {
   parseRoomIdFromUrl,
   parseSubHeardFromUrl,
@@ -23,7 +23,9 @@ import {
   parseAnalysisRoomIdFromUrl,
   updateUrlForDevTools,
   parseFlyerDataFromUrl,
-  updateUrlForRoom
+  updateUrlForRoom,
+  parseEventIdFromUrl,
+  updateUrlForEvent,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { safelyGetStorageItem } from "./utils/localStorage";
@@ -31,10 +33,15 @@ import { safelyGetStorageItem } from "./utils/localStorage";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
+const KALORAMA_ROOM_ID = "xo38wmfkm7bmo35js4i";
+const KALORAMA_COMMUNITIES = ["kalorama-park", "dupont-circle-neighborhoods", "washington-dc"];
+
 function AppContent() {
   const [targetRoomId, setTargetRoomId] = useState<
     string | null
   >(null);
+  const [pendingCommunities, setPendingCommunities] = useState<string[]>([]);
+  const [pendingFlyerScan, setPendingFlyerScan] = useState<string | null>(null);
   const [analysisRoomId, setAnalysisRoomId] = useState<
     string | null
   >(null);
@@ -54,6 +61,9 @@ function AppContent() {
   const [newsletterEdition, setNewsletterEdition] = useState<number | null>(null);
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
+  const [currentEventId, setCurrentEventId] = useState<string | null>(null);
+  const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
+  const [eventLoading, setEventLoading] = useState(false);
 
   const {
     user,
@@ -139,6 +149,35 @@ function AppContent() {
     clearRoomFromUrl();
   };
 
+  const handleOpenEvent = (eventId: string) => {
+    setCurrentEventId(eventId);
+    updateUrlForEvent(eventId);
+  };
+
+  const handleExitEvent = () => {
+    setCurrentEventId(null);
+    setCurrentEvent(null);
+    updateUrlForEvent(null);
+  };
+
+  const fetchEvent = async (eventId: string) => {
+    setEventLoading(true);
+    const response = await api.getEvent(eventId);
+    if (response.success && response.data) {
+      setCurrentEvent(response.data.event);
+    }
+    setEventLoading(false);
+  };
+
+  useEffect(() => {
+    if (!currentEventId) return;
+    fetchEvent(currentEventId);
+  }, [currentEventId]);
+
+  const handleRefreshEvent = () => {
+    if (currentEventId) fetchEvent(currentEventId);
+  };
+
   const loginViaMagicTokenInUrl = async (magicToken: string) => {
     const response = await verifyMagicLink(magicToken);
     if (response && response.success) {
@@ -168,11 +207,7 @@ function AppContent() {
       }
 
       const anonUserResponse = await createAnonymousUser();
-      if (anonUserResponse && anonUserResponse.success) {
-        if (room.subHeard) {
-          setCurrentSubHeard(room.subHeard);
-        }
-      } else {
+      if (!anonUserResponse?.success) {
         setIsJoiningAnonymously(false);
       }
     } catch (error) {
@@ -203,6 +238,8 @@ function AppContent() {
         window.location.pathname.startsWith("/orgs");
 
       const newsletterMatch = window.location.pathname.match(/^\/newsletter\/(\d+)$/);
+      const isKaloramaRoute =
+        window.location.pathname.startsWith("/kal");
       const isParkletRoute =
         window.location.pathname.startsWith("/parklet");
       const is2b04Route =
@@ -213,6 +250,7 @@ function AppContent() {
       const analysisRoomIdFromUrl =
         parseAnalysisRoomIdFromUrl();
       const flyerDataFromUrl = parseFlyerDataFromUrl();
+      const eventIdFromUrl = parseEventIdFromUrl();
 
       if (analysisRoomIdFromUrl) {
         setAnalysisRoomId(analysisRoomIdFromUrl);
@@ -226,6 +264,14 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
+      } else if (isKaloramaRoute) {
+        setPendingFlyerScan("kalorama");
+        setPendingCommunities(KALORAMA_COMMUNITIES);
+        if (user) {
+          setTargetRoomId(KALORAMA_ROOM_ID);
+        } else {
+          autoJoinAsAnonymous(KALORAMA_ROOM_ID);
+        }
       } else if (isParkletRoute || is2b04Route) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
@@ -242,6 +288,8 @@ function AppContent() {
         }
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
+      } else if (eventIdFromUrl) {
+        setCurrentEventId(eventIdFromUrl);
       } else if (roomIdFromUrl) {
         if (user) {
           setTargetRoomId(roomIdFromUrl);
@@ -321,12 +369,6 @@ function AppContent() {
       const autoJoinRoom = async () => {
         const roomData = await joinRoom(targetRoomId);
         if (roomData) {
-          if (
-            roomData.subHeard &&
-            roomData.subHeard !== currentSubHeard
-          ) {
-            setCurrentSubHeard(roomData.subHeard);
-          }
           setIsJoiningAnonymously(false);
         } else {
           setTargetRoomId(null);
@@ -337,6 +379,17 @@ function AppContent() {
       autoJoinRoom();
     }
   }, [user, targetRoomId]);
+
+  useEffect(() => {
+    if (user && hasCheckedUrl && pendingCommunities.length > 0) {
+      if (pendingFlyerScan) {
+        api.recordFlyerScan(pendingFlyerScan);
+        setPendingFlyerScan(null);
+      }
+      Promise.all(pendingCommunities.map((community) => api.joinSubHeard(community)));
+      setPendingCommunities([]);
+    }
+  }, [user, hasCheckedUrl, pendingCommunities, pendingFlyerScan]);
 
   useEffect(() => {
     if (user && hasCheckedUrl) {
@@ -495,6 +548,8 @@ function AppContent() {
         targetRoomId={targetRoomId || undefined}
         analysisRoomId={analysisRoomId || undefined}
         hasQrScanResult={!!qrScanResult}
+        eventLoading={eventLoading}
+        currentEvent={currentEvent}
         onCreateRoom={handleCreateRoom}
         onJoinRoom={handleJoinRoom}
         onRefreshRooms={getActiveRooms}
@@ -507,6 +562,9 @@ function AppContent() {
         onOpenFeatureTracker={handleOpenFeatureTracker}
         onOpenDevTools={handleOpenDevTools}
         onSubHeardChange={handleSubHeardChange}
+        onOpenEvent={handleOpenEvent}
+        onRefreshEvent={handleRefreshEvent}
+        onExitEvent={handleExitEvent}
       />
       <Toaster />
       {qrScanResult && (

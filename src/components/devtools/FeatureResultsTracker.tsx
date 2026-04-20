@@ -6,6 +6,7 @@ import {
   X,
   TrendingUp,
   Smartphone,
+  Bell,
   UserPlus,
   Tag,
   Flag,
@@ -17,6 +18,7 @@ import {
   Shield,
   Bot,
   Rabbit,
+  ScanLine,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -69,6 +71,24 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
   };
 
   let featureCards: FeatureCardData[] = [
+    {
+      icon: ScanLine,
+      iconColor: "text-yellow-600",
+      bgColor: "bg-yellow-100",
+      title: "Flyer Scans",
+      description: "Total scans recorded from flyer landing pages",
+      getValue: (s) => s.flyerScans,
+      getDate: (s) => s.flyerScansSince,
+    },
+    {
+      icon: Bell,
+      iconColor: "text-emerald-600",
+      bgColor: "bg-emerald-100",
+      title: "Phone Submissions",
+      description: "Phone numbers submitted via the sign up card (including unverified)",
+      getValue: (s) => s.phoneSubmissions,
+      getDate: (s) => s.phoneSubmissionsSince,
+    },
     {
       icon: Bot,
       iconColor: "text-amber-600",

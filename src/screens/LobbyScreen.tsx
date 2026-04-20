@@ -2,23 +2,28 @@ import type {
   UserSession,
   DebateRoom, NewDebateRoom,
   VoteType,
-  UserPresence, SubHeard
+  UserPresence, SubHeard,
+  EventSummary,
+  Event,
 } from "../types";
+import { EventView } from "../components/events/EventView";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { motion } from "motion/react";
 import {
   RoomScroller,
   RoomScrollerRef,
 } from "../components/RoomScroller";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
+import { CreateEventSheet } from "../components/CreateEventSheet";
 import { SubHeardBrowser } from "../components/community/SubHeardBrowser";
 import { CommunityExplorerDialog } from "../components/community/CommunityExplorerDialog";
 import { IntroModal } from "../components/IntroModal";
 import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
-import { SquarePlus } from "lucide-react";
+import { NewItemButton } from "../components/NewItemButton";
 import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
-import { api } from "../utils/api";
+import { api, safelyMakeApiCall } from "../utils/api";
+import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
+
 
 interface LobbyScreenProps {
   user: UserSession;
@@ -30,6 +35,8 @@ interface LobbyScreenProps {
   targetRoomId?: string;
   analysisRoomId?: string;
   hasQrScanResult?: boolean;
+  eventLoading?: boolean;
+  currentEvent?: Event | null;
   onCreateRoom: (
     newDebate: NewDebateRoom,
   ) => Promise<DebateRoom>;
@@ -51,6 +58,9 @@ interface LobbyScreenProps {
   onOpenFeatureTracker: () => void;
   onOpenDevTools?: () => void;
   onSubHeardChange?: (subHeard: string | null) => void;
+  onOpenEvent: (eventId: string) => void;
+  onRefreshEvent: () => void;
+  onExitEvent: () => void;
 }
 
 export function LobbyScreen({
@@ -59,6 +69,9 @@ export function LobbyScreen({
   roomsLoading,
   error,
   hasQrScanResult,
+  currentSubHeard,
+  eventLoading,
+  currentEvent,
   onCreateRoom,
   onJoinRoom,
   onRefreshRooms,
@@ -71,14 +84,19 @@ export function LobbyScreen({
   onOpenAdminDashboard,
   onOpenFeatureTracker,
   onOpenDevTools,
-  currentSubHeard,
   onSubHeardChange,
+  onOpenEvent,
+  onRefreshEvent,
+  onExitEvent,
   roomStatements,
   targetRoomId,
   analysisRoomId,
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
     useState(false);
+  const [createEventSheetOpen, setCreateEventSheetOpen] =
+    useState(false);
+
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [discussTopic, setDiscussTopic] = useState<
     string | undefined
@@ -98,6 +116,7 @@ export function LobbyScreen({
   const [presences, setPresences] = useState<UserPresence[]>(
     [],
   );
+  const [events, setEvents] = useState<EventSummary[]>([]);
   const [showAccountSetupAnonModal, setShowAccountSetupAnonModal] = useState(false);
   const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
   const [explorerOpen, setExplorerOpen] = useState(false);
@@ -172,6 +191,20 @@ export function LobbyScreen({
     };
   }, []);
 
+  // Fetch events for the current community (feature-flagged)
+  useEffect(() => {
+    if (!isFeatureEnabled(FeatureFlags.EVENTS)) return;
+    const fetchEvents = async () => {
+      const response = await safelyMakeApiCall(() =>
+        api.getEvents(currentSubHeard),
+      );
+      if (response?.data) {
+        setEvents(response.data.events);
+      }
+    };
+    fetchEvents();
+  }, [currentSubHeard]);
+
   // Poll for user presences
   useEffect(() => {
     const fetchPresences = async () => {
@@ -227,6 +260,10 @@ export function LobbyScreen({
     }
   };
 
+  const handleOpenCreateEventSheet = () => {
+    setCreateEventSheetOpen(true);
+  };
+
   const handleDiscussStatement = (
     statementText: string,
     subHeard?: string,
@@ -278,99 +315,120 @@ export function LobbyScreen({
         onClose={() => setHelpModalOpen(false)}
       />
 
-      {/* Main TikTok-style scroller */}
-      <div className="relative">
-        {/* Floating header with user info and menu */}
-        <div className="absolute top-0 left-0 right-0 controls-layer pt-[6px] px-2 flex justify-center items-center">
-          <div
-            className="flex items-center justify-between gap-2 w-full max-w-2xl"
-            style={{ marginTop: 8 }}
-          >
-            {onSubHeardChange && (
-              <div className="flex-1 min-w-0 mr-3">
-                <SubHeardBrowser
-                  currentSubHeard={currentSubHeard}
-                  user={user}
-                  onSubHeardChange={onSubHeardChange}
-                  onUpdateSubHeard={async (community: SubHeard) => {
-                    try {
-                      const response =
-                        await api.updateSubHeardSettings(community);
-                      if (response.success) {
-                        return true;
-                      }
-                      console.error(
-                        "Failed to update sub-heard:",
-                        response.error,
-                      );
-                      return false;
-                    } catch (error) {
-                      console.error("Error updating sub-heard:", error);
-                      return false;
-                    }
-                  }}
-                  onShowAccountSetupModal={handleShowAccountSetupModal}
-                  onOpenExplorer={() => setExplorerOpen(true)}
-                  onLogoClick={() => {
-                    roomScrollerRef.current?.scrollToTop();
-                    if (user.isDeveloper) {
-                      setShowDebugPanel(!showDebugPanel);
-                    }
-                  }}
-                />
-              </div>
-            )}
-
-            <button
-              onClick={handleOpenCreateSheet}
-              style={{ height: 30 }}
-              className="flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-gray-200 px-3 controls-layer"
-            >
-              <SquarePlus className="w-4 h-4 text-gray-600 shrink-0" />
-              <span className="text-gray-700 text-sm font-medium">
-                New
-              </span>
-            </button>
-
-            {onLogout && (
-              <SidePanelMenu
-                user={user}
-                onLogout={onLogout}
-                onOpenHelp={() => setHelpModalOpen(true)}
-                onOpenShowcase={onOpenShowcase}
-                onOpenAdminDashboard={onOpenAdminDashboard}
-                onOpenFeatureTracker={onOpenFeatureTracker}
-                onOpenDevTools={onOpenDevTools}
-                onOpenAdminPanel={onOpenAdminPanel}
-                onJumpToFinalResults={onJumpToFinalResults}
-                onCreateAnonDebate={handleCreateAnonDebate}
-                onShowAccountSetupModal={handleShowAccountSetupModal}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Room scroller */}
-        <RoomScroller
-          ref={roomScrollerRef}
-          rooms={filteredRooms}
-          isDeveloper={user.isDeveloper || false}
-          loading={roomsLoading}
+      {/* Event view */}
+      {(eventLoading || currentEvent) && (
+        <EventView
+          event={currentEvent ?? null}
+          eventLoading={eventLoading}
           user={user}
           currentSubHeard={currentSubHeard}
-          roomStatements={roomStatements}
-          analysisRoomId={analysisRoomId}
-          presences={presences}
-          onJoinRoom={handleJoinRoom}
-          onCreateRoom={handleOpenCreateSheet}
+          onExitEvent={onExitEvent}
+          onJoinRoom={onJoinRoom}
           onSubmitStatement={onSubmitStatement}
           onVoteOnStatement={onVoteOnStatement}
-          onDiscussStatement={handleDiscussStatement}
-          onUpdatePresence={handleUpdatePresence}
           onShowAccountSetupModal={handleShowAccountSetupModal}
-          onOpenExplorer={() => setExplorerOpen(true)}
+          onCreateRoom={onCreateRoom}
+          onRefreshEvent={onRefreshEvent}
         />
-      </div>
+      )}
+
+      {/* Feed view — absolute floating header over snap-scroll */}
+      {!currentEvent && !eventLoading && (
+        <div className="relative">
+          {/* Floating header with user info and menu */}
+          <div className="absolute top-0 left-0 right-0 controls-layer pt-[6px] px-2 flex justify-center items-center">
+            <div
+              className="flex items-center justify-between gap-2 w-full max-w-2xl"
+              style={{ marginTop: 8 }}
+            >
+              {onSubHeardChange && (
+                <div className="flex-1 min-w-0 mr-3">
+                  <SubHeardBrowser
+                    currentSubHeard={currentSubHeard}
+                    user={user}
+                    onSubHeardChange={onSubHeardChange}
+                    onUpdateSubHeard={async (community: SubHeard) => {
+                      try {
+                        const response =
+                          await api.updateSubHeardSettings(community);
+                        if (response.success) {
+                          return true;
+                        }
+                        console.error(
+                          "Failed to update sub-heard:",
+                          response.error,
+                        );
+                        return false;
+                      } catch (error) {
+                        console.error(
+                          "Error updating sub-heard:",
+                          error,
+                        );
+                        return false;
+                      }
+                    }}
+                    onShowAccountSetupModal={
+                      handleShowAccountSetupModal
+                    }
+                    onOpenExplorer={() => setExplorerOpen(true)}
+                    onLogoClick={() => {
+                      roomScrollerRef.current?.scrollToTop();
+                      if (user.isDeveloper) {
+                        setShowDebugPanel(!showDebugPanel);
+                      }
+                    }}
+                  />
+                </div>
+              )}
+
+              <NewItemButton
+                onNewConversation={handleOpenCreateSheet}
+                onNewEvent={handleOpenCreateEventSheet}
+              />
+
+              {onLogout && (
+                <SidePanelMenu
+                  user={user}
+                  onLogout={onLogout}
+                  onOpenHelp={() => setHelpModalOpen(true)}
+                  onOpenShowcase={onOpenShowcase}
+                  onOpenAdminDashboard={onOpenAdminDashboard}
+                  onOpenFeatureTracker={onOpenFeatureTracker}
+                  onOpenDevTools={onOpenDevTools}
+                  onOpenAdminPanel={onOpenAdminPanel}
+                  onJumpToFinalResults={onJumpToFinalResults}
+                  onCreateAnonDebate={handleCreateAnonDebate}
+                  onShowAccountSetupModal={
+                    handleShowAccountSetupModal
+                  }
+                />
+              )}
+            </div>
+          </div>
+
+          <RoomScroller
+            ref={roomScrollerRef}
+            rooms={filteredRooms}
+            events={events}
+            isDeveloper={user.isDeveloper || false}
+            loading={roomsLoading}
+            user={user}
+            currentSubHeard={currentSubHeard}
+            roomStatements={roomStatements}
+            analysisRoomId={analysisRoomId}
+            presences={presences}
+            onJoinRoom={handleJoinRoom}
+            onCreateRoom={handleOpenCreateSheet}
+            onSubmitStatement={onSubmitStatement}
+            onVoteOnStatement={onVoteOnStatement}
+            onDiscussStatement={handleDiscussStatement}
+            onUpdatePresence={handleUpdatePresence}
+            onShowAccountSetupModal={handleShowAccountSetupModal}
+            onOpenExplorer={() => setExplorerOpen(true)}
+            onOpenEvent={onOpenEvent}
+          />
+        </div>
+      )}
 
       {/* Create room sheet */}
       <CreateRoomSheet
@@ -390,6 +448,15 @@ export function LobbyScreen({
         }}
         defaultSubHeard={discussSubHeard || currentSubHeard}
         defaultTopic={discussTopic}
+      />
+
+      {/* Create event sheet */}
+      <CreateEventSheet
+        open={createEventSheetOpen}
+        userId={user.id}
+        defaultSubHeard={currentSubHeard}
+        onOpenChange={setCreateEventSheetOpen}
+        onGoToEvent={() => setCreateEventSheetOpen(false)}
       />
 
       {/* Error notification */}
