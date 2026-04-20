@@ -172,6 +172,7 @@ export function DebateScrollerStory() {
             <RoomScroller
               user={{} as any}
               rooms={mockRooms}
+              events={[]}
               roomStatements={mockStatements}
               presences={presences}
               loading={false}
@@ -185,6 +186,7 @@ export function DebateScrollerStory() {
               onDiscussStatement={() => {}}
               onShowAccountSetupModal={() => {}}
               onOpenExplorer={() => {}}
+              onOpenEvent={() => {}}
             />
           ),
         },
@@ -195,6 +197,7 @@ export function DebateScrollerStory() {
             <RoomScroller
               user={{ id: "user1" } as any}
               rooms={mockRooms}
+              events={[]}
               roomStatements={Object.fromEntries(
                 Object.entries(mockStatements).map(
                   ([roomId, stmts]) => [
@@ -234,6 +237,7 @@ export function DebateScrollerStory() {
               onDiscussStatement={() => {}}
               onShowAccountSetupModal={() => {}}
               onOpenExplorer={() => {}}
+              onOpenEvent={() => {}}
             />
           ),
         },

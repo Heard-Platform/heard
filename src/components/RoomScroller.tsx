@@ -13,6 +13,7 @@ import type {
   UserPresence,
   VoteType,
   UserSession,
+  EventSummary,
 } from "../types";
 import { RoomCard } from "./RoomCard";
 import { VineNavigator } from "./vine/VineNavigator";
@@ -20,9 +21,20 @@ import { useDebateSession } from "../hooks/useDebateSession";
 import { SwipeTutorialProvider, useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { CreateRoomCard } from "./CreateRoomCard";
 import { NextRoomNudge } from "./NextRoomNudge";
+import { EventCard } from "./events/EventCard";
+
+type EventCard = EventSummary & { cardType: "event" };
+type CreateCard = { id: string; cardType: "create" };
+type RoomCard = DebateRoom & { cardType: "room" };
+type Card = EventCard | RoomCard | CreateCard;
+
+const isEventCard = (card: Card): card is EventCard => card.cardType === "event";
+const isCreateCard = (card: Card): card is CreateCard => card.cardType === "create";
+const isRoomCard = (card: Card): card is RoomCard => card.cardType === "room";
 
 interface RoomScrollerProps {
   rooms: DebateRoom[];
+  events: EventSummary[];
   isDeveloper: boolean;
   loading: boolean;
   user: UserSession;
@@ -49,6 +61,7 @@ interface RoomScrollerProps {
     currentRoomIndex: number,
   ) => void;
   onShowAccountSetupModal: (featureText: string) => void;
+  onOpenEvent: (eventId: string) => void;
 }
 
 export interface RoomScrollerRef {
@@ -62,6 +75,7 @@ const RoomScrollerInner = forwardRef<
   (
     {
       rooms,
+      events,
       onJoinRoom,
       onCreateRoom,
       onOpenExplorer,
@@ -77,6 +91,7 @@ const RoomScrollerInner = forwardRef<
       presences,
       onUpdatePresence,
       onShowAccountSetupModal,
+      onOpenEvent,
     },
     ref,
   ) => {
@@ -96,11 +111,12 @@ const RoomScrollerInner = forwardRef<
     const { getRoomStatements } = useDebateSession();
     const { resetTutorialTimer } = useSwipeTutorialContext();
 
-    // Combine rooms with a "create new" card at the end
-    const allCards = [
-      ...rooms,
-      { id: "create-new", isCreateCard: true },
-    ] as Array<DebateRoom | { id: string; isCreateCard: true }>;
+    // Combine events (at top), rooms, and a "create new" card at the end
+    const allCards: Card[] = [
+      ...events.map((e) => ({ ...e, cardType: "event" as const })),
+      ...rooms.map((r) => ({ ...r, cardType: "room" as const })),
+      { id: "create-new", cardType: "create" as const },
+    ];
 
     currentIndexRef.current = currentIndex;
     allCardsLengthRef.current = allCards.length;
@@ -258,10 +274,20 @@ const RoomScrollerInner = forwardRef<
       );
     }
 
-    const currentRoom =
-      currentIndex < rooms.length ? rooms[currentIndex] : null;
-    const nextRoom =
-      currentIndex + 1 < rooms.length ? rooms[currentIndex + 1] : null;
+    const currentCard = allCards[currentIndex];
+    const currentRoom = currentCard && isRoomCard(currentCard) ? currentCard : null;
+
+    let nextRoomIndex = -1;
+    let nextRoom: DebateRoom | null = null;
+    for (let i = currentIndex + 1; i < allCards.length; i++) {
+      const card = allCards[i];
+      if (isRoomCard(card)) {
+        nextRoomIndex = i;
+        nextRoom = card;
+        break;
+      }
+    }
+
     const showNudge =
       currentRoom !== null &&
       nudgeableRoomIds.has(currentRoom.id) &&
@@ -297,11 +323,8 @@ const RoomScrollerInner = forwardRef<
           />
 
           {allCards.map((card, index) => {
-            const isCreateCard =
-              "isCreateCard" in card && card.isCreateCard;
-            const room = isCreateCard
-              ? null
-              : (card as DebateRoom);
+            const room = isRoomCard(card) ? card : null;
+            const event = isEventCard(card) ? card : null;
 
             return (
               <div
@@ -309,8 +332,10 @@ const RoomScrollerInner = forwardRef<
                 className="h-screen w-full snap-start snap-always flex items-start justify-center pt-15 pb-20 px-4"
                 style={{ paddingRight: "2.5rem" }}
               >
-                {isCreateCard ? (
+                {isCreateCard(card) ? (
                   <CreateRoomCard onCreateRoom={onCreateRoom} onOpenExplorer={onOpenExplorer} />
+                ) : event ? (
+                  <EventCard event={event} onOpen={onOpenEvent} />
                 ) : room ? (
                   <RoomCard
                     room={room}
@@ -346,7 +371,7 @@ const RoomScrollerInner = forwardRef<
           topic={nextRoom?.topic ?? ""}
           visible={showNudge}
           subHeard={currentSubHeard ? undefined : nextRoom?.subHeard}
-          onClick={() => scrollToIndex(currentIndex + 1)}
+          onClick={() => scrollToIndex(nextRoomIndex)}
         />
       </div>
     );

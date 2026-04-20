@@ -61,6 +61,16 @@ export const parseFlyerDataFromUrl = (): { flyerId: string; statementId: string;
   return null
 };
 
+export const parseEventIdFromUrl = (): string | null => {
+  return parseFromUrl('event')
+}
+
+export const updateUrlForEvent = (eventId: string | null) => {
+  if (typeof window === 'undefined') return
+  const newPath = eventId ? `/event/${eventId}` : '/'
+  window.history.pushState(null, '', newPath)
+}
+
 export const createShareableLink = (roomId: string): string => {
   if (typeof window === 'undefined') return ''
   

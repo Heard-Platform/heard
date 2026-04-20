@@ -466,7 +466,7 @@ export const saveDebateRoom = async (room: DebateRoom) => {
 
 export const getActiveRooms = async (): Promise<DebateRoom[]> => {
   const allRooms = await getAllDebates();
-  return allRooms.filter((r) => r.isActive);
+  return allRooms.filter((r) => r.isActive && !r.eventId);
 };
 
 

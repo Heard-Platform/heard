@@ -145,6 +145,21 @@ export interface DemographicAnswer {
 export type NewDemographicAnswer =
   Omit<DemographicAnswer, "id" | "createdAt">;
 
+
+export type Event = {
+  id: number;
+  name: string;
+  subtitle: string;
+  communityName: string;
+  creatorId: string;
+  createdAt: number;
+};
+
+export type NewEvent = Pick<
+  Event,
+  "name" | "subtitle" | "communityName" | "creatorId"
+>;
+
 export type Phase =
   | "lobby"
   | "round1"
@@ -160,6 +175,7 @@ export interface DebateRoom {
   id: string;
   topic: string;
   description?: string;
+  emoji?: string;
   phase: Phase;
   subPhase?: SubPhase;
   gameNumber: number;
@@ -181,6 +197,7 @@ export interface DebateRoom {
   youtubeCardSwiped?: boolean;
   lastActivityAt?: number;
   totalVotes?: number;
+  eventId?: number;
 }
 
 export type AnonCreatableRecords = "votes" | "statements" | "score";

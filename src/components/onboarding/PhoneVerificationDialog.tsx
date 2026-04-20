@@ -107,6 +107,7 @@ export function PhoneVerificationDialog({
                 <Input
                   id="phone"
                   type="tel"
+                  autoComplete="tel"
                   placeholder="(555) 123-4567"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
@@ -139,6 +140,7 @@ export function PhoneVerificationDialog({
                 <Input
                   id="code"
                   type="text"
+                  autoComplete="one-time-code"
                   placeholder="123456"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}

@@ -105,6 +105,46 @@ export const isDemographicsCard = (card: Card): card is DemographicsCard => {
   return card.type === "demographics";
 };
 
+export interface Event {
+  id: string;
+  name: string;
+  subtitle?: string;
+  communityName: string;
+  totalMembers: number;
+  rooms: EventRoomStatus[];
+  creatorId: string;
+  createdAt: number;
+}
+
+export type NewEvent = Pick<
+  Event,
+  "name" | "subtitle" | "communityName"
+>;
+
+export type EventSummary = Pick<
+  Event,
+  "id" | "name" | "subtitle" | "communityName"
+>;
+
+
+export interface EventRoomStatus extends Pick<
+  DebateRoom,
+  | "id"
+  | "topic"
+  | "description"
+  | "emoji"
+  | "participants"
+  | "createdAt"
+  | "endTime"
+> {
+  status: RoomStatus;
+  userHasVoted: boolean;
+  newStatementCount: number;
+  participantAvatars: AvatarAnimal[];
+}
+
+export type RoomStatus = "needs_input" | "caught_up" | "completed";
+
 export interface Achievement {
   title: string;
   description: string;
@@ -160,11 +200,12 @@ export interface DebateRoom {
   chanceCardSwiped?: boolean;
   youtubeCardSwiped?: boolean;
   demographicQuestions: DemographicQuestion[];
+  eventId?: number;
 }
 
 export type NewDebateRoom = Pick<
   DebateRoom,
-  "topic" | "subHeard" | "allowAnonymous"
+  "topic" | "subHeard" | "allowAnonymous" | "eventId"
 > & {
   seedStatements?: string[];
   imageUrl?: string;
@@ -371,6 +412,8 @@ export interface FeatureResults {
   avatarAnimalUsers: number;
   avatarAnimalUsersSince: number;
   avatarAnimalData: { counts: Record<string, number> };
+  phoneSubmissions: number;
+  phoneSubmissionsSince: number;
 }
 
 export interface UserHistoryData {

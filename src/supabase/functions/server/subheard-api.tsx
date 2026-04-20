@@ -1,4 +1,5 @@
 import { getUserMemberships } from "./membership-utils.tsx";
+import { normalizeCommunityName } from "./utils.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
@@ -116,10 +117,7 @@ app.post(
         );
       }
 
-      const normalized = name
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "-");
+      const normalized = normalizeCommunityName(name);
 
       if (normalized.length < 2) {
         return c.json(

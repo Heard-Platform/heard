@@ -3,6 +3,7 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Plus, Compass } from "lucide-react";
 import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
+import { FEED_CARD_WIDTH } from "../utils/constants/general";
 
 interface CreateRoomCardProps {
   onCreateRoom: () => void;
@@ -18,7 +19,7 @@ export function CreateRoomCard({
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="w-full max-w-2xl"
+      className={FEED_CARD_WIDTH}
     >
       <Card className="relative overflow-hidden bg-gradient-to-br from-green-50 via-white to-emerald-50 border-2 border-green-200 shadow-2xl">
         <div className="p-8 space-y-6 text-center flex flex-col items-center justify-center min-h-[500px]">
