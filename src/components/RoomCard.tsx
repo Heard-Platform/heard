@@ -20,6 +20,7 @@ import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType, UserSession } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
+import { DeduplicateModal } from "./room/DeduplicateModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { timeAgoShort } from "../utils/time";
@@ -77,7 +78,10 @@ export function RoomCard({
 
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showAddResponseModal, setShowAddResponseModal] = useState(false);
+  const [showDeduplication, setShowDeduplication] = useState(false);
   const { markChanceCardSwiped, markYouTubeCardSwiped } = useDebateSession();
+
+  const isHost = user.id === room.hostId;
 
   useEffect(() => {
     if (analysisRoomId === room.id) {
@@ -249,7 +253,8 @@ export function RoomCard({
                   isRealtime={isRealtime}
                   hasRealtimeEnded={hasRealtimeEnded}
                   isDeveloper={isDeveloper}
-                  handleOpenAnalysis={handleOpenAnalysis}
+                  isHost={isHost}
+                  onOpenDeduplication={() => setShowDeduplication(true)}
                 />
               </div>
             </div>
@@ -416,6 +421,13 @@ export function RoomCard({
           roomId={room.id}
           isDeveloper={isDeveloper}
           onClose={handleCloseAnalysis}
+        />
+      )}
+
+      {showDeduplication && (
+        <DeduplicateModal
+          roomId={room.id}
+          onClose={() => setShowDeduplication(false)}
         />
       )}
 

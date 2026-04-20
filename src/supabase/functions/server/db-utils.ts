@@ -72,6 +72,26 @@ export const selectAll = async <T>(
   return (data ?? []) as T[];
 };
 
+export const deleteRecord = async (
+  tableName: string,
+  conditions: Record<string, any>,
+): Promise<{ success: boolean; error?: string }> => {
+  const supabase = createClientFromEnv();
+
+  const { error } = await supabase
+    .from(tableName)
+    .delete()
+    .match(conditions);
+
+  if (error) {
+    console.error(`Error deleting from ${tableName} table:`, error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+};
+
+
 export const getStatementsForUser = async (
   userId: string,
 ): Promise<Statement[]> => {

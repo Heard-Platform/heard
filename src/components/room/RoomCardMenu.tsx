@@ -6,12 +6,14 @@ import {
   Users,
   XCircle,
   Link2,
-  MoreHorizontal
+  MoreHorizontal,
+  GitMerge,
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
@@ -26,7 +28,8 @@ interface RoomCardMenuProps {
   isRealtime: boolean;
   hasRealtimeEnded: boolean | number | undefined;
   isDeveloper: boolean;
-  handleOpenAnalysis: () => void;
+  isHost: boolean;
+  onOpenDeduplication: () => void;
 }
 
 export function RoomCardMenu({
@@ -35,7 +38,8 @@ export function RoomCardMenu({
   isRealtime,
   hasRealtimeEnded,
   isDeveloper,
-  handleOpenAnalysis,
+  isHost,
+  onOpenDeduplication,
 }: RoomCardMenuProps) {
   const { setRoomInactive } = useDebateSession();
 
@@ -110,6 +114,21 @@ export function RoomCardMenu({
               }
             })()}
           </DropdownMenuItem>
+        )}
+        {(isHost || isDeveloper) && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs text-muted-foreground px-2 py-1">Moderator Tools</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onOpenDeduplication();
+              }}
+            >
+              <GitMerge className="w-4 h-4 mr-2" />
+              Manage Duplicate Statements
+            </DropdownMenuItem>
+          </>
         )}
         {isDeveloper && (
           <>

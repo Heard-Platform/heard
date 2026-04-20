@@ -7,6 +7,7 @@ import {
   InternalVarKey,
   NewDemographicAnswer,
   NewUserReport,
+  StatementMerge,
   UserPresence,
   UserReport
 } from "./types.tsx";
@@ -108,6 +109,11 @@ export const insertOrgEmail = async (email: string) => {
 export const getOrgEmails = async () => {
   return selectAll<{ email: string }>("org_signups");
 };
+
+export const getMergesForRoom = async (roomId: string): Promise<StatementMerge[]> => {
+  return selectAll<StatementMerge>("statement_merges", { roomId });
+};
+
 
 export const setInternalVar = async (key: InternalVarKey, value: any) =>
   upsert(
