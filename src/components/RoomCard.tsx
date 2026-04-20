@@ -378,16 +378,14 @@ export function RoomCard({
             {!isCompleted && (
               <AddResponseButton onClick={() => setShowAddResponseModal(true)} />
             )}
-            {isCompleted && (
-              <Button
-                onClick={handleOpenAnalysis}
-                variant="secondary"
-                className="heard-pill"
-              >
-                {showAnalysis ? "Hide Analysis" : "Show Analysis"}
-                <BarChart3 className="w-4 h-4" />
-              </Button>
-            )}
+            <Button
+              onClick={handleOpenAnalysis}
+              variant="secondary"
+              className="heard-pill"
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span className="hidden sm:inline">Insights</span>
+            </Button>
             {isCompleted ? (
               <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>
             ) : isActive_status ? (
