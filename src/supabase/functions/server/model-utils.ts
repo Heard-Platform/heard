@@ -9,6 +9,7 @@ import {
   NewUserEvent,
   NewUserReport,
   StatementMerge,
+  UserEvent,
   UserPresence,
   UserReport
 } from "./types.tsx";
@@ -115,16 +116,16 @@ export const getMergesForRoom = async (roomId: string): Promise<StatementMerge[]
   return selectAll<StatementMerge>("statement_merges", { roomId });
 };
 
-export const getCertifyCardEvents = async (): Promise<{ event: string }[]> => {
-  return selectAll<{ event: string }>(
-    "analytics_events",
+export const getCertifyCardEvents = async () => {
+  return selectAll<UserEvent>(
+    "user_events",
     {},
-    (q: any) => q.like("event", "certify_card_%").select("event"),
+    (q: any) => q.like("type", "certify_card_%").select("type"),
   );
 };
 
 export const insertAnalyticsEvent = async (event: NewUserEvent) => {
-  return insert<NewUserEvent>( "analytics_events", event );
+  return insert<NewUserEvent>( "user_events", event );
 };
 
 export const setInternalVar = async (key: InternalVarKey, value: any) =>

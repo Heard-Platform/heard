@@ -75,7 +75,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const certifyCardEvents = await getCertifyCardEvents();
     const certifyCardCounts: Record<string, number> = {};
     for (const row of certifyCardEvents) {
-      certifyCardCounts[row.event] = (certifyCardCounts[row.event] ?? 0) + 1;
+      certifyCardCounts[row.type] = (certifyCardCounts[row.type] ?? 0) + 1;
     }
     const certifyCardData = {
       shown: certifyCardCounts["certify_card_shown"] ?? 0,
