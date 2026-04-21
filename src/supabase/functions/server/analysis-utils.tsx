@@ -6,10 +6,13 @@ export interface TopPost {
   id: string;
   text: string;
   agreeVotes: number;
+  rawAgreeVotes: number;
+  superAgreeVotes: number;
   disagreeVotes: number;
   passVotes: number;
   consensusScore: number;
   totalVotes: number;
+  mergedFrom: Array<{ id: string; text: string }>;
 }
 
 export type DemographicBreakdown = Record<
@@ -38,6 +41,7 @@ export interface AnalysisMetrics {
   };
   topPosts: TopPost[];
   spiciestPosts: TopPost[];
+  allStatements: TopPost[];
 }
 
 export function calcStatementMetrics(statement: Statement) {
@@ -213,6 +217,8 @@ export function calculateAnalysisMetrics(
     ? Math.min(postersWithHighConsensusPost.size / uniquePosters.size, 1)
     : 0;
 
+  const allStatements = statements.map(serializeStatement);
+
   return {
     totalParticipants: uniqueParticipants.size,
     totalPosters: uniquePosters.size,
@@ -228,5 +234,6 @@ export function calculateAnalysisMetrics(
     },
     topPosts,
     spiciestPosts,
+    allStatements,
   };
 }

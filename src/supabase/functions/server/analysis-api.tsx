@@ -98,6 +98,7 @@ app.get(
         totalStatements: mergedStatements.length,
         clusterConsensus,
         ...metrics,
+        allStatements: metrics.allStatements,
       };
       
       return c.json(analysisData);

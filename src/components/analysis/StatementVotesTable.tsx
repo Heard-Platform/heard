@@ -1,27 +1,18 @@
 import { useState } from "react";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
-import { List, ChevronUp, ChevronDown } from "lucide-react";
+import { List, ChevronUp, ChevronDown, CornerLeftUp } from "lucide-react";
+import { StatementVotes } from "../../types";
 
-export interface StatementVoteRow {
-  id: string;
-  text: string;
-  agreeVotes: number;
-  superAgreeVotes: number;
-  disagreeVotes: number;
-  passVotes: number;
-  totalVotes: number;
-}
-
-type SortColumn = "agreeVotes" | "superAgreeVotes" | "disagreeVotes" | "passVotes" | "totalVotes";
+type SortColumn = "rawAgreeVotes" | "superAgreeVotes" | "disagreeVotes" | "passVotes" | "totalVotes";
 type SortDir = "asc" | "desc";
 
 interface StatementVotesTableProps {
-  statements: StatementVoteRow[];
+  statements: StatementVotes[];
 }
 
 const COLUMNS: { key: SortColumn; label: string; badgeClass: string }[] = [
-  { key: "agreeVotes", label: "Agree", badgeClass: "agree-bg agree-text agree-border" },
+  { key: "rawAgreeVotes", label: "Agree", badgeClass: "agree-bg agree-text agree-border" },
   { key: "superAgreeVotes", label: "Super Agree", badgeClass: "super-agree-bg super-agree-text super-agree-border" },
   { key: "disagreeVotes", label: "Disagree", badgeClass: "disagree-bg disagree-text disagree-border" },
   { key: "passVotes", label: "Pass", badgeClass: "pass-bg pass-text pass-border" },
@@ -36,7 +27,7 @@ function SortIcon({ column, sortCol, sortDir }: { column: SortColumn; sortCol: S
 }
 
 export function StatementVotesTable({ statements }: StatementVotesTableProps) {
-  const [sortCol, setSortCol] = useState<SortColumn | null>("agreeVotes");
+  const [sortCol, setSortCol] = useState<SortColumn | null>("rawAgreeVotes");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   function handleSort(col: SortColumn) {
@@ -90,8 +81,20 @@ export function StatementVotesTable({ statements }: StatementVotesTableProps) {
           <tbody>
             {sorted.map((row) => (
               <tr key={row.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                <td className="py-3 pr-4 text-sm leading-snug">{row.text}</td>
-                <td className="py-3 px-2 text-right tabular-nums agree-text font-medium">{row.agreeVotes}</td>
+                <td className="py-3 pr-4 text-sm leading-snug">
+                  <span>{row.text}</span>
+                  {row.mergedFrom && row.mergedFrom.length > 0 && (
+                    <div className="mt-1 space-y-0.5">
+                      {row.mergedFrom.map((merged) => (
+                        <div key={merged.id} className="flex items-start gap-1 text-xs text-muted-foreground">
+                          <CornerLeftUp className="w-3 h-3 mt-0.5" />
+                          <span>{merged.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </td>
+                <td className="py-3 px-2 text-right tabular-nums agree-text font-medium">{row.rawAgreeVotes}</td>
                 <td className="py-3 px-2 text-right tabular-nums super-agree-text font-medium">{row.superAgreeVotes}</td>
                 <td className="py-3 px-2 text-right tabular-nums disagree-text font-medium">{row.disagreeVotes}</td>
                 <td className="py-3 px-2 text-right tabular-nums pass-text font-medium">{row.passVotes}</td>

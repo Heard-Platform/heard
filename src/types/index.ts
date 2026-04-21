@@ -33,6 +33,7 @@ export interface Statement {
   timestamp: number;
   round: number;
   voters: { [userId: string]: VoteType };
+  mergedFrom?: Array<{ id: string; text: string }>;
 }
 
 export interface Comment {
@@ -240,14 +241,17 @@ export interface Rant {
   timestamp: number;
 }
 
-export interface TopPost {
+export interface StatementVotes {
   id: string;
   text: string;
   agreeVotes: number;
+  rawAgreeVotes: number;
+  superAgreeVotes: number;
   disagreeVotes: number;
   passVotes: number;
   consensusScore: number;
   totalVotes: number;
+  mergedFrom: Array<{ id: string; text: string }>;
 }
 
 export interface ClusterStatement {
@@ -294,14 +298,15 @@ export interface AnalysisMetrics {
     postersWithHighConsensusPost: number;
     reach: number;
   };
-  topPosts: TopPost[];
-  spiciestPosts: TopPost[];
+  topPosts: StatementVotes[];
+  spiciestPosts: StatementVotes[];
 }
 
 export interface AnalysisData extends AnalysisMetrics {
   debateTopic: string;
   totalStatements: number;
   clusterConsensus?: ClusterConsensus | null;
+  allStatements: StatementVotes[];
 }
 
 export interface UserPresence {

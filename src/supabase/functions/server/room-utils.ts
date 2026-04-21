@@ -91,6 +91,11 @@ export function applyStatementMerges(
         }
       }
 
+      const mergedFrom = sources.map((src) => ({
+        id: src.id,
+        text: src.text,
+      }));
+
       return {
         ...s,
         voters: mergedVoters,
@@ -98,6 +103,7 @@ export function applyStatementMerges(
         disagrees,
         passes,
         superAgrees,
+        mergedFrom,
       };
     });
 }
