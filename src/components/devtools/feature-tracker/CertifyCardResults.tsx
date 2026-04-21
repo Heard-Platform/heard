@@ -17,7 +17,7 @@ export function CertifyCardResults({ shown, phoneSubmitted, verified, dismissed 
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="flex gap-4">
       {steps.map((step) => (
         <div key={step.label} className="p-4 border rounded-lg">
           <p className="text-sm text-muted-foreground">{step.label}</p>
