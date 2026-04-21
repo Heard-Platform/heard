@@ -56,8 +56,8 @@ export function ComposePostStep({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => setIsHelpDialogOpen(true)}
             className="text-xs text-green-700 hover:text-green-900 hover:bg-green-100/50 flex items-center gap-1 h-auto px-2 py-1 -ml-2"
+            onClick={() => setIsHelpDialogOpen(true)}
           >
             <HelpCircle className="w-3.5 h-3.5" />
             How does this work?
