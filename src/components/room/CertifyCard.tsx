@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Bell, PartyPopper, Send, Sparkles } from "lucide-react";
@@ -6,17 +6,29 @@ import { motion, AnimatePresence } from "motion/react";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { isValidPhone, formatPhone } from "../../utils/validation";
 import { TOSText } from "../onboarding/TOSText";
+import { api } from "../../utils/api";
 
 type Step = "phone" | "code" | "success";
 
 interface CertifyCardProps {
+  roomId: string;
+  isActive: boolean;
   onSuccess: () => void;
 }
 
 export function CertifyCard({
+  roomId,
+  isActive,
   onSuccess,
 }: CertifyCardProps) {
   const { sendSmsCode, verifySmsCode } = useDebateSession();
+
+  useEffect(() => {
+    if (isActive) {
+      api.trackEvent("certify_card_shown", roomId);
+    }
+  }, [isActive, roomId]);
+  
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -33,6 +45,7 @@ export function CertifyCard({
     try {
       const response = await sendSmsCode(formatPhone(phone));
       if (response && response.success) {
+        api.trackEvent("certify_card_phone_submitted", roomId);
         setStep("code");
       } else {
         setError("Couldn't send code. Please try again.");
@@ -54,6 +67,7 @@ export function CertifyCard({
     try {
       const response = await verifySmsCode(formatPhone(phone), code);
       if (response && response.success) {
+        api.trackEvent("certify_card_verified", roomId);
         setStep("success");
         setTimeout(onSuccess, 1800);
       } else {

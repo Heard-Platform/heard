@@ -1,4 +1,4 @@
-import { TopPost } from "./analysis-utils.tsx";
+import { StatementVotes as StatementVotes } from "./analysis-utils.tsx";
 import { Statement } from "./types.tsx";
 
 export const normalizeCommunityName = (name: string): string =>
@@ -28,7 +28,7 @@ export function getConsensusScore(statement: Statement) {
     : 0;
 }
 
-export function serializeStatement(statement: Statement): TopPost {
+export function serializeStatement(statement: Statement): StatementVotes {
   const totalVoteCount = getTotalVoteCount(statement);
   const consensusScore = getConsensusScore(statement);
 
@@ -36,9 +36,12 @@ export function serializeStatement(statement: Statement): TopPost {
     id: statement.id,
     text: statement.text,
     agreeVotes: statement.agrees + statement.superAgrees,
+    rawAgreeVotes: statement.agrees,
+    superAgreeVotes: statement.superAgrees,
     disagreeVotes: statement.disagrees,
     passVotes: statement.passes,
     consensusScore,
     totalVotes: totalVoteCount,
+    mergedFrom: statement.mergedFrom ?? [],
   };
 }
