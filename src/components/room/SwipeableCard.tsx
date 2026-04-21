@@ -182,6 +182,7 @@ export function SwipeableCard({
         ) : card.type === "certify" ? (
           <CertifyCard
             roomId={room.id}
+            isActive={isTopCard}
             onSuccess={onCertifySuccess}
           />
         ) : card.type === "statement" ? (

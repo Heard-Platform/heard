@@ -12,18 +12,23 @@ type Step = "phone" | "code" | "success";
 
 interface CertifyCardProps {
   roomId: string;
+  isActive: boolean;
   onSuccess: () => void;
 }
 
 export function CertifyCard({
   roomId,
+  isActive,
   onSuccess,
 }: CertifyCardProps) {
   const { sendSmsCode, verifySmsCode } = useDebateSession();
 
   useEffect(() => {
-    api.trackEvent("certify_card_shown", roomId);
-  }, []);
+    if (isActive) {
+      api.trackEvent("certify_card_shown", roomId);
+    }
+  }, [isActive, roomId]);
+  
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
