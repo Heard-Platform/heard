@@ -2,14 +2,17 @@ import { calcDemographicBreakdown } from "./demographics-utils.ts";
 import { DemographicAnswer, DemographicQuestion, Statement } from "./types.tsx";
 import { serializeStatement } from "./utils.tsx";
 
-export interface TopPost {
+export interface StatementVotes {
   id: string;
   text: string;
   agreeVotes: number;
+  rawAgreeVotes: number;
+  superAgreeVotes: number;
   disagreeVotes: number;
   passVotes: number;
   consensusScore: number;
   totalVotes: number;
+  mergedFrom: Array<{ id: string; text: string }>;
 }
 
 export type DemographicBreakdown = Record<
@@ -36,8 +39,9 @@ export interface AnalysisMetrics {
     postersWithHighConsensusPost: number;
     reach: number;
   };
-  topPosts: TopPost[];
-  spiciestPosts: TopPost[];
+  topPosts: StatementVotes[];
+  spiciestPosts: StatementVotes[];
+  allStatements: StatementVotes[];
 }
 
 export function calcStatementMetrics(statement: Statement) {
@@ -213,6 +217,8 @@ export function calculateAnalysisMetrics(
     ? Math.min(postersWithHighConsensusPost.size / uniquePosters.size, 1)
     : 0;
 
+  const allStatements = statements.map(serializeStatement);
+
   return {
     totalParticipants: uniqueParticipants.size,
     totalPosters: uniquePosters.size,
@@ -228,5 +234,6 @@ export function calculateAnalysisMetrics(
     },
     topPosts,
     spiciestPosts,
+    allStatements,
   };
 }

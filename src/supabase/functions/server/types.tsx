@@ -117,6 +117,7 @@ export interface Statement {
   round: number;
   voters: { [userId: string]: VoteType };
   anonymousUserId?: string;
+  mergedFrom?: Array<{ id: string; text: string }>;
 }
 
 export interface Vote {

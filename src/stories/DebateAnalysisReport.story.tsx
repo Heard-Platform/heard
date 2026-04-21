@@ -1,17 +1,34 @@
 import { DebateAnalysisReport } from "../components/analysis/DebateAnalysisReport";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { TopPost, ClusterConsensus, AnalysisData } from "../types";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import {
+  StatementVotes,
+  ClusterConsensus,
+  AnalysisData,
+} from "../types";
 
 export default {
   title: "Analysis/Report",
 };
 
-const mockTopPosts: TopPost[] = [
+const mockTopPosts: StatementVotes[] = [
   {
     id: "post-1",
     text: "We should invest more in renewable energy infrastructure to reduce our carbon footprint and create green jobs for the future.",
-    agreeVotes: 142,
+    agreeVotes: 170,
+    rawAgreeVotes: 142,
+    superAgreeVotes: 28,
     disagreeVotes: 23,
     passVotes: 15,
     consensusScore: 78.9,
@@ -20,7 +37,9 @@ const mockTopPosts: TopPost[] = [
   {
     id: "post-2",
     text: "Public transportation improvements should be prioritized over expanding highway systems to reduce traffic congestion.",
-    agreeVotes: 98,
+    agreeVotes: 112,
+    rawAgreeVotes: 98,
+    superAgreeVotes: 14,
     disagreeVotes: 45,
     passVotes: 22,
     consensusScore: 59.4,
@@ -29,7 +48,9 @@ const mockTopPosts: TopPost[] = [
   {
     id: "post-3",
     text: "Community gardens and urban green spaces contribute significantly to neighborhood wellbeing and should receive more funding.",
-    agreeVotes: 87,
+    agreeVotes: 98,
+    rawAgreeVotes: 87,
+    superAgreeVotes: 11,
     disagreeVotes: 31,
     passVotes: 28,
     consensusScore: 59.6,
@@ -37,11 +58,13 @@ const mockTopPosts: TopPost[] = [
   },
 ];
 
-const mockSpiciestPosts: TopPost[] = [
+const mockSpiciestPosts: StatementVotes[] = [
   {
     id: "spicy-1",
     text: "We should completely ban cars in the downtown core to prioritize pedestrian spaces.",
-    agreeVotes: 18,
+    agreeVotes: 21,
+    rawAgreeVotes: 18,
+    superAgreeVotes: 3,
     disagreeVotes: 112,
     passVotes: 25,
     consensusScore: 11.6,
@@ -50,7 +73,9 @@ const mockSpiciestPosts: TopPost[] = [
   {
     id: "spicy-2",
     text: "Property taxes should be tripled to fund ambitious green initiatives.",
-    agreeVotes: 22,
+    agreeVotes: 24,
+    rawAgreeVotes: 22,
+    superAgreeVotes: 2,
     disagreeVotes: 96,
     passVotes: 14,
     consensusScore: 16.7,
@@ -59,7 +84,9 @@ const mockSpiciestPosts: TopPost[] = [
   {
     id: "spicy-3",
     text: "All parking lots should be converted to housing developments immediately.",
-    agreeVotes: 15,
+    agreeVotes: 16,
+    rawAgreeVotes: 15,
+    superAgreeVotes: 1,
     disagreeVotes: 78,
     passVotes: 19,
     consensusScore: 13.4,
@@ -163,34 +190,40 @@ const mockClusterConsensus: ClusterConsensus = {
   ],
 };
 
-const mockDemographics: Record<string, { [option: string]: number }> = {
-  "What is your gender?": {
-    "Male": 98,
-    "Female": 112,
-    "Non-binary": 21,
-    "Prefer not to say": 16,
-  },
-  "What is your age range?": {
-    "18–24": 34,
-    "25–34": 71,
-    "35–44": 63,
-    "45–54": 48,
-    "55–64": 22,
-    "65+": 9,
-  },
-  "What best describes your political leaning?": {
-    "Liberal": 74,
-    "Moderate": 89,
-    "Conservative": 61,
-    "Independent": 23,
-  },
-  "How long have you lived in this city?": {
-    "Less than 1 year": 18,
-    "1–5 years": 52,
-    "5–10 years": 61,
-    "More than 10 years": 116,
-  },
-};
+const mockDemographics: Record<string, { [option: string]: number }> =
+  {
+    "What is your gender?": {
+      Male: 98,
+      Female: 112,
+      "Non-binary": 21,
+      "Prefer not to say": 16,
+    },
+    "What is your age range?": {
+      "18–24": 34,
+      "25–34": 71,
+      "35–44": 63,
+      "45–54": 48,
+      "55–64": 22,
+      "65+": 9,
+    },
+    "What best describes your political leaning?": {
+      Liberal: 74,
+      Moderate: 89,
+      Conservative: 61,
+      Independent: 23,
+    },
+    "How long have you lived in this city?": {
+      "Less than 1 year": 18,
+      "1–5 years": 52,
+      "5–10 years": 61,
+      "More than 10 years": 116,
+    },
+  };
+
+const mockAllStatements: StatementVotes[] = [
+  ...mockTopPosts,
+  ...mockSpiciestPosts,
+];
 
 const defaultAnalysisData: AnalysisData = {
   debateTopic: "What should our city prioritize in the next budget?",
@@ -201,12 +234,13 @@ const defaultAnalysisData: AnalysisData = {
   totalVoters: 220,
   demographics: {},
   participation: 0.71,
-  consensusData: {consensus: 0.62, highConsensusPostCount: 48},
-  spicinessData: {spiciness: 0.35, lowConsensusPostCount: 11},
-  reachData: {reach: 0.42, postersWithHighConsensusPost: 66},
+  consensusData: { consensus: 0.62, highConsensusPostCount: 48 },
+  spicinessData: { spiciness: 0.35, lowConsensusPostCount: 11 },
+  reachData: { reach: 0.42, postersWithHighConsensusPost: 66 },
   topPosts: mockTopPosts,
   spiciestPosts: mockSpiciestPosts,
   clusterConsensus: mockClusterConsensus,
+  allStatements: mockAllStatements,
 };
 
 export const WithClusters = () => {
@@ -237,14 +271,16 @@ export const NoClusters = () => {
       debateId="demo-debate-456"
       debateTopic="Should our neighborhood allow food trucks?"
       participation={0.74}
-      consensusData={{consensus: 0.45, highConsensusPostCount: 12}}
-      spicinessData={{spiciness: 0.68, lowConsensusPostCount: 19}}
-      reachData={{reach: 0.28, postersWithHighConsensusPost: 15}}
+      consensusData={{ consensus: 0.45, highConsensusPostCount: 12 }}
+      spicinessData={{ spiciness: 0.68, lowConsensusPostCount: 19 }}
+      reachData={{ reach: 0.28, postersWithHighConsensusPost: 15 }}
       topPosts={[
         {
           id: "post-a",
           text: "Food trucks bring variety and support small businesses in our community.",
-          agreeVotes: 28,
+          agreeVotes: 32,
+          rawAgreeVotes: 28,
+          superAgreeVotes: 4,
           disagreeVotes: 8,
           passVotes: 6,
           consensusScore: 66.7,
@@ -253,7 +289,9 @@ export const NoClusters = () => {
         {
           id: "post-b",
           text: "We need to consider parking and traffic impacts before allowing food trucks.",
-          agreeVotes: 24,
+          agreeVotes: 26,
+          rawAgreeVotes: 24,
+          superAgreeVotes: 2,
           disagreeVotes: 12,
           passVotes: 6,
           consensusScore: 57.1,
@@ -264,7 +302,9 @@ export const NoClusters = () => {
         {
           id: "spicy-a",
           text: "Ban all restaurants within 500 feet of food truck locations.",
-          agreeVotes: 5,
+          agreeVotes: 6,
+          rawAgreeVotes: 5,
+          superAgreeVotes: 1,
           disagreeVotes: 34,
           passVotes: 8,
           consensusScore: 10.6,
@@ -288,15 +328,19 @@ export function DebateAnalysisReportStory() {
       <CardContent>
         <Tabs defaultValue="with-demographics" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="with-clusters">With Clusters</TabsTrigger>
+            <TabsTrigger value="with-clusters">
+              With Clusters
+            </TabsTrigger>
             <TabsTrigger value="no-clusters">No Clusters</TabsTrigger>
-            <TabsTrigger value="with-demographics">With Demographics</TabsTrigger>
+            <TabsTrigger value="with-demographics">
+              With Demographics
+            </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="with-clusters">
             <WithClusters />
           </TabsContent>
-          
+
           <TabsContent value="no-clusters">
             <NoClusters />
           </TabsContent>

@@ -4383,23 +4383,77 @@
   }
 
   .agree-bg {
-    background-color: var(--color-green-400);
+    background-color: var(--color-green-50);
+  }
+
+  .agree-text {
+    color: var(--color-green-700);
+  }
+
+  .agree-border {
+    border-color: var(--color-green-200);
   }
 
   .super-agree-bg {
-    background-color: var(--color-green-600);
+    background-color: var(--color-purple-50);
+  }
+
+  .super-agree-text {
+    color: var(--color-purple-700);
+  }
+
+  .super-agree-border {
+    border-color: var(--color-purple-200);
   }
 
   .disagree-bg {
-    background-color: var(--color-red-400);
+    background-color: var(--color-red-50);
+  }
+
+  .disagree-text {
+    color: var(--color-red-700);
+  }
+
+  .disagree-border {
+    border-color: var(--color-red-200);
   }
 
   .pass-bg {
-    background-color: var(--color-slate-300);
+    background-color: var(--color-amber-50);
+  }
+
+  .pass-text {
+    color: var(--color-amber-700);
+  }
+
+  .pass-border {
+    border-color: var(--color-amber-200);
+  }
+
+  .total-bg {
+    background-color: var(--color-blue-50);
+  }
+
+  .total-text {
+    color: var(--color-blue-700);
+  }
+
+  .total-border {
+    border-color: var(--color-blue-200);
   }
 
   .positive-bg {
     background-color: var(--color-emerald-500);
+  }
+
+  .info-gradient {
+    --tw-gradient-from: var(--color-blue-500);
+    --tw-gradient-to: var(--color-blue-600);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+
+  .invisible {
+    visibility: hidden;
   }
 
   /* Formatting */

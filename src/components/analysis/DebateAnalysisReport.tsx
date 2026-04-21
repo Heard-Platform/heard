@@ -9,6 +9,7 @@ import { DemographicsPieCharts } from "./DemographicsPieCharts";
 import { AnalysisData } from "../../types";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 import { MetricCard } from "./MetricCard";
+import { StatementVotesTable } from "./StatementVotesTable";
 
 interface DebateAnalysisReportProps extends AnalysisData {
   debateId: string;
@@ -32,6 +33,7 @@ export function DebateAnalysisReport({
   spiciestPosts,
   clusterConsensus,
   demographics,
+  allStatements,
   isDeveloper,
   regenerating,
   onRegenerateClusters,
@@ -78,28 +80,28 @@ export function DebateAnalysisReport({
             viz="dots"
             filled={totalPosters}
             total={totalParticipants}
-            description={`${totalPosters} respondents out of ${totalParticipants} participants`}
+            description={`${totalPosters} out of ${totalParticipants} people posted a statement`}
           />
           <MetricCard
             label="Consensus"
             viz="bar"
             score={consensusData.consensus}
             count={consensusData.highConsensusPostCount}
-            description={`${consensusData.highConsensusPostCount} high consensus posts out of ${totalStatements}`}
+            description={`${consensusData.highConsensusPostCount} high consensus posts`}
           />
           <MetricCard
             label="Spiciness"
             viz="bar"
             score={spicinessData.spiciness}
             count={spicinessData.lowConsensusPostCount}
-            description={`${spicinessData.lowConsensusPostCount} low consensus posts out of ${totalStatements}`}
+            description={`${spicinessData.lowConsensusPostCount} low consensus posts`}
           />
           <MetricCard
             label="Reach"
             viz="bar"
             score={reachData.reach}
             count={reachData.postersWithHighConsensusPost}
-            description={`${reachData.postersWithHighConsensusPost} people with a top statement out of ${totalParticipants}`}
+            description={`${reachData.postersWithHighConsensusPost} ${reachData.postersWithHighConsensusPost === 1 ? "person" : "people"} with a high consensus response`}
           />
         </div>
 
@@ -162,6 +164,9 @@ export function DebateAnalysisReport({
             )}
           </Card>
         )}
+
+        <StatementVotesTable statements={allStatements} />
+
       </div>
     </div>
   );
