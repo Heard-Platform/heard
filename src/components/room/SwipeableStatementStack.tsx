@@ -16,6 +16,7 @@ import { SwipeableCard } from "./SwipeableCard";
 import { SwipeInstructions } from "../SwipeInstructions";
 import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import { api } from "../../utils/api";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -288,6 +289,7 @@ export function SwipeableStatementStack({
       setSwipeDirection(swipeDirection);
 
       if (card.type === "certify") {
+        api.trackEvent("certify_card_dismissed", room.id);
         setCertifyCardDismissed(true);
         onCertifyDone();
       } else if (card.type === "chance") {
@@ -322,10 +324,6 @@ export function SwipeableStatementStack({
       onCertifyDone();
     }, 300);
   }
-
-  const handleDismissCertifyCard = () => {
-    swipeCertifyCard("left");
-  };
 
   const handleSuccessCertifyCard = () => {
     swipeCertifyCard("right");
@@ -468,7 +466,6 @@ export function SwipeableStatementStack({
                 onSubmitStatement={handleSubmitFromChanceCard}
                 onShowAccountSetupModal={onShowAccountSetupModal}
                 onDemographicsAnswer={handleDemographicsAnswer}
-                onCertifyDismiss={handleDismissCertifyCard}
                 onCertifySuccess={handleSuccessCertifyCard}
                 onSkip={() => {
                   if (card.type === "statement") {

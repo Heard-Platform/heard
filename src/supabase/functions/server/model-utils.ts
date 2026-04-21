@@ -114,6 +114,25 @@ export const getMergesForRoom = async (roomId: string): Promise<StatementMerge[]
   return selectAll<StatementMerge>("statement_merges", { roomId });
 };
 
+export const getCertifyCardEvents = async (): Promise<{ event: string }[]> => {
+  return selectAll<{ event: string }>(
+    "analytics_events",
+    {},
+    (q: any) => q.like("event", "certify_card_%").select("event"),
+  );
+};
+
+export const insertAnalyticsEvent = async (
+  event: string,
+  userId: string | null,
+  roomId?: string,
+) => {
+  return insert<{ event: string; userId: string | null; roomId?: string; createdAt: number }>(
+    "analytics_events",
+    { event, userId, ...(roomId ? { roomId } : {}), createdAt: Date.now() },
+  );
+};
+
 
 export const setInternalVar = async (key: InternalVarKey, value: any) =>
   upsert(

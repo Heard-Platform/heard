@@ -23,6 +23,7 @@ import {
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
 import { AvatarAnimalChart } from "./feature-tracker/AvatarAnimalChart";
+import { CertifyCardResults } from "./feature-tracker/CertifyCardResults";
 
 interface FeatureResultsTrackerProps {
   onExit: () => void;
@@ -197,6 +198,16 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.avatarAnimalUsers,
       getDate: (s) => s.avatarAnimalUsersSince,
       renderExtra: (s) => <AvatarAnimalChart {...s.avatarAnimalData} />
+    },
+    {
+      icon: Bell,
+      iconColor: "text-emerald-600",
+      bgColor: "bg-emerald-100",
+      title: "Certify Card Shown",
+      description: "Anonymous users who have seen the phone verification card",
+      getValue: (s) => s.certifyCardShown,
+      getDate: (s) => s.certifyCardShownSince,
+      renderExtra: (s) => <CertifyCardResults {...s.certifyCardData} />,
     },
   ]
 
