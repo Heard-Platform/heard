@@ -28,6 +28,7 @@ import { internalConfigApi } from "./internal-config-api.tsx";
 import { enrichmentApi } from "./enrichment-api.ts";
 import { userRankApi } from "./user-rank-api.tsx";
 import { accountApi } from "./account-api.ts";
+import { analyticsApi } from "./analytics-api.ts";
 import { eventApi } from "./event-api.tsx";
 import { modApi } from "./mod-api.tsx";
 import { validateAdmin, validateCronAuth, validateDeveloper } from "./internal-utils.ts";
@@ -105,7 +106,7 @@ protect(dontValidate, ["orgs/*", "user/*",]);
 
 // Account
 protect(validateSession, [
-  "account/*", "activity/*", "chance-card/*", "event/*", "events",
+  "account/*", "activity/*", "analytics/*", "chance-card/*", "event/*", "events",
   "feedback/*", "flyer/*",
   "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
   "statement/*", "subheard/*", "subheards", "subheards/*",
@@ -136,6 +137,7 @@ app.route("/", debateApi);
 app.route("/", adminApi);
 app.route("/", authApi);
 app.route("/", accountApi);
+app.route("/", analyticsApi);
 app.route("/", loginApi);
 app.route("/", redditApi);
 app.route("/", oneTimeFixesApi);

@@ -785,7 +785,15 @@ class ApiClient extends BaseApiClient {
       merges: StatementMerge[];
       phoneVerified: Record<string, boolean>;
     }>(`/room/${roomId}/mod/vote-matrix`);
-  }}
+  }
+
+  trackEvent(type: string, roomId?: string): void {
+    if (safelyGetStorageItem("showComponentShowcase", false))
+      return;
+    this.post("/analytics/event", { type, roomId })
+      .catch(() => {});
+  }
+}
 
 export const api = new ApiClient();
 

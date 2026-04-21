@@ -2,6 +2,15 @@ import { AnalysisMetrics } from "./analysis-utils.tsx";
 import { ClusterConsensus } from "./cluster-analysis.tsx";
 import { VALID_AVATARS } from "./constants.tsx";
 
+export interface UserEvent {
+  type: string;
+  userId: string | null;
+  roomId?: string;
+  createdAt: number;
+}
+
+export type NewUserEvent = Omit<UserEvent, "createdAt">;
+
 export interface User {
   id: string;
   nickname: string;

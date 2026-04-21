@@ -425,6 +425,9 @@ export interface FeatureResults {
   phoneSubmissionsSince: number;
   flyerScans: number;
   flyerScansSince: number;
+  certifyCardShown: number;
+  certifyCardShownSince: number;
+  certifyCardData: { shown: number; phoneSubmitted: number; verified: number; dismissed: number };
 }
 
 export interface UserHistoryData {

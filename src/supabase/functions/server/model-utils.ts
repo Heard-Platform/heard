@@ -6,8 +6,10 @@ import {
   InternalVar,
   InternalVarKey,
   NewDemographicAnswer,
+  NewUserEvent,
   NewUserReport,
   StatementMerge,
+  UserEvent,
   UserPresence,
   UserReport
 } from "./types.tsx";
@@ -114,6 +116,17 @@ export const getMergesForRoom = async (roomId: string): Promise<StatementMerge[]
   return selectAll<StatementMerge>("statement_merges", { roomId });
 };
 
+export const getCertifyCardEvents = async () => {
+  return selectAll<UserEvent>(
+    "user_events",
+    {},
+    (q: any) => q.like("type", "certify_card_%").select("type"),
+  );
+};
+
+export const insertAnalyticsEvent = async (event: NewUserEvent) => {
+  return insert<NewUserEvent>( "user_events", event );
+};
 
 export const setInternalVar = async (key: InternalVarKey, value: any) =>
   upsert(
