@@ -24,6 +24,7 @@ app.post(
       const userId = c.get("userId");
       const {
         topic,
+        description,
         subHeard: communityName,
         seedStatements,
         imageUrl,
@@ -85,6 +86,7 @@ app.post(
       const debateRoom = createNewRoomData({
         id: roomId,
         topic: topic.substring(0, 500),
+        description: description?.substring(0, 500) || undefined,
         participants: [userId],
         hostId: userId,
         subHeard: normalizedCommunityName || undefined,
