@@ -4398,6 +4398,9 @@
     background-color: var(--color-slate-300);
   }
 
+  .positive-bg {
+    background-color: var(--color-emerald-500);
+  }
 
   /* Formatting */
 
