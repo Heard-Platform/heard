@@ -1,0 +1,5 @@
+Expected value format,Actual value format,LLM?,Strength of comparison,Example comparison,Remarks
+Computer language,Computer language,No,Strongest,"expected value ""Monday"" == user provided ""monday""",
+Computer language,Natural language,Yes,,"expected value ""Monday"" == user provided ""the day after Sunday""",
+Natural language,Computer language,Yes,,"expected value ""Any day except Tuesday"" == user provided ""Monday""",
+Natural language,Natural language,Yes,Weakest,"expected value ""Any day except Tuesday"" == user provided ""Four days from now"" (submitted on Friday)",
