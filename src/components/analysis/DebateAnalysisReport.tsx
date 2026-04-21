@@ -9,7 +9,6 @@ import { DemographicsPieCharts } from "./DemographicsPieCharts";
 import { AnalysisData } from "../../types";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 import { MetricCard } from "./MetricCard";
-import { VoteMatrix } from "../room/VoteMatrix";
 import { StatementVotesTable } from "./StatementVotesTable";
 
 interface DebateAnalysisReportProps extends AnalysisData {
@@ -167,9 +166,6 @@ export function DebateAnalysisReport({
         )}
 
         <StatementVotesTable statements={allStatements} />
-
-        {/* Finish adding vote matrix */}
-        {/* <VoteMatrix /> */}
 
       </div>
     </div>

@@ -2,7 +2,7 @@ import { calcDemographicBreakdown } from "./demographics-utils.ts";
 import { DemographicAnswer, DemographicQuestion, Statement } from "./types.tsx";
 import { serializeStatement } from "./utils.tsx";
 
-export interface TopPost {
+export interface StatementVotes {
   id: string;
   text: string;
   agreeVotes: number;
@@ -39,9 +39,9 @@ export interface AnalysisMetrics {
     postersWithHighConsensusPost: number;
     reach: number;
   };
-  topPosts: TopPost[];
-  spiciestPosts: TopPost[];
-  allStatements: TopPost[];
+  topPosts: StatementVotes[];
+  spiciestPosts: StatementVotes[];
+  allStatements: StatementVotes[];
 }
 
 export function calcStatementMetrics(statement: Statement) {

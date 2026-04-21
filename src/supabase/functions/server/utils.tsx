@@ -1,4 +1,4 @@
-import { TopPost as StatementVotes } from "./analysis-utils.tsx";
+import { StatementVotes as StatementVotes } from "./analysis-utils.tsx";
 import { Statement } from "./types.tsx";
 
 export const normalizeCommunityName = (name: string): string =>
