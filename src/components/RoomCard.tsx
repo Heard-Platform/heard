@@ -51,6 +51,7 @@ interface RoomCardProps {
   onRefreshStatements: () => Promise<void>;
   onDiscussStatement: (statementText: string, subHeard?: string) => void;
   onShowAccountSetupModal: (featureText: string) => void;
+  onSelectSubHeard: (subHeard: string) => void;
 }
 
 export function RoomCard({
@@ -69,6 +70,7 @@ export function RoomCard({
   onRefreshStatements,
   onDiscussStatement,
   onShowAccountSetupModal,
+  onSelectSubHeard,
 }: RoomCardProps) {
   const { resetTutorialTimer } = useSwipeTutorialContext();
   
@@ -237,7 +239,10 @@ export function RoomCard({
                   <>
                     <Globe className="w-3.5 h-3.5 prefix-icon shrink-0" />
                     {room.subHeard && (
-                      <span className="font-medium text-foreground truncate">
+                      <span
+                        className={`font-medium text-foreground truncate ${"cursor-pointer hover:underline active:opacity-50 transition-opacity"}`}
+                        onClick={(e) => { e.stopPropagation(); onSelectSubHeard(room.subHeard!); }}
+                      >
                         {formatSubHeardDisplay(room.subHeard)}
                       </span>
                     )}

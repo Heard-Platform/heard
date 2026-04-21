@@ -57,7 +57,7 @@ interface LobbyScreenProps {
   onOpenAdminDashboard?: () => void;
   onOpenFeatureTracker: () => void;
   onOpenDevTools?: () => void;
-  onSubHeardChange?: (subHeard: string | null) => void;
+  onSubHeardChange: (subHeard: string | null) => void;
   onOpenEvent: (eventId: string) => void;
   onRefreshEvent: () => void;
   onExitEvent: () => void;
@@ -426,6 +426,7 @@ export function LobbyScreen({
             onShowAccountSetupModal={handleShowAccountSetupModal}
             onOpenExplorer={() => setExplorerOpen(true)}
             onOpenEvent={onOpenEvent}
+            onSelectSubHeard={onSubHeardChange}
           />
         </div>
       )}
