@@ -1,7 +1,6 @@
-import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Sparkles, Wand2, HelpCircle } from "lucide-react";
+import { TopicDescriptionFields } from "./TopicDescriptionFields";
 import { FunSheetCard } from "../FunSheet";
 import { SeedStatements } from "./SeedStatements";
 import { useState } from "react";
@@ -15,8 +14,10 @@ import {
 
 interface ComposePostStepProps {
   topic: string;
+  description: string;
   statements: string[];
   onTopicChange: (topic: string) => void;
+  onDescriptionChange: (description: string) => void;
   onStatementsChange: (statements: string[]) => void;
   onSwitchToRantMode: () => void;
   showError: boolean;
@@ -24,15 +25,16 @@ interface ComposePostStepProps {
 
 export function ComposePostStep({
   topic,
+  description,
   statements,
   onTopicChange,
+  onDescriptionChange,
   onStatementsChange,
   onSwitchToRantMode,
   showError,
 }: ComposePostStepProps) {
   const iconGreen = "w-5 h-5 text-green-500";
   const labelText = "text-base text-slate-700";
-  const helperText = "text-xs text-slate-500";
 
   const [isHelpDialogOpen, setIsHelpDialogOpen] = useState(false);
 
@@ -42,34 +44,24 @@ export function ComposePostStep({
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Sparkles className={iconGreen} />
-            <Label htmlFor="topic-input" className={labelText}>
-              Conversation Topic
-            </Label>
+            <span className={labelText}>Conversation</span>
           </div>
-          <Textarea
-            id="topic-input"
-            placeholder="Enter your conversation topic..."
-            maxLength={200}
-            value={topic}
-            onChange={(e) => onTopicChange(e.target.value)}
-            className="min-h-[60px] resize-none bg-white border-green-200 hover:border-green-300 focus:border-green-400 transition-colors placeholder:text-slate-400"
-            rows={2}
+          <TopicDescriptionFields
+            topic={topic}
+            description={description}
+            onTopicChange={onTopicChange}
+            onDescriptionChange={onDescriptionChange}
           />
-          <div className="flex justify-between items-center">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsHelpDialogOpen(true)}
-              className="text-xs text-green-700 hover:text-green-900 hover:bg-green-100/50 flex items-center gap-1 h-auto px-2 py-1 -ml-2"
-            >
-              <HelpCircle className="w-3.5 h-3.5" />
-              How does this work?
-            </Button>
-            <span className={helperText}>
-              {topic.length}/200
-            </span>
-          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsHelpDialogOpen(true)}
+            className="text-xs text-green-700 hover:text-green-900 hover:bg-green-100/50 flex items-center gap-1 h-auto px-2 py-1 -ml-2"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            How does this work?
+          </Button>
         </div>
       </FunSheetCard>
 

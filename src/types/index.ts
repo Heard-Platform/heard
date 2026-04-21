@@ -214,7 +214,7 @@ export interface DebateRoom {
 
 export type NewDebateRoom = Pick<
   DebateRoom,
-  "topic" | "subHeard" | "allowAnonymous" | "eventId"
+  "topic" | "description" | "subHeard" | "allowAnonymous" | "eventId"
 > & {
   seedStatements?: string[];
   imageUrl?: string;

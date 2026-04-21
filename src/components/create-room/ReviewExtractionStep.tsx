@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
+import { TopicDescriptionFields } from "./TopicDescriptionFields";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { Sparkles, Check, UserCheck, Clock, Youtube, AlertCircle, Image as ImageIcon, Loader2 } from "lucide-react";
@@ -14,6 +14,7 @@ import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-fl
 
 interface ReviewExtractionStepProps {
   topic: string;
+  description: string;
   statements: string[];
   isUploadingImage?: boolean;
   uploadedImageUrl?: string | null;
@@ -23,6 +24,7 @@ interface ReviewExtractionStepProps {
   demographicQuestions: NewDemographicQuestion[];
   hideTopicAndStatements?: boolean;
   onTopicChange: (topic: string) => void;
+  onDescriptionChange: (description: string) => void;
   onStatementsChange: (statements: string[]) => void;
   onImageUpload: (file: File) => void;
   onYoutubeUrlChange: (url: string) => void;
@@ -33,6 +35,7 @@ interface ReviewExtractionStepProps {
 
 export function ReviewExtractionStep({
   topic,
+  description,
   statements,
   isUploadingImage,
   uploadedImageUrl,
@@ -42,6 +45,7 @@ export function ReviewExtractionStep({
   demographicQuestions,
   hideTopicAndStatements = false,
   onTopicChange,
+  onDescriptionChange,
   onStatementsChange,
   onImageUpload,
   onYoutubeUrlChange,
@@ -61,7 +65,6 @@ export function ReviewExtractionStep({
   const statementCardBg = "bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 transition-all hover:border-blue-300";
   const iconBlue = "w-5 h-5 text-blue-500";
   const labelText = "text-base text-slate-700";
-  const helperText = "text-xs text-slate-500";
   const helperTextCenter = "text-xs text-slate-500 text-center";
   const primaryButton = "bg-blue-600 hover:bg-blue-700";
 
@@ -117,24 +120,17 @@ export function ReviewExtractionStep({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Sparkles className={iconBlue} />
-              <Label htmlFor="topic-input" className={labelText}>
-                Conversation Topic
-              </Label>
+              <span className={labelText}>Conversation</span>
             </div>
-            <Textarea
-              id="topic-input"
-              placeholder="Edit the conversation topic..."
-              maxLength={200}
-              value={topic}
-              onChange={(e) => onTopicChange(e.target.value)}
-              className="min-h-[60px] resize-none bg-white border-blue-200 hover:border-blue-300 focus:border-blue-400 transition-colors placeholder:text-slate-400"
-              rows={2}
+            <TopicDescriptionFields
+              topic={topic}
+              description={description}
+              topicBorderColor="border-blue-200 hover:border-blue-300 focus:border-blue-400"
+              descriptionBorderColor="border-blue-200 hover:border-blue-300 focus:border-blue-400"
+              topicPlaceholder="Edit the conversation topic..."
+              onTopicChange={onTopicChange}
+              onDescriptionChange={onDescriptionChange}
             />
-            <div className="flex justify-end">
-              <span className={helperText}>
-                {topic.length}/200
-              </span>
-            </div>
           </div>
         </FunSheetCard>
       )}

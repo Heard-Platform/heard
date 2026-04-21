@@ -9,6 +9,7 @@ type RoomPartial = Pick<
   DebateRoom,
   | "id"
   | "topic"
+  | "description"
   | "hostId"
   | "participants"
   | "hostId"
@@ -26,6 +27,7 @@ export const createNewRoomData = (
   return {
     id: roomPartial.id,
     topic: roomPartial.topic,
+    description: roomPartial.description,
     phase: "round1",
     subPhase: "posting",
     gameNumber: 1,
