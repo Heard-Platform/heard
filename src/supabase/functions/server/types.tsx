@@ -2,6 +2,15 @@ import { AnalysisMetrics } from "./analysis-utils.tsx";
 import { ClusterConsensus } from "./cluster-analysis.tsx";
 import { VALID_AVATARS } from "./constants.tsx";
 
+export interface UserEvent {
+  type: string;
+  userId: string | null;
+  roomId?: string;
+  createdAt: number;
+}
+
+export type NewUserEvent = Omit<UserEvent, "createdAt">;
+
 export interface User {
   id: string;
   nickname: string;
@@ -108,6 +117,7 @@ export interface Statement {
   round: number;
   voters: { [userId: string]: VoteType };
   anonymousUserId?: string;
+  mergedFrom?: Array<{ id: string; text: string }>;
 }
 
 export interface Vote {
@@ -145,6 +155,15 @@ export interface DemographicAnswer {
 export type NewDemographicAnswer =
   Omit<DemographicAnswer, "id" | "createdAt">;
 
+
+export interface StatementMerge {
+  id: string;
+  roomId: string;
+  sourceStatementId: string;
+  targetStatementId: string;
+  creatorId: string;
+  createdAt: string;
+}
 
 export type Event = {
   id: number;

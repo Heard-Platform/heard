@@ -1,6 +1,6 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers } from "./kv-utils.tsx";
-import { getUserReports, getFlyerEmails, getFlyerScans } from "./model-utils.ts";
+import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents } from "./model-utils.ts";
 import { selectAll } from "./db-utils.ts";
 
 const app = new Hono();
@@ -72,6 +72,19 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const phoneSubmissions = (await selectAll("phone_submissions")).length;
     const flyerScans = (await getFlyerScans()).length;
 
+    const certifyCardEvents = await getCertifyCardEvents();
+    const certifyCardCounts: Record<string, number> = {};
+    for (const row of certifyCardEvents) {
+      certifyCardCounts[row.type] = (certifyCardCounts[row.type] ?? 0) + 1;
+    }
+    const certifyCardData = {
+      shown: certifyCardCounts["certify_card_shown"] ?? 0,
+      phoneSubmitted: certifyCardCounts["certify_card_phone_submitted"] ?? 0,
+      verified: certifyCardCounts["certify_card_verified"] ?? 0,
+      dismissed: certifyCardCounts["certify_card_dismissed"] ?? 0,
+    };
+    const certifyCardShownSince = new Date("2026-04-21").getTime();
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -117,6 +130,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       phoneSubmissionsSince,
       flyerScans,
       flyerScansSince,
+      certifyCardShown: certifyCardData.shown,
+      certifyCardShownSince,
+      certifyCardData,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);

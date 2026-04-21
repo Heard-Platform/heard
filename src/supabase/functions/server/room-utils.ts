@@ -1,9 +1,15 @@
-import { DebateRoom } from "./types.tsx";
+import {
+  DebateRoom,
+  Statement,
+  StatementMerge,
+  VoteType,
+} from "./types.tsx";
 
 type RoomPartial = Pick<
   DebateRoom,
   | "id"
   | "topic"
+  | "description"
   | "hostId"
   | "participants"
   | "hostId"
@@ -21,6 +27,7 @@ export const createNewRoomData = (
   return {
     id: roomPartial.id,
     topic: roomPartial.topic,
+    description: roomPartial.description,
     phase: "round1",
     subPhase: "posting",
     gameNumber: 1,
@@ -39,3 +46,64 @@ export const createNewRoomData = (
     eventId: roomPartial.eventId,
   };
 };
+
+export function applyStatementMerges(
+  statements: Statement[],
+  merges: StatementMerge[],
+): Statement[] {
+  if (merges.length === 0) return statements;
+
+  const sourceIds = new Set(merges.map((m) => m.sourceStatementId));
+
+  const sourcesForTarget = new Map<string, Statement[]>();
+  for (const merge of merges) {
+    const source = statements.find(
+      (s) => s.id === merge.sourceStatementId,
+    );
+    if (!source) continue;
+    const group = sourcesForTarget.get(merge.targetStatementId) ?? [];
+    group.push(source);
+    sourcesForTarget.set(merge.targetStatementId, group);
+  }
+
+  return statements
+    .filter((s) => !sourceIds.has(s.id))
+    .map((s) => {
+      const sources = sourcesForTarget.get(s.id);
+      if (!sources || sources.length === 0) return s;
+
+      const mergedVoters: { [userId: string]: VoteType } = {};
+      for (const source of sources)
+        Object.assign(mergedVoters, source.voters ?? {});
+      Object.assign(mergedVoters, s.voters ?? {});
+
+      let agrees = 0,
+        disagrees = 0,
+        passes = 0,
+        superAgrees = 0;
+      for (const voteType of Object.values(mergedVoters)) {
+        if (voteType === "agree") agrees++;
+        else if (voteType === "disagree") disagrees++;
+        else if (voteType === "pass") passes++;
+        else if (voteType === "super_agree") {
+          superAgrees++;
+          agrees++;
+        }
+      }
+
+      const mergedFrom = sources.map((src) => ({
+        id: src.id,
+        text: src.text,
+      }));
+
+      return {
+        ...s,
+        voters: mergedVoters,
+        agrees,
+        disagrees,
+        passes,
+        superAgrees,
+        mergedFrom,
+      };
+    });
+}

@@ -8,8 +8,9 @@ import {
 import { calculateClusterConsensus } from "./cluster-analysis.tsx";
 import { getParsedKvData } from "./kv-utils.tsx";
 import { calculateAnalysisMetrics } from "./analysis-utils.tsx";
+import { applyStatementMerges } from "./room-utils.ts";
 import { AnalysisData } from "./types.tsx";
-import { getDemographicAnswersForQuestionIds, getDemographicQuestionsForRoom } from "./model-utils.ts";
+import { getDemographicAnswersForQuestionIds, getDemographicQuestionsForRoom, getMergesForRoom } from "./model-utils.ts";
 
 const app = new Hono();
 
@@ -24,12 +25,17 @@ app.get(
         return c.json({ error: "Room not found" }, 404);
       }
 
-      const statements = await getStatements(roomId);
+      const [statements, merges] = await Promise.all([
+        getStatements(roomId),
+        getMergesForRoom(roomId),
+      ]);
+      const mergedStatements = applyStatementMerges(statements, merges);
+
       const questions = await getDemographicQuestionsForRoom(roomId);
       const questionIds = questions.map((q) => q.id);
       const answers = await getDemographicAnswersForQuestionIds(questionIds);
 
-      const metrics = calculateAnalysisMetrics(statements, questions, answers);
+      const metrics = calculateAnalysisMetrics(mergedStatements, questions, answers);
 
       const metadataKey = `cluster:${roomId}:metadata`;
       let clusterMetadata =
@@ -80,7 +86,7 @@ app.get(
         );
 
         clusterConsensus = calculateClusterConsensus(
-          statements,
+          mergedStatements,
           clusterMetadata,
           assignments,
           room.participants,
@@ -89,7 +95,7 @@ app.get(
 
       const analysisData: AnalysisData = {
         debateTopic: room.topic,
-        totalStatements: statements.length,
+        totalStatements: mergedStatements.length,
         clusterConsensus,
         ...metrics,
       };

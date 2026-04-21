@@ -7,8 +7,9 @@ import { SpiciestPosts } from "./SpiciestPosts";
 import { ClusterConsensusBox } from "./ClusterConsensusBox";
 import { DemographicsPieCharts } from "./DemographicsPieCharts";
 import { AnalysisData } from "../../types";
-import { scoreToWord } from "../../utils/analysis";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
+import { MetricCard } from "./MetricCard";
+import { StatementVotesTable } from "./StatementVotesTable";
 
 interface DebateAnalysisReportProps extends AnalysisData {
   debateId: string;
@@ -25,8 +26,6 @@ export function DebateAnalysisReport({
   totalStatements,
   totalVotes,
   totalPosters,
-  totalVoters,
-  participation,
   consensusData,
   spicinessData,
   reachData,
@@ -34,6 +33,7 @@ export function DebateAnalysisReport({
   spiciestPosts,
   clusterConsensus,
   demographics,
+  allStatements,
   isDeveloper,
   regenerating,
   onRegenerateClusters,
@@ -74,32 +74,35 @@ export function DebateAnalysisReport({
           <DemographicsPieCharts demographics={demographics} />
         )}
 
-        <div className="text-sm text-muted-foreground mb-2">
-          Participation: {scoreToWord(participation)}
-          <div className="text-xs mt-0.5">
-            {totalPosters} posters / {totalVoters} voters
-          </div>
-        </div>
-
-        <div className="text-sm text-muted-foreground mb-2">
-          Consensus: {scoreToWord(consensusData.consensus)}
-          <div className="text-xs mt-0.5">
-            {consensusData.highConsensusPostCount} high consensus posts
-          </div>
-        </div>
-
-        <div className="text-sm text-muted-foreground mb-2">
-          Spiciness: {scoreToWord(spicinessData.spiciness)}
-          <div className="text-xs mt-0.5">
-            {spicinessData.lowConsensusPostCount} low consensus posts
-          </div>
-        </div>
-
-        <div className="text-sm text-muted-foreground mb-2">
-          Reach: {scoreToWord(reachData.reach)}
-          <div className="text-xs mt-0.5">
-            {reachData.postersWithHighConsensusPost} posters with a high consensus post
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <MetricCard
+            label="Participation"
+            viz="dots"
+            filled={totalPosters}
+            total={totalParticipants}
+            description={`${totalPosters} out of ${totalParticipants} people posted a statement`}
+          />
+          <MetricCard
+            label="Consensus"
+            viz="bar"
+            score={consensusData.consensus}
+            count={consensusData.highConsensusPostCount}
+            description={`${consensusData.highConsensusPostCount} high consensus posts`}
+          />
+          <MetricCard
+            label="Spiciness"
+            viz="bar"
+            score={spicinessData.spiciness}
+            count={spicinessData.lowConsensusPostCount}
+            description={`${spicinessData.lowConsensusPostCount} low consensus posts`}
+          />
+          <MetricCard
+            label="Reach"
+            viz="bar"
+            score={reachData.reach}
+            count={reachData.postersWithHighConsensusPost}
+            description={`${reachData.postersWithHighConsensusPost} ${reachData.postersWithHighConsensusPost === 1 ? "person" : "people"} with a high consensus response`}
+          />
         </div>
 
         <TopAgreedPosts topPosts={topPosts} />
@@ -161,6 +164,9 @@ export function DebateAnalysisReport({
             )}
           </Card>
         )}
+
+        <StatementVotesTable statements={allStatements} />
+
       </div>
     </div>
   );

@@ -1,10 +1,10 @@
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { CheckCircle, XCircle, MinusCircle } from "lucide-react";
-import { TopPost } from "../../types";
+import { StatementVotes } from "../../types";
 
 interface TopAgreedPostsProps {
-  topPosts: TopPost[];
+  topPosts: StatementVotes[];
 }
 
 export function TopAgreedPosts({ topPosts }: TopAgreedPostsProps) {

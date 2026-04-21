@@ -14,14 +14,14 @@ const STATS = (
     value: needsInput,
     label: "to vote on",
     g: "attention-gradient",
-    bg: "attention-background",
+    bg: "attention-bg",
     t: "attention-text",
   },
   {
     value: caughtUp,
     label: "caught up",
     g: "resolved-gradient",
-    bg: "resolved-background",
+    bg: "resolved-bg",
     t: "resolved-text",
   },
   {

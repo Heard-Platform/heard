@@ -33,6 +33,7 @@ export interface Statement {
   timestamp: number;
   round: number;
   voters: { [userId: string]: VoteType };
+  mergedFrom?: Array<{ id: string; text: string }>;
 }
 
 export interface Comment {
@@ -104,6 +105,15 @@ export const isYouTubeCard = (card: Card): card is YouTubeCard => {
 export const isDemographicsCard = (card: Card): card is DemographicsCard => {
   return card.type === "demographics";
 };
+
+export interface StatementMerge {
+  id: string;
+  roomId: string;
+  sourceStatementId: string;
+  targetStatementId: string;
+  creatorId: string;
+  createdAt: string;
+}
 
 export interface Event {
   id: string;
@@ -205,7 +215,7 @@ export interface DebateRoom {
 
 export type NewDebateRoom = Pick<
   DebateRoom,
-  "topic" | "subHeard" | "allowAnonymous" | "eventId"
+  "topic" | "description" | "subHeard" | "allowAnonymous" | "eventId"
 > & {
   seedStatements?: string[];
   imageUrl?: string;
@@ -231,14 +241,17 @@ export interface Rant {
   timestamp: number;
 }
 
-export interface TopPost {
+export interface StatementVotes {
   id: string;
   text: string;
   agreeVotes: number;
+  rawAgreeVotes: number;
+  superAgreeVotes: number;
   disagreeVotes: number;
   passVotes: number;
   consensusScore: number;
   totalVotes: number;
+  mergedFrom: Array<{ id: string; text: string }>;
 }
 
 export interface ClusterStatement {
@@ -285,14 +298,15 @@ export interface AnalysisMetrics {
     postersWithHighConsensusPost: number;
     reach: number;
   };
-  topPosts: TopPost[];
-  spiciestPosts: TopPost[];
+  topPosts: StatementVotes[];
+  spiciestPosts: StatementVotes[];
 }
 
 export interface AnalysisData extends AnalysisMetrics {
   debateTopic: string;
   totalStatements: number;
   clusterConsensus?: ClusterConsensus | null;
+  allStatements: StatementVotes[];
 }
 
 export interface UserPresence {
@@ -416,6 +430,9 @@ export interface FeatureResults {
   phoneSubmissionsSince: number;
   flyerScans: number;
   flyerScansSince: number;
+  certifyCardShown: number;
+  certifyCardShownSince: number;
+  certifyCardData: { shown: number; phoneSubmitted: number; verified: number; dismissed: number };
 }
 
 export interface UserHistoryData {
