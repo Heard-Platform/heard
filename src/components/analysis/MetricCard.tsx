@@ -29,7 +29,7 @@ export function MetricCard(props: MetricCardProps) {
   const { label, description } = props;
 
   return (
-    <Card className="flex flex-col gap-3 p-1">
+    <Card className="flex flex-col gap-3 p-2">
       <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">{label}</div>
       <div className="flex items-center gap-2 mb-1.5">
         {props.viz === "dots" ? (
