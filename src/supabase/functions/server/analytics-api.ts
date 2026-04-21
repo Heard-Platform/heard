@@ -7,15 +7,14 @@ const app = new Hono();
 
 app.post(
   `${API_URL_PREFIX}/analytics/event`,
-  defineRoute<{ event: string; roomId?: string }, {}>(
+  defineRoute<{ type: string; roomId?: string }, void>(
     {
-      event: { type: "string", required: true },
+      type: { type: "string", required: true },
       roomId: { type: "string", required: false },
     },
-    async ({ event, roomId }, c) => {
-      const userId = c.get("userId") ?? null;
-      await insertAnalyticsEvent(event, userId, roomId);
-      return {};
+    async ({ type, roomId }, c) => {
+      const userId = c.get("userId");
+      await insertAnalyticsEvent({ type, userId, roomId });
     },
     "Failed to track analytics event",
   ),

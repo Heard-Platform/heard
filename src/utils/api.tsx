@@ -787,10 +787,10 @@ class ApiClient extends BaseApiClient {
     }>(`/room/${roomId}/mod/vote-matrix`);
   }
 
-  trackEvent(event: string, roomId?: string): void {
+  trackEvent(type: string, roomId?: string): void {
     if (safelyGetStorageItem("showComponentShowcase", false))
       return;
-    this.post("/analytics/event", { event, roomId })
+    this.post("/analytics/event", { type, roomId })
       .catch(() => {});
   }
 }

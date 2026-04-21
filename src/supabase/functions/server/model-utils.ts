@@ -6,6 +6,7 @@ import {
   InternalVar,
   InternalVarKey,
   NewDemographicAnswer,
+  NewUserEvent,
   NewUserReport,
   StatementMerge,
   UserPresence,
@@ -122,17 +123,9 @@ export const getCertifyCardEvents = async (): Promise<{ event: string }[]> => {
   );
 };
 
-export const insertAnalyticsEvent = async (
-  event: string,
-  userId: string | null,
-  roomId?: string,
-) => {
-  return insert<{ event: string; userId: string | null; roomId?: string; createdAt: number }>(
-    "analytics_events",
-    { event, userId, ...(roomId ? { roomId } : {}), createdAt: Date.now() },
-  );
+export const insertAnalyticsEvent = async (event: NewUserEvent) => {
+  return insert<NewUserEvent>( "analytics_events", event );
 };
-
 
 export const setInternalVar = async (key: InternalVarKey, value: any) =>
   upsert(
