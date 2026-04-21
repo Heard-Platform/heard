@@ -30,6 +30,7 @@ import { timeAgoShort } from "../utils/time";
 import { AddResponseButton } from "./widgets/AddResponseButton";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
+import { LinkedText } from "./widgets/LinkedText";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -317,7 +318,7 @@ export function RoomCard({
                 onClick={() => (descriptionTruncated || descriptionExpanded) && setDescriptionExpanded((v) => !v)}
               >
                 <span ref={descriptionRef} className={descriptionExpanded ? "" : "line-clamp-1"}>
-                  {room.description}
+                  <LinkedText text={room.description} />
                 </span>
                 {(descriptionTruncated || descriptionExpanded) && (
                   <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground/50 mt-0.5">
