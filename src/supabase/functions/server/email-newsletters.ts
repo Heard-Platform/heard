@@ -158,7 +158,32 @@ const newsletters = [
       imageAlt: "Heard demographics feature",
     },
   }),
-]
+  getParameterizedNewsletter({
+    subject: "Ya' Heard #14: New Organizer Features, Kalorama Park Flyering, and Pushup Challenge Progress",
+    editionNumber: 14,
+    section1: {
+      title: "🛠️ New Organizer Features: Merging Similar Responses and Better Insights",
+      text: "Hosts can now <a href='https://heard-platform.github.io/heard/organizer-tools.html'>select similar responses to merge them</a> so that the analysis treats them as the same response. We’ve already used this feature for a recent park survey! We’ve also improved the insights view for organizers.",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-14-organizer-tools.png",
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard new organizer features",
+    },
+    section2: {
+      title: "🌳 How do DC locals feel about Kalorama Park?",
+      text: "<a href='https://www.youtube.com/shorts/C7pC3D8nJkg'>We put up about 15 flyers around Kalorama Park</a> asking people to weigh in on what they love and want to see improved about the park. We’ve had about 50 people scan the flyers so far!",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-14-kalorama-park.png",
+      imageLink: "https://www.youtube.com/shorts/C7pC3D8nJkg",
+      imageAlt: "Kalorama Park flyering",
+    },
+    section3: {
+      title: "💪 Alex is Getting Swole from Pushups",
+      text: "I started a pushup challenge <a href='https://www.youtube.com/shorts/JWv-IaL2jh4'>at the start of April</a> to do 1 extra pushup per day until we get 200 signups. We’re up to 117, 83 to go! If this goes too far into May things may get interesting. 💪",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-14-pushup-challenge.png",
+      imageLink: "https://www.youtube.com/shorts/JWv-IaL2jh4",
+      imageAlt: "Pushup challenge progress",
+    },
+  }),
+];
 
 const offset = 8
 
