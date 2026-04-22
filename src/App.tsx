@@ -246,6 +246,10 @@ function AppContent() {
         window.location.pathname.startsWith("/2b04");
       const isRatsRoute =
         window.location.pathname.startsWith("/rats");
+      const isShirtAgreeRoute =
+        window.location.pathname.startsWith("/shirt-agree");
+      const isShirtDisagreeRoute =
+        window.location.pathname.startsWith("/shirt-disagree");
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
@@ -296,6 +300,13 @@ function AppContent() {
             autoJoinAsAnonymous(hardcodedRoomId);
           }
         }
+      } else if (isShirtAgreeRoute || isShirtDisagreeRoute) {
+        handleFlyerJoin({
+          flyerId: "43rmfvxw9wjmoaizr4y",
+          statementId: "fa34pfk93dumoaizr6n",
+          vote: isShirtAgreeRoute ? "agree" : "disagree",
+          flyerGroup: 1,
+        });
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (eventIdFromUrl) {
