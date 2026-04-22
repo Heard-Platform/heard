@@ -16,6 +16,7 @@ type FlyerVoteResponse = {
   disagreePercent: number;
   passPercent: number;
   userVote: VoteType;
+  statementText: string;
 };
 
 flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
@@ -109,6 +110,7 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         disagreePercent,
         passPercent,
         userVote: result.userVote as VoteType,
+        statementText: result.statement.text,
       };
 
       return c.json(response, 200);

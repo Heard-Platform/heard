@@ -14,6 +14,7 @@ export type QRScanResult = {
   disagreePercent: number;
   passPercent: number;
   userVote: VoteType;
+  statementText: string;
 };
 
 interface QRScanResultDialogProps extends QRScanResult {
@@ -28,6 +29,7 @@ export function QRScanResultDialog({
   disagreePercent,
   passPercent,
   userVote,
+  statementText,
   isOpen,
   onEmailSubmit,
   onClose,
@@ -141,7 +143,7 @@ export function QRScanResultDialog({
                 transition={{ delay: 0.2 }}
                 className="text-sm text-slate-300"
               >
-                You voted {voteLabel}! 🎉
+                You voted <strong>{userVote}</strong> on <strong>{statementText}</strong>! 🎉
               </motion.p>
             </div>
 
