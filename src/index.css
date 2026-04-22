@@ -4343,6 +4343,18 @@
   }
 
   .creation-bg {
+    background-color: var(--color-emerald-400);
+  }
+
+  .creation-bg-strong {
+    background-color: var(--color-emerald-600);
+  }
+
+  .creation-bg-strong-hover {
+    background-color: var(--color-emerald-700);
+  }
+
+  .creation-gradient {
     background: linear-gradient(to bottom right, var(--color-green-100), var(--color-emerald-100), var(--color-teal-200));
   }
 
@@ -4352,6 +4364,10 @@
 
   .creation-icon-bg {
     background: linear-gradient(to bottom right, var(--color-green-400), var(--color-teal-500));
+  }
+
+  .creation-text {
+    color: var(--color-emerald-500);
   }
 
   .high-priority-bg {
@@ -4450,6 +4466,10 @@
     --tw-gradient-from: var(--color-blue-500);
     --tw-gradient-to: var(--color-blue-600);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+
+  .error-text {
+    color: var(--color-red-500);
   }
 
   .invisible {

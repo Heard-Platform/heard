@@ -39,22 +39,7 @@ export function CertifyCardStory() {
 }
 
 function CertifyCardIsolated() {
-  const [dismissed, setDismissed] = useState(false);
   const [succeeded, setSucceeded] = useState(false);
-
-  if (dismissed) {
-    return (
-      <div className="text-center py-8 space-y-3">
-        <p className="text-muted-foreground">Card dismissed.</p>
-        <button
-          className="text-sm underline text-primary"
-          onClick={() => setDismissed(false)}
-        >
-          Reset
-        </button>
-      </div>
-    );
-  }
 
   if (succeeded) {
     return (
@@ -72,7 +57,8 @@ function CertifyCardIsolated() {
 
   return (
     <CertifyCard
-      onDismiss={() => setDismissed(true)}
+      roomId="story"
+      isActive={true}
       onSuccess={() => setSucceeded(true)}
     />
   );

@@ -32,7 +32,7 @@ export function AddConversationCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.15 }}
     >
-      <Card className="overflow-hidden creation-bg border creation-border shadow-sm">
+      <Card className="overflow-hidden creation-bg-gradient border creation-border shadow-sm">
         <div className="p-6 flex flex-col items-center text-center gap-4">
           <div className="w-16 h-16 rounded-3xl creation-icon-bg flex items-center justify-center text-3xl shadow-md">
             {emoji}
@@ -41,7 +41,7 @@ export function AddConversationCard({
             <p className="text-base font-bold text-foreground">{heading}</p>
             <p className="text-sm text-muted-foreground">{subtext}</p>
           </div>
-          <Button onClick={onAddRoom} className="gap-2 heard-primary-gradient text-white shadow-md">
+          <Button onClick={onAddRoom} className="gap-2 heard-primary-gradient normal-text shadow-md">
             <PlusCircle className="w-4 h-4" />
             {buttonLabel}
           </Button>

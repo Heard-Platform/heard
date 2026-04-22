@@ -79,6 +79,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     }
     const certifyCardData = {
       shown: certifyCardCounts["certify_card_shown"] ?? 0,
+      emailSubmitted: certifyCardCounts["certify_card_email_submitted"] ?? 0,
       phoneSubmitted: certifyCardCounts["certify_card_phone_submitted"] ?? 0,
       verified: certifyCardCounts["certify_card_verified"] ?? 0,
       dismissed: certifyCardCounts["certify_card_dismissed"] ?? 0,
