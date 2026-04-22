@@ -244,6 +244,8 @@ function AppContent() {
         window.location.pathname.startsWith("/parklet");
       const is2b04Route =
         window.location.pathname.startsWith("/2b04");
+      const isRatsRoute =
+        window.location.pathname.startsWith("/rats");
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
@@ -272,19 +274,27 @@ function AppContent() {
         } else {
           autoJoinAsAnonymous(KALORAMA_ROOM_ID);
         }
-      } else if (isParkletRoute || is2b04Route) {
+      } else if (isParkletRoute || is2b04Route || isRatsRoute) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
           : is2b04Route
             ? "5zagvhpy4iamnf18dh5"
-            : undefined;
+            : isRatsRoute
+              ? "rrrir5rzsi9moacjd80"
+              : undefined;
+
+        const routeName = isParkletRoute ? "parklet" : is2b04Route ? "2b04" : "rats";
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
-        } else if (user) {
-          setTargetRoomId(hardcodedRoomId);
         } else {
-          autoJoinAsAnonymous(hardcodedRoomId);
+          setPendingFlyerScan(routeName);
+          setPendingCommunities(KALORAMA_COMMUNITIES);
+          if (user) {
+            setTargetRoomId(hardcodedRoomId);
+          } else {
+            autoJoinAsAnonymous(hardcodedRoomId);
+          }
         }
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
