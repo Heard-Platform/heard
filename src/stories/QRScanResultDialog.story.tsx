@@ -24,10 +24,13 @@ export function QRScanResultDialogStory() {
     demographicQuestions: [],
   };
 
-  const scenarios: Record<VoteTypeNew, { topic: string; statementText: string; agreePercent: number; disagreePercent: number; passPercent: number; userVote: VoteTypeNew }> = {
+  const scenarios: Record<VoteTypeNew, { topic: string; statementText: string; teaserStatementText: string; teaserStatementTimestamp: number; teaserStatementVoteCount: number; agreePercent: number; disagreePercent: number; passPercent: number; userVote: VoteTypeNew }> = {
     agree: {
       topic: "Should we close Q Street to cars?",
-      statementText: "Closing Q Street to cars would improve pedestrian safety and reduce pollution.",
+      statementText: "Close Q Street to cars",
+      teaserStatementText: "The city should invest more in protected bike lanes",
+      teaserStatementTimestamp: Date.now() - 6 * 60 * 60 * 1000,
+      teaserStatementVoteCount: 47,
       agreePercent: 62,
       disagreePercent: 28,
       passPercent: 10,
@@ -36,6 +39,9 @@ export function QRScanResultDialogStory() {
     disagree: {
       topic: "Is pineapple acceptable on pizza?",
       statementText: "Pineapple on pizza is a delicious combination that everyone should try.",
+      teaserStatementText: "Restaurants should be required to offer gluten-free options.",
+      teaserStatementTimestamp: Date.now() - 2 * 24 * 60 * 60 * 1000,
+      teaserStatementVoteCount: 112,
       agreePercent: 35,
       disagreePercent: 55,
       passPercent: 10,
@@ -44,6 +50,9 @@ export function QRScanResultDialogStory() {
     pass: {
       topic: "Should the city ban gas stoves?",
       statementText: "Banning gas stoves would meaningfully reduce indoor air pollution and carbon emissions.",
+      teaserStatementText: "The city should offer rebates for households that switch to electric appliances.",
+      teaserStatementTimestamp: Date.now() - 45 * 60 * 1000,
+      teaserStatementVoteCount: 23,
       agreePercent: 42,
       disagreePercent: 38,
       passPercent: 20,
@@ -129,6 +138,9 @@ export function QRScanResultDialogStory() {
                 <strong>Statement:</strong> {currentScenario.statementText}
               </li>
               <li>
+                <strong>Teaser:</strong> {currentScenario.teaserStatementText}
+              </li>
+              <li>
                 <strong>User Vote:</strong> {currentScenario.userVote}
               </li>
               <li>
@@ -148,6 +160,9 @@ export function QRScanResultDialogStory() {
         passPercent={currentScenario.passPercent}
         userVote={currentScenario.userVote}
         statementText={currentScenario.statementText}
+        teaserStatementText={currentScenario.teaserStatementText}
+        teaserStatementTimestamp={currentScenario.teaserStatementTimestamp}
+        teaserStatementVoteCount={currentScenario.teaserStatementVoteCount}
         isOpen={dialogOpen}
         onEmailSubmit={async () => console.log("Email submitted")}
         onClose={() => setDialogOpen(false)}

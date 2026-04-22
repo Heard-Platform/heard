@@ -83,7 +83,7 @@ function AppContent() {
     setCurrentSubHeard,
     resetSession,
     roomStatements,
-    submitFlyerEmail,
+    anonAddEmailAndLogin,
   } = useDebateSession();
 
   const handleMagicLinkSuccess = async () => {
@@ -134,7 +134,7 @@ function AppContent() {
   };
 
   const handleQrEmailSubmit = async (email: string) => {
-    const response = await submitFlyerEmail(email);
+    const response = await anonAddEmailAndLogin(email);
     if (response?.success) {
       setTargetRoomId(qrScanResult!.room.id);
       updateUrlForRoom(qrScanResult!.room.id);
@@ -575,6 +575,9 @@ function AppContent() {
           passPercent={qrScanResult.passPercent}
           userVote={qrScanResult.userVote}
           statementText={qrScanResult.statementText}
+          teaserStatementText={qrScanResult.teaserStatementText}
+          teaserStatementTimestamp={qrScanResult.teaserStatementTimestamp}
+          teaserStatementVoteCount={qrScanResult.teaserStatementVoteCount}
           isOpen={true}
           onEmailSubmit={handleQrEmailSubmit}
           onClose={() => setQrScanResult(null)}

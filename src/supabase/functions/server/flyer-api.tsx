@@ -1,5 +1,5 @@
 import { Context, Hono } from "npm:hono";
-import { getDebate } from "./kv-utils.tsx";
+import { getDebate, getStatementsForRoom } from "./kv-utils.tsx";
 import type { DebateRoom, User, VoteType } from "./types.tsx";
 import { processVote } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
@@ -17,6 +17,9 @@ type FlyerVoteResponse = {
   passPercent: number;
   userVote: VoteType;
   statementText: string;
+  teaserStatementText?: string;
+  teaserStatementTimestamp?: number;
+  teaserStatementVoteCount?: number;
 };
 
 flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
@@ -71,9 +74,10 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         400,
       );
     } else {
-      const [room, session] = await Promise.all([
+      const [room, session, roomStatements] = await Promise.all([
         getDebate(result.statement.roomId),
         createSession(userId),
+        getStatementsForRoom(result.statement.roomId),
       ]);
 
       if (!room) {
@@ -102,6 +106,11 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
           ? Math.round((result.statement.passes / totalVotes) * 100)
           : 0;
 
+      const otherStatements = roomStatements.filter(s => s.id !== result.statement.id);
+      const teaserStatement = otherStatements.length > 0
+        ? otherStatements[Math.floor(Math.random() * otherStatements.length)]
+        : undefined;
+
       const response: FlyerVoteResponse = {
         user: result.user,
         sessionId: session.id,
@@ -111,6 +120,11 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         passPercent,
         userVote: result.userVote as VoteType,
         statementText: result.statement.text,
+        teaserStatementText: teaserStatement?.text,
+        teaserStatementTimestamp: teaserStatement?.timestamp,
+        teaserStatementVoteCount: teaserStatement
+          ? teaserStatement.agrees + teaserStatement.disagrees + teaserStatement.passes
+          : undefined,
       };
 
       return c.json(response, 200);
