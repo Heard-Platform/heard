@@ -451,7 +451,7 @@ export function AnonAccountSetupModal({
                         onClick={() => setShowEmailFlow(true)}
                         className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
                       >
-                        Use email instead (legacy users)
+                        Use email instead
                       </button>
                     )}
                   </div>

@@ -432,7 +432,13 @@ export interface FeatureResults {
   flyerScansSince: number;
   certifyCardShown: number;
   certifyCardShownSince: number;
-  certifyCardData: { shown: number; phoneSubmitted: number; verified: number; dismissed: number };
+  certifyCardData: {
+    shown: number;
+    emailSubmitted: number;
+    phoneSubmitted: number;
+    verified: number;
+    dismissed: number;
+  };
 }
 
 export interface UserHistoryData {

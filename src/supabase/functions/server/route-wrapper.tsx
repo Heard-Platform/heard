@@ -48,7 +48,14 @@ export function defineRoute<TInput extends Record<string, any>, TOutput>(
       return c.json({ success: true, ...result });
     } catch (error) {
       console.error(`${errorMessage}:`, error);
-      return c.json({ success: false, error: errorMessage }, 500);
+      return c.json(
+        {
+          success: false,
+          error:
+            error instanceof Error ? error.message : errorMessage,
+        },
+        500,
+      );
     }
   };
 }

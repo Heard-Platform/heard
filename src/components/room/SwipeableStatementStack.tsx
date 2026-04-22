@@ -8,7 +8,7 @@ import {
   type ChanceCard,
   type YouTubeCard,
   type DemographicsCard,
-  type CertifyCard,
+
   type DebateRoom,
   DemographicQuestion,
 } from "../../types";
@@ -16,7 +16,7 @@ import { SwipeableCard } from "./SwipeableCard";
 import { SwipeInstructions } from "../SwipeInstructions";
 import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
-import { api } from "../../utils/api";
+
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -124,7 +124,7 @@ export function SwipeableStatementStack({
   }
 
   if (isAnonymous && !certifyCardDismissed) {
-    const certifyCard: CertifyCard = { type: "certify" };
+    const certifyCard: Card = { type: "certify", isUnswipeable: true };
     cards.push(certifyCard);
   }
 
@@ -288,11 +288,7 @@ export function SwipeableStatementStack({
       setSwipedNoopCard(card.type);
       setSwipeDirection(swipeDirection);
 
-      if (card.type === "certify") {
-        api.trackEvent("certify_card_dismissed", room.id);
-        setCertifyCardDismissed(true);
-        onCertifyDone();
-      } else if (card.type === "chance") {
+      if (card.type === "chance") {
         onChanceCardSwiped();
       } else if (card.type === "youtube") {
         onYouTubeCardSwiped && onYouTubeCardSwiped();

@@ -35,6 +35,7 @@ interface DebateSessionContextType {
   verifySmsCode: (phone: string, code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
   addPhoneToAccount: (phone: string, code: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   addEmailToAccount: (email: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
+  anonAddEmailAndLogin: (email: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
   updateAvatar: (avatarAnimal: AvatarAnimal) => Promise<void>;
   createRoom: (
@@ -208,6 +209,16 @@ export function DebateSessionProvider(
     }
     return response;
   }, [safelyMakeApiCall, user?.id]);
+
+  const anonAddEmailAndLogin = useCallback(async (email: string) => {
+    const response = await api.anonAddEmailAndLogin(email);
+
+    if (response?.data?.user) {
+      setUser(response.data.user);
+    }
+
+    return response;
+  }, [safelyMakeApiCall]);
 
   const createAnonymousUser = useCallback(async () => {
     const response = await safelyMakeApiCall<UserSessionResponse>(() => api.createAnonymousUser());
@@ -755,6 +766,7 @@ export function DebateSessionProvider(
     verifySmsCode,
     addPhoneToAccount,
     addEmailToAccount,
+    anonAddEmailAndLogin,
     createAnonymousUser,
     updateAvatar,
     createRoom,
@@ -816,6 +828,10 @@ export function DebateSessionProvider(
       },
       addEmailToAccount: async (email: string) => {
         console.log("[Showcase] addEmailToAccount called");
+        return { success: true };
+      },
+      anonAddEmailAndLogin: async (_email: string) => {
+        console.log("[Showcase] anonAddEmailAndLogin called");
         return { success: true };
       },
       updateAvatar: async (avatarAnimal: AvatarAnimal) => {
