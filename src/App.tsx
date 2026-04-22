@@ -574,6 +574,7 @@ function AppContent() {
           disagreePercent={qrScanResult.disagreePercent}
           passPercent={qrScanResult.passPercent}
           userVote={qrScanResult.userVote}
+          statementText={qrScanResult.statementText}
           isOpen={true}
           onEmailSubmit={handleQrEmailSubmit}
           onClose={() => setQrScanResult(null)}

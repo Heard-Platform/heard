@@ -21,11 +21,13 @@ export function QRScanResultDialogStory() {
     isActive: true,
     createdAt: Date.now(),
     mode: "realtime",
+    demographicQuestions: [],
   };
 
-  const scenarios: Record<VoteTypeNew, { topic: string; agreePercent: number; disagreePercent: number; passPercent: number; userVote: VoteTypeNew }> = {
+  const scenarios: Record<VoteTypeNew, { topic: string; statementText: string; agreePercent: number; disagreePercent: number; passPercent: number; userVote: VoteTypeNew }> = {
     agree: {
       topic: "Should we close Q Street to cars?",
+      statementText: "Closing Q Street to cars would improve pedestrian safety and reduce pollution.",
       agreePercent: 62,
       disagreePercent: 28,
       passPercent: 10,
@@ -33,6 +35,7 @@ export function QRScanResultDialogStory() {
     },
     disagree: {
       topic: "Is pineapple acceptable on pizza?",
+      statementText: "Pineapple on pizza is a delicious combination that everyone should try.",
       agreePercent: 35,
       disagreePercent: 55,
       passPercent: 10,
@@ -40,6 +43,7 @@ export function QRScanResultDialogStory() {
     },
     pass: {
       topic: "Should the city ban gas stoves?",
+      statementText: "Banning gas stoves would meaningfully reduce indoor air pollution and carbon emissions.",
       agreePercent: 42,
       disagreePercent: 38,
       passPercent: 20,
@@ -122,6 +126,9 @@ export function QRScanResultDialogStory() {
                 <strong>Topic:</strong> {currentScenario.topic}
               </li>
               <li>
+                <strong>Statement:</strong> {currentScenario.statementText}
+              </li>
+              <li>
                 <strong>User Vote:</strong> {currentScenario.userVote}
               </li>
               <li>
@@ -140,6 +147,7 @@ export function QRScanResultDialogStory() {
         disagreePercent={currentScenario.disagreePercent}
         passPercent={currentScenario.passPercent}
         userVote={currentScenario.userVote}
+        statementText={currentScenario.statementText}
         isOpen={dialogOpen}
         onEmailSubmit={async () => console.log("Email submitted")}
         onClose={() => setDialogOpen(false)}
