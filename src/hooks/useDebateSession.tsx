@@ -211,12 +211,12 @@ export function DebateSessionProvider(
   }, [safelyMakeApiCall, user?.id]);
 
   const anonAddEmailAndLogin = useCallback(async (email: string) => {
-    const response = await safelyMakeApiCall<{ user: UserSession }>(
-      () => api.anonAddEmailAndLogin(email),
-    );
+    const response = await api.anonAddEmailAndLogin(email);
+
     if (response?.data?.user) {
       setUser(response.data.user);
     }
+
     return response;
   }, [safelyMakeApiCall]);
 

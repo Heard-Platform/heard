@@ -24,8 +24,9 @@ export function CertifyEmailStep({ onSubmit }: CertifyEmailStepProps) {
     setError(null);
     try {
       await onSubmit(email.trim());
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      const defaultMessage = "Something went wrong. Please try again.";
+      setError(err instanceof Error ? err.message : defaultMessage);
       setLoading(false);
     }
   };
