@@ -402,7 +402,7 @@ function AppContent() {
         }
       }
     })();
-  }, [user, targetRoomId]);
+  }, [user, targetRoomId, joinRoom]);
 
   useEffect(() => {
     if (user && hasCheckedUrl && pendingCommunities.length > 0) {
