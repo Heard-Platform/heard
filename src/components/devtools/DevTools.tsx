@@ -8,6 +8,7 @@ import { FlyersTab } from "./FlyersTab";
 import { VoteMatrixTab } from "./VoteMatrixTab";
 import { VoteStatsTab } from "./VoteStatsTab";
 import { PerformanceTestTab } from "./PerformanceTestTab";
+import { TestingTab } from "./TestingTab";
 import { TabButton } from "./TabButton";
 import {
   parseDevToolsTabFromUrl,
@@ -20,7 +21,7 @@ interface DevToolsProps {
   onExit?: () => void;
 }
 
-type TabType = "vote-matrix" | "clustering" | "email" | "enrichment" | "posts" | "flyers" | "vote-stats" | "performance";
+type TabType = "vote-matrix" | "clustering" | "email" | "enrichment" | "posts" | "flyers" | "vote-stats" | "performance" | "testing";
 
 export function DevTools({ user, onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
@@ -96,6 +97,11 @@ export function DevTools({ user, onExit }: DevToolsProps) {
                 label="Performance"
                 onClick={() => handleTabChange("performance")}
               />
+              <TabButton
+                active={activeTab === "testing"}
+                label="Testing"
+                onClick={() => handleTabChange("testing")}
+              />
             </div>
           </div>
 
@@ -115,6 +121,7 @@ export function DevTools({ user, onExit }: DevToolsProps) {
             {activeTab === "flyers" && <FlyersTab />}
             {activeTab === "vote-stats" && <VoteStatsTab />}
             {activeTab === "performance" && <PerformanceTestTab />}
+            {activeTab === "testing" && <TestingTab />}
           </div>
         </div>
       </div>

@@ -42,6 +42,16 @@ class DevApiClient extends BaseApiClient {
   async testKvAllPerf() {
     return this.timedGet("/performance-test/kv-all");
   }
+
+  async getRoomOgHtml(roomId: string): Promise<string | null> {
+    try {
+      const res = await this.get(`/og/${roomId}`);
+      if (!res.ok) return null;
+      return res.text();
+    } catch {
+      return null;
+    }
+  }
 }
 
 export const devApi = new DevApiClient();
