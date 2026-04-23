@@ -4346,6 +4346,14 @@
     color: var(--color-slate-600);
   }
 
+  .secondary-text {
+    color: var(--color-slate-500);
+  }
+
+  .secondary-text-strong {
+    color: var(--color-slate-600);
+  }
+
   .info-bg {
     background-color: var(--color-violet-50);
   }
@@ -4407,7 +4415,7 @@
   }
 
   .agree-bg {
-    background-color: var(--color-green-50);
+    background-color: var(--color-green-500);
   }
 
   .agree-text {
@@ -4419,7 +4427,7 @@
   }
 
   .super-agree-bg {
-    background-color: var(--color-purple-50);
+    background-color: var(--color-purple-500);
   }
 
   .super-agree-text {
@@ -4431,7 +4439,7 @@
   }
 
   .disagree-bg {
-    background-color: var(--color-red-50);
+    background-color: var(--color-red-500);
   }
 
   .disagree-text {
@@ -4443,7 +4451,7 @@
   }
 
   .pass-bg {
-    background-color: var(--color-amber-50);
+    background-color: var(--color-amber-500);
   }
 
   .pass-text {
@@ -4486,6 +4494,10 @@
 
   .invisible {
     visibility: hidden;
+  }
+
+  .header-3 {
+    color: var(--color-slate-700);
   }
 
   .header-4 {
