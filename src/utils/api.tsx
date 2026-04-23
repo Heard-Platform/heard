@@ -21,6 +21,7 @@ import {
   type Event,
   type NewEvent,
   EventSummary,
+  StatementMerge,
 } from "../types";
 import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
@@ -93,6 +94,13 @@ class ApiClient extends BaseApiClient {
 
   async addEmailToAccount(email: string) {
     return this.request<{ user: UserSession }>("/auth/add-email-to-account", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async anonAddEmailAndLogin(email: string) {
+    return this.request<{ user: UserSession }>("/auth/anon-add-email-and-login", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
@@ -379,6 +387,12 @@ class ApiClient extends BaseApiClient {
 
   async createRealtimeTestRoom() {
     return this.request("/realtime-test-room/create", {
+      method: "POST",
+    });
+  }
+
+  async createScalabilityTest() {
+    return this.request("/dev/scalability-test", {
       method: "POST",
     });
   }
@@ -759,6 +773,38 @@ class ApiClient extends BaseApiClient {
     return this.request<{ html: string }>(`/newsletter/${edition}`, {
       method: "GET",
     });
+  }
+
+  async getStatementMerges(roomId: string) {
+    return this.request<{ merges: StatementMerge[] }>(`/room/${roomId}/mod/statement-merges`);
+  }
+
+  async createStatementMerge(roomId: string, sourceStatementId: string, targetStatementId: string) {
+    return this.request<undefined>(`/room/${roomId}/mod/statement-merges`, {
+      method: "POST",
+      body: JSON.stringify({ sourceStatementId, targetStatementId }),
+    });
+  }
+
+  async deleteStatementMerge(roomId: string, mergeId: string) {
+    return this.request<undefined>(`/room/${roomId}/mod/statement-merges/${mergeId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getVoteMatrix(roomId: string) {
+    return this.request<{
+      statements: Statement[];
+      merges: StatementMerge[];
+      phoneVerified: Record<string, boolean>;
+    }>(`/room/${roomId}/mod/vote-matrix`);
+  }
+
+  trackEvent(type: string, roomId?: string): void {
+    if (safelyGetStorageItem("showComponentShowcase", false))
+      return;
+    this.post("/analytics/event", { type, roomId })
+      .catch(() => {});
   }
 }
 

@@ -33,7 +33,7 @@ interface CreateRoomSheetProps {
   defaultSubHeard?: string;
   defaultTopic?: string;
   userId: string;
-  eventId?: string;
+  eventId?: number;
   onOpenChange: (open: boolean) => void;
   onCreateRoom: (
     newDebate: NewDebateRoom,
@@ -72,6 +72,7 @@ export function CreateRoomSheet({
   const [extractedData, setExtractedData] =
     useState<ExtractedData | null>(null);
   const [editedTopic, setEditedTopic] = useState("");
+  const [editedDescription, setEditedDescription] = useState("");
   const [editedStatements, setEditedStatements] = useState<
     string[]
   >([]);
@@ -124,6 +125,7 @@ export function CreateRoomSheet({
         setEditedStatements([]);
       }
       setExtractedData(null);
+      setEditedDescription("");
       setUploadedImageUrl(null);
       setYoutubeUrl("");
     }
@@ -176,6 +178,7 @@ export function CreateRoomSheet({
 
       const result = await onCreateRoom({
         topic: editedTopic.trim(),
+        description: editedDescription.trim() || undefined,
         subHeard: communityName,
         seedStatements: editedStatements,
         imageUrl: uploadedImageUrl || undefined,
@@ -260,6 +263,7 @@ export function CreateRoomSheet({
 
     if (newCount === 3) {
       setEditedTopic("Should our city invest more in public transportation?");
+      setEditedDescription("A discussion about urban transit investment priorities and how our city should allocate infrastructure spending.");
       setEditedStatements([
         "Public transportation reduces traffic congestion and improves air quality",
         "The cost of expanding public transit is too high for our city's budget",
@@ -400,8 +404,10 @@ export function CreateRoomSheet({
       {currentStep === "compose-post" && (
         <ComposePostStep
           topic={editedTopic}
+          description={editedDescription}
           statements={editedStatements}
           onTopicChange={setEditedTopic}
+          onDescriptionChange={setEditedDescription}
           onStatementsChange={setEditedStatements}
           onSwitchToRantMode={() => setCurrentStep("write-rant")}
           showError={showComposeError}
@@ -420,6 +426,7 @@ export function CreateRoomSheet({
       {currentStep === "review-details" && (
         <ReviewExtractionStep
           topic={editedTopic}
+          description={editedDescription}
           statements={editedStatements}
           isUploadingImage={isUploadingImage}
           uploadedImageUrl={uploadedImageUrl}
@@ -429,6 +436,7 @@ export function CreateRoomSheet({
           demographicQuestions={demographicQuestions}
           hideTopicAndStatements={!cameFromRantMode}
           onTopicChange={setEditedTopic}
+          onDescriptionChange={setEditedDescription}
           onStatementsChange={setEditedStatements}
           onImageUpload={handleImageUpload}
           onYoutubeUrlChange={setYoutubeUrl}

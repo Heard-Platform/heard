@@ -1,10 +1,11 @@
 import { Context, Hono } from "npm:hono";
-import { getDebate } from "./kv-utils.tsx";
+import { getDebate, getStatementsForRoom } from "./kv-utils.tsx";
 import type { DebateRoom, User, VoteType } from "./types.tsx";
-import { processVote } from "./voting-utils.ts";
+import { processVote, countStatementVotes } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
 import { insertFlyerEmail, insertFlyerScan } from "./model-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
+import { validateSession } from "./auth-utils.ts";
 
 export const flyerApi = new Hono();
 
@@ -16,6 +17,12 @@ type FlyerVoteResponse = {
   disagreePercent: number;
   passPercent: number;
   userVote: VoteType;
+  statementText: string;
+  teaserStatement?: {
+    text: string;
+    timestamp: number;
+    voteCount: number;
+  };
 };
 
 flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
@@ -70,9 +77,10 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         400,
       );
     } else {
-      const [room, session] = await Promise.all([
+      const [room, session, roomStatements] = await Promise.all([
         getDebate(result.statement.roomId),
         createSession(userId),
+        getStatementsForRoom(result.statement.roomId),
       ]);
 
       if (!room) {
@@ -101,6 +109,25 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
           ? Math.round((result.statement.passes / totalVotes) * 100)
           : 0;
 
+      const makeTeaserStatement = () => {
+        const other = roomStatements.filter(
+          (s) => s.id !== result.statement.id,
+        );
+
+        const picked =
+          other.length > 0
+            ? other[Math.floor(Math.random() * other.length)]
+            : undefined;
+            
+        return picked
+          ? {
+              text: picked.text,
+              timestamp: picked.timestamp,
+              voteCount: countStatementVotes(picked),
+            }
+          : undefined;
+      }
+
       const response: FlyerVoteResponse = {
         user: result.user,
         sessionId: session.id,
@@ -109,6 +136,8 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         disagreePercent,
         passPercent,
         userVote: result.userVote as VoteType,
+        statementText: result.statement.text,
+        teaserStatement: makeTeaserStatement(),
       };
 
       return c.json(response, 200);
@@ -128,6 +157,7 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
 
 flyerApi.post(
   "/make-server-f1a393b4/flyer/scan",
+  validateSession,
   defineRoute(
     { flyer: { type: "string", required: true } },
     async ({ flyer }: { flyer: string }, c: Context) => {
@@ -138,28 +168,31 @@ flyerApi.post(
   ),
 );
 
-flyerApi.post("/make-server-f1a393b4/flyer/submit-email", async (c) => {
-  try {
-    const { email } = await c.req.json();
+flyerApi.post("/make-server-f1a393b4/flyer/submit-email",
+  validateSession,
+  async (c) => {
+    try {
+      const { email } = await c.req.json();
 
-    if (!email) {
+      if (!email) {
+        return c.json(
+          { success: false, error: "Email is required" },
+          400,
+        );
+      }
+
+      await insertFlyerEmail(email);
+
+      return c.json({ success: true }, 200);
+    } catch (error) {
+      console.error("Error submitting flyer email:", error);
       return c.json(
-        { success: false, error: "Email is required" },
-        400,
+        {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+        500,
       );
     }
-
-    await insertFlyerEmail(email);
-
-    return c.json({ success: true }, 200);
-  } catch (error) {
-    console.error("Error submitting flyer email:", error);
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      500,
-    );
-  }
-});
+  },
+);

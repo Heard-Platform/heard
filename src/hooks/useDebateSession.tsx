@@ -8,6 +8,7 @@ import type {
   DebateRoom,
   NewDebateRoom,
   Statement,
+  StatementMerge,
   VoteType,
   AnalysisData,
   SubHeard,
@@ -17,7 +18,7 @@ import type {
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
-import { ApiResponse, clearSessionId, setSessionId } from "../utils/api-client";
+import { ApiResponse, clearSessionId, getSessionId, setSessionId } from "../utils/api-client";
 import { AvatarAnimal } from "../utils/constants/avatars";
 
 interface DebateSessionContextType {
@@ -34,6 +35,7 @@ interface DebateSessionContextType {
   verifySmsCode: (phone: string, code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
   addPhoneToAccount: (phone: string, code: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   addEmailToAccount: (email: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
+  anonAddEmailAndLogin: (email: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
   updateAvatar: (avatarAnimal: AvatarAnimal) => Promise<void>;
   createRoom: (
@@ -71,14 +73,25 @@ interface DebateSessionContextType {
   createTestRoom: () => Promise<any>;
   createRantTestRoom: () => Promise<any>;
   createRealtimeTestRoom: () => Promise<any>;
+  createScalabilityTest: () => Promise<any>;
   setRoomInactive: (roomId: string) => Promise<boolean>;
   roomStatements: Record<string, Statement[]>;
   getRoomStatements: (roomId: string) => Promise<Statement[]>;
   getRoomAnalysis: (roomId: string) => Promise<AnalysisData | null>;
+  getStatementMerges: ( roomId: string ) => Promise<StatementMerge[]>;
+  createStatementMerge: (
+    roomId: string,
+    sourceStatementId: string,
+    targetStatementId: string,
+  ) => Promise<ApiResponse | null>;
+  deleteStatementMerge: (
+    roomId: string,
+    mergeId: string,
+  ) => Promise<ApiResponse | null>;
   getSubHeards: () => Promise<ApiResponse<{ subHeards: SubHeard[] }> | null>;
   getExplorableSubHeards: () => Promise<ApiResponse<SubHeard[]> | null>;
-  joinSubHeard: (subHeardName: string) => Promise<ApiResponse<undefined> | null>;
-  leaveSubHeard: (subHeardName: string) => Promise<ApiResponse<undefined> | null>;
+  joinSubHeard: (subHeardName: string) => Promise<ApiResponse | null>;
+  leaveSubHeard: (subHeardName: string) => Promise<ApiResponse | null>;
   getEnrichmentConfig: () => Promise<ApiResponse<EnrichmentConfig> | null>;
   setEnrichmentConfig: (
     config: EnrichmentConfig,
@@ -91,7 +104,7 @@ interface DebateSessionContextType {
 
 export type OverridableApiMethods = Pick<
   DebateSessionContextType,
-  "safelyGetUser" | "getExplorableSubHeards" | "createEvent"
+  "user" | "safelyGetUser" | "getExplorableSubHeards" | "createEvent"
 >;
 
 const DebateSessionContext = createContext<DebateSessionContextType | null>(null);
@@ -197,6 +210,16 @@ export function DebateSessionProvider(
     }
     return response;
   }, [safelyMakeApiCall, user?.id]);
+
+  const anonAddEmailAndLogin = useCallback(async (email: string) => {
+    const response = await api.anonAddEmailAndLogin(email);
+
+    if (response?.data?.user) {
+      setUser(response.data.user);
+    }
+
+    return response;
+  }, [safelyMakeApiCall]);
 
   const createAnonymousUser = useCallback(async () => {
     const response = await safelyMakeApiCall<UserSessionResponse>(() => api.createAnonymousUser());
@@ -568,6 +591,26 @@ export function DebateSessionProvider(
     return null;
   }, [getActiveRooms]);
 
+  const createScalabilityTest = useCallback(async () => {
+    try {
+      setError(null);
+      const response = await api.createScalabilityTest();
+      if (response.success && response.data) {
+        return response.data;
+      } else {
+        throw new Error(
+          response.error || "Failed to run scalability test",
+        );
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to run scalability test:", errorMsg);
+    }
+    return null;
+  }, []);
+
   // Mark room as inactive (dev tool)
   const setRoomInactive = useCallback(
     async (roomId: string) => {
@@ -620,6 +663,28 @@ export function DebateSessionProvider(
     },
     [],
   );
+
+  const getStatementMerges = useCallback(
+    async (roomId: string) => {
+      const response = await safelyMakeApiCall<{
+        merges: StatementMerge[];
+      }>(() => api.getStatementMerges(roomId))
+
+      return response?.data?.merges || [];
+    }
+  , [safelyMakeApiCall]);
+
+  const createStatementMerge = useCallback(
+    async (roomId: string, sourceStatementId: string, targetStatementId: string) =>
+      safelyMakeApiCall(
+        () => api.createStatementMerge(roomId, sourceStatementId, targetStatementId)
+      )
+  , [safelyMakeApiCall]);
+
+  const deleteStatementMerge = useCallback(
+    async (roomId: string, mergeId: string) =>
+      safelyMakeApiCall<undefined>(() => api.deleteStatementMerge(roomId, mergeId))
+  , [safelyMakeApiCall]);
 
   const getRoomAnalysis = useCallback(async (roomId: string) => {
     try {
@@ -689,19 +754,21 @@ export function DebateSessionProvider(
     const init = async () => {
       setLoading(true);
 
-      const response = await api.getUser();
-      if (response.success && response.data) {
-        const user = response.data.user;
-        setUser(user);
-        api.trackActivity().catch((err) => {
-          console.error("Failed to track activity on init:", err);
-        });
-      } else if (response.error === "SESSION_EXPIRED") {
-        console.error("Session expired, clearing local data");
-        clearSessionId();
-        return null;
+      if (getSessionId()) {
+        const response = await api.getUser();
+        if (response.success && response.data) {
+          const user = response.data.user;
+          setUser(user);
+          api.trackActivity().catch((err) => {
+            console.error("Failed to track activity on init:", err);
+          });
+        } else if (response.error === "SESSION_EXPIRED") {
+          console.error("Session expired, clearing local data");
+          clearSessionId();
+          return null;
+        }
       }
-
+      
       setLoading(false);
     };
 
@@ -722,6 +789,7 @@ export function DebateSessionProvider(
     verifySmsCode,
     addPhoneToAccount,
     addEmailToAccount,
+    anonAddEmailAndLogin,
     createAnonymousUser,
     updateAvatar,
     createRoom,
@@ -739,10 +807,14 @@ export function DebateSessionProvider(
     createTestRoom,
     createRantTestRoom,
     createRealtimeTestRoom,
+    createScalabilityTest,
     setRoomInactive,
     roomStatements,
     getRoomStatements,
     getRoomAnalysis,
+    getStatementMerges,
+    createStatementMerge,
+    deleteStatementMerge,
     markChanceCardSwiped,
     markYouTubeCardSwiped,
     saveDemographicAnswer,
@@ -782,6 +854,10 @@ export function DebateSessionProvider(
         console.log("[Showcase] addEmailToAccount called");
         return { success: true };
       },
+      anonAddEmailAndLogin: async (_email: string) => {
+        console.log("[Showcase] anonAddEmailAndLogin called");
+        return { success: true };
+      },
       updateAvatar: async (avatarAnimal: AvatarAnimal) => {
         console.log("[Showcase] updateAvatar called");
       },
@@ -804,9 +880,21 @@ export function DebateSessionProvider(
       flagStatement: async (statementId: string, roomId: string) => {
         console.log("[Showcase] flagStatement called");
       },
-      getRoomAnalysis: async () => { 
-        console.log("[Showcase] getRoomAnalysis called"); 
+      getRoomAnalysis: async () => {
+        console.log("[Showcase] getRoomAnalysis called");
         return null;
+      },
+      getStatementMerges: async () => {
+        console.log("[Showcase] getStatementMerges called");
+        return [];
+      },
+      createStatementMerge: async () => {
+        console.log("[Showcase] createStatementMerge called");
+        return { success: true };
+      },
+      deleteStatementMerge: async () => {
+        console.log("[Showcase] deleteStatementMerge called");
+        return { success: true };
       },
       createSeedData: async () => {
         console.log("[Showcase] createSeedData called");
@@ -822,6 +910,10 @@ export function DebateSessionProvider(
       },
       createRealtimeTestRoom: async () => {
         console.log("[Showcase] createRealtimeTestRoom called");
+        return { success: true };
+      },
+      createScalabilityTest: async () => {
+        console.log("[Showcase] createScalabilityTest called");
         return { success: true };
       },
       markChanceCardSwiped: async () => {

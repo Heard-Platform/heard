@@ -5,6 +5,8 @@ import { EmailPreviews } from "./EmailPreviews";
 import { EnrichmentTab } from "./EnrichmentTab";
 import { PostsTab } from "./PostsTab";
 import { FlyersTab } from "./FlyersTab";
+import { VoteMatrixTab } from "./VoteMatrixTab";
+import { VoteStatsTab } from "./VoteStatsTab";
 import { TabButton } from "./TabButton";
 import {
   parseDevToolsTabFromUrl,
@@ -17,12 +19,12 @@ interface DevToolsProps {
   onExit?: () => void;
 }
 
-type TabType = "clustering" | "email" | "enrichment" | "posts" | "flyers";
+type TabType = "vote-matrix" | "clustering" | "email" | "enrichment" | "posts" | "flyers" | "vote-stats";
 
 export function DevTools({ user, onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     const tabFromUrl = parseDevToolsTabFromUrl();
-    return tabFromUrl ? (tabFromUrl as TabType) : "clustering";
+    return tabFromUrl ? (tabFromUrl as TabType) : "vote-matrix";
   });
 
   const handleTabChange = (tab: TabType) => {
@@ -54,6 +56,11 @@ export function DevTools({ user, onExit }: DevToolsProps) {
           <div className="border-b">
             <div className="flex gap-1 px-6">
               <TabButton
+                active={activeTab === "vote-matrix"}
+                label="Vote Matrix"
+                onClick={() => handleTabChange("vote-matrix")}
+              />
+              <TabButton
                 active={activeTab === "clustering"}
                 label="Clustering"
                 onClick={() => handleTabChange("clustering")}
@@ -78,10 +85,16 @@ export function DevTools({ user, onExit }: DevToolsProps) {
                 label="Flyers"
                 onClick={() => handleTabChange("flyers")}
               />
+              <TabButton
+                active={activeTab === "vote-stats"}
+                label="Vote Stats"
+                onClick={() => handleTabChange("vote-stats")}
+              />
             </div>
           </div>
 
           <div className="p-6">
+            {activeTab === "vote-matrix" && <VoteMatrixTab />}
             {activeTab === "clustering" && (
               <div className="space-y-4">
                 <p className="text-slate-600">
@@ -94,6 +107,7 @@ export function DevTools({ user, onExit }: DevToolsProps) {
             {activeTab === "enrichment" && <EnrichmentTab />}
             {activeTab === "posts" && <PostsTab />}
             {activeTab === "flyers" && <FlyersTab />}
+            {activeTab === "vote-stats" && <VoteStatsTab />}
           </div>
         </div>
       </div>

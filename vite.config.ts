@@ -2,11 +2,13 @@
   import { defineConfig } from 'vite';
   import react from '@vitejs/plugin-react-swc';
   import path from 'path';
+  import tailwindcss from '@tailwindcss/vite';
 
   export default defineConfig(() => {
     return {
     plugins: [
       react(),
+      tailwindcss(),
       {
         name: 'assemblyai-token-proxy',
         configureServer(server) {

@@ -8,24 +8,29 @@ import { Button } from "./ui/button";
 import {
   Globe, UserCircle, ArrowRight,
   BarChart3,
-  Loader2
+  Loader2,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { SwipeableStatementStack } from "./room/SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { AddResponseModal } from "./room/AddResponseModal";
 import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType, UserSession } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
+import { DeduplicateModal } from "./room/DeduplicateModal";
+import { VoteMatrixModal } from "./room/VoteMatrixModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { timeAgoShort } from "../utils/time";
 import { AddResponseButton } from "./widgets/AddResponseButton";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
+import { LinkedText } from "./widgets/LinkedText";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -49,6 +54,7 @@ interface RoomCardProps {
   onRefreshStatements: () => Promise<void>;
   onDiscussStatement: (statementText: string, subHeard?: string) => void;
   onShowAccountSetupModal: (featureText: string) => void;
+  onSelectSubHeard: (subHeard: string) => void;
 }
 
 export function RoomCard({
@@ -67,6 +73,7 @@ export function RoomCard({
   onRefreshStatements,
   onDiscussStatement,
   onShowAccountSetupModal,
+  onSelectSubHeard,
 }: RoomCardProps) {
   const { resetTutorialTimer } = useSwipeTutorialContext();
   
@@ -76,14 +83,26 @@ export function RoomCard({
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
 
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [descriptionTruncated, setDescriptionTruncated] = useState(false);
+  const descriptionRef = useRef<HTMLSpanElement>(null);
   const [showAddResponseModal, setShowAddResponseModal] = useState(false);
+  const [showDeduplication, setShowDeduplication] = useState(false);
+  const [showVoteMatrix, setShowVoteMatrix] = useState(false);
   const { markChanceCardSwiped, markYouTubeCardSwiped } = useDebateSession();
+
+  const isHost = user.id === room.hostId;
 
   useEffect(() => {
     if (analysisRoomId === room.id) {
       setShowAnalysis(true);
     }
   }, [analysisRoomId, room.id]);
+
+  useLayoutEffect(() => {
+    const el = descriptionRef.current;
+    if (el) setDescriptionTruncated(el.scrollHeight > el.clientHeight);
+  }, [room.description]);
 
   useEffect(() => {
     setChanceCardSwiped(room.chanceCardSwiped || false);
@@ -231,7 +250,10 @@ export function RoomCard({
                   <>
                     <Globe className="w-3.5 h-3.5 prefix-icon shrink-0" />
                     {room.subHeard && (
-                      <span className="font-medium text-foreground truncate">
+                      <span
+                        className={`font-medium text-foreground truncate cursor-pointer hover:underline active:opacity-50 transition-opacity`}
+                        onClick={(e) => { e.stopPropagation(); onSelectSubHeard(room.subHeard!); }}
+                      >
                         {formatSubHeardDisplay(room.subHeard)}
                       </span>
                     )}
@@ -249,7 +271,9 @@ export function RoomCard({
                   isRealtime={isRealtime}
                   hasRealtimeEnded={hasRealtimeEnded}
                   isDeveloper={isDeveloper}
-                  handleOpenAnalysis={handleOpenAnalysis}
+                  isHost={isHost}
+                  onOpenDeduplication={() => setShowDeduplication(true)}
+                  onOpenVoteMatrix={() => setShowVoteMatrix(true)}
                 />
               </div>
             </div>
@@ -287,6 +311,24 @@ export function RoomCard({
                 {room.topic}
               </h2>
             </div>
+
+            {room.description && (
+              <div
+                className={`text-sm text-muted-foreground transition-opacity ${descriptionTruncated || descriptionExpanded ? "cursor-pointer active:opacity-60" : ""}`}
+                onClick={() => (descriptionTruncated || descriptionExpanded) && setDescriptionExpanded((v) => !v)}
+              >
+                <span ref={descriptionRef} className={descriptionExpanded ? "" : "line-clamp-1"}>
+                  <LinkedText text={room.description} />
+                </span>
+                {(descriptionTruncated || descriptionExpanded) && (
+                  <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground/50 mt-0.5">
+                    {descriptionExpanded
+                      ? <><ChevronUp className="w-3 h-3" />see less</>
+                      : <><ChevronDown className="w-3 h-3" />see more</>}
+                  </span>
+                )}
+              </div>
+            )}
 
           </motion.div>
 
@@ -416,6 +458,22 @@ export function RoomCard({
           roomId={room.id}
           isDeveloper={isDeveloper}
           onClose={handleCloseAnalysis}
+        />
+      )}
+
+      {showDeduplication && (
+        <DeduplicateModal
+          roomId={room.id}
+          onClose={() => setShowDeduplication(false)}
+        />
+      )}
+
+      {showVoteMatrix && (
+        <VoteMatrixModal
+          roomId={room.id}
+          roomTopic={room.topic}
+          participantCount={participantCount}
+          onClose={() => setShowVoteMatrix(false)}
         />
       )}
 

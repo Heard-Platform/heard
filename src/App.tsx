@@ -83,7 +83,7 @@ function AppContent() {
     setCurrentSubHeard,
     resetSession,
     roomStatements,
-    submitFlyerEmail,
+    anonAddEmailAndLogin,
   } = useDebateSession();
 
   const handleMagicLinkSuccess = async () => {
@@ -134,13 +134,14 @@ function AppContent() {
   };
 
   const handleQrEmailSubmit = async (email: string) => {
-    const response = await submitFlyerEmail(email);
-    if (response?.success) {
-      setTargetRoomId(qrScanResult!.room.id);
-      updateUrlForRoom(qrScanResult!.room.id);
-      setQrScanResult(null);
+    if (user?.isAnonymous && email) {
+      const response = await anonAddEmailAndLogin(email);
+      if (!response?.success) throw new Error(response?.error || "Unknown error");
       toast.success("Welcome to Heard! 🎉");
     }
+    setTargetRoomId(qrScanResult!.room.id);
+    updateUrlForRoom(qrScanResult!.room.id);
+    setQrScanResult(null);
   };
 
   const handleLogout = () => {
@@ -244,6 +245,12 @@ function AppContent() {
         window.location.pathname.startsWith("/parklet");
       const is2b04Route =
         window.location.pathname.startsWith("/2b04");
+      const isRatsRoute =
+        window.location.pathname.startsWith("/rats");
+      const isShirtAgreeRoute =
+        window.location.pathname.startsWith("/shirt-agree");
+      const isShirtDisagreeRoute =
+        window.location.pathname.startsWith("/shirt-disagree");
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
@@ -272,20 +279,35 @@ function AppContent() {
         } else {
           autoJoinAsAnonymous(KALORAMA_ROOM_ID);
         }
-      } else if (isParkletRoute || is2b04Route) {
+      } else if (isParkletRoute || is2b04Route || isRatsRoute) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
           : is2b04Route
             ? "5zagvhpy4iamnf18dh5"
-            : undefined;
+            : isRatsRoute
+              ? "rrrir5rzsi9moacjd80"
+              : undefined;
+
+        const routeName = isParkletRoute ? "parklet" : is2b04Route ? "2b04" : "rats";
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
-        } else if (user) {
-          setTargetRoomId(hardcodedRoomId);
         } else {
-          autoJoinAsAnonymous(hardcodedRoomId);
+          setPendingFlyerScan(routeName);
+          setPendingCommunities(KALORAMA_COMMUNITIES);
+          if (user) {
+            setTargetRoomId(hardcodedRoomId);
+          } else {
+            autoJoinAsAnonymous(hardcodedRoomId);
+          }
         }
+      } else if (isShirtAgreeRoute || isShirtDisagreeRoute) {
+        handleFlyerJoin({
+          flyerId: "43rmfvxw9wjmoaizr4y",
+          statementId: "fa34pfk93dumoaizr6n",
+          vote: isShirtAgreeRoute ? "agree" : "disagree",
+          flyerGroup: 1,
+        });
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (eventIdFromUrl) {
@@ -574,6 +596,8 @@ function AppContent() {
           disagreePercent={qrScanResult.disagreePercent}
           passPercent={qrScanResult.passPercent}
           userVote={qrScanResult.userVote}
+          statementText={qrScanResult.statementText}
+          teaserStatement={qrScanResult.teaserStatement}
           isOpen={true}
           onEmailSubmit={handleQrEmailSubmit}
           onClose={() => setQrScanResult(null)}

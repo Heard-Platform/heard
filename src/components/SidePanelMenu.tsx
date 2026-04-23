@@ -98,6 +98,7 @@ export function SidePanelMenu({
     createTestRoom,
     createRantTestRoom,
     createRealtimeTestRoom,
+    createScalabilityTest,
   } = useDebateSession();
 
   const closeMenuAndRun = (action: () => void) => {
@@ -142,6 +143,16 @@ export function SidePanelMenu({
     } catch (error) {
       console.error("Error creating realtime test room:", error);
       alert("❌ Failed to create realtime test room");
+    }
+  };
+
+  const handleCreateScalabilityTest = async () => {
+    try {
+      const result = await createScalabilityTest();
+      alert(`✅ ${result?.message ?? "Scalability test created!"}`);
+    } catch (error) {
+      console.error("Error running scalability test:", error);
+      alert("❌ Failed to run scalability test");
     }
   };
 
@@ -454,6 +465,15 @@ export function SidePanelMenu({
                     >
                       <Clock className="w-3 h-3 mr-2" />
                       Real-time Test Room (5min)
+                    </Button>
+                    <Button
+                      onClick={handleCreateScalabilityTest}
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-red-50 border-red-200 text-red-800"
+                    >
+                      <Database className="w-3 h-3 mr-2" />
+                      Scalability Test (1k users)
                     </Button>
                   </div>
                 </div>

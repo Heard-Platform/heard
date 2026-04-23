@@ -28,9 +28,11 @@ import { internalConfigApi } from "./internal-config-api.tsx";
 import { enrichmentApi } from "./enrichment-api.ts";
 import { userRankApi } from "./user-rank-api.tsx";
 import { accountApi } from "./account-api.ts";
+import { analyticsApi } from "./analytics-api.ts";
 import { eventApi } from "./event-api.tsx";
+import { modApi } from "./mod-api.tsx";
 import { validateAdmin, validateCronAuth, validateDeveloper } from "./internal-utils.ts";
-import { validateSession } from "./auth-utils.ts";
+import { validateSession, validateHost } from "./auth-utils.ts";
 import { API_URL_PREFIX } from "./constants.tsx";
 
 type Variables = {
@@ -104,9 +106,8 @@ protect(dontValidate, ["orgs/*", "user/*",]);
 
 // Account
 protect(validateSession, [
-  "account/*", "activity/*", "chance-card/*", "event/*", "events",
-  "feedback/*", "flyer/*",
-  "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
+  "account/*", "activity/*", "analytics/*", "chance-card/*", "event/*", "events",
+  "feedback/*", "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
   "statement/*", "subheard/*", "subheards", "subheards/*",
   "upload-debate-image", "user-rank", "vine/*", "youtube-card/*",
 ]);
@@ -116,6 +117,9 @@ protect(validateDeveloper, [
   "dev/*", "internal/*", "stats/*", "reddit/*",
   "test-room/*", "rant-test-room/*", "realtime-test-room/*", "seed/*",
 ]);
+
+// Host-only mod routes
+protect(validateHost, ["room/:roomId/mod/*"]);
 
 // Admin
 protect(validateAdmin, ["admin/*", "one-time-fixes/*"]);
@@ -132,6 +136,7 @@ app.route("/", debateApi);
 app.route("/", adminApi);
 app.route("/", authApi);
 app.route("/", accountApi);
+app.route("/", analyticsApi);
 app.route("/", loginApi);
 app.route("/", redditApi);
 app.route("/", oneTimeFixesApi);
@@ -142,6 +147,7 @@ app.route("/", statsApi);
 app.route("/", featuresResultsTrackerApi);
 app.route("/", polisImportApi);
 app.route("/", analysisApi);
+app.route("/", modApi);
 app.route("/", vineApi);
 app.route("/", emailPreviewsApi);
 app.route("/", digestEmailOrchestratorApi);
