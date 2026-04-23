@@ -73,6 +73,7 @@ interface DebateSessionContextType {
   createTestRoom: () => Promise<any>;
   createRantTestRoom: () => Promise<any>;
   createRealtimeTestRoom: () => Promise<any>;
+  createScalabilityTest: () => Promise<any>;
   setRoomInactive: (roomId: string) => Promise<boolean>;
   roomStatements: Record<string, Statement[]>;
   getRoomStatements: (roomId: string) => Promise<Statement[]>;
@@ -590,6 +591,26 @@ export function DebateSessionProvider(
     return null;
   }, [getActiveRooms]);
 
+  const createScalabilityTest = useCallback(async () => {
+    try {
+      setError(null);
+      const response = await api.createScalabilityTest();
+      if (response.success && response.data) {
+        return response.data;
+      } else {
+        throw new Error(
+          response.error || "Failed to run scalability test",
+        );
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      console.error("Failed to run scalability test:", errorMsg);
+    }
+    return null;
+  }, []);
+
   // Mark room as inactive (dev tool)
   const setRoomInactive = useCallback(
     async (roomId: string) => {
@@ -784,6 +805,7 @@ export function DebateSessionProvider(
     createTestRoom,
     createRantTestRoom,
     createRealtimeTestRoom,
+    createScalabilityTest,
     setRoomInactive,
     roomStatements,
     getRoomStatements,
@@ -886,6 +908,10 @@ export function DebateSessionProvider(
       },
       createRealtimeTestRoom: async () => {
         console.log("[Showcase] createRealtimeTestRoom called");
+        return { success: true };
+      },
+      createScalabilityTest: async () => {
+        console.log("[Showcase] createScalabilityTest called");
         return { success: true };
       },
       markChanceCardSwiped: async () => {

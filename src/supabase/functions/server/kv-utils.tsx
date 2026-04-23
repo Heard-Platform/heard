@@ -92,6 +92,27 @@ export const bulkUpsert = async (
   }
 };
 
+export const parallelBulkUpsert = async (
+  items: any[],
+  keyFn: (item: any) => string,
+  batchSize = 50,
+  concurrency = 20,
+) => {
+  const records = items.map((item) => ({
+    key: keyFn(item),
+    value: JSON.stringify(item),
+  }));
+  const batches: (typeof records)[] = [];
+  for (let i = 0; i < records.length; i += batchSize) {
+    batches.push(records.slice(i, i + batchSize));
+  }
+  for (let i = 0; i < batches.length; i += concurrency) {
+    await Promise.all(
+      batches.slice(i, i + concurrency).map((batch) => kv.bulkSet(batch)),
+    );
+  }
+};
+
 /**
  * Entity-specific helpers for common KV operations
  */

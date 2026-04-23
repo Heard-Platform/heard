@@ -391,6 +391,12 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async createScalabilityTest() {
+    return this.request("/dev/scalability-test", {
+      method: "POST",
+    });
+  }
+
   async createAnonDebate() {
     return this.request<DevAnonDebate>(
       "/dev/create-anon-enabled-debate",
