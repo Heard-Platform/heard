@@ -387,19 +387,21 @@ function AppContent() {
   ]);
 
   useEffect(() => {
-    if (user && targetRoomId) {
-      const autoJoinRoom = async () => {
+    (async () => {
+      if (user && targetRoomId) {
         const roomData = await joinRoom(targetRoomId);
         if (roomData) {
+          if (roomData.subHeard) {
+            setCurrentSubHeard(roomData.subHeard);
+          }
           setIsJoiningAnonymously(false);
         } else {
           setTargetRoomId(null);
           clearRoomFromUrl();
           setIsJoiningAnonymously(false);
         }
-      };
-      autoJoinRoom();
-    }
+      }
+    })();
   }, [user, targetRoomId]);
 
   useEffect(() => {
