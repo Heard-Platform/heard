@@ -4,11 +4,26 @@ import {
   saveUserAndEmail,
 } from "./auth-api.tsx";
 import { saveDebateRoom } from "./debate-api.tsx";
-import { DebateRoom } from "./types.tsx";
+import {
+  DebateRoom,
+  User,
+  Statement,
+  Vote,
+  VoteType,
+  CommunityMembership,
+} from "./types.tsx";
 import { generateId } from "./utils.tsx";
 import { API_URL_PREFIX } from "./constants.tsx";
-import { getAllDebates } from "./kv-utils.tsx";
-import { getAllRealUsers, getDebate } from "./kv-utils.tsx";
+import {
+  getAllDebates,
+  getAllRealUsers,
+  getDebate,
+  userKeyFn,
+  membershipKeyFn,
+  statementKeyFn,
+  voteKeyFn,
+  parallelBulkUpsert,
+} from "./kv-utils.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
@@ -204,6 +219,174 @@ app.get(
     },
     "Failed to fetch flyer stats"
   )
+);
+
+const SAMPLE_STATEMENTS = [
+  "The city should invest more in public transit infrastructure",
+  "Remote work has permanently changed how we use office space",
+  "Bike lanes should replace parking on main streets",
+  "Local businesses deserve priority over national chains",
+  "Green spaces improve mental health in urban environments",
+  "Mixed-use zoning makes neighborhoods more livable",
+  "Rent control protects long-term residents from displacement",
+  "Solar panels should be required on all new construction",
+  "Pedestrian-first street design reduces traffic accidents",
+  "Community gardens strengthen neighborhood social bonds",
+  "Electric vehicle charging should be publicly funded",
+  "Affordable housing quotas should apply to all new developments",
+  "Food trucks add vibrancy to urban commercial corridors",
+  "Trees on residential streets should be protected by law",
+  "Public libraries are essential community infrastructure",
+  "Street parking fees should fund public transportation",
+  "Noise ordinances should be stricter in residential zones",
+  "Farmers markets support local food systems",
+  "Urban density reduces per-capita carbon footprint",
+  "Historic preservation limits necessary urban growth",
+];
+
+const VOTE_DISTRIBUTION: VoteType[] = [
+  "agree", "agree", "agree", "agree", "agree",
+  "disagree", "disagree", "disagree",
+  "pass", "pass",
+];
+
+app.post(
+  `${API_URL_PREFIX}/dev/scalability-test`,
+  async (c: Context) => {
+    try {
+      const roomId = generateId();
+      const now = Date.now();
+
+      const room: DebateRoom = {
+        id: roomId,
+        topic: "Scalability test room",
+        phase: "lobby",
+        subPhase: "voting",
+        gameNumber: 1,
+        roundStartTime: now,
+        participants: [],
+        hostId: "system",
+        isActive: true,
+        createdAt: now,
+        mode: "realtime",
+        subHeard: "test",
+        isTestRoom: true,
+        endTime: now + 7 * 24 * 60 * 60 * 1000,
+      };
+      await saveDebateRoom(room);
+
+      const users: User[] = Array.from({ length: 1000 }, (_, i) => ({
+        id: generateId(),
+        nickname: `TestUser${i + 1}`,
+        email: "",
+        score: 0,
+        streak: 0,
+        lastActive: now,
+        isTestUser: true,
+        isAnonymous: true,
+        emailDigestsEnabled: false,
+        createdAt: now,
+      }));
+
+      const memberships: CommunityMembership[] = users.map((user) => ({
+        userId: user.id,
+        subHeard: "test",
+        joinedAt: now,
+      }));
+
+      await parallelBulkUpsert(users, userKeyFn);
+      await parallelBulkUpsert(memberships, (m: CommunityMembership) =>
+        membershipKeyFn(m.userId, m.subHeard)
+      );
+
+      const statements: Statement[] = [];
+      const userOwnedStatementIds = new Map<string, Set<string>>();
+
+      for (const user of users) {
+        const count = Math.floor(Math.random() * 4);
+        const ownIds = new Set<string>();
+        for (let i = 0; i < count; i++) {
+          const statementId = generateId();
+          const text = SAMPLE_STATEMENTS[
+            Math.floor(Math.random() * SAMPLE_STATEMENTS.length)
+          ];
+          statements.push({
+            id: statementId,
+            text,
+            author: user.id,
+            agrees: 0,
+            disagrees: 0,
+            passes: 0,
+            superAgrees: 0,
+            roomId,
+            timestamp: now + Math.floor(Math.random() * 3_600_000),
+            round: 1,
+            voters: {},
+          });
+          ownIds.add(statementId);
+        }
+        userOwnedStatementIds.set(user.id, ownIds);
+      }
+
+      const statementById = new Map(statements.map((s) => [s.id, s]));
+      const allStatementIds = statements.map((s) => s.id);
+
+      const votes: Vote[] = [];
+
+      for (const user of users) {
+        const voteCount = 20 + Math.floor(Math.random() * 21);
+        const ownIds = userOwnedStatementIds.get(user.id) ?? new Set();
+        const eligible = allStatementIds.filter((id) => !ownIds.has(id));
+        const shuffled = eligible
+          .map((id) => [Math.random(), id] as [number, string])
+          .sort((a, b) => a[0] - b[0])
+          .map(([, id]) => id)
+          .slice(0, Math.min(voteCount, eligible.length));
+
+        for (const statementId of shuffled) {
+          const voteType =
+            VOTE_DISTRIBUTION[
+              Math.floor(Math.random() * VOTE_DISTRIBUTION.length)
+            ];
+          votes.push({
+            id: generateId(),
+            statementId,
+            userId: user.id,
+            voteType,
+            timestamp: now,
+          });
+          const stmt = statementById.get(statementId)!;
+          if (voteType === "agree") stmt.agrees++;
+          else if (voteType === "disagree") stmt.disagrees++;
+          else if (voteType === "pass") stmt.passes++;
+          else if (voteType === "super_agree") stmt.superAgrees++;
+          stmt.voters[user.id] = voteType;
+        }
+      }
+
+      await parallelBulkUpsert(statements, statementKeyFn);
+      await parallelBulkUpsert(votes, voteKeyFn);
+
+      return c.json({
+        success: true,
+        roomId,
+        userCount: users.length,
+        statementCount: statements.length,
+        voteCount: votes.length,
+        message: `Created ${statements.length} statements and ${votes.length} votes across ${users.length} users`,
+      });
+    } catch (error) {
+      console.error("Error running scalability test:", error);
+      return c.json(
+        {
+          success: false,
+          error:
+            error instanceof Error ? error.message : "Unknown error",
+        },
+        500,
+      );
+    }
+  },
 );
 
 export { app as devApi };
