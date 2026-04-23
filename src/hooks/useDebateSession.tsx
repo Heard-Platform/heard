@@ -18,7 +18,7 @@ import type {
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
-import { ApiResponse, clearSessionId, setSessionId } from "../utils/api-client";
+import { ApiResponse, clearSessionId, getSessionId, setSessionId } from "../utils/api-client";
 import { AvatarAnimal } from "../utils/constants/avatars";
 
 interface DebateSessionContextType {
@@ -104,7 +104,7 @@ interface DebateSessionContextType {
 
 export type OverridableApiMethods = Pick<
   DebateSessionContextType,
-  "safelyGetUser" | "getExplorableSubHeards" | "createEvent"
+  "user" | "safelyGetUser" | "getExplorableSubHeards" | "createEvent"
 >;
 
 const DebateSessionContext = createContext<DebateSessionContextType | null>(null);
@@ -754,19 +754,21 @@ export function DebateSessionProvider(
     const init = async () => {
       setLoading(true);
 
-      const response = await api.getUser();
-      if (response.success && response.data) {
-        const user = response.data.user;
-        setUser(user);
-        api.trackActivity().catch((err) => {
-          console.error("Failed to track activity on init:", err);
-        });
-      } else if (response.error === "SESSION_EXPIRED") {
-        console.error("Session expired, clearing local data");
-        clearSessionId();
-        return null;
+      if (getSessionId()) {
+        const response = await api.getUser();
+        if (response.success && response.data) {
+          const user = response.data.user;
+          setUser(user);
+          api.trackActivity().catch((err) => {
+            console.error("Failed to track activity on init:", err);
+          });
+        } else if (response.error === "SESSION_EXPIRED") {
+          console.error("Session expired, clearing local data");
+          clearSessionId();
+          return null;
+        }
       }
-
+      
       setLoading(false);
     };
 

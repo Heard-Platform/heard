@@ -3,6 +3,8 @@ import { QRScanResultDialog } from "../components/room/QRScanResultDialog";
 import { Button } from "../components/ui/button";
 import { QrCode } from "lucide-react";
 import { DebateRoom, VoteTypeNew, VoteType } from "../types";
+import { DebateSessionProvider } from "../hooks/useDebateSession";
+import { mockUser } from "./mockData";
 
 export function QRScanResultDialogStory() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -147,18 +149,20 @@ export function QRScanResultDialogStory() {
         </div>
       </div>
 
-      <QRScanResultDialog
-        room={{ ...mockRoom, topic: currentScenario.topic }}
-        agreePercent={currentScenario.agreePercent}
-        disagreePercent={currentScenario.disagreePercent}
-        passPercent={currentScenario.passPercent}
-        userVote={currentScenario.userVote}
-        statementText={currentScenario.statementText}
-        teaserStatement={currentScenario.teaserStatement}
-        isOpen={dialogOpen}
-        onEmailSubmit={async () => console.log("Email submitted")}
-        onClose={() => setDialogOpen(false)}
-      />
+      <DebateSessionProvider showcaseOverrides={{user: {...mockUser, isAnonymous: true}}}>
+        <QRScanResultDialog
+          room={{ ...mockRoom, topic: currentScenario.topic }}
+          agreePercent={currentScenario.agreePercent}
+          disagreePercent={currentScenario.disagreePercent}
+          passPercent={currentScenario.passPercent}
+          userVote={currentScenario.userVote}
+          statementText={currentScenario.statementText}
+          teaserStatement={currentScenario.teaserStatement}
+          isOpen={dialogOpen}
+          onEmailSubmit={async () => console.log("Email submitted")}
+          onClose={() => setDialogOpen(false)}
+        />
+      </DebateSessionProvider>
     </div>
   );
 }

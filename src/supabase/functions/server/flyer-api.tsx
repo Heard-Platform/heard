@@ -5,6 +5,7 @@ import { processVote, countStatementVotes } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
 import { insertFlyerEmail, insertFlyerScan } from "./model-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
+import { validateSession } from "./auth-utils.ts";
 
 export const flyerApi = new Hono();
 
@@ -156,6 +157,7 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
 
 flyerApi.post(
   "/make-server-f1a393b4/flyer/scan",
+  validateSession,
   defineRoute(
     { flyer: { type: "string", required: true } },
     async ({ flyer }: { flyer: string }, c: Context) => {
@@ -166,28 +168,31 @@ flyerApi.post(
   ),
 );
 
-flyerApi.post("/make-server-f1a393b4/flyer/submit-email", async (c) => {
-  try {
-    const { email } = await c.req.json();
+flyerApi.post("/make-server-f1a393b4/flyer/submit-email",
+  validateSession,
+  async (c) => {
+    try {
+      const { email } = await c.req.json();
 
-    if (!email) {
+      if (!email) {
+        return c.json(
+          { success: false, error: "Email is required" },
+          400,
+        );
+      }
+
+      await insertFlyerEmail(email);
+
+      return c.json({ success: true }, 200);
+    } catch (error) {
+      console.error("Error submitting flyer email:", error);
       return c.json(
-        { success: false, error: "Email is required" },
-        400,
+        {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+        500,
       );
     }
-
-    await insertFlyerEmail(email);
-
-    return c.json({ success: true }, 200);
-  } catch (error) {
-    console.error("Error submitting flyer email:", error);
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      500,
-    );
-  }
-});
+  },
+);
