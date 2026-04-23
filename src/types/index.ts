@@ -460,3 +460,11 @@ export interface EnrichmentConfig {
 }
 
 export type Environment = "production" | "development";
+
+export interface VoteStats {
+  total: number;
+  uniqueVoters: number;
+  avgVotesPerUser: number;
+  byType: Record<string, number>;
+  distributionByUser: Record<string, number>;
+}

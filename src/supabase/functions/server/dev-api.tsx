@@ -17,6 +17,7 @@ import { API_URL_PREFIX } from "./constants.tsx";
 import {
   getAllDebates,
   getAllRealUsers,
+  getAllVotes,
   getDebate,
   userKeyFn,
   membershipKeyFn,
@@ -219,6 +220,65 @@ app.get(
     },
     "Failed to fetch flyer stats"
   )
+);
+
+app.get(
+  `${API_URL_PREFIX}/dev/vote-stats`,
+  defineRoute(
+    {},
+    async () => {
+      const votes = await getAllVotes();
+
+      const byType: Record<string, number> = {
+        agree: 0,
+        disagree: 0,
+        pass: 0,
+        super_agree: 0,
+      };
+
+      const votesByUser = new Map<string, number>();
+
+      for (const vote of votes) {
+        byType[vote.voteType] = (byType[vote.voteType] || 0) + 1;
+        votesByUser.set(vote.userId, (votesByUser.get(vote.userId) || 0) + 1);
+      }
+
+      const uniqueVoters = votesByUser.size;
+      const avgVotesPerUser =
+        uniqueVoters > 0
+          ? Math.round((votes.length / uniqueVoters) * 10) / 10
+          : 0;
+
+      const distribution: Record<string, number> = {
+        "1": 0,
+        "2–5": 0,
+        "6–10": 0,
+        "11–20": 0,
+        "21–50": 0,
+        "51–100": 0,
+        "100+": 0,
+      };
+
+      for (const count of votesByUser.values()) {
+        if (count === 1) distribution["1"]++;
+        else if (count <= 5) distribution["2–5"]++;
+        else if (count <= 10) distribution["6–10"]++;
+        else if (count <= 20) distribution["11–20"]++;
+        else if (count <= 50) distribution["21–50"]++;
+        else if (count <= 100) distribution["51–100"]++;
+        else distribution["100+"]++;
+      }
+
+      return {
+        total: votes.length,
+        uniqueVoters,
+        avgVotesPerUser,
+        byType,
+        distributionByUser: distribution,
+      };
+    },
+    "Failed to fetch vote stats",
+  ),
 );
 
 const SAMPLE_STATEMENTS = [

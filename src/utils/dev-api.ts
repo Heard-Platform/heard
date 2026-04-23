@@ -1,4 +1,5 @@
 import { BaseApiClient } from "./api-client";
+import type { VoteStats } from "../types";
 
 interface FlyerRoomData {
   topic: string;
@@ -14,6 +15,10 @@ class DevApiClient extends BaseApiClient {
         method: "GET",
       },
     );
+  }
+
+  async getVoteStats() {
+    return this.request<VoteStats>("/dev/vote-stats", { method: "GET" });
   }
 }
 
