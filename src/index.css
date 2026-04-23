@@ -4476,6 +4476,10 @@
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
 
+  .error-border {
+    border-color: var(--color-red-500);
+  }
+  
   .error-text {
     color: var(--color-red-500);
   }
@@ -4485,7 +4489,7 @@
   }
 
   .header-4 {
-    color: var(--color-slate-400);
+    color: var(--color-slate-500);
   }
 
   /* Formatting */

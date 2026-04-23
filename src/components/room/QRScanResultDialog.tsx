@@ -8,6 +8,7 @@ import { DebateRoom } from "../../types";
 import { VoteType } from "../../types";
 import { isValidEmail } from "../../utils/validation";
 import { TOSText } from "../onboarding/TOSText";
+import { useDebateSession } from "../../hooks/useDebateSession";
 import moment from "moment";
 
 export type QRScanResult = {
@@ -17,9 +18,7 @@ export type QRScanResult = {
   passPercent: number;
   userVote: VoteType;
   statementText: string;
-  teaserStatementText?: string;
-  teaserStatementTimestamp?: number;
-  teaserStatementVoteCount?: number;
+  teaserStatement?: { text: string; timestamp: number; voteCount: number };
 };
 
 interface QRScanResultDialogProps extends QRScanResult {
@@ -35,13 +34,13 @@ export function QRScanResultDialog({
   passPercent,
   userVote,
   statementText,
-  teaserStatementText,
-  teaserStatementTimestamp,
-  teaserStatementVoteCount,
+  teaserStatement,
   isOpen,
   onEmailSubmit,
   onClose,
 }: QRScanResultDialogProps) {
+  const { user } = useDebateSession();
+  const isAnonymous = !!user?.isAnonymous;
   const [showBars, setShowBars] = useState(false);
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -87,8 +86,12 @@ export function QRScanResultDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email.trim() || !isValidEmail(email)) {
-      setError(!email.trim() ? "Please enter your email to join the discussion" : "Please enter a valid email");
+    if (isAnonymous && (!email.trim() || !isValidEmail(email))) {
+      setError(
+        !email.trim()
+          ? "Please enter your email to join the discussion"
+          : "Please enter a valid email",
+      );
       setShakeEmail(true);
       setTimeout(() => setShakeEmail(false), 500);
       return;
@@ -100,7 +103,7 @@ export function QRScanResultDialog({
     try {
       await onEmailSubmit(email);
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "An error occurred. Please try again.");
       setSubmitting(false);
     }
   };
@@ -140,7 +143,7 @@ export function QRScanResultDialog({
                 className="text-sm text-slate-300"
               >
                 You voted <strong>{userVote}</strong> on{" "}
-                <strong>{statementText}</strong>! 🎉
+                <strong>{statementText}</strong>
               </motion.p>
             </div>
 
@@ -228,64 +231,57 @@ export function QRScanResultDialog({
               transition={{ delay: 1.5 }}
               className="space-y-4"
             >
-              {teaserStatementText && (
+              {teaserStatement && (
                 <div className="space-y-2">
                   <p className="text-xs font-semibold uppercase tracking-wider header-4">
                     Other responses up for debate
                   </p>
                   <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 space-y-2">
                     <p className="text-sm text-slate-200 leading-relaxed">
-                      "{teaserStatementText}"
+                      "{teaserStatement.text}"
                     </p>
-                    {teaserStatementTimestamp && (
-                      <p className="text-xs text-slate-500">
-                        posted {moment(teaserStatementTimestamp).fromNow()}
-                        {teaserStatementVoteCount !== undefined && (
-                          <> · {teaserStatementVoteCount} votes</>
-                        )}
-                      </p>
-                    )}
+                    <p className="text-xs text-slate-500">
+                      posted{" "}
+                      {moment(teaserStatement.timestamp).fromNow()} ·{" "}
+                      {teaserStatement.voteCount} votes
+                    </p>
                   </div>
                 </div>
               )}
 
-              {teaserStatementText && (
+              {teaserStatement && (
                 <div className="border-t border-slate-700" />
               )}
-              {/* <p className="text-sm font-semibold normal-text text-center">
-                There's more to this conversation inside 👇
-              </p> */}
 
               <form onSubmit={handleSubmit} className="space-y-3">
-                <motion.div
-                  className="relative"
-                  animate={
-                    shakeEmail
-                      ? { x: [0, -8, 8, -6, 6, -4, 4, 0] }
-                      : { x: 0 }
-                  }
-                  transition={{ duration: 0.45, ease: "easeInOut" }}
-                >
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (error) setError("");
-                    }}
-                    placeholder={
-                      teaserStatementText
-                        ? `Enter your email to vote on "${teaserStatementText}"`
-                        : "Enter your email to vote"
+                {isAnonymous && (
+                  <motion.div
+                    className="relative"
+                    animate={
+                      shakeEmail
+                        ? { x: [0, -8, 8, -6, 6, -4, 4, 0] }
+                        : { x: 0 }
                     }
-                    disabled={submitting}
-                    className={`pl-11 h-11 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500 rounded-xl text-sm ${shakeEmail ? "border-red-500" : ""}`}
-                  />
-                </motion.div>
+                    transition={{ duration: 0.45, ease: "easeInOut" }}
+                  >
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      placeholder={"Enter your email to vote"}
+                      disabled={submitting}
+                      className={`pl-11 h-11 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500 rounded-xl text-sm ${shakeEmail ? "error-border" : ""}`}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (error) setError("");
+                      }}
+                    />
+                  </motion.div>
+                )}
 
                 {error && (
-                  <p className="text-sm text-red-400 text-center">
+                  <p className="text-sm error-text text-center">
                     {error}
                   </p>
                 )}
@@ -299,15 +295,17 @@ export function QRScanResultDialog({
                     "Joining..."
                   ) : (
                     <>
-                      Vote on the next response
+                      Vote on More Responses Inside
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}
                 </Button>
 
-                <div className="text-center">
-                  <TOSText />
-                </div>
+                {isAnonymous && (
+                  <div className="text-center">
+                    <TOSText />
+                  </div>
+                )}
               </form>
             </motion.div>
           </div>

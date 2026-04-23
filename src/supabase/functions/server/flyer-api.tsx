@@ -1,7 +1,7 @@
 import { Context, Hono } from "npm:hono";
 import { getDebate, getStatementsForRoom } from "./kv-utils.tsx";
 import type { DebateRoom, User, VoteType } from "./types.tsx";
-import { processVote } from "./voting-utils.ts";
+import { processVote, countStatementVotes } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
 import { insertFlyerEmail, insertFlyerScan } from "./model-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
@@ -17,9 +17,11 @@ type FlyerVoteResponse = {
   passPercent: number;
   userVote: VoteType;
   statementText: string;
-  teaserStatementText?: string;
-  teaserStatementTimestamp?: number;
-  teaserStatementVoteCount?: number;
+  teaserStatement?: {
+    text: string;
+    timestamp: number;
+    voteCount: number;
+  };
 };
 
 flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
@@ -106,10 +108,24 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
           ? Math.round((result.statement.passes / totalVotes) * 100)
           : 0;
 
-      const otherStatements = roomStatements.filter(s => s.id !== result.statement.id);
-      const teaserStatement = otherStatements.length > 0
-        ? otherStatements[Math.floor(Math.random() * otherStatements.length)]
-        : undefined;
+      const makeTeaserStatement = () => {
+        const other = roomStatements.filter(
+          (s) => s.id !== result.statement.id,
+        );
+
+        const picked =
+          other.length > 0
+            ? other[Math.floor(Math.random() * other.length)]
+            : undefined;
+            
+        return picked
+          ? {
+              text: picked.text,
+              timestamp: picked.timestamp,
+              voteCount: countStatementVotes(picked),
+            }
+          : undefined;
+      }
 
       const response: FlyerVoteResponse = {
         user: result.user,
@@ -120,11 +136,7 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         passPercent,
         userVote: result.userVote as VoteType,
         statementText: result.statement.text,
-        teaserStatementText: teaserStatement?.text,
-        teaserStatementTimestamp: teaserStatement?.timestamp,
-        teaserStatementVoteCount: teaserStatement
-          ? teaserStatement.agrees + teaserStatement.disagrees + teaserStatement.passes
-          : undefined,
+        teaserStatement: makeTeaserStatement(),
       };
 
       return c.json(response, 200);
