@@ -25,12 +25,19 @@ app.post(
         };
       }
 
-      const rows = kvVotes.map((vote: Vote) => ({
+      const seen = new Set<string>();
+      const rows = kvVotes.reduce<typeof kvVotes>((acc, vote) => {
+        if (!seen.has(vote.id)) {
+          seen.add(vote.id);
+          acc.push(vote);
+        }
+        return acc;
+      }, []).map((vote: Vote) => ({
         id: vote.id,
         statementId: vote.statementId,
         userId: vote.userId,
         voteType: vote.voteType,
-        timestamp: vote.timestamp,
+        timestamp: Math.floor(vote.timestamp),
         flyerId: vote.flyerId ?? null,
         anonymousUserId: vote.anonymousUserId ?? null,
       }));
@@ -49,13 +56,14 @@ app.post(
         }
       }
 
-      // Quality check: compare KV count to table count
+      // Quality check: compare deduplicated KV count to table count
       const tableVoteCount = (await selectAll("votes")).length;
-      const countsMatch = tableVoteCount === kvVotes.length;
+      const countsMatch = tableVoteCount === rows.length;
 
       return {
         dryRun: false,
         kvVoteCount: kvVotes.length,
+        uniqueKvVoteCount: rows.length,
         insertedCount: inserted,
         tableVoteCount,
         countsMatch,
