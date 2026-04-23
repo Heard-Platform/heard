@@ -34,6 +34,7 @@ import { modApi } from "./mod-api.tsx";
 import { validateAdmin, validateCronAuth, validateDeveloper } from "./internal-utils.ts";
 import { validateSession, validateHost } from "./auth-utils.ts";
 import { API_URL_PREFIX } from "./constants.tsx";
+import { performanceTestApi } from "./performance-test-api.tsx";
 
 type Variables = {
   userId?: string;
@@ -107,8 +108,7 @@ protect(dontValidate, ["orgs/*", "user/*",]);
 // Account
 protect(validateSession, [
   "account/*", "activity/*", "analytics/*", "chance-card/*", "event/*", "events",
-  "feedback/*", "flyer/*",
-  "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
+  "feedback/*", "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
   "statement/*", "subheard/*", "subheards", "subheards/*",
   "upload-debate-image", "user-rank", "vine/*", "youtube-card/*",
 ]);
@@ -117,6 +117,7 @@ protect(validateSession, [
 protect(validateDeveloper, [
   "dev/*", "internal/*", "stats/*", "reddit/*",
   "test-room/*", "rant-test-room/*", "realtime-test-room/*", "seed/*",
+  "performance-test/*",
 ]);
 
 // Host-only mod routes
@@ -162,5 +163,6 @@ app.route("/", internalConfigApi);
 app.route("/", enrichmentApi);
 app.route("/", userRankApi);
 app.route("/", eventApi);
+app.route("/", performanceTestApi);
 
 Deno.serve(app.fetch);

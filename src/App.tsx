@@ -37,6 +37,7 @@ const KALORAMA_ROOM_ID = "xo38wmfkm7bmo35js4i";
 const KALORAMA_COMMUNITIES = ["kalorama-park", "dupont-circle-neighborhoods", "washington-dc"];
 
 function AppContent() {
+  const [isJoiningRoom, setIsJoiningRoom] = useState(false);
   const [targetRoomId, setTargetRoomId] = useState<
     string | null
   >(null);
@@ -76,6 +77,7 @@ function AppContent() {
     createAnonymousUser,
     createRoom,
     joinRoom,
+    joinSubHeard,
     submitStatement,
     voteOnStatement,
     voteViaFlyer,
@@ -83,8 +85,13 @@ function AppContent() {
     setCurrentSubHeard,
     resetSession,
     roomStatements,
-    submitFlyerEmail,
+    anonAddEmailAndLogin,
   } = useDebateSession();
+
+  const startRoomJoin = (roomId: string) => {
+    setIsJoiningRoom(true);
+    setTargetRoomId(roomId);
+  }
 
   const handleMagicLinkSuccess = async () => {
     toast.success("Signed in successfully!");
@@ -108,7 +115,7 @@ function AppContent() {
     if (!response || !response.user) {
       toast.error("Failed to process flyer vote");
     } else {
-      setTargetRoomId(response.room.id);
+      startRoomJoin(response.room.id);
       setQrScanResult(response);
     }
 
@@ -134,13 +141,13 @@ function AppContent() {
   };
 
   const handleQrEmailSubmit = async (email: string) => {
-    const response = await submitFlyerEmail(email);
-    if (response?.success) {
-      setTargetRoomId(qrScanResult!.room.id);
-      updateUrlForRoom(qrScanResult!.room.id);
-      setQrScanResult(null);
+    if (user?.isAnonymous && email) {
+      const response = await anonAddEmailAndLogin(email);
+      if (!response?.success) throw new Error(response?.error || "Unknown error");
       toast.success("Welcome to Heard! 🎉");
     }
+    updateUrlForRoom(qrScanResult!.room.id);
+    setQrScanResult(null);
   };
 
   const handleLogout = () => {
@@ -187,35 +194,6 @@ function AppContent() {
     window.history.pushState({}, "", "/");
   };
 
-  const autoJoinAsAnonymous = async (roomIdFromUrl: string) => {
-    setTargetRoomId(roomIdFromUrl);
-    try {
-      setIsJoiningAnonymously(true);
-      const response = await api.getRoomStatus(roomIdFromUrl);
-
-      if (!response.success || !response.data) {
-        toast.error("Room not found");
-        setIsJoiningAnonymously(false);
-        return;
-      }
-
-      const room = response.data.room;
-
-      if (!room.allowAnonymous) {
-        setIsJoiningAnonymously(false);
-        return;
-      }
-
-      const anonUserResponse = await createAnonymousUser();
-      if (!anonUserResponse?.success) {
-        setIsJoiningAnonymously(false);
-      }
-    } catch (error) {
-      console.error("Error auto-joining as anonymous:", error);
-      setIsJoiningAnonymously(false);
-    }
-  };
-
   useEffect(() => {
     if (!hasCheckedUrl && !loading) {
       const urlParams = new URLSearchParams(
@@ -244,6 +222,12 @@ function AppContent() {
         window.location.pathname.startsWith("/parklet");
       const is2b04Route =
         window.location.pathname.startsWith("/2b04");
+      const isRatsRoute =
+        window.location.pathname.startsWith("/rats");
+      const isShirtAgreeRoute =
+        window.location.pathname.startsWith("/shirt-agree");
+      const isShirtDisagreeRoute =
+        window.location.pathname.startsWith("/shirt-disagree");
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
@@ -267,35 +251,38 @@ function AppContent() {
       } else if (isKaloramaRoute) {
         setPendingFlyerScan("kalorama");
         setPendingCommunities(KALORAMA_COMMUNITIES);
-        if (user) {
-          setTargetRoomId(KALORAMA_ROOM_ID);
-        } else {
-          autoJoinAsAnonymous(KALORAMA_ROOM_ID);
-        }
-      } else if (isParkletRoute || is2b04Route) {
+        startRoomJoin(KALORAMA_ROOM_ID);
+      } else if (isParkletRoute || is2b04Route || isRatsRoute) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
           : is2b04Route
             ? "5zagvhpy4iamnf18dh5"
-            : undefined;
+            : isRatsRoute
+              ? "rrrir5rzsi9moacjd80"
+              : undefined;
+
+        const routeName = isParkletRoute ? "parklet" : is2b04Route ? "2b04" : "rats";
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
-        } else if (user) {
-          setTargetRoomId(hardcodedRoomId);
         } else {
-          autoJoinAsAnonymous(hardcodedRoomId);
+          setPendingFlyerScan(routeName);
+          setPendingCommunities(KALORAMA_COMMUNITIES);
+          startRoomJoin(hardcodedRoomId);
         }
+      } else if (isShirtAgreeRoute || isShirtDisagreeRoute) {
+        handleFlyerJoin({
+          flyerId: "43rmfvxw9wjmoaizr4y",
+          statementId: "fa34pfk93dumoaizr6n",
+          vote: isShirtAgreeRoute ? "agree" : "disagree",
+          flyerGroup: 1,
+        });
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (eventIdFromUrl) {
         setCurrentEventId(eventIdFromUrl);
       } else if (roomIdFromUrl) {
-        if (user) {
-          setTargetRoomId(roomIdFromUrl);
-        } else {
-          autoJoinAsAnonymous(roomIdFromUrl);
-        }
+        startRoomJoin(roomIdFromUrl);
       } else if (subHeardFromUrl) {
         setCurrentSubHeard(subHeardFromUrl);
       } else if (isTermsRoute) {
@@ -322,12 +309,11 @@ function AppContent() {
       !newsletterEdition &&
       !isJoiningAnonymously
     ) {
-      const autoCreateAnonymousUser = async () => {
+      (async () => {
         setIsJoiningAnonymously(true);
         await createAnonymousUser();
         setIsJoiningAnonymously(false);
-      };
-      autoCreateAnonymousUser();
+      })();
     }
   }, [
     user,
@@ -365,20 +351,22 @@ function AppContent() {
   ]);
 
   useEffect(() => {
-    if (user && targetRoomId) {
-      const autoJoinRoom = async () => {
+    (async () => {
+      if (user && targetRoomId) {
         const roomData = await joinRoom(targetRoomId);
         if (roomData) {
-          setIsJoiningAnonymously(false);
+          if (roomData.subHeard) {
+            await joinSubHeard(roomData.subHeard);
+          }
         } else {
           setTargetRoomId(null);
           clearRoomFromUrl();
-          setIsJoiningAnonymously(false);
         }
-      };
-      autoJoinRoom();
-    }
-  }, [user, targetRoomId]);
+        setIsJoiningAnonymously(false);
+        setIsJoiningRoom(false);
+      }
+    })();
+  }, [user, targetRoomId, joinRoom]);
 
   useEffect(() => {
     if (user && hasCheckedUrl && pendingCommunities.length > 0) {
@@ -392,10 +380,10 @@ function AppContent() {
   }, [user, hasCheckedUrl, pendingCommunities, pendingFlyerScan]);
 
   useEffect(() => {
-    if (user && hasCheckedUrl) {
+    if (user && hasCheckedUrl && !isJoiningRoom) {
       getActiveRooms();
     }
-  }, [user?.id, currentSubHeard, getActiveRooms, hasCheckedUrl]);
+  }, [user?.id, currentSubHeard, getActiveRooms, hasCheckedUrl, isJoiningRoom]);
 
   const handleOpenShowcase = () => {
     setShowComponentShowcase(true);
@@ -574,6 +562,8 @@ function AppContent() {
           disagreePercent={qrScanResult.disagreePercent}
           passPercent={qrScanResult.passPercent}
           userVote={qrScanResult.userVote}
+          statementText={qrScanResult.statementText}
+          teaserStatement={qrScanResult.teaserStatement}
           isOpen={true}
           onEmailSubmit={handleQrEmailSubmit}
           onClose={() => setQrScanResult(null)}

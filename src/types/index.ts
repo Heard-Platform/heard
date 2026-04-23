@@ -432,7 +432,13 @@ export interface FeatureResults {
   flyerScansSince: number;
   certifyCardShown: number;
   certifyCardShownSince: number;
-  certifyCardData: { shown: number; phoneSubmitted: number; verified: number; dismissed: number };
+  certifyCardData: {
+    shown: number;
+    emailSubmitted: number;
+    phoneSubmitted: number;
+    verified: number;
+    dismissed: number;
+  };
 }
 
 export interface UserHistoryData {
@@ -454,3 +460,11 @@ export interface EnrichmentConfig {
 }
 
 export type Environment = "production" | "development";
+
+export interface VoteStats {
+  total: number;
+  uniqueVoters: number;
+  avgVotesPerUser: number;
+  byType: Record<string, number>;
+  distributionByUser: Record<string, number>;
+}

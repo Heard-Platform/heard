@@ -119,6 +119,7 @@ Store the OTP in KV with a short TTL:
 - Story for the updated auth modal showing the phone fallback link.
 - Unit tests for OTP generation, TTL expiry, and attempt limiting on the server.
 - Manual test matrix: new signup, returning email user, legacy phone user via fallback, anon conversion.
+- Manual test: Anon user sees certify card, can't swipe, submits email, is logged in, and card auto swipes.
 
 ---
 

@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { Sparkles, X, Mail, ArrowRight } from "lucide-react";
+import { X, Mail, ArrowRight } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { DebateRoom } from "../../types";
 import { VoteType } from "../../types";
 import { isValidEmail } from "../../utils/validation";
+import { TOSText } from "../onboarding/TOSText";
+import { useDebateSession } from "../../hooks/useDebateSession";
+import moment from "moment";
 
 export type QRScanResult = {
   room: DebateRoom;
@@ -14,6 +17,8 @@ export type QRScanResult = {
   disagreePercent: number;
   passPercent: number;
   userVote: VoteType;
+  statementText: string;
+  teaserStatement?: { text: string; timestamp: number; voteCount: number };
 };
 
 interface QRScanResultDialogProps extends QRScanResult {
@@ -28,14 +33,19 @@ export function QRScanResultDialog({
   disagreePercent,
   passPercent,
   userVote,
+  statementText,
+  teaserStatement,
   isOpen,
   onEmailSubmit,
   onClose,
 }: QRScanResultDialogProps) {
+  const { user } = useDebateSession();
+  const isAnonymous = !!user?.isAnonymous;
   const [showBars, setShowBars] = useState(false);
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [shakeEmail, setShakeEmail] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -76,13 +86,14 @@ export function QRScanResultDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email.trim()) {
-      setError("Please enter your email to join the discussion");
-      return;
-    }
-
-    if (!isValidEmail(email)) {
-      setError("Please enter a valid email");
+    if (isAnonymous && (!email.trim() || !isValidEmail(email))) {
+      setError(
+        !email.trim()
+          ? "Please enter your email to join the discussion"
+          : "Please enter a valid email",
+      );
+      setShakeEmail(true);
+      setTimeout(() => setShakeEmail(false), 500);
       return;
     }
 
@@ -92,7 +103,7 @@ export function QRScanResultDialog({
     try {
       await onEmailSubmit(email);
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "An error occurred. Please try again.");
       setSubmitting(false);
     }
   };
@@ -115,18 +126,8 @@ export function QRScanResultDialog({
               <X className="w-4 h-4 text-white" />
               <span className="sr-only">Close</span>
             </button>
-            
+
             <div className="text-center space-y-2">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="inline-block"
-              >
-                <div className="w-12 h-12 mx-auto bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-white" />
-                </div>
-              </motion.div>
               <motion.h2
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -141,7 +142,8 @@ export function QRScanResultDialog({
                 transition={{ delay: 0.2 }}
                 className="text-sm text-slate-300"
               >
-                You voted {voteLabel}! 🎉
+                You voted <strong>{userVote}</strong> on{" "}
+                <strong>{statementText}</strong>
               </motion.p>
             </div>
 
@@ -200,7 +202,9 @@ export function QRScanResultDialog({
                         ease: "easeOut",
                       }}
                       className={`h-full ${bar.color} relative ${
-                        bar.isUserVote ? `shadow-lg ${bar.glowColor}` : ""
+                        bar.isUserVote
+                          ? `shadow-lg ${bar.glowColor}`
+                          : ""
                       }`}
                     >
                       {bar.isUserVote && (
@@ -227,27 +231,59 @@ export function QRScanResultDialog({
               transition={{ delay: 1.5 }}
               className="space-y-4"
             >
-              <div className="text-center space-y-2">
-                <p className="text-base font-semibold text-white">
-                  Get updates on this discussion
-                </p>
-              </div>
+              {teaserStatement && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider header-4">
+                    Other responses up for debate
+                  </p>
+                  <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 space-y-2">
+                    <p className="text-sm text-slate-200 leading-relaxed">
+                      "{teaserStatement.text}"
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      posted{" "}
+                      {moment(teaserStatement.timestamp).fromNow()} ·{" "}
+                      {teaserStatement.voteCount} votes
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {teaserStatement && (
+                <div className="border-t border-slate-700" />
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-3">
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    disabled={submitting}
-                    className="pl-12 h-14 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500 rounded-xl text-base"
-                  />
-                </div>
-                
+                {isAnonymous && (
+                  <motion.div
+                    className="relative"
+                    animate={
+                      shakeEmail
+                        ? { x: [0, -8, 8, -6, 6, -4, 4, 0] }
+                        : { x: 0 }
+                    }
+                    transition={{ duration: 0.45, ease: "easeInOut" }}
+                  >
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      placeholder={"Enter your email to vote"}
+                      disabled={submitting}
+                      className={`pl-11 h-11 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500 rounded-xl text-sm ${shakeEmail ? "error-border" : ""}`}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (error) setError("");
+                      }}
+                    />
+                  </motion.div>
+                )}
+
                 {error && (
-                  <p className="text-sm text-red-400 text-center">{error}</p>
+                  <p className="text-sm error-text text-center">
+                    {error}
+                  </p>
                 )}
 
                 <Button
@@ -256,29 +292,21 @@ export function QRScanResultDialog({
                   className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
                 >
                   {submitting ? (
-                    "Joining discussion..."
+                    "Joining..."
                   ) : (
                     <>
-                      Join Discussion
+                      Vote on More Responses Inside
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}
                 </Button>
-              </form>
-            </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.8 }}
-              className="flex items-center justify-center gap-2 pt-2 border-t border-slate-800"
-            >
-              <span className="text-sm font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Heard
-              </span>
-              <span className="text-xs text-slate-500">
-                Beta • Public discourse made fun
-              </span>
+                {isAnonymous && (
+                  <div className="text-center">
+                    <TOSText />
+                  </div>
+                )}
+              </form>
             </motion.div>
           </div>
         </motion.div>

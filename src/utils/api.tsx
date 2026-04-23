@@ -99,6 +99,13 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async anonAddEmailAndLogin(email: string) {
+    return this.request<{ user: UserSession }>("/auth/anon-add-email-and-login", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+
   async updateAvatar(avatarAnimal: string) {
     return this.request<{ user: UserSession }>("/account/avatar", {
       method: "POST",
@@ -380,6 +387,12 @@ class ApiClient extends BaseApiClient {
 
   async createRealtimeTestRoom() {
     return this.request("/realtime-test-room/create", {
+      method: "POST",
+    });
+  }
+
+  async createScalabilityTest() {
+    return this.request("/dev/scalability-test", {
       method: "POST",
     });
   }

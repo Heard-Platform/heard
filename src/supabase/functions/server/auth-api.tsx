@@ -4,6 +4,8 @@ import { Context, Hono } from "npm:hono";
 import { getMagicLinkEmail } from "./email-templates.tsx";
 import { loginUserWithMerge, validateSession } from "./auth-utils.ts";
 import { sanitizeUser } from "./user-utils.ts";
+import { defineRoute } from "./route-wrapper.tsx";
+import { isValidEmail } from "./validation-utils.ts";
 
 const app = new Hono();
 
@@ -408,6 +410,37 @@ app.post(
   },
 );
 
+export const attachEmailToAccount = async (
+  userId: string,
+  email: string,
+): Promise<{ error: string; status: number } | { user: User }> => {
+  if (!email || !isValidEmail(email)) {
+    return { error: "Valid email address is required", status: 400 };
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const existingUser = await getUserByEmail(normalizedEmail);
+  if (existingUser && existingUser.id !== userId) {
+    return { error: "This email is already registered to another account", status: 409 };
+  }
+
+  const user = await getUserSession(userId);
+  if (!user) {
+    return { error: "User not found", status: 404 };
+  }
+
+  user.email = normalizedEmail;
+  user.emailDigestsEnabled = true;
+  await saveUserAndEmail(user);
+
+  sendWelcomeEmail(normalizedEmail, user.nickname).catch((error) => {
+    console.error("Welcome email failed:", error);
+  });
+
+  return { user };
+};
+
 app.post(
   "/make-server-f1a393b4/auth/add-email-to-account",
   validateSession,
@@ -416,40 +449,44 @@ app.post(
       const userId = c.get("userId");
       const { email } = await c.req.json();
 
-      if (!email) {
-        return c.json({ error: "Email is required" }, 400);
+      const result = await attachEmailToAccount(userId, email);
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status as any);
       }
 
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return c.json({ error: "Valid email address is required" }, 400);
-      }
-
-      const normalizedEmail = email.trim().toLowerCase();
-
-      const existingUser = await getUserByEmail(normalizedEmail);
-      if (existingUser && existingUser.id !== userId) {
-        return c.json({ error: "This email is already registered to another account" }, 409);
-      }
-
-      const user = await getUserSession(userId);
-      if (!user) {
-        return c.json({ error: "User not found" }, 404);
-      }
-
-      user.email = normalizedEmail;
-      user.emailDigestsEnabled = true;
-      await saveUserAndEmail(user);
-
-      sendWelcomeEmail(normalizedEmail, user.nickname).catch((error) => {
-        console.error("Welcome email failed:", error);
-      });
-
-      return c.json({ user: sanitizeUser(user) });
+      return c.json({ user: sanitizeUser(result.user) });
     } catch (error) {
       console.error("Error adding email to account:", error);
       return c.json({ error: "Failed to add email to account" }, 500);
     }
   },
+);
+
+app.post(
+  "/make-server-f1a393b4/auth/anon-add-email-and-login",
+  validateSession,
+  defineRoute(
+    { email: { type: "string", required: true } },
+    async ({ email }: { email: string }, c: Context) => {
+      const userId = c.get("userId");
+
+      const user = await getUser(userId);
+      if (!user?.isAnonymous) {
+        throw new Error("Only anonymous users can use this endpoint");
+      }
+
+      const result = await attachEmailToAccount(userId, email);
+      if ("error" in result) {
+        throw new Error(result.error);
+      }
+
+      result.user.isAnonymous = false;
+      await saveUserAndEmail(result.user);
+
+      return { user: sanitizeUser(result.user) };
+    },
+    "Failed to create account",
+  ),
 );
 
 export { app as authApi };

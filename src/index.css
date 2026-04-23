@@ -1186,6 +1186,10 @@
     height: calc(var(--spacing) * 10);
   }
 
+  .h-11 {
+    height: calc(var(--spacing) * 11);
+  }
+
   .h-12 {
     height: calc(var(--spacing) * 12);
   }
@@ -3707,6 +3711,10 @@
     padding-left: calc(var(--spacing) * 8);
   }
 
+  .pl-11 {
+    padding-left: calc(var(--spacing) * 11);
+  }
+
   .pl-12 {
     padding-left: calc(var(--spacing) * 12);
   }
@@ -4338,11 +4346,31 @@
     color: var(--color-slate-600);
   }
 
+  .secondary-text {
+    color: var(--color-slate-500);
+  }
+
+  .secondary-text-strong {
+    color: var(--color-slate-600);
+  }
+
   .info-bg {
     background-color: var(--color-violet-50);
   }
 
   .creation-bg {
+    background-color: var(--color-emerald-400);
+  }
+
+  .creation-bg-strong {
+    background-color: var(--color-emerald-600);
+  }
+
+  .creation-bg-strong-hover {
+    background-color: var(--color-emerald-700);
+  }
+
+  .creation-gradient {
     background: linear-gradient(to bottom right, var(--color-green-100), var(--color-emerald-100), var(--color-teal-200));
   }
 
@@ -4352,6 +4380,10 @@
 
   .creation-icon-bg {
     background: linear-gradient(to bottom right, var(--color-green-400), var(--color-teal-500));
+  }
+
+  .creation-text {
+    color: var(--color-emerald-500);
   }
 
   .high-priority-bg {
@@ -4383,7 +4415,7 @@
   }
 
   .agree-bg {
-    background-color: var(--color-green-50);
+    background-color: var(--color-green-500);
   }
 
   .agree-text {
@@ -4395,7 +4427,7 @@
   }
 
   .super-agree-bg {
-    background-color: var(--color-purple-50);
+    background-color: var(--color-purple-500);
   }
 
   .super-agree-text {
@@ -4407,7 +4439,7 @@
   }
 
   .disagree-bg {
-    background-color: var(--color-red-50);
+    background-color: var(--color-red-500);
   }
 
   .disagree-text {
@@ -4419,7 +4451,7 @@
   }
 
   .pass-bg {
-    background-color: var(--color-amber-50);
+    background-color: var(--color-amber-500);
   }
 
   .pass-text {
@@ -4452,8 +4484,24 @@
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
 
+  .error-border {
+    border-color: var(--color-red-500);
+  }
+  
+  .error-text {
+    color: var(--color-red-500);
+  }
+
   .invisible {
     visibility: hidden;
+  }
+
+  .header-3 {
+    color: var(--color-slate-700);
+  }
+
+  .header-4 {
+    color: var(--color-slate-500);
   }
 
   /* Formatting */
