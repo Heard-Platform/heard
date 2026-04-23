@@ -1186,6 +1186,10 @@
     height: calc(var(--spacing) * 10);
   }
 
+  .h-11 {
+    height: calc(var(--spacing) * 11);
+  }
+
   .h-12 {
     height: calc(var(--spacing) * 12);
   }
@@ -3707,6 +3711,10 @@
     padding-left: calc(var(--spacing) * 8);
   }
 
+  .pl-11 {
+    padding-left: calc(var(--spacing) * 11);
+  }
+
   .pl-12 {
     padding-left: calc(var(--spacing) * 12);
   }
@@ -4468,12 +4476,20 @@
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
 
+  .error-border {
+    border-color: var(--color-red-500);
+  }
+  
   .error-text {
     color: var(--color-red-500);
   }
 
   .invisible {
     visibility: hidden;
+  }
+
+  .header-4 {
+    color: var(--color-slate-500);
   }
 
   /* Formatting */

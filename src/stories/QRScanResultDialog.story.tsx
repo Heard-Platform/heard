@@ -24,10 +24,11 @@ export function QRScanResultDialogStory() {
     demographicQuestions: [],
   };
 
-  const scenarios: Record<VoteTypeNew, { topic: string; statementText: string; agreePercent: number; disagreePercent: number; passPercent: number; userVote: VoteTypeNew }> = {
+  const scenarios: Record<VoteTypeNew, { topic: string; statementText: string; teaserStatement: { text: string; timestamp: number; voteCount: number }; agreePercent: number; disagreePercent: number; passPercent: number; userVote: VoteTypeNew }> = {
     agree: {
       topic: "Should we close Q Street to cars?",
-      statementText: "Closing Q Street to cars would improve pedestrian safety and reduce pollution.",
+      statementText: "Close Q Street to cars",
+      teaserStatement: { text: "The city should invest more in protected bike lanes", timestamp: Date.now() - 6 * 60 * 60 * 1000, voteCount: 47 },
       agreePercent: 62,
       disagreePercent: 28,
       passPercent: 10,
@@ -36,6 +37,7 @@ export function QRScanResultDialogStory() {
     disagree: {
       topic: "Is pineapple acceptable on pizza?",
       statementText: "Pineapple on pizza is a delicious combination that everyone should try.",
+      teaserStatement: { text: "Restaurants should be required to offer gluten-free options.", timestamp: Date.now() - 2 * 24 * 60 * 60 * 1000, voteCount: 112 },
       agreePercent: 35,
       disagreePercent: 55,
       passPercent: 10,
@@ -44,6 +46,7 @@ export function QRScanResultDialogStory() {
     pass: {
       topic: "Should the city ban gas stoves?",
       statementText: "Banning gas stoves would meaningfully reduce indoor air pollution and carbon emissions.",
+      teaserStatement: { text: "The city should offer rebates for households that switch to electric appliances.", timestamp: Date.now() - 45 * 60 * 1000, voteCount: 23 },
       agreePercent: 42,
       disagreePercent: 38,
       passPercent: 20,
@@ -129,6 +132,9 @@ export function QRScanResultDialogStory() {
                 <strong>Statement:</strong> {currentScenario.statementText}
               </li>
               <li>
+                <strong>Teaser:</strong> {currentScenario.teaserStatement.text}
+              </li>
+              <li>
                 <strong>User Vote:</strong> {currentScenario.userVote}
               </li>
               <li>
@@ -148,6 +154,7 @@ export function QRScanResultDialogStory() {
         passPercent={currentScenario.passPercent}
         userVote={currentScenario.userVote}
         statementText={currentScenario.statementText}
+        teaserStatement={currentScenario.teaserStatement}
         isOpen={dialogOpen}
         onEmailSubmit={async () => console.log("Email submitted")}
         onClose={() => setDialogOpen(false)}

@@ -1,7 +1,7 @@
 import { Context, Hono } from "npm:hono";
-import { getDebate } from "./kv-utils.tsx";
+import { getDebate, getStatementsForRoom } from "./kv-utils.tsx";
 import type { DebateRoom, User, VoteType } from "./types.tsx";
-import { processVote } from "./voting-utils.ts";
+import { processVote, countStatementVotes } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
 import { insertFlyerEmail, insertFlyerScan } from "./model-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
@@ -17,6 +17,11 @@ type FlyerVoteResponse = {
   passPercent: number;
   userVote: VoteType;
   statementText: string;
+  teaserStatement?: {
+    text: string;
+    timestamp: number;
+    voteCount: number;
+  };
 };
 
 flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
@@ -71,9 +76,10 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         400,
       );
     } else {
-      const [room, session] = await Promise.all([
+      const [room, session, roomStatements] = await Promise.all([
         getDebate(result.statement.roomId),
         createSession(userId),
+        getStatementsForRoom(result.statement.roomId),
       ]);
 
       if (!room) {
@@ -102,6 +108,25 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
           ? Math.round((result.statement.passes / totalVotes) * 100)
           : 0;
 
+      const makeTeaserStatement = () => {
+        const other = roomStatements.filter(
+          (s) => s.id !== result.statement.id,
+        );
+
+        const picked =
+          other.length > 0
+            ? other[Math.floor(Math.random() * other.length)]
+            : undefined;
+            
+        return picked
+          ? {
+              text: picked.text,
+              timestamp: picked.timestamp,
+              voteCount: countStatementVotes(picked),
+            }
+          : undefined;
+      }
+
       const response: FlyerVoteResponse = {
         user: result.user,
         sessionId: session.id,
@@ -111,6 +136,7 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         passPercent,
         userVote: result.userVote as VoteType,
         statementText: result.statement.text,
+        teaserStatement: makeTeaserStatement(),
       };
 
       return c.json(response, 200);

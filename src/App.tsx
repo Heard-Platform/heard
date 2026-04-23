@@ -83,7 +83,7 @@ function AppContent() {
     setCurrentSubHeard,
     resetSession,
     roomStatements,
-    submitFlyerEmail,
+    anonAddEmailAndLogin,
   } = useDebateSession();
 
   const handleMagicLinkSuccess = async () => {
@@ -134,13 +134,14 @@ function AppContent() {
   };
 
   const handleQrEmailSubmit = async (email: string) => {
-    const response = await submitFlyerEmail(email);
-    if (response?.success) {
-      setTargetRoomId(qrScanResult!.room.id);
-      updateUrlForRoom(qrScanResult!.room.id);
-      setQrScanResult(null);
+    if (user?.isAnonymous && email) {
+      const response = await anonAddEmailAndLogin(email);
+      if (!response?.success) throw new Error(response?.error || "Unknown error");
       toast.success("Welcome to Heard! 🎉");
     }
+    setTargetRoomId(qrScanResult!.room.id);
+    updateUrlForRoom(qrScanResult!.room.id);
+    setQrScanResult(null);
   };
 
   const handleLogout = () => {
@@ -596,6 +597,7 @@ function AppContent() {
           passPercent={qrScanResult.passPercent}
           userVote={qrScanResult.userVote}
           statementText={qrScanResult.statementText}
+          teaserStatement={qrScanResult.teaserStatement}
           isOpen={true}
           onEmailSubmit={handleQrEmailSubmit}
           onClose={() => setQrScanResult(null)}
