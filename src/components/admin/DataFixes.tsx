@@ -6,6 +6,7 @@ import { Label } from "../ui/label";
 import { Shield } from "lucide-react";
 import { api } from "../../utils/api";
 import { adminApi } from "../../utils/admin-api";
+import { CopyVotesToTable } from "./data-fixes/CopyVotesToTable";
 
 interface DataFixesProps {
   adminKey: string;
@@ -397,6 +398,7 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
             Disabled
           </Button>
         </div>
+        <CopyVotesToTable adminKey={adminKey} fetchAdminData={fetchAdminData} />
         <div className="heard-between p-4 border rounded-lg bg-blue-50">
           <div className="flex-1">
             <h3 className="font-medium">
