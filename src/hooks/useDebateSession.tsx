@@ -104,7 +104,7 @@ interface DebateSessionContextType {
 
 export type OverridableApiMethods = Pick<
   DebateSessionContextType,
-  "safelyGetUser" | "getExplorableSubHeards" | "createEvent"
+  "user" | "safelyGetUser" | "getExplorableSubHeards" | "createEvent"
 >;
 
 const DebateSessionContext = createContext<DebateSessionContextType | null>(null);
