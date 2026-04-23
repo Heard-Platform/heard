@@ -8,7 +8,7 @@ import { FlyersTab } from "./FlyersTab";
 import { VoteMatrixTab } from "./VoteMatrixTab";
 import { VoteStatsTab } from "./VoteStatsTab";
 import { PerformanceTestTab } from "./PerformanceTestTab";
-import { TestingTab } from "./OgTestingTab";
+import { TestingTab } from "./TestingTab";
 import { TabButton } from "./TabButton";
 import {
   parseDevToolsTabFromUrl,
