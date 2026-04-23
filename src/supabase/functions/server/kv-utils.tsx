@@ -10,6 +10,7 @@ import {
   type ChanceCardStatus,
   type Rant,
   type YouTubeCardStatus,
+  type CoverImageCardStatus,
   MagicLinkRecord,
   Session,
   Community,
@@ -406,6 +407,19 @@ export const getUsersYouTubeCardStatuses = async (
 
 export const saveYouTubeCardStatus = async (status: YouTubeCardStatus) => {
   await upsert(status, youtubeCardStatusKeyFn);
+};
+
+export const coverImageCardStatusKeyFn = (status: CoverImageCardStatus) =>
+  `cover_image_card_status:${status.userId}:${status.roomId}`;
+
+export const getUsersCoverImageCardStatuses = async (
+  userId: string,
+) => {
+  return getAllRecords<CoverImageCardStatus>(`cover_image_card_status:${userId}:`);
+};
+
+export const saveCoverImageCardStatus = async (status: CoverImageCardStatus) => {
+  await upsert(status, coverImageCardStatusKeyFn);
 };
 
 export const getSentEmails = async (): Promise<

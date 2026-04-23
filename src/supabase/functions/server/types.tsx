@@ -213,7 +213,7 @@ export interface DebateRoom {
   anonymousLinkId?: string;
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
-  youtubeCardSwiped?: boolean;
+  coverCardSwiped?: boolean;
   lastActivityAt?: number;
   totalVotes?: number;
   eventId?: number;
@@ -236,6 +236,12 @@ export interface ChanceCardStatus {
 }
 
 export interface YouTubeCardStatus {
+  userId: string;
+  roomId: string;
+  swipedAt: number;
+}
+
+export interface CoverImageCardStatus {
   userId: string;
   roomId: string;
   swipedAt: number;

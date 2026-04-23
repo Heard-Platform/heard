@@ -8,6 +8,8 @@ import {
   getUsersChanceCardStatuses,
   saveYouTubeCardStatus,
   getUsersYouTubeCardStatuses,
+  saveCoverImageCardStatus,
+  getUsersCoverImageCardStatuses,
   getVotesForStatement,
   getCommunities,
   getStatementsForRoom,
@@ -961,16 +963,20 @@ app.get(
             statuses.map(status => status.roomId)
         );
 
-        const youtubeStatuses = await getUsersYouTubeCardStatuses(userId);
-        
-        const swipedYoutubeRoomIds = new Set(
-            youtubeStatuses.map(status => status.roomId)
-        );
+        const [youtubeStatuses, coverImageStatuses] = await Promise.all([
+          getUsersYouTubeCardStatuses(userId),
+          getUsersCoverImageCardStatuses(userId),
+        ]);
+
+        const swipedYoutubeRoomIds = new Set(youtubeStatuses.map(s => s.roomId));
+        const swipedCoverImageRoomIds = new Set(coverImageStatuses.map(s => s.roomId));
 
         rooms = rooms.map((room) => ({
           ...room,
           chanceCardSwiped: swipedRoomIds.has(room.id),
-          youtubeCardSwiped: swipedYoutubeRoomIds.has(room.id),
+          coverCardSwiped: room.imageUrl
+            ? swipedCoverImageRoomIds.has(room.id)
+            : swipedYoutubeRoomIds.has(room.id),
         }));
       }
 
@@ -2304,6 +2310,31 @@ app.post(
         { error: "Failed to mark YouTube card as swiped" },
         500
       );
+    }
+  }
+);
+
+app.post(
+  "/make-server-f1a393b4/cover-card/mark-swiped",
+  async (c: Context) => {
+    try {
+      const userId = c.get("userId");
+      const { roomId, coverType } = await c.req.json();
+
+      if (!roomId || !coverType) {
+        return c.json({ error: "roomId and coverType are required" }, 400);
+      }
+
+      if (coverType === "image") {
+        await saveCoverImageCardStatus({ userId, roomId, swipedAt: Date.now() });
+      } else {
+        await saveYouTubeCardStatus({ userId, roomId, swipedAt: Date.now() });
+      }
+
+      return c.json({ success: true });
+    } catch (error) {
+      console.error("Error marking cover card as swiped:", error);
+      return c.json({ error: "Failed to mark cover card as swiped" }, 500);
     }
   }
 );

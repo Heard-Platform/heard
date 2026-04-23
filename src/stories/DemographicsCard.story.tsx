@@ -104,7 +104,7 @@ function DemographicsSwipeableStack() {
         allowAnonymous={true}
         isAnonymous={false}
         chanceCardSwiped={true}
-        youtubeCardSwiped={true}
+        coverCardSwiped={true}
         demographicQuestions={questions}
         answeredQuestionIds={questionIds}
         onVote={async () => { } }
@@ -112,7 +112,7 @@ function DemographicsSwipeableStack() {
         onShowAccountSetupModal={() => { } }
         onCertifyDone={async () => { } }
         onChanceCardSwiped={async () => { } }
-        onYouTubeCardSwiped={async () => { } }
+        onCoverCardSwiped={async () => { } }
         onDemographicsAnswered={handleAnswer}
       />
     </div>

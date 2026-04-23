@@ -198,14 +198,14 @@ export function SwipeableStatementStackStory() {
                 allowAnonymous={true}
                 isAnonymous={false}
                 chanceCardSwiped={chanceCardSwiped}
-                youtubeCardSwiped={false}
+                coverCardSwiped={false}
                 demographicQuestions={[]}
                 answeredQuestionIds={new Set()}
                 onVote={handleVote}
                 onSubmitStatement={handleSubmitStatement}
                 onShowAccountSetupModal={() => {}}
                 onChanceCardSwiped={handleChanceCardSwiped}
-                onYouTubeCardSwiped={async () => {}}
+                onCoverCardSwiped={async () => {}}
                 onCertifyDone={async () => {}}
                 onDemographicsAnswered={async () => {}}
               />

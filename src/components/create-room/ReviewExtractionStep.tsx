@@ -4,21 +4,20 @@ import { Input } from "../ui/input";
 import { TopicDescriptionFields } from "./TopicDescriptionFields";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
-import { Sparkles, Check, UserCheck, Clock, Youtube, AlertCircle, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Sparkles, Check, UserCheck, Clock, AlertCircle, Image as ImageIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
 import { AdvancedFeatures } from "./AdvancedFeatures";
 import { SeedStatements } from "./SeedStatements";
-import type { NewDemographicQuestion } from "../../types";
+import type { NewDemographicQuestion, CoverCard } from "../../types";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 
 interface ReviewExtractionStepProps {
   topic: string;
   description: string;
   statements: string[];
+  cover: CoverCard | null;
   isUploadingImage?: boolean;
-  uploadedImageUrl?: string | null;
-  youtubeUrl?: string;
   debateLength: number;
   allowAnonymousVoting: boolean;
   demographicQuestions: NewDemographicQuestion[];
@@ -27,19 +26,20 @@ interface ReviewExtractionStepProps {
   onDescriptionChange: (description: string) => void;
   onStatementsChange: (statements: string[]) => void;
   onImageUpload: (file: File) => void;
-  onYoutubeUrlChange: (url: string) => void;
+  onCoverCardChange: (cover: CoverCard | null) => void;
   onDebateLengthChange: (length: number) => void;
   onAllowAnonymousVotingChange: (value: boolean) => void;
   onDemographicQuestionsChange: (questions: NewDemographicQuestion[]) => void;
 }
 
+type CoverCardMode = "none" | "image" | "youtube";
+
 export function ReviewExtractionStep({
   topic,
   description,
   statements,
+  cover,
   isUploadingImage,
-  uploadedImageUrl,
-  youtubeUrl,
   debateLength,
   allowAnonymousVoting,
   demographicQuestions,
@@ -48,13 +48,23 @@ export function ReviewExtractionStep({
   onDescriptionChange,
   onStatementsChange,
   onImageUpload,
-  onYoutubeUrlChange,
+  onCoverCardChange,
   onDebateLengthChange,
   onAllowAnonymousVotingChange,
   onDemographicQuestionsChange,
 }: ReviewExtractionStepProps) {
   const showAdvancedFeatures = isFeatureEnabled(FeatureFlags.DEMOGRAPHICS);
-  
+
+  const [coverMode, setCoverCardMode] = useState<CoverCardMode>(
+    cover?.type === "image" ? "image" : cover?.type === "youtube" ? "youtube" : "none"
+  );
+
+  const handleCoverCardModeChange = (mode: CoverCardMode) => {
+    if (mode === coverMode) return;
+    setCoverCardMode(mode);
+    if (mode === "none") onCoverCardChange(null);
+  };
+
   const [showCustomDateTime, setShowCustomDateTime] = useState(false);
   const [customDate, setCustomDate] = useState("");
   const [customTime, setCustomTime] = useState("");
@@ -135,104 +145,103 @@ export function ReviewExtractionStep({
         </FunSheetCard>
       )}
 
-      {onImageUpload && (
-        <FunSheetCard delay={0.2}>
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <ImageIcon className={iconBlue} />
-              <Label className={labelText}>
-                Add cover image (optional)
-              </Label>
-            </div>
-            
-            <input
-              type="file"
-              id="conversation-image"
-              accept="image/*"
-              onClick={(e) => {
-                (e.target as HTMLInputElement).value = "";
-              }}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  onImageUpload(file);
-                }
-              }}
-              className="hidden"
-              disabled={isUploadingImage}
-            />
-            
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => document.getElementById("conversation-image")?.click()}
-              disabled={isUploadingImage}
-              className={`${uploadButtonBase} ${blueGradientBg} ${dashedBlueBorder}`}
-            >
-              {isUploadingImage ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-                  <span className="text-blue-700">Uploading...</span>
-                </div>
-              ) : uploadedImageUrl ? (
-                <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-green-600" />
-                  <span className="text-green-700">Image uploaded! Click to change</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5 text-blue-600" />
-                  <span className="text-blue-700">Choose an image</span>
-                </div>
-              )}
-            </Button>
-            
-            {uploadedImageUrl && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mt-3 rounded-xl overflow-hidden border-2 border-blue-200"
-              >
-                <img
-                  src={uploadedImageUrl}
-                  alt="Preview"
-                  className="w-full h-48 object-cover"
-                />
-              </motion.div>
-            )}
-            
-            <p className="text-xs text-slate-500 text-center">
-              Make your post stand out with a cover image
-            </p>
+      <FunSheetCard delay={0.2}>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <ImageIcon className={iconBlue} />
+            <Label className={labelText}>CoverCard card (optional)</Label>
           </div>
-        </FunSheetCard>
-      )}
 
-      {onYoutubeUrlChange && (
-        <FunSheetCard delay={0.25}>
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Youtube className={iconBlue} />
-              <Label className={labelText}>
-                Add YouTube video URL (optional)
-              </Label>
-            </div>
-            
-            <Input
-              type="url"
-              id="youtube-url"
-              placeholder="https://www.youtube.com/watch?v=..."
-              value={youtubeUrl || ""}
-              onChange={(e) => onYoutubeUrlChange?.(e.target.value)}
-              className={`${uploadButtonBase} ${blueGradientBg} ${dashedBlueBorder}`}
-            />
-            
-            <p className={helperTextCenter}>
-              Add a YouTube video to enhance your post
-            </p>
+          {/* Selector tabs */}
+          <div className="grid grid-cols-3 gap-2">
+            {(["none", "image", "youtube"] as CoverCardMode[]).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => handleCoverCardModeChange(mode)}
+                className={`py-2 px-3 rounded-lg text-sm font-medium border-2 transition-all ${
+                  coverMode === mode
+                    ? "border-blue-400 bg-blue-100 text-blue-700"
+                    : "border-blue-200 bg-white text-slate-500 hover:border-blue-300"
+                }`}
+              >
+                {mode === "none" ? "None" : mode === "image" ? "📷 Image" : "▶️ YouTube"}
+              </button>
+            ))}
           </div>
-        </FunSheetCard>
-      )}
+
+          {/* Image input */}
+          {coverMode === "image" && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-3"
+            >
+              <input
+                type="file"
+                id="conversation-image"
+                accept="image/*"
+                onClick={(e) => { (e.target as HTMLInputElement).value = ""; }}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) onImageUpload(f); }}
+                className="hidden"
+                disabled={isUploadingImage}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById("conversation-image")?.click()}
+                disabled={isUploadingImage}
+                className={`${uploadButtonBase} ${blueGradientBg} ${dashedBlueBorder}`}
+              >
+                {isUploadingImage ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                    <span className="text-blue-700">Uploading...</span>
+                  </div>
+                ) : cover?.type === "image" ? (
+                  <div className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-green-600" />
+                    <span className="text-green-700">Image uploaded! Click to change</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-blue-600" />
+                    <span className="text-blue-700">Choose an image</span>
+                  </div>
+                )}
+              </Button>
+              {cover?.type === "image" && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="rounded-xl overflow-hidden border-2 border-blue-200"
+                >
+                  <img src={cover.url} alt="Preview" className="w-full h-48 object-cover" />
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
+          {/* YouTube input */}
+          {coverMode === "youtube" && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-2"
+            >
+              <Input
+                type="url"
+                id="youtube-url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={cover?.type === "youtube" ? cover.url : ""}
+                onChange={(e) => onCoverCardChange(e.target.value ? { type: "youtube", url: e.target.value } : null)}
+                className={`${blueGradientBg} ${dashedBlueBorder}`}
+              />
+              <p className={helperTextCenter}>Paste a YouTube URL to show as an intro video</p>
+            </motion.div>
+          )}
+        </div>
+      </FunSheetCard>
 
       {!hideTopicAndStatements && (
         <SeedStatements
