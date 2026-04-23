@@ -3,6 +3,7 @@ import { Hono } from "npm:hono";
 import { getByPrefixParsed, getActiveRoomValues, saveActiveRoomPointer, saveDebate } from "./kv-utils.tsx";
 import { backfillUserCreatedAtApi } from "./backfill-user-created-at.tsx";
 import { backfillMembershipsApi } from "./script-backfill-memberships.tsx";
+import { backfillVotesToTableApi } from "./backfill-votes-to-table.tsx";
 import { verifyAdminKey } from "./admin-api.tsx";
 
 const app = new Hono();
@@ -109,5 +110,6 @@ app.post(
 
 app.route("/", backfillUserCreatedAtApi);
 app.route("/", backfillMembershipsApi);
+app.route("/", backfillVotesToTableApi);
 
 export { app as oneTimeFixesApi };

@@ -26,6 +26,15 @@ interface BackfillUserCreatedAtResult {
   errors: number;
 }
 
+interface CopyVotesToTableResult {
+  kvVoteCount: number;
+  insertedCount: number;
+  tableVoteCount: number;
+  countsMatch: boolean;
+  batchErrors: string[];
+  message: string;
+}
+
 class AdminApiClient extends BaseApiClient {
   async fixActiveRoomPointers(adminKey: string) {
     return this.request<FixActiveRoomPointersResult>(
@@ -53,6 +62,17 @@ class AdminApiClient extends BaseApiClient {
       {
         method: "POST",
         headers: { "X-Admin-Key": adminKey },
+      },
+    );
+  }
+
+  async copyVotesToTable(adminKey: string, dryRun: boolean) {
+    return this.request<CopyVotesToTableResult>(
+      "/one-time-fixes/copy-votes-to-table",
+      {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+        body: JSON.stringify({ dryRun }),
       },
     );
   }

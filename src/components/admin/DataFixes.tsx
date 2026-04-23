@@ -50,6 +50,32 @@ const SCRIPTS: ScriptConfig[] = [
     apiCall: (adminKey, dryRun) => adminApi.backfillMemberships(adminKey, dryRun),
     bgColor: "bg-purple-50",
   },
+  {
+    id: "copy-votes-to-table",
+    title: "Copy Votes to Table",
+    description: "Copies all votes from the KV store into the votes table. Idempotent — safe to run multiple times. Includes a count check at the end.",
+    dryRunMessage: "Preview how many votes would be copied from KV store to the votes table?\n\nNo changes will be made.\n\nContinue?",
+    liveRunMessage: "Copy all votes from KV store into the votes table?\n\nThis is idempotent — safe to run multiple times.\n\nContinue?",
+    successMessageDryRun: (stats) =>
+      `Dry run complete!\n\n` +
+      `Votes in KV store: ${stats.kvVoteCount}\n` +
+      `Already in table: ${stats.tableVoteCount}\n` +
+      `Would insert: ${stats.kvVoteCount - stats.tableVoteCount}\n\n` +
+      `No changes were made.`,
+    successMessageLive: (stats) =>
+      `Done!\n\n` +
+      `KV votes: ${stats.kvVoteCount}\n` +
+      `Inserted: ${stats.insertedCount}\n` +
+      `Table count: ${stats.tableVoteCount}\n` +
+      `Counts match: ${stats.countsMatch ? "Yes" : "No — check batchErrors"}\n\n` +
+      (stats.batchErrors?.length ? `Errors:\n${stats.batchErrors.join("\n")}` : "No errors."),
+    statsDisplay: (stats) =>
+      stats.dryRun
+        ? `Last dry run: ${stats.kvVoteCount} in KV, ${stats.tableVoteCount} in table, ${stats.kvVoteCount - stats.tableVoteCount} would be inserted`
+        : `Last run: ${stats.insertedCount} inserted, ${stats.tableVoteCount} total in table, counts match: ${stats.countsMatch ? "yes" : "no"}`,
+    apiCall: (adminKey, dryRun) => adminApi.copyVotesToTable(adminKey, dryRun),
+    bgColor: "bg-amber-50",
+  },
 ];
 
 export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
@@ -57,9 +83,11 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
   const [migrationStats, setMigrationStats] = useState<any>(null);
   const [isMigrating, setIsMigrating] = useState(false);
   const [migrationDryRun, setMigrationDryRun] = useState(true);
-  const [scriptStats, setScriptStats] = useState<any>(null);
+  const [scriptStats, setScriptStats] = useState<Record<string, any>>({});
   const [isRunningScript, setIsRunningScript] = useState(false);
-  const [scriptDryRun, setScriptDryRun] = useState(true);
+  const [scriptDryRun, setScriptDryRun] = useState<Record<string, boolean>>(
+    Object.fromEntries(SCRIPTS.map(s => [s.id, true])),
+  );
   const [currentScript, setCurrentScript] = useState<string>(SCRIPTS[0]?.id || "");
 
   const handleDataFixNormalizeDupontCircle = async () => {
@@ -231,32 +259,25 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
     }
   };
 
-  const handleRunScript = async () => {
-    const script = SCRIPTS.find(s => s.id === currentScript);
-    if (!script) {
-      alert("Please select a script to run.");
-      return;
-    }
-
-    const confirmMessage = scriptDryRun
-      ? script.dryRunMessage
-      : script.liveRunMessage;
+  const handleRunScript = async (script: ScriptConfig) => {
+    const dryRun = scriptDryRun[script.id];
+    const confirmMessage = dryRun ? script.dryRunMessage : script.liveRunMessage;
 
     if (!confirm(confirmMessage)) {
       return;
     }
 
+    setCurrentScript(script.id);
     setIsRunningScript(true);
-    setScriptStats(null);
+    setScriptStats(prev => ({ ...prev, [script.id]: null }));
     try {
-      const res = await script.apiCall(adminKey, scriptDryRun);
+      const res = await script.apiCall(adminKey, dryRun);
 
       if (res.success && res.data) {
-        setScriptStats(res.data);
-        const stats = res.data;
-        const resultMessage = scriptDryRun
-          ? script.successMessageDryRun(stats)
-          : script.successMessageLive(stats);
+        setScriptStats(prev => ({ ...prev, [script.id]: res.data }));
+        const resultMessage = dryRun
+          ? script.successMessageDryRun(res.data)
+          : script.successMessageLive(res.data);
 
         alert(resultMessage);
         await fetchAdminData();
@@ -282,6 +303,7 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
         to run multiple times.
       </p>
       <div className="space-y-3">
+
         {SCRIPTS.map(script => {
           const isCurrentScript = currentScript === script.id;
           return (
@@ -296,8 +318,10 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
                 <div className="flex items-center gap-2 mt-3">
                   <Checkbox
                     id={`script-dry-run-${script.id}`}
-                    checked={scriptDryRun}
-                    onCheckedChange={setScriptDryRun}
+                    checked={scriptDryRun[script.id]}
+                    onCheckedChange={(v: boolean) =>
+                      setScriptDryRun(prev => ({ ...prev, [script.id]: v }))
+                    }
                     disabled={isRunningScript}
                   />
                   <Label
@@ -307,24 +331,21 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
                     Dry Run Mode (preview only)
                   </Label>
                 </div>
-                {scriptStats && isCurrentScript && (
+                {scriptStats[script.id] && (
                   <div className="mt-2 text-xs text-muted-foreground">
-                    {script.statsDisplay(scriptStats)}
+                    {script.statsDisplay(scriptStats[script.id])}
                   </div>
                 )}
               </div>
               <Button
-                onClick={() => {
-                  setCurrentScript(script.id);
-                  handleRunScript();
-                }}
+                onClick={() => handleRunScript(script)}
                 disabled={isRunningScript}
                 variant="outline"
                 size="sm"
               >
                 {isRunningScript && isCurrentScript
                   ? "Running..."
-                  : scriptDryRun
+                  : scriptDryRun[script.id]
                   ? "Run Dry Run"
                   : "Run"}
               </Button>
