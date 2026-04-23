@@ -111,6 +111,12 @@ export function SwipeableStatementStack({
     demogEndIndex = insertAt + demoCards.length;
   }
 
+  if (isAnonymous && !certifyCardDismissed) {
+    const certifyCard: Card = { type: "certify", isUnswipeable: true };
+    const insertIndex = Math.min(3, cards.length);
+    cards.splice(insertIndex, 0, certifyCard);
+  }
+
   if (!chanceCardSwiped) {
     const chanceCard: ChanceCard = { type: "chance" };
     const naturalIndex = Math.min(5, statements.length) - votedStatementIds.size;
@@ -121,11 +127,6 @@ export function SwipeableStatementStack({
   if (youtubeUrl && !youtubeCardSwiped) {
     const youtubeCard: YouTubeCard = { type: "youtube", url: youtubeUrl };
     cards.unshift(youtubeCard);
-  }
-
-  if (isAnonymous && !certifyCardDismissed) {
-    const certifyCard: Card = { type: "certify", isUnswipeable: true };
-    cards.push(certifyCard);
   }
 
   const hasMoreCards = cards.length > 0;
