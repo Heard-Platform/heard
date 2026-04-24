@@ -14,7 +14,10 @@ export type StatementWithVotes = {
 export interface VotingMatrix {
   userIds: string[];
   statementIds: string[];
-  matrix: number[][]; // rows=users, cols=statements, values: 1=agree, -1=disagree, 0=pass/no vote
+  // rows=users, cols=statements, values: 1=agree, -1=disagree, 0=pass/no vote
+  // Float32Array is packed contiguous memory — much smaller footprint than number[][]
+  // and faster in the distance-computation hot loop.
+  matrix: Float32Array[];
 }
 
 export interface ClusterAssignment {
@@ -33,66 +36,104 @@ export interface ClusterMetadata {
 }
 
 /**
- * Build voting matrix from statements
+ * Build voting matrix from statements.
+ *
+ * We build a per-statement userId→encodedVote Map once, then populate each user row
+ * via O(1) Map lookups. Previously this did an O(votes) .find() inside the user×statement
+ * inner loop, which was O(users × statements × votes_per_statement).
  */
 export function buildVotingMatrix(
   userIds: string[],
   statements: StatementWithVotes[],
 ): VotingMatrix {
   const statementIds = statements.map((s) => s.id);
-  const matrix: number[][] = [];
+  const statementCount = statements.length;
+  const userCount = userIds.length;
+  type UserId = string;
+  type EncodedVote = 1 | -1 | 0;
 
-  // Build matrix: rows = users, cols = statements
-  for (const userId of userIds) {
-    const row: number[] = [];
-    for (const statement of statements) {
-      const vote = statement.votes.find(
-        (v) => v.userId === userId,
-      );
-      if (!vote || vote.voteType === "pass") {
-        row.push(0);
-      } else if (vote.voteType === "agree" || vote.voteType === "super_agree") {
-        row.push(1);
-      } else {
-        row.push(-1);
-      }
+  const voteLookups: Map<UserId, EncodedVote>[] = statements.map((statement) => {
+    const lookup = new Map<UserId, EncodedVote>();
+    for (const vote of statement.votes) {
+      const encoded =
+        vote.voteType === "pass"
+          ? 0
+          : vote.voteType === "agree" || vote.voteType === "super_agree"
+            ? 1
+            : -1;
+      lookup.set(vote.userId, encoded);
     }
-    matrix.push(row);
+    return lookup;
+  });
+
+  const matrix: Float32Array[] = new Array(userCount);
+  for (let userIdx = 0; userIdx < userCount; userIdx++) {
+    const row = new Float32Array(statementCount);
+    const userId = userIds[userIdx];
+    for (let stmtIdx = 0; stmtIdx < statementCount; stmtIdx++) {
+      const v = voteLookups[stmtIdx].get(userId);
+      if (v !== undefined) row[stmtIdx] = v;
+    }
+    matrix[userIdx] = row;
   }
 
   return { userIds, statementIds, matrix };
 }
 
 /**
- * Calculate Euclidean distance between two vectors
+ * Squared Euclidean distance — used in the k-means hot loop for comparison.
+ * sqrt is monotonic, so skipping it gives identical cluster assignments at 2-3x the speed.
+ * (a-b)*(a-b) is also faster than Math.pow(a-b, 2) in V8.
  */
-function euclideanDistance(a: number[], b: number[]): number {
+function squaredDistance(a: Float32Array, b: Float32Array): number {
   let sum = 0;
   for (let i = 0; i < a.length; i++) {
-    sum += Math.pow(a[i] - b[i], 2);
+    const d = a[i] - b[i];
+    sum += d * d;
   }
-  return Math.sqrt(sum);
+  return sum;
 }
 
 /**
- * Calculate mean of vectors
+ * Full Euclidean distance — used once per user to produce the stored `distance` field.
  */
-function calculateMean(vectors: number[][]): number[] {
-  if (vectors.length === 0) return [];
+function euclideanDistance(a: Float32Array, b: Float32Array): number {
+  return Math.sqrt(squaredDistance(a, b));
+}
+
+function calculateMean(vectors: Float32Array[]): Float32Array {
+  if (vectors.length === 0) return new Float32Array(0);
   const dim = vectors[0].length;
-  const mean = new Array(dim).fill(0);
+  const mean = new Float32Array(dim);
 
   for (const vector of vectors) {
-    for (let i = 0; i < dim; i++) {
-      mean[i] += vector[i];
+    for (let dimIdx = 0; dimIdx < dim; dimIdx++) {
+      mean[dimIdx] += vector[dimIdx];
     }
   }
 
-  for (let i = 0; i < dim; i++) {
-    mean[i] /= vectors.length;
+  const n = vectors.length;
+  for (let dimIdx = 0; dimIdx < dim; dimIdx++) {
+    mean[dimIdx] /= n;
   }
 
   return mean;
+}
+
+/**
+ * Simple seedable PRNG (mulberry32) for deterministic test runs.
+ * Production calls pass no seed and use Math.random.
+ */
+function makeRng(seed?: number): () => number {
+  if (seed === undefined) return Math.random;
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
 /**
@@ -100,12 +141,14 @@ function calculateMean(vectors: number[][]): number[] {
  * @param matrix - Voting matrix (rows = users, cols = statements)
  * @param k - Number of clusters (will auto-determine if too many)
  * @param maxIterations - Maximum iterations for convergence
+ * @param randomSeed - Optional seed for deterministic centroid initialization (used by tests)
  */
 export function kMeansClustering(
-  matrix: number[][],
+  matrix: Float32Array[],
   k: number = 3,
   maxIterations: number = 10,
-): { assignments: number[]; centroids: number[][] } {
+  randomSeed?: number,
+): { assignments: number[]; centroids: Float32Array[] } {
   const n = matrix.length; // number of users
 
   if (n === 0) {
@@ -123,54 +166,79 @@ export function kMeansClustering(
     };
   }
 
+  const random = makeRng(randomSeed);
+  const dim = matrix[0].length;
+
   // Initialize centroids randomly by selecting k random users
-  const centroids: number[][] = [];
+  const centroids: Float32Array[] = [];
   const selectedIndices = new Set<number>();
   while (centroids.length < k) {
-    const idx = Math.floor(Math.random() * n);
+    const idx = Math.floor(random() * n);
     if (!selectedIndices.has(idx)) {
       selectedIndices.add(idx);
-      centroids.push([...matrix[idx]]);
+      centroids.push(new Float32Array(matrix[idx]));
     }
   }
 
   let assignments = new Array(n).fill(0);
+  // Preallocate sum/count buffers reused across iterations for centroid recalculation.
+  const sums: Float32Array[] = new Array(k);
+  for (let c = 0; c < k; c++) sums[c] = new Float32Array(dim);
+  const counts = new Array<number>(k).fill(0);
+
   let converged = false;
   let iterations = 0;
 
   while (!converged && iterations < maxIterations) {
-    // Assign each user to nearest centroid
-    const newAssignments = matrix.map((userVector) => {
+    // Assign each user to nearest centroid (using squared distance — monotonic, no sqrt needed)
+    const newAssignments = new Array<number>(n);
+    for (let u = 0; u < n; u++) {
+      const userVector = matrix[u];
       let minDistance = Infinity;
       let closestCluster = 0;
-
       for (let i = 0; i < k; i++) {
-        const distance = euclideanDistance(
-          userVector,
-          centroids[i],
-        );
+        const distance = squaredDistance(userVector, centroids[i]);
         if (distance < minDistance) {
           minDistance = distance;
           closestCluster = i;
         }
       }
-
-      return closestCluster;
-    });
+      newAssignments[u] = closestCluster;
+    }
 
     // Check for convergence
-    converged = newAssignments.every(
-      (a, i) => a === assignments[i],
-    );
+    converged = true;
+    for (let i = 0; i < n; i++) {
+      if (newAssignments[i] !== assignments[i]) {
+        converged = false;
+        break;
+      }
+    }
     assignments = newAssignments;
 
-    // Recalculate centroids
-    for (let i = 0; i < k; i++) {
-      const clusterMembers = matrix.filter(
-        (_, idx) => assignments[idx] === i,
-      );
-      if (clusterMembers.length > 0) {
-        centroids[i] = calculateMean(clusterMembers);
+    // Recalculate centroids in a single pass: sum then divide.
+    // Previously this did k separate O(n) filter() calls followed by calculateMean per cluster.
+    for (let c = 0; c < k; c++) {
+      sums[c].fill(0);
+      counts[c] = 0;
+    }
+    for (let u = 0; u < n; u++) {
+      const cluster = assignments[u];
+      const vec = matrix[u];
+      const sum = sums[cluster];
+      for (let i = 0; i < dim; i++) {
+        sum[i] += vec[i];
+      }
+      counts[cluster]++;
+    }
+    for (let c = 0; c < k; c++) {
+      if (counts[c] > 0) {
+        const sum = sums[c];
+        const centroid = centroids[c];
+        const inv = 1 / counts[c];
+        for (let i = 0; i < dim; i++) {
+          centroid[i] = sum[i] * inv;
+        }
       }
     }
 
@@ -187,6 +255,7 @@ export function clusterUsers(
   roomId: string,
   userIds: string[],
   statements: StatementWithVotes[],
+  randomSeed?: number,
 ): {
   metadata: ClusterMetadata;
   clusterAssignments: ClusterAssignment[];
@@ -201,6 +270,8 @@ export function clusterUsers(
   const { assignments, centroids } = kMeansClustering(
     votingMatrix.matrix,
     optimalK,
+    undefined,
+    randomSeed,
   );
 
   const clusterSizes: Record<number, number> = {};
@@ -232,7 +303,8 @@ export function clusterUsers(
       0,
     ),
     clusterSizes,
-    centroids,
+    // Convert Float32Array centroids to plain arrays for JSON serialization to KV.
+    centroids: centroids.map((c) => Array.from(c)),
   };
 
   return { metadata, clusterAssignments };
