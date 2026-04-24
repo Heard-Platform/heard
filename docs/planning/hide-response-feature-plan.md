@@ -221,7 +221,7 @@ Do not call the API directly from components — go through the hook, consistent
 
 Tasks are ordered so each one leaves the app in a working, mergeable state. We will ship and review them one PR at a time.
 
-1. **Types + server filter plumbing.** Add `isHidden` / `hiddenAt` / `hiddenBy` to `Statement` in [server types](src/supabase/functions/server/types.tsx#L105-L121) and [frontend types](src/types/index.ts#L22-L37). Update [getStatementsForRoom](src/supabase/functions/server/kv-utils.tsx#L314) to filter hidden by default; add `getAllStatementsForRoomIncludingHidden`. Make `processVote` in [voting-utils.ts](src/supabase/functions/server/voting-utils.ts#L60) return 404 on hidden statements. Unit tests for both. *No user-visible change — pure plumbing.*
+1. ✅ **Types + server filter plumbing.** Add `isHidden` / `hiddenAt` / `hiddenBy` to `Statement` in [server types](src/supabase/functions/server/types.tsx#L105-L121) and [frontend types](src/types/index.ts#L22-L37). Update [getStatementsForRoom](src/supabase/functions/server/kv-utils.tsx#L314) to filter hidden by default; add `getAllStatementsForRoomIncludingHidden`. Make `processVote` in [voting-utils.ts](src/supabase/functions/server/voting-utils.ts#L60) return 404 on hidden statements. Unit tests for both. *No user-visible change — pure plumbing.*
 
 2. **Moderation API endpoints.** New `moderation-api.tsx` on the server exposing `POST /room/:roomId/mod/statement/:statementId/hide`, `POST .../unhide`, and `GET /room/:roomId/mod/statements` (returns all statements including hidden, for the moderator modal). Host-only auth on all three. Unit tests and a Postman-style smoke test.
 
