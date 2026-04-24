@@ -1,7 +1,14 @@
 import type { Statement } from "../../types";
 import { SwipeIndicator } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
-import { X, Star, Flag } from "lucide-react";
+import { Star, Flag, MoreVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
 import moment from "moment";
 
 interface StatementCardProps {
@@ -68,24 +75,34 @@ export function StatementCard({
                 <Star className="w-4 h-4 text-white" />
               </button>
             )}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onFlag();
-              }}
-              className={`${actionButtonBase} hover:bg-gray-100`}
-            >
-              <Flag className="w-3.5 h-3.5 text-red-500" />
-            </button>
-            <button
-              onClick={(e) => {
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onSkip();
               }}
-              className={`${actionButtonBase} bg-gray-200 hover:bg-gray-300`}
+              className="rounded-full overflow-hidden bg-gray-100 hover:bg-gray-200"
+              title="Not sure"
             >
-              <X className="w-4 h-4 text-gray-700" />
-            </button>
+              <span className="text-xl leading-none block" aria-hidden="true">🤷</span>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  onClick={(e) => e.stopPropagation()}
+                  className={`${actionButtonBase} hover:bg-gray-100`}
+                >
+                  <MoreVertical className="w-4 h-4 text-gray-700" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => onFlag()}>
+                  <Flag className="w-4 h-4 mr-2 text-red-500" />
+                  Report
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </div>
