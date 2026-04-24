@@ -61,7 +61,7 @@ interface DebateSessionContextType {
   ) => Promise<FlyerVoteResponse | null>;
   submitFlyerEmail: (email: string) => Promise<ApiResponse | null>;
   markChanceCardSwiped: (roomId: string) => Promise<void>;
-  markYouTubeCardSwiped: (roomId: string) => Promise<void>;
+  markCoverCardSwiped: (roomId: string) => Promise<void>;
   saveDemographicAnswer: (
     questionId: string,
     answer: string | null,
@@ -451,18 +451,18 @@ export function DebateSessionProvider(
     }, [],
   );
 
-  const markYouTubeCardSwiped = useCallback(
+  const markCoverCardSwiped = useCallback(
     async (roomId: string) => {
       try {
-        const response = await api.markYouTubeCardSwiped(roomId);
+        const response = await api.markCoverCardSwiped(roomId);
         if (!response.success) {
-          throw new Error(response.error || "Failed to mark YouTube card as swiped");
+          throw new Error(response.error || "Failed to mark cover card as swiped");
         }
       } catch (err) {
         const errorMsg =
           err instanceof Error ? err.message : "Unknown error";
         setError(errorMsg);
-        console.error("Failed to mark YouTube card as swiped:", errorMsg);
+        console.error("Failed to mark cover card as swiped:", errorMsg);
       }
     }, [],
   );
@@ -816,7 +816,7 @@ export function DebateSessionProvider(
     createStatementMerge,
     deleteStatementMerge,
     markChanceCardSwiped,
-    markYouTubeCardSwiped,
+    markCoverCardSwiped,
     saveDemographicAnswer,
     getSubHeards,
     getExplorableSubHeards,
@@ -919,8 +919,8 @@ export function DebateSessionProvider(
       markChanceCardSwiped: async () => {
         console.log("[Showcase] markChanceCardSwiped called");
       },
-      markYouTubeCardSwiped: async () => {
-        console.log("[Showcase] markYouTubeCardSwiped called");
+      markCoverCardSwiped: async () => {
+        console.log("[Showcase] markCoverCardSwiped called");
       },
       saveDemographicAnswer: async (questionId: string, answer: string | null) => {
         console.log("[Showcase] saveDemographicAnswer called");

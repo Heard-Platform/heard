@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { SwipeableStatementStack } from "../components/room/SwipeableStatementStack";
-import { Statement, VoteType, YouTubeCard } from "../types";
-import { Card, CardContent } from "../components/ui/card";
+import { Statement, VoteType } from "../types";
 import { mockRooms } from "./mockData";
 
 const mockStatements: Statement[] = [
@@ -49,7 +48,7 @@ const mockStatements: Statement[] = [
 ];
 
 export function YouTubeCardStory() {
-  const [youtubeCardSwiped, setYoutubeCardSwiped] = useState(false);
+  const [coverCardSwiped, setCoverCardSwiped] = useState(false);
 
   const handleVote = async (statementId: string, voteType: VoteType) => {
     console.log("Vote:", { statementId, voteType });
@@ -58,11 +57,6 @@ export function YouTubeCardStory() {
   const handleSubmitStatement = async (text: string) => {
     console.log("Submit statement:", text);
     await new Promise((resolve) => setTimeout(resolve, 500));
-  };
-
-  const handleYouTubeCardSwiped = async () => {
-    console.log("YouTube card swiped");
-    setYoutubeCardSwiped(true);
   };
 
   return (
@@ -75,14 +69,18 @@ export function YouTubeCardStory() {
           allowAnonymous={true}
           isAnonymous={false}
           chanceCardSwiped={true}
-          youtubeUrl="https://www.youtube.com/shorts/Ukwy8FqNGZc"
-          youtubeCardSwiped={youtubeCardSwiped}
+          coverCardUrl="https://www.youtube.com/shorts/Ukwy8FqNGZc"
+          coverCardType="youtube"
+          coverCardSwiped={coverCardSwiped}
+          demographicQuestions={[]}
+          answeredQuestionIds={new Set()}
           onVote={handleVote}
           onSubmitStatement={handleSubmitStatement}
           onShowAccountSetupModal={() => {}}
           onChanceCardSwiped={async () => {}}
-          onYouTubeCardSwiped={handleYouTubeCardSwiped}
+          onCoverCardSwiped={async () => { setCoverCardSwiped(true); }}
           onCertifyDone={async () => {}}
+          onDemographicsAnswered={() => {}}
         />
       </div>
     </div>

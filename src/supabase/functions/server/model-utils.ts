@@ -138,3 +138,11 @@ export const setInternalVar = async (key: InternalVarKey, value: any) =>
 export const getInternalVar = async <T>(key: InternalVarKey): Promise<T | null> =>
   selectAll<InternalVar>("internal_vars", { key })
     .then((vars) => (vars[0] ? JSON.parse(vars[0].value) : null));
+
+export const saveCoverCardSwipe = async (userId: string, roomId: string) =>
+  upsert("cover_card_swipes", { userId, roomId, swipedAt: Date.now() }, "userId,roomId");
+
+export const getCoverCardSwipedRoomIds = async (userId: string): Promise<Set<string>> => {
+  const rows = await selectAll<{ roomId: string }>("cover_card_swipes", { userId });
+  return new Set(rows.map((r) => r.roomId));
+};

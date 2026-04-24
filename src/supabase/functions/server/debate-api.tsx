@@ -5,9 +5,7 @@ import {
   saveVote,
   getAllDebates,
   saveChanceCardStatus,
-  getUsersChanceCardStatuses,
-  saveYouTubeCardStatus,
-  getUsersYouTubeCardStatuses,
+  getUsersChanceCardStatuses, getUsersYouTubeCardStatuses,
   getVotesForStatement,
   getCommunities,
   getStatementsForRoom,
@@ -16,7 +14,7 @@ import {
   bulkSaveStatements,
   saveUserWithEmailIndex,
   getClusterMetadataRecord,
-  getClusterAssignmentsBatch,
+  getClusterAssignmentsBatch
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
@@ -30,14 +28,15 @@ import {
   getDemographicQuestionsForRooms,
   getAnsweredDemographicQuestionIds,
   saveDemographicAnswer,
+  saveCoverCardSwipe,
+  getCoverCardSwipedRoomIds,
 } from "./model-utils.ts";
 import type {
   User, Statement,
   Vote,
   Phase,
   SubPhase,
-  DebateRoom,
-  Rant,
+  DebateRoom
 } from "./types.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { calculateVoteStats, processVote } from "./voting-utils.ts";
@@ -961,16 +960,17 @@ app.get(
             statuses.map(status => status.roomId)
         );
 
-        const youtubeStatuses = await getUsersYouTubeCardStatuses(userId);
-        
-        const swipedYoutubeRoomIds = new Set(
-            youtubeStatuses.map(status => status.roomId)
-        );
+        const [youtubeStatuses, swipedCoverCardRoomIds] = await Promise.all([
+          getUsersYouTubeCardStatuses(userId),
+          getCoverCardSwipedRoomIds(userId),
+        ]);
+
+        const swipedYoutubeRoomIds = new Set(youtubeStatuses.map((s: any) => s.roomId));
 
         rooms = rooms.map((room) => ({
           ...room,
           chanceCardSwiped: swipedRoomIds.has(room.id),
-          youtubeCardSwiped: swipedYoutubeRoomIds.has(room.id),
+          coverCardSwiped: swipedCoverCardRoomIds.has(room.id) || swipedYoutubeRoomIds.has(room.id),
         }));
       }
 
@@ -2282,28 +2282,22 @@ app.post(
 );
 
 app.post(
-  "/make-server-f1a393b4/youtube-card/mark-swiped",
+  "/make-server-f1a393b4/cover-card/mark-swiped",
   async (c: Context) => {
     try {
       const userId = c.get("userId");
       const { roomId } = await c.req.json();
 
       if (!roomId) {
-        return c.json(
-          { error: "roomId is required" },
-          400
-        );
+        return c.json({ error: "roomId is required" }, 400);
       }
 
-      await saveYouTubeCardStatus({ userId, roomId, swipedAt: Date.now() });
+      await saveCoverCardSwipe(userId, roomId);
 
       return c.json({ success: true });
     } catch (error) {
-      console.error("Error marking YouTube card as swiped:", error);
-      return c.json(
-        { error: "Failed to mark YouTube card as swiped" },
-        500
-      );
+      console.error("Error marking cover card as swiped:", error);
+      return c.json({ error: "Failed to mark cover card as swiped" }, 500);
     }
   }
 );

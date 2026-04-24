@@ -8,7 +8,7 @@ import {
 import type { Card, DebateRoom } from "../../types";
 import { getPastelColor } from "../../utils/colors";
 import { ChanceCard } from "./ChanceCard";
-import { YouTubeCard } from "./YouTubeCard";
+import { CoverCard } from "./CoverCard";
 import { DemographicsCard } from "./DemographicsCard";
 import { StatementCard } from "./StatementCard";
 import { CertifyCard } from "./CertifyCard";
@@ -139,8 +139,10 @@ export function SwipeableCard({
           ? "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-300"
             : card.type === "chance"
             ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-orange-300"
-            : card.type === "youtube"
+            : card.type === "cover" && card.cover.type === "youtube"
             ? "bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300"
+            : card.type === "cover" && card.cover.type === "image"
+            ? "bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-300"
             : card.type === "demographics"
             ? "border-transparent p-0"
             : card.type === "statement"
@@ -167,9 +169,9 @@ export function SwipeableCard({
             onSubmitStatement={onSubmitStatement}
             onShowAccountSetupModal={onShowAccountSetupModal}
           />
-        ) : card.type === "youtube" ? (
-          <YouTubeCard
-            url={card.url}
+        ) : card.type === "cover" ? (
+          <CoverCard
+            cover={card.cover}
             isTopCard={isTopCard}
           />
         ) : card.type === "demographics" ? (

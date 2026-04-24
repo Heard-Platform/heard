@@ -6,11 +6,12 @@ import {
   type VoteType,
   type Card,
   type ChanceCard,
-  type YouTubeCard,
+  type CoverCard,
   type DemographicsCard,
 
   type DebateRoom,
   DemographicQuestion,
+  FullCoverData,
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
 import { SwipeInstructions } from "../SwipeInstructions";
@@ -28,8 +29,8 @@ interface SwipeableStatementStackProps {
   allowAnonymous: boolean;
   isAnonymous: boolean;
   chanceCardSwiped: boolean;
-  youtubeUrl?: string;
-  youtubeCardSwiped: boolean;
+  cover: FullCoverData | null;
+  coverCardSwiped: boolean;
   demographicQuestions: DemographicQuestion[];
   answeredQuestionIds: Set<string>;
   onVote: (
@@ -40,7 +41,7 @@ interface SwipeableStatementStackProps {
   onShowAccountSetupModal: (featureText: string) => void;
   onCertifyDone: () => void;
   onChanceCardSwiped: () => Promise<void>;
-  onYouTubeCardSwiped: () => Promise<void>;
+  onCoverCardSwiped: () => Promise<void>;
   onDemographicsAnswered: (questionId: string) => void;
 }
 
@@ -53,8 +54,8 @@ export function SwipeableStatementStack({
   allowAnonymous,
   isAnonymous,
   chanceCardSwiped,
-  youtubeUrl,
-  youtubeCardSwiped,
+  cover,
+  coverCardSwiped,
   demographicQuestions,
   answeredQuestionIds,
   onVote,
@@ -62,7 +63,7 @@ export function SwipeableStatementStack({
   onShowAccountSetupModal,
   onCertifyDone,
   onChanceCardSwiped,
-  onYouTubeCardSwiped,
+  onCoverCardSwiped,
   onDemographicsAnswered,
 }: SwipeableStatementStackProps) {
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
@@ -76,7 +77,7 @@ export function SwipeableStatementStack({
   const [swipedCardId, setSwipedCardId] = useState<
     string | null
   >(null);
-  const [swipedNoopCard, setSwipedNoopCard] = useState<"certify" | "chance" | "youtube" | null>(null);
+  const [swipedNoopCard, setSwipedNoopCard] = useState<"certify" | "chance" | "cover" | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
@@ -124,9 +125,12 @@ export function SwipeableStatementStack({
     cards.splice(chanceCardIndex, 0, chanceCard);
   }
 
-  if (youtubeUrl && !youtubeCardSwiped) {
-    const youtubeCard: YouTubeCard = { type: "youtube", url: youtubeUrl };
-    cards.unshift(youtubeCard);
+  if (cover && !coverCardSwiped) {
+    const coverCard: CoverCard = {
+      type: "cover",
+      cover,
+    };
+    cards.unshift(coverCard);
   }
 
   const hasMoreCards = cards.length > 0;
@@ -284,15 +288,15 @@ export function SwipeableStatementStack({
         swipeDirection,
       );
       return;
-    } else if (card.type === "certify" || card.type === "chance" || card.type === "youtube") {
+    } else if (card.type === "certify" || card.type === "chance" || card.type === "cover") {
       setIsVoting(true);
       setSwipedNoopCard(card.type);
       setSwipeDirection(swipeDirection);
 
       if (card.type === "chance") {
         onChanceCardSwiped();
-      } else if (card.type === "youtube") {
-        onYouTubeCardSwiped && onYouTubeCardSwiped();
+      } else if (card.type === "cover") {
+        onCoverCardSwiped();
       }
 
       setTimeout(() => {
@@ -433,7 +437,7 @@ export function SwipeableStatementStack({
               if (card.type === "statement") return card.statement.id;
               if (card.type === "certify") return "certify";
               if (card.type === "chance") return "chance";
-              if (card.type === "youtube") return "youtube";
+              if (card.type === "cover") return "cover";
               if (card.type === "demographics") return `demographics-${card.question.id}`;
               return "unknown";
             };

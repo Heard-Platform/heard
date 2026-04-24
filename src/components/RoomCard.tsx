@@ -20,7 +20,7 @@ import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
-import { DebateRoom, Statement, VoteType, UserSession } from "../types";
+import { DebateRoom, Statement, VoteType, UserSession, Cover, FullCoverData } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
 import { DeduplicateModal } from "./room/DeduplicateModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
@@ -31,6 +31,7 @@ import { AddResponseButton } from "./widgets/AddResponseButton";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
+import { openImageOverlay } from "../utils/image-overlay";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -79,7 +80,7 @@ export function RoomCard({
   
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
-  const [youtubeCardSwiped, setYoutubeCardSwiped] = useState(room.youtubeCardSwiped || false);
+  const [coverCardSwiped, setCoverCardSwiped] = useState(room.coverCardSwiped || false);
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
 
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -89,7 +90,7 @@ export function RoomCard({
   const [showAddResponseModal, setShowAddResponseModal] = useState(false);
   const [showDeduplication, setShowDeduplication] = useState(false);
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
-  const { markChanceCardSwiped, markYouTubeCardSwiped } = useDebateSession();
+  const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
 
   const isHost = user.id === room.hostId;
 
@@ -109,8 +110,8 @@ export function RoomCard({
   }, [room.chanceCardSwiped]);
 
   useEffect(() => {
-    setYoutubeCardSwiped(room.youtubeCardSwiped || false);
-  }, [room.youtubeCardSwiped]);
+    setCoverCardSwiped(room.coverCardSwiped || false);
+  }, [room.coverCardSwiped]);
 
   const handleOpenAnalysis = () => {
     setShowAnalysis(true);
@@ -144,7 +145,7 @@ export function RoomCard({
     ) &&
     (!user.isAnonymous || certifyCardDismissed) &&
     chanceCardSwiped &&
-    (!room.youtubeUrl || youtubeCardSwiped) &&
+    (coverCardSwiped || !(room.imageUrl || room.youtubeUrl)) &&
     (!room.demographicQuestions.length ||
       room.demographicQuestions.every((q) =>
         answeredQuestionIds.has(q.id),
@@ -196,9 +197,18 @@ export function RoomCard({
     await markChanceCardSwiped(room.id);
   }
 
-  const handleSwipeYouTubeCard = async () => {
-    setYoutubeCardSwiped(true);
-    await markYouTubeCardSwiped(room.id);
+  const coverCardUrl = room.imageUrl || room.youtubeUrl;
+  const cover: FullCoverData | null = coverCardUrl
+    ? {
+        type: room.imageUrl ? "image" : "youtube",
+        url: coverCardUrl,
+        description: room.description,
+      }
+    : null;
+
+  const handleSwipeCoverCard = async () => {
+    setCoverCardSwiped(true);
+    await markCoverCardSwiped(room.id);
   }
 
   const handleDemographicsAnswered = (questionId: string) => {
@@ -283,22 +293,7 @@ export function RoomCard({
               {room.imageUrl && (
                 <div
                   className="w-10 h-10 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-2 border-purple-300 shrink-0"
-                  onClick={() => {
-                    const fullScreenDiv =
-                      document.createElement("div");
-                    fullScreenDiv.className =
-                      "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4";
-                    fullScreenDiv.onclick = () =>
-                      fullScreenDiv.remove();
-
-                    const img = document.createElement("img");
-                    img.src = room.imageUrl!;
-                    img.className =
-                      "max-w-full max-h-full object-contain";
-
-                    fullScreenDiv.appendChild(img);
-                    document.body.appendChild(fullScreenDiv);
-                  }}
+                  onClick={() => openImageOverlay(room.imageUrl!)}
                 >
                   <img
                     src={room.imageUrl}
@@ -369,8 +364,8 @@ export function RoomCard({
                     allowAnonymous={!!room.allowAnonymous}
                     isAnonymous={!!user?.isAnonymous}
                     chanceCardSwiped={chanceCardSwiped}
-                    youtubeUrl={room.youtubeUrl}
-                    youtubeCardSwiped={youtubeCardSwiped}
+                    cover={cover}
+                    coverCardSwiped={coverCardSwiped}
                     demographicQuestions={room.demographicQuestions}
                     answeredQuestionIds={answeredQuestionIds}
                     onVote={handleVote}
@@ -378,7 +373,7 @@ export function RoomCard({
                     onShowAccountSetupModal={onShowAccountSetupModal}
                     onCertifyDone={() => setCertifyCardDismissed(true)}
                     onChanceCardSwiped={handleSwipeChanceCard}
-                    onYouTubeCardSwiped={handleSwipeYouTubeCard}
+                    onCoverCardSwiped={handleSwipeCoverCard}
                     onDemographicsAnswered={handleDemographicsAnswered}
                   />
                 );

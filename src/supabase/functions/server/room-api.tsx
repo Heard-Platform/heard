@@ -27,13 +27,15 @@ app.post(
         description,
         subHeard: communityName,
         seedStatements,
-        imageUrl,
-        youtubeUrl,
+        cover,
         allowAnonymous,
         debateLength,
         demographicQuestions,
         eventId,
       } = await c.req.json();
+
+      const imageUrl = cover?.type === "image" ? cover.url : undefined;
+      const youtubeUrl = cover?.type === "youtube" ? cover.url : undefined;
 
       if (!topic || topic.length < 10) {
         return c.json(
