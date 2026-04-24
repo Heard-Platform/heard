@@ -1,5 +1,9 @@
 {
   "imports": {
     "@std/testing": "jsr:@std/testing@^1.0.17"
+  },
+  "tasks": {
+    "extract-statements": "deno run --allow-net --allow-env --allow-read --allow-write --env-file=.env scripts/extract-statements.ts",
+    "score-statement-similarity": "deno run --allow-net --allow-env --allow-read --allow-write --env-file=.env scripts/score-statement-similarity.ts"
   }
 }

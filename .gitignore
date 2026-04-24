@@ -63,3 +63,6 @@ build/
 env/
 
 .temp/
+
+# Generated data for similarity exploration tool (see scripts/extract-statements.ts)
+/public/data/

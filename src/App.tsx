@@ -6,6 +6,7 @@ import { PrivacyPolicyPage } from "./screens/PrivacyPolicyPage";
 import { OrgsLanding } from "./screens/OrgsLanding";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
+import { SimilarityExplorer } from "./screens/SimilarityExplorer";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTracker";
@@ -55,6 +56,7 @@ function AppContent() {
     useState(safelyGetStorageItem<boolean>("showAdminDashboard", false));
   const [showFeatureTracker, setShowFeatureTracker] = useState(false);
   const [showDevTools, setShowDevTools] = useState(false);
+  const [showSimilarityExplorer, setShowSimilarityExplorer] = useState(false);
   const [showUnsubscribe, setShowUnsubscribe] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
@@ -206,6 +208,8 @@ function AppContent() {
         window.location.pathname.startsWith("/admin");
       const isDevToolsRoute =
         window.location.pathname.startsWith("/devtools");
+      const isSimilarityExplorerRoute =
+        window.location.pathname.startsWith("/similarity-explorer");
       const isUnsubscribeRoute =
         window.location.pathname.startsWith("/unsubscribe");
       const isTermsRoute =
@@ -248,6 +252,8 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
+      } else if (isSimilarityExplorerRoute) {
+        setShowSimilarityExplorer(true);
       } else if (isKaloramaRoute) {
         setPendingFlyerScan("kalorama");
         setPendingCommunities(KALORAMA_COMMUNITIES);
@@ -306,6 +312,7 @@ function AppContent() {
       !showUnsubscribe &&
       !showAdminPanel &&
       !showDevTools &&
+      !showSimilarityExplorer &&
       !newsletterEdition &&
       !isJoiningAnonymously
     ) {
@@ -321,6 +328,7 @@ function AppContent() {
     showUnsubscribe,
     showAdminPanel,
     showDevTools,
+    showSimilarityExplorer,
     newsletterEdition,
     isJoiningAnonymously,
     createAnonymousUser,
@@ -486,6 +494,17 @@ function AppContent() {
 
   if (showComponentShowcase) {
     return <ComponentShowcase onExit={handleExitShowcase} />;
+  }
+
+  if (showSimilarityExplorer) {
+    return (
+      <SimilarityExplorer
+        onExit={() => {
+          setShowSimilarityExplorer(false);
+          window.history.pushState({}, "", "/");
+        }}
+      />
+    );
   }
 
   if (showUnsubscribe) {

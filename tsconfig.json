@@ -23,6 +23,7 @@
   },
   "exclude": [
     "src/components/ui",
-    "src/supabase"
+    "src/supabase",
+    "scripts"
   ]
 }
