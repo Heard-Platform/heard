@@ -98,7 +98,7 @@ export function StatementCard({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onSelect={() => onFlag()}>
-                  <Flag className="w-4 h-4 mr-2 text-red-500" />
+                  <Flag className="w-4 h-4 mr-2 report-text" />
                   Report
                 </DropdownMenuItem>
               </DropdownMenuContent>
