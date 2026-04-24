@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { FullCoverData } from "../../types";
 import { openImageOverlay } from "../../utils/image-overlay";
 
@@ -50,20 +51,17 @@ export function CoverCard({ cover, isTopCard }: CoverCardProps) {
     }
 
     return (
-      <div
+      <motion.div
         className="relative w-full overflow-hidden rounded-2xl h-[200px] cursor-pointer"
-        onClick={() => {
-          if (type === "image") {
-            openImageOverlay(url);
-          }
-        }}
+        onTap={() => openImageOverlay(url)}
       >
         <img
           src={url}
           alt="Room cover"
-          className="absolute inset-0 w-full h-full object-cover"
+          draggable={false}
+          className="absolute inset-0 w-full h-full object-cover select-none"
         />
-      </div>
+      </motion.div>
     );
   };
 

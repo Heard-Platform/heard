@@ -115,6 +115,12 @@ const mockStatements: Statement[] = [
 
 export function SwipeableStatementStackStory() {
   const [chanceCardSwiped, setChanceCardSwiped] = useState(false);
+  const [coverCardSwiped, setCoverCardSwiped] = useState(false);
+
+  const storyRoom = mockRooms[0];
+  const cover = storyRoom.imageUrl
+    ? { type: "image" as const, url: storyRoom.imageUrl, description: storyRoom.description }
+    : null;
 
   useEffect(() => {
     const checkChanceCardSwiped = async (
@@ -150,8 +156,15 @@ export function SwipeableStatementStackStory() {
     setChanceCardSwiped(true);
   };
 
+  const handleCoverCardSwiped = async () => {
+    console.log("Mark cover card swiped");
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    setCoverCardSwiped(true);
+  };
+
   const handleReset = () => {
     setChanceCardSwiped(false);
+    setCoverCardSwiped(false);
   };
 
   return (
@@ -168,7 +181,7 @@ export function SwipeableStatementStackStory() {
           <div className="space-y-6">
             <Card>
               <CardContent className="space-y-4">
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button onClick={handleReset} variant="outline" size="sm">
                     Reset Story
                   </Button>
@@ -179,33 +192,49 @@ export function SwipeableStatementStackStory() {
                   >
                     {chanceCardSwiped ? "Show Chance Card" : "Hide Chance Card"}
                   </Button>
+                  <Button
+                    onClick={() => setCoverCardSwiped(!coverCardSwiped)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {coverCardSwiped ? "Show Cover Card" : "Hide Cover Card"}
+                  </Button>
                 </div>
 
-                <div className="p-4 rounded-lg border bg-muted/30">
-                  <span className="text-muted-foreground">Chance Card:</span>{" "}
-                  <span className="font-medium">
-                    {chanceCardSwiped ? "Swiped" : "Not Swiped"}
-                  </span>
+                <div className="p-4 rounded-lg border bg-muted/30 space-y-1">
+                  <div>
+                    <span className="text-muted-foreground">Chance Card:</span>{" "}
+                    <span className="font-medium">
+                      {chanceCardSwiped ? "Swiped" : "Not Swiped"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Cover Card:</span>{" "}
+                    <span className="font-medium">
+                      {coverCardSwiped ? "Swiped" : "Not Swiped"}
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             <div className="bg-slate-100 rounded-lg p-8 min-h-[600px] flex items-center justify-center">
               <SwipeableStatementStack
-                room={mockRooms[0]}
+                room={storyRoom}
                 statements={mockStatements}
                 currentUserId="story-user"
                 allowAnonymous={true}
                 isAnonymous={false}
                 chanceCardSwiped={chanceCardSwiped}
-                coverCardSwiped={false}
+                cover={cover}
+                coverCardSwiped={coverCardSwiped}
                 demographicQuestions={[]}
                 answeredQuestionIds={new Set()}
                 onVote={handleVote}
                 onSubmitStatement={handleSubmitStatement}
                 onShowAccountSetupModal={() => {}}
                 onChanceCardSwiped={handleChanceCardSwiped}
-                onCoverCardSwiped={async () => {}}
+                onCoverCardSwiped={handleCoverCardSwiped}
                 onCertifyDone={async () => {}}
                 onDemographicsAnswered={async () => {}}
               />
