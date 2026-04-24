@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { FullCoverData } from "../../types";
 import { openImageOverlay } from "../../utils/image-overlay";
 
@@ -5,6 +6,8 @@ interface CoverCardProps {
   cover: FullCoverData;
   isTopCard: boolean;
 }
+
+const TAP_MAX_MOVEMENT_PX = 5;
 
 function extractYouTubeVideoId(url: string): string | null {
   const patterns = [
@@ -21,6 +24,19 @@ function extractYouTubeVideoId(url: string): string | null {
 export function CoverCard({ cover, isTopCard }: CoverCardProps) {
   const { type, url, description } = cover;
   const isYouTube = type === "youtube";
+  const pointerStart = useRef<{ x: number; y: number } | null>(null);
+
+  const handleImagePointerDown = (e: React.PointerEvent) => {
+    pointerStart.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleImagePointerUp = (e: React.PointerEvent) => {
+    if (!pointerStart.current) return;
+    const dx = Math.abs(e.clientX - pointerStart.current.x);
+    const dy = Math.abs(e.clientY - pointerStart.current.y);
+    if (dx < TAP_MAX_MOVEMENT_PX && dy < TAP_MAX_MOVEMENT_PX) openImageOverlay(url);
+    pointerStart.current = null;
+  };
 
   const label = isYouTube ? "Intro Video" : "Cover Image";
   const icon = isYouTube ? "📺" : "🖼️";
@@ -52,16 +68,14 @@ export function CoverCard({ cover, isTopCard }: CoverCardProps) {
     return (
       <div
         className="relative w-full overflow-hidden rounded-2xl h-[200px] cursor-pointer"
-        onClick={() => {
-          if (type === "image") {
-            openImageOverlay(url);
-          }
-        }}
+        onPointerDown={handleImagePointerDown}
+        onPointerUp={handleImagePointerUp}
       >
         <img
           src={url}
           alt="Room cover"
-          className="absolute inset-0 w-full h-full object-cover"
+          draggable={false}
+          className="absolute inset-0 w-full h-full object-cover select-none"
         />
       </div>
     );
