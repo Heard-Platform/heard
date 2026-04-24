@@ -3,7 +3,7 @@
  * Uses k-means clustering on user-statement voting matrix
  */
 
-import { getStatementsForRoom, getDebate, saveClusterData, getClusterAssignment, getClusterMetadataRecord, getClusterAssignmentsBatch } from "./kv-utils.tsx";
+import { getStatementsForRoom, getDebate, saveClusterData, getClusterAssignment, getClusterMetadataRecord, getClusterAssignmentsBatch, getVotesForStatement } from "./kv-utils.tsx";
 import type { Vote } from "./types.tsx";
 
 export type StatementWithVotes = {
@@ -330,11 +330,11 @@ export async function getRoomClusters(
 /**
  * Helper: Get votes for a statement
  */
-async function getVotesForStatement(
+async function safelyGetVotesForStatement(
   statementId: string,
 ): Promise<Vote[]> {
   try {
-    return getVotesForStatement(statementId);
+    return await getVotesForStatement(statementId);
   } catch (error) {
     console.error(
       `[Clustering] Error fetching votes for statement ${statementId}:`,
@@ -376,7 +376,7 @@ export async function recalculateClustersForRoom(
 
     const statementsWithVotes = await Promise.all(
       roomStatements.map(async (stmt) => {
-        const votes = await getVotesForStatement(stmt.id);
+        const votes = await safelyGetVotesForStatement(stmt.id);
         return { id: stmt.id, votes };
       }),
     );
