@@ -349,7 +349,7 @@ app.post(
         body: JSON.stringify({
           from: "Heard <alex@heard-now.com>",
           to: [normalizedEmail],
-          subject: "Log in to Heard",
+          subject: `[${token}] Log in to Heard`,
           html,
         }),
       });
