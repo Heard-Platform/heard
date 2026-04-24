@@ -35,6 +35,7 @@ import { validateAdmin, validateCronAuth, validateDeveloper } from "./internal-u
 import { validateSession, validateHost } from "./auth-utils.ts";
 import { API_URL_PREFIX } from "./constants.tsx";
 import { performanceTestApi } from "./performance-test-api.tsx";
+import { ogApi } from "./og-api.tsx";
 
 type Variables = {
   userId?: string;
@@ -67,6 +68,9 @@ app.use(
     maxAge: 600,
   }),
 );
+
+// Public routes — registered before the API key middleware so they require no auth.
+app.route("/", ogApi);
 
 app.use("*", async (c, next) => {
   const apiKey = c.req.header("X-API-Key");
