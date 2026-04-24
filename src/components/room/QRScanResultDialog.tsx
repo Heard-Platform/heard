@@ -57,8 +57,6 @@ export function QRScanResultDialog({
     }
   }, [isOpen]);
 
-  const voteLabel = userVote === "agree" ? "Agree" : userVote === "disagree" ? "Disagree" : "Unsure";
-
   const bars = [
     {
       label: "Agree",
@@ -134,17 +132,8 @@ export function QRScanResultDialog({
                 transition={{ delay: 0.1 }}
                 className="text-2xl font-bold text-white leading-tight"
               >
-                {room.topic}
+                {statementText}
               </motion.h2>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="text-sm text-slate-300"
-              >
-                You voted <strong>{userVote}</strong> on{" "}
-                <strong>{statementText}</strong>
-              </motion.p>
             </div>
 
             <div className="space-y-4">
@@ -231,10 +220,19 @@ export function QRScanResultDialog({
               transition={{ delay: 1.5 }}
               className="space-y-4"
             >
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider header-4">
+                  Part of the conversation on
+                </p>
+                <p className="text-base font-semibold normal-text leading-relaxed">
+                  {room.topic}
+                </p>
+              </div>
+
               {teaserStatement && (
                 <div className="space-y-2">
                   <p className="text-xs font-semibold uppercase tracking-wider header-4">
-                    Other responses up for debate
+                    Other responses
                   </p>
                   <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 space-y-2">
                     <p className="text-sm text-slate-200 leading-relaxed">
@@ -249,9 +247,7 @@ export function QRScanResultDialog({
                 </div>
               )}
 
-              {teaserStatement && (
-                <div className="border-t border-slate-700" />
-              )}
+              <div className="border-t border-slate-700" />
 
               <form onSubmit={handleSubmit} className="space-y-3">
                 {isAnonymous && (
@@ -269,7 +265,7 @@ export function QRScanResultDialog({
                       type="email"
                       autoComplete="email"
                       value={email}
-                      placeholder={"Enter your email to vote"}
+                      placeholder={"Enter your email to add a response"}
                       disabled={submitting}
                       className={`pl-11 h-11 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500 rounded-xl text-sm ${shakeEmail ? "error-border" : ""}`}
                       onChange={(e) => {
@@ -295,7 +291,7 @@ export function QRScanResultDialog({
                     "Joining..."
                   ) : (
                     <>
-                      Vote on More Responses Inside
+                      Vote and respond inside
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}
