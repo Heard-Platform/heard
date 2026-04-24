@@ -57,10 +57,13 @@ export type ChanceCard = {
   type: "chance";
 }
 
-export type YouTubeCard = {
-  type: "youtube";
-  url: string;
+export type CoverCard = {
+  type: "cover";
+  cover: FullCoverData;
 }
+
+export type FullCoverData =
+  Cover & { description?: string };
 
 export type StandardDemographicQuestionType =
   "gender" | "age_range" | "occupation";
@@ -87,7 +90,7 @@ export type DemographicsCard = {
   question: DemographicQuestion;
 }
 
-export type Card = (StatementCard | CertifyCard | ChanceCard | YouTubeCard | DemographicsCard)
+export type Card = (StatementCard | CertifyCard | ChanceCard | CoverCard | DemographicsCard)
   & { isUnswipeable?: boolean };
 
 export const isStatementCard = (card: Card): card is StatementCard => {
@@ -98,8 +101,8 @@ export const isChanceCard = (card: Card): card is ChanceCard => {
   return card.type === "chance";
 };
 
-export const isYouTubeCard = (card: Card): card is YouTubeCard => {
-  return card.type === "youtube";
+export const isCoverCard = (card: Card): card is CoverCard => {
+  return card.type === "cover";
 };
 
 export const isDemographicsCard = (card: Card): card is DemographicsCard => {
@@ -208,7 +211,7 @@ export interface DebateRoom {
   anonymousLinkId?: string;
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
-  youtubeCardSwiped?: boolean;
+  coverCardSwiped?: boolean;
   demographicQuestions: DemographicQuestion[];
   eventId?: number;
 }
@@ -218,11 +221,17 @@ export type NewDebateRoom = Pick<
   "topic" | "description" | "subHeard" | "allowAnonymous" | "eventId"
 > & {
   seedStatements?: string[];
-  imageUrl?: string;
-  youtubeUrl?: string;
+  cover?: Cover;
   debateLength: number;
   demographicQuestions: NewDemographicQuestion[];
 };
+
+export type Cover = {
+  type: CoverType;
+  url: string;
+};
+
+export type CoverType = "youtube" | "image";
 
 export interface SubHeard {
   name: string;

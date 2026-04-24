@@ -331,8 +331,8 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async markYouTubeCardSwiped(roomId: string) {
-    return this.request("/youtube-card/mark-swiped", {
+  async markCoverCardSwiped(roomId: string) {
+    return this.request("/cover-card/mark-swiped", {
       method: "POST",
       body: JSON.stringify({ roomId }),
     });

@@ -111,7 +111,7 @@ protect(dontValidate, ["orgs/*", "user/*",]);
 
 // Account
 protect(validateSession, [
-  "account/*", "activity/*", "analytics/*", "chance-card/*", "event/*", "events",
+  "account/*", "activity/*", "analytics/*", "chance-card/*", "cover-card/*", "event/*", "events",
   "feedback/*", "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
   "statement/*", "subheard/*", "subheards", "subheards/*",
   "upload-debate-image", "user-rank", "vine/*", "youtube-card/*",

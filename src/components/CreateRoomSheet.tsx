@@ -11,6 +11,7 @@ import {
   type NewDebateRoom,
   type DebateRoom,
   type NewDemographicQuestion,
+  type Cover,
 } from "../types";
 import { FunSheet, FunSheetRef } from "./FunSheet";
 import {
@@ -83,9 +84,8 @@ export function CreateRoomSheet({
   );
   const [newSubHeardName, setNewSubHeardName] = useState("");
   const [debateId, setDebateId] = useState<string | null>(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [cover, setCover] = useState<Cover | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [youtubeUrl, setYoutubeUrl] = useState<string>("");
   const [allowAnonymousVoting, setAllowAnonymousVoting] = useState(false);
   const [demographicQuestions, setDemographicQuestions] = useState<NewDemographicQuestion[]>([]);
   const [debateLength, setDebateLength] = useState(ONE_WEEK_MIN);
@@ -126,8 +126,7 @@ export function CreateRoomSheet({
       }
       setExtractedData(null);
       setEditedDescription("");
-      setUploadedImageUrl(null);
-      setYoutubeUrl("");
+      setCover(null);
     }
   }, [open, defaultTopic]);
 
@@ -181,8 +180,7 @@ export function CreateRoomSheet({
         description: editedDescription.trim() || undefined,
         subHeard: communityName,
         seedStatements: editedStatements,
-        imageUrl: uploadedImageUrl || undefined,
-        youtubeUrl: youtubeUrl.trim() || undefined,
+        cover: cover || undefined,
         allowAnonymous: allowAnonymousVoting,
         debateLength,
         demographicQuestions,
@@ -214,7 +212,7 @@ export function CreateRoomSheet({
       
       const result = await api.uploadDebateImage(fileToUpload);
       if (result.success && result.data?.imageUrl) {
-        setUploadedImageUrl(result.data.imageUrl);
+        setCover({ type: "image", url: result.data.imageUrl });
         toast.success("Image uploaded!");
       } else {
         toast.error(result.error || "Failed to upload image");
@@ -428,9 +426,8 @@ export function CreateRoomSheet({
           topic={editedTopic}
           description={editedDescription}
           statements={editedStatements}
+          cover={cover}
           isUploadingImage={isUploadingImage}
-          uploadedImageUrl={uploadedImageUrl}
-          youtubeUrl={youtubeUrl}
           debateLength={debateLength}
           allowAnonymousVoting={allowAnonymousVoting}
           demographicQuestions={demographicQuestions}
@@ -439,7 +436,7 @@ export function CreateRoomSheet({
           onDescriptionChange={setEditedDescription}
           onStatementsChange={setEditedStatements}
           onImageUpload={handleImageUpload}
-          onYoutubeUrlChange={setYoutubeUrl}
+          onCoverChange={setCover}
           onDebateLengthChange={setDebateLength}
           onAllowAnonymousVotingChange={setAllowAnonymousVoting}
           onDemographicQuestionsChange={setDemographicQuestions}

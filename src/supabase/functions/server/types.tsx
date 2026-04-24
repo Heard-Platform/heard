@@ -213,7 +213,7 @@ export interface DebateRoom {
   anonymousLinkId?: string;
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
-  youtubeCardSwiped?: boolean;
+  coverCardSwiped?: boolean;
   lastActivityAt?: number;
   totalVotes?: number;
   eventId?: number;
