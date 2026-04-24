@@ -604,6 +604,10 @@
 }
 
 @layer utilities {
+  .aspect-square {
+    aspect-ratio: 1 / 1;
+  }
+
   .max-h-\[calc\(100vh-260px\)\] {
     max-height: calc(100vh - 260px);
   }
