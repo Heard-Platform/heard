@@ -34,6 +34,9 @@ export interface Statement {
   round: number;
   voters: { [userId: string]: VoteType };
   mergedFrom?: Array<{ id: string; text: string }>;
+  isHidden?: boolean;
+  hiddenAt?: number;
+  hiddenBy?: string;
 }
 
 export interface Comment {

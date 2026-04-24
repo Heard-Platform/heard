@@ -118,6 +118,9 @@ export interface Statement {
   voters: { [userId: string]: VoteType };
   anonymousUserId?: string;
   mergedFrom?: Array<{ id: string; text: string }>;
+  isHidden?: boolean;
+  hiddenAt?: number;
+  hiddenBy?: string;
 }
 
 export interface Vote {
