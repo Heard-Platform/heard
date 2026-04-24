@@ -67,12 +67,12 @@ Deno.test("calculateClusterConsensus - basic clustering with consensus", () => {
   );
 
   assertEquals(result.totalClusters, 2);
-  assertEquals(result.clusterSizes, { 0: 3, 1: 1 });
-  assertEquals(result.statementsByCluster[0].length, 1);
-  assertEquals(result.statementsByCluster[0][0].id, "stmt1");
-  assertEquals(result.statementsByCluster[0][0].agreeVotes, 3);
-  assertEquals(result.statementsByCluster[0][0].totalVotes, 3);
-  assertEquals(result.statementsByCluster[0][0].consensusScore, 100);
+  assertEquals(result.clusters[0].size, 3);
+  assertEquals(result.clusters[1].size, 1);
+  assertEquals(result.clusters[0].statements[0].id, "stmt1");
+  assertEquals(result.clusters[0].statements[0].agreeVotes, 3);
+  assertEquals(result.clusters[0].statements[0].totalVotes, 3);
+  assertEquals(result.clusters[0].statements[0].consensusScore, Math.log(3));
 });
 
 Deno.test("calculateClusterConsensus - includes statements with less than 3 votes per cluster", () => {
@@ -115,8 +115,8 @@ Deno.test("calculateClusterConsensus - includes statements with less than 3 vote
     participants,
   );
 
-  assertEquals(result.statementsByCluster[0].length, 1);
-  assertEquals(result.statementsByCluster[0][0].totalVotes, 1);
+  assertEquals(result.clusters[0].statements.length, 1);
+  assertEquals(result.clusters[0].statements[0].totalVotes, 1);
 });
 
 Deno.test("calculateClusterConsensus - sorts by consensus score and limits to top 3", () => {
@@ -218,10 +218,10 @@ Deno.test("calculateClusterConsensus - sorts by consensus score and limits to to
     participants,
   );
 
-  assertEquals(result.statementsByCluster[0].length, 3);
-  assertEquals(result.statementsByCluster[0][0].id, "stmt1");
-  assertEquals(result.statementsByCluster[0][1].id, "stmt2");
-  assertEquals(result.statementsByCluster[0][2].id, "stmt3");
+  assertEquals(result.clusters[0].statements.length, 3);
+  assertEquals(result.clusters[0].statements[0].id, "stmt1");
+  assertEquals(result.clusters[0].statements[1].id, "stmt2");
+  assertEquals(result.clusters[0].statements[2].id, "stmt4");
 });
 
 Deno.test("calculateClusterConsensus - handles super agrees correctly", () => {
@@ -267,8 +267,8 @@ Deno.test("calculateClusterConsensus - handles super agrees correctly", () => {
     participants,
   );
 
-  assertEquals(result.statementsByCluster[0][0].agreeVotes, 3);
-  assertEquals(result.statementsByCluster[0][0].consensusScore, 100);
+  assertEquals(result.clusters[0].statements[0].agreeVotes, 3);
+  assertEquals(result.clusters[0].statements[0].consensusScore, Math.log(3));
 });
 
 Deno.test("calculateClusterConsensus - handles null assignments", () => {
@@ -313,9 +313,9 @@ Deno.test("calculateClusterConsensus - handles null assignments", () => {
     participants,
   );
 
-  assertEquals(result.statementsByCluster[0].length, 1);
-  assertEquals(result.statementsByCluster[0][0].totalVotes, 1);
-  assertEquals(result.statementsByCluster[0][0].agreeVotes, 1);
+  assertEquals(result.clusters[0].statements.length, 1);
+  assertEquals(result.clusters[0].statements[0].totalVotes, 1);
+  assertEquals(result.clusters[0].statements[0].agreeVotes, 1);
 });
 
 Deno.test("calculateClusterConsensus - empty statements array", () => {
@@ -346,6 +346,6 @@ Deno.test("calculateClusterConsensus - empty statements array", () => {
   );
 
   assertEquals(result.totalClusters, 2);
-  assertEquals(result.statementsByCluster[0].length, 0);
-  assertEquals(result.statementsByCluster[1].length, 0);
+  assertEquals(result.clusters[0].statements.length, 0);
+  assertEquals(result.clusters[1].statements.length, 0);
 });

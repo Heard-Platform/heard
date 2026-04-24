@@ -59,7 +59,7 @@ Deno.test(
       },
     ];
 
-    const result = clusterUsers(roomId, userIds, statements);
+    const result = clusterUsers(roomId, userIds, statements, 1);
 
     assertEquals(result.metadata.totalClusters, 2);
     assertEquals(result.clusterAssignments.length, 4);
@@ -93,7 +93,7 @@ Deno.test(
       })) as Vote[],
     }));
 
-    const result = clusterUsers(roomId, userIds, statements);
+    const result = clusterUsers(roomId, userIds, statements, 1);
 
     assertEquals(result.metadata.totalClusters, 3);
     assertEquals(result.clusterAssignments.length, 20);
