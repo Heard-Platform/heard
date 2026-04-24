@@ -308,7 +308,8 @@ export const getAllStatements = async (): Promise<Statement[]> => {
 };
 
 export const getStatement = async (statementId: string): Promise<Statement | null> => {
-  return getParsedKvData<Statement>(`statement:%:${statementId}`);
+  const matches = await getByPrefixParsed<Statement>(`statement:%:${statementId}`);
+  return matches[0] ?? null;
 };
 
 export const filterVisibleStatements = (statements: Statement[]): Statement[] =>

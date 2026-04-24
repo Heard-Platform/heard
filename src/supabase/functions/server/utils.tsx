@@ -14,6 +14,15 @@ export const getFrontendUrl = (): string => {
   );
 };
 
+export function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export function getTotalVoteCount(statement: Statement) {
   return statement.agrees +
     statement.superAgrees +
