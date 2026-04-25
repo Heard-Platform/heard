@@ -674,6 +674,13 @@ app.post(
         );
       }
 
+      if (room.responsesPaused) {
+        return c.json(
+          { error: "Responses are paused for this room." },
+          423,
+        );
+      }
+
       const user = await getUserSession(userId);
       if (!user) {
         return c.json({ error: "User session not found" }, 404);

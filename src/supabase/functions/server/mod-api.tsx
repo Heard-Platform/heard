@@ -2,13 +2,19 @@ import { Hono } from "npm:hono";
 import { deleteRecord, insert } from "./db-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { getMergesForRoom } from "./model-utils.ts";
-import { getStatementById, getStatements } from "./debate-api.tsx";
+import {
+  getDebateRoom,
+  getStatementById,
+  getStatements,
+  saveDebateRoom,
+} from "./debate-api.tsx";
 import {
   getStatementsForRoomIncludingHidden,
   getUser,
   saveStatement,
 } from "./kv-utils.tsx";
 import { markStatementHidden, markStatementVisible } from "./moderation-utils.ts";
+import { DebateRoom } from "./types.tsx";
 
 const app = new Hono();
 const PREFIX = "/make-server-f1a393b4/room/:roomId/mod";
@@ -146,6 +152,34 @@ app.post(
       return { statement: updated };
     },
     "Failed to unhide statement",
+  ),
+);
+
+app.post(
+  `${PREFIX}/responses-paused`,
+  defineRoute(
+    {
+      roomId: { type: "string", required: true },
+      paused: { type: "boolean", required: true },
+    },
+    async ({ roomId, paused }: { roomId: string; paused: boolean }, c) => {
+      const userId = c.get("userId");
+
+      const room = await getDebateRoom(roomId);
+      if (!room) {
+        throw new Error("Room not found");
+      }
+
+      const updated: DebateRoom = {
+        ...room,
+        responsesPaused: paused ? true : null,
+        responsesPausedAt: paused ? Date.now() : null,
+        responsesPausedBy: paused ? userId : null,
+      };
+      await saveDebateRoom(updated);
+      return { room: updated };
+    },
+    "Failed to update responses paused state",
   ),
 );
 

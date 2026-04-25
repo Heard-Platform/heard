@@ -217,6 +217,9 @@ export interface DebateRoom {
   coverCardSwiped?: boolean;
   demographicQuestions: DemographicQuestion[];
   eventId?: number;
+  responsesPaused?: boolean | null;
+  responsesPausedAt?: number | null;
+  responsesPausedBy?: string | null;
 }
 
 export type NewDebateRoom = Pick<
