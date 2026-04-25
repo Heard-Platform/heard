@@ -133,7 +133,7 @@ export function RoomCardMenu({
               }}
             >
               <GitMerge className="w-4 h-4 mr-2" />
-              Manage Duplicate Statements
+              Hide and Merge Statements
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
