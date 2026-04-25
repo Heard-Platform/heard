@@ -1,7 +1,7 @@
 import type { Statement } from "../../types";
 import { SwipeIndicator } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
-import { Star, Flag, MoreVertical } from "lucide-react";
+import { Star, Flag, MoreVertical, EyeOff } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
+import { useDebateSession } from "../../hooks/useDebateSession";
 import moment from "moment";
 
 interface StatementCardProps {
@@ -40,7 +41,21 @@ export function StatementCard({
   onSkip,
   onFlag,
 }: StatementCardProps) {
+  const { user, activeRooms, setStatementHidden } = useDebateSession();
+  const room = activeRooms.find((r) => r.id === statement.roomId);
+  const isHost = !!user && !!room && room.hostId === user.id;
   const timeAgo = moment(statement.timestamp).fromNow();
+
+  const handleHide = () => {
+    if (
+      !window.confirm(
+        "Hide this response? It will no longer appear to anyone. You can undo this from the Hide and Merge Statements moderator tool.",
+      )
+    ) {
+      return;
+    }
+    setStatementHidden(statement.roomId, statement.id, true);
+  };
   
   const actionButtonBase = "w-7 h-7 rounded-full transition-colors flex items-center justify-center flex-shrink-0";
 
@@ -105,6 +120,12 @@ export function StatementCard({
                   <Flag className="w-4 h-4 mr-2 report-text" />
                   Report
                 </DropdownMenuItem>
+                {isHost && (
+                  <DropdownMenuItem onSelect={handleHide}>
+                    <EyeOff className="w-4 h-4 mr-2" />
+                    Hide response
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

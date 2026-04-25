@@ -22,7 +22,7 @@ import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType, UserSession, Cover, FullCoverData } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
-import { DeduplicateModal } from "./room/DeduplicateModal";
+import { HideAndMergeModal } from "./room/mod/HideAndMergeModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
@@ -463,7 +463,7 @@ export function RoomCard({
       )}
 
       {showDeduplication && (
-        <DeduplicateModal
+        <HideAndMergeModal
           roomId={room.id}
           onClose={() => setShowDeduplication(false)}
         />
