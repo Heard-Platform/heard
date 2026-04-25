@@ -322,6 +322,12 @@ export const getStatementsForRoom = async (
   return filterVisibleStatements(statements);
 };
 
+export const getStatementsForRoomIncludingHidden = async (
+  roomId: string,
+): Promise<Statement[]> => {
+  return getByPrefixParsed<Statement>(`statement:${roomId}:`);
+};
+
 export const saveStatement = async (statement: Statement) => {
   await upsert(statement, statementKeyFn);
 };
