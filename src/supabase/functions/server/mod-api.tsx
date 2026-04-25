@@ -2,8 +2,13 @@ import { Hono } from "npm:hono";
 import { deleteRecord, insert } from "./db-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { getMergesForRoom } from "./model-utils.ts";
-import { getStatements } from "./debate-api.tsx";
-import { getUser } from "./kv-utils.tsx";
+import { getStatementById, getStatements } from "./debate-api.tsx";
+import {
+  getStatementsForRoomIncludingHidden,
+  getUser,
+  saveStatement,
+} from "./kv-utils.tsx";
+import { markStatementHidden, markStatementVisible } from "./moderation-utils.ts";
 
 const app = new Hono();
 const PREFIX = "/make-server-f1a393b4/room/:roomId/mod";
@@ -85,6 +90,62 @@ app.get(
       return { statements, merges, phoneVerified };
     },
     "Failed to fetch vote matrix",
+  ),
+);
+
+app.get(
+  `${PREFIX}/statements`,
+  defineRoute(
+    { roomId: { type: "string", required: true } },
+    async ({ roomId }: { roomId: string }) => {
+      const statements = await getStatementsForRoomIncludingHidden(roomId);
+      return { statements };
+    },
+    "Failed to fetch statements",
+  ),
+);
+
+app.post(
+  `${PREFIX}/statement/:statementId/hide`,
+  defineRoute(
+    {
+      roomId: { type: "string", required: true },
+      statementId: { type: "string", required: true },
+    },
+    async ({ roomId, statementId }: { roomId: string; statementId: string }, c) => {
+      const userId = c.get("userId");
+
+      const statement = await getStatementById(statementId);
+      if (!statement || statement.roomId !== roomId) {
+        throw new Error("Statement not found");
+      }
+
+      const updated = markStatementHidden(statement, userId);
+      await saveStatement(updated);
+      return { statement: updated };
+    },
+    "Failed to hide statement",
+  ),
+);
+
+app.post(
+  `${PREFIX}/statement/:statementId/unhide`,
+  defineRoute(
+    {
+      roomId: { type: "string", required: true },
+      statementId: { type: "string", required: true },
+    },
+    async ({ roomId, statementId }: { roomId: string; statementId: string }) => {
+      const statement = await getStatementById(statementId);
+      if (!statement || statement.roomId !== roomId) {
+        throw new Error("Statement not found");
+      }
+
+      const updated = markStatementVisible(statement);
+      await saveStatement(updated);
+      return { statement: updated };
+    },
+    "Failed to unhide statement",
   ),
 );
 

@@ -223,7 +223,7 @@ Tasks are ordered so each one leaves the app in a working, mergeable state. We w
 
 1. ✅ **Types + server filter plumbing.** Add `isHidden` / `hiddenAt` / `hiddenBy` to `Statement` in [server types](src/supabase/functions/server/types.tsx#L105-L121) and [frontend types](src/types/index.ts#L22-L37). Update [getStatementsForRoom](src/supabase/functions/server/kv-utils.tsx#L314) to filter hidden by default; add `getAllStatementsForRoomIncludingHidden`. Make `processVote` in [voting-utils.ts](src/supabase/functions/server/voting-utils.ts#L60) return 404 on hidden statements. Unit tests for both. *No user-visible change — pure plumbing.*
 
-2. **Moderation API endpoints.** New `moderation-api.tsx` on the server exposing `POST /room/:roomId/mod/statement/:statementId/hide`, `POST .../unhide`, and `GET /room/:roomId/mod/statements` (returns all statements including hidden, for the moderator modal). Host-only auth on all three. Unit tests and a Postman-style smoke test.
+2. ✅ **Moderation API endpoints.** New `moderation-api.tsx` on the server exposing `POST /room/:roomId/mod/statement/:statementId/hide`, `POST .../unhide`, and `GET /room/:roomId/mod/statements` (returns all statements including hidden, for the moderator modal). Host-only auth on all three. Unit tests and a Postman-style smoke test.
 
 3. **Analysis / clustering / digest coverage tests.** Add unit tests confirming `calculateAnalysisMetrics`, `recalculateClustersForRoom`, and the three email-digest call sites all exclude hidden statements (they should, by virtue of task 1, but we pin it down with tests so it can't regress). Fix any call site that turns out to bypass the shared retrieval helpers.
 
