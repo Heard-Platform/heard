@@ -97,6 +97,10 @@ interface DebateSessionContextType {
     roomId: string,
     mergeId: string,
   ) => Promise<ApiResponse | null>;
+  setResponsesPaused: (
+    roomId: string,
+    paused: boolean,
+  ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
   getSubHeards: () => Promise<ApiResponse<{ subHeards: SubHeard[] }> | null>;
   getExplorableSubHeards: () => Promise<ApiResponse<SubHeard[]> | null>;
   joinSubHeard: (subHeardName: string) => Promise<ApiResponse | null>;
@@ -695,6 +699,28 @@ export function DebateSessionProvider(
       safelyMakeApiCall<undefined>(() => api.deleteStatementMerge(roomId, mergeId))
   , [safelyMakeApiCall]);
 
+  const callRoomMutation = useCallback(
+    async (apiCall: () => Promise<ApiResponse<{ room: DebateRoom }>>) => {
+      const response = await safelyMakeApiCall<{ room: DebateRoom }>(apiCall);
+      if (response?.success && response.data) {
+        const updated = response.data.room;
+        setActiveRooms((prev) =>
+          prev.map((r) =>
+            r.id === updated.id ? { ...r, ...updated } : r,
+          ),
+        );
+      }
+      return response;
+    },
+    [safelyMakeApiCall],
+  );
+
+  const setResponsesPaused = useCallback(
+    (roomId: string, paused: boolean) =>
+      callRoomMutation(() => api.setResponsesPaused(roomId, paused)),
+    [callRoomMutation],
+  );
+
   const getRoomAnalysis = useCallback(async (roomId: string) => {
     try {
       const response = (await api.getRoomAnalysis(roomId)) as any;
@@ -839,6 +865,7 @@ export function DebateSessionProvider(
     getStatementMerges,
     createStatementMerge,
     deleteStatementMerge,
+    setResponsesPaused,
     markChanceCardSwiped,
     markCoverCardSwiped,
     saveDemographicAnswer,
@@ -918,6 +945,10 @@ export function DebateSessionProvider(
       },
       deleteStatementMerge: async () => {
         console.log("[Showcase] deleteStatementMerge called");
+        return { success: true };
+      },
+      setResponsesPaused: async () => {
+        console.log("[Showcase] setResponsesPaused called");
         return { success: true };
       },
       createSeedData: async () => {

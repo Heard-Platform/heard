@@ -800,6 +800,16 @@ class ApiClient extends BaseApiClient {
     }>(`/room/${roomId}/mod/vote-matrix`);
   }
 
+  async setResponsesPaused(roomId: string, paused: boolean) {
+    return this.request<{ room: DebateRoom }>(
+      `/room/${roomId}/mod/responses-paused`,
+      {
+        method: "POST",
+        body: JSON.stringify({ paused }),
+      },
+    );
+  }
+
   trackEvent(type: string, roomId?: string): void {
     if (safelyGetStorageItem("showComponentShowcase", false))
       return;

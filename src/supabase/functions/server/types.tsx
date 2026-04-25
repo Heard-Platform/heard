@@ -220,6 +220,9 @@ export interface DebateRoom {
   lastActivityAt?: number;
   totalVotes?: number;
   eventId?: number;
+  responsesPaused?: boolean | null;
+  responsesPausedAt?: number | null;
+  responsesPausedBy?: string | null;
 }
 
 export type AnonCreatableRecords = "votes" | "statements" | "score";
