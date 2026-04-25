@@ -1,6 +1,11 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { Statement } from "./types.tsx";
-import { calcConsensus, calcSpiciness } from "./analysis-utils.tsx";
+import {
+  calcConsensus,
+  calcSpiciness,
+  calculateAnalysisMetrics,
+} from "./analysis-utils.tsx";
+import { filterVisibleStatements } from "./kv-utils.tsx";
 import { describe, it } from "@std/testing/bdd";
 
 const ZERO_VOTES_STMT = {
@@ -419,5 +424,71 @@ describe("Consensus", () => {
       assertEquals(result.highConsensusPostCount, 2)
       assertEquals(result.consensus, 1.0);
     });
+  });
+});
+
+describe("analysis with hidden statements", () => {
+  function makeStmt(id: string, overrides: Partial<Statement> = {}): Statement {
+    return {
+      id,
+      text: `Statement ${id}`,
+      author: `author_${id}`,
+      roomId: "room1",
+      round: 1,
+      timestamp: 0,
+      agrees: 0,
+      disagrees: 0,
+      passes: 0,
+      superAgrees: 0,
+      voters: {},
+      ...overrides,
+    };
+  }
+
+  it("excludes hidden statements, their authors, and voters that only appear in hidden statements", () => {
+    const visible1 = makeStmt("v1", {
+      author: "author_visible_1",
+      voters: { sharedVoter: "agree", visibleOnlyVoter: "disagree" },
+      agrees: 1,
+      disagrees: 1,
+    });
+    const hidden = makeStmt("h1", {
+      isHidden: true,
+      author: "author_hidden_only",
+      voters: { sharedVoter: "agree", hiddenOnlyVoter: "disagree" },
+      agrees: 1,
+      disagrees: 1,
+    });
+    const visible2 = makeStmt("v2", {
+      author: "author_visible_2",
+      voters: { sharedVoter: "agree" },
+      agrees: 1,
+    });
+
+    const filtered = filterVisibleStatements([visible1, hidden, visible2]);
+    const metrics = calculateAnalysisMetrics(filtered, [], []);
+
+    assertEquals(filtered.length, 2);
+    assertEquals(metrics.totalPosters, 2);
+    assertEquals(metrics.totalVoters, 2);
+    assertEquals(metrics.totalParticipants, 4);
+    assertEquals(metrics.totalVotes, 3);
+    assertEquals(metrics.allStatements.length, 2);
+
+    const allAuthors = metrics.allStatements.map((s) => s.id);
+    assertEquals(allAuthors.includes("h1"), false);
+    assertEquals(metrics.topPosts.some((p) => p.id === "h1"), false);
+    assertEquals(metrics.spiciestPosts.some((p) => p.id === "h1"), false);
+  });
+
+  it("includes everyone when no statements are hidden", () => {
+    const stmts = [
+      makeStmt("v1", { voters: { u1: "agree" }, agrees: 1 }),
+      makeStmt("v2", { voters: { u2: "agree" }, agrees: 1 }),
+    ];
+    const metrics = calculateAnalysisMetrics(filterVisibleStatements(stmts), [], []);
+    assertEquals(metrics.totalParticipants, 4);
+    assertEquals(metrics.totalVotes, 2);
+    assertEquals(metrics.allStatements.length, 2);
   });
 });

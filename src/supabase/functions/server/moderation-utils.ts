@@ -13,10 +13,9 @@ export const markStatementHidden = (
 
 export const markStatementVisible = (
   statement: Statement,
-): Statement => {
-  const copy = { ...statement };
-  delete copy.isHidden;
-  delete copy.hiddenAt;
-  delete copy.hiddenBy;
-  return copy;
-};
+): Statement => ({
+  ...statement,
+  isHidden: false,
+  hiddenAt: null,
+  hiddenBy: null,
+});

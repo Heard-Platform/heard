@@ -119,8 +119,8 @@ export interface Statement {
   anonymousUserId?: string;
   mergedFrom?: Array<{ id: string; text: string }>;
   isHidden?: boolean;
-  hiddenAt?: number;
-  hiddenBy?: string;
+  hiddenAt?: number | null;
+  hiddenBy?: string | null;
 }
 
 export interface Vote {
