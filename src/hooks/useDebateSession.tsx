@@ -3,6 +3,7 @@ import {
   api,
   safelyMakeApiCall,
 } from "../utils/api";
+import { isValidCachedUser } from "../utils/cache-utils";
 import type {
   UserSession,
   DebateRoom,
@@ -18,7 +19,15 @@ import type {
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
-import { ApiResponse, clearSessionId, getSessionId, setSessionId } from "../utils/api-client";
+import {
+  ApiResponse,
+  clearSessionId,
+  getSessionId,
+  setSessionId,
+  getCachedUser,
+  setCachedUser,
+  clearCachedUser,
+} from "../utils/api-client";
 import { AvatarAnimal } from "../utils/constants/avatars";
 
 interface DebateSessionContextType {
@@ -749,31 +758,58 @@ export function DebateSessionProvider(
     clearSessionId();
   }, []);
 
-  // Initialize on mount
   useEffect(() => {
-    const init = async () => {
-      setLoading(true);
+    if (user) {
+      setCachedUser(user);
+    } else {
+      clearCachedUser();
+    }
+  }, [user]);
 
-      if (getSessionId()) {
-        const response = await api.getUser();
-        if (response.success && response.data) {
-          const user = response.data.user;
-          setUser(user);
-          api.trackActivity().catch((err) => {
-            console.error("Failed to track activity on init:", err);
-          });
-        } else if (response.error === "SESSION_EXPIRED") {
-          console.error("Session expired, clearing local data");
-          clearSessionId();
-          return null;
-        }
-      }
-      
+  const revalidateInBackground = async () => {
+    const response = await api.getUser();
+    if (response.success && response.data) {
+      setUser(response.data.user);
+      api.trackActivity().catch((err) => {
+        console.error("Failed to track activity on init:", err);
+      });
+    } else if (response.error === "SESSION_EXPIRED") {
+      console.warn("Session expired during revalidation, clearing local data");
+      clearSessionId();
+      setUser(null);
+    }
+  };
+
+  const initUser = async () => {
+    const sessionId = getSessionId();
+    const cachedUser = getCachedUser();
+
+    if (sessionId && isValidCachedUser(cachedUser)) {
+      setUser(cachedUser);
       setLoading(false);
-    };
+      revalidateInBackground().catch((err) => {
+        console.error("Background revalidation failed:", err);
+      });
+      return;
+    }
 
-    init();
-  }, []);
+    setLoading(true);
+    if (sessionId) {
+      const response = await api.getUser();
+      if (response.success && response.data) {
+        setUser(response.data.user);
+        api.trackActivity().catch((err) => {
+          console.error("Failed to track activity on init:", err);
+        });
+      } else if (response.error === "SESSION_EXPIRED") {
+        console.error("Session expired, clearing local data");
+        clearSessionId();
+      }
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { initUser(); }, []);
 
   let returnObj = {
     user,
