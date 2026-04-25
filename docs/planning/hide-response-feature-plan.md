@@ -233,4 +233,4 @@ Tasks are ordered so each one leaves the app in a working, mergeable state. We w
 
 6. ✅ **Combined `HideAndMergeModal`.** Extend [DeduplicateModal](src/components/room/DeduplicateModal.tsx) into a unified modal: rename the component/file, switch its data source to `listStatementsForModeration`, add per-row Hide/Unhide toggle, visually mute hidden rows, disable merge controls on hidden rows. Update [RoomCardMenu.tsx:121-145](src/components/room/RoomCardMenu.tsx#L121-L145) to rename "Manage Duplicate Statements" → "Hide and Merge Statements". Storybook story.
 
-7. **Manual QA and sign-off.** Run through the manual test matrix from the Testing section on a staging room: hide mid-round, unhide, hide a merge target, non-host 403, report still works for non-hosts. Fix any gaps found and close out the feature.
+7. ✅ **Manual QA and sign-off.** Run through the manual test matrix from the Testing section on a staging room: hide mid-round, unhide, hide a merge target, non-host 403, report still works for non-hosts. Fix any gaps found and close out the feature.
