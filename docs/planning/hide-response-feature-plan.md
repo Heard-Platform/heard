@@ -225,9 +225,9 @@ Tasks are ordered so each one leaves the app in a working, mergeable state. We w
 
 2. ✅ **Moderation API endpoints.** New `moderation-api.tsx` on the server exposing `POST /room/:roomId/mod/statement/:statementId/hide`, `POST .../unhide`, and `GET /room/:roomId/mod/statements` (returns all statements including hidden, for the moderator modal). Host-only auth on all three. Unit tests and a Postman-style smoke test.
 
-3. **Analysis / clustering / digest coverage tests.** Add unit tests confirming `calculateAnalysisMetrics`, `recalculateClustersForRoom`, and the three email-digest call sites all exclude hidden statements (they should, by virtue of task 1, but we pin it down with tests so it can't regress). Fix any call site that turns out to bypass the shared retrieval helpers.
+3. ✅ **Analysis / clustering / digest coverage tests.** Add unit tests confirming `calculateAnalysisMetrics`, `recalculateClustersForRoom`, and the three email-digest call sites all exclude hidden statements (they should, by virtue of task 1, but we pin it down with tests so it can't regress). Fix any call site that turns out to bypass the shared retrieval helpers.
 
-4. **`useDebateSession` hook methods.** Add `hideStatement`, `unhideStatement`, `listStatementsForModeration`. Thin wrappers over the endpoints; no UI yet.
+4. ✅ **`useDebateSession` hook methods.** Add `hideStatement`, `unhideStatement`, `listStatementsForModeration`. Thin wrappers over the endpoints; no UI yet.
 
 5. **`StatementCard` menu refactor.** Replace the standalone flag button with a kebab menu. Menu items: "Report" (all users, wraps existing `onFlag`) and "Hide response" (host-only, opens confirm dialog → calls `hideStatement`). Storybook story covering both regular and host modes.
 

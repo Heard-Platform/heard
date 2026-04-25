@@ -59,16 +59,16 @@ describe("markStatementHidden", () => {
 });
 
 describe("markStatementVisible", () => {
-  it("removes isHidden, hiddenAt, and hiddenBy fields", () => {
+  it("sets isHidden to false and clears hiddenAt and hiddenBy", () => {
     const stmt = makeStmt("s1", {
       isHidden: true,
       hiddenAt: 123456,
       hiddenBy: "host1",
     });
     const result = markStatementVisible(stmt);
-    assertEquals(result.isHidden, undefined);
-    assertEquals(result.hiddenAt, undefined);
-    assertEquals(result.hiddenBy, undefined);
+    assertEquals(result.isHidden, false);
+    assertEquals(result.hiddenAt, null);
+    assertEquals(result.hiddenBy, null);
   });
 
   it("preserves all other fields", () => {
@@ -85,10 +85,13 @@ describe("markStatementVisible", () => {
     assertEquals(result.voters, { u1: "agree" });
   });
 
-  it("is a no-op on an already-visible statement", () => {
+  it("is idempotent on an already-visible statement", () => {
     const stmt = makeStmt("s1", { agrees: 3 });
     const result = markStatementVisible(stmt);
-    assertEquals(result, stmt);
+    assertEquals(result.isHidden, false);
+    assertEquals(result.hiddenAt, null);
+    assertEquals(result.hiddenBy, null);
+    assertEquals(result.agrees, 3);
   });
 
   it("does not mutate the input statement", () => {

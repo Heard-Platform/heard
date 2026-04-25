@@ -101,6 +101,12 @@ interface DebateSessionContextType {
     roomId: string,
     paused: boolean,
   ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
+  listStatementsForModeration: (roomId: string) => Promise<Statement[]>;
+  setStatementHidden: (
+    roomId: string,
+    statementId: string,
+    isHidden: boolean,
+  ) => Promise<ApiResponse<{ statement: Statement }> | null>;
   getSubHeards: () => Promise<ApiResponse<{ subHeards: SubHeard[] }> | null>;
   getExplorableSubHeards: () => Promise<ApiResponse<SubHeard[]> | null>;
   joinSubHeard: (subHeardName: string) => Promise<ApiResponse | null>;
@@ -715,10 +721,45 @@ export function DebateSessionProvider(
     [safelyMakeApiCall],
   );
 
+  const callRoomStatementMutation = useCallback(
+    async (apiCall: () => Promise<ApiResponse<{ statement: Statement }>>) => {
+      const response = await safelyMakeApiCall<{ statement: Statement }>(apiCall);
+      if (response?.success && response.data) {
+        const updated = response.data.statement;
+        setRoomStatements((prev) => ({
+          ...prev,
+          [updated.roomId]: (prev[updated.roomId] || []).map((s) =>
+            s.id === updated.id ? updated : s,
+          ),
+        }));
+      }
+      return response;
+    },
+    [safelyMakeApiCall],
+  );
+
   const setResponsesPaused = useCallback(
     (roomId: string, paused: boolean) =>
       callRoomMutation(() => api.setResponsesPaused(roomId, paused)),
     [callRoomMutation],
+  );
+
+  const listStatementsForModeration = useCallback(
+    async (roomId: string) => {
+      const response = await safelyMakeApiCall<{
+        statements: Statement[];
+      }>(() => api.getStatementsForModeration(roomId));
+
+      return response?.data?.statements || [];
+    }
+  , [safelyMakeApiCall]);
+
+  const setStatementHidden = useCallback(
+    (roomId: string, statementId: string, isHidden: boolean) =>
+      callRoomStatementMutation(() =>
+        api.setStatementHidden(roomId, statementId, isHidden),
+      ),
+    [callRoomStatementMutation],
   );
 
   const getRoomAnalysis = useCallback(async (roomId: string) => {
@@ -866,6 +907,8 @@ export function DebateSessionProvider(
     createStatementMerge,
     deleteStatementMerge,
     setResponsesPaused,
+    listStatementsForModeration,
+    setStatementHidden,
     markChanceCardSwiped,
     markCoverCardSwiped,
     saveDemographicAnswer,
@@ -949,6 +992,14 @@ export function DebateSessionProvider(
       },
       setResponsesPaused: async () => {
         console.log("[Showcase] setResponsesPaused called");
+        return null;
+      },
+      listStatementsForModeration: async () => {
+        console.log("[Showcase] listStatementsForModeration called");
+        return [];
+      },
+      setStatementHidden: async () => {
+        console.log("[Showcase] setStatementHidden called");
         return { success: true };
       },
       createSeedData: async () => {

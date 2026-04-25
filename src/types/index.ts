@@ -35,8 +35,8 @@ export interface Statement {
   voters: { [userId: string]: VoteType };
   mergedFrom?: Array<{ id: string; text: string }>;
   isHidden?: boolean;
-  hiddenAt?: number;
-  hiddenBy?: string;
+  hiddenAt?: number | null;
+  hiddenBy?: string | null;
 }
 
 export interface Comment {

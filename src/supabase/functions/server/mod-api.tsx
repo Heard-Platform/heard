@@ -112,13 +112,21 @@ app.get(
 );
 
 app.post(
-  `${PREFIX}/statement/:statementId/hide`,
+  `${PREFIX}/statement/:statementId/hidden`,
   defineRoute(
     {
       roomId: { type: "string", required: true },
       statementId: { type: "string", required: true },
+      isHidden: { type: "boolean", required: true },
     },
-    async ({ roomId, statementId }: { roomId: string; statementId: string }, c) => {
+    async (
+      {
+        roomId,
+        statementId,
+        isHidden,
+      }: { roomId: string; statementId: string; isHidden: boolean },
+      c,
+    ) => {
       const userId = c.get("userId");
 
       const statement = await getStatementById(statementId);
@@ -126,32 +134,13 @@ app.post(
         throw new Error("Statement not found");
       }
 
-      const updated = markStatementHidden(statement, userId);
+      const updated = isHidden
+        ? markStatementHidden(statement, userId)
+        : markStatementVisible(statement);
       await saveStatement(updated);
       return { statement: updated };
     },
-    "Failed to hide statement",
-  ),
-);
-
-app.post(
-  `${PREFIX}/statement/:statementId/unhide`,
-  defineRoute(
-    {
-      roomId: { type: "string", required: true },
-      statementId: { type: "string", required: true },
-    },
-    async ({ roomId, statementId }: { roomId: string; statementId: string }) => {
-      const statement = await getStatementById(statementId);
-      if (!statement || statement.roomId !== roomId) {
-        throw new Error("Statement not found");
-      }
-
-      const updated = markStatementVisible(statement);
-      await saveStatement(updated);
-      return { statement: updated };
-    },
-    "Failed to unhide statement",
+    "Failed to update statement visibility",
   ),
 );
 
