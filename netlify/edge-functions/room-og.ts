@@ -24,7 +24,10 @@ function isCrawler(userAgent: string): boolean {
 
 export default async function handler(request: Request, context: Context): Promise<Response> {
   const userAgent = request.headers.get("user-agent") ?? "";
-  if (!isCrawler(userAgent)) return context.next();
+  if (!isCrawler(userAgent)) {
+    console.log(`Not a crawler (UA: ${userAgent}), skipping OG fetch`);
+    return context.next();
+  }
 
   const functionsUrl = Deno.env.get("SUPABASE_FUNCTIONS_URL");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
