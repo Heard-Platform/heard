@@ -788,11 +788,9 @@ export function DebateSessionProvider(
 
     if (sessionId && isValidCachedUser(cachedUser)) {
       setUser(cachedUser);
-      setLoading(false);
       reloadUser().catch((err) => {
         console.error("Background revalidation failed:", err);
       });
-      return;
     } else if (sessionId) {
       await reloadUser();
     }
