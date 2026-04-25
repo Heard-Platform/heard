@@ -766,15 +766,17 @@ export function DebateSessionProvider(
     }
   }, [user]);
 
-  const revalidateInBackground = async () => {
+  const reloadUser = async () => {
     const response = await api.getUser();
+    if (!getSessionId()) return // Logged out mid-request
+    
     if (response.success && response.data) {
       setUser(response.data.user);
       api.trackActivity().catch((err) => {
-        console.error("Failed to track activity on init:", err);
+        console.error("Failed to track activity:", err);
       });
     } else if (response.error === "SESSION_EXPIRED") {
-      console.warn("Session expired during revalidation, clearing local data");
+      console.warn("Session expired, clearing local data");
       clearSessionId();
       setUser(null);
     }
@@ -787,24 +789,12 @@ export function DebateSessionProvider(
     if (sessionId && isValidCachedUser(cachedUser)) {
       setUser(cachedUser);
       setLoading(false);
-      revalidateInBackground().catch((err) => {
+      reloadUser().catch((err) => {
         console.error("Background revalidation failed:", err);
       });
       return;
-    }
-
-    setLoading(true);
-    if (sessionId) {
-      const response = await api.getUser();
-      if (response.success && response.data) {
-        setUser(response.data.user);
-        api.trackActivity().catch((err) => {
-          console.error("Failed to track activity on init:", err);
-        });
-      } else if (response.error === "SESSION_EXPIRED") {
-        console.error("Session expired, clearing local data");
-        clearSessionId();
-      }
+    } else if (sessionId) {
+      await reloadUser();
     }
     setLoading(false);
   };
