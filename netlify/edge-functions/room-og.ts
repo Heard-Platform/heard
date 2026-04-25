@@ -24,6 +24,7 @@ function isCrawler(userAgent: string): boolean {
 
 export default async function handler(request: Request, context: Context): Promise<Response> {
   const userAgent = request.headers.get("user-agent") ?? "";
+  console.log(`Received request with UA: ${userAgent}`);
   if (!isCrawler(userAgent)) {
     console.log(`Not a crawler (UA: ${userAgent}), skipping OG fetch`);
     return context.next();
