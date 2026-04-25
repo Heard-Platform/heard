@@ -4,6 +4,7 @@
   },
   "tasks": {
     "extract-statements": "deno run --allow-net --allow-env --allow-read --allow-write --env-file=.env scripts/extract-statements.ts",
-    "score-statement-similarity": "deno run --allow-net --allow-env --allow-read --allow-write --env-file=.env scripts/score-statement-similarity.ts"
+    "score-statement-similarity": "deno run --allow-net --allow-env --allow-read --allow-write --env-file=.env scripts/score-statement-similarity.ts",
+    "dryrun-duplicate-detection": "deno run --allow-read --allow-write scripts/dryrun-duplicate-detection.ts"
   }
 }

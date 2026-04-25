@@ -19,63 +19,95 @@ import {
 } from "../components/ui/select";
 import { Input } from "../components/ui/input";
 
-const CSV_PATH = "/data/statement-similarity.csv";
 const PAGE_SIZE = 50;
 const ALL_TOPICS = "__all__";
 
-interface SimilarityExplorerProps {
-  onExit: () => void;
-}
-
-type SimilarityRow = {
-  topic: string;
-  statement_1: string;
-  statement_2: string;
-  cosine_similarity: string;
-};
-
-type SortKey = keyof SimilarityRow;
-type SortDir = "asc" | "desc";
+type Mode = "pairs" | "merges";
 
 type Col = {
-  key: SortKey;
+  key: string;
   label: string;
   width: number;
   numeric?: boolean;
 };
 
-const DEFAULT_COLS: Col[] = [
-  { key: "topic", label: "Topic", width: 220 },
-  { key: "statement_1", label: "Statement 1", width: 320 },
-  { key: "statement_2", label: "Statement 2", width: 320 },
-  { key: "cosine_similarity", label: "Cosine similarity", width: 140, numeric: true },
-];
+type ModeConfig = {
+  label: string;
+  path: string;
+  cols: Col[];
+  defaultSortKey: string;
+  rowFilter?: (row: Record<string, string>) => boolean;
+};
+
+const MODE_CONFIGS: Record<Mode, ModeConfig> = {
+  pairs: {
+    label: "All pairs",
+    path: "/data/statement-similarity.csv",
+    defaultSortKey: "cosine_similarity",
+    cols: [
+      { key: "topic", label: "Topic", width: 220 },
+      { key: "statement_1", label: "Statement 1", width: 320 },
+      { key: "statement_2", label: "Statement 2", width: 320 },
+      { key: "cosine_similarity", label: "Cosine similarity", width: 140, numeric: true },
+    ],
+    rowFilter: (r) => r.statement_1 !== r.statement_2,
+  },
+  merges: {
+    label: "Dryrun merges",
+    path: "/data/dryrun-merges.csv",
+    defaultSortKey: "similarity",
+    cols: [
+      { key: "topic", label: "Topic", width: 220 },
+      { key: "duplicate_text", label: "Duplicate (new)", width: 320 },
+      { key: "target_text", label: "Target (kept)", width: 320 },
+      { key: "similarity", label: "Similarity", width: 140, numeric: true },
+    ],
+  },
+};
+
+interface SimilarityExplorerProps {
+  onExit: () => void;
+}
+
+type SortDir = "asc" | "desc";
 
 export function SimilarityExplorer({ onExit }: SimilarityExplorerProps) {
-  const [rows, setRows] = useState<SimilarityRow[] | null>(null);
+  const [mode, setMode] = useState<Mode>("pairs");
+  const [rows, setRows] = useState<Record<string, string>[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [topic, setTopic] = useState<string>(ALL_TOPICS);
   const [topicSearch, setTopicSearch] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("cosine_similarity");
+  const [sortKey, setSortKey] = useState<string>(
+    MODE_CONFIGS.pairs.defaultSortKey,
+  );
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(0);
-  const [cols, setCols] = useState<Col[]>(DEFAULT_COLS);
+  const [cols, setCols] = useState<Col[]>(MODE_CONFIGS.pairs.cols);
 
   useEffect(() => {
+    const config = MODE_CONFIGS[mode];
+    setRows(null);
+    setError(null);
+    setCols(config.cols);
+    setSortKey(config.defaultSortKey);
+    setSortDir("desc");
+    setTopic(ALL_TOPICS);
+    setTopicSearch("");
+
     let cancelled = false;
-    fetch(CSV_PATH)
+    fetch(config.path)
       .then((res) => {
         if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
         return res.text();
       })
       .then((text) => {
-        const parsed = Papa.parse<SimilarityRow>(text, {
+        const parsed = Papa.parse<Record<string, string>>(text, {
           header: true,
           skipEmptyLines: true,
         });
-        const filtered = parsed.data.filter(
-          (r) => r.statement_1 !== r.statement_2,
-        );
+        const filtered = config.rowFilter
+          ? parsed.data.filter(config.rowFilter)
+          : parsed.data;
         if (!cancelled) setRows(filtered);
       })
       .catch((err: Error) => {
@@ -84,7 +116,7 @@ export function SimilarityExplorer({ onExit }: SimilarityExplorerProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [mode]);
 
   const allTopics = useMemo(() => {
     if (!rows) return [];
@@ -107,24 +139,24 @@ export function SimilarityExplorer({ onExit }: SimilarityExplorerProps) {
     const col = cols.find((c) => c.key === sortKey);
     const numeric = col?.numeric ?? false;
     const sorted = [...filtered].sort((a, b) => {
-      const av = a[sortKey];
-      const bv = b[sortKey];
+      const av = a[sortKey] ?? "";
+      const bv = b[sortKey] ?? "";
       const diff = numeric
         ? Number(av) - Number(bv)
         : String(av).localeCompare(String(bv));
       return sortDir === "desc" ? -diff : diff;
     });
     return sorted;
-  }, [rows, topic, sortKey, sortDir, cols]);
+  }, [rows, topic, topicSearch, sortKey, sortDir, cols]);
 
   useEffect(() => {
     setPage(0);
-  }, [topic, topicSearch, sortKey, sortDir]);
+  }, [mode, topic, topicSearch, sortKey, sortDir]);
 
   const pageCount = Math.max(1, Math.ceil(filteredSorted.length / PAGE_SIZE));
   const pageRows = filteredSorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
-  const handleSortClick = (key: SortKey) => {
+  const handleSortClick = (key: string) => {
     if (key === sortKey) {
       setSortDir(sortDir === "desc" ? "asc" : "desc");
     } else {
@@ -143,16 +175,32 @@ export function SimilarityExplorer({ onExit }: SimilarityExplorerProps) {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-2xl font-semibold">Similarity Explorer</h1>
+          <div className="ml-auto flex items-center gap-2">
+            <label className="text-sm text-muted-foreground">View:</label>
+            <Select value={mode} onValueChange={(v: string) => setMode(v as Mode)}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(MODE_CONFIGS).map(([k, c]) => (
+                  <SelectItem key={k} value={k}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {error && (
           <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-            Failed to load {CSV_PATH}: {error}
+            Failed to load {MODE_CONFIGS[mode].path}: {error}
             <div className="mt-2 text-muted-foreground">
-              Run the extraction and scoring scripts first:
+              Run the relevant scripts first:
               <pre className="mt-1">
                 deno task extract-statements{"\n"}
-                deno task score-statement-similarity
+                deno task score-statement-similarity{"\n"}
+                deno task dryrun-duplicate-detection
               </pre>
             </div>
           </div>
@@ -191,7 +239,7 @@ export function SimilarityExplorer({ onExit }: SimilarityExplorerProps) {
                 />
               </div>
               <div className="ml-auto text-sm text-muted-foreground">
-                {filteredSorted.length} pairs
+                {filteredSorted.length} rows
               </div>
             </div>
 
@@ -224,7 +272,7 @@ export function SimilarityExplorer({ onExit }: SimilarityExplorerProps) {
                   {pageRows.map((row, i) => (
                     <TableRow key={page * PAGE_SIZE + i}>
                       {cols.map((col) => {
-                        const raw = row[col.key];
+                        const raw = row[col.key] ?? "";
                         const display = col.numeric
                           ? Number(raw).toFixed(4)
                           : raw;

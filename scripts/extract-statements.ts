@@ -12,6 +12,7 @@ type RoomResponseStatement = {
   id: string;
   text: string;
   roomId: string;
+  timestamp: number;
 };
 
 type RoomResponse = {
@@ -24,6 +25,7 @@ type CsvRow = {
   topic: string;
   statement_id: string;
   statement_text: string;
+  timestamp: number;
 };
 
 const projectId = Deno.env.get("VITE_SUPABASE_PROJECT_ID");
@@ -116,13 +118,14 @@ for (const debate of debates) {
       topic: room.topic ?? "",
       statement_id: s.id,
       statement_text: s.text,
+      timestamp: s.timestamp ?? 0,
     });
   }
   console.log(`  room ${room.id}: ${statements.length} statements`);
 }
 
 const csv = Papa.unparse(rows, {
-  columns: ["room_id", "topic", "statement_id", "statement_text"],
+  columns: ["room_id", "topic", "statement_id", "statement_text", "timestamp"],
   quotes: true,
 });
 
