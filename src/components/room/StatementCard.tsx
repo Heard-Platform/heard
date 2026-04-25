@@ -85,7 +85,11 @@ export function StatementCard({
               className="rounded-full overflow-hidden bg-gray-100 hover:bg-gray-200"
               title="Not sure"
             >
-              <span className="text-xl leading-none block" aria-hidden="true">🤷</span>
+              <span
+                className="text-xl leading-none block"
+                style={{ opacity: 0.8 }}
+                aria-hidden="true"
+              >🤷</span>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
