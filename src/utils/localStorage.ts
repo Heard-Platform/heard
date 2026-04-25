@@ -17,3 +17,11 @@ export const safelyGetStorageItem = <T,>(key: string, fallback: T): T => {
     return fallback;
   }
 };
+
+export const safelyDelStorageItem = (key: string): void => {
+  try {
+    localStorage.removeItem(key);
+  } catch (error) {
+    console.error(`Failed to remove item "${key}":`, error);
+  }
+};

@@ -83,6 +83,8 @@
         "dev": "vite",
         "build": "vite build",
         "storybook": "storybook dev -p 6006",
-        "test": "deno test"
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:server": "deno test --no-check --allow-read --allow-env --allow-net src/supabase/"
     }
 }

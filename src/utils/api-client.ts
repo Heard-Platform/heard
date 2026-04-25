@@ -1,5 +1,6 @@
-import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
+import { safelyDelStorageItem, safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { projectId, publicAnonKey } from "./supabase/info";
+import type { UserSession } from "../types";
 
 export const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
 
@@ -10,6 +11,7 @@ export interface ApiResponse<T = undefined> {
 }
 
 const SESSION_ID_KEY = "heard_session_id";
+const CACHED_USER_KEY = "heard_cached_user";
 
 export const getSessionId = (): string | null =>
   safelyGetStorageItem<string | null>(SESSION_ID_KEY, null);
@@ -19,11 +21,18 @@ export const setSessionId = (id: string): void => {
 };
 
 export const clearSessionId = (): void => {
-  try {
-    localStorage.removeItem(SESSION_ID_KEY);
-  } catch (error) {
-    console.error("Failed to clear session ID:", error);
-  }
+  safelyDelStorageItem(SESSION_ID_KEY);
+};
+
+export const getCachedUser = (): UserSession | null =>
+  safelyGetStorageItem<UserSession | null>(CACHED_USER_KEY, null);
+
+export const setCachedUser = (user: UserSession): void => {
+  safelySetStorageItem(CACHED_USER_KEY, user);
+};
+
+export const clearCachedUser = (): void => {
+  safelyDelStorageItem(CACHED_USER_KEY);
 };
 
 type HeadersDict = Record<string, string>;
