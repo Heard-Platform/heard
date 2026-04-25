@@ -44,6 +44,7 @@ export function StatementCard({
   const { user, activeRooms, setStatementHidden } = useDebateSession();
   const room = activeRooms.find((r) => r.id === statement.roomId);
   const isHost = !!user && !!room && room.hostId === user.id;
+  const isDeveloper = !!user?.isDeveloper;
   const timeAgo = moment(statement.timestamp).fromNow();
 
   const handleHide = () => {
@@ -120,7 +121,7 @@ export function StatementCard({
                   <Flag className="w-4 h-4 mr-2 report-text" />
                   Report
                 </DropdownMenuItem>
-                {isHost && (
+                {(isHost || isDeveloper) && (
                   <DropdownMenuItem onSelect={handleHide}>
                     <EyeOff className="w-4 h-4 mr-2" />
                     Hide response
