@@ -52,5 +52,6 @@ export function serializeStatement(statement: Statement): StatementVotes {
     consensusScore,
     totalVotes: totalVoteCount,
     mergedFrom: statement.mergedFrom ?? [],
+    clusterVotes: [],
   };
 }
