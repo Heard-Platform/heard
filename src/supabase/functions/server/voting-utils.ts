@@ -81,7 +81,11 @@ export const processVote = async (
   if (!statement) {
     console.error(`Statement not found with ID: ${statementId}`);
     return { success: false, error: "Statement not found" };
+  } else if (statement.isHidden) {
+    console.error(`Attempt to vote on hidden statement ID: ${statementId}`);
+    return { success: false, error: "Statement is hidden" };
   }
+
   console.log(
     `Voting on statement ${statementId} by user ${userId} with vote ${voteType}`,
   );

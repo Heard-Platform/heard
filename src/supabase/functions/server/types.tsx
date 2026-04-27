@@ -79,6 +79,7 @@ export interface UserReport {
   responseId: string;
   reportingUserId: string;
   createdAt: string;
+  reason: string;
 }
 
 export type NewUserReport = Omit<UserReport, "id" | "createdAt">;
@@ -118,6 +119,9 @@ export interface Statement {
   voters: { [userId: string]: VoteType };
   anonymousUserId?: string;
   mergedFrom?: Array<{ id: string; text: string }>;
+  isHidden?: boolean;
+  hiddenAt?: number | null;
+  hiddenBy?: string | null;
 }
 
 export interface Vote {
@@ -217,6 +221,9 @@ export interface DebateRoom {
   lastActivityAt?: number;
   totalVotes?: number;
   eventId?: number;
+  responsesPaused?: boolean | null;
+  responsesPausedAt?: number | null;
+  responsesPausedBy?: string | null;
 }
 
 export type AnonCreatableRecords = "votes" | "statements" | "score";

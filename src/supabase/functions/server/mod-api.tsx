@@ -2,8 +2,19 @@ import { Hono } from "npm:hono";
 import { deleteRecord, insert } from "./db-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { getMergesForRoom } from "./model-utils.ts";
-import { getStatements } from "./debate-api.tsx";
-import { getUser } from "./kv-utils.tsx";
+import {
+  getDebateRoom,
+  getStatementById,
+  getStatements,
+  saveDebateRoom,
+} from "./debate-api.tsx";
+import {
+  getStatementsForRoomIncludingHidden,
+  getUser,
+  saveStatement,
+} from "./kv-utils.tsx";
+import { markStatementHidden, markStatementVisible } from "./moderation-utils.ts";
+import { DebateRoom } from "./types.tsx";
 
 const app = new Hono();
 const PREFIX = "/make-server-f1a393b4/room/:roomId/mod";
@@ -85,6 +96,79 @@ app.get(
       return { statements, merges, phoneVerified };
     },
     "Failed to fetch vote matrix",
+  ),
+);
+
+app.get(
+  `${PREFIX}/statements`,
+  defineRoute(
+    { roomId: { type: "string", required: true } },
+    async ({ roomId }: { roomId: string }) => {
+      const statements = await getStatementsForRoomIncludingHidden(roomId);
+      return { statements };
+    },
+    "Failed to fetch statements",
+  ),
+);
+
+app.post(
+  `${PREFIX}/statement/:statementId/hidden`,
+  defineRoute(
+    {
+      roomId: { type: "string", required: true },
+      statementId: { type: "string", required: true },
+      isHidden: { type: "boolean", required: true },
+    },
+    async (
+      {
+        roomId,
+        statementId,
+        isHidden,
+      }: { roomId: string; statementId: string; isHidden: boolean },
+      c,
+    ) => {
+      const userId = c.get("userId");
+
+      const statement = await getStatementById(statementId);
+      if (!statement || statement.roomId !== roomId) {
+        throw new Error("Statement not found");
+      }
+
+      const updated = isHidden
+        ? markStatementHidden(statement, userId)
+        : markStatementVisible(statement);
+      await saveStatement(updated);
+      return { statement: updated };
+    },
+    "Failed to update statement visibility",
+  ),
+);
+
+app.post(
+  `${PREFIX}/responses-paused`,
+  defineRoute(
+    {
+      roomId: { type: "string", required: true },
+      paused: { type: "boolean", required: true },
+    },
+    async ({ roomId, paused }: { roomId: string; paused: boolean }, c) => {
+      const userId = c.get("userId");
+
+      const room = await getDebateRoom(roomId);
+      if (!room) {
+        throw new Error("Room not found");
+      }
+
+      const updated: DebateRoom = {
+        ...room,
+        responsesPaused: paused ? true : null,
+        responsesPausedAt: paused ? Date.now() : null,
+        responsesPausedBy: paused ? userId : null,
+      };
+      await saveDebateRoom(updated);
+      return { room: updated };
+    },
+    "Failed to update responses paused state",
   ),
 );
 

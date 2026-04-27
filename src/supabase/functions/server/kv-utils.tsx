@@ -308,10 +308,21 @@ export const getAllStatements = async (): Promise<Statement[]> => {
 };
 
 export const getStatement = async (statementId: string): Promise<Statement | null> => {
-  return getParsedKvData<Statement>(`statement:%:${statementId}`);
+  const matches = await getByPrefixParsed<Statement>(`statement:%:${statementId}`);
+  return matches[0] ?? null;
 };
 
+export const filterVisibleStatements = (statements: Statement[]): Statement[] =>
+  statements.filter((s) => !s.isHidden);
+
 export const getStatementsForRoom = async (
+  roomId: string,
+): Promise<Statement[]> => {
+  const statements = await getByPrefixParsed<Statement>(`statement:${roomId}:`);
+  return filterVisibleStatements(statements);
+};
+
+export const getStatementsForRoomIncludingHidden = async (
   roomId: string,
 ): Promise<Statement[]> => {
   return getByPrefixParsed<Statement>(`statement:${roomId}:`);

@@ -299,14 +299,16 @@ export function SidePanelMenu({
               Help
             </Button>
 
-            <Button
-              onClick={onLogout}
-              variant="outline"
-              className="w-full"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+            {!user.isAnonymous && (
+              <Button
+                onClick={onLogout}
+                variant="outline"
+                className="w-full"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            )}
 
             {user.isDeveloper && onOpenShowcase && (
               <Button

@@ -30,6 +30,7 @@ import {
   saveDemographicAnswer,
   saveCoverCardSwipe,
   getCoverCardSwipedRoomIds,
+  getMergesForRoom,
 } from "./model-utils.ts";
 import type {
   User, Statement,
@@ -625,7 +626,13 @@ app.get(
         return c.json({ error: "Room not found" }, 404);
       }
 
-      const statements = await getStatements(roomId);
+      const [statements, merges] = await Promise.all([
+        getStatements(roomId),
+        getMergesForRoom(roomId),
+      ]);
+
+      const mergeSourceIds = new Set(merges.map((m) => m.sourceStatementId));
+      const visibleStatements = statements.filter((s) => !mergeSourceIds.has(s.id));
 
       // Get rants if this is a rant-first room
       const rants = room.rantFirst
@@ -634,7 +641,7 @@ app.get(
 
       return c.json({
         room,
-        statements,
+        statements: visibleStatements,
         rants,
       });
     } catch (error) {
@@ -671,6 +678,13 @@ app.post(
         return c.json(
           { error: "Room not found or inactive" },
           404,
+        );
+      }
+
+      if (room.responsesPaused) {
+        return c.json(
+          { error: "Responses are paused for this room." },
+          423,
         );
       }
 

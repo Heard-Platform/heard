@@ -1,7 +1,15 @@
 import type { Statement } from "../../types";
 import { SwipeIndicator } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
-import { X, Star, Flag } from "lucide-react";
+import { Star, Flag, MoreVertical, EyeOff } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
+import { useDebateSession } from "../../hooks/useDebateSession";
 import moment from "moment";
 
 interface StatementCardProps {
@@ -33,7 +41,22 @@ export function StatementCard({
   onSkip,
   onFlag,
 }: StatementCardProps) {
+  const { user, activeRooms, setStatementHidden } = useDebateSession();
+  const room = activeRooms.find((r) => r.id === statement.roomId);
+  const isHost = !!user && !!room && room.hostId === user.id;
+  const isDeveloper = !!user?.isDeveloper;
   const timeAgo = moment(statement.timestamp).fromNow();
+
+  const handleHide = () => {
+    if (
+      !window.confirm(
+        "Hide this response? It will no longer appear to anyone. You can undo this from the Hide and Merge Statements moderator tool.",
+      )
+    ) {
+      return;
+    }
+    setStatementHidden(statement.roomId, statement.id, true);
+  };
   
   const actionButtonBase = "w-7 h-7 rounded-full transition-colors flex items-center justify-center flex-shrink-0";
 
@@ -68,24 +91,44 @@ export function StatementCard({
                 <Star className="w-4 h-4 text-white" />
               </button>
             )}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onFlag();
-              }}
-              className={`${actionButtonBase} hover:bg-gray-100`}
-            >
-              <Flag className="w-3.5 h-3.5 text-red-500" />
-            </button>
-            <button
-              onClick={(e) => {
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onSkip();
               }}
-              className={`${actionButtonBase} bg-gray-200 hover:bg-gray-300`}
+              className="rounded-full overflow-hidden bg-gray-100 hover:bg-gray-200"
+              title="Not sure"
             >
-              <X className="w-4 h-4 text-gray-700" />
-            </button>
+              <span
+                className="text-xl leading-none block"
+                style={{ opacity: 0.8 }}
+                aria-hidden="true"
+              >🤷</span>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  onClick={(e) => e.stopPropagation()}
+                  className={`${actionButtonBase} hover:bg-gray-100`}
+                >
+                  <MoreVertical className="w-4 h-4 text-gray-700" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => onFlag()}>
+                  <Flag className="w-4 h-4 mr-2 report-text" />
+                  Report
+                </DropdownMenuItem>
+                {(isHost || isDeveloper) && (
+                  <DropdownMenuItem onSelect={handleHide}>
+                    <EyeOff className="w-4 h-4 mr-2" />
+                    Hide response
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </div>

@@ -22,7 +22,7 @@ import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType, UserSession, Cover, FullCoverData } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
-import { DeduplicateModal } from "./room/DeduplicateModal";
+import { HideAndMergeModal } from "./room/mod/HideAndMergeModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
@@ -137,6 +137,8 @@ export function RoomCard({
     return engaged.size;
   })();
   
+  const effectiveChanceCardSwiped = chanceCardSwiped || !!room.responsesPaused;
+
   const hasSwipedAll =
     statements.length > 0 &&
     statements.every(
@@ -144,7 +146,7 @@ export function RoomCard({
         statement.voters && statement.voters[user.id],
     ) &&
     (!user.isAnonymous || certifyCardDismissed) &&
-    chanceCardSwiped &&
+    effectiveChanceCardSwiped &&
     (coverCardSwiped || !(room.imageUrl || room.youtubeUrl)) &&
     (!room.demographicQuestions.length ||
       room.demographicQuestions.every((q) =>
@@ -363,7 +365,7 @@ export function RoomCard({
                     currentUserId={user.id}
                     allowAnonymous={!!room.allowAnonymous}
                     isAnonymous={!!user?.isAnonymous}
-                    chanceCardSwiped={chanceCardSwiped}
+                    chanceCardSwiped={effectiveChanceCardSwiped}
                     cover={cover}
                     coverCardSwiped={coverCardSwiped}
                     demographicQuestions={room.demographicQuestions}
@@ -413,7 +415,11 @@ export function RoomCard({
 
           <div className="flex items-center gap-2">
             {!isCompleted && (
-              <AddResponseButton onClick={() => setShowAddResponseModal(true)} />
+              <AddResponseButton
+                disabled={!!room.responsesPaused}
+                disabledLabel="Responses paused"
+                onClick={() => setShowAddResponseModal(true)}
+              />
             )}
             <Button
               onClick={handleOpenAnalysis}
@@ -457,7 +463,7 @@ export function RoomCard({
       )}
 
       {showDeduplication && (
-        <DeduplicateModal
+        <HideAndMergeModal
           roomId={room.id}
           onClose={() => setShowDeduplication(false)}
         />

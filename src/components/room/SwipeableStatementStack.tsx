@@ -358,13 +358,13 @@ export function SwipeableStatementStack({
     setShowFlagDialog(true);
   };
 
-  const handleConfirmFlag = async () => {
+  const handleConfirmFlag = async (reason: string) => {
     if (!statementToFlag) return;
 
     setShowFlagDialog(false);
     handleVote(statementToFlag.id, "pass", "down");
 
-    await flagStatement(statementToFlag.id, statementToFlag.roomId);
+    await flagStatement(statementToFlag.id, statementToFlag.roomId, reason);
     toast.success("🙏 Thank you for reporting. Our team will review this shortly.");
 
     setStatementToFlag(null);

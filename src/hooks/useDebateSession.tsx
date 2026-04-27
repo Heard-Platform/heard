@@ -3,6 +3,7 @@ import {
   api,
   safelyMakeApiCall,
 } from "../utils/api";
+import { isValidCachedUser } from "../utils/cache-utils";
 import type {
   UserSession,
   DebateRoom,
@@ -18,7 +19,15 @@ import type {
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
-import { ApiResponse, clearSessionId, getSessionId, setSessionId } from "../utils/api-client";
+import {
+  ApiResponse,
+  clearSessionId,
+  getSessionId,
+  setSessionId,
+  getCachedUser,
+  setCachedUser,
+  clearCachedUser,
+} from "../utils/api-client";
 import { AvatarAnimal } from "../utils/constants/avatars";
 
 interface DebateSessionContextType {
@@ -52,6 +61,7 @@ interface DebateSessionContextType {
   flagStatement: (
     statementId: string,
     roomId: string,
+    reason: string,
   ) => Promise<void>;
   voteViaFlyer: (
     flyerId: string,
@@ -88,6 +98,16 @@ interface DebateSessionContextType {
     roomId: string,
     mergeId: string,
   ) => Promise<ApiResponse | null>;
+  setResponsesPaused: (
+    roomId: string,
+    paused: boolean,
+  ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
+  listStatementsForModeration: (roomId: string) => Promise<Statement[]>;
+  setStatementHidden: (
+    roomId: string,
+    statementId: string,
+    isHidden: boolean,
+  ) => Promise<ApiResponse<{ statement: Statement }> | null>;
   getSubHeards: () => Promise<ApiResponse<{ subHeards: SubHeard[] }> | null>;
   getExplorableSubHeards: () => Promise<ApiResponse<SubHeard[]> | null>;
   joinSubHeard: (subHeardName: string) => Promise<ApiResponse | null>;
@@ -390,9 +410,9 @@ export function DebateSessionProvider(
   );
 
   const flagStatement = useCallback(
-    async (statementId: string, roomId: string) => {
+    async (statementId: string, roomId: string, reason: string) => {
       try {
-        const response = await api.flagStatement(statementId, roomId);
+        const response = await api.flagStatement(statementId, roomId, reason);
         if (!response.success) {
           throw new Error(response.error || "Failed to flag statement");
         }
@@ -686,6 +706,63 @@ export function DebateSessionProvider(
       safelyMakeApiCall<undefined>(() => api.deleteStatementMerge(roomId, mergeId))
   , [safelyMakeApiCall]);
 
+  const callRoomMutation = useCallback(
+    async (apiCall: () => Promise<ApiResponse<{ room: DebateRoom }>>) => {
+      const response = await safelyMakeApiCall<{ room: DebateRoom }>(apiCall);
+      if (response?.success && response.data) {
+        const updated = response.data.room;
+        setActiveRooms((prev) =>
+          prev.map((r) =>
+            r.id === updated.id ? { ...r, ...updated } : r,
+          ),
+        );
+      }
+      return response;
+    },
+    [safelyMakeApiCall],
+  );
+
+  const callRoomStatementMutation = useCallback(
+    async (apiCall: () => Promise<ApiResponse<{ statement: Statement }>>) => {
+      const response = await safelyMakeApiCall<{ statement: Statement }>(apiCall);
+      if (response?.success && response.data) {
+        const updated = response.data.statement;
+        setRoomStatements((prev) => ({
+          ...prev,
+          [updated.roomId]: (prev[updated.roomId] || []).map((s) =>
+            s.id === updated.id ? updated : s,
+          ),
+        }));
+      }
+      return response;
+    },
+    [safelyMakeApiCall],
+  );
+
+  const setResponsesPaused = useCallback(
+    (roomId: string, paused: boolean) =>
+      callRoomMutation(() => api.setResponsesPaused(roomId, paused)),
+    [callRoomMutation],
+  );
+
+  const listStatementsForModeration = useCallback(
+    async (roomId: string) => {
+      const response = await safelyMakeApiCall<{
+        statements: Statement[];
+      }>(() => api.getStatementsForModeration(roomId));
+
+      return response?.data?.statements || [];
+    }
+  , [safelyMakeApiCall]);
+
+  const setStatementHidden = useCallback(
+    (roomId: string, statementId: string, isHidden: boolean) =>
+      callRoomStatementMutation(() =>
+        api.setStatementHidden(roomId, statementId, isHidden),
+      ),
+    [callRoomStatementMutation],
+  );
+
   const getRoomAnalysis = useCallback(async (roomId: string) => {
     try {
       const response = (await api.getRoomAnalysis(roomId)) as any;
@@ -749,31 +826,46 @@ export function DebateSessionProvider(
     clearSessionId();
   }, []);
 
-  // Initialize on mount
   useEffect(() => {
-    const init = async () => {
-      setLoading(true);
+    if (user) {
+      setCachedUser(user);
+    } else {
+      clearCachedUser();
+    }
+  }, [user]);
 
-      if (getSessionId()) {
-        const response = await api.getUser();
-        if (response.success && response.data) {
-          const user = response.data.user;
-          setUser(user);
-          api.trackActivity().catch((err) => {
-            console.error("Failed to track activity on init:", err);
-          });
-        } else if (response.error === "SESSION_EXPIRED") {
-          console.error("Session expired, clearing local data");
-          clearSessionId();
-          return null;
-        }
-      }
-      
-      setLoading(false);
-    };
+  const reloadUser = async () => {
+    const response = await api.getUser();
+    if (!getSessionId()) return // Logged out mid-request
+    
+    if (response.success && response.data) {
+      setUser(response.data.user);
+      api.trackActivity().catch((err) => {
+        console.error("Failed to track activity:", err);
+      });
+    } else if (response.error === "SESSION_EXPIRED") {
+      console.warn("Session expired, clearing local data");
+      clearSessionId();
+      setUser(null);
+    }
+  };
 
-    init();
-  }, []);
+  const initUser = async () => {
+    const sessionId = getSessionId();
+    const cachedUser = getCachedUser();
+
+    if (sessionId && isValidCachedUser(cachedUser)) {
+      setUser(cachedUser);
+      reloadUser().catch((err) => {
+        console.error("Background revalidation failed:", err);
+      });
+    } else if (sessionId) {
+      await reloadUser();
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { initUser(); }, []);
 
   let returnObj = {
     user,
@@ -815,6 +907,9 @@ export function DebateSessionProvider(
     getStatementMerges,
     createStatementMerge,
     deleteStatementMerge,
+    setResponsesPaused,
+    listStatementsForModeration,
+    setStatementHidden,
     markChanceCardSwiped,
     markCoverCardSwiped,
     saveDemographicAnswer,
@@ -877,8 +972,8 @@ export function DebateSessionProvider(
         console.log("[Showcase] getRoomStatements called"); 
         return [];
       },
-      flagStatement: async (statementId: string, roomId: string) => {
-        console.log("[Showcase] flagStatement called");
+      flagStatement: async (statementId: string, roomId: string, reason: string) => {
+        console.log("[Showcase] flagStatement called", { reason });
       },
       getRoomAnalysis: async () => {
         console.log("[Showcase] getRoomAnalysis called");
@@ -894,6 +989,18 @@ export function DebateSessionProvider(
       },
       deleteStatementMerge: async () => {
         console.log("[Showcase] deleteStatementMerge called");
+        return { success: true };
+      },
+      setResponsesPaused: async () => {
+        console.log("[Showcase] setResponsesPaused called");
+        return null;
+      },
+      listStatementsForModeration: async () => {
+        console.log("[Showcase] listStatementsForModeration called");
+        return [];
+      },
+      setStatementHidden: async () => {
+        console.log("[Showcase] setStatementHidden called");
         return { success: true };
       },
       createSeedData: async () => {

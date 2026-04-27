@@ -34,6 +34,9 @@ export interface Statement {
   round: number;
   voters: { [userId: string]: VoteType };
   mergedFrom?: Array<{ id: string; text: string }>;
+  isHidden?: boolean;
+  hiddenAt?: number | null;
+  hiddenBy?: string | null;
 }
 
 export interface Comment {
@@ -214,6 +217,9 @@ export interface DebateRoom {
   coverCardSwiped?: boolean;
   demographicQuestions: DemographicQuestion[];
   eventId?: number;
+  responsesPaused?: boolean | null;
+  responsesPausedAt?: number | null;
+  responsesPausedBy?: string | null;
 }
 
 export type NewDebateRoom = Pick<

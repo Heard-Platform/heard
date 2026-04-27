@@ -37,7 +37,7 @@ import { WriteRantStepStory } from "../stories/WriteRantStep.story";
 import { Story } from "../stories/EventPage.story";
 import { CreateEventSheetStory } from "../stories/CreateEventSheet.story";
 import { EventCardStory } from "../stories/EventCard.story";
-import { DeduplicateModalStory } from "../stories/DeduplicateModal.story";
+import { HideAndMergeModalStory } from "../stories/HideAndMergeModal.story";
 import { VoteMatrixStory } from "../stories/VoteMatrix.story";
 import { StatementVotesTableStory } from "../stories/StatementVotesTable.story";
 
@@ -130,7 +130,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="create-event-sheet">Create Event Sheet</TabsTrigger>
                 <TabsTrigger value="event-room-listing">Event Room Listing</TabsTrigger>
                 <TabsTrigger value="event-card">Event Card</TabsTrigger>
-                <TabsTrigger value="deduplicate-modal">Deduplicate Modal</TabsTrigger>
+                <TabsTrigger value="hide-and-merge-modal">Hide & Merge Modal</TabsTrigger>
                 <TabsTrigger value="vote-matrix">Vote Matrix</TabsTrigger>
                 <TabsTrigger value="statement-votes-table">Statement Votes Table</TabsTrigger>
               </TabsList>
@@ -237,8 +237,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsContent value="event-card">
                 <EventCardStory />
               </TabsContent>
-              <TabsContent value="deduplicate-modal">
-                <DeduplicateModalStory />
+              <TabsContent value="hide-and-merge-modal">
+                <HideAndMergeModalStory />
               </TabsContent>
               <TabsContent value="vote-matrix">
                 <VoteMatrixStory />

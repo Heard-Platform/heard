@@ -104,6 +104,7 @@ export const getStatementsForUser = async (
       .from(TABLE_NAME)
       .select("value")
       .like("key", "statement:%")
+      .order("key")
       .range(offset, offset + limit - 1);
 
     if (error) {
@@ -139,6 +140,7 @@ export const getAllRecords = async <T>(
       .from(TABLE_NAME)
       .select("value")
       .like("key", `${prefix}%`)
+      .order("key")
       .range(offset, offset + limit - 1);
 
     if (error) {

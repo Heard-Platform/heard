@@ -9,6 +9,8 @@ import {
   MoreHorizontal,
   GitMerge,
   BarChart2,
+  Pause,
+  Play,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -44,7 +46,7 @@ export function RoomCardMenu({
   onOpenDeduplication,
   onOpenVoteMatrix,
 }: RoomCardMenuProps) {
-  const { setRoomInactive } = useDebateSession();
+  const { setRoomInactive, setResponsesPaused } = useDebateSession();
 
   return (
     <DropdownMenu>
@@ -131,7 +133,7 @@ export function RoomCardMenu({
               }}
             >
               <GitMerge className="w-4 h-4 mr-2" />
-              Manage Duplicate Statements
+              Hide and Merge Statements
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
@@ -141,6 +143,28 @@ export function RoomCardMenu({
             >
               <BarChart2 className="w-4 h-4 mr-2" />
               View Vote Matrix
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async (e: React.MouseEvent) => {
+                e.stopPropagation();
+                const isPaused = !!room.responsesPaused;
+                if (!isPaused && !window.confirm(
+                  "No one will be able to add new responses until you resume. Voting continues as normal.",
+                )) return;
+                const response = await setResponsesPaused(room.id, !isPaused);
+                if (response?.success) {
+                  toast.success(isPaused ? "Responses resumed" : "Responses paused");
+                } else {
+                  toast.error(isPaused ? "Failed to resume responses" : "Failed to pause responses");
+                }
+              }}
+            >
+              {room.responsesPaused ? (
+                <Play className="w-4 h-4 mr-2" />
+              ) : (
+                <Pause className="w-4 h-4 mr-2" />
+              )}
+              {room.responsesPaused ? "Resume responses" : "Pause responses"}
             </DropdownMenuItem>
           </>
         )}

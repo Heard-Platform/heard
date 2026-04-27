@@ -347,10 +347,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async flagStatement(statementId: string, roomId: string) {
+  async flagStatement(statementId: string, roomId: string, reason: string) {
     return this.request(`/statement/${statementId}/flag`, {
       method: "POST",
-      body: JSON.stringify({ roomId }),
+      body: JSON.stringify({ roomId, reason }),
     });
   }
 
@@ -798,6 +798,32 @@ class ApiClient extends BaseApiClient {
       merges: StatementMerge[];
       phoneVerified: Record<string, boolean>;
     }>(`/room/${roomId}/mod/vote-matrix`);
+  }
+
+  async setResponsesPaused(roomId: string, paused: boolean) {
+    return this.request<{ room: DebateRoom }>(
+      `/room/${roomId}/mod/responses-paused`,
+      {
+        method: "POST",
+        body: JSON.stringify({ paused }),
+      },
+    );
+  }
+
+  async getStatementsForModeration(roomId: string) {
+    return this.request<{ statements: Statement[] }>(
+      `/room/${roomId}/mod/statements`,
+    );
+  }
+
+  async setStatementHidden(roomId: string, statementId: string, isHidden: boolean) {
+    return this.request<{ statement: Statement }>(
+      `/room/${roomId}/mod/statement/${statementId}/hidden`,
+      {
+        method: "POST",
+        body: JSON.stringify({ isHidden }),
+      },
+    );
   }
 
   trackEvent(type: string, roomId?: string): void {

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,13 +9,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
+import { Textarea } from "../ui/textarea";
+import { Label } from "../ui/label";
 import type { Statement } from "../../types";
 
 interface FlagResponseDialogProps {
   statement: Statement | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
+  onConfirm: (reason: string) => void;
 }
 
 export function FlagResponseDialog({
@@ -23,6 +26,12 @@ export function FlagResponseDialog({
   onOpenChange,
   onConfirm,
 }: FlagResponseDialogProps) {
+  const [reason, setReason] = useState("");
+
+  useEffect(() => {
+    if (!open) setReason("");
+  }, [open]);
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -37,11 +46,20 @@ export function FlagResponseDialog({
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
+        <div className="space-y-2">
+          <Label htmlFor="flag-reason">Reason (optional)</Label>
+          <Textarea
+            id="flag-reason"
+            placeholder="Tell us why you're reporting this response"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+        </div>
         <AlertDialogFooter>
           <AlertDialogCancel>
             Cancel
           </AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
+          <AlertDialogAction onClick={() => onConfirm(reason.trim())}>
             Report
           </AlertDialogAction>
         </AlertDialogFooter>

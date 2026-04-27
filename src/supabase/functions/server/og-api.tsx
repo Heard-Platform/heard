@@ -1,18 +1,11 @@
 import { Hono } from "npm:hono";
 import { getDebate } from "./kv-utils.tsx";
 import { API_URL_PREFIX } from "./constants.tsx";
+import { escapeHtml } from "./utils.tsx";
 
 const SITE_NAME = "Heard";
 const SITE_URL = "https://heard.vote";
 const FALLBACK_IMAGE = `${SITE_URL}/monkey.png`;
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
 
 function buildOgHtml(params: {
   topic: string;
