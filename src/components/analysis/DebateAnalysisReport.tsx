@@ -40,7 +40,7 @@ export function DebateAnalysisReport({
 }: DebateAnalysisReportProps) {
   return (
     <div className="heard-page-bg p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="mx-auto space-y-6">
         <div>
           <h1 className="text-3xl">Conversation Analysis</h1>
           <p className="text-muted-foreground mt-1">{debateTopic}</p>
