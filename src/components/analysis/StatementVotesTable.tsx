@@ -3,13 +3,10 @@ import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { List, ChevronUp, ChevronDown, CornerLeftUp } from "lucide-react";
 import { StatementVotes } from "../../types";
+import { VoteBreakdownPie } from "./VoteBreakdownPie";
 
 type SortColumn = "rawAgreeVotes" | "superAgreeVotes" | "disagreeVotes" | "passVotes" | "totalVotes";
 type SortDir = "asc" | "desc";
-
-interface StatementVotesTableProps {
-  statements: StatementVotes[];
-}
 
 const COLUMNS: { key: SortColumn; label: string; badgeClass: string }[] = [
   { key: "rawAgreeVotes", label: "Agree", badgeClass: "agree-bg agree-text agree-border" },
@@ -19,6 +16,10 @@ const COLUMNS: { key: SortColumn; label: string; badgeClass: string }[] = [
   { key: "totalVotes", label: "Total", badgeClass: "total-bg total-text total-border" },
 ];
 
+function clusterLabel(idx: number): string {
+  return String.fromCharCode(65 + idx);
+}
+
 function SortIcon({ column, sortCol, sortDir }: { column: SortColumn; sortCol: SortColumn | null; sortDir: SortDir }) {
   if (sortCol !== column) return null;
   return sortDir === "desc"
@@ -26,7 +27,13 @@ function SortIcon({ column, sortCol, sortDir }: { column: SortColumn; sortCol: S
     : <ChevronUp className="w-3 h-3" />;
 }
 
-export function StatementVotesTable({ statements }: StatementVotesTableProps) {
+interface StatementVotesTableProps {
+  statements: StatementVotes[];
+  totalParticipants: number;
+  clusterSizes: number[];
+}
+
+export function StatementVotesTable({ statements, totalParticipants, clusterSizes }: StatementVotesTableProps) {
   const [sortCol, setSortCol] = useState<SortColumn | null>("rawAgreeVotes");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -76,6 +83,16 @@ export function StatementVotesTable({ statements }: StatementVotesTableProps) {
                   </button>
                 </th>
               ))}
+              <th className="py-2 px-2 text-right whitespace-nowrap font-medium text-muted-foreground border-l">
+                <div className="text-xs">Overall</div>
+                <div className="text-xs text-muted-foreground font-normal">{totalParticipants}</div>
+              </th>
+              {clusterSizes.map((size, idx) => (
+                <th key={idx} className="py-2 px-2 text-right whitespace-nowrap font-medium text-muted-foreground">
+                  <div className="text-xs">{clusterLabel(idx)}</div>
+                  <div className="text-xs text-muted-foreground font-normal">{size}</div>
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -99,6 +116,31 @@ export function StatementVotesTable({ statements }: StatementVotesTableProps) {
                 <td className="py-3 px-2 text-right tabular-nums disagree-text font-medium">{row.disagreeVotes}</td>
                 <td className="py-3 px-2 text-right tabular-nums pass-text font-medium">{row.passVotes}</td>
                 <td className="py-3 px-2 text-right tabular-nums total-text font-medium">{row.totalVotes}</td>
+                <td className="py-3 px-2 align-middle border-l">
+                  <VoteBreakdownPie
+                    rawAgree={row.rawAgreeVotes}
+                    superAgree={row.superAgreeVotes}
+                    disagree={row.disagreeVotes}
+                    pass={row.passVotes}
+                    size={totalParticipants}
+                  />
+                </td>
+                {clusterSizes.map((size, idx) => {
+                  const cv = row.clusterVotes?.[idx];
+                  const cvSuper = cv?.superAgreeVotes ?? 0;
+                  const cvRawAgree = (cv?.agreeVotes ?? 0) - cvSuper;
+                  return (
+                    <td key={idx} className="py-3 px-2 align-middle">
+                      <VoteBreakdownPie
+                        rawAgree={cvRawAgree}
+                        superAgree={cvSuper}
+                        disagree={cv?.disagreeVotes ?? 0}
+                        pass={cv?.passVotes ?? 0}
+                        size={cv?.clusterSize ?? size}
+                      />
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

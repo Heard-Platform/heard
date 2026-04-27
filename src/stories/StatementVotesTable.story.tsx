@@ -6,6 +6,9 @@ export default {
   title: "Analysis/StatementVotesTable",
 };
 
+const clusterSizes = [80, 60, 50, 35];
+const totalParticipants = 225;
+
 const mockStatements: StatementVotes[] = [
   {
     id: "s-1",
@@ -18,6 +21,12 @@ const mockStatements: StatementVotes[] = [
     totalVotes: 218,
     consensusScore: 65.1,
     mergedFrom: [],
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 80, agreeVotes: 72, superAgreeVotes: 15, disagreeVotes: 2, passVotes: 4 },
+      { clusterId: 1, clusterSize: 60, agreeVotes: 55, superAgreeVotes: 12, disagreeVotes: 2, passVotes: 3 },
+      { clusterId: 2, clusterSize: 50, agreeVotes: 37, superAgreeVotes: 8, disagreeVotes: 8, passVotes: 4 },
+      { clusterId: 3, clusterSize: 35, agreeVotes: 16, superAgreeVotes: 3, disagreeVotes: 11, passVotes: 4 },
+    ],
   },
   {
     id: "s-2",
@@ -33,6 +42,12 @@ const mockStatements: StatementVotes[] = [
       { id: "s-2m-1", text: "We should invest heavily in buses and trains to reduce private car usage." },
       { id: "s-2m-2", text: "Light rail and subway expansion should be a budget priority." },
     ],
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 80, agreeVotes: 55, superAgreeVotes: 6, disagreeVotes: 10, passVotes: 8 },
+      { clusterId: 1, clusterSize: 60, agreeVotes: 35, superAgreeVotes: 4, disagreeVotes: 12, passVotes: 6 },
+      { clusterId: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 2, disagreeVotes: 18, passVotes: 5 },
+      { clusterId: 3, clusterSize: 35, agreeVotes: 5, superAgreeVotes: 0, disagreeVotes: 5, passVotes: 3 },
+    ],
   },
   {
     id: "s-3",
@@ -45,6 +60,12 @@ const mockStatements: StatementVotes[] = [
     totalVotes: 155,
     consensusScore: 56.1,
     mergedFrom: [],
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 80, agreeVotes: 48, superAgreeVotes: 5, disagreeVotes: 10, passVotes: 10 },
+      { clusterId: 1, clusterSize: 60, agreeVotes: 30, superAgreeVotes: 3, disagreeVotes: 8, passVotes: 8 },
+      { clusterId: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 1, disagreeVotes: 8, passVotes: 6 },
+      { clusterId: 3, clusterSize: 35, agreeVotes: 3, superAgreeVotes: 0, disagreeVotes: 5, passVotes: 4 },
+    ],
   },
   {
     id: "s-4",
@@ -57,6 +78,12 @@ const mockStatements: StatementVotes[] = [
     totalVotes: 160,
     consensusScore: 11.3,
     mergedFrom: [],
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 80, agreeVotes: 12, superAgreeVotes: 3, disagreeVotes: 50, passVotes: 10 },
+      { clusterId: 1, clusterSize: 60, agreeVotes: 8, superAgreeVotes: 2, disagreeVotes: 35, passVotes: 8 },
+      { clusterId: 2, clusterSize: 50, agreeVotes: 2, superAgreeVotes: 0, disagreeVotes: 20, passVotes: 5 },
+      { clusterId: 3, clusterSize: 35, agreeVotes: 1, superAgreeVotes: 0, disagreeVotes: 7, passVotes: 2 },
+    ],
   },
   {
     id: "s-5",
@@ -69,6 +96,12 @@ const mockStatements: StatementVotes[] = [
     totalVotes: 135,
     consensusScore: 16.3,
     mergedFrom: [],
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 80, agreeVotes: 12, superAgreeVotes: 2, disagreeVotes: 42, passVotes: 5 },
+      { clusterId: 1, clusterSize: 60, agreeVotes: 8, superAgreeVotes: 1, disagreeVotes: 30, passVotes: 4 },
+      { clusterId: 2, clusterSize: 50, agreeVotes: 4, superAgreeVotes: 0, disagreeVotes: 18, passVotes: 3 },
+      { clusterId: 3, clusterSize: 35, agreeVotes: 1, superAgreeVotes: 0, disagreeVotes: 6, passVotes: 2 },
+    ],
   },
   {
     id: "s-6",
@@ -81,6 +114,12 @@ const mockStatements: StatementVotes[] = [
     totalVotes: 114,
     consensusScore: 13.2,
     mergedFrom: [],
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 80, agreeVotes: 8, superAgreeVotes: 1, disagreeVotes: 35, passVotes: 8 },
+      { clusterId: 1, clusterSize: 60, agreeVotes: 5, superAgreeVotes: 1, disagreeVotes: 22, passVotes: 6 },
+      { clusterId: 2, clusterSize: 50, agreeVotes: 3, superAgreeVotes: 0, disagreeVotes: 15, passVotes: 3 },
+      { clusterId: 3, clusterSize: 35, agreeVotes: 1, superAgreeVotes: 0, disagreeVotes: 6, passVotes: 2 },
+    ],
   },
   {
     id: "s-7",
@@ -93,6 +132,12 @@ const mockStatements: StatementVotes[] = [
     totalVotes: 153,
     consensusScore: 48.4,
     mergedFrom: [],
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 80, agreeVotes: 45, superAgreeVotes: 9, disagreeVotes: 12, passVotes: 7 },
+      { clusterId: 1, clusterSize: 60, agreeVotes: 30, superAgreeVotes: 6, disagreeVotes: 10, passVotes: 6 },
+      { clusterId: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 3, disagreeVotes: 12, passVotes: 4 },
+      { clusterId: 3, clusterSize: 35, agreeVotes: 2, superAgreeVotes: 0, disagreeVotes: 7, passVotes: 3 },
+    ],
   },
   {
     id: "s-8",
@@ -105,18 +150,47 @@ const mockStatements: StatementVotes[] = [
     totalVotes: 184,
     consensusScore: 59.8,
     mergedFrom: [],
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 80, agreeVotes: 65, superAgreeVotes: 19, disagreeVotes: 4, passVotes: 3 },
+      { clusterId: 1, clusterSize: 60, agreeVotes: 48, superAgreeVotes: 14, disagreeVotes: 4, passVotes: 3 },
+      { clusterId: 2, clusterSize: 50, agreeVotes: 30, superAgreeVotes: 9, disagreeVotes: 5, passVotes: 3 },
+      { clusterId: 3, clusterSize: 35, agreeVotes: 11, superAgreeVotes: 2, disagreeVotes: 6, passVotes: 2 },
+    ],
   },
 ];
 
 export const Default = () => (
+  <div className="p-4 max-w-6xl mx-auto">
+    <StatementVotesTable
+      statements={mockStatements}
+      totalParticipants={totalParticipants}
+      clusterSizes={clusterSizes}
+    />
+  </div>
+);
+
+export const WithoutClusters = () => (
   <div className="p-4 max-w-4xl mx-auto">
-    <StatementVotesTable statements={mockStatements} />
+    <StatementVotesTable
+      statements={mockStatements.map(
+        ({ clusterVotes: _cv, ...rest }) => ({
+          clusterVotes: [],
+          ...rest,
+        }),
+      )}
+      totalParticipants={totalParticipants}
+      clusterSizes={[]}
+    />
   </div>
 );
 
 export const Empty = () => (
   <div className="p-4 max-w-4xl mx-auto">
-    <StatementVotesTable statements={[]} />
+    <StatementVotesTable
+      statements={[]}
+      totalParticipants={0}
+      clusterSizes={[]}
+    />
   </div>
 );
 
@@ -130,7 +204,11 @@ export function StatementVotesTableStory() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <StatementVotesTable statements={mockStatements} />
+        <StatementVotesTable
+          statements={mockStatements}
+          totalParticipants={totalParticipants}
+          clusterSizes={clusterSizes}
+        />
       </CardContent>
     </Card>
   );

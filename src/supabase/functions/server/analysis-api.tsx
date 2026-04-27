@@ -93,13 +93,21 @@ app.get(
         );
       }
 
+      const allStatementsWithClusters = clusterConsensus
+        ? metrics.allStatements.map((s) => ({
+            ...s,
+            clusterVotes: clusterConsensus.statementBreakdowns[s.id] ?? [],
+          }))
+        : metrics.allStatements;
+
       const analysisData: AnalysisData = {
         debateTopic: room.topic,
         totalStatements: mergedStatements.length,
         clusterConsensus,
         ...metrics,
+        allStatements: allStatementsWithClusters,
       };
-      
+
       return c.json(analysisData);
     } catch (error) {
       console.error("Error fetching debate analysis:", error);

@@ -21,9 +21,25 @@ export interface Cluster {
   statements: ClusterConsensusStatement[];
 }
 
+export interface ClusterVoteBreakdown {
+  clusterId: number;
+  clusterSize: number;
+  agreeVotes: number;
+  superAgreeVotes: number;
+  disagreeVotes: number;
+  passVotes: number;
+}
+
 export interface ClusterConsensus {
   totalClusters: number;
   clusters: Cluster[];
+  statementBreakdowns: Record<string, ClusterVoteBreakdown[]>;
+}
+
+interface ClusterUserGroup {
+  clusterId: number;
+  size: number;
+  users: string[];
 }
 
 export function calcConsensusScore(agreeCount: number, disagreeCount: number): number {
@@ -81,6 +97,40 @@ export function calcBestClusterStatements(statements: Statement[], usersInCluste
   return clusterStatements;
 }
 
+export function calcStatementBreakdownForCluster(
+  statement: Statement,
+  group: ClusterUserGroup,
+): ClusterVoteBreakdown {
+  let agreeCount = 0;
+  let superAgreeCount = 0;
+  let disagreeCount = 0;
+  let passCount = 0;
+
+  for (const userId of group.users) {
+    const voteType = statement.voters?.[userId];
+    if (!voteType) continue;
+    if (voteType === "super_agree") {
+      agreeCount++;
+      superAgreeCount++;
+    } else if (voteType === "agree") {
+      agreeCount++;
+    } else if (voteType === "disagree") {
+      disagreeCount++;
+    } else if (voteType === "pass") {
+      passCount++;
+    }
+  }
+
+  return {
+    clusterId: group.clusterId,
+    clusterSize: group.size,
+    agreeVotes: agreeCount,
+    superAgreeVotes: superAgreeCount,
+    disagreeVotes: disagreeCount,
+    passVotes: passCount,
+  };
+}
+
 export function calculateClusterConsensus(
   statements: Statement[],
   clusterMetadata: ClusterMetadata,
@@ -95,40 +145,43 @@ export function calculateClusterConsensus(
     }
   });
 
-  const usersByCluster: Record<number, string[]> = {};
+  const usersByOriginalCluster: Record<number, string[]> = {};
   for (let i = 0; i < clusterMetadata.totalClusters; i++) {
-    usersByCluster[i] = [];
+    usersByOriginalCluster[i] = [];
   }
   userClusterMap.forEach((clusterId, userId) => {
-    usersByCluster[clusterId].push(userId);
+    usersByOriginalCluster[clusterId].push(userId);
   });
 
-  const clusters: Cluster[] = [];
-
-  for (
-    let clusterId = 0;
-    clusterId < clusterMetadata.totalClusters;
-    clusterId++
-  ) {
-    const usersInCluster = usersByCluster[clusterId];
-
-    const clusterStatements = calcBestClusterStatements(statements, usersInCluster);
-
-    clusters.push({
-      id: clusterId,
-      size: usersInCluster.length,
-      statements: clusterStatements.slice(0, 3),
+  const groups: ClusterUserGroup[] = [];
+  for (let cid = 0; cid < clusterMetadata.totalClusters; cid++) {
+    groups.push({
+      clusterId: cid,
+      size: usersByOriginalCluster[cid].length,
+      users: usersByOriginalCluster[cid],
     });
   }
-
-  clusters.sort((a, b) => b.size - a.size);
-
-  clusters.forEach((cluster, idx) => {
-    cluster.id = idx;
+  groups.sort((a, b) => b.size - a.size);
+  groups.forEach((g, idx) => {
+    g.clusterId = idx;
   });
+
+  const clusters: Cluster[] = groups.map((g) => ({
+    id: g.clusterId,
+    size: g.size,
+    statements: calcBestClusterStatements(statements, g.users).slice(0, 3),
+  }));
+
+  const statementBreakdowns: Record<string, ClusterVoteBreakdown[]> = {};
+  for (const statement of statements) {
+    statementBreakdowns[statement.id] = groups.map((g) =>
+      calcStatementBreakdownForCluster(statement, g),
+    );
+  }
 
   return {
     totalClusters: clusterMetadata.totalClusters,
     clusters,
+    statementBreakdowns,
   };
 }

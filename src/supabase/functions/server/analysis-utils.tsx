@@ -1,6 +1,7 @@
 import { calcDemographicBreakdown } from "./demographics-utils.ts";
 import { DemographicAnswer, DemographicQuestion, Statement } from "./types.tsx";
 import { serializeStatement } from "./utils.tsx";
+import { ClusterVoteBreakdown } from "./cluster-analysis.tsx";
 
 export interface StatementVotes {
   id: string;
@@ -13,6 +14,7 @@ export interface StatementVotes {
   consensusScore: number;
   totalVotes: number;
   mergedFrom: Array<{ id: string; text: string }>;
+  clusterVotes: ClusterVoteBreakdown[];
 }
 
 export type DemographicBreakdown = Record<
