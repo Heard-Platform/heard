@@ -347,10 +347,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async flagStatement(statementId: string, roomId: string) {
+  async flagStatement(statementId: string, roomId: string, reason: string) {
     return this.request(`/statement/${statementId}/flag`, {
       method: "POST",
-      body: JSON.stringify({ roomId }),
+      body: JSON.stringify({ roomId, reason }),
     });
   }
 
