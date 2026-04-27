@@ -165,7 +165,11 @@ export function DebateAnalysisReport({
           </Card>
         )}
 
-        <StatementVotesTable statements={allStatements} />
+        <StatementVotesTable
+          statements={allStatements}
+          totalParticipants={totalParticipants}
+          clusterSizes={clusterConsensus?.clusters.map((c) => c.size) ?? []}
+        />
 
       </div>
     </div>

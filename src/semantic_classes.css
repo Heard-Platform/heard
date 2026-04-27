@@ -184,6 +184,10 @@
   border-color: var(--color-green-200);
 }
 
+.agree-fill {
+  fill: var(--color-green-500);
+}
+
 .super-agree-bg {
   background-color: var(--color-purple-500);
 }
@@ -194,6 +198,10 @@
 
 .super-agree-border {
   border-color: var(--color-purple-200);
+}
+
+.super-agree-fill {
+  fill: var(--color-purple-500);
 }
 
 .disagree-bg {
@@ -208,6 +216,10 @@
   border-color: var(--color-red-200);
 }
 
+.disagree-fill {
+  fill: var(--color-red-500);
+}
+
 .pass-bg {
   background-color: var(--color-amber-500);
 }
@@ -218,6 +230,14 @@
 
 .pass-border {
   border-color: var(--color-amber-200);
+}
+
+.pass-fill {
+  fill: var(--color-amber-500);
+}
+
+.no-vote-fill {
+  fill: var(--color-gray-200);
 }
 
 .total-bg {

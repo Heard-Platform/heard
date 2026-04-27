@@ -256,6 +256,15 @@ export interface Rant {
   timestamp: number;
 }
 
+export interface ClusterVoteBreakdown {
+  clusterId: number;
+  clusterSize: number;
+  agreeVotes: number;
+  superAgreeVotes: number;
+  disagreeVotes: number;
+  passVotes: number;
+}
+
 export interface StatementVotes {
   id: string;
   text: string;
@@ -267,6 +276,7 @@ export interface StatementVotes {
   consensusScore: number;
   totalVotes: number;
   mergedFrom: Array<{ id: string; text: string }>;
+  clusterVotes: ClusterVoteBreakdown[];
 }
 
 export interface ClusterStatement {
