@@ -79,6 +79,7 @@ export interface UserReport {
   responseId: string;
   reportingUserId: string;
   createdAt: string;
+  reason: string;
 }
 
 export type NewUserReport = Omit<UserReport, "id" | "createdAt">;
