@@ -8,12 +8,6 @@ import { VoteBreakdownPie } from "./VoteBreakdownPie";
 type SortColumn = "rawAgreeVotes" | "superAgreeVotes" | "disagreeVotes" | "passVotes" | "totalVotes";
 type SortDir = "asc" | "desc";
 
-interface StatementVotesTableProps {
-  statements: StatementVotes[];
-  totalParticipants: number;
-  clusterSizes: number[];
-}
-
 const COLUMNS: { key: SortColumn; label: string; badgeClass: string }[] = [
   { key: "rawAgreeVotes", label: "Agree", badgeClass: "agree-bg agree-text agree-border" },
   { key: "superAgreeVotes", label: "Super Agree", badgeClass: "super-agree-bg super-agree-text super-agree-border" },
@@ -31,6 +25,12 @@ function SortIcon({ column, sortCol, sortDir }: { column: SortColumn; sortCol: S
   return sortDir === "desc"
     ? <ChevronDown className="w-3 h-3" />
     : <ChevronUp className="w-3 h-3" />;
+}
+
+interface StatementVotesTableProps {
+  statements: StatementVotes[];
+  totalParticipants: number;
+  clusterSizes: number[];
 }
 
 export function StatementVotesTable({ statements, totalParticipants, clusterSizes }: StatementVotesTableProps) {
