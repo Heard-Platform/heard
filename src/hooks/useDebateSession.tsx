@@ -61,6 +61,7 @@ interface DebateSessionContextType {
   flagStatement: (
     statementId: string,
     roomId: string,
+    reason: string,
   ) => Promise<void>;
   voteViaFlyer: (
     flyerId: string,
@@ -409,9 +410,9 @@ export function DebateSessionProvider(
   );
 
   const flagStatement = useCallback(
-    async (statementId: string, roomId: string) => {
+    async (statementId: string, roomId: string, reason: string) => {
       try {
-        const response = await api.flagStatement(statementId, roomId);
+        const response = await api.flagStatement(statementId, roomId, reason);
         if (!response.success) {
           throw new Error(response.error || "Failed to flag statement");
         }
@@ -971,8 +972,8 @@ export function DebateSessionProvider(
         console.log("[Showcase] getRoomStatements called"); 
         return [];
       },
-      flagStatement: async (statementId: string, roomId: string) => {
-        console.log("[Showcase] flagStatement called");
+      flagStatement: async (statementId: string, roomId: string, reason: string) => {
+        console.log("[Showcase] flagStatement called", { reason });
       },
       getRoomAnalysis: async () => {
         console.log("[Showcase] getRoomAnalysis called");

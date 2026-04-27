@@ -13,7 +13,7 @@ app.post(
     try {
       const userId = c.get("userId");
       const statementId = c.req.param("statementId");
-      const { roomId } = await c.req.json();
+      const { roomId, reason } = await c.req.json();
 
       if (!roomId || !statementId) {
         return c.json(
@@ -22,9 +22,12 @@ app.post(
         );
       }
 
+      const trimmedReason = reason.trim();
+
       const report: NewUserReport = {
         responseId: statementId,
         reportingUserId: userId,
+        reason: trimmedReason,
       };
 
       const result = await insertUserReport(report);
@@ -47,6 +50,7 @@ app.post(
           statementId,
           roomId,
           reportingUserId: userId,
+          reason: trimmedReason,
         });
       } catch (emailError) {
         console.error("Failed to send report email:", emailError);
@@ -69,12 +73,14 @@ async function sendReportEmail({
   statementId,
   roomId,
   reportingUserId,
+  reason,
 }: {
   statement: Statement | null;
   reportingUser: User | null;
   statementId: string;
   roomId: string;
   reportingUserId: string | undefined;
+  reason: string;
 }) {
   const statementText = statement?.text ?? "(statement not found)";
   const reporterLabel = reportingUser
@@ -82,6 +88,16 @@ async function sendReportEmail({
     : reportingUserId
       ? `User ID: ${reportingUserId}`
       : "Anonymous";
+
+  const reasonBlock = reason
+    ? `
+          <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #1976d2; margin-top: 20px;">
+            <h2 style="margin: 0 0 15px 0; color: #333; font-size: 18px;">Reporter's reason:</h2>
+            <p style="margin: 0; white-space: pre-wrap; font-size: 16px; line-height: 1.8;">
+              ${escapeHtml(reason)}
+            </p>
+          </div>`
+    : "";
 
   const emailHtml = `
     <!DOCTYPE html>
@@ -118,6 +134,7 @@ async function sendReportEmail({
               ${escapeHtml(statementText)}
             </p>
           </div>
+          ${reasonBlock}
         </div>
       </body>
     </html>
