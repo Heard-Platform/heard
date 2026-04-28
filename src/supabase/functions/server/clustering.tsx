@@ -453,10 +453,27 @@ export async function recalculateClustersForRoom(
       }),
     );
 
+    const votingUserIds = new Set<string>();
+    for (const stmt of statementsWithVotes) {
+      for (const vote of stmt.votes) {
+        votingUserIds.add(vote.userId);
+      }
+    }
+    const participantsWithVotes = room.participants.filter((userId) =>
+      votingUserIds.has(userId),
+    );
+
+    if (participantsWithVotes.length === 0) {
+      console.log(
+        `[Clustering] No voting participants found for room ${roomId}`,
+      );
+      return null;
+    }
+
     // Run clustering
     const metadata = await clusterUsersAndSave(
       roomId,
-      room.participants,
+      participantsWithVotes,
       statementsWithVotes,
     );
 

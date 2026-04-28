@@ -77,8 +77,20 @@ app.get(
         room.participants &&
         room.participants.length > 0
       ) {
+        const votingUserIds = new Set<string>();
+        for (const stmt of mergedStatements) {
+          if (stmt.voters) {
+            for (const userId of Object.keys(stmt.voters)) {
+              votingUserIds.add(userId);
+            }
+          }
+        }
+        const participantsWithVotes = room.participants.filter((userId) =>
+          votingUserIds.has(userId),
+        );
+
         const assignments = await Promise.all(
-          room.participants.map((userId) =>
+          participantsWithVotes.map((userId) =>
             getParsedKvData<ClusterAssignment>(
               `cluster_assignment:${roomId}:${userId}`,
             ),
@@ -89,7 +101,7 @@ app.get(
           mergedStatements,
           clusterMetadata,
           assignments,
-          room.participants,
+          participantsWithVotes,
         );
       }
 
