@@ -6,7 +6,7 @@ import { PrivacyPolicyPage } from "./screens/PrivacyPolicyPage";
 import { OrgsLanding } from "./screens/OrgsLanding";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
-import { SimilarityExplorer } from "./screens/SimilarityExplorer";
+import { SimilarityExplorer } from "../research/duplication-detection/screens/SimilarityExplorer";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTracker";

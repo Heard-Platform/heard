@@ -19,11 +19,15 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
 
-    "noEmit": true
+    "noEmit": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "exclude": [
     "src/components/ui",
-    "src/supabase",
-    "scripts"
+    "src/supabase"
   ]
 }

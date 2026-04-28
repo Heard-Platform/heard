@@ -1,23 +1,25 @@
 # Automatic Duplicate Detection Feature Plan
 
+> **Status: shelved.** This document captures the design as of the time it was written. The feature was paused before implementation. The `Open Questions / Known Issues` section at the bottom lists everything that needs to be resolved before picking this back up.
+
 ## Overview
 
-A scheduled cron job runs every 30 seconds, finds newly-added statements, compares each one against the other statements in its room via cosine similarity of sentence embeddings, and merges any pair that exceeds a configurable similarity threshold. Merged statements have their votes migrated to the canonical statement and disappear from the user-facing UI. An admin can undo any merge from the AdminPanel; an "manually unmerged" flag prevents the cron from re-merging it later.
+A scheduled cron job runs every 30 seconds, finds newly-added statements, compares each one against the other statements in its room via cosine similarity of sentence embeddings, and merges any pair that exceeds a configurable similarity threshold. Merged statements have their votes migrated to the canonical statement and disappear from the user-facing UI. An admin can undo any merge from the AdminPanel; a "manually unmerged" flag prevents the cron from re-merging it later.
 
-This complements the existing manual [statement deduplication feature](deduplication-feature-plan.md). The manual flow lets a host pick two statements and merge them by hand; this automatic flow catches duplicates that hosts miss or that arrive too quickly to triage.
+This complements the manual [statement deduplication feature](deduplication-feature-plan.md). The manual flow lets a host pick two statements and merge them by hand; this automatic flow catches duplicates that hosts miss or that arrive too quickly to triage.
 
-The threshold and algorithm were calibrated by running the simulation in [`scripts/dryrun-duplicate-detection.ts`](../../scripts/dryrun-duplicate-detection.ts) over the historical statement corpus before any production code paths were touched.
+A separate one-off calibration step (described in the **Calibration** section) is required before deploying this feature, to pick a similarity threshold against current-corpus data.
 
 ---
 
 ## Assumptions
 
-- Embeddings are produced by Gemini's `gemini-embedding-001` model (2048 dimensions). The same model used by the existing similarity exploration tooling.
+- Embeddings are produced by Gemini's `gemini-embedding-001` model (2048 dimensions). If a different embedding model is used in the future, the assumption is that 1) it returns a fixed-length numeric vector and 2) cosine similarity remains a meaningful similarity metric for it.
 - Cosine similarity is computed in-process by the cron worker. No vector database, no `pgvector` extension.
-- The existing `statement_merges` table from the manual deduplication feature is reused. New cron-driven merges are differentiated from manual ones by an `auto BOOLEAN` column.
+- The `statement_merges` table from the manual deduplication feature is reused. New cron-driven merges are differentiated from manual ones by an `auto BOOLEAN` column.
 - Embedding generation does not block the user-facing statement-submission path. New statements may exist without an embedding for up to one cron tick (≤30s).
 - The cron is best-effort and idempotent. Repeated runs over the same data produce the same merges. Failures (Gemini timeout, partial DB failure) are recovered on later ticks via a retry sweep.
-- A starting threshold of 0.85 was chosen from the dry-run calibration. Lower than 0.85 introduces false positives (e.g. statements about the same topic but different opinions); higher than 0.90 misses obvious paraphrases.
+- A starting threshold of 0.85 is the design's working assumption. It was chosen by spot-checking near-threshold pairs from a one-time calibration; a fresh calibration should be run before this feature is enabled in production. Below 0.85 false positives appear (statements about the same topic with different opinions); above 0.90 obvious paraphrases get missed.
 
 ---
 
@@ -66,15 +68,18 @@ The existing `mergedFrom?: Array<{ id: string; text: string }>` field on `Statem
 mergedFrom?: Array<{
   id: string;
   text: string;
-  votes: Record<string, VoteType>;       // who voted what on the duplicate
+  votes: Record<string, VoteType>;          // duplicate's full voter map (used to restore the duplicate)
   counts: {
     agrees: number;
     disagrees: number;
     passes: number;
     superAgrees: number;
   };
+  appliedVoters: Record<string, VoteType>;  // subset of `votes` that actually migrated to the canonical (used for undo)
 }>;
 ```
+
+`votes` is the duplicate's complete voter dict at merge time, used to restore the duplicate on undo. `appliedVoters` is the subset that was actually applied to the canonical (i.e., `votes` minus the entries that collided with an existing canonical voter). Storing both makes undo unambiguous even when multiple merges have stacked into the same canonical: undo only subtracts what its own merge added.
 
 This is a forward-compatible change: existing records with the simpler shape continue to load (the new fields are simply absent), and new merges populate the snapshot. Manual merges from the existing flow can also be upgraded to populate the snapshot at the same time, so undo semantics work uniformly.
 
@@ -157,11 +162,12 @@ for each candidate s in the room:
 
 `mergeDuplicate(duplicate, canonical, similarity)` performs:
 
-1. Snapshot the duplicate's current state into a `mergedFrom` entry on the canonical: `{ id: duplicate.id, text: duplicate.text, votes: { ...duplicate.voters }, counts: { agrees, disagrees, passes, superAgrees } }`.
-2. Migrate votes (see next section).
-3. Set `duplicate.mergedIntoId = canonical.id`.
-4. Insert a row into `statement_merges` with `auto = true` and `similarity` set.
-5. Save both statements.
+1. Compute `appliedVoters` = the subset of `duplicate.voters` whose `userId` is NOT already present in `canonical.voters`.
+2. Append a new `mergedFrom` entry to the canonical: `{ id: duplicate.id, text: duplicate.text, votes: { ...duplicate.voters }, counts: { agrees, disagrees, passes, superAgrees }, appliedVoters }`.
+3. Migrate votes (see next section). The set of voters actually applied is exactly `appliedVoters`.
+4. Set `duplicate.mergedIntoId = canonical.id`.
+5. Insert a row into `statement_merges` with `auto = true` and `similarity` set.
+6. Save both statements.
 
 ---
 
@@ -180,13 +186,13 @@ This rule keeps "one vote per user per canonical statement" as an invariant. A u
 To reverse a merge:
 
 1. Find the `mergedFrom` entry on the canonical that matches the duplicate's id.
-2. Restore `duplicate.voters` and counters from the snapshot.
-3. From the canonical, subtract the votes that were originally migrated. The snapshot tells us which votes to remove; collisions during merge are reconstructed from the snapshot's vote map.
-4. Remove the `mergedFrom` entry from the canonical.
+2. Restore `duplicate.voters` from `entry.votes` and the duplicate's counters from `entry.counts`.
+3. For each `(userId, voteType)` in `entry.appliedVoters`: remove that user from `canonical.voters` and decrement the matching counter on the canonical. Voters that collided at merge time are NOT in `appliedVoters`, so their canonical vote is left untouched (it was the canonical's pre-merge vote and should remain).
+4. Remove the matched `mergedFrom` entry from the canonical.
 5. Clear `duplicate.mergedIntoId`. Set `duplicate.manuallyUnmerged = true`.
 6. Delete the `statement_merges` row.
 
-The combination of "snapshot stored on canonical" plus "manuallyUnmerged flag" makes the operation reversible and idempotent — undoing the same merge twice is a no-op the second time.
+The combination of `appliedVoters` in the snapshot plus the `manuallyUnmerged` flag makes the operation precise and idempotent — undoing the same merge twice is a no-op the second time. Multiple merges stacked into the same canonical can also be undone in any order, since each undo only touches the voters it itself migrated.
 
 ---
 
@@ -214,21 +220,33 @@ Idempotent: re-running the script only embeds statements that lack an embedding.
 
 ---
 
+## Calibration
+
+Before turning the cron on, the threshold needs to be tuned against current-corpus data. The intended workflow:
+
+1. Extract every existing statement (text, room, timestamp) into a CSV.
+2. Generate embeddings for each via Gemini's batch embedding endpoint and cache them in a second CSV.
+3. Run a chronological simulation per room: for each statement in timestamp order, compute cosine similarity against every prior statement in its room and record the highest score.
+4. Inspect the resulting (statement_1, statement_2, score) pairs at thresholds 0.70, 0.75, 0.80, 0.85, 0.90, 0.95. Eyeball pairs near the cutoff at each threshold.
+5. Pick the threshold where the lowest-scoring "merge" still feels like a real duplicate.
+
+This calibration was done once during the design phase (April 2026) against ~3,700 statements across ~750 rooms; 0.85 was the resulting recommendation. The code that performed it lives under [`research/duplication-detection/`](../../research/duplication-detection/) — three Deno scripts (`extract-statements.ts`, `score-statement-similarity.ts`, `dryrun-duplicate-detection.ts`) and a React viewer (`screens/SimilarityExplorer.tsx`) reachable in dev at `/similarity-explorer`. If those scripts still exist when this feature is revisited they can be re-run; if not, the design above describes what they need to do.
+
+---
+
 ## Phased Rollout
 
 This feature lives behind multiple gates so it can be introduced safely.
 
-1. **Phase 0 — dry run.** A standalone Deno script ([`scripts/dryrun-duplicate-detection.ts`](../../scripts/dryrun-duplicate-detection.ts)) simulates the cron over the historical CSV corpus produced by the extract+score scripts. Output is `public/data/dryrun-merges.csv`, viewable in the in-app `/similarity-explorer`. Used to pick the threshold before any production code changes. **Already complete.**
+1. **Schema and write-path types.** Add the new optional fields to `Statement`. Extend `mergedFrom` shape. Add the two columns to `statement_merges`. No runtime behaviour changes; existing endpoints continue to work.
 
-2. **Phase 1 — schema and write-path types.** Add the new optional fields to `Statement`. Extend `mergedFrom` shape. Add the two columns to `statement_merges`. No runtime behaviour changes; existing endpoints continue to work.
+2. **Backfill.** Run the backfill script against production. Embed every existing statement. Verify all statements have an embedding of the expected length.
 
-3. **Phase 2 — backfill.** Run the backfill script against production. Embed every existing statement. Verify all statements have `embedding.length === 2048`.
+3. **Cron worker.** Ship the cron endpoint. Initially register it but do not schedule it — invoke it manually a few times to verify behaviour. Then schedule it at 30s.
 
-4. **Phase 3 — cron worker.** Ship the cron endpoint. Initially register it but do not schedule it — invoke it manually a few times to verify behaviour. Then schedule it at 30s.
+4. **Admin Merges UI.** Build the AdminPanel tab and undo flow.
 
-5. **Phase 4 — admin Merges UI.** Build the AdminPanel tab and undo flow.
-
-Each phase ships independently and can be merged/reverted on its own.
+Each phase ships independently and can be merged/reverted on its own. Calibration (above) should be redone before phase 3 if the corpus has grown significantly since the last calibration.
 
 ---
 
@@ -313,20 +331,56 @@ Pagination, topic filter, and search reuse the patterns already established by t
 
 Tasks are ordered so each one leaves the app in a working, mergeable state.
 
-1. ✅ **Calibration tooling.** Extract / score / dryrun scripts plus the `/similarity-explorer` viewer. *Already shipped on this branch.*
+1. **Resolve open questions.** See the **Open Questions / Known Issues** section below. Several of these change the data model or the migration path; do not skip.
 
-2. **Schema + types.** Add the four new fields to `Statement` (server + frontend types). Extend `mergedFrom` shape in both. Add migration for the two new columns on `statement_merges`. No behaviour changes. Type-checks pass.
+2. **Calibration refresh.** Re-run the calibration workflow described in the **Calibration** section against current data. Confirm the threshold (working assumption: 0.85) or pick a new one.
 
-3. **Backfill script.** `scripts/backfill-statement-embeddings.ts`. Idempotent. Run on staging first, then production.
+3. **Schema + types.** Add the four new fields to `Statement` (server + frontend types). Extend `mergedFrom` shape in both. Add migration for the two new columns on `statement_merges`, and an `UPDATE` to set `auto = false` on existing rows (see Open Questions). No behaviour changes. Type-checks pass.
 
-4. **`merge-utils.ts` extraction.** Pull the existing manual-merge vote logic into a shared helper. Refactor the existing manual endpoint to use it. Verify nothing regresses.
+4. **Backfill script.** `scripts/backfill-statement-embeddings.ts`. Idempotent. Run on staging first, then production.
 
-5. **Cron handler.** New `duplicate-detection-api.tsx`. Invoke manually a few times against staging. Verify the algorithm walks the chain, migrates votes correctly, and updates `duplicateCheckedAt`.
+5. **`merge-utils.ts` extraction.** Pull the manual-merge vote logic into a shared helper. Refactor the manual endpoint to use it. Verify nothing regresses.
 
-6. **Schedule the cron.** Wire it up to fire every 30 seconds with the cron secret. Monitor for a few hours. Watch for embedding failures and unintended merges.
+6. **Cron handler.** New `duplicate-detection-api.tsx`. Invoke manually a few times against staging. Verify the algorithm walks the chain, migrates votes correctly, and updates `duplicateCheckedAt`.
 
-7. **Frontend filter.** Update `getStatementsForRoom` (and any other shared retrieval point) to filter `mergedIntoId`. Verify in staging that auto-merged statements disappear from the voting queue.
+7. **Schedule the cron.** Wire it up to fire every 30 seconds with the cron secret. Monitor for a few hours. Watch for embedding failures and unintended merges.
 
-8. **AdminPanel Merges tab.** New tab with the list view, undo button, and topic filter. Storybook story.
+8. **Frontend filter.** Update `getStatementsForRoom` (and any other shared retrieval point) to filter `mergedIntoId`. Verify in staging that auto-merged statements disappear from the voting queue.
 
-9. **Manual QA + sign-off.** Run through the manual test matrix. Tune the threshold one more time if needed.
+9. **AdminPanel Merges tab.** New tab with the list view, undo button, and topic filter. Storybook story.
+
+10. **Manual QA + sign-off.** Run through the manual test matrix. Tune the threshold one more time if needed.
+
+---
+
+## Open Questions / Known Issues
+
+These were identified during design review and should be resolved before implementation begins. They are listed roughly in order of severity.
+
+### Critical
+
+1. **Inconsistency with the existing manual-merge model.** The manual deduplication feature (see [deduplication-feature-plan.md](deduplication-feature-plan.md)) explicitly does NOT modify the duplicate statement — it stores merges only in `statement_merges` and applies them on-the-fly at analysis/display time. This plan, by contrast, sets `mergedIntoId` on the duplicate and migrates votes immediately. As written, we end up with two parallel mechanisms that need to be reconciled. Pick one before building:
+   - **Option A**: adopt the on-the-fly model so auto and manual merges work the same way. Simpler to reason about consistency; harder to reverse efficiently because there's no single field to flip.
+   - **Option B**: migrate existing manual merges to also write `mergedIntoId` and `mergedFrom` snapshots, so a single retrieval-time filter handles both. Requires a one-off migration but unifies the runtime path.
+
+2. **Migration bug on the new `auto` column.** `ADD COLUMN auto BOOLEAN NOT NULL DEFAULT true` would mark every existing `statement_merges` row (all manual merges) as `auto = true`, which is the opposite of correct. The migration must run an explicit `UPDATE statement_merges SET auto = false` immediately after the column is added, OR use `DEFAULT false` and have new cron code explicitly set `auto = true`.
+
+3. **Cron-vs-retrieval filter conflict.** The plan says to filter `mergedIntoId` at the shared retrieval layer (so duplicates disappear from the UI), but the cron itself needs the unfiltered list to walk chains and compare against duplicates. We need an "includes duplicates" escape hatch — analogous to `getAllStatementsForRoomIncludingHidden` in the hide-response feature design. The cron will call the unfiltered variant; everyone else will call the default-filtered one.
+
+### Notable
+
+4. **Concurrent-tick mutex.** Corner case "Cron tick takes longer than 30 seconds" suggests a Postgres advisory lock, but Supabase edge functions don't easily share advisory locks across invocations. A practical approach is a CAS (compare-and-set) on a KV key like `cron_lock:duplicate-detection` with a TTL. Pick a real mechanism before shipping the cron.
+
+5. **Intra-tick ordering.** The fact that same-tick candidates are sorted by `timestamp` ascending (older becomes canonical) is hidden in a corner case but is load-bearing for the algorithm. Move it explicitly into the algorithm pseudocode.
+
+6. **Backfill scope.** Should the backfill script embed statements that are already merged-out (manually)? Probably yes, because they may be un-merged later, but the answer should be documented.
+
+### Minor
+
+7. **Backfilling manual merges to the new snapshot shape.** The plan mentions that "Manual merges from the existing flow can also be upgraded to populate the snapshot at the same time," but doesn't describe the migration. If we don't backfill, existing manual merges can't be undone via the new endpoint. Decide whether undo applies retroactively or only to new merges.
+
+8. **Threshold env var.** The plan currently treats the threshold as a server constant requiring a deploy to change, with an env var as a "future improvement." For a tunable parameter, env var should likely be the starting point.
+
+9. **Embedding API rate limits.** At Gemini's free-tier limits the cron is fine, but if traffic spikes (e.g. someone imports a large batch via the existing Polis importer), the cron could hit per-minute caps. Worth monitoring; consider implementing the batched-embedding optimisation up front rather than as a follow-up.
+
+10. **Cycle defense in `walkChain`.** Cycles in `mergedIntoId` shouldn't be possible to create through the documented flow, but `walkChain` should defensively detect a cycle (visited-set) and bail rather than infinite-loop.
