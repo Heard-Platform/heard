@@ -33,6 +33,12 @@ const mockTopPosts: StatementVotes[] = [
     passVotes: 15,
     consensusScore: 78.9,
     totalVotes: 180,
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 92, agreeVotes: 70, superAgreeVotes: 12, disagreeVotes: 8, passVotes: 5 },
+      { clusterId: 1, clusterSize: 85, agreeVotes: 60, superAgreeVotes: 10, disagreeVotes: 10, passVotes: 6 },
+      { clusterId: 2, clusterSize: 70, agreeVotes: 40, superAgreeVotes: 6, disagreeVotes: 5, passVotes: 4 },
+    ],
+    mergedFrom: [],
   },
   {
     id: "post-2",
@@ -44,6 +50,12 @@ const mockTopPosts: StatementVotes[] = [
     passVotes: 22,
     consensusScore: 59.4,
     totalVotes: 165,
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 92, agreeVotes: 50, superAgreeVotes: 6, disagreeVotes: 14, passVotes: 8 },
+      { clusterId: 1, clusterSize: 85, agreeVotes: 40, superAgreeVotes: 5, disagreeVotes: 15, passVotes: 8 },
+      { clusterId: 2, clusterSize: 70, agreeVotes: 22, superAgreeVotes: 3, disagreeVotes: 16, passVotes: 6 },
+    ],
+    mergedFrom: [],
   },
   {
     id: "post-3",
@@ -55,6 +67,12 @@ const mockTopPosts: StatementVotes[] = [
     passVotes: 28,
     consensusScore: 59.6,
     totalVotes: 146,
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 92, agreeVotes: 42, superAgreeVotes: 5, disagreeVotes: 10, passVotes: 10 },
+      { clusterId: 1, clusterSize: 85, agreeVotes: 34, superAgreeVotes: 4, disagreeVotes: 10, passVotes: 10 },
+      { clusterId: 2, clusterSize: 70, agreeVotes: 22, superAgreeVotes: 2, disagreeVotes: 11, passVotes: 8 },
+    ],
+    mergedFrom: [],
   },
 ];
 
@@ -69,6 +87,12 @@ const mockSpiciestPosts: StatementVotes[] = [
     passVotes: 25,
     consensusScore: 11.6,
     totalVotes: 155,
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 92, agreeVotes: 10, superAgreeVotes: 2, disagreeVotes: 45, passVotes: 10 },
+      { clusterId: 1, clusterSize: 85, agreeVotes: 8, superAgreeVotes: 1, disagreeVotes: 42, passVotes: 10 },
+      { clusterId: 2, clusterSize: 70, agreeVotes: 3, superAgreeVotes: 0, disagreeVotes: 25, passVotes: 5 },
+    ],
+    mergedFrom: [],
   },
   {
     id: "spicy-2",
@@ -80,6 +104,12 @@ const mockSpiciestPosts: StatementVotes[] = [
     passVotes: 14,
     consensusScore: 16.7,
     totalVotes: 132,
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 92, agreeVotes: 12, superAgreeVotes: 1, disagreeVotes: 38, passVotes: 5 },
+      { clusterId: 1, clusterSize: 85, agreeVotes: 8, superAgreeVotes: 1, disagreeVotes: 35, passVotes: 5 },
+      { clusterId: 2, clusterSize: 70, agreeVotes: 4, superAgreeVotes: 0, disagreeVotes: 23, passVotes: 4 },
+    ],
+    mergedFrom: [],
   },
   {
     id: "spicy-3",
@@ -91,6 +121,12 @@ const mockSpiciestPosts: StatementVotes[] = [
     passVotes: 19,
     consensusScore: 13.4,
     totalVotes: 112,
+    clusterVotes: [
+      { clusterId: 0, clusterSize: 92, agreeVotes: 8, superAgreeVotes: 1, disagreeVotes: 32, passVotes: 8 },
+      { clusterId: 1, clusterSize: 85, agreeVotes: 5, superAgreeVotes: 0, disagreeVotes: 28, passVotes: 7 },
+      { clusterId: 2, clusterSize: 70, agreeVotes: 3, superAgreeVotes: 0, disagreeVotes: 18, passVotes: 4 },
+    ],
+    mergedFrom: [],
   },
 ];
 
@@ -285,6 +321,8 @@ export const NoClusters = () => {
           passVotes: 6,
           consensusScore: 66.7,
           totalVotes: 42,
+          mergedFrom: [],
+          clusterVotes: [],
         },
         {
           id: "post-b",
@@ -296,6 +334,8 @@ export const NoClusters = () => {
           passVotes: 6,
           consensusScore: 57.1,
           totalVotes: 42,
+          mergedFrom: [],
+          clusterVotes: [],
         },
       ]}
       spiciestPosts={[
@@ -309,6 +349,8 @@ export const NoClusters = () => {
           passVotes: 8,
           consensusScore: 10.6,
           totalVotes: 47,
+          mergedFrom: [],
+          clusterVotes: [],
         },
       ]}
       clusterConsensus={null}
