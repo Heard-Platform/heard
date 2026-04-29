@@ -1,6 +1,7 @@
 import { CornerLeftUp } from "lucide-react";
 import { StatementVotes } from "../../types";
 import { VoteBreakdownPie } from "./VoteBreakdownPie";
+import { getClusterColor } from "../../utils/colors";
 
 interface StatementVotesTableRowProps {
   statement: StatementVotes;
@@ -65,7 +66,10 @@ export function StatementVotesTableRow({ statement, totalParticipants, clusterIn
         const cvSuper = cv.superAgreeVotes;
         const cvRawAgree = cv.agreeVotes - cvSuper;
         return (
-          <td key={idx} className="py-3 px-2 align-middle">
+          <td
+            key={idx}
+            className={`py-3 px-2 align-middle${idx === clusterIndex ? ` ${getClusterColor(idx).bg}` : ""}`}
+          >
             <VoteBreakdownPie
               rawAgree={cvRawAgree}
               superAgree={cvSuper}

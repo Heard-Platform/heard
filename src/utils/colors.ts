@@ -42,3 +42,21 @@ export function getPastelColor(id: string): string {
   const index = Math.abs(hash) % pastelColors.length;
   return pastelColors[index];
 }
+
+export interface ClusterColor {
+  bg: string;
+  border: string;
+  text: string;
+  badge: string;
+}
+
+export const CLUSTER_COLORS: ClusterColor[] = [
+  { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-600", badge: "bg-blue-100" },
+  { bg: "bg-green-50", border: "border-green-200", text: "text-green-600", badge: "bg-green-100" },
+  { bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-600", badge: "bg-purple-100" },
+  { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-600", badge: "bg-orange-100" },
+];
+
+export function getClusterColor(clusterIndex: number): ClusterColor {
+  return CLUSTER_COLORS[clusterIndex % CLUSTER_COLORS.length];
+}

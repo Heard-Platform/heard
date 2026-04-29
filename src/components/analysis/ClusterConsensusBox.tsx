@@ -2,13 +2,7 @@ import { Badge } from "../ui/badge";
 import { StatementVotes } from "../../types";
 import { StatementVotesTableHead, clusterLabel } from "./StatementVotesTableHead";
 import { StatementVotesTableRow } from "./StatementVotesTableRow";
-
-const clusterColors = [
-  { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-600", badge: "bg-blue-100" },
-  { bg: "bg-green-50", border: "border-green-200", text: "text-green-600", badge: "bg-green-100" },
-  { bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-600", badge: "bg-purple-100" },
-  { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-600", badge: "bg-orange-100" },
-];
+import { getClusterColor } from "../../utils/colors";
 
 interface ClusterConsensusBoxProps {
   clusterIndex: number;
@@ -25,7 +19,7 @@ export function ClusterConsensusBox({
   totalParticipants,
   statements,
 }: ClusterConsensusBoxProps) {
-  const colors = clusterColors[(clusterIndex + 1) % clusterColors.length];
+  const colors = getClusterColor(clusterIndex);
 
   return (
     <div className={`border ${colors.border} rounded-lg p-4 ${colors.bg}`}>
@@ -49,6 +43,7 @@ export function ClusterConsensusBox({
             <StatementVotesTableHead
               totalParticipants={totalParticipants}
               clusterSizes={clusterSizes}
+              highlightClusterIndex={clusterIndex}
             />
             <tbody>
               {statements.map((statement) => (

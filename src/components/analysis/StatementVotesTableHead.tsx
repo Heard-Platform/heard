@@ -1,3 +1,4 @@
+import { getClusterColor } from "../../utils/colors";
 import { Badge } from "../ui/badge";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
@@ -25,12 +26,14 @@ interface SortState {
 interface StatementVotesTableHeadProps {
   totalParticipants: number;
   clusterSizes: number[];
+  highlightClusterIndex: number;
   sort?: SortState;
 }
 
 export function StatementVotesTableHead({
   totalParticipants,
   clusterSizes,
+  highlightClusterIndex,
   sort,
 }: StatementVotesTableHeadProps) {
   return (
@@ -61,7 +64,10 @@ export function StatementVotesTableHead({
           <div className="text-xs text-muted-foreground font-normal">{totalParticipants}</div>
         </th>
         {clusterSizes.map((size, idx) => (
-          <th key={idx} className="py-2 px-2 text-right whitespace-nowrap font-medium text-muted-foreground">
+          <th
+            key={idx}
+            className={`py-2 px-2 text-right whitespace-nowrap font-medium text-muted-foreground${idx === highlightClusterIndex ? ` ${getClusterColor(highlightClusterIndex).bg}` : ""}`}
+          >
             <div className="text-xs">{clusterLabel(idx)}</div>
             <div className="text-xs text-muted-foreground font-normal">{size}</div>
           </th>
