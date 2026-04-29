@@ -1,10 +1,12 @@
-// @ts-nocheck — Deno script; not type-checked by the project tsc.
+// @ts-nocheck (Deno script; not type-checked by the project tsc)
 /// <reference lib="deno.ns" />
 import Papa from "npm:papaparse@5.5.3";
 
-const STATEMENTS_PATH = "public/data/statements.csv";
-const EMBEDDINGS_PATH = "public/data/statement-embeddings.csv";
-const SIMILARITY_PATH = "public/data/statement-similarity.csv";
+const DATA_DIR = new URL("../public/data/", import.meta.url);
+const STATEMENTS_PATH = new URL("statements.csv", DATA_DIR);
+const EMBEDDINGS_PATH = new URL("statement-embeddings.csv", DATA_DIR);
+const SIMILARITY_PATH = new URL("statement-similarity.csv", DATA_DIR);
+const display = (url: URL) => decodeURIComponent(url.pathname);
 
 const MODEL = "gemini-embedding-001";
 const EMBED_URL =
@@ -31,7 +33,7 @@ type SimilarityRow = {
 };
 
 async function readCsv<T extends Record<string, string>>(
-  path: string,
+  path: string | URL,
 ): Promise<T[]> {
   try {
     const text = await Deno.readTextFile(path);
@@ -46,7 +48,7 @@ async function readCsv<T extends Record<string, string>>(
 }
 
 async function writeCsv<T extends Record<string, unknown>>(
-  path: string,
+  path: string | URL,
   rows: T[],
   columns: string[],
 ): Promise<void> {
@@ -56,6 +58,22 @@ async function writeCsv<T extends Record<string, unknown>>(
 
 const MAX_RETRIES = 5;
 const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
+
+function parseServerRetryDelayMs(body: string): number | null {
+  try {
+    const parsed = JSON.parse(body);
+    const details = parsed?.error?.details ?? [];
+    for (const d of details) {
+      if (typeof d?.["@type"] === "string" && d["@type"].endsWith("RetryInfo")) {
+        const match = String(d.retryDelay ?? "").match(/^(\d+(?:\.\d+)?)s$/);
+        if (match) return Math.ceil(parseFloat(match[1]) * 1000) + 500;
+      }
+    }
+  } catch {
+    // ignore parse errors; fall back to exponential backoff
+  }
+  return null;
+}
 
 async function embedBatch(
   apiKey: string,
@@ -86,9 +104,11 @@ async function embedBatch(
     if (!retryable || attempt >= MAX_RETRIES) {
       throw new Error(`Gemini batchEmbedContents ${res.status}: ${body}`);
     }
-    const delayMs = 1000 * 2 ** (attempt - 1);
+    const serverDelay = parseServerRetryDelayMs(body);
+    const delayMs = serverDelay ?? 1000 * 2 ** (attempt - 1);
+    const source = serverDelay ? "server" : "backoff";
     console.log(
-      `  Gemini ${res.status}; retrying in ${delayMs}ms (attempt ${attempt + 1}/${MAX_RETRIES})`,
+      `  Gemini ${res.status}; retrying in ${delayMs}ms (${source}, attempt ${attempt + 1}/${MAX_RETRIES})`,
     );
     await new Promise((r) => setTimeout(r, delayMs));
   }
@@ -123,18 +143,22 @@ function cosine(a: number[], b: number[]): number {
 
 const apiKey = Deno.env.get("GEMINI_API_KEY");
 if (!apiKey) {
-  console.error("Missing GEMINI_API_KEY. Set in env or pass --env-file=.env");
+  console.error(
+    "Missing GEMINI_API_KEY. Set in env or pass --env-file=<path-to-.env>",
+  );
   Deno.exit(1);
 }
 
-console.log(`Reading ${STATEMENTS_PATH}...`);
+await Deno.mkdir(DATA_DIR, { recursive: true });
+
+console.log(`Reading ${display(STATEMENTS_PATH)}...`);
 const rawStatements = await readCsv<StatementRow>(STATEMENTS_PATH);
 const statements = rawStatements.filter((s) => s.statement_text.trim().length > 0);
 console.log(
   `  ${statements.length} statements (${rawStatements.length - statements.length} skipped as empty)`,
 );
 
-console.log(`Reading ${EMBEDDINGS_PATH} cache...`);
+console.log(`Reading ${display(EMBEDDINGS_PATH)} cache...`);
 const cached = await readCsv<EmbeddingRow>(EMBEDDINGS_PATH);
 const embeddingById = new Map<string, number[]>();
 for (const row of cached) {
@@ -158,7 +182,7 @@ for (let i = 0; i < missing.length; i += BATCH_SIZE) {
 }
 
 if (missing.length > 0) {
-  console.log(`Wrote ${embeddingById.size} rows to ${EMBEDDINGS_PATH}`);
+  console.log(`Wrote ${embeddingById.size} rows to ${display(EMBEDDINGS_PATH)}`);
 }
 
 console.log("Computing pairwise similarity per room...");
@@ -194,4 +218,4 @@ await writeCsv(SIMILARITY_PATH, similarityRows, [
   "statement_2",
   "cosine_similarity",
 ]);
-console.log(`Wrote ${similarityRows.length} pairs to ${SIMILARITY_PATH}`);
+console.log(`Wrote ${similarityRows.length} pairs to ${display(SIMILARITY_PATH)}`);

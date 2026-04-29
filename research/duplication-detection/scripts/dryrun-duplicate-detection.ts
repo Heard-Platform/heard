@@ -1,10 +1,12 @@
-// @ts-nocheck — Deno script; not type-checked by the project tsc.
+// @ts-nocheck (Deno script; not type-checked by the project tsc)
 /// <reference lib="deno.ns" />
 import Papa from "npm:papaparse@5.5.3";
 
-const STATEMENTS_PATH = "public/data/statements.csv";
-const EMBEDDINGS_PATH = "public/data/statement-embeddings.csv";
-const OUTPUT_PATH = "public/data/dryrun-merges.csv";
+const DATA_DIR = new URL("../public/data/", import.meta.url);
+const STATEMENTS_PATH = new URL("statements.csv", DATA_DIR);
+const EMBEDDINGS_PATH = new URL("statement-embeddings.csv", DATA_DIR);
+const OUTPUT_PATH = new URL("dryrun-merges.csv", DATA_DIR);
+const display = (url: URL) => decodeURIComponent(url.pathname);
 
 const SUMMARY_THRESHOLDS = [0.70, 0.75, 0.80, 0.85, 0.90, 0.95];
 
@@ -35,7 +37,7 @@ type MergeRow = {
 };
 
 async function readCsv<T extends Record<string, string>>(
-  path: string,
+  path: string | URL,
 ): Promise<T[]> {
   const text = await Deno.readTextFile(path);
   const parsed = Papa.parse<T>(text, { header: true, skipEmptyLines: true });
@@ -109,11 +111,11 @@ if (Number.isNaN(THRESHOLD) || THRESHOLD < 0 || THRESHOLD > 1) {
   Deno.exit(1);
 }
 
-console.log(`Reading ${STATEMENTS_PATH}...`);
+console.log(`Reading ${display(STATEMENTS_PATH)}...`);
 const rawStatements = await readCsv<StatementRow>(STATEMENTS_PATH);
 console.log(`  ${rawStatements.length} statements`);
 
-console.log(`Reading ${EMBEDDINGS_PATH}...`);
+console.log(`Reading ${display(EMBEDDINGS_PATH)}...`);
 const embeddings = await readCsv<EmbeddingRow>(EMBEDDINGS_PATH);
 const embeddingById = new Map<string, number[]>();
 for (const row of embeddings) {
@@ -177,8 +179,9 @@ const csv = Papa.unparse(merges, {
   quotes: true,
 });
 
+await Deno.mkdir(DATA_DIR, { recursive: true });
 await Deno.writeTextFile(OUTPUT_PATH, csv);
-console.log(`Wrote ${merges.length} merges to ${OUTPUT_PATH}`);
+console.log(`Wrote ${merges.length} merges to ${display(OUTPUT_PATH)}`);
 
 const mergesByRoom = new Map<string, number>();
 for (const m of merges) {

@@ -1,8 +1,9 @@
-// @ts-nocheck — Deno script; not type-checked by the project tsc.
+// @ts-nocheck (Deno script; not type-checked by the project tsc)
 /// <reference lib="deno.ns" />
 import Papa from "npm:papaparse@5.5.3";
 
-const OUTPUT_PATH = "public/data/statements.csv";
+const OUTPUT_PATH = new URL("../public/data/statements.csv", import.meta.url);
+const display = (url: URL) => decodeURIComponent(url.pathname);
 
 type AdminDebate = {
   id: string;
@@ -137,5 +138,6 @@ const csv = Papa.unparse(rows, {
   quotes: true,
 });
 
+await Deno.mkdir(new URL("../public/data/", import.meta.url), { recursive: true });
 await Deno.writeTextFile(OUTPUT_PATH, csv);
-console.log(`Wrote ${rows.length} rows to ${OUTPUT_PATH}`);
+console.log(`Wrote ${rows.length} rows to ${display(OUTPUT_PATH)}`);

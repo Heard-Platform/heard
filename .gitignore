@@ -63,9 +63,3 @@ build/
 env/
 
 .temp/
-
-# Embedding cache for the duplication-detection research tooling
-# Too large for git (~150 MB). Other CSVs in /public/data/ are committed
-# snapshots so the SimilarityExplorer viewer works on a fresh clone.
-# See research/duplication-detection/README.md for the regeneration workflow.
-/public/data/statement-embeddings.csv
