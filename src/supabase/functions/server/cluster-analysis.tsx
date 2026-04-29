@@ -135,10 +135,10 @@ export function calculateClusterConsensus(
   statements: Statement[],
   clusterMetadata: ClusterMetadata,
   assignments: (ClusterAssignment | null)[],
-  participants: string[],
+  voterIds: string[],
 ): ClusterConsensus {
   const userClusterMap = new Map<string, number>();
-  participants.forEach((userId, idx) => {
+  voterIds.forEach((userId, idx) => {
     const assignment = assignments[idx];
     if (assignment) {
       userClusterMap.set(userId, assignment.clusterId);
