@@ -3,6 +3,7 @@
  * Uses k-means clustering on user-statement voting matrix
  */
 
+import { getStatementVoterIds } from "./analysis-utils.tsx";
 import { getStatementsForRoom, getDebate, saveClusterData, getClusterAssignment, getClusterMetadataRecord, getClusterAssignmentsBatch, getVotesForStatement } from "./kv-utils.tsx";
 import type { Vote } from "./types.tsx";
 
@@ -453,17 +454,9 @@ export async function recalculateClustersForRoom(
       }),
     );
 
-    const votingUserIds = new Set<string>();
-    for (const stmt of statementsWithVotes) {
-      for (const vote of stmt.votes) {
-        votingUserIds.add(vote.userId);
-      }
-    }
-    const participantsWithVotes = room.participants.filter((userId) =>
-      votingUserIds.has(userId),
-    );
+    const voterIds = getStatementVoterIds(roomStatements);
 
-    if (participantsWithVotes.length === 0) {
+    if (voterIds.length === 0) {
       console.log(
         `[Clustering] No voting participants found for room ${roomId}`,
       );
@@ -473,7 +466,7 @@ export async function recalculateClustersForRoom(
     // Run clustering
     const metadata = await clusterUsersAndSave(
       roomId,
-      participantsWithVotes,
+      voterIds,
       statementsWithVotes,
     );
 

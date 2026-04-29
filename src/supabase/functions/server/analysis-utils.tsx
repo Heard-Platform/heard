@@ -239,3 +239,15 @@ export function calculateAnalysisMetrics(
     allStatements,
   };
 }
+
+export function getStatementVoterIds(statements: Statement[]): string[] {
+  const votingUserIds = new Set<string>();
+  for (const stmt of statements) {
+    if (stmt.voters) {
+      for (const userId of Object.keys(stmt.voters)) {
+        votingUserIds.add(userId);
+      }
+    }
+  }
+  return Array.from(votingUserIds);
+}
