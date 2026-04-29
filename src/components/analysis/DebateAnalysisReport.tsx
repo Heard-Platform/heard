@@ -6,7 +6,7 @@ import { TopAgreedPosts } from "./TopAgreedPosts";
 import { SpiciestPosts } from "./SpiciestPosts";
 import { ClusterConsensusBox } from "./ClusterConsensusBox";
 import { DemographicsPieCharts } from "./DemographicsPieCharts";
-import { AnalysisData } from "../../types";
+import { AnalysisData, StatementVotes } from "../../types";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 import { MetricCard } from "./MetricCard";
 import { StatementVotesTable } from "./StatementVotesTable";
@@ -38,6 +38,9 @@ export function DebateAnalysisReport({
   regenerating,
   onRegenerateClusters,
 }: DebateAnalysisReportProps) {
+  const clusterSizes = clusterConsensus?.clusters.map((c) => c.size) ?? [];
+  const statementVotesById = new Map(allStatements.map((s) => [s.id, s]));
+
   return (
     <div className="heard-page-bg p-4">
       <div className="mx-auto space-y-6">
@@ -137,14 +140,21 @@ export function DebateAnalysisReport({
             </div>
 
             <div className="space-y-6">
-              {clusterConsensus.clusters.map((cluster, index) => (
-                <ClusterConsensusBox
-                  key={cluster.id}
-                  clusterNumber={index + 1}
-                  clusterSize={cluster.size}
-                  statements={cluster.statements}
-                />
-              ))}
+              {clusterConsensus.clusters.map((cluster, index) => {
+                const clusterStatements = cluster.statements
+                  .map((s) => statementVotesById.get(s.id))
+                  .filter(s => s !== undefined);
+                return (
+                  <ClusterConsensusBox
+                    key={cluster.id}
+                    clusterIndex={index}
+                    clusterSize={cluster.size}
+                    clusterSizes={clusterSizes}
+                    totalParticipants={totalParticipants}
+                    statements={clusterStatements}
+                  />
+                );
+              })}
             </div>
 
             {isDeveloper && (
@@ -168,7 +178,7 @@ export function DebateAnalysisReport({
         <StatementVotesTable
           statements={allStatements}
           totalParticipants={totalParticipants}
-          clusterSizes={clusterConsensus?.clusters.map((c) => c.size) ?? []}
+          clusterSizes={clusterSizes}
         />
 
       </div>

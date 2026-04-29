@@ -1,69 +1,61 @@
 import { Badge } from "../ui/badge";
-import { ClusterStatement } from "../../types";
+import { StatementVotes } from "../../types";
+import { StatementVotesTableHead, clusterLabel } from "./StatementVotesTableHead";
+import { StatementVotesTableRow } from "./StatementVotesTableRow";
+import { getClusterColor } from "../../utils/colors";
 
 interface ClusterConsensusBoxProps {
-  clusterNumber: number;
+  clusterIndex: number;
   clusterSize: number;
-  statements: ClusterStatement[];
-}
-
-const clusterColors = [
-  { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-600", badge: "bg-blue-100" },
-  { bg: "bg-green-50", border: "border-green-200", text: "text-green-600", badge: "bg-green-100" },
-  { bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-600", badge: "bg-purple-100" },
-  { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-600", badge: "bg-orange-100" },
-];
-
-function consensusPercent(statement: ClusterStatement): number {
-  const totalVotes = (statement.agreeVotes ?? 0) + (statement.disagreeVotes ?? 0);
-  if (totalVotes === 0) return 0;
-  const dominant = Math.max(statement.agreeVotes ?? 0, statement.disagreeVotes ?? 0);
-  return Math.round((dominant / totalVotes) * 100);
+  clusterSizes: number[];
+  totalParticipants: number;
+  statements: StatementVotes[];
 }
 
 export function ClusterConsensusBox({
-  clusterNumber, 
-  clusterSize, 
-  statements 
+  clusterIndex,
+  clusterSize,
+  clusterSizes,
+  totalParticipants,
+  statements,
 }: ClusterConsensusBoxProps) {
-  const colors = clusterColors[clusterNumber % clusterColors.length];
+  const colors = getClusterColor(clusterIndex);
 
   return (
     <div className={`border ${colors.border} rounded-lg p-4 ${colors.bg}`}>
-      <div className="heard-between mb-3">
+      <div className="heard-between mb-1">
         <div className="flex items-center gap-2">
           <h3 className={`font-medium ${colors.text}`}>
-            Cluster {clusterNumber}
+            Cluster {clusterLabel(clusterIndex)}
           </h3>
           <Badge variant="outline" className={colors.badge}>
             {clusterSize} users
           </Badge>
         </div>
       </div>
+      <p className="text-sm text-muted-foreground mb-3">
+        Distinguishing statements of this cluster
+      </p>
 
       {statements.length > 0 ? (
-        <div className="space-y-3">
-          {statements.map((statement, idx) => (
-            <div key={statement.id} className="bg-white rounded-lg p-3 border">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge variant="secondary" className="text-xs">
-                      #{idx + 1}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {consensusPercent(statement)}% consensus
-                    </span>
-                  </div>
-                  <p className="text-sm">{statement.text}</p>
-                </div>
-                <div className="flex flex-col items-end text-xs text-muted-foreground">
-                  <span>{statement.agreeVotes ?? 0} agreed</span>
-                  <span>{statement.disagreeVotes ?? 0} disagreed</span>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="bg-white rounded-lg border p-3">
+          <table className="w-full text-sm">
+            <StatementVotesTableHead
+              totalParticipants={totalParticipants}
+              clusterSizes={clusterSizes}
+              highlightClusterIndex={clusterIndex}
+            />
+            <tbody>
+              {statements.map((statement) => (
+                <StatementVotesTableRow
+                  key={statement.id}
+                  statement={statement}
+                  totalParticipants={totalParticipants}
+                  clusterIndex={clusterIndex}
+                />
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">

@@ -7,7 +7,7 @@ import {
 } from "./clustering.tsx";
 import { calculateClusterConsensus } from "./cluster-analysis.tsx";
 import { getParsedKvData } from "./kv-utils.tsx";
-import { calculateAnalysisMetrics } from "./analysis-utils.tsx";
+import { calculateAnalysisMetrics, getStatementVoterIds } from "./analysis-utils.tsx";
 import { applyStatementMerges } from "./room-utils.ts";
 import { AnalysisData } from "./types.tsx";
 import { getDemographicAnswersForQuestionIds, getDemographicQuestionsForRoom, getMergesForRoom } from "./model-utils.ts";
@@ -72,13 +72,13 @@ app.get(
 
       let clusterConsensus = null;
 
+      const voterIds = getStatementVoterIds(mergedStatements);
       if (
         clusterMetadata &&
-        room.participants &&
-        room.participants.length > 0
+        voterIds.length > 0
       ) {
         const assignments = await Promise.all(
-          room.participants.map((userId) =>
+          voterIds.map((userId) =>
             getParsedKvData<ClusterAssignment>(
               `cluster_assignment:${roomId}:${userId}`,
             ),
@@ -89,7 +89,7 @@ app.get(
           mergedStatements,
           clusterMetadata,
           assignments,
-          room.participants,
+          voterIds,
         );
       }
 
