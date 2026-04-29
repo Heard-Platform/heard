@@ -77,6 +77,26 @@ class AdminApiClient extends BaseApiClient {
     );
   }
 
+  async unsubApril26Signups(adminKey: string, dryRun: boolean) {
+    interface Result {
+      dryRun: boolean;
+      updated: number;
+      alreadyUnsubbed: number;
+      errors: number;
+      updatedUserIds: string[];
+      message: string;
+    }
+
+    return this.request<Result>(
+      "/one-time-fixes/unsub-april-26-signups",
+      {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+        body: JSON.stringify({ dryRun }),
+      },
+    );
+  }
+
   async backfillMemberships(adminKey: string, dryRun: boolean) {
     interface Result {
       totalUsers: number;
