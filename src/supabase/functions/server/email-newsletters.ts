@@ -183,6 +183,31 @@ const newsletters = [
       imageAlt: "Pushup challenge progress",
     },
   }),
+  getParameterizedNewsletter({
+    subject: "No More Pushups - Ya' Heard #15",
+    editionNumber: 15,
+    section1: {
+      title: "🎉 307 animal rights activists debrief on Heard",
+      text: "In the single biggest post we've seen on Heard yet, last weekend 307 people involved in an animal rights action used Heard to debrief the event. In total, 8,899 votes were cast on 31 different statements over the span of about 24 hours. This brings the total number of user signups on Heard to 358, well over the 200 threshold for my daily pushup challenge, and oh-so-close to the July 4th goal of 500 signups. <a href='https://www.youtube.com/shorts/E0FxCb2QmDY'>I made a silly video to celebrate</a>. A big shoutout to the organizers and voters who made this happen. 🙏🎉",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-15-pushup-celebration.png",
+      imageLink: "https://www.youtube.com/shorts/E0FxCb2QmDY",
+      imageAlt: "Pushup challenge celebration video",
+    },
+    section2: {
+      title: "🐀 DC residents can't agree on how they feel about their rats",
+      text: "In our latest endeavor to bring Heard to the streets, we put up flyers around Dupont asking residents how they feel about rats in DC and what they want done. So far 65 people have weighed in on the debate, and interestingly, rat birth control is an overwhelmingly popular solution. 💊",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-15-dc-rats.png",
+      imageLink: "https://heard.vote",
+      imageAlt: "DC residents discussing rat control solutions",
+    },
+    section3: {
+      title: "🔧 Once more for the moderators",
+      text: "In preparation for the pilot program last weekend, we shipped a ton of new moderation and analysis features. 📊 Moderators of conversations on Heard can now merge similar responses, hide problematic ones, and even pause all responses completely if need be. We've also beefed up the user clustering analysis significantly to make it much easier to drill down into the details of why people voted the way they did.",
+      imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-15-moderation.png",
+      imageLink: "https://heard.vote",
+      imageAlt: "Moderators using new features on Heard",
+    },
+  }),
 ];
 
 const offset = 8
