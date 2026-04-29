@@ -1410,6 +1410,10 @@
     width: calc(var(--spacing) * 3.5);
   }
 
+  .w-1\/2 {
+    width: 50%;
+  }
+
   .w-3\/4 {
     width: 75%;
   }
@@ -1472,6 +1476,10 @@
 
   .w-\[30px\] {
     width: 30px;
+  }
+
+  .w-auto {
+    width: auto;
   }
 
   .w-fit {
@@ -3835,6 +3843,10 @@
   .tracking-widest {
     --tw-tracking: var(--tracking-widest);
     letter-spacing: var(--tracking-widest);
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 
   .break-words {
