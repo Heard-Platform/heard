@@ -4,6 +4,7 @@ import { getByPrefixParsed, getActiveRoomValues, saveActiveRoomPointer, saveDeba
 import { backfillUserCreatedAtApi } from "./backfill-user-created-at.tsx";
 import { backfillMembershipsApi } from "./script-backfill-memberships.tsx";
 import { backfillVotesToTableApi } from "./backfill-votes-to-table.tsx";
+import { unsubApril26SignupsApi } from "./unsub-april-26-signups.tsx";
 import { verifyAdminKey } from "./admin-api.tsx";
 
 const app = new Hono();
@@ -111,5 +112,6 @@ app.post(
 app.route("/", backfillUserCreatedAtApi);
 app.route("/", backfillMembershipsApi);
 app.route("/", backfillVotesToTableApi);
+app.route("/", unsubApril26SignupsApi);
 
 export { app as oneTimeFixesApi };
