@@ -62,6 +62,14 @@ describe("calcDistinguishingScore", () => {
     assertLess(z, 0);
   });
 
+  it("score is near zero when both groups disagree at similar rates", () => {
+    const z = calcDistinguishingScore(
+      { agrees: 5, disagrees: 45, passes: 0 },
+      { agrees: 6, disagrees: 44, passes: 0 },
+    );
+    assertLess(Math.abs(z), 1);
+  });
+
   it("same proportional gap scores higher with larger samples", () => {
     const small = calcDistinguishingScore(
       { agrees: 8, disagrees: 2, passes: 0 },
@@ -118,7 +126,7 @@ describe("calcDistinguishingStatements", () => {
     assertGreater(result[0].distinguishingScore, 0);
   });
 
-  it("sorts by absolute score, picks both directions", () => {
+  it("excludes statements the in-cluster disagrees with more than out-cluster", () => {
     const inUsers = Array.from({ length: 40 }, (_, i) => `in${i}`);
     const outUsers = Array.from({ length: 40 }, (_, i) => `out${i}`);
 
@@ -136,10 +144,9 @@ describe("calcDistinguishingStatements", () => {
       outUsers,
     );
 
-    assertEquals(result.length, 2);
+    assertEquals(result.length, 1);
+    assertEquals(result[0].id, "agrees");
     assertGreater(result[0].distinguishingScore, 0);
-    assertLess(result[1].distinguishingScore, 0);
-    assertEquals(Math.abs(result[0].distinguishingScore), Math.abs(result[1].distinguishingScore));
   });
 
   it("super_agree counts as agree", () => {

@@ -104,10 +104,10 @@ export function calcDistinguishingStatements(
         distinguishingScore: calcDistinguishingScore(inGroup, outGroup),
       };
     })
-    .filter((s) => Math.abs(s.distinguishingScore) >= DISTINGUISHING_Z_THRESHOLD)
+    .filter((s) => s.distinguishingScore >= DISTINGUISHING_Z_THRESHOLD)
     .sort((a, b) => {
-      const absDiff = Math.abs(b.distinguishingScore) - Math.abs(a.distinguishingScore);
-      return absDiff !== 0 ? absDiff : b.totalVotes - a.totalVotes;
+      const diff = b.distinguishingScore - a.distinguishingScore;
+      return diff !== 0 ? diff : b.totalVotes - a.totalVotes;
     });
 }
 
