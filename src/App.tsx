@@ -224,6 +224,8 @@ function AppContent() {
         window.location.pathname.startsWith("/2b04");
       const isRatsRoute =
         window.location.pathname.startsWith("/rats");
+      const isDogsRoute =
+        window.location.pathname.startsWith("/dogs");
       const isShirtAgreeRoute =
         window.location.pathname.startsWith("/shirt-agree");
       const isShirtDisagreeRoute =
@@ -252,16 +254,29 @@ function AppContent() {
         setPendingFlyerScan("kalorama");
         setPendingCommunities(KALORAMA_COMMUNITIES);
         startRoomJoin(KALORAMA_ROOM_ID);
-      } else if (isParkletRoute || is2b04Route || isRatsRoute) {
+      } else if (
+        isParkletRoute ||
+        is2b04Route ||
+        isRatsRoute ||
+        isDogsRoute
+      ) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
           : is2b04Route
             ? "5zagvhpy4iamnf18dh5"
             : isRatsRoute
               ? "rrrir5rzsi9moacjd80"
-              : undefined;
+              : isDogsRoute
+                ? "jl4rwa5amtmolpfau4"
+                : undefined;
 
-        const routeName = isParkletRoute ? "parklet" : is2b04Route ? "2b04" : "rats";
+        const routeName = isParkletRoute
+          ? "parklet"
+          : is2b04Route
+            ? "2b04"
+            : isRatsRoute
+              ? "rats"
+              : "dogs";
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
