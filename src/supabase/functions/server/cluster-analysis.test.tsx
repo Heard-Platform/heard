@@ -1,17 +1,19 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertGreater } from "https://deno.land/std@0.224.0/assert/assert_greater.ts";
+import { assertLess } from "https://deno.land/std@0.224.0/assert/assert_less.ts";
 import {
   calcStatementBreakdownForCluster,
   calculateClusterConsensus,
 } from "./cluster-analysis.tsx";
-import { Statement } from "./types.tsx";
+import { Statement, VoteType } from "./types.tsx";
 import { ClusterAssignment } from "./clustering.tsx";
 
-function makeStatement(voters: Statement["voters"]): Statement {
+function makeStatement(id: string, voters: Statement["voters"]): Statement {
   const counts = { agree: 0, super_agree: 0, disagree: 0, pass: 0 };
   for (const v of Object.values(voters)) counts[v]++;
   return {
-    id: "stmt",
-    text: "test",
+    id,
+    text: `text-${id}`,
     author: "author",
     agrees: counts.agree,
     disagrees: counts.disagree,
@@ -24,346 +26,179 @@ function makeStatement(voters: Statement["voters"]): Statement {
   };
 }
 
-Deno.test("calculateClusterConsensus - basic clustering with consensus", () => {
-  const statements: Statement[] = [
-    {
-      id: "stmt1",
-      text: "Climate change is real",
-      author: "user1",
-      agrees: 3,
-      disagrees: 0,
-      passes: 0,
-      superAgrees: 1,
-      roomId: "room1",
-      timestamp: Date.now(),
-      round: 1,
-      voters: {
-        user1: "agree",
-        user2: "agree",
-        user3: "super_agree",
-        user4: "agree",
-      },
-    },
-    {
-      id: "stmt2",
-      text: "We need renewable energy",
-      author: "user2",
-      agrees: 2,
-      disagrees: 1,
-      passes: 0,
-      superAgrees: 0,
-      roomId: "room1",
-      timestamp: Date.now(),
-      round: 1,
-      voters: {
-        user1: "agree",
-        user2: "agree",
-        user3: "disagree",
-      },
-    },
-  ];
+function makeClusteredVoters(
+  inCluster: string[],
+  outCluster: string[],
+  inVote: VoteType,
+  outVote: VoteType,
+): Record<string, VoteType> {
+  const voters: Record<string, VoteType> = {};
+  for (const u of inCluster) voters[u] = inVote;
+  for (const u of outCluster) voters[u] = outVote;
+  return voters;
+}
 
-  const clusterMetadata = {
-    totalClusters: 2,
-    clusterSizes: {
-      0: 3,
-      1: 1,
-    },
-  };
+Deno.test("calculateClusterConsensus - picks distinguishing statements where one cluster diverges", () => {
+  const clusterA = Array.from({ length: 40 }, (_, i) => `a${i}`);
+  const clusterB = Array.from({ length: 40 }, (_, i) => `b${i}`);
+
+  const statements: Statement[] = [
+    makeStatement("divisive", makeClusteredVoters(clusterA, clusterB, "agree", "disagree")),
+    makeStatement("universal", makeClusteredVoters(clusterA, clusterB, "agree", "agree")),
+  ];
 
   const assignments: (ClusterAssignment | null)[] = [
-    { userId: "user1", clusterId: 0, distance: 0.1 },
-    { userId: "user2", clusterId: 0, distance: 0.2 },
-    { userId: "user3", clusterId: 0, distance: 0.15 },
-    { userId: "user4", clusterId: 1, distance: 0.3 },
+    ...clusterA.map((u) => ({ userId: u, clusterId: 0, distance: 0.1 })),
+    ...clusterB.map((u) => ({ userId: u, clusterId: 1, distance: 0.1 })),
   ];
-
-  const participants = ["user1", "user2", "user3", "user4"];
 
   const result = calculateClusterConsensus(
     statements,
-    clusterMetadata,
+    { totalClusters: 2, clusterSizes: { 0: 40, 1: 40 } },
     assignments,
-    participants,
-  );
-
-  assertEquals(result.totalClusters, 2);
-  assertEquals(result.clusters[0].size, 3);
-  assertEquals(result.clusters[1].size, 1);
-  assertEquals(result.clusters[0].statements[0].id, "stmt1");
-  assertEquals(result.clusters[0].statements[0].agreeVotes, 3);
-  assertEquals(result.clusters[0].statements[0].totalVotes, 3);
-  assertEquals(result.clusters[0].statements[0].consensusScore, Math.log(3));
-});
-
-Deno.test("calculateClusterConsensus - includes statements with less than 3 votes per cluster", () => {
-  const statements: Statement[] = [
-    {
-      id: "stmt1",
-      text: "Low participation statement",
-      author: "user1",
-      agrees: 1,
-      disagrees: 0,
-      passes: 0,
-      superAgrees: 0,
-      roomId: "room1",
-      timestamp: Date.now(),
-      round: 1,
-      voters: {
-        user1: "agree",
-      },
-    },
-  ];
-
-  const clusterMetadata = {
-    totalClusters: 1,
-    clusterSizes: {
-      0: 2,
-    },
-  };
-
-  const assignments: (ClusterAssignment | null)[] = [
-    { userId: "user1", clusterId: 0, distance: 0.1 },
-    { userId: "user2", clusterId: 0, distance: 0.2 },
-  ];
-
-  const participants = ["user1", "user2"];
-
-  const result = calculateClusterConsensus(
-    statements,
-    clusterMetadata,
-    assignments,
-    participants,
+    [...clusterA, ...clusterB],
   );
 
   assertEquals(result.clusters[0].statements.length, 1);
-  assertEquals(result.clusters[0].statements[0].totalVotes, 1);
+  assertEquals(result.clusters[0].statements[0].id, "divisive");
+  assertEquals(result.clusters[1].statements.length, 1);
+  assertEquals(result.clusters[1].statements[0].id, "divisive");
 });
 
-Deno.test("calculateClusterConsensus - sorts by consensus score and limits to top 3", () => {
-  const statements: Statement[] = [
-    {
-      id: "stmt1",
-      text: "Statement 1",
-      author: "user1",
-      agrees: 4,
-      disagrees: 0,
-      passes: 0,
-      superAgrees: 0,
-      roomId: "room1",
-      timestamp: Date.now(),
-      round: 1,
-      voters: {
-        user1: "agree",
-        user2: "agree",
-        user3: "agree",
-        user4: "agree",
-      },
-    },
-    {
-      id: "stmt2",
-      text: "Statement 2",
-      author: "user2",
-      agrees: 3,
-      disagrees: 1,
-      passes: 0,
-      superAgrees: 0,
-      roomId: "room1",
-      timestamp: Date.now(),
-      round: 1,
-      voters: {
-        user1: "agree",
-        user2: "agree",
-        user3: "agree",
-        user4: "disagree",
-      },
-    },
-    {
-      id: "stmt3",
-      text: "Statement 3",
-      author: "user3",
-      agrees: 2,
-      disagrees: 2,
-      passes: 0,
-      superAgrees: 0,
-      roomId: "room1",
-      timestamp: Date.now(),
-      round: 1,
-      voters: {
-        user1: "agree",
-        user2: "agree",
-        user3: "disagree",
-        user4: "disagree",
-      },
-    },
-    {
-      id: "stmt4",
-      text: "Statement 4",
-      author: "user4",
-      agrees: 1,
-      disagrees: 3,
-      passes: 0,
-      superAgrees: 0,
-      roomId: "room1",
-      timestamp: Date.now(),
-      round: 1,
-      voters: {
-        user1: "agree",
-        user2: "disagree",
-        user3: "disagree",
-        user4: "disagree",
-      },
-    },
-  ];
+Deno.test("calculateClusterConsensus - clusters get opposite-signed scores for the same divisive statement", () => {
+  const clusterA = Array.from({ length: 40 }, (_, i) => `a${i}`);
+  const clusterB = Array.from({ length: 40 }, (_, i) => `b${i}`);
 
-  const clusterMetadata = {
-    totalClusters: 1,
-    clusterSizes: {
-      0: 4,
-    },
-  };
+  const statements: Statement[] = [
+    makeStatement("divisive", makeClusteredVoters(clusterA, clusterB, "agree", "disagree")),
+  ];
 
   const assignments: (ClusterAssignment | null)[] = [
-    { userId: "user1", clusterId: 0, distance: 0.1 },
-    { userId: "user2", clusterId: 0, distance: 0.1 },
-    { userId: "user3", clusterId: 0, distance: 0.1 },
-    { userId: "user4", clusterId: 0, distance: 0.1 },
+    ...clusterA.map((u) => ({ userId: u, clusterId: 0, distance: 0.1 })),
+    ...clusterB.map((u) => ({ userId: u, clusterId: 1, distance: 0.1 })),
   ];
-
-  const participants = ["user1", "user2", "user3", "user4"];
 
   const result = calculateClusterConsensus(
     statements,
-    clusterMetadata,
+    { totalClusters: 2, clusterSizes: { 0: 40, 1: 40 } },
     assignments,
-    participants,
+    [...clusterA, ...clusterB],
+  );
+
+  assertGreater(result.clusters[0].statements[0].distinguishingScore, 0);
+  assertLess(result.clusters[1].statements[0].distinguishingScore, 0);
+});
+
+Deno.test("calculateClusterConsensus - low-participation cluster yields no distinguishing statements", () => {
+  const statements: Statement[] = [
+    makeStatement("low", { user1: "agree" }),
+  ];
+
+  const result = calculateClusterConsensus(
+    statements,
+    { totalClusters: 1, clusterSizes: { 0: 2 } },
+    [
+      { userId: "user1", clusterId: 0, distance: 0.1 },
+      { userId: "user2", clusterId: 0, distance: 0.2 },
+    ],
+    ["user1", "user2"],
+  );
+
+  assertEquals(result.clusters[0].statements.length, 0);
+});
+
+Deno.test("calculateClusterConsensus - limits to top 3 distinguishing statements", () => {
+  const clusterA = Array.from({ length: 40 }, (_, i) => `a${i}`);
+  const clusterB = Array.from({ length: 40 }, (_, i) => `b${i}`);
+
+  const statements: Statement[] = Array.from({ length: 5 }, (_, i) =>
+    makeStatement(`s${i}`, makeClusteredVoters(clusterA, clusterB, "agree", "disagree")),
+  );
+
+  const assignments: (ClusterAssignment | null)[] = [
+    ...clusterA.map((u) => ({ userId: u, clusterId: 0, distance: 0.1 })),
+    ...clusterB.map((u) => ({ userId: u, clusterId: 1, distance: 0.1 })),
+  ];
+
+  const result = calculateClusterConsensus(
+    statements,
+    { totalClusters: 2, clusterSizes: { 0: 40, 1: 40 } },
+    assignments,
+    [...clusterA, ...clusterB],
   );
 
   assertEquals(result.clusters[0].statements.length, 3);
-  assertEquals(result.clusters[0].statements[0].id, "stmt1");
-  assertEquals(result.clusters[0].statements[1].id, "stmt2");
-  assertEquals(result.clusters[0].statements[2].id, "stmt4");
 });
 
-Deno.test("calculateClusterConsensus - handles super agrees correctly", () => {
-  const statements: Statement[] = [
-    {
-      id: "stmt1",
-      text: "Super agree statement",
-      author: "user1",
-      agrees: 1,
-      disagrees: 0,
-      passes: 0,
-      superAgrees: 2,
-      roomId: "room1",
-      timestamp: Date.now(),
-      round: 1,
-      voters: {
-        user1: "agree",
-        user2: "super_agree",
-        user3: "super_agree",
-      },
-    },
-  ];
+Deno.test("calculateClusterConsensus - super_agree counts as agree in distinguishing statements", () => {
+  const clusterA = Array.from({ length: 30 }, (_, i) => `a${i}`);
+  const clusterB = Array.from({ length: 30 }, (_, i) => `b${i}`);
 
-  const clusterMetadata = {
-    totalClusters: 1,
-    clusterSizes: {
-      0: 3,
-    },
-  };
+  const voters: Record<string, VoteType> = {};
+  for (const u of clusterA) voters[u] = "super_agree";
+  for (const u of clusterB) voters[u] = "disagree";
+
+  const statements: Statement[] = [makeStatement("s", voters)];
 
   const assignments: (ClusterAssignment | null)[] = [
-    { userId: "user1", clusterId: 0, distance: 0.1 },
-    { userId: "user2", clusterId: 0, distance: 0.2 },
-    { userId: "user3", clusterId: 0, distance: 0.3 },
+    ...clusterA.map((u) => ({ userId: u, clusterId: 0, distance: 0.1 })),
+    ...clusterB.map((u) => ({ userId: u, clusterId: 1, distance: 0.1 })),
   ];
-
-  const participants = ["user1", "user2", "user3"];
 
   const result = calculateClusterConsensus(
     statements,
-    clusterMetadata,
+    { totalClusters: 2, clusterSizes: { 0: 30, 1: 30 } },
     assignments,
-    participants,
-  );
-
-  assertEquals(result.clusters[0].statements[0].agreeVotes, 3);
-  assertEquals(result.clusters[0].statements[0].consensusScore, Math.log(3));
-});
-
-Deno.test("calculateClusterConsensus - handles null assignments", () => {
-  const statements: Statement[] = [
-    {
-      id: "stmt1",
-      text: "Test statement",
-      author: "user1",
-      agrees: 2,
-      disagrees: 0,
-      passes: 0,
-      superAgrees: 0,
-      roomId: "room1",
-      timestamp: Date.now(),
-      round: 1,
-      voters: {
-        user1: "agree",
-        user2: "agree",
-      },
-    },
-  ];
-
-  const clusterMetadata = {
-    totalClusters: 1,
-    clusterSizes: {
-      0: 2,
-    },
-  };
-
-  const assignments: (ClusterAssignment | null)[] = [
-    { userId: "user1", clusterId: 0, distance: 0.1 },
-    null,
-    { userId: "user3", clusterId: 0, distance: 0.2 },
-  ];
-
-  const participants = ["user1", "user2", "user3"];
-
-  const result = calculateClusterConsensus(
-    statements,
-    clusterMetadata,
-    assignments,
-    participants,
+    [...clusterA, ...clusterB],
   );
 
   assertEquals(result.clusters[0].statements.length, 1);
-  assertEquals(result.clusters[0].statements[0].totalVotes, 1);
-  assertEquals(result.clusters[0].statements[0].agreeVotes, 1);
+  assertEquals(result.clusters[0].statements[0].agreeVotes, 30);
+  assertEquals(result.clusters[0].statements[0].disagreeVotes, 0);
 });
 
-Deno.test("calculateClusterConsensus - empty statements array", () => {
-  const statements: Statement[] = [];
+Deno.test("calculateClusterConsensus - users with null cluster assignments are skipped", () => {
+  const clusterA = Array.from({ length: 30 }, (_, i) => `a${i}`);
+  const clusterB = Array.from({ length: 30 }, (_, i) => `b${i}`);
+  const unassigned = ["ghost1", "ghost2"];
 
-  const clusterMetadata = {
-    totalClusters: 2,
-    clusterSizes: {
-      0: 2,
-      1: 2,
-    },
-  };
+  const voters: Record<string, VoteType> = {};
+  for (const u of clusterA) voters[u] = "agree";
+  for (const u of clusterB) voters[u] = "disagree";
+  for (const u of unassigned) voters[u] = "agree";
+
+  const statements: Statement[] = [makeStatement("s", voters)];
 
   const assignments: (ClusterAssignment | null)[] = [
-    { userId: "user1", clusterId: 0, distance: 0.1 },
-    { userId: "user2", clusterId: 0, distance: 0.2 },
-    { userId: "user3", clusterId: 1, distance: 0.1 },
-    { userId: "user4", clusterId: 1, distance: 0.2 },
+    ...clusterA.map((u) => ({ userId: u, clusterId: 0, distance: 0.1 })),
+    ...clusterB.map((u) => ({ userId: u, clusterId: 1, distance: 0.1 })),
+    ...unassigned.map(() => null),
   ];
-
-  const participants = ["user1", "user2", "user3", "user4"];
 
   const result = calculateClusterConsensus(
     statements,
-    clusterMetadata,
+    { totalClusters: 2, clusterSizes: { 0: 30, 1: 30 } },
     assignments,
-    participants,
+    [...clusterA, ...clusterB, ...unassigned],
+  );
+
+  assertEquals(result.clusters[0].size, 30);
+  assertEquals(result.clusters[1].size, 30);
+  assertEquals(result.clusters[0].statements[0].agreeVotes, 30);
+  assertEquals(result.clusters[0].statements[0].totalVotes, 30);
+});
+
+Deno.test("calculateClusterConsensus - empty statements array", () => {
+  const result = calculateClusterConsensus(
+    [],
+    { totalClusters: 2, clusterSizes: { 0: 2, 1: 2 } },
+    [
+      { userId: "user1", clusterId: 0, distance: 0.1 },
+      { userId: "user2", clusterId: 0, distance: 0.2 },
+      { userId: "user3", clusterId: 1, distance: 0.1 },
+      { userId: "user4", clusterId: 1, distance: 0.2 },
+    ],
+    ["user1", "user2", "user3", "user4"],
   );
 
   assertEquals(result.totalClusters, 2);
@@ -373,61 +208,28 @@ Deno.test("calculateClusterConsensus - empty statements array", () => {
 
 Deno.test("calculateClusterConsensus - statementBreakdowns covers every statement and every cluster in size-desc order", () => {
   const statements: Statement[] = [
-    {
-      id: "stmt1",
-      text: "Statement 1",
-      author: "user1",
-      agrees: 2,
-      disagrees: 1,
-      passes: 1,
-      superAgrees: 1,
-      roomId: "room1",
-      timestamp: Date.now(),
-      round: 1,
-      voters: {
-        userA1: "super_agree",
-        userA2: "agree",
-        userB1: "disagree",
-        userB2: "pass",
-      },
-    },
-    {
-      id: "stmt2",
-      text: "Statement 2",
-      author: "user2",
-      agrees: 1,
-      disagrees: 0,
-      passes: 0,
-      superAgrees: 0,
-      roomId: "room1",
-      timestamp: Date.now(),
-      round: 1,
-      voters: {
-        userA1: "agree",
-      },
-    },
+    makeStatement("stmt1", {
+      userA1: "super_agree",
+      userA2: "agree",
+      userB1: "disagree",
+      userB2: "pass",
+    }),
+    makeStatement("stmt2", {
+      userA1: "agree",
+    }),
   ];
-
-  const clusterMetadata = {
-    totalClusters: 2,
-    clusterSizes: { 0: 3, 1: 2 },
-  };
-
-  const assignments: (ClusterAssignment | null)[] = [
-    { userId: "userA1", clusterId: 0, distance: 0.1 },
-    { userId: "userA2", clusterId: 0, distance: 0.1 },
-    { userId: "userA3", clusterId: 0, distance: 0.1 },
-    { userId: "userB1", clusterId: 1, distance: 0.1 },
-    { userId: "userB2", clusterId: 1, distance: 0.1 },
-  ];
-
-  const participants = ["userA1", "userA2", "userA3", "userB1", "userB2"];
 
   const result = calculateClusterConsensus(
     statements,
-    clusterMetadata,
-    assignments,
-    participants,
+    { totalClusters: 2, clusterSizes: { 0: 3, 1: 2 } },
+    [
+      { userId: "userA1", clusterId: 0, distance: 0.1 },
+      { userId: "userA2", clusterId: 0, distance: 0.1 },
+      { userId: "userA3", clusterId: 0, distance: 0.1 },
+      { userId: "userB1", clusterId: 1, distance: 0.1 },
+      { userId: "userB2", clusterId: 1, distance: 0.1 },
+    ],
+    ["userA1", "userA2", "userA3", "userB1", "userB2"],
   );
 
   assertEquals(Object.keys(result.statementBreakdowns).length, 2);
@@ -435,7 +237,6 @@ Deno.test("calculateClusterConsensus - statementBreakdowns covers every statemen
   const stmt1Breakdowns = result.statementBreakdowns["stmt1"];
   assertEquals(stmt1Breakdowns.length, 2);
 
-  // Cluster 0 (largest, size 3): A1 super_agree, A2 agree, A3 didn't vote.
   assertEquals(stmt1Breakdowns[0].clusterId, 0);
   assertEquals(stmt1Breakdowns[0].clusterSize, 3);
   assertEquals(stmt1Breakdowns[0].agreeVotes, 2);
@@ -443,7 +244,6 @@ Deno.test("calculateClusterConsensus - statementBreakdowns covers every statemen
   assertEquals(stmt1Breakdowns[0].disagreeVotes, 0);
   assertEquals(stmt1Breakdowns[0].passVotes, 0);
 
-  // Cluster 1 (size 2): B1 disagree, B2 pass.
   assertEquals(stmt1Breakdowns[1].clusterId, 1);
   assertEquals(stmt1Breakdowns[1].clusterSize, 2);
   assertEquals(stmt1Breakdowns[1].agreeVotes, 0);
@@ -451,14 +251,12 @@ Deno.test("calculateClusterConsensus - statementBreakdowns covers every statemen
   assertEquals(stmt1Breakdowns[1].disagreeVotes, 1);
   assertEquals(stmt1Breakdowns[1].passVotes, 1);
 
-  // stmt2 only has one voter (userA1, in cluster 0).
   const stmt2Breakdowns = result.statementBreakdowns["stmt2"];
   assertEquals(stmt2Breakdowns[0].agreeVotes, 1);
   assertEquals(stmt2Breakdowns[0].superAgreeVotes, 0);
   assertEquals(stmt2Breakdowns[1].agreeVotes, 0);
   assertEquals(stmt2Breakdowns[1].clusterSize, 2);
 
-  // Cluster ordering in statementBreakdowns matches clusters[] ordering.
   result.clusters.forEach((cluster, idx) => {
     assertEquals(stmt1Breakdowns[idx].clusterId, cluster.id);
     assertEquals(stmt1Breakdowns[idx].clusterSize, cluster.size);
@@ -467,52 +265,31 @@ Deno.test("calculateClusterConsensus - statementBreakdowns covers every statemen
 
 Deno.test("calculateClusterConsensus - statementBreakdowns: cluster with no voters yields zeroed counts", () => {
   const statements: Statement[] = [
-    {
-      id: "stmt1",
-      text: "Only cluster A voted",
-      author: "userA1",
-      agrees: 2,
-      disagrees: 0,
-      passes: 0,
-      superAgrees: 0,
-      roomId: "room1",
-      timestamp: Date.now(),
-      round: 1,
-      voters: {
-        userA1: "agree",
-        userA2: "agree",
-      },
-    },
-  ];
-
-  const clusterMetadata = {
-    totalClusters: 2,
-    clusterSizes: { 0: 3, 1: 2 },
-  };
-
-  const assignments: (ClusterAssignment | null)[] = [
-    { userId: "userA1", clusterId: 0, distance: 0.1 },
-    { userId: "userA2", clusterId: 0, distance: 0.1 },
-    { userId: "userA3", clusterId: 0, distance: 0.1 },
-    { userId: "userB1", clusterId: 1, distance: 0.1 },
-    { userId: "userB2", clusterId: 1, distance: 0.1 },
+    makeStatement("stmt1", {
+      userA1: "agree",
+      userA2: "agree",
+    }),
   ];
 
   const result = calculateClusterConsensus(
     statements,
-    clusterMetadata,
-    assignments,
+    { totalClusters: 2, clusterSizes: { 0: 3, 1: 2 } },
+    [
+      { userId: "userA1", clusterId: 0, distance: 0.1 },
+      { userId: "userA2", clusterId: 0, distance: 0.1 },
+      { userId: "userA3", clusterId: 0, distance: 0.1 },
+      { userId: "userB1", clusterId: 1, distance: 0.1 },
+      { userId: "userB2", clusterId: 1, distance: 0.1 },
+    ],
     ["userA1", "userA2", "userA3", "userB1", "userB2"],
   );
 
   const breakdown = result.statementBreakdowns["stmt1"];
   assertEquals(breakdown.length, 2);
 
-  // Cluster 0 (largest): 2 agree out of 3.
   assertEquals(breakdown[0].clusterSize, 3);
   assertEquals(breakdown[0].agreeVotes, 2);
 
-  // Cluster 1: nobody voted, all counts are zero.
   assertEquals(breakdown[1].clusterSize, 2);
   assertEquals(breakdown[1].agreeVotes, 0);
   assertEquals(breakdown[1].superAgreeVotes, 0);
@@ -521,7 +298,7 @@ Deno.test("calculateClusterConsensus - statementBreakdowns: cluster with no vote
 });
 
 Deno.test("calcStatementBreakdownForCluster - counts each vote type and double-counts super_agree as agree", () => {
-  const statement = makeStatement({
+  const statement = makeStatement("s", {
     u1: "agree",
     u2: "super_agree",
     u3: "super_agree",
@@ -538,19 +315,19 @@ Deno.test("calcStatementBreakdownForCluster - counts each vote type and double-c
   assertEquals(result, {
     clusterId: 0,
     clusterSize: 5,
-    agreeVotes: 3,        // u1 (agree) + u2/u3 (super_agree)
-    superAgreeVotes: 2,   // u2 + u3
+    agreeVotes: 3,
+    superAgreeVotes: 2,
     disagreeVotes: 1,
     passVotes: 1,
   });
 });
 
 Deno.test("calcStatementBreakdownForCluster - ignores votes from users outside the cluster group", () => {
-  const statement = makeStatement({
+  const statement = makeStatement("s", {
     insider1: "agree",
     insider2: "disagree",
-    outsider1: "super_agree",  // not in users[]
-    outsider2: "pass",          // not in users[]
+    outsider1: "super_agree",
+    outsider2: "pass",
   });
 
   const result = calcStatementBreakdownForCluster(statement, {
@@ -566,9 +343,8 @@ Deno.test("calcStatementBreakdownForCluster - ignores votes from users outside t
 });
 
 Deno.test("calcStatementBreakdownForCluster - cluster members who didn't vote contribute zero (denominator stays clusterSize)", () => {
-  const statement = makeStatement({
+  const statement = makeStatement("s", {
     u1: "agree",
-    // u2 and u3 are in the cluster but didn't vote on this statement
   });
 
   const result = calcStatementBreakdownForCluster(statement, {
@@ -582,11 +358,10 @@ Deno.test("calcStatementBreakdownForCluster - cluster members who didn't vote co
   assertEquals(result.superAgreeVotes, 0);
   assertEquals(result.disagreeVotes, 0);
   assertEquals(result.passVotes, 0);
-  // didn'tVote = clusterSize - (agree + disagree + pass) = 3 - 1 = 2
 });
 
 Deno.test("calcStatementBreakdownForCluster - empty cluster returns all zeros", () => {
-  const statement = makeStatement({ u1: "agree", u2: "disagree" });
+  const statement = makeStatement("s", { u1: "agree", u2: "disagree" });
 
   const result = calcStatementBreakdownForCluster(statement, {
     clusterId: 0,
@@ -605,7 +380,7 @@ Deno.test("calcStatementBreakdownForCluster - empty cluster returns all zeros", 
 });
 
 Deno.test("calcStatementBreakdownForCluster - passes through clusterId and clusterSize from the group", () => {
-  const statement = makeStatement({ u1: "agree" });
+  const statement = makeStatement("s", { u1: "agree" });
 
   const result = calcStatementBreakdownForCluster(statement, {
     clusterId: 7,
