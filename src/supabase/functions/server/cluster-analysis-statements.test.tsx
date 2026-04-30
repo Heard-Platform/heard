@@ -24,48 +24,48 @@ function makeStatement(id: string, voters: Record<string, VoteType>): Statement 
 
 Deno.test("calcDistinguishingScore - returns 0 when either group has no opinionated votes", () => {
   assertEquals(
-    calcDistinguishingScore({ agrees: 0, disagrees: 0 }, { agrees: 10, disagrees: 10 }),
+    calcDistinguishingScore({ agrees: 0, disagrees: 0, passes: 0 }, { agrees: 10, disagrees: 10, passes: 0 }),
     0,
   );
   assertEquals(
-    calcDistinguishingScore({ agrees: 10, disagrees: 10 }, { agrees: 0, disagrees: 0 }),
+    calcDistinguishingScore({ agrees: 10, disagrees: 10, passes: 0 }, { agrees: 0, disagrees: 0, passes: 0 }),
     0,
   );
 });
 
 Deno.test("calcDistinguishingScore - returns 0 when pooled proportion is 0 or 1", () => {
   assertEquals(
-    calcDistinguishingScore({ agrees: 0, disagrees: 5 }, { agrees: 0, disagrees: 5 }),
+    calcDistinguishingScore({ agrees: 0, disagrees: 5, passes: 0 }, { agrees: 0, disagrees: 5, passes: 0 }),
     0,
   );
   assertEquals(
-    calcDistinguishingScore({ agrees: 5, disagrees: 0 }, { agrees: 5, disagrees: 0 }),
+    calcDistinguishingScore({ agrees: 5, disagrees: 0, passes: 0 }, { agrees: 5, disagrees: 0, passes: 0 }),
     0,
   );
 });
 
 Deno.test("calcDistinguishingScore - positive when in-cluster agrees more than out-cluster", () => {
   const z = calcDistinguishingScore(
-    { agrees: 50, disagrees: 5 },
-    { agrees: 5, disagrees: 50 },
+    { agrees: 50, disagrees: 5, passes: 0 },
+    { agrees: 5, disagrees: 50, passes: 0 },
   );
   assertGreater(z, 0);
 });
 
 Deno.test("calcDistinguishingScore - negative when in-cluster disagrees more than out-cluster", () => {
   const z = calcDistinguishingScore(
-    { agrees: 5, disagrees: 50 },
-    { agrees: 50, disagrees: 5 },
+    { agrees: 5, disagrees: 50, passes: 0 },
+    { agrees: 50, disagrees: 5, passes: 0 },
   );
   assertLess(z, 0);
 });
 
 Deno.test("calcDistinguishingScore - same proportional gap scores higher with larger samples", () => {
   const small = Math.abs(
-    calcDistinguishingScore({ agrees: 8, disagrees: 2 }, { agrees: 2, disagrees: 8 }),
+    calcDistinguishingScore({ agrees: 8, disagrees: 2, passes: 0 }, { agrees: 2, disagrees: 8, passes: 0 }),
   );
   const large = Math.abs(
-    calcDistinguishingScore({ agrees: 80, disagrees: 20 }, { agrees: 20, disagrees: 80 }),
+    calcDistinguishingScore({ agrees: 80, disagrees: 20, passes: 0 }, { agrees: 20, disagrees: 80, passes: 0 }),
   );
   assertGreater(large, small);
 });

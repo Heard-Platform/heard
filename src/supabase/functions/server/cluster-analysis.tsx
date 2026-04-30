@@ -47,6 +47,7 @@ const DISTINGUISHING_Z_THRESHOLD = 1.96;
 export interface VoteTally {
   agrees: number;
   disagrees: number;
+  passes: number;
 }
 
 // Two-proportion z-test: how much does the in-group's agree rate differ from the out-group's?
@@ -69,14 +70,10 @@ export function calcDistinguishingScore(inGroup: VoteTally, outGroup: VoteTally)
   return (inAgreeRate - outAgreeRate) / standardError;
 }
 
-interface VoteRollup extends VoteTally {
-  totalVotes: number;
-}
-
-function recordVote(rollup: VoteRollup, voteType: VoteType): void {
-  rollup.totalVotes++;
-  if (voteType === "agree" || voteType === "super_agree") rollup.agrees++;
-  else if (voteType === "disagree") rollup.disagrees++;
+function recordVote(tally: VoteTally, voteType: VoteType): void {
+  if (voteType === "agree" || voteType === "super_agree") tally.agrees++;
+  else if (voteType === "disagree") tally.disagrees++;
+  else if (voteType === "pass") tally.passes++;
 }
 
 export function calcDistinguishingStatements(
@@ -89,8 +86,8 @@ export function calcDistinguishingStatements(
 
   return statements
     .map((statement) => {
-      const inGroup: VoteRollup = { agrees: 0, disagrees: 0, totalVotes: 0 };
-      const outGroup: VoteRollup = { agrees: 0, disagrees: 0, totalVotes: 0 };
+      const inGroup: VoteTally = { agrees: 0, disagrees: 0, passes: 0 };
+      const outGroup: VoteTally = { agrees: 0, disagrees: 0, passes: 0 };
 
       for (const [userId, voteType] of Object.entries(statement.voters ?? {})) {
         if (inSet.has(userId)) recordVote(inGroup, voteType);
@@ -102,7 +99,7 @@ export function calcDistinguishingStatements(
         text: statement.text,
         agreeVotes: inGroup.agrees,
         disagreeVotes: inGroup.disagrees,
-        totalVotes: inGroup.totalVotes,
+        totalVotes: inGroup.agrees + inGroup.disagrees + inGroup.passes,
         distinguishingScore: calcDistinguishingScore(inGroup, outGroup),
       };
     })
