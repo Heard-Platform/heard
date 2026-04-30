@@ -70,7 +70,7 @@ export function calcDistinguishingScore(inGroup: VoteTally, outGroup: VoteTally)
   return (inAgreeRate - outAgreeRate) / standardError;
 }
 
-function recordVote(tally: VoteTally, voteType: VoteType): void {
+function incrementTally(tally: VoteTally, voteType: VoteType): void {
   if (voteType === "agree" || voteType === "super_agree") tally.agrees++;
   else if (voteType === "disagree") tally.disagrees++;
   else if (voteType === "pass") tally.passes++;
@@ -90,8 +90,8 @@ export function calcDistinguishingStatements(
       const outGroup: VoteTally = { agrees: 0, disagrees: 0, passes: 0 };
 
       for (const [userId, voteType] of Object.entries(statement.voters ?? {})) {
-        if (inSet.has(userId)) recordVote(inGroup, voteType);
-        else if (outSet.has(userId)) recordVote(outGroup, voteType);
+        if (inSet.has(userId)) incrementTally(inGroup, voteType);
+        else if (outSet.has(userId)) incrementTally(outGroup, voteType);
       }
 
       return {
