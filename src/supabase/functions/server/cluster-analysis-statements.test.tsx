@@ -60,14 +60,33 @@ Deno.test("calcDistinguishingScore - negative when in-cluster disagrees more tha
   assertLess(z, 0);
 });
 
-Deno.test("calcDistinguishingScore - same proportional gap scores higher with larger samples", () => {
-  const small = Math.abs(
-    calcDistinguishingScore({ agrees: 8, disagrees: 2, passes: 0 }, { agrees: 2, disagrees: 8, passes: 0 }),
+Deno.test(
+  "calcDistinguishingScore - same proportional gap scores higher with larger samples",
+  () => {
+    const small = calcDistinguishingScore(
+      { agrees: 8, disagrees: 2, passes: 0 },
+      { agrees: 2, disagrees: 8, passes: 0 },
+    );
+
+    const large = calcDistinguishingScore(
+      { agrees: 80, disagrees: 20, passes: 0 },
+      { agrees: 20, disagrees: 80, passes: 0 },
+    );
+    assertGreater(large, small);
+  },
+);
+
+Deno.test("calcDistinguishingStatements - ranks distinguishing statements higher even with fewer votes", () => {
+  const commonStatementScore = calcDistinguishingScore(
+    { agrees: 90, disagrees: 10, passes: 0 },
+    { agrees: 170, disagrees: 30, passes: 0 },
   );
-  const large = Math.abs(
-    calcDistinguishingScore({ agrees: 80, disagrees: 20, passes: 0 }, { agrees: 20, disagrees: 80, passes: 0 }),
+  const distinctStatementScore = calcDistinguishingScore(
+    { agrees: 60, disagrees: 10, passes: 0 },
+    { agrees: 30, disagrees: 140, passes: 0 },
   );
-  assertGreater(large, small);
+
+  assertGreater(distinctStatementScore, commonStatementScore);
 });
 
 Deno.test("calcDistinguishingStatements - filters out statements below z threshold", () => {
