@@ -477,7 +477,8 @@ describe("analysis with hidden statements", () => {
 
     const allAuthors = metrics.allStatements.map((s) => s.id);
     assertEquals(allAuthors.includes("h1"), false);
-    assertEquals(metrics.topPosts.some((p) => p.id === "h1"), false);
+    assertEquals(metrics.topAgreedPosts.some((p) => p.id === "h1"), false);
+    assertEquals(metrics.topDisagreedPosts.some((p) => p.id === "h1"), false);
     assertEquals(metrics.spiciestPosts.some((p) => p.id === "h1"), false);
   });
 
@@ -490,5 +491,71 @@ describe("analysis with hidden statements", () => {
     assertEquals(metrics.totalParticipants, 4);
     assertEquals(metrics.totalVotes, 2);
     assertEquals(metrics.allStatements.length, 2);
+  });
+});
+
+describe("top posts splits", () => {
+  function makeStmt(id: string, overrides: Partial<Statement> = {}): Statement {
+    return {
+      id,
+      text: `Statement ${id}`,
+      author: `author_${id}`,
+      roomId: "room1",
+      round: 1,
+      timestamp: 0,
+      agrees: 0,
+      disagrees: 0,
+      passes: 0,
+      superAgrees: 0,
+      voters: { stub: "agree" },
+      ...overrides,
+    };
+  }
+
+  it("topAgreedPosts contains only agree-leaning statements, sorted by agreement rate desc", () => {
+    const stmts = [
+      makeStmt("agreed-most", { agrees: 90, disagrees: 10 }),
+      makeStmt("agreed-some", { agrees: 60, disagrees: 40 }),
+      makeStmt("disagreed", { agrees: 10, disagrees: 90 }),
+      makeStmt("tied", { agrees: 50, disagrees: 50 }),
+    ];
+
+    const metrics = calculateAnalysisMetrics(stmts, [], []);
+
+    assertEquals(metrics.topAgreedPosts.map((p) => p.id), ["agreed-most", "agreed-some"]);
+  });
+
+  it("topDisagreedPosts contains only disagree-leaning statements, sorted by disagreement rate desc", () => {
+    const stmts = [
+      makeStmt("disagreed-most", { agrees: 5, disagrees: 95 }),
+      makeStmt("disagreed-some", { agrees: 30, disagrees: 70 }),
+      makeStmt("agreed", { agrees: 90, disagrees: 10 }),
+    ];
+
+    const metrics = calculateAnalysisMetrics(stmts, [], []);
+
+    assertEquals(
+      metrics.topDisagreedPosts.map((p) => p.id),
+      ["disagreed-most", "disagreed-some"],
+    );
+  });
+
+  it("a tied statement appears in neither top-agreed nor top-disagreed", () => {
+    const stmts = [makeStmt("tied", { agrees: 25, disagrees: 25 })];
+
+    const metrics = calculateAnalysisMetrics(stmts, [], []);
+
+    assertEquals(metrics.topAgreedPosts.length, 0);
+    assertEquals(metrics.topDisagreedPosts.length, 0);
+  });
+
+  it("limits each list to 3 entries", () => {
+    const stmts = Array.from({ length: 5 }, (_, i) =>
+      makeStmt(`a${i}`, { agrees: 90 - i, disagrees: 10 + i }),
+    );
+
+    const metrics = calculateAnalysisMetrics(stmts, [], []);
+
+    assertEquals(metrics.topAgreedPosts.length, 3);
   });
 });

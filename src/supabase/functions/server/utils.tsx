@@ -31,10 +31,10 @@ export function getTotalVoteCount(statement: Statement) {
 }
 
 export function getConsensusScore(statement: Statement) {
-  const totalVoteCount = getTotalVoteCount(statement);
-  return totalVoteCount > 0
-    ? ((statement.agrees + statement.superAgrees) / totalVoteCount) * 100
-    : 0;
+  const agreeCount = statement.agrees + statement.superAgrees;
+  const opinionatedVotes = agreeCount + statement.disagrees;
+  if (opinionatedVotes === 0) return 0;
+  return (Math.abs(agreeCount - statement.disagrees) / opinionatedVotes) * 100;
 }
 
 export function serializeStatement(statement: Statement): StatementVotes {

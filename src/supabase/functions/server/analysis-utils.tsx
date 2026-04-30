@@ -41,7 +41,8 @@ export interface AnalysisMetrics {
     postersWithHighConsensusPost: number;
     reach: number;
   };
-  topPosts: StatementVotes[];
+  topAgreedPosts: StatementVotes[];
+  topDisagreedPosts: StatementVotes[];
   spiciestPosts: StatementVotes[];
   allStatements: StatementVotes[];
 }
@@ -189,13 +190,31 @@ export function calculateAnalysisMetrics(
   const consensusData = calcConsensus(statements);
   const spicinessData = calcSpiciness(statements);
 
-  const topPosts = statements
-    .map(serializeStatement)
+  const serialized = statements.map(serializeStatement);
+
+  const opinionatedVotesOf = (s: StatementVotes) => s.agreeVotes + s.disagreeVotes;
+  const agreementRateOf = (s: StatementVotes) => {
+    const opinionated = opinionatedVotesOf(s);
+    return opinionated > 0 ? s.agreeVotes / opinionated : 0;
+  };
+  const disagreementRateOf = (s: StatementVotes) => {
+    const opinionated = opinionatedVotesOf(s);
+    return opinionated > 0 ? s.disagreeVotes / opinionated : 0;
+  };
+
+  const topAgreedPosts = serialized
+    .filter((s) => s.agreeVotes > s.disagreeVotes)
     .sort((a, b) => {
-      if (b.consensusScore !== a.consensusScore) {
-        return b.consensusScore - a.consensusScore;
-      }
-      return b.totalVotes - a.totalVotes;
+      const rateDiff = agreementRateOf(b) - agreementRateOf(a);
+      return rateDiff !== 0 ? rateDiff : b.totalVotes - a.totalVotes;
+    })
+    .slice(0, 3);
+
+  const topDisagreedPosts = serialized
+    .filter((s) => s.disagreeVotes > s.agreeVotes)
+    .sort((a, b) => {
+      const rateDiff = disagreementRateOf(b) - disagreementRateOf(a);
+      return rateDiff !== 0 ? rateDiff : b.totalVotes - a.totalVotes;
     })
     .slice(0, 3);
 
@@ -219,7 +238,7 @@ export function calculateAnalysisMetrics(
     ? Math.min(postersWithHighConsensusPost.size / uniquePosters.size, 1)
     : 0;
 
-  const allStatements = statements.map(serializeStatement);
+  const allStatements = serialized;
 
   return {
     totalParticipants: uniqueParticipants.size,
@@ -234,7 +253,8 @@ export function calculateAnalysisMetrics(
       postersWithHighConsensusPost: postersWithHighConsensusPost.size,
       reach,
     },
-    topPosts,
+    topAgreedPosts,
+    topDisagreedPosts,
     spiciestPosts,
     allStatements,
   };

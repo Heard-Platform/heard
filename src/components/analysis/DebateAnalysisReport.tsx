@@ -2,14 +2,27 @@ import { Card } from "../ui/card";
 import { Users, MessageSquare, Target, GitBranch, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "../ui/button";
 import { StatBox } from "./StatBox";
-import { TopAgreedPosts } from "./TopAgreedPosts";
-import { SpiciestPosts } from "./SpiciestPosts";
+import { TopPostsByMetric } from "./TopPostsByMetric";
 import { ClusterConsensusBox } from "./ClusterConsensusBox";
 import { DemographicsPieCharts } from "./DemographicsPieCharts";
 import { AnalysisData, StatementVotes } from "../../types";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 import { MetricCard } from "./MetricCard";
 import { StatementVotesTable } from "./StatementVotesTable";
+
+function opinionatedVotesOf(post: StatementVotes): number {
+  return post.agreeVotes + post.disagreeVotes;
+}
+
+function agreementRate(post: StatementVotes): number {
+  const opinionated = opinionatedVotesOf(post);
+  return opinionated > 0 ? (post.agreeVotes / opinionated) * 100 : 0;
+}
+
+function disagreementRate(post: StatementVotes): number {
+  const opinionated = opinionatedVotesOf(post);
+  return opinionated > 0 ? (post.disagreeVotes / opinionated) * 100 : 0;
+}
 
 interface DebateAnalysisReportProps extends AnalysisData {
   debateId: string;
@@ -29,7 +42,8 @@ export function DebateAnalysisReport({
   consensusData,
   spicinessData,
   reachData,
-  topPosts,
+  topAgreedPosts,
+  topDisagreedPosts,
   spiciestPosts,
   clusterConsensus,
   demographics,
@@ -90,14 +104,14 @@ export function DebateAnalysisReport({
             viz="bar"
             score={consensusData.consensus}
             count={consensusData.highConsensusPostCount}
-            description={`${consensusData.highConsensusPostCount} high consensus posts`}
+            description={`${consensusData.highConsensusPostCount} high consensus statements`}
           />
           <MetricCard
             label="Spiciness"
             viz="bar"
             score={spicinessData.spiciness}
             count={spicinessData.lowConsensusPostCount}
-            description={`${spicinessData.lowConsensusPostCount} low consensus posts`}
+            description={`${spicinessData.lowConsensusPostCount} low consensus statements`}
           />
           <MetricCard
             label="Reach"
@@ -108,8 +122,30 @@ export function DebateAnalysisReport({
           />
         </div>
 
-        <TopAgreedPosts topPosts={topPosts} />
-        <SpiciestPosts spiciestPosts={spiciestPosts} />
+        <TopPostsByMetric
+          posts={topAgreedPosts}
+          title="Top Agreed Upon Statements"
+          subtitle="Super agrees are counted as agrees"
+          metric={agreementRate}
+          metricLabel="agreement"
+          badgeClassName="bg-green-50 text-green-700 border-green-200"
+        />
+        <TopPostsByMetric
+          posts={topDisagreedPosts}
+          title="Top Disagreed Upon Statements"
+          metric={disagreementRate}
+          metricLabel="disagreement"
+          badgeClassName="bg-red-50 text-red-700 border-red-200"
+        />
+        <TopPostsByMetric
+          posts={spiciestPosts}
+          title="Spiciest Statements"
+          subtitle="Most controversial takes"
+          metric={(post) => post.consensusScore}
+          metricLabel="consensus"
+          badgeClassName="bg-red-50 text-red-700 border-red-200"
+          numberBadgeClassName="absolute top-2 right-2 w-6 h-6 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white text-xs"
+        />
 
         {!clusterConsensus || clusterConsensus.totalClusters === 0 ? (
           <Card className="p-6 border-2 border-yellow-200 bg-yellow-50">
