@@ -285,7 +285,7 @@ export interface ClusterStatement {
   agreeVotes: number;
   disagreeVotes: number;
   totalVotes: number;
-  consensusScore: number;
+  distinguishingScore: number;
 }
 
 export interface Cluster {
