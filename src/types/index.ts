@@ -323,7 +323,8 @@ export interface AnalysisMetrics {
     postersWithHighConsensusPost: number;
     reach: number;
   };
-  topPosts: StatementVotes[];
+  topAgreedPosts: StatementVotes[];
+  topDisagreedPosts: StatementVotes[];
   spiciestPosts: StatementVotes[];
 }
 

@@ -3,27 +3,43 @@ import { Badge } from "../ui/badge";
 import { CheckCircle, XCircle, MinusCircle } from "lucide-react";
 import { StatementVotes } from "../../types";
 
-interface SpiciestPostsProps {
-  spiciestPosts: StatementVotes[];
+interface TopPostsByMetricProps {
+  posts: StatementVotes[];
+  title: string;
+  subtitle?: string;
+  metric: (post: StatementVotes) => number;
+  metricLabel: string;
+  badgeClassName: string;
+  numberBadgeClassName?: string;
 }
 
-export function SpiciestPosts({ spiciestPosts }: SpiciestPostsProps) {
-  if (spiciestPosts.length === 0) {
+const DEFAULT_NUMBER_BADGE_CLASS = "heard-badge-circle absolute top-2 right-2";
+
+export function TopPostsByMetric({
+  posts,
+  title,
+  subtitle,
+  metric,
+  metricLabel,
+  badgeClassName,
+  numberBadgeClassName = DEFAULT_NUMBER_BADGE_CLASS,
+}: TopPostsByMetricProps) {
+  if (posts.length === 0) {
     return null;
   }
 
   return (
     <div>
       <div className="mb-3">
-        <h2 className="text-xl">Spiciest Posts</h2>
-        <p className="text-xs text-muted-foreground mt-1">Most controversial takes</p>
+        <h2 className="text-xl">{title}</h2>
+        {subtitle && (
+          <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+        )}
       </div>
       <div className="space-y-3">
-        {spiciestPosts.slice(0, 3).map((post, index) => (
+        {posts.slice(0, 3).map((post, index) => (
           <Card key={post.id} className="p-4 hover:shadow-md transition-shadow relative">
-            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white text-xs">
-              {index + 1}
-            </div>
+            <div className={numberBadgeClassName}>{index + 1}</div>
             <p className="text-sm mb-3 pr-8">{post.text}</p>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
@@ -38,8 +54,11 @@ export function SpiciestPosts({ spiciestPosts }: SpiciestPostsProps) {
                 <MinusCircle className="w-3 h-3" />
                 <span>{post.passVotes}</span>
               </div>
-              <Badge variant="outline" className="ml-auto bg-red-50 text-red-700 border-red-200">
-                {Math.round(post.consensusScore)}% consensus
+              <Badge
+                variant="outline"
+                className={`ml-auto ${badgeClassName}`}
+              >
+                {Math.round(metric(post))}% {metricLabel}
               </Badge>
             </div>
           </Card>

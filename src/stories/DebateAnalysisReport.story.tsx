@@ -22,7 +22,7 @@ export default {
   title: "Analysis/Report",
 };
 
-const mockTopPosts: StatementVotes[] = [
+const mockTopAgreedPosts: StatementVotes[] = [
   {
     id: "post-1",
     text: "We should invest more in renewable energy infrastructure to reduce our carbon footprint and create green jobs for the future.",
@@ -76,7 +76,7 @@ const mockTopPosts: StatementVotes[] = [
   },
 ];
 
-const mockSpiciestPosts: StatementVotes[] = [
+const mockTopDisagreedPosts: StatementVotes[] = [
   {
     id: "spicy-1",
     text: "We should completely ban cars in the downtown core to prioritize pedestrian spaces.",
@@ -257,8 +257,8 @@ const mockDemographics: Record<string, { [option: string]: number }> =
   };
 
 const mockAllStatements: StatementVotes[] = [
-  ...mockTopPosts,
-  ...mockSpiciestPosts,
+  ...mockTopAgreedPosts,
+  ...mockTopDisagreedPosts,
 ];
 
 const defaultAnalysisData: AnalysisData = {
@@ -273,8 +273,9 @@ const defaultAnalysisData: AnalysisData = {
   consensusData: { consensus: 0.62, highConsensusPostCount: 48 },
   spicinessData: { spiciness: 0.35, lowConsensusPostCount: 11 },
   reachData: { reach: 0.42, postersWithHighConsensusPost: 66 },
-  topPosts: mockTopPosts,
-  spiciestPosts: mockSpiciestPosts,
+  topAgreedPosts: mockTopAgreedPosts,
+  topDisagreedPosts: mockTopDisagreedPosts,
+  spiciestPosts: [],
   clusterConsensus: mockClusterConsensus,
   allStatements: mockAllStatements,
 };
@@ -310,7 +311,7 @@ export const NoClusters = () => {
       consensusData={{ consensus: 0.45, highConsensusPostCount: 12 }}
       spicinessData={{ spiciness: 0.68, lowConsensusPostCount: 19 }}
       reachData={{ reach: 0.28, postersWithHighConsensusPost: 15 }}
-      topPosts={[
+      topAgreedPosts={[
         {
           id: "post-a",
           text: "Food trucks bring variety and support small businesses in our community.",
@@ -338,21 +339,22 @@ export const NoClusters = () => {
           clusterVotes: [],
         },
       ]}
-      spiciestPosts={[
+      topDisagreedPosts={[
         {
-          id: "spicy-a",
+          id: "post-c",
           text: "Ban all restaurants within 500 feet of food truck locations.",
           agreeVotes: 6,
           rawAgreeVotes: 5,
           superAgreeVotes: 1,
           disagreeVotes: 34,
           passVotes: 8,
-          consensusScore: 10.6,
+          consensusScore: 70.0,
           totalVotes: 47,
           mergedFrom: [],
           clusterVotes: [],
         },
       ]}
+      spiciestPosts={[]}
       clusterConsensus={null}
     />
   );
