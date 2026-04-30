@@ -50,7 +50,8 @@ export interface VoteTally {
   passes: number;
 }
 
-// Two-proportion z-test: how much does the in-group's agree rate differ from the out-group's?
+// Two-proportion z-test on agree rates. Sign indicates direction:
+// positive = in-group agrees more, negative = in-group disagrees more.
 export function calcDistinguishingScore(inGroup: VoteTally, outGroup: VoteTally): number {
   const inOpinionatedVotes = inGroup.agrees + inGroup.disagrees;
   const outOpinionatedVotes = outGroup.agrees + outGroup.disagrees;
