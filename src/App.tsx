@@ -36,6 +36,15 @@ import { toast } from "sonner@2.0.3";
 const KALORAMA_ROOM_ID = "xo38wmfkm7bmo35js4i";
 const KALORAMA_COMMUNITIES = ["kalorama-park", "dupont-circle-neighborhoods", "washington-dc"];
 
+const I_LOVE_CIVTECH_FLYER_ID = "gv7kmooa0lmom3pn2m";
+const I_LOVE_CIVTECH_STATEMENT_ID = "jg46pxp4fsmom3pn3c";
+
+const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: string }> = {
+  shirt: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
+  sign: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
+  card: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
+};
+
 function AppContent() {
   const [isJoiningRoom, setIsJoiningRoom] = useState(false);
   const [targetRoomId, setTargetRoomId] = useState<
@@ -226,10 +235,9 @@ function AppContent() {
         window.location.pathname.startsWith("/rats");
       const isDogsRoute =
         window.location.pathname.startsWith("/dogs");
-      const isShirtAgreeRoute =
-        window.location.pathname.startsWith("/shirt-agree");
-      const isShirtDisagreeRoute =
-        window.location.pathname.startsWith("/shirt-disagree");
+      const hardcodedFlyerMatch = window.location.pathname.match(
+        /^\/(shirt|sign|card)-(agree|disagree)/,
+      );
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
@@ -285,12 +293,13 @@ function AppContent() {
           setPendingCommunities(KALORAMA_COMMUNITIES);
           startRoomJoin(hardcodedRoomId);
         }
-      } else if (isShirtAgreeRoute || isShirtDisagreeRoute) {
+      } else if (hardcodedFlyerMatch) {
+        const [, routeKey, voteWord] = hardcodedFlyerMatch;
+        const flyerConfig = HARDCODED_FLYER_ROUTES[routeKey];
         handleFlyerJoin({
-          flyerId: "43rmfvxw9wjmoaizr4y",
-          statementId: "fa34pfk93dumoaizr6n",
-          vote: isShirtAgreeRoute ? "agree" : "disagree",
-          flyerGroup: 1,
+          flyerId: flyerConfig.flyerId,
+          statementId: flyerConfig.statementId,
+          vote: voteWord === "agree" ? "agree" : "disagree",
         });
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
