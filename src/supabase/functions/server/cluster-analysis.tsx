@@ -6,7 +6,7 @@ interface ClusterMetadata {
   clusterSizes: Record<number, number>;
 }
 
-interface ClusterDistinguishingStatement {
+interface DistinguishingStatement {
   id: string;
   text: string;
   agreeVotes: number;
@@ -18,7 +18,7 @@ interface ClusterDistinguishingStatement {
 export interface Cluster {
   id: number;
   size: number;
-  statements: ClusterDistinguishingStatement[];
+  statements: DistinguishingStatement[];
 }
 
 export interface ClusterVoteBreakdown {
@@ -81,7 +81,7 @@ export function calcDistinguishingStatements(
   statements: Statement[],
   inClusterUsers: string[],
   outClusterUsers: string[],
-): ClusterDistinguishingStatement[] {
+): DistinguishingStatement[] {
   const inSet = new Set(inClusterUsers);
   const outSet = new Set(outClusterUsers);
 

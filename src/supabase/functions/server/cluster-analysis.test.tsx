@@ -27,14 +27,14 @@ function makeStatement(id: string, voters: Statement["voters"]): Statement {
 }
 
 function makeClusteredVoters(
-  inCluster: string[],
-  outCluster: string[],
+  inClusterUserIds: string[],
+  outClusterUserIds: string[],
   inVote: VoteType,
   outVote: VoteType,
 ): Record<string, VoteType> {
   const voters: Record<string, VoteType> = {};
-  for (const u of inCluster) voters[u] = inVote;
-  for (const u of outCluster) voters[u] = outVote;
+  for (const id of inClusterUserIds) voters[id] = inVote;
+  for (const id of outClusterUserIds) voters[id] = outVote;
   return voters;
 }
 
