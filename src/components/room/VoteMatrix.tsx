@@ -68,7 +68,7 @@ function buildMergeInfo(merges: StatementMerge[]): MergeInfo {
 }
 
 const AuthorBadge = () => (
-  <span className="absolute top-[5px] right-[5px] w-1.5 h-1.5 rounded-full attention-background" />
+  <span className="absolute top-[5px] right-[5px] w-1.5 h-1.5 rounded-full attention-bg" />
 );
 
 interface VoteMatrixProps {
