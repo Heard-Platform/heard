@@ -312,20 +312,10 @@ app.post(
 
       const normalizedEmail = email.trim().toLowerCase();
 
-      const user = await getUserByEmail(normalizedEmail);
-
-      if (!user) {
-        return c.json(
-          { error: "No account found with this email" },
-          404,
-        );
-      }
-
       const token = generateMagicLinkCode();
       const expiresAt = Date.now() + 15 * 60 * 1000;
 
       await saveMagicLink(token, {
-        userId: user.id,
         email: normalizedEmail,
         expiresAt,
       });
@@ -388,7 +378,7 @@ app.post(
         return c.json({ error: "Invalid or expired magic link" }, 401);
       }
 
-      const { userId, expiresAt } = magicLinkData;
+      const { email, expiresAt } = magicLinkData;
 
       if (Date.now() > expiresAt) {
         await deleteMagicLink(token);
@@ -396,8 +386,13 @@ app.post(
       }
 
       await deleteMagicLink(token);
-      
-      const result = await loginUserWithMerge(userId, currentUserId);
+
+      let user = await getUserByEmail(email);
+      if (!user) {
+        user = await createUserAccount({ email });
+      }
+
+      const result = await loginUserWithMerge(user.id, currentUserId);
       if ("error" in result) {
         return c.json({ error: result.error }, result.status as any);
       }
