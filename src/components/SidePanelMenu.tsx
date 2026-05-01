@@ -101,6 +101,21 @@ export function SidePanelMenu({
     createScalabilityTest,
   } = useDebateSession();
 
+  if (user.isAnonymous) {
+    return (
+      <Button
+        onClick={() => onShowAccountSetupModal("save your progress")}
+        variant="outline"
+        className="controls-layer rounded-full bg-gradient-to-r from-orange-500 to-amber-500 backdrop-blur-sm shadow-lg h-[30px] px-4 gap-2 border border-orange-400 hover:from-orange-600 hover:to-amber-600 transition-all"
+      >
+        <div className="flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-white" />
+          <span className="font-bold text-sm text-white">Sign Up</span>
+        </div>
+      </Button>
+    );
+  }
+
   const closeMenuAndRun = (action: () => void) => {
     setMenuOpen(false);
     action();
@@ -177,44 +192,34 @@ export function SidePanelMenu({
       />
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetTrigger asChild>
-          {user.isAnonymous ? (
-            <Button
-              variant="outline"
-              className="controls-layer rounded-full bg-gradient-to-r from-orange-500 to-amber-500 backdrop-blur-sm shadow-lg h-[30px] px-4 gap-2 border border-orange-400 hover:from-orange-600 hover:to-amber-600 transition-all"
-              >
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-white" />
-                <span className="font-bold text-sm text-white">Sign Up</span>
+          <Button
+            variant="outline"
+            className="controls-layer rounded-full bg-white/90 backdrop-blur-sm shadow-lg px-3 h-[30px] gap-2 border border-gray-200"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-sm">{formattedScore}</span>
+              <div className="relative w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+                {!user.phoneVerified && (
+                  <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center">
+                    <ShieldAlert className="w-2 h-2 text-white" />
+                  </div>
+                )}
+                {user.phoneVerified && (
+                  <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center">
+                    <ShieldCheck className="w-2 h-2 text-white" />
+                  </div>
+                )}
               </div>
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              className="controls-layer rounded-full bg-white/90 backdrop-blur-sm shadow-lg px-3 h-[30px] gap-2 border border-gray-200"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-sm">{formattedScore}</span>
-                <div className="relative w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
-                  {!user.phoneVerified && (
-                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center">
-                      <ShieldAlert className="w-2 h-2 text-white" />
-                    </div>
-                  )}
-                  {user.phoneVerified && (
-                    <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center">
-                      <ShieldCheck className="w-2 h-2 text-white" />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Button>
-          )}
+            </div>
+          </Button>
         </SheetTrigger>
         <SheetContent side="right" className="flex flex-col">
           <SheetHeader>
             <SheetTitle>Menu</SheetTitle>
-            <SheetDescription>User settings and options</SheetDescription>
+            <SheetDescription>
+              User settings and options
+            </SheetDescription>
           </SheetHeader>
 
           <div className="space-y-4 mt-6 overflow-y-auto flex-1 px-1">
@@ -235,7 +240,8 @@ export function SidePanelMenu({
                       Your score isn't being saved
                     </p>
                     <p className="text-orange-700 text-xs mt-1">
-                      Sign in or setup an account to save your score, make rooms, and access more features.
+                      Sign in or setup an account to save your score,
+                      make rooms, and access more features.
                     </p>
                   </div>
                 </div>
@@ -344,7 +350,9 @@ export function SidePanelMenu({
             )}
 
             <div className="border-t pt-4">
-              <h3 className="font-medium mb-3 text-sm text-muted-foreground">Learn More</h3>
+              <h3 className="font-medium mb-3 text-sm text-muted-foreground">
+                Learn More
+              </h3>
               <div className="space-y-2">
                 <Button
                   onClick={() => {
@@ -359,8 +367,12 @@ export function SidePanelMenu({
                       <MessageCircle className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex flex-col items-start flex-1">
-                      <span className="font-bold text-purple-900">Talk to Founder</span>
-                      <span className="text-xs text-purple-600">Chat with Alex!</span>
+                      <span className="font-bold text-purple-900">
+                        Talk to Founder
+                      </span>
+                      <span className="text-xs text-purple-600">
+                        Chat with Alex!
+                      </span>
                     </div>
                     <span className="text-xl">💜</span>
                   </div>
@@ -386,11 +398,15 @@ export function SidePanelMenu({
             {user.isDeveloper && (
               <>
                 <div className="border-t pt-4">
-                  <h3 className="font-medium mb-3">Developer Tools</h3>
+                  <h3 className="font-medium mb-3">
+                    Developer Tools
+                  </h3>
                   <div className="space-y-2">
                     {onOpenDevTools && (
                       <Button
-                        onClick={() => closeMenuAndRun(onOpenDevTools)}
+                        onClick={() =>
+                          closeMenuAndRun(onOpenDevTools)
+                        }
                         variant="outline"
                         size="sm"
                         className="w-full bg-blue-50 border-blue-200 text-blue-800"
@@ -401,7 +417,9 @@ export function SidePanelMenu({
                     )}
                     {onOpenAdminPanel && (
                       <Button
-                        onClick={() => closeMenuAndRun(onOpenAdminPanel)}
+                        onClick={() =>
+                          closeMenuAndRun(onOpenAdminPanel)
+                        }
                         variant="outline"
                         size="sm"
                         className="w-full bg-purple-50 border-purple-200 text-purple-800"
