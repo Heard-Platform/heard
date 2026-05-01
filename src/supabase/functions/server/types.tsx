@@ -55,7 +55,6 @@ export type UserActivityRecord = {
 };
 
 export type MagicLinkRecord = {
-  userId: string;
   email: string;
   expiresAt: number;
 };
