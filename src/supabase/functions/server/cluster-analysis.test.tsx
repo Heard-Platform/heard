@@ -107,11 +107,11 @@ Deno.test("calculateClusterConsensus - low-participation cluster yields no disti
   assertEquals(result.clusters[0].statements.length, 0);
 });
 
-Deno.test("calculateClusterConsensus - limits to top 3 distinguishing statements", () => {
+Deno.test("calculateClusterConsensus - limits to top 6 distinguishing statements", () => {
   const clusterA = Array.from({ length: 40 }, (_, i) => `a${i}`);
   const clusterB = Array.from({ length: 40 }, (_, i) => `b${i}`);
 
-  const statements: Statement[] = Array.from({ length: 5 }, (_, i) =>
+  const statements: Statement[] = Array.from({ length: 10 }, (_, i) =>
     makeStatement(`s${i}`, makeClusteredVoters(clusterA, clusterB, "agree", "disagree")),
   );
 
@@ -127,7 +127,7 @@ Deno.test("calculateClusterConsensus - limits to top 3 distinguishing statements
     [...clusterA, ...clusterB],
   );
 
-  assertEquals(result.clusters[0].statements.length, 3);
+  assertEquals(result.clusters[0].statements.length, 6);
 });
 
 Deno.test("calculateClusterConsensus - super_agree counts as agree in distinguishing statements", () => {
