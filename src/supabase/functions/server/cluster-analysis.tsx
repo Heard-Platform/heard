@@ -189,7 +189,7 @@ export function calculateClusterConsensus(
     return {
       id: g.clusterId,
       size: g.size,
-      statements: calcDistinguishingStatements(statements, g.users, otherUsers).slice(0, 3),
+      statements: calcDistinguishingStatements(statements, g.users, otherUsers).slice(0, 6),
     };
   });
 

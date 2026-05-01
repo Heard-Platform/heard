@@ -1,8 +1,12 @@
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { StatementVotes } from "../../types";
 import { StatementVotesTableHead, clusterLabel } from "./StatementVotesTableHead";
 import { StatementVotesTableRow } from "./StatementVotesTableRow";
 import { getClusterColor } from "../../utils/colors";
+
+const VISIBLE_STATEMENTS = 3;
 
 interface ClusterConsensusBoxProps {
   clusterIndex: number;
@@ -20,6 +24,9 @@ export function ClusterConsensusBox({
   statements,
 }: ClusterConsensusBoxProps) {
   const colors = getClusterColor(clusterIndex);
+  const [expanded, setExpanded] = useState(false);
+  const visibleStatements = expanded ? statements : statements.slice(0, VISIBLE_STATEMENTS);
+  const extraCount = Math.max(0, statements.length - VISIBLE_STATEMENTS);
 
   return (
     <div className={`border ${colors.border} rounded-lg p-4 ${colors.bg}`}>
@@ -46,7 +53,7 @@ export function ClusterConsensusBox({
               highlightClusterIndex={clusterIndex}
             />
             <tbody>
-              {statements.map((statement) => (
+              {visibleStatements.map((statement) => (
                 <StatementVotesTableRow
                   key={statement.id}
                   statement={statement}
@@ -56,6 +63,25 @@ export function ClusterConsensusBox({
               ))}
             </tbody>
           </table>
+          {extraCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              className="mt-2 inline-flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {expanded ? (
+                <>
+                  <ChevronUp className="w-3 h-3" />
+                  See less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-3 h-3" />
+                  See more
+                </>
+              )}
+            </button>
+          )}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">
