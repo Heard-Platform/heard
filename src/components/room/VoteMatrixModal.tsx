@@ -37,7 +37,7 @@ export function VoteMatrixModal({ roomId, roomTopic, participantCount, onClose }
 
   return (
     <Dialog open onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="max-w-[95vw] w-full max-h-[90vh] flex flex-col gap-2 overflow-hidden">
+      <DialogContent className="max-w-[95vw] w-full h-[90vh] flex flex-col gap-2 overflow-hidden">
         <DialogTitle className="line-clamp-1 pr-8 shrink-0">{roomTopic}</DialogTitle>
         {loading ? (
           <div className="flex items-center justify-center h-48 inactive-text-soft text-sm">
