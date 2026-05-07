@@ -1,5 +1,11 @@
-import { ChevronRight, CheckSquare } from "lucide-react";
-import { Statement, StatementMerge, VoteType } from "../../types";
+import { ChevronRight, CheckSquare, Download } from "lucide-react";
+import { StatementMerge, VoteType } from "../../types";
+import { Button } from "../ui/button";
+import {
+  VoteMatrixData,
+  downloadVoteMatrixCsv,
+  getMatrixUserIds,
+} from "./vote-matrix-utils";
 
 const VOTE_COLORS: Record<VoteType, string> = {
   agree: "agree-bg",
@@ -72,28 +78,17 @@ const AuthorBadge = () => (
 );
 
 interface VoteMatrixProps {
-  statements: Statement[];
-  merges: StatementMerge[];
-  phoneVerified?: Record<string, boolean>;
+  matrix: VoteMatrixData;
   tableWrapperClassName?: string;
 }
 
 export function VoteMatrix({
-  statements,
-  merges,
-  phoneVerified = {},
+  matrix,
   tableWrapperClassName = "max-h-[calc(100vh-280px)]",
 }: VoteMatrixProps) {
+  const { statements, merges, phoneVerified = {} } = matrix;
   const mergeInfo = buildMergeInfo(merges);
-
-  const allUserIds = Array.from(
-    new Set(
-      statements.flatMap((s) => [
-        s.author,
-        ...Object.keys(s.voters ?? {}),
-      ]),
-    ),
-  ).sort();
+  const allUserIds = getMatrixUserIds(statements);
 
   if (statements.length === 0) {
     return (
@@ -266,6 +261,15 @@ export function VoteMatrix({
             dimmed = merged source
           </span>
         )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => downloadVoteMatrixCsv(matrix)}
+          className="ml-auto h-7 px-2 text-xs"
+        >
+          <Download className="w-3 h-3 mr-1" />
+          Download CSV
+        </Button>
       </div>
     </div>
   );

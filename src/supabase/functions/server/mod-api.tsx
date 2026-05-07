@@ -9,6 +9,7 @@ import {
   saveDebateRoom,
 } from "./debate-api.tsx";
 import {
+  getClusterAssignmentsBatch,
   getStatementsForRoomIncludingHidden,
   getUser,
   saveStatement,
@@ -88,12 +89,18 @@ app.get(
       const userIds = Array.from(
         new Set(statements.flatMap((s) => [s.author, ...Object.keys(s.voters ?? {})]))
       );
-      const users = await Promise.all(userIds.map((id) => getUser(id)));
+      const [users, clusterAssignments] = await Promise.all([
+        Promise.all(userIds.map((id) => getUser(id))),
+        getClusterAssignmentsBatch(roomId, userIds),
+      ]);
       const phoneVerified: Record<string, boolean> = {};
+      const userClusters: Record<string, number> = {};
       for (let i = 0; i < userIds.length; i++) {
         if (users[i]?.phoneVerified) phoneVerified[userIds[i]] = true;
+        const assignment = clusterAssignments.get(userIds[i]);
+        if (assignment) userClusters[userIds[i]] = assignment.clusterId;
       }
-      return { statements, merges, phoneVerified };
+      return { statements, merges, phoneVerified, userClusters };
     },
     "Failed to fetch vote matrix",
   ),

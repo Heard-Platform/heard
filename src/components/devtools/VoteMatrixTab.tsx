@@ -3,8 +3,9 @@ import { api, safelyMakeApiCall } from "../../utils/api";
 import { Button } from "../ui/button";
 import { RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
-import { DebateRoom, Statement, StatementMerge } from "../../types";
+import { DebateRoom } from "../../types";
 import { VoteMatrix } from "../room/VoteMatrix";
+import { VoteMatrixData } from "../room/vote-matrix-utils";
 
 const formatDate = (ts: number) =>
   new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
@@ -12,9 +13,7 @@ const formatDate = (ts: number) =>
 export function VoteMatrixTab() {
   const [rooms, setRooms] = useState<DebateRoom[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<DebateRoom | null>(null);
-  const [statements, setStatements] = useState<Statement[]>([]);
-  const [merges, setMerges] = useState<StatementMerge[]>([]);
-  const [phoneVerified, setPhoneVerified] = useState<Record<string, boolean>>({});
+  const [matrix, setMatrix] = useState<VoteMatrixData | null>(null);
   const [loadingRooms, setLoadingRooms] = useState(true);
   const [loadingMatrix, setLoadingMatrix] = useState(false);
   const [search, setSearch] = useState("");
@@ -30,15 +29,16 @@ export function VoteMatrixTab() {
 
   const openMatrix = async (room: DebateRoom) => {
     setSelectedRoom(room);
-    setStatements([]);
-    setMerges([]);
-    setPhoneVerified({});
+    setMatrix(null);
     setLoadingMatrix(true);
     const response = await safelyMakeApiCall(() => api.getVoteMatrix(room.id));
     if (response?.success && response.data) {
-      setStatements(response.data.statements);
-      setMerges(response.data.merges);
-      setPhoneVerified(response.data.phoneVerified ?? {});
+      setMatrix({
+        statements: response.data.statements,
+        merges: response.data.merges,
+        phoneVerified: response.data.phoneVerified ?? {},
+        userClusters: response.data.userClusters ?? {},
+      });
     }
     setLoadingMatrix(false);
   };
@@ -53,10 +53,10 @@ export function VoteMatrixTab() {
       r.subHeard?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const totalVotesLoaded = statements.reduce(
+  const totalVotesLoaded = matrix?.statements.reduce(
     (sum, s) => sum + s.agrees + s.superAgrees + s.disagrees + s.passes,
     0
-  );
+  ) ?? 0;
 
   return (
     <>
@@ -124,23 +124,18 @@ export function VoteMatrixTab() {
           <DialogTitle className="line-clamp-1 pr-8 shrink-0">
             {selectedRoom?.topic}
           </DialogTitle>
-          {loadingMatrix ? (
+          {loadingMatrix || !matrix ? (
             <div className="flex items-center justify-center h-48 text-slate-400 text-sm">
-              Loading matrix…
+              {loadingMatrix ? "Loading matrix…" : "No data."}
             </div>
           ) : (
             <>
               <p className="text-xs text-slate-400 shrink-0">
-                {statements.length} statements · {selectedRoom?.participants.length} participants · {totalVotesLoaded} votes
-                {merges.length > 0 && ` · ${merges.length} merges`}
+                {matrix.statements.length} statements · {selectedRoom?.participants.length} participants · {totalVotesLoaded} votes
+                {matrix.merges.length > 0 && ` · ${matrix.merges.length} merges`}
               </p>
               <div className="flex-1 overflow-hidden min-h-0">
-                <VoteMatrix
-                  statements={statements}
-                  merges={merges}
-                  phoneVerified={phoneVerified}
-                  tableWrapperClassName="h-full"
-                />
+                <VoteMatrix matrix={matrix} tableWrapperClassName="h-full" />
               </div>
             </>
           )}
