@@ -24,6 +24,7 @@ import { DebateRoom, Statement, VoteType, UserSession, Cover, FullCoverData } fr
 import { RoomCardMenu } from "./room/RoomCardMenu";
 import { HideAndMergeModal } from "./room/mod/HideAndMergeModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
+import { VoterIntegrityModal } from "./room/VoterIntegrityModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { timeAgoShort } from "../utils/time";
@@ -90,6 +91,7 @@ export function RoomCard({
   const [showAddResponseModal, setShowAddResponseModal] = useState(false);
   const [showDeduplication, setShowDeduplication] = useState(false);
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
+  const [showVoterIntegrity, setShowVoterIntegrity] = useState(false);
   const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
 
   const isHost = user.id === room.hostId;
@@ -286,6 +288,7 @@ export function RoomCard({
                   isHost={isHost}
                   onOpenDeduplication={() => setShowDeduplication(true)}
                   onOpenVoteMatrix={() => setShowVoteMatrix(true)}
+                  onOpenVoterIntegrity={() => setShowVoterIntegrity(true)}
                 />
               </div>
             </div>
@@ -475,6 +478,14 @@ export function RoomCard({
           roomTopic={room.topic}
           participantCount={participantCount}
           onClose={() => setShowVoteMatrix(false)}
+        />
+      )}
+
+      {showVoterIntegrity && (
+        <VoterIntegrityModal
+          roomId={room.id}
+          roomTopic={room.topic}
+          onClose={() => setShowVoterIntegrity(false)}
         />
       )}
 

@@ -801,6 +801,21 @@ class ApiClient extends BaseApiClient {
     }>(`/room/${roomId}/mod/vote-matrix`);
   }
 
+  async getVoterIntegrity(roomId: string) {
+    return this.request<{
+      totalVoters: number;
+      uniqueDevices: number;
+      votersWithoutDeviceInfo: number;
+      timeline: Array<{
+        statementId: string;
+        userId: string;
+        voteType: VoteType;
+        timestamp: number;
+      }>;
+      statementTexts: Record<string, string>;
+    }>(`/room/${roomId}/mod/voter-integrity`);
+  }
+
   async setResponsesPaused(roomId: string, paused: boolean) {
     return this.request<{ room: DebateRoom }>(
       `/room/${roomId}/mod/responses-paused`,

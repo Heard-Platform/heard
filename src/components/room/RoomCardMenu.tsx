@@ -11,6 +11,7 @@ import {
   BarChart2,
   Pause,
   Play,
+  ShieldAlert,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -34,6 +35,7 @@ interface RoomCardMenuProps {
   isHost: boolean;
   onOpenDeduplication: () => void;
   onOpenVoteMatrix: () => void;
+  onOpenVoterIntegrity: () => void;
 }
 
 export function RoomCardMenu({
@@ -45,6 +47,7 @@ export function RoomCardMenu({
   isHost,
   onOpenDeduplication,
   onOpenVoteMatrix,
+  onOpenVoterIntegrity,
 }: RoomCardMenuProps) {
   const { setRoomInactive, setResponsesPaused } = useDebateSession();
 
@@ -143,6 +146,15 @@ export function RoomCardMenu({
             >
               <BarChart2 className="w-4 h-4 mr-2" />
               View Vote Matrix
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onOpenVoterIntegrity();
+              }}
+            >
+              <ShieldAlert className="w-4 h-4 mr-2" />
+              Check Voter Integrity
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={async (e: React.MouseEvent) => {
