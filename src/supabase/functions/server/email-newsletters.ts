@@ -1,6 +1,7 @@
 import { getParameterizedNewsletter } from "./email-newsletter-4.ts";
 import { GITHUB_URL, YT_SHORTS_URL } from "./email-templates.tsx";
 
+const SUPABASE_URL = "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting";
 const YT_FIRST_VID_URL = "https://youtu.be/JM0WUrFkYZc";
 const YT_FLYERING_URL_NL12 = "https://www.youtube.com/shorts/wnFjDv0S4Bo";
 const YT_PUSHUPS_URL_NL12 = "https://www.youtube.com/shorts/JWv-IaL2jh4";
@@ -63,7 +64,7 @@ const newsletters = [
     editionNumber: 10,
     section1: {
       title: "🚶 Hitting the Pavement",
-      text: "Alex has been heads down on outreach these past few weeks. So far this month he has attended six events, twelve outreach meetings, and is actively in conversation with four organizations about running a pilot program with Heard. The use cases span an interesting mix, from a local community garden, to a business development board, to the local ANC, and we’re just gettin’ started.",
+      text: "Alex has been heads down on outreach these past few weeks. So far this month he has attended six events, twelve outreach meetings, and is actively in conversation with four organizations about running a pilot program with Heard. The use cases span an interesting mix, from a local community garden, to a business development board, to the local ANC, and we're just gettin' started.",
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-10-garden.jpeg",
       imageLink: "https://heard.vote",
       imageAlt: "Heard outreach efforts",
@@ -88,7 +89,7 @@ const newsletters = [
     editionNumber: 11,
     section1: {
       title: "🎉 Heard is now officially open source!",
-      text: `It took a little longer than expected but the source code for Heard is now <a href='${GITHUB_URL}'>publicly available on GitHub</a>. We wanted to make sure we were doing our due dilligence in shoring up the app’s security before releasing it, as we do have people’s emails and phone numbers in our database, and we wanted to make sure those were being kept safe. Fair warning, it’s startup code, so it isn’t all great, but it’s out there! Check out the code and contribute if you’re interested in helping out!`,
+      text: `It took a little longer than expected but the source code for Heard is now <a href='${GITHUB_URL}'>publicly available on GitHub</a>. We wanted to make sure we were doing our due dilligence in shoring up the app's security before releasing it, as we do have people's emails and phone numbers in our database, and we wanted to make sure those were being kept safe. Fair warning, it's startup code, so it isn't all great, but it's out there! Check out the code and contribute if you're interested in helping out!`,
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-11-github.png",
       imageLink: GITHUB_URL,
       imageAlt: "Heard open source on GitHub",
@@ -102,7 +103,7 @@ const newsletters = [
     },
     section3: {
       title: "⏳ A Moment of Reflection",
-      text: `We’re 3 months into 2026 now, which means <a href='${YT_FIRST_VID_URL}'>we’re halfway through my runway for Heard</a>. It’s been a big 3 months, with hundreds of people now having tried the app, and a lot of promising irons in the fire for upcoming partnerships. No newsletter next week as I will be taking a few days to reflect and plan the next steps so we come out swinging in April. 🥊`,
+      text: `We're 3 months into 2026 now, which means <a href='${YT_FIRST_VID_URL}'>we're halfway through my runway for Heard</a>. It's been a big 3 months, with hundreds of people now having tried the app, and a lot of promising irons in the fire for upcoming partnerships. No newsletter next week as I will be taking a few days to reflect and plan the next steps so we come out swinging in April. 🥊`,
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-11-yt.png",
       imageLink: YT_FIRST_VID_URL,
       imageAlt: "Heard reflection video still",
@@ -120,14 +121,14 @@ const newsletters = [
     },
     section2: {
       title: "💪 New challenge! An extra pushup per day til 200 signups",
-      text: `I’ll be doing 1 pushup for every day it takes to get to 200 signups, <a href='${YT_PUSHUPS_URL_NL12}'>follow along here.</a> And if you know anyone please send Heard their way to spare my arms 💪`,
+      text: `I'll be doing 1 pushup for every day it takes to get to 200 signups, <a href='${YT_PUSHUPS_URL_NL12}'>follow along here.</a> And if you know anyone please send Heard their way to spare my arms 💪`,
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-12-pushups.png",
       imageLink: YT_PUSHUPS_URL_NL12,
       imageAlt: "Heard pushup challenge video",
     },
     section3: {
       title: "🔄 Switching our AI provider",
-      text: `Before going on break last week <a href='${GITHUB_AI_PR_URL}'>we overhauled our AI integration</a> so that we aren't locked in to OpenAI, our previous AI provider, and then switched to Google’s Gemini instead. This flexibility will allow us to choose the platform offering the best service that’s also most aligned with our principles and mission.`,
+      text: `Before going on break last week <a href='${GITHUB_AI_PR_URL}'>we overhauled our AI integration</a> so that we aren't locked in to OpenAI, our previous AI provider, and then switched to Google's Gemini instead. This flexibility will allow us to choose the platform offering the best service that's also most aligned with our principles and mission.`,
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-12-ai.png",
       imageLink: GITHUB_AI_PR_URL,
       imageAlt: "Heard AI provider switch GitHub PR",
@@ -163,21 +164,21 @@ const newsletters = [
     editionNumber: 14,
     section1: {
       title: "🛠️ New Organizer Features: Merging Similar Responses and Better Insights",
-      text: "Hosts can now <a href='https://heard-platform.github.io/heard/organizer-tools.html'>select similar responses to merge them</a> so that the analysis treats them as the same response. We’ve already used this feature for a recent park survey! We’ve also improved the insights view for organizers.",
+      text: "Hosts can now <a href='https://heard-platform.github.io/heard/organizer-tools.html'>select similar responses to merge them</a> so that the analysis treats them as the same response. We've already used this feature for a recent park survey! We've also improved the insights view for organizers.",
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-14-organizer-tools.png",
       imageLink: "https://heard.vote",
       imageAlt: "Heard new organizer features",
     },
     section2: {
       title: "🌳 How do DC locals feel about Kalorama Park?",
-      text: "<a href='https://www.youtube.com/shorts/C7pC3D8nJkg'>We put up about 15 flyers around Kalorama Park</a> asking people to weigh in on what they love and want to see improved about the park. We’ve had about 50 people scan the flyers so far!",
+      text: "<a href='https://www.youtube.com/shorts/C7pC3D8nJkg'>We put up about 15 flyers around Kalorama Park</a> asking people to weigh in on what they love and want to see improved about the park. We've had about 50 people scan the flyers so far!",
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-14-kalorama-park.png",
       imageLink: "https://www.youtube.com/shorts/C7pC3D8nJkg",
       imageAlt: "Kalorama Park flyering",
     },
     section3: {
       title: "💪 Alex is Getting Swole from Pushups",
-      text: "I started a pushup challenge <a href='https://www.youtube.com/shorts/JWv-IaL2jh4'>at the start of April</a> to do 1 extra pushup per day until we get 200 signups. We’re up to 117, 83 to go! If this goes too far into May things may get interesting. 💪",
+      text: "I started a pushup challenge <a href='https://www.youtube.com/shorts/JWv-IaL2jh4'>at the start of April</a> to do 1 extra pushup per day until we get 200 signups. We're up to 117, 83 to go! If this goes too far into May things may get interesting. 💪",
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-14-pushup-challenge.png",
       imageLink: "https://www.youtube.com/shorts/JWv-IaL2jh4",
       imageAlt: "Pushup challenge progress",
@@ -206,6 +207,31 @@ const newsletters = [
       imageUrl: "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/nl-15-moderation.png",
       imageLink: "https://heard.vote",
       imageAlt: "Moderators using new features on Heard",
+    },
+  }),
+  getParameterizedNewsletter({
+    subject: "DC Running on Heard - Ya' Heard #16",
+    editionNumber: 16,
+    section1: {
+      title: "🏛️ DC candidates looking at using Heard for their campaigns",
+      text: "We're in conversation with a select group of DC candidates who are considering integrating Heard into their campaigns, demonstrating a commitment to a truly people-powered platform. Combined with our flyering campaigns that have seen 300+ DC residents vote on Heard so far, we're excited to become a bigger part of the DC civic landscape!",
+      imageUrl: `${SUPABASE_URL}/nl-16-talk-bubbles.jpeg`,
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard being used by DC candidates",
+    },
+    section2: {
+      title: "🐕 Should dogs be allowed off leash in Kalorama Park?",
+      text: "A few weeks we did a poll of people's priorities for Kalorama and unleashed dogs emerged as a contentious subject. <a href='https://www.youtube.com/shorts/2VUDjdAkGkU'>Last week we followed up with flyers digging into that topic.</a> We've had 128 people weigh in, and so far it's been evenly split. Supporters say they enjoy what dogs add to the park, while people opposing it mention incidents they've had with unleashed dogs that made them feel unsafe or uncomfortable, and also argue that there are other dog park options nearby.",
+      imageUrl: `${SUPABASE_URL}/nl-16-dog-results.png`,
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard poll about unleashed dogs in Kalorama Park",
+    },
+    section3: {
+      title: "🔧 Analysis features can't stop, won't stop",
+      text: "Following up <a href='https://www.youtube.com/shorts/E0FxCb2QmDY'>our successful 307-person deployment last week</a>, we've continued to build out the organizer analysis features on Heard. We've added a vote matrix for organizers to help dig into anonymized specifics of the data, with a soon-to-be-added download feature. We've also improved and expanded the “distinguishing statements” cluster section to help provide more insights into different groups of voters.",
+      imageUrl: `${SUPABASE_URL}/nl-16-vote-matrix.png`,
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard new analysis features",
     },
   }),
 ];
