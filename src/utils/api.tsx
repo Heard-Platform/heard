@@ -797,6 +797,7 @@ class ApiClient extends BaseApiClient {
       statements: Statement[];
       merges: StatementMerge[];
       phoneVerified: Record<string, boolean>;
+      userClusters: Record<string, number>;
     }>(`/room/${roomId}/mod/vote-matrix`);
   }
 

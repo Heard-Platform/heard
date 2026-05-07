@@ -124,22 +124,22 @@ export function VoteMatrixStory() {
           {
             id: "basic",
             label: "Basic",
-            children: <VoteMatrix statements={basicStatements} merges={[]} />,
+            children: <VoteMatrix matrix={{ statements: basicStatements, merges: [] }} />,
           },
           {
             id: "merges",
             label: "With Merges",
-            children: <VoteMatrix statements={mergeStatements} merges={merges} />,
+            children: <VoteMatrix matrix={{ statements: mergeStatements, merges }} />,
           },
           {
             id: "large",
             label: "Large",
-            children: <VoteMatrix statements={largeStatements} merges={largeMerges} />,
+            children: <VoteMatrix matrix={{ statements: largeStatements, merges: largeMerges }} />,
           },
           {
             id: "empty",
             label: "Empty",
-            children: <VoteMatrix statements={[]} merges={[]} />,
+            children: <VoteMatrix matrix={{ statements: [], merges: [] }} />,
           },
         ]}
       />
