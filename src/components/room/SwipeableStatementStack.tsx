@@ -331,8 +331,8 @@ export function SwipeableStatementStack({
   };
 
   const handleSubmitFromChanceCard = async (text: string) => {
-    onChanceCardSwiped();
     await onSubmitStatement(text);
+    onChanceCardSwiped();
   };
 
   const handleDemographicsAnswer = (
