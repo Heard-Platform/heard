@@ -64,7 +64,7 @@ export function WriteRantStep({
     }
   };
 
-  const handleTextareaTap = (e: React.MouseEvent<HTMLTextAreaElement>) => {
+  const handleTextAreaTap = (e: React.MouseEvent<HTMLTextAreaElement>) => {
     const el = e.currentTarget;
     flushSync(() => {
       stopRecording();
@@ -145,7 +145,7 @@ export function WriteRantStep({
           maxLength={2000}
           value={rant}
           onChange={(e) => onRantChange(e.target.value)}
-          onClick={isRecording ? handleTextareaTap : undefined}
+          onClick={isRecording ? handleTextAreaTap : undefined}
           readOnly={isRecording}
           className={`w-full min-h-[200px] resize-none bg-white placeholder:text-slate-400 ${
             isRecording
