@@ -137,7 +137,7 @@ function makeRng(seed?: number): () => number {
   };
 }
 
-const K_MEANS_N_INIT = 5;
+const K_MEANS_MAX_RETRIES = 5;
 
 /**
  * K-means clustering algorithm
@@ -272,14 +272,14 @@ export function kMeansClusteringMultiRun(
   matrix: Float32Array[],
   k: number = 3,
   maxIterations: number = 10,
+  maxRetries: number = K_MEANS_MAX_RETRIES,
   randomSeed?: number,
-  nInit: number = K_MEANS_N_INIT,
 ): { assignments: number[]; centroids: Float32Array[] } {
   let bestVariance = Infinity;
   let bestAssignments: number[] = [];
   let bestCentroids: Float32Array[] = [];
 
-  for (let i = 0; i < nInit; i++) {
+  for (let i = 0; i < maxRetries; i++) {
     const seed = randomSeed !== undefined ? randomSeed + i : undefined;
     const { assignments, centroids } = kMeansClustering(matrix, k, maxIterations, seed);
     const sizes = clusterSizes(assignments, Math.min(k, matrix.length));
@@ -316,6 +316,7 @@ export function clusterUsers(
   const { assignments, centroids } = kMeansClusteringMultiRun(
     votingMatrix.matrix,
     optimalK,
+    undefined,
     undefined,
     randomSeed,
   );
