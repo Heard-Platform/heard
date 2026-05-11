@@ -137,6 +137,8 @@ function makeRng(seed?: number): () => number {
   };
 }
 
+const K_MEANS_N_INIT = 5;
+
 /**
  * K-means clustering algorithm
  * @param matrix - Voting matrix (rows = users, cols = statements)
@@ -249,6 +251,49 @@ export function kMeansClustering(
   return { assignments, centroids };
 }
 
+function clusterSizes(assignments: number[], k: number): number[] {
+  const sizes = new Array<number>(k).fill(0);
+  for (const c of assignments) sizes[c]++;
+  return sizes;
+}
+
+function varianceOf(nums: number[]): number {
+  if (nums.length === 0) return 0;
+  const mean = nums.reduce((s, n) => s + n, 0) / nums.length;
+  let sumSq = 0;
+  for (const n of nums) {
+    const d = n - mean;
+    sumSq += d * d;
+  }
+  return sumSq / nums.length;
+}
+
+export function kMeansClusteringMultiRun(
+  matrix: Float32Array[],
+  k: number = 3,
+  maxIterations: number = 10,
+  randomSeed?: number,
+  nInit: number = K_MEANS_N_INIT,
+): { assignments: number[]; centroids: Float32Array[] } {
+  let bestVariance = Infinity;
+  let bestAssignments: number[] = [];
+  let bestCentroids: Float32Array[] = [];
+
+  for (let i = 0; i < nInit; i++) {
+    const seed = randomSeed !== undefined ? randomSeed + i : undefined;
+    const { assignments, centroids } = kMeansClustering(matrix, k, maxIterations, seed);
+    const sizes = clusterSizes(assignments, Math.min(k, matrix.length));
+    const sizeVariance = varianceOf(sizes);
+    if (sizeVariance < bestVariance) {
+      bestVariance = sizeVariance;
+      bestAssignments = assignments;
+      bestCentroids = centroids;
+    }
+  }
+
+  return { assignments: bestAssignments, centroids: bestCentroids };
+}
+
 /**
  * Perform clustering on user voting data (pure function - no database operations)
  */
@@ -268,7 +313,7 @@ export function clusterUsers(
     3,
   );
 
-  const { assignments, centroids } = kMeansClustering(
+  const { assignments, centroids } = kMeansClusteringMultiRun(
     votingMatrix.matrix,
     optimalK,
     undefined,
