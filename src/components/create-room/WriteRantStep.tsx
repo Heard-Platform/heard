@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { flushSync } from "react-dom";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
@@ -61,6 +62,16 @@ export function WriteRantStep({
     } else {
       startRecording(rant);
     }
+  };
+
+  const handleTextAreaTap = (e: React.MouseEvent<HTMLTextAreaElement>) => {
+    const el = e.currentTarget;
+    flushSync(() => {
+      stopRecording();
+    });
+    // iOS Safari won't show the keyboard from a tap on a readOnly textarea, so we re-focus after flushSync flips readOnly off.
+    el.blur();
+    el.focus();
   };
 
   const handleNeedInspirationClick = () => {
@@ -134,7 +145,7 @@ export function WriteRantStep({
           maxLength={2000}
           value={rant}
           onChange={(e) => onRantChange(e.target.value)}
-          onClick={isRecording ? stopRecording : undefined}
+          onClick={isRecording ? handleTextAreaTap : undefined}
           readOnly={isRecording}
           className={`w-full min-h-[200px] resize-none bg-white placeholder:text-slate-400 ${
             isRecording
