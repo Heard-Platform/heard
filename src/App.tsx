@@ -43,7 +43,7 @@ const I_LOVE_CIVTECH_FLYER_ID = "gv7kmooa0lmom3pn2m";
 const I_LOVE_CIVTECH_STATEMENT_ID = "jg46pxp4fsmom3pn3c";
 
 const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: string }> = {
-  shirt: { flyerId: SHIRT_FLYER_ID, statementId: SHIRT_STATEMENT_ID },
+  shirt: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
   sign: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
   card: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
 };
