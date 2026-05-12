@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Plus,
   Hash,
@@ -57,6 +57,23 @@ interface ExtractedData {
   statements: string[];
 }
 
+const INITIAL_FORM = {
+  currentStep: "compose-post" as Step,
+  rant: "",
+  extractedData: null as ExtractedData | null,
+  editedTopic: "",
+  editedDescription: "",
+  editedStatements: [] as string[],
+  newSubHeardName: "",
+  debateId: null as string | null,
+  cover: null as Cover | null,
+  allowAnonymousVoting: false,
+  demographicQuestions: [] as NewDemographicQuestion[],
+  debateLength: ONE_WEEK_MIN,
+  showComposeError: false,
+  cameFromRantMode: false,
+};
+
 export function CreateRoomSheet({
   open,
   defaultSubHeard,
@@ -67,32 +84,26 @@ export function CreateRoomSheet({
   onCreateRoom,
   onExtractTopicAndStatements,
 }: CreateRoomSheetProps) {
-  const [currentStep, setCurrentStep] =
-    useState<Step>("write-rant");
-  const [rant, setRant] = useState("");
-  const [extractedData, setExtractedData] =
-    useState<ExtractedData | null>(null);
-  const [editedTopic, setEditedTopic] = useState("");
-  const [editedDescription, setEditedDescription] = useState("");
-  const [editedStatements, setEditedStatements] = useState<
-    string[]
-  >([]);
+  const [currentStep, setCurrentStep] = useState(INITIAL_FORM.currentStep);
+  const [rant, setRant] = useState(INITIAL_FORM.rant);
+  const [extractedData, setExtractedData] = useState(INITIAL_FORM.extractedData);
+  const [editedTopic, setEditedTopic] = useState(INITIAL_FORM.editedTopic);
+  const [editedDescription, setEditedDescription] = useState(INITIAL_FORM.editedDescription);
+  const [editedStatements, setEditedStatements] = useState(INITIAL_FORM.editedStatements);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [subHeard, setSubHeard] = useState(
-    defaultSubHeard || "",
-  );
-  const [newSubHeardName, setNewSubHeardName] = useState("");
-  const [debateId, setDebateId] = useState<string | null>(null);
-  const [cover, setCover] = useState<Cover | null>(null);
+  const [subHeard, setSubHeard] = useState(defaultSubHeard || "");
+  const [newSubHeardName, setNewSubHeardName] = useState(INITIAL_FORM.newSubHeardName);
+  const [debateId, setDebateId] = useState(INITIAL_FORM.debateId);
+  const [cover, setCover] = useState(INITIAL_FORM.cover);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [allowAnonymousVoting, setAllowAnonymousVoting] = useState(false);
-  const [demographicQuestions, setDemographicQuestions] = useState<NewDemographicQuestion[]>([]);
-  const [debateLength, setDebateLength] = useState(ONE_WEEK_MIN);
-  const [showComposeError, setShowComposeError] = useState(false);
+  const [allowAnonymousVoting, setAllowAnonymousVoting] = useState(INITIAL_FORM.allowAnonymousVoting);
+  const [demographicQuestions, setDemographicQuestions] = useState(INITIAL_FORM.demographicQuestions);
+  const [debateLength, setDebateLength] = useState(INITIAL_FORM.debateLength);
+  const [showComposeError, setShowComposeError] = useState(INITIAL_FORM.showComposeError);
   const [titleClickCount, setTitleClickCount] = useState(0);
   const [titleClickTimer, setTitleClickTimer] = useState<NodeJS.Timeout | null>(null);
-  const [cameFromRantMode, setCameFromRantMode] = useState(false);
+  const [cameFromRantMode, setCameFromRantMode] = useState(INITIAL_FORM.cameFromRantMode);
   const funSheetRef = useRef<FunSheetRef>(null);
 
   const isRantValid = rant.trim().length >= 50;
@@ -106,29 +117,36 @@ export function CreateRoomSheet({
   }, [defaultSubHeard]);
 
   useEffect(() => {
-    if (defaultTopic && open) {
-      setEditedTopic(defaultTopic);
-    }
-  }, [defaultTopic, open]);
-
-  useEffect(() => {
     funSheetRef.current?.scrollToTop();
   }, [currentStep]);
 
-  // Reset form when sheet opens/closes
+  const resetForm = useCallback(() => {
+    setCurrentStep(INITIAL_FORM.currentStep);
+    setRant(INITIAL_FORM.rant);
+    setExtractedData(INITIAL_FORM.extractedData);
+    setEditedTopic(INITIAL_FORM.editedTopic);
+    setEditedDescription(INITIAL_FORM.editedDescription);
+    setEditedStatements(INITIAL_FORM.editedStatements);
+    setSubHeard(defaultSubHeard || "");
+    setNewSubHeardName(INITIAL_FORM.newSubHeardName);
+    setDebateId(INITIAL_FORM.debateId);
+    setCover(INITIAL_FORM.cover);
+    setAllowAnonymousVoting(INITIAL_FORM.allowAnonymousVoting);
+    setDemographicQuestions(INITIAL_FORM.demographicQuestions);
+    setDebateLength(INITIAL_FORM.debateLength);
+    setShowComposeError(INITIAL_FORM.showComposeError);
+    setCameFromRantMode(INITIAL_FORM.cameFromRantMode);
+  }, [defaultSubHeard]);
+
+  // Reset form when sheet opens
   useEffect(() => {
     if (open) {
-      setCurrentStep("compose-post");
-      if (!defaultTopic) {
-        setRant("");
-        setEditedTopic("");
-        setEditedStatements([]);
+      resetForm();
+      if (defaultTopic) {
+        setEditedTopic(defaultTopic);
       }
-      setExtractedData(null);
-      setEditedDescription("");
-      setCover(null);
     }
-  }, [open, defaultTopic]);
+  }, [open, defaultTopic, resetForm]);
 
   const handleExtractClick = async () => {
     if (!isRantValid || isExtracting) return;
@@ -227,14 +245,7 @@ export function CreateRoomSheet({
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
-      setCurrentStep("compose-post");
-      setRant("");
-      setEditedTopic("");
-      setEditedStatements([]);
-      setExtractedData(null);
-      setNewSubHeardName("");
-      setDebateId(null);
-      setSubHeard(defaultSubHeard || "");
+      resetForm();
     }
     onOpenChange(isOpen);
   };
