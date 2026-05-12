@@ -141,9 +141,6 @@ export function DebateAnalysisReport({
           posts={spiciestPosts}
           title="Spiciest Statements"
           subtitle="Most controversial takes"
-          metric={(post) => post.consensusScore}
-          metricLabel="consensus"
-          badgeClassName="bg-red-50 text-red-700 border-red-200"
           numberBadgeClassName="absolute top-2 right-2 w-6 h-6 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white text-xs"
         />
 

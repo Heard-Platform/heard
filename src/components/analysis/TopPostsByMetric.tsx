@@ -7,9 +7,9 @@ interface TopPostsByMetricProps {
   posts: StatementVotes[];
   title: string;
   subtitle?: string;
-  metric: (post: StatementVotes) => number;
-  metricLabel: string;
-  badgeClassName: string;
+  metric?: (post: StatementVotes) => number;
+  metricLabel?: string;
+  badgeClassName?: string;
   numberBadgeClassName?: string;
 }
 
@@ -54,12 +54,14 @@ export function TopPostsByMetric({
                 <MinusCircle className="w-3 h-3" />
                 <span>{post.passVotes}</span>
               </div>
-              <Badge
-                variant="outline"
-                className={`ml-auto ${badgeClassName}`}
-              >
-                {Math.round(metric(post))}% {metricLabel}
-              </Badge>
+              {metric && (
+                <Badge
+                  variant="outline"
+                  className={`ml-auto ${badgeClassName ?? ""}`}
+                >
+                  {Math.round(metric(post))}% {metricLabel}
+                </Badge>
+              )}
             </div>
           </Card>
         ))}
