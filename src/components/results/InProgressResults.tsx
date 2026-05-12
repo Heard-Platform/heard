@@ -1,7 +1,6 @@
 import { motion } from "motion/react";
 import { TrendingUp } from "lucide-react";
 import { Card } from "../ui/card";
-import { Badge } from "../ui/badge";
 import { VotesDrawer } from "./VotesDrawer";
 import type { Statement, VoteType } from "../../types";
 
@@ -67,21 +66,11 @@ export function InProgressResults({
                 <span className="sm:hidden">⚡ LIVE! ⚡</span>
               </span>
             </h3>
-            <div className="flex items-center gap-2">
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                <Badge className="bg-orange-500 text-white text-xs whitespace-nowrap">
-                  {totalVotes} votes 🔥
-                </Badge>
-              </motion.div>
-              <VotesDrawer
-                statements={statements}
-                debateTitle={debateTitle}
-                onChangeVote={onChangeVote}
-              />
-            </div>
+            <VotesDrawer
+              statements={statements}
+              debateTitle={debateTitle}
+              onChangeVote={onChangeVote}
+            />
           </motion.div>
 
           {/* Live Leaderboard - Racing Bars */}
