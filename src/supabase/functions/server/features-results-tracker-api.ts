@@ -1,5 +1,5 @@
 import { Hono } from "npm:hono";
-import { getAllRealUsers } from "./kv-utils.tsx";
+import { getAllRealUsers, getWebDriverUsers } from "./kv-utils.tsx";
 import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents } from "./model-utils.ts";
 import { selectAll } from "./db-utils.ts";
 
@@ -8,10 +8,8 @@ const app = new Hono();
 app.get("/make-server-f1a393b4/stats/features", async (c) => {
   try {
     const users = await getAllRealUsers();
-    
-    const webDriverUsers = users.filter(
-      u => u.webdriver === true
-    ).length;
+
+    const webDriverUsers = (await getWebDriverUsers()).length;
 
     const uniqueIpAddresses = new Set(
       users

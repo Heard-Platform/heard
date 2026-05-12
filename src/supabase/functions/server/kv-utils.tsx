@@ -126,12 +126,17 @@ export const getUser = async (userId: string) => {
 
 export const getAllRealUsers = async (): Promise<User[]> => {
   const allUsers = await getAllRecords<User>("user:");
-  return allUsers.filter(user => !user.isTestUser);
+  return allUsers.filter(user => !user.isTestUser && !user.webdriver);
 };
 
 export const getDevUsers = async (): Promise<User[]> => {
   const allUsers = await getAllRecords<User>("user:");
   return allUsers.filter(user => user.isDeveloper);
+};
+
+export const getWebDriverUsers = async (): Promise<User[]> => {
+  const allUsers = await getAllRecords<User>("user:");
+  return allUsers.filter(user => !user.isTestUser && user.webdriver === true);
 };
 
 export const getUserIdByPhone = async (phone: string): Promise<string | null> => {
