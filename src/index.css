@@ -5104,6 +5104,18 @@
   }
 
   @media (hover: hover) {
+    .hover\:bg-secondary\/60:hover {
+      background-color: var(--secondary);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-secondary\/60:hover {
+        background-color: color-mix(in oklab, var(--secondary) 60%, transparent);
+      }
+    }
+  }
+
+  @media (hover: hover) {
     .hover\:bg-slate-50:hover {
       background-color: var(--color-slate-50);
     }

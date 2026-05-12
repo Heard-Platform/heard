@@ -424,7 +424,7 @@ export function RoomCard({
             <Button
               onClick={handleOpenAnalysis}
               variant="secondary"
-              className="heard-pill"
+              className="heard-pill hover:bg-secondary/60"
             >
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Insights</span>

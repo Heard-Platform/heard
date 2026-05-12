@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import {
-  Eye,
   CheckCircle,
   XCircle,
   MinusCircle,
-  Star,
   LucideIcon,
   Link as LinkIcon,
 } from "lucide-react";
@@ -29,7 +27,9 @@ interface VotesDrawerProps {
   onChangeVote: (statementId: string, newVote: VoteType) => Promise<void>;
 }
 
-const voteTypeConfig: Record<VoteType, {
+type DisplayVoteType = Exclude<VoteType, "super_agree">;
+
+const voteTypeConfig: Record<DisplayVoteType, {
   icon: LucideIcon;
   borderColor: string;
   hoverColor: string;
@@ -47,12 +47,6 @@ const voteTypeConfig: Record<VoteType, {
     hoverColor: "hover:bg-red-50",
     activeColor: "bg-red-100 border-red-400"
   },
-  super_agree: {
-    icon: Star,
-    borderColor: "border-yellow-300",
-    hoverColor: "hover:bg-yellow-50",
-    activeColor: "bg-yellow-100 border-yellow-400"
-  },
   pass: {
     icon: MinusCircle,
     borderColor: "border-gray-300",
@@ -62,7 +56,7 @@ const voteTypeConfig: Record<VoteType, {
 };
 
 interface SortButtonProps {
-  type: VoteType;
+  type: DisplayVoteType;
   count: number;
   isActive: boolean;
   onClick: () => void;
@@ -87,7 +81,7 @@ function SortButton({ type, count, isActive, onClick }: SortButtonProps) {
 }
 
 interface VoteButtonProps {
-  type: VoteType;
+  type: DisplayVoteType;
   count: number;
   isUserVote: boolean;
   isChanging: boolean;
@@ -130,7 +124,7 @@ export function VotesDrawer({
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [changingVoteId, setChangingVoteId] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<SortBy>("none");
+  const [sortBy, setSortBy] = useState<SortBy>("agree");
   const [qrDialogStatement, setQrDialogStatement] = useState<Statement | null>(null);
 
   const getUserVote = (statement: Statement): VoteType | null => {
@@ -172,6 +166,12 @@ export function VotesDrawer({
     { agree: 0, disagree: 0, super_agree: 0, pass: 0 }
   );
 
+  const totalVoteCount =
+    totalVotes.agree +
+    totalVotes.disagree +
+    totalVotes.super_agree +
+    totalVotes.pass;
+
   const sortedStatements = [...statements].sort((a, b) => {
     const aCounts = getVoteCounts(a);
     const bCounts = getVoteCounts(b);
@@ -196,15 +196,14 @@ export function VotesDrawer({
     <>
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 px-2 text-xs border-orange-300 hover:bg-orange-50 whitespace-nowrap"
+        <motion.button
+          type="button"
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-2 py-0.5 whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
         >
-          <Eye className="w-3 h-3 mr-1" />
-          <span className="hidden sm:inline">See Votes</span>
-          <span className="sm:hidden">Votes</span>
-        </Button>
+          {totalVoteCount} votes 🔥
+        </motion.button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-lg p-0 flex flex-col h-full">
         <SheetHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 pr-12 border-b flex-shrink-0 space-y-3">
@@ -215,6 +214,9 @@ export function VotesDrawer({
                 {statements.length} statements
               </Badge>
             </SheetDescription>
+            <p className="text-xs text-gray-600 mt-2">
+              Tap a vote button below any statement to change your vote.
+            </p>
           </div>
           
           {/* Sort buttons */}
@@ -232,12 +234,6 @@ export function VotesDrawer({
                 count={totalVotes.disagree}
                 isActive={sortBy === "disagree"}
                 onClick={() => setSortBy(sortBy === "disagree" ? "none" : "disagree")}
-              />
-              <SortButton
-                type="super_agree"
-                count={totalVotes.super_agree}
-                isActive={sortBy === "super_agree"}
-                onClick={() => setSortBy(sortBy === "super_agree" ? "none" : "super_agree")}
               />
               <SortButton
                 type="pass"
@@ -296,16 +292,6 @@ export function VotesDrawer({
                       isChanging={isChanging}
                       onClick={() =>
                         handleChangeVote(statement.id, "disagree")
-                      }
-                    />
-
-                    <VoteButton
-                      type="super_agree"
-                      count={counts.super_agree}
-                      isUserVote={userVote === "super_agree"}
-                      isChanging={isChanging}
-                      onClick={() =>
-                        handleChangeVote(statement.id, "super_agree")
                       }
                     />
 
