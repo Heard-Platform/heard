@@ -3,7 +3,6 @@ import {
   getAllSubHeards, getActivitiesForDate,
   getAllRealUsers,
   getAllRealDebates,
-  getAllActivityRecords,
   getAllStatements,
   getAllVotes,
 } from "./kv-utils.tsx";
@@ -134,23 +133,42 @@ app.get("/make-server-f1a393b4/stats/funnel", async (c) => {
     const usersWithAccounts = nonDevUsers.filter((user) => !user.isAnonymous);
     const usersWithAccountsCount = usersWithAccounts.length;
 
-    const userActivityRecords = await getAllActivityRecords();
-    
+    const [allVotes, allStatements] = await Promise.all([
+      getAllVotes(),
+      getAllStatements(),
+    ]);
+
+    const actionDatesByUser = new Map<string, Set<string>>();
+    const recordActionDate = (userId: string, timestamp: number) => {
+      const date = new Date(timestamp).toISOString().split("T")[0];
+      let dates = actionDatesByUser.get(userId);
+      if (!dates) {
+        dates = new Set();
+        actionDatesByUser.set(userId, dates);
+      }
+      dates.add(date);
+    };
+    for (const vote of allVotes) {
+      recordActionDate(vote.userId, vote.timestamp);
+    }
+    for (const statement of allStatements) {
+      recordActionDate(statement.author, statement.timestamp);
+    }
+
     let usersWhoTookAction = []
     let usersWhoTookActionTwoDays = [];
     let usersWhoTookActionTenDays = [];
 
     for (const user of usersWithAccounts) {
-      const activities = userActivityRecords.filter(record => record.userId === user.id);
-      const uniqueDates = new Set(activities.map(a => a.date));
-      
-      if (uniqueDates.size >= 1) {
+      const uniqueDateCount = actionDatesByUser.get(user.id)?.size ?? 0;
+
+      if (uniqueDateCount >= 1) {
         usersWhoTookAction.push(user.id);
       }
-      if (uniqueDates.size >= 2) {
+      if (uniqueDateCount >= 2) {
         usersWhoTookActionTwoDays.push(user.id);
       }
-      if (uniqueDates.size >= 10) {
+      if (uniqueDateCount >= 10) {
         usersWhoTookActionTenDays.push(user.id);
       }
     }
