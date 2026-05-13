@@ -42,11 +42,11 @@ export function TopPostsByMetric({
             <div className={numberBadgeClassName}>{index + 1}</div>
             <p className="text-sm mb-3 pr-8">{post.text}</p>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1 text-green-700">
+              <div className="flex items-center gap-1 agree-text">
                 <CheckCircle className="w-3 h-3" />
                 <span>{post.agreeVotes}</span>
               </div>
-              <div className="flex items-center gap-1 text-red-700">
+              <div className="flex items-center gap-1 disagree-text">
                 <XCircle className="w-3 h-3" />
                 <span>{post.disagreeVotes}</span>
               </div>
