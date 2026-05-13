@@ -14,6 +14,7 @@ interface ClusterConsensusBoxProps {
   clusterSizes: number[];
   totalParticipants: number;
   statements: StatementVotes[];
+  showNumbers: boolean;
 }
 
 export function ClusterConsensusBox({
@@ -22,6 +23,7 @@ export function ClusterConsensusBox({
   clusterSizes,
   totalParticipants,
   statements,
+  showNumbers,
 }: ClusterConsensusBoxProps) {
   const colors = getClusterColor(clusterIndex);
   const [expanded, setExpanded] = useState(false);
@@ -50,6 +52,7 @@ export function ClusterConsensusBox({
             <StatementVotesTableHead
               totalParticipants={totalParticipants}
               clusterSizes={clusterSizes}
+              showNumbers={showNumbers}
               highlightClusterIndex={clusterIndex}
             />
             <tbody>
@@ -58,6 +61,7 @@ export function ClusterConsensusBox({
                   key={statement.id}
                   statement={statement}
                   totalParticipants={totalParticipants}
+                  showNumbers={showNumbers}
                   clusterIndex={clusterIndex}
                 />
               ))}

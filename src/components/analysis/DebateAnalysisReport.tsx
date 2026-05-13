@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card } from "../ui/card";
 import { Users, MessageSquare, Target, GitBranch, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "../ui/button";
@@ -9,6 +10,7 @@ import { AnalysisData, StatementVotes } from "../../types";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 import { MetricCard } from "./MetricCard";
 import { StatementVotesTable } from "./StatementVotesTable";
+import { ShowNumbersToggle } from "./ShowNumbersToggle";
 
 function opinionatedVotesOf(post: StatementVotes): number {
   return post.agreeVotes + post.disagreeVotes;
@@ -54,6 +56,7 @@ export function DebateAnalysisReport({
 }: DebateAnalysisReportProps) {
   const clusterSizes = clusterConsensus?.clusters.map((c) => c.size) ?? [];
   const statementVotesById = new Map(allStatements.map((s) => [s.id, s]));
+  const [showNumbers, setShowNumbers] = useState(false);
 
   return (
     <div className="heard-page-bg p-4">
@@ -167,12 +170,13 @@ export function DebateAnalysisReport({
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
                 <GitBranch className="w-5 h-5 text-white" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h2 className="text-xl">Cluster Consensus</h2>
                 <p className="text-sm text-muted-foreground">
                   Top consensus statements by opinion cluster
                 </p>
               </div>
+              <ShowNumbersToggle showNumbers={showNumbers} onShowNumbersChange={setShowNumbers} />
             </div>
 
             <div className="space-y-6">
@@ -188,6 +192,7 @@ export function DebateAnalysisReport({
                     clusterSizes={clusterSizes}
                     totalParticipants={totalParticipants}
                     statements={clusterStatements}
+                    showNumbers={showNumbers}
                   />
                 );
               })}
@@ -215,6 +220,8 @@ export function DebateAnalysisReport({
           statements={allStatements}
           totalParticipants={totalParticipants}
           clusterSizes={clusterSizes}
+          showNumbers={showNumbers}
+          onShowNumbersChange={setShowNumbers}
         />
 
       </div>

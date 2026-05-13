@@ -1,6 +1,16 @@
+import { useState } from "react";
 import { StatementVotesTable } from "../components/analysis/StatementVotesTable";
 import { StatementVotes } from "../types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+
+function StatefulStatementVotesTable(props: {
+  statements: StatementVotes[];
+  totalParticipants: number;
+  clusterSizes: number[];
+}) {
+  const [showNumbers, setShowNumbers] = useState(false);
+  return <StatementVotesTable {...props} showNumbers={showNumbers} onShowNumbersChange={setShowNumbers} />;
+}
 
 export default {
   title: "Analysis/StatementVotesTable",
@@ -161,7 +171,7 @@ const mockStatements: StatementVotes[] = [
 
 export const Default = () => (
   <div className="p-4 max-w-6xl mx-auto">
-    <StatementVotesTable
+    <StatefulStatementVotesTable
       statements={mockStatements}
       totalParticipants={totalParticipants}
       clusterSizes={clusterSizes}
@@ -171,7 +181,7 @@ export const Default = () => (
 
 export const WithoutClusters = () => (
   <div className="p-4 max-w-4xl mx-auto">
-    <StatementVotesTable
+    <StatefulStatementVotesTable
       statements={mockStatements.map(
         ({ clusterVotes: _cv, ...rest }) => ({
           clusterVotes: [],
@@ -186,7 +196,7 @@ export const WithoutClusters = () => (
 
 export const Empty = () => (
   <div className="p-4 max-w-4xl mx-auto">
-    <StatementVotesTable
+    <StatefulStatementVotesTable
       statements={[]}
       totalParticipants={0}
       clusterSizes={[]}
@@ -204,7 +214,7 @@ export function StatementVotesTableStory() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <StatementVotesTable
+        <StatefulStatementVotesTable
           statements={mockStatements}
           totalParticipants={totalParticipants}
           clusterSizes={clusterSizes}

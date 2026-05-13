@@ -6,6 +6,7 @@ import { getClusterColor } from "../../utils/colors";
 interface StatementVotesTableRowProps {
   statement: StatementVotes;
   totalParticipants: number;
+  showNumbers: boolean;
   clusterIndex?: number;
 }
 
@@ -31,7 +32,12 @@ function rowCounts(statement: StatementVotes, clusterIndex: number | undefined) 
   };
 }
 
-export function StatementVotesTableRow({ statement, totalParticipants, clusterIndex }: StatementVotesTableRowProps) {
+export function StatementVotesTableRow({
+  statement,
+  totalParticipants,
+  showNumbers,
+  clusterIndex,
+}: StatementVotesTableRowProps) {
   const counts = rowCounts(statement, clusterIndex);
   return (
     <tr className="border-b last:border-0 hover:bg-muted/30 transition-colors">
@@ -48,12 +54,16 @@ export function StatementVotesTableRow({ statement, totalParticipants, clusterIn
           </div>
         )}
       </td>
-      <td className="py-3 px-2 text-right tabular-nums agree-text font-medium">{counts.rawAgree}</td>
-      <td className="py-3 px-2 text-right tabular-nums super-agree-text font-medium">{counts.superAgree}</td>
-      <td className="py-3 px-2 text-right tabular-nums disagree-text font-medium">{counts.disagree}</td>
-      <td className="py-3 px-2 text-right tabular-nums pass-text font-medium">{counts.pass}</td>
-      <td className="py-3 px-2 text-right tabular-nums total-text font-medium">{counts.total}</td>
-      <td className="py-3 px-2 align-middle border-l">
+      {showNumbers && (
+        <>
+          <td className="py-3 px-2 text-right tabular-nums agree-text font-medium">{counts.rawAgree}</td>
+          <td className="py-3 px-2 text-right tabular-nums super-agree-text font-medium">{counts.superAgree}</td>
+          <td className="py-3 px-2 text-right tabular-nums disagree-text font-medium">{counts.disagree}</td>
+          <td className="py-3 px-2 text-right tabular-nums pass-text font-medium">{counts.pass}</td>
+          <td className="py-3 px-2 text-right tabular-nums total-text font-medium">{counts.total}</td>
+        </>
+      )}
+      <td className={`py-3 px-2 align-middle${showNumbers ? " border-l" : ""}`}>
         <VoteBreakdownPie
           rawAgree={statement.rawAgreeVotes}
           superAgree={statement.superAgreeVotes}

@@ -26,13 +26,15 @@ interface SortState {
 interface StatementVotesTableHeadProps {
   totalParticipants: number;
   clusterSizes: number[];
-  highlightClusterIndex: number;
+  showNumbers: boolean;
+  highlightClusterIndex?: number;
   sort?: SortState;
 }
 
 export function StatementVotesTableHead({
   totalParticipants,
   clusterSizes,
+  showNumbers,
   highlightClusterIndex,
   sort,
 }: StatementVotesTableHeadProps) {
@@ -40,36 +42,37 @@ export function StatementVotesTableHead({
     <thead>
       <tr className="border-b">
         <th className="text-left py-2 pr-4 font-medium text-muted-foreground w-1/2">Statement</th>
-        {COLUMNS.map(({ key, label, badgeClass }) => (
-          <th key={key} className="py-2 px-2 text-right whitespace-nowrap">
-            {sort ? (
-              <button
-                onClick={() => sort.onSort(key)}
-                className="flex items-center gap-1 ml-auto font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Badge variant="outline" className={`${badgeClass} text-xs`}>
+        {showNumbers &&
+          COLUMNS.map(({ key, label, badgeClass }) => (
+            <th key={key} className="py-2 px-2 text-right whitespace-nowrap">
+              {sort ? (
+                <button
+                  onClick={() => sort.onSort(key)}
+                  className="flex items-center gap-1 ml-auto font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Badge variant="outline" className={`${badgeClass} text-xs`}>
+                    {label}
+                  </Badge>
+                  <SortIcon column={key} sortCol={sort.sortCol} sortDir={sort.sortDir} />
+                </button>
+              ) : (
+                <Badge variant="outline" className={`${badgeClass} text-xs ml-auto`}>
                   {label}
                 </Badge>
-                <SortIcon column={key} sortCol={sort.sortCol} sortDir={sort.sortDir} />
-              </button>
-            ) : (
-              <Badge variant="outline" className={`${badgeClass} text-xs ml-auto`}>
-                {label}
-              </Badge>
-            )}
-          </th>
-        ))}
-        <th className="py-2 px-2 text-right whitespace-nowrap font-medium text-muted-foreground border-l">
+              )}
+            </th>
+          ))}
+        <th className={`py-2 px-2 text-center whitespace-nowrap font-medium text-muted-foreground${showNumbers ? " border-l" : ""}`}>
           <div className="text-xs">Overall</div>
-          <div className="text-xs text-muted-foreground font-normal">{totalParticipants}</div>
+          <div className="text-xs text-muted-foreground font-normal">{totalParticipants} users</div>
         </th>
         {clusterSizes.map((size, idx) => (
           <th
             key={idx}
-            className={`py-2 px-2 text-right whitespace-nowrap font-medium text-muted-foreground${idx === highlightClusterIndex ? ` ${getClusterColor(highlightClusterIndex).bg}` : ""}`}
+            className={`py-2 px-2 text-center whitespace-nowrap font-medium text-muted-foreground${idx === highlightClusterIndex ? ` ${getClusterColor(highlightClusterIndex).bg}` : ""}`}
           >
-            <div className="text-xs">{clusterLabel(idx)}</div>
-            <div className="text-xs text-muted-foreground font-normal">{size}</div>
+            <div className="text-xs">Cluster {clusterLabel(idx)}</div>
+            <div className="text-xs text-muted-foreground font-normal">{size} users</div>
           </th>
         ))}
       </tr>
