@@ -59,6 +59,7 @@ export function StatementVotesTable({
             totalParticipants={totalParticipants}
             clusterSizes={clusterSizes}
             showNumbers={showNumbers}
+            colorAllClusters
             sort={showNumbers ? { sortCol, sortDir, onSort: handleSort } : undefined}
           />
           <tbody>
@@ -68,6 +69,7 @@ export function StatementVotesTable({
                 statement={row}
                 totalParticipants={totalParticipants}
                 showNumbers={showNumbers}
+                colorAllClusters
               />
             ))}
           </tbody>

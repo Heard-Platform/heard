@@ -8,6 +8,7 @@ interface StatementVotesTableRowProps {
   totalParticipants: number;
   showNumbers: boolean;
   clusterIndex?: number;
+  colorAllClusters?: boolean;
 }
 
 function rowCounts(statement: StatementVotes, clusterIndex: number | undefined) {
@@ -37,6 +38,7 @@ export function StatementVotesTableRow({
   totalParticipants,
   showNumbers,
   clusterIndex,
+  colorAllClusters,
 }: StatementVotesTableRowProps) {
   const counts = rowCounts(statement, clusterIndex);
   return (
@@ -75,10 +77,11 @@ export function StatementVotesTableRow({
       {statement.clusterVotes.map((cv, idx) => {
         const cvSuper = cv.superAgreeVotes;
         const cvRawAgree = cv.agreeVotes - cvSuper;
+        const colored = colorAllClusters || idx === clusterIndex;
         return (
           <td
             key={idx}
-            className={`py-3 px-2 align-middle${idx === clusterIndex ? ` ${getClusterColor(idx).bg}` : ""}`}
+            className={`py-3 px-2 align-middle${colored ? ` ${getClusterColor(idx).bg}` : ""}`}
           >
             <VoteBreakdownPie
               rawAgree={cvRawAgree}

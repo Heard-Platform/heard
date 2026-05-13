@@ -28,6 +28,7 @@ interface StatementVotesTableHeadProps {
   clusterSizes: number[];
   showNumbers: boolean;
   highlightClusterIndex?: number;
+  colorAllClusters?: boolean;
   sort?: SortState;
 }
 
@@ -36,6 +37,7 @@ export function StatementVotesTableHead({
   clusterSizes,
   showNumbers,
   highlightClusterIndex,
+  colorAllClusters,
   sort,
 }: StatementVotesTableHeadProps) {
   return (
@@ -66,15 +68,18 @@ export function StatementVotesTableHead({
           <div className="text-xs">Overall</div>
           <div className="text-xs text-muted-foreground font-normal">{totalParticipants} users</div>
         </th>
-        {clusterSizes.map((size, idx) => (
-          <th
-            key={idx}
-            className={`py-2 px-2 text-center whitespace-nowrap font-medium text-muted-foreground${idx === highlightClusterIndex ? ` ${getClusterColor(highlightClusterIndex).bg}` : ""}`}
-          >
-            <div className="text-xs">Cluster {clusterLabel(idx)}</div>
-            <div className="text-xs text-muted-foreground font-normal">{size} users</div>
-          </th>
-        ))}
+        {clusterSizes.map((size, idx) => {
+          const colored = colorAllClusters || idx === highlightClusterIndex;
+          return (
+            <th
+              key={idx}
+              className={`py-2 px-2 text-center whitespace-nowrap font-medium text-muted-foreground${colored ? ` ${getClusterColor(idx).bg}` : ""}`}
+            >
+              <div className="text-xs">Cluster {clusterLabel(idx)}</div>
+              <div className="text-xs text-muted-foreground font-normal">{size} users</div>
+            </th>
+          );
+        })}
       </tr>
     </thead>
   );
