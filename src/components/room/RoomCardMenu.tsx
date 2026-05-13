@@ -11,6 +11,7 @@ import {
   BarChart2,
   Pause,
   Play,
+  Pencil,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -34,6 +35,7 @@ interface RoomCardMenuProps {
   isHost: boolean;
   onOpenDeduplication: () => void;
   onOpenVoteMatrix: () => void;
+  onOpenEditRoom: () => void;
 }
 
 export function RoomCardMenu({
@@ -45,6 +47,7 @@ export function RoomCardMenu({
   isHost,
   onOpenDeduplication,
   onOpenVoteMatrix,
+  onOpenEditRoom,
 }: RoomCardMenuProps) {
   const { setRoomInactive, setResponsesPaused } = useDebateSession();
 
@@ -171,6 +174,15 @@ export function RoomCardMenu({
         {isDeveloper && (
           <>
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onOpenEditRoom();
+              }}
+            >
+              <Pencil className="w-4 h-4 mr-2" />
+              Edit post
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={async (e: React.MouseEvent) => {
                 e.stopPropagation();

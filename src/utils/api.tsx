@@ -801,6 +801,19 @@ class ApiClient extends BaseApiClient {
     }>(`/room/${roomId}/mod/vote-matrix`);
   }
 
+  async updateRoom(
+    roomId: string,
+    updates: { topic?: string; description?: string; imageUrl?: string },
+  ) {
+    return this.request<{ room: DebateRoom }>(
+      `/room/${roomId}/mod/edit`,
+      {
+        method: "POST",
+        body: JSON.stringify(updates),
+      },
+    );
+  }
+
   async setResponsesPaused(roomId: string, paused: boolean) {
     return this.request<{ room: DebateRoom }>(
       `/room/${roomId}/mod/responses-paused`,

@@ -23,6 +23,7 @@ import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType, UserSession, Cover, FullCoverData } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
 import { HideAndMergeModal } from "./room/mod/HideAndMergeModal";
+import { EditRoomModal } from "./room/mod/EditRoomModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
@@ -90,6 +91,7 @@ export function RoomCard({
   const [showAddResponseModal, setShowAddResponseModal] = useState(false);
   const [showDeduplication, setShowDeduplication] = useState(false);
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
+  const [showEditRoom, setShowEditRoom] = useState(false);
   const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
 
   const isHost = user.id === room.hostId;
@@ -286,6 +288,7 @@ export function RoomCard({
                   isHost={isHost}
                   onOpenDeduplication={() => setShowDeduplication(true)}
                   onOpenVoteMatrix={() => setShowVoteMatrix(true)}
+                  onOpenEditRoom={() => setShowEditRoom(true)}
                 />
               </div>
             </div>
@@ -475,6 +478,16 @@ export function RoomCard({
           roomTopic={room.topic}
           participantCount={participantCount}
           onClose={() => setShowVoteMatrix(false)}
+        />
+      )}
+
+      {showEditRoom && (
+        <EditRoomModal
+          room={room}
+          hasVotes={statements.some(
+            (s) => s.voters && Object.keys(s.voters).length > 0,
+          )}
+          onClose={() => setShowEditRoom(false)}
         />
       )}
 

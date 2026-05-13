@@ -102,6 +102,10 @@ interface DebateSessionContextType {
     roomId: string,
     paused: boolean,
   ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
+  updateRoom: (
+    roomId: string,
+    updates: { topic?: string; description?: string; imageUrl?: string },
+  ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
   listStatementsForModeration: (roomId: string) => Promise<Statement[]>;
   setStatementHidden: (
     roomId: string,
@@ -745,6 +749,14 @@ export function DebateSessionProvider(
     [callRoomMutation],
   );
 
+  const updateRoom = useCallback(
+    (
+      roomId: string,
+      updates: { topic?: string; description?: string; imageUrl?: string },
+    ) => callRoomMutation(() => api.updateRoom(roomId, updates)),
+    [callRoomMutation],
+  );
+
   const listStatementsForModeration = useCallback(
     async (roomId: string) => {
       const response = await safelyMakeApiCall<{
@@ -908,6 +920,7 @@ export function DebateSessionProvider(
     createStatementMerge,
     deleteStatementMerge,
     setResponsesPaused,
+    updateRoom,
     listStatementsForModeration,
     setStatementHidden,
     markChanceCardSwiped,
@@ -993,6 +1006,10 @@ export function DebateSessionProvider(
       },
       setResponsesPaused: async () => {
         console.log("[Showcase] setResponsesPaused called");
+        return null;
+      },
+      updateRoom: async () => {
+        console.log("[Showcase] updateRoom called");
         return null;
       },
       listStatementsForModeration: async () => {
