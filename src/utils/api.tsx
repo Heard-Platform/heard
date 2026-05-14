@@ -31,6 +31,7 @@ import {
 } from "./api-client";
 import { FeatureFlags, isFeatureEnabled } from "./constants/feature-flags";
 import { getEnvironment } from "./constants/general";
+import { convertImageToJPEG, shouldConvertImage } from "./image-converter";
 import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { publicAnonKey } from "./supabase/info";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
@@ -126,8 +127,12 @@ class ApiClient extends BaseApiClient {
   async uploadDebateImage(
     imageFile: File,
   ): Promise<ApiResponse<{ imageUrl: string; filename: string }>> {
+    const fileToUpload = shouldConvertImage(imageFile)
+      ? await convertImageToJPEG(imageFile)
+      : imageFile;
+
     const formData = new FormData();
-    formData.append("image", imageFile);
+    formData.append("image", fileToUpload);
 
     return await this.request<{
       imageUrl: string;
@@ -773,6 +778,19 @@ class ApiClient extends BaseApiClient {
     return this.request<{ html: string }>(`/newsletter/${edition}`, {
       method: "GET",
     });
+  }
+
+  async updateRoom(
+    roomId: string,
+    updates: { topic?: string; description?: string; imageUrl?: string },
+  ) {
+    return this.request<{ room: DebateRoom }>(
+      `/room/${roomId}/mod/edit`,
+      {
+        method: "POST",
+        body: JSON.stringify(updates),
+      },
+    );
   }
 
   async getStatementMerges(roomId: string) {
