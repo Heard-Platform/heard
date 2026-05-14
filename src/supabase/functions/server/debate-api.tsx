@@ -494,6 +494,9 @@ const getVotesForStatements = async (
   return voteMap;
 };
 
+const VOTE_BOOST_RANGE = 25;
+const RANDOM_RANGE = 100;
+
 const getStatements = async (
   roomId: string,
 ): Promise<Statement[]> => {
@@ -523,9 +526,24 @@ const getStatements = async (
       },
     );
 
-    return statementsWithVotes.sort(
-      (a, b) => a.timestamp - b.timestamp,
+    const opinionatedCounts = statementsWithVotes.map(
+      (s) => s.agrees + s.disagrees,
     );
+    const maxOpinionatedVotes = Math.max(0, ...opinionatedCounts);
+
+    return statementsWithVotes
+      .map((statement, i) => {
+        const normalizedBoost =
+          maxOpinionatedVotes > 0
+            ? (opinionatedCounts[i] / maxOpinionatedVotes) *
+              VOTE_BOOST_RANGE
+            : 0;
+        const score =
+          normalizedBoost + Math.random() * RANDOM_RANGE;
+        return { statement, score };
+      })
+      .sort((a, b) => b.score - a.score)
+      .map(({ statement }) => statement);
   } catch (error) {
     console.error(
       `Error fetching statements for room ${roomId}:`,
