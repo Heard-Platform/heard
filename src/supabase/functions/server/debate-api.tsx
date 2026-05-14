@@ -497,6 +497,28 @@ const getVotesForStatements = async (
 const VOTE_BOOST_RANGE = 25;
 const RANDOM_RANGE = 100;
 
+const rankStatementsForVoter = (
+  statements: Statement[],
+): Statement[] => {
+  const maxOpinionatedVotes = Math.max(
+    0,
+    ...statements.map((s) => s.agrees + s.disagrees),
+  );
+
+  return statements
+    .map((statement) => {
+      const opinionated = statement.agrees + statement.disagrees;
+      const normalizedBoost =
+        maxOpinionatedVotes > 0
+          ? (opinionated / maxOpinionatedVotes) * VOTE_BOOST_RANGE
+          : 0;
+      const score = normalizedBoost + Math.random() * RANDOM_RANGE;
+      return { statement, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .map(({ statement }) => statement);
+};
+
 const getStatements = async (
   roomId: string,
 ): Promise<Statement[]> => {
@@ -526,24 +548,7 @@ const getStatements = async (
       },
     );
 
-    const opinionatedCounts = statementsWithVotes.map(
-      (s) => s.agrees + s.disagrees,
-    );
-    const maxOpinionatedVotes = Math.max(0, ...opinionatedCounts);
-
-    return statementsWithVotes
-      .map((statement, i) => {
-        const normalizedBoost =
-          maxOpinionatedVotes > 0
-            ? (opinionatedCounts[i] / maxOpinionatedVotes) *
-              VOTE_BOOST_RANGE
-            : 0;
-        const score =
-          normalizedBoost + Math.random() * RANDOM_RANGE;
-        return { statement, score };
-      })
-      .sort((a, b) => b.score - a.score)
-      .map(({ statement }) => statement);
+    return rankStatementsForVoter(statementsWithVotes);
   } catch (error) {
     console.error(
       `Error fetching statements for room ${roomId}:`,
