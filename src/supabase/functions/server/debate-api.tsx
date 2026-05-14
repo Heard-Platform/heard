@@ -497,7 +497,7 @@ const getVotesForStatements = async (
 const MAX_VOTE_BOOST = 25;
 const MAX_RANDOM_JITTER = 100;
 
-const rankStatementsForVoter = (
+const orderStatementsForVoter = (
   statements: Statement[],
 ): Statement[] => {
   const maxOpinionatedVotes = Math.max(
@@ -548,7 +548,7 @@ const getStatements = async (
       },
     );
 
-    return rankStatementsForVoter(statementsWithVotes);
+    return orderStatementsForVoter(statementsWithVotes);
   } catch (error) {
     console.error(
       `Error fetching statements for room ${roomId}:`,
