@@ -153,7 +153,7 @@ function AppContent() {
 
   const handleQrComplete = ({ reason }: { reason: "signup" | "otp-login" | "continue" }) => {
     if (reason === "signup") toast.success("Welcome to Heard! 🎉");
-    if (reason === "otp-login") toast.success("Welcome back to Heard! 🎉");
+    if (reason === "otp-login") toast.success("Welcome back! 🎉");
     updateUrlForRoom(qrScanResult!.room.id);
     setQrScanResult(null);
   };
