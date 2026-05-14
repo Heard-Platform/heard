@@ -44,7 +44,12 @@ interface DebateSessionContextType {
   verifySmsCode: (phone: string, code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
   addPhoneToAccount: (phone: string, code: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
   addEmailToAccount: (email: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
-  anonAddEmailAndLogin: (email: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
+  anonAddEmailAndLogin: (
+    email: string,
+  ) => Promise<ApiResponse<
+    | { requiresOtp: false; user: UserSession }
+    | { requiresOtp: true; email: string }
+  > | null>;
   createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
   updateAvatar: (avatarAnimal: AvatarAnimal) => Promise<void>;
   createRoom: (
@@ -124,7 +129,12 @@ interface DebateSessionContextType {
 
 export type OverridableApiMethods = Pick<
   DebateSessionContextType,
-  "user" | "safelyGetUser" | "getExplorableSubHeards" | "createEvent"
+  | "user"
+  | "safelyGetUser"
+  | "getExplorableSubHeards"
+  | "createEvent"
+  | "anonAddEmailAndLogin"
+  | "verifyMagicLink"
 >;
 
 const DebateSessionContext = createContext<DebateSessionContextType | null>(null);
@@ -234,7 +244,7 @@ export function DebateSessionProvider(
   const anonAddEmailAndLogin = useCallback(async (email: string) => {
     const response = await api.anonAddEmailAndLogin(email);
 
-    if (response?.data?.user) {
+    if (response?.data && !response.data.requiresOtp) {
       setUser(response.data.user);
     }
 
@@ -867,7 +877,7 @@ export function DebateSessionProvider(
 
   useEffect(() => { initUser(); }, []);
 
-  let returnObj = {
+  let returnObj: DebateSessionContextType = {
     user,
     activeRooms,
     currentSubHeard,

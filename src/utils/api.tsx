@@ -100,7 +100,10 @@ class ApiClient extends BaseApiClient {
   }
 
   async anonAddEmailAndLogin(email: string) {
-    return this.request<{ user: UserSession }>("/auth/anon-add-email-and-login", {
+    return this.request<
+      | { requiresOtp: false; user: UserSession }
+      | { requiresOtp: true; email: string }
+    >("/auth/anon-add-email-and-login", {
       method: "POST",
       body: JSON.stringify({ email }),
     });

@@ -6,9 +6,10 @@ import { Input } from "../ui/input";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { DebateRoom } from "../../types";
 import { VoteType } from "../../types";
-import { isValidEmail } from "../../utils/validation";
 import { TOSText } from "../onboarding/TOSText";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import { useEmailOtpFlow } from "../../hooks/useEmailOtpFlow";
+import { OtpCodeInput } from "../auth/OtpCodeInput";
 import moment from "moment";
 
 export type QRScanResult = {
@@ -21,9 +22,11 @@ export type QRScanResult = {
   teaserStatement?: { text: string; timestamp: number; voteCount: number };
 };
 
+type CompleteReason = "signup" | "otp-login" | "continue";
+
 interface QRScanResultDialogProps extends QRScanResult {
   isOpen: boolean;
-  onEmailSubmit: (email: string) => Promise<void>;
+  onComplete: (result: { reason: CompleteReason }) => void;
   onClose: () => void;
 }
 
@@ -36,24 +39,35 @@ export function QRScanResultDialog({
   statementText,
   teaserStatement,
   isOpen,
-  onEmailSubmit,
+  onComplete,
   onClose,
 }: QRScanResultDialogProps) {
   const { user } = useDebateSession();
   const isAnonymous = !!user?.isAnonymous;
   const [showBars, setShowBars] = useState(false);
-  const [email, setEmail] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
   const [shakeEmail, setShakeEmail] = useState(false);
+
+  const {
+    step,
+    email,
+    otp,
+    error,
+    submitting,
+    setEmail,
+    setOtp,
+    submitEmail,
+    submitOtp,
+    goBackToEmail,
+  } = useEmailOtpFlow({
+    onComplete: ({ wasOtpLogin }) =>
+      onComplete({ reason: wasOtpLogin ? "otp-login" : "signup" }),
+  });
 
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => setShowBars(true), 300);
     } else {
       setShowBars(false);
-      setEmail("");
-      setError("");
     }
   }, [isOpen]);
 
@@ -81,30 +95,29 @@ export function QRScanResultDialog({
     },
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (isAnonymous && (!email.trim() || !isValidEmail(email))) {
-      setError(
-        !email.trim()
-          ? "Please enter your email to join the discussion"
-          : "Please enter a valid email",
-      );
-      setShakeEmail(true);
-      setTimeout(() => setShakeEmail(false), 500);
+
+    if (!isAnonymous) {
+      onComplete({ reason: "continue" });
       return;
     }
 
-    setSubmitting(true);
-    setError("");
-    
-    try {
-      await onEmailSubmit(email);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred. Please try again.");
-      setSubmitting(false);
+    if (step === "otp") {
+      submitOtp();
+      return;
     }
+
+    if (!email.trim()) {
+      setShakeEmail(true);
+      setTimeout(() => setShakeEmail(false), 500);
+    }
+    submitEmail();
   };
+
+  const buttonLabel = submitting
+    ? step === "otp" ? "Verifying..." : "Joining..."
+    : step === "otp" ? "Log in" : "Vote and respond inside";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -250,7 +263,7 @@ export function QRScanResultDialog({
               <div className="border-t border-slate-700" />
 
               <form onSubmit={handleSubmit} className="space-y-3">
-                {isAnonymous && (
+                {isAnonymous && step === "email" && (
                   <motion.div
                     className="relative"
                     animate={
@@ -268,12 +281,31 @@ export function QRScanResultDialog({
                       placeholder={"Enter your email to add a response"}
                       disabled={submitting}
                       className={`pl-11 h-11 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500 rounded-xl text-sm ${shakeEmail ? "error-border" : ""}`}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (error) setError("");
-                      }}
+                      onChange={(e) => setEmail(e.target.value)}
                     />
                   </motion.div>
+                )}
+
+                {isAnonymous && step === "otp" && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-slate-300 text-center">
+                      We sent a 6-character code to <span className="font-semibold text-white">{email}</span>. Enter it to log in.
+                    </p>
+                    <div className="flex justify-center">
+                      <OtpCodeInput
+                        value={otp}
+                        slotClassName="bg-slate-800 border-slate-700 text-white"
+                        onChange={setOtp}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={goBackToEmail}
+                      className="block mx-auto text-xs text-slate-400 hover:text-slate-200 underline"
+                    >
+                      Use a different email
+                    </button>
+                  </div>
                 )}
 
                 {error && (
@@ -288,16 +320,16 @@ export function QRScanResultDialog({
                   className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
                 >
                   {submitting ? (
-                    "Joining..."
+                    buttonLabel
                   ) : (
                     <>
-                      Vote and respond inside
+                      {buttonLabel}
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}
                 </Button>
 
-                {isAnonymous && (
+                {isAnonymous && step === "email" && (
                   <div className="text-center">
                     <TOSText />
                   </div>

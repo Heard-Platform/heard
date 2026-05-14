@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence } from "motion/react";
-import { useDebateSession } from "../../hooks/useDebateSession";
 import { api } from "../../utils/api";
+import { useEmailOtpFlow } from "../../hooks/useEmailOtpFlow";
 import { CertifyEmailStep } from "./CertifyEmailStep";
+import { CertifyOtpStep } from "./CertifyOtpStep";
 import { CertifyCelebrationStep } from "./CertifyCelebrationStep";
-
-type Step = "email" | "celebration";
 
 interface CertifyCardProps {
   roomId: string;
@@ -14,8 +13,22 @@ interface CertifyCardProps {
 }
 
 export function CertifyCard({ roomId, isActive, onSuccess }: CertifyCardProps) {
-  const { anonAddEmailAndLogin } = useDebateSession();
-  const [step, setStep] = useState<Step>("email");
+  const [done, setDone] = useState(false);
+
+  const {
+    step,
+    email,
+    otp,
+    error,
+    submitting,
+    setEmail,
+    setOtp,
+    submitEmail,
+    submitOtp,
+    goBackToEmail,
+  } = useEmailOtpFlow({
+    onComplete: () => setDone(true),
+  });
 
   useEffect(() => {
     if (isActive) {
@@ -23,27 +36,34 @@ export function CertifyCard({ roomId, isActive, onSuccess }: CertifyCardProps) {
     }
   }, [isActive, roomId]);
 
-  const handleEmailSubmit = async (email: string) => {
+  const handleEmailSubmit = () => {
     api.trackEvent("certify_card_email_submitted", roomId);
-    const response = await anonAddEmailAndLogin(email);
-    if (response && response.success) {
-      setStep("celebration");
-    } else {
-      throw new Error(response?.error || "Couldn't save email. Please try again.");
-    }
+    submitEmail();
   };
 
   return (
-    <>
-
-      <AnimatePresence mode="wait">
-        {step === "email" && (
-          <CertifyEmailStep onSubmit={handleEmailSubmit} />
-        )}
-        {step === "celebration" && (
-          <CertifyCelebrationStep onDone={onSuccess} />
-        )}
-      </AnimatePresence>
-    </>
+    <AnimatePresence mode="wait">
+      {done ? (
+        <CertifyCelebrationStep onDone={onSuccess} />
+      ) : step === "otp" ? (
+        <CertifyOtpStep
+          email={email}
+          otp={otp}
+          error={error}
+          loading={submitting}
+          onOtpChange={setOtp}
+          onSubmit={submitOtp}
+          onBack={goBackToEmail}
+        />
+      ) : (
+        <CertifyEmailStep
+          email={email}
+          error={error}
+          loading={submitting}
+          onEmailChange={setEmail}
+          onSubmit={handleEmailSubmit}
+        />
+      )}
+    </AnimatePresence>
   );
 }

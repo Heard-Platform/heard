@@ -2,7 +2,11 @@ import { useState } from "react";
 import { CertifyCard } from "../components/room/CertifyCard";
 import { SwipeableStatementStack } from "../components/room/SwipeableStatementStack";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { mockRooms, mockStatements } from "./mockData";
+import { Button } from "../components/ui/button";
+import { DebateSessionProvider } from "../hooks/useDebateSession";
+import { mockRooms, mockStatements, mockUser } from "./mockData";
+
+type AuthPath = "signup" | "otp";
 
 export function CertifyCardStory() {
   return (
@@ -17,12 +21,10 @@ export function CertifyCardStory() {
           <div>
             <h2 className="text-2xl font-bold mb-1">Certify Card</h2>
             <p className="text-muted-foreground mb-6">
-              Prompts anonymous users to verify their phone number. Includes phone entry, code verification, and success states.
+              Prompts anonymous users to verify their email. Two auth paths: new email (signup) goes straight to celebration; existing email triggers the OTP step.
             </p>
           </div>
-          <div className="max-w-sm">
-            <CertifyCardIsolated />
-          </div>
+          <CertifyCardIsolated />
         </div>
       </TabsContent>
 
@@ -39,28 +41,67 @@ export function CertifyCardStory() {
 }
 
 function CertifyCardIsolated() {
+  const [authPath, setAuthPath] = useState<AuthPath>("signup");
   const [succeeded, setSucceeded] = useState(false);
 
-  if (succeeded) {
-    return (
-      <div className="text-center py-8 space-y-3">
-        <p className="text-muted-foreground">✅ Verification succeeded — card auto-dismissed.</p>
-        <button
-          className="text-sm underline text-primary"
-          onClick={() => setSucceeded(false)}
-        >
-          Reset
-        </button>
-      </div>
-    );
-  }
+  const overrides = {
+    user: { ...mockUser, isAnonymous: true },
+    anonAddEmailAndLogin: async (email: string) => {
+      console.log("[Story] anonAddEmailAndLogin", { email, authPath });
+      if (authPath === "otp") {
+        return { success: true, data: { requiresOtp: true as const, email } };
+      }
+      return { success: true, data: { requiresOtp: false as const, user: mockUser } };
+    },
+    verifyMagicLink: async (code: string) => {
+      console.log("[Story] verifyMagicLink", { code });
+      return { success: true, data: { user: mockUser, sessionId: "story-session" } };
+    },
+  };
 
   return (
-    <CertifyCard
-      roomId="story"
-      isActive={true}
-      onSuccess={() => setSucceeded(true)}
-    />
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground">Auth path:</span>
+        <Button
+          size="sm"
+          variant={authPath === "signup" ? "default" : "outline"}
+          onClick={() => { setAuthPath("signup"); setSucceeded(false); }}
+        >
+          New email (signup)
+        </Button>
+        <Button
+          size="sm"
+          variant={authPath === "otp" ? "default" : "outline"}
+          onClick={() => { setAuthPath("otp"); setSucceeded(false); }}
+        >
+          Existing email (OTP)
+        </Button>
+      </div>
+
+      <div className="max-w-sm bg-gradient-to-br from-emerald-100 to-teal-50 border-2 border-emerald-300 rounded-xl p-6">
+        {succeeded ? (
+          <div className="text-center py-8 space-y-3">
+            <p className="text-muted-foreground">✅ Verification succeeded — card auto-dismissed.</p>
+            <button
+              className="text-sm underline text-primary"
+              onClick={() => setSucceeded(false)}
+            >
+              Reset
+            </button>
+          </div>
+        ) : (
+          <DebateSessionProvider showcaseOverrides={overrides}>
+            <CertifyCard
+              key={authPath}
+              roomId="story"
+              isActive={true}
+              onSuccess={() => setSucceeded(true)}
+            />
+          </DebateSessionProvider>
+        )}
+      </div>
+    </div>
   );
 }
 

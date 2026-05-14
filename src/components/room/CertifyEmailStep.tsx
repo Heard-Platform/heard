@@ -1,36 +1,24 @@
-import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { motion } from "motion/react";
 import { Send, Sparkles } from "lucide-react";
-import { isValidEmail } from "../../utils/validation";
 import { TOSText } from "../onboarding/TOSText";
 
 interface CertifyEmailStepProps {
-  onSubmit: (email: string) => Promise<void>;
+  email: string;
+  error: string | null;
+  loading: boolean;
+  onEmailChange: (email: string) => void;
+  onSubmit: () => void;
 }
 
-export function CertifyEmailStep({ onSubmit }: CertifyEmailStepProps) {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async () => {
-    if (!isValidEmail(email.trim())) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      await onSubmit(email.trim());
-    } catch (err) {
-      const defaultMessage = "Something went wrong. Please try again.";
-      setError(err instanceof Error ? err.message : defaultMessage);
-      setLoading(false);
-    }
-  };
-
+export function CertifyEmailStep({
+  email,
+  error,
+  loading,
+  onEmailChange,
+  onSubmit,
+}: CertifyEmailStepProps) {
   return (
     <motion.div
       key="email"
@@ -64,15 +52,12 @@ export function CertifyEmailStep({ onSubmit }: CertifyEmailStepProps) {
               autoComplete="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setError(null);
-              }}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              onChange={(e) => onEmailChange(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && onSubmit()}
               className="bg-background"
             />
             <Button
-              onClick={handleSubmit}
+              onClick={onSubmit}
               disabled={loading}
               size="icon"
               className="creation-bg-strong hover:creation-bg-strong-hover shrink-0"
