@@ -993,7 +993,6 @@ app.get(
       rooms = sortRoomsForFeed(rooms, userMemberships);
       rooms = rooms.slice(0, 20);
 
-      // Ensure target room is included if accessible, even if filtered/sliced out
       if (targetRoomId && !rooms.some((r) => r.id === targetRoomId)) {
         const targetRoom = await getDebateRoom(targetRoomId);
         if (targetRoom) {
