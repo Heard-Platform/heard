@@ -84,6 +84,10 @@ interface DebateSessionContextType {
   createRantTestRoom: () => Promise<any>;
   createRealtimeTestRoom: () => Promise<any>;
   createScalabilityTest: () => Promise<any>;
+  updateRoom: (
+    roomId: string,
+    updates: { topic?: string; description?: string; imageUrl?: string },
+  ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
   setRoomInactive: (roomId: string) => Promise<boolean>;
   roomStatements: Record<string, Statement[]>;
   getRoomStatements: (roomId: string) => Promise<Statement[]>;
@@ -631,6 +635,47 @@ export function DebateSessionProvider(
     return null;
   }, []);
 
+  const callRoomMutation = useCallback(
+    async (apiCall: () => Promise<ApiResponse<{ room: DebateRoom }>>) => {
+      const response = await safelyMakeApiCall<{ room: DebateRoom }>(apiCall);
+      if (response?.success && response.data) {
+        const updated = response.data.room;
+        setActiveRooms((prev) =>
+          prev.map((r) =>
+            r.id === updated.id ? { ...r, ...updated } : r,
+          ),
+        );
+      }
+      return response;
+    },
+    [safelyMakeApiCall],
+  );
+
+  const callRoomStatementMutation = useCallback(
+    async (apiCall: () => Promise<ApiResponse<{ statement: Statement }>>) => {
+      const response = await safelyMakeApiCall<{ statement: Statement }>(apiCall);
+      if (response?.success && response.data) {
+        const updated = response.data.statement;
+        setRoomStatements((prev) => ({
+          ...prev,
+          [updated.roomId]: (prev[updated.roomId] || []).map((s) =>
+            s.id === updated.id ? updated : s,
+          ),
+        }));
+      }
+      return response;
+    },
+    [safelyMakeApiCall],
+  );
+
+  const updateRoom = useCallback(
+    (
+      roomId: string,
+      updates: { topic?: string; description?: string; imageUrl?: string },
+    ) => callRoomMutation(() => api.updateRoom(roomId, updates)),
+    [callRoomMutation],
+  );
+
   // Mark room as inactive (dev tool)
   const setRoomInactive = useCallback(
     async (roomId: string) => {
@@ -705,39 +750,6 @@ export function DebateSessionProvider(
     async (roomId: string, mergeId: string) =>
       safelyMakeApiCall<undefined>(() => api.deleteStatementMerge(roomId, mergeId))
   , [safelyMakeApiCall]);
-
-  const callRoomMutation = useCallback(
-    async (apiCall: () => Promise<ApiResponse<{ room: DebateRoom }>>) => {
-      const response = await safelyMakeApiCall<{ room: DebateRoom }>(apiCall);
-      if (response?.success && response.data) {
-        const updated = response.data.room;
-        setActiveRooms((prev) =>
-          prev.map((r) =>
-            r.id === updated.id ? { ...r, ...updated } : r,
-          ),
-        );
-      }
-      return response;
-    },
-    [safelyMakeApiCall],
-  );
-
-  const callRoomStatementMutation = useCallback(
-    async (apiCall: () => Promise<ApiResponse<{ statement: Statement }>>) => {
-      const response = await safelyMakeApiCall<{ statement: Statement }>(apiCall);
-      if (response?.success && response.data) {
-        const updated = response.data.statement;
-        setRoomStatements((prev) => ({
-          ...prev,
-          [updated.roomId]: (prev[updated.roomId] || []).map((s) =>
-            s.id === updated.id ? updated : s,
-          ),
-        }));
-      }
-      return response;
-    },
-    [safelyMakeApiCall],
-  );
 
   const setResponsesPaused = useCallback(
     (roomId: string, paused: boolean) =>
@@ -900,6 +912,7 @@ export function DebateSessionProvider(
     createRantTestRoom,
     createRealtimeTestRoom,
     createScalabilityTest,
+    updateRoom,
     setRoomInactive,
     roomStatements,
     getRoomStatements,
@@ -964,9 +977,13 @@ export function DebateSessionProvider(
         console.log("[Showcase] createAnonymousUser called");
         return { success: true };
       },
-      setRoomInactive: async () => { 
-        console.log("[Showcase] setRoomInactive called"); 
-        return true; 
+      updateRoom: async () => {
+        console.log("[Showcase] updateRoom called");
+        return null;
+      },
+      setRoomInactive: async () => {
+        console.log("[Showcase] setRoomInactive called");
+        return true;
       },
       getRoomStatements: async () => { 
         console.log("[Showcase] getRoomStatements called"); 

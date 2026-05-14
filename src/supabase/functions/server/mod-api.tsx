@@ -152,6 +152,39 @@ app.post(
 );
 
 app.post(
+  `${PREFIX}/edit`,
+  defineRoute(
+    {
+      roomId: { type: "string", required: true },
+      topic: { type: "string" },
+      description: { type: "string" },
+      imageUrl: { type: "string" },
+    },
+    async (
+      { roomId, topic, description, imageUrl }: {
+        roomId: string;
+        topic?: string;
+        description?: string;
+        imageUrl?: string;
+      },
+    ) => {
+      const room = await getDebateRoom(roomId);
+      if (!room) {
+        throw new Error("Room not found");
+      }
+
+      if (topic !== undefined) room.topic = topic;
+      if (description !== undefined) room.description = description;
+      if (imageUrl !== undefined) room.imageUrl = imageUrl;
+
+      await saveDebateRoom(room);
+      return { room };
+    },
+    "Failed to update room",
+  ),
+);
+
+app.post(
   `${PREFIX}/responses-paused`,
   defineRoute(
     {
