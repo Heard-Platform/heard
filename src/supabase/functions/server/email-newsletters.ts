@@ -7,6 +7,7 @@ const YT_FLYERING_URL_NL12 = "https://www.youtube.com/shorts/wnFjDv0S4Bo";
 const YT_PUSHUPS_URL_NL12 = "https://www.youtube.com/shorts/JWv-IaL2jh4";
 const GITHUB_AI_PR_URL = "https://github.com/Heard-Platform/heard/pull/94";
 const YT_HAPPY_HOUR_URL_NL13 = "https://www.youtube.com/shorts/hNqqqJBIkQs";
+const SHORTS_URL = "https://www.youtube.com/shorts";
 
 const newsletters = [
   getParameterizedNewsletter({
@@ -232,6 +233,33 @@ const newsletters = [
       imageUrl: `${SUPABASE_URL}/nl-16-vote-matrix.png`,
       imageLink: "https://heard.vote",
       imageAlt: "Heard new analysis features",
+    },
+  }),
+  getParameterizedNewsletter({
+    subject: "400 signups! 🎉 Ya' Heard #17",
+    editionNumber: 17,
+    debate: {
+      title: "🗳️ Vote on Heard's logo",
+      question: "Heard needs a real logo (and no the monkey won't do) 🐒 Tap one of the buttons below to vote on this design and add your ideas! Spicy takes welcome.",
+      imageUrl: `${SUPABASE_URL}/nl-17-logo.jpg`,
+      agreeLabel: "Like it",
+      disagreeLabel: "Needs work",
+      flyerId: "y56b6fdgoimp5wo8vy",
+      statementId: "4i3okqoff4amp5wo8wg",
+    },
+    section1: {
+      title: "🎉 Heard hits 400 signups!",
+      text: `Thanks to two big Heard posts on unleashed dog policy and an animal rescue event (plus a little organic traction), we are currently at 406 signed up users. That’s 406 vetted real people that provided either an email or phone number and tried Heard! 💯 500 is our next big goal and I’m doing a <a href='${SHORTS_URL}/557972zpK4o'>daily shoot-till-I-make-it basketball challenge</a> until we get there. 🏀`,
+      imageUrl: `${SUPABASE_URL}/nl-17-400-users.png`,
+      imageLink: `${SHORTS_URL}/557972zpK4o`,
+      imageAlt: "Alex doing basketball challenge",
+    },
+    section2: {
+      title: "🐀 Over twenty Dupont residents show up to think like a rat",
+      text: "A few weeks ago we flyered Dupont Circle about the “rat situation” and saw 92 residents vote on the post. Over the weekend the official “Think like a rat” event took place with over two dozen residents attending! (Pic courtesy of Goodweather for Mayor campaign)",
+      imageUrl: `${SUPABASE_URL}/nl-17-rats-2.jpg`,
+      imageLink: "https://heard.vote",
+      imageAlt: "Dupont residents at the Think Like a Rat event",
     },
   }),
 ];

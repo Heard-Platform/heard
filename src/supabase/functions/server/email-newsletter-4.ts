@@ -8,13 +8,51 @@ interface NewsletterSection {
   imageLink?: string;
 }
 
+interface NewsletterDebate {
+  title: string;
+  question: string;
+  flyerId: string;
+  statementId: string;
+  imageUrl?: string;
+  imageAlt?: string;
+  agreeLabel?: string;
+  disagreeLabel?: string;
+}
+
 export interface NewsletterParams {
   subject: string;
   editionNumber: number;
   section1: NewsletterSection;
   section2: NewsletterSection;
-  section3: NewsletterSection;
+  section3?: NewsletterSection;
+  debate?: NewsletterDebate;
 }
+
+const renderDebateSection = (debate: NewsletterDebate): string => `
+  <div style="${styles.section}">
+    <h2 style="${styles.sectionTitle}">
+      ${debate.title}
+    </h2>
+    <p style="${styles.paragraph}">
+      ${debate.question}
+    </p>
+    ${debate.imageUrl ? `
+      <img src="${debate.imageUrl}"
+           alt="${debate.imageAlt || ""}"
+           style="${styles.image}" />
+    ` : ""}
+    <div style="${styles.debateButtons}">
+      <a href="https://heard.vote/flyer/${debate.flyerId}/${debate.statementId}/agree"
+         style="${styles.buttonAgree}">
+        👍 ${debate.agreeLabel || "Agree"}
+      </a>
+      <a href="https://heard.vote/flyer/${debate.flyerId}/${debate.statementId}/disagree"
+         style="${styles.buttonDisagree}">
+        👎 ${debate.disagreeLabel || "Disagree"}
+      </a>
+    </div>
+  </div>
+`;
 
 export const GFM_URL = "https://www.gofundme.com/f/support-heard-making-democracy-fun-and-engaging"
 
@@ -41,11 +79,13 @@ export const getParameterizedNewsletter = (params: NewsletterParams): { subject:
           ${params.section1.text}
         </p>
         <a href="${params.section1.imageLink || params.section1.imageUrl}">
-          <img src="${params.section1.imageUrl}" 
-               alt="${params.section1.imageAlt}" 
+          <img src="${params.section1.imageUrl}"
+               alt="${params.section1.imageAlt}"
                style="${styles.image}" />
         </a>
       </div>
+
+      ${params.debate ? renderDebateSection(params.debate) : ''}
 
       <div style="${styles.section}">
         <h2 style="${styles.sectionTitle}">
@@ -61,19 +101,21 @@ export const getParameterizedNewsletter = (params: NewsletterParams): { subject:
         </a>
       </div>
 
-      <div style="${styles.section}">
-        <h2 style="${styles.sectionTitle}">
-          ${params.section3.title}
-        </h2>
-        <p style="${styles.paragraph}">
-          ${params.section3.text}
-        </p>
-        <a href="${params.section3.imageLink || params.section3.imageUrl}">
-          <img src="${params.section3.imageUrl}" 
-               alt="${params.section3.imageAlt}" 
-               style="${styles.image}" />
-        </a>
-      </div>
+      ${params.section3 ? `
+        <div style="${styles.section}">
+          <h2 style="${styles.sectionTitle}">
+            ${params.section3.title}
+          </h2>
+          <p style="${styles.paragraph}">
+            ${params.section3.text}
+          </p>
+          <a href="${params.section3.imageLink || params.section3.imageUrl}">
+            <img src="${params.section3.imageUrl}" 
+                alt="${params.section3.imageAlt}" 
+                style="${styles.image}" />
+          </a>
+        </div>
+      ` : ''}
 
       ${getSupportSection()}
 
