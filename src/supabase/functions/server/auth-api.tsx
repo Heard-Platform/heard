@@ -300,6 +300,48 @@ app.post(
   },
 );
 
+const sendMagicLinkToEmail = async (email: string): Promise<void> => {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const token = generateMagicLinkCode();
+  const expiresAt = Date.now() + 15 * 60 * 1000;
+
+  await saveMagicLink(token, {
+    email: normalizedEmail,
+    expiresAt,
+  });
+
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendApiKey) {
+    throw new Error("Email service not configured");
+  }
+
+  const magicLinkUrl = `https://heard.vote/magic-link?token=${token}`;
+  const html = getMagicLinkEmail(magicLinkUrl, token);
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${resendApiKey}`,
+    },
+    body: JSON.stringify({
+      from: "Heard <alex@heard-now.com>",
+      to: [normalizedEmail],
+      subject: `[${token}] Log in to Heard`,
+      html,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Failed to send magic link email:", errorText);
+    throw new Error("Failed to send email");
+  }
+
+  console.log(`Magic link sent to ${normalizedEmail}`);
+};
+
 app.post(
   "/make-server-f1a393b4/auth/send-magic-link",
   async (c: any) => {
@@ -310,52 +352,14 @@ app.post(
         return c.json({ error: "Email is required" }, 400);
       }
 
-      const normalizedEmail = email.trim().toLowerCase();
-
-      const token = generateMagicLinkCode();
-      const expiresAt = Date.now() + 15 * 60 * 1000;
-
-      await saveMagicLink(token, {
-        email: normalizedEmail,
-        expiresAt,
-      });
-
-      const resendApiKey = Deno.env.get("RESEND_API_KEY");
-      if (!resendApiKey) {
-        console.error("RESEND_API_KEY not configured");
-        return c.json({ error: "Email service not configured" }, 500);
-      }
-
-      const magicLinkUrl = `https://heard.vote/magic-link?token=${token}`;
-
-      const html = getMagicLinkEmail(magicLinkUrl, token);
-
-      const response = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${resendApiKey}`,
-        },
-        body: JSON.stringify({
-          from: "Heard <alex@heard-now.com>",
-          to: [normalizedEmail],
-          subject: `[${token}] Log in to Heard`,
-          html,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Failed to send magic link email:", errorText);
-        return c.json({ error: "Failed to send email" }, 500);
-      }
-
-      console.log(`Magic link sent to ${normalizedEmail}`);
-
+      await sendMagicLinkToEmail(email);
       return c.json({ success: true });
     } catch (error) {
       console.error("Error sending magic link:", error);
-      return c.json({ error: "Failed to send magic link" }, 500);
+      return c.json(
+        { error: error instanceof Error ? error.message : "Failed to send magic link" },
+        500,
+      );
     }
   },
 );
@@ -470,7 +474,19 @@ app.post(
         throw new Error("Only anonymous users can use this endpoint");
       }
 
-      const result = await attachEmailToAccount(userId, email);
+      if (!email || !isValidEmail(email)) {
+        throw new Error("Valid email address is required");
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+      const existingUser = await getUserByEmail(normalizedEmail);
+
+      if (existingUser && existingUser.id !== userId) {
+        await sendMagicLinkToEmail(normalizedEmail);
+        return { requiresOtp: true as const, email: normalizedEmail };
+      }
+
+      const result = await attachEmailToAccount(userId, normalizedEmail);
       if ("error" in result) {
         throw new Error(result.error);
       }
@@ -478,7 +494,7 @@ app.post(
       result.user.isAnonymous = false;
       await saveUserAndEmail(result.user);
 
-      return { user: sanitizeUser(result.user) };
+      return { requiresOtp: false as const, user: sanitizeUser(result.user) };
     },
     "Failed to create account",
   ),

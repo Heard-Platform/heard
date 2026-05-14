@@ -6,9 +6,27 @@ import { DebateRoom, VoteTypeNew, VoteType } from "../types";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { mockUser } from "./mockData";
 
+type AuthPath = "signup" | "otp";
+
 export function QRScanResultDialogStory() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [scenario, setScenario] = useState<VoteType>("agree");
+  const [authPath, setAuthPath] = useState<AuthPath>("signup");
+
+  const overrides = {
+    user: { ...mockUser, isAnonymous: true },
+    anonAddEmailAndLogin: async (email: string) => {
+      console.log("[Story] anonAddEmailAndLogin", { email, authPath });
+      if (authPath === "otp") {
+        return { success: true, data: { requiresOtp: true as const, email } };
+      }
+      return { success: true, data: { requiresOtp: false as const, user: mockUser } };
+    },
+    verifyMagicLink: async (code: string) => {
+      console.log("[Story] verifyMagicLink", { code });
+      return { success: true, data: { user: mockUser, sessionId: "story-session" } };
+    },
+  };
 
   const mockRoom: DebateRoom = {
     id: "test-room-123",
@@ -115,6 +133,28 @@ export function QRScanResultDialogStory() {
             </div>
           </div>
 
+          <div>
+            <label className="text-sm font-medium text-slate-700 mb-2 block">
+              Auth Path
+            </label>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setAuthPath("signup")}
+                variant={authPath === "signup" ? "default" : "outline"}
+                size="sm"
+              >
+                New email (signup)
+              </Button>
+              <Button
+                onClick={() => setAuthPath("otp")}
+                variant={authPath === "otp" ? "default" : "outline"}
+                size="sm"
+              >
+                Existing email (OTP)
+              </Button>
+            </div>
+          </div>
+
           <Button
             onClick={() => setDialogOpen(true)}
             className="w-full"
@@ -149,8 +189,9 @@ export function QRScanResultDialogStory() {
         </div>
       </div>
 
-      <DebateSessionProvider showcaseOverrides={{user: {...mockUser, isAnonymous: true}}}>
+      <DebateSessionProvider showcaseOverrides={overrides}>
         <QRScanResultDialog
+          key={`${scenario}-${authPath}`}
           room={{ ...mockRoom, topic: currentScenario.topic }}
           agreePercent={currentScenario.agreePercent}
           disagreePercent={currentScenario.disagreePercent}
@@ -159,7 +200,10 @@ export function QRScanResultDialogStory() {
           statementText={currentScenario.statementText}
           teaserStatement={currentScenario.teaserStatement}
           isOpen={dialogOpen}
-          onEmailSubmit={async () => console.log("Email submitted")}
+          onComplete={(result) => {
+            console.log("Completed", result);
+            setDialogOpen(false);
+          }}
           onClose={() => setDialogOpen(false)}
         />
       </DebateSessionProvider>

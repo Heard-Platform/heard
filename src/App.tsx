@@ -97,7 +97,6 @@ function AppContent() {
     setCurrentSubHeard,
     resetSession,
     roomStatements,
-    anonAddEmailAndLogin,
   } = useDebateSession();
 
   const startRoomJoin = (roomId: string) => {
@@ -152,12 +151,9 @@ function AppContent() {
     updateUrlForSubHeard(subHeard);
   };
 
-  const handleQrEmailSubmit = async (email: string) => {
-    if (user?.isAnonymous && email) {
-      const response = await anonAddEmailAndLogin(email);
-      if (!response?.success) throw new Error(response?.error || "Unknown error");
-      toast.success("Welcome to Heard! 🎉");
-    }
+  const handleQrComplete = ({ reason }: { reason: "signup" | "otp-login" | "continue" }) => {
+    if (reason === "signup") toast.success("Welcome to Heard! 🎉");
+    if (reason === "otp-login") toast.success("Welcome back! 🎉");
     updateUrlForRoom(qrScanResult!.room.id);
     setQrScanResult(null);
   };
@@ -599,7 +595,7 @@ function AppContent() {
           statementText={qrScanResult.statementText}
           teaserStatement={qrScanResult.teaserStatement}
           isOpen={true}
-          onEmailSubmit={handleQrEmailSubmit}
+          onComplete={handleQrComplete}
           onClose={() => setQrScanResult(null)}
         />
       )}

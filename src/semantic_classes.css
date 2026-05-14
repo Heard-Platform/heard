@@ -136,6 +136,10 @@
   border-color: var(--color-emerald-300);
 }
 
+.creation-border-strong {
+  border-color: var(--color-emerald-700);
+}
+
 .creation-icon-bg {
   background: linear-gradient(to bottom right, var(--color-green-400), var(--color-teal-500));
 }
