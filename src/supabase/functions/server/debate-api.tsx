@@ -40,7 +40,7 @@ import type {
   DebateRoom
 } from "./types.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
-import { calculateVoteStats, processVote } from "./voting-utils.ts";
+import { calculateVoteStats, orderStatementsForVoter, processVote } from "./voting-utils.ts";
 import { filterFeedRooms, sortRoomsForFeed } from "./feed-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
@@ -492,31 +492,6 @@ const getVotesForStatements = async (
     voteMap[statementId] = votes;
   }
   return voteMap;
-};
-
-const MAX_VOTE_BOOST = 25;
-const MAX_RANDOM_JITTER = 100;
-
-const orderStatementsForVoter = (
-  statements: Statement[],
-): Statement[] => {
-  const maxOpinionatedVotes = Math.max(
-    0,
-    ...statements.map((s) => s.agrees + s.disagrees),
-  );
-
-  return statements
-    .map((statement) => {
-      const opinionatedVotes = statement.agrees + statement.disagrees;
-      const normalizedBoost =
-        maxOpinionatedVotes > 0
-          ? (opinionatedVotes / maxOpinionatedVotes) * MAX_VOTE_BOOST
-          : 0;
-      const score = normalizedBoost + Math.random() * MAX_RANDOM_JITTER;
-      return { statement, score };
-    })
-    .sort((a, b) => b.score - a.score)
-    .map(({ statement }) => statement);
 };
 
 const getStatements = async (

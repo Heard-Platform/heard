@@ -8,6 +8,32 @@ import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 export const countStatementVotes = (statement: Statement): number =>
   statement.agrees + statement.disagrees + statement.passes + statement.superAgrees;
 
+const MAX_VOTE_BOOST = 25;
+const MAX_RANDOM_JITTER = 100;
+
+export const orderStatementsForVoter = (
+  statements: Statement[],
+  random: () => number = Math.random,
+): Statement[] => {
+  const maxOpinionatedVotes = statements.reduce(
+    (max, s) => Math.max(max, s.agrees + s.disagrees),
+    0,
+  );
+
+  return statements
+    .map((statement) => {
+      const opinionatedVotes = statement.agrees + statement.disagrees;
+      const normalizedBoost =
+        maxOpinionatedVotes > 0
+          ? (opinionatedVotes / maxOpinionatedVotes) * MAX_VOTE_BOOST
+          : 0;
+      const score = normalizedBoost + random() * MAX_RANDOM_JITTER;
+      return { statement, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .map(({ statement }) => statement);
+};
+
 export const calculateVoteStats = (
   votes: Vote[],
 ): {
