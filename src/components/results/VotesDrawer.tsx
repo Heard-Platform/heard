@@ -5,7 +5,8 @@ import {
   XCircle,
   MinusCircle,
   LucideIcon,
-  Link as LinkIcon,
+  Copy,
+  QrCode,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -260,17 +261,27 @@ export function VotesDrawer({
                   className="p-3 sm:p-4 bg-gradient-to-br from-white to-orange-50 border-2 border-orange-200 rounded-xl space-y-3 relative"
                 >
                   {user.isDeveloper && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="absolute top-2 right-2 h-7 w-7 p-0"
-                      onClick={() => handleOpenQrGenerator(statement)}
-                    >
-                      <LinkIcon className="w-4 h-4" />
-                    </Button>
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0"
+                        onClick={() => navigator.clipboard.writeText(statement.id)}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0"
+                        onClick={() => handleOpenQrGenerator(statement)}
+                      >
+                        <QrCode className="w-4 h-4" />
+                      </Button>
+                    </div>
                   )}
 
-                  <p className="text-sm leading-relaxed pr-8">
+                  <p className={`text-sm leading-relaxed ${user.isDeveloper ? "pr-16" : ""}`}>
                     {statement.text}
                   </p>
 
