@@ -93,7 +93,12 @@ export type DemographicsCard = {
   question: DemographicQuestion;
 }
 
-export type Card = (StatementCard | CertifyCard | ChanceCard | CoverCard | DemographicsCard)
+export type ResultsSoFarCard = {
+  type: "results-so-far";
+  statements: Statement[];
+}
+
+export type Card = (StatementCard | CertifyCard | ChanceCard | CoverCard | DemographicsCard | ResultsSoFarCard)
   & { isUnswipeable?: boolean };
 
 export const isStatementCard = (card: Card): card is StatementCard => {
