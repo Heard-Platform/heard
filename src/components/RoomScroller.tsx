@@ -262,7 +262,7 @@ const RoomScrollerInner = forwardRef<
 
     if (loading) {
       return (
-        <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+        <div className="h-dvh w-full flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{
@@ -296,7 +296,7 @@ const RoomScrollerInner = forwardRef<
       nextRoom !== null;
 
     return (
-      <div className="relative h-screen w-full overflow-hidden">
+      <div className="relative h-dvh w-full overflow-hidden">
         <div
           ref={scrollContainerRef}
           className="h-full w-full overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scroll-smooth relative"
@@ -331,7 +331,7 @@ const RoomScrollerInner = forwardRef<
             return (
               <div
                 key={card.id}
-                className="h-screen w-full snap-start snap-always flex items-start justify-center pt-15 pb-20 px-4"
+                className="h-dvh w-full snap-start snap-always flex items-start justify-center pt-15 pb-20 px-4"
                 style={{ paddingRight: "2.5rem" }}
               >
                 {isCreateCard(card) ? (
