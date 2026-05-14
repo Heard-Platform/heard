@@ -207,9 +207,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async getActiveRooms(subHeard?: string) {
+  async getActiveRooms(subHeard?: string, targetRoomId?: string) {
     const params = new URLSearchParams();
     if (subHeard) params.append("subHeard", subHeard);
+    if (targetRoomId) params.append("targetRoomId", targetRoomId);
     params.append("onlyJoined", isFeatureEnabled(FeatureFlags.ONLY_JOINED_COMMUNITIES).toString());
     params.append("includeDemographics", isFeatureEnabled(FeatureFlags.DEMOGRAPHICS).toString());
     const queryString = params.toString();

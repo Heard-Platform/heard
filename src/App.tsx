@@ -411,9 +411,9 @@ function AppContent() {
 
   useEffect(() => {
     if (user && hasCheckedUrl && !isJoiningRoom) {
-      getActiveRooms();
+      getActiveRooms(targetRoomId || undefined);
     }
-  }, [user?.id, currentSubHeard, getActiveRooms, hasCheckedUrl, isJoiningRoom]);
+  }, [user?.id, currentSubHeard, getActiveRooms, hasCheckedUrl, isJoiningRoom, targetRoomId]);
 
   const handleOpenShowcase = () => {
     setShowComponentShowcase(true);
@@ -596,7 +596,7 @@ function AppContent() {
           teaserStatement={qrScanResult.teaserStatement}
           isOpen={true}
           onComplete={handleQrComplete}
-          onClose={() => setQrScanResult(null)}
+          onClose={() => handleQrComplete({ reason: "continue" })}
         />
       )}
     </>
