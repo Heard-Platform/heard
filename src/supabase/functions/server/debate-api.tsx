@@ -952,6 +952,7 @@ app.get(
     try {
       const userId = c.get("userId");
       const subHeard = c.req.query("subHeard");
+      const targetRoomId = c.req.query("targetRoomId");
       const includeDemographics = c.req.query("includeDemographics") === "true";
 
       let rooms = await getActiveRooms();
@@ -969,7 +970,7 @@ app.get(
         );
 
         const statuses = await getUsersChanceCardStatuses(userId);
-        
+
         const swipedRoomIds = new Set(
             statuses.map(status => status.roomId)
         );
@@ -991,6 +992,13 @@ app.get(
       rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 100);
       rooms = sortRoomsForFeed(rooms, userMemberships);
       rooms = rooms.slice(0, 20);
+
+      if (targetRoomId && !rooms.some((r) => r.id === targetRoomId)) {
+        const targetRoom = await getDebateRoom(targetRoomId);
+        if (targetRoom) {
+          rooms = [targetRoom, ...rooms];
+        }
+      }
 
       // Attach demographic questions to each room
       if (includeDemographics) {
