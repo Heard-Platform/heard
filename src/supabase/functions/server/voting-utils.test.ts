@@ -87,4 +87,16 @@ describe("orderStatementsForVoter", () => {
 
     assertEquals(result.map((s) => s.id), ["agree", "passes"]);
   });
+
+  it("counts disagrees toward opinionated votes", () => {
+    const allDisagrees = makeStatement("disagrees", 0, 5);
+    const allPasses = makeStatement("passes", 0, 0, { passes: 5 });
+
+    const result = orderStatementsForVoter(
+      [allPasses, allDisagrees],
+      () => 0,
+    );
+
+    assertEquals(result.map((s) => s.id), ["disagrees", "passes"]);
+  });
 });
