@@ -494,8 +494,8 @@ const getVotesForStatements = async (
   return voteMap;
 };
 
-const VOTE_BOOST_RANGE = 25;
-const RANDOM_RANGE = 100;
+const MAX_VOTE_BOOST = 25;
+const MAX_RANDOM_JITTER = 100;
 
 const rankStatementsForVoter = (
   statements: Statement[],
@@ -507,12 +507,12 @@ const rankStatementsForVoter = (
 
   return statements
     .map((statement) => {
-      const opinionated = statement.agrees + statement.disagrees;
+      const opinionatedVotes = statement.agrees + statement.disagrees;
       const normalizedBoost =
         maxOpinionatedVotes > 0
-          ? (opinionated / maxOpinionatedVotes) * VOTE_BOOST_RANGE
+          ? (opinionatedVotes / maxOpinionatedVotes) * MAX_VOTE_BOOST
           : 0;
-      const score = normalizedBoost + Math.random() * RANDOM_RANGE;
+      const score = normalizedBoost + Math.random() * MAX_RANDOM_JITTER;
       return { statement, score };
     })
     .sort((a, b) => b.score - a.score)
