@@ -81,7 +81,7 @@ interface DebateSessionContextType {
     questionId: string,
     answer: string | null,
   ) => Promise<ApiResponse | null>;
-  getActiveRooms: () => Promise<DebateRoom[]>;
+  getActiveRooms: (targetRoomId?: string) => Promise<DebateRoom[]>;
   setCurrentSubHeard: (subHeard: string | null) => void;
   resetSession: () => void;
   createSeedData: () => Promise<any>;
@@ -508,11 +508,12 @@ export function DebateSessionProvider(
   );      
 
   // Get active rooms - uses currentSubHeard from state
-  const getActiveRooms = useCallback(async () => {
+  const getActiveRooms = useCallback(async (targetRoomId?: string) => {
     setRoomsLoading(true);
     try {
       const response = await api.getActiveRooms(
         currentSubHeard || undefined,
+        targetRoomId,
       ) as any;
       if (response.success && response.data) {
         setActiveRooms(response.data.rooms || []);
