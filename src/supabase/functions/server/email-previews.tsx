@@ -9,6 +9,12 @@ import { sendEmailViaResend, getUsersToEmailDigest } from "./email-sender-utils.
 import { getAdminDailyStats, generateAdminDigestHtml } from "./admin-digest.tsx";
 import { getWelcomeEmailHtml, WELCOME_EMAIL_SUBJECT } from "./auth-api.tsx";
 import { User } from "./types.tsx";
+import {
+  generateDebateEndedEmailHtml,
+  generateFakeDebateEndedData,
+  getDebateEndedSubject,
+} from "./email-debate-ended-template.tsx";
+import { getFrontendUrl } from "./utils.tsx";
 
 const app = new Hono();
 
@@ -43,6 +49,12 @@ app.get(
     if (digestType === "welcome") {
       console.log("[email-previews GET] Generating welcome email preview");
       return c.html(getWelcomeEmailHtml());
+    }
+
+    if (digestType === "debate_ended") {
+      console.log("[email-previews GET] Generating debate-ended email preview");
+      const data = generateFakeDebateEndedData(getFrontendUrl());
+      return c.html(generateDebateEndedEmailHtml(data));
     }
 
     let emailData: EmailData;
@@ -125,6 +137,11 @@ app.post(
         console.log("[send-email] Generating welcome email for test email");
         emailHtml = getWelcomeEmailHtml();
         subject = WELCOME_EMAIL_SUBJECT;
+      } else if (digestType === "debate_ended") {
+        console.log("[send-email] Generating debate-ended email for test email");
+        const data = generateFakeDebateEndedData(getFrontendUrl());
+        emailHtml = generateDebateEndedEmailHtml({ ...data, userId });
+        subject = getDebateEndedSubject(data.room.topic);
       } else {
         let emailData: EmailData;
         if (useMockData) {

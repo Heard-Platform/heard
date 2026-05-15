@@ -452,15 +452,15 @@ export const getFeedbackList = async (): Promise<any[]> => {
   return getByPrefixParsed<any>("feedback:");
 };
 
-// Celebration SMS helpers
+// Debate-ended email helpers
 
-export const getCelebrationSmsSent = async (roomId: string): Promise<boolean> => {
-  const value = await kv.get(`celebration-sms-sent:${roomId}`);
+export const getDebateEndedEmailSent = async (roomId: string): Promise<boolean> => {
+  const value = await kv.get(`debate-end-email-sent:${roomId}`);
   return !!value;
 };
 
-export const saveCelebrationSmsSent = async (roomId: string): Promise<void> => {
-  await kv.set(`celebration-sms-sent:${roomId}`, "true");
+export const saveDebateEndedEmailSent = async (roomId: string): Promise<void> => {
+  await kv.set(`debate-end-email-sent:${roomId}`, "true");
 };
 
 // Newsletter sent tracking

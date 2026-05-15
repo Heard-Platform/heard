@@ -174,20 +174,6 @@ class AdminApiClient extends BaseApiClient {
     });
   }
 
-  async sendTestCelebrationSms(
-    adminKey: string,
-    userId: string,
-    roomId: string,
-  ) {
-    return this.request<{ message: string }>("/admin/send-test-celebration-sms", {
-      method: "POST",
-      headers: {
-        "X-Admin-Key": adminKey,
-      },
-      body: JSON.stringify({ userId, roomId }),
-    });
-  }
-
   async getFlyerEmails(adminKey: string) {
     return this.request<{ emails: { email: string }[] }>(
       "/admin/flyer-emails",
