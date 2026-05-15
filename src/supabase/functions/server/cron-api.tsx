@@ -101,6 +101,12 @@ export async function sendDebateEndedEmails(
         result.skipped++;
         continue;
       }
+      // TEMPORARY: dev-only rollout for debate-ended emails. Remove this
+      // block once we're comfortable sending to all participants.
+      if (!user.isDeveloper) {
+        result.skipped++;
+        continue;
+      }
 
       const html = generateDebateEndedEmailHtml({
         room,
