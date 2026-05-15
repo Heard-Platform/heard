@@ -55,14 +55,7 @@ export function FlyersTab() {
     );
   }
 
-  const allGroups = new Set<number>();
-  flyerIds.forEach(flyerId => {
-    Object.keys(flyerRoomData[flyerId].groups).forEach(group => {
-      allGroups.add(parseInt(group));
-    });
-  });
-
-  const sortedGroups = Array.from(allGroups).sort((a, b) => a - b);
+  const sortedGroups = [1, 2, 3, 4, 5, 6];
   
   const sortedFlyerIds = flyerIds.sort((a, b) => {
     return flyerRoomData[b].lastUserCreated - flyerRoomData[a].lastUserCreated;
@@ -78,7 +71,7 @@ export function FlyersTab() {
               <th className="text-left p-2 font-semibold">Room Topic</th>
               {sortedGroups.map(group => (
                 <th key={group} className="text-center p-2 font-semibold">
-                  Group {group === 0 ? "N/A" : group}
+                  Group {group}
                 </th>
               ))}
               <th className="text-center p-2 font-semibold bg-gray-100">Total</th>
@@ -88,7 +81,7 @@ export function FlyersTab() {
           <tbody>
             {sortedFlyerIds.map(flyerId => {
               const roomData = flyerRoomData[flyerId];
-              const rowTotal = Object.values(roomData.groups).reduce((sum, count) => sum + count, 0);
+              const rowTotal = sortedGroups.reduce((sum, group) => sum + (roomData.groups[group] || 0), 0);
               return (
                 <tr key={flyerId} className="border-b hover:bg-gray-50">
                   <td className="p-2 text-sm">{roomData.topic}</td>
