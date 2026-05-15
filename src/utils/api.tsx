@@ -26,14 +26,12 @@ import {
 import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
   BaseApiClient,
-  API_BASE_URL,
   ApiResponse,
 } from "./api-client";
 import { FeatureFlags, isFeatureEnabled } from "./constants/feature-flags";
 import { getEnvironment } from "./constants/general";
 import { convertImageToJPEG, shouldConvertImage } from "./image-converter";
 import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
-import { publicAnonKey } from "./supabase/info";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 export async function safelyMakeApiCall<T>(
@@ -680,15 +678,8 @@ class ApiClient extends BaseApiClient {
     if (digestType) params.append("digestType", digestType);
 
     const queryString = params.toString();
-    const response = await fetch(
-      `${API_BASE_URL}/dev/email-previews${
-        queryString ? `?${queryString}` : ""
-      }`,
-      {
-        headers: {
-          Authorization: `Bearer ${publicAnonKey}`,
-        },
-      },
+    const response = await this.get(
+      `/dev/email-previews${queryString ? `?${queryString}` : ""}`,
     );
 
     if (!response.ok) {

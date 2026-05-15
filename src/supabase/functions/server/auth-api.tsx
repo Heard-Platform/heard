@@ -192,7 +192,7 @@ const sendEmail = async ({
           Authorization: `Bearer ${resendApiKey}`,
         },
         body: JSON.stringify({
-          from: "HEARD <hello@heard.vote>",
+          from: "HEARD <hello@heard-now.com>",
           to: [to],
           subject,
           html,
@@ -225,18 +225,18 @@ export const getWelcomeEmailHtml = () => `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="text-align: center; margin-bottom: 30px;">
         <h1 style="color: #8B5CF6; margin-bottom: 10px;">Welcome to Heard!</h1>
-        <p style="color: #666; font-size: 18px;">An app for arguing<br>(and secretly saving democracy) 🐒</p>
+        <p style="color: #666; font-size: 18px;">An app for communities to go deep on topics they care about 🐒</p>
       </div>
 
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
-        <p style="margin: 0; line-height: 1.6;">You're all set to jump into fast-paced discussions that make arguing fun (and we hope, meaningful). Get ready to roll up your sleeves, build bridges, and maybe change some minds!</p>
+        <p style="margin: 0; line-height: 1.6;">You're all set to jump into fast-paced discussions that make arguing fun (and we hope, meaningful). Get ready to roll up your sleeves, build bridges, and be heard!</p>
       </div>
 
       <div style="margin-bottom: 25px;">
         <h3 style="color: #333; margin-bottom: 15px;">What's Next?</h3>
         <ol style="padding-left: 20px;">
           <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">👥 <strong>Find communities</strong> - Browse rooms on topics you care about</li>
-          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🎯 <strong>Join a debate</strong> - Jump into a live conversation</li>
+          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🎯 <strong>Join a conversation</strong> - Jump into a live discussion</li>
           <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🗳️ <strong>Vote</strong> - React to statements and shape where the room lands</li>
           <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">💬 <strong>Add your own take</strong> - Post a statement and see how it resonates</li>
         </ol>
@@ -326,7 +326,7 @@ const sendMagicLinkToEmail = async (email: string): Promise<void> => {
       Authorization: `Bearer ${resendApiKey}`,
     },
     body: JSON.stringify({
-      from: "Heard <hello@heard.vote>",
+      from: "Heard <hello@heard-now.com>",
       to: [normalizedEmail],
       subject: `[${token}] Log in to Heard`,
       html,

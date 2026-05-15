@@ -115,7 +115,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
   };
 
   const fetchCountData = async () => {
-    if (useMockData || digestType === "admin_daily_digest") {
+    if (useMockData || digestType === "admin_daily_digest" || digestType === "welcome") {
       setCountData(null);
       setEligibleUsers([]);
       setConsideredUsers([]);
@@ -153,7 +153,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
       <div className="heard-between">
         <h3>Email Previews</h3>
         <div className="flex items-center gap-3">
-          {digestType !== "admin_daily_digest" && (
+          {digestType !== "admin_daily_digest" && digestType !== "welcome" && (
             <div className="flex items-center gap-2">
               <label className="text-sm text-slate-600">
                 Mock Data
@@ -186,6 +186,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
               <option value="weekly_digest">Weekly Digest</option>
               <option value="first_day_digest">First Day Digest</option>
               <option value="admin_daily_digest">Admin Daily Digest</option>
+              <option value="welcome">Welcome Email</option>
             </select>
           </div>
           <Button

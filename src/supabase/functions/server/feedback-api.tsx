@@ -106,7 +106,7 @@ async function sendFeedbackEmail(feedback: any) {
   `;
 
   await sendEmailToDevs({
-    from: "Heard Feedback <hello@heard.vote>",
+    from: "Heard Feedback <hello@heard-now.com>",
     subject: `💜 New Heard Feedback: "${feedback.text.substring(0, 50)}${feedback.text.length > 50 ? "..." : ""}"`,
     html: emailHtml,
   });

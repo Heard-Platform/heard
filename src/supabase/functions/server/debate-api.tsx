@@ -107,7 +107,7 @@ const sendEmail = async (params: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "Heard <hello@heard.vote>",
+          from: "Heard <hello@heard-now.com>",
           to: [params.to],
           subject: params.subject,
           html: params.html,

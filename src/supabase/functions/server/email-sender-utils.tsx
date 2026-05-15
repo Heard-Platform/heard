@@ -33,7 +33,7 @@ export const sendEmailViaResend = async (
           Authorization: `Bearer ${resendApiKey}`,
         },
         body: JSON.stringify({
-          from: "Heard <hello@heard.vote>",
+          from: "Heard <hello@heard-now.com>",
           to: [params.to],
           subject: params.subject,
           html: params.html,
