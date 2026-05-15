@@ -249,6 +249,7 @@ function AppContent() {
       const clubFlyerMatch = window.location.pathname.match(
         /^\/club-(yes|no)/,
       );
+      const isClubRoute = /^\/club\/?$/.test(window.location.pathname);
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
@@ -324,6 +325,8 @@ function AppContent() {
           statementId: CLUB_STATEMENT_ID,
           vote: voteWord === "yes" ? "agree" : "disagree",
         });
+      } else if (isClubRoute) {
+        startRoomJoin(CLUB_FLYER_ID);
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (eventIdFromUrl) {
