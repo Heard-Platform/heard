@@ -128,7 +128,7 @@ export const getOneBillionEvents = async () => {
   return selectAll<UserEvent>(
     "user_events",
     {},
-    (q: any) => q.like("type", "one_billion_%").select("type"),
+    (q: any) => q.like("type", "one_billion_%").select("type, userId"),
   );
 };
 

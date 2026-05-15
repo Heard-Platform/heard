@@ -85,8 +85,12 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const certifyCardShownSince = new Date("2026-04-21").getTime();
 
     const oneBillionEventRows = await getOneBillionEvents();
+    const realNonDevUserIds = new Set(
+      users.filter((u) => !u.isDeveloper).map((u) => u.id),
+    );
     const oneBillionCounts: Record<string, number> = {};
     for (const row of oneBillionEventRows) {
+      if (!row.userId || !realNonDevUserIds.has(row.userId)) continue;
       oneBillionCounts[row.type] = (oneBillionCounts[row.type] ?? 0) + 1;
     }
     const oneBillionEvents = {

@@ -19,11 +19,13 @@ import {
   Bot,
   Rabbit,
   ScanLine,
+  Vote,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
 import { AvatarAnimalChart } from "./feature-tracker/AvatarAnimalChart";
 import { CertifyCardResults } from "./feature-tracker/CertifyCardResults";
+import { OneBillionResults } from "./feature-tracker/OneBillionResults";
 
 interface FeatureResultsTrackerProps {
   onExit: () => void;
@@ -209,6 +211,16 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getDate: (s) => s.certifyCardShownSince,
       renderExtra: (s) => <CertifyCardResults {...s.certifyCardData} />,
     },
+    {
+      icon: Vote,
+      iconColor: "text-indigo-600",
+      bgColor: "bg-indigo-100",
+      title: "/1billion Page",
+      description: "Loads and clicks on the 1 Billion for Trust voting page",
+      getValue: (s) => s.oneBillionEvents.pageLoad,
+      getDate: () => new Date("2026-05-15").getTime(),
+      renderExtra: (s) => <OneBillionResults {...s.oneBillionEvents} />,
+    },
   ]
 
   featureCards.sort((a, b) =>
@@ -241,21 +253,6 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
             Exit
           </Button>
         </div>
-
-        {stats && (
-          <Card className="p-4 bg-indigo-50 border-indigo-200">
-            <p className="text-sm font-semibold text-indigo-900 mb-1">
-              /1billion page
-            </p>
-            <p className="text-sm text-indigo-800">
-              {stats.oneBillionEvents.pageLoad} loads ·{" "}
-              {stats.oneBillionEvents.clickProjects} projects clicks ·{" "}
-              {stats.oneBillionEvents.clickOrg} org clicks ·{" "}
-              {stats.oneBillionEvents.clickForm} form clicks ·{" "}
-              {stats.oneBillionEvents.clickCopy} copy clicks
-            </p>
-          </Card>
-        )}
 
         <div className="space-y-4">
           {featureCards.map((card) => (
