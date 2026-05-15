@@ -1,6 +1,6 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers } from "./kv-utils.tsx";
-import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents } from "./model-utils.ts";
+import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents } from "./model-utils.ts";
 import { selectAll } from "./db-utils.ts";
 
 const app = new Hono();
@@ -84,6 +84,23 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     };
     const certifyCardShownSince = new Date("2026-04-21").getTime();
 
+    const oneBillionEventRows = await getOneBillionEvents();
+    const realNonDevUserIds = new Set(
+      users.filter((u) => !u.isDeveloper).map((u) => u.id),
+    );
+    const oneBillionCounts: Record<string, number> = {};
+    for (const row of oneBillionEventRows) {
+      if (!row.userId || !realNonDevUserIds.has(row.userId)) continue;
+      oneBillionCounts[row.type] = (oneBillionCounts[row.type] ?? 0) + 1;
+    }
+    const oneBillionEvents = {
+      pageLoad: oneBillionCounts["one_billion_page_load"] ?? 0,
+      clickProjects: oneBillionCounts["one_billion_click_projects"] ?? 0,
+      clickOrg: oneBillionCounts["one_billion_click_org"] ?? 0,
+      clickForm: oneBillionCounts["one_billion_click_form"] ?? 0,
+      clickCopy: oneBillionCounts["one_billion_click_copy"] ?? 0,
+    };
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -132,6 +149,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       certifyCardShown: certifyCardData.shown,
       certifyCardShownSince,
       certifyCardData,
+      oneBillionEvents,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);

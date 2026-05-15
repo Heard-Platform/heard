@@ -1052,6 +1052,10 @@
     margin-bottom: calc(var(--spacing) * 8);
   }
 
+  .mb-12 {
+    margin-bottom: calc(var(--spacing) * 12);
+  }
+
   .mb-\[-10px\] {
     margin-bottom: -10px;
   }
@@ -1074,6 +1078,10 @@
 
   .ml-6 {
     margin-left: calc(var(--spacing) * 6);
+  }
+
+  .ml-16 {
+    margin-left: calc(var(--spacing) * 16);
   }
 
   .ml-auto {
@@ -1224,6 +1232,10 @@
 
   .h-48 {
     height: calc(var(--spacing) * 48);
+  }
+
+  .h-64 {
+    height: calc(var(--spacing) * 64);
   }
 
   .h-\[1\.15rem\] {
@@ -1468,6 +1480,10 @@
 
   .w-24 {
     width: calc(var(--spacing) * 24);
+  }
+
+  .w-32 {
+    width: calc(var(--spacing) * 32);
   }
 
   .w-46 {
@@ -3622,6 +3638,10 @@
 
   .py-8 {
     padding-block: calc(var(--spacing) * 8);
+  }
+
+  .py-10 {
+    padding-block: calc(var(--spacing) * 10);
   }
 
   .py-12 {
