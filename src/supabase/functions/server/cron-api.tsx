@@ -18,7 +18,7 @@ import {
   getDebateEndedSubject,
   type OtherConvo,
 } from "./email-debate-ended-template.tsx";
-import { rankStatements } from "./statement-utils.tsx";
+import { getTotalVoteCount, rankStatements } from "./statement-utils.tsx";
 
 const app = new Hono();
 
@@ -40,7 +40,6 @@ const MAX_TOP_STATEMENTS = 3;
 const findOtherConvosInSubHeard = (
   endedRoom: DebateRoom,
   allRooms: DebateRoom[],
-  now: number,
 ): OtherConvo[] => {
   if (!endedRoom.subHeard) return [];
   return allRooms
@@ -48,9 +47,7 @@ const findOtherConvosInSubHeard = (
       (r) =>
         r.id !== endedRoom.id &&
         r.subHeard === endedRoom.subHeard &&
-        r.isActive &&
-        !r.isTestRoom &&
-        (!r.endTime || r.endTime > now),
+        !r.isTestRoom,
     )
     .sort(
       (a, b) =>
@@ -72,26 +69,16 @@ export async function sendDebateEndedEmails(
 ): Promise<{ sent: number; failed: number; skipped: number }> {
   const result = { sent: 0, failed: 0, skipped: 0 };
 
-  const resendApiKey = Deno.env.get("RESEND_API_KEY");
-  if (!resendApiKey) {
-    console.log(
-      `[debate-ended-email] RESEND_API_KEY not configured, skipping emails for room ${room.id}`,
-    );
-    result.skipped = room.participants.length;
-    return result;
-  }
-
   const statements = await getStatements(room.id);
   const totalVotes = statements.reduce(
-    (sum, s) =>
-      sum + s.superAgrees + s.agrees + s.disagrees + s.passes,
+    (sum, s) => sum + getTotalVoteCount(s),
     0,
   );
   const { topStatements, mostDisagreed, spiciest } = rankStatements(
     statements,
     MAX_TOP_STATEMENTS,
   );
-  const otherConvos = findOtherConvosInSubHeard(room, allRooms, now);
+  const otherConvos = findOtherConvosInSubHeard(room, allRooms);
   const subject = getDebateEndedSubject(room.topic);
   const frontendUrl = getFrontendUrl();
 
