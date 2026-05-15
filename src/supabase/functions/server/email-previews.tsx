@@ -42,19 +42,27 @@ app.get(
     if (digestType === "admin_daily_digest") {
       console.log("[email-previews GET] Generating admin digest preview");
       const stats = await getAdminDailyStats(24 * 60 * 60 * 1000);
-      const emailHtml = generateAdminDigestHtml(stats);
-      return c.html(emailHtml);
+      return c.json({
+        subject: "📊 Heard Admin Daily Digest",
+        html: generateAdminDigestHtml(stats),
+      });
     }
 
     if (digestType === "welcome") {
       console.log("[email-previews GET] Generating welcome email preview");
-      return c.html(getWelcomeEmailHtml());
+      return c.json({
+        subject: WELCOME_EMAIL_SUBJECT,
+        html: getWelcomeEmailHtml(),
+      });
     }
 
     if (digestType === "debate_ended") {
       console.log("[email-previews GET] Generating debate-ended email preview");
       const data = generateFakeDebateEndedData(getFrontendUrl());
-      return c.html(generateDebateEndedEmailHtml(data));
+      return c.json({
+        subject: getDebateEndedSubject(data.room.topic),
+        html: generateDebateEndedEmailHtml(data),
+      });
     }
 
     let emailData: EmailData;
@@ -88,7 +96,10 @@ app.get(
     });
 
     const emailHtml = generateEmailHtml(emailData, userId || "preview-user");
-    return c.html(emailHtml);
+    const subject = digestType === "first_day_digest"
+      ? "🔥 Your First Day on Heard"
+      : "🔥 The Latest on Heard";
+    return c.json({ subject, html: emailHtml });
   },
 );
 

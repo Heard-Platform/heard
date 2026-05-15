@@ -55,6 +55,7 @@ function UserListCollapsible({ title, users, isExpanded, onToggle }: UserListCol
 
 export function EmailPreviews({ user }: EmailPreviewsProps) {
   const [emailHtml, setEmailHtml] = useState<string>("");
+  const [emailSubject, setEmailSubject] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -75,8 +76,9 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
     setError(null);
 
     try {
-      const html = await api.getEmailPreview(digestType);
+      const { subject, html } = await api.getEmailPreview(digestType);
       setEmailHtml(html);
+      setEmailSubject(subject);
     } catch (err) {
       console.error("Error fetching email preview:", err);
       setError(
@@ -265,6 +267,12 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
 
       {!loading && !error && emailHtml && (
         <div className="border rounded-lg overflow-hidden">
+          {emailSubject && (
+            <div className="border-b bg-slate-50 px-4 py-3">
+              <div className="text-xs uppercase tracking-wide text-slate-500">Subject</div>
+              <div className="font-medium text-slate-900">{emailSubject}</div>
+            </div>
+          )}
           <iframe
             srcDoc={emailHtml}
             title="Email Preview"

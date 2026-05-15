@@ -74,7 +74,7 @@ export async function sendDebateEndedEmails(
     (sum, s) => sum + getTotalVoteCount(s),
     0,
   );
-  const { topStatements, mostDisagreed, spiciest } = rankStatements(
+  const { topStatements, mostDisagreed, mostSplit } = rankStatements(
     statements,
     MAX_TOP_STATEMENTS,
   );
@@ -106,7 +106,7 @@ export async function sendDebateEndedEmails(
         room,
         topStatements,
         mostDisagreed,
-        spiciest,
+        mostSplit,
         totalVotes,
         participantCount: room.participants.length,
         otherConvos,

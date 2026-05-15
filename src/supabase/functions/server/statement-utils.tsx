@@ -62,7 +62,7 @@ export function getSplitScore(statement: Statement): number {
 export interface RankedStatements {
   topStatements: Statement[];
   mostDisagreed: Statement | null;
-  spiciest: Statement | null;
+  mostSplit: Statement | null;
 }
 
 const MIN_VOTES_FOR_HIGHLIGHT = 2;
@@ -89,12 +89,12 @@ export function rankStatements(
       ? mostDisagreedCandidate
       : null;
 
-  const excludeFromSpicy = new Set(topIds);
-  if (mostDisagreed) excludeFromSpicy.add(mostDisagreed.id);
-  const spiciest =
-    [...eligible.filter((s) => !excludeFromSpicy.has(s.id))].sort(
+  const excludeFromSplit = new Set(topIds);
+  if (mostDisagreed) excludeFromSplit.add(mostDisagreed.id);
+  const mostSplit =
+    [...eligible.filter((s) => !excludeFromSplit.has(s.id))].sort(
       (a, b) => getSplitScore(b) - getSplitScore(a),
     )[0] ?? null;
 
-  return { topStatements, mostDisagreed, spiciest };
+  return { topStatements, mostDisagreed, mostSplit };
 }

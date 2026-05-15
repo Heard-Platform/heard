@@ -6,7 +6,7 @@ export const DEBATE_ENDED_EMAIL_TYPE = "debate_ended";
 
 export const getDebateEndedSubject = (topic: string): string => {
   const trimmed = topic.length > 60 ? topic.substring(0, 60) + "..." : topic;
-  return `🎬 Your debate just wrapped: ${trimmed}`;
+  return `${trimmed} — The results are in!`;
 };
 
 export interface OtherConvo {
@@ -19,7 +19,7 @@ export interface DebateEndedEmailData {
   room: DebateRoom;
   topStatements: Statement[];
   mostDisagreed: Statement | null;
-  spiciest: Statement | null;
+  mostSplit: Statement | null;
   totalVotes: number;
   participantCount: number;
   otherConvos: OtherConvo[];
@@ -80,7 +80,7 @@ export const generateDebateEndedEmailHtml = (
     room,
     topStatements,
     mostDisagreed,
-    spiciest,
+    mostSplit,
     totalVotes,
     participantCount,
     otherConvos,
@@ -113,10 +113,10 @@ export const generateDebateEndedEmailHtml = (
       )
     : "";
 
-  const spiciestHtml = spiciest
+  const mostSplitHtml = mostSplit
     ? renderHighlightSection(
-        "🌶️ Spiciest Take",
-        spiciest,
+        "⚖️ Most Split Take",
+        mostSplit,
         "#fa709a",
         "#fffbf0",
       )
@@ -144,7 +144,7 @@ export const generateDebateEndedEmailHtml = (
       <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
         <div style="${PURPLE_GRADIENT} color: #ffffff; padding: 40px 24px; text-align: center;">
           <h1 style="margin: 0 0 8px 0; font-size: 28px; line-height: 1.25;">${topicEscaped}</h1>
-          <p style="margin: 0; font-size: 14px; opacity: 0.9;">🎬 That's a wrap</p>
+          <p style="margin: 0; font-size: 14px; opacity: 0.9;">The votes are in — see how the room landed 👇</p>
         </div>
 
         <div style="padding: 32px 24px;">
@@ -173,7 +173,7 @@ export const generateDebateEndedEmailHtml = (
 
           ${mostDisagreedHtml}
 
-          ${spiciestHtml}
+          ${mostSplitHtml}
 
           ${otherConvosHtml}
 
@@ -283,7 +283,7 @@ export const generateFakeDebateEndedData = (
     },
   ];
 
-  const { topStatements, mostDisagreed, spiciest } = rankStatements(
+  const { topStatements, mostDisagreed, mostSplit } = rankStatements(
     allStatements,
     3,
   );
@@ -315,7 +315,7 @@ export const generateFakeDebateEndedData = (
     room,
     topStatements,
     mostDisagreed,
-    spiciest,
+    mostSplit,
     totalVotes,
     participantCount: room.participants.length,
     otherConvos,
