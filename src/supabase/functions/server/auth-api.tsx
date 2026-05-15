@@ -192,7 +192,7 @@ const sendEmail = async ({
           Authorization: `Bearer ${resendApiKey}`,
         },
         body: JSON.stringify({
-          from: "HEARD <notifications@heard-now.com>",
+          from: "HEARD <hello@heard-now.com>",
           to: [to],
           subject,
           html,
@@ -219,43 +219,43 @@ const sendEmail = async ({
   }
 };
 
-export const sendWelcomeEmail = async (
-  email: string,
-  nickname: string,
-) => {
-  const welcomeHtml = `
+export const WELCOME_EMAIL_SUBJECT = "Welcome to HEARD! 🎯";
+
+export const getWelcomeEmailHtml = () => `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #8B5CF6; margin-bottom: 10px;">Welcome to HEARD!</h1>
-        <p style="color: #666; font-size: 18px;">Ready to argue and save democracy? 🚀</p>
+        <h1 style="color: #8B5CF6; margin-bottom: 10px;">Welcome to Heard!</h1>
+        <p style="color: #666; font-size: 18px;">An app for communities to go deep on topics they care about 🐒</p>
       </div>
-      
+
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
-        <h2 style="margin: 0 0 15px 0;">Hey ${nickname}! 👋</h2>
-        <p style="margin: 0; line-height: 1.6;">You're all set to jump into fast-paced debates that make arguing fun and educational. Get ready to earn points, build bridges, and maybe change some minds!</p>
+        <p style="margin: 0; line-height: 1.6;">You're all set to jump into fast-paced discussions that make arguing fun (and we hope, meaningful). Get ready to roll up your sleeves, build bridges, and be heard!</p>
       </div>
-      
+
       <div style="margin-bottom: 25px;">
         <h3 style="color: #333; margin-bottom: 15px;">What's Next?</h3>
-        <ul style="list-style: none; padding: 0;">
-          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🎯 <strong>Join a debate</strong> - Jump into active rooms or create your own</li>
-          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">💬 <strong>Share statements</strong> - Earn points for posting thoughtful arguments</li>
-          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🔥 <strong>Get spicy</strong> - Add 🌶️ to controversial takes for bonus points</li>
-          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🤝 <strong>Build bridges</strong> - Find common ground and level up your score</li>
-        </ul>
+        <ol style="padding-left: 20px;">
+          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">👥 <strong>Find communities</strong> - Browse rooms on topics you care about</li>
+          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🎯 <strong>Join a conversation</strong> - Jump into a live discussion</li>
+          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">🗳️ <strong>Vote</strong> - React to statements and shape where the room lands</li>
+          <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">💬 <strong>Add your own take</strong> - Post a statement and see how it resonates</li>
+        </ol>
       </div>
-      
+
       <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
         <p style="margin: 0; color: #666;">Happy debating!</p>
-        <p style="margin: 5px 0 0 0; color: #8B5CF6; font-weight: bold;">The HEARD Team</p>
+        <p style="margin: 5px 0 0 0; color: #8B5CF6; font-weight: bold;">The Heard Team</p>
       </div>
     </div>
   `;
 
+export const sendWelcomeEmail = async (
+  email: string,
+) => {
   return await sendEmail({
     to: email,
-    subject: "Welcome to HEARD! 🎯",
-    html: welcomeHtml,
+    subject: WELCOME_EMAIL_SUBJECT,
+    html: getWelcomeEmailHtml(),
   });
 };
 
@@ -326,7 +326,7 @@ const sendMagicLinkToEmail = async (email: string): Promise<void> => {
       Authorization: `Bearer ${resendApiKey}`,
     },
     body: JSON.stringify({
-      from: "Heard <alex@heard-now.com>",
+      from: "Heard <hello@heard-now.com>",
       to: [normalizedEmail],
       subject: `[${token}] Log in to Heard`,
       html,
@@ -433,7 +433,7 @@ export const attachEmailToAccount = async (
   user.emailDigestsEnabled = true;
   await saveUserAndEmail(user);
 
-  sendWelcomeEmail(normalizedEmail, user.nickname).catch((error) => {
+  sendWelcomeEmail(normalizedEmail).catch((error) => {
     console.error("Welcome email failed:", error);
   });
 

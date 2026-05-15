@@ -7,6 +7,7 @@ import {
 import { generateEmailHtml, generateFakeData } from "./email-digest-template.tsx";
 import { sendEmailViaResend, getUsersToEmailDigest } from "./email-sender-utils.tsx";
 import { getAdminDailyStats, generateAdminDigestHtml } from "./admin-digest.tsx";
+import { getWelcomeEmailHtml, WELCOME_EMAIL_SUBJECT } from "./auth-api.tsx";
 import { User } from "./types.tsx";
 
 const app = new Hono();
@@ -37,6 +38,11 @@ app.get(
       const stats = await getAdminDailyStats(24 * 60 * 60 * 1000);
       const emailHtml = generateAdminDigestHtml(stats);
       return c.html(emailHtml);
+    }
+
+    if (digestType === "welcome") {
+      console.log("[email-previews GET] Generating welcome email preview");
+      return c.html(getWelcomeEmailHtml());
     }
 
     let emailData: EmailData;
@@ -115,6 +121,10 @@ app.post(
         const stats = await getAdminDailyStats(24 * 60 * 60 * 1000);
         emailHtml = generateAdminDigestHtml(stats);
         subject = "📊 Heard Admin Daily Digest";
+      } else if (digestType === "welcome") {
+        console.log("[send-email] Generating welcome email for test email");
+        emailHtml = getWelcomeEmailHtml();
+        subject = WELCOME_EMAIL_SUBJECT;
       } else {
         let emailData: EmailData;
         if (useMockData) {

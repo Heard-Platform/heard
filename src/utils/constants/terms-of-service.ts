@@ -198,5 +198,5 @@ Continued use of the Service after changes become effective constitutes acceptan
 
 ## **16. Contact**
 
-If you have questions about these Terms, contact: hello@heard-now.com
+If you have questions about these Terms, contact: hello@heard.vote
 `
