@@ -616,7 +616,7 @@ app.post(
               Authorization: `Bearer ${resendApiKey}`,
             },
             body: JSON.stringify({
-              from: "Alex @ Heard <alex@heard-now.com>",
+              from: "Alex @ Heard <hello@heard.vote>",
               to: [user.email],
               subject: `${testMode ? "[TEST] " : ""}${subject}`,
               html,

@@ -142,7 +142,7 @@ async function sendReportEmail({
 
   const preview = statementText.substring(0, 50);
   await sendEmailToDevs({
-    from: "Heard Reports <feedback@heard-now.com>",
+    from: "Heard Reports <hello@heard.vote>",
     subject: `🚩 Statement reported: "${preview}${statementText.length > 50 ? "..." : ""}"`,
     html: emailHtml,
   });
