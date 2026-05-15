@@ -43,6 +43,9 @@ const SHIRT_STATEMENT_ID = "orgi27e8jipmoyd0uhl";
 const I_LOVE_CIVTECH_FLYER_ID = "gv7kmooa0lmom3pn2m";
 const I_LOVE_CIVTECH_STATEMENT_ID = "jg46pxp4fsmom3pn3c";
 
+const CLUB_FLYER_ID = "i2yo40k84womp72i2qi";
+const CLUB_STATEMENT_ID = "qkjea7qnj3mp72i2r3";
+
 const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: string }> = {
   shirt: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
   sign: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
@@ -243,6 +246,9 @@ function AppContent() {
       const hardcodedFlyerMatch = window.location.pathname.match(
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
+      const clubFlyerMatch = window.location.pathname.match(
+        /^\/club-(yes|no)/,
+      );
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
@@ -310,6 +316,13 @@ function AppContent() {
           flyerId: flyerConfig.flyerId,
           statementId: flyerConfig.statementId,
           vote: voteWord === "agree" ? "agree" : "disagree",
+        });
+      } else if (clubFlyerMatch) {
+        const [, voteWord] = clubFlyerMatch;
+        handleFlyerJoin({
+          flyerId: CLUB_FLYER_ID,
+          statementId: CLUB_STATEMENT_ID,
+          vote: voteWord === "yes" ? "agree" : "disagree",
         });
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
