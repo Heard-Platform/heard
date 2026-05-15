@@ -4,6 +4,7 @@ import { UnsubscribePage } from "./components/UnsubscribePage";
 import { TermsOfServicePage } from "./screens/TermsOfServicePage";
 import { PrivacyPolicyPage } from "./screens/PrivacyPolicyPage";
 import { OrgsLanding } from "./screens/OrgsLanding";
+import { OneBillionPage } from "./screens/OneBillionPage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
@@ -71,6 +72,7 @@ function AppContent() {
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showOrgsPage, setShowOrgsPage] = useState(false);
+  const [showOneBillion, setShowOneBillion] = useState(false);
   const [newsletterEdition, setNewsletterEdition] = useState<number | null>(null);
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
@@ -222,6 +224,8 @@ function AppContent() {
         window.location.pathname.startsWith("/privacy");
       const isOrgsRoute =
         window.location.pathname.startsWith("/orgs");
+      const isOneBillionRoute =
+        window.location.pathname.startsWith("/1billion");
 
       const newsletterMatch = window.location.pathname.match(/^\/newsletter\/(\d+)$/);
       const isKaloramaRoute =
@@ -321,6 +325,8 @@ function AppContent() {
         setShowPrivacy(true);
       } else if (isOrgsRoute) {
         setShowOrgsPage(true);
+      } else if (isOneBillionRoute) {
+        setShowOneBillion(true);
       } else if (newsletterMatch) {
         const edition = parseInt(newsletterMatch[1]);
         setNewsletterEdition(edition);
@@ -532,6 +538,10 @@ function AppContent() {
 
   if (showOrgsPage) {
     return <OrgsLanding onExit={handleExitOrgs} />;
+  }
+
+  if (showOneBillion) {
+    return <OneBillionPage />;
   }
 
   if (newsletterEdition) {

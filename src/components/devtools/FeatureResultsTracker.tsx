@@ -242,6 +242,21 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
           </Button>
         </div>
 
+        {stats && (
+          <Card className="p-4 bg-indigo-50 border-indigo-200">
+            <p className="text-sm font-semibold text-indigo-900 mb-1">
+              /1billion page
+            </p>
+            <p className="text-sm text-indigo-800">
+              {stats.oneBillionEvents.pageLoad} loads ·{" "}
+              {stats.oneBillionEvents.clickProjects} projects clicks ·{" "}
+              {stats.oneBillionEvents.clickOrg} org clicks ·{" "}
+              {stats.oneBillionEvents.clickForm} form clicks ·{" "}
+              {stats.oneBillionEvents.clickCopy} copy clicks
+            </p>
+          </Card>
+        )}
+
         <div className="space-y-4">
           {featureCards.map((card) => (
             <Card className="p-6" key={card.title}>
