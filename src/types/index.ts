@@ -465,6 +465,13 @@ export interface FeatureResults {
     verified: number;
     dismissed: number;
   };
+  oneBillionEvents: {
+    pageLoad: number;
+    clickProjects: number;
+    clickOrg: number;
+    clickForm: number;
+    clickCopy: number;
+  };
 }
 
 export interface UserHistoryData {

@@ -124,6 +124,14 @@ export const getCertifyCardEvents = async () => {
   );
 };
 
+export const getOneBillionEvents = async () => {
+  return selectAll<UserEvent>(
+    "user_events",
+    {},
+    (q: any) => q.like("type", "one_billion_%").select("type, userId"),
+  );
+};
+
 export const insertAnalyticsEvent = async (event: NewUserEvent) => {
   return insert<NewUserEvent>( "user_events", event );
 };
