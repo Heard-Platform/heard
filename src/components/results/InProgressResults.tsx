@@ -15,6 +15,28 @@ interface InProgressResultsProps {
   ) => Promise<void>;
 }
 
+function TugBar({
+  side,
+  percentage,
+}: {
+  side: "agree" | "disagree";
+  percentage: number;
+}) {
+  const isAgree = side === "agree";
+  return (
+    <motion.div
+      className={
+        isAgree
+          ? "absolute left-0 top-0 h-full bg-gradient-to-r agree-gradient-from agree-gradient-to"
+          : "absolute right-0 top-0 h-full bg-gradient-to-l disagree-gradient-from disagree-gradient-to"
+      }
+      initial={{ width: 0 }}
+      animate={{ width: `${percentage}%` }}
+      transition={{ duration: 0.8, type: "spring", stiffness: 50 }}
+    />
+  );
+}
+
 export function InProgressResults({
   statements,
   debateTitle,
@@ -118,26 +140,8 @@ export function InProgressResults({
 
                   {/* Tug-of-war bar */}
                   <div className="relative h-3 sm:h-4 bg-gray-200 rounded-full overflow-hidden">
-                    <motion.div
-                      className="absolute left-0 top-0 h-full bg-gradient-to-r agree-gradient-from agree-gradient-to"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${agreePct}%` }}
-                      transition={{
-                        duration: 0.8,
-                        type: "spring",
-                        stiffness: 50,
-                      }}
-                    />
-                    <motion.div
-                      className="absolute right-0 top-0 h-full bg-gradient-to-l disagree-gradient-from disagree-gradient-to"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${disagreePct}%` }}
-                      transition={{
-                        duration: 0.8,
-                        type: "spring",
-                        stiffness: 50,
-                      }}
-                    />
+                    <TugBar side="agree" percentage={agreePct} />
+                    <TugBar side="disagree" percentage={disagreePct} />
                     {/* Center reference line */}
                     <div className="absolute left-1/2 top-0 h-full w-px bg-white/80 -translate-x-1/2 z-10" />
                   </div>
