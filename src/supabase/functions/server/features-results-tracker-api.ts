@@ -1,7 +1,7 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers } from "./kv-utils.tsx";
 import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents } from "./model-utils.ts";
-import { selectAll } from "./db-utils.ts";
+import { countRecords, selectAll } from "./db-utils.ts";
 
 const app = new Hono();
 
@@ -67,8 +67,10 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
 
     const avatarAnimalData = { counts: avatarAnimalCounts };
 
-    const phoneSubmissions = (await selectAll("phone_submissions")).length;
+    const phoneSubmissions = await countRecords("phone_submissions");
     const flyerScans = (await getFlyerScans()).length;
+    const roomViews = await countRecords("room_views");
+    const roomFollows = await countRecords("room_follows");
 
     const certifyCardEvents = await getCertifyCardEvents();
     const certifyCardCounts: Record<string, number> = {};
@@ -115,6 +117,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const avatarAnimalUsersSince = new Date("2026-03-26").getTime();
     const phoneSubmissionsSince = new Date("2026-04-17").getTime();
     const flyerScansSince = new Date("2026-04-17").getTime();
+    const roomViewsSince = new Date("2026-05-15").getTime();
+    const roomFollowsSince = new Date("2026-05-15").getTime();
 
     return c.json({
       webDriverUsers,
@@ -146,6 +150,10 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       phoneSubmissionsSince,
       flyerScans,
       flyerScansSince,
+      roomViews,
+      roomViewsSince,
+      roomFollows,
+      roomFollowsSince,
       certifyCardShown: certifyCardData.shown,
       certifyCardShownSince,
       certifyCardData,
