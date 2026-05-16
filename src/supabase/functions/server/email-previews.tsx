@@ -9,6 +9,12 @@ import { sendEmailViaResend, getUsersToEmailDigest } from "./email-sender-utils.
 import { getAdminDailyStats, generateAdminDigestHtml } from "./admin-digest.tsx";
 import { getWelcomeEmailHtml, WELCOME_EMAIL_SUBJECT } from "./auth-api.tsx";
 import { User } from "./types.tsx";
+import {
+  generateDebateEndedEmailHtml,
+  generateFakeDebateEndedData,
+  getDebateEndedSubject,
+} from "./email-debate-ended-template.tsx";
+import { getFrontendUrl } from "./utils.tsx";
 
 const app = new Hono();
 
@@ -36,13 +42,27 @@ app.get(
     if (digestType === "admin_daily_digest") {
       console.log("[email-previews GET] Generating admin digest preview");
       const stats = await getAdminDailyStats(24 * 60 * 60 * 1000);
-      const emailHtml = generateAdminDigestHtml(stats);
-      return c.html(emailHtml);
+      return c.json({
+        subject: "📊 Heard Admin Daily Digest",
+        html: generateAdminDigestHtml(stats),
+      });
     }
 
     if (digestType === "welcome") {
       console.log("[email-previews GET] Generating welcome email preview");
-      return c.html(getWelcomeEmailHtml());
+      return c.json({
+        subject: WELCOME_EMAIL_SUBJECT,
+        html: getWelcomeEmailHtml(),
+      });
+    }
+
+    if (digestType === "debate_ended") {
+      console.log("[email-previews GET] Generating debate-ended email preview");
+      const data = generateFakeDebateEndedData(getFrontendUrl());
+      return c.json({
+        subject: getDebateEndedSubject(data.room.topic),
+        html: generateDebateEndedEmailHtml(data),
+      });
     }
 
     let emailData: EmailData;
@@ -76,7 +96,10 @@ app.get(
     });
 
     const emailHtml = generateEmailHtml(emailData, userId || "preview-user");
-    return c.html(emailHtml);
+    const subject = digestType === "first_day_digest"
+      ? "🔥 Your First Day on Heard"
+      : "🔥 The Latest on Heard";
+    return c.json({ subject, html: emailHtml });
   },
 );
 
@@ -125,6 +148,11 @@ app.post(
         console.log("[send-email] Generating welcome email for test email");
         emailHtml = getWelcomeEmailHtml();
         subject = WELCOME_EMAIL_SUBJECT;
+      } else if (digestType === "debate_ended") {
+        console.log("[send-email] Generating debate-ended email for test email");
+        const data = generateFakeDebateEndedData(getFrontendUrl());
+        emailHtml = generateDebateEndedEmailHtml({ ...data, userId });
+        subject = getDebateEndedSubject(data.room.topic);
       } else {
         let emailData: EmailData;
         if (useMockData) {

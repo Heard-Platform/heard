@@ -673,7 +673,7 @@ class ApiClient extends BaseApiClient {
     return this.request<{ data: UserPresence[] }>("/vine/presences");
   }
 
-  async getEmailPreview(digestType?: string) {
+  async getEmailPreview(digestType?: string): Promise<{ subject: string; html: string }> {
     const params = new URLSearchParams();
     if (digestType) params.append("digestType", digestType);
 
@@ -686,7 +686,7 @@ class ApiClient extends BaseApiClient {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    return response.text();
+    return response.json();
   }
 
   async sendTestEmail(
@@ -696,6 +696,18 @@ class ApiClient extends BaseApiClient {
     return this.request("/dev/email-previews/send", {
       method: "POST",
       body: JSON.stringify({ useMockData, digestType }),
+    });
+  }
+
+  async triggerDebateCompletionCron() {
+    return this.request<{
+      processed: number;
+      results: Array<{
+        roomId: string;
+        emails: { sent: number; failed: number; skipped: number };
+      }>;
+    }>("/cron/send-completion-celebrations", {
+      method: "POST",
     });
   }
 
