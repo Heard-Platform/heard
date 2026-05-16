@@ -36,6 +36,7 @@ import {
 import type { UserSession } from "../types";
 import { RoomAlertsList } from "./side-panel/RoomAlertsList";
 import { AvatarAlertDot } from "./side-panel/AvatarAlertDot";
+import { useRoomAlertsContext } from "../contexts/RoomAlertsContext";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { PhoneVerificationDialog } from "./onboarding/PhoneVerificationDialog";
 import { VERIFY_TEXT } from "../utils/constants/text";
@@ -97,6 +98,12 @@ export function SidePanelMenu({
   const [menuOpen, setMenuOpen] = useState(false);
   const [phoneVerificationOpen, setPhoneVerificationOpen] = useState(false);
   const [feedbackSheetOpen, setFeedbackSheetOpen] = useState(false);
+  const { refresh: refreshAlerts } = useRoomAlertsContext();
+
+  const handleSheetOpenChange = (open: boolean) => {
+    setMenuOpen(open);
+    if (open) refreshAlerts();
+  };
   const {
     createSeedData,
     createTestRoom,
@@ -194,7 +201,7 @@ export function SidePanelMenu({
         onOpenChange={setFeedbackSheetOpen}
         userId={user.id}
       />
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+      <Sheet open={menuOpen} onOpenChange={handleSheetOpenChange}>
         <SheetTrigger asChild>
           <Button
             variant="outline"
@@ -227,7 +234,7 @@ export function SidePanelMenu({
             </SheetDescription>
           </SheetHeader>
 
-          <div className="space-y-4 mt-6 overflow-y-auto flex-1 px-1">
+          <div className="space-y-4 overflow-y-auto flex-1 px-1">
             <RoomAlertsList
               onJumpToRoom={(roomId) => {
                 setMenuOpen(false);
