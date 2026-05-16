@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import * as Sentry from "@sentry/react";
 import { motion } from "motion/react";
 import { UnsubscribePage } from "./components/UnsubscribePage";
 import { TermsOfServicePage } from "./screens/TermsOfServicePage";
@@ -193,6 +194,14 @@ function AppContent() {
     if (!currentEventId) return;
     fetchEvent(currentEventId);
   }, [currentEventId]);
+
+  useEffect(() => {
+    if (user) {
+      Sentry.setUser({ id: user.id });
+    } else {
+      Sentry.setUser(null);
+    }
+  }, [user?.id]);
 
   const handleRefreshEvent = () => {
     if (currentEventId) fetchEvent(currentEventId);
@@ -629,10 +638,16 @@ function AppContent() {
   );
 }
 
-export default function App() {
+export default Sentry.withErrorBoundary(function App() {
   return (
     <DebateSessionProvider>
       <AppContent />
     </DebateSessionProvider>
   );
-}
+}, {
+  fallback: (
+    <div className="heard-page-bg heard-center">
+      <div>Something went wrong. Please refresh the page.</div>
+    </div>
+  ),
+});
