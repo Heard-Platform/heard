@@ -699,6 +699,18 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async triggerDebateCompletionCron() {
+    return this.request<{
+      processed: number;
+      results: Array<{
+        roomId: string;
+        emails: { sent: number; failed: number; skipped: number };
+      }>;
+    }>("/cron/send-completion-celebrations", {
+      method: "POST",
+    });
+  }
+
   async getEmailDigestCount(digestType: string) {
     const params = new URLSearchParams();
     params.append("digestType", digestType);

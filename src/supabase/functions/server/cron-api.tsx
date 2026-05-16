@@ -101,12 +101,6 @@ export async function sendDebateEndedEmails(
         result.skipped++;
         continue;
       }
-      // TEMPORARY: dev-only rollout for debate-ended emails. Remove this
-      // block once we're comfortable sending to all participants.
-      if (!user.isDeveloper) {
-        result.skipped++;
-        continue;
-      }
 
       const html = generateDebateEndedEmailHtml({
         room,
@@ -161,12 +155,12 @@ app.post(
     {},
     async () => {
       const now = Date.now();
-      const twentyMinutesAgo = now - (20 * 60 * 1000);
+      const twoHoursAgo = now - (2 * 60 * 60 * 1000);
 
       const allRooms = await getAllDebates();
       const recentlyEndedRooms = allRooms.filter(room =>
         room.endTime &&
-        room.endTime >= twentyMinutesAgo &&
+        room.endTime >= twoHoursAgo &&
         room.endTime <= now
       );
 

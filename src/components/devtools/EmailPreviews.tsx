@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
-import { RefreshCw, Mail, ChevronDown, ChevronUp } from "lucide-react";
+import { RefreshCw, Mail, ChevronDown, ChevronUp, Zap } from "lucide-react";
 import { api } from "../../utils/api";
 import type { UserSession } from "../../types";
 
@@ -59,6 +59,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [triggeringCron, setTriggeringCron] = useState(false);
   const [useMockData, setUseMockData] = useState(false);
   const [digestType, setDigestType] = useState<string>("weekly_digest");
   const [countData, setCountData] = useState<{
@@ -113,6 +114,39 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
       toast.error(`Failed to send email: ${errorMsg}`);
     } finally {
       setSending(false);
+    }
+  };
+
+  const triggerCron = async () => {
+    setTriggeringCron(true);
+    setError(null);
+
+    try {
+      const result = await api.triggerDebateCompletionCron();
+
+      if (!result.success || !result.data) {
+        throw new Error(result.error || "Cron run failed");
+      }
+
+      const totals = result.data.results.reduce(
+        (acc, r) => ({
+          sent: acc.sent + r.emails.sent,
+          failed: acc.failed + r.emails.failed,
+          skipped: acc.skipped + r.emails.skipped,
+        }),
+        { sent: 0, failed: 0, skipped: 0 },
+      );
+
+      toast.success(
+        `Cron ran: ${result.data.processed} room${result.data.processed === 1 ? "" : "s"}, ${totals.sent} sent, ${totals.failed} failed, ${totals.skipped} skipped`,
+      );
+    } catch (err) {
+      console.error("Error triggering cron:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      toast.error(`Failed to trigger cron: ${errorMsg}`);
+    } finally {
+      setTriggeringCron(false);
     }
   };
 
@@ -209,6 +243,17 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
             >
               <Mail className="w-4 h-4 mr-2" />
               {sending ? "Sending..." : "Send Test Email"}
+            </Button>
+          )}
+          {digestType === "debate_ended" && (
+            <Button
+              onClick={triggerCron}
+              variant="outline"
+              size="sm"
+              disabled={triggeringCron}
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              {triggeringCron ? "Running..." : "Trigger Cron Now"}
             </Button>
           )}
         </div>
