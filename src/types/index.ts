@@ -468,6 +468,10 @@ export interface FeatureResults {
   phoneSubmissionsSince: number;
   flyerScans: number;
   flyerScansSince: number;
+  roomViews: number;
+  roomViewsSince: number;
+  roomFollows: number;
+  roomFollowsSince: number;
   certifyCardShown: number;
   certifyCardShownSince: number;
   certifyCardData: {
