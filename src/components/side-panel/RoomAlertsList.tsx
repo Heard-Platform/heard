@@ -3,16 +3,16 @@ import { useRoomAlertsContext } from "../../contexts/RoomAlertsContext";
 import { api, safelyMakeApiCall } from "../../utils/api";
 
 interface RoomAlertsListProps {
-  onJumpToRoom: (roomId: string) => void;
+  onJumpToRoom: (roomId: string, subHeard?: string) => void;
 }
 
 export function RoomAlertsList({ onJumpToRoom }: RoomAlertsListProps) {
   const { alerts, clearAlert } = useRoomAlertsContext();
 
-  const handleTap = (roomId: string) => {
+  const handleTap = (roomId: string, subHeard?: string) => {
     clearAlert(roomId);
     safelyMakeApiCall(() => api.markRoomSeen(roomId));
-    onJumpToRoom(roomId);
+    onJumpToRoom(roomId, subHeard);
   };
   const hasAlerts = alerts.length > 0;
   const headerStyles = hasAlerts
@@ -37,10 +37,10 @@ export function RoomAlertsList({ onJumpToRoom }: RoomAlertsListProps) {
         </div>
       )}
       <div className="max-h-72 overflow-y-auto divide-y divide-gray-100">
-        {alerts.map(({ roomId, topic, emoji, reason }) => (
+        {alerts.map(({ roomId, topic, emoji, subHeard, reason }) => (
           <button
             key={roomId}
-            onClick={() => handleTap(roomId)}
+            onClick={() => handleTap(roomId, subHeard)}
             className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-50 transition-colors"
           >
             {emoji && <span className="text-base flex-shrink-0">{emoji}</span>}

@@ -16,6 +16,7 @@ interface RoomAlertResponse {
   roomId: string;
   topic: string;
   emoji?: string;
+  subHeard?: string;
   reason: RoomAlertReason;
   lastActivityAt: number;
 }
@@ -64,6 +65,7 @@ app.get(
             roomId: room.id,
             topic: room.topic,
             emoji: room.emoji,
+            subHeard: room.subHeard,
             reason,
             lastActivityAt,
           });

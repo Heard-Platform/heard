@@ -78,7 +78,7 @@ interface SidePanelMenuProps {
   onJumpToFinalResults?: () => void;
   onCreateAnonDebate?: () => void;
   onShowAccountSetupModal: (featureText: string) => void;
-  onJumpToRoom: (roomId: string) => void;
+  onJumpToRoom: (roomId: string, subHeard?: string) => void;
 }
 
 export function SidePanelMenu({
@@ -236,9 +236,9 @@ export function SidePanelMenu({
 
           <div className="space-y-4 overflow-y-auto flex-1 px-1">
             <RoomAlertsList
-              onJumpToRoom={(roomId) => {
+              onJumpToRoom={(roomId, subHeard) => {
                 setMenuOpen(false);
-                onJumpToRoom(roomId);
+                onJumpToRoom(roomId, subHeard);
               }}
             />
 

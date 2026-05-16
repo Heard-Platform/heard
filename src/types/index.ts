@@ -167,6 +167,7 @@ export interface RoomAlert {
   roomId: string;
   topic: string;
   emoji?: string;
+  subHeard?: string;
   reason: RoomAlertReason;
   lastActivityAt: number;
 }

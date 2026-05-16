@@ -42,6 +42,7 @@ interface LobbyScreenProps {
     newDebate: NewDebateRoom,
   ) => Promise<DebateRoom>;
   onJoinRoom: (roomId: string) => Promise<void>;
+  onJumpToRoom: (roomId: string, subHeard?: string) => void;
   onRefreshRooms: (subHeard?: string) => Promise<DebateRoom[]>;
   onJumpToFinalResults?: () => Promise<void>;
   onSubmitStatement: (
@@ -75,6 +76,7 @@ export function LobbyScreen({
   currentEvent,
   onCreateRoom,
   onJoinRoom,
+  onJumpToRoom,
   onRefreshRooms,
   onJumpToFinalResults,
   onSubmitStatement,
@@ -403,7 +405,7 @@ export function LobbyScreen({
                   onShowAccountSetupModal={
                     handleShowAccountSetupModal
                   }
-                  onJumpToRoom={onJoinRoom}
+                  onJumpToRoom={onJumpToRoom}
                 />
               )}
             </div>
