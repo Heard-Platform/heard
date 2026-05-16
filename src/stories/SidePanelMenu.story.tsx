@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SidePanelMenu } from "../components/SidePanelMenu";
 import { StoryContainer } from "./StoryContainer";
+import { RoomAlertsProvider } from "../contexts/RoomAlertsContext";
 import type { UserSession } from "../types";
 
 const mockUser: UserSession = {
@@ -45,13 +46,16 @@ export default function SidePanelMenuStory() {
         variants={variants}
       >
         <div className="flex items-center justify-center p-12">
-          <SidePanelMenu
-            user={mockUser}
-            onLogout={handleLogout}
-            onOpenHelp={handleOpenHelp}
-            onShowAccountSetupModal={handleShowAccountSetupModal}
-            onOpenFeatureTracker={() => alert("Open Feature Tracker clicked")}
-          />
+          <RoomAlertsProvider>
+            <SidePanelMenu
+              user={mockUser}
+              onLogout={handleLogout}
+              onOpenHelp={handleOpenHelp}
+              onShowAccountSetupModal={handleShowAccountSetupModal}
+              onOpenFeatureTracker={() => alert("Open Feature Tracker clicked")}
+              onJumpToRoom={(roomId) => alert(`Jump to room: ${roomId}`)}
+            />
+          </RoomAlertsProvider>
         </div>
       </StoryContainer>
     </div>

@@ -30,6 +30,7 @@ import { userRankApi } from "./user-rank-api.tsx";
 import { accountApi } from "./account-api.ts";
 import { analyticsApi } from "./analytics-api.ts";
 import { eventApi } from "./event-api.tsx";
+import { alertsApi } from "./alerts-api.tsx";
 import { modApi } from "./mod-api.tsx";
 import { validateAdmin, validateCronAuth, validateDeveloper } from "./internal-utils.ts";
 import { validateSession, validateHost } from "./auth-utils.ts";
@@ -111,7 +112,7 @@ protect(dontValidate, ["orgs/*", "user/*",]);
 
 // Account
 protect(validateSession, [
-  "account/*", "activity/*", "analytics/*", "chance-card/*", "cover-card/*", "event/*", "events",
+  "account/*", "activity/*", "alerts/*", "analytics/*", "chance-card/*", "cover-card/*", "event/*", "events",
   "feedback/*", "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
   "statement/*", "subheard/*", "subheards", "subheards/*",
   "upload-debate-image", "user-rank", "vine/*", "youtube-card/*",
@@ -139,6 +140,7 @@ app.get("/make-server-f1a393b4/health", (c) => {
 });
 
 app.route("/", debateApi);
+app.route("/", alertsApi);
 app.route("/", adminApi);
 app.route("/", authApi);
 app.route("/", accountApi);

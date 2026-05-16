@@ -77,6 +77,30 @@ class AdminApiClient extends BaseApiClient {
     );
   }
 
+  async backfillRoomEngagement(adminKey: string, dryRun: boolean) {
+    interface Result {
+      dryRun: boolean;
+      derivedPairs: number;
+      existingViews?: number;
+      existingFollows?: number;
+      viewsUpserted?: number;
+      followsUpserted?: number;
+      finalViews?: number;
+      finalFollows?: number;
+      batchErrors?: string[];
+      message: string;
+    }
+
+    return this.request<Result>(
+      "/one-time-fixes/backfill-room-engagement",
+      {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+        body: JSON.stringify({ dryRun }),
+      },
+    );
+  }
+
   async unsubApril26Signups(adminKey: string, dryRun: boolean) {
     interface Result {
       dryRun: boolean;

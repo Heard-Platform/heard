@@ -20,6 +20,8 @@ import {
   Rabbit,
   ScanLine,
   Vote,
+  Eye,
+  Heart,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -210,6 +212,24 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.certifyCardShown,
       getDate: (s) => s.certifyCardShownSince,
       renderExtra: (s) => <CertifyCardResults {...s.certifyCardData} />,
+    },
+    {
+      icon: Eye,
+      iconColor: "text-sky-600",
+      bgColor: "bg-sky-100",
+      title: "Room Views",
+      description: "Total (user, room) pairs in the room_views table — one row per user-room they've scrolled to in the lobby",
+      getValue: (s) => s.roomViews,
+      getDate: (s) => s.roomViewsSince,
+    },
+    {
+      icon: Heart,
+      iconColor: "text-rose-600",
+      bgColor: "bg-rose-100",
+      title: "Room Follows",
+      description: "Total (user, room) pairs in the room_follows table — set when a user hosts, votes, submits a statement, or joins",
+      getValue: (s) => s.roomFollows,
+      getDate: (s) => s.roomFollowsSince,
     },
     {
       icon: Vote,

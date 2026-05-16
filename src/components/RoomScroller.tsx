@@ -23,6 +23,8 @@ import { CreateRoomCard } from "./CreateRoomCard";
 import { NextRoomNudge } from "./NextRoomNudge";
 import { EventCard } from "./events/EventCard";
 import { safelySetStorageItem } from "../utils/localStorage";
+import { api, safelyMakeApiCall } from "../utils/api";
+import { useRoomAlertsContext } from "../contexts/RoomAlertsContext";
 
 const LAST_VIEWED_ROOM_KEY = "lastViewedRoom";
 
@@ -105,6 +107,7 @@ const RoomScrollerInner = forwardRef<
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
     const isPolling = useRef(false);
+    const { clearAlert } = useRoomAlertsContext();
     const currentIndexRef = useRef(0);
     const allCardsLengthRef = useRef(0);
     const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(
@@ -160,6 +163,8 @@ const RoomScrollerInner = forwardRef<
       const card = allCards[currentIndex];
       if (card && isRoomCard(card)) {
         safelySetStorageItem(LAST_VIEWED_ROOM_KEY, card.id);
+        clearAlert(card.id);
+        safelyMakeApiCall(() => api.markRoomSeen(card.id));
       }
     }, [currentIndex, rooms, events]);
 

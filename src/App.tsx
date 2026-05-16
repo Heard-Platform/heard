@@ -155,6 +155,12 @@ function AppContent() {
     await joinRoom(roomId);
   };
 
+  const handleJumpToRoom = (roomId: string, subHeard?: string) => {
+    setCurrentSubHeard(subHeard ?? null);
+    startRoomJoin(roomId);
+    updateUrlForRoom(roomId);
+  };
+
   const handleSubHeardChange = (subHeard: string | null) => {
     setCurrentSubHeard(subHeard);
     setTargetRoomId(null);
@@ -626,6 +632,7 @@ function AppContent() {
         currentEvent={currentEvent}
         onCreateRoom={handleCreateRoom}
         onJoinRoom={handleJoinRoom}
+        onJumpToRoom={handleJumpToRoom}
         onRefreshRooms={getActiveRooms}
         onSubmitStatement={submitStatement}
         onVoteOnStatement={voteOnStatement}

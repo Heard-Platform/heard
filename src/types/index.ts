@@ -161,6 +161,17 @@ export interface EventRoomStatus extends Pick<
 
 export type RoomStatus = "needs_input" | "caught_up" | "completed";
 
+export type RoomAlertReason = "new-activity" | "ended";
+
+export interface RoomAlert {
+  roomId: string;
+  topic: string;
+  emoji?: string;
+  subHeard?: string;
+  reason: RoomAlertReason;
+  lastActivityAt: number;
+}
+
 export interface Achievement {
   title: string;
   description: string;
@@ -215,6 +226,8 @@ export interface DebateRoom {
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
   coverCardSwiped?: boolean;
+  lastActivityAt?: number;
+  totalVotes?: number;
   demographicQuestions: DemographicQuestion[];
   eventId?: number;
   responsesPaused?: boolean | null;
@@ -456,6 +469,10 @@ export interface FeatureResults {
   phoneSubmissionsSince: number;
   flyerScans: number;
   flyerScansSince: number;
+  roomViews: number;
+  roomViewsSince: number;
+  roomFollows: number;
+  roomFollowsSince: number;
   certifyCardShown: number;
   certifyCardShownSince: number;
   certifyCardData: {
