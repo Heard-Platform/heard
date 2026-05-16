@@ -30,7 +30,10 @@ import {
   updateUrlForEvent,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
-import { safelyGetStorageItem } from "./utils/localStorage";
+import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
+
+const LAST_VIEWED_SUBHEARD_KEY = "lastViewedSubHeard";
+const LAST_VIEWED_ROOM_KEY = "lastViewedRoom";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -154,6 +157,7 @@ function AppContent() {
 
   const handleSubHeardChange = (subHeard: string | null) => {
     setCurrentSubHeard(subHeard);
+    setTargetRoomId(null);
     updateUrlForSubHeard(subHeard);
   };
 
@@ -202,6 +206,12 @@ function AppContent() {
       Sentry.setUser(null);
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    if (hasCheckedUrl) {
+      safelySetStorageItem(LAST_VIEWED_SUBHEARD_KEY, currentSubHeard);
+    }
+  }, [currentSubHeard, hasCheckedUrl]);
 
   const handleRefreshEvent = () => {
     if (currentEventId) fetchEvent(currentEventId);
@@ -355,6 +365,17 @@ function AppContent() {
       } else if (newsletterMatch) {
         const edition = parseInt(newsletterMatch[1]);
         setNewsletterEdition(edition);
+      } else if (window.location.pathname === "/") {
+        const lastSubHeard = safelyGetStorageItem<string | null>(
+          LAST_VIEWED_SUBHEARD_KEY,
+          null,
+        );
+        const lastRoomId = safelyGetStorageItem<string | null>(
+          LAST_VIEWED_ROOM_KEY,
+          null,
+        );
+        if (lastSubHeard) setCurrentSubHeard(lastSubHeard);
+        if (lastRoomId) startRoomJoin(lastRoomId);
       }
       setHasCheckedUrl(true);
     }
