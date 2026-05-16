@@ -786,6 +786,10 @@
   .right-\[5px\] {
     right: 5px;
   }
+  
+  .-bottom-0\.5 {
+    bottom: calc(var(--spacing) * -.5);
+  }
 
   .-bottom-1 {
     bottom: calc(var(--spacing) * -1);
@@ -821,6 +825,10 @@
 
   .bottom-32 {
     bottom: calc(var(--spacing) * 32);
+  }
+
+  .-left-0\.5 {
+    left: calc(var(--spacing) * -.5);
   }
 
   .-left-1 {
