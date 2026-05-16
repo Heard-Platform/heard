@@ -148,10 +148,10 @@ export function InProgressResults({
 
                   <div className="flex items-center justify-between text-[10px] sm:text-xs">
                     <span className="text-emerald-700 font-medium">
-                      ✅ {agrees}
+                      ✅ {agrees} agree{agrees === 1 ? "" : "s"}
                     </span>
                     <span className="text-rose-700 font-medium">
-                      {disagrees} ❌
+                      {disagrees} disagree{disagrees === 1 ? "" : "s"} ❌
                     </span>
                   </div>
                 </motion.div>
