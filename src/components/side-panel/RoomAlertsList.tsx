@@ -1,26 +1,46 @@
 import { Bell, Flag } from "lucide-react";
 import { useRoomAlertsContext } from "../../contexts/RoomAlertsContext";
+import { api, safelyMakeApiCall } from "../../utils/api";
 
 interface RoomAlertsListProps {
   onJumpToRoom: (roomId: string) => void;
 }
 
 export function RoomAlertsList({ onJumpToRoom }: RoomAlertsListProps) {
-  const { alerts } = useRoomAlertsContext();
-  if (alerts.length === 0) return null;
+  const { alerts, clearAlert } = useRoomAlertsContext();
+
+  const handleTap = (roomId: string) => {
+    clearAlert(roomId);
+    safelyMakeApiCall(() => api.markRoomSeen(roomId));
+    onJumpToRoom(roomId);
+  };
+  const hasAlerts = alerts.length > 0;
+  const headerStyles = hasAlerts
+    ? "bg-red-50 border-b border-red-200"
+    : "bg-gray-50 border-b border-gray-200";
+  const iconStyles = hasAlerts ? "text-red-600" : "text-gray-400";
+  const labelStyles = hasAlerts ? "text-red-900" : "text-gray-700";
+  const containerStyles = hasAlerts ? "border-red-200" : "border-gray-200";
 
   return (
-    <div className="border border-red-200 rounded-lg overflow-hidden">
-      <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border-b border-red-200">
-        <Bell className="w-4 h-4 text-red-600" />
-        <span className="text-sm font-medium text-red-900">Updates</span>
-        <span className="text-xs text-red-700 ml-auto">{alerts.length}</span>
+    <div className={`border rounded-lg overflow-hidden ${containerStyles}`}>
+      <div className={`flex items-center gap-2 px-3 py-2 ${headerStyles}`}>
+        <Bell className={`w-4 h-4 ${iconStyles}`} />
+        <span className={`text-sm font-medium ${labelStyles}`}>Updates</span>
+        {hasAlerts && (
+          <span className="text-xs text-red-700 ml-auto">{alerts.length}</span>
+        )}
       </div>
+      {!hasAlerts && (
+        <div className="px-3 py-4 text-center text-sm text-gray-500">
+          No updates from rooms you follow.
+        </div>
+      )}
       <div className="max-h-72 overflow-y-auto divide-y divide-gray-100">
         {alerts.map(({ roomId, topic, emoji, reason }) => (
           <button
             key={roomId}
-            onClick={() => onJumpToRoom(roomId)}
+            onClick={() => handleTap(roomId)}
             className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-50 transition-colors"
           >
             {emoji && <span className="text-base flex-shrink-0">{emoji}</span>}
