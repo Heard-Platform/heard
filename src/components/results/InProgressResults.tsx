@@ -15,6 +15,28 @@ interface InProgressResultsProps {
   ) => Promise<void>;
 }
 
+function TugBar({
+  side,
+  percentage,
+}: {
+  side: "agree" | "disagree";
+  percentage: number;
+}) {
+  const isAgree = side === "agree";
+  return (
+    <motion.div
+      className={
+        isAgree
+          ? "absolute left-0 top-0 h-full bg-gradient-to-r agree-gradient-from agree-gradient-to"
+          : "absolute right-0 top-0 h-full bg-gradient-to-l disagree-gradient-from disagree-gradient-to"
+      }
+      initial={{ width: 0 }}
+      animate={{ width: `${percentage}%` }}
+      transition={{ duration: 0.8, type: "spring", stiffness: 50 }}
+    />
+  );
+}
+
 export function InProgressResults({
   statements,
   debateTitle,
@@ -26,10 +48,17 @@ export function InProgressResults({
     (sum, s) => sum + s.agrees + s.superAgrees + s.disagrees + s.passes,
     0,
   );
-  const maxVotes = Math.max(
-    ...statements.map((s) => s.agrees + s.superAgrees),
-    1,
-  );
+
+  const topStatements = [...statements]
+    .map((s) => ({
+      statement: s,
+      agrees: s.agrees + s.superAgrees,
+      disagrees: s.disagrees,
+      decisive: s.agrees + s.superAgrees + s.disagrees,
+    }))
+    .filter((s) => s.decisive > 0)
+    .sort((a, b) => b.decisive - a.decisive)
+    .slice(0, 3);
 
   return (
     <motion.div
@@ -88,78 +117,52 @@ export function InProgressResults({
               </span>
             </div>
 
-            {[...statements]
-              .sort((a, b) => (b.agrees + b.superAgrees) - (a.agrees + a.superAgrees))
-              .slice(0, 3)
-              .map((s, index) => {
-                const percentage =
-                  maxVotes > 0
-                    ? ((s.agrees + s.superAgrees) / maxVotes) * 100
-                    : 0;
+            {topStatements.map(({ statement: s, agrees, disagrees, decisive }, index) => {
+              const agreePct = (agrees / decisive) * 100;
+              const disagreePct = 100 - agreePct;
 
-                // Gradient colors for each position
-                const gradients = [
-                  {
-                    badge: "from-yellow-500 to-orange-500",
-                    bar: "from-yellow-400 to-orange-500",
-                  },
-                  {
-                    badge: "from-orange-500 to-red-500",
-                    bar: "from-orange-400 to-red-500",
-                  },
-                  {
-                    badge: "from-red-500 to-pink-500",
-                    bar: "from-red-400 to-pink-500",
-                  },
-                ];
+              return (
+                <motion.div
+                  key={s.id}
+                  initial={{ x: -50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="space-y-1.5"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[10px] sm:text-xs truncate min-w-0 flex-1">
+                      {s.text}
+                    </p>
+                    <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
+                      {decisive} vote{decisive === 1 ? "" : "s"}
+                    </span>
+                  </div>
 
-                return (
-                  <motion.div
-                    key={s.id}
-                    initial={{ x: -50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="space-y-1"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
-                        <span className="text-base sm:text-lg shrink-0">
-                          {index === 0
-                            ? "🥇"
-                            : index === 1
-                              ? "🥈"
-                              : "🥉"}
-                        </span>
-                        <p className="text-[10px] sm:text-xs truncate">
-                          {s.text}
-                        </p>
-                      </div>
-                      <motion.div
-                        key={s.id}
-                        initial={{ scale: 1.5 }}
-                        animate={{ scale: 1 }}
-                        className={`px-1.5 sm:px-2 py-0.5 rounded-full text-xs sm:text-sm font-medium shrink-0 bg-gradient-to-r ${gradients[index].badge} text-white`}
-                      >
-                        {s.agrees + s.superAgrees}
-                      </motion.div>
-                    </div>
+                  {/* Tug-of-war bar */}
+                  <div className="relative h-3 sm:h-4 bg-gray-200 rounded-full overflow-hidden">
+                    <TugBar side="agree" percentage={agreePct} />
+                    <TugBar side="disagree" percentage={disagreePct} />
+                    {/* Center reference line */}
+                    <div className="absolute left-1/2 top-0 h-full w-px bg-white/80 -translate-x-1/2 z-10" />
+                  </div>
 
-                    {/* Racing bar */}
-                    <div className="h-2 sm:h-3 bg-gray-200 rounded-full overflow-hidden">
-                      <motion.div
-                        className={`h-full rounded-full bg-gradient-to-r ${gradients[index].bar}`}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${percentage}%` }}
-                        transition={{
-                          duration: 0.8,
-                          type: "spring",
-                          stiffness: 50,
-                        }}
-                      />
-                    </div>
-                  </motion.div>
-                );
-              })}
+                  <div className="flex items-center justify-between text-[10px] sm:text-xs">
+                    <span className="text-emerald-700 font-medium">
+                      ✅ {agrees}
+                    </span>
+                    <span className="text-rose-700 font-medium">
+                      {disagrees} ❌
+                    </span>
+                  </div>
+                </motion.div>
+              );
+            })}
+
+            {topStatements.length === 0 && (
+              <p className="text-xs sm:text-sm text-center text-muted-foreground py-2">
+                Waiting for the first decisive votes…
+              </p>
+            )}
           </div>
 
           {isAnonymous && onFollowDiscussion && (
