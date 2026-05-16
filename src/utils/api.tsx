@@ -9,6 +9,7 @@ import {
   LiveActivityData,
   PublicStatsData,
   RetentionStatsData,
+  RoomAlert,
   Statement,
   SubHeard,
   UserHistoryData,
@@ -203,6 +204,16 @@ class ApiClient extends BaseApiClient {
       method: "POST",
       body: JSON.stringify({ environment, fingerprint, userAgent, webdriver }),
     });
+  }
+
+  async markRoomSeen(roomId: string) {
+    return this.request<{}>(`/rooms/${roomId}/seen`, {
+      method: "POST",
+    });
+  }
+
+  async getRoomAlerts() {
+    return this.request<{ alerts: RoomAlert[] }>("/alerts/rooms");
   }
 
   async getActiveRooms(subHeard?: string, targetRoomId?: string) {

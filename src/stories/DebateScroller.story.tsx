@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { mockStatements, mockRooms } from "./mockData";
 import { AvatarAnimal } from "../utils/constants/avatars";
 import { StoryContainer } from "./StoryContainer";
+import { RoomAlertsProvider } from "../contexts/RoomAlertsContext";
 
 export function DebateScrollerStory() {
   const handleSubmitStatement = async (roomId: string, text: string) => {
@@ -162,86 +163,88 @@ export function DebateScrollerStory() {
   }, [mockRooms.length]);
 
   return (
-    <StoryContainer
-      title="Debate Scroller"
-      variants={[
-        {
-          id: "default",
-          label: "Default",
-          children: (
-            <RoomScroller
-              user={{} as any}
-              rooms={mockRooms}
-              events={[]}
-              roomStatements={mockStatements}
-              presences={presences}
-              loading={false}
-              currentSubHeard="food"
-              isDeveloper={true}
-              onJoinRoom={() => {}}
-              onCreateRoom={() => {}}
-              onSubmitStatement={handleSubmitStatement}
-              onVoteOnStatement={handleVoteOnStatement}
-              onUpdatePresence={handleUpdatePresence}
-              onDiscussStatement={() => {}}
-              onShowAccountSetupModal={() => {}}
-              onOpenExplorer={() => {}}
-              onOpenEvent={() => {}}
-            />
-          ),
-        },
-        {
-          id: "in-progress-results",
-          label: "In-progress results",
-          children: (
-            <RoomScroller
-              user={{ id: "user1" } as any}
-              rooms={mockRooms}
-              events={[]}
-              roomStatements={Object.fromEntries(
-                Object.entries(mockStatements).map(
-                  ([roomId, stmts]) => [
-                    roomId,
-                    stmts.map((s) => ({
-                      ...s,
-                      voters: {
-                        ...s.voters,
-                        user1: "agree" as const,
-                      },
-                    })),
-                  ],
-                ),
-              )}
-              presences={[
-                {
-                  userId: "user2",
-                  currentRoomIndex: 0,
-                  lastUpdated: Date.now(),
-                  avatarAnimal: "koala",
-                },
-                {
-                  userId: "user3",
-                  currentRoomIndex: 1,
-                  lastUpdated: Date.now(),
-                  avatarAnimal: "rhino",
-                },
-              ]}
-              currentSubHeard="food"
-              isDeveloper={true}
-              loading={false}
-              onJoinRoom={() => {}}
-              onCreateRoom={() => {}}
-              onSubmitStatement={handleSubmitStatement}
-              onVoteOnStatement={handleVoteOnStatement}
-              onUpdatePresence={() => {}}
-              onDiscussStatement={() => {}}
-              onShowAccountSetupModal={() => {}}
-              onOpenExplorer={() => {}}
-              onOpenEvent={() => {}}
-            />
-          ),
-        },
-      ]}
-    />
+    <RoomAlertsProvider>
+      <StoryContainer
+        title="Debate Scroller"
+        variants={[
+          {
+            id: "default",
+            label: "Default",
+            children: (
+              <RoomScroller
+                user={{} as any}
+                rooms={mockRooms}
+                events={[]}
+                roomStatements={mockStatements}
+                presences={presences}
+                loading={false}
+                currentSubHeard="food"
+                isDeveloper={true}
+                onJoinRoom={() => {}}
+                onCreateRoom={() => {}}
+                onSubmitStatement={handleSubmitStatement}
+                onVoteOnStatement={handleVoteOnStatement}
+                onUpdatePresence={handleUpdatePresence}
+                onDiscussStatement={() => {}}
+                onShowAccountSetupModal={() => {}}
+                onOpenExplorer={() => {}}
+                onOpenEvent={() => {}}
+              />
+            ),
+          },
+          {
+            id: "in-progress-results",
+            label: "In-progress results",
+            children: (
+              <RoomScroller
+                user={{ id: "user1" } as any}
+                rooms={mockRooms}
+                events={[]}
+                roomStatements={Object.fromEntries(
+                  Object.entries(mockStatements).map(
+                    ([roomId, stmts]) => [
+                      roomId,
+                      stmts.map((s) => ({
+                        ...s,
+                        voters: {
+                          ...s.voters,
+                          user1: "agree" as const,
+                        },
+                      })),
+                    ],
+                  ),
+                )}
+                presences={[
+                  {
+                    userId: "user2",
+                    currentRoomIndex: 0,
+                    lastUpdated: Date.now(),
+                    avatarAnimal: "koala",
+                  },
+                  {
+                    userId: "user3",
+                    currentRoomIndex: 1,
+                    lastUpdated: Date.now(),
+                    avatarAnimal: "rhino",
+                  },
+                ]}
+                currentSubHeard="food"
+                isDeveloper={true}
+                loading={false}
+                onJoinRoom={() => {}}
+                onCreateRoom={() => {}}
+                onSubmitStatement={handleSubmitStatement}
+                onVoteOnStatement={handleVoteOnStatement}
+                onUpdatePresence={() => {}}
+                onDiscussStatement={() => {}}
+                onShowAccountSetupModal={() => {}}
+                onOpenExplorer={() => {}}
+                onOpenEvent={() => {}}
+              />
+            ),
+          },
+        ]}
+      />
+    </RoomAlertsProvider>
   );
 }

@@ -47,6 +47,10 @@ export const createNewRoomData = (
   };
 };
 
+export function isRoomEnded(room: DebateRoom): boolean {
+  return !!room.endTime && Date.now() >= room.endTime;
+}
+
 export function applyStatementMerges(
   statements: Statement[],
   merges: StatementMerge[],

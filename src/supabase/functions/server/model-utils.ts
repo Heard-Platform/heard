@@ -8,6 +8,8 @@ import {
   NewDemographicAnswer,
   NewUserEvent,
   NewUserReport,
+  RoomFollow,
+  RoomView,
   StatementMerge,
   UserEvent,
   UserPresence,
@@ -154,3 +156,27 @@ export const getCoverCardSwipedRoomIds = async (userId: string): Promise<Set<str
   const rows = await selectAll<{ roomId: string }>("cover_card_swipes", { userId });
   return new Set(rows.map((r) => r.roomId));
 };
+
+export const saveRoomView = async (view: RoomView) =>
+  upsert("room_views", view, "userId,roomId");
+
+export const getRoomViewsForUser = async (userId: string): Promise<RoomView[]> =>
+  selectAll<RoomView>("room_views", { userId });
+
+export const bulkUpsertRoomViews = async (views: RoomView[]) =>
+  upsert("room_views", views as any, "userId,roomId");
+
+export const saveRoomFollow = async (userId: string, roomId: string) =>
+  upsert(
+    "room_follows",
+    { userId, roomId, followedAt: Date.now() },
+    "userId,roomId",
+  );
+
+export const getFollowedRoomIds = async (userId: string): Promise<Set<string>> => {
+  const rows = await selectAll<{ roomId: string }>("room_follows", { userId });
+  return new Set(rows.map((r) => r.roomId));
+};
+
+export const bulkUpsertRoomFollows = async (follows: RoomFollow[]) =>
+  upsert("room_follows", follows as any, "userId,roomId");

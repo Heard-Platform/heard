@@ -225,6 +225,18 @@ export interface DebateRoom {
   responsesPausedBy?: string | null;
 }
 
+export interface RoomView {
+  userId: string;
+  roomId: string;
+  lastSeenAt: number;
+}
+
+export interface RoomFollow {
+  userId: string;
+  roomId: string;
+  followedAt: number;
+}
+
 export type AnonCreatableRecords = "votes" | "statements" | "score";
 
 export interface Rant {

@@ -23,6 +23,7 @@ import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api, safelyMakeApiCall } from "../utils/api";
 import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
+import { RoomAlertsProvider } from "../contexts/RoomAlertsContext";
 
 
 interface LobbyScreenProps {
@@ -131,6 +132,7 @@ export function LobbyScreen({
       return 0;
     });
   }, [activeRooms, targetRoomId]);
+
 
   // Detect mobile keyboard state
   useEffect(() => {
@@ -309,7 +311,7 @@ export function LobbyScreen({
   };
 
   return (
-    <>
+    <RoomAlertsProvider>
       <IntroModal
         isOpen={helpModalOpen}
         onClose={() => setHelpModalOpen(false)}
@@ -401,6 +403,7 @@ export function LobbyScreen({
                   onShowAccountSetupModal={
                     handleShowAccountSetupModal
                   }
+                  onJumpToRoom={onJoinRoom}
                 />
               )}
             </div>
@@ -496,6 +499,6 @@ export function LobbyScreen({
         onCommunitiesJoined={handleExplorerCommunitiesJoined}
         onClose={handleCloseExplorer}
       />
-    </>
+    </RoomAlertsProvider>
   );
 }
