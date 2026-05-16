@@ -1,7 +1,7 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import { getAllDebates } from "./kv-utils.tsx";
-import { upsert, selectAll } from "./db-utils.ts";
+import { upsert, countRecords } from "./db-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import type { RoomFollow, RoomView } from "./types.tsx";
 
@@ -30,15 +30,15 @@ app.post(
 
       if (dryRun) {
         const [existingViews, existingFollows] = await Promise.all([
-          selectAll("room_views"),
-          selectAll("room_follows"),
+          countRecords("room_views"),
+          countRecords("room_follows"),
         ]);
         return {
           dryRun: true,
           derivedPairs: views.length,
-          existingViews: existingViews.length,
-          existingFollows: existingFollows.length,
-          message: `Dry run: ${views.length} (userId, roomId) pairs derived from room.participants. room_views has ${existingViews.length} rows; room_follows has ${existingFollows.length} rows.`,
+          existingViews,
+          existingFollows,
+          message: `Dry run: ${views.length} (userId, roomId) pairs derived from room.participants. room_views has ${existingViews} rows; room_follows has ${existingFollows} rows.`,
         };
       }
 
@@ -68,8 +68,8 @@ app.post(
       }
 
       const [finalViews, finalFollows] = await Promise.all([
-        selectAll("room_views"),
-        selectAll("room_follows"),
+        countRecords("room_views"),
+        countRecords("room_follows"),
       ]);
 
       return {
@@ -77,10 +77,10 @@ app.post(
         derivedPairs: views.length,
         viewsUpserted,
         followsUpserted,
-        finalViews: finalViews.length,
-        finalFollows: finalFollows.length,
+        finalViews,
+        finalFollows,
         batchErrors,
-        message: `Upserted ${viewsUpserted} room_views and ${followsUpserted} room_follows. Final row counts — room_views: ${finalViews.length}, room_follows: ${finalFollows.length}.`,
+        message: `Upserted ${viewsUpserted} room_views and ${followsUpserted} room_follows. Final row counts — room_views: ${finalViews}, room_follows: ${finalFollows}.`,
       };
     },
     "Failed to backfill room engagement",
