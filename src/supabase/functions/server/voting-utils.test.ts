@@ -1,102 +1,84 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { describe, it } from "@std/testing/bdd";
-import { orderStatementsForVoter } from "./voting-utils.ts";
+import { scoreStatementsForVoter } from "./voting-utils.ts";
 import { Statement } from "./types.tsx";
 
-const makeStatement = (
-  id: string,
-  agrees: number,
-  disagrees: number,
-  overrides: Partial<Statement> = {},
-): Statement => ({
-  id,
+const STATEMENT: Statement = {
+  id: "stmt",
   text: "",
   author: "author",
-  agrees,
-  disagrees,
+  agrees: 0,
+  disagrees: 0,
   passes: 0,
   superAgrees: 0,
   roomId: "room",
   timestamp: 0,
   round: 0,
   voters: {},
-  ...overrides,
-});
-
-const sequenceRandom = (values: number[]): (() => number) => {
-  let i = 0;
-  return () => values[i++];
 };
 
-describe("orderStatementsForVoter", () => {
+const scoresById = (
+  entries: { statement: Statement; score: number }[],
+): Record<string, number> =>
+  Object.fromEntries(entries.map(({ statement, score }) => [statement.id, score]));
+
+describe("scoreStatementsForVoter", () => {
   it("returns empty array for empty input", () => {
-    assertEquals(orderStatementsForVoter([], () => 0), []);
+    assertEquals(scoreStatementsForVoter([]), []);
   });
 
-  it("returns single statement unchanged", () => {
-    const statement = makeStatement("only", 3, 2);
-    assertEquals(orderStatementsForVoter([statement], () => 0), [statement]);
+  it("gives a single opinionated statement the full boost (it is its own leader)", () => {
+    const statement = { ...STATEMENT, id: "only", agrees: 3, disagrees: 2 };
+    assertEquals(scoreStatementsForVoter([statement]), [
+      { statement, score: 25 },
+    ]);
   });
 
-  it("places the most opinionated statement first when randomness is zero", () => {
-    const leader = makeStatement("leader", 10, 5);
-    const middle = makeStatement("middle", 3, 4);
-    const newcomer = makeStatement("newcomer", 0, 0);
+  it("gives the leader the full boost and others a proportional share", () => {
+    const leader = { ...STATEMENT, id: "leader", agrees: 20 };
+    const half = { ...STATEMENT, id: "half", agrees: 10 };
+    const quarter = { ...STATEMENT, id: "quarter", agrees: 5 };
 
-    const result = orderStatementsForVoter(
-      [newcomer, middle, leader],
-      () => 0,
-    );
-
-    assertEquals(result.map((s) => s.id), ["leader", "middle", "newcomer"]);
+    assertEquals(scoresById(scoreStatementsForVoter([leader, half, quarter])), {
+      leader: 25,
+      half: 12.5,
+      quarter: 6.25,
+    });
   });
 
-  it("scales the vote boost proportionally to the leader's vote count", () => {
-    const leader = makeStatement("leader", 20, 0);
-    const half = makeStatement("half", 10, 0);
+  it("scores everything as zero when no statements have opinionated votes", () => {
+    const a = { ...STATEMENT, id: "a" };
+    const b = { ...STATEMENT, id: "b", passes: 100 };
 
-    const result = orderStatementsForVoter(
-      [half, leader],
-      () => 0.125,
-    );
-
-    assertEquals(result.map((s) => s.id), ["leader", "half"]);
-  });
-
-  it("orders by random value when no statements have opinionated votes", () => {
-    const a = makeStatement("a", 0, 0);
-    const b = makeStatement("b", 0, 0);
-    const c = makeStatement("c", 0, 0);
-
-    const result = orderStatementsForVoter(
-      [a, b, c],
-      sequenceRandom([0.1, 0.9, 0.5]),
-    );
-
-    assertEquals(result.map((s) => s.id), ["b", "c", "a"]);
+    assertEquals(scoresById(scoreStatementsForVoter([a, b])), { a: 0, b: 0 });
   });
 
   it("does not count passes toward opinionated votes", () => {
-    const allPasses = makeStatement("passes", 0, 0, { passes: 100 });
-    const oneAgree = makeStatement("agree", 1, 0);
+    const allPasses = { ...STATEMENT, id: "passes", passes: 100 };
+    const oneAgree = { ...STATEMENT, id: "agree", agrees: 1 };
 
-    const result = orderStatementsForVoter(
-      [allPasses, oneAgree],
-      () => 0,
-    );
-
-    assertEquals(result.map((s) => s.id), ["agree", "passes"]);
+    assertEquals(scoresById(scoreStatementsForVoter([allPasses, oneAgree])), {
+      passes: 0,
+      agree: 25,
+    });
   });
 
   it("counts disagrees toward opinionated votes", () => {
-    const allDisagrees = makeStatement("disagrees", 0, 5);
-    const allPasses = makeStatement("passes", 0, 0, { passes: 5 });
+    const allDisagrees = { ...STATEMENT, id: "disagrees", disagrees: 5 };
+    const allPasses = { ...STATEMENT, id: "passes", passes: 5 };
 
-    const result = orderStatementsForVoter(
-      [allPasses, allDisagrees],
-      () => 0,
+    assertEquals(
+      scoresById(scoreStatementsForVoter([allDisagrees, allPasses])),
+      { disagrees: 25, passes: 0 },
     );
+  });
 
-    assertEquals(result.map((s) => s.id), ["disagrees", "passes"]);
+  it("preserves input order in the returned entries", () => {
+    const a = { ...STATEMENT, id: "a", agrees: 1 };
+    const b = { ...STATEMENT, id: "b", agrees: 2 };
+    const c = { ...STATEMENT, id: "c", agrees: 3 };
+
+    const result = scoreStatementsForVoter([c, a, b]);
+    assertEquals(result.map(({ statement }) => statement.id), ["c", "a", "b"]);
   });
 });
