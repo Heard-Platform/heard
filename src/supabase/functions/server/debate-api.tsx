@@ -41,7 +41,7 @@ import type {
   DebateRoom
 } from "./types.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
-import { calculateVoteStats, processVote } from "./voting-utils.ts";
+import { calculateVoteStats, orderStatements, processVote } from "./voting-utils.ts";
 import { filterFeedRooms, sortRoomsForFeed } from "./feed-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
@@ -524,9 +524,7 @@ const getStatements = async (
       },
     );
 
-    return statementsWithVotes.sort(
-      (a, b) => a.timestamp - b.timestamp,
-    );
+    return orderStatements(statementsWithVotes);
   } catch (error) {
     console.error(
       `Error fetching statements for room ${roomId}:`,
