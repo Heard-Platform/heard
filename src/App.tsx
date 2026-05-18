@@ -268,6 +268,16 @@ function AppContent() {
         window.location.pathname.startsWith("/dogs");
       const isMarketRoute =
         window.location.pathname.startsWith("/market");
+      const is311Route =
+        window.location.pathname.startsWith("/311");
+      const isDataRoute =
+        window.location.pathname.startsWith("/data");
+      const isHeightRoute =
+        window.location.pathname.startsWith("/height");
+      const isDcRoute =
+        window.location.pathname.startsWith("/dc");
+      const isUdcRoute =
+        window.location.pathname.startsWith("/udc");
       const hardcodedFlyerMatch = window.location.pathname.match(
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
@@ -304,7 +314,12 @@ function AppContent() {
         is2b04Route ||
         isRatsRoute ||
         isDogsRoute ||
-        isMarketRoute
+        isMarketRoute ||
+        is311Route ||
+        isDataRoute ||
+        isHeightRoute ||
+        isUdcRoute ||
+        isDcRoute
       ) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
@@ -316,7 +331,17 @@ function AppContent() {
                 ? "jl4rwa5amtmolpfau4"
                 : isMarketRoute
                   ? "oltpupzrkkmp1ettwt"
-                  : undefined;
+                  : is311Route
+                    ? "hn3nzbxfxe9mp2o2cjx"
+                    : isDataRoute
+                      ? "s7895siw8lqmp2zfkp8"
+                      : isHeightRoute
+                        ? "7y6ti3yj605mp2yni2i"
+                        : isUdcRoute
+                          ? "6vo32rv77imp2p51ti"
+                          : isDcRoute
+                            ? "0tlal5afi6mlmpbckaso"
+                            : undefined;
 
         const routeName = isParkletRoute
           ? "parklet"
@@ -326,7 +351,17 @@ function AppContent() {
               ? "rats"
               : isDogsRoute
                 ? "dogs"
-                : "market";
+                : isMarketRoute
+                  ? "market"
+                  : is311Route
+                    ? "311"
+                    : isDataRoute
+                      ? "data"
+                      : isHeightRoute
+                        ? "height"
+                        : isUdcRoute
+                          ? "udc"
+                          : "dc";
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
