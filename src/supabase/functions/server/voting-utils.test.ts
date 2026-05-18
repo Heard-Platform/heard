@@ -1,6 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { describe, it } from "@std/testing/bdd";
-import { scoreStatementsForVoter } from "./voting-utils.ts";
+import { scoreStatements } from "./voting-utils.ts";
 import { Statement } from "./types.tsx";
 
 const STATEMENT: Statement = {
@@ -22,14 +22,14 @@ const scoresById = (
 ): Record<string, number> =>
   Object.fromEntries(entries.map(({ statement, score }) => [statement.id, score]));
 
-describe("scoreStatementsForVoter", () => {
+describe("scoreStatements", () => {
   it("returns empty array for empty input", () => {
-    assertEquals(scoreStatementsForVoter([]), []);
+    assertEquals(scoreStatements([]), []);
   });
 
   it("gives a single opinionated statement the full boost (it is its own leader)", () => {
     const statement = { ...STATEMENT, id: "only", agrees: 3, disagrees: 2 };
-    assertEquals(scoreStatementsForVoter([statement]), [
+    assertEquals(scoreStatements([statement]), [
       { statement, score: 25 },
     ]);
   });
@@ -39,7 +39,7 @@ describe("scoreStatementsForVoter", () => {
     const half = { ...STATEMENT, id: "half", agrees: 10 };
     const quarter = { ...STATEMENT, id: "quarter", agrees: 5 };
 
-    assertEquals(scoresById(scoreStatementsForVoter([leader, half, quarter])), {
+    assertEquals(scoresById(scoreStatements([leader, half, quarter])), {
       leader: 25,
       half: 12.5,
       quarter: 6.25,
@@ -50,14 +50,14 @@ describe("scoreStatementsForVoter", () => {
     const a = { ...STATEMENT, id: "a" };
     const b = { ...STATEMENT, id: "b", passes: 100 };
 
-    assertEquals(scoresById(scoreStatementsForVoter([a, b])), { a: 0, b: 0 });
+    assertEquals(scoresById(scoreStatements([a, b])), { a: 0, b: 0 });
   });
 
   it("does not count passes toward opinionated votes", () => {
     const allPasses = { ...STATEMENT, id: "passes", passes: 100 };
     const oneAgree = { ...STATEMENT, id: "agree", agrees: 1 };
 
-    assertEquals(scoresById(scoreStatementsForVoter([allPasses, oneAgree])), {
+    assertEquals(scoresById(scoreStatements([allPasses, oneAgree])), {
       passes: 0,
       agree: 25,
     });
@@ -68,7 +68,7 @@ describe("scoreStatementsForVoter", () => {
     const allPasses = { ...STATEMENT, id: "passes", passes: 5 };
 
     assertEquals(
-      scoresById(scoreStatementsForVoter([allDisagrees, allPasses])),
+      scoresById(scoreStatements([allDisagrees, allPasses])),
       { disagrees: 25, passes: 0 },
     );
   });
@@ -78,7 +78,7 @@ describe("scoreStatementsForVoter", () => {
     const b = { ...STATEMENT, id: "b", agrees: 2 };
     const c = { ...STATEMENT, id: "c", agrees: 3 };
 
-    const result = scoreStatementsForVoter([c, a, b]);
+    const result = scoreStatements([c, a, b]);
     assertEquals(result.map(({ statement }) => statement.id), ["c", "a", "b"]);
   });
 });

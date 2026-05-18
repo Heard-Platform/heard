@@ -12,7 +12,7 @@ export const countStatementVotes = (statement: Statement): number =>
 const MAX_VOTE_BOOST = 25;
 const MAX_RANDOM_JITTER = 100 - MAX_VOTE_BOOST;
 
-export const scoreStatementsForVoter = (
+export const scoreStatements = (
   statements: Statement[],
 ): { statement: Statement; score: number }[] => {
   const maxOpinionatedVotes = statements.reduce(
@@ -30,10 +30,10 @@ export const scoreStatementsForVoter = (
   });
 };
 
-export const orderStatementsForVoter = (
+export const orderStatements = (
   statements: Statement[],
 ): Statement[] =>
-  scoreStatementsForVoter(statements)
+  scoreStatements(statements)
     .map(({ statement, score }) => ({
       statement,
       finalScore: score + Math.random() * MAX_RANDOM_JITTER,
