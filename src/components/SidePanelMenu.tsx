@@ -34,6 +34,9 @@ import {
   MessageCircle,
 } from "lucide-react";
 import type { UserSession } from "../types";
+import { RoomAlertsList } from "./side-panel/RoomAlertsList";
+import { AvatarAlertDot } from "./side-panel/AvatarAlertDot";
+import { useRoomAlertsContext } from "../contexts/RoomAlertsContext";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { PhoneVerificationDialog } from "./onboarding/PhoneVerificationDialog";
 import { VERIFY_TEXT } from "../utils/constants/text";
@@ -75,6 +78,7 @@ interface SidePanelMenuProps {
   onJumpToFinalResults?: () => void;
   onCreateAnonDebate?: () => void;
   onShowAccountSetupModal: (featureText: string) => void;
+  onJumpToRoom: (roomId: string, subHeard?: string) => void;
 }
 
 export function SidePanelMenu({
@@ -89,10 +93,17 @@ export function SidePanelMenu({
   onJumpToFinalResults,
   onCreateAnonDebate,
   onShowAccountSetupModal,
+  onJumpToRoom,
 }: SidePanelMenuProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [phoneVerificationOpen, setPhoneVerificationOpen] = useState(false);
   const [feedbackSheetOpen, setFeedbackSheetOpen] = useState(false);
+  const { refresh: refreshAlerts } = useRoomAlertsContext();
+
+  const handleSheetOpenChange = (open: boolean) => {
+    setMenuOpen(open);
+    if (open) refreshAlerts();
+  };
   const {
     createSeedData,
     createTestRoom,
@@ -190,7 +201,7 @@ export function SidePanelMenu({
         onOpenChange={setFeedbackSheetOpen}
         userId={user.id}
       />
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+      <Sheet open={menuOpen} onOpenChange={handleSheetOpenChange}>
         <SheetTrigger asChild>
           <Button
             variant="outline"
@@ -210,6 +221,7 @@ export function SidePanelMenu({
                     <ShieldCheck className="w-2 h-2 text-white" />
                   </div>
                 )}
+                <AvatarAlertDot />
               </div>
             </div>
           </Button>
@@ -222,7 +234,14 @@ export function SidePanelMenu({
             </SheetDescription>
           </SheetHeader>
 
-          <div className="space-y-4 mt-6 overflow-y-auto flex-1 px-1">
+          <div className="space-y-4 overflow-y-auto flex-1 px-1">
+            <RoomAlertsList
+              onJumpToRoom={(roomId, subHeard) => {
+                setMenuOpen(false);
+                onJumpToRoom(roomId, subHeard);
+              }}
+            />
+
             <UserRankDisplay user={user} />
 
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">

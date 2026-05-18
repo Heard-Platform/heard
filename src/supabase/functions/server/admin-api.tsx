@@ -23,7 +23,6 @@ import {
 } from "./kv-utils.tsx";
 import { DebateRoom, Rant, Statement } from "./types.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
-import { sendDebateCompletionCelebration } from "./cron-api.tsx";
 import { getNewsletterByEdition, getNewsletterRecipients } from "./newsletter-utils.ts";
 import { getFlyerEmails } from "./model-utils.ts";
 
@@ -616,7 +615,7 @@ app.post(
               Authorization: `Bearer ${resendApiKey}`,
             },
             body: JSON.stringify({
-              from: "Alex @ Heard <alex@heard-now.com>",
+              from: "Alex @ Heard <hello@heard-now.com>",
               to: [user.email],
               subject: `${testMode ? "[TEST] " : ""}${subject}`,
               html,
@@ -655,52 +654,6 @@ app.post(
       console.error("Error sending newsletter:", error);
       return c.json(
         { error: "Failed to send newsletter" },
-        500,
-      );
-    }
-  },
-);
-
-app.post(
-  "/make-server-f1a393b4/admin/send-test-celebration-sms",
-  async (c) => {
-    try {
-      const { userId, roomId } = await c.req.json();
-
-      if (!userId) {
-        return c.json({ error: "User ID is required" }, 400);
-      }
-
-      if (!roomId) {
-        return c.json({ error: "Room ID is required" }, 400);
-      }
-
-      const user = await getUser(userId);
-      if (!user) {
-        return c.json({ error: "User not found" }, 404);
-      }
-
-      if (!user.phoneNumber || !user.phoneVerified) {
-        return c.json({ 
-          error: "User does not have a verified phone number" 
-        }, 400);
-      }
-
-      const room = await getDebate(roomId);
-      if (!room) {
-        return c.json({ error: "Room not found" }, 404);
-      }
-
-      await sendDebateCompletionCelebration(room);
-
-      return c.json({
-        success: true,
-        message: "Test celebration SMS sent successfully",
-      });
-    } catch (error) {
-      console.error("Error sending test celebration SMS:", error);
-      return c.json(
-        { error: "Failed to send test celebration SMS" },
         500,
       );
     }

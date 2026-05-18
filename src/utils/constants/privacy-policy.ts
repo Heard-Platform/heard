@@ -116,7 +116,7 @@ You may access and update your account information through your profile settings
 
 ### **5.2 Delete Your Account**
 
-You may request deletion of your account by contacting us at hello@heard-now.com. Please note that some information may remain in backups for a limited period.
+You may request deletion of your account by contacting us at hello@heard.vote. Please note that some information may remain in backups for a limited period.
 
 ### **5.3 Opt-Out of Communications**
 
@@ -175,7 +175,7 @@ Your continued use of the Service after changes become effective constitutes acc
 
 If you have questions about this Privacy Policy or our privacy practices, please contact us at:
 
-**Email:** hello@heard-now.com
+**Email:** hello@heard.vote
 
 ---
 
@@ -188,7 +188,7 @@ If you are a California resident, you have additional rights under the Californi
 - **Right to Opt-Out:** You may opt out of the sale of your personal information (we do not sell personal information)
 - **Right to Non-Discrimination:** We will not discriminate against you for exercising your privacy rights
 
-To exercise these rights, contact us at hello@heard-now.com.
+To exercise these rights, contact us at hello@heard.vote.
 
 ---
 
@@ -204,5 +204,5 @@ If you are located in the European Economic Area (EEA), you have rights under th
 - **Object:** Object to processing based on legitimate interests
 - **Withdraw Consent:** Withdraw consent at any time
 
-To exercise these rights, contact us at hello@heard-now.com.
+To exercise these rights, contact us at hello@heard.vote.
 `;

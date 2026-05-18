@@ -41,7 +41,6 @@ import {
   TestTube,
   History,
   Mail,
-  MessageSquare,
 } from "lucide-react";
 import { api } from "../utils/api";
 import { adminApi } from "../utils/admin-api";
@@ -51,7 +50,6 @@ import { UserHistory } from "./admin/UserHistory";
 import { UsersTable } from "./admin/UsersTable";
 import { DataFixes } from "./admin/DataFixes";
 import { Newsletter } from "./admin/Newsletter";
-import { SmsNotifications } from "./admin/SmsNotifications";
 import { Flyers } from "./admin/Flyers";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 import { PowerUsers } from "./admin/PowerUsers";
@@ -540,13 +538,6 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             User History
           </Button>
           <Button
-            variant={activeTab === "sms" ? "default" : "ghost"}
-            onClick={() => handleTabChange("sms")}
-          >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            SMS Notifications
-          </Button>
-          <Button
             variant={activeTab === "flyers" ? "default" : "ghost"}
             onClick={() => handleTabChange("flyers")}
           >
@@ -868,14 +859,6 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         {activeTab === "newsletter" && (
           <Newsletter
             adminKey={adminKey}
-          />
-        )}
-
-        {activeTab === "sms" && (
-          <SmsNotifications
-            adminKey={adminKey}
-            currentUserId={users[0]?.id || ""}
-            debates={debates}
           />
         )}
 

@@ -27,7 +27,14 @@ export function UserRankDisplay({ user }: UserRankDisplayProps) {
   }, [user.score]);
 
   if (loading) {
-    return null;
+    return (
+      <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+        <div className="flex items-center gap-2">
+          <Trophy className="w-4 h-4 text-purple-300 flex-shrink-0" />
+          <div className="h-4 w-32 bg-purple-200 rounded animate-pulse" />
+        </div>
+      </div>
+    );
   }
 
   if (rank === null) {

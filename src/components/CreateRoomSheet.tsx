@@ -137,15 +137,17 @@ export function CreateRoomSheet({
     setCameFromRantMode(INITIAL_FORM.cameFromRantMode);
   }, [defaultSubHeard]);
 
+  const handleOpen = useCallback(() => {
+    resetForm();
+    if (defaultTopic) {
+      setEditedTopic(defaultTopic);
+    }
+  }, [resetForm, defaultTopic]);
+
   // Reset form when sheet opens
   useEffect(() => {
-    if (open) {
-      resetForm();
-      if (defaultTopic) {
-        setEditedTopic(defaultTopic);
-      }
-    }
-  }, [open, defaultTopic, resetForm]);
+    if (open) handleOpen();
+  }, [open]);
 
   const handleExtractClick = async () => {
     if (!isRantValid || isExtracting) return;

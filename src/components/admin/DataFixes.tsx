@@ -26,6 +26,33 @@ interface ScriptConfig {
 }
 
 const SCRIPTS: ScriptConfig[] = [
+  {
+    id: "backfill-room-engagement",
+    title: "Backfill Room Engagement (Views + Follows)",
+    description: "Seeds the room_views and room_follows tables from each room's participants list. Marks every (user, room) pair as seen-now and followed-now so the alert center starts from a clean baseline. Idempotent.",
+    dryRunMessage: "Run DRY RUN?\n\nPreviews how many (userId, roomId) pairs would be upserted into room_views and room_follows.\n\nNo changes will be made.\n\nContinue?",
+    liveRunMessage: "Run LIVE SCRIPT?\n\nThis will upsert one row per (user, room) into both room_views and room_follows for every participant on every room.\n\n- Idempotent (re-runs reset lastSeenAt to now)\n- May take a few minutes for large datasets\n\nContinue?",
+    successMessageDryRun: (stats) =>
+      `DRY RUN complete!\n\n` +
+      `Pairs derived: ${stats.derivedPairs}\n` +
+      `Existing room_views rows: ${stats.existingViews}\n` +
+      `Existing room_follows rows: ${stats.existingFollows}\n\n` +
+      `No changes were made.`,
+    successMessageLive: (stats) =>
+      `Done!\n\n` +
+      `Pairs derived: ${stats.derivedPairs}\n` +
+      `room_views upserted: ${stats.viewsUpserted}\n` +
+      `room_follows upserted: ${stats.followsUpserted}\n` +
+      `Final room_views: ${stats.finalViews}\n` +
+      `Final room_follows: ${stats.finalFollows}\n\n` +
+      (stats.batchErrors?.length ? `Errors:\n${stats.batchErrors.join("\n")}` : "No errors."),
+    statsDisplay: (stats) =>
+      stats.dryRun
+        ? `Last dry run: ${stats.derivedPairs} pairs derived, ${stats.existingViews} views + ${stats.existingFollows} follows already exist`
+        : `Last run: ${stats.viewsUpserted} views + ${stats.followsUpserted} follows upserted (final: ${stats.finalViews} views, ${stats.finalFollows} follows)`,
+    apiCall: (adminKey, dryRun) => adminApi.backfillRoomEngagement(adminKey, dryRun),
+    bgColor: "bg-sky-50",
+  },
     {
     id: "unsub-april-26-signups",
     title: "Unsub April 26 Signups from Updates",

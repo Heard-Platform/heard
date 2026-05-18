@@ -31,6 +31,7 @@ import {
   saveCoverCardSwipe,
   getCoverCardSwipedRoomIds,
   getMergesForRoom,
+  saveRoomFollow,
 } from "./model-utils.ts";
 import type {
   User, Statement,
@@ -591,6 +592,7 @@ app.post(
         room.participants.push(userId);
         await saveDebateRoom(room);
       }
+      await saveRoomFollow(userId, roomId);
 
       // Update user's current room
       user.currentRoomId = roomId;
@@ -709,12 +711,13 @@ app.post(
             `Auto-added user ${userId} to room ${roomId} via statement submission`,
           );
         }
-        
+
         room.lastActivityAt = Date.now();
         await saveDebateRoom(room);
       }
 
       await updateRoom(room);
+      await saveRoomFollow(userId, roomId);
 
       // Convert phase to round number
       const getRoundNumber = (phase: Phase): number => {

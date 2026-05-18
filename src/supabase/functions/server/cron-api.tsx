@@ -1,11 +1,24 @@
 import { Hono } from "npm:hono";
-import { getAllDebates, getUser, getCelebrationSmsSent, saveCelebrationSmsSent } from "./kv-utils.tsx";
+import {
+  getAllDebates,
+  getUser,
+  getDebateEndedEmailSent,
+  saveDebateEndedEmailSent,
+  saveSentEmail,
+} from "./kv-utils.tsx";
 import { getFrontendUrl } from "./utils.tsx";
-import { sendSms } from "./twilio-service.tsx";
-import type { DebateRoom } from "./types.tsx";
+import type { DebateRoom, SentEmail } from "./types.tsx";
 import { getStatements } from "./debate-api.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 import { validateDeveloper } from "./internal-utils.ts";
+import { sendEmailViaResend } from "./email-sender-utils.tsx";
+import {
+  DEBATE_ENDED_EMAIL_TYPE,
+  generateDebateEndedEmailHtml,
+  getDebateEndedSubject,
+  type OtherConvo,
+} from "./email-debate-ended-template.tsx";
+import { getTotalVoteCount, rankStatements } from "./statement-utils.tsx";
 
 const app = new Hono();
 
@@ -21,33 +34,118 @@ export async function validateCronAuth(c: any, next: any) {
   }
 }
 
-export async function sendDebateCompletionCelebration(room: DebateRoom) {
-  try {
-    const host = await getUser(room.hostId);
-    if (!host || !host.phoneNumber || !host.phoneVerified) {
-      console.log(`Cannot send celebration SMS: host ${room.hostId} has no verified phone`);
-      return;
+const MAX_OTHER_CONVOS = 3;
+const MAX_TOP_STATEMENTS = 3;
+
+const findOtherConvosInSubHeard = (
+  endedRoom: DebateRoom,
+  allRooms: DebateRoom[],
+): OtherConvo[] => {
+  if (!endedRoom.subHeard) return [];
+  return allRooms
+    .filter(
+      (r) =>
+        r.id !== endedRoom.id &&
+        r.subHeard === endedRoom.subHeard &&
+        !r.isTestRoom,
+    )
+    .sort(
+      (a, b) =>
+        (b.lastActivityAt ?? b.createdAt) -
+        (a.lastActivityAt ?? a.createdAt),
+    )
+    .slice(0, MAX_OTHER_CONVOS)
+    .map((r) => ({
+      id: r.id,
+      topic: r.topic,
+      participantCount: r.participants.length,
+    }));
+};
+
+export async function sendDebateEndedEmails(
+  room: DebateRoom,
+  allRooms: DebateRoom[],
+  now: number,
+): Promise<{ sent: number; failed: number; skipped: number }> {
+  const result = { sent: 0, failed: 0, skipped: 0 };
+
+  const statements = await getStatements(room.id);
+  const totalVotes = statements.reduce(
+    (sum, s) => sum + getTotalVoteCount(s),
+    0,
+  );
+  const { topStatements, mostDisagreed, mostSplit } = rankStatements(
+    statements,
+    MAX_TOP_STATEMENTS,
+  );
+  const otherConvos = findOtherConvosInSubHeard(room, allRooms);
+  const subject = getDebateEndedSubject(room.topic);
+  const frontendUrl = getFrontendUrl();
+
+  for (const userId of room.participants) {
+    try {
+      const user = await getUser(userId);
+      if (!user) {
+        result.skipped++;
+        continue;
+      }
+      if (!user.email) {
+        result.skipped++;
+        continue;
+      }
+      if (user.emailDigestsEnabled === false) {
+        result.skipped++;
+        continue;
+      }
+      if (user.isTestUser || user.webdriver) {
+        result.skipped++;
+        continue;
+      }
+
+      const html = generateDebateEndedEmailHtml({
+        room,
+        topStatements,
+        mostDisagreed,
+        mostSplit,
+        totalVotes,
+        participantCount: room.participants.length,
+        otherConvos,
+        frontendUrl,
+        userId: user.id,
+      });
+
+      const sendResult = await sendEmailViaResend({
+        to: user.email,
+        subject,
+        html,
+      });
+
+      if (!sendResult.success) {
+        console.log(
+          `[debate-ended-email] Failed for user ${user.id} room ${room.id}: ${sendResult.error}`,
+        );
+        result.failed++;
+        continue;
+      }
+
+      const sentEmailRecord: SentEmail = {
+        id: `${user.id}_${DEBATE_ENDED_EMAIL_TYPE}_${room.id}`,
+        userId: user.id,
+        sentAt: now,
+        emailType: DEBATE_ENDED_EMAIL_TYPE,
+      };
+      await saveSentEmail(sentEmailRecord);
+      result.sent++;
+    } catch (error) {
+      console.log(
+        `[debate-ended-email] Error for user ${userId} room ${room.id}:`,
+        error,
+      );
+      result.failed++;
     }
-
-    const statements = await getStatements(room.id);
-    const totalVotes = statements.reduce((sum, stmt) => {
-      return sum + stmt.superAgrees + stmt.agrees + stmt.disagrees + stmt.passes;
-    }, 0);
-
-    const participantCount = room.participants.length;
-    const topic = room.topic.length > 60 ? room.topic.substring(0, 60) + "..." : room.topic;
-
-    const celebrationMessage = `🎉 Your debate "${topic}" just wrapped! ${participantCount} debater${participantCount !== 1 ? 's' : ''} cast ${totalVotes} vote${totalVotes !== 1 ? 's' : ''}. Check the results at ${getFrontendUrl()}/room/${room.id}`;
-
-    const { success } = await sendSms(host.phoneNumber, celebrationMessage);
-    if (success) {
-      console.log(`Celebration SMS sent to host ${host.id} for room ${room.id}`);
-    } else {
-      console.error(`Failed to send celebration SMS to host ${host.id} for room ${room.id}`);
-    }
-  } catch (error) {
-    console.error("Error sending celebration SMS:", error);
   }
+
+  return result;
 }
 
 app.post(
@@ -57,12 +155,12 @@ app.post(
     {},
     async () => {
       const now = Date.now();
-      const twentyMinutesAgo = now - (20 * 60 * 1000);
+      const twoHoursAgo = now - (2 * 60 * 60 * 1000);
 
       const allRooms = await getAllDebates();
-      const recentlyEndedRooms = allRooms.filter(room => 
-        room.endTime && 
-        room.endTime >= twentyMinutesAgo && 
+      const recentlyEndedRooms = allRooms.filter(room =>
+        room.endTime &&
+        room.endTime >= twoHoursAgo &&
         room.endTime <= now
       );
 
@@ -70,32 +168,31 @@ app.post(
 
       const results = [];
       for (const room of recentlyEndedRooms) {
-        const alreadySent = await getCelebrationSmsSent(room.id);
-        if (alreadySent) {
-          console.log(`Celebration SMS already sent for room ${room.id}`);
-          continue;
+        const emailAlreadySent = await getDebateEndedEmailSent(room.id);
+        let emailResult = { sent: 0, failed: 0, skipped: 0 };
+        if (!emailAlreadySent) {
+          try {
+            emailResult = await sendDebateEndedEmails(room, allRooms, now);
+            await saveDebateEndedEmailSent(room.id);
+          } catch (error: any) {
+            console.error(`Failed to send debate-ended emails for room ${room.id}:`, error);
+          }
+        } else {
+          console.log(`Debate-ended emails already sent for room ${room.id}`);
         }
 
-        try {
-          await sendDebateCompletionCelebration(room);
-          await saveCelebrationSmsSent(room.id);
-          results.push({ roomId: room.id, success: true });
-        } catch (error: any) {
-          console.error(`Failed to send celebration for room ${room.id}:`, error);
-          results.push({ 
-            roomId: room.id, 
-            success: false, 
-            error: error.message 
-          });
-        }
+        results.push({
+          roomId: room.id,
+          emails: emailResult,
+        });
       }
 
-      return { 
+      return {
         processed: results.length,
-        results: results
+        results: results,
       };
     },
-    "Failed to process celebration cron job"
+    "Failed to process completion cron job"
   ),
 );
 
