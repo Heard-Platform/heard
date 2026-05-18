@@ -69,7 +69,7 @@ const renderHighlightSection = (
 const renderOtherConvo = (c: OtherConvo, frontendUrl: string): string => `
   <a href="${frontendUrl}/room/${c.id}" style="display: block; text-decoration: none; background-color: #fffbf0; border-left: 4px solid #fa709a; padding: 14px 16px; margin-bottom: 10px; border-radius: 8px;">
     <div style="color: #030213; font-weight: 600; font-size: 15px; margin-bottom: 4px;">${escapeHtml(c.topic)}</div>
-    <div style="color: #4a5568; font-size: 13px;">👥 ${c.participantCount} ${c.participantCount === 1 ? "debater" : "debaters"}</div>
+    <div style="color: #4a5568; font-size: 13px;">👥 ${c.participantCount} ${c.participantCount === 1 ? "participant" : "participants"}</div>
   </a>
 `;
 
