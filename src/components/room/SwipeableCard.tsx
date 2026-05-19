@@ -12,6 +12,7 @@ import { CoverCard } from "./CoverCard";
 import { DemographicsCard } from "./DemographicsCard";
 import { StatementCard } from "./StatementCard";
 import { CertifyCard } from "./CertifyCard";
+import { CommitCard } from "./CommitCard";
 
 interface SwipeableCardProps {
   card: Card;
@@ -137,6 +138,8 @@ export function SwipeableCard({
         } rounded-xl border-2 shadow-xl ${
           card.type === "certify"
           ? "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-300"
+            : card.type === "commit"
+            ? "border-emerald-300 relative overflow-hidden"
             : card.type === "chance"
             ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-orange-300"
             : card.type === "cover" && card.cover.type === "youtube"
@@ -157,7 +160,7 @@ export function SwipeableCard({
           touchAction:
             isTopCard && !card.isUnswipeable ? "none" : "auto",
           height: !isTopCard ? "286px" : "auto",
-          overflow: !isTopCard ? "hidden" : "visible",
+          overflow: !isTopCard || card.type === "commit" ? "hidden" : "visible",
         }}
       >
         {card.type === "chance" ? (
@@ -186,6 +189,14 @@ export function SwipeableCard({
             roomId={room.id}
             isActive={isTopCard}
             onSuccess={onCertifySuccess}
+          />
+        ) : card.type === "commit" ? (
+          <CommitCard
+            action={card.action}
+            learnMoreUrl={card.learnMoreUrl}
+            isTopCard={isTopCard}
+            ignoreOpacity={disagreeOpacity}
+            commitOpacity={agreeOpacity}
           />
         ) : card.type === "statement" ? (
           <StatementCard

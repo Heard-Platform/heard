@@ -232,6 +232,10 @@
   background-color: var(--color-red-500);
 }
 
+.disagree-bg-soft {
+  background-color: var(--color-rose-500);
+}
+
 .disagree-text {
   color: var(--color-red-700);
 }

@@ -6,6 +6,7 @@ import {
   type VoteType,
   type Card,
   type ChanceCard,
+  type CommitCard,
   type CoverCard,
   type DemographicsCard,
 
@@ -31,6 +32,8 @@ interface SwipeableStatementStackProps {
   chanceCardSwiped: boolean;
   cover: FullCoverData | null;
   coverCardSwiped: boolean;
+  commitAction?: { action: string; learnMoreUrl?: string } | null;
+  commitCardSwiped?: boolean;
   demographicQuestions: DemographicQuestion[];
   answeredQuestionIds: Set<string>;
   onVote: (
@@ -42,6 +45,7 @@ interface SwipeableStatementStackProps {
   onCertifyDone: () => void;
   onChanceCardSwiped: () => Promise<void>;
   onCoverCardSwiped: () => Promise<void>;
+  onCommitCardSwiped?: (committed: boolean) => void;
   onDemographicsAnswered: (questionId: string) => void;
 }
 
@@ -56,6 +60,8 @@ export function SwipeableStatementStack({
   chanceCardSwiped,
   cover,
   coverCardSwiped,
+  commitAction,
+  commitCardSwiped,
   demographicQuestions,
   answeredQuestionIds,
   onVote,
@@ -64,6 +70,7 @@ export function SwipeableStatementStack({
   onCertifyDone,
   onChanceCardSwiped,
   onCoverCardSwiped,
+  onCommitCardSwiped,
   onDemographicsAnswered,
 }: SwipeableStatementStackProps) {
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
@@ -77,7 +84,7 @@ export function SwipeableStatementStack({
   const [swipedCardId, setSwipedCardId] = useState<
     string | null
   >(null);
-  const [swipedNoopCard, setSwipedNoopCard] = useState<"certify" | "chance" | "cover" | null>(null);
+  const [swipedNoopCard, setSwipedNoopCard] = useState<"certify" | "chance" | "cover" | "commit" | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
@@ -123,6 +130,15 @@ export function SwipeableStatementStack({
     const naturalIndex = Math.min(5, statements.length) - votedStatementIds.size;
     const chanceCardIndex = Math.max(naturalIndex, demogEndIndex);
     cards.splice(chanceCardIndex, 0, chanceCard);
+  }
+
+  if (commitAction && !commitCardSwiped) {
+    const commitCard: CommitCard = {
+      type: "commit",
+      action: commitAction.action,
+      learnMoreUrl: commitAction.learnMoreUrl,
+    };
+    cards.unshift(commitCard);
   }
 
   if (cover && !coverCardSwiped) {
@@ -288,7 +304,7 @@ export function SwipeableStatementStack({
         swipeDirection,
       );
       return;
-    } else if (card.type === "certify" || card.type === "chance" || card.type === "cover") {
+    } else if (card.type === "certify" || card.type === "chance" || card.type === "cover" || card.type === "commit") {
       setIsVoting(true);
       setSwipedNoopCard(card.type);
       setSwipeDirection(swipeDirection);
@@ -297,6 +313,8 @@ export function SwipeableStatementStack({
         onChanceCardSwiped();
       } else if (card.type === "cover") {
         onCoverCardSwiped();
+      } else if (card.type === "commit") {
+        onCommitCardSwiped?.(swipeDirection === "right");
       }
 
       setTimeout(() => {
@@ -438,6 +456,7 @@ export function SwipeableStatementStack({
               if (card.type === "certify") return "certify";
               if (card.type === "chance") return "chance";
               if (card.type === "cover") return "cover";
+              if (card.type === "commit") return "commit";
               if (card.type === "demographics") return `demographics-${card.question.id}`;
               return "unknown";
             };

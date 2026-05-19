@@ -56,6 +56,12 @@ export type CertifyCard = {
   type: "certify";
 }
 
+export type CommitCard = {
+  type: "commit";
+  action: string;
+  learnMoreUrl?: string;
+}
+
 export type ChanceCard = {
   type: "chance";
 }
@@ -93,7 +99,7 @@ export type DemographicsCard = {
   question: DemographicQuestion;
 }
 
-export type Card = (StatementCard | CertifyCard | ChanceCard | CoverCard | DemographicsCard)
+export type Card = (StatementCard | CertifyCard | CommitCard | ChanceCard | CoverCard | DemographicsCard)
   & { isUnswipeable?: boolean };
 
 export const isStatementCard = (card: Card): card is StatementCard => {
@@ -106,6 +112,10 @@ export const isChanceCard = (card: Card): card is ChanceCard => {
 
 export const isCoverCard = (card: Card): card is CoverCard => {
   return card.type === "cover";
+};
+
+export const isCommitCard = (card: Card): card is CommitCard => {
+  return card.type === "commit";
 };
 
 export const isDemographicsCard = (card: Card): card is DemographicsCard => {

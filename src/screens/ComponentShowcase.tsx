@@ -18,6 +18,7 @@ import { YouTubeCardStory } from "../stories/YouTubeCard.story";
 import { IntroModalStory } from "../stories/IntroModal.story";
 import { DemographicsCardStory } from "../stories/DemographicsCard.story";
 import { CertifyCardStory } from "../stories/CertifyCard.story";
+import { CommitCardStory } from "../stories/CommitCard.story";
 import { AnonAccountSetupModalStory } from "../stories/AnonAccountSetupModal.story";
 import { CommentingModalStory } from "../stories/CommentingModal.story";
 import { EditAnswersModalStory } from "../stories/EditAnswersModal.story";
@@ -114,6 +115,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
                 <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
                 <TabsTrigger value="certify-card">Certify Card</TabsTrigger>
+                <TabsTrigger value="commit-card">Commit Card</TabsTrigger>
                 <TabsTrigger value="anon-account-setup-modal">Anon Account Setup Modal</TabsTrigger>
                 <TabsTrigger value="comment-modal">Comment Modal</TabsTrigger>
                 <TabsTrigger value="edit-answers-modal">Edit Answers Modal</TabsTrigger>
@@ -191,6 +193,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="certify-card">
                 <CertifyCardStory />
+              </TabsContent>
+              <TabsContent value="commit-card">
+                <CommitCardStory />
               </TabsContent>
               <TabsContent value="anon-account-setup-modal">
                 <AnonAccountSetupModalStory />
