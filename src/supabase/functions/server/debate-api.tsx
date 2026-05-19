@@ -31,7 +31,7 @@ import {
   saveCoverCardSwipe,
   getCoverCardSwipedRoomIds,
   getMergesForRoom,
-  saveRoomFollow,
+  recordRoomEngagement,
 } from "./model-utils.ts";
 import type {
   User, Statement,
@@ -592,7 +592,7 @@ app.post(
         room.participants.push(userId);
         await saveDebateRoom(room);
       }
-      await saveRoomFollow(userId, roomId);
+      await recordRoomEngagement(userId, roomId);
 
       // Update user's current room
       user.currentRoomId = roomId;
@@ -703,6 +703,8 @@ app.post(
         );
       }
 
+      const now = Date.now();
+
       async function updateRoom(room: DebateRoom) {
         // Auto-join user to room if they're not already a participant
         if (!room.participants.includes(userId)) {
@@ -712,12 +714,12 @@ app.post(
           );
         }
 
-        room.lastActivityAt = Date.now();
+        room.lastActivityAt = now;
         await saveDebateRoom(room);
       }
 
       await updateRoom(room);
-      await saveRoomFollow(userId, roomId);
+      await recordRoomEngagement(userId, roomId, now);
 
       // Convert phase to round number
       const getRoundNumber = (phase: Phase): number => {

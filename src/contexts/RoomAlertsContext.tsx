@@ -1,7 +1,7 @@
 import { createContext, useContext, ReactNode } from "react";
 import { useRoomAlerts, type RoomAlertsState } from "../hooks/useRoomAlerts";
 
-const RoomAlertsContext = createContext<RoomAlertsState | null>(null);
+export const RoomAlertsContext = createContext<RoomAlertsState | null>(null);
 
 export function RoomAlertsProvider({ children }: { children: ReactNode }) {
   const value = useRoomAlerts();
