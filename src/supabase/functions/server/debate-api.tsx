@@ -993,7 +993,12 @@ app.get(
       }
 
       rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 100);
-      rooms = sortRoomsForFeed(rooms, userMemberships);
+      // For users with no memberships, treat washington-dc as a default so DC
+      // rooms get boosted into the joined partition.
+      const sortMemberships = userMemberships.size === 0
+        ? new Set(["washington-dc"])
+        : userMemberships;
+      rooms = sortRoomsForFeed(rooms, sortMemberships);
       rooms = rooms.slice(0, 20);
 
       if (targetRoomId && !rooms.some((r) => r.id === targetRoomId)) {
