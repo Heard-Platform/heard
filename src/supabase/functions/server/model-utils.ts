@@ -180,3 +180,14 @@ export const getFollowedRoomIds = async (userId: string): Promise<Set<string>> =
 
 export const bulkUpsertRoomFollows = async (follows: RoomFollow[]) =>
   upsert("room_follows", follows as any, "userId,roomId");
+
+export const recordRoomEngagement = async (
+  userId: string,
+  roomId: string,
+  now: number = Date.now(),
+) => {
+  await Promise.all([
+    saveRoomFollow(userId, roomId),
+    saveRoomView({ userId, roomId, lastSeenAt: now }),
+  ]);
+};

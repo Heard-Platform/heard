@@ -3,7 +3,7 @@ import { saveStatement, saveVote, getVotesForStatement, deleteVote, saveUser } f
 import { getByPrefixParsed } from "./kv-utils.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { generateId, getDebateRoom, getStatementById, saveDebateRoom } from "./debate-api.tsx";
-import { saveRoomFollow } from "./model-utils.ts";
+import { recordRoomEngagement } from "./model-utils.ts";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 
 export const countStatementVotes = (statement: Statement): number =>
@@ -146,7 +146,6 @@ export const processVote = async (
       `Auto-added user ${userId} to room ${statement.roomId} via voting`,
     );
   }
-  await saveRoomFollow(userId, statement.roomId);
 
   // Get current vote if it exists
   const currentVotes = await getVotesForStatement(statementId);
@@ -216,9 +215,11 @@ export const processVote = async (
     }
   }
 
-  room.lastActivityAt = Date.now();
+  const now = Date.now();
+  room.lastActivityAt = now;
   room.totalVotes = (room.totalVotes || 0) + voteCountChange;
   await saveDebateRoom(room);
+  await recordRoomEngagement(userId, statement.roomId, now);
 
   // Get updated vote data to return
   const updatedVotes = await getVotesForStatement(statementId);

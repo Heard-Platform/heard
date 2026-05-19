@@ -13,7 +13,8 @@ import type {
 import { ONE_WEEK_MS } from "./time-utils.ts";
 import { getCommunity, saveCommunity, saveStatement } from "./kv-utils.tsx";
 import { createNewRoomData } from "./room-utils.ts";
-import { insertDemographicQuestion, saveRoomFollow, saveRoomView } from "./model-utils.ts";
+import { insertDemographicQuestion, recordRoomEngagement } from "./model-utils.ts";
+
 
 const app = new Hono();
 
@@ -101,7 +102,7 @@ app.post(
       });
 
       await saveDebateRoom(debateRoom);
-      await saveRoomFollow(userId, roomId);
+      await recordRoomEngagement(userId, roomId);
 
       user.score += 100;
 
