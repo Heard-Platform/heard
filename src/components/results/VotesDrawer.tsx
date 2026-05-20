@@ -20,6 +20,7 @@ import {
 } from "../ui/sheet";
 import type { Statement, VoteType, SortBy } from "../../types";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import { sortStatementsByVoteType } from "../../utils/statement-utils";
 import { QRGenerationPage } from "./QRGenerationPage";
 
 interface VotesDrawerProps {
@@ -173,15 +174,10 @@ export function VotesDrawer({
     totalVotes.super_agree +
     totalVotes.pass;
 
-  const sortedStatements = [...statements].sort((a, b) => {
-    const aCounts = getVoteCounts(a);
-    const bCounts = getVoteCounts(b);
-    if (sortBy === "agree") return bCounts.agree - aCounts.agree;
-    if (sortBy === "disagree") return bCounts.disagree - aCounts.disagree;
-    if (sortBy === "super_agree") return bCounts.super_agree - aCounts.super_agree;
-    if (sortBy === "pass") return bCounts.pass - aCounts.pass;
-    return 0;
-  });
+  const sortedStatements =
+    sortBy === "none"
+      ? statements
+      : sortStatementsByVoteType(statements, sortBy);
 
   const handleOpenQrGenerator = (statement: Statement) => {
     setIsSheetOpen(false);

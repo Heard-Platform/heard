@@ -38,7 +38,11 @@ export const orderStatements = (
       statement,
       finalScore: score + Math.random() * MAX_RANDOM_JITTER,
     }))
-    .sort((a, b) => b.finalScore - a.finalScore)
+    .sort(
+      (a, b) =>
+        b.finalScore - a.finalScore ||
+        a.statement.id.localeCompare(b.statement.id),
+    )
     .map(({ statement }) => statement);
 
 export const calculateVoteStats = (

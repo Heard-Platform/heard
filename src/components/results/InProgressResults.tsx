@@ -3,6 +3,7 @@ import { TrendingUp } from "lucide-react";
 import { Card } from "../ui/card";
 import { VotesDrawer } from "./VotesDrawer";
 import type { Statement, VoteType } from "../../types";
+import { sortStatementsByDecisive } from "../../utils/statement-utils";
 
 interface InProgressResultsProps {
   statements: Statement[];
@@ -49,7 +50,7 @@ export function InProgressResults({
     0,
   );
 
-  const topStatements = [...statements]
+  const topStatements = sortStatementsByDecisive(statements)
     .map((s) => ({
       statement: s,
       agrees: s.agrees + s.superAgrees,
@@ -57,7 +58,6 @@ export function InProgressResults({
       decisive: s.agrees + s.superAgrees + s.disagrees,
     }))
     .filter((s) => s.decisive > 0)
-    .sort((a, b) => b.decisive - a.decisive)
     .slice(0, 3);
 
   return (

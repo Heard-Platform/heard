@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card } from "../ui/card";
 import { List } from "lucide-react";
 import { StatementVotes } from "../../types";
+import { sortByNumericField } from "../../utils/statement-utils";
 import { StatementVotesTableHead, SortColumn, SortDir } from "./StatementVotesTableHead";
 import { StatementVotesTableRow } from "./StatementVotesTableRow";
 import { ShowNumbersToggle } from "./ShowNumbersToggle";
@@ -33,10 +34,9 @@ export function StatementVotesTable({
     }
   }
 
-  const sorted = [...statements].sort((a, b) => {
-    if (!sortCol) return 0;
-    return sortDir === "desc" ? b[sortCol] - a[sortCol] : a[sortCol] - b[sortCol];
-  });
+  const sorted = sortCol
+    ? sortByNumericField(statements, sortCol, sortDir)
+    : statements;
 
   if (statements.length === 0) return null;
 

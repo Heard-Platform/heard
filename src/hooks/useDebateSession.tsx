@@ -4,7 +4,7 @@ import {
   safelyMakeApiCall,
 } from "../utils/api";
 import { isValidCachedUser } from "../utils/cache-utils";
-import { mergeStatements } from "../utils/statement-merge";
+import { mergeStatements } from "../utils/statement-utils";
 import type {
   UserSession,
   DebateRoom,

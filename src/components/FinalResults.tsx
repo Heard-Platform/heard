@@ -18,6 +18,7 @@ import {
   Home,
 } from "lucide-react";
 import type { Statement } from "../types";
+import { sortStatementsByNetAgreement } from "../utils/statement-utils";
 
 interface FinalResultsProps {
   statements: Statement[];
@@ -55,10 +56,9 @@ export function FinalResults({
   const getTopStatements = (
     type?: "bridge" | "crux" | "plurality",
   ) => {
-    return statements
-      .filter((s) => (type ? s.type === type : !s.type))
-      .sort((a, b) => (b.agrees - b.disagrees) - (a.agrees - a.disagrees))
-      .slice(0, 3);
+    return sortStatementsByNetAgreement(
+      statements.filter((s) => (type ? s.type === type : !s.type)),
+    ).slice(0, 3);
   };
 
   const topBridges = getTopStatements("bridge");
