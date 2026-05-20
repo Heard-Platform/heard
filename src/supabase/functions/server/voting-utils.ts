@@ -36,7 +36,7 @@ export const orderStatements = (
   scoreStatements(statements)
     .map(({ statement, score }) => ({
       statement,
-      finalScore: score
+      finalScore: score + Math.random() * MAX_RANDOM_JITTER,
     }))
     .sort((a, b) => b.finalScore - a.finalScore)
     .map(({ statement }) => statement);

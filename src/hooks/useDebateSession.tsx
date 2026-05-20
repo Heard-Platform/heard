@@ -4,6 +4,7 @@ import {
   safelyMakeApiCall,
 } from "../utils/api";
 import { isValidCachedUser } from "../utils/cache-utils";
+import { mergeStatements } from "../utils/statement-merge";
 import type {
   UserSession,
   DebateRoom,
@@ -722,12 +723,13 @@ export function DebateSessionProvider(
       try {
         const response = await api.getRoomStatus(roomId);
         if (response.success && response.data) {
-          const statements = response.data.statements || [];
-          setRoomStatements((prev) => ({
-            ...prev,
-            [roomId]: statements,
-          }));
-          return statements;
+          const incoming = response.data.statements || [];
+          let merged: Statement[] = incoming;
+          setRoomStatements((prev) => {
+            merged = mergeStatements(prev[roomId], incoming);
+            return { ...prev, [roomId]: merged };
+          });
+          return merged;
         }
       } catch (error) {
         console.error(
