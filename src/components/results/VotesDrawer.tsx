@@ -174,10 +174,7 @@ export function VotesDrawer({
     totalVotes.super_agree +
     totalVotes.pass;
 
-  const sortedStatements =
-    sortBy === "none"
-      ? statements
-      : sortStatementsByVoteType(statements, sortBy);
+  const sortedStatements = sortStatementsByVoteType(statements, sortBy);
 
   const handleOpenQrGenerator = (statement: Statement) => {
     setIsSheetOpen(false);

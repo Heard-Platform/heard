@@ -56,8 +56,9 @@ const countVotesOfType = (statement: Statement, vote: VoteType): number => {
 
 export function sortStatementsByVoteType(
   statements: Statement[],
-  voteType: VoteType,
+  voteType: VoteType | "none",
 ): Statement[] {
+  if (voteType === "none") return statements;
   return [...statements].sort(
     sortWithIdTieBreaker(
       (a, b) => countVotesOfType(b, voteType) - countVotesOfType(a, voteType),
@@ -67,9 +68,10 @@ export function sortStatementsByVoteType(
 
 export function sortByNumericField<T extends { id: string }>(
   items: T[],
-  field: keyof T,
+  field: keyof T | null,
   direction: "asc" | "desc",
 ): T[] {
+  if (!field) return items;
   return [...items].sort(
     sortWithIdTieBreaker((a, b) => {
       const av = a[field] as unknown as number;

@@ -277,6 +277,15 @@ describe("sortStatementsByVoteType", () => {
     );
     expect(result.map((s) => s.id)).toEqual(["a", "b"]);
   });
+
+  it('returns the input unchanged when voteType is "none"', () => {
+    const input = [
+      { ...STATEMENT, id: "b", voters: { u1: "agree" as const } },
+      { ...STATEMENT, id: "a", voters: { u1: "agree" as const } },
+    ];
+    const result = sortStatementsByVoteType(input, "none");
+    expect(result).toBe(input);
+  });
 });
 
 describe("sortByNumericField", () => {
@@ -316,5 +325,14 @@ describe("sortByNumericField", () => {
     expect(
       sortByNumericField(tied, "passVotes", "asc").map((s) => s.id),
     ).toEqual(["a", "z"]);
+  });
+
+  it("returns the input unchanged when field is null", () => {
+    const input = [
+      { ...STATEMENT_VOTES, id: "b", totalVotes: 3 },
+      { ...STATEMENT_VOTES, id: "a", totalVotes: 7 },
+    ];
+    const result = sortByNumericField(input, null, "desc");
+    expect(result).toBe(input);
   });
 });

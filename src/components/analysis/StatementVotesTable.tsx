@@ -34,9 +34,7 @@ export function StatementVotesTable({
     }
   }
 
-  const sorted = sortCol
-    ? sortByNumericField(statements, sortCol, sortDir)
-    : statements;
+  const sorted = sortByNumericField(statements, sortCol, sortDir);
 
   if (statements.length === 0) return null;
 
