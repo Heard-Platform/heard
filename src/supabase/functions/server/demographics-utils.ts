@@ -20,15 +20,9 @@ export function calcDemographicBreakdown(
       answer.question.type === 'custom' ? answer.question.text : answer.question.type
   );
 
-  const breakdown = _.mapValues(answersGroupedByQuestion, (group: GroupedAnswer[]) => {
-    const total = group.length;
-    const optionCounts = _.countBy(group, 'answer');
-    const optionPercentages = _.mapValues(
-      optionCounts,
-      (count: number) => (count / total),
-    );
-    return optionPercentages;
-  });
+  const breakdown = _.mapValues(answersGroupedByQuestion, (group: GroupedAnswer[]) =>
+    _.countBy(group, 'answer')
+  );
 
   return breakdown;
 }
