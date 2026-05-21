@@ -262,7 +262,32 @@ const newsletters = [
       imageAlt: "Dupont residents at the Think Like a Rat event",
     },
   }),
-];
+  getParameterizedNewsletter({
+    subject: "Our first official partnership! 🤝 Ya' Heard #18",
+    editionNumber: 18,
+    section1: {
+      title: "🤝 Our first official partnership!",
+      text: "A major DC delegate candidate gave Heard a shoutout in her latest newsletter, marking our first official partnership! 🎉 We're running Heard posts on key issues relevant to her campaign to draw attention to the issues and get voters more engaged for the upcoming DC primary.",
+      imageUrl: `${SUPABASE_URL}/nl-18-candidate-1.png`,
+      imageLink: "https://heard.vote",
+      imageAlt: "First official Heard partnership announcement",
+    },
+    section2: {
+      title: "🔔 Adding a new update center",
+      text: "We've made it easier to catch up on Heard posts you've participated in! You can now tap your avatar in the app to see if there have been any new votes or responses in threads you've engaged with",
+      imageUrl: `${SUPABASE_URL}/nl-18-updates.png`,
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard update center feature",
+    },
+    section3: {
+      title: "🐶 Conference organizer talks about Heard results",
+      text: "Remember the 307-person debrief we ran for the Ridglan beagle rescue back in April? One of the event's organizers <a href='https://www.youtube.com/shorts/MNrL20ngOeY'>just presented the Heard results on stage at a conference</a>, walking through what activists agreed on, where they split, and what they want to see next. Seeing Heard data inform real movement strategy is what this is all about. 🙌",
+      imageUrl: `${SUPABASE_URL}/nl-18-conf.png`,
+      imageLink: "https://www.youtube.com/shorts/MNrL20ngOeY",
+      imageAlt: "Ridglan rescue organizer presenting Heard results at a conference",
+    },
+  }),
+]
 
 const offset = 8
 
