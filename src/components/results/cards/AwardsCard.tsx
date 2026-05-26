@@ -34,7 +34,7 @@ export function AwardsCard({ statements }: AwardsCardProps) {
         gradientTo="to-pink-600"
       />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-2">
         {/* Most Persuasive */}
         {analysis.byAgrees[0] && (
           <AwardCard

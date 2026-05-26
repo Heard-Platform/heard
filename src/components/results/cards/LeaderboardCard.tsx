@@ -21,7 +21,7 @@ export function LeaderboardCard({ statements }: LeaderboardCardProps) {
         gradientTo="to-purple-600"
       />
 
-      <div className="space-y-2 max-h-[400px] overflow-y-auto">
+      <div className="space-y-2">
         {analysis.byAgrees.slice(0, 10).map((statement, index) => (
           <motion.div
             key={statement.id}
