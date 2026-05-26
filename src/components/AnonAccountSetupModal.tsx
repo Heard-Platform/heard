@@ -516,14 +516,11 @@ export function AnonAccountSetupModal({
 
 function FeatureBadge({ icon: Icon, label }: { icon: any; label: string }) {
   return (
-    <motion.div
-      whileHover={{ scale: 1.05 }}
-      className="flex flex-col items-center gap-2 p-3 rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30"
-    >
+    <div className="flex flex-col items-center gap-2 p-3 rounded-lg border border-purple-100">
       <Icon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
       <span className="text-xs text-center text-muted-foreground">
         {label}
       </span>
-    </motion.div>
+    </div>
   );
 }

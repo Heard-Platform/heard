@@ -309,3 +309,7 @@
 .header-4 {
   color: var(--color-slate-500);
 }
+
+.results-max-h {
+  max-height: calc(100dvh - 400px);
+}

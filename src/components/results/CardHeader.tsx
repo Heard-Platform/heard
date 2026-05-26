@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 interface CardHeaderProps {
   icon: ReactNode;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   gradientFrom: string;
   gradientTo: string;
 }
@@ -29,7 +29,7 @@ export function CardHeader({
         {icon}
         {title}
       </h2>
-      <p className="text-sm text-muted-foreground">{subtitle}</p>
+      {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
     </motion.div>
   );
 }

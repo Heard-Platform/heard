@@ -121,29 +121,31 @@ export function ConcludedResults({
       transition={{ duration: 0.5, type: "spring" }}
     >
       <div
-        className="relative min-h-[500px] bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 rounded-lg border-2 border-purple-200 overflow-hidden"
+        className="relative min-h-[400px] results-max-h bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 rounded-lg border-2 border-purple-200 overflow-hidden flex flex-col"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {/* Card Container */}
-        <div className="relative h-full p-6 overflow-hidden">
-          <AnimatePresence initial={false} custom={direction} mode="wait">
-            <motion.div
-              key={currentCard}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 },
-              }}
-            >
-              {cardContent[currentCard]}
-            </motion.div>
-          </AnimatePresence>
+        {/* Single scroll container so nav stays pinned to the visible area */}
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+          <div className="p-6 pb-12">
+            <AnimatePresence initial={false} custom={direction} mode="wait">
+              <motion.div
+                key={currentCard}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.2 },
+                }}
+              >
+                {cardContent[currentCard]}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Navigation Arrows */}
