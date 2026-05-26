@@ -1,15 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { X, Mail, ArrowRight } from "lucide-react";
+import { X, ArrowRight } from "lucide-react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { DebateRoom } from "../../types";
 import { VoteType } from "../../types";
-import { TOSText } from "../onboarding/TOSText";
-import { useDebateSession } from "../../hooks/useDebateSession";
-import { useEmailOtpFlow } from "../../hooks/useEmailOtpFlow";
-import { OtpCodeInput } from "../auth/OtpCodeInput";
 import moment from "moment";
 
 export type QRScanResult = {
@@ -42,26 +37,7 @@ export function QRScanResultDialog({
   onComplete,
   onClose,
 }: QRScanResultDialogProps) {
-  const { user } = useDebateSession();
-  const isAnonymous = !!user?.isAnonymous;
   const [showBars, setShowBars] = useState(false);
-  const [shakeEmail, setShakeEmail] = useState(false);
-
-  const {
-    step,
-    email,
-    otp,
-    error,
-    submitting,
-    setEmail,
-    setOtp,
-    submitEmail,
-    submitOtp,
-    goBackToEmail,
-  } = useEmailOtpFlow({
-    onComplete: ({ wasOtpLogin }) =>
-      onComplete({ reason: wasOtpLogin ? "otp-login" : "signup" }),
-  });
 
   useEffect(() => {
     if (isOpen) {
@@ -95,29 +71,9 @@ export function QRScanResultDialog({
     },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!isAnonymous) {
-      onComplete({ reason: "continue" });
-      return;
-    }
-
-    if (step === "otp") {
-      submitOtp();
-      return;
-    }
-
-    if (!email.trim()) {
-      setShakeEmail(true);
-      setTimeout(() => setShakeEmail(false), 500);
-    }
-    submitEmail();
+  const handleContinue = () => {
+    onComplete({ reason: "continue" });
   };
-
-  const buttonLabel = submitting
-    ? step === "otp" ? "Verifying..." : "Joining..."
-    : step === "otp" ? "Log in" : "Vote and respond inside";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -262,79 +218,13 @@ export function QRScanResultDialog({
 
               <div className="border-t border-slate-700" />
 
-              <form onSubmit={handleSubmit} className="space-y-3">
-                {isAnonymous && step === "email" && (
-                  <motion.div
-                    className="relative"
-                    animate={
-                      shakeEmail
-                        ? { x: [0, -8, 8, -6, 6, -4, 4, 0] }
-                        : { x: 0 }
-                    }
-                    transition={{ duration: 0.45, ease: "easeInOut" }}
-                  >
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      type="email"
-                      autoComplete="email"
-                      value={email}
-                      placeholder={"Enter your email to add a response"}
-                      disabled={submitting}
-                      className={`pl-11 h-11 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500 rounded-xl text-sm ${shakeEmail ? "error-border" : ""}`}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </motion.div>
-                )}
-
-                {isAnonymous && step === "otp" && (
-                  <div className="space-y-2">
-                    <p className="text-sm text-slate-300 text-center">
-                      We sent a 6-character code to <span className="font-semibold text-white">{email}</span>. Enter it to log in.
-                    </p>
-                    <div className="flex justify-center">
-                      <OtpCodeInput
-                        value={otp}
-                        slotClassName="bg-slate-800 border-slate-700 text-white"
-                        onChange={setOtp}
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={goBackToEmail}
-                      className="block mx-auto text-xs text-slate-400 hover:text-slate-200 underline"
-                    >
-                      Use a different email
-                    </button>
-                  </div>
-                )}
-
-                {error && (
-                  <p className="text-sm error-text text-center">
-                    {error}
-                  </p>
-                )}
-
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  {submitting ? (
-                    buttonLabel
-                  ) : (
-                    <>
-                      {buttonLabel}
-                      <ArrowRight className="w-5 h-5" />
-                    </>
-                  )}
-                </Button>
-
-                {isAnonymous && step === "email" && (
-                  <div className="text-center">
-                    <TOSText />
-                  </div>
-                )}
-              </form>
+              <Button
+                onClick={handleContinue}
+                className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                Vote and respond inside
+                <ArrowRight className="w-5 h-5" />
+              </Button>
             </motion.div>
           </div>
         </motion.div>
