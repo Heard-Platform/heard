@@ -193,12 +193,13 @@ export function PolisSpectrumScrub({ statements }: PolisSpectrumScrubProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [dims, setDims] = useState({ w: 0, h: 0, dpr: 1 });
-  const [scrubX, setScrubX] = useState<number | null>(null);
-  const [pinnedX, setPinnedX] = useState<number | null>(null);
+  const [hoverRange, setHoverRange] = useState<{ start: number; end: number } | null>(null);
+  const [pinnedRange, setPinnedRange] = useState<{ start: number; end: number } | null>(null);
+  const [dragStart, setDragStart] = useState<number | null>(null);
   const [hintHidden, setHintHidden] = useState(false);
 
-  const pinned = pinnedX !== null;
-  const activeX = pinned ? pinnedX : scrubX;
+  const pinned = pinnedRange !== null;
+  const activeRange = pinned ? pinnedRange : hoverRange;
 
   const points = useMemo<Point[]>(() => {
     const rng = makeSeededRng(13);
@@ -288,75 +289,128 @@ export function PolisSpectrumScrub({ statements }: PolisSpectrumScrubProps) {
     ctx.lineTo(dims.w * 0.96, dims.h * 0.5);
     ctx.stroke();
 
-    if (activeX !== null) {
-      const bw = dims.w * SCRUB_HALF_WIDTH_PCT;
+    if (activeRange !== null) {
+      const x = activeRange.start;
+      const w = Math.max(2, activeRange.end - activeRange.start);
       ctx.fillStyle = "rgba(0,0,0,0.06)";
       ctx.beginPath();
-      ctx.roundRect(activeX - bw, 2, bw * 2, dims.h - 4, 4);
+      ctx.roundRect(x, 2, w, dims.h - 4, 4);
       ctx.fill();
       ctx.strokeStyle = pinned ? "rgba(0,0,0,0.32)" : "rgba(0,0,0,0.16)";
       ctx.lineWidth = pinned ? 1.25 : 1;
       ctx.beginPath();
-      ctx.roundRect(activeX - bw, 2, bw * 2, dims.h - 4, 4);
+      ctx.roundRect(x, 2, w, dims.h - 4, 4);
       ctx.stroke();
     }
 
     points.forEach((p) => {
       const x = ptX(p);
       const y = ptY(p);
-      const dist = activeX !== null ? Math.abs(x - activeX) / dims.w : 1;
-      const inScrub = dist < SCRUB_HALF_WIDTH_PCT;
-      const radius = inScrub ? 6 : 4;
-      const alpha = activeX !== null ? (inScrub ? 1 : Math.max(0.15, 0.8 - dist * 4)) : 0.75;
+      let dist: number;
+      if (activeRange === null) {
+        dist = 1;
+      } else if (x >= activeRange.start && x <= activeRange.end) {
+        dist = 0;
+      } else {
+        dist =
+          Math.min(
+            Math.abs(x - activeRange.start),
+            Math.abs(x - activeRange.end),
+          ) / dims.w;
+      }
+      const inActive = dist === 0;
+      const radius = inActive ? 6 : 4;
+      const alpha = activeRange !== null ? (inActive ? 1 : Math.max(0.15, 0.8 - dist * 4)) : 0.75;
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fillStyle = dotColor(p.nx, alpha);
       ctx.fill();
-      if (inScrub) {
+      if (inActive) {
         ctx.strokeStyle = dotColor(p.nx, 0.9);
         ctx.lineWidth = 1.5;
         ctx.stroke();
       }
     });
-  }, [dims, points, activeX, pinned, ptX, ptY]);
+  }, [dims, points, activeRange, pinned, ptX, ptY]);
 
-  const handleMove = (clientX: number) => {
-    if (pinned) return;
+  const hoverBand = (cx: number) => {
+    const bw = dims.w * SCRUB_HALF_WIDTH_PCT;
+    return { start: cx - bw, end: cx + bw };
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    setScrubX(clientX - rect.left);
+    const cx = e.clientX - rect.left;
+    if (pinned && pinnedRange) {
+      const center = (pinnedRange.start + pinnedRange.end) / 2;
+      if (Math.abs(cx - center) < 8) {
+        setPinnedRange(null);
+        return;
+      }
+    }
+    setPinnedRange(null);
+    setDragStart(cx);
+    setHoverRange(hoverBand(cx));
+    e.currentTarget.setPointerCapture(e.pointerId);
     if (!hintHidden) setHintHidden(true);
   };
 
-  const handleClick = (clientX: number) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const cx = clientX - rect.left;
-    if (pinned && pinnedX !== null && Math.abs(cx - pinnedX) < 8) {
-      unpin();
+    const cx = Math.max(0, Math.min(dims.w, e.clientX - rect.left));
+    if (!hintHidden) setHintHidden(true);
+
+    if (dragStart !== null) {
+      setHoverRange({
+        start: Math.min(dragStart, cx),
+        end: Math.max(dragStart, cx),
+      });
+    } else if (!pinned) {
+      setHoverRange(hoverBand(cx));
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (dragStart === null) return;
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      setDragStart(null);
       return;
     }
-    setPinnedX(cx);
-    setScrubX(null);
+    const rect = canvas.getBoundingClientRect();
+    const cx = Math.max(0, Math.min(dims.w, e.clientX - rect.left));
+    const dist = Math.abs(cx - dragStart);
+    const next =
+      dist < 4
+        ? hoverBand(cx)
+        : { start: Math.min(dragStart, cx), end: Math.max(dragStart, cx) };
+    setPinnedRange(next);
+    setHoverRange(null);
+    setDragStart(null);
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
   };
 
-  const handleLeave = () => {
-    if (pinned) return;
-    setScrubX(null);
-  };
-
-  const unpin = () => {
-    setPinnedX(null);
+  const handlePointerLeave = () => {
+    if (pinned || dragStart !== null) return;
+    setHoverRange(null);
   };
 
   const nearby = useMemo<Point[]>(() => {
-    if (activeX === null || dims.w === 0) return [];
+    if (activeRange === null || dims.w === 0) return [];
+    const center = (activeRange.start + activeRange.end) / 2;
     return points
-      .filter((p) => Math.abs(ptX(p) - activeX) / dims.w < SCRUB_HALF_WIDTH_PCT)
-      .sort((a, b) => Math.abs(ptX(a) - activeX) - Math.abs(ptX(b) - activeX));
-  }, [activeX, points, dims.w, ptX]);
+      .filter((p) => {
+        const x = ptX(p);
+        return x >= activeRange.start && x <= activeRange.end;
+      })
+      .sort((a, b) => Math.abs(ptX(a) - center) - Math.abs(ptX(b) - center));
+  }, [activeRange, points, dims.w, ptX]);
 
   return (
     <div style={styles.wrap}>
@@ -367,15 +421,12 @@ export function PolisSpectrumScrub({ statements }: PolisSpectrumScrubProps) {
 
       <div
         ref={stripWrapRef}
-        style={styles.stripWrap}
-        onMouseMove={(e) => handleMove(e.clientX)}
-        onMouseLeave={handleLeave}
-        onClick={(e) => handleClick(e.clientX)}
-        onTouchMove={(e) => {
-          e.preventDefault();
-          handleMove(e.touches[0].clientX);
-        }}
-        onTouchEnd={(e) => handleClick(e.changedTouches[0].clientX)}
+        style={{ ...styles.stripWrap, touchAction: "none" }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onPointerLeave={handlePointerLeave}
       >
         <canvas ref={canvasRef} style={styles.canvas} />
       </div>
@@ -388,9 +439,10 @@ export function PolisSpectrumScrub({ statements }: PolisSpectrumScrubProps) {
             </span>
             <button
               type="button"
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
-                unpin();
+                setPinnedRange(null);
               }}
               style={styles.pinButton}
             >
@@ -399,11 +451,11 @@ export function PolisSpectrumScrub({ statements }: PolisSpectrumScrubProps) {
           </div>
         )}
 
-        {activeX !== null && nearby.length === 0 && (
+        {activeRange !== null && nearby.length === 0 && (
           <div style={styles.hint}>— no statements here —</div>
         )}
 
-        {activeX !== null && nearby.length > 0 && (
+        {activeRange !== null && nearby.length > 0 && (
           <div style={styles.bricksScroll}>
             {nearby.map((p, i) => (
               <div key={i} style={styles.brick}>
@@ -429,7 +481,7 @@ export function PolisSpectrumScrub({ statements }: PolisSpectrumScrubProps) {
           </div>
         )}
 
-        {activeX === null && anchors.length > 0 && (
+        {activeRange === null && anchors.length > 0 && (
           <div style={styles.bricksScroll}>
             {anchors.map(({ label, point: p }, i) => (
               <div key={i} style={styles.brick}>
@@ -456,7 +508,7 @@ export function PolisSpectrumScrub({ statements }: PolisSpectrumScrubProps) {
           </div>
         )}
 
-        {activeX === null && anchors.length === 0 && (
+        {activeRange === null && anchors.length === 0 && (
           <div style={styles.hint}>
             hover the strip to read statements · click to pin
           </div>
