@@ -1,12 +1,12 @@
 import { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Statement } from "../../types";
+import { StatementVotes } from "../../types";
 
 interface PolisSpectrumScrubProps {
-  statements: Statement[];
+  statements: StatementVotes[];
 }
 
 interface Point {
-  statement: Statement;
+  statement: StatementVotes;
   agreePct: number;
   disagreePct: number;
   passPct: number;
@@ -182,9 +182,9 @@ export function PolisSpectrumScrub({ statements }: PolisSpectrumScrubProps) {
     const rng = makeSeededRng(13);
     return statements
       .map((s) => {
-        const total = s.agrees + s.superAgrees + s.disagrees + s.passes;
-        const agreePct = total === 0 ? 0 : ((s.agrees + s.superAgrees) / total) * 100;
-        const disagreePct = total === 0 ? 0 : (s.disagrees / total) * 100;
+        const total = s.totalVotes || s.agreeVotes + s.disagreeVotes + s.passVotes;
+        const agreePct = total === 0 ? 0 : (s.agreeVotes / total) * 100;
+        const disagreePct = total === 0 ? 0 : (s.disagreeVotes / total) * 100;
         const passPct = Math.max(0, 100 - agreePct - disagreePct);
         return {
           statement: s,

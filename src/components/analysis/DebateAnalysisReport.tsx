@@ -11,6 +11,7 @@ import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-fl
 import { MetricCard } from "./MetricCard";
 import { StatementVotesTable } from "./StatementVotesTable";
 import { ShowNumbersToggle } from "./ShowNumbersToggle";
+import { PolisSpectrumScrub } from "./PolisSpectrumScrub";
 
 function opinionatedVotesOf(post: StatementVotes): number {
   return post.agreeVotes + post.disagreeVotes;
@@ -124,6 +125,16 @@ export function DebateAnalysisReport({
             description={`${reachData.postersWithHighConsensusPost} ${reachData.postersWithHighConsensusPost === 1 ? "person" : "people"} with a high consensus response`}
           />
         </div>
+
+        <Card className="p-6">
+          <div className="mb-2">
+            <h2 className="text-xl">Statement Spectrum</h2>
+            <p className="text-sm text-muted-foreground">
+              Every statement plotted from consensus to divisive. Drag across the strip to inspect a range.
+            </p>
+          </div>
+          <PolisSpectrumScrub statements={allStatements} />
+        </Card>
 
         <TopPostsByMetric
           posts={topAgreedPosts}

@@ -1,5 +1,5 @@
 import { PolisSpectrumScrub } from "../components/analysis/PolisSpectrumScrub";
-import { Statement } from "../types";
+import { StatementVotes } from "../types";
 import {
   Card,
   CardContent,
@@ -12,19 +12,25 @@ export default {
   title: "Analysis/PolisSpectrumScrub",
 };
 
-function mkStmt(id: string, text: string, agrees: number, disagrees: number): Statement {
+function mkStmt(
+  id: string,
+  text: string,
+  agreeVotes: number,
+  disagreeVotes: number,
+): StatementVotes {
+  const passVotes = Math.max(0, 100 - agreeVotes - disagreeVotes);
   return {
     id,
     text,
-    author: "mock",
-    agrees,
-    disagrees,
-    passes: 0,
-    superAgrees: 0,
-    roomId: "mock-room",
-    timestamp: 0,
-    round: 1,
-    voters: {},
+    agreeVotes,
+    rawAgreeVotes: agreeVotes,
+    superAgreeVotes: 0,
+    disagreeVotes,
+    passVotes,
+    consensusScore: agreeVotes - disagreeVotes,
+    totalVotes: agreeVotes + disagreeVotes + passVotes,
+    mergedFrom: [],
+    clusterVotes: [],
   };
 }
 
@@ -91,11 +97,11 @@ const neighborhoodSeeds: Array<[string, number, number]> = [
   ["Height limits should stay permanent", 6, 51],
 ];
 
-const neighborhoodStatements: Statement[] = neighborhoodSeeds.map(
+const neighborhoodStatements: StatementVotes[] = neighborhoodSeeds.map(
   ([text, a, d], i) => mkStmt(`n-${i}`, text, a, d),
 );
 
-const sparseStatements: Statement[] = [
+const sparseStatements: StatementVotes[] = [
   mkStmt("s-0", "We need more parks", 82, 5),
   mkStmt("s-1", "Library hours should be extended", 65, 12),
   mkStmt("s-2", "Convert empty lots into community gardens", 48, 22),
