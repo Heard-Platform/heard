@@ -37,8 +37,6 @@ export function TimeLeftBadge({
     return null;
   }
 
-  const prefix = ["high", "critical"].includes(timeRemaining.urgency) ? "🔥" : "🕐";
-
   const handleTap = () => {
     const humanized = moment.duration(effectiveEndTime - currentTime).humanize();
     toast(`Voting ends in ${humanized}`);
@@ -57,7 +55,7 @@ export function TimeLeftBadge({
 
     return (
       <span className={`text-xs shrink-0 cursor-pointer ${getTextStyles()}`} onClick={handleTap}>
-        {prefix} {timeRemaining.formatted}
+        {timeRemaining.formatted}
       </span>
     );
   } else {
@@ -73,7 +71,7 @@ export function TimeLeftBadge({
 
     return (
       <Badge className={`heard-pill text-white cursor-pointer ${getBadgeStyles()}`} onClick={handleTap}>
-        {prefix} {timeRemaining.formatted}
+        {timeRemaining.formatted}
       </Badge>
     );
   }
