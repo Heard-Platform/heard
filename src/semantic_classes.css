@@ -280,6 +280,18 @@
   background-color: var(--color-emerald-500);
 }
 
+.positive-text {
+  color: var(--color-emerald-500);
+}
+
+.negative-bg {
+  background-color: var(--color-amber-700);
+}
+
+.negative-text {
+  color: var(--color-amber-700);
+}
+
 .info-gradient {
   --tw-gradient-from: var(--color-blue-500);
   --tw-gradient-to: var(--color-blue-600);
