@@ -287,6 +287,31 @@ const newsletters = [
       imageAlt: "Ridglan rescue organizer presenting Heard results at a conference",
     },
   }),
+  getParameterizedNewsletter({
+    subject: "Sentiment on a Spectrum - Ya' Heard #19",
+    editionNumber: 19,
+    section1: {
+      title: "📊 New: The Statement Spectrum",
+      text: "We just added a new visualization that shows you exactly where each statement in a Heard post falls on the spectrum from strong agreement to strong disagreement. Statements clustered toward one end are clear consensus, while ones in the middle are where opinions are most split. Check it out in the insights view of any post.",
+      imageUrl: `${SUPABASE_URL}/nl-19-spectrum.gif`,
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard statement spectrum visualization",
+    },
+    section2: {
+      title: "🏀 Alex's Arms Are Getting Tired...",
+      text: `We're on day 23 of the <a href='${SHORTS_URL}/R3qRQGuYfm4'>daily basketball challenge</a> — shoot from one foot farther every day until we hit 500 signups. Alex started from a foot away and is now almost at half-court. We have some flyering coming up soon that should help push us over the line but if you know someone who'd be into Heard please send it their way. 🙏`,
+      imageUrl: `${SUPABASE_URL}/nl-19-basketball.png`,
+      imageLink: `${SHORTS_URL}/R3qRQGuYfm4`,
+      imageAlt: "Alex shooting basketball from near half-court",
+    },
+    section3: {
+      title: "🛒 Should the Farmers Market Take Over the Circle?",
+      text: "On a recent ANC call, someone raised the idea of moving the Dupont Farmers Market directly onto the circle to help with overcrowding, and of course the Heard team was on it! We put up flyers, polled market-goers, and the results were actually pretty split. We brought the preliminary data to the ANC and presented the findings: Any decision is months if not years away but it was an exciting early example of stoking conversations on hyperlocal issues around the neighborhood.",
+      imageUrl: `${SUPABASE_URL}/nl-19-dupont.jpeg`,
+      imageLink: "https://heard.vote",
+      imageAlt: "Dupont Farmers Market flyering results and ANC presentation",
+    },
+  }),
 ]
 
 const offset = 8
