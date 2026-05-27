@@ -11,7 +11,7 @@ import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-fl
 import { MetricCard } from "./MetricCard";
 import { StatementVotesTable } from "./StatementVotesTable";
 import { ShowNumbersToggle } from "./ShowNumbersToggle";
-import { PolisSpectrumScrub } from "./PolisSpectrumScrub";
+import { StatementSpectrum } from "./StatementSpectrum";
 
 function opinionatedVotesOf(post: StatementVotes): number {
   return post.agreeVotes + post.disagreeVotes;
@@ -133,7 +133,7 @@ export function DebateAnalysisReport({
               Every statement plotted from consensus to divisive. Drag across the strip to inspect a range.
             </p>
           </div>
-          <PolisSpectrumScrub statements={allStatements} />
+          <StatementSpectrum statements={allStatements} />
         </Card>
 
         <TopPostsByMetric

@@ -41,7 +41,7 @@ import { EventCardStory } from "../stories/EventCard.story";
 import { HideAndMergeModalStory } from "../stories/HideAndMergeModal.story";
 import { VoteMatrixStory } from "../stories/VoteMatrix.story";
 import { StatementVotesTableStory } from "../stories/StatementVotesTable.story";
-import { PolisSpectrumScrubStory } from "../stories/PolisSpectrumScrub.story";
+import { StatementSpectrumStory } from "../stories/StatementSpectrum.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -136,7 +136,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="hide-and-merge-modal">Hide & Merge Modal</TabsTrigger>
                 <TabsTrigger value="vote-matrix">Vote Matrix</TabsTrigger>
                 <TabsTrigger value="statement-votes-table">Statement Votes Table</TabsTrigger>
-                <TabsTrigger value="polis-spectrum-scrub">Polis Spectrum Scrub</TabsTrigger>
+                <TabsTrigger value="statement-spectrum">Statement Spectrum</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -253,8 +253,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsContent value="statement-votes-table">
                 <StatementVotesTableStory />
               </TabsContent>
-              <TabsContent value="polis-spectrum-scrub">
-                <PolisSpectrumScrubStory />
+              <TabsContent value="statement-spectrum">
+                <StatementSpectrumStory />
               </TabsContent>
             </Tabs>
           </div>

@@ -1,7 +1,7 @@
 import { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StatementVotes } from "../../types";
 
-interface PolisSpectrumScrubProps {
+interface StatementSpectrumProps {
   statements: StatementVotes[];
 }
 
@@ -165,7 +165,7 @@ const styles: Record<string, CSSProperties> = {
   },
 };
 
-export function PolisSpectrumScrub({ statements }: PolisSpectrumScrubProps) {
+export function StatementSpectrum({ statements }: StatementSpectrumProps) {
   const stripWrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 

@@ -1,4 +1,4 @@
-import { PolisSpectrumScrub } from "../components/analysis/PolisSpectrumScrub";
+import { StatementSpectrum } from "../components/analysis/StatementSpectrum";
 import { StatementVotes } from "../types";
 import {
   Card,
@@ -9,7 +9,7 @@ import {
 } from "../components/ui/card";
 
 export default {
-  title: "Analysis/PolisSpectrumScrub",
+  title: "Analysis/StatementSpectrum",
 };
 
 function mkStmt(
@@ -111,41 +111,41 @@ const sparseStatements: StatementVotes[] = [
 
 export const Default = () => (
   <div className="p-4 max-w-3xl mx-auto">
-    <PolisSpectrumScrub statements={neighborhoodStatements} />
+    <StatementSpectrum statements={neighborhoodStatements} />
   </div>
 );
 
 export const Sparse = () => (
   <div className="p-4 max-w-3xl mx-auto">
-    <PolisSpectrumScrub statements={sparseStatements} />
+    <StatementSpectrum statements={sparseStatements} />
   </div>
 );
 
 export const Narrow = () => (
   <div className="p-4 max-w-sm mx-auto">
-    <PolisSpectrumScrub statements={neighborhoodStatements} />
+    <StatementSpectrum statements={neighborhoodStatements} />
   </div>
 );
 
 export const Empty = () => (
   <div className="p-4 max-w-3xl mx-auto">
-    <PolisSpectrumScrub statements={[]} />
+    <StatementSpectrum statements={[]} />
   </div>
 );
 
-export function PolisSpectrumScrubStory() {
+export function StatementSpectrumStory() {
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Polis Spectrum Scrub</CardTitle>
+          <CardTitle>Statement Spectrum</CardTitle>
           <CardDescription>
             Hover or drag across the strip to inspect statements binned along the
             consensus-to-divisive axis. Click to pin a slice.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <PolisSpectrumScrub statements={neighborhoodStatements} />
+          <StatementSpectrum statements={neighborhoodStatements} />
         </CardContent>
       </Card>
 
@@ -157,7 +157,7 @@ export function PolisSpectrumScrubStory() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <PolisSpectrumScrub statements={sparseStatements} />
+          <StatementSpectrum statements={sparseStatements} />
         </CardContent>
       </Card>
 
@@ -170,7 +170,7 @@ export function PolisSpectrumScrubStory() {
         </CardHeader>
         <CardContent>
           <div className="max-w-sm">
-            <PolisSpectrumScrub statements={neighborhoodStatements} />
+            <StatementSpectrum statements={neighborhoodStatements} />
           </div>
         </CardContent>
       </Card>
@@ -181,7 +181,7 @@ export function PolisSpectrumScrubStory() {
           <CardDescription>No statements supplied.</CardDescription>
         </CardHeader>
         <CardContent>
-          <PolisSpectrumScrub statements={[]} />
+          <StatementSpectrum statements={[]} />
         </CardContent>
       </Card>
     </div>
