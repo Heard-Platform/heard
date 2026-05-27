@@ -11,6 +11,7 @@ import {
   Loader2,
   ChevronDown,
   ChevronUp,
+  MessageCirclePlus,
 } from "lucide-react";
 import { SwipeableStatementStack } from "./room/SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
@@ -28,7 +29,6 @@ import { VoteMatrixModal } from "./room/VoteMatrixModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { timeAgoShort } from "../utils/time";
-import { AddResponseButton } from "./widgets/AddResponseButton";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
@@ -140,6 +140,11 @@ export function RoomCard({
   })();
   
   const effectiveChanceCardSwiped = chanceCardSwiped || !!room.responsesPaused;
+
+  const totalVotes = statements.reduce(
+    (sum, s) => sum + (s.voters ? Object.keys(s.voters).length : 0),
+    0,
+  );
 
   const hasSwipedAll =
     statements.length > 0 &&
@@ -418,11 +423,15 @@ export function RoomCard({
 
           <div className="flex items-center gap-2">
             {!isCompleted && (
-              <AddResponseButton
+              <Button
+                variant="secondary"
+                className="heard-pill"
                 disabled={!!room.responsesPaused}
-                disabledLabel="Responses paused"
                 onClick={() => setShowAddResponseModal(true)}
-              />
+              >
+                <MessageCirclePlus className="w-4 h-4" />
+                Respond
+              </Button>
             )}
             <Button
               onClick={handleOpenAnalysis}
@@ -430,7 +439,7 @@ export function RoomCard({
               className="heard-pill hover:bg-secondary/60"
             >
               <BarChart3 className="w-4 h-4" />
-              <span className="hidden sm:inline">Insights</span>
+              {totalVotes} vote{totalVotes === 1 ? "" : "s"}
             </Button>
             {isCompleted ? (
               <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>
