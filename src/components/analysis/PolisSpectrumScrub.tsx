@@ -33,9 +33,6 @@ const ANCHOR_BANDS: AnchorBand[] = [
 
 const SCRUB_HALF_WIDTH_PCT = 0.055;
 const BRICK_GAP_PX = 5;
-const AGREE_COLOR = "#1D9E75";
-const DISAGREE_COLOR = "#D85A30";
-const COLOR_BG = "#ffffff";
 const COLOR_FG = "#1a1a1a";
 const COLOR_MUTED = "#f4f4f5";
 const COLOR_MUTED_FG = "#71717a";
@@ -85,32 +82,12 @@ const styles: Record<string, CSSProperties> = {
     width: "100%",
     height: "100%",
   },
-  labelLayer: {
-    position: "absolute",
-    inset: 0,
-    pointerEvents: "none",
-  },
-  anchorLabel: {
-    position: "absolute",
-    pointerEvents: "none",
-    background: COLOR_BG,
-    border: `0.5px solid ${COLOR_BORDER}`,
-    borderRadius: 6,
-    padding: "6px 9px",
-    maxWidth: 155,
-    fontSize: 11,
-    lineHeight: 1.4,
-    color: COLOR_FG,
-  },
   anchorBadge: {
     fontSize: 9,
     textTransform: "uppercase",
     letterSpacing: "0.05em",
     color: COLOR_MUTED_FG,
     marginBottom: 2,
-  },
-  anchorText: {
-    fontWeight: 500,
   },
   cardsArea: {
     marginTop: 10,
@@ -461,15 +438,15 @@ export function PolisSpectrumScrub({ statements }: PolisSpectrumScrubProps) {
               <div key={i} style={styles.brick}>
                 <div style={styles.brickText}>{p.statement.text}</div>
                 <div style={styles.brickBarWrap}>
-                  <div style={{ flex: p.agreePct, background: AGREE_COLOR }} />
-                  <div style={{ flex: p.disagreePct, background: DISAGREE_COLOR }} />
+                  <div className="positive-bg" style={{ flex: p.agreePct }} />
+                  <div className="negative-bg" style={{ flex: p.disagreePct }} />
                   <div style={{ flex: p.passPct, background: COLOR_BORDER }} />
                 </div>
                 <div style={styles.brickNums}>
-                  <span style={{ color: AGREE_COLOR, fontWeight: 500 }}>
+                  <span className="positive-text" style={{ fontWeight: 500 }}>
                     {Math.round(p.agreePct)}%
                   </span>
-                  <span style={{ color: DISAGREE_COLOR, fontWeight: 500 }}>
+                  <span className="negative-text" style={{ fontWeight: 500 }}>
                     {Math.round(p.disagreePct)}%
                   </span>
                   <span style={{ color: COLOR_MUTED_FG }}>
@@ -488,15 +465,15 @@ export function PolisSpectrumScrub({ statements }: PolisSpectrumScrubProps) {
                 <div style={styles.anchorBadge}>{label}</div>
                 <div style={styles.brickText}>{p.statement.text}</div>
                 <div style={styles.brickBarWrap}>
-                  <div style={{ flex: p.agreePct, background: AGREE_COLOR }} />
-                  <div style={{ flex: p.disagreePct, background: DISAGREE_COLOR }} />
+                  <div className="positive-bg" style={{ flex: p.agreePct }} />
+                  <div className="negative-bg" style={{ flex: p.disagreePct }} />
                   <div style={{ flex: p.passPct, background: COLOR_BORDER }} />
                 </div>
                 <div style={styles.brickNums}>
-                  <span style={{ color: AGREE_COLOR, fontWeight: 500 }}>
+                  <span className="positive-text" style={{ fontWeight: 500 }}>
                     {Math.round(p.agreePct)}%
                   </span>
-                  <span style={{ color: DISAGREE_COLOR, fontWeight: 500 }}>
+                  <span className="negative-text" style={{ fontWeight: 500 }}>
                     {Math.round(p.disagreePct)}%
                   </span>
                   <span style={{ color: COLOR_MUTED_FG }}>
