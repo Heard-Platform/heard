@@ -13,6 +13,7 @@ interface Point {
   agreePct: number;
   disagreePct: number;
   passPct: number;
+  total: number;
   nx: number;
   lean: number;
   jitter: number;
@@ -51,6 +52,9 @@ const MODE_LABELS: Record<SpectrumMode, { left: string; right: string }> = {
 
 const SCRUB_HALF_WIDTH_PCT = 0.055;
 const BRICK_GAP_PX = 5;
+const MIN_DOT_RADIUS = 2;
+const MAX_DOT_RADIUS = 8.5;
+const ACTIVE_RADIUS_BOOST = 2;
 const COLOR_FG = "#1a1a1a";
 const COLOR_MUTED = "#f4f4f5";
 const COLOR_MUTED_FG = "#71717a";
@@ -211,6 +215,7 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
           agreePct,
           disagreePct,
           passPct,
+          total,
           nx: mode === "agree" ? lean : splitNx,
           lean,
           jitter: (rng() - 0.5) * 0.65 + 0.5,
@@ -274,6 +279,25 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
   );
   const ptY = useCallback((p: Point) => dims.h * 0.1 + p.jitter * (dims.h * 0.72), [dims.h]);
 
+  const avgVotes = useMemo(() => {
+    if (points.length === 0) return 0;
+    let sum = 0;
+    for (const p of points) sum += p.total;
+    return sum / points.length;
+  }, [points]);
+
+  const baseRadius = useCallback(
+    (total: number) => {
+      if (avgVotes <= 0) return MIN_DOT_RADIUS;
+      // Fixed scale anchored at zero: 0 votes → min, the average → medium,
+      // and 2× the average (or more) → max. Insensitive to how wide or narrow
+      // the actual vote range is, so values near the average stay near medium.
+      const t = Math.min(1, total / (2 * avgVotes));
+      return MIN_DOT_RADIUS + t * (MAX_DOT_RADIUS - MIN_DOT_RADIUS);
+    },
+    [avgVotes],
+  );
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || dims.w === 0 || dims.h === 0) return;
@@ -323,7 +347,7 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
           ) / dims.w;
       }
       const inActive = dist === 0;
-      const radius = inActive ? 6 : 4;
+      const radius = baseRadius(p.total) + (inActive ? ACTIVE_RADIUS_BOOST : 0);
       const alpha = activeRange !== null ? (inActive ? 1 : Math.max(0.15, 0.8 - dist * 4)) : 0.75;
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -335,7 +359,7 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
         ctx.stroke();
       }
     });
-  }, [dims, points, activeRange, pinned, ptX, ptY]);
+  }, [dims, points, activeRange, pinned, ptX, ptY, baseRadius]);
 
   const hoverBand = (cx: number) => {
     const bw = dims.w * SCRUB_HALF_WIDTH_PCT;
@@ -479,6 +503,9 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
                   <span style={{ color: COLOR_MUTED_FG }}>
                     {Math.round(p.passPct)}% pass
                   </span>
+                  <span style={{ color: COLOR_MUTED_FG }}>
+                    · {Math.round(p.total)} votes
+                  </span>
                 </div>
               </div>
             ))}
@@ -505,6 +532,9 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
                   </span>
                   <span style={{ color: COLOR_MUTED_FG }}>
                     {Math.round(p.passPct)}% pass
+                  </span>
+                  <span style={{ color: COLOR_MUTED_FG }}>
+                    · {Math.round(p.total)} votes
                   </span>
                 </div>
               </div>

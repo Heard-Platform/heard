@@ -10,18 +10,19 @@ function mkStmt(
   text: string,
   agreeVotes: number,
   disagreeVotes: number,
+  scale = 1,
 ): StatementVotes {
   const passVotes = Math.max(0, 100 - agreeVotes - disagreeVotes);
   return {
     id,
     text,
-    agreeVotes,
-    rawAgreeVotes: agreeVotes,
+    agreeVotes: Math.round(agreeVotes * scale),
+    rawAgreeVotes: Math.round(agreeVotes * scale),
     superAgreeVotes: 0,
-    disagreeVotes,
-    passVotes,
+    disagreeVotes: Math.round(disagreeVotes * scale),
+    passVotes: Math.round(passVotes * scale),
     consensusScore: agreeVotes - disagreeVotes,
-    totalVotes: agreeVotes + disagreeVotes + passVotes,
+    totalVotes: Math.round((agreeVotes + disagreeVotes + passVotes) * scale),
     mergedFrom: [],
     clusterVotes: [],
   };
@@ -91,15 +92,15 @@ const neighborhoodSeeds: Array<[string, number, number]> = [
 ];
 
 const neighborhoodStatements: StatementVotes[] = neighborhoodSeeds.map(
-  ([text, a, d], i) => mkStmt(`n-${i}`, text, a, d),
+  ([text, a, d], i) => mkStmt(`n-${i}`, text, a, d, 0.4 + ((i * 7) % 30) / 10),
 );
 
 const sparseStatements: StatementVotes[] = [
-  mkStmt("s-0", "We need more parks", 82, 5),
-  mkStmt("s-1", "Library hours should be extended", 65, 12),
-  mkStmt("s-2", "Convert empty lots into community gardens", 48, 22),
-  mkStmt("s-3", "Ban gas-powered leaf blowers", 33, 38),
-  mkStmt("s-4", "Triple the property tax to fund schools", 14, 55),
+  mkStmt("s-0", "We need more parks", 82, 5, 3),
+  mkStmt("s-1", "Library hours should be extended", 65, 12, 1.4),
+  mkStmt("s-2", "Convert empty lots into community gardens", 48, 22, 0.6),
+  mkStmt("s-3", "Ban gas-powered leaf blowers", 33, 38, 2.2),
+  mkStmt("s-4", "Triple the property tax to fund schools", 14, 55, 0.4),
 ];
 
 export const Default = () => (
