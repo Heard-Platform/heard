@@ -141,10 +141,9 @@ export function RoomCard({
   
   const effectiveChanceCardSwiped = chanceCardSwiped || !!room.responsesPaused;
 
-  const totalVotes = statements.reduce(
-    (sum, s) => sum + (s.voters ? Object.keys(s.voters).length : 0),
-    0,
-  );
+  const uniqueVoters = new Set(
+    statements.flatMap((s) => (s.voters ? Object.keys(s.voters) : [])),
+  ).size;
 
   const hasSwipedAll =
     statements.length > 0 &&
@@ -439,7 +438,7 @@ export function RoomCard({
               className="heard-pill hover:bg-secondary/60"
             >
               <BarChart3 className="w-4 h-4" />
-              {totalVotes} vote{totalVotes === 1 ? "" : "s"}
+              {loadingStatements ? "Insights" : `${uniqueVoters} voted`}
             </Button>
             {isCompleted ? (
               <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>
