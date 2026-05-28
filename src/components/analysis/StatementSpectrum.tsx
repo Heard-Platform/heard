@@ -1,6 +1,8 @@
 import { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StatementVotes } from "../../types";
 
+type SpectrumMode = "agree" | "split";
+
 interface StatementSpectrumProps {
   statements: StatementVotes[];
 }
@@ -11,6 +13,7 @@ interface Point {
   disagreePct: number;
   passPct: number;
   nx: number;
+  lean: number;
   jitter: number;
 }
 
@@ -23,13 +26,27 @@ interface AnchorBand {
   useHighestIdx?: boolean;
 }
 
-const ANCHOR_BANDS: AnchorBand[] = [
-  { label: "most agreement", target: 0, min: 0, max: 0.12, useLowestIdx: true },
-  { label: "high agreement", target: 0.25, min: 0.18, max: 0.36 },
-  { label: "split", target: 0.5, min: 0.42, max: 0.58 },
-  { label: "high disagreement", target: 0.75, min: 0.64, max: 0.82 },
-  { label: "most disagreement", target: 1, min: 0.88, max: 1, useHighestIdx: true },
-];
+const ANCHOR_BANDS: Record<SpectrumMode, AnchorBand[]> = {
+  agree: [
+    { label: "most agreement", target: 0, min: 0, max: 0.12, useLowestIdx: true },
+    { label: "high agreement", target: 0.25, min: 0.18, max: 0.36 },
+    { label: "split", target: 0.5, min: 0.42, max: 0.58 },
+    { label: "high disagreement", target: 0.75, min: 0.64, max: 0.82 },
+    { label: "most disagreement", target: 1, min: 0.88, max: 1, useHighestIdx: true },
+  ],
+  split: [
+    { label: "strongest consensus", target: 0, min: 0, max: 0.12, useLowestIdx: true },
+    { label: "high consensus", target: 0.25, min: 0.18, max: 0.36 },
+    { label: "leaning split", target: 0.5, min: 0.42, max: 0.58 },
+    { label: "divided", target: 0.75, min: 0.64, max: 0.82 },
+    { label: "most divided", target: 1, min: 0.88, max: 1, useHighestIdx: true },
+  ],
+};
+
+const MODE_LABELS: Record<SpectrumMode, { left: string; right: string }> = {
+  agree: { left: "← agree", right: "disagree →" },
+  split: { left: "← consensus", right: "split →" },
+};
 
 const SCRUB_HALF_WIDTH_PCT = 0.055;
 const BRICK_GAP_PX = 5;
@@ -69,6 +86,30 @@ const styles: Record<string, CSSProperties> = {
     color: COLOR_MUTED_FG,
     marginBottom: 6,
     padding: "0 2px",
+  },
+  toggleWrap: {
+    display: "inline-flex",
+    gap: 2,
+    marginBottom: 10,
+    padding: 2,
+    background: COLOR_MUTED,
+    borderRadius: 6,
+  },
+  toggleButton: {
+    fontSize: 11,
+    padding: "3px 10px",
+    cursor: "pointer",
+    borderRadius: 4,
+    color: COLOR_MUTED_FG,
+    background: "transparent",
+    border: "none",
+    font: "inherit",
+  },
+  toggleButtonActive: {
+    background: "#ffffff",
+    color: COLOR_FG,
+    fontWeight: 500,
+    boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
   },
   stripWrap: {
     position: "relative",
@@ -169,6 +210,7 @@ export function StatementSpectrum({ statements }: StatementSpectrumProps) {
   const stripWrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const [mode, setMode] = useState<SpectrumMode>("agree");
   const [dims, setDims] = useState({ w: 0, h: 0, dpr: 1 });
   const [hoverRange, setHoverRange] = useState<{ start: number; end: number } | null>(null);
   const [pinnedRange, setPinnedRange] = useState<{ start: number; end: number } | null>(null);
@@ -186,23 +228,34 @@ export function StatementSpectrum({ statements }: StatementSpectrumProps) {
         const agreePct = total === 0 ? 0 : (s.agreeVotes / total) * 100;
         const disagreePct = total === 0 ? 0 : (s.disagreeVotes / total) * 100;
         const passPct = Math.max(0, 100 - agreePct - disagreePct);
+        const lean = (100 - (agreePct - disagreePct)) / 200;
+        const splitNx = 1 - Math.abs(agreePct - disagreePct) / 100;
         return {
           statement: s,
           agreePct,
           disagreePct,
           passPct,
-          nx: (100 - (agreePct - disagreePct)) / 200,
+          nx: mode === "agree" ? lean : splitNx,
+          lean,
           jitter: (rng() - 0.5) * 0.65 + 0.5,
         };
       })
       .sort((a, b) => a.nx - b.nx);
-  }, [statements]);
+  }, [statements, mode]);
+
+  const handleModeChange = (next: SpectrumMode) => {
+    if (next === mode) return;
+    setMode(next);
+    setPinnedRange(null);
+    setHoverRange(null);
+    setDragStart(null);
+  };
 
   const anchors = useMemo<{ label: string; point: Point }[]>(() => {
     if (points.length === 0) return [];
     const used = new Set<Point>();
     const result: { label: string; point: Point }[] = [];
-    for (const { label, target, min, max, useLowestIdx: lowestIndex, useHighestIdx: highestIndex } of ANCHOR_BANDS) {
+    for (const { label, target, min, max, useLowestIdx: lowestIndex, useHighestIdx: highestIndex } of ANCHOR_BANDS[mode]) {
       const pick = points
         .filter((p) => p.nx >= min && p.nx <= max && !used.has(p))
         .sort((a, b) =>
@@ -219,7 +272,7 @@ export function StatementSpectrum({ statements }: StatementSpectrumProps) {
       }
     }
     return result;
-  }, [points]);
+  }, [points, mode]);
 
   useEffect(() => {
     const wrap = stripWrapRef.current;
@@ -300,10 +353,10 @@ export function StatementSpectrum({ statements }: StatementSpectrumProps) {
       const alpha = activeRange !== null ? (inActive ? 1 : Math.max(0.15, 0.8 - dist * 4)) : 0.75;
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = dotColor(p.nx, alpha);
+      ctx.fillStyle = dotColor(p.lean, alpha);
       ctx.fill();
       if (inActive) {
-        ctx.strokeStyle = dotColor(p.nx, 0.9);
+        ctx.strokeStyle = dotColor(p.lean, 0.9);
         ctx.lineWidth = 1.5;
         ctx.stroke();
       }
@@ -391,9 +444,32 @@ export function StatementSpectrum({ statements }: StatementSpectrumProps) {
 
   return (
     <div style={styles.wrap}>
+      <div style={styles.toggleWrap}>
+        <button
+          type="button"
+          onClick={() => handleModeChange("agree")}
+          style={{
+            ...styles.toggleButton,
+            ...(mode === "agree" ? styles.toggleButtonActive : {}),
+          }}
+        >
+          Agree / Disagree
+        </button>
+        <button
+          type="button"
+          onClick={() => handleModeChange("split")}
+          style={{
+            ...styles.toggleButton,
+            ...(mode === "split" ? styles.toggleButtonActive : {}),
+          }}
+        >
+          Consensus / Split
+        </button>
+      </div>
+
       <div style={styles.header}>
-        <span>← agree</span>
-        <span>disagree →</span>
+        <span>{MODE_LABELS[mode].left}</span>
+        <span>{MODE_LABELS[mode].right}</span>
       </div>
 
       <div
