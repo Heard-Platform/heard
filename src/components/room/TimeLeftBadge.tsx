@@ -54,8 +54,8 @@ export function TimeLeftBadge({
     };
 
     return (
-      <span className={`text-xs shrink-0 cursor-pointer ${getTextStyles()}`} onClick={handleTap}>
-        {timeRemaining.formatted}
+      <span className={`text-sm shrink-0 cursor-pointer ${getTextStyles()}`} onClick={handleTap}>
+        {timeRemaining.formatted} left
       </span>
     );
   } else {

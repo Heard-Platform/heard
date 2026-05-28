@@ -280,6 +280,17 @@ export function RoomCard({
                 <span className="text-muted-foreground shrink-0">
                   {timeAgoShort(room.createdAt)} ago
                 </span>
+                {isActive_status && !isCompleted && isRealtime && (
+                  <>
+                    <span className="text-muted-foreground">·</span>
+                    <TimeLeftBadge
+                      endTime={room.endTime}
+                      createdAt={room.createdAt}
+                      isRealtime={isRealtime}
+                      variant="text"
+                    />
+                  </>
+                )}
               </div>
 
               <div className="shrink-0">
@@ -440,17 +451,7 @@ export function RoomCard({
               <BarChart3 className="w-4 h-4" />
               {loadingStatements ? "Insights" : `${uniqueVoters} voted`}
             </Button>
-            {isCompleted ? (
-              <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>
-            ) : isActive_status ? (
-              <TimeLeftBadge
-                endTime={room.endTime}
-                createdAt={room.createdAt}
-                isRealtime={isRealtime}
-              />
-            ) : (
-              <Badge className="heard-pill bg-blue-600 text-white">Waiting</Badge>
-            )}
+            {isCompleted && <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>}
           </div>
 
           {isCompleted && showAnalysis && (
