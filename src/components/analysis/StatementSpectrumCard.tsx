@@ -5,9 +5,9 @@ import { StatementVotes } from "../../types";
 
 const MODE_DESCRIPTIONS: Record<SpectrumMode, string> = {
   agree:
-    "Every statement plotted from most agreed to most disagreed. Drag across the strip to inspect a range.",
+    "Every statement plotted from most agreed to most disagreed; dot size reflects total votes. Drag across the strip to inspect a range.",
   split:
-    "Every statement plotted from strongest consensus to most divided. Drag across the strip to inspect a range.",
+    "Every statement plotted from strongest consensus to most divided; dot size reflects total votes. Drag across the strip to inspect a range.",
 };
 
 const MODE_OPTIONS: Array<{ value: SpectrumMode; label: string }> = [
