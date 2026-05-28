@@ -1,7 +1,7 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers } from "./kv-utils.tsx";
-import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents } from "./model-utils.ts";
-import { countRecords, selectAll } from "./db-utils.ts";
+import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getUniqueUserIdsForEvent } from "./model-utils.ts";
+import { countRecords } from "./db-utils.ts";
 
 const app = new Hono();
 
@@ -86,6 +86,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     };
     const certifyCardShownSince = new Date("2026-04-21").getTime();
 
+    const flyerResultsClicked = (await getUniqueUserIdsForEvent("flyer_results_continue_clicked")).size;
+    const flyerResultsClickedSince = new Date("2026-05-28").getTime();
+
     const oneBillionEventRows = await getOneBillionEvents();
     const realNonDevUserIds = new Set(
       users.filter((u) => !u.isDeveloper).map((u) => u.id),
@@ -157,6 +160,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       certifyCardShown: certifyCardData.shown,
       certifyCardShownSince,
       certifyCardData,
+      flyerResultsClicked,
+      flyerResultsClickedSince,
       oneBillionEvents,
     });
   } catch (error) {

@@ -138,6 +138,11 @@ export const insertAnalyticsEvent = async (event: NewUserEvent) => {
   return insert<NewUserEvent>( "user_events", event );
 };
 
+export const getUniqueUserIdsForEvent = async (type: string): Promise<Set<string>> => {
+  const events = await selectAll<UserEvent>("user_events", { type });
+  return new Set(events.map(e => e.userId).filter((id): id is string => id !== null));
+};
+
 export const setInternalVar = async (key: InternalVarKey, value: any) =>
   upsert(
     "internal_vars",
