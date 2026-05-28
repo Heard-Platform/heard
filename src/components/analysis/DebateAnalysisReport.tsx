@@ -11,7 +11,7 @@ import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-fl
 import { MetricCard } from "./MetricCard";
 import { StatementVotesTable } from "./StatementVotesTable";
 import { ShowNumbersToggle } from "./ShowNumbersToggle";
-import { StatementSpectrum } from "./StatementSpectrum";
+import { StatementSpectrumCard } from "./StatementSpectrumCard";
 
 function opinionatedVotesOf(post: StatementVotes): number {
   return post.agreeVotes + post.disagreeVotes;
@@ -126,15 +126,7 @@ export function DebateAnalysisReport({
           />
         </div>
 
-        <Card className="p-6">
-          <div className="mb-2">
-            <h2 className="text-xl">Statement Spectrum</h2>
-            <p className="text-sm text-muted-foreground">
-              Every statement plotted from consensus to divisive. Drag across the strip to inspect a range.
-            </p>
-          </div>
-          <StatementSpectrum statements={allStatements} />
-        </Card>
+        <StatementSpectrumCard statements={allStatements} />
 
         <TopPostsByMetric
           posts={topAgreedPosts}

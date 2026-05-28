@@ -1,10 +1,11 @@
 import { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StatementVotes } from "../../types";
 
-type SpectrumMode = "agree" | "split";
+export type SpectrumMode = "agree" | "split";
 
 interface StatementSpectrumProps {
   statements: StatementVotes[];
+  mode: SpectrumMode;
 }
 
 interface Point {
@@ -86,30 +87,6 @@ const styles: Record<string, CSSProperties> = {
     color: COLOR_MUTED_FG,
     marginBottom: 6,
     padding: "0 2px",
-  },
-  toggleWrap: {
-    display: "inline-flex",
-    gap: 2,
-    marginBottom: 10,
-    padding: 2,
-    background: COLOR_MUTED,
-    borderRadius: 6,
-  },
-  toggleButton: {
-    fontSize: 11,
-    padding: "3px 10px",
-    cursor: "pointer",
-    borderRadius: 4,
-    color: COLOR_MUTED_FG,
-    background: "transparent",
-    border: "none",
-    font: "inherit",
-  },
-  toggleButtonActive: {
-    background: "#ffffff",
-    color: COLOR_FG,
-    fontWeight: 500,
-    boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
   },
   stripWrap: {
     position: "relative",
@@ -206,11 +183,10 @@ const styles: Record<string, CSSProperties> = {
   },
 };
 
-export function StatementSpectrum({ statements }: StatementSpectrumProps) {
+export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) {
   const stripWrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const [mode, setMode] = useState<SpectrumMode>("agree");
   const [dims, setDims] = useState({ w: 0, h: 0, dpr: 1 });
   const [hoverRange, setHoverRange] = useState<{ start: number; end: number } | null>(null);
   const [pinnedRange, setPinnedRange] = useState<{ start: number; end: number } | null>(null);
@@ -243,13 +219,11 @@ export function StatementSpectrum({ statements }: StatementSpectrumProps) {
       .sort((a, b) => a.nx - b.nx);
   }, [statements, mode]);
 
-  const handleModeChange = (next: SpectrumMode) => {
-    if (next === mode) return;
-    setMode(next);
+  useEffect(() => {
     setPinnedRange(null);
     setHoverRange(null);
     setDragStart(null);
-  };
+  }, [mode]);
 
   const anchors = useMemo<{ label: string; point: Point }[]>(() => {
     if (points.length === 0) return [];
@@ -444,29 +418,6 @@ export function StatementSpectrum({ statements }: StatementSpectrumProps) {
 
   return (
     <div style={styles.wrap}>
-      <div style={styles.toggleWrap}>
-        <button
-          type="button"
-          onClick={() => handleModeChange("agree")}
-          style={{
-            ...styles.toggleButton,
-            ...(mode === "agree" ? styles.toggleButtonActive : {}),
-          }}
-        >
-          Agree / Disagree
-        </button>
-        <button
-          type="button"
-          onClick={() => handleModeChange("split")}
-          style={{
-            ...styles.toggleButton,
-            ...(mode === "split" ? styles.toggleButtonActive : {}),
-          }}
-        >
-          Consensus / Split
-        </button>
-      </div>
-
       <div style={styles.header}>
         <span>{MODE_LABELS[mode].left}</span>
         <span>{MODE_LABELS[mode].right}</span>
