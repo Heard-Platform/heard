@@ -1,12 +1,5 @@
-import { StatementSpectrum } from "../components/analysis/StatementSpectrum";
+import { StatementSpectrumCard } from "../components/analysis/StatementSpectrumCard";
 import { StatementVotes } from "../types";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
 
 export default {
   title: "Analysis/StatementSpectrum",
@@ -111,79 +104,37 @@ const sparseStatements: StatementVotes[] = [
 
 export const Default = () => (
   <div className="p-4 max-w-3xl mx-auto">
-    <StatementSpectrum statements={neighborhoodStatements} />
+    <StatementSpectrumCard statements={neighborhoodStatements} />
   </div>
 );
 
 export const Sparse = () => (
   <div className="p-4 max-w-3xl mx-auto">
-    <StatementSpectrum statements={sparseStatements} />
+    <StatementSpectrumCard statements={sparseStatements} />
   </div>
 );
 
 export const Narrow = () => (
   <div className="p-4 max-w-sm mx-auto">
-    <StatementSpectrum statements={neighborhoodStatements} />
+    <StatementSpectrumCard statements={neighborhoodStatements} />
   </div>
 );
 
 export const Empty = () => (
   <div className="p-4 max-w-3xl mx-auto">
-    <StatementSpectrum statements={[]} />
+    <StatementSpectrumCard statements={[]} />
   </div>
 );
 
 export function StatementSpectrumStory() {
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Statement Spectrum</CardTitle>
-          <CardDescription>
-            Hover or drag across the strip to inspect statements binned along the
-            consensus-to-divisive axis. Click to pin a slice.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <StatementSpectrum statements={neighborhoodStatements} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Sparse (5 statements)</CardTitle>
-          <CardDescription>
-            Verifies anchor labels and dot spacing with a much smaller dataset.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <StatementSpectrum statements={sparseStatements} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Narrow container</CardTitle>
-          <CardDescription>
-            Resize behavior: same data, constrained width.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="max-w-sm">
-            <StatementSpectrum statements={neighborhoodStatements} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Empty</CardTitle>
-          <CardDescription>No statements supplied.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <StatementSpectrum statements={[]} />
-        </CardContent>
-      </Card>
+      <StatementSpectrumCard statements={neighborhoodStatements} />
+      <StatementSpectrumCard statements={sparseStatements} />
+      <div className="max-w-sm">
+        <StatementSpectrumCard statements={neighborhoodStatements} />
+      </div>
+      <StatementSpectrumCard statements={[]} />
     </div>
   );
 }
