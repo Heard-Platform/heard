@@ -84,10 +84,10 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
   const [newDebateSubHeard, setNewDebateSubHeard] =
     useState<string>("");
   const [activeTab, setActiveTab] = useState<string>(() => {
-    if (typeof window === "undefined") return "subheards";
+    if (typeof window === "undefined") return "users";
     const url = new URL(window.location.href);
     const tab = url.searchParams.get("tab");
-    return tab || "subheards";
+    return tab || "users";
   });
   const [selectedHistoryUserId, setSelectedHistoryUserId] = useState<string>("");
 
@@ -494,6 +494,12 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
 
         <div className="flex gap-2 border-b">
           <Button
+            variant={activeTab === "users" ? "default" : "ghost"}
+            onClick={() => handleTabChange("users")}
+          >
+            Users
+          </Button>
+          <Button
             variant={activeTab === "subheards" ? "default" : "ghost"}
             onClick={() => handleTabChange("subheards")}
           >
@@ -523,12 +529,6 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             onClick={() => handleTabChange("fixes")}
           >
             Data Fixes
-          </Button>
-          <Button
-            variant={activeTab === "users" ? "default" : "ghost"}
-            onClick={() => handleTabChange("users")}
-          >
-            Users
           </Button>
           <Button
             variant={activeTab === "history" ? "default" : "ghost"}
