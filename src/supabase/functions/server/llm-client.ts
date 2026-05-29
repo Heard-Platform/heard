@@ -25,16 +25,16 @@ export abstract class BaseLlmClient implements LlmClient {
   protected abstract readonly model: string;
 
   async complete(prompt: AiPrompt, context: LlmCallContext): Promise<string> {
-    return this.run(prompt, false, context);
+    return this.completeAndRecord(prompt, false, context);
   }
 
   async completeJson(prompt: AiPrompt, context: LlmCallContext): Promise<string> {
-    return this.run(prompt, true, context);
+    return this.completeAndRecord(prompt, true, context);
   }
 
   protected abstract callApi(prompt: AiPrompt, json: boolean): Promise<LlmApiResult>;
 
-  private async run(
+  private async completeAndRecord(
     prompt: AiPrompt,
     json: boolean,
     context: LlmCallContext,
