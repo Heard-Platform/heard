@@ -1,6 +1,6 @@
 import process from "node:process";
 import { LlmClient } from "./llm-client.ts";
-import { LlmProvider } from "./llm-usage-logger.ts";
+import { LlmProvider } from "./llm-types.ts";
 import { OpenAiClient } from "./openai-client.ts";
 import { AnthropicClient } from "./anthropic-client.ts";
 import { GeminiClient } from "./gemini-client.ts";

@@ -1,16 +1,9 @@
 import process from "node:process";
 import { insert } from "./db-utils.ts";
+import { LlmProvider, NormalizedUsage } from "./llm-types.ts";
 
 const LLM_API_CALLS_TABLE = "llm_api_calls";
 const TEST_ENV = "test";
-
-export type LlmProvider = "openai" | "anthropic" | "gemini";
-
-export interface NormalizedUsage {
-  inputTokens: number;
-  outputTokens: number;
-  totalTokens: number;
-}
 
 export interface LlmUsageRecord extends NormalizedUsage {
   provider: LlmProvider;

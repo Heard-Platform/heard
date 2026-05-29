@@ -1,7 +1,7 @@
 import process from "node:process";
 import { AiPrompt } from "./types.tsx";
 import { BaseLlmClient, LlmApiResult } from "./llm-client.ts";
-import { LlmProvider } from "./llm-usage-logger.ts";
+import { LlmProvider } from "./llm-types.ts";
 
 const MODEL = "claude-haiku-4-5-20251001";
 
