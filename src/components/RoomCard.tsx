@@ -23,6 +23,7 @@ import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType, UserSession, Cover, FullCoverData } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
+import { ShareButton } from "./ShareButton";
 import { HideAndMergeModal } from "./room/mod/HideAndMergeModal";
 import { EditRoomModal } from "./room/mod/EditRoomModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
@@ -452,6 +453,7 @@ export function RoomCard({
               {loadingStatements ? "Insights" : `${uniqueVoters} voted`}
             </Button>
             {isCompleted && <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>}
+            <ShareButton roomId={room.id} />
           </div>
 
           {isCompleted && showAnalysis && (
