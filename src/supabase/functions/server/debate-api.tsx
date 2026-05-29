@@ -992,7 +992,13 @@ app.get(
         }));
       }
 
-      rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 100);
+      rooms = rooms
+        .sort(
+          (a, b) =>
+            (b.lastActivityAt ?? b.createdAt) -
+            (a.lastActivityAt ?? a.createdAt),
+        )
+        .slice(0, 1000);
       rooms = sortRoomsForFeed(rooms, userMemberships);
       rooms = rooms.slice(0, 20);
 
