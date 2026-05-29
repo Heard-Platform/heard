@@ -22,6 +22,7 @@ import {
   Vote,
   Eye,
   Heart,
+  ArrowRight,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -202,6 +203,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.avatarAnimalUsers,
       getDate: (s) => s.avatarAnimalUsersSince,
       renderExtra: (s) => <AvatarAnimalChart {...s.avatarAnimalData} />
+    },
+    {
+      icon: ArrowRight,
+      iconColor: "text-fuchsia-600",
+      bgColor: "bg-fuchsia-100",
+      title: "Flyer Results Button Clicks",
+      description: "Unique users who clicked \"Vote and respond inside\" on the flyer results dialog",
+      getValue: (s) => s.flyerResultsClicked,
+      getDate: (s) => s.flyerResultsClickedSince,
     },
     {
       icon: Bell,

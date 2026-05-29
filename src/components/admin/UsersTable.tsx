@@ -22,8 +22,8 @@ export function UsersTable({
   onUserUpdate,
   onUserUnsubUpdate,
 }: UsersTableProps) {
-  const [hideTestUsers, setHideTestUsers] = useState(false);
-  const [hideAnonUsers, setHideAnonUsers] = useState(false);
+  const [hideTestUsers, setHideTestUsers] = useState(true);
+  const [hideAnonUsers, setHideAnonUsers] = useState(true);
 
   const filteredUsers = users
     .filter(user => {

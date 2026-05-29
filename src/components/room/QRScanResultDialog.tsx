@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { DebateRoom } from "../../types";
 import { VoteType } from "../../types";
 import moment from "moment";
+import { api } from "../../utils/api";
 
 export type QRScanResult = {
   room: DebateRoom;
@@ -72,6 +73,7 @@ export function QRScanResultDialog({
   ];
 
   const handleContinue = () => {
+    api.trackEvent("flyer_results_continue_clicked", room.id);
     onComplete({ reason: "continue" });
   };
 

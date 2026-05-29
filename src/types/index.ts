@@ -475,6 +475,8 @@ export interface FeatureResults {
   roomFollowsSince: number;
   certifyCardShown: number;
   certifyCardShownSince: number;
+  flyerResultsClicked: number;
+  flyerResultsClickedSince: number;
   certifyCardData: {
     shown: number;
     emailSubmitted: number;
