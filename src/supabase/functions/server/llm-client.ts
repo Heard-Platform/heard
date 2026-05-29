@@ -1,9 +1,6 @@
 import { AiPrompt } from "./types.tsx";
-import {
-  LlmProvider,
-  NormalizedUsage,
-  recordLlmUsage,
-} from "./llm-usage-logger.ts";
+import { LlmProvider, NormalizedUsage } from "./llm-types.ts";
+import { recordLlmUsage } from "./llm-usage-logger.ts";
 
 export interface LlmCallContext {
   userId?: string;
