@@ -16,6 +16,7 @@ import { Community, DebateRoom } from "./types.tsx";
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
+const DAY = 24 * HOUR;
 
 const makeRoom = (createdAt: number, overrides: Partial<DebateRoom> = {}): DebateRoom => ({
   id: "room-1",
@@ -200,7 +201,7 @@ describe("sortRoomsByActivity", () => {
 
     it("revived old room jumps above newer inactive rooms", () => {
       const now = Date.now();
-      const rwsRevived = makeRoom(now - 6 * HOUR, { lastActivityAt: now - 3 * MIN });
+      const rwsRevived = makeRoom(now - 6 * DAY, { lastActivityAt: now - 3 * MIN });
       const rwsQuietNew = makeRoom(now - 30 * MIN);
       const rwsQuietNewer = makeRoom(now - 15 * MIN);
 
