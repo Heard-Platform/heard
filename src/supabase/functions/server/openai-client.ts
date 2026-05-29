@@ -1,11 +1,18 @@
 import process from "node:process";
 import { AiPrompt } from "./types.tsx";
-import { LlmClient } from "./llm-client.ts";
+import { BaseLlmClient, LlmApiResult } from "./llm-client.ts";
+import { LlmProvider } from "./llm-usage-logger.ts";
 
-export class OpenAiClient implements LlmClient {
+const MODEL = "gpt-4o-mini";
+
+export class OpenAiClient extends BaseLlmClient {
+  protected readonly provider: LlmProvider = "openai";
+  protected readonly model: string = MODEL;
+
   private readonly openAiApiKey: string;
 
   constructor() {
+    super();
     const key = process.env.OPENAI_API_KEY;
     if (!key) {
       throw new Error(
@@ -15,17 +22,9 @@ export class OpenAiClient implements LlmClient {
     this.openAiApiKey = key;
   }
 
-  async complete(prompt: AiPrompt): Promise<string> {
-    return this.request(prompt, false);
-  }
-
-  async completeJson(prompt: AiPrompt): Promise<string> {
-    return this.request(prompt, true);
-  }
-
-  private async request(prompt: AiPrompt, json: boolean): Promise<string> {
+  protected async callApi(prompt: AiPrompt, json: boolean): Promise<LlmApiResult> {
     const body: Record<string, unknown> = {
-      model: "gpt-4o-mini",
+      model: MODEL,
       messages: [
         {
           role: "system",
@@ -70,6 +69,13 @@ export class OpenAiClient implements LlmClient {
       throw new Error("No content in OpenAI response");
     }
 
-    return content;
+    return {
+      content,
+      usage: {
+        inputTokens: data.usage?.prompt_tokens ?? 0,
+        outputTokens: data.usage?.completion_tokens ?? 0,
+        totalTokens: data.usage?.total_tokens ?? 0,
+      },
+    };
   }
 }

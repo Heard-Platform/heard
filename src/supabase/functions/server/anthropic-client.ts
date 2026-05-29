@@ -1,11 +1,18 @@
 import process from "node:process";
 import { AiPrompt } from "./types.tsx";
-import { LlmClient } from "./llm-client.ts";
+import { BaseLlmClient, LlmApiResult } from "./llm-client.ts";
+import { LlmProvider } from "./llm-usage-logger.ts";
 
-export class AnthropicClient implements LlmClient {
+const MODEL = "claude-haiku-4-5-20251001";
+
+export class AnthropicClient extends BaseLlmClient {
+  protected readonly provider: LlmProvider = "anthropic";
+  protected readonly model: string = MODEL;
+
   private readonly apiKey: string;
 
   constructor() {
+    super();
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) {
       throw new Error(
@@ -15,16 +22,7 @@ export class AnthropicClient implements LlmClient {
     this.apiKey = key;
   }
 
-  async complete(prompt: AiPrompt): Promise<string> {
-    return this.request(prompt);
-  }
-
-  async completeJson(prompt: AiPrompt): Promise<string> {
-    // Anthropic has no native JSON mode — rely on prompt instructions
-    return this.request(prompt);
-  }
-
-  private async request(prompt: AiPrompt): Promise<string> {
+  protected async callApi(prompt: AiPrompt, _json: boolean): Promise<LlmApiResult> {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -33,7 +31,7 @@ export class AnthropicClient implements LlmClient {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
+        model: MODEL,
         max_tokens: 500,
         system: prompt.systemPrompt,
         messages: [
@@ -59,6 +57,20 @@ export class AnthropicClient implements LlmClient {
       throw new Error("No content in Anthropic response");
     }
 
-    return content;
+    const usage = data.usage ?? {};
+    const inputTokens =
+      (usage.input_tokens ?? 0) +
+      (usage.cache_creation_input_tokens ?? 0) +
+      (usage.cache_read_input_tokens ?? 0);
+    const outputTokens = usage.output_tokens ?? 0;
+
+    return {
+      content,
+      usage: {
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
+      },
+    };
   }
 }

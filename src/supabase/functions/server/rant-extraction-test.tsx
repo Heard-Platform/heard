@@ -1,3 +1,4 @@
+import process from "node:process";
 import { describe, it } from "jsr:@std/testing/bdd";
 import { assert } from "https://deno.land/std@0.208.0/assert/assert.ts";
 import { assertGreater } from "https://deno.land/std@0.208.0/assert/assert_greater.ts";
@@ -6,6 +7,9 @@ import { AnthropicClient } from "./anthropic-client.ts";
 import { GeminiClient } from "./gemini-client.ts";
 import { LlmClient } from "./llm-client.ts";
 import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
+
+process.env.NODE_ENV = "test";
+const TEST_ENDPOINT = "test:rant-extraction";
 
 const testRants = [
   {
@@ -54,7 +58,7 @@ function assertValidRantExtraction(response: string, label: string) {
 async function runRantTest(client: LlmClient, providerName: string) {
   for (const rant of testRants) {
     const prompt = makeRantExtractionPrompt(rant.text);
-    const response = await client.completeJson(prompt);
+    const response = await client.completeJson(prompt, { endpoint: TEST_ENDPOINT });
     console.log(`\n=== ${providerName} - ${rant.label} ===`);
     console.log(`Rant: ${rant.text}`);
     console.log(`Result: ${response}`);

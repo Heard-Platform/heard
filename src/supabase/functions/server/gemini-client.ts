@@ -1,13 +1,18 @@
 import process from "node:process";
 import { AiPrompt } from "./types.tsx";
-import { LlmClient } from "./llm-client.ts";
+import { BaseLlmClient, LlmApiResult } from "./llm-client.ts";
+import { LlmProvider } from "./llm-usage-logger.ts";
 
 const MODEL = "gemini-2.5-flash";
 
-export class GeminiClient implements LlmClient {
+export class GeminiClient extends BaseLlmClient {
+  protected readonly provider: LlmProvider = "gemini";
+  protected readonly model: string = MODEL;
+
   private readonly apiKey: string;
 
   constructor() {
+    super();
     const key = process.env.GEMINI_API_KEY;
     if (!key) {
       throw new Error(
@@ -17,15 +22,7 @@ export class GeminiClient implements LlmClient {
     this.apiKey = key;
   }
 
-  async complete(prompt: AiPrompt): Promise<string> {
-    return this.request(prompt, false);
-  }
-
-  async completeJson(prompt: AiPrompt): Promise<string> {
-    return this.request(prompt, true);
-  }
-
-  private async request(prompt: AiPrompt, json: boolean): Promise<string> {
+  protected async callApi(prompt: AiPrompt, json: boolean): Promise<LlmApiResult> {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
     const generationConfig: Record<string, unknown> = {
@@ -74,6 +71,15 @@ export class GeminiClient implements LlmClient {
       throw new Error("No content in Gemini response");
     }
 
-    return content;
+    const usage = data.usageMetadata ?? {};
+
+    return {
+      content,
+      usage: {
+        inputTokens: usage.promptTokenCount ?? 0,
+        outputTokens: usage.candidatesTokenCount ?? 0,
+        totalTokens: usage.totalTokenCount ?? 0,
+      },
+    };
   }
 }

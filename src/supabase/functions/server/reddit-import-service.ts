@@ -8,6 +8,8 @@ import { ONE_HOUR_MIN, ONE_WEEK_MS } from "./time-utils.ts";
 import { generateId } from "./utils.tsx";
 import { saveStatement } from "./kv-utils.tsx";
 
+const REDDIT_IMPORT_ENDPOINT = "reddit-import";
+
 export const subredditsToHerds: { [key: string]: string } = {
   "ChangeMyView": "change-my-mind",
   "UnpopularOpinion": "spicy-opinions",
@@ -37,7 +39,9 @@ export class RedditImporter extends EnrichmentService {
   ): Promise<boolean> {
     const aiPrompt = makeTransformPromptFromRedditPost(redditPost, this.provider);
 
-    const aiResponse = await this.aiClient.complete(aiPrompt);
+    const aiResponse = await this.aiClient.complete(aiPrompt, {
+      endpoint: REDDIT_IMPORT_ENDPOINT,
+    });
 
     if (aiResponse.trim() === "Error") {
       console.error(`Error creating Heard convo from Reddit post:
