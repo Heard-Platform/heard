@@ -268,6 +268,7 @@ export function QRScanResultDialog({
                     <div className="flex gap-2">
                       <input
                         type="email"
+                        autoComplete="email"
                         placeholder="you@example.com"
                         value={emailFlow.email}
                         onChange={(e) => emailFlow.setEmail(e.target.value)}
