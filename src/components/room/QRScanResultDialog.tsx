@@ -254,7 +254,7 @@ export function QRScanResultDialog({
                   <div className="space-y-1">
                     <p className="text-base font-bold text-white">
                       {emailFlow.step === "email"
-                        ? "Enter your email to be heard"
+                        ? "Enter your email to vote and respond"
                         : "Check your email"}
                     </p>
                     <p className="text-sm text-slate-400">
