@@ -241,7 +241,7 @@ export function QRScanResultDialog({
                   }}
                   className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
                 >
-                  {isAlreadyLoggedIn ? "See full results" : "Email me when it ends"}
+                  Vote and respond inside
                   <ArrowRight className="w-5 h-5" />
                 </Button>
               ) : (
@@ -254,12 +254,12 @@ export function QRScanResultDialog({
                   <div className="space-y-1">
                     <p className="text-base font-bold text-white">
                       {emailFlow.step === "email"
-                        ? "Enter your email to get the results"
+                        ? "Enter your email to be heard"
                         : "Check your email"}
                     </p>
                     <p className="text-sm text-slate-400">
                       {emailFlow.step === "email"
-                        ? "We'll only email you when the poll ends, no spam, and we won't share your email with anyone."
+                        ? "We'll only use your email to send you the results, no spam, and we won't share it with anyone."
                         : "We sent a 6-character code to " + emailFlow.email + "."}
                     </p>
                   </div>
