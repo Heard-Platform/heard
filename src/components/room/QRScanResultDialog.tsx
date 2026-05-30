@@ -241,7 +241,7 @@ export function QRScanResultDialog({
                   }}
                   className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
                 >
-                  Vote and respond inside
+                  Vote and respond
                   <ArrowRight className="w-5 h-5" />
                 </Button>
               ) : (
