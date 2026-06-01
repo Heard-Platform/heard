@@ -86,7 +86,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     };
     const certifyCardShownSince = new Date("2026-04-21").getTime();
 
-    const flyerResultsClicked = (await getUniqueUserIdsForEvent("flyer_results_continue_clicked")).size;
+    const flyerResultsClicked = (await getUniqueUserIdsForEvent("flyer_results_get_results_clicked")).size;
     const flyerResultsClickedSince = new Date("2026-05-28").getTime();
 
     const oneBillionEventRows = await getOneBillionEvents();
