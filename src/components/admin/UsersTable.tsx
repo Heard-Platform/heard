@@ -5,10 +5,13 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import type { UserSession } from "../../types";
 import { useState } from "react";
-import { Phone } from "lucide-react";
+import { Phone, ChevronDown, ChevronUp } from "lucide-react";
+
+type SortKey = "createdAt" | "activeDays";
 
 interface UsersTableProps {
   users: UserSession[];
+  activeDayCounts: Record<string, number>;
   adminKey: string;
   onClearPhoneVerification: (userId: string) => void;
   onUserUpdate: (userId: string, isTestUser: boolean) => void;
@@ -17,6 +20,7 @@ interface UsersTableProps {
 
 export function UsersTable({
   users,
+  activeDayCounts,
   adminKey,
   onClearPhoneVerification,
   onUserUpdate,
@@ -24,6 +28,17 @@ export function UsersTable({
 }: UsersTableProps) {
   const [hideTestUsers, setHideTestUsers] = useState(true);
   const [hideAnonUsers, setHideAnonUsers] = useState(true);
+  const [sortKey, setSortKey] = useState<SortKey>("createdAt");
+  const [sortDesc, setSortDesc] = useState(true);
+
+  const handleSortClick = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDesc((d) => !d);
+    } else {
+      setSortKey(key);
+      setSortDesc(true);
+    }
+  };
 
   const filteredUsers = users
     .filter(user => {
@@ -32,9 +47,13 @@ export function UsersTable({
       return true;
     })
     .sort((a, b) => {
-      const aTime = a.createdAt || 0;
-      const bTime = b.createdAt || 0;
-      return bTime - aTime;
+      const aVal = sortKey === "activeDays"
+        ? (activeDayCounts[a.id] ?? 0)
+        : (a.createdAt || 0);
+      const bVal = sortKey === "activeDays"
+        ? (activeDayCounts[b.id] ?? 0)
+        : (b.createdAt || 0);
+      return sortDesc ? bVal - aVal : aVal - bVal;
     });
 
   return (
@@ -72,7 +91,25 @@ export function UsersTable({
               <th className="text-left p-3 font-medium">Email</th>
               <th className="text-left p-3 font-medium">Phone</th>
               <th className="text-left p-3 font-medium">ID</th>
-              <th className="text-left p-3 font-medium">Created At</th>
+              <th className="text-left p-3 font-medium">Last Active</th>
+              <th
+                className="text-left p-3 font-medium cursor-pointer select-none hover:bg-muted/70"
+                onClick={() => handleSortClick("createdAt")}
+              >
+                <span className="flex items-center gap-1">
+                  Created At
+                  {sortKey === "createdAt" && (sortDesc ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />)}
+                </span>
+              </th>
+              <th
+                className="text-right p-3 font-medium cursor-pointer select-none hover:bg-muted/70"
+                onClick={() => handleSortClick("activeDays")}
+              >
+                <span className="flex items-center justify-end gap-1">
+                  Active Days
+                  {sortKey === "activeDays" && (sortDesc ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />)}
+                </span>
+              </th>
               <th className="text-center p-3 font-medium">Anonymous</th>
               <th className="text-center p-3 font-medium">Test User</th>
               <th className="text-center p-3 font-medium">Unsubbed from Updates</th>
@@ -89,9 +126,17 @@ export function UsersTable({
                   {user.id.substring(0, 12)}...
                 </td>
                 <td className="p-3 text-sm">
-                  {user.createdAt 
+                  {user.lastActive
+                    ? new Date(user.lastActive).toLocaleString()
+                    : "N/A"}
+                </td>
+                <td className="p-3 text-sm">
+                  {user.createdAt
                     ? new Date(user.createdAt).toLocaleString()
                     : "N/A"}
+                </td>
+                <td className="p-3 text-right tabular-nums">
+                  {activeDayCounts[user.id] ?? <span className="text-muted-foreground">—</span>}
                 </td>
                 <td className="p-3 text-center">
                   {user.isAnonymous ? (

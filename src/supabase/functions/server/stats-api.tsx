@@ -9,7 +9,7 @@ import {
 import { getAllRecords } from "./db-utils.ts";
 import type { Session } from "./types.tsx";
 import { getFlyerEmails } from "./model-utils.ts";
-import { generateSparklineData, getDateString, calculateRetention } from "./stats-utils.ts";
+import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
 
 const app = new Hono();
 
@@ -302,15 +302,7 @@ app.get("/make-server-f1a393b4/stats/user-timeline", async (c) => {
       getAllStatements(),
     ]);
 
-    const activeDaysByUser = new Map<string, Set<number>>();
-    const recordDay = (userId: string, timestamp: number) => {
-      const d = new Date(timestamp);
-      d.setUTCHours(0, 0, 0, 0);
-      if (!activeDaysByUser.has(userId)) activeDaysByUser.set(userId, new Set());
-      activeDaysByUser.get(userId)!.add(d.getTime());
-    };
-    for (const vote of allVotes) recordDay(vote.userId, vote.timestamp);
-    for (const stmt of allStatements) recordDay(stmt.author, stmt.timestamp);
+    const activeDaysByUser = buildActiveDaysMap(allVotes, allStatements);
 
     const entries = users
       .filter((u: any) => {

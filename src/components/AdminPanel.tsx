@@ -63,6 +63,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     useState(safelyGetStorageItem<string>("devAdminKey", ""));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [users, setUsers] = useState<UserSession[]>([]);
+  const [activeDayCounts, setActiveDayCounts] = useState<Record<string, number>>({});
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [debates, setDebates] = useState<DebateRoom[]>([]);
   const [loading, setLoading] = useState(false);
@@ -124,6 +125,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         debatesRes.success
       ) {
         setUsers(usersRes.data?.users || []);
+        setActiveDayCounts(usersRes.data?.activeDayCounts || {});
         setSubHeards(subHeardsRes.data?.subHeards || []);
         setDebates(debatesRes.data?.debates || []);
         setIsAuthenticated(true);
@@ -830,8 +832,9 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         )}
 
         {activeTab === "users" && (
-          <UsersTable 
-            users={users} 
+          <UsersTable
+            users={users}
+            activeDayCounts={activeDayCounts}
             adminKey={adminKey}
             onUserUpdate={handleUpdateUserTestStatus}
             onUserUnsubUpdate={handleUpdateUserUnsubStatus}
