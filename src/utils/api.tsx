@@ -637,6 +637,10 @@ class ApiClient extends BaseApiClient {
     return this.request<LiveActivityData>("/stats/live-activity");
   }
 
+  async getUserTimeline() {
+    return this.request<{ entries: import("../types").UserTimelineEntry[] }>("/stats/user-timeline");
+  }
+
   async getFeatureStats() {
     return this.request<FeatureResults>("/stats/features", {
       method: "GET",
