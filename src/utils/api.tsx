@@ -435,7 +435,7 @@ class ApiClient extends BaseApiClient {
 
   // Admin methods (require X-Admin-Key header)
   async adminGetUsers(adminKey: string) {
-    return this.request<{ users: UserSession[] }>("/admin/users", {
+    return this.request<{ users: UserSession[]; activeDayCounts: Record<string, number> }>("/admin/users", {
       headers: {
         "X-Admin-Key": adminKey,
       },

@@ -1,5 +1,21 @@
 import { User } from "./types.tsx";
 
+export function buildActiveDaysMap(
+  votes: Array<{ userId: string; timestamp: number }>,
+  statements: Array<{ author: string; timestamp: number }>,
+): Map<string, Set<number>> {
+  const map = new Map<string, Set<number>>();
+  const record = (userId: string, timestamp: number) => {
+    const d = new Date(timestamp);
+    d.setUTCHours(0, 0, 0, 0);
+    if (!map.has(userId)) map.set(userId, new Set());
+    map.get(userId)!.add(d.getTime());
+  };
+  for (const v of votes) record(v.userId, v.timestamp);
+  for (const s of statements) record(s.author, s.timestamp);
+  return map;
+}
+
 export const generateSparklineData = (
   items: any[],
   daysBack = 7,

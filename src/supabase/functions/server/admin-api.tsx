@@ -5,6 +5,7 @@ import {
   getAllRealDebates,
   getAllRealUsers,
   getAllStatements,
+  getAllVotes,
   getAllSubHeards,
   getByPrefixParsed,
   getDebate,
@@ -25,6 +26,7 @@ import { DebateRoom, Rant, Statement } from "./types.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 import { getNewsletterByEdition, getNewsletterRecipients } from "./newsletter-utils.ts";
 import { getFlyerEmails } from "./model-utils.ts";
+import { buildActiveDaysMap } from "./stats-utils.ts";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
@@ -51,10 +53,18 @@ app.use("/make-server-f1a393b4/admin/*", verifyAdminKey);
 // Get all users
 app.get("/make-server-f1a393b4/admin/users", async (c) => {
   try {
-    let users = await getAllRealUsers();
-    users = users.map(sanitizeUser);
-    users.sort((a, b) => b.lastActive - a.lastActive);
-    return c.json({ users });
+    const [rawUsers, allVotes, allStatements] = await Promise.all([
+      getAllRealUsers(),
+      getAllVotes(),
+      getAllStatements(),
+    ]);
+    const activeDaysMap = buildActiveDaysMap(allVotes, allStatements);
+    const activeDayCounts: Record<string, number> = {};
+    for (const [userId, days] of activeDaysMap) {
+      activeDayCounts[userId] = days.size;
+    }
+    const users = rawUsers.map(sanitizeUser).sort((a: any, b: any) => b.lastActive - a.lastActive);
+    return c.json({ users, activeDayCounts });
   } catch (error) {
     console.error("Error fetching all users for admin:", error);
     return c.json({ error: "Failed to fetch users" }, 500);

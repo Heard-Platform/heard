@@ -30,6 +30,7 @@ function fmtDate(ts: number): string {
 interface TooltipState {
   x: number;
   y: number;
+  id: string;
   name: string;
   email: string;
   createdAt: number;
@@ -149,8 +150,8 @@ export function UserTimelineChart({ users }: UserTimelineChartProps) {
                       cy={dotY(dx)}
                       r={1.5}
                       fill={color}
-                      fillOpacity={0.75}
-                      style={{ pointerEvents: "none" }}
+                      fillOpacity={tooltip && tooltip.id !== u.id ? 0.05 : 0.75}
+                      style={{ pointerEvents: "none", transition: "fill-opacity 0.15s" }}
                     />
                   );
                 })}
@@ -165,6 +166,7 @@ export function UserTimelineChart({ users }: UserTimelineChartProps) {
                     setTooltip({
                       x: midX,
                       y: peakY,
+                      id: u.id,
                       name,
                       email: u.email,
                       createdAt: u.createdAt,
@@ -179,8 +181,8 @@ export function UserTimelineChart({ users }: UserTimelineChartProps) {
                   fill="none"
                   stroke={color}
                   strokeWidth={1.5}
-                  strokeOpacity={0.5}
-                  style={{ pointerEvents: "none" }}
+                  strokeOpacity={tooltip && tooltip.id !== u.id ? 0.08 : 0.5}
+                  style={{ pointerEvents: "none", transition: "stroke-opacity 0.15s" }}
                 />
               </g>
             );
