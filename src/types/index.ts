@@ -513,6 +513,17 @@ export interface EnrichmentConfig {
 
 export type Environment = "production" | "development";
 
+export interface UserTimelineEntry {
+  id: string;
+  nickname: string;
+  email: string;
+  createdAt: number;
+  lastActive: number;
+  activeDays?: number[]; // UTC day-start timestamps for days with any action
+  isTestUser?: boolean;
+  isDeveloper?: boolean;
+}
+
 export interface VoteStats {
   total: number;
   uniqueVoters: number;

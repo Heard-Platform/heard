@@ -42,6 +42,7 @@ import { HideAndMergeModalStory } from "../stories/HideAndMergeModal.story";
 import { VoteMatrixStory } from "../stories/VoteMatrix.story";
 import { StatementVotesTableStory } from "../stories/StatementVotesTable.story";
 import { StatementSpectrumStory } from "../stories/StatementSpectrum.story";
+import { UserTimelineChartStory } from "../stories/UserTimelineChart.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -137,6 +138,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="vote-matrix">Vote Matrix</TabsTrigger>
                 <TabsTrigger value="statement-votes-table">Statement Votes Table</TabsTrigger>
                 <TabsTrigger value="statement-spectrum">Statement Spectrum</TabsTrigger>
+                <TabsTrigger value="user-timeline">User Timeline</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -255,6 +257,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="statement-spectrum">
                 <StatementSpectrumStory />
+              </TabsContent>
+              <TabsContent value="user-timeline">
+                <UserTimelineChartStory />
               </TabsContent>
             </Tabs>
           </div>
