@@ -34,6 +34,7 @@ import { VoteMatrixModal } from "./room/VoteMatrixModal";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
+import { formatSubHeardDisplay } from "../utils/subheard";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -67,6 +68,7 @@ export function RoomCard({
   isDeveloper,
   isActive,
   user,
+  currentSubHeard,
   analysisRoomId,
   targetStatementId,
   onJoin,
@@ -240,6 +242,13 @@ export function RoomCard({
             transition={{ delay: 0.1 }}
             className="space-y-2"
           >
+            {/* Subheard label */}
+            {!currentSubHeard && room.subHeard && (
+              <p className="text-center text-xs text-muted-foreground/60 font-medium tracking-wide uppercase">
+                {formatSubHeardDisplay(room.subHeard)}
+              </p>
+            )}
+
             {/* Title */}
             <div className="flex items-start justify-center gap-1">
               <h2 className="font-bold text-foreground text-xl text-center leading-tight">
