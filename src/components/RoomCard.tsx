@@ -317,7 +317,7 @@ export function RoomCard({
           {!isCompleted && statements.length > 0 && !hasSwipedAll && (
             <p className="text-center text-s text-muted-foreground/60">Vote on responses below</p>
           )}
-{isCompleted && statements.length > 0 ? (
+          {isCompleted && statements.length > 0 ? (
             <ConcludedResults
               statements={statements}
               onDiscuss={
