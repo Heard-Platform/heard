@@ -340,7 +340,8 @@ export function LobbyScreen({
 
       {/* Feed view — absolute floating header over snap-scroll */}
       {!currentEvent && !eventLoading && (
-        <div className="relative heard-feed-bg">
+        <div className="heard-feed-bg md:flex md:items-start md:justify-center md:min-h-screen">
+        <div className="relative w-full md:max-w-[420px] md:shadow-2xl md:rounded-3xl md:overflow-hidden md:my-8">
           {/* Floating header with user info and menu */}
           <div className="absolute top-0 left-0 right-0 controls-layer pt-[6px] px-2 flex justify-center items-center">
             <div
@@ -435,6 +436,7 @@ export function LobbyScreen({
             onOpenExplorer={() => setExplorerOpen(true)}
             onOpenEvent={onOpenEvent}
           />
+        </div>
         </div>
       )}
 
