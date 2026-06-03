@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { SwipeableStatementStack } from "./room/SwipeableStatementStack";
+import { extractYouTubeVideoId } from "./room/CoverCard";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { AddResponseModal } from "./room/AddResponseModal";
@@ -254,7 +255,7 @@ export function RoomCard({
               <h2 className="font-bold text-foreground text-xl text-center leading-tight">
                 {room.topic}
               </h2>
-              {room.description && (
+              {(room.description || room.imageUrl || room.youtubeUrl) && (
                 <button
                   onClick={() => setShowDescriptionModal(true)}
                   className="mt-1 shrink-0 text-foreground/40 hover:text-foreground/70 transition-colors"
@@ -276,15 +277,38 @@ export function RoomCard({
               );
             })()}
 
-            {room.description && (
+            {(room.description || room.imageUrl || room.youtubeUrl) && (
               <Dialog open={showDescriptionModal} onOpenChange={setShowDescriptionModal}>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>{room.topic}</DialogTitle>
                   </DialogHeader>
-                  <p className="text-sm text-muted-foreground">
-                    <LinkedText text={room.description} />
-                  </p>
+                  {room.imageUrl && (
+                    <img
+                      src={room.imageUrl}
+                      alt={room.topic}
+                      className="w-full rounded-lg object-cover max-h-48"
+                    />
+                  )}
+                  {room.youtubeUrl && (() => {
+                    const videoId = extractYouTubeVideoId(room.youtubeUrl!);
+                    return videoId ? (
+                      <div className="relative w-full overflow-hidden rounded-lg" style={{ paddingBottom: "56.25%" }}>
+                        <iframe
+                          className="absolute inset-0 w-full h-full"
+                          src={`https://www.youtube.com/embed/${videoId}`}
+                          title="Intro video"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : null;
+                  })()}
+                  {room.description && (
+                    <p className="text-sm text-muted-foreground">
+                      <LinkedText text={room.description} />
+                    </p>
+                  )}
                 </DialogContent>
               </Dialog>
             )}

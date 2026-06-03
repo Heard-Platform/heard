@@ -7,7 +7,7 @@ interface CoverCardProps {
   isTopCard: boolean;
 }
 
-function extractYouTubeVideoId(url: string): string | null {
+export function extractYouTubeVideoId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&\n?#]+)/,
     /youtube\.com\/embed\/([^&\n?#]+)/,
