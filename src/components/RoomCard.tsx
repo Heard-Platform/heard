@@ -2,11 +2,10 @@
 import { toast } from "sonner@2.0.3";
 
 import { motion } from "motion/react";
-import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
-  Globe, UserCircle, ArrowRight,
+  ArrowRight,
   BarChart3,
   Loader2,
   ChevronDown,
@@ -30,10 +29,8 @@ import { VoteMatrixModal } from "./room/VoteMatrixModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { timeAgoShort } from "../utils/time";
-import { formatSubHeardDisplay } from "../utils/subheard";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
-import { openImageOverlay } from "../utils/image-overlay";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -57,7 +54,6 @@ interface RoomCardProps {
   onRefreshStatements: () => Promise<void>;
   onDiscussStatement: (statementText: string, subHeard?: string) => void;
   onShowAccountSetupModal: (featureText: string) => void;
-  onSelectSubHeard: (subHeard: string) => void;
 }
 
 export function RoomCard({
@@ -67,7 +63,6 @@ export function RoomCard({
   isDeveloper,
   isActive,
   user,
-  currentSubHeard,
   analysisRoomId,
   onJoin,
   onSubmitStatement,
@@ -76,7 +71,6 @@ export function RoomCard({
   onRefreshStatements,
   onDiscussStatement,
   onShowAccountSetupModal,
-  onSelectSubHeard,
 }: RoomCardProps) {
   const { resetTutorialTimer } = useSwipeTutorialContext();
   
@@ -142,10 +136,6 @@ export function RoomCard({
   
   const effectiveChanceCardSwiped = chanceCardSwiped || !!room.responsesPaused;
 
-  const uniqueVoters = new Set(
-    statements.flatMap((s) => (s.voters ? Object.keys(s.voters) : [])),
-  ).size;
-
   const hasSwipedAll =
     statements.length > 0 &&
     statements.every(
@@ -164,15 +154,11 @@ export function RoomCard({
     onSwipedAllChange(hasSwipedAll);
   }, [hasSwipedAll]);
 
-  const isRantFirst = room.rantFirst;
   const isRealtime = room.mode === "realtime";
 
   const hasRealtimeEnded =
     isRealtime && room.endTime && Date.now() >= room.endTime;
 
-  const isActive_status =
-    room.phase !== "lobby" && room.phase !== "results";
-  const isWaiting = room.phase === "lobby";
   const isCompleted =
     room.phase === "results" || hasRealtimeEnded;
 
@@ -248,8 +234,7 @@ export function RoomCard({
       className="w-full"
       style={{ maxWidth: "var(--room-card-max-width)" }}
     >
-      <Card className="heard-card-bg">
-        <div className="p-6 space-y-4">
+      <div className="space-y-4">
           {/* Compact header */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -257,33 +242,13 @@ export function RoomCard({
             transition={{ delay: 0.1 }}
             className="space-y-2"
           >
-            {/* Top row: community + time | menu */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-sm min-w-0">
-                {currentSubHeard ? (
+            {/* Top row: timestamp + menu */}
+            <div className="flex items-center justify-end gap-2">
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <span>{timeAgoShort(room.createdAt)} ago</span>
+                {room.endTime && !isCompleted && (
                   <>
-                    <UserCircle className="w-3.5 h-3.5 prefix-icon shrink-0" />
-                    <span className="font-medium text-foreground truncate">Anonymous</span>
-                  </>
-                ) : (
-                  <>
-                    <Globe className="w-3.5 h-3.5 prefix-icon shrink-0" />
-                    {room.subHeard && (
-                      <span
-                        className={`font-medium text-foreground truncate cursor-pointer hover:underline active:opacity-50 transition-opacity`}
-                        onClick={(e) => { e.stopPropagation(); onSelectSubHeard(room.subHeard!); }}
-                      >
-                        {formatSubHeardDisplay(room.subHeard)}
-                      </span>
-                    )}
-                  </>
-                )}
-                <span className="text-muted-foreground shrink-0">
-                  {timeAgoShort(room.createdAt)} ago
-                </span>
-                {isActive_status && !isCompleted && isRealtime && (
-                  <>
-                    <span className="text-muted-foreground">·</span>
+                    <span>·</span>
                     <TimeLeftBadge
                       endTime={room.endTime}
                       createdAt={room.createdAt}
@@ -293,7 +258,6 @@ export function RoomCard({
                   </>
                 )}
               </div>
-
               <div className="shrink-0">
                 <RoomCardMenu
                   room={room}
@@ -309,24 +273,22 @@ export function RoomCard({
               </div>
             </div>
 
-            {/* Title row */}
-            <div className="flex items-start gap-2">
-              {room.imageUrl && (
-                <div
-                  className="w-10 h-10 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-2 border-purple-300 shrink-0"
-                  onClick={() => openImageOverlay(room.imageUrl!)}
-                >
-                  <img
-                    src={room.imageUrl}
-                    alt={room.topic}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-              <h2 className="font-bold text-foreground flex-1">
-                {room.topic}
-              </h2>
-            </div>
+            {/* Title */}
+            <h2 className="font-bold text-foreground text-3xl text-center">
+              {room.topic}
+            </h2>
+
+            {statements.length > 0 && (() => {
+              const totalVotes = statements.reduce(
+                (sum, s) => sum + (s.agrees ?? 0) + (s.disagrees ?? 0) + (s.passes ?? 0) + (s.superAgrees ?? 0),
+                0,
+              );
+              return (
+                <p className="text-center text-foreground">
+                  <strong>{totalVotes.toLocaleString()}</strong> votes on <strong>{statements.length.toLocaleString()}</strong> responses
+                </p>
+              );
+            })()}
 
             {room.description && (
               <div
@@ -349,6 +311,9 @@ export function RoomCard({
           </motion.div>
 
           {/* Statement Stack or Results */}
+          {!isCompleted && statements.length > 0 && (
+            <h3 className="font-bold text-foreground text-xl -mb-2">Vote on Responses below</h3>
+          )}
           {isCompleted && statements.length > 0 ? (
             <ConcludedResults
               statements={statements}
@@ -450,11 +415,12 @@ export function RoomCard({
               className="heard-pill hover:bg-secondary/60"
             >
               <BarChart3 className="w-4 h-4" />
-              {loadingStatements ? "Insights" : `${uniqueVoters} voted`}
+              Results
             </Button>
             {isCompleted && <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>}
             <ShareButton roomId={room.id} />
           </div>
+
 
           {isCompleted && showAnalysis && (
             <div>
@@ -466,7 +432,6 @@ export function RoomCard({
             </div>
           )}
         </div>
-      </Card>
 
       {showAnalysis && (
         <DebateAnalysisView

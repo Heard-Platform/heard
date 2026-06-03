@@ -67,12 +67,14 @@ export function CoverCard({ cover, isTopCard }: CoverCardProps) {
 
   return (
     <>
-      <div className="heard-between mb-2">
-        <div className="flex items-center gap-2">
-          <span className="text-l">{icon}</span>
-          <span className={`text-sm text-${accentColor}-700 font-medium`}>{label}</span>
+      {isYouTube && (
+        <div className="heard-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-l">{icon}</span>
+            <span className={`text-sm text-${accentColor}-700 font-medium`}>{label}</span>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="mb-4">{renderMedia()}</div>
 

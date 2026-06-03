@@ -431,7 +431,6 @@ export function LobbyScreen({
             onShowAccountSetupModal={handleShowAccountSetupModal}
             onOpenExplorer={() => setExplorerOpen(true)}
             onOpenEvent={onOpenEvent}
-            onSelectSubHeard={onSubHeardChange}
           />
         </div>
       )}

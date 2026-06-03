@@ -1,7 +1,7 @@
 import type { Statement } from "../../types";
 import { SwipeIndicator } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
-import { Star, Flag, MoreVertical, EyeOff } from "lucide-react";
+import { Star, Flag, MoreVertical, EyeOff, Share, SkipForward } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -91,22 +91,30 @@ export function StatementCard({
                 <Star className="w-4 h-4 text-white" />
               </button>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
+            <button
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onSkip();
               }}
-              className="rounded-full overflow-hidden bg-gray-100 hover:bg-gray-200"
-              title="Not sure"
+              className={`${actionButtonBase} hover:bg-gray-100`}
+              title="Skip"
             >
-              <span
-                className="text-xl leading-none block"
-                style={{ opacity: 0.8 }}
-                aria-hidden="true"
-              >🤷</span>
-            </Button>
+              <SkipForward className="w-4 h-4 text-gray-700" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (navigator.share) {
+                  navigator.share({ text: statement.text });
+                } else {
+                  navigator.clipboard.writeText(statement.text);
+                }
+              }}
+              className={`${actionButtonBase} hover:bg-gray-100`}
+              title="Share response"
+            >
+              <Share className="w-4 h-4 text-gray-700" />
+            </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -141,11 +149,14 @@ export function StatementCard({
 
       <div className="flex items-end justify-between">
         <span className="text-xs text-muted-foreground">{timeAgo}</span>
-        {isTopCard && (
-          <span className="text-xs text-muted-foreground">
-            Response {currentIndex} of {totalStatements}
-          </span>
-        )}
+        {isTopCard && (() => {
+          const totalVotes = (statement.agrees ?? 0) + (statement.disagrees ?? 0) + (statement.passes ?? 0) + (statement.superAgrees ?? 0);
+          return (
+            <span className="text-xs text-muted-foreground">
+              {totalVotes.toLocaleString()} votes
+            </span>
+          );
+        })()}
       </div>
 
 

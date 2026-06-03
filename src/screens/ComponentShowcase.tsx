@@ -43,6 +43,8 @@ import { VoteMatrixStory } from "../stories/VoteMatrix.story";
 import { StatementVotesTableStory } from "../stories/StatementVotesTable.story";
 import { StatementSpectrumStory } from "../stories/StatementSpectrum.story";
 import { UserTimelineChartStory } from "../stories/UserTimelineChart.story";
+import { RoomCardStory } from "../stories/RoomCard.story";
+import { SinglePostViewStory } from "../stories/SinglePostView.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -139,6 +141,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="statement-votes-table">Statement Votes Table</TabsTrigger>
                 <TabsTrigger value="statement-spectrum">Statement Spectrum</TabsTrigger>
                 <TabsTrigger value="user-timeline">User Timeline</TabsTrigger>
+                <TabsTrigger value="room-card">Room Card</TabsTrigger>
+                <TabsTrigger value="single-post-view">Single Post View</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -260,6 +264,12 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="user-timeline">
                 <UserTimelineChartStory />
+              </TabsContent>
+              <TabsContent value="room-card">
+                <RoomCardStory />
+              </TabsContent>
+              <TabsContent value="single-post-view">
+                <SinglePostViewStory />
               </TabsContent>
             </Tabs>
           </div>
