@@ -236,7 +236,7 @@ export function RoomCard({
       className="w-full"
       style={{ maxWidth: "var(--room-card-max-width)" }}
     >
-      <div className="space-y-4">
+      <div className="space-y-4 border rounded-2xl py-4 px-2" style={{ borderColor: "rgba(151, 107, 132, 0.2)" }}>
           {/* Compact header */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
