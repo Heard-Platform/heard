@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import { getTotalVotes } from "../../utils/votes";
 import { share } from "../../utils/share";
 import { createShareableLink } from "../../utils/url";
 import moment from "moment";
@@ -156,7 +157,7 @@ export function StatementCard({
       <div className="flex items-end justify-between">
         <span className="text-xs text-muted-foreground">{timeAgo}</span>
         {isTopCard && (() => {
-          const totalVotes = (statement.agrees ?? 0) + (statement.disagrees ?? 0) + (statement.passes ?? 0) + (statement.superAgrees ?? 0);
+          const totalVotes = getTotalVotes(statement);
           return (
             <span className="text-xs text-muted-foreground">
               {totalVotes.toLocaleString()} votes

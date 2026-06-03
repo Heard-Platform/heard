@@ -36,6 +36,7 @@ import { useDebateSession } from "../hooks/useDebateSession";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
 import { formatSubHeardDisplay } from "../utils/subheard";
+import { getTotalVotes } from "../utils/votes";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -266,10 +267,7 @@ export function RoomCard({
             </div>
 
             {statements.length > 0 && (() => {
-              const totalVotes = statements.reduce(
-                (sum, s) => sum + (s.agrees ?? 0) + (s.disagrees ?? 0) + (s.passes ?? 0) + (s.superAgrees ?? 0),
-                0,
-              );
+              const totalVotes = statements.reduce((sum, s) => sum + getTotalVotes(s), 0);
               return (
                 <p className="text-center text-foreground">
                   <strong>{totalVotes.toLocaleString()}</strong> votes on <strong>{statements.length.toLocaleString()}</strong> responses
