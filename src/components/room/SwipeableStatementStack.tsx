@@ -33,6 +33,7 @@ interface SwipeableStatementStackProps {
   coverCardSwiped: boolean;
   demographicQuestions: DemographicQuestion[];
   answeredQuestionIds: Set<string>;
+  targetStatementId?: string;
   onVote: (
     id: string,
     voteType: VoteType,
@@ -58,6 +59,7 @@ export function SwipeableStatementStack({
   coverCardSwiped,
   demographicQuestions,
   answeredQuestionIds,
+  targetStatementId,
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
@@ -84,12 +86,17 @@ export function SwipeableStatementStack({
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [statementToFlag, setStatementToFlag] = useState<Statement | null>(null);
 
-  const unvotedStatements = statements.filter((statement) => {
-    const hasVotedBefore =
-      currentUserId && statement.voters?.[currentUserId];
-    const justVoted = votedStatementIds.has(statement.id);
-    return !hasVotedBefore && !justVoted;
-  });
+  const unvotedStatements = statements
+    .filter((statement) => {
+      const hasVotedBefore = currentUserId && statement.voters?.[currentUserId];
+      const justVoted = votedStatementIds.has(statement.id);
+      return !hasVotedBefore && !justVoted;
+    })
+    .sort((a, b) =>
+      targetStatementId
+        ? a.id === targetStatementId ? -1 : b.id === targetStatementId ? 1 : 0
+        : 0,
+    );
 
   const cards: Card[] = unvotedStatements.map((statement) => ({
     type: "statement",

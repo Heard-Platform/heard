@@ -46,6 +46,7 @@ interface RoomScrollerProps {
   currentSubHeard?: string;
   roomStatements: Record<string, Statement[]>;
   analysisRoomId?: string;
+  targetStatementId?: string;
   presences: UserPresence[];
   onJoinRoom: (roomId: string) => void;
   onCreateRoom: () => void;
@@ -93,6 +94,7 @@ const RoomScrollerInner = forwardRef<
       onDiscussStatement,
       roomStatements,
       analysisRoomId,
+      targetStatementId,
       presences,
       onUpdatePresence,
       onShowAccountSetupModal,
@@ -350,6 +352,7 @@ const RoomScrollerInner = forwardRef<
                       loadingRooms[room.id] || false
                     }
                     analysisRoomId={analysisRoomId}
+                    targetStatementId={targetStatementId}
                     onJoin={() => onJoinRoom(room.id)}
                     onSubmitStatement={onSubmitStatement}
                     onVoteOnStatement={onVoteOnStatement}

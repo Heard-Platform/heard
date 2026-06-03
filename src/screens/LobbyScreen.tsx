@@ -35,6 +35,7 @@ interface LobbyScreenProps {
   roomStatements: Record<string, any[]>;
   targetRoomId?: string;
   analysisRoomId?: string;
+  targetStatementId?: string;
   hasQrScanResult?: boolean;
   eventLoading?: boolean;
   currentEvent?: Event | null;
@@ -94,6 +95,7 @@ export function LobbyScreen({
   roomStatements,
   targetRoomId,
   analysisRoomId,
+  targetStatementId,
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
     useState(false);
@@ -421,6 +423,7 @@ export function LobbyScreen({
             currentSubHeard={currentSubHeard}
             roomStatements={roomStatements}
             analysisRoomId={analysisRoomId}
+            targetStatementId={targetStatementId}
             presences={presences}
             onJoinRoom={handleJoinRoom}
             onCreateRoom={handleOpenCreateSheet}

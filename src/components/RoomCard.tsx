@@ -25,7 +25,7 @@ import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
 import { useState, useEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
-import { DebateRoom, Statement, VoteType, UserSession, Cover, FullCoverData } from "../types";
+import { DebateRoom, Statement, VoteType, UserSession, FullCoverData } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
 import { ShareButton } from "./ShareButton";
 import { HideAndMergeModal } from "./room/mod/HideAndMergeModal";
@@ -44,6 +44,7 @@ interface RoomCardProps {
   user: UserSession;
   currentSubHeard?: string;
   analysisRoomId?: string;
+  targetStatementId?: string;
   onJoin: () => void;
   onSubmitStatement: (
     roomId: string,
@@ -67,6 +68,7 @@ export function RoomCard({
   isActive,
   user,
   analysisRoomId,
+  targetStatementId,
   onJoin,
   onSubmitStatement,
   onVoteOnStatement,
@@ -324,6 +326,7 @@ export function RoomCard({
                     coverCardSwiped={coverCardSwiped}
                     demographicQuestions={room.demographicQuestions}
                     answeredQuestionIds={answeredQuestionIds}
+                    targetStatementId={targetStatementId}
                     onVote={handleVote}
                     onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
@@ -388,7 +391,7 @@ export function RoomCard({
               Results
             </Button>
             {isCompleted && <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>}
-            <ShareButton roomId={room.id} />
+            <ShareButton roomId={room.id} roomTopic={room.topic} />
             <RoomCardMenu
               room={room}
               participantCount={participantCount}

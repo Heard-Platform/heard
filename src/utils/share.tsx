@@ -8,15 +8,18 @@ export interface ShareOptions {
   onError?: (error: Error) => void;
 }
 
+const copyToClipboard = (text: string): Promise<void> => {
+  return navigator.clipboard.writeText(text);
+};
+
 export const share = async (options: ShareOptions): Promise<boolean> => {
   const isDesktop = window.innerWidth >= 768;
+  
+  const contentToCopy = options.text || options.url || "";
 
   if (isDesktop) {
-    // Desktop: clipboard only, no fallbacks
-    // Use URL if provided, otherwise use text
-    const contentToCopy = options.url || options.text || "";
     try {
-      await navigator.clipboard.writeText(contentToCopy);
+      await copyToClipboard(contentToCopy);
       options?.onSuccess?.();
       return true;
     } catch (error) {
@@ -30,12 +33,10 @@ export const share = async (options: ShareOptions): Promise<boolean> => {
   try {
     if (navigator.share) {
       const shareData: ShareData = {};
-      
       if (options.title) shareData.title = options.title;
-      if (options.text) shareData.text = options.url ? `${options.text} ${options.url}` : options.text;
+      if (options.text) shareData.text = contentToCopy;
       if (options.url) shareData.url = options.url;
 
-      // Only use canShare if it exists (it's not available on all browsers)
       if (!navigator.canShare || navigator.canShare(shareData)) {
         await navigator.share(shareData);
         options?.onSuccess?.();
@@ -47,9 +48,8 @@ export const share = async (options: ShareOptions): Promise<boolean> => {
   }
 
   // Mobile clipboard fallback
-  const contentToCopy = options.url || options.text || "";
   try {
-    await navigator.clipboard.writeText(contentToCopy);
+    await copyToClipboard(contentToCopy);
     options?.onSuccess?.();
     return true;
   } catch (clipboardError) {

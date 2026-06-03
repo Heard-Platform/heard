@@ -8,9 +8,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import { share } from "../../utils/share";
+import { createShareableLink } from "../../utils/url";
 import moment from "moment";
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
 
 interface StatementCardProps {
   statement: Statement;
@@ -104,11 +107,14 @@ export function StatementCard({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (navigator.share) {
-                  navigator.share({ text: statement.text });
-                } else {
-                  navigator.clipboard.writeText(statement.text);
-                }
+                const link = `${createShareableLink(statement.roomId)}?statement=${statement.id}`;
+                share({
+                  url: link,
+                  title: "Come vote on this",
+                  text: `Come vote on "${statement.text}"! ${link}`,
+                  onSuccess: () => toast.success("Link copied to clipboard!"),
+                  onError: (e) => toast.error("Failed to share link"),
+                });
               }}
               className={`${actionButtonBase} hover:bg-gray-100`}
               title="Share response"
