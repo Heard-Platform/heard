@@ -5,6 +5,8 @@ export const mockRooms: DebateRoom[] = [
     id: "debate-with-image",
     topic:
       "Pineapple belongs on pizza and anyone who disagrees is living in denial",
+    description:
+      "The great pineapple debate has raged for decades. Some say the sweetness complements the savory, others consider it a culinary crime. Where do you stand?",
     phase: "round1",
     subPhase: "ranting",
     gameNumber: 1,
@@ -24,6 +26,8 @@ export const mockRooms: DebateRoom[] = [
   {
     id: "debate-no-image",
     topic: "Remote work is objectively better than office work",
+    description:
+      "Since 2020, remote work has gone from exception to expectation at many companies. But is the flexibility worth the trade-offs in collaboration and culture?",
     phase: "round1",
     subPhase: "voting",
     gameNumber: 1,
@@ -41,6 +45,8 @@ export const mockRooms: DebateRoom[] = [
   {
     id: "debate-with-image-2",
     topic: "Cats are superior pets to dogs in every measurable way",
+    description:
+      "Independent, low-maintenance, and endlessly entertaining — cat owners have long argued their pets are simply the better choice. Dog people, your time to respond.",
     phase: "round1",
     subPhase: "ranting",
     gameNumber: 1,
@@ -61,6 +67,8 @@ export const mockRooms: DebateRoom[] = [
     id: "debate-with-image-3",
     topic:
       "Electric cars will completely replace gas cars within the next decade",
+    description:
+      "EV adoption is accelerating fast, but charging infrastructure, range anxiety, and cost remain real barriers. Is a full transition by 2035 realistic or wishful thinking?",
     phase: "round1",
     subPhase: "results",
     gameNumber: 1,

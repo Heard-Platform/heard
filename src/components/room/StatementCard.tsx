@@ -1,16 +1,20 @@
 import type { Statement } from "../../types";
 import { SwipeIndicator } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
-import { Star, Flag, MoreVertical, EyeOff } from "lucide-react";
+import { Star, Flag, MoreVertical, EyeOff, Share, SkipForward } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import { getTotalVotes } from "../../utils/votes";
+import { share } from "../../utils/share";
+import { createShareableLink } from "../../utils/url";
 import moment from "moment";
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
 
 interface StatementCardProps {
   statement: Statement;
@@ -91,22 +95,33 @@ export function StatementCard({
                 <Star className="w-4 h-4 text-white" />
               </button>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
+            <button
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onSkip();
               }}
-              className="rounded-full overflow-hidden bg-gray-100 hover:bg-gray-200"
-              title="Not sure"
+              className={`${actionButtonBase} hover:bg-gray-100`}
+              title="Skip"
             >
-              <span
-                className="text-xl leading-none block"
-                style={{ opacity: 0.8 }}
-                aria-hidden="true"
-              >🤷</span>
-            </Button>
+              <SkipForward className="w-4 h-4 text-gray-700" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const link = `${createShareableLink(statement.roomId)}?statement=${statement.id}`;
+                share({
+                  url: link,
+                  title: "Come vote on this",
+                  text: `Come vote on "${statement.text}"! ${link}`,
+                  onSuccess: () => toast.success("Link copied to clipboard!"),
+                  onError: (e) => toast.error("Failed to share link"),
+                });
+              }}
+              className={`${actionButtonBase} hover:bg-gray-100`}
+              title="Share response"
+            >
+              <Share className="w-4 h-4 text-gray-700" />
+            </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -141,11 +156,14 @@ export function StatementCard({
 
       <div className="flex items-end justify-between">
         <span className="text-xs text-muted-foreground">{timeAgo}</span>
-        {isTopCard && (
-          <span className="text-xs text-muted-foreground">
-            Response {currentIndex} of {totalStatements}
-          </span>
-        )}
+        {isTopCard && (() => {
+          const totalVotes = getTotalVotes(statement);
+          return (
+            <span className="text-xs text-muted-foreground">
+              {totalVotes.toLocaleString()} votes
+            </span>
+          );
+        })()}
       </div>
 
 

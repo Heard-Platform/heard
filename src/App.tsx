@@ -28,6 +28,7 @@ import {
   updateUrlForRoom,
   parseEventIdFromUrl,
   updateUrlForEvent,
+  parseStatementIdFromUrl,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
@@ -66,6 +67,7 @@ function AppContent() {
   const [analysisRoomId, setAnalysisRoomId] = useState<
     string | null
   >(null);
+  const [targetStatementId, setTargetStatementId] = useState<string | null>(null);
   const [hasCheckedUrl, setHasCheckedUrl] = useState(false);
   const [isJoiningAnonymously, setIsJoiningAnonymously] = useState(false);
   const [showComponentShowcase, setShowComponentShowcase] =
@@ -288,10 +290,14 @@ function AppContent() {
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
-      const analysisRoomIdFromUrl =
-        parseAnalysisRoomIdFromUrl();
+      const analysisRoomIdFromUrl = parseAnalysisRoomIdFromUrl();
       const flyerDataFromUrl = parseFlyerDataFromUrl();
       const eventIdFromUrl = parseEventIdFromUrl();
+      const statementIdFromUrl = parseStatementIdFromUrl();
+
+      if (statementIdFromUrl) {
+        setTargetStatementId(statementIdFromUrl);
+      }
 
       if (analysisRoomIdFromUrl) {
         setAnalysisRoomId(analysisRoomIdFromUrl);
@@ -662,6 +668,7 @@ function AppContent() {
         roomStatements={roomStatements}
         targetRoomId={targetRoomId || undefined}
         analysisRoomId={analysisRoomId || undefined}
+        targetStatementId={targetStatementId || undefined}
         hasQrScanResult={!!qrScanResult}
         eventLoading={eventLoading}
         currentEvent={currentEvent}

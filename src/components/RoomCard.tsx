@@ -2,38 +2,41 @@
 import { toast } from "sonner@2.0.3";
 
 import { motion } from "motion/react";
-import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
-  Globe, UserCircle, ArrowRight,
+  ArrowRight,
   BarChart3,
   Loader2,
-  ChevronDown,
-  ChevronUp,
+  Info,
   MessageCirclePlus,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 import { SwipeableStatementStack } from "./room/SwipeableStatementStack";
+import { extractYouTubeVideoId } from "./room/CoverCard";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { AddResponseModal } from "./room/AddResponseModal";
 import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
-import { DebateRoom, Statement, VoteType, UserSession, Cover, FullCoverData } from "../types";
+import { DebateRoom, Statement, VoteType, UserSession, FullCoverData } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
 import { ShareButton } from "./ShareButton";
 import { HideAndMergeModal } from "./room/mod/HideAndMergeModal";
 import { EditRoomModal } from "./room/mod/EditRoomModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
-import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
-import { timeAgoShort } from "../utils/time";
-import { formatSubHeardDisplay } from "../utils/subheard";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
-import { openImageOverlay } from "../utils/image-overlay";
+import { formatSubHeardDisplay } from "../utils/subheard";
+import { getTotalVotes } from "../utils/votes";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -44,6 +47,7 @@ interface RoomCardProps {
   user: UserSession;
   currentSubHeard?: string;
   analysisRoomId?: string;
+  targetStatementId?: string;
   onJoin: () => void;
   onSubmitStatement: (
     roomId: string,
@@ -57,7 +61,6 @@ interface RoomCardProps {
   onRefreshStatements: () => Promise<void>;
   onDiscussStatement: (statementText: string, subHeard?: string) => void;
   onShowAccountSetupModal: (featureText: string) => void;
-  onSelectSubHeard: (subHeard: string) => void;
 }
 
 export function RoomCard({
@@ -69,6 +72,7 @@ export function RoomCard({
   user,
   currentSubHeard,
   analysisRoomId,
+  targetStatementId,
   onJoin,
   onSubmitStatement,
   onVoteOnStatement,
@@ -76,7 +80,6 @@ export function RoomCard({
   onRefreshStatements,
   onDiscussStatement,
   onShowAccountSetupModal,
-  onSelectSubHeard,
 }: RoomCardProps) {
   const { resetTutorialTimer } = useSwipeTutorialContext();
   
@@ -86,9 +89,7 @@ export function RoomCard({
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
 
   const [showAnalysis, setShowAnalysis] = useState(false);
-  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
-  const [descriptionTruncated, setDescriptionTruncated] = useState(false);
-  const descriptionRef = useRef<HTMLSpanElement>(null);
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false);
   const [showAddResponseModal, setShowAddResponseModal] = useState(false);
   const [showDeduplication, setShowDeduplication] = useState(false);
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
@@ -102,11 +103,6 @@ export function RoomCard({
       setShowAnalysis(true);
     }
   }, [analysisRoomId, room.id]);
-
-  useLayoutEffect(() => {
-    const el = descriptionRef.current;
-    if (el) setDescriptionTruncated(el.scrollHeight > el.clientHeight);
-  }, [room.description]);
 
   useEffect(() => {
     setChanceCardSwiped(room.chanceCardSwiped || false);
@@ -142,10 +138,6 @@ export function RoomCard({
   
   const effectiveChanceCardSwiped = chanceCardSwiped || !!room.responsesPaused;
 
-  const uniqueVoters = new Set(
-    statements.flatMap((s) => (s.voters ? Object.keys(s.voters) : [])),
-  ).size;
-
   const hasSwipedAll =
     statements.length > 0 &&
     statements.every(
@@ -164,15 +156,11 @@ export function RoomCard({
     onSwipedAllChange(hasSwipedAll);
   }, [hasSwipedAll]);
 
-  const isRantFirst = room.rantFirst;
   const isRealtime = room.mode === "realtime";
 
   const hasRealtimeEnded =
     isRealtime && room.endTime && Date.now() >= room.endTime;
 
-  const isActive_status =
-    room.phase !== "lobby" && room.phase !== "results";
-  const isWaiting = room.phase === "lobby";
   const isCompleted =
     room.phase === "results" || hasRealtimeEnded;
 
@@ -248,8 +236,7 @@ export function RoomCard({
       className="w-full"
       style={{ maxWidth: "var(--room-card-max-width)" }}
     >
-      <Card className="heard-card-bg">
-        <div className="p-6 space-y-4">
+      <div className="space-y-4">
           {/* Compact header */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -257,98 +244,79 @@ export function RoomCard({
             transition={{ delay: 0.1 }}
             className="space-y-2"
           >
-            {/* Top row: community + time | menu */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-sm min-w-0">
-                {currentSubHeard ? (
-                  <>
-                    <UserCircle className="w-3.5 h-3.5 prefix-icon shrink-0" />
-                    <span className="font-medium text-foreground truncate">Anonymous</span>
-                  </>
-                ) : (
-                  <>
-                    <Globe className="w-3.5 h-3.5 prefix-icon shrink-0" />
-                    {room.subHeard && (
-                      <span
-                        className={`font-medium text-foreground truncate cursor-pointer hover:underline active:opacity-50 transition-opacity`}
-                        onClick={(e) => { e.stopPropagation(); onSelectSubHeard(room.subHeard!); }}
-                      >
-                        {formatSubHeardDisplay(room.subHeard)}
-                      </span>
-                    )}
-                  </>
-                )}
-                <span className="text-muted-foreground shrink-0">
-                  {timeAgoShort(room.createdAt)} ago
-                </span>
-                {isActive_status && !isCompleted && isRealtime && (
-                  <>
-                    <span className="text-muted-foreground">·</span>
-                    <TimeLeftBadge
-                      endTime={room.endTime}
-                      createdAt={room.createdAt}
-                      isRealtime={isRealtime}
-                      variant="text"
-                    />
-                  </>
-                )}
-              </div>
+            {/* Subheard label */}
+            {!currentSubHeard && room.subHeard && (
+              <p className="text-center text-xs text-muted-foreground/60 font-medium tracking-wide uppercase">
+                {formatSubHeardDisplay(room.subHeard)}
+              </p>
+            )}
 
-              <div className="shrink-0">
-                <RoomCardMenu
-                  room={room}
-                  participantCount={participantCount}
-                  isRealtime={isRealtime}
-                  hasRealtimeEnded={hasRealtimeEnded}
-                  isDeveloper={isDeveloper}
-                  isHost={isHost}
-                  onOpenEditRoom={() => setShowEditRoom(true)}
-                  onOpenDeduplication={() => setShowDeduplication(true)}
-                  onOpenVoteMatrix={() => setShowVoteMatrix(true)}
-                />
-              </div>
-            </div>
-
-            {/* Title row */}
-            <div className="flex items-start gap-2">
-              {room.imageUrl && (
-                <div
-                  className="w-10 h-10 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-2 border-purple-300 shrink-0"
-                  onClick={() => openImageOverlay(room.imageUrl!)}
-                >
-                  <img
-                    src={room.imageUrl}
-                    alt={room.topic}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-              <h2 className="font-bold text-foreground flex-1">
+            {/* Title */}
+            <div className="flex items-start justify-center gap-1">
+              <h2 className="font-bold text-foreground text-xl text-center leading-tight">
                 {room.topic}
               </h2>
+              {(room.description || room.imageUrl || room.youtubeUrl) && (
+                <button
+                  onClick={() => setShowDescriptionModal(true)}
+                  className="mt-1 shrink-0 text-foreground/40 hover:text-foreground/70 transition-colors"
+                >
+                  <Info className="w-5 h-5" />
+                </button>
+              )}
             </div>
 
-            {room.description && (
-              <div
-                className={`text-sm text-muted-foreground transition-opacity ${descriptionTruncated || descriptionExpanded ? "cursor-pointer active:opacity-60" : ""}`}
-                onClick={() => (descriptionTruncated || descriptionExpanded) && setDescriptionExpanded((v) => !v)}
-              >
-                <span ref={descriptionRef} className={descriptionExpanded ? "" : "line-clamp-1"}>
-                  <LinkedText text={room.description} />
-                </span>
-                {(descriptionTruncated || descriptionExpanded) && (
-                  <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground/50 mt-0.5">
-                    {descriptionExpanded
-                      ? <><ChevronUp className="w-3 h-3" />see less</>
-                      : <><ChevronDown className="w-3 h-3" />see more</>}
-                  </span>
-                )}
-              </div>
+            {statements.length > 0 && (() => {
+              const totalVotes = statements.reduce((sum, s) => sum + getTotalVotes(s), 0);
+              return (
+                <p className="text-center text-foreground">
+                  <strong>{totalVotes.toLocaleString()}</strong> votes on <strong>{statements.length.toLocaleString()}</strong> responses
+                </p>
+              );
+            })()}
+
+            {(room.description || room.imageUrl || room.youtubeUrl) && (
+              <Dialog open={showDescriptionModal} onOpenChange={setShowDescriptionModal}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{room.topic}</DialogTitle>
+                  </DialogHeader>
+                  {room.imageUrl && (
+                    <img
+                      src={room.imageUrl}
+                      alt={room.topic}
+                      className="w-full rounded-lg object-cover max-h-48"
+                    />
+                  )}
+                  {room.youtubeUrl && (() => {
+                    const videoId = extractYouTubeVideoId(room.youtubeUrl!);
+                    return videoId ? (
+                      <div className="relative w-full overflow-hidden rounded-lg" style={{ paddingBottom: "56.25%" }}>
+                        <iframe
+                          className="absolute inset-0 w-full h-full"
+                          src={`https://www.youtube.com/embed/${videoId}`}
+                          title="Intro video"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : null;
+                  })()}
+                  {room.description && (
+                    <p className="text-sm text-muted-foreground">
+                      <LinkedText text={room.description} />
+                    </p>
+                  )}
+                </DialogContent>
+              </Dialog>
             )}
 
           </motion.div>
 
           {/* Statement Stack or Results */}
+          {!isCompleted && statements.length > 0 && !hasSwipedAll && (
+            <p className="text-center text-s text-muted-foreground/60">Vote on responses below</p>
+          )}
           {isCompleted && statements.length > 0 ? (
             <ConcludedResults
               statements={statements}
@@ -389,6 +357,7 @@ export function RoomCard({
                     coverCardSwiped={coverCardSwiped}
                     demographicQuestions={room.demographicQuestions}
                     answeredQuestionIds={answeredQuestionIds}
+                    targetStatementId={targetStatementId}
                     onVote={handleVote}
                     onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
@@ -432,7 +401,7 @@ export function RoomCard({
             </div>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative z-10">
             {!isCompleted && (
               <Button
                 variant="secondary"
@@ -450,11 +419,24 @@ export function RoomCard({
               className="heard-pill hover:bg-secondary/60"
             >
               <BarChart3 className="w-4 h-4" />
-              {loadingStatements ? "Insights" : `${uniqueVoters} voted`}
+              Results
             </Button>
             {isCompleted && <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>}
-            <ShareButton roomId={room.id} />
+            <ShareButton roomId={room.id} roomTopic={room.topic} />
+            <RoomCardMenu
+              room={room}
+              participantCount={participantCount}
+              isRealtime={isRealtime}
+              hasRealtimeEnded={hasRealtimeEnded}
+              isDeveloper={isDeveloper}
+              isHost={isHost}
+              isCompleted={!!isCompleted}
+              onOpenEditRoom={() => setShowEditRoom(true)}
+              onOpenDeduplication={() => setShowDeduplication(true)}
+              onOpenVoteMatrix={() => setShowVoteMatrix(true)}
+            />
           </div>
+
 
           {isCompleted && showAnalysis && (
             <div>
@@ -466,7 +448,6 @@ export function RoomCard({
             </div>
           )}
         </div>
-      </Card>
 
       {showAnalysis && (
         <DebateAnalysisView

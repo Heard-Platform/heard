@@ -8,17 +8,18 @@ import { share } from "../utils/share";
 
 interface ShareButtonProps {
   roomId: string;
+  roomTopic: string;
 }
 
-export function ShareButton({ roomId }: ShareButtonProps) {
+export function ShareButton({ roomId, roomTopic }: ShareButtonProps) {
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const link = createShareableLink(roomId);
 
     await share({
       url: link,
-      title: "Join this conversation on Heard",
-      text: "Check out this conversation!",
+      title: roomTopic,
+      text: `Come vote on "${roomTopic}"! ${link}`,
       onSuccess: () => {
         toast.success("Link copied to clipboard!");
       },
