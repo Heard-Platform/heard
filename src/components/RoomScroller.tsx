@@ -103,6 +103,7 @@ const RoomScrollerInner = forwardRef<
     ref,
   ) => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [nudgeDismissed, setNudgeDismissed] = useState(false);
     const [nudgeableRoomIds, setNudgeableRoomIds] = useState<Set<string>>(new Set());
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
@@ -166,6 +167,7 @@ const RoomScrollerInner = forwardRef<
         clearAlert(card.id);
         safelyMakeApiCall(() => api.markRoomSeen(card.id));
       }
+      setNudgeDismissed(false);
     }, [currentIndex, rooms, events]);
 
     // Poll for updates on the currently visible room
@@ -262,16 +264,11 @@ const RoomScrollerInner = forwardRef<
       scrollToIndex(0);
     }, [currentSubHeard, rooms.length]);
 
-    const handleSwipedAllChange = (
-      roomId: string,
-      allSwiped: boolean,
-    ) => {
+    const handleSwipedAllChange = (roomId: string, allSwiped: boolean) => {
       setNudgeableRoomIds((prev) => {
-        const newRoomIds = new Set(prev);
-        allSwiped
-          ? newRoomIds.add(roomId)
-          : newRoomIds.delete(roomId);
-        return newRoomIds;
+        const next = new Set(prev);
+        allSwiped ? next.add(roomId) : next.delete(roomId);
+        return next;
       });
     };
 
@@ -373,9 +370,10 @@ const RoomScrollerInner = forwardRef<
 
         <NextRoomNudge
           topic={nextRoom?.topic ?? ""}
-          visible={nextRoom !== null}
+          visible={nextRoom !== null && !nudgeDismissed}
           animate={showNudge}
           subHeard={currentSubHeard ? undefined : nextRoom?.subHeard}
+          onDismiss={() => setNudgeDismissed(true)}
           onClick={() => scrollToIndex(nextRoomIndex)}
         />
       </div>

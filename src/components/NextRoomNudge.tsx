@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { X } from "lucide-react";
 import { formatSubHeardDisplay } from "../utils/subheard";
 
 const ENTER_DELAY = 1;
@@ -8,10 +9,11 @@ interface NextRoomNudgeProps {
   visible: boolean;
   animate: boolean;
   subHeard?: string;
+  onDismiss: () => void;
   onClick: () => void;
 }
 
-export function NextRoomNudge({ topic, visible, animate, subHeard, onClick }: NextRoomNudgeProps) {
+export function NextRoomNudge({ topic, visible, animate, subHeard, onDismiss, onClick }: NextRoomNudgeProps) {
   return (
     <motion.button
       initial={{ opacity: 0, y: 20, scale: 0.85 }}
@@ -50,7 +52,7 @@ export function NextRoomNudge({ topic, visible, animate, subHeard, onClick }: Ne
       }}
     >
       <span className="text-xl leading-none shrink-0">👇</span>
-      <div className="flex flex-col items-start gap-0.5 min-w-0">
+      <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
         <span className="text-xs opacity-75 font-medium leading-none">
           {subHeard ? (
             <>
@@ -67,6 +69,13 @@ export function NextRoomNudge({ topic, visible, animate, subHeard, onClick }: Ne
           {topic}
         </span>
       </div>
+      <button
+        onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+        className="shrink-0 ml-1 p-1 rounded-full hover:bg-white/20 transition-colors"
+        aria-label="Dismiss"
+      >
+        <X className="w-3.5 h-3.5 opacity-70" />
+      </button>
     </motion.button>
   );
 }
