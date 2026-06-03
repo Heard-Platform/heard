@@ -372,9 +372,9 @@ const RoomScrollerInner = forwardRef<
         </div>
 
         <NextRoomNudge
-          key={nextRoom?.id}
           topic={nextRoom?.topic ?? ""}
-          visible={showNudge}
+          visible={nextRoom !== null}
+          animate={showNudge}
           subHeard={currentSubHeard ? undefined : nextRoom?.subHeard}
           onClick={() => scrollToIndex(nextRoomIndex)}
         />

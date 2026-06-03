@@ -6,17 +6,18 @@ const ENTER_DELAY = 1;
 interface NextRoomNudgeProps {
   topic: string;
   visible: boolean;
+  animate: boolean;
   subHeard?: string;
   onClick: () => void;
 }
 
-export function NextRoomNudge({ topic, visible, subHeard, onClick }: NextRoomNudgeProps) {
+export function NextRoomNudge({ topic, visible, animate, subHeard, onClick }: NextRoomNudgeProps) {
   return (
     <motion.button
       initial={{ opacity: 0, y: 20, scale: 0.85 }}
       animate={
         visible
-          ? { opacity: 1, y: [0, -6, 0], scale: 1 }
+          ? { opacity: 1, y: animate ? [0, -6, 0] : 0, scale: 1 }
           : { opacity: 0, y: 20, scale: 0.85 }
       }
       transition={
@@ -24,12 +25,14 @@ export function NextRoomNudge({ topic, visible, subHeard, onClick }: NextRoomNud
           ? {
               opacity: { duration: 0.4, delay: ENTER_DELAY },
               scale: { duration: 0.4, delay: ENTER_DELAY },
-              y: {
-                delay: ENTER_DELAY + 0.4,
-                duration: 1.4,
-                repeat: Infinity,
-                ease: "easeInOut",
-              },
+              y: animate
+                ? {
+                    delay: ENTER_DELAY + 0.4,
+                    duration: 1.4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }
+                : { duration: 0.3 },
             }
           : { duration: 0.25 }
       }
@@ -43,7 +46,7 @@ export function NextRoomNudge({ topic, visible, subHeard, onClick }: NextRoomNud
           "linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f97316 100%)",
         boxShadow:
           "0 4px 24px 0 rgba(168,85,247,0.45), 0 2px 8px 0 rgba(0,0,0,0.18)",
-        pointerEvents: visible ? "auto" : "none",
+        pointerEvents: "auto",
       }}
     >
       <span className="text-xl leading-none shrink-0">👇</span>
