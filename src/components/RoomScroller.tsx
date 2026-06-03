@@ -331,7 +331,7 @@ const RoomScrollerInner = forwardRef<
             return (
               <div
                 key={card.id}
-                className="h-dvh w-full snap-start snap-always flex items-start justify-center pt-15 pb-20 px-4"
+                className="h-dvh w-full snap-start snap-always flex items-start justify-center pt-13 pb-20 px-2"
               >
                 {isCreateCard(card) ? (
                   <CreateRoomCard onCreateRoom={onCreateRoom} onOpenExplorer={onOpenExplorer} />
