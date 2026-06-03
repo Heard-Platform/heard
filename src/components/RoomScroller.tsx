@@ -325,18 +325,6 @@ const RoomScrollerInner = forwardRef<
           }
         `}</style>
 
-          <VineNavigator
-            totalCards={allCards.length}
-            currentIndex={currentIndex}
-            currentUser={user}
-            presences={
-              presences?.filter(
-                (p) => p.userId !== user.id,
-              ) || []
-            }
-            onUpdatePresence={onUpdatePresence}
-          />
-
           {allCards.map((card, index) => {
             const room = isRoomCard(card) ? card : null;
             const event = isEventCard(card) ? card : null;
@@ -345,7 +333,6 @@ const RoomScrollerInner = forwardRef<
               <div
                 key={card.id}
                 className="h-dvh w-full snap-start snap-always flex items-start justify-center pt-15 pb-20 px-4"
-                style={{ paddingRight: "2.5rem" }}
               >
                 {isCreateCard(card) ? (
                   <CreateRoomCard onCreateRoom={onCreateRoom} onOpenExplorer={onOpenExplorer} />

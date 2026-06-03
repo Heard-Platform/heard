@@ -338,7 +338,7 @@ export function LobbyScreen({
 
       {/* Feed view — absolute floating header over snap-scroll */}
       {!currentEvent && !eventLoading && (
-        <div className="relative">
+        <div className="relative heard-feed-bg">
           {/* Floating header with user info and menu */}
           <div className="absolute top-0 left-0 right-0 controls-layer pt-[6px] px-2 flex justify-center items-center">
             <div

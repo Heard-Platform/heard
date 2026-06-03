@@ -8,16 +8,21 @@ import {
   ArrowRight,
   BarChart3,
   Loader2,
-  ChevronDown,
-  ChevronUp,
+  Info,
   MessageCirclePlus,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 import { SwipeableStatementStack } from "./room/SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { AddResponseModal } from "./room/AddResponseModal";
 import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType, UserSession, Cover, FullCoverData } from "../types";
@@ -26,9 +31,7 @@ import { ShareButton } from "./ShareButton";
 import { HideAndMergeModal } from "./room/mod/HideAndMergeModal";
 import { EditRoomModal } from "./room/mod/EditRoomModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
-import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
-import { timeAgoShort } from "../utils/time";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
 
@@ -80,9 +83,7 @@ export function RoomCard({
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
 
   const [showAnalysis, setShowAnalysis] = useState(false);
-  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
-  const [descriptionTruncated, setDescriptionTruncated] = useState(false);
-  const descriptionRef = useRef<HTMLSpanElement>(null);
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false);
   const [showAddResponseModal, setShowAddResponseModal] = useState(false);
   const [showDeduplication, setShowDeduplication] = useState(false);
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
@@ -96,11 +97,6 @@ export function RoomCard({
       setShowAnalysis(true);
     }
   }, [analysisRoomId, room.id]);
-
-  useLayoutEffect(() => {
-    const el = descriptionRef.current;
-    if (el) setDescriptionTruncated(el.scrollHeight > el.clientHeight);
-  }, [room.description]);
 
   useEffect(() => {
     setChanceCardSwiped(room.chanceCardSwiped || false);
@@ -242,41 +238,20 @@ export function RoomCard({
             transition={{ delay: 0.1 }}
             className="space-y-2"
           >
-            {/* Top row: timestamp + menu */}
-            <div className="flex items-center justify-end gap-2">
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <span>{timeAgoShort(room.createdAt)} ago</span>
-                {room.endTime && !isCompleted && (
-                  <>
-                    <span>·</span>
-                    <TimeLeftBadge
-                      endTime={room.endTime}
-                      createdAt={room.createdAt}
-                      isRealtime={isRealtime}
-                      variant="text"
-                    />
-                  </>
-                )}
-              </div>
-              <div className="shrink-0">
-                <RoomCardMenu
-                  room={room}
-                  participantCount={participantCount}
-                  isRealtime={isRealtime}
-                  hasRealtimeEnded={hasRealtimeEnded}
-                  isDeveloper={isDeveloper}
-                  isHost={isHost}
-                  onOpenEditRoom={() => setShowEditRoom(true)}
-                  onOpenDeduplication={() => setShowDeduplication(true)}
-                  onOpenVoteMatrix={() => setShowVoteMatrix(true)}
-                />
-              </div>
-            </div>
-
             {/* Title */}
-            <h2 className="font-bold text-foreground text-3xl text-center">
-              {room.topic}
-            </h2>
+            <div className="flex items-start justify-center gap-1">
+              <h2 className="font-bold text-foreground text-xl text-center leading-tight">
+                {room.topic}
+              </h2>
+              {room.description && (
+                <button
+                  onClick={() => setShowDescriptionModal(true)}
+                  className="mt-1 shrink-0 text-foreground/40 hover:text-foreground/70 transition-colors"
+                >
+                  <Info className="w-5 h-5" />
+                </button>
+              )}
+            </div>
 
             {statements.length > 0 && (() => {
               const totalVotes = statements.reduce(
@@ -291,30 +266,25 @@ export function RoomCard({
             })()}
 
             {room.description && (
-              <div
-                className={`text-sm text-muted-foreground transition-opacity ${descriptionTruncated || descriptionExpanded ? "cursor-pointer active:opacity-60" : ""}`}
-                onClick={() => (descriptionTruncated || descriptionExpanded) && setDescriptionExpanded((v) => !v)}
-              >
-                <span ref={descriptionRef} className={descriptionExpanded ? "" : "line-clamp-1"}>
-                  <LinkedText text={room.description} />
-                </span>
-                {(descriptionTruncated || descriptionExpanded) && (
-                  <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground/50 mt-0.5">
-                    {descriptionExpanded
-                      ? <><ChevronUp className="w-3 h-3" />see less</>
-                      : <><ChevronDown className="w-3 h-3" />see more</>}
-                  </span>
-                )}
-              </div>
+              <Dialog open={showDescriptionModal} onOpenChange={setShowDescriptionModal}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{room.topic}</DialogTitle>
+                  </DialogHeader>
+                  <p className="text-sm text-muted-foreground">
+                    <LinkedText text={room.description} />
+                  </p>
+                </DialogContent>
+              </Dialog>
             )}
 
           </motion.div>
 
           {/* Statement Stack or Results */}
-          {!isCompleted && statements.length > 0 && (
-            <h3 className="font-bold text-foreground text-xl -mb-2">Vote on Responses below</h3>
+          {!isCompleted && statements.length > 0 && !hasSwipedAll && (
+            <p className="text-center text-s text-muted-foreground/60">Vote on responses below</p>
           )}
-          {isCompleted && statements.length > 0 ? (
+{isCompleted && statements.length > 0 ? (
             <ConcludedResults
               statements={statements}
               onDiscuss={
@@ -397,7 +367,7 @@ export function RoomCard({
             </div>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative z-10">
             {!isCompleted && (
               <Button
                 variant="secondary"
@@ -419,6 +389,18 @@ export function RoomCard({
             </Button>
             {isCompleted && <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>}
             <ShareButton roomId={room.id} />
+            <RoomCardMenu
+              room={room}
+              participantCount={participantCount}
+              isRealtime={isRealtime}
+              hasRealtimeEnded={hasRealtimeEnded}
+              isDeveloper={isDeveloper}
+              isHost={isHost}
+              isCompleted={!!isCompleted}
+              onOpenEditRoom={() => setShowEditRoom(true)}
+              onOpenDeduplication={() => setShowDeduplication(true)}
+              onOpenVoteMatrix={() => setShowVoteMatrix(true)}
+            />
           </div>
 
 

@@ -44,7 +44,6 @@ import { StatementVotesTableStory } from "../stories/StatementVotesTable.story";
 import { StatementSpectrumStory } from "../stories/StatementSpectrum.story";
 import { UserTimelineChartStory } from "../stories/UserTimelineChart.story";
 import { RoomCardStory } from "../stories/RoomCard.story";
-import { SinglePostViewStory } from "../stories/SinglePostView.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -267,9 +266,6 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="room-card">
                 <RoomCardStory />
-              </TabsContent>
-              <TabsContent value="single-post-view">
-                <SinglePostViewStory />
               </TabsContent>
             </Tabs>
           </div>
