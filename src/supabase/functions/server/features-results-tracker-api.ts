@@ -89,6 +89,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const flyerResultsClicked = (await getUniqueUserIdsForEvent("flyer_results_get_results_clicked")).size;
     const flyerResultsClickedSince = new Date("2026-05-28").getTime();
 
+    const llmApiCalls = await countRecords("llm_api_calls");
+    const llmApiCallsSince = new Date("2026-06-04").getTime();
+
     const oneBillionEventRows = await getOneBillionEvents();
     const realNonDevUserIds = new Set(
       users.filter((u) => !u.isDeveloper).map((u) => u.id),
@@ -163,6 +166,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       flyerResultsClicked,
       flyerResultsClickedSince,
       oneBillionEvents,
+      llmApiCalls,
+      llmApiCallsSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);

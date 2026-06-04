@@ -37,6 +37,7 @@ import { validateSession, validateHost } from "./auth-utils.ts";
 import { API_URL_PREFIX } from "./constants.tsx";
 import { performanceTestApi } from "./performance-test-api.tsx";
 import { ogApi } from "./og-api.tsx";
+import { aiUsageApi } from "./ai-usage-api.ts";
 
 type Variables = {
   userId?: string;
@@ -72,6 +73,7 @@ app.use(
 
 // Public routes — registered before the API key middleware so they require no auth.
 app.route("/", ogApi);
+app.route("/", aiUsageApi);
 
 app.use("*", async (c, next) => {
   const apiKey = c.req.header("X-API-Key");

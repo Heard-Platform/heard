@@ -1,12 +1,14 @@
 import process from "node:process";
 import { LlmClient } from "./llm-client.ts";
+import { LlmProvider } from "./llm-types.ts";
 import { OpenAiClient } from "./openai-client.ts";
 import { AnthropicClient } from "./anthropic-client.ts";
 import { GeminiClient } from "./gemini-client.ts";
 
+export type { LlmProvider };
+
 // Set LLM_PROVIDER in .env to switch providers.
 // Accepted values: "gemini" (default) | "anthropic" | "openai"
-export type LlmProvider = "openai" | "anthropic" | "gemini";
 
 export function getLlmProvider(): LlmProvider {
   const provider = process.env.LLM_PROVIDER ?? "gemini";

@@ -491,6 +491,8 @@ export interface FeatureResults {
     clickForm: number;
     clickCopy: number;
   };
+  llmApiCalls: number;
+  llmApiCallsSince: number;
 }
 
 export interface UserHistoryData {

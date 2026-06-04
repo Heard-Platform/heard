@@ -791,6 +791,7 @@ app.post(
 );
 
 // Extract topic and statements from a rant (for creation flow)
+const RANT_EXTRACT_ENDPOINT = "/rant/extract";
 app.post(
   "/make-server-f1a393b4/rant/extract",
   async (c: Context) => {
@@ -804,9 +805,13 @@ app.post(
         );
       }
 
+      const userId = c.get("userId");
       const aiClient = createLlmClient();
       const prompt = makeRantExtractionPrompt(rant);
-      const content = await aiClient.completeJson(prompt);
+      const content = await aiClient.completeJson(prompt, {
+        userId,
+        endpoint: RANT_EXTRACT_ENDPOINT,
+      });
 
       if (!content) {
         return c.json({ error: "No content generated" }, 500);

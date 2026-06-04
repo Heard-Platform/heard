@@ -1,3 +1,4 @@
+import process from "node:process";
 import { describe, it } from "jsr:@std/testing/bdd";
 import { ONE_HOUR_MIN } from "./time-utils.ts";
 import { getRedditPosts } from "./reddit-scraper-utils.ts";
@@ -12,6 +13,9 @@ import { getRandomPersona } from "./personas.tsx";
 import { OpenAiClient } from "./openai-client.ts";
 import { AnthropicClient } from "./anthropic-client.ts";
 import { GeminiClient } from "./gemini-client.ts";
+
+process.env.NODE_ENV = "test";
+const TEST_ENDPOINT = "test:reddit-import";
 
 const testCriteria = {
   subredditName: getRandomSubreddit(),
@@ -117,7 +121,7 @@ if (false) {
     it("returns a valid response", async () => {
       const client = new OpenAiClient();
       const prompt = makeTransformPromptFromRedditPost(testPosts[testPostIndex], "openai", testPersona);
-      const response = await client.complete(prompt);
+      const response = await client.complete(prompt, { endpoint: TEST_ENDPOINT });
       console.log("\n=== OpenAI ===\n" + response);
       assertValidResponse(response);
     });
@@ -127,7 +131,7 @@ if (false) {
     it("returns a valid response", async () => {
       const client = new AnthropicClient();
       const prompt = makeTransformPromptFromRedditPost(testPosts[testPostIndex], "anthropic", testPersona);
-      const response = await client.complete(prompt);
+      const response = await client.complete(prompt, { endpoint: TEST_ENDPOINT });
       console.log("\n=== Anthropic ===\n" + response);
       assertValidResponse(response);
     });
@@ -137,7 +141,7 @@ if (false) {
     it("returns a valid response", async () => {
       const client = new GeminiClient();
       const prompt = makeTransformPromptFromRedditPost(testPosts[testPostIndex], "gemini", testPersona);
-      const response = await client.complete(prompt);
+      const response = await client.complete(prompt, { endpoint: TEST_ENDPOINT });
       console.log("\n=== Gemini ===\n" + response);
       assertValidResponse(response);
     });
@@ -150,7 +154,7 @@ if (false) {
       const randomIndex = Math.floor(Math.random() * posts.length);
       const prompt = makeTransformPromptFromRedditPost(posts[randomIndex], "gemini", testPersona);
       const client = new GeminiClient();
-      const response = await client.complete(prompt);
+      const response = await client.complete(prompt, { endpoint: TEST_ENDPOINT });
       console.log("\n=== End-to-end ===\n" + response);
       assertValidResponse(response);
     });
