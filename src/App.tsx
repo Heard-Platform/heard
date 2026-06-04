@@ -6,6 +6,7 @@ import { TermsOfServicePage } from "./screens/TermsOfServicePage";
 import { PrivacyPolicyPage } from "./screens/PrivacyPolicyPage";
 import { OrgsLanding } from "./screens/OrgsLanding";
 import { OneBillionPage } from "./screens/OneBillionPage";
+import { AiUsagePage } from "./screens/AiUsagePage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
@@ -82,6 +83,7 @@ function AppContent() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showOrgsPage, setShowOrgsPage] = useState(false);
   const [showOneBillion, setShowOneBillion] = useState(false);
+  const [showAiUsage, setShowAiUsage] = useState(false);
   const [newsletterEdition, setNewsletterEdition] = useState<number | null>(null);
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
@@ -256,6 +258,8 @@ function AppContent() {
         window.location.pathname.startsWith("/orgs");
       const isOneBillionRoute =
         window.location.pathname.startsWith("/1billion");
+      const isAiUsageRoute =
+        window.location.pathname.startsWith("/ai-usage");
 
       const newsletterMatch = window.location.pathname.match(/^\/newsletter\/(\d+)$/);
       const isKaloramaRoute =
@@ -409,6 +413,8 @@ function AppContent() {
         setShowOrgsPage(true);
       } else if (isOneBillionRoute) {
         setShowOneBillion(true);
+      } else if (isAiUsageRoute) {
+        setShowAiUsage(true);
       } else if (newsletterMatch) {
         const edition = parseInt(newsletterMatch[1]);
         setNewsletterEdition(edition);
@@ -435,6 +441,7 @@ function AppContent() {
       !showUnsubscribe &&
       !showAdminPanel &&
       !showDevTools &&
+      !showAiUsage &&
       !newsletterEdition &&
       !isJoiningAnonymously
     ) {
@@ -450,6 +457,7 @@ function AppContent() {
     showUnsubscribe,
     showAdminPanel,
     showDevTools,
+    showAiUsage,
     newsletterEdition,
     isJoiningAnonymously,
     createAnonymousUser,
@@ -635,6 +643,10 @@ function AppContent() {
 
   if (showOneBillion) {
     return <OneBillionPage />;
+  }
+
+  if (showAiUsage) {
+    return <AiUsagePage />;
   }
 
   if (newsletterEdition) {
