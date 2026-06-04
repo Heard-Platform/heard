@@ -25,6 +25,7 @@ import { createShareableLink } from "../../utils/url";
 import { share } from "../../utils/share";
 import { DebateRoom } from "../../types";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import { timeAgoShort } from "../../utils/time";
 
 interface RoomCardMenuProps {
   room: DebateRoom;
@@ -33,6 +34,7 @@ interface RoomCardMenuProps {
   hasRealtimeEnded: boolean | number | undefined;
   isDeveloper: boolean;
   isHost: boolean;
+  isCompleted: boolean;
   onOpenEditRoom: () => void;
   onOpenDeduplication: () => void;
   onOpenVoteMatrix: () => void;
@@ -45,6 +47,7 @@ export function RoomCardMenu({
   hasRealtimeEnded,
   isDeveloper,
   isHost,
+  isCompleted,
   onOpenEditRoom,
   onOpenDeduplication,
   onOpenVoteMatrix,
@@ -55,15 +58,29 @@ export function RoomCardMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
+          variant="secondary"
           size="icon"
-          className="w-6 h-6 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-0 flex-shrink-0"
+          className="heard-pill hover:bg-secondary/60 w-9 h-9"
           onClick={(e: React.MouseEvent) => e.stopPropagation()}
         >
           <MoreHorizontal className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem disabled>
+          <span className="text-xs text-muted-foreground">
+            {timeAgoShort(room.createdAt)} ago
+            {room.endTime && !isCompleted && (() => {
+              const timeLeft = Math.max(0, room.endTime - Date.now());
+              const days = Math.floor(timeLeft / (24 * 60 * 60 * 1000));
+              const hours = Math.floor((timeLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+              const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / 60000);
+              const label = days > 0 ? `${days}d` : hours > 0 ? `${hours}h` : `${minutes}m`;
+              return ` · ${label} left`;
+            })()}
+          </span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async (e: React.MouseEvent) => {
             e.stopPropagation();
@@ -90,39 +107,6 @@ export function RoomCardMenu({
           <Users className="w-4 h-4 mr-2" />
           {participantCount} {participantCount === 1 ? 'person' : 'people'}
         </DropdownMenuItem>
-        {isRealtime && room.endTime && !hasRealtimeEnded && (
-          <DropdownMenuItem disabled>
-            {(() => {
-              const timeLeft = Math.max(
-                0,
-                room.endTime - Date.now(),
-              );
-              const days = Math.floor(
-                timeLeft / (24 * 60 * 60 * 1000),
-              );
-              const hours = Math.floor(
-                (timeLeft % (24 * 60 * 60 * 1000)) /
-                  (60 * 60 * 1000),
-              );
-              const minutes = Math.floor(
-                (timeLeft % (60 * 60 * 1000)) / 60000,
-              );
-              const seconds = Math.floor(
-                (timeLeft % 60000) / 1000,
-              );
-
-              if (days > 0) {
-                return `${days}d left`;
-              } else if (hours > 0) {
-                return `${hours}h left`;
-              } else if (minutes > 0) {
-                return `${minutes}m left`;
-              } else {
-                return `${seconds}s left`;
-              }
-            })()}
-          </DropdownMenuItem>
-        )}
         {(isHost || isDeveloper) && (
           <>
             <DropdownMenuSeparator />

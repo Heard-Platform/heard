@@ -46,6 +46,7 @@ interface RoomScrollerProps {
   currentSubHeard?: string;
   roomStatements: Record<string, Statement[]>;
   analysisRoomId?: string;
+  targetStatementId?: string;
   presences: UserPresence[];
   onJoinRoom: (roomId: string) => void;
   onCreateRoom: () => void;
@@ -65,7 +66,6 @@ interface RoomScrollerProps {
   onUpdatePresence: (
     currentRoomIndex: number,
   ) => void;
-  onSelectSubHeard: (subHeard: string) => void;
   onShowAccountSetupModal: (featureText: string) => void;
   onOpenEvent: (eventId: string) => void;
 }
@@ -94,15 +94,16 @@ const RoomScrollerInner = forwardRef<
       onDiscussStatement,
       roomStatements,
       analysisRoomId,
+      targetStatementId,
       presences,
       onUpdatePresence,
       onShowAccountSetupModal,
       onOpenEvent,
-      onSelectSubHeard,
     },
     ref,
   ) => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [nudgeDismissed, setNudgeDismissed] = useState(false);
     const [nudgeableRoomIds, setNudgeableRoomIds] = useState<Set<string>>(new Set());
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
@@ -166,6 +167,7 @@ const RoomScrollerInner = forwardRef<
         clearAlert(card.id);
         safelyMakeApiCall(() => api.markRoomSeen(card.id));
       }
+      setNudgeDismissed(false);
     }, [currentIndex, rooms, events]);
 
     // Poll for updates on the currently visible room
@@ -262,16 +264,11 @@ const RoomScrollerInner = forwardRef<
       scrollToIndex(0);
     }, [currentSubHeard, rooms.length]);
 
-    const handleSwipedAllChange = (
-      roomId: string,
-      allSwiped: boolean,
-    ) => {
+    const handleSwipedAllChange = (roomId: string, allSwiped: boolean) => {
       setNudgeableRoomIds((prev) => {
-        const newRoomIds = new Set(prev);
-        allSwiped
-          ? newRoomIds.add(roomId)
-          : newRoomIds.delete(roomId);
-        return newRoomIds;
+        const next = new Set(prev);
+        allSwiped ? next.add(roomId) : next.delete(roomId);
+        return next;
       });
     };
 
@@ -327,18 +324,6 @@ const RoomScrollerInner = forwardRef<
           }
         `}</style>
 
-          <VineNavigator
-            totalCards={allCards.length}
-            currentIndex={currentIndex}
-            currentUser={user}
-            presences={
-              presences?.filter(
-                (p) => p.userId !== user.id,
-              ) || []
-            }
-            onUpdatePresence={onUpdatePresence}
-          />
-
           {allCards.map((card, index) => {
             const room = isRoomCard(card) ? card : null;
             const event = isEventCard(card) ? card : null;
@@ -346,8 +331,7 @@ const RoomScrollerInner = forwardRef<
             return (
               <div
                 key={card.id}
-                className="h-dvh w-full snap-start snap-always flex items-start justify-center pt-15 pb-20 px-4"
-                style={{ paddingRight: "2.5rem" }}
+                className="h-dvh w-full snap-start snap-always flex items-start justify-center pt-13 pb-20 px-2"
               >
                 {isCreateCard(card) ? (
                   <CreateRoomCard onCreateRoom={onCreateRoom} onOpenExplorer={onOpenExplorer} />
@@ -365,6 +349,7 @@ const RoomScrollerInner = forwardRef<
                       loadingRooms[room.id] || false
                     }
                     analysisRoomId={analysisRoomId}
+                    targetStatementId={targetStatementId}
                     onJoin={() => onJoinRoom(room.id)}
                     onSubmitStatement={onSubmitStatement}
                     onVoteOnStatement={onVoteOnStatement}
@@ -376,7 +361,6 @@ const RoomScrollerInner = forwardRef<
                     }
                     onDiscussStatement={onDiscussStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
-                    onSelectSubHeard={onSelectSubHeard}
                   />
                 ) : null}
               </div>
@@ -385,10 +369,11 @@ const RoomScrollerInner = forwardRef<
         </div>
 
         <NextRoomNudge
-          key={nextRoom?.id}
           topic={nextRoom?.topic ?? ""}
-          visible={showNudge}
+          visible={nextRoom !== null && !nudgeDismissed}
+          animate={showNudge}
           subHeard={currentSubHeard ? undefined : nextRoom?.subHeard}
+          onDismiss={() => setNudgeDismissed(true)}
           onClick={() => scrollToIndex(nextRoomIndex)}
         />
       </div>

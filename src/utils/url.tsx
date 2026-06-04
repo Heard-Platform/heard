@@ -65,6 +65,10 @@ export const parseEventIdFromUrl = (): string | null => {
   return parseFromUrl('event')
 }
 
+export const parseStatementIdFromUrl = (): string | null => {
+  return parseFromUrl('statement', 'statement')
+}
+
 export const updateUrlForEvent = (eventId: string | null) => {
   if (typeof window === 'undefined') return
   const newPath = eventId ? `/event/${eventId}` : '/'

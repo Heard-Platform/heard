@@ -35,6 +35,7 @@ interface LobbyScreenProps {
   roomStatements: Record<string, any[]>;
   targetRoomId?: string;
   analysisRoomId?: string;
+  targetStatementId?: string;
   hasQrScanResult?: boolean;
   eventLoading?: boolean;
   currentEvent?: Event | null;
@@ -94,6 +95,7 @@ export function LobbyScreen({
   roomStatements,
   targetRoomId,
   analysisRoomId,
+  targetStatementId,
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
     useState(false);
@@ -338,101 +340,107 @@ export function LobbyScreen({
 
       {/* Feed view — absolute floating header over snap-scroll */}
       {!currentEvent && !eventLoading && (
-        <div className="relative">
-          {/* Floating header with user info and menu */}
-          <div className="absolute top-0 left-0 right-0 controls-layer pt-[6px] px-2 flex justify-center items-center">
-            <div
-              className="flex items-center justify-between gap-2 w-full max-w-2xl"
-              style={{ marginTop: 8 }}
-            >
-              {onSubHeardChange && (
-                <div className="flex-1 min-w-0 mr-3">
-                  <SubHeardBrowser
-                    currentSubHeard={currentSubHeard}
-                    user={user}
-                    onSubHeardChange={onSubHeardChange}
-                    onUpdateSubHeard={async (community: SubHeard) => {
-                      try {
-                        const response =
-                          await api.updateSubHeardSettings(community);
-                        if (response.success) {
-                          return true;
+        <div className="heard-feed-bg md:flex md:items-start md:justify-center md:min-h-screen">
+          <div className="relative w-full md:max-w-[420px] md:shadow-2xl md:rounded-3xl md:overflow-hidden md:my-8">
+            {/* Floating header with user info and menu */}
+            <div className="absolute top-0 left-0 right-0 controls-layer pt-[6px] px-2 flex justify-center items-center">
+              <div
+                className="flex items-center justify-between gap-2 w-full max-w-2xl"
+                style={{ marginTop: 8 }}
+              >
+                {onSubHeardChange && (
+                  <div className="flex-1 min-w-0 mr-3">
+                    <SubHeardBrowser
+                      currentSubHeard={currentSubHeard}
+                      user={user}
+                      onSubHeardChange={onSubHeardChange}
+                      onUpdateSubHeard={async (
+                        community: SubHeard,
+                      ) => {
+                        try {
+                          const response =
+                            await api.updateSubHeardSettings(
+                              community,
+                            );
+                          if (response.success) {
+                            return true;
+                          }
+                          console.error(
+                            "Failed to update sub-heard:",
+                            response.error,
+                          );
+                          return false;
+                        } catch (error) {
+                          console.error(
+                            "Error updating sub-heard:",
+                            error,
+                          );
+                          return false;
                         }
-                        console.error(
-                          "Failed to update sub-heard:",
-                          response.error,
-                        );
-                        return false;
-                      } catch (error) {
-                        console.error(
-                          "Error updating sub-heard:",
-                          error,
-                        );
-                        return false;
+                      }}
+                      onShowAccountSetupModal={
+                        handleShowAccountSetupModal
                       }
-                    }}
+                      onOpenExplorer={() => setExplorerOpen(true)}
+                      onLogoClick={() => {
+                        roomScrollerRef.current?.scrollToTop();
+                        if (user.isDeveloper) {
+                          setShowDebugPanel(!showDebugPanel);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+
+                <NewItemButton
+                  onNewConversation={handleOpenCreateSheet}
+                  onNewEvent={handleOpenCreateEventSheet}
+                />
+
+                {onLogout && (
+                  <SidePanelMenu
+                    user={user}
+                    onLogout={onLogout}
+                    onOpenHelp={() => setHelpModalOpen(true)}
+                    onOpenShowcase={onOpenShowcase}
+                    onOpenAdminDashboard={onOpenAdminDashboard}
+                    onOpenFeatureTracker={onOpenFeatureTracker}
+                    onOpenDevTools={onOpenDevTools}
+                    onOpenAdminPanel={onOpenAdminPanel}
+                    onJumpToFinalResults={onJumpToFinalResults}
+                    onCreateAnonDebate={handleCreateAnonDebate}
                     onShowAccountSetupModal={
                       handleShowAccountSetupModal
                     }
-                    onOpenExplorer={() => setExplorerOpen(true)}
-                    onLogoClick={() => {
-                      roomScrollerRef.current?.scrollToTop();
-                      if (user.isDeveloper) {
-                        setShowDebugPanel(!showDebugPanel);
-                      }
-                    }}
+                    onJumpToRoom={onJumpToRoom}
                   />
-                </div>
-              )}
-
-              <NewItemButton
-                onNewConversation={handleOpenCreateSheet}
-                onNewEvent={handleOpenCreateEventSheet}
-              />
-
-              {onLogout && (
-                <SidePanelMenu
-                  user={user}
-                  onLogout={onLogout}
-                  onOpenHelp={() => setHelpModalOpen(true)}
-                  onOpenShowcase={onOpenShowcase}
-                  onOpenAdminDashboard={onOpenAdminDashboard}
-                  onOpenFeatureTracker={onOpenFeatureTracker}
-                  onOpenDevTools={onOpenDevTools}
-                  onOpenAdminPanel={onOpenAdminPanel}
-                  onJumpToFinalResults={onJumpToFinalResults}
-                  onCreateAnonDebate={handleCreateAnonDebate}
-                  onShowAccountSetupModal={
-                    handleShowAccountSetupModal
-                  }
-                  onJumpToRoom={onJumpToRoom}
-                />
-              )}
+                )}
+              </div>
             </div>
-          </div>
 
-          <RoomScroller
-            ref={roomScrollerRef}
-            rooms={filteredRooms}
-            events={events}
-            isDeveloper={user.isDeveloper || false}
-            loading={roomsLoading}
-            user={user}
-            currentSubHeard={currentSubHeard}
-            roomStatements={roomStatements}
-            analysisRoomId={analysisRoomId}
-            presences={presences}
-            onJoinRoom={handleJoinRoom}
-            onCreateRoom={handleOpenCreateSheet}
-            onSubmitStatement={onSubmitStatement}
-            onVoteOnStatement={onVoteOnStatement}
-            onDiscussStatement={handleDiscussStatement}
-            onUpdatePresence={handleUpdatePresence}
-            onShowAccountSetupModal={handleShowAccountSetupModal}
-            onOpenExplorer={() => setExplorerOpen(true)}
-            onOpenEvent={onOpenEvent}
-            onSelectSubHeard={onSubHeardChange}
-          />
+            <RoomScroller
+              ref={roomScrollerRef}
+              rooms={filteredRooms}
+              events={events}
+              isDeveloper={user.isDeveloper || false}
+              loading={roomsLoading}
+              user={user}
+              currentSubHeard={currentSubHeard}
+              roomStatements={roomStatements}
+              analysisRoomId={analysisRoomId}
+              targetStatementId={targetStatementId}
+              presences={presences}
+              onJoinRoom={handleJoinRoom}
+              onCreateRoom={handleOpenCreateSheet}
+              onSubmitStatement={onSubmitStatement}
+              onVoteOnStatement={onVoteOnStatement}
+              onDiscussStatement={handleDiscussStatement}
+              onUpdatePresence={handleUpdatePresence}
+              onShowAccountSetupModal={handleShowAccountSetupModal}
+              onOpenExplorer={() => setExplorerOpen(true)}
+              onOpenEvent={onOpenEvent}
+            />
+          </div>
         </div>
       )}
 
