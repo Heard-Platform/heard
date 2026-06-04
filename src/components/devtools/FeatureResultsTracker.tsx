@@ -23,6 +23,7 @@ import {
   Eye,
   Heart,
   ArrowRight,
+  Cpu,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -250,6 +251,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.oneBillionEvents.pageLoad,
       getDate: () => new Date("2026-05-15").getTime(),
       renderExtra: (s) => <OneBillionResults {...s.oneBillionEvents} />,
+    },
+    {
+      icon: Cpu,
+      iconColor: "text-slate-600",
+      bgColor: "bg-slate-100",
+      title: "LLM API Calls",
+      description: "Total rows in the llm_api_calls table",
+      getValue: (s) => s.llmApiCalls,
+      getDate: (s) => s.llmApiCallsSince,
     },
   ]
 
