@@ -65,7 +65,7 @@ export function NextRoomNudge({ topic, visible, animate, subHeard, onDismiss, on
             "next post"
           )}
         </span>
-        <span className="w-full truncate text-sm font-semibold leading-snug">
+        <span className="w-full truncate text-sm font-semibold leading-snug text-left">
           {topic}
         </span>
       </div>
