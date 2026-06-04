@@ -1,4 +1,5 @@
 import { Context, Hono } from "npm:hono";
+import { defineRoute } from "./route-wrapper.tsx";
 import {
   getUserSession,
   saveUserAndEmail,
@@ -12,7 +13,8 @@ import type {
 import { ONE_WEEK_MS } from "./time-utils.ts";
 import { getCommunity, saveCommunity, saveStatement } from "./kv-utils.tsx";
 import { createNewRoomData } from "./room-utils.ts";
-import { insertDemographicQuestion } from "./model-utils.ts";
+import { insertDemographicQuestion, recordRoomEngagement, saveRoomView } from "./model-utils.ts";
+
 
 const app = new Hono();
 
@@ -100,6 +102,7 @@ app.post(
       });
 
       await saveDebateRoom(debateRoom);
+      await recordRoomEngagement(userId, roomId);
 
       user.score += 100;
 
@@ -157,6 +160,28 @@ app.post(
       );
     }
   },
+);
+
+app.post(
+  "/make-server-f1a393b4/rooms/:roomId/seen",
+  defineRoute(
+    {},
+    async (_params, c: Context) => {
+      const userId = c.get("userId");
+      if (!userId) throw new Error("Not authenticated");
+      const roomId = c.req.param("roomId");
+      if (!roomId) throw new Error("Room ID is required");
+
+      await saveRoomView({
+        userId,
+        roomId,
+        lastSeenAt: Date.now(),
+      });
+
+      return {};
+    },
+    "Failed to mark room as seen",
+  ),
 );
 
 export { app as roomApi };

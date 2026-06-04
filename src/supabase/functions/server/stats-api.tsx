@@ -9,7 +9,7 @@ import {
 import { getAllRecords } from "./db-utils.ts";
 import type { Session } from "./types.tsx";
 import { getFlyerEmails } from "./model-utils.ts";
-import { generateSparklineData, getDateString, calculateRetention } from "./stats-utils.ts";
+import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
 
 const app = new Hono();
 
@@ -291,6 +291,40 @@ app.get("/make-server-f1a393b4/stats/live-activity", async (c) => {
   } catch (error) {
     console.error("Error fetching live activity:", error);
     return c.json({ error: "Failed to fetch live activity" }, 500);
+  }
+});
+
+app.get("/make-server-f1a393b4/stats/user-timeline", async (c) => {
+  try {
+    const [users, allVotes, allStatements] = await Promise.all([
+      getAllRealUsers(),
+      getAllVotes(),
+      getAllStatements(),
+    ]);
+
+    const activeDaysByUser = buildActiveDaysMap(allVotes, allStatements);
+
+    const entries = users
+      .filter((u: any) => {
+        const startDay = new Date(u.createdAt).toISOString().split("T")[0];
+        const endDay = new Date(u.lastActive).toISOString().split("T")[0];
+        return startDay !== endDay;
+      })
+      .map((u: any) => ({
+        id: u.id,
+        nickname: u.nickname,
+        email: u.email,
+        createdAt: u.createdAt,
+        lastActive: u.lastActive,
+        isTestUser: u.isTestUser,
+        isDeveloper: u.isDeveloper,
+        activeDays: Array.from(activeDaysByUser.get(u.id) ?? []).sort((a: number, b: number) => a - b),
+      }));
+
+    return c.json({ entries });
+  } catch (error) {
+    console.error("Error fetching user timeline:", error);
+    return c.json({ error: "Failed to fetch user timeline" }, 500);
   }
 });
 

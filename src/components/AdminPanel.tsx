@@ -41,7 +41,6 @@ import {
   TestTube,
   History,
   Mail,
-  MessageSquare,
 } from "lucide-react";
 import { api } from "../utils/api";
 import { adminApi } from "../utils/admin-api";
@@ -51,7 +50,6 @@ import { UserHistory } from "./admin/UserHistory";
 import { UsersTable } from "./admin/UsersTable";
 import { DataFixes } from "./admin/DataFixes";
 import { Newsletter } from "./admin/Newsletter";
-import { SmsNotifications } from "./admin/SmsNotifications";
 import { Flyers } from "./admin/Flyers";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 import { PowerUsers } from "./admin/PowerUsers";
@@ -65,6 +63,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     useState(safelyGetStorageItem<string>("devAdminKey", ""));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [users, setUsers] = useState<UserSession[]>([]);
+  const [activeDayCounts, setActiveDayCounts] = useState<Record<string, number>>({});
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [debates, setDebates] = useState<DebateRoom[]>([]);
   const [loading, setLoading] = useState(false);
@@ -86,10 +85,10 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
   const [newDebateSubHeard, setNewDebateSubHeard] =
     useState<string>("");
   const [activeTab, setActiveTab] = useState<string>(() => {
-    if (typeof window === "undefined") return "subheards";
+    if (typeof window === "undefined") return "users";
     const url = new URL(window.location.href);
     const tab = url.searchParams.get("tab");
-    return tab || "subheards";
+    return tab || "users";
   });
   const [selectedHistoryUserId, setSelectedHistoryUserId] = useState<string>("");
 
@@ -126,6 +125,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         debatesRes.success
       ) {
         setUsers(usersRes.data?.users || []);
+        setActiveDayCounts(usersRes.data?.activeDayCounts || {});
         setSubHeards(subHeardsRes.data?.subHeards || []);
         setDebates(debatesRes.data?.debates || []);
         setIsAuthenticated(true);
@@ -496,6 +496,12 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
 
         <div className="flex gap-2 border-b">
           <Button
+            variant={activeTab === "users" ? "default" : "ghost"}
+            onClick={() => handleTabChange("users")}
+          >
+            Users
+          </Button>
+          <Button
             variant={activeTab === "subheards" ? "default" : "ghost"}
             onClick={() => handleTabChange("subheards")}
           >
@@ -527,24 +533,11 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             Data Fixes
           </Button>
           <Button
-            variant={activeTab === "users" ? "default" : "ghost"}
-            onClick={() => handleTabChange("users")}
-          >
-            Users
-          </Button>
-          <Button
             variant={activeTab === "history" ? "default" : "ghost"}
             onClick={() => handleTabChange("history")}
           >
             <History className="w-4 h-4 mr-2" />
             User History
-          </Button>
-          <Button
-            variant={activeTab === "sms" ? "default" : "ghost"}
-            onClick={() => handleTabChange("sms")}
-          >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            SMS Notifications
           </Button>
           <Button
             variant={activeTab === "flyers" ? "default" : "ghost"}
@@ -839,8 +832,9 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         )}
 
         {activeTab === "users" && (
-          <UsersTable 
-            users={users} 
+          <UsersTable
+            users={users}
+            activeDayCounts={activeDayCounts}
             adminKey={adminKey}
             onUserUpdate={handleUpdateUserTestStatus}
             onUserUnsubUpdate={handleUpdateUserUnsubStatus}
@@ -868,14 +862,6 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         {activeTab === "newsletter" && (
           <Newsletter
             adminKey={adminKey}
-          />
-        )}
-
-        {activeTab === "sms" && (
-          <SmsNotifications
-            adminKey={adminKey}
-            currentUserId={users[0]?.id || ""}
-            debates={debates}
           />
         )}
 

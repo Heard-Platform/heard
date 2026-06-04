@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import * as Sentry from "@sentry/react";
 import { motion } from "motion/react";
 import { UnsubscribePage } from "./components/UnsubscribePage";
 import { TermsOfServicePage } from "./screens/TermsOfServicePage";
 import { PrivacyPolicyPage } from "./screens/PrivacyPolicyPage";
 import { OrgsLanding } from "./screens/OrgsLanding";
+import { OneBillionPage } from "./screens/OneBillionPage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
@@ -28,7 +30,10 @@ import {
   updateUrlForEvent,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
-import { safelyGetStorageItem } from "./utils/localStorage";
+import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
+
+const LAST_VIEWED_SUBHEARD_KEY = "lastViewedSubHeard";
+const LAST_VIEWED_ROOM_KEY = "lastViewedRoom";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -41,6 +46,9 @@ const SHIRT_STATEMENT_ID = "orgi27e8jipmoyd0uhl";
 
 const I_LOVE_CIVTECH_FLYER_ID = "gv7kmooa0lmom3pn2m";
 const I_LOVE_CIVTECH_STATEMENT_ID = "jg46pxp4fsmom3pn3c";
+
+const CLUB_FLYER_ID = "i2yo40k84womp72i2qi";
+const CLUB_STATEMENT_ID = "qkjea7qnj3mp72i2r3";
 
 const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: string }> = {
   shirt: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
@@ -71,6 +79,7 @@ function AppContent() {
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showOrgsPage, setShowOrgsPage] = useState(false);
+  const [showOneBillion, setShowOneBillion] = useState(false);
   const [newsletterEdition, setNewsletterEdition] = useState<number | null>(null);
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
@@ -146,8 +155,15 @@ function AppContent() {
     await joinRoom(roomId);
   };
 
+  const handleJumpToRoom = (roomId: string, subHeard?: string) => {
+    setCurrentSubHeard(subHeard ?? null);
+    startRoomJoin(roomId);
+    updateUrlForRoom(roomId);
+  };
+
   const handleSubHeardChange = (subHeard: string | null) => {
     setCurrentSubHeard(subHeard);
+    setTargetRoomId(null);
     updateUrlForSubHeard(subHeard);
   };
 
@@ -189,6 +205,20 @@ function AppContent() {
     fetchEvent(currentEventId);
   }, [currentEventId]);
 
+  useEffect(() => {
+    if (user) {
+      Sentry.setUser({ id: user.id });
+    } else {
+      Sentry.setUser(null);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (hasCheckedUrl) {
+      safelySetStorageItem(LAST_VIEWED_SUBHEARD_KEY, currentSubHeard);
+    }
+  }, [currentSubHeard, hasCheckedUrl]);
+
   const handleRefreshEvent = () => {
     if (currentEventId) fetchEvent(currentEventId);
   };
@@ -222,6 +252,8 @@ function AppContent() {
         window.location.pathname.startsWith("/privacy");
       const isOrgsRoute =
         window.location.pathname.startsWith("/orgs");
+      const isOneBillionRoute =
+        window.location.pathname.startsWith("/1billion");
 
       const newsletterMatch = window.location.pathname.match(/^\/newsletter\/(\d+)$/);
       const isKaloramaRoute =
@@ -236,9 +268,23 @@ function AppContent() {
         window.location.pathname.startsWith("/dogs");
       const isMarketRoute =
         window.location.pathname.startsWith("/market");
+      const is311Route =
+        window.location.pathname.startsWith("/311");
+      const isDataRoute =
+        window.location.pathname.startsWith("/data");
+      const isHeightRoute =
+        window.location.pathname.startsWith("/height");
+      const isDcRoute =
+        window.location.pathname.startsWith("/dc");
+      const isUdcRoute =
+        window.location.pathname.startsWith("/udc");
       const hardcodedFlyerMatch = window.location.pathname.match(
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
+      const clubFlyerMatch = window.location.pathname.match(
+        /^\/club-(yes|no)/,
+      );
+      const isClubRoute = /^\/club\/?$/.test(window.location.pathname);
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
@@ -268,7 +314,12 @@ function AppContent() {
         is2b04Route ||
         isRatsRoute ||
         isDogsRoute ||
-        isMarketRoute
+        isMarketRoute ||
+        is311Route ||
+        isDataRoute ||
+        isHeightRoute ||
+        isUdcRoute ||
+        isDcRoute
       ) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
@@ -280,7 +331,17 @@ function AppContent() {
                 ? "jl4rwa5amtmolpfau4"
                 : isMarketRoute
                   ? "oltpupzrkkmp1ettwt"
-                  : undefined;
+                  : is311Route
+                    ? "hn3nzbxfxe9mp2o2cjx"
+                    : isDataRoute
+                      ? "s7895siw8lqmp2zfkp8"
+                      : isHeightRoute
+                        ? "7y6ti3yj605mp2yni2i"
+                        : isUdcRoute
+                          ? "6vo32rv77imp2p51ti"
+                          : isDcRoute
+                            ? "0tlal5afi6mlmpbckaso"
+                            : undefined;
 
         const routeName = isParkletRoute
           ? "parklet"
@@ -290,7 +351,17 @@ function AppContent() {
               ? "rats"
               : isDogsRoute
                 ? "dogs"
-                : "market";
+                : isMarketRoute
+                  ? "market"
+                  : is311Route
+                    ? "311"
+                    : isDataRoute
+                      ? "data"
+                      : isHeightRoute
+                        ? "height"
+                        : isUdcRoute
+                          ? "udc"
+                          : "dc";
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
@@ -307,6 +378,15 @@ function AppContent() {
           statementId: flyerConfig.statementId,
           vote: voteWord === "agree" ? "agree" : "disagree",
         });
+      } else if (clubFlyerMatch) {
+        const [, voteWord] = clubFlyerMatch;
+        handleFlyerJoin({
+          flyerId: CLUB_FLYER_ID,
+          statementId: CLUB_STATEMENT_ID,
+          vote: voteWord === "yes" ? "agree" : "disagree",
+        });
+      } else if (isClubRoute) {
+        startRoomJoin(CLUB_FLYER_ID);
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (eventIdFromUrl) {
@@ -321,9 +401,22 @@ function AppContent() {
         setShowPrivacy(true);
       } else if (isOrgsRoute) {
         setShowOrgsPage(true);
+      } else if (isOneBillionRoute) {
+        setShowOneBillion(true);
       } else if (newsletterMatch) {
         const edition = parseInt(newsletterMatch[1]);
         setNewsletterEdition(edition);
+      } else if (window.location.pathname === "/") {
+        const lastSubHeard = safelyGetStorageItem<string | null>(
+          LAST_VIEWED_SUBHEARD_KEY,
+          null,
+        );
+        const lastRoomId = safelyGetStorageItem<string | null>(
+          LAST_VIEWED_ROOM_KEY,
+          null,
+        );
+        if (lastSubHeard) setCurrentSubHeard(lastSubHeard);
+        if (lastRoomId) startRoomJoin(lastRoomId);
       }
       setHasCheckedUrl(true);
     }
@@ -534,6 +627,10 @@ function AppContent() {
     return <OrgsLanding onExit={handleExitOrgs} />;
   }
 
+  if (showOneBillion) {
+    return <OneBillionPage />;
+  }
+
   if (newsletterEdition) {
     return <NewsletterViewer edition={newsletterEdition} />;
   }
@@ -570,6 +667,7 @@ function AppContent() {
         currentEvent={currentEvent}
         onCreateRoom={handleCreateRoom}
         onJoinRoom={handleJoinRoom}
+        onJumpToRoom={handleJumpToRoom}
         onRefreshRooms={getActiveRooms}
         onSubmitStatement={submitStatement}
         onVoteOnStatement={voteOnStatement}
@@ -603,10 +701,16 @@ function AppContent() {
   );
 }
 
-export default function App() {
+export default Sentry.withErrorBoundary(function App() {
   return (
     <DebateSessionProvider>
       <AppContent />
     </DebateSessionProvider>
   );
-}
+}, {
+  fallback: (
+    <div className="heard-page-bg heard-center">
+      <div>Something went wrong. Please refresh the page.</div>
+    </div>
+  ),
+});

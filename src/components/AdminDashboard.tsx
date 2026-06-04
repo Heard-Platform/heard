@@ -12,12 +12,14 @@ import type {
   PublicStatsData,
   RetentionStatsData,
   FunnelMetricsData,
+  UserTimelineEntry,
 } from "../types";
 import { SparklineChart } from "./SparklineChart";
 import { ActivityMetrics } from "./ActivityMetrics";
 import { RetentionCard } from "./RetentionCard";
 import { FunnelChart } from "./FunnelChart";
 import { LiveActivityFeed } from "./LiveActivityFeed";
+import { UserTimelineChart } from "./UserTimelineChart";
 
 interface AdminDashboardProps {
   currentUserId: string;
@@ -33,6 +35,7 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
   const [publicStats, setPublicStats] = useState<PublicStatsData | null>(null);
   const [retentionStats, setRetentionStats] = useState<RetentionStatsData | null>(null);
   const [funnelMetrics, setFunnelMetrics] = useState<FunnelMetricsData | null>(null);
+  const [userTimeline, setUserTimeline] = useState<UserTimelineEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -63,6 +66,7 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
             publicStatsRes,
             retentionStatsRes,
             funnelMetricsRes,
+            userTimelineRes,
           ] = await Promise.all([
             api.getActiveRooms(),
             api.getFeedbackList(),
@@ -70,6 +74,7 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
             api.getPublicStats(),
             api.getRetentionStats(),
             api.getFunnelMetrics(),
+            api.getUserTimeline(),
           ]);
 
           if (debatesRes.success) {
@@ -89,6 +94,9 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
           }
           if (funnelMetricsRes.success) {
             setFunnelMetrics(funnelMetricsRes.data || null);
+          }
+          if (userTimelineRes.success) {
+            setUserTimeline(userTimelineRes.data?.entries || []);
           }
         }
       }
@@ -245,6 +253,15 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
             <FunnelChart metrics={funnelMetrics} />
           </Card>
         )}
+
+        {/* User Timeline Section */}
+        <Card className="p-6">
+          <h2 className="text-xl mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-purple-600" />
+            User Activity Timeline
+          </h2>
+          <UserTimelineChart users={userTimeline} />
+        </Card>
 
         {/* Feedback Section */}
         <Card className="p-6">

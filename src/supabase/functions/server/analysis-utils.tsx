@@ -1,6 +1,6 @@
 import { calcDemographicBreakdown } from "./demographics-utils.ts";
 import { DemographicAnswer, DemographicQuestion, Statement } from "./types.tsx";
-import { serializeStatement } from "./utils.tsx";
+import { serializeStatement } from "./statement-utils.tsx";
 import { ClusterVoteBreakdown } from "./cluster-analysis.tsx";
 
 export interface StatementVotes {

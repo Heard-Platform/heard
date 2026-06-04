@@ -161,6 +161,17 @@ export interface EventRoomStatus extends Pick<
 
 export type RoomStatus = "needs_input" | "caught_up" | "completed";
 
+export type RoomAlertReason = "new-activity" | "ended";
+
+export interface RoomAlert {
+  roomId: string;
+  topic: string;
+  emoji?: string;
+  subHeard?: string;
+  reason: RoomAlertReason;
+  lastActivityAt: number;
+}
+
 export interface Achievement {
   title: string;
   description: string;
@@ -215,6 +226,8 @@ export interface DebateRoom {
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
   coverCardSwiped?: boolean;
+  lastActivityAt?: number;
+  totalVotes?: number;
   demographicQuestions: DemographicQuestion[];
   eventId?: number;
   responsesPaused?: boolean | null;
@@ -456,14 +469,27 @@ export interface FeatureResults {
   phoneSubmissionsSince: number;
   flyerScans: number;
   flyerScansSince: number;
+  roomViews: number;
+  roomViewsSince: number;
+  roomFollows: number;
+  roomFollowsSince: number;
   certifyCardShown: number;
   certifyCardShownSince: number;
+  flyerResultsClicked: number;
+  flyerResultsClickedSince: number;
   certifyCardData: {
     shown: number;
     emailSubmitted: number;
     phoneSubmitted: number;
     verified: number;
     dismissed: number;
+  };
+  oneBillionEvents: {
+    pageLoad: number;
+    clickProjects: number;
+    clickOrg: number;
+    clickForm: number;
+    clickCopy: number;
   };
 }
 
@@ -486,6 +512,17 @@ export interface EnrichmentConfig {
 }
 
 export type Environment = "production" | "development";
+
+export interface UserTimelineEntry {
+  id: string;
+  nickname: string;
+  email: string;
+  createdAt: number;
+  lastActive: number;
+  activeDays?: number[]; // UTC day-start timestamps for days with any action
+  isTestUser?: boolean;
+  isDeveloper?: boolean;
+}
 
 export interface VoteStats {
   total: number;

@@ -9,6 +9,7 @@ import {
   LiveActivityData,
   PublicStatsData,
   RetentionStatsData,
+  RoomAlert,
   Statement,
   SubHeard,
   UserHistoryData,
@@ -26,14 +27,12 @@ import {
 import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
   BaseApiClient,
-  API_BASE_URL,
   ApiResponse,
 } from "./api-client";
 import { FeatureFlags, isFeatureEnabled } from "./constants/feature-flags";
 import { getEnvironment } from "./constants/general";
 import { convertImageToJPEG, shouldConvertImage } from "./image-converter";
 import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
-import { publicAnonKey } from "./supabase/info";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 export async function safelyMakeApiCall<T>(
@@ -205,6 +204,16 @@ class ApiClient extends BaseApiClient {
       method: "POST",
       body: JSON.stringify({ environment, fingerprint, userAgent, webdriver }),
     });
+  }
+
+  async markRoomSeen(roomId: string) {
+    return this.request<{}>(`/rooms/${roomId}/seen`, {
+      method: "POST",
+    });
+  }
+
+  async getRoomAlerts() {
+    return this.request<{ alerts: RoomAlert[] }>("/alerts/rooms");
   }
 
   async getActiveRooms(subHeard?: string, targetRoomId?: string) {
@@ -426,7 +435,7 @@ class ApiClient extends BaseApiClient {
 
   // Admin methods (require X-Admin-Key header)
   async adminGetUsers(adminKey: string) {
-    return this.request<{ users: UserSession[] }>("/admin/users", {
+    return this.request<{ users: UserSession[]; activeDayCounts: Record<string, number> }>("/admin/users", {
       headers: {
         "X-Admin-Key": adminKey,
       },
@@ -628,6 +637,10 @@ class ApiClient extends BaseApiClient {
     return this.request<LiveActivityData>("/stats/live-activity");
   }
 
+  async getUserTimeline() {
+    return this.request<{ entries: import("../types").UserTimelineEntry[] }>("/stats/user-timeline");
+  }
+
   async getFeatureStats() {
     return this.request<FeatureResults>("/stats/features", {
       method: "GET",
@@ -675,27 +688,20 @@ class ApiClient extends BaseApiClient {
     return this.request<{ data: UserPresence[] }>("/vine/presences");
   }
 
-  async getEmailPreview(digestType?: string) {
+  async getEmailPreview(digestType?: string): Promise<{ subject: string; html: string }> {
     const params = new URLSearchParams();
     if (digestType) params.append("digestType", digestType);
 
     const queryString = params.toString();
-    const response = await fetch(
-      `${API_BASE_URL}/dev/email-previews${
-        queryString ? `?${queryString}` : ""
-      }`,
-      {
-        headers: {
-          Authorization: `Bearer ${publicAnonKey}`,
-        },
-      },
+    const response = await this.get(
+      `/dev/email-previews${queryString ? `?${queryString}` : ""}`,
     );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    return response.text();
+    return response.json();
   }
 
   async sendTestEmail(
@@ -705,6 +711,18 @@ class ApiClient extends BaseApiClient {
     return this.request("/dev/email-previews/send", {
       method: "POST",
       body: JSON.stringify({ useMockData, digestType }),
+    });
+  }
+
+  async triggerDebateCompletionCron() {
+    return this.request<{
+      processed: number;
+      results: Array<{
+        roomId: string;
+        emails: { sent: number; failed: number; skipped: number };
+      }>;
+    }>("/cron/send-completion-celebrations", {
+      method: "POST",
     });
   }
 

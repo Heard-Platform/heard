@@ -192,6 +192,26 @@
   fill: var(--color-green-500);
 }
 
+.agree-gradient-from {
+  --tw-gradient-from: var(--color-emerald-300);
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+
+.agree-gradient-to {
+  --tw-gradient-to: var(--color-emerald-400);
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+
+.disagree-gradient-from {
+  --tw-gradient-from: var(--color-rose-300);
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+
+.disagree-gradient-to {
+  --tw-gradient-to: var(--color-rose-400);
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+
 .super-agree-bg {
   background-color: var(--color-purple-500);
 }
@@ -260,6 +280,18 @@
   background-color: var(--color-emerald-500);
 }
 
+.positive-text {
+  color: var(--color-emerald-500);
+}
+
+.negative-bg {
+  background-color: var(--color-amber-700);
+}
+
+.negative-text {
+  color: var(--color-amber-700);
+}
+
 .info-gradient {
   --tw-gradient-from: var(--color-blue-500);
   --tw-gradient-to: var(--color-blue-600);
@@ -288,4 +320,8 @@
 
 .header-4 {
   color: var(--color-slate-500);
+}
+
+.results-max-h {
+  max-height: calc(100dvh - 400px);
 }

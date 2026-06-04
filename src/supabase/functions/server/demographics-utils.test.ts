@@ -11,7 +11,7 @@ it("calcs demographics for single question type", () => {
 
   const breakdown = calcDemographicBreakdown(questions, answers);
 
-  assertEquals(breakdown, { gender: { Male: 1/2, Female: 1/2 } });
+  assertEquals(breakdown, { gender: { Male: 1, Female: 1 } });
 });
 
 it("calcs demographics for multiple question types", () => {
@@ -33,8 +33,8 @@ it("calcs demographics for multiple question types", () => {
   assertEquals(
     breakdown,
     {
-      gender: { Male: 1/3, Female: 2/3 },
-      age: { "18-24": 1/3, "25-34": 1/3, "35-44": 1/3 },
+      gender: { Male: 1, Female: 2 },
+      age: { "18-24": 1, "25-34": 1, "35-44": 1 },
     }
   );
 });
@@ -57,7 +57,7 @@ it("handles skip answers", () => {
 
   const breakdown = calcDemographicBreakdown(questions, answers);
 
-  assertEquals(breakdown, { gender: { Female: 1/2, "Not answered": 1/2 } });
+  assertEquals(breakdown, { gender: { Female: 1, "Not answered": 1 } });
 });
 
 it("handles custom questions", () => {
@@ -78,8 +78,8 @@ it("handles custom questions", () => {
   assertEquals(
     breakdown,
     {
-      "gender": { Male: 1, },
-      "Favorite color?": { Blue: 2/3, Red: 1/3 },
+      "gender": { Male: 2, },
+      "Favorite color?": { Blue: 2, Red: 1 },
     }
   );
 });

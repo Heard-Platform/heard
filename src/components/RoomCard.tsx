@@ -11,6 +11,7 @@ import {
   Loader2,
   ChevronDown,
   ChevronUp,
+  MessageCirclePlus,
 } from "lucide-react";
 import { SwipeableStatementStack } from "./room/SwipeableStatementStack";
 import { InProgressResults } from "./results/InProgressResults";
@@ -22,13 +23,13 @@ import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType, UserSession, Cover, FullCoverData } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
+import { ShareButton } from "./ShareButton";
 import { HideAndMergeModal } from "./room/mod/HideAndMergeModal";
 import { EditRoomModal } from "./room/mod/EditRoomModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
 import { TimeLeftBadge } from "./room/TimeLeftBadge";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { timeAgoShort } from "../utils/time";
-import { AddResponseButton } from "./widgets/AddResponseButton";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
@@ -140,6 +141,10 @@ export function RoomCard({
   })();
   
   const effectiveChanceCardSwiped = chanceCardSwiped || !!room.responsesPaused;
+
+  const uniqueVoters = new Set(
+    statements.flatMap((s) => (s.voters ? Object.keys(s.voters) : [])),
+  ).size;
 
   const hasSwipedAll =
     statements.length > 0 &&
@@ -276,6 +281,17 @@ export function RoomCard({
                 <span className="text-muted-foreground shrink-0">
                   {timeAgoShort(room.createdAt)} ago
                 </span>
+                {isActive_status && !isCompleted && isRealtime && (
+                  <>
+                    <span className="text-muted-foreground">·</span>
+                    <TimeLeftBadge
+                      endTime={room.endTime}
+                      createdAt={room.createdAt}
+                      isRealtime={isRealtime}
+                      variant="text"
+                    />
+                  </>
+                )}
               </div>
 
               <div className="shrink-0">
@@ -418,11 +434,15 @@ export function RoomCard({
 
           <div className="flex items-center gap-2">
             {!isCompleted && (
-              <AddResponseButton
+              <Button
+                variant="secondary"
+                className="heard-pill"
                 disabled={!!room.responsesPaused}
-                disabledLabel="Responses paused"
                 onClick={() => setShowAddResponseModal(true)}
-              />
+              >
+                <MessageCirclePlus className="w-4 h-4" />
+                Respond
+              </Button>
             )}
             <Button
               onClick={handleOpenAnalysis}
@@ -430,19 +450,10 @@ export function RoomCard({
               className="heard-pill hover:bg-secondary/60"
             >
               <BarChart3 className="w-4 h-4" />
-              <span className="hidden sm:inline">Insights</span>
+              {loadingStatements ? "Insights" : `${uniqueVoters} voted`}
             </Button>
-            {isCompleted ? (
-              <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>
-            ) : isActive_status ? (
-              <TimeLeftBadge
-                endTime={room.endTime}
-                createdAt={room.createdAt}
-                isRealtime={isRealtime}
-              />
-            ) : (
-              <Badge className="heard-pill bg-blue-600 text-white">Waiting</Badge>
-            )}
+            {isCompleted && <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>}
+            <ShareButton roomId={room.id} />
           </div>
 
           {isCompleted && showAnalysis && (

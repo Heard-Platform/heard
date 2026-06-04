@@ -11,6 +11,7 @@ import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-fl
 import { MetricCard } from "./MetricCard";
 import { StatementVotesTable } from "./StatementVotesTable";
 import { ShowNumbersToggle } from "./ShowNumbersToggle";
+import { StatementSpectrumCard } from "./StatementSpectrumCard";
 
 function opinionatedVotesOf(post: StatementVotes): number {
   return post.agreeVotes + post.disagreeVotes;
@@ -124,6 +125,8 @@ export function DebateAnalysisReport({
             description={`${reachData.postersWithHighConsensusPost} ${reachData.postersWithHighConsensusPost === 1 ? "person" : "people"} with a high consensus response`}
           />
         </div>
+
+        <StatementSpectrumCard statements={allStatements} />
 
         <TopPostsByMetric
           posts={topAgreedPosts}

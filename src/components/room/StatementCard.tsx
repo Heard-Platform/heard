@@ -140,12 +140,10 @@ export function StatementCard({
       </div>
 
       <div className="flex items-end justify-between">
-        <span className="text-xs text-muted-foreground">
-          {timeAgo}
-        </span>
+        <span className="text-xs text-muted-foreground">{timeAgo}</span>
         {isTopCard && (
           <span className="text-xs text-muted-foreground">
-            {currentIndex}/{totalStatements}
+            Response {currentIndex} of {totalStatements}
           </span>
         )}
       </div>

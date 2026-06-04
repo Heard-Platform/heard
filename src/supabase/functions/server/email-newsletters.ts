@@ -262,7 +262,57 @@ const newsletters = [
       imageAlt: "Dupont residents at the Think Like a Rat event",
     },
   }),
-];
+  getParameterizedNewsletter({
+    subject: "Our first official partnership! 🤝 Ya' Heard #18",
+    editionNumber: 18,
+    section1: {
+      title: "🤝 Our first official partnership!",
+      text: "A major DC delegate candidate gave Heard a shoutout in her latest newsletter, marking our first official partnership! 🎉 We're running Heard posts on key issues relevant to her campaign to draw attention to the issues and get voters more engaged for the upcoming DC primary.",
+      imageUrl: `${SUPABASE_URL}/nl-18-candidate-1.png`,
+      imageLink: "https://heard.vote",
+      imageAlt: "First official Heard partnership announcement",
+    },
+    section2: {
+      title: "🔔 Adding a new update center",
+      text: "We've made it easier to catch up on Heard posts you've participated in! You can now tap your avatar in the app to see if there have been any new votes or responses in threads you've engaged with",
+      imageUrl: `${SUPABASE_URL}/nl-18-updates.png`,
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard update center feature",
+    },
+    section3: {
+      title: "🐶 Conference organizer talks about Heard results",
+      text: "Remember the 307-person debrief we ran for the Ridglan beagle rescue back in April? One of the event's organizers <a href='https://www.youtube.com/shorts/MNrL20ngOeY'>just presented the Heard results on stage at a conference</a>, walking through what activists agreed on, where they split, and what they want to see next. Seeing Heard data inform real movement strategy is what this is all about. 🙌",
+      imageUrl: `${SUPABASE_URL}/nl-18-conf.png`,
+      imageLink: "https://www.youtube.com/shorts/MNrL20ngOeY",
+      imageAlt: "Ridglan rescue organizer presenting Heard results at a conference",
+    },
+  }),
+  getParameterizedNewsletter({
+    subject: "Sentiment on a Spectrum - Ya' Heard #19",
+    editionNumber: 19,
+    section1: {
+      title: "📊 New: The Statement Spectrum",
+      text: "We just added a new visualization that shows you exactly where each statement in a Heard post falls on the spectrum from strong agreement to strong disagreement. Statements clustered toward one end are clear consensus, while ones in the middle are where opinions are most split. Check it out in the insights view of any post.",
+      imageUrl: `${SUPABASE_URL}/nl-19-spectrum.gif`,
+      imageLink: "https://heard.vote",
+      imageAlt: "Heard statement spectrum visualization",
+    },
+    section2: {
+      title: "🏀 Alex's Arms Are Getting Tired...",
+      text: `We're on day 23 of the <a href='${SHORTS_URL}/R3qRQGuYfm4'>daily basketball challenge</a> — shoot from one foot farther every day until we hit 500 signups. Alex started from a foot away and is now almost at half-court. We have some flyering coming up soon that should help push us over the line but if you know someone who'd be into Heard please send it their way. 🙏`,
+      imageUrl: `${SUPABASE_URL}/nl-19-basketball.png`,
+      imageLink: `${SHORTS_URL}/R3qRQGuYfm4`,
+      imageAlt: "Alex shooting basketball from near half-court",
+    },
+    section3: {
+      title: "🛒 Should the Farmers Market Take Over the Circle?",
+      text: "On a recent ANC call, someone raised the idea of moving the Dupont Farmers Market directly onto the circle to help with overcrowding, and of course the Heard team was on it! We put up flyers, polled market-goers, and the results were actually pretty split. We brought the preliminary data to the ANC and presented the findings: Any decision is months if not years away but it was an exciting early example of stoking conversations on hyperlocal issues around the neighborhood.",
+      imageUrl: `${SUPABASE_URL}/nl-19-dupont.jpeg`,
+      imageLink: "https://heard.vote",
+      imageAlt: "Dupont Farmers Market flyering results and ANC presentation",
+    },
+  }),
+]
 
 const offset = 8
 

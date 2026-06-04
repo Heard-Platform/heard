@@ -76,7 +76,9 @@ Post self-text: ${redditPost.selfText}
       hostId: "enrichment-service",
       subHeard,
       endTime: Date.now() + ONE_WEEK_MS,
+      allowAnonymous: true,
     });
+    
     await createRoom(newPost);
 
     await Promise.all(stmtTexts.map((stmtText) =>

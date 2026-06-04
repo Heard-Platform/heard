@@ -31,6 +31,7 @@ import {
   saveCoverCardSwipe,
   getCoverCardSwipedRoomIds,
   getMergesForRoom,
+  recordRoomEngagement,
 } from "./model-utils.ts";
 import type {
   User, Statement,
@@ -40,7 +41,7 @@ import type {
   DebateRoom
 } from "./types.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
-import { calculateVoteStats, orderStatementsForVoter, processVote } from "./voting-utils.ts";
+import { calculateVoteStats, orderStatements, processVote } from "./voting-utils.ts";
 import { filterFeedRooms, sortRoomsForFeed } from "./feed-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
@@ -523,7 +524,7 @@ const getStatements = async (
       },
     );
 
-    return orderStatementsForVoter(statementsWithVotes);
+    return orderStatements(statementsWithVotes);
   } catch (error) {
     console.error(
       `Error fetching statements for room ${roomId}:`,
@@ -591,6 +592,7 @@ app.post(
         room.participants.push(userId);
         await saveDebateRoom(room);
       }
+      await recordRoomEngagement(userId, roomId);
 
       // Update user's current room
       user.currentRoomId = roomId;
@@ -701,6 +703,8 @@ app.post(
         );
       }
 
+      const now = Date.now();
+
       async function updateRoom(room: DebateRoom) {
         // Auto-join user to room if they're not already a participant
         if (!room.participants.includes(userId)) {
@@ -709,12 +713,13 @@ app.post(
             `Auto-added user ${userId} to room ${roomId} via statement submission`,
           );
         }
-        
-        room.lastActivityAt = Date.now();
+
+        room.lastActivityAt = now;
         await saveDebateRoom(room);
       }
 
       await updateRoom(room);
+      await recordRoomEngagement(userId, roomId, now);
 
       // Convert phase to round number
       const getRoundNumber = (phase: Phase): number => {
@@ -992,7 +997,13 @@ app.get(
         }));
       }
 
-      rooms = rooms.sort((a, b) => b.createdAt - a.createdAt).slice(0, 100);
+      rooms = rooms
+        .sort(
+          (a, b) =>
+            (b.lastActivityAt ?? b.createdAt) -
+            (a.lastActivityAt ?? a.createdAt),
+        )
+        .slice(0, 1000);
       rooms = sortRoomsForFeed(rooms, userMemberships);
       rooms = rooms.slice(0, 20);
 

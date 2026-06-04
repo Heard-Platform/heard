@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { X, Mail, ArrowRight } from "lucide-react";
+import { X, ArrowRight, ChevronLeft } from "lucide-react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { DebateRoom } from "../../types";
 import { VoteType } from "../../types";
-import { TOSText } from "../onboarding/TOSText";
-import { useDebateSession } from "../../hooks/useDebateSession";
-import { useEmailOtpFlow } from "../../hooks/useEmailOtpFlow";
-import { OtpCodeInput } from "../auth/OtpCodeInput";
 import moment from "moment";
+import { api } from "../../utils/api";
+import { useEmailOtpFlow } from "../../hooks/useEmailOtpFlow";
+import { useDebateSession } from "../../hooks/useDebateSession";
 
 export type QRScanResult = {
   room: DebateRoom;
@@ -43,24 +41,16 @@ export function QRScanResultDialog({
   onClose,
 }: QRScanResultDialogProps) {
   const { user } = useDebateSession();
-  const isAnonymous = !!user?.isAnonymous;
-  const [showBars, setShowBars] = useState(false);
-  const [shakeEmail, setShakeEmail] = useState(false);
+  const isAlreadyLoggedIn = user && !user.isAnonymous;
 
-  const {
-    step,
-    email,
-    otp,
-    error,
-    submitting,
-    setEmail,
-    setOtp,
-    submitEmail,
-    submitOtp,
-    goBackToEmail,
-  } = useEmailOtpFlow({
-    onComplete: ({ wasOtpLogin }) =>
-      onComplete({ reason: wasOtpLogin ? "otp-login" : "signup" }),
+  const [showBars, setShowBars] = useState(false);
+  const [showEmailCapture, setShowEmailCapture] = useState(false);
+
+  const emailFlow = useEmailOtpFlow({
+    onComplete: ({ wasOtpLogin }) => {
+      api.trackEvent("flyer_results_email_submitted", room.id);
+      onComplete({ reason: wasOtpLogin ? "otp-login" : "signup" });
+    },
   });
 
   useEffect(() => {
@@ -68,6 +58,7 @@ export function QRScanResultDialog({
       setTimeout(() => setShowBars(true), 300);
     } else {
       setShowBars(false);
+      setShowEmailCapture(false);
     }
   }, [isOpen]);
 
@@ -94,30 +85,6 @@ export function QRScanResultDialog({
       isUserVote: userVote === "pass",
     },
   ];
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!isAnonymous) {
-      onComplete({ reason: "continue" });
-      return;
-    }
-
-    if (step === "otp") {
-      submitOtp();
-      return;
-    }
-
-    if (!email.trim()) {
-      setShakeEmail(true);
-      setTimeout(() => setShakeEmail(false), 500);
-    }
-    submitEmail();
-  };
-
-  const buttonLabel = submitting
-    ? step === "otp" ? "Verifying..." : "Joining..."
-    : step === "otp" ? "Log in" : "Vote and respond inside";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -242,7 +209,7 @@ export function QRScanResultDialog({
                 </p>
               </div>
 
-              {teaserStatement && (
+              {teaserStatement && !showEmailCapture && (
                 <div className="space-y-2">
                   <p className="text-xs font-semibold uppercase tracking-wider header-4">
                     Other responses
@@ -262,79 +229,97 @@ export function QRScanResultDialog({
 
               <div className="border-t border-slate-700" />
 
-              <form onSubmit={handleSubmit} className="space-y-3">
-                {isAnonymous && step === "email" && (
-                  <motion.div
-                    className="relative"
-                    animate={
-                      shakeEmail
-                        ? { x: [0, -8, 8, -6, 6, -4, 4, 0] }
-                        : { x: 0 }
-                    }
-                    transition={{ duration: 0.45, ease: "easeInOut" }}
-                  >
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      type="email"
-                      autoComplete="email"
-                      value={email}
-                      placeholder={"Enter your email to add a response"}
-                      disabled={submitting}
-                      className={`pl-11 h-11 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500 rounded-xl text-sm ${shakeEmail ? "error-border" : ""}`}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </motion.div>
-                )}
-
-                {isAnonymous && step === "otp" && (
-                  <div className="space-y-2">
-                    <p className="text-sm text-slate-300 text-center">
-                      We sent a 6-character code to <span className="font-semibold text-white">{email}</span>. Enter it to log in.
-                    </p>
-                    <div className="flex justify-center">
-                      <OtpCodeInput
-                        value={otp}
-                        slotClassName="bg-slate-800 border-slate-700 text-white"
-                        onChange={setOtp}
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={goBackToEmail}
-                      className="block mx-auto text-xs text-slate-400 hover:text-slate-200 underline"
-                    >
-                      Use a different email
-                    </button>
-                  </div>
-                )}
-
-                {error && (
-                  <p className="text-sm error-text text-center">
-                    {error}
-                  </p>
-                )}
-
+              {!showEmailCapture ? (
                 <Button
-                  type="submit"
-                  disabled={submitting}
+                  onClick={() => {
+                    api.trackEvent("flyer_results_get_results_clicked", room.id);
+                    if (isAlreadyLoggedIn) {
+                      onComplete({ reason: "continue" });
+                    } else {
+                      setShowEmailCapture(true);
+                    }
+                  }}
                   className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
                 >
-                  {submitting ? (
-                    buttonLabel
-                  ) : (
-                    <>
-                      {buttonLabel}
-                      <ArrowRight className="w-5 h-5" />
-                    </>
-                  )}
+                  Vote and respond
+                  <ArrowRight className="w-5 h-5" />
                 </Button>
-
-                {isAnonymous && step === "email" && (
-                  <div className="text-center">
-                    <TOSText />
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-4"
+                >
+                  <div className="space-y-1">
+                    <p className="text-base font-bold text-white">
+                      {emailFlow.step === "email"
+                        ? "Enter your email to vote and respond"
+                        : "Check your email"}
+                    </p>
+                    <p className="text-sm text-slate-400">
+                      {emailFlow.step === "email"
+                        ? "We'll only use your email to send you the results, no spam, and we won't share it with anyone."
+                        : "We sent a 6-character code to " + emailFlow.email + "."}
+                    </p>
                   </div>
-                )}
-              </form>
+
+                  {emailFlow.step === "email" ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="email"
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        value={emailFlow.email}
+                        onChange={(e) => emailFlow.setEmail(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && emailFlow.submitEmail()}
+                        autoFocus
+                        className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-purple-500"
+                      />
+                      <Button
+                        onClick={emailFlow.submitEmail}
+                        disabled={emailFlow.submitting}
+                        className="h-auto px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl"
+                      >
+                        <ArrowRight className="w-5 h-5" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="ABC123"
+                          value={emailFlow.otp}
+                          onChange={(e) => emailFlow.setOtp(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && emailFlow.submitOtp()}
+                          maxLength={6}
+                          autoFocus
+                          className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-purple-500 tracking-widest font-mono uppercase"
+                        />
+                        <Button
+                          onClick={emailFlow.submitOtp}
+                          disabled={emailFlow.submitting}
+                          className="h-auto px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl"
+                        >
+                          <ArrowRight className="w-5 h-5" />
+                        </Button>
+                      </div>
+                      <button
+                        onClick={emailFlow.goBackToEmail}
+                        className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"
+                      >
+                        <ChevronLeft className="w-3 h-3" />
+                        Use a different email
+                      </button>
+                    </div>
+                  )}
+
+                  {emailFlow.error && (
+                    <p className="text-xs text-red-400">{emailFlow.error}</p>
+                  )}
+                </motion.div>
+              )}
             </motion.div>
           </div>
         </motion.div>

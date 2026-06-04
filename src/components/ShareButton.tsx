@@ -2,7 +2,7 @@
 import { toast } from "sonner@2.0.3";
 
 import { Button } from "./ui/button";
-import { Link2 } from "lucide-react";
+import { Share } from "lucide-react";
 import { createShareableLink } from "../utils/url";
 import { share } from "../utils/share";
 
@@ -14,7 +14,7 @@ export function ShareButton({ roomId }: ShareButtonProps) {
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const link = createShareableLink(roomId);
-    
+
     await share({
       url: link,
       title: "Join this conversation on Heard",
@@ -31,12 +31,11 @@ export function ShareButton({ roomId }: ShareButtonProps) {
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
-      className="w-6 h-6 text-gray-400 hover:text-purple-600 hover:bg-purple-50 p-0"
+      variant="secondary"
+      className="heard-pill hover:bg-secondary/60"
       onClick={handleShare}
     >
-      <Link2 className="w-4 h-4" />
+      <Share className="w-4 h-4" />
     </Button>
   );
 }

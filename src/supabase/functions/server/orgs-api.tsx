@@ -115,7 +115,7 @@ async function sendOrgSignupNotification(orgEmail: string) {
   `;
 
   await sendEmailToDevs({
-    from: "Heard Orgs <orgs@heard-now.com>",
+    from: "Heard Orgs <hello@heard-now.com>",
     subject: `🎉 New Org Pilot Program Signup: ${orgEmail}`,
     html: emailHtml,
   });

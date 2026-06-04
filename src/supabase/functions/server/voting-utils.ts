@@ -3,36 +3,43 @@ import { saveStatement, saveVote, getVotesForStatement, deleteVote, saveUser } f
 import { getByPrefixParsed } from "./kv-utils.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { generateId, getDebateRoom, getStatementById, saveDebateRoom } from "./debate-api.tsx";
+import { recordRoomEngagement } from "./model-utils.ts";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 
 export const countStatementVotes = (statement: Statement): number =>
   statement.agrees + statement.disagrees + statement.passes + statement.superAgrees;
 
 const MAX_VOTE_BOOST = 25;
-const MAX_RANDOM_JITTER = 100;
+const MAX_RANDOM_JITTER = 100 - MAX_VOTE_BOOST;
 
-export const orderStatementsForVoter = (
+export const scoreStatements = (
   statements: Statement[],
-  random: () => number = Math.random,
-): Statement[] => {
+): { statement: Statement; score: number }[] => {
   const maxOpinionatedVotes = statements.reduce(
     (max, s) => Math.max(max, s.agrees + s.disagrees),
     0,
   );
 
-  return statements
-    .map((statement) => {
-      const opinionatedVotes = statement.agrees + statement.disagrees;
-      const normalizedBoost =
-        maxOpinionatedVotes > 0
-          ? (opinionatedVotes / maxOpinionatedVotes) * MAX_VOTE_BOOST
-          : 0;
-      const score = normalizedBoost + random() * MAX_RANDOM_JITTER;
-      return { statement, score };
-    })
-    .sort((a, b) => b.score - a.score)
-    .map(({ statement }) => statement);
+  return statements.map((statement) => {
+    const opinionatedVotes = statement.agrees + statement.disagrees;
+    const score =
+      maxOpinionatedVotes > 0
+        ? (opinionatedVotes / maxOpinionatedVotes) * MAX_VOTE_BOOST
+        : 0;
+    return { statement, score };
+  });
 };
+
+export const orderStatements = (
+  statements: Statement[],
+): Statement[] =>
+  scoreStatements(statements)
+    .map(({ statement, score }) => ({
+      statement,
+      finalScore: score
+    }))
+    .sort((a, b) => b.finalScore - a.finalScore)
+    .map(({ statement }) => statement);
 
 export const calculateVoteStats = (
   votes: Vote[],
@@ -208,9 +215,11 @@ export const processVote = async (
     }
   }
 
-  room.lastActivityAt = Date.now();
+  const now = Date.now();
+  room.lastActivityAt = now;
   room.totalVotes = (room.totalVotes || 0) + voteCountChange;
   await saveDebateRoom(room);
+  await recordRoomEngagement(userId, statement.roomId, now);
 
   // Get updated vote data to return
   const updatedVotes = await getVotesForStatement(statementId);

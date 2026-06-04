@@ -25,6 +25,7 @@ import { DataPrivacyModalStory } from "../stories/DataPrivacyModal.story";
 import { CustomDemographicQuestionStory } from "../stories/CustomDemographicQuestion.story";
 import { AdvancedFeaturesStory } from "../stories/AdvancedFeatures.story";
 import SidePanelMenuStory from "../stories/SidePanelMenu.story";
+import RoomAlertsListStory from "../stories/RoomAlertsList.story";
 import { CommunityAdminDialogStory } from "../stories/CommunityAdminDialog.story";
 import { FeedbackSheetStory } from "../stories/FeedbackSheet.story";
 import { CommunityExplorerDialogStory } from "../stories/CommunityExplorerDialog.story";
@@ -40,6 +41,8 @@ import { EventCardStory } from "../stories/EventCard.story";
 import { HideAndMergeModalStory } from "../stories/HideAndMergeModal.story";
 import { VoteMatrixStory } from "../stories/VoteMatrix.story";
 import { StatementVotesTableStory } from "../stories/StatementVotesTable.story";
+import { StatementSpectrumStory } from "../stories/StatementSpectrum.story";
+import { UserTimelineChartStory } from "../stories/UserTimelineChart.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -121,6 +124,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="custom-demographic-question">Custom Demographic Question</TabsTrigger>
                 <TabsTrigger value="advanced-features">Advanced Features</TabsTrigger>
                 <TabsTrigger value="side-panel-menu">Side Panel Menu</TabsTrigger>
+                <TabsTrigger value="room-alerts-list">Room Alerts List</TabsTrigger>
                 <TabsTrigger value="community-admin-dialog">Community Admin Dialog</TabsTrigger>
                 <TabsTrigger value="feed-customization-modal">Feed Customization Modal</TabsTrigger>
                 <TabsTrigger value="feedback-sheet">Feedback Sheet</TabsTrigger>
@@ -133,6 +137,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="hide-and-merge-modal">Hide & Merge Modal</TabsTrigger>
                 <TabsTrigger value="vote-matrix">Vote Matrix</TabsTrigger>
                 <TabsTrigger value="statement-votes-table">Statement Votes Table</TabsTrigger>
+                <TabsTrigger value="statement-spectrum">Statement Spectrum</TabsTrigger>
+                <TabsTrigger value="user-timeline">User Timeline</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -213,6 +219,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsContent value="side-panel-menu">
                 <SidePanelMenuStory />
               </TabsContent>
+              <TabsContent value="room-alerts-list">
+                <RoomAlertsListStory />
+              </TabsContent>
               <TabsContent value="community-admin-dialog">
                 <CommunityAdminDialogStory />
               </TabsContent>
@@ -245,6 +254,12 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="statement-votes-table">
                 <StatementVotesTableStory />
+              </TabsContent>
+              <TabsContent value="statement-spectrum">
+                <StatementSpectrumStory />
+              </TabsContent>
+              <TabsContent value="user-timeline">
+                <UserTimelineChartStory />
               </TabsContent>
             </Tabs>
           </div>

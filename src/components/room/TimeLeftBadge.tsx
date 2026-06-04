@@ -1,6 +1,9 @@
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
 import { Badge } from "../ui/badge";
 import { getTimeRemaining, ONE_WEEK_MS } from "../../utils/time";
 import { useState, useEffect } from "react";
+import moment from "moment";
 
 interface TimeLeftBadgeProps {
   endTime: number | undefined;
@@ -34,10 +37,9 @@ export function TimeLeftBadge({
     return null;
   }
 
-  const getEmoji = () => {
-    return ["high", "critical"].includes(timeRemaining.urgency)
-      ? "🔥"
-      : "";
+  const handleTap = () => {
+    const humanized = moment.duration(effectiveEndTime - currentTime).humanize();
+    toast(`Voting ends in ${humanized}`);
   };
 
   if (variant === "text") {
@@ -52,8 +54,8 @@ export function TimeLeftBadge({
     };
 
     return (
-      <span className={`text-xs shrink-0 ${getTextStyles()}`}>
-        {getEmoji()} {timeRemaining.formatted} left
+      <span className={`text-sm shrink-0 cursor-pointer ${getTextStyles()}`} onClick={handleTap}>
+        {timeRemaining.formatted} left
       </span>
     );
   } else {
@@ -66,10 +68,10 @@ export function TimeLeftBadge({
         return "bg-yellow-600 animate-pulse";
       return "bg-green-700/70";
     };
-  
+
     return (
-      <Badge className={`heard-pill text-white ${getBadgeStyles()}`}>
-        {getEmoji()} {timeRemaining.formatted} left
+      <Badge className={`heard-pill text-white cursor-pointer ${getBadgeStyles()}`} onClick={handleTap}>
+        {timeRemaining.formatted}
       </Badge>
     );
   }

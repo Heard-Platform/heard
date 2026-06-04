@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
-import { RefreshCw, Mail, ChevronDown, ChevronUp } from "lucide-react";
+import { RefreshCw, Mail, ChevronDown, ChevronUp, Zap } from "lucide-react";
 import { api } from "../../utils/api";
 import type { UserSession } from "../../types";
 
@@ -55,9 +55,11 @@ function UserListCollapsible({ title, users, isExpanded, onToggle }: UserListCol
 
 export function EmailPreviews({ user }: EmailPreviewsProps) {
   const [emailHtml, setEmailHtml] = useState<string>("");
+  const [emailSubject, setEmailSubject] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [triggeringCron, setTriggeringCron] = useState(false);
   const [useMockData, setUseMockData] = useState(false);
   const [digestType, setDigestType] = useState<string>("weekly_digest");
   const [countData, setCountData] = useState<{
@@ -75,8 +77,9 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
     setError(null);
 
     try {
-      const html = await api.getEmailPreview(digestType);
+      const { subject, html } = await api.getEmailPreview(digestType);
       setEmailHtml(html);
+      setEmailSubject(subject);
     } catch (err) {
       console.error("Error fetching email preview:", err);
       setError(
@@ -114,8 +117,41 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
     }
   };
 
+  const triggerCron = async () => {
+    setTriggeringCron(true);
+    setError(null);
+
+    try {
+      const result = await api.triggerDebateCompletionCron();
+
+      if (!result.success || !result.data) {
+        throw new Error(result.error || "Cron run failed");
+      }
+
+      const totals = result.data.results.reduce(
+        (acc, r) => ({
+          sent: acc.sent + r.emails.sent,
+          failed: acc.failed + r.emails.failed,
+          skipped: acc.skipped + r.emails.skipped,
+        }),
+        { sent: 0, failed: 0, skipped: 0 },
+      );
+
+      toast.success(
+        `Cron ran: ${result.data.processed} room${result.data.processed === 1 ? "" : "s"}, ${totals.sent} sent, ${totals.failed} failed, ${totals.skipped} skipped`,
+      );
+    } catch (err) {
+      console.error("Error triggering cron:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      setError(errorMsg);
+      toast.error(`Failed to trigger cron: ${errorMsg}`);
+    } finally {
+      setTriggeringCron(false);
+    }
+  };
+
   const fetchCountData = async () => {
-    if (useMockData || digestType === "admin_daily_digest") {
+    if (useMockData || digestType === "admin_daily_digest" || digestType === "welcome" || digestType === "debate_ended") {
       setCountData(null);
       setEligibleUsers([]);
       setConsideredUsers([]);
@@ -153,7 +189,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
       <div className="heard-between">
         <h3>Email Previews</h3>
         <div className="flex items-center gap-3">
-          {digestType !== "admin_daily_digest" && (
+          {digestType !== "admin_daily_digest" && digestType !== "welcome" && digestType !== "debate_ended" && (
             <div className="flex items-center gap-2">
               <label className="text-sm text-slate-600">
                 Mock Data
@@ -186,6 +222,8 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
               <option value="weekly_digest">Weekly Digest</option>
               <option value="first_day_digest">First Day Digest</option>
               <option value="admin_daily_digest">Admin Daily Digest</option>
+              <option value="welcome">Welcome Email</option>
+              <option value="debate_ended">Debate Ended</option>
             </select>
           </div>
           <Button
@@ -205,6 +243,17 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
             >
               <Mail className="w-4 h-4 mr-2" />
               {sending ? "Sending..." : "Send Test Email"}
+            </Button>
+          )}
+          {digestType === "debate_ended" && (
+            <Button
+              onClick={triggerCron}
+              variant="outline"
+              size="sm"
+              disabled={triggeringCron}
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              {triggeringCron ? "Running..." : "Trigger Cron Now"}
             </Button>
           )}
         </div>
@@ -263,6 +312,12 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
 
       {!loading && !error && emailHtml && (
         <div className="border rounded-lg overflow-hidden">
+          {emailSubject && (
+            <div className="border-b bg-slate-50 px-4 py-3">
+              <div className="text-xs uppercase tracking-wide text-slate-500">Subject</div>
+              <div className="font-medium text-slate-900">{emailSubject}</div>
+            </div>
+          )}
           <iframe
             srcDoc={emailHtml}
             title="Email Preview"
