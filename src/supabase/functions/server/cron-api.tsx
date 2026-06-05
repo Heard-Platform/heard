@@ -6,6 +6,8 @@ import {
   saveDebateEndedEmailSent,
   saveSentEmail,
 } from "./kv-utils.tsx";
+import { queueEmail } from "./email-queue-db.ts";
+import { EMAIL_PRIORITY } from "./email-queue-types.ts";
 import { getFrontendUrl } from "./utils.tsx";
 import type { DebateRoom, SentEmail } from "./types.tsx";
 import { getStatements } from "./debate-api.tsx";
@@ -89,6 +91,14 @@ export async function sendDebateEndedEmails(
         result.skipped++;
         continue;
       }
+
+      await queueEmail(user, {
+        emailType: "post_ended",
+        priority: EMAIL_PRIORITY.LOW,
+        postId: room.id,
+        data: { postTitle: room.topic, participantCount: room.participants.length },
+      });
+
       if (!user.email) {
         result.skipped++;
         continue;
