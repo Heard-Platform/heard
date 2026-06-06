@@ -45,11 +45,12 @@ const KALORAMA_COMMUNITIES = ["kalorama-park", "dupont-circle-neighborhoods", "w
 
 const WAYMO_ROOM_ID = "jhxaoh1a3bmq2fflpx";
 const WAYMO_STATEMENT_ID = "0d3m3yflnlc8mq2fflre";
-const SHIRT_FLYER_ID = WAYMO_ROOM_ID;
-const SHIRT_STATEMENT_ID = WAYMO_STATEMENT_ID;
 
 const I_LOVE_CIVTECH_FLYER_ID = "gv7kmooa0lmom3pn2m";
 const I_LOVE_CIVTECH_STATEMENT_ID = "jg46pxp4fsmom3pn3c";
+
+const SHIRT_FLYER_ID = WAYMO_ROOM_ID;
+const SHIRT_STATEMENT_ID = WAYMO_STATEMENT_ID;
 
 const CLUB_FLYER_ID = "i2yo40k84womp72i2qi";
 const CLUB_STATEMENT_ID = "qkjea7qnj3mp72i2r3";
