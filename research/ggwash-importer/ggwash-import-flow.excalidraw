@@ -411,8 +411,8 @@
         "type": 3
       },
       "seed": 2003,
-      "version": 1,
-      "versionNonce": 12,
+      "version": 3,
+      "versionNonce": 1734548437,
       "isDeleted": false,
       "boundElements": [
         {
@@ -428,7 +428,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1,
+      "updated": 1781033982972,
       "link": null,
       "locked": false,
       "index": "b2"
@@ -452,11 +452,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 2004,
-      "version": 3,
-      "versionNonce": 985505435,
+      "version": 5,
+      "versionNonce": 986019131,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1781031051872,
+      "updated": 1781033982973,
       "link": null,
       "locked": false,
       "fontSize": 16,
@@ -538,10 +538,10 @@
       "roundness": null,
       "seed": 2006,
       "version": 3,
-      "versionNonce": 207478782,
+      "versionNonce": 432120917,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1781032217038,
+      "updated": 1781033995049,
       "link": null,
       "locked": false,
       "fontSize": 16,
@@ -689,10 +689,6 @@
         {
           "id": "arrow_walk_publish",
           "type": "arrow"
-        },
-        {
-          "id": "arrow_publish_seen",
-          "type": "arrow"
         }
       ],
       "updated": 1,
@@ -773,6 +769,10 @@
         },
         {
           "id": "arrow_publish_room",
+          "type": "arrow"
+        },
+        {
+          "id": "arrow_publish_seen",
           "type": "arrow"
         }
       ],
@@ -1052,11 +1052,11 @@
       "locked": false,
       "fontSize": 16,
       "fontFamily": 5,
-      "text": "KV  ggwash-processed:{guid}\nboolean-flag processed-set\nmarked before each attempt",
+      "text": "KV  ggwash-processed:{guid}\nboolean-flag processed-set\nmarked on publish OR Error",
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "box_seen",
-      "originalText": "KV  ggwash-processed:{guid}\nboolean-flag processed-set\nmarked before each attempt",
+      "originalText": "KV  ggwash-processed:{guid}\nboolean-flag processed-set\nmarked on publish OR Error",
       "lineHeight": 1.25,
       "baseline": 15,
       "index": "bH",
@@ -1223,10 +1223,10 @@
     {
       "id": "arrow_cron_fetch",
       "type": "arrow",
-      "x": 301.6918751498427,
-      "y": 242.04799253337333,
-      "width": 56.38328934691924,
-      "height": 3.810759374527805,
+      "x": 299.0411164469426,
+      "y": 184.78497301928218,
+      "width": 57.123944228253265,
+      "height": 0.3471752936453072,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -1241,11 +1241,11 @@
         "type": 2
       },
       "seed": 3001,
-      "version": 31,
-      "versionNonce": 321904693,
+      "version": 228,
+      "versionNonce": 147650555,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1781031047721,
+      "updated": 1781033982973,
       "link": null,
       "locked": false,
       "points": [
@@ -1254,20 +1254,20 @@
           0
         ],
         [
-          56.38328934691924,
-          -3.810759374527805
+          57.123944228253265,
+          0.3471752936453072
         ]
       ],
       "lastCommittedPoint": null,
       "startBinding": {
         "elementId": "box_cron",
-        "focus": 0,
-        "gap": 2
+        "focus": -0.8142701308215974,
+        "gap": 2.1463456482262786
       },
       "endBinding": {
         "elementId": "box_fetch",
-        "focus": 0,
-        "gap": 2
+        "focus": 0.7210917162379588,
+        "gap": 5.406414636795023
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -1276,10 +1276,10 @@
     {
       "id": "arrow_cron_fetch_label",
       "type": "text",
-      "x": 303.21875,
-      "y": 184.8046875,
-      "width": 50,
-      "height": 36,
+      "x": 297.90928649902344,
+      "y": 140.8046875,
+      "width": 60.618927001953125,
+      "height": 32.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -1292,11 +1292,16 @@
       "frameId": null,
       "roundness": null,
       "seed": 3002,
-      "version": 121,
-      "versionNonce": 1114193237,
+      "version": 139,
+      "versionNonce": 1217639835,
       "isDeleted": false,
-      "boundElements": [],
-      "updated": 1781030218357,
+      "boundElements": [
+        {
+          "id": "arrow_cron_fetch",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1781033987056,
       "link": null,
       "locked": false,
       "fontSize": 13,
@@ -1315,9 +1320,9 @@
       "id": "arrow_fetch_filter",
       "type": "arrow",
       "x": 560,
-      "y": 282,
-      "width": 0,
-      "height": 46,
+      "y": 280.5431466519038,
+      "width": 1.1368683772161603e-13,
+      "height": 48.95825736035056,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -1332,11 +1337,11 @@
         "type": 2
       },
       "seed": 3003,
-      "version": 1,
-      "versionNonce": 42,
+      "version": 3,
+      "versionNonce": 503464091,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1,
+      "updated": 1781033982973,
       "link": null,
       "locked": false,
       "points": [
@@ -1345,8 +1350,8 @@
           0
         ],
         [
-          0,
-          46
+          -1.1368683772161603e-13,
+          48.95825736035056
         ]
       ],
       "lastCommittedPoint": null,
@@ -2130,10 +2135,10 @@
     {
       "id": "arrow_publish_seen",
       "type": "arrow",
-      "x": 700,
-      "y": 810,
-      "width": 500,
-      "height": 470,
+      "x": 762,
+      "y": 928,
+      "width": 438,
+      "height": 498,
       "angle": 0,
       "strokeColor": "#15803d",
       "backgroundColor": "transparent",
@@ -2161,26 +2166,22 @@
           0
         ],
         [
-          0,
-          40
+          413,
+          0
         ],
         [
-          475,
-          40
+          413,
+          -498
         ],
         [
-          475,
-          -430
-        ],
-        [
-          500,
-          -430
+          438,
+          -498
         ]
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "elementId": "box_walk",
-        "focus": 0.5,
+        "elementId": "box_publish",
+        "focus": -0.6,
         "gap": 2
       },
       "endBinding": {
@@ -2197,8 +2198,8 @@
       "type": "text",
       "x": 1206.5062419426245,
       "y": 664.9760384442965,
-      "width": 155.8437957763672,
-      "height": 32.5,
+      "width": 150,
+      "height": 36,
       "angle": 0,
       "strokeColor": "#15803d",
       "backgroundColor": "transparent",
@@ -2211,20 +2212,20 @@
       "frameId": null,
       "roundness": null,
       "seed": 3021,
-      "version": 60,
-      "versionNonce": 1048960638,
+      "version": 59,
+      "versionNonce": 360731643,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1781032249252,
+      "updated": 1781030391888,
       "link": null,
       "locked": false,
       "fontSize": 13,
       "fontFamily": 5,
-      "text": "write (before transform):\nmarkGGWashProcessed()",
+      "text": "write:\nmarkGGWashProcessed()",
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
-      "originalText": "write (before transform):\nmarkGGWashProcessed()",
+      "originalText": "write:\nmarkGGWashProcessed()",
       "lineHeight": 1.25,
       "baseline": 11,
       "index": "cK",
@@ -2324,8 +2325,8 @@
     {
       "id": "note_error",
       "type": "text",
-      "x": 835,
-      "y": 817,
+      "x": 820,
+      "y": 825,
       "width": 320,
       "height": 52,
       "angle": 0,
@@ -2340,20 +2341,20 @@
       "frameId": null,
       "roundness": null,
       "seed": 4002,
-      "version": 12,
-      "versionNonce": 655659298,
+      "version": 1,
+      "versionNonce": 71,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1781032281109,
+      "updated": 1,
       "link": null,
       "locked": false,
       "fontSize": 13,
       "fontFamily": 5,
-      "text": "Each candidate is marked processed\nBEFORE its transform call. On 'Error'\nor wrong count, just skip to the next.",
+      "text": "On 'Error' or wrong statement count:\nmark processed, skip to next candidate.",
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
-      "originalText": "Each candidate is marked processed\nBEFORE its transform call. On 'Error'\nor wrong count, just skip to the next.",
+      "originalText": "On 'Error' or wrong statement count:\nmark processed, skip to next candidate.",
       "lineHeight": 1.25,
       "baseline": 11,
       "index": "d1",
@@ -2400,8 +2401,8 @@
     {
       "id": "note_legend",
       "type": "text",
-      "x": 40,
-      "y": 1220,
+      "x": 37.73828125,
+      "y": 1224.25,
       "width": 374.23052978515625,
       "height": 16.25,
       "angle": 0,
@@ -2416,11 +2417,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 4004,
-      "version": 16,
-      "versionNonce": 863245602,
+      "version": 184,
+      "versionNonce": 1279489979,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1781032237320,
+      "updated": 1781034034970,
       "link": null,
       "locked": false,
       "fontSize": 13,
