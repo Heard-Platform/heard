@@ -689,6 +689,10 @@
         {
           "id": "arrow_walk_publish",
           "type": "arrow"
+        },
+        {
+          "id": "arrow_publish_seen",
+          "type": "arrow"
         }
       ],
       "updated": 1,
@@ -769,10 +773,6 @@
         },
         {
           "id": "arrow_publish_room",
-          "type": "arrow"
-        },
-        {
-          "id": "arrow_publish_seen",
           "type": "arrow"
         }
       ],
@@ -1052,11 +1052,11 @@
       "locked": false,
       "fontSize": 16,
       "fontFamily": 5,
-      "text": "KV  ggwash-processed:{guid}\nboolean-flag processed-set\nmarked on publish OR Error",
+      "text": "KV  ggwash-processed:{guid}\nboolean-flag processed-set\nmarked before each attempt",
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "box_seen",
-      "originalText": "KV  ggwash-processed:{guid}\nboolean-flag processed-set\nmarked on publish OR Error",
+      "originalText": "KV  ggwash-processed:{guid}\nboolean-flag processed-set\nmarked before each attempt",
       "lineHeight": 1.25,
       "baseline": 15,
       "index": "bH",
@@ -2130,10 +2130,10 @@
     {
       "id": "arrow_publish_seen",
       "type": "arrow",
-      "x": 762,
-      "y": 928,
-      "width": 438,
-      "height": 498,
+      "x": 700,
+      "y": 810,
+      "width": 500,
+      "height": 470,
       "angle": 0,
       "strokeColor": "#15803d",
       "backgroundColor": "transparent",
@@ -2161,22 +2161,26 @@
           0
         ],
         [
-          413,
-          0
+          0,
+          40
         ],
         [
-          413,
-          -498
+          475,
+          40
         ],
         [
-          438,
-          -498
+          475,
+          -430
+        ],
+        [
+          500,
+          -430
         ]
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "elementId": "box_publish",
-        "focus": -0.6,
+        "elementId": "box_walk",
+        "focus": 0.5,
         "gap": 2
       },
       "endBinding": {
@@ -2216,11 +2220,11 @@
       "locked": false,
       "fontSize": 13,
       "fontFamily": 5,
-      "text": "write:\nmarkGGWashProcessed()",
+      "text": "write (before transform):\nmarkGGWashProcessed()",
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
-      "originalText": "write:\nmarkGGWashProcessed()",
+      "originalText": "write (before transform):\nmarkGGWashProcessed()",
       "lineHeight": 1.25,
       "baseline": 11,
       "index": "cK",
@@ -2345,11 +2349,11 @@
       "locked": false,
       "fontSize": 13,
       "fontFamily": 5,
-      "text": "On 'Error' or wrong statement count:\nmark processed, skip to next candidate.",
+      "text": "Each candidate is marked processed\nBEFORE its transform call. On 'Error'\nor wrong count, just skip to the next.",
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
-      "originalText": "On 'Error' or wrong statement count:\nmark processed, skip to next candidate.",
+      "originalText": "Each candidate is marked processed\nBEFORE its transform call. On 'Error'\nor wrong count, just skip to the next.",
       "lineHeight": 1.25,
       "baseline": 11,
       "index": "d1",
