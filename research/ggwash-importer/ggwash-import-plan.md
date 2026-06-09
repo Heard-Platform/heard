@@ -34,6 +34,7 @@ These shaped the design and remove the obvious gotchas up front:
 7. [../../src/supabase/functions/server/index.tsx](../../src/supabase/functions/server/index.tsx) — how `enrichmentApi` is imported/routed and how `enrichment/*` inherits `validateCronAuth`. The new route lives under that prefix to inherit auth.
 8. [../../src/supabase/functions/server/room-utils.ts](../../src/supabase/functions/server/room-utils.ts) — `createNewRoomData()`.
 9. [../../src/supabase/functions/server/route-wrapper.tsx](../../src/supabase/functions/server/route-wrapper.tsx) — wrap the endpoint with `defineRoute`.
+10. [../../src/supabase/functions/server/debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx) (around line 811) — `completeJson` usage, the structured-output path the selection step reuses.
 
 ## Reuse map
 
@@ -46,10 +47,11 @@ These shaped the design and remove the obvious gotchas up front:
 | Reuse as-is | Route validation | `defineRoute` |
 | Reuse as-is | Post creation | `createNewRoomData`, `createRoom`, `saveStatement` |
 | Reuse as-is | KV helpers | `getParsedKvData`, `upsert`, the boolean-flag pattern |
-| Reuse as-is | Usage logging | `complete(prompt, { endpoint })` already records usage |
+| Reuse as-is | Usage logging | `complete` / `completeJson(prompt, { endpoint })` already records usage |
+| Reuse as-is | Structured LLM output | `completeJson` for the selection step (proven path in [debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx)) |
 | Extract + reuse (DRY) | Shared Topic/Response rules + provider reminders | New `discussion-prompt-rules.ts`, consumed by both the Reddit and GGWash transform prompts (see "Clean Code" note) |
 | Adapt | Transform prompt | New `makeTransformPromptFromGGWashArticle` with GGWash disqualifiers |
-| New | Selection prompt | `makeGGWashSelectionPrompt` (titles → ranked indices or `None`) |
+| New | Selection prompt | `makeGGWashSelectionPrompt` (title + body snippet → ranked indices via `completeJson`; `[]` = none) |
 | New | RSS scraper | `ggwash-scraper-utils.ts` |
 | New | Importer service | `GGWashImporter` in `ggwash-import-service.ts` |
 | New | Processed-set helpers | `isGGWashProcessed`, `markGGWashProcessed` |
@@ -75,7 +77,7 @@ KV key (new), boolean-flag pattern mirroring `getDebateEndedEmailSent` / `saveDe
 |---|---|---|
 | `ggwash-processed:${guid}` | `"true"` sentinel | `isGGWashProcessed(guid)`, `markGGWashProcessed(guid)` |
 
-**Processed-set semantics** (deliberate): mark an article processed only when we (a) publish it, or (b) selected it and the transform returned `Error`. Articles that simply weren't the best today are **not** marked, so they stay eligible on future days as fresher rivals age out of the feed. This avoids permanently burning good-but-not-today articles while preventing repeated re-failure of bad ones.
+**Processed-set semantics** (deliberate, at-most-once): an article is marked processed at the moment we **commit to attempting it** (the instant *before* its transform call), not after a successful publish. Rationale: KV writes are not transactional, so marking after publish leaves a window where a crash, a thrown error, or a concurrent double-fire of the cron re-selects the same article and produces a **duplicate post**. Marking first closes that window. The cost is at-most-once delivery: a transient transform/publish failure drops that one article (it is not retried), which is invisible and self-heals the next day with a different article. Articles that were fetched but **never selected/attempted** (e.g. ranked below the day's winner) are **not** marked, so they stay eligible on future days as fresher rivals age out of the feed.
 
 ## Two-stage flow
 
@@ -83,12 +85,13 @@ KV key (new), boolean-flag pattern mirroring `getDebateEndedEmailSent` / `saveDe
 
 1. `fetchGGWashArticles()` → up to 10 articles.
 2. Filter out `isGGWashProcessed(guid)`. `considered` = remaining count. If 0, return early.
-3. **Stage 1 — Selection.** One LLM call: `makeGGWashSelectionPrompt(articles)`. The prompt includes a short description of Heard and what makes a good discussion topic, then the numbered titles. The LLM returns a **ranked, comma-separated list of article indices** (best first), or the sentinel `None`. Parse leniently (extract integers, clamp to valid range, dedupe). `None`/empty → `posted: 0`, return.
+3. **Stage 1 — Selection.** One `completeJson` call: `makeGGWashSelectionPrompt(articles)`. The prompt includes a short description of Heard and what makes a good discussion topic, then the candidate articles numbered **0-based over the filtered (unprocessed) list**, each shown as its title plus the first `SELECTION_SNIPPET_CHARS` characters of its body. The model returns structured JSON, e.g. `{ "ranked": [2, 0, 5] }` (best first) or `{ "ranked": [] }` if none fit. Parse the JSON, clamp/drop out-of-range and duplicate indices. Empty `ranked` → `posted: 0`, return. **The indices map back into the same filtered array used to build the prompt, never the raw 10-item feed** (off-by-one / wrong-article trap).
 4. **Stage 2 — Transform, walking the ranked list.** For each candidate index in order, up to `TARGET_POSTS_PER_RUN` successful posts:
+   - `markGGWashProcessed(guid)` **first** (commit to attempting; see Processed-set semantics). The article is now never reconsidered, whatever happens next.
    - One LLM call: `makeTransformPromptFromGGWashArticle(article, provider)`.
-   - If the response trims to `Error`: `markGGWashProcessed(guid)`, `skipped++`, continue.
-   - Else parse: line 1 = topic, remaining non-empty lines = statements. Validate `MIN_STATEMENTS..MAX_STATEMENTS`; if out of range, treat as `Error` (mark processed, skip).
-   - Else publish: `createNewRoomData({ topic, participants: [], hostId: IMPORTER_AUTHOR, subHeard: DEFAULT_SUBHEARD, endTime: Date.now() + ONE_WEEK_MS, allowAnonymous: true })`, `createRoom`, `saveStatement` per statement (author `IMPORTER_AUTHOR`, round 1). `markGGWashProcessed(guid)`, `posted++`.
+   - If the response trims to `Error`: `skipped++`, continue.
+   - Else parse: line 1 = topic, remaining non-empty lines = statements. Validate `MIN_STATEMENTS..MAX_STATEMENTS`; if out of range, treat as `Error` (`skipped++`, continue).
+   - Else publish: `createNewRoomData({ topic, participants: [], hostId: IMPORTER_AUTHOR, subHeard: DEFAULT_SUBHEARD, endTime: Date.now() + ONE_WEEK_MS, allowAnonymous: true })`, `createRoom`, `saveStatement` per statement (author `IMPORTER_AUTHOR`, round 1). `posted++`.
    - When `posted === TARGET_POSTS_PER_RUN` (1), stop.
 5. Return `{ posted, considered, skipped }`.
 
@@ -98,8 +101,9 @@ Both LLM calls pass a distinct `endpoint` tag to `complete()` (`ggwash-select`, 
 
 ### Selection prompt (`makeGGWashSelectionPrompt`)
 - **System:** Heard is a place for short, open-ended, experience-based discussions; a good topic is evergreen, invites personal perspective (not analysis), and is not breaking news, not a call to action, and not about named individuals.
-- **User:** numbered list of titles; instruction to return the indices of the articles best suited to become a Heard discussion, **ranked best-first, comma-separated, indices only**, or the single word `None` if none fit. Explicitly deprioritize "Breakfast links" / link-roundup digests (not single-topic).
-- Constants: `HEARD_DESCRIPTION`, `SELECTION_NONE_SENTINEL = "None"`.
+- **User:** the candidate articles as a **0-based numbered list**, each entry being the title **plus the first `SELECTION_SNIPPET_CHARS` characters of the article body** (taken from the already-HTML-stripped `body`). Ranking on title + snippet rather than title alone matters because GGWash advocacy pieces often have neutral titles. Instruction to pick the ones best suited to become a Heard discussion, and to explicitly deprioritize "Breakfast links" / link-roundup digests (not single-topic).
+- **Output:** call via `completeJson`. Instruct the model to return only JSON of the form `{ "ranked": number[] }`, where the numbers are 0-based indices into the provided list, ordered best-first, and `[]` when nothing is suitable. Structured output removes the brittle free-text index parsing that differs across gemini/anthropic/openai.
+- Constants: `HEARD_DESCRIPTION`, `SELECTION_SNIPPET_CHARS`.
 
 ### Transform prompt (`makeTransformPromptFromGGWashArticle`)
 Mirrors `makeTransformPromptFromRedditPost` exactly (same `Error` sentinel, same Topic rules, same Response rules, same per-provider reminder blocks), substituting a **GGWash-specific disqualifier list**: advocacy / call-to-action; local political figures/events/legislation; specific crime/accident; "Breakfast links" or any multi-link roundup; box-office/market/sports-score/weather pure-data items; reviews of a specific media title; content primarily about named real people. Request **3 responses** (accept `MIN_STATEMENTS..MAX_STATEMENTS`). The article body is the HTML-stripped, length-capped text.
@@ -128,15 +132,16 @@ Existing files to modify:
 - `index.tsx` — import/route `ggwashImportApi`.
 
 ### Implementation order
-1. Types. 2. KV processed-set helpers. 3. Scraper. 4. Extract shared rules + GGWash prompts. 5. Service. 6. Endpoint + wiring.
+1. Types. 2. KV processed-set helpers. 3. Scraper (verify `contentSnippet`/`guid` mapping against one live item). 4. Extract shared rules + GGWash prompts (selection via `completeJson`). 5. Service (mark-first ordering, indices over the filtered list). 6. Endpoint + wiring.
 
 ### Key constants (no magic numbers/strings)
 - `GGWASH_RSS_URL = "https://ggwash.org/rss"`
 - `MAX_ARTICLE_CHARS = 8000` (transform body cap, token control)
+- `SELECTION_SNIPPET_CHARS = 200` (per-article body snippet shown in the selection prompt)
 - `TARGET_POSTS_PER_RUN = 1`
 - `DEFAULT_SUBHEARD = "washington-dc"`
 - `IMPORTER_AUTHOR = "enrichment-service"` (matches Reddit imports)
-- `LLM_ERROR_SENTINEL = "Error"`, `SELECTION_NONE_SENTINEL = "None"`
+- `LLM_ERROR_SENTINEL = "Error"` (transform sentinel; selection uses structured JSON, so it has no sentinel, an empty `ranked` array means none)
 - `MIN_STATEMENTS = 2`, `MAX_STATEMENTS = 3`
 - `SELECT_ENDPOINT = "ggwash-select"`, `TRANSFORM_ENDPOINT = "ggwash-transform"`
 - `GGWASH_PROCESSED_PREFIX = "ggwash-processed:"`
@@ -146,10 +151,12 @@ Existing files to modify:
 - **Full HTML body, up to ~45k chars.** Strip HTML (use `rss-parser` `contentSnippet`) and truncate to `MAX_ARTICLE_CHARS` before the transform call. Controls token cost and latency.
 - **Daily re-posting.** Processed-set keyed on `<guid>` permalink, marked on publish or transform-failure (semantics above).
 - **Advocacy / local-politics content.** Two-layer filter: selection stage + GGWash-tuned transform disqualifiers. "Breakfast links" roundups explicitly excluded.
+- **RSS field mapping is unverified.** The body is in `<description>` (CDATA HTML) with no `<content:encoded>`. Confirm `rss-parser` populates `contentSnippet` (HTML-stripped) and `guid` / `link` / `isoDate` for this feed; if `contentSnippet` is empty, configure the parser's `customFields` so the body is read from `<description>`. A blank `body` would silently send empty articles to the transform.
+- **Non-atomic publish.** `createRoom` then `saveStatement` x3 are separate KV writes with no transaction. A failure after `createRoom` can leave a room with fewer than 3 statements. The mark-first ordering prevents duplicates (not partials); a partial room is a rare, minor quality blemish at 1 post/day. Acceptable; do not add defensive rollback.
 - **Do not inherit the enrichment scheduler quirks.** No probability-skip, no 3am-7am ET skip (would break an early-morning run). This run is deterministic; the external scheduler decides timing.
 - **No in-repo scheduler.** Like the other crons, scheduling lives outside the repo. Leave a PR note: daily early-morning run (e.g. `0 6 * * *` ET, converted to the scheduler's TZ), `POST`, header `x-cron-secret: <CRON_SECRET>`. DST is the scheduler's concern.
-- **Two LLM calls per run.** Tagged distinctly for usage logging; one selection (cheap, titles only) + one-or-few transforms.
-- **Idempotency.** Re-running the endpoint is safe (processed-set). Concurrent double-fire is unlikely and at worst risks one duplicate; acceptable, not engineered against.
+- **Two LLM calls per run.** Tagged distinctly for usage logging; one selection (cheap, titles + short body snippets) + one-or-few transforms.
+- **Idempotency / no duplicates.** Because an article is marked processed *before* its transform/publish attempt (at-most-once), a re-run, a crash mid-publish, or a concurrent double-fire of the cron cannot create a duplicate post. The trade-off is that a failed attempt drops that article rather than retrying it.
 - **Dry days.** If selection returns `None` or every candidate transforms to `Error`, the run posts nothing. That is correct behavior, not an error.
 
 ## Clean Code (Uncle Bob) notes
@@ -165,10 +172,11 @@ Existing files to modify:
 1. **Build + typecheck.** `npm run build` / `tsc --noEmit`. Fix errors first.
 2. **Manual run.** `curl -X POST http://localhost:<port>/make-server-f1a393b4/enrichment/ggwash-import/run -H "x-cron-secret: <secret>"`. Confirm `{ posted, considered, skipped }`.
 3. **Post created.** Confirm a new room in `washington-dc` with the generated topic and 3 statements (author `enrichment-service`). Confirm `ggwash-processed:<guid>` exists for the published article.
-4. **Dedup.** Re-run immediately. Confirm the just-published article is not reconsidered and no duplicate post appears.
+4. **Dedup / at-most-once.** Re-run immediately. Confirm the just-published article is not reconsidered and no duplicate post appears (it was marked processed before publishing).
 5. **Quality gate.** Confirm a "Breakfast links" item is either not selected, or transforms to `Error` (counted in `skipped`, marked processed, no post).
 6. **Dry path.** Force a feed where selection returns `None` (or all unprocessed are roundups). Confirm `posted: 0` and nothing marked processed for non-attempted articles.
 7. **Reddit prompt unchanged.** After the shared-rules extraction, confirm the Reddit prompt string is byte-identical (Reddit importer still produces the same prompt/output).
+8. **RSS field mapping.** Log one parsed feed item and confirm `contentSnippet` carries the HTML-stripped article body and `guid` / `link` / `isoDate` are populated. If `contentSnippet` is empty, fix the parser field config before relying on the transform.
 
 ## Out of scope (deliberately deferred)
 
