@@ -20,7 +20,7 @@ These shaped the design and remove the obvious gotchas up front:
 
 1. **The full article body is already in the RSS feed.** The live feed has 10 `<item>`s, each with `<title>`, `<link>`, `<guid>` (a permalink URL), `<pubDate>`, `<dc:creator>`, and a CDATA `<description>` containing the **complete article HTML** (the longest seen was ~45,000 chars). There is no `<content:encoded>`. Implication: **no separate page-scrape is needed**. We strip the HTML and cap length before sending to the transform LLM.
 2. **The "newsletter importer" was never built as an RSS importer.** The `email-newsletter-*.ts` / `newsletter-utils.ts` files send outbound email; [../newsletter-importer/newsletter-import-plan.md](../newsletter-importer/newsletter-import-plan.md) is an unbuilt plan. The only built importer to mirror is the **Reddit importer**.
-3. **A seen-set is mandatory.** The feed shows the same ~10 articles for days, and this runs daily. Without dedup we would re-post the same article every morning. The `<guid>` permalink is the natural dedup key.
+3. **A processed-set is mandatory.** The feed shows the same ~10 articles for days, and this runs daily. Without dedup we would re-post the same article every morning. The `<guid>` permalink is the natural dedup key.
 4. **GGWash is an advocacy publication.** Much of its content is call-to-action / local DC politics and "Breakfast links" roundups, all of which the transform disqualifier list is designed to reject. The selection stage is the first filter; the transform disqualifier list is the second. Both need GGWash-specific tuning.
 
 ## Reference reading (do this first)
@@ -30,7 +30,7 @@ These shaped the design and remove the obvious gotchas up front:
 3. [../../src/supabase/functions/server/ai-prompt-utils.ts](../../src/supabase/functions/server/ai-prompt-utils.ts) — `makeTransformPromptFromRedditPost()`. Study the `"Error"` sentinel, the disqualifier list, the Topic/Response rules, and the per-provider "CRITICAL REMINDERS" blocks. The GGWash transform prompt reuses all of these with a different disqualifier list.
 4. [../../src/supabase/functions/server/enrichment-api.ts](../../src/supabase/functions/server/enrichment-api.ts) — the cron endpoint shape. **Do NOT copy the probability-skip or the 3am-7am ET skip** (lines 26-49); a 3-7am skip would actively break an early-morning run.
 5. [../../src/supabase/functions/server/enrichment-service.ts](../../src/supabase/functions/server/enrichment-service.ts) — `EnrichmentService` base (provides `this.aiClient` / `this.provider`). Extend it.
-6. [../../src/supabase/functions/server/kv-utils.tsx](../../src/supabase/functions/server/kv-utils.tsx) — `getDebateEndedEmailSent` / `saveDebateEndedEmailSent` (lines 457-462) are the boolean-flag pattern for the seen-set; `getByPrefixParsed` / `getParsedKvData` / `upsert` are the generic helpers.
+6. [../../src/supabase/functions/server/kv-utils.tsx](../../src/supabase/functions/server/kv-utils.tsx) — `getDebateEndedEmailSent` / `saveDebateEndedEmailSent` (lines 457-462) are the boolean-flag pattern for the processed-set; `getByPrefixParsed` / `getParsedKvData` / `upsert` are the generic helpers.
 7. [../../src/supabase/functions/server/index.tsx](../../src/supabase/functions/server/index.tsx) — how `enrichmentApi` is imported/routed and how `enrichment/*` inherits `validateCronAuth`. The new route lives under that prefix to inherit auth.
 8. [../../src/supabase/functions/server/room-utils.ts](../../src/supabase/functions/server/room-utils.ts) — `createNewRoomData()`.
 9. [../../src/supabase/functions/server/route-wrapper.tsx](../../src/supabase/functions/server/route-wrapper.tsx) — wrap the endpoint with `defineRoute`.
@@ -52,7 +52,7 @@ These shaped the design and remove the obvious gotchas up front:
 | New | Selection prompt | `makeGGWashSelectionPrompt` (titles → ranked indices or `None`) |
 | New | RSS scraper | `ggwash-scraper-utils.ts` |
 | New | Importer service | `GGWashImporter` in `ggwash-import-service.ts` |
-| New | Seen-set helpers | `isGGWashSeen`, `markGGWashSeen` |
+| New | Processed-set helpers | `isGGWashProcessed`, `markGGWashProcessed` |
 | New | Cron endpoint | `POST /make-server-f1a393b4/enrichment/ggwash-import/run` |
 
 ## Data model
@@ -64,7 +64,7 @@ export interface GGWashArticle {
   title: string;
   body: string;        // HTML-stripped, truncated to MAX_ARTICLE_CHARS
   url: string;         // <link>
-  guid: string;        // <guid> permalink; the seen-set key
+  guid: string;        // <guid> permalink; the processed-set key
   publishedAt: number;
 }
 ```
@@ -73,22 +73,22 @@ KV key (new), boolean-flag pattern mirroring `getDebateEndedEmailSent` / `saveDe
 
 | Key pattern | Value | Helpers (in [kv-utils.tsx](../../src/supabase/functions/server/kv-utils.tsx)) |
 |---|---|---|
-| `ggwash-seen:${guid}` | `"true"` sentinel | `isGGWashSeen(guid)`, `markGGWashSeen(guid)` |
+| `ggwash-processed:${guid}` | `"true"` sentinel | `isGGWashProcessed(guid)`, `markGGWashProcessed(guid)` |
 
-**Seen-set semantics** (deliberate): mark an article seen only when we (a) publish it, or (b) selected it and the transform returned `Error`. Articles that simply weren't the best today are **not** marked, so they stay eligible on future days as fresher rivals age out of the feed. This avoids permanently burning good-but-not-today articles while preventing repeated re-failure of bad ones.
+**Processed-set semantics** (deliberate): mark an article processed only when we (a) publish it, or (b) selected it and the transform returned `Error`. Articles that simply weren't the best today are **not** marked, so they stay eligible on future days as fresher rivals age out of the feed. This avoids permanently burning good-but-not-today articles while preventing repeated re-failure of bad ones.
 
 ## Two-stage flow
 
 `GGWashImporter.runOnce(): Promise<{ posted: number; considered: number; skipped: number }>`:
 
 1. `fetchGGWashArticles()` → up to 10 articles.
-2. Filter out `isGGWashSeen(guid)`. `considered` = remaining count. If 0, return early.
+2. Filter out `isGGWashProcessed(guid)`. `considered` = remaining count. If 0, return early.
 3. **Stage 1 — Selection.** One LLM call: `makeGGWashSelectionPrompt(articles)`. The prompt includes a short description of Heard and what makes a good discussion topic, then the numbered titles. The LLM returns a **ranked, comma-separated list of article indices** (best first), or the sentinel `None`. Parse leniently (extract integers, clamp to valid range, dedupe). `None`/empty → `posted: 0`, return.
 4. **Stage 2 — Transform, walking the ranked list.** For each candidate index in order, up to `TARGET_POSTS_PER_RUN` successful posts:
    - One LLM call: `makeTransformPromptFromGGWashArticle(article, provider)`.
-   - If the response trims to `Error`: `markGGWashSeen(guid)`, `skipped++`, continue.
-   - Else parse: line 1 = topic, remaining non-empty lines = statements. Validate `MIN_STATEMENTS..MAX_STATEMENTS`; if out of range, treat as `Error` (mark seen, skip).
-   - Else publish: `createNewRoomData({ topic, participants: [], hostId: IMPORTER_AUTHOR, subHeard: DEFAULT_SUBHEARD, endTime: Date.now() + ONE_WEEK_MS, allowAnonymous: true })`, `createRoom`, `saveStatement` per statement (author `IMPORTER_AUTHOR`, round 1). `markGGWashSeen(guid)`, `posted++`.
+   - If the response trims to `Error`: `markGGWashProcessed(guid)`, `skipped++`, continue.
+   - Else parse: line 1 = topic, remaining non-empty lines = statements. Validate `MIN_STATEMENTS..MAX_STATEMENTS`; if out of range, treat as `Error` (mark processed, skip).
+   - Else publish: `createNewRoomData({ topic, participants: [], hostId: IMPORTER_AUTHOR, subHeard: DEFAULT_SUBHEARD, endTime: Date.now() + ONE_WEEK_MS, allowAnonymous: true })`, `createRoom`, `saveStatement` per statement (author `IMPORTER_AUTHOR`, round 1). `markGGWashProcessed(guid)`, `posted++`.
    - When `posted === TARGET_POSTS_PER_RUN` (1), stop.
 5. Return `{ posted, considered, skipped }`.
 
@@ -123,12 +123,12 @@ New files (all under `src/supabase/functions/server/`):
 
 Existing files to modify:
 - `types.tsx` — add `GGWashArticle`.
-- `kv-utils.tsx` — add `isGGWashSeen` / `markGGWashSeen`.
+- `kv-utils.tsx` — add `isGGWashProcessed` / `markGGWashProcessed`.
 - `ai-prompt-utils.ts` — consume the extracted shared rule constants (behavior-preserving; see note).
 - `index.tsx` — import/route `ggwashImportApi`.
 
 ### Implementation order
-1. Types. 2. KV seen-set helpers. 3. Scraper. 4. Extract shared rules + GGWash prompts. 5. Service. 6. Endpoint + wiring.
+1. Types. 2. KV processed-set helpers. 3. Scraper. 4. Extract shared rules + GGWash prompts. 5. Service. 6. Endpoint + wiring.
 
 ### Key constants (no magic numbers/strings)
 - `GGWASH_RSS_URL = "https://ggwash.org/rss"`
@@ -139,17 +139,17 @@ Existing files to modify:
 - `LLM_ERROR_SENTINEL = "Error"`, `SELECTION_NONE_SENTINEL = "None"`
 - `MIN_STATEMENTS = 2`, `MAX_STATEMENTS = 3`
 - `SELECT_ENDPOINT = "ggwash-select"`, `TRANSFORM_ENDPOINT = "ggwash-transform"`
-- `GGWASH_SEEN_PREFIX = "ggwash-seen:"`
+- `GGWASH_PROCESSED_PREFIX = "ggwash-processed:"`
 
 ## Externalities / gotchas (and how this plan handles them)
 
 - **Full HTML body, up to ~45k chars.** Strip HTML (use `rss-parser` `contentSnippet`) and truncate to `MAX_ARTICLE_CHARS` before the transform call. Controls token cost and latency.
-- **Daily re-posting.** Seen-set keyed on `<guid>` permalink, marked on publish or transform-failure (semantics above).
+- **Daily re-posting.** Processed-set keyed on `<guid>` permalink, marked on publish or transform-failure (semantics above).
 - **Advocacy / local-politics content.** Two-layer filter: selection stage + GGWash-tuned transform disqualifiers. "Breakfast links" roundups explicitly excluded.
 - **Do not inherit the enrichment scheduler quirks.** No probability-skip, no 3am-7am ET skip (would break an early-morning run). This run is deterministic; the external scheduler decides timing.
 - **No in-repo scheduler.** Like the other crons, scheduling lives outside the repo. Leave a PR note: daily early-morning run (e.g. `0 6 * * *` ET, converted to the scheduler's TZ), `POST`, header `x-cron-secret: <CRON_SECRET>`. DST is the scheduler's concern.
 - **Two LLM calls per run.** Tagged distinctly for usage logging; one selection (cheap, titles only) + one-or-few transforms.
-- **Idempotency.** Re-running the endpoint is safe (seen-set). Concurrent double-fire is unlikely and at worst risks one duplicate; acceptable, not engineered against.
+- **Idempotency.** Re-running the endpoint is safe (processed-set). Concurrent double-fire is unlikely and at worst risks one duplicate; acceptable, not engineered against.
 - **Dry days.** If selection returns `None` or every candidate transforms to `Error`, the run posts nothing. That is correct behavior, not an error.
 
 ## Clean Code (Uncle Bob) notes
@@ -164,10 +164,10 @@ Existing files to modify:
 
 1. **Build + typecheck.** `npm run build` / `tsc --noEmit`. Fix errors first.
 2. **Manual run.** `curl -X POST http://localhost:<port>/make-server-f1a393b4/enrichment/ggwash-import/run -H "x-cron-secret: <secret>"`. Confirm `{ posted, considered, skipped }`.
-3. **Post created.** Confirm a new room in `washington-dc` with the generated topic and 3 statements (author `enrichment-service`). Confirm `ggwash-seen:<guid>` exists for the published article.
+3. **Post created.** Confirm a new room in `washington-dc` with the generated topic and 3 statements (author `enrichment-service`). Confirm `ggwash-processed:<guid>` exists for the published article.
 4. **Dedup.** Re-run immediately. Confirm the just-published article is not reconsidered and no duplicate post appears.
-5. **Quality gate.** Confirm a "Breakfast links" item is either not selected, or transforms to `Error` (counted in `skipped`, marked seen, no post).
-6. **Dry path.** Force a feed where selection returns `None` (or all unseen are roundups). Confirm `posted: 0` and nothing marked seen for non-attempted articles.
+5. **Quality gate.** Confirm a "Breakfast links" item is either not selected, or transforms to `Error` (counted in `skipped`, marked processed, no post).
+6. **Dry path.** Force a feed where selection returns `None` (or all unprocessed are roundups). Confirm `posted: 0` and nothing marked processed for non-attempted articles.
 7. **Reddit prompt unchanged.** After the shared-rules extraction, confirm the Reddit prompt string is byte-identical (Reddit importer still produces the same prompt/output).
 
 ## Out of scope (deliberately deferred)
