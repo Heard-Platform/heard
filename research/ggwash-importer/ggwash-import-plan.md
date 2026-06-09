@@ -34,7 +34,8 @@ These shaped the design and remove the obvious gotchas up front:
 7. [../../src/supabase/functions/server/index.tsx](../../src/supabase/functions/server/index.tsx) — how `enrichmentApi` is imported/routed and how `enrichment/*` inherits `validateCronAuth`. The new route lives under that prefix to inherit auth.
 8. [../../src/supabase/functions/server/room-utils.ts](../../src/supabase/functions/server/room-utils.ts) — `createNewRoomData()`.
 9. [../../src/supabase/functions/server/route-wrapper.tsx](../../src/supabase/functions/server/route-wrapper.tsx) — wrap the endpoint with `defineRoute`.
-10. [../../src/supabase/functions/server/debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx) (around line 811) — `completeJson` usage, the structured-output path the selection step reuses.
+10. [../../src/supabase/functions/server/debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx) (around lines 811-839) — `completeJson` usage plus the `JSON.parse(stripMarkdownFences(content))` + try/catch + shape-check pattern the selection parser must mirror. `stripMarkdownFences` is exported from [rant-prompt-utils.ts](../../src/supabase/functions/server/rant-prompt-utils.ts).
+11. [../../src/supabase/functions/server/reddit-import-test.tsx](../../src/supabase/functions/server/reddit-import-test.tsx) — the `describe`/`it` (`jsr:@std/testing/bdd`) test layout the new `ggwash-import-test.tsx` mirrors.
 
 ## Reuse map
 
@@ -48,7 +49,7 @@ These shaped the design and remove the obvious gotchas up front:
 | Reuse as-is | Post creation | `createNewRoomData`, `createRoom`, `saveStatement` |
 | Reuse as-is | KV helpers | `getParsedKvData`, `upsert`, the boolean-flag pattern |
 | Reuse as-is | Usage logging | `complete` / `completeJson(prompt, { endpoint })` already records usage |
-| Reuse as-is | Structured LLM output | `completeJson` for the selection step (proven path in [debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx)) |
+| Reuse as-is | Structured LLM output + JSON parse | `completeJson` + `stripMarkdownFences` (from [rant-prompt-utils.ts](../../src/supabase/functions/server/rant-prompt-utils.ts)); parse pattern proven in [debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx) |
 | Extract + reuse (DRY) | Shared Topic/Response rules + provider reminders | New `discussion-prompt-rules.ts`, consumed by both the Reddit and GGWash transform prompts (see "Clean Code" note) |
 | Adapt | Transform prompt | New `makeTransformPromptFromGGWashArticle` with GGWash disqualifiers |
 | New | Selection prompt | `makeGGWashSelectionPrompt` (title + body snippet → ranked indices via `completeJson`; `[]` = none) |
@@ -85,12 +86,12 @@ KV key (new), boolean-flag pattern mirroring `getDebateEndedEmailSent` / `saveDe
 
 1. `fetchGGWashArticles()` → up to 10 articles.
 2. Filter out `isGGWashProcessed(guid)`. `considered` = remaining count. If 0, return early.
-3. **Stage 1 — Selection.** One `completeJson` call: `makeGGWashSelectionPrompt(articles)`. The prompt includes a short description of Heard and what makes a good discussion topic, then the candidate articles numbered **0-based over the filtered (unprocessed) list**, each shown as its title plus the first `SELECTION_SNIPPET_CHARS` characters of its body. The model returns structured JSON, e.g. `{ "ranked": [2, 0, 5] }` (best first) or `{ "ranked": [] }` if none fit. Parse the JSON, clamp/drop out-of-range and duplicate indices. Empty `ranked` → `posted: 0`, return. **The indices map back into the same filtered array used to build the prompt, never the raw 10-item feed** (off-by-one / wrong-article trap).
+3. **Stage 1 — Selection.** One `completeJson` call: `makeGGWashSelectionPrompt(articles)`. The prompt includes a short description of Heard and what makes a good discussion topic, then the candidate articles numbered **0-based over the filtered (unprocessed) list**, each shown as its title plus the first `SELECTION_SNIPPET_CHARS` characters of its body. The model returns structured JSON, e.g. `{ "ranked": [2, 0, 5] }` (best first) or `{ "ranked": [] }` if none fit. Parse with `JSON.parse(stripMarkdownFences(content))` inside a try/catch (mirror [debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx)); on parse failure, a non-object result, or `ranked` not being an array, treat as empty and return `posted: 0`. Otherwise clamp/drop out-of-range and duplicate indices. Empty `ranked` → `posted: 0`, return. **The indices map back into the same filtered array used to build the prompt, never the raw 10-item feed** (off-by-one / wrong-article trap).
 4. **Stage 2 — Transform, walking the ranked list.** For each candidate index in order, up to `TARGET_POSTS_PER_RUN` successful posts:
    - `markGGWashProcessed(guid)` **first** (commit to attempting; see Processed-set semantics). The article is now never reconsidered, whatever happens next.
    - One LLM call: `makeTransformPromptFromGGWashArticle(article, provider)`.
    - If the response trims to `Error`: `skipped++`, continue.
-   - Else parse: line 1 = topic, remaining non-empty lines = statements. Validate `MIN_STATEMENTS..MAX_STATEMENTS`; if out of range, treat as `Error` (`skipped++`, continue).
+   - Else parse: line 1 = topic, remaining non-empty lines = statements. If the topic is empty or the statement count is outside `MIN_STATEMENTS..MAX_STATEMENTS`, treat as `Error` (`skipped++`, continue).
    - Else publish: `createNewRoomData({ topic, participants: [], hostId: IMPORTER_AUTHOR, subHeard: DEFAULT_SUBHEARD, endTime: Date.now() + ONE_WEEK_MS, allowAnonymous: true })`, `createRoom`, `saveStatement` per statement (author `IMPORTER_AUTHOR`, round 1). `posted++`.
    - When `posted === TARGET_POSTS_PER_RUN` (1), stop.
 5. Return `{ posted, considered, skipped }`.
@@ -111,8 +112,8 @@ Mirrors `makeTransformPromptFromRedditPost` exactly (same `Error` sentinel, same
 ## API endpoint
 
 `POST /make-server-f1a393b4/enrichment/ggwash-import/run`
-- Inherits `validateCronAuth` from the `enrichment/*` prefix (uses `x-cron-secret`).
-- No required body params. Wrap with `defineRoute`. Calls `new GGWashImporter().runOnce()`.
+- Inherits `validateCronAuth` from the `enrichment/*` prefix (uses `x-cron-secret`). The `enrichment/*` placement is deliberate, purely to inherit cron auth; this importer is otherwise independent of the probabilistic enrichment cron and shares none of its config.
+- No required body params. Wrap with `defineRoute` and tolerate an empty/absent JSON body (the scheduler may send none). Calls `new GGWashImporter().runOnce()`.
 - Returns `{ posted, considered, skipped }`.
 - New file `ggwash-import-api.ts`; wire into [index.tsx](../../src/supabase/functions/server/index.tsx) the same way `enrichmentApi` is.
 
@@ -124,6 +125,7 @@ New files (all under `src/supabase/functions/server/`):
 - `discussion-prompt-rules.ts` — extracted shared Topic/Response rule blocks + provider reminders (see Clean Code note).
 - `ggwash-import-service.ts` — `GGWashImporter extends EnrichmentService`.
 - `ggwash-import-api.ts` — the cron endpoint.
+- `ggwash-import-test.tsx` — unit tests (see Testing).
 
 Existing files to modify:
 - `types.tsx` — add `GGWashArticle`.
@@ -146,6 +148,17 @@ Existing files to modify:
 - `SELECT_ENDPOINT = "ggwash-select"`, `TRANSFORM_ENDPOINT = "ggwash-transform"`
 - `GGWASH_PROCESSED_PREFIX = "ggwash-processed:"`
 
+## Testing
+
+Add `ggwash-import-test.tsx`, mirroring [reddit-import-test.tsx](../../src/supabase/functions/server/reddit-import-test.tsx) (`jsr:@std/testing/bdd` `describe`/`it`). Cover, with no network where possible:
+
+- **Selection prompt construction:** title + body snippet present per candidate, 0-based numbering, JSON-output instruction present.
+- **Selection parse:** clean `{ "ranked": [...] }`, a fenced JSON block, trailing prose, malformed JSON, `ranked` missing or non-array, and out-of-range/duplicate indices all resolve to a valid clamped array or empty, never throw.
+- **Transform prompt construction:** GGWash disqualifiers present; provider-specific reminder blocks added for gemini/anthropic only (as the Reddit test asserts).
+- **Transform parse:** topic + 2-3 statements parsed; `Error` sentinel, empty topic, and wrong statement count all rejected.
+- **Scraper:** field mapping (`contentSnippet` / `guid` / `link`), body is HTML-stripped, item cap obeyed.
+- **(Optional, networked) end-to-end:** fetch → select → transform yields a topic + statements, gated behind the same env checks the Reddit e2e test uses.
+
 ## Externalities / gotchas (and how this plan handles them)
 
 - **Full HTML body, up to ~45k chars.** Strip HTML (use `rss-parser` `contentSnippet`) and truncate to `MAX_ARTICLE_CHARS` before the transform call. Controls token cost and latency.
@@ -162,6 +175,8 @@ Existing files to modify:
 ## Clean Code (Uncle Bob) notes
 
 - **SRP / one level of abstraction:** scraper (fetch), prompt-utils (prompt construction), service (orchestration), api (HTTP). Mirrors the Reddit importer's separation.
+- **Keep `runOnce` thin.** It should read as a short sequence of intent-revealing steps delegating to small private methods (e.g. `fetchCandidates()`, `selectRanked(articles)`, `tryPublish(article)`), not one long procedure. Each does one thing at one level of abstraction.
+- **Parse inline; do not extract a shared transform parser.** The ~5-line topic+statements split is duplicated with the Reddit service, but it is tiny and same-shaped, so a thin shared helper would touch the Reddit file for little gain. Keep the parse inline in the GGWash service. (The shared *prompt rules* extraction below is the DRY win worth making; the parser is not.)
 - **DRY — shared prompt rules:** the Topic rules, Response rules, and per-provider reminder blocks are ~40 identical lines shared by the Reddit and GGWash transform prompts. The Clean-Code-correct move is to extract them once into `discussion-prompt-rules.ts` and have both prompts consume them, rather than duplicate. This touches the pre-existing `ai-prompt-utils.ts`, so the change is strictly behavior-preserving and guarded: capture the Reddit prompt string before and after the refactor and assert it is byte-identical (the existing Reddit test exercises prompt construction). If you would rather not touch the Reddit file in this PR, the fallback is to duplicate the rule blocks in the GGWash prompt and extract later; this plan recommends the extraction.
 - **Intention-revealing names, small functions, named constants** throughout; no magic values.
 - **No defensive handling of impossible cases** (trust `generateId`, etc.). The `Error`/`None` sentinels and statement-count check are real input validation of LLM output, not defensive cruft.
