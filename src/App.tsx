@@ -43,14 +43,17 @@ import { toast } from "sonner@2.0.3";
 const KALORAMA_ROOM_ID = "xo38wmfkm7bmo35js4i";
 const KALORAMA_COMMUNITIES = ["kalorama-park", "dupont-circle-neighborhoods", "washington-dc"];
 
-const WAYMO_ROOM_ID = "jhxaoh1a3bmq2fflpx";
-const WAYMO_STATEMENT_ID = "0d3m3yflnlc8mq2fflre";
+const WAYMO_DUPONT_ROOM_ID = "jhxaoh1a3bmq2fflpx";
+const WAYMO_DUPONT_STATEMENT_ID = "0d3m3yflnlc8mq2fflre";
+
+const WAYMO_DC_ROOM_ID = "s6r23ralcomq8l9p6p";
+const WAYMO_DC_STATEMENT_ID = "ecgld4qfclqmq8l9p82";
 
 const I_LOVE_CIVTECH_FLYER_ID = "gv7kmooa0lmom3pn2m";
 const I_LOVE_CIVTECH_STATEMENT_ID = "jg46pxp4fsmom3pn3c";
 
-const SHIRT_FLYER_ID = WAYMO_ROOM_ID;
-const SHIRT_STATEMENT_ID = WAYMO_STATEMENT_ID;
+const SHIRT_FLYER_ID = WAYMO_DC_ROOM_ID;
+const SHIRT_STATEMENT_ID = WAYMO_DC_STATEMENT_ID;
 
 const CLUB_FLYER_ID = "i2yo40k84womp72i2qi";
 const CLUB_STATEMENT_ID = "qkjea7qnj3mp72i2r3";
@@ -289,6 +292,8 @@ function AppContent() {
         window.location.pathname.startsWith("/udc");
       const isWaymoRoute =
         window.location.pathname.startsWith("/waymo");
+      const isWaymoDcRoute =
+        window.location.pathname.startsWith("/waymodc");
       const hardcodedFlyerMatch = window.location.pathname.match(
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
@@ -358,8 +363,10 @@ function AppContent() {
                           : isDcRoute
                             ? "0tlal5afi6mlmpbckaso"
                             : isWaymoRoute
-                              ? WAYMO_ROOM_ID
-                              : undefined;
+                              ? WAYMO_DUPONT_ROOM_ID
+                              : isWaymoDcRoute
+                                ? WAYMO_DC_ROOM_ID
+                                : null;
 
         const routeName = isParkletRoute
           ? "parklet"
