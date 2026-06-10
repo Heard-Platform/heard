@@ -874,11 +874,11 @@ class ApiClient extends BaseApiClient {
       .catch(() => {});
   }
 
-  async createPaymentIntent(amount: number) {
+  async createCheckoutSession(amount: number, successUrl: string, cancelUrl: string) {
     const mode = import.meta.env.VITE_STRIPE_MODE ?? "test";
-    return this.request<{ clientSecret: string }>("/create-payment-intent", {
+    return this.request<{ url: string }>("/create-checkout-session", {
       method: "POST",
-      body: JSON.stringify({ amount, mode }),
+      body: JSON.stringify({ amount, mode, successUrl, cancelUrl }),
     });
   }
 }

@@ -16,7 +16,7 @@ const getStripe = (mode: "test" | "live") => {
 };
 
 stripeApi.post(
-  `${API_URL_PREFIX}/create-payment-intent`,
+  `${API_URL_PREFIX}/create-checkout-session`,
   defineRoute(
     {
       amount: {
@@ -25,21 +25,30 @@ stripeApi.post(
         validate: (val) => val >= 1,
         errorMessage: "Amount must be at least $1",
       },
-      mode: {
-        type: "string",
-        required: false,
-      },
+      mode: { type: "string", required: false },
+      successUrl: { type: "string", required: true },
+      cancelUrl: { type: "string", required: true },
     },
-    async ({ amount, mode }: { amount: number; mode?: string }) => {
+    async ({ amount, mode, successUrl, cancelUrl }: { amount: number; mode?: string; successUrl: string; cancelUrl: string }) => {
       const stripeMode = mode === "live" ? "live" : "test";
       const stripe = getStripe(stripeMode);
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100),
-        currency: "usd",
-        automatic_payment_methods: { enabled: true },
+      const session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: { name: "Donation to Heard" },
+              unit_amount: Math.round(amount * 100),
+            },
+            quantity: 1,
+          },
+        ],
+        success_url: successUrl,
+        cancel_url: cancelUrl,
         metadata: { source: "heard-funding-page" },
       });
-      return { clientSecret: paymentIntent.client_secret };
+      return { url: session.url };
     },
   ),
 );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Dialog, DialogContent, DialogTitle } from "../../components/ui/dialog";
 import { DonateCard } from "./DonateCard";
@@ -13,14 +13,28 @@ interface FundingPageProps {
 }
 
 export function FundingPage({ onExit }: FundingPageProps) {
-  const [amount, setAmount] = useState(25);
+  const params = new URLSearchParams(window.location.search);
+  const returnedWithSuccess = params.get("payment") === "success";
+  const returnedAmount = parseInt(params.get("amount") ?? "0", 10) || 0;
+
+  const [amount, setAmount] = useState(returnedAmount || 25);
   const [showAmountPicker, setShowAmountPicker] = useState(false);
   const [customAmount, setCustomAmount] = useState("");
-  const [cardStep, setCardStep] = useState<CardStep>("donate");
+  const [cardStep, setCardStep] = useState<CardStep>(returnedWithSuccess ? "share" : "donate");
   const [showDonationDialog, setShowDonationDialog] = useState(false);
-  const [totalDonated, setTotalDonated] = useState(INITIAL_DONATED);
-  const [donorCount, setDonorCount] = useState(7);
+  const [cardKey, setCardKey] = useState(0);
+  const [totalDonated, setTotalDonated] = useState(returnedWithSuccess ? INITIAL_DONATED + returnedAmount : INITIAL_DONATED);
+  const [donorCount, setDonorCount] = useState(returnedWithSuccess ? 8 : 7);
   const [nugMode, setNugMode] = useState(false);
+
+  useEffect(() => {
+    if (returnedWithSuccess) {
+      window.history.replaceState({}, "", window.location.pathname);
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      }, 100);
+    }
+  }, []);
 
   const progressPct = Math.min((totalDonated / FUNDING_GOAL) * 100, 100);
 
@@ -37,16 +51,6 @@ export function FundingPage({ onExit }: FundingPageProps) {
       setShowAmountPicker(false);
       setCustomAmount("");
     }
-  };
-
-  const handleDonationSuccess = () => {
-    setTotalDonated((prev) => prev + amount);
-    setDonorCount((prev) => prev + 1);
-    setShowDonationDialog(false);
-    setCardStep("share");
-    setTimeout(() => {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-    }, 100);
   };
 
   return (
@@ -78,18 +82,14 @@ export function FundingPage({ onExit }: FundingPageProps) {
         </h1>
         <p style={{ color: C.slate600, lineHeight: 1.625, marginBottom: 16 }}>
           In Jan 2026, I gave myself a deadline: raise{" "}
-          <strong style={{ color: C.slate800 }}>$5,000 in funding by July 4th</strong>, or consider{" "}
-          <strong style={{ color: C.slate800 }}>ending Heard</strong>. We're less than a month away and still have some ground to cover.
-        </p>
-        <p style={{ color: C.slate600, lineHeight: 1.625, marginBottom: 16 }}>
-          If you believe in what Heard is building, you can donate directly below.{" "}
-          <strong style={{ color: C.slate800 }}>Every dollar goes toward keeping the project alive</strong> for the rest of the year.
+          <strong style={{ color: C.slate800 }}>$5,000 in funding by July 4th</strong>, or {" "}
+          <strong style={{ color: C.slate800 }}>get a tattoo chosen via a debate on Heard</strong>. We're less than a month away and have some ground to cover!
         </p>
         <p style={{ color: C.slate600, lineHeight: 1.625, marginBottom: 20 }}>
-          You'd also be funding my vegan chicken nuggies addiction 🍗 and telling me there are{" "}
-          <strong style={{ color: C.slate800 }}>people out there who support and believe in Heard</strong>.
+          Below you can make a donation to help me reach that goal. Your gift will not only fund my vegan chicken nuggies addiction 🍗 It also tells me there are{" "}
+          <strong style={{ color: C.slate800 }}>people out there who support and believe in Heard</strong>, and will encourage me to keep working on this project, at least for the rest of year.
         </p>
-        <p style={{ color: C.slate500, fontSize: 14, fontStyle: "italic" }}>— Alex, founder of Heard</p>
+        <p style={{ color: C.slate500, fontSize: 14, fontStyle: "italic" }}>— Alex Long, founder of Heard</p>
       </div>
 
       <div style={{ width: "100%", maxWidth: 384, borderTop: `1px solid ${C.slate200}`, marginBottom: 32 }} />
@@ -125,7 +125,7 @@ export function FundingPage({ onExit }: FundingPageProps) {
             transition={{ duration: 0.4 }}
           >
             {fmt(totalDonated, nugMode)} donated{" "}
-            <span style={{ color: C.slate400, fontWeight: 400 }}>by {donorCount} people</span>
+            <span style={{ color: C.slate400, fontWeight: 400 }}>by {donorCount} Hearos</span>
           </motion.span>
           <span style={{ color: C.slate400 }}>{fmt(FUNDING_GOAL, nugMode)} goal</span>
         </div>
@@ -153,7 +153,7 @@ export function FundingPage({ onExit }: FundingPageProps) {
             padding: 0,
           }}
         >
-          {nugMode ? "Show in dollars 💵" : "Show currency in vegan nuggies 🍗"}
+          {nugMode ? "Show in dollars 💵" : "Show currency in nuggies 🍗"}
         </button>
       </div>
 
@@ -176,6 +176,7 @@ export function FundingPage({ onExit }: FundingPageProps) {
               transform: "translateY(10px) scale(0.965)", zIndex: 2,
             }} />
             <DonateCard
+              key={cardKey}
               amount={amount}
               nugMode={nugMode}
               onSwipeRight={() => setShowDonationDialog(true)}
@@ -285,8 +286,7 @@ export function FundingPage({ onExit }: FundingPageProps) {
       <DonationDialog
         open={showDonationDialog}
         amount={amount}
-        onClose={() => setShowDonationDialog(false)}
-        onSuccess={handleDonationSuccess}
+        onClose={() => { setShowDonationDialog(false); setCardKey((k) => k + 1); }}
       />
     </div>
   );

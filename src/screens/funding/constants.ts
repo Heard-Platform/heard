@@ -1,16 +1,7 @@
-import { loadStripe } from "@stripe/stripe-js";
-
 export const PRESET_AMOUNTS = [10, 25, 50, 100];
 export const FUNDING_GOAL = 5000;
 export const INITIAL_DONATED = 1850;
 export const SHARE_URL = "https://heard.vote/funding";
-
-const stripeMode = import.meta.env.VITE_STRIPE_MODE ?? "test";
-const stripePublishableKey = stripeMode === "live"
-  ? import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY_LIVE
-  : import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY_TEST;
-
-export const stripePromise = loadStripe(stripePublishableKey ?? "");
 
 export const C = {
   slate900: "#0f172a",

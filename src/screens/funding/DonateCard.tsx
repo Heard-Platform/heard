@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, useMotionValue, useTransform } from "motion/react";
 import type { PanInfo } from "motion/react";
 import { C, fmt } from "./constants";
@@ -13,6 +13,15 @@ interface DonateCardProps {
 export function DonateCard({ amount, nugMode, onSwipeRight, onTapAmount }: DonateCardProps) {
   const [swiped, setSwiped] = useState(false);
   const x = useMotionValue(0);
+  const dragRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = dragRef.current;
+    if (!el) return;
+    const prevent = (e: TouchEvent) => { if (e.cancelable) e.preventDefault(); };
+    el.addEventListener("touchmove", prevent, { passive: false });
+    return () => el.removeEventListener("touchmove", prevent);
+  }, []);
   const rotate = useTransform(x, [-200, 200], [-15, 15]);
   const cardOpacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
   const badgeOpacity = useTransform(x, [20, 80], [0, 1]);
@@ -26,6 +35,7 @@ export function DonateCard({ amount, nugMode, onSwipeRight, onTapAmount }: Donat
 
   return (
     <motion.div
+      ref={dragRef}
       style={{
         x: swiped ? undefined : x,
         rotate: swiped ? undefined : rotate,
@@ -97,20 +107,21 @@ export function DonateCard({ amount, nugMode, onSwipeRight, onTapAmount }: Donat
           >
             {fmt(amount, nugMode)}
           </button>
+          <p style={{ fontSize: 12, color: C.emerald600, marginBottom: 16, marginTop: -10, fontWeight: 500 }}>
+            ✏️ tap to change
+          </p>
 
           <p style={{ fontSize: 22, fontWeight: 700, color: C.slate800, lineHeight: 1.375, marginBottom: 40 }}>
             to Heard
           </p>
 
-          <p style={{ color: C.slate400, fontSize: 16, display: "flex", alignItems: "center", gap: 8 }}>
-            swipe right to donate
-            <motion.span
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
-            >
-              👉
-            </motion.span>
-          </p>
+          <motion.p
+            style={{ color: C.slate700, fontSize: 16, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}
+            animate={{ x: [0, 8, 0] }}
+            transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+          >
+            swipe right to donate 👉
+          </motion.p>
         </div>
       </div>
     </motion.div>
