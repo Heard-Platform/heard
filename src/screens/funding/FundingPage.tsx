@@ -158,7 +158,7 @@ export function FundingPage({ onExit }: FundingPageProps) {
       </div>
 
       {/* Card stack */}
-      <div style={{ position: "relative", width: "100%", maxWidth: 384, height: 440 }}>
+      <div style={{ position: "relative", width: "100%", maxWidth: 384, height: 440, overflow: "hidden" }}>
         {cardStep === "donate" && (
           <>
             <div style={{
