@@ -83,11 +83,11 @@ export function FundingPage({ onExit }: FundingPageProps) {
         <p style={{ color: C.slate600, lineHeight: 1.625, marginBottom: 16 }}>
           In Jan 2026, I gave myself a deadline: raise{" "}
           <strong style={{ color: C.slate800 }}>$5,000 in funding by July 4th</strong>, or {" "}
-          <strong style={{ color: C.slate800 }}>get a tattoo chosen via a debate on Heard</strong>. We're less than a month away and have some ground to cover!
+          <strong style={{ color: C.slate800 }}>get a tattoo</strong> chosen via a debate on Heard. We're less than a month away and have some ground to cover!
         </p>
         <p style={{ color: C.slate600, lineHeight: 1.625, marginBottom: 20 }}>
-          Below you can make a donation to help me reach that goal. Your gift will not only fund my vegan chicken nuggies addiction 🍗 It also tells me there are{" "}
-          <strong style={{ color: C.slate800 }}>people out there who support and believe in Heard</strong>, and will encourage me to keep working on this project, at least for the rest of year.
+          Below you can send over a donation to help me reach my goal. Your gift not only funds my vegan chicken nuggies addiction 🍗 It also tells me there are{" "}
+          <strong style={{ color: C.slate800 }}>people out there who support and believe in Heard</strong>, and encourages me to keep working on this project, at least for the rest of year.
         </p>
         <p style={{ color: C.slate500, fontSize: 14, fontStyle: "italic" }}>— Alex Long, founder of Heard</p>
       </div>
@@ -110,7 +110,7 @@ export function FundingPage({ onExit }: FundingPageProps) {
         <span style={{ fontSize: 22 }}>🏅</span>
         <p style={{ fontSize: 14, color: C.amber800, lineHeight: 1.4, margin: 0 }}>
           <span style={{ fontWeight: 600 }}>Donor perk:</span>{" "}
-          Anyone who donates will receive a lifetime supporter badge in the Heard app.
+          Anyone who donates will receive a lifetime supporter badge in the Heard app and my lifelong gratitude.
         </p>
       </div>
 
