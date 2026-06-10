@@ -6,6 +6,7 @@ import { TermsOfServicePage } from "./screens/TermsOfServicePage";
 import { PrivacyPolicyPage } from "./screens/PrivacyPolicyPage";
 import { OrgsLanding } from "./screens/OrgsLanding";
 import { OneBillionPage } from "./screens/OneBillionPage";
+import { FundingPage } from "./screens/funding/FundingPage";
 import { AiUsagePage } from "./screens/AiUsagePage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
@@ -86,6 +87,7 @@ function AppContent() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showOrgsPage, setShowOrgsPage] = useState(false);
   const [showOneBillion, setShowOneBillion] = useState(false);
+  const [showFundingPage, setShowFundingPage] = useState(false);
   const [showAiUsage, setShowAiUsage] = useState(false);
   const [newsletterEdition, setNewsletterEdition] = useState<number | null>(null);
   const [qrScanResult, setQrScanResult] =
@@ -263,6 +265,8 @@ function AppContent() {
         window.location.pathname.startsWith("/1billion");
       const isAiUsageRoute =
         window.location.pathname.startsWith("/ai-usage");
+      const isFundingRoute =
+        window.location.pathname.startsWith("/funding");
 
       const newsletterMatch = window.location.pathname.match(/^\/newsletter\/(\d+)$/);
       const isKaloramaRoute =
@@ -425,6 +429,8 @@ function AppContent() {
         setShowOneBillion(true);
       } else if (isAiUsageRoute) {
         setShowAiUsage(true);
+      } else if (isFundingRoute) {
+        setShowFundingPage(true);
       } else if (newsletterMatch) {
         const edition = parseInt(newsletterMatch[1]);
         setNewsletterEdition(edition);
@@ -653,6 +659,15 @@ function AppContent() {
 
   if (showOneBillion) {
     return <OneBillionPage />;
+  }
+
+  if (showFundingPage) {
+    return (
+      <>
+        <FundingPage onExit={() => { setShowFundingPage(false); window.history.pushState({}, "", "/"); }} />
+        <Toaster />
+      </>
+    );
   }
 
   if (showAiUsage) {

@@ -873,6 +873,14 @@ class ApiClient extends BaseApiClient {
     this.post("/analytics/event", { type, roomId })
       .catch(() => {});
   }
+
+  async createPaymentIntent(amount: number) {
+    const mode = import.meta.env.VITE_STRIPE_MODE ?? "test";
+    return this.request<{ clientSecret: string }>("/create-payment-intent", {
+      method: "POST",
+      body: JSON.stringify({ amount, mode }),
+    });
+  }
 }
 
 export const api = new ApiClient();

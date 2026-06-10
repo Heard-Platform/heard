@@ -38,6 +38,7 @@ import { API_URL_PREFIX } from "./constants.tsx";
 import { performanceTestApi } from "./performance-test-api.tsx";
 import { ogApi } from "./og-api.tsx";
 import { aiUsageApi } from "./ai-usage-api.ts";
+import { stripeApi } from "./stripe-api.tsx";
 
 type Variables = {
   userId?: string;
@@ -172,5 +173,6 @@ app.route("/", enrichmentApi);
 app.route("/", userRankApi);
 app.route("/", eventApi);
 app.route("/", performanceTestApi);
+app.route("/", stripeApi);
 
 Deno.serve(app.fetch);
