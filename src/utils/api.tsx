@@ -881,6 +881,12 @@ class ApiClient extends BaseApiClient {
       body: JSON.stringify({ amount, mode, successUrl, cancelUrl }),
     });
   }
+
+  async getFundingStats() {
+    return this.request<{ totalDollars: number; donorCount: number }>("/funding-stats", {
+      method: "GET",
+    });
+  }
 }
 
 export const api = new ApiClient();

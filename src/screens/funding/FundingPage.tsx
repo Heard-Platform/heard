@@ -4,7 +4,8 @@ import { Dialog, DialogContent, DialogTitle } from "../../components/ui/dialog";
 import { DonateCard } from "./DonateCard";
 import { ShareCard } from "./ShareCard";
 import { DonationDialog } from "./DonationDialog";
-import { C, fmt, PRESET_AMOUNTS, FUNDING_GOAL, INITIAL_DONATED } from "./constants";
+import { C, fmt, PRESET_AMOUNTS, FUNDING_GOAL } from "./constants";
+import { api } from "../../utils/api";
 
 type CardStep = "donate" | "share" | "done";
 
@@ -23,11 +24,21 @@ export function FundingPage({ onExit }: FundingPageProps) {
   const [cardStep, setCardStep] = useState<CardStep>(returnedWithSuccess ? "share" : "donate");
   const [showDonationDialog, setShowDonationDialog] = useState(false);
   const [cardKey, setCardKey] = useState(0);
-  const [totalDonated, setTotalDonated] = useState(returnedWithSuccess ? INITIAL_DONATED + returnedAmount : INITIAL_DONATED);
-  const [donorCount, setDonorCount] = useState(returnedWithSuccess ? 8 : 7);
+  const [totalDonated, setTotalDonated] = useState(returnedWithSuccess ? returnedAmount : 0);
+  const [donorCount, setDonorCount] = useState(0);
+  const [statsLoading, setStatsLoading] = useState(true);
   const [nugMode, setNugMode] = useState(false);
 
   useEffect(() => {
+    api.getFundingStats()
+      .then((res) => {
+        if (res.success && res.data) {
+          setTotalDonated(res.data.totalDollars);
+          setDonorCount(res.data.donorCount);
+        }
+      })
+      .finally(() => setStatsLoading(false));
+
     if (returnedWithSuccess) {
       window.history.replaceState({}, "", window.location.pathname);
       setTimeout(() => {
@@ -116,27 +127,36 @@ export function FundingPage({ onExit }: FundingPageProps) {
 
       {/* Progress bar */}
       <div style={{ width: "100%", maxWidth: 384, marginBottom: 32 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
-          <motion.span
-            style={{ color: C.emerald600 }}
-            key={totalDonated}
-            initial={{ scale: 1 }}
-            animate={{ scale: [1, 1.15, 1] }}
-            transition={{ duration: 0.4 }}
-          >
-            {fmt(totalDonated, nugMode)} donated{" "}
-            <span style={{ color: C.slate400, fontWeight: 400 }}>by {donorCount} Hearos</span>
-          </motion.span>
-          <span style={{ color: C.slate400 }}>{fmt(FUNDING_GOAL, nugMode)} goal</span>
-        </div>
-        <div style={{ height: 12, backgroundColor: C.slate200, borderRadius: 999, overflow: "hidden" }}>
-          <motion.div
-            style={{ height: "100%", backgroundColor: C.emerald500, borderRadius: 999 }}
-            initial={{ width: `${(INITIAL_DONATED / FUNDING_GOAL) * 100}%` }}
-            animate={{ width: `${progressPct}%` }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
-          />
-        </div>
+        {statsLoading ? (
+          <>
+            <div style={{ height: 20, marginBottom: 8, borderRadius: 6, backgroundColor: C.slate200, width: "70%", opacity: 0.6 }} />
+            <div style={{ height: 12, backgroundColor: C.slate200, borderRadius: 999 }} />
+          </>
+        ) : (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
+              <motion.span
+                style={{ color: C.emerald600 }}
+                key={totalDonated}
+                initial={{ scale: 1 }}
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ duration: 0.4 }}
+              >
+                {fmt(totalDonated, nugMode)} donated{" "}
+                <span style={{ color: C.slate400, fontWeight: 400 }}>by {donorCount} Hearos</span>
+              </motion.span>
+              <span style={{ color: C.slate400 }}>{fmt(FUNDING_GOAL, nugMode)} goal</span>
+            </div>
+            <div style={{ height: 12, backgroundColor: C.slate200, borderRadius: 999, overflow: "hidden" }}>
+              <motion.div
+                style={{ height: "100%", backgroundColor: C.emerald500, borderRadius: 999 }}
+                initial={{ width: "0%" }}
+                animate={{ width: `${progressPct}%` }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+              />
+            </div>
+          </>
+        )}
         <button
           onClick={() => setNugMode((v) => !v)}
           style={{
@@ -202,7 +222,24 @@ export function FundingPage({ onExit }: FundingPageProps) {
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", textAlign: "center" }}>
             <p style={{ fontSize: 48, marginBottom: 16 }}>🙏</p>
             <p style={{ fontSize: 20, fontWeight: 600, color: C.slate700 }}>Thank you for donating</p>
-            <p style={{ color: C.slate400, fontSize: 14, marginTop: 4 }}>It means everything.</p>
+            <p style={{ color: C.slate400, fontSize: 14, marginTop: 4, marginBottom: 24 }}>It means everything.</p>
+            <a
+              href="https://heard.vote"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-block",
+                padding: "14px 28px",
+                borderRadius: 12,
+                background: "linear-gradient(135deg, #059669, #0d9488)",
+                color: "white",
+                fontWeight: 700,
+                fontSize: 16,
+                textDecoration: "none",
+              }}
+            >
+              Go to Heard →
+            </a>
           </div>
         )}
       </div>
