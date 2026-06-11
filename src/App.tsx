@@ -340,6 +340,7 @@ function AppContent() {
                               : isWaymoDcRoute
                                 ? WAYMO_DC_ROOM_ID
                                 : null;
+
         const routeName = isParkletRoute
           ? "parklet"
           : is2b04Route
