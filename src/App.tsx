@@ -312,7 +312,8 @@ function AppContent() {
         isHeightRoute ||
         isUdcRoute ||
         isDcRoute ||
-        isWaymoRoute
+        isWaymoRoute ||
+        isWaymoDcRoute
       ) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
@@ -339,7 +340,6 @@ function AppContent() {
                               : isWaymoDcRoute
                                 ? WAYMO_DC_ROOM_ID
                                 : null;
-
         const routeName = isParkletRoute
           ? "parklet"
           : is2b04Route
@@ -359,8 +359,10 @@ function AppContent() {
                         : isUdcRoute
                           ? "udc"
                           : isWaymoRoute
-                          ? "waymo"
-                          : "dc";
+                            ? "waymo"
+                            : isWaymoDcRoute
+                              ? "waymodc"
+                              : "dc";
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
