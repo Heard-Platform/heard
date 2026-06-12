@@ -15,6 +15,7 @@ import {
   Community,
   CommunityMembership,
   UserActivityRecord,
+  GGWashArticleRecord,
 } from "./types.tsx";
 
 /**
@@ -453,6 +454,29 @@ export const getFeedbackList = async (): Promise<any[]> => {
 };
 
 // Debate-ended email helpers
+
+// GGWash importer article store. One record per scraped article, keyed by RSS
+// guid. The status field doubles as the dedup/at-most-once flag: only records
+// still "scraped" are eligible for selection.
+
+const ggwashArticleKeyFn = (record: GGWashArticleRecord) =>
+  `ggwash-article:${record.guid}`;
+
+export const getGGWashArticle = async (
+  guid: string,
+): Promise<GGWashArticleRecord | null> => {
+  return getParsedKvData<GGWashArticleRecord>(`ggwash-article:${guid}`);
+};
+
+export const saveGGWashArticle = async (
+  record: GGWashArticleRecord,
+): Promise<void> => {
+  await upsert(record, ggwashArticleKeyFn);
+};
+
+export const getAllGGWashArticles = async (): Promise<GGWashArticleRecord[]> => {
+  return getByPrefixParsed<GGWashArticleRecord>("ggwash-article:");
+};
 
 export const getDebateEndedEmailSent = async (roomId: string): Promise<boolean> => {
   const value = await kv.get(`debate-end-email-sent:${roomId}`);

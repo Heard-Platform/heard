@@ -311,3 +311,35 @@ export type AiPrompt = {
   systemPrompt: string;
   userPrompt: string;
 };
+
+export interface GGWashArticle {
+  title: string;
+  body: string; // HTML-stripped, capped to MAX_ARTICLE_CHARS
+  url: string;
+  guid: string; // RSS <guid> permalink; the article-store key
+  imageUrl?: string; // first <img> in the article HTML, hotlinked onto the post
+  publishedAt: number;
+}
+
+export type GGWashArticleStatus =
+  | "scraped" // fetched, not yet attempted; eligible for selection
+  | "attempting" // committed to an attempt (marked before transform; at-most-once)
+  | "published" // became a Heard post
+  | "rejected"; // transform returned Error or invalid output
+
+export interface GGWashArticleRecord {
+  guid: string;
+  title: string;
+  url: string;
+  imageUrl?: string;
+  publishedAt: number;
+  scrapedAt: number;
+  bodyExcerpt: string; // trimmed body kept for reviewing the LLM's choices
+  status: GGWashArticleStatus;
+  rank?: number; // rank the selection gave it on the run that attempted it
+  generatedTopic?: string;
+  generatedStatements?: string[];
+  publishedRoomId?: string;
+  error?: string;
+  decidedAt?: number;
+}

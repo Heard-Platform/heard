@@ -1,208 +1,178 @@
-# GGWash Importer: Implementation Plan
+# GGWash Importer: Implementation Plan (as built)
 
-A complete plan for an implementing agent. Read this end to end before writing any code. Cross-reference with the flow diagram in this folder: [ggwash-import-flow.excalidraw](ggwash-import-flow.excalidraw).
+This feature is **implemented and tested**. The code lives under `src/supabase/functions/server/` (files listed below). This doc is the design of record; cross-reference the flow diagram: [ggwash-import-flow.excalidraw](ggwash-import-flow.excalidraw).
 
 ## Context
 
-[GGWash](https://ggwash.org/) (Greater Greater Washington) publishes daily articles about the DC area (urbanism, transit, housing, local policy) and exposes a public RSS feed at https://ggwash.org/rss. We want an automated way to turn that high-quality local content into Heard discussion posts so the DC community feed stays fresh without manual curation.
+[GGWash](https://ggwash.org/) (Greater Greater Washington) publishes daily articles about DC and exposes a public RSS feed at https://ggwash.org/rss. The importer turns that content into Heard discussion posts so the DC feed stays fresh without manual curation.
 
-This is the structural sibling of the existing, built **Reddit importer**: fetch external content, transform it with an LLM into a Heard topic plus response statements, and create a Heard post. The new twist is a **two-stage LLM flow**: a daily run first asks the LLM to pick the single best article out of the day's feed (given a description of Heard and what makes a good discussion topic), then asks the LLM to convert that one article into a topic + 3 responses. The result auto-publishes to the feed exactly like a Reddit import.
+It is the structural sibling of the built **Reddit importer** (fetch → LLM transform → create a Heard post), with a **two-stage LLM flow**: a daily run first asks the LLM to pick the best DC articles out of the day's feed, then converts the top survivor into a topic + 3 responses. The result auto-publishes, with the article's lead image, exactly like a Reddit import.
 
 Confirmed product decisions:
 - **Auto-publish** directly to the feed (Reddit-style), no admin approval gate.
-- **1 best post per day**: rank candidates, walk the ranked list, publish the first that survives the transform quality gate.
-- **Standalone post, no source link** (no `DebateRoom` schema change; the article is inspiration only).
-- **Target community: `washington-dc`**.
+- **1 best post per day**: rank candidates, walk the ranked list, publish the first that survives the transform gate.
+- **Permissive selection, DC-only.** Allow hot/timely topics, news, named people, and calls to action; exclude only benign/informational items, link roundups, and anything not focused on the District of Columbia itself (drop mixed DC+MD/VA pieces).
+- **Hotlinked image** from the article onto the post.
+- **Store every scraped article** (chosen or not) for later review of the LLM's choices.
+- **Target community: `washington-dc`**, standalone post (no source link, no `DebateRoom` schema change).
 
 ## Key findings from exploration
 
-These shaped the design and remove the obvious gotchas up front:
+1. **The full article body is already in the RSS feed.** 10 `<item>`s, each with `<title>`, `<link>`, `<guid>` (permalink), `<pubDate>`, `<dc:creator>`, and a CDATA `<description>` of complete article HTML (up to ~45k chars). No separate page-scrape needed; `rss-parser` gives `contentSnippet` (HTML-stripped) and `content` (raw HTML, used for image extraction).
+2. **Images can be hotlinked.** The app renders `room.imageUrl` via a plain `<img src>` with no allowlist/proxy/validation ([RoomCard.tsx](../../src/components/RoomCard.tsx), [CoverCard.tsx](../../src/components/room/CoverCard.tsx)). Every GGWash article opens with `<figure><img src="https://ggwash.org/...">`.
+3. **A dedup store is mandatory.** The feed shows the same ~10 articles for days; a daily run would otherwise re-post them. Keyed on `<guid>`.
+4. **GGWash's "Breakfast links" roundup has a fixed title prefix.** The LLM is tempted by its substantive DC content, so it is excluded deterministically in code rather than by prompt.
+5. **`completeJson` returns a raw string**, parsed via `JSON.parse(stripMarkdownFences(content))` in a try/catch ([debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx) ~811-839). The selection parser mirrors this.
 
-1. **The full article body is already in the RSS feed.** The live feed has 10 `<item>`s, each with `<title>`, `<link>`, `<guid>` (a permalink URL), `<pubDate>`, `<dc:creator>`, and a CDATA `<description>` containing the **complete article HTML** (the longest seen was ~45,000 chars). There is no `<content:encoded>`. Implication: **no separate page-scrape is needed**. We strip the HTML and cap length before sending to the transform LLM.
-2. **The "newsletter importer" was never built as an RSS importer.** The `email-newsletter-*.ts` / `newsletter-utils.ts` files send outbound email; [../newsletter-importer/newsletter-import-plan.md](../newsletter-importer/newsletter-import-plan.md) is an unbuilt plan. The only built importer to mirror is the **Reddit importer**.
-3. **A processed-set is mandatory.** The feed shows the same ~10 articles for days, and this runs daily. Without dedup we would re-post the same article every morning. The `<guid>` permalink is the natural dedup key.
-4. **GGWash is an advocacy publication.** Much of its content is call-to-action / local DC politics and "Breakfast links" roundups, all of which the transform disqualifier list is designed to reject. The selection stage is the first filter; the transform disqualifier list is the second. Both need GGWash-specific tuning.
+## Reference reading
 
-## Reference reading (do this first)
-
-1. [../../src/supabase/functions/server/reddit-import-service.ts](../../src/supabase/functions/server/reddit-import-service.ts) — `RedditImporter`. The GGWash importer mirrors its shape and its `createNewRoomData` + `createRoom` + `saveStatement` publish path (lines 72-98).
-2. [../../src/supabase/functions/server/reddit-scraper-utils.ts](../../src/supabase/functions/server/reddit-scraper-utils.ts) — `getRedditPosts()` and its use of `scrapeRssToXml` + `npm:rss-parser`. The GGWash scraper mirrors this. Note `item.contentSnippet` gives HTML-stripped plain text.
-3. [../../src/supabase/functions/server/ai-prompt-utils.ts](../../src/supabase/functions/server/ai-prompt-utils.ts) — `makeTransformPromptFromRedditPost()`. Study the `"Error"` sentinel, the disqualifier list, the Topic/Response rules, and the per-provider "CRITICAL REMINDERS" blocks. The GGWash transform prompt reuses all of these with a different disqualifier list.
-4. [../../src/supabase/functions/server/enrichment-api.ts](../../src/supabase/functions/server/enrichment-api.ts) — the cron endpoint shape. **Do NOT copy the probability-skip or the 3am-7am ET skip** (lines 26-49); a 3-7am skip would actively break an early-morning run.
-5. [../../src/supabase/functions/server/enrichment-service.ts](../../src/supabase/functions/server/enrichment-service.ts) — `EnrichmentService` base (provides `this.aiClient` / `this.provider`). Extend it.
-6. [../../src/supabase/functions/server/kv-utils.tsx](../../src/supabase/functions/server/kv-utils.tsx) — `getDebateEndedEmailSent` / `saveDebateEndedEmailSent` (lines 457-462) are the boolean-flag pattern for the processed-set; `getByPrefixParsed` / `getParsedKvData` / `upsert` are the generic helpers.
-7. [../../src/supabase/functions/server/index.tsx](../../src/supabase/functions/server/index.tsx) — how `enrichmentApi` is imported/routed and how `enrichment/*` inherits `validateCronAuth`. The new route lives under that prefix to inherit auth.
-8. [../../src/supabase/functions/server/room-utils.ts](../../src/supabase/functions/server/room-utils.ts) — `createNewRoomData()`.
-9. [../../src/supabase/functions/server/route-wrapper.tsx](../../src/supabase/functions/server/route-wrapper.tsx) — wrap the endpoint with `defineRoute`.
-10. [../../src/supabase/functions/server/debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx) (around lines 811-839) — `completeJson` usage plus the `JSON.parse(stripMarkdownFences(content))` + try/catch + shape-check pattern the selection parser must mirror. `stripMarkdownFences` is exported from [rant-prompt-utils.ts](../../src/supabase/functions/server/rant-prompt-utils.ts).
-11. [../../src/supabase/functions/server/reddit-import-test.tsx](../../src/supabase/functions/server/reddit-import-test.tsx) — the `describe`/`it` (`jsr:@std/testing/bdd`) test layout the new `ggwash-import-test.tsx` mirrors.
+1. [reddit-import-service.ts](../../src/supabase/functions/server/reddit-import-service.ts) — `RedditImporter`; the publish path (`createNewRoomData` + `createRoom` + `saveStatement`) the GGWash importer mirrors.
+2. [reddit-scraper-utils.ts](../../src/supabase/functions/server/reddit-scraper-utils.ts) — `scrapeRssToXml` + `npm:rss-parser` usage.
+3. [ai-prompt-utils.ts](../../src/supabase/functions/server/ai-prompt-utils.ts) — `makeTransformPromptFromRedditPost()`, the `Error` sentinel and per-provider "CRITICAL REMINDERS" pattern. **Reference only; this file is NOT modified** (GGWash's rules diverge, so its prompt is self-contained).
+4. [enrichment-api.ts](../../src/supabase/functions/server/enrichment-api.ts) — cron endpoint shape. **The probability-skip and 3am-7am ET skip are deliberately NOT copied.**
+5. [enrichment-service.ts](../../src/supabase/functions/server/enrichment-service.ts) — `EnrichmentService` base (`this.aiClient` / `this.provider`).
+6. [kv-utils.tsx](../../src/supabase/functions/server/kv-utils.tsx) — `getParsedKvData` / `upsert` / `getByPrefixParsed` generic helpers.
+7. [index.tsx](../../src/supabase/functions/server/index.tsx) — `enrichment/*` inherits `validateCronAuth` (Hono trailing `*` matches the nested route).
+8. [debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx) (~811-839) — `completeJson` + `stripMarkdownFences` parse pattern. `stripMarkdownFences` is in [rant-prompt-utils.ts](../../src/supabase/functions/server/rant-prompt-utils.ts).
+9. [reddit-import-test.tsx](../../src/supabase/functions/server/reddit-import-test.tsx) — `jsr:@std/testing/bdd` test layout mirrored by `ggwash-import-test.tsx`.
 
 ## Reuse map
 
 | Layer | What | Where |
 |---|---|---|
-| Reuse as-is | LLM provider abstraction | `createLlmClient`, `getLlmProvider` in [llm-provider.ts](../../src/supabase/functions/server/llm-provider.ts) (via `EnrichmentService`) |
-| Reuse as-is | RSS fetch | `scrapeRssToXml` in [scraper-utils.ts](../../src/supabase/functions/server/scraper-utils.ts) + `npm:rss-parser` |
+| Reuse as-is | LLM client + provider | `createLlmClient` (via `EnrichmentService`); `complete` / `completeJson` record usage automatically |
+| Reuse as-is | RSS fetch | `scrapeRssToXml` (sends a browser User-Agent) + `npm:rss-parser` |
 | Reuse as-is | Persona randomization | `getRandomPersona` in [personas.tsx](../../src/supabase/functions/server/personas.tsx) |
 | Reuse as-is | Cron auth | `validateCronAuth` (auto-applied to `enrichment/*`) |
 | Reuse as-is | Route validation | `defineRoute` |
-| Reuse as-is | Post creation | `createNewRoomData`, `createRoom`, `saveStatement` |
-| Reuse as-is | KV helpers | `getParsedKvData`, `upsert`, the boolean-flag pattern |
-| Reuse as-is | Usage logging | `complete` / `completeJson(prompt, { endpoint })` already records usage |
-| Reuse as-is | Structured LLM output + JSON parse | `completeJson` + `stripMarkdownFences` (from [rant-prompt-utils.ts](../../src/supabase/functions/server/rant-prompt-utils.ts)); parse pattern proven in [debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx) |
-| Extract + reuse (DRY) | Shared Topic/Response rules + provider reminders | New `discussion-prompt-rules.ts`, consumed by both the Reddit and GGWash transform prompts (see "Clean Code" note) |
-| Adapt | Transform prompt | New `makeTransformPromptFromGGWashArticle` with GGWash disqualifiers |
-| New | Selection prompt | `makeGGWashSelectionPrompt` (title + body snippet → ranked indices via `completeJson`; `[]` = none) |
-| New | RSS scraper | `ggwash-scraper-utils.ts` |
+| Reuse as-is | Post creation | `createNewRoomData` (accepts `imageUrl`), `createRoom`, `saveStatement` |
+| Reuse as-is | JSON parse | `stripMarkdownFences` + try/catch (pattern from [debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx)) |
+| New | RSS scraper + image/roundup helpers | `ggwash-scraper-utils.ts` (`fetchGGWashArticles`, `extractFirstImageUrl`, `isRoundupTitle`) |
+| New | Prompts | `ggwash-prompt-utils.ts` (`makeGGWashSelectionPrompt`, `parseSelectionResponse`, `makeTransformPromptFromGGWashArticle`) |
 | New | Importer service | `GGWashImporter` in `ggwash-import-service.ts` |
-| New | Processed-set helpers | `isGGWashProcessed`, `markGGWashProcessed` |
+| New | Article store | `getGGWashArticle` / `saveGGWashArticle` / `getAllGGWashArticles` in `kv-utils.tsx` |
 | New | Cron endpoint | `POST /make-server-f1a393b4/enrichment/ggwash-import/run` |
 
 ## Data model
 
-No `DebateRoom` schema change (standalone posts). Add an internal type to [types.tsx](../../src/supabase/functions/server/types.tsx):
+No `DebateRoom` schema change. In [types.tsx](../../src/supabase/functions/server/types.tsx):
 
 ```ts
 export interface GGWashArticle {
   title: string;
-  body: string;        // HTML-stripped, truncated to MAX_ARTICLE_CHARS
-  url: string;         // <link>
-  guid: string;        // <guid> permalink; the processed-set key
+  body: string;        // HTML-stripped, capped to MAX_ARTICLE_CHARS
+  url: string;
+  guid: string;        // RSS <guid> permalink; the article-store key
+  imageUrl?: string;   // first <img> in the article HTML, hotlinked onto the post
   publishedAt: number;
+}
+
+export type GGWashArticleStatus = "scraped" | "attempting" | "published" | "rejected";
+
+export interface GGWashArticleRecord {
+  guid: string; title: string; url: string; imageUrl?: string;
+  publishedAt: number; scrapedAt: number;
+  bodyExcerpt: string;            // trimmed body kept for review
+  status: GGWashArticleStatus;
+  rank?: number;                  // selection rank on the run that attempted it
+  generatedTopic?: string; generatedStatements?: string[];
+  publishedRoomId?: string; error?: string; decidedAt?: number;
 }
 ```
 
-KV key (new), boolean-flag pattern mirroring `getDebateEndedEmailSent` / `saveDebateEndedEmailSent`:
+**The article store doubles as the dedup/at-most-once flag.** One record per scraped article at KV key `ggwash-article:${guid}` (via `upsert`). The `status` field is the single source of truth:
 
-| Key pattern | Value | Helpers (in [kv-utils.tsx](../../src/supabase/functions/server/kv-utils.tsx)) |
-|---|---|---|
-| `ggwash-processed:${guid}` | `"true"` sentinel | `isGGWashProcessed(guid)`, `markGGWashProcessed(guid)` |
+- `scraped` — fetched, never attempted; the **only** status eligible for selection.
+- `attempting` — committed to an attempt (set **before** the transform call).
+- `published` / `rejected` — terminal.
 
-**Processed-set semantics** (deliberate, at-most-once): an article is marked processed at the moment we **commit to attempting it** (the instant *before* its transform call), not after a successful publish. Rationale: KV writes are not transactional, so marking after publish leaves a window where a crash, a thrown error, or a concurrent double-fire of the cron re-selects the same article and produces a **duplicate post**. Marking first closes that window. The cost is at-most-once delivery: a transient transform/publish failure drops that one article (it is not retried), which is invisible and self-heals the next day with a different article. Articles that were fetched but **never selected/attempted** (e.g. ranked below the day's winner) are **not** marked, so they stay eligible on future days as fresher rivals age out of the feed.
+**At-most-once semantics** (deliberate): an article is moved to `attempting` the instant *before* its transform call, not after publish. KV writes aren't transactional, so marking after publish leaves a window where a crash or a concurrent double-fire re-selects it and produces a **duplicate post**. Marking first closes that window; the cost is that a transient failure drops that one article (no retry), which self-heals next day. Articles fetched but never attempted (ranked below the winner) stay `scraped` and remain eligible as fresher rivals age out. Storing every scraped article (including the deterministically-rejected roundups) gives a full review trail of the LLM's choices.
 
 ## Two-stage flow
 
-`GGWashImporter.runOnce(): Promise<{ posted: number; considered: number; skipped: number }>`:
+`GGWashImporter.runOnce(): Promise<{ posted, considered, skipped }>`:
 
-1. `fetchGGWashArticles()` → up to 10 articles.
-2. Filter out `isGGWashProcessed(guid)`. `considered` = remaining count. If 0, return early.
-3. **Stage 1 — Selection.** One `completeJson` call: `makeGGWashSelectionPrompt(articles)`. The prompt includes a short description of Heard and what makes a good discussion topic, then the candidate articles numbered **0-based over the filtered (unprocessed) list**, each shown as its title plus the first `SELECTION_SNIPPET_CHARS` characters of its body. The model returns structured JSON, e.g. `{ "ranked": [2, 0, 5] }` (best first) or `{ "ranked": [] }` if none fit. Parse with `JSON.parse(stripMarkdownFences(content))` inside a try/catch (mirror [debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx)); on parse failure, a non-object result, or `ranked` not being an array, treat as empty and return `posted: 0`. Otherwise clamp/drop out-of-range and duplicate indices. Empty `ranked` → `posted: 0`, return. **The indices map back into the same filtered array used to build the prompt, never the raw 10-item feed** (off-by-one / wrong-article trap).
-4. **Stage 2 — Transform, walking the ranked list.** For each candidate index in order, up to `TARGET_POSTS_PER_RUN` successful posts:
-   - `markGGWashProcessed(guid)` **first** (commit to attempting; see Processed-set semantics). The article is now never reconsidered, whatever happens next.
-   - One LLM call: `makeTransformPromptFromGGWashArticle(article, provider)`.
-   - If the response trims to `Error`: `skipped++`, continue.
-   - Else parse: line 1 = topic, remaining non-empty lines = statements. If the topic is empty or the statement count is outside `MIN_STATEMENTS..MAX_STATEMENTS`, treat as `Error` (`skipped++`, continue).
-   - Else publish: `createNewRoomData({ topic, participants: [], hostId: IMPORTER_AUTHOR, subHeard: DEFAULT_SUBHEARD, endTime: Date.now() + ONE_WEEK_MS, allowAnonymous: true })`, `createRoom`, `saveStatement` per statement (author `IMPORTER_AUTHOR`, round 1). `posted++`.
-   - When `posted === TARGET_POSTS_PER_RUN` (1), stop.
+1. `fetchGGWashArticles()` → up to 10 articles (each with `imageUrl`).
+2. **Record + collect candidates.** For each article: if no record exists, store one (`scraped`); but if its title is a roundup (`isRoundupTitle`), store it `rejected` ("auto-excluded: links roundup") and skip it. Candidates = articles whose record status is `scraped`. `considered` = candidate count; if 0, return.
+3. **Stage 1 — Selection.** `completeJson(makeGGWashSelectionPrompt(candidates))`. Candidates are numbered **0-based**, each shown as title + first `SELECTION_SNIPPET_CHARS` of body. Returns `{ "ranked": number[] }` best-first, or `[]`. `parseSelectionResponse` runs `JSON.parse(stripMarkdownFences(raw))` in a try/catch; on parse failure / non-object / non-array `ranked` it returns `[]`; otherwise it clamps to range and dedupes. **Indices map back into the same candidate array**, never the raw feed.
+4. **Stage 2 — Walk the ranked list.** For each index, until `TARGET_POSTS_PER_RUN` posts:
+   - Set the record `attempting` + `rank` and save (**mark-first**; never reconsidered again).
+   - `complete(makeTransformPromptFromGGWashArticle(article, provider))`.
+   - Parse: line 1 = topic, rest = statements. If the response is `Error`, topic is empty, or statement count is outside `MIN_STATEMENTS..MAX_STATEMENTS` → record `rejected` + error, `skipped++`, continue.
+   - Else publish: `createNewRoomData({ ..., subHeard: DEFAULT_SUBHEARD, endTime: now + ONE_WEEK_MS, allowAnonymous: true, imageUrl: article.imageUrl })`, `createRoom`, `saveStatement` ×N (author `IMPORTER_AUTHOR`, round 1). Record `published` + topic/statements/roomId. `posted++`.
 5. Return `{ posted, considered, skipped }`.
 
-Both LLM calls pass a distinct `endpoint` tag to `complete()` (`ggwash-select`, `ggwash-transform`) so usage logging separates the two.
+Selection and transform pass distinct `endpoint` tags (`ggwash-select`, `ggwash-transform`) for usage logging.
 
 ## LLM prompts
 
-### Selection prompt (`makeGGWashSelectionPrompt`)
-- **System:** Heard is a place for short, open-ended, experience-based discussions; a good topic is evergreen, invites personal perspective (not analysis), and is not breaking news, not a call to action, and not about named individuals.
-- **User:** the candidate articles as a **0-based numbered list**, each entry being the title **plus the first `SELECTION_SNIPPET_CHARS` characters of the article body** (taken from the already-HTML-stripped `body`). Ranking on title + snippet rather than title alone matters because GGWash advocacy pieces often have neutral titles. Instruction to pick the ones best suited to become a Heard discussion, and to explicitly deprioritize "Breakfast links" / link-roundup digests (not single-topic).
-- **Output:** call via `completeJson`. Instruct the model to return only JSON of the form `{ "ranked": number[] }`, where the numbers are 0-based indices into the provided list, ordered best-first, and `[]` when nothing is suitable. Structured output removes the brittle free-text index parsing that differs across gemini/anthropic/openai.
-- Constants: `HEARD_DESCRIPTION`, `SELECTION_SNIPPET_CHARS`.
+### Selection (`makeGGWashSelectionPrompt`)
+- **System:** `HEARD_DESCRIPTION` (Heard is a DC discussion app; a good post is a specific, debatable, interesting DC topic) + "reply with JSON only."
+- **User:** 0-based numbered list of `title` + body snippet, then the selection criteria, then "return ONLY `{"ranked": [<indices>]}` best-first, `[]` if none."
+- **Permissive guidance:** hot/timely/mildly controversial DC topics are good (transit, housing, development, bike/car culture, local policy, a mayoral/council race, new tech like Waymo, neighborhood change); a topic need not be evergreen, open-ended, or experience-based; news, named people, elections, and CTAs are fine if DC-focused.
+- **Exclusions:** benign/informational (staff/hiring announcements, intern intros, housekeeping, routine "breaks ground", awards, event listings, weekly games/puzzles); any "Breakfast links"/roundup; anything not focused on DC itself, strict, with explicit VA (Arlington, Alexandria, Fairfax, Falls Church) and MD (Montgomery, Prince George's, Bethesda, Silver Spring) place names, including mixed DC+MD/VA pieces; when unclear, exclude.
+- Tuned against the live feed (see Verification). The "Breakfast links" prefix is also filtered in code, since the LLM kept overriding the rule for substantive roundups.
 
-### Transform prompt (`makeTransformPromptFromGGWashArticle`)
-Mirrors `makeTransformPromptFromRedditPost` exactly (same `Error` sentinel, same Topic rules, same Response rules, same per-provider reminder blocks), substituting a **GGWash-specific disqualifier list**: advocacy / call-to-action; local political figures/events/legislation; specific crime/accident; "Breakfast links" or any multi-link roundup; box-office/market/sports-score/weather pure-data items; reviews of a specific media title; content primarily about named real people. Request **3 responses** (accept `MIN_STATEMENTS..MAX_STATEMENTS`). The article body is the HTML-stripped, length-capped text.
+### Transform (`makeTransformPromptFromGGWashArticle`)
+Self-contained (does **not** reuse the Reddit prompt). Keeps the Heard **format** but loosens the **subjects**:
+- Persona system prompt + `Error` sentinel.
+- Title + capped body, then a short `Error`-if list (benign/roundup; not-DC / mixed MD-VA; frames marginalized groups in opposition; medical-condition misinfo).
+- **Topic rules (loosened):** one engaging question inviting a range of opinions; may be specific, timely, and directly phrased (e.g. "Should Waymo expand its robotaxis in DC?"); need not be evergreen/open-ended/experience-based; keep it about DC.
+- **Response rules (unchanged Heard format):** exactly 3, ≤8 words each, no preamble/filler, speak for yourself, range of viewpoints incl. a minority one, complete thoughts, no quotes or trailing punctuation.
+- Per-provider "CRITICAL REMINDERS" appended for gemini/anthropic (not openai), mirroring the Reddit pattern.
 
 ## API endpoint
 
 `POST /make-server-f1a393b4/enrichment/ggwash-import/run`
-- Inherits `validateCronAuth` from the `enrichment/*` prefix (uses `x-cron-secret`). The `enrichment/*` placement is deliberate, purely to inherit cron auth; this importer is otherwise independent of the probabilistic enrichment cron and shares none of its config.
-- No required body params. Wrap with `defineRoute` and tolerate an empty/absent JSON body (the scheduler may send none). Calls `new GGWashImporter().runOnce()`.
-- Returns `{ posted, considered, skipped }`.
-- New file `ggwash-import-api.ts`; wire into [index.tsx](../../src/supabase/functions/server/index.tsx) the same way `enrichmentApi` is.
+- Inherits `validateCronAuth` from `enrichment/*` (uses `x-cron-secret`). The prefix is chosen purely for auth reuse; the importer shares none of the probabilistic enrichment config.
+- No body params; `defineRoute` tolerates an empty body. Calls `new GGWashImporter().runOnce()`, returns `{ posted, considered, skipped }`.
+- In `ggwash-import-api.ts`, routed in [index.tsx](../../src/supabase/functions/server/index.tsx) like `enrichmentApi`.
 
 ## Backend file map
 
-New files (all under `src/supabase/functions/server/`):
-- `ggwash-scraper-utils.ts` — `fetchGGWashArticles()`.
-- `ggwash-prompt-utils.ts` — `makeGGWashSelectionPrompt`, `makeTransformPromptFromGGWashArticle`, exported constants.
-- `discussion-prompt-rules.ts` — extracted shared Topic/Response rule blocks + provider reminders (see Clean Code note).
-- `ggwash-import-service.ts` — `GGWashImporter extends EnrichmentService`.
-- `ggwash-import-api.ts` — the cron endpoint.
-- `ggwash-import-test.tsx` — unit tests (see Testing).
+New files (`src/supabase/functions/server/`): `ggwash-scraper-utils.ts`, `ggwash-prompt-utils.ts`, `ggwash-import-service.ts`, `ggwash-import-api.ts`, `ggwash-import-test.tsx`.
 
-Existing files to modify:
-- `types.tsx` — add `GGWashArticle`.
-- `kv-utils.tsx` — add `isGGWashProcessed` / `markGGWashProcessed`.
-- `ai-prompt-utils.ts` — consume the extracted shared rule constants (behavior-preserving; see note).
-- `index.tsx` — import/route `ggwashImportApi`.
+Modified: `types.tsx` (article types), `kv-utils.tsx` (article-store helpers), `index.tsx` (import/route). `ai-prompt-utils.ts` is **not** touched.
 
-### Implementation order
-1. Types. 2. KV processed-set helpers. 3. Scraper (verify `contentSnippet`/`guid` mapping against one live item). 4. Extract shared rules + GGWash prompts (selection via `completeJson`). 5. Service (mark-first ordering, indices over the filtered list). 6. Endpoint + wiring.
-
-### Key constants (no magic numbers/strings)
-- `GGWASH_RSS_URL = "https://ggwash.org/rss"`
-- `MAX_ARTICLE_CHARS = 8000` (transform body cap, token control)
-- `SELECTION_SNIPPET_CHARS = 200` (per-article body snippet shown in the selection prompt)
-- `TARGET_POSTS_PER_RUN = 1`
-- `DEFAULT_SUBHEARD = "washington-dc"`
-- `IMPORTER_AUTHOR = "enrichment-service"` (matches Reddit imports)
-- `LLM_ERROR_SENTINEL = "Error"` (transform sentinel; selection uses structured JSON, so it has no sentinel, an empty `ranked` array means none)
-- `MIN_STATEMENTS = 2`, `MAX_STATEMENTS = 3`
-- `SELECT_ENDPOINT = "ggwash-select"`, `TRANSFORM_ENDPOINT = "ggwash-transform"`
-- `GGWASH_PROCESSED_PREFIX = "ggwash-processed:"`
+### Key constants
+- `GGWASH_RSS_URL`, `MAX_ARTICLE_CHARS = 8000`, `MAX_ARTICLES = 10`, `ROUNDUP_TITLE_PREFIX = "breakfast links"` (scraper)
+- `SELECTION_SNIPPET_CHARS = 200`, `LLM_ERROR_SENTINEL = "Error"` (prompts)
+- `TARGET_POSTS_PER_RUN = 1`, `DEFAULT_SUBHEARD = "washington-dc"`, `IMPORTER_AUTHOR = "enrichment-service"`, `MIN_STATEMENTS = 2`, `MAX_STATEMENTS = 3`, `STORE_EXCERPT_CHARS = 2000`, `SELECT_ENDPOINT`, `TRANSFORM_ENDPOINT` (service)
 
 ## Testing
 
-Add `ggwash-import-test.tsx`, mirroring [reddit-import-test.tsx](../../src/supabase/functions/server/reddit-import-test.tsx) (`jsr:@std/testing/bdd` `describe`/`it`). Cover, with no network where possible:
+`ggwash-import-test.tsx` (offline, runs in `deno test`; 17 steps): selection prompt construction; `parseSelectionResponse` (clean / fenced / malformed / missing-or-non-array `ranked` / out-of-range+dupes → never throws); transform prompt construction (gemini/anthropic reminders only); `parseTransform` (topic+3, Error/empty/wrong-count rejected); `isRoundupTitle`; `extractFirstImageUrl` (absolute only, encodes spaces). A networked end-to-end block is gated behind `RUN_GGWASH_LLM_TESTS=1`.
 
-- **Selection prompt construction:** title + body snippet present per candidate, 0-based numbering, JSON-output instruction present.
-- **Selection parse:** clean `{ "ranked": [...] }`, a fenced JSON block, trailing prose, malformed JSON, `ranked` missing or non-array, and out-of-range/duplicate indices all resolve to a valid clamped array or empty, never throw.
-- **Transform prompt construction:** GGWash disqualifiers present; provider-specific reminder blocks added for gemini/anthropic only (as the Reddit test asserts).
-- **Transform parse:** topic + 2-3 statements parsed; `Error` sentinel, empty topic, and wrong statement count all rejected.
-- **Scraper:** field mapping (`contentSnippet` / `guid` / `link`), body is HTML-stripped, item cap obeyed.
-- **(Optional, networked) end-to-end:** fetch → select → transform yields a topic + statements, gated behind the same env checks the Reddit e2e test uses.
+## Externalities / gotchas
 
-## Externalities / gotchas (and how this plan handles them)
+- **Image hotlinking.** `imageUrl` is the article's first `<img>`; spaces are `%20`-encoded. No re-hosting; if GGWash moves/referrer-blocks an image it just won't render (acceptable). Image rendering has no allowlist, so external URLs work.
+- **Roundup filter is deterministic.** "Breakfast links" is excluded in code (`isRoundupTitle`); the prompt rule is a backstop for other roundup shapes. Roundups are still recorded (`rejected`) for the review trail.
+- **DC-only required live tuning.** The selection prompt needed explicit VA/MD place names before it reliably dropped Arlington and mixed DC+MD pieces. Re-tune if GGWash coverage shifts.
+- **Non-atomic publish.** `createRoom` then `saveStatement` ×N aren't transactional; a mid-publish failure can leave a room with <3 statements. Mark-first prevents duplicates (not partials); a partial room is a rare minor blemish at 1/day. No rollback.
+- **Do not inherit enrichment scheduler quirks.** No probability-skip, no 3-7am ET skip.
+- **No in-repo scheduler.** Add the external cron entry: daily early-morning (e.g. `0 6 * * *` ET → scheduler TZ), `POST`, header `x-cron-secret: <CRON_SECRET>`. DST is the scheduler's concern.
+- **Two LLM calls/run**, tagged distinctly. Default provider is gemini (`GEMINI_API_KEY` required, already set).
+- **Idempotency / no duplicates** via mark-first (at-most-once). Dry days (no candidates, or all transform to `Error`) correctly post nothing.
 
-- **Full HTML body, up to ~45k chars.** Strip HTML (use `rss-parser` `contentSnippet`) and truncate to `MAX_ARTICLE_CHARS` before the transform call. Controls token cost and latency.
-- **Daily re-posting.** Processed-set keyed on `<guid>` permalink, marked on publish or transform-failure (semantics above).
-- **Advocacy / local-politics content.** Two-layer filter: selection stage + GGWash-tuned transform disqualifiers. "Breakfast links" roundups explicitly excluded.
-- **RSS field mapping is unverified.** The body is in `<description>` (CDATA HTML) with no `<content:encoded>`. Confirm `rss-parser` populates `contentSnippet` (HTML-stripped) and `guid` / `link` / `isoDate` for this feed; if `contentSnippet` is empty, configure the parser's `customFields` so the body is read from `<description>`. A blank `body` would silently send empty articles to the transform.
-- **Non-atomic publish.** `createRoom` then `saveStatement` x3 are separate KV writes with no transaction. A failure after `createRoom` can leave a room with fewer than 3 statements. The mark-first ordering prevents duplicates (not partials); a partial room is a rare, minor quality blemish at 1 post/day. Acceptable; do not add defensive rollback.
-- **Do not inherit the enrichment scheduler quirks.** No probability-skip, no 3am-7am ET skip (would break an early-morning run). This run is deterministic; the external scheduler decides timing.
-- **No in-repo scheduler.** Like the other crons, scheduling lives outside the repo. Leave a PR note: daily early-morning run (e.g. `0 6 * * *` ET, converted to the scheduler's TZ), `POST`, header `x-cron-secret: <CRON_SECRET>`. DST is the scheduler's concern.
-- **Two LLM calls per run.** Tagged distinctly for usage logging; one selection (cheap, titles + short body snippets) + one-or-few transforms.
-- **Idempotency / no duplicates.** Because an article is marked processed *before* its transform/publish attempt (at-most-once), a re-run, a crash mid-publish, or a concurrent double-fire of the cron cannot create a duplicate post. The trade-off is that a failed attempt drops that article rather than retrying it.
-- **Dry days.** If selection returns `None` or every candidate transforms to `Error`, the run posts nothing. That is correct behavior, not an error.
+## Clean Code notes
 
-## Clean Code (Uncle Bob) notes
-
-- **SRP / one level of abstraction:** scraper (fetch), prompt-utils (prompt construction), service (orchestration), api (HTTP). Mirrors the Reddit importer's separation.
-- **Keep `runOnce` thin.** It should read as a short sequence of intent-revealing steps delegating to small private methods (e.g. `fetchCandidates()`, `selectRanked(articles)`, `tryPublish(article)`), not one long procedure. Each does one thing at one level of abstraction.
-- **Parse inline; do not extract a shared transform parser.** The ~5-line topic+statements split is duplicated with the Reddit service, but it is tiny and same-shaped, so a thin shared helper would touch the Reddit file for little gain. Keep the parse inline in the GGWash service. (The shared *prompt rules* extraction below is the DRY win worth making; the parser is not.)
-- **DRY — shared prompt rules:** the Topic rules, Response rules, and per-provider reminder blocks are ~40 identical lines shared by the Reddit and GGWash transform prompts. The Clean-Code-correct move is to extract them once into `discussion-prompt-rules.ts` and have both prompts consume them, rather than duplicate. This touches the pre-existing `ai-prompt-utils.ts`, so the change is strictly behavior-preserving and guarded: capture the Reddit prompt string before and after the refactor and assert it is byte-identical (the existing Reddit test exercises prompt construction). If you would rather not touch the Reddit file in this PR, the fallback is to duplicate the rule blocks in the GGWash prompt and extract later; this plan recommends the extraction.
-- **Intention-revealing names, small functions, named constants** throughout; no magic values.
-- **No defensive handling of impossible cases** (trust `generateId`, etc.). The `Error`/`None` sentinels and statement-count check are real input validation of LLM output, not defensive cruft.
-- TypeScript strict, no `any`. No code comments unless the "why" is non-obvious.
+- **SRP:** scraper / prompts / service / api each do one thing; `runOnce` delegates to small private methods (`recordAndCollectCandidates`, `selectRanked`, `attemptPublish`, `publish`).
+- **No shared-rules extraction.** GGWash's transform rules diverged from Reddit's, so the prompt is self-contained and `ai-prompt-utils.ts` is left untouched (no drift into pre-existing code, no thin abstraction).
+- **Parse inline** (the small transform split lives in the service as `parseTransform`); `parseSelectionResponse` is its own function because the JSON handling is substantive.
+- **No defensive handling of impossible cases** (the record always exists when attempted, asserted with `!`). The `Error` sentinel and count/topic checks are real LLM-output validation. Named constants throughout; TS strict.
 
 ## Verification
 
-1. **Build + typecheck.** `npm run build` / `tsc --noEmit`. Fix errors first.
-2. **Manual run.** `curl -X POST http://localhost:<port>/make-server-f1a393b4/enrichment/ggwash-import/run -H "x-cron-secret: <secret>"`. Confirm `{ posted, considered, skipped }`.
-3. **Post created.** Confirm a new room in `washington-dc` with the generated topic and 3 statements (author `enrichment-service`). Confirm `ggwash-processed:<guid>` exists for the published article.
-4. **Dedup / at-most-once.** Re-run immediately. Confirm the just-published article is not reconsidered and no duplicate post appears (it was marked processed before publishing).
-5. **Quality gate.** Confirm a "Breakfast links" item is either not selected, or transforms to `Error` (counted in `skipped`, marked processed, no post).
-6. **Dry path.** Force a feed where selection returns `None` (or all unprocessed are roundups). Confirm `posted: 0` and nothing marked processed for non-attempted articles.
-7. **Reddit prompt unchanged.** After the shared-rules extraction, confirm the Reddit prompt string is byte-identical (Reddit importer still produces the same prompt/output).
-8. **RSS field mapping.** Log one parsed feed item and confirm `contentSnippet` carries the HTML-stripped article body and `guid` / `link` / `isoDate` are populated. If `contentSnippet` is empty, fix the parser field config before relying on the transform.
+1. **Offline tests + typecheck (done).** `deno test --allow-env --allow-net --no-check ggwash-import-test.tsx` → 17 steps pass. `deno check ggwash-*.ts` → clean.
+2. **Live selection tuning (done).** Ran selection+transform against the live feed repeatedly: stable picks of the genuine single-topic DC opinion pieces; VA/MD, roundups, the intern intro, the puzzle, and mixed DC+MD endorsements all excluded; image URL extracted; transform yields a topic + 3 distinct-viewpoint responses. Re-run live with `RUN_GGWASH_LLM_TESTS=1 deno test --allow-env --allow-net --no-check ggwash-import-test.tsx`.
+3. **Manual cron run.** `curl -X POST http://localhost:<port>/make-server-f1a393b4/enrichment/ggwash-import/run -H "x-cron-secret: <secret>"` → `{ posted, considered, skipped }`. Confirm a new `washington-dc` room with the image + 3 statements, and `ggwash-article:<guid>` records (status `published` for the winner, `scraped` for the rest, `rejected` for roundups).
+4. **Dedup.** Re-run immediately → the winner is `published` (not re-attempted), no duplicate.
 
-## Out of scope (deliberately deferred)
+## Out of scope (deferred)
 
-- Admin approval gate / editing UI (chose auto-publish).
-- Source attribution / linking + any `DebateRoom` schema change (chose standalone).
-- Generalizing into a multi-feed newsletter importer (separate effort; this is GGWash-specific).
-- Cross-source dedup against Reddit-imported posts.
-- Scheduled/future publishing.
-- An on/off config flag like `EnrichmentConfig`. The external scheduler controls timing; to pause, disable the cron entry. (Add an internal-var kill switch later only if operationally needed.)
+- Admin UI to browse the `ggwash-article:*` store (data is captured; reviewing it is currently raw-KV only).
+- Admin approval gate, source attribution/link, multi-feed generalization, cross-source dedup, scheduled/future publishing, an on/off config flag (disable the cron entry to pause).
 
 ## References
-- Flow diagram: [ggwash-import-flow.excalidraw](ggwash-import-flow.excalidraw) in this folder.
-- Sibling built importer: [../../src/supabase/functions/server/reddit-import-service.ts](../../src/supabase/functions/server/reddit-import-service.ts).
-- Unbuilt sibling plan: [../newsletter-importer/newsletter-import-plan.md](../newsletter-importer/newsletter-import-plan.md).
+- Flow diagram: [ggwash-import-flow.excalidraw](ggwash-import-flow.excalidraw).
+- Built sibling: [reddit-import-service.ts](../../src/supabase/functions/server/reddit-import-service.ts).
