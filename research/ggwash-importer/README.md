@@ -32,24 +32,22 @@ node_modules mode: `--node-modules-dir=auto` lets it auto-install `rss-parser`,
 and `--no-lock` keeps the repo's root `deno.lock` from being modified by the run.
 
 Open the generated `dry-run-report.md` (use VS Code's Markdown preview to see the
-images). It shows, per stage:
+images). It has three parts:
 
-- **Stage 0 — Feed:** each article's extracted image, title, the 200-char snippet
-  the selection prompt sees, and the full body text the transform prompt sends.
-  "Breakfast links" roundups are flagged as deterministically rejected.
-- **Stage 1 — Selection:** the exact system+user prompt sent, the raw LLM JSON
-  response, and the parsed ranking.
-- **Would-be-published post:** a headline section with the exact topic + seed
-  statements that would be persisted (the first valid ranked candidate).
-- **Stage 2 — Transform:** two groups. *Selected by Stage 1 (ranked)* is the real
-  flow — each ranked article's prompt, raw response, parse result, and resulting
-  Heard post (topic + statements + image); the first valid is badged "would be
-  published". *Other candidates not selected by Stage 1* transforms the eligible
-  articles Stage 1 didn't rank, so you can see what post each would generate even
-  though the real importer wouldn't touch them (disable with `GGWASH_SKIP_UNSELECTED=1`).
+- **Summary:** the run's counts, which article would be published, and a
+  consolidated list of every generated topic + seed statements — each marked
+  🟢 (would be posted) / ☑️ (valid but ranked lower) / ⚪ (valid but not selected).
+- **Articles — one row per article:** for each feed article, its outcome
+  (would-publish / valid / rejected / auto-rejected roundup), Stage-1 verdict,
+  image, the 200-char snippet Stage 1 ranked on, the full body sent to the
+  transform, the raw LLM response, and the resulting Heard post.
+- **Appendix — shared prompts:** the transform prompt (shown once — it is identical
+  for every article) and the Stage 1 selection call with its raw ranking. The
+  unselected articles are transformed too (so you can see what they would become)
+  unless you set `GGWASH_SKIP_UNSELECTED=1`.
 
-Without a key it still runs: it renders the feed, images, and prompts, leaving the
-LLM responses blank. Good for inspecting prompt construction offline.
+Without a key it still runs: it renders the articles, images, and prompts, leaving
+the LLM responses blank. Good for inspecting prompt construction offline.
 
 ## The tweak-and-rerun loop
 

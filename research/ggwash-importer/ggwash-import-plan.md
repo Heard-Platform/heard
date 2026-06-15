@@ -2,6 +2,8 @@
 
 This feature is **implemented and tested**. The code lives under `src/supabase/functions/server/` (files listed below). This doc is the design of record; cross-reference the flow diagram: [ggwash-import-flow.excalidraw](ggwash-import-flow.excalidraw).
 
+> Changes made *after* this as-built plan was written (a later prompt-tuning + tooling pass) are listed under [Changes after the initial implementation](#changes-after-the-initial-implementation), kept separate so the original design stays distinguishable from subsequent edits.
+
 ## Context
 
 [GGWash](https://ggwash.org/) (Greater Greater Washington) publishes daily articles about DC and exposes a public RSS feed at https://ggwash.org/rss. The importer turns that content into Heard discussion posts so the DC feed stays fresh without manual curation.
@@ -172,6 +174,16 @@ Modified: `types.tsx` (article types), `kv-utils.tsx` (article-store helpers), `
 
 - Admin UI to browse the `ggwash-article:*` store (data is captured; reviewing it is currently raw-KV only).
 - Admin approval gate, source attribution/link, multi-feed generalization, cross-source dedup, scheduled/future publishing, an on/off config flag (disable the cron entry to pause).
+
+## Changes after the initial implementation
+
+Everything above describes the feature as first built. The items below were changed **afterward**, during a prompt-tuning and tooling pass, and are listed as deltas — not folded into the design above as if they were always there:
+
+- **Transform disqualifiers tightened** (`ggwash-prompt-utils.ts`). Added `Error`-if cases the first build lacked: a **call to action** urging a *specific civic action* (vote for/endorse a candidate or slate, sign a petition, attend a rally, donate, contact officials) — **with an explicit op-ed carve-out** so a piece that merely argues a position or proposes a policy is kept; **games/puzzles/quizzes**; and **photo essays / "Photo Friday"**. The roundup rule now also names **"National links"** alongside "Breakfast links". Net effect: the original "allow calls to action" decision (line 14) is narrowed — *opinion/advocacy* is allowed, but *mobilization* is rejected.
+- **Punctuation normalized in code, not just the prompt** (`parseTransform`). The model was unreliable about punctuation, so the parser now forces a single trailing `?` on the topic (new `toQuestion` helper) and strips trailing punctuation from each response; the prompt's response rules were also hardened to forbid `!`/`?` anywhere in a response. Two tests were added — the suite is now **19 steps** (was 17).
+- **Dry-run harness added** under `research/ggwash-importer/` (`dry-run.ts` + `README.md`). It runs the real fetch → select → transform against the live feed/LLM and writes a Markdown report for offline prompt iteration, but **never publishes**. A research tool, separate from the importer.
+- **Code comments removed** from the importer (a later Clean-Code pass), keeping only two deliberate "why" comments: the mark-first ordering in `attemptPublish`, and the harness's `NODE_ENV=test`.
+- **Flow diagram labels corrected.** [ggwash-import-flow.excalidraw](ggwash-import-flow.excalidraw) had been left showing the *first-draft* design — a boolean `ggwash-processed:{guid}` / `isGGWashProcessed` processed-set marked on publish — which the implementation had already replaced with the `ggwash-article:{guid}` status-record store (marked `attempting` before the transform). The labels were corrected to match the as-built system; the original-draft version is recoverable from git history.
 
 ## References
 - Flow diagram: [ggwash-import-flow.excalidraw](ggwash-import-flow.excalidraw).
