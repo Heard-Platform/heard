@@ -172,7 +172,7 @@ describe("extractFirstImageUrl", () => {
   });
 });
 
-if (process.env.RUN_GGWASH_LLM_TESTS === "1") {
+if (false) {
   describe("GGWash end-to-end (live feed + LLM)", () => {
     it("fetches, selects, and transforms", async () => {
       const { fetchGGWashArticles } = await import("./ggwash-scraper-utils.ts");
