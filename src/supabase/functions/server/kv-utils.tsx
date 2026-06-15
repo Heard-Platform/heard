@@ -453,30 +453,30 @@ export const getFeedbackList = async (): Promise<any[]> => {
   return getByPrefixParsed<any>("feedback:");
 };
 
-// Debate-ended email helpers
-
 // GGWash importer article store. One record per scraped article, keyed by RSS
 // guid. The status field doubles as the dedup/at-most-once flag: only records
 // still "scraped" are eligible for selection.
 
-const ggwashArticleKeyFn = (record: GGWashArticleRecord) =>
-  `ggwash-article:${record.guid}`;
+const GGWASH_ARTICLE_PREFIX = "ggwash-article:";
+const ggwashArticleKey = (guid: string) => `${GGWASH_ARTICLE_PREFIX}${guid}`;
 
 export const getGGWashArticle = async (
   guid: string,
 ): Promise<GGWashArticleRecord | null> => {
-  return getParsedKvData<GGWashArticleRecord>(`ggwash-article:${guid}`);
+  return getParsedKvData<GGWashArticleRecord>(ggwashArticleKey(guid));
 };
 
 export const saveGGWashArticle = async (
   record: GGWashArticleRecord,
 ): Promise<void> => {
-  await upsert(record, ggwashArticleKeyFn);
+  await upsert(record, (r) => ggwashArticleKey(r.guid));
 };
 
 export const getAllGGWashArticles = async (): Promise<GGWashArticleRecord[]> => {
-  return getByPrefixParsed<GGWashArticleRecord>("ggwash-article:");
+  return getByPrefixParsed<GGWashArticleRecord>(GGWASH_ARTICLE_PREFIX);
 };
+
+// Debate-ended email helpers
 
 export const getDebateEndedEmailSent = async (roomId: string): Promise<boolean> => {
   const value = await kv.get(`debate-end-email-sent:${roomId}`);

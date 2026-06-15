@@ -70,6 +70,5 @@ export async function fetchGGWashArticles(): Promise<GGWashArticle[]> {
     });
   }
 
-  articles.splice(MAX_ARTICLES);
-  return articles;
+  return articles.slice(0, MAX_ARTICLES);
 }

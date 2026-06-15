@@ -102,7 +102,7 @@ const PROVIDER_MODEL: Record<LlmProvider, string> = {
 const POST_SUBHEARD = "washington-dc";
 const POST_AUTHOR = "enrichment-service";
 
-// --- captured shape for the report -----------------------------------------
+// --- captured shapes for the report -----------------------------------------
 interface TransformCapture {
   candidateIndex: number;
   selectionRank: number | null; // Stage 1 rank position, or null if not selected
@@ -113,6 +113,19 @@ interface TransformCapture {
   parsed: { topic: string; statements: string[] } | null;
   reason: string;
   wouldPublish: boolean;
+}
+
+interface ReportData {
+  feedSource: string;
+  provider: LlmProvider;
+  clientError: string | null;
+  articles: GGWashArticle[];
+  roundups: GGWashArticle[];
+  candidates: GGWashArticle[];
+  selectionPrompt: AiPrompt;
+  rawSelection: string | null;
+  ranked: number[];
+  transforms: TransformCapture[];
 }
 
 async function main() {
@@ -276,18 +289,7 @@ function image(url: string | undefined): string {
   return `![image](<${url}>)\n\n\`${url}\``;
 }
 
-function renderMarkdown(d: {
-  feedSource: string;
-  provider: LlmProvider;
-  clientError: string | null;
-  articles: GGWashArticle[];
-  roundups: GGWashArticle[];
-  candidates: GGWashArticle[];
-  selectionPrompt: AiPrompt;
-  rawSelection: string | null;
-  ranked: number[];
-  transforms: TransformCapture[];
-}): string {
+function renderMarkdown(d: ReportData): string {
   const now = new Date().toISOString();
   const wouldPublish = d.transforms.find((t) => t.wouldPublish);
   const out: string[] = [];
@@ -302,6 +304,21 @@ function renderMarkdown(d: {
     p();
   }
 
+  out.push(...summarySection(d, wouldPublish));
+  out.push(...headlineSection(wouldPublish));
+  out.push(...feedSection(d));
+  out.push(...selectionSection(d));
+  out.push(...transformsSection(d));
+
+  return out.join("\n");
+}
+
+function summarySection(
+  d: ReportData,
+  wouldPublish: TransformCapture | undefined,
+): string[] {
+  const out: string[] = [];
+  const p = (s = "") => out.push(s);
   p(`## Summary`);
   p();
   p(`| field | value |`);
@@ -314,33 +331,42 @@ function renderMarkdown(d: {
   p(`| ranked by LLM | ${d.ranked.length} |`);
   p(`| would publish | ${wouldPublish ? 1 : 0} |`);
   p();
+  return out;
+}
 
-  // Headline — the exact Heard post that would be created this run.
+// The exact Heard post that would be created this run.
+function headlineSection(wouldPublish: TransformCapture | undefined): string[] {
+  const out: string[] = [];
+  const p = (s = "") => out.push(s);
   p(`## Would-be-published Heard post`);
   p();
   if (!wouldPublish || !wouldPublish.parsed) {
     p(`_Nothing would be published this run — no ranked candidate passed the transform gate._`);
     p();
-  } else {
-    p(`The topic and seed statements that would be persisted this run — the first ranked candidate that passed the transform gate. Community \`${POST_SUBHEARD}\`, author \`${POST_AUTHOR}\`, open one week, image hotlinked from the source article.`);
-    p();
-    p(`**Source article:** [${esc(wouldPublish.article.title)}](<${wouldPublish.article.url}>)`);
-    p();
-    if (wouldPublish.article.imageUrl) {
-      p(image(wouldPublish.article.imageUrl));
-      p();
-    }
-    p(`**Topic:**`);
-    p();
-    p(fence(wouldPublish.parsed.topic));
-    p();
-    p(`**Seed statements (${wouldPublish.parsed.statements.length}):**`);
-    p();
-    p(fence(wouldPublish.parsed.statements.join("\n")));
+    return out;
+  }
+  p(`The topic and seed statements that would be persisted this run — the first ranked candidate that passed the transform gate. Community \`${POST_SUBHEARD}\`, author \`${POST_AUTHOR}\`, open one week, image hotlinked from the source article.`);
+  p();
+  p(`**Source article:** [${esc(wouldPublish.article.title)}](<${wouldPublish.article.url}>)`);
+  p();
+  if (wouldPublish.article.imageUrl) {
+    p(image(wouldPublish.article.imageUrl));
     p();
   }
+  p(`**Topic:**`);
+  p();
+  p(fence(wouldPublish.parsed.topic));
+  p();
+  p(`**Seed statements (${wouldPublish.parsed.statements.length}):**`);
+  p();
+  p(fence(wouldPublish.parsed.statements.join("\n")));
+  p();
+  return out;
+}
 
-  // Stage 0 — feed
+function feedSection(d: ReportData): string[] {
+  const out: string[] = [];
+  const p = (s = "") => out.push(s);
   p(`## Stage 0 · Feed (${d.articles.length} articles)`);
   p();
   p(`Each article shows the extracted image, the title, and the ${SELECTION_SNIPPET_CHARS}-char snippet the selection prompt sees. "Breakfast links" roundups are filtered deterministically before the LLM; the full body text appears inside each transform prompt in Stage 2.`);
@@ -364,8 +390,12 @@ function renderMarkdown(d: {
     p(`> ${esc(snippet) || "_(empty)_"}`);
     p();
   }
+  return out;
+}
 
-  // Stage 1 — selection
+function selectionSection(d: ReportData): string[] {
+  const out: string[] = [];
+  const p = (s = "") => out.push(s);
   p(`## Stage 1 · Selection`);
   p();
   p(`**Prompt — system:**`);
@@ -394,52 +424,12 @@ function renderMarkdown(d: {
     }
   }
   p();
+  return out;
+}
 
-  // Stage 2 — transforms, as a shared card renderer used by both groups.
-  const card = (t: TransformCapture) => {
-    const isRanked = t.selectionRank !== null;
-    const status = isRanked
-      ? (t.wouldPublish
-        ? `🟢 **would be published** (real run stops here)`
-        : t.parsed
-        ? `☑️ valid · ranked #${t.selectionRank! + 1}, not chosen this run`
-        : `🚫 skipped — ${esc(t.reason)}`)
-      : (t.parsed
-        ? `⚪ not selected by Stage 1 · would not be published`
-        : `🚫 not selected by Stage 1 · transform also rejected — ${esc(t.reason)}`);
-    p(`#### ${esc(t.article.title)}`);
-    p();
-    p(`${status}  `);
-    p(`candidate ${t.candidateIndex} · ${isRanked ? `rank #${t.selectionRank! + 1}` : "not ranked"} · persona: _${esc(t.persona)}_`);
-    p();
-    p(`**Transform prompt — system:**`);
-    p();
-    p(fence(t.prompt.systemPrompt));
-    p();
-    p(`**Transform prompt — user:**`);
-    p();
-    p(fence(t.prompt.userPrompt));
-    p();
-    p(`**Raw LLM response:**`);
-    p();
-    p(t.raw === null ? `_No LLM key — transform not run._` : fence(t.raw));
-    p();
-    if (t.parsed) {
-      p(`**Resulting Heard post${isRanked ? "" : " (exploratory)"} — topic + seed statements:**`);
-      p();
-      if (t.article.imageUrl) {
-        p(image(t.article.imageUrl));
-        p();
-      }
-      p(`> **${esc(t.parsed.topic)}**`);
-      p(`>`);
-      t.parsed.statements.forEach((s) => p(`> - ${esc(s)}`));
-      p();
-    }
-    p(`---`);
-    p();
-  };
-
+function transformsSection(d: ReportData): string[] {
+  const out: string[] = [];
+  const p = (s = "") => out.push(s);
   const rankedCaps = d.transforms.filter((t) => t.selectionRank !== null);
   const otherCaps = d.transforms.filter((t) => t.selectionRank === null);
 
@@ -453,17 +443,63 @@ function renderMarkdown(d: {
     p(`_Nothing ranked, so nothing was transformed._`);
     p();
   }
-  for (const t of rankedCaps) card(t);
+  for (const t of rankedCaps) out.push(...transformCard(t));
 
   if (otherCaps.length) {
     p(`### Other candidates not selected by Stage 1 — ${otherCaps.length}`);
     p();
     p(`These passed the roundup filter but Stage 1 did **not** rank them, so the real importer would neither transform nor publish them. Shown so you can see the Heard post each non-selected candidate would generate. (Disable with \`GGWASH_SKIP_UNSELECTED=1\`.)`);
     p();
-    for (const t of otherCaps) card(t);
+    for (const t of otherCaps) out.push(...transformCard(t));
   }
+  return out;
+}
 
-  return out.join("\n");
+function transformCard(t: TransformCapture): string[] {
+  const out: string[] = [];
+  const p = (s = "") => out.push(s);
+  const isRanked = t.selectionRank !== null;
+  const status = isRanked
+    ? (t.wouldPublish
+      ? `🟢 **would be published** (real run stops here)`
+      : t.parsed
+      ? `☑️ valid · ranked #${t.selectionRank! + 1}, not chosen this run`
+      : `🚫 skipped — ${esc(t.reason)}`)
+    : (t.parsed
+      ? `⚪ not selected by Stage 1 · would not be published`
+      : `🚫 not selected by Stage 1 · transform also rejected — ${esc(t.reason)}`);
+  p(`#### ${esc(t.article.title)}`);
+  p();
+  p(`${status}  `);
+  p(`candidate ${t.candidateIndex} · ${isRanked ? `rank #${t.selectionRank! + 1}` : "not ranked"} · persona: _${esc(t.persona)}_`);
+  p();
+  p(`**Transform prompt — system:**`);
+  p();
+  p(fence(t.prompt.systemPrompt));
+  p();
+  p(`**Transform prompt — user:**`);
+  p();
+  p(fence(t.prompt.userPrompt));
+  p();
+  p(`**Raw LLM response:**`);
+  p();
+  p(t.raw === null ? `_No LLM key — transform not run._` : fence(t.raw));
+  p();
+  if (t.parsed) {
+    p(`**Resulting Heard post${isRanked ? "" : " (exploratory)"} — topic + seed statements:**`);
+    p();
+    if (t.article.imageUrl) {
+      p(image(t.article.imageUrl));
+      p();
+    }
+    p(`> **${esc(t.parsed.topic)}**`);
+    p(`>`);
+    t.parsed.statements.forEach((s) => p(`> - ${esc(s)}`));
+    p();
+  }
+  p(`---`);
+  p();
+  return out;
 }
 
 await main();

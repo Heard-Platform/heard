@@ -94,10 +94,10 @@ export class GGWashImporter extends EnrichmentService {
     article: GGWashArticle,
     rank: number,
   ): Promise<boolean> {
+    // Guaranteed present: recordAndCollectCandidates saved a record for every
+    // candidate it returned.
     const record = (await getGGWashArticle(article.guid))!;
-    record.status = "attempting";
-    record.rank = rank;
-    await saveGGWashArticle(record);
+    await markAttempting(record, rank);
 
     const prompt = makeTransformPromptFromGGWashArticle(article, this.provider);
     const aiResponse = await this.aiClient.complete(prompt, {
@@ -106,23 +106,12 @@ export class GGWashImporter extends EnrichmentService {
 
     const parsed = parseTransform(aiResponse);
     if (!parsed) {
-      record.status = "rejected";
-      record.error = aiResponse.trim() === LLM_ERROR_SENTINEL
-        ? "transform returned Error"
-        : "invalid transform output";
-      record.decidedAt = Date.now();
-      await saveGGWashArticle(record);
+      await recordRejection(record, aiResponse);
       return false;
     }
 
     const roomId = await this.publish(article, parsed.topic, parsed.statements);
-
-    record.status = "published";
-    record.generatedTopic = parsed.topic;
-    record.generatedStatements = parsed.statements;
-    record.publishedRoomId = roomId;
-    record.decidedAt = Date.now();
-    await saveGGWashArticle(record);
+    await recordPublished(record, parsed, roomId);
 
     logSuccess(article, parsed.topic, parsed.statements);
     return true;
@@ -191,6 +180,42 @@ function toScrapedRecord(article: GGWashArticle): GGWashArticleRecord {
     bodyExcerpt: article.body.slice(0, STORE_EXCERPT_CHARS),
     status: "scraped",
   };
+}
+
+// Record state transitions (mutate + persist). Marking happens BEFORE the
+// transform call so a crash or double-fire can never re-attempt the article.
+async function markAttempting(
+  record: GGWashArticleRecord,
+  rank: number,
+): Promise<void> {
+  record.status = "attempting";
+  record.rank = rank;
+  await saveGGWashArticle(record);
+}
+
+async function recordRejection(
+  record: GGWashArticleRecord,
+  aiResponse: string,
+): Promise<void> {
+  record.status = "rejected";
+  record.error = aiResponse.trim() === LLM_ERROR_SENTINEL
+    ? "transform returned Error"
+    : "invalid transform output";
+  record.decidedAt = Date.now();
+  await saveGGWashArticle(record);
+}
+
+async function recordPublished(
+  record: GGWashArticleRecord,
+  parsed: { topic: string; statements: string[] },
+  roomId: string,
+): Promise<void> {
+  record.status = "published";
+  record.generatedTopic = parsed.topic;
+  record.generatedStatements = parsed.statements;
+  record.publishedRoomId = roomId;
+  record.decidedAt = Date.now();
+  await saveGGWashArticle(record);
 }
 
 export function parseTransform(

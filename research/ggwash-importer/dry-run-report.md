@@ -1,6 +1,6 @@
 # GGWash importer — dry run
 
-_No posts were published. Generated 2026-06-14T22:04:51.602Z._
+_No posts were published. Generated 2026-06-14T22:39:08.349Z._
 
 ## Summary
 
@@ -11,7 +11,7 @@ _No posts were published. Generated 2026-06-14T22:04:51.602Z._
 | articles fetched | 10 |
 | roundups auto-rejected | 2 |
 | candidates | 8 |
-| ranked by LLM | 4 |
+| ranked by LLM | 3 |
 | would publish | 1 |
 
 ## Would-be-published Heard post
@@ -27,15 +27,15 @@ The topic and seed statements that would be persisted this run — the first ran
 **Topic:**
 
 ~~~~
-Do Lime's new e-bikes truly improve accessibility for DC riders
+Do new e-bike designs address core micromobility challenges in DC
 ~~~~
 
 **Seed statements (3):**
 
 ~~~~
-Great for quick trips, really helps connections
-Still worried about bikes blocking sidewalks
-Makes biking feel much less intimidating
+More accessible bikes mean more people will use them
+They still block sidewalks and create clutter
+Costs are still too high for everyday use
 ~~~~
 
 ## Stage 0 · Feed (10 articles)
@@ -224,14 +224,7 @@ Return ONLY JSON of the form {"ranked": [<indices>]}, listing the 0-based indice
 **Raw LLM response:**
 
 ~~~~
-{
-  "ranked": [
-    0,
-    7,
-    2,
-    4
-  ]
-}
+{"ranked": [0, 7, 2]}
 ~~~~
 
 **Parsed ranking:**
@@ -239,23 +232,22 @@ Return ONLY JSON of the form {"ranked": [<indices>]}, listing the 0-based indice
 1. candidate 0 — What Lime’s new e-bike says about the next challenge for micromobility in DC
 2. candidate 7 — Ward 7 deserves a Pennsylvania Avenue that works for everyone
 3. candidate 2 — Washington, DC has a housing crisis. I know how to fix it
-4. candidate 4 — Vote for our endorsed candidates in DC and Maryland
 
 ## Stage 2 · Transform & preview
 
-### Selected by Stage 1 (ranked) — 4
+### Selected by Stage 1 (ranked) — 3
 
 The real flow: ranked candidates are transformed in order and the first valid result (🟢) is the post that would go live today.
 
 #### What Lime’s new e-bike says about the next challenge for micromobility in DC
 
 🟢 **would be published** (real run stops here)  
-candidate 0 · rank #1 · persona: _Your thoughts trail off sometimes or jump around, you make small typos bc you're typing fast, and you sometimes forget to finish a sentance. You care a lot about safety and community._
+candidate 0 · rank #1 · persona: _You use terms like 'centering,' 'equity,' and 'community-led.' You write with conviction, tend toward longer statements, and you are careful with your word choices._
 
 **Transform prompt — system:**
 
 ~~~~
-Your thoughts trail off sometimes or jump around, you make small typos bc you're typing fast, and you sometimes forget to finish a sentance. You care a lot about safety and community. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+You use terms like 'centering,' 'equity,' and 'community-led.' You write with conviction, tend toward longer statements, and you are careful with your word choices. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -322,10 +314,10 @@ CRITICAL REMINDERS — you MUST follow these exactly:
 **Raw LLM response:**
 
 ~~~~
-Do Lime's new e-bikes truly improve accessibility for DC riders
-Great for quick trips, really helps connections
-Still worried about bikes blocking sidewalks
-Makes biking feel much less intimidating
+Do new e-bike designs address core micromobility challenges in DC
+More accessible bikes mean more people will use them
+They still block sidewalks and create clutter
+Costs are still too high for everyday use
 ~~~~
 
 **Resulting Heard post — topic + seed statements:**
@@ -334,23 +326,23 @@ Makes biking feel much less intimidating
 
 `https://ggwash.org/images/made/images/posts/_resized/Copy_of_LimeBike_3_800_534.png`
 
-> **Do Lime's new e-bikes truly improve accessibility for DC riders**
+> **Do new e-bike designs address core micromobility challenges in DC**
 >
-> - Great for quick trips, really helps connections
-> - Still worried about bikes blocking sidewalks
-> - Makes biking feel much less intimidating
+> - More accessible bikes mean more people will use them
+> - They still block sidewalks and create clutter
+> - Costs are still too high for everyday use
 
 ---
 
 #### Ward 7 deserves a Pennsylvania Avenue that works for everyone
 
 ☑️ valid · ranked #2, not chosen this run  
-candidate 7 · rank #2 · persona: _you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy_
+candidate 7 · rank #2 · persona: _You Type With Weird Capitalization, use ... a lot ..., and sometimes go on tangents. You sign off with your name or 'just my 2 cents.' You do not use periods at the end of sentences._
 
 **Transform prompt — system:**
 
 ~~~~
-you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+You Type With Weird Capitalization, use ... a lot ..., and sometimes go on tangents. You sign off with your name or 'just my 2 cents.' You do not use periods at the end of sentences. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -417,10 +409,10 @@ CRITICAL REMINDERS — you MUST follow these exactly:
 **Raw LLM response:**
 
 ~~~~
-should ddot expand pennsylvania ave se to 10 lanes
-10 lanes is too much for a neighborhood
-we need better traffic flow bc it's chaos
-ddot knows best trust the engineers
+Should DDOT prioritize community input for Ward 7 intersection safety
+DDOT needs to listen, 10 lanes is too many
+Safety is paramount, trust the experts on design
+Projects take forever, just build something already
 ~~~~
 
 **Resulting Heard post — topic + seed statements:**
@@ -429,23 +421,23 @@ ddot knows best trust the engineers
 
 `https://ggwash.org/images/made/images/posts/_resized/Screenshot_2026-06-09_at_6.36.31 PM__800_562.png`
 
-> **should ddot expand pennsylvania ave se to 10 lanes**
+> **Should DDOT prioritize community input for Ward 7 intersection safety**
 >
-> - 10 lanes is too much for a neighborhood
-> - we need better traffic flow bc it's chaos
-> - ddot knows best trust the engineers
+> - DDOT needs to listen, 10 lanes is too many
+> - Safety is paramount, trust the experts on design
+> - Projects take forever, just build something already
 
 ---
 
 #### Washington, DC has a housing crisis. I know how to fix it
 
 ☑️ valid · ranked #3, not chosen this run  
-candidate 2 · rank #3 · persona: _Your thoughts trail off sometimes or jump around, you make small typos bc you're typing fast, and you sometimes forget to finish a sentance. You care a lot about safety and community._
+candidate 2 · rank #3 · persona: _You are a sarcastic millennial. You use dry humor and irony, write in lowercase sometimes, and pepper in phrases like 'cool cool cool' or 'totally fine.' You keep things short and a little cynical. you never use a period at the end of a sentence unless it's necessary between sentences_
 
 **Transform prompt — system:**
 
 ~~~~
-Your thoughts trail off sometimes or jump around, you make small typos bc you're typing fast, and you sometimes forget to finish a sentance. You care a lot about safety and community. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+You are a sarcastic millennial. You use dry humor and irony, write in lowercase sometimes, and pepper in phrases like 'cool cool cool' or 'totally fine.' You keep things short and a little cynical. you never use a period at the end of a sentence unless it's necessary between sentences You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -511,10 +503,10 @@ CRITICAL REMINDERS — you MUST follow these exactly:
 **Raw LLM response:**
 
 ~~~~
-What are your thoughts on Janeese Lewis George's housing plan
-Finally, a plan to actually build housing
-This plan just sounds like more developer giveaways
-We need to protect existing neighborhoods, not overdevelop
+Can DC actually fix its housing crisis
+More housing just means more luxury condos, totally fine
+The Comp Plan needs a total overhaul, cool cool cool
+Developers always win, regular folks get pushed out
 ~~~~
 
 **Resulting Heard post — topic + seed statements:**
@@ -523,23 +515,207 @@ We need to protect existing neighborhoods, not overdevelop
 
 `https://ggwash.org/images/made/images/posts/_resized/53460505339_43b277d259_6k_800_533_90.jpg`
 
-> **What are your thoughts on Janeese Lewis George's housing plan**
+> **Can DC actually fix its housing crisis**
 >
-> - Finally, a plan to actually build housing
-> - This plan just sounds like more developer giveaways
-> - We need to protect existing neighborhoods, not overdevelop
+> - More housing just means more luxury condos, totally fine
+> - The Comp Plan needs a total overhaul, cool cool cool
+> - Developers always win, regular folks get pushed out
 
 ---
 
-#### Vote for our endorsed candidates in DC and Maryland
+### Other candidates not selected by Stage 1 — 5
 
-🚫 skipped — LLM returned the "Error" sentinel (deemed unsuitable)  
-candidate 4 · rank #4 · persona: _you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy_
+These passed the roundup filter but Stage 1 did **not** rank them, so the real importer would neither transform nor publish them. Shown so you can see the Heard post each non-selected candidate would generate. (Disable with `GGWASH_SKIP_UNSELECTED=1`.)
+
+#### National links: Could cool(ing) bricks help with city heat?
+
+⚪ not selected by Stage 1 · would not be published  
+candidate 1 · not ranked · persona: _You are a sarcastic millennial. You use dry humor and irony, write in lowercase sometimes, and pepper in phrases like 'cool cool cool' or 'totally fine.' You keep things short and a little cynical. you never use a period at the end of a sentence unless it's necessary between sentences_
+
+**Transform prompt — system:**
+
+~~~~
+You are a sarcastic millennial. You use dry humor and irony, write in lowercase sometimes, and pepper in phrases like 'cool cool cool' or 'totally fine.' You keep things short and a little cynical. you never use a period at the end of a sentence unless it's necessary between sentences You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+~~~~
+
+**Transform prompt — user:**
+
+~~~~
+Convert this Greater Greater Washington article into a Heard discussion for a Washington, DC audience: one topic question plus a few short response statements representing distinct opinions people might hold.
+
+Article title: "National links: Could cool(ing) bricks help with city heat?"
+Article body: "Students invented a brick that could reduce temperatures, but not necessarily in humid conditions. A land value tax-esque policy could help boost housing production in Washington state. Desirable lakefront property in Cleveland doesn’t need tax breaks.
+Special brick could help cool cities: Industrial design students from the University of Zurich designed a terracotta brick that cools the areas around it through evaporation. In controlled environments, the bricks were able to reduce temperatures by 9°C, though the tool is less effective in humid places. Urban materials such as asphalt tend to increase surface temperatures, and tools are needed to address extreme heat. (Times of India)
+Property tax reform could discourage vacant lots in Washington state: Washington state’s property tax system, standard in North America, rewards land speculation by taxing vacant lots much less than lots with productive uses. To solve this, a new report from the Center for Land Economics suggests exempting building value from the property tax. This approach would allow the state to impose a policy similar to a land value tax without violating state tax rules. (Dan Bertolet | Sightline Institute)
+Cleveland’s mayor advocates development without subsidies: Mayor Justin Bibb believes the city doesn’t need to offer tax incentives on publicly-owned lakefront property in order for it to be redeveloped with private investment. The property is highly accessible to transportation, amenities, and downtown Cleveland. (Kristan Wong Karinen | Good Jobs First)
+US urban areas increase housing near transit: Across the US, most large urban areas have more housing near transit now than they did four decades ago, per data available through a new Urban Institute tool. Moreover, a 10% increase in the share of housing units near transit induces 10 more transit rides per person per year. To encourage more ridership, cities must also boost transit frequency. (Yonah Freemark | Urban Institute)
+Transportation reporters need stories readers care about: In a recent webinar, five reporters who focus on transportation in the US shared five lessons for how the media covers transportation. Transportation is political and broad, reporters need stories that garner engagement, every national story is local, reporters and agencies have different objectives, and relationships still matter. (Philip Plotch | Eno Center for Transportation)
+Quote of the Week
+“Commercial properties right now are not regulated under any stormwater permit. Think Costco, think Amazon warehouses. Large places with large parking lots are really what we’re going after.”
+Sean Bothwell, executive director of California Coastkeeper Alliance in the Los Angeles Times discussing how advocates are trying to get California regulators to crack down on parking lot stormwater pollution.
+This week on the Talking Headways podcast we’re joined by Jaime Benavides and Marianthi-Anna Kioumourtzoglou of Brown University to discuss their new paper showing how community severance by road infrastructure and traffic has led to more mental health-related hospital visits in New York City.
+
+Comment on this article"
+
+BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "Error" and stop. Do not generate a topic or responses:
+- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
+- The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
+- The article frames marginalized or vulnerable groups in opposition to each other.
+- The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
+
+Topic rules:
+- One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
+- The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
+- Keep the topic about DC.
+
+Response rules:
+- Imagine a specific kind of person (an enthusiast, a skeptic, someone with a bad experience) and write what they would say out loud to a friend, not what they would write in an essay.
+- STRICT MAX 8 WORDS per response. Cut mercilessly.
+- Never start with "I think", "I feel", "I believe", "In my opinion", or "Honestly" — jump straight to the point.
+- Never end with filler qualifiers like "to me" or "for me".
+- Never use "everyone", "most people", or "we" — speak only for yourself.
+- Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
+- Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
+- Randomize the order of the responses; do not always put the unpopular one last.
+- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).
+
+Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.
+
+CRITICAL REMINDERS — you MUST follow these exactly:
+- Produce EXACTLY 3 response statements, each on its own line after the topic question.
+- Each response MUST be a STRICT MAX of 8 words.
+- ABSOLUTELY NO trailing punctuation and no quotation marks.
+- No preambles like "I think" or "Honestly" — state the opinion directly.
+- No blank lines between the topic and the responses or between responses.
+~~~~
+
+**Raw LLM response:**
+
+~~~~
+could cooling bricks actually make dc summers tolerable
+sounds like another climate change band-aid
+totally fine with anything that reduces humidity
+they'll probably just make the bricks expensive
+~~~~
+
+**Resulting Heard post (exploratory) — topic + seed statements:**
+
+![image](<https://ggwash.org/images/made/images/posts/_resized/36063218203_e51c86b911_c_799_533_90.jpg>)
+
+`https://ggwash.org/images/made/images/posts/_resized/36063218203_e51c86b911_c_799_533_90.jpg`
+
+> **could cooling bricks actually make dc summers tolerable**
+>
+> - sounds like another climate change band-aid
+> - totally fine with anything that reduces humidity
+> - they'll probably just make the bricks expensive
+
+---
+
+#### Photo Friday: Approaching rainbows
+
+⚪ not selected by Stage 1 · would not be published  
+candidate 3 · not ranked · persona: _you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy_
 
 **Transform prompt — system:**
 
 ~~~~
 you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+~~~~
+
+**Transform prompt — user:**
+
+~~~~
+Convert this Greater Greater Washington article into a Heard discussion for a Washington, DC audience: one topic question plus a few short response statements representing distinct opinions people might hold.
+
+Article title: "Photo Friday: Approaching rainbows"
+Article body: "It’s Pride month! Are you ready to party? Want to march in the parade? Summer’s most joyful month is here, and though most Pride events are still a bit in the future, the universe must sense the approaching festivities because the Greater and Lesser Washington Flickr pool is already brimming with rainbows.
+Subtle rainbows, just showing up all over town. Image by D. Reed licensed under Creative Commons.
+
+				
+				
+ Image by Richard Piel used with permission.
+
+				
+				
+What’s better than bikeshare + Pride? Image by Kai Hall used with permission.
+
+				
+				
+Let that joy flow.  Image by Joe Flood licensed under Creative Commons.
+
+				
+				
+Submit photos! 
+For a chance to see your photos show up in these posts, add them to the Greater and Lesser Washington Flickr pool.
+By posting to the Flickr pool you agree to allow Greater Greater Washington and the Coalition for Smarter Growth to use the image(s) in their materials, including republication on other site and formats, under the same terms as the Creative Commons CC-BY 4.0 license.
+Top image: Rainbow over Takoma on Wednesday, June 10. Image by BeyondDC licensed under Creative Commons.
+Comment on this article"
+
+BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "Error" and stop. Do not generate a topic or responses:
+- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
+- The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
+- The article frames marginalized or vulnerable groups in opposition to each other.
+- The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
+
+Topic rules:
+- One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
+- The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
+- Keep the topic about DC.
+
+Response rules:
+- Imagine a specific kind of person (an enthusiast, a skeptic, someone with a bad experience) and write what they would say out loud to a friend, not what they would write in an essay.
+- STRICT MAX 8 WORDS per response. Cut mercilessly.
+- Never start with "I think", "I feel", "I believe", "In my opinion", or "Honestly" — jump straight to the point.
+- Never end with filler qualifiers like "to me" or "for me".
+- Never use "everyone", "most people", or "we" — speak only for yourself.
+- Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
+- Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
+- Randomize the order of the responses; do not always put the unpopular one last.
+- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).
+
+Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.
+
+CRITICAL REMINDERS — you MUST follow these exactly:
+- Produce EXACTLY 3 response statements, each on its own line after the topic question.
+- Each response MUST be a STRICT MAX of 8 words.
+- ABSOLUTELY NO trailing punctuation and no quotation marks.
+- No preambles like "I think" or "Honestly" — state the opinion directly.
+- No blank lines between the topic and the responses or between responses.
+~~~~
+
+**Raw LLM response:**
+
+~~~~
+what do u think abt pride month in dc
+love seeing all the rainbows around dc
+it's just a corporate cash grab now
+too many road closures for parades
+~~~~
+
+**Resulting Heard post (exploratory) — topic + seed statements:**
+
+![image](<https://ggwash.org/images/made/images/posts/_resized/20260610_174306_800_600_90.jpg>)
+
+`https://ggwash.org/images/made/images/posts/_resized/20260610_174306_800_600_90.jpg`
+
+> **what do u think abt pride month in dc**
+>
+> - love seeing all the rainbows around dc
+> - it's just a corporate cash grab now
+> - too many road closures for parades
+
+---
+
+#### Vote for our endorsed candidates in DC and Maryland
+
+🚫 not selected by Stage 1 · transform also rejected — LLM returned the "Error" sentinel (deemed unsuitable)  
+candidate 4 · not ranked · persona: _You keep it short and blunt, don't mince words, and are skeptical of change. occasional typo, no frills, just your honest take._
+
+**Transform prompt — system:**
+
+~~~~
+You keep it short and blunt, don't mince words, and are skeptical of change. occasional typo, no frills, just your honest take. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -712,169 +888,15 @@ Error
 
 ---
 
-### Other candidates not selected by Stage 1 — 4
-
-These passed the roundup filter but Stage 1 did **not** rank them, so the real importer would neither transform nor publish them. Shown so you can see the Heard post each non-selected candidate would generate. (Disable with `GGWASH_SKIP_UNSELECTED=1`.)
-
-#### National links: Could cool(ing) bricks help with city heat?
-
-🚫 not selected by Stage 1 · transform also rejected — LLM returned the "Error" sentinel (deemed unsuitable)  
-candidate 1 · not ranked · persona: _you type like you talk, use slang, and are very online. lots of run-ons and no caps, occasionally throw in a 'lol' or 'idk' or 'literally.' you have strong opinions but short attention span. you never use a period at the end of a sentence unless it's necessary between sentences_
-
-**Transform prompt — system:**
-
-~~~~
-you type like you talk, use slang, and are very online. lots of run-ons and no caps, occasionally throw in a 'lol' or 'idk' or 'literally.' you have strong opinions but short attention span. you never use a period at the end of a sentence unless it's necessary between sentences You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
-~~~~
-
-**Transform prompt — user:**
-
-~~~~
-Convert this Greater Greater Washington article into a Heard discussion for a Washington, DC audience: one topic question plus a few short response statements representing distinct opinions people might hold.
-
-Article title: "National links: Could cool(ing) bricks help with city heat?"
-Article body: "Students invented a brick that could reduce temperatures, but not necessarily in humid conditions. A land value tax-esque policy could help boost housing production in Washington state. Desirable lakefront property in Cleveland doesn’t need tax breaks.
-Special brick could help cool cities: Industrial design students from the University of Zurich designed a terracotta brick that cools the areas around it through evaporation. In controlled environments, the bricks were able to reduce temperatures by 9°C, though the tool is less effective in humid places. Urban materials such as asphalt tend to increase surface temperatures, and tools are needed to address extreme heat. (Times of India)
-Property tax reform could discourage vacant lots in Washington state: Washington state’s property tax system, standard in North America, rewards land speculation by taxing vacant lots much less than lots with productive uses. To solve this, a new report from the Center for Land Economics suggests exempting building value from the property tax. This approach would allow the state to impose a policy similar to a land value tax without violating state tax rules. (Dan Bertolet | Sightline Institute)
-Cleveland’s mayor advocates development without subsidies: Mayor Justin Bibb believes the city doesn’t need to offer tax incentives on publicly-owned lakefront property in order for it to be redeveloped with private investment. The property is highly accessible to transportation, amenities, and downtown Cleveland. (Kristan Wong Karinen | Good Jobs First)
-US urban areas increase housing near transit: Across the US, most large urban areas have more housing near transit now than they did four decades ago, per data available through a new Urban Institute tool. Moreover, a 10% increase in the share of housing units near transit induces 10 more transit rides per person per year. To encourage more ridership, cities must also boost transit frequency. (Yonah Freemark | Urban Institute)
-Transportation reporters need stories readers care about: In a recent webinar, five reporters who focus on transportation in the US shared five lessons for how the media covers transportation. Transportation is political and broad, reporters need stories that garner engagement, every national story is local, reporters and agencies have different objectives, and relationships still matter. (Philip Plotch | Eno Center for Transportation)
-Quote of the Week
-“Commercial properties right now are not regulated under any stormwater permit. Think Costco, think Amazon warehouses. Large places with large parking lots are really what we’re going after.”
-Sean Bothwell, executive director of California Coastkeeper Alliance in the Los Angeles Times discussing how advocates are trying to get California regulators to crack down on parking lot stormwater pollution.
-This week on the Talking Headways podcast we’re joined by Jaime Benavides and Marianthi-Anna Kioumourtzoglou of Brown University to discuss their new paper showing how community severance by road infrastructure and traffic has led to more mental health-related hospital visits in New York City.
-
-Comment on this article"
-
-BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "Error" and stop. Do not generate a topic or responses:
-- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
-- The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
-- The article frames marginalized or vulnerable groups in opposition to each other.
-- The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
-
-Topic rules:
-- One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
-- The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
-- Keep the topic about DC.
-
-Response rules:
-- Imagine a specific kind of person (an enthusiast, a skeptic, someone with a bad experience) and write what they would say out loud to a friend, not what they would write in an essay.
-- STRICT MAX 8 WORDS per response. Cut mercilessly.
-- Never start with "I think", "I feel", "I believe", "In my opinion", or "Honestly" — jump straight to the point.
-- Never end with filler qualifiers like "to me" or "for me".
-- Never use "everyone", "most people", or "we" — speak only for yourself.
-- Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
-- Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
-- Randomize the order of the responses; do not always put the unpopular one last.
-- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).
-
-Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.
-
-CRITICAL REMINDERS — you MUST follow these exactly:
-- Produce EXACTLY 3 response statements, each on its own line after the topic question.
-- Each response MUST be a STRICT MAX of 8 words.
-- ABSOLUTELY NO trailing punctuation and no quotation marks.
-- No preambles like "I think" or "Honestly" — state the opinion directly.
-- No blank lines between the topic and the responses or between responses.
-~~~~
-
-**Raw LLM response:**
-
-~~~~
-Error
-~~~~
-
----
-
-#### Photo Friday: Approaching rainbows
-
-🚫 not selected by Stage 1 · transform also rejected — LLM returned the "Error" sentinel (deemed unsuitable)  
-candidate 3 · not ranked · persona: _you type like you talk, use slang, and are very online. lots of run-ons and no caps, occasionally throw in a 'lol' or 'idk' or 'literally.' you have strong opinions but short attention span. you never use a period at the end of a sentence unless it's necessary between sentences_
-
-**Transform prompt — system:**
-
-~~~~
-you type like you talk, use slang, and are very online. lots of run-ons and no caps, occasionally throw in a 'lol' or 'idk' or 'literally.' you have strong opinions but short attention span. you never use a period at the end of a sentence unless it's necessary between sentences You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
-~~~~
-
-**Transform prompt — user:**
-
-~~~~
-Convert this Greater Greater Washington article into a Heard discussion for a Washington, DC audience: one topic question plus a few short response statements representing distinct opinions people might hold.
-
-Article title: "Photo Friday: Approaching rainbows"
-Article body: "It’s Pride month! Are you ready to party? Want to march in the parade? Summer’s most joyful month is here, and though most Pride events are still a bit in the future, the universe must sense the approaching festivities because the Greater and Lesser Washington Flickr pool is already brimming with rainbows.
-Subtle rainbows, just showing up all over town. Image by D. Reed licensed under Creative Commons.
-
-				
-				
- Image by Richard Piel used with permission.
-
-				
-				
-What’s better than bikeshare + Pride? Image by Kai Hall used with permission.
-
-				
-				
-Let that joy flow.  Image by Joe Flood licensed under Creative Commons.
-
-				
-				
-Submit photos! 
-For a chance to see your photos show up in these posts, add them to the Greater and Lesser Washington Flickr pool.
-By posting to the Flickr pool you agree to allow Greater Greater Washington and the Coalition for Smarter Growth to use the image(s) in their materials, including republication on other site and formats, under the same terms as the Creative Commons CC-BY 4.0 license.
-Top image: Rainbow over Takoma on Wednesday, June 10. Image by BeyondDC licensed under Creative Commons.
-Comment on this article"
-
-BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "Error" and stop. Do not generate a topic or responses:
-- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
-- The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
-- The article frames marginalized or vulnerable groups in opposition to each other.
-- The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
-
-Topic rules:
-- One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
-- The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
-- Keep the topic about DC.
-
-Response rules:
-- Imagine a specific kind of person (an enthusiast, a skeptic, someone with a bad experience) and write what they would say out loud to a friend, not what they would write in an essay.
-- STRICT MAX 8 WORDS per response. Cut mercilessly.
-- Never start with "I think", "I feel", "I believe", "In my opinion", or "Honestly" — jump straight to the point.
-- Never end with filler qualifiers like "to me" or "for me".
-- Never use "everyone", "most people", or "we" — speak only for yourself.
-- Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
-- Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
-- Randomize the order of the responses; do not always put the unpopular one last.
-- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).
-
-Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.
-
-CRITICAL REMINDERS — you MUST follow these exactly:
-- Produce EXACTLY 3 response statements, each on its own line after the topic question.
-- Each response MUST be a STRICT MAX of 8 words.
-- ABSOLUTELY NO trailing punctuation and no quotation marks.
-- No preambles like "I think" or "Honestly" — state the opinion directly.
-- No blank lines between the topic and the responses or between responses.
-~~~~
-
-**Raw LLM response:**
-
-~~~~
-Error
-~~~~
-
----
-
 #### Play GGWash Junctions weekly word puzzle #50
 
 🚫 not selected by Stage 1 · transform also rejected — LLM returned the "Error" sentinel (deemed unsuitable)  
-candidate 5 · not ranked · persona: _You write confidently and use words like 'fundamentally,' 'at the end of the day,' and 'it's really not that complicated.' You rarely make typos but keep things concise._
+candidate 5 · not ranked · persona: _Your thoughts trail off sometimes or jump around, you make small typos bc you're typing fast, and you sometimes forget to finish a sentance. You care a lot about safety and community._
 
 **Transform prompt — system:**
 
 ~~~~
-You write confidently and use words like 'fundamentally,' 'at the end of the day,' and 'it's really not that complicated.' You rarely make typos but keep things concise. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+Your thoughts trail off sometimes or jump around, you make small typos bc you're typing fast, and you sometimes forget to finish a sentance. You care a lot about safety and community. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -952,12 +974,12 @@ Error
 #### Do Something #122: Everybody’s got that person
 
 ⚪ not selected by Stage 1 · would not be published  
-candidate 6 · not ranked · persona: _you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy_
+candidate 6 · not ranked · persona: _You Love Capitalizing Things For Emphasis and use a lot of exclamation points!! You're very into community events and keeping the neighborhood nice._
 
 **Transform prompt — system:**
 
 ~~~~
-you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+You Love Capitalizing Things For Emphasis and use a lot of exclamation points!! You're very into community events and keeping the neighborhood nice. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -1025,10 +1047,10 @@ CRITICAL REMINDERS — you MUST follow these exactly:
 **Raw LLM response:**
 
 ~~~~
-should ppl rely on ggwash for voting advice
-rly appreciate the endorsements, makes voting easier
-they're too biased, do ur own research
-vision zero happy hour sounds cool, will go
+What do you make of the Vision Zero happy hour
+Great way to meet other safe street advocates
+Another happy hour, still no real change
+Glad to see ANCs getting involved, finally
 ~~~~
 
 **Resulting Heard post (exploratory) — topic + seed statements:**
@@ -1037,10 +1059,10 @@ vision zero happy hour sounds cool, will go
 
 `https://ggwash.org/images/made/images/posts/_resized/do_something_june_8_800_451_90.jpg`
 
-> **should ppl rely on ggwash for voting advice**
+> **What do you make of the Vision Zero happy hour**
 >
-> - rly appreciate the endorsements, makes voting easier
-> - they're too biased, do ur own research
-> - vision zero happy hour sounds cool, will go
+> - Great way to meet other safe street advocates
+> - Another happy hour, still no real change
+> - Glad to see ANCs getting involved, finally
 
 ---
