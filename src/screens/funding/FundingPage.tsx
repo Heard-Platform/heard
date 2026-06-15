@@ -92,7 +92,7 @@ export function FundingPage({ onExit }: FundingPageProps) {
           The goal I set for July&nbsp;4th
         </h1>
         <p style={{ color: C.slate600, lineHeight: 1.625, marginBottom: 16 }}>
-          In Jan 2026, I gave myself a deadline: raise{" "}
+          At the start of 2026, I gave myself a deadline: raise{" "}
           <strong style={{ color: C.slate800 }}>$5,000 in funding by July 4th</strong>, or {" "}
           <strong style={{ color: C.slate800 }}>get a tattoo</strong> chosen via a debate on Heard. We're less than a month away and have some ground to cover!
         </p>
