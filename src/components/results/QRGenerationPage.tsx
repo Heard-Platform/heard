@@ -13,6 +13,17 @@ interface QRGenerationPageProps {
 
 export function QRGenerationPage({ statement, onClose }: QRGenerationPageProps) {
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+
+  if (baseUrl.includes("localhost")) {
+    return (
+      <div className="bg-white flex items-center justify-center" style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 1000}}>
+        <div className="text-center">
+          <p className="text-lg text-red-500 font-medium mb-4">QR codes can't be generated on localhost — URLs won't work for scanning.</p>
+          <Button variant="ghost" onClick={onClose}>Close</Button>
+        </div>
+      </div>
+    );
+  }
   const roomId = statement.roomId;
   const [currentGroupOffset, setCurrentGroupOffset] = useState(0);
 
