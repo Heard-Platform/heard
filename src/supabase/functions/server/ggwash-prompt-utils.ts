@@ -7,7 +7,7 @@ export const SELECTION_SNIPPET_CHARS = 200;
 export const LLM_ERROR_SENTINEL = "Error";
 
 export const HEARD_DESCRIPTION =
-  `Heard is a discussion app for the Washington, DC area. People react to a topic by voting agree or disagree on short statements and adding their own. A good Heard post is an article about a specific, debatable, or interesting DC topic that locals would have opinions about.`;
+  `Heard is a discussion app based in the Washington, DC area. People react to a topic by voting agree or disagree on short response statements and adding their own. A good Heard post is an article about a specific, debatable, or interesting topic that people would have opinions about.`;
 
 const EXCLUSION_RULES =
   `EXCLUDE an article if ANY of these apply:
