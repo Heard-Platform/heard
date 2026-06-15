@@ -69,7 +69,16 @@ function parseTransform(
   ) {
     return null;
   }
-  return { topic, statements };
+  // Mirrors ggwash-import-service.ts: force a single "?" on the topic, strip
+  // trailing punctuation off responses.
+  return {
+    topic: stripTrailingPunctuation(topic) + "?",
+    statements: statements.map(stripTrailingPunctuation),
+  };
+}
+
+function stripTrailingPunctuation(text: string): string {
+  return text.replace(/[.!?]+$/, "").trim();
 }
 
 // --- paths + env ------------------------------------------------------------

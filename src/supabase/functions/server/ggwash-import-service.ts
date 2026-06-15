@@ -237,7 +237,16 @@ export function parseTransform(
   ) {
     return null;
   }
-  return { topic, statements };
+  // Normalize punctuation deterministically — the LLM is unreliable here. The
+  // topic is a question, so force a single trailing "?"; responses carry none.
+  return {
+    topic: stripTrailingPunctuation(topic) + "?",
+    statements: statements.map(stripTrailingPunctuation),
+  };
+}
+
+function stripTrailingPunctuation(text: string): string {
+  return text.replace(/[.!?]+$/, "").trim();
 }
 
 function logSuccess(

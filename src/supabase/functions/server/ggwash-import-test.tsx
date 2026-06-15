@@ -124,6 +124,21 @@ describe("parseTransform", () => {
       null,
     );
   });
+  it("forces a single ? on the topic and strips trailing punctuation from responses", () => {
+    const parsed = parseTransform(
+      "What about DC bikes\nGreat for quick trips!\nToo many on sidewalks.\nNot safe enough yet",
+    );
+    assert(parsed !== null);
+    assertEquals(parsed!.topic, "What about DC bikes?");
+    assertEquals(parsed!.statements, [
+      "Great for quick trips",
+      "Too many on sidewalks",
+      "Not safe enough yet",
+    ]);
+  });
+  it("does not double the question mark when the topic already ends with one", () => {
+    assertEquals(parseTransform("Is DC ready?\na\nb")!.topic, "Is DC ready?");
+  });
 });
 
 describe("isRoundupTitle", () => {

@@ -85,7 +85,7 @@ const RESPONSE_RULES =
 - Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
 - Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
 - Randomize the order of the responses; do not always put the unpopular one last.
-- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).`;
+- No quotation marks. No exclamation marks or question marks anywhere, and no punctuation at the end of a response — write plainly even when the opinion is excited (e.g. "Great for quick trips around the city", not "Great! Quick trips, love it!").`;
 
 export function makeTransformPromptFromGGWashArticle(
   article: GGWashArticle,
@@ -104,7 +104,10 @@ Article title: "${article.title}"
 Article body: "${article.body}"
 
 BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "${LLM_ERROR_SENTINEL}" and stop. Do not generate a topic or responses:
-- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
+- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a link-roundup column such as "Breakfast links" or "National links", or any other multi-link roundup).
+- The article is a call to action that urges readers to take a specific civic action — vote for or endorse a particular candidate or slate, sign a petition, attend a rally or meeting, donate, or contact officials. (An op-ed that merely argues a position or proposes a policy is NOT a call to action — that is good debate material; keep it.)
+- The article is a game, puzzle, quiz, crossword, or word game.
+- The article is primarily a photo, photo essay, gallery, or "Photo Friday"-style image post with little discussable text.
 - The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
 - The article frames marginalized or vulnerable groups in opposition to each other.
 - The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
@@ -113,6 +116,7 @@ Topic rules:
 - One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
 - The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
 - Keep the topic about DC.
+- The topic is a question: end it with a single question mark. (The no-punctuation rule below applies only to the responses, never to the topic.)
 
 ${RESPONSE_RULES}
 
@@ -124,7 +128,7 @@ Format: no blank lines, topic on line 1, then exactly 3 responses on the followi
 CRITICAL REMINDERS — you MUST follow these exactly:
 - Produce EXACTLY 3 response statements, each on its own line after the topic question.
 - Each response MUST be a STRICT MAX of 8 words.
-- ABSOLUTELY NO trailing punctuation and no quotation marks.
+- Each RESPONSE must have NO exclamation marks, question marks, end-of-line punctuation, or quotation marks. (The topic line is a question and MUST keep its question mark — this rule is only about the responses.)
 - No preambles like "I think" or "Honestly" — state the opinion directly.
 - No blank lines between the topic and the responses or between responses.`;
   }

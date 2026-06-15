@@ -1,6 +1,6 @@
 # GGWash importer — dry run
 
-_No posts were published. Generated 2026-06-14T22:39:08.349Z._
+_No posts were published. Generated 2026-06-15T18:42:39.667Z._
 
 ## Summary
 
@@ -27,15 +27,15 @@ The topic and seed statements that would be persisted this run — the first ran
 **Topic:**
 
 ~~~~
-Do new e-bike designs address core micromobility challenges in DC
+Are Lime's new e-bikes actually improving DC's micromobility accessibility?
 ~~~~
 
 **Seed statements (3):**
 
 ~~~~
-More accessible bikes mean more people will use them
-They still block sidewalks and create clutter
-Costs are still too high for everyday use
+They just block sidewalks more, another nuisance
+Love the step-through frame, makes riding easier
+Still too many scooters littering the streets
 ~~~~
 
 ## Stage 0 · Feed (10 articles)
@@ -224,7 +224,13 @@ Return ONLY JSON of the form {"ranked": [<indices>]}, listing the 0-based indice
 **Raw LLM response:**
 
 ~~~~
-{"ranked": [0, 7, 2]}
+{
+  "ranked": [
+    0,
+    7,
+    2
+  ]
+}
 ~~~~
 
 **Parsed ranking:**
@@ -242,12 +248,12 @@ The real flow: ranked candidates are transformed in order and the first valid re
 #### What Lime’s new e-bike says about the next challenge for micromobility in DC
 
 🟢 **would be published** (real run stops here)  
-candidate 0 · rank #1 · persona: _You use terms like 'centering,' 'equity,' and 'community-led.' You write with conviction, tend toward longer statements, and you are careful with your word choices._
+candidate 0 · rank #1 · persona: _you type like you talk, use slang, and are very online. lots of run-ons and no caps, occasionally throw in a 'lol' or 'idk' or 'literally.' you have strong opinions but short attention span. you never use a period at the end of a sentence unless it's necessary between sentences_
 
 **Transform prompt — system:**
 
 ~~~~
-You use terms like 'centering,' 'equity,' and 'community-led.' You write with conviction, tend toward longer statements, and you are careful with your word choices. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+you type like you talk, use slang, and are very online. lots of run-ons and no caps, occasionally throw in a 'lol' or 'idk' or 'literally.' you have strong opinions but short attention span. you never use a period at the end of a sentence unless it's necessary between sentences You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -280,7 +286,10 @@ We’re sharing this article through an advertising agreement; the content is fu
 Comment on this article"
 
 BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "Error" and stop. Do not generate a topic or responses:
-- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
+- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a link-roundup column such as "Breakfast links" or "National links", or any other multi-link roundup).
+- The article is a call to action that urges readers to take a specific civic action — vote for or endorse a particular candidate or slate, sign a petition, attend a rally or meeting, donate, or contact officials. (An op-ed that merely argues a position or proposes a policy is NOT a call to action — that is good debate material; keep it.)
+- The article is a game, puzzle, quiz, crossword, or word game.
+- The article is primarily a photo, photo essay, gallery, or "Photo Friday"-style image post with little discussable text.
 - The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
 - The article frames marginalized or vulnerable groups in opposition to each other.
 - The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
@@ -289,6 +298,7 @@ Topic rules:
 - One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
 - The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
 - Keep the topic about DC.
+- The topic is a question: end it with a single question mark. (The no-punctuation rule below applies only to the responses, never to the topic.)
 
 Response rules:
 - Imagine a specific kind of person (an enthusiast, a skeptic, someone with a bad experience) and write what they would say out loud to a friend, not what they would write in an essay.
@@ -299,14 +309,14 @@ Response rules:
 - Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
 - Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
 - Randomize the order of the responses; do not always put the unpopular one last.
-- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).
+- No quotation marks. No exclamation marks or question marks anywhere, and no punctuation at the end of a response — write plainly even when the opinion is excited (e.g. "Great for quick trips around the city", not "Great! Quick trips, love it!").
 
 Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.
 
 CRITICAL REMINDERS — you MUST follow these exactly:
 - Produce EXACTLY 3 response statements, each on its own line after the topic question.
 - Each response MUST be a STRICT MAX of 8 words.
-- ABSOLUTELY NO trailing punctuation and no quotation marks.
+- Each RESPONSE must have NO exclamation marks, question marks, end-of-line punctuation, or quotation marks. (The topic line is a question and MUST keep its question mark — this rule is only about the responses.)
 - No preambles like "I think" or "Honestly" — state the opinion directly.
 - No blank lines between the topic and the responses or between responses.
 ~~~~
@@ -314,10 +324,10 @@ CRITICAL REMINDERS — you MUST follow these exactly:
 **Raw LLM response:**
 
 ~~~~
-Do new e-bike designs address core micromobility challenges in DC
-More accessible bikes mean more people will use them
-They still block sidewalks and create clutter
-Costs are still too high for everyday use
+Are Lime's new e-bikes actually improving DC's micromobility accessibility
+They just block sidewalks more, another nuisance
+Love the step-through frame, makes riding easier
+Still too many scooters littering the streets
 ~~~~
 
 **Resulting Heard post — topic + seed statements:**
@@ -326,23 +336,23 @@ Costs are still too high for everyday use
 
 `https://ggwash.org/images/made/images/posts/_resized/Copy_of_LimeBike_3_800_534.png`
 
-> **Do new e-bike designs address core micromobility challenges in DC**
+> **Are Lime's new e-bikes actually improving DC's micromobility accessibility?**
 >
-> - More accessible bikes mean more people will use them
-> - They still block sidewalks and create clutter
-> - Costs are still too high for everyday use
+> - They just block sidewalks more, another nuisance
+> - Love the step-through frame, makes riding easier
+> - Still too many scooters littering the streets
 
 ---
 
 #### Ward 7 deserves a Pennsylvania Avenue that works for everyone
 
 ☑️ valid · ranked #2, not chosen this run  
-candidate 7 · rank #2 · persona: _You Type With Weird Capitalization, use ... a lot ..., and sometimes go on tangents. You sign off with your name or 'just my 2 cents.' You do not use periods at the end of sentences._
+candidate 7 · rank #2 · persona: _You tend to over-qualify your statements ('I think what we really need to interrogate here is...'), write in longer paragraphs, and use words like 'nuanced,' 'discourse,' and 'frankly.'_
 
 **Transform prompt — system:**
 
 ~~~~
-You Type With Weird Capitalization, use ... a lot ..., and sometimes go on tangents. You sign off with your name or 'just my 2 cents.' You do not use periods at the end of sentences. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+You tend to over-qualify your statements ('I think what we really need to interrogate here is...'), write in longer paragraphs, and use words like 'nuanced,' 'discourse,' and 'frankly.' You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -375,7 +385,10 @@ Top image: Pennsylvania and Minnesota Avenues SE. Image from Google Maps.
 Comment on this article"
 
 BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "Error" and stop. Do not generate a topic or responses:
-- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
+- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a link-roundup column such as "Breakfast links" or "National links", or any other multi-link roundup).
+- The article is a call to action that urges readers to take a specific civic action — vote for or endorse a particular candidate or slate, sign a petition, attend a rally or meeting, donate, or contact officials. (An op-ed that merely argues a position or proposes a policy is NOT a call to action — that is good debate material; keep it.)
+- The article is a game, puzzle, quiz, crossword, or word game.
+- The article is primarily a photo, photo essay, gallery, or "Photo Friday"-style image post with little discussable text.
 - The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
 - The article frames marginalized or vulnerable groups in opposition to each other.
 - The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
@@ -384,6 +397,7 @@ Topic rules:
 - One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
 - The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
 - Keep the topic about DC.
+- The topic is a question: end it with a single question mark. (The no-punctuation rule below applies only to the responses, never to the topic.)
 
 Response rules:
 - Imagine a specific kind of person (an enthusiast, a skeptic, someone with a bad experience) and write what they would say out loud to a friend, not what they would write in an essay.
@@ -394,14 +408,14 @@ Response rules:
 - Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
 - Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
 - Randomize the order of the responses; do not always put the unpopular one last.
-- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).
+- No quotation marks. No exclamation marks or question marks anywhere, and no punctuation at the end of a response — write plainly even when the opinion is excited (e.g. "Great for quick trips around the city", not "Great! Quick trips, love it!").
 
 Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.
 
 CRITICAL REMINDERS — you MUST follow these exactly:
 - Produce EXACTLY 3 response statements, each on its own line after the topic question.
 - Each response MUST be a STRICT MAX of 8 words.
-- ABSOLUTELY NO trailing punctuation and no quotation marks.
+- Each RESPONSE must have NO exclamation marks, question marks, end-of-line punctuation, or quotation marks. (The topic line is a question and MUST keep its question mark — this rule is only about the responses.)
 - No preambles like "I think" or "Honestly" — state the opinion directly.
 - No blank lines between the topic and the responses or between responses.
 ~~~~
@@ -409,10 +423,10 @@ CRITICAL REMINDERS — you MUST follow these exactly:
 **Raw LLM response:**
 
 ~~~~
-Should DDOT prioritize community input for Ward 7 intersection safety
-DDOT needs to listen, 10 lanes is too many
-Safety is paramount, trust the experts on design
-Projects take forever, just build something already
+Should the Pennsylvania and Minnesota Avenue SE intersection be expanded to 10 lanes
+Expanding lanes only encourages more driving not safety
+DDOT is ignoring community needs and the area plan
+More lanes are needed for smoother traffic flow
 ~~~~
 
 **Resulting Heard post — topic + seed statements:**
@@ -421,23 +435,23 @@ Projects take forever, just build something already
 
 `https://ggwash.org/images/made/images/posts/_resized/Screenshot_2026-06-09_at_6.36.31 PM__800_562.png`
 
-> **Should DDOT prioritize community input for Ward 7 intersection safety**
+> **Should the Pennsylvania and Minnesota Avenue SE intersection be expanded to 10 lanes?**
 >
-> - DDOT needs to listen, 10 lanes is too many
-> - Safety is paramount, trust the experts on design
-> - Projects take forever, just build something already
+> - Expanding lanes only encourages more driving not safety
+> - DDOT is ignoring community needs and the area plan
+> - More lanes are needed for smoother traffic flow
 
 ---
 
 #### Washington, DC has a housing crisis. I know how to fix it
 
 ☑️ valid · ranked #3, not chosen this run  
-candidate 2 · rank #3 · persona: _You are a sarcastic millennial. You use dry humor and irony, write in lowercase sometimes, and pepper in phrases like 'cool cool cool' or 'totally fine.' You keep things short and a little cynical. you never use a period at the end of a sentence unless it's necessary between sentences_
+candidate 2 · rank #3 · persona: _You tend to over-qualify your statements ('I think what we really need to interrogate here is...'), write in longer paragraphs, and use words like 'nuanced,' 'discourse,' and 'frankly.'_
 
 **Transform prompt — system:**
 
 ~~~~
-You are a sarcastic millennial. You use dry humor and irony, write in lowercase sometimes, and pepper in phrases like 'cool cool cool' or 'totally fine.' You keep things short and a little cynical. you never use a period at the end of a sentence unless it's necessary between sentences You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+You tend to over-qualify your statements ('I think what we really need to interrogate here is...'), write in longer paragraphs, and use words like 'nuanced,' 'discourse,' and 'frankly.' You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -469,7 +483,10 @@ I was glad to see the current Council legalize single-stair apartment buildings 
 I will also reform District government, especially the Department of Housing and Community Development, so that public dollars produce more homes. I will require stronger scoring for projects that produce the most bedrooms per dollar, mark"
 
 BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "Error" and stop. Do not generate a topic or responses:
-- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
+- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a link-roundup column such as "Breakfast links" or "National links", or any other multi-link roundup).
+- The article is a call to action that urges readers to take a specific civic action — vote for or endorse a particular candidate or slate, sign a petition, attend a rally or meeting, donate, or contact officials. (An op-ed that merely argues a position or proposes a policy is NOT a call to action — that is good debate material; keep it.)
+- The article is a game, puzzle, quiz, crossword, or word game.
+- The article is primarily a photo, photo essay, gallery, or "Photo Friday"-style image post with little discussable text.
 - The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
 - The article frames marginalized or vulnerable groups in opposition to each other.
 - The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
@@ -478,6 +495,7 @@ Topic rules:
 - One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
 - The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
 - Keep the topic about DC.
+- The topic is a question: end it with a single question mark. (The no-punctuation rule below applies only to the responses, never to the topic.)
 
 Response rules:
 - Imagine a specific kind of person (an enthusiast, a skeptic, someone with a bad experience) and write what they would say out loud to a friend, not what they would write in an essay.
@@ -488,14 +506,14 @@ Response rules:
 - Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
 - Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
 - Randomize the order of the responses; do not always put the unpopular one last.
-- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).
+- No quotation marks. No exclamation marks or question marks anywhere, and no punctuation at the end of a response — write plainly even when the opinion is excited (e.g. "Great for quick trips around the city", not "Great! Quick trips, love it!").
 
 Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.
 
 CRITICAL REMINDERS — you MUST follow these exactly:
 - Produce EXACTLY 3 response statements, each on its own line after the topic question.
 - Each response MUST be a STRICT MAX of 8 words.
-- ABSOLUTELY NO trailing punctuation and no quotation marks.
+- Each RESPONSE must have NO exclamation marks, question marks, end-of-line punctuation, or quotation marks. (The topic line is a question and MUST keep its question mark — this rule is only about the responses.)
 - No preambles like "I think" or "Honestly" — state the opinion directly.
 - No blank lines between the topic and the responses or between responses.
 ~~~~
@@ -503,10 +521,10 @@ CRITICAL REMINDERS — you MUST follow these exactly:
 **Raw LLM response:**
 
 ~~~~
-Can DC actually fix its housing crisis
-More housing just means more luxury condos, totally fine
-The Comp Plan needs a total overhaul, cool cool cool
-Developers always win, regular folks get pushed out
+What do you make of this plan to fix DC's housing crisis?
+Finally someone is serious about building more homes
+This just sounds like deregulation benefiting developers
+We need more affordable housing, not just market-rate
 ~~~~
 
 **Resulting Heard post — topic + seed statements:**
@@ -515,11 +533,11 @@ Developers always win, regular folks get pushed out
 
 `https://ggwash.org/images/made/images/posts/_resized/53460505339_43b277d259_6k_800_533_90.jpg`
 
-> **Can DC actually fix its housing crisis**
+> **What do you make of this plan to fix DC's housing crisis?**
 >
-> - More housing just means more luxury condos, totally fine
-> - The Comp Plan needs a total overhaul, cool cool cool
-> - Developers always win, regular folks get pushed out
+> - Finally someone is serious about building more homes
+> - This just sounds like deregulation benefiting developers
+> - We need more affordable housing, not just market-rate
 
 ---
 
@@ -529,13 +547,13 @@ These passed the roundup filter but Stage 1 did **not** rank them, so the real i
 
 #### National links: Could cool(ing) bricks help with city heat?
 
-⚪ not selected by Stage 1 · would not be published  
-candidate 1 · not ranked · persona: _You are a sarcastic millennial. You use dry humor and irony, write in lowercase sometimes, and pepper in phrases like 'cool cool cool' or 'totally fine.' You keep things short and a little cynical. you never use a period at the end of a sentence unless it's necessary between sentences_
+🚫 not selected by Stage 1 · transform also rejected — LLM returned the "Error" sentinel (deemed unsuitable)  
+candidate 1 · not ranked · persona: _you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy_
 
 **Transform prompt — system:**
 
 ~~~~
-You are a sarcastic millennial. You use dry humor and irony, write in lowercase sometimes, and pepper in phrases like 'cool cool cool' or 'totally fine.' You keep things short and a little cynical. you never use a period at the end of a sentence unless it's necessary between sentences You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -558,7 +576,10 @@ This week on the Talking Headways podcast we’re joined by Jaime Benavides and 
 Comment on this article"
 
 BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "Error" and stop. Do not generate a topic or responses:
-- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
+- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a link-roundup column such as "Breakfast links" or "National links", or any other multi-link roundup).
+- The article is a call to action that urges readers to take a specific civic action — vote for or endorse a particular candidate or slate, sign a petition, attend a rally or meeting, donate, or contact officials. (An op-ed that merely argues a position or proposes a policy is NOT a call to action — that is good debate material; keep it.)
+- The article is a game, puzzle, quiz, crossword, or word game.
+- The article is primarily a photo, photo essay, gallery, or "Photo Friday"-style image post with little discussable text.
 - The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
 - The article frames marginalized or vulnerable groups in opposition to each other.
 - The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
@@ -567,6 +588,7 @@ Topic rules:
 - One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
 - The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
 - Keep the topic about DC.
+- The topic is a question: end it with a single question mark. (The no-punctuation rule below applies only to the responses, never to the topic.)
 
 Response rules:
 - Imagine a specific kind of person (an enthusiast, a skeptic, someone with a bad experience) and write what they would say out loud to a friend, not what they would write in an essay.
@@ -577,14 +599,14 @@ Response rules:
 - Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
 - Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
 - Randomize the order of the responses; do not always put the unpopular one last.
-- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).
+- No quotation marks. No exclamation marks or question marks anywhere, and no punctuation at the end of a response — write plainly even when the opinion is excited (e.g. "Great for quick trips around the city", not "Great! Quick trips, love it!").
 
 Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.
 
 CRITICAL REMINDERS — you MUST follow these exactly:
 - Produce EXACTLY 3 response statements, each on its own line after the topic question.
 - Each response MUST be a STRICT MAX of 8 words.
-- ABSOLUTELY NO trailing punctuation and no quotation marks.
+- Each RESPONSE must have NO exclamation marks, question marks, end-of-line punctuation, or quotation marks. (The topic line is a question and MUST keep its question mark — this rule is only about the responses.)
 - No preambles like "I think" or "Honestly" — state the opinion directly.
 - No blank lines between the topic and the responses or between responses.
 ~~~~
@@ -592,35 +614,20 @@ CRITICAL REMINDERS — you MUST follow these exactly:
 **Raw LLM response:**
 
 ~~~~
-could cooling bricks actually make dc summers tolerable
-sounds like another climate change band-aid
-totally fine with anything that reduces humidity
-they'll probably just make the bricks expensive
+Error
 ~~~~
-
-**Resulting Heard post (exploratory) — topic + seed statements:**
-
-![image](<https://ggwash.org/images/made/images/posts/_resized/36063218203_e51c86b911_c_799_533_90.jpg>)
-
-`https://ggwash.org/images/made/images/posts/_resized/36063218203_e51c86b911_c_799_533_90.jpg`
-
-> **could cooling bricks actually make dc summers tolerable**
->
-> - sounds like another climate change band-aid
-> - totally fine with anything that reduces humidity
-> - they'll probably just make the bricks expensive
 
 ---
 
 #### Photo Friday: Approaching rainbows
 
-⚪ not selected by Stage 1 · would not be published  
-candidate 3 · not ranked · persona: _you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy_
+🚫 not selected by Stage 1 · transform also rejected — LLM returned the "Error" sentinel (deemed unsuitable)  
+candidate 3 · not ranked · persona: _You are a sarcastic millennial. You use dry humor and irony, write in lowercase sometimes, and pepper in phrases like 'cool cool cool' or 'totally fine.' You keep things short and a little cynical. you never use a period at the end of a sentence unless it's necessary between sentences_
 
 **Transform prompt — system:**
 
 ~~~~
-you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+You are a sarcastic millennial. You use dry humor and irony, write in lowercase sometimes, and pepper in phrases like 'cool cool cool' or 'totally fine.' You keep things short and a little cynical. you never use a period at the end of a sentence unless it's necessary between sentences You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -653,7 +660,10 @@ Top image: Rainbow over Takoma on Wednesday, June 10. Image by BeyondDC licensed
 Comment on this article"
 
 BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "Error" and stop. Do not generate a topic or responses:
-- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
+- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a link-roundup column such as "Breakfast links" or "National links", or any other multi-link roundup).
+- The article is a call to action that urges readers to take a specific civic action — vote for or endorse a particular candidate or slate, sign a petition, attend a rally or meeting, donate, or contact officials. (An op-ed that merely argues a position or proposes a policy is NOT a call to action — that is good debate material; keep it.)
+- The article is a game, puzzle, quiz, crossword, or word game.
+- The article is primarily a photo, photo essay, gallery, or "Photo Friday"-style image post with little discussable text.
 - The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
 - The article frames marginalized or vulnerable groups in opposition to each other.
 - The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
@@ -662,6 +672,7 @@ Topic rules:
 - One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
 - The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
 - Keep the topic about DC.
+- The topic is a question: end it with a single question mark. (The no-punctuation rule below applies only to the responses, never to the topic.)
 
 Response rules:
 - Imagine a specific kind of person (an enthusiast, a skeptic, someone with a bad experience) and write what they would say out loud to a friend, not what they would write in an essay.
@@ -672,14 +683,14 @@ Response rules:
 - Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
 - Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
 - Randomize the order of the responses; do not always put the unpopular one last.
-- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).
+- No quotation marks. No exclamation marks or question marks anywhere, and no punctuation at the end of a response — write plainly even when the opinion is excited (e.g. "Great for quick trips around the city", not "Great! Quick trips, love it!").
 
 Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.
 
 CRITICAL REMINDERS — you MUST follow these exactly:
 - Produce EXACTLY 3 response statements, each on its own line after the topic question.
 - Each response MUST be a STRICT MAX of 8 words.
-- ABSOLUTELY NO trailing punctuation and no quotation marks.
+- Each RESPONSE must have NO exclamation marks, question marks, end-of-line punctuation, or quotation marks. (The topic line is a question and MUST keep its question mark — this rule is only about the responses.)
 - No preambles like "I think" or "Honestly" — state the opinion directly.
 - No blank lines between the topic and the responses or between responses.
 ~~~~
@@ -687,35 +698,20 @@ CRITICAL REMINDERS — you MUST follow these exactly:
 **Raw LLM response:**
 
 ~~~~
-what do u think abt pride month in dc
-love seeing all the rainbows around dc
-it's just a corporate cash grab now
-too many road closures for parades
+Error
 ~~~~
-
-**Resulting Heard post (exploratory) — topic + seed statements:**
-
-![image](<https://ggwash.org/images/made/images/posts/_resized/20260610_174306_800_600_90.jpg>)
-
-`https://ggwash.org/images/made/images/posts/_resized/20260610_174306_800_600_90.jpg`
-
-> **what do u think abt pride month in dc**
->
-> - love seeing all the rainbows around dc
-> - it's just a corporate cash grab now
-> - too many road closures for parades
 
 ---
 
 #### Vote for our endorsed candidates in DC and Maryland
 
 🚫 not selected by Stage 1 · transform also rejected — LLM returned the "Error" sentinel (deemed unsuitable)  
-candidate 4 · not ranked · persona: _You keep it short and blunt, don't mince words, and are skeptical of change. occasional typo, no frills, just your honest take._
+candidate 4 · not ranked · persona: _you type like you talk, use slang, and are very online. lots of run-ons and no caps, occasionally throw in a 'lol' or 'idk' or 'literally.' you have strong opinions but short attention span. you never use a period at the end of a sentence unless it's necessary between sentences_
 
 **Transform prompt — system:**
 
 ~~~~
-You keep it short and blunt, don't mince words, and are skeptical of change. occasional typo, no frills, just your honest take. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+you type like you talk, use slang, and are very online. lots of run-ons and no caps, occasionally throw in a 'lol' or 'idk' or 'literally.' you have strong opinions but short attention span. you never use a period at the end of a sentence unless it's necessary between sentences You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -849,7 +845,10 @@ Janeese Lewis George for DC mayor
 “The most affordable and efficient transit policy starts with a smart land use policy. I will set a goal to ensure every resident can access n"
 
 BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "Error" and stop. Do not generate a topic or responses:
-- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
+- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a link-roundup column such as "Breakfast links" or "National links", or any other multi-link roundup).
+- The article is a call to action that urges readers to take a specific civic action — vote for or endorse a particular candidate or slate, sign a petition, attend a rally or meeting, donate, or contact officials. (An op-ed that merely argues a position or proposes a policy is NOT a call to action — that is good debate material; keep it.)
+- The article is a game, puzzle, quiz, crossword, or word game.
+- The article is primarily a photo, photo essay, gallery, or "Photo Friday"-style image post with little discussable text.
 - The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
 - The article frames marginalized or vulnerable groups in opposition to each other.
 - The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
@@ -858,6 +857,7 @@ Topic rules:
 - One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
 - The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
 - Keep the topic about DC.
+- The topic is a question: end it with a single question mark. (The no-punctuation rule below applies only to the responses, never to the topic.)
 
 Response rules:
 - Imagine a specific kind of person (an enthusiast, a skeptic, someone with a bad experience) and write what they would say out loud to a friend, not what they would write in an essay.
@@ -868,14 +868,14 @@ Response rules:
 - Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
 - Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
 - Randomize the order of the responses; do not always put the unpopular one last.
-- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).
+- No quotation marks. No exclamation marks or question marks anywhere, and no punctuation at the end of a response — write plainly even when the opinion is excited (e.g. "Great for quick trips around the city", not "Great! Quick trips, love it!").
 
 Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.
 
 CRITICAL REMINDERS — you MUST follow these exactly:
 - Produce EXACTLY 3 response statements, each on its own line after the topic question.
 - Each response MUST be a STRICT MAX of 8 words.
-- ABSOLUTELY NO trailing punctuation and no quotation marks.
+- Each RESPONSE must have NO exclamation marks, question marks, end-of-line punctuation, or quotation marks. (The topic line is a question and MUST keep its question mark — this rule is only about the responses.)
 - No preambles like "I think" or "Honestly" — state the opinion directly.
 - No blank lines between the topic and the responses or between responses.
 ~~~~
@@ -891,12 +891,12 @@ Error
 #### Play GGWash Junctions weekly word puzzle #50
 
 🚫 not selected by Stage 1 · transform also rejected — LLM returned the "Error" sentinel (deemed unsuitable)  
-candidate 5 · not ranked · persona: _Your thoughts trail off sometimes or jump around, you make small typos bc you're typing fast, and you sometimes forget to finish a sentance. You care a lot about safety and community._
+candidate 5 · not ranked · persona: _you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy_
 
 **Transform prompt — system:**
 
 ~~~~
-Your thoughts trail off sometimes or jump around, you make small typos bc you're typing fast, and you sometimes forget to finish a sentance. You care a lot about safety and community. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -932,7 +932,10 @@ Top image: GGWash Junctions #50. Click to play!
 Comment on this article"
 
 BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "Error" and stop. Do not generate a topic or responses:
-- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
+- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a link-roundup column such as "Breakfast links" or "National links", or any other multi-link roundup).
+- The article is a call to action that urges readers to take a specific civic action — vote for or endorse a particular candidate or slate, sign a petition, attend a rally or meeting, donate, or contact officials. (An op-ed that merely argues a position or proposes a policy is NOT a call to action — that is good debate material; keep it.)
+- The article is a game, puzzle, quiz, crossword, or word game.
+- The article is primarily a photo, photo essay, gallery, or "Photo Friday"-style image post with little discussable text.
 - The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
 - The article frames marginalized or vulnerable groups in opposition to each other.
 - The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
@@ -941,6 +944,7 @@ Topic rules:
 - One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
 - The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
 - Keep the topic about DC.
+- The topic is a question: end it with a single question mark. (The no-punctuation rule below applies only to the responses, never to the topic.)
 
 Response rules:
 - Imagine a specific kind of person (an enthusiast, a skeptic, someone with a bad experience) and write what they would say out loud to a friend, not what they would write in an essay.
@@ -951,14 +955,14 @@ Response rules:
 - Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
 - Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
 - Randomize the order of the responses; do not always put the unpopular one last.
-- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).
+- No quotation marks. No exclamation marks or question marks anywhere, and no punctuation at the end of a response — write plainly even when the opinion is excited (e.g. "Great for quick trips around the city", not "Great! Quick trips, love it!").
 
 Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.
 
 CRITICAL REMINDERS — you MUST follow these exactly:
 - Produce EXACTLY 3 response statements, each on its own line after the topic question.
 - Each response MUST be a STRICT MAX of 8 words.
-- ABSOLUTELY NO trailing punctuation and no quotation marks.
+- Each RESPONSE must have NO exclamation marks, question marks, end-of-line punctuation, or quotation marks. (The topic line is a question and MUST keep its question mark — this rule is only about the responses.)
 - No preambles like "I think" or "Honestly" — state the opinion directly.
 - No blank lines between the topic and the responses or between responses.
 ~~~~
@@ -973,13 +977,13 @@ Error
 
 #### Do Something #122: Everybody’s got that person
 
-⚪ not selected by Stage 1 · would not be published  
-candidate 6 · not ranked · persona: _You Love Capitalizing Things For Emphasis and use a lot of exclamation points!! You're very into community events and keeping the neighborhood nice._
+🚫 not selected by Stage 1 · transform also rejected — LLM returned the "Error" sentinel (deemed unsuitable)  
+candidate 6 · not ranked · persona: _You keep it short and blunt, don't mince words, and are skeptical of change. occasional typo, no frills, just your honest take._
 
 **Transform prompt — system:**
 
 ~~~~
-You Love Capitalizing Things For Emphasis and use a lot of exclamation points!! You're very into community events and keeping the neighborhood nice. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
+You keep it short and blunt, don't mince words, and are skeptical of change. occasional typo, no frills, just your honest take. You write concisely. If the article cannot be turned into a good DC discussion, your entire response must be only the word "Error" — no topic, no responses, nothing else.
 ~~~~
 
 **Transform prompt — user:**
@@ -1013,7 +1017,10 @@ Top image: Image by Dan Reed.
 Comment on this article"
 
 BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only the word "Error" and stop. Do not generate a topic or responses:
-- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a "Breakfast links" / multi-link roundup).
+- The article is benign or purely informational with nothing to debate (a staff or hiring announcement, an intern introduction, a routine "breaks ground" or project-update notice, an award notice, an event listing, or a link-roundup column such as "Breakfast links" or "National links", or any other multi-link roundup).
+- The article is a call to action that urges readers to take a specific civic action — vote for or endorse a particular candidate or slate, sign a petition, attend a rally or meeting, donate, or contact officials. (An op-ed that merely argues a position or proposes a policy is NOT a call to action — that is good debate material; keep it.)
+- The article is a game, puzzle, quiz, crossword, or word game.
+- The article is primarily a photo, photo essay, gallery, or "Photo Friday"-style image post with little discussable text.
 - The article is not focused on the District of Columbia itself — it is primarily about Virginia or Maryland, or it mixes DC with the Maryland or Virginia suburbs.
 - The article frames marginalized or vulnerable groups in opposition to each other.
 - The article dismisses, minimizes, or misrepresents a recognized medical or psychological condition.
@@ -1022,6 +1029,7 @@ Topic rules:
 - One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
 - The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
 - Keep the topic about DC.
+- The topic is a question: end it with a single question mark. (The no-punctuation rule below applies only to the responses, never to the topic.)
 
 Response rules:
 - Imagine a specific kind of person (an enthusiast, a skeptic, someone with a bad experience) and write what they would say out loud to a friend, not what they would write in an essay.
@@ -1032,14 +1040,14 @@ Response rules:
 - Each response must directly answer the topic and be a complete thought, never trailing off with ellipses.
 - Cover a range of viewpoints, including at least one unpopular or minority opinion that a real person might genuinely hold.
 - Randomize the order of the responses; do not always put the unpopular one last.
-- No quotation marks and no trailing punctuation of any kind (no periods, exclamation marks, or question marks).
+- No quotation marks. No exclamation marks or question marks anywhere, and no punctuation at the end of a response — write plainly even when the opinion is excited (e.g. "Great for quick trips around the city", not "Great! Quick trips, love it!").
 
 Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.
 
 CRITICAL REMINDERS — you MUST follow these exactly:
 - Produce EXACTLY 3 response statements, each on its own line after the topic question.
 - Each response MUST be a STRICT MAX of 8 words.
-- ABSOLUTELY NO trailing punctuation and no quotation marks.
+- Each RESPONSE must have NO exclamation marks, question marks, end-of-line punctuation, or quotation marks. (The topic line is a question and MUST keep its question mark — this rule is only about the responses.)
 - No preambles like "I think" or "Honestly" — state the opinion directly.
 - No blank lines between the topic and the responses or between responses.
 ~~~~
@@ -1047,22 +1055,7 @@ CRITICAL REMINDERS — you MUST follow these exactly:
 **Raw LLM response:**
 
 ~~~~
-What do you make of the Vision Zero happy hour
-Great way to meet other safe street advocates
-Another happy hour, still no real change
-Glad to see ANCs getting involved, finally
+Error
 ~~~~
-
-**Resulting Heard post (exploratory) — topic + seed statements:**
-
-![image](<https://ggwash.org/images/made/images/posts/_resized/do_something_june_8_800_451_90.jpg>)
-
-`https://ggwash.org/images/made/images/posts/_resized/do_something_june_8_800_451_90.jpg`
-
-> **What do you make of the Vision Zero happy hour**
->
-> - Great way to meet other safe street advocates
-> - Another happy hour, still no real change
-> - Glad to see ANCs getting involved, finally
 
 ---
