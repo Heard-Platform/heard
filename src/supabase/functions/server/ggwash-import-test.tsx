@@ -172,8 +172,6 @@ describe("extractFirstImageUrl", () => {
   });
 });
 
-// Networked checks against the live feed + LLM. Gated so the default test run
-// stays offline and free. Enable with RUN_GGWASH_LLM_TESTS=1.
 if (process.env.RUN_GGWASH_LLM_TESTS === "1") {
   describe("GGWash end-to-end (live feed + LLM)", () => {
     it("fetches, selects, and transforms", async () => {

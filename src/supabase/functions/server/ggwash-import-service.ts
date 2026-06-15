@@ -54,9 +54,6 @@ export class GGWashImporter extends EnrichmentService {
     return { posted, considered: candidates.length, skipped };
   }
 
-  // Stores a record for every freshly scraped article (for later review of the
-  // LLM's choices) and returns the ones still eligible for selection: anything
-  // never attempted, i.e. status "scraped".
   private async recordAndCollectCandidates(
     articles: GGWashArticle[],
   ): Promise<GGWashArticle[]> {
@@ -87,16 +84,12 @@ export class GGWashImporter extends EnrichmentService {
     return parseSelectionResponse(raw, candidates.length);
   }
 
-  // Marks the article processed BEFORE the transform call (at-most-once: a
-  // crash or double-fire can never re-attempt it), then transforms and, on
-  // success, publishes a room with the article's image hotlinked.
   private async attemptPublish(
     article: GGWashArticle,
     rank: number,
   ): Promise<boolean> {
-    // Guaranteed present: recordAndCollectCandidates saved a record for every
-    // candidate it returned.
     const record = (await getGGWashArticle(article.guid))!;
+    // Mark as attempted BEFORE the transform, so a crash or double-fire can never re-post this article (at-most-once).
     await markAttempting(record, rank);
 
     const prompt = makeTransformPromptFromGGWashArticle(article, this.provider);
@@ -182,8 +175,6 @@ function toScrapedRecord(article: GGWashArticle): GGWashArticleRecord {
   };
 }
 
-// Record state transitions (mutate + persist). Marking happens BEFORE the
-// transform call so a crash or double-fire can never re-attempt the article.
 async function markAttempting(
   record: GGWashArticleRecord,
   rank: number,
@@ -237,12 +228,14 @@ export function parseTransform(
   ) {
     return null;
   }
-  // Normalize punctuation deterministically — the LLM is unreliable here. The
-  // topic is a question, so force a single trailing "?"; responses carry none.
   return {
-    topic: stripTrailingPunctuation(topic) + "?",
+    topic: toQuestion(topic),
     statements: statements.map(stripTrailingPunctuation),
   };
+}
+
+function toQuestion(text: string): string {
+  return stripTrailingPunctuation(text) + "?";
 }
 
 function stripTrailingPunctuation(text: string): string {

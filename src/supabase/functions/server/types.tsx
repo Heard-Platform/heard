@@ -314,18 +314,18 @@ export type AiPrompt = {
 
 export interface GGWashArticle {
   title: string;
-  body: string; // HTML-stripped, capped to MAX_ARTICLE_CHARS
+  body: string;
   url: string;
-  guid: string; // RSS <guid> permalink; the article-store key
-  imageUrl?: string; // first <img> in the article HTML, hotlinked onto the post
+  guid: string;
+  imageUrl?: string;
   publishedAt: number;
 }
 
 export type GGWashArticleStatus =
-  | "scraped" // fetched, not yet attempted; eligible for selection
-  | "attempting" // committed to an attempt (marked before transform; at-most-once)
-  | "published" // became a Heard post
-  | "rejected"; // transform returned Error or invalid output
+  | "scraped"
+  | "attempting"
+  | "published"
+  | "rejected";
 
 export interface GGWashArticleRecord {
   guid: string;
@@ -334,9 +334,9 @@ export interface GGWashArticleRecord {
   imageUrl?: string;
   publishedAt: number;
   scrapedAt: number;
-  bodyExcerpt: string; // trimmed body kept for reviewing the LLM's choices
+  bodyExcerpt: string;
   status: GGWashArticleStatus;
-  rank?: number; // rank the selection gave it on the run that attempted it
+  rank?: number;
   generatedTopic?: string;
   generatedStatements?: string[];
   publishedRoomId?: string;

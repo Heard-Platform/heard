@@ -1,29 +1,3 @@
-/**
- * GGWash importer — DRY RUN harness (no publishing).
- *
- * Runs the real two-stage flow against the live feed + LLM and writes a Markdown
- * report, but never calls createRoom/saveStatement, so nothing is published and
- * no DB is touched.
- *
- * It imports the REAL prompt + scraper code from the server, so editing
- *   ../../src/supabase/functions/server/ggwash-prompt-utils.ts
- * and re-running shows exactly how a prompt change affects each stage.
- *
- * Run (from the repo root):
- *   deno run -A --node-modules-dir=auto --no-lock research/ggwash-importer/dry-run.ts
- *
- * Keys are read from the repo-root .env (research/ggwash-importer/.env overrides
- * it). Without a key it still fetches the feed and renders the articles, images,
- * and the exact prompts — only the LLM responses are blank.
- *
- * Knobs (env, settable in .env):
- *   GEMINI_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY  — provider key
- *   LLM_PROVIDER          — gemini (default) | anthropic | openai
- *   GGWASH_REFRESH=1      — re-fetch the live feed (otherwise reuse the cache)
- *   GGWASH_PERSONA="..."  — pin the transform persona (default: random per call)
- *   GGWASH_TRANSFORM_LIMIT=N — transform only the top N ranked (default: all)
- *   GGWASH_SKIP_UNSELECTED=1 — skip transforming the candidates Stage 1 didn't rank
- */
 import { fromFileUrl } from "jsr:@std/path";
 import { load } from "jsr:@std/dotenv";
 import process from "node:process";
@@ -48,7 +22,6 @@ import { LlmClient } from "../../src/supabase/functions/server/llm-client.ts";
 import { getRandomPersona } from "../../src/supabase/functions/server/personas.tsx";
 import { AiPrompt, GGWashArticle } from "../../src/supabase/functions/server/types.tsx";
 
-// --- statement-count gate, mirrored from ggwash-import-service.ts -----------
 const MIN_STATEMENTS = 2;
 const MAX_STATEMENTS = 3;
 
@@ -69,34 +42,32 @@ function parseTransform(
   ) {
     return null;
   }
-  // Mirrors ggwash-import-service.ts: force a single "?" on the topic, strip
-  // trailing punctuation off responses.
   return {
-    topic: stripTrailingPunctuation(topic) + "?",
+    topic: toQuestion(topic),
     statements: statements.map(stripTrailingPunctuation),
   };
+}
+
+function toQuestion(text: string): string {
+  return stripTrailingPunctuation(text) + "?";
 }
 
 function stripTrailingPunctuation(text: string): string {
   return text.replace(/[.!?]+$/, "").trim();
 }
 
-// --- paths + env ------------------------------------------------------------
 const here = (rel: string) => fromFileUrl(new URL(rel, import.meta.url));
 const FEED_CACHE = here("./dry-run-feed.json");
 const REPORT = here("./dry-run-report.md");
 
-// Load env keys. The research-folder .env (if present) takes precedence; the
-// repo-root .env supplies the rest. std dotenv does not overwrite already-set
-// vars, so loading local first gives it precedence over root.
 for (const envPath of [here("./.env"), here("../../.env")]) {
   try {
     await load({ envPath, export: true });
   } catch {
-    // missing/unreadable .env — ignore and try the next.
+    continue;
   }
 }
-// Disable the LLM client's fire-and-forget DB usage logging.
+// "test" makes the LLM client skip its fire-and-forget DB usage-logging (there is no DB here).
 process.env.NODE_ENV = "test";
 
 const refreshFeed = process.env.GGWASH_REFRESH === "1";
@@ -107,14 +78,12 @@ const PROVIDER_MODEL: Record<LlmProvider, string> = {
   anthropic: "(see anthropic-client.ts)",
   openai: "(see openai-client.ts)",
 };
-// Display-only mirrors of the publish constants in ggwash-import-service.ts.
 const POST_SUBHEARD = "washington-dc";
 const POST_AUTHOR = "enrichment-service";
 
-// --- captured shapes for the report -----------------------------------------
 interface TransformCapture {
   candidateIndex: number;
-  selectionRank: number | null; // Stage 1 rank position, or null if not selected
+  selectionRank: number | null;
   article: GGWashArticle;
   persona: string;
   prompt: AiPrompt;
@@ -138,7 +107,6 @@ interface ReportData {
 }
 
 async function main() {
-  // 1. Feed: reuse the cache so prompt tweaks compare against identical inputs.
   let articles: GGWashArticle[] | undefined;
   let feedSource = "cache";
   if (!refreshFeed) {
@@ -157,16 +125,15 @@ async function main() {
     console.log(`Using cached feed (${articles.length} articles). GGWASH_REFRESH=1 to refetch.`);
   }
 
-  // 2. Partition exactly like recordAndCollectCandidates (minus the KV dedup,
-  //    which a dry run has no store for): roundups auto-rejected, rest eligible.
   const roundups = articles.filter((a) => isRoundupTitle(a.title));
   const candidates = articles.filter((a) => !isRoundupTitle(a.title));
 
-  // 3. LLM client (optional — render prompts even with no key).
   let provider: LlmProvider = "gemini";
   try {
     provider = getLlmProvider();
-  } catch { /* keep default for display */ }
+  } catch {
+    provider = "gemini";
+  }
   let client: LlmClient | null = null;
   let clientError: string | null = null;
   try {
@@ -176,7 +143,6 @@ async function main() {
     console.warn(`\n⚠  No LLM client: ${clientError}\n   Rendering feed + prompts only.\n`);
   }
 
-  // 4. Stage 1 — selection.
   const selectionPrompt = makeGGWashSelectionPrompt(candidates);
   let rawSelection: string | null = null;
   let ranked: number[] = [];
@@ -193,10 +159,6 @@ async function main() {
     }
   }
 
-  // 5. Stage 2 — transform. The real flow only transforms ranked candidates and
-  //    stops at the first valid one; we additionally transform the candidates
-  //    Stage 1 did NOT rank, purely to show what they would have become
-  //    (disable with GGWASH_SKIP_UNSELECTED=1).
   const rankedLimit = Number.isFinite(transformLimitRaw) && transformLimitRaw > 0
     ? transformLimitRaw
     : ranked.length;
@@ -243,7 +205,6 @@ async function main() {
   };
 
   const transforms: TransformCapture[] = [];
-  // 5a. Ranked candidates (real flow): first valid one is the would-be post.
   let publishedYet = false;
   for (let pos = 0; pos < ranked.length && pos < rankedLimit; pos++) {
     const cap = await transformArticle(
@@ -257,7 +218,6 @@ async function main() {
     }
     transforms.push(cap);
   }
-  // 5b. Candidates Stage 1 did not rank (exploratory; never published).
   const includeUnselected = client !== null &&
     process.env.GGWASH_SKIP_UNSELECTED !== "1";
   if (includeUnselected) {
@@ -272,7 +232,6 @@ async function main() {
     }
   }
 
-  // 6. Render.
   const md = renderMarkdown({
     feedSource,
     provider,
@@ -292,22 +251,16 @@ async function main() {
   }
 }
 
-// --- Markdown rendering -----------------------------------------------------
-// Escape the few characters that would break inline Markdown (headings, list
-// items, table cells, blockquotes). Code-fenced content is left untouched.
 function esc(s: string): string {
   return s.replace(/([\\`*_|<>[\]])/g, "\\$1");
 }
 
-// 4-tilde fence so any backticks (or ``` runs) inside prompts/responses are safe.
 function fence(s: string): string {
   return "~~~~\n" + s.replace(/\r/g, "") + "\n~~~~";
 }
 
 function image(url: string | undefined): string {
   if (!url) return "_no image extracted from the article HTML_";
-  // Angle-bracket form tolerates the %20 the scraper leaves in some URLs; the
-  // backtick line keeps the URL visible even if the hotlink is blocked.
   return `![image](<${url}>)\n\n\`${url}\``;
 }
 
@@ -380,8 +333,6 @@ function summarySection(d: ReportData): string[] {
   return out;
 }
 
-// One self-contained row per article: everything that happened to it, no shared
-// boilerplate repeated.
 function articlesSection(d: ReportData): string[] {
   const out: string[] = [];
   out.push(`## Articles — one row per article (${d.articles.length})`, ``);
@@ -469,8 +420,6 @@ function articleCard(
   return out;
 }
 
-// Shared prompts shown once (identical across articles), so the per-article rows
-// stay focused on each article's own inputs and results.
 function appendixSection(d: ReportData): string[] {
   const out: string[] = [];
   const p = (s = "") => out.push(s);

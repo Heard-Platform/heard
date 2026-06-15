@@ -1,6 +1,6 @@
 # GGWash importer — dry run
 
-_No posts were published. Generated 2026-06-15T19:06:41.489Z._
+_No posts were published. Generated 2026-06-15T19:53:00.619Z._
 
 ## Summary
 
@@ -22,20 +22,20 @@ The shared prompts (the transform prompt is identical for every article; the Sta
 
 🟢 would be posted this run · ☑️ valid but ranked lower · ⚪ valid but not selected by Stage 1
 
-**🟢 Do Lime's new e-bikes truly improve accessibility in DC?** — _would be posted_
-- These new bikes look much more comfortable to ride
-- Accessibility is about more than just bike design
-- Still worried about safety riding bikes on DC streets
+**🟢 What does Lime's new e-bike mean for accessibility in DC?** — _would be posted_
+- These new bikes are so much easier to use
+- Still too many bikes blocking sidewalks everywhere
+- They're great for connecting to Metro
 
-**☑️ what do you think of this plan to fix dc's housing crisis?**
-- we need more housing everywhere rly
-- it sounds like typical developer-led gentrification
-- streamlining permits and building is crucial
+**☑️ What's the most impactful housing policy proposed in this article?**
+- Streamlining the Comp Plan is absolutely essential for growth
+- We need more focus on preserving existing affordable housing
+- Legalizing diverse housing types everywhere sounds promising
 
-**☑️ Should DDOT reconsider the Pennsylvania and Minnesota Avenue SE intersection design?**
-- It prioritizes drivers too much over residents
-- Safety is key; ten lanes are just too many
-- This project is long overdue, let's build it
+**☑️ Should DDOT proceed with the Pennsylvania Avenue intersection redesign?**
+- Ten lanes is too much for any neighborhood
+- DDOT knows best for traffic flow and safety
+- We need those bus and bike improvements NOW
 
 ## Articles — one row per article (10)
 
@@ -43,7 +43,7 @@ The shared prompts (the transform prompt is identical for every article; the Sta
 
 **🟢 WOULD BE PUBLISHED — the post that goes live this run**
 
-Fri, 12 Jun 2026 19:21:00 GMT · body 4517 chars · candidate #0 · Stage 1 rank #1 · persona: Your thoughts trail off sometimes or jump around, you make small typos bc you're typing fast, and you sometimes forget to finish a sentance. You care a lot about safety and community.
+Fri, 12 Jun 2026 19:21:00 GMT · body 4517 chars · candidate #0 · Stage 1 rank #1 · persona: You Love Capitalizing Things For Emphasis and use a lot of exclamation points!! You're very into community events and keeping the neighborhood nice.
 
 [article link](<https://ggwash.org/view/103797/what-limes-new-e-bike-says-about-the-next-challenge-for-micromobility-in-dc>)
 
@@ -82,18 +82,18 @@ Comment on this article
 
 **Raw transform response:**
 ~~~~
-Do Lime's new e-bikes truly improve accessibility in DC
-These new bikes look much more comfortable to ride
-Accessibility is about more than just bike design
-Still worried about safety riding bikes on DC streets
+What does Lime's new e-bike mean for accessibility in DC?
+These new bikes are so much easier to use!
+Still too many bikes blocking sidewalks everywhere.
+They're great for connecting to Metro!
 ~~~~
 
 **Resulting Heard post:**
-> **Do Lime's new e-bikes truly improve accessibility in DC?**
+> **What does Lime's new e-bike mean for accessibility in DC?**
 >
-> - These new bikes look much more comfortable to ride
-> - Accessibility is about more than just bike design
-> - Still worried about safety riding bikes on DC streets
+> - These new bikes are so much easier to use
+> - Still too many bikes blocking sidewalks everywhere
+> - They're great for connecting to Metro
 
 ---
 
@@ -101,7 +101,7 @@ Still worried about safety riding bikes on DC streets
 
 **🚫 transform returned no post — LLM returned the "Error" sentinel (deemed unsuitable)**
 
-Fri, 12 Jun 2026 17:30:00 GMT · body 3161 chars · candidate #1 · not ranked by Stage 1 · persona: You write informally, bluntly, sometimes missing words or using run-on sentences. You are skeptical of government and outsiders telling you what to do. You do not use periods at the end of sentences
+Fri, 12 Jun 2026 17:30:00 GMT · body 3161 chars · candidate #1 · not ranked by Stage 1 · persona: You Type With Weird Capitalization, use ... a lot ..., and sometimes go on tangents. You sign off with your name or 'just my 2 cents.' You do not use periods at the end of sentences.
 
 [article link](<https://ggwash.org/view/103800/national-links-can-cooling-bricks-help-with-summer-heat>)
 
@@ -139,7 +139,7 @@ Error
 
 **☑️ valid topic, ranked #2 but not first — not chosen this run**
 
-Fri, 12 Jun 2026 17:12:00 GMT · body 8000 chars · candidate #2 · Stage 1 rank #2 · persona: you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy
+Fri, 12 Jun 2026 17:12:00 GMT · body 8000 chars · candidate #2 · Stage 1 rank #2 · persona: You tend to over-qualify your statements ('I think what we really need to interrogate here is...'), write in longer paragraphs, and use words like 'nuanced,' 'discourse,' and 'frankly.'
 
 [article link](<https://ggwash.org/view/103817/washington-dc-has-a-housing-crisis-i-know-how-to-fix-it>)
 
@@ -177,18 +177,18 @@ I will also reform District government, especially the Department of Housing and
 
 **Raw transform response:**
 ~~~~
-what do you think of this plan to fix dc's housing crisis
-we need more housing everywhere rly
-it sounds like typical developer-led gentrification
-streamlining permits and building is crucial
+What's the most impactful housing policy proposed in this article?
+Streamlining the Comp Plan is absolutely essential for growth
+We need more focus on preserving existing affordable housing
+Legalizing diverse housing types everywhere sounds promising
 ~~~~
 
 **Resulting Heard post:**
-> **what do you think of this plan to fix dc's housing crisis?**
+> **What's the most impactful housing policy proposed in this article?**
 >
-> - we need more housing everywhere rly
-> - it sounds like typical developer-led gentrification
-> - streamlining permits and building is crucial
+> - Streamlining the Comp Plan is absolutely essential for growth
+> - We need more focus on preserving existing affordable housing
+> - Legalizing diverse housing types everywhere sounds promising
 
 ---
 
@@ -196,7 +196,7 @@ streamlining permits and building is crucial
 
 **🚫 transform returned no post — LLM returned the "Error" sentinel (deemed unsuitable)**
 
-Fri, 12 Jun 2026 16:46:00 GMT · body 1172 chars · candidate #3 · not ranked by Stage 1 · persona: You are friendly and emoji-adjacent in energy (but don't use emojis in text), write like you're chatting, and care a lot about kids, safety, and the neighborhood vibe.
+Fri, 12 Jun 2026 16:46:00 GMT · body 1172 chars · candidate #3 · not ranked by Stage 1 · persona: blunt and practical, you care about whether things actually work and cost money. short sentences, occasional typo, zero patience for bureaucracy or what you call 'red tape nonsense.' you rarely capitalize words.
 
 [article link](<https://ggwash.org/view/103803/photo-friday-approaching-rainbows>)
 
@@ -258,7 +258,7 @@ Fri, 12 Jun 2026 13:42:00 GMT · body 2782 chars · roundup (not a candidate)
 
 **🚫 transform returned no post — LLM returned the "Error" sentinel (deemed unsuitable)**
 
-Thu, 11 Jun 2026 19:02:00 GMT · body 8000 chars · candidate #4 · not ranked by Stage 1 · persona: blunt and practical, you care about whether things actually work and cost money. short sentences, occasional typo, zero patience for bureaucracy or what you call 'red tape nonsense.' you rarely capitalize words.
+Thu, 11 Jun 2026 19:02:00 GMT · body 8000 chars · candidate #4 · not ranked by Stage 1 · persona: you type like you talk, use slang, and are very online. lots of run-ons and no caps, occasionally throw in a 'lol' or 'idk' or 'literally.' you have strong opinions but short attention span. you never use a period at the end of a sentence unless it's necessary between sentences
 
 [article link](<https://ggwash.org/view/103759/vote-for-our-endorsed-candidates-in-dc-and-maryland>)
 
@@ -407,7 +407,7 @@ Error
 
 **🚫 transform returned no post — LLM returned the "Error" sentinel (deemed unsuitable)**
 
-Thu, 11 Jun 2026 16:15:00 GMT · body 2035 chars · candidate #5 · not ranked by Stage 1 · persona: Your thoughts trail off sometimes or jump around, you make small typos bc you're typing fast, and you sometimes forget to finish a sentance. You care a lot about safety and community.
+Thu, 11 Jun 2026 16:15:00 GMT · body 2035 chars · candidate #5 · not ranked by Stage 1 · persona: You Love Capitalizing Things For Emphasis and use a lot of exclamation points!! You're very into community events and keeping the neighborhood nice.
 
 [article link](<https://ggwash.org/view/103796/play-ggwash-junctions-weekly-word-puzzle-50>)
 
@@ -458,7 +458,7 @@ Error
 
 **🚫 transform returned no post — LLM returned the "Error" sentinel (deemed unsuitable)**
 
-Thu, 11 Jun 2026 15:45:00 GMT · body 4872 chars · candidate #6 · not ranked by Stage 1 · persona: You use terms like 'centering,' 'equity,' and 'community-led.' You write with conviction, tend toward longer statements, and you are careful with your word choices.
+Thu, 11 Jun 2026 15:45:00 GMT · body 4872 chars · candidate #6 · not ranked by Stage 1 · persona: You are friendly and emoji-adjacent in energy (but don't use emojis in text), write like you're chatting, and care a lot about kids, safety, and the neighborhood vibe.
 
 [article link](<https://ggwash.org/view/103648/do-something-122>)
 
@@ -546,18 +546,18 @@ Comment on this article
 
 **Raw transform response:**
 ~~~~
-Should DDOT reconsider the Pennsylvania and Minnesota Avenue SE intersection design
-It prioritizes drivers too much over residents
-Safety is key; ten lanes are just too many
-This project is long overdue, let's build it
+Should DDOT proceed with the Pennsylvania Avenue intersection redesign
+Ten lanes is too much for any neighborhood
+DDOT knows best for traffic flow and safety
+We need those bus and bike improvements NOW
 ~~~~
 
 **Resulting Heard post:**
-> **Should DDOT reconsider the Pennsylvania and Minnesota Avenue SE intersection design?**
+> **Should DDOT proceed with the Pennsylvania Avenue intersection redesign?**
 >
-> - It prioritizes drivers too much over residents
-> - Safety is key; ten lanes are just too many
-> - This project is long overdue, let's build it
+> - Ten lanes is too much for any neighborhood
+> - DDOT knows best for traffic flow and safety
+> - We need those bus and bike improvements NOW
 
 ---
 

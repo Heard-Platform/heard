@@ -6,10 +6,6 @@ export const GGWASH_RSS_URL = "https://ggwash.org/rss";
 const MAX_ARTICLE_CHARS = 8000;
 const MAX_ARTICLES = 10;
 
-// GGWash publishes a recurring "Breakfast links" link-roundup column. It has a
-// fixed title prefix and never has a single discussable topic, so it is filtered
-// deterministically rather than left to the LLM (which is tempted by its
-// substantive DC content).
 const ROUNDUP_TITLE_PREFIX = "breakfast links";
 
 export function isRoundupTitle(title: string): boolean {
@@ -21,8 +17,6 @@ const IMG_SRC_RE = /<img[^>]+\bsrc\s*=\s*["']([^"']+)["']/i;
 export function extractFirstImageUrl(html: string): string | undefined {
   const match = IMG_SRC_RE.exec(html);
   const url = match?.[1]?.trim();
-  // GGWash image filenames sometimes contain spaces; encode them so the value
-  // is a valid <img src>. Leave any existing percent-encoding untouched.
   return url && /^https?:\/\//i.test(url) ? url.replace(/ /g, "%20") : undefined;
 }
 
@@ -36,9 +30,9 @@ interface GGWashFeedItem {
   guid?: string;
   isoDate?: string;
   pubDate?: string;
-  content?: string; // raw HTML of <description>
-  contentSnippet?: string; // HTML-stripped text
-  contentEncoded?: string; // <content:encoded> if a feed ever uses it
+  content?: string;
+  contentSnippet?: string;
+  contentEncoded?: string;
 }
 
 export async function fetchGGWashArticles(): Promise<GGWashArticle[]> {

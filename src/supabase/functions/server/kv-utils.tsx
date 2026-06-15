@@ -453,10 +453,6 @@ export const getFeedbackList = async (): Promise<any[]> => {
   return getByPrefixParsed<any>("feedback:");
 };
 
-// GGWash importer article store. One record per scraped article, keyed by RSS
-// guid. The status field doubles as the dedup/at-most-once flag: only records
-// still "scraped" are eligible for selection.
-
 const GGWASH_ARTICLE_PREFIX = "ggwash-article:";
 const ggwashArticleKey = (guid: string) => `${GGWASH_ARTICLE_PREFIX}${guid}`;
 
