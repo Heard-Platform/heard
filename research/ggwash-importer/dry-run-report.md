@@ -1,6 +1,6 @@
 # GGWash importer — dry run
 
-_No posts were published. Generated 2026-06-15T19:53:00.619Z._
+_No posts were published. Generated 2026-06-15T22:23:12.937Z._
 
 ## Summary
 
@@ -14,7 +14,7 @@ _No posts were published. Generated 2026-06-15T19:53:00.619Z._
 | ranked by Stage 1 | 3 |
 | would publish | 1 |
 
-**🟢 Would publish:** #0 · What Lime’s new e-bike says about the next challenge for micromobility in DC → community `washington-dc`, author `enrichment-service`, open one week.
+**🟢 Would publish:** #2 · Washington, DC has a housing crisis. I know how to fix it → community `washington-dc`, author `enrichment-service`, open one week.
 
 The shared prompts (the transform prompt is identical for every article; the Stage 1 selection call ranks them all together) are in the **Appendix** at the bottom — each article row below shows only its own inputs and results.
 
@@ -22,28 +22,28 @@ The shared prompts (the transform prompt is identical for every article; the Sta
 
 🟢 would be posted this run · ☑️ valid but ranked lower · ⚪ valid but not selected by Stage 1
 
-**🟢 What does Lime's new e-bike mean for accessibility in DC?** — _would be posted_
-- These new bikes are so much easier to use
-- Still too many bikes blocking sidewalks everywhere
-- They're great for connecting to Metro
+**🟢 What are the most effective ways to address DC's housing crisis?** — _would be posted_
+- Build more housing everywhere, especially near transit
+- Preserve existing affordable homes, stop displacement
+- Prioritize community input, not just new development
 
-**☑️ What's the most impactful housing policy proposed in this article?**
-- Streamlining the Comp Plan is absolutely essential for growth
-- We need more focus on preserving existing affordable housing
-- Legalizing diverse housing types everywhere sounds promising
+**☑️ How will new e-bike designs like Lime's impact shared micromobility in DC?**
+- cool new bikes make getting around way easier
+- still too many bikes blocking sidewalks and ramps
+- just another scooter that's gonna get trashed
 
-**☑️ Should DDOT proceed with the Pennsylvania Avenue intersection redesign?**
-- Ten lanes is too much for any neighborhood
-- DDOT knows best for traffic flow and safety
-- We need those bus and bike improvements NOW
+**☑️ Should DDOT expand Pennsylvania Avenue SE to 10 lanes in Ward 7?**
+- Roads need to handle traffic. More lanes makes sense
+- This project is a mess, always delays and bad ideas
+- Ten lanes is too much, kills the neighborhood feel
 
 ## Articles — one row per article (10)
 
 ### 0. What Lime’s new e-bike says about the next challenge for micromobility in DC
 
-**🟢 WOULD BE PUBLISHED — the post that goes live this run**
+**☑️ valid topic, ranked #2 but not first — not chosen this run**
 
-Fri, 12 Jun 2026 19:21:00 GMT · body 4517 chars · candidate #0 · Stage 1 rank #1 · persona: You Love Capitalizing Things For Emphasis and use a lot of exclamation points!! You're very into community events and keeping the neighborhood nice.
+Fri, 12 Jun 2026 19:21:00 GMT · body 4517 chars · candidate #0 · Stage 1 rank #2 · persona: You are a sarcastic millennial. You use dry humor and irony, write in lowercase sometimes, and pepper in phrases like 'cool cool cool' or 'totally fine.' You keep things short and a little cynical. you never use a period at the end of a sentence unless it's necessary between sentences
 
 [article link](<https://ggwash.org/view/103797/what-limes-new-e-bike-says-about-the-next-challenge-for-micromobility-in-dc>)
 
@@ -82,18 +82,18 @@ Comment on this article
 
 **Raw transform response:**
 ~~~~
-What does Lime's new e-bike mean for accessibility in DC?
-These new bikes are so much easier to use!
-Still too many bikes blocking sidewalks everywhere.
-They're great for connecting to Metro!
+How will new e-bike designs like Lime's impact shared micromobility in DC
+cool new bikes make getting around way easier
+still too many bikes blocking sidewalks and ramps
+just another scooter that's gonna get trashed
 ~~~~
 
 **Resulting Heard post:**
-> **What does Lime's new e-bike mean for accessibility in DC?**
+> **How will new e-bike designs like Lime's impact shared micromobility in DC?**
 >
-> - These new bikes are so much easier to use
-> - Still too many bikes blocking sidewalks everywhere
-> - They're great for connecting to Metro
+> - cool new bikes make getting around way easier
+> - still too many bikes blocking sidewalks and ramps
+> - just another scooter that's gonna get trashed
 
 ---
 
@@ -101,7 +101,7 @@ They're great for connecting to Metro!
 
 **🚫 transform returned no post — LLM returned the "Error" sentinel (deemed unsuitable)**
 
-Fri, 12 Jun 2026 17:30:00 GMT · body 3161 chars · candidate #1 · not ranked by Stage 1 · persona: You Type With Weird Capitalization, use ... a lot ..., and sometimes go on tangents. You sign off with your name or 'just my 2 cents.' You do not use periods at the end of sentences.
+Fri, 12 Jun 2026 17:30:00 GMT · body 3161 chars · candidate #1 · not ranked by Stage 1 · persona: You write informally, bluntly, sometimes missing words or using run-on sentences. You are skeptical of government and outsiders telling you what to do. You do not use periods at the end of sentences
 
 [article link](<https://ggwash.org/view/103800/national-links-can-cooling-bricks-help-with-summer-heat>)
 
@@ -137,9 +137,9 @@ Error
 
 ### 2. Washington, DC has a housing crisis. I know how to fix it
 
-**☑️ valid topic, ranked #2 but not first — not chosen this run**
+**🟢 WOULD BE PUBLISHED — the post that goes live this run**
 
-Fri, 12 Jun 2026 17:12:00 GMT · body 8000 chars · candidate #2 · Stage 1 rank #2 · persona: You tend to over-qualify your statements ('I think what we really need to interrogate here is...'), write in longer paragraphs, and use words like 'nuanced,' 'discourse,' and 'frankly.'
+Fri, 12 Jun 2026 17:12:00 GMT · body 8000 chars · candidate #2 · Stage 1 rank #1 · persona: Your thoughts trail off sometimes or jump around, you make small typos bc you're typing fast, and you sometimes forget to finish a sentance. You care a lot about safety and community.
 
 [article link](<https://ggwash.org/view/103817/washington-dc-has-a-housing-crisis-i-know-how-to-fix-it>)
 
@@ -177,18 +177,19 @@ I will also reform District government, especially the Department of Housing and
 
 **Raw transform response:**
 ~~~~
-What's the most impactful housing policy proposed in this article?
-Streamlining the Comp Plan is absolutely essential for growth
-We need more focus on preserving existing affordable housing
-Legalizing diverse housing types everywhere sounds promising
+What are the most effective ways to address DC's housing crisis
+Build more housing everywhere, especially near transit
+Preserve existing affordable homes, stop displacement
+Prioritize community input, not just new development
+
 ~~~~
 
 **Resulting Heard post:**
-> **What's the most impactful housing policy proposed in this article?**
+> **What are the most effective ways to address DC's housing crisis?**
 >
-> - Streamlining the Comp Plan is absolutely essential for growth
-> - We need more focus on preserving existing affordable housing
-> - Legalizing diverse housing types everywhere sounds promising
+> - Build more housing everywhere, especially near transit
+> - Preserve existing affordable homes, stop displacement
+> - Prioritize community input, not just new development
 
 ---
 
@@ -258,7 +259,7 @@ Fri, 12 Jun 2026 13:42:00 GMT · body 2782 chars · roundup (not a candidate)
 
 **🚫 transform returned no post — LLM returned the "Error" sentinel (deemed unsuitable)**
 
-Thu, 11 Jun 2026 19:02:00 GMT · body 8000 chars · candidate #4 · not ranked by Stage 1 · persona: you type like you talk, use slang, and are very online. lots of run-ons and no caps, occasionally throw in a 'lol' or 'idk' or 'literally.' you have strong opinions but short attention span. you never use a period at the end of a sentence unless it's necessary between sentences
+Thu, 11 Jun 2026 19:02:00 GMT · body 8000 chars · candidate #4 · not ranked by Stage 1 · persona: you dont capitalize anything and use minimal punctuation, you abbreviate words like 'bc' for because and 'rly' for really. your messages are short and punchy
 
 [article link](<https://ggwash.org/view/103759/vote-for-our-endorsed-candidates-in-dc-and-maryland>)
 
@@ -407,7 +408,7 @@ Error
 
 **🚫 transform returned no post — LLM returned the "Error" sentinel (deemed unsuitable)**
 
-Thu, 11 Jun 2026 16:15:00 GMT · body 2035 chars · candidate #5 · not ranked by Stage 1 · persona: You Love Capitalizing Things For Emphasis and use a lot of exclamation points!! You're very into community events and keeping the neighborhood nice.
+Thu, 11 Jun 2026 16:15:00 GMT · body 2035 chars · candidate #5 · not ranked by Stage 1 · persona: You write in a clear, neutral, structured way and tend to frame things as questions or considerations rather than strong opinions. You cite specifics when you can.
 
 [article link](<https://ggwash.org/view/103796/play-ggwash-junctions-weekly-word-puzzle-50>)
 
@@ -458,7 +459,7 @@ Error
 
 **🚫 transform returned no post — LLM returned the "Error" sentinel (deemed unsuitable)**
 
-Thu, 11 Jun 2026 15:45:00 GMT · body 4872 chars · candidate #6 · not ranked by Stage 1 · persona: You are friendly and emoji-adjacent in energy (but don't use emojis in text), write like you're chatting, and care a lot about kids, safety, and the neighborhood vibe.
+Thu, 11 Jun 2026 15:45:00 GMT · body 4872 chars · candidate #6 · not ranked by Stage 1 · persona: You use terms like 'centering,' 'equity,' and 'community-led.' You write with conviction, tend toward longer statements, and you are careful with your word choices.
 
 [article link](<https://ggwash.org/view/103648/do-something-122>)
 
@@ -507,7 +508,7 @@ Error
 
 **☑️ valid topic, ranked #3 but not first — not chosen this run**
 
-Thu, 11 Jun 2026 15:06:00 GMT · body 6281 chars · candidate #7 · Stage 1 rank #3 · persona: You Love Capitalizing Things For Emphasis and use a lot of exclamation points!! You're very into community events and keeping the neighborhood nice.
+Thu, 11 Jun 2026 15:06:00 GMT · body 6281 chars · candidate #7 · Stage 1 rank #3 · persona: You keep it short and blunt, don't mince words, and are skeptical of change. occasional typo, no frills, just your honest take.
 
 [article link](<https://ggwash.org/view/103766/ward-7-deserves-a-pennsylvania-avenue-that-works-for-everyone>)
 
@@ -546,18 +547,18 @@ Comment on this article
 
 **Raw transform response:**
 ~~~~
-Should DDOT proceed with the Pennsylvania Avenue intersection redesign
-Ten lanes is too much for any neighborhood
-DDOT knows best for traffic flow and safety
-We need those bus and bike improvements NOW
+Should DDOT expand Pennsylvania Avenue SE to 10 lanes in Ward 7?
+Roads need to handle traffic. More lanes makes sense.
+This project is a mess, always delays and bad ideas.
+Ten lanes is too much, kills the neighborhood feel.
 ~~~~
 
 **Resulting Heard post:**
-> **Should DDOT proceed with the Pennsylvania Avenue intersection redesign?**
+> **Should DDOT expand Pennsylvania Avenue SE to 10 lanes in Ward 7?**
 >
-> - Ten lanes is too much for any neighborhood
-> - DDOT knows best for traffic flow and safety
-> - We need those bus and bike improvements NOW
+> - Roads need to handle traffic. More lanes makes sense
+> - This project is a mess, always delays and bad ideas
+> - Ten lanes is too much, kills the neighborhood feel
 
 ---
 
@@ -602,6 +603,7 @@ BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only 
 
 Topic rules:
 - One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
+- The topic MUST be self-contained — it has to make complete sense to a reader who has NOT seen the article (they never will; only the topic and responses are shown). Never write "this plan", "this proposal", "this idea", "this article", "the author", or anything that points at content only the article's readers would have. Name the actual subject instead. For example: "How should DC tackle its housing crisis?" NOT "What do you think of this plan to fix DC's housing crisis?".
 - The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
 - Keep the topic about DC.
 - The topic is a question: end it with a single question mark. (The no-punctuation rule below applies only to the responses, never to the topic.)
@@ -631,7 +633,7 @@ CRITICAL REMINDERS — you MUST follow these exactly:
 
 **System:**
 ~~~~
-Heard is a discussion app for the Washington, DC area. People react to a topic by voting agree or disagree on short statements and adding their own. A good Heard post is an article about a specific, debatable, or interesting DC topic that locals would have opinions about.
+Heard is a discussion app based in the Washington, DC area. People react to a topic by voting agree or disagree on short response statements and adding their own. A good Heard post is an article about a specific, debatable, or interesting topic that people would have opinions about.
 
 You are choosing which of today's Greater Greater Washington articles would spark the best Heard discussion for a Washington, DC audience. Reply with JSON only.
 ~~~~
@@ -676,10 +678,16 @@ Return ONLY JSON of the form {"ranked": [<indices>]}, listing the 0-based indice
 
 **Raw response:**
 ~~~~
-{"ranked": [0, 2, 7]}
+{
+  "ranked": [
+    2,
+    0,
+    7
+  ]
+}
 ~~~~
 
 **Parsed ranking:**
-1. candidate #0 — What Lime’s new e-bike says about the next challenge for micromobility in DC
-2. candidate #2 — Washington, DC has a housing crisis. I know how to fix it
+1. candidate #2 — Washington, DC has a housing crisis. I know how to fix it
+2. candidate #0 — What Lime’s new e-bike says about the next challenge for micromobility in DC
 3. candidate #7 — Ward 7 deserves a Pennsylvania Avenue that works for everyone

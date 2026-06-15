@@ -114,6 +114,7 @@ BEFORE DOING ANYTHING ELSE — if any condition below is met, respond with only 
 
 Topic rules:
 - One engaging question that invites a range of opinions about the article's subject. News, a named person, a policy, an election, or a new technology are all fine subjects.
+- The topic MUST be self-contained — it has to make complete sense to a reader who has NOT seen the article (they never will; only the topic and responses are shown). Never write "this plan", "this proposal", "this idea", "this article", "the author", or anything that points at content only the article's readers would have. Name the actual subject instead. For example: "How should DC tackle its housing crisis?" NOT "What do you think of this plan to fix DC's housing crisis?".
 - The topic may be specific and timely, and may be phrased directly (for example "Should Waymo expand its robotaxis in DC?" or "What do you make of the candidates in the DC mayoral race?"). It does NOT need to be evergreen, open-ended, or experience-based.
 - Keep the topic about DC.
 - The topic is a question: end it with a single question mark. (The no-punctuation rule below applies only to the responses, never to the topic.)
