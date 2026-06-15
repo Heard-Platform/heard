@@ -182,11 +182,15 @@ async function main() {
   let ranked: number[] = [];
   if (client) {
     console.log("Stage 1: selecting...");
-    rawSelection = await client.completeJson(selectionPrompt, {
-      endpoint: "dryrun-ggwash-select",
-    });
-    ranked = parseSelectionResponse(rawSelection, candidates.length);
-    console.log(`  ranked candidate indices: [${ranked.join(", ")}]`);
+    try {
+      rawSelection = await client.completeJson(selectionPrompt, {
+        endpoint: "dryrun-ggwash-select",
+      });
+      ranked = parseSelectionResponse(rawSelection, candidates.length);
+      console.log(`  ranked candidate indices: [${ranked.join(", ")}]`);
+    } catch (e) {
+      console.warn(`  selection call failed: ${e instanceof Error ? e.message : e}`);
+    }
   }
 
   // 5. Stage 2 — transform. The real flow only transforms ranked candidates and
@@ -206,9 +210,16 @@ async function main() {
     const persona = pinnedPersona ?? getRandomPersona();
     const prompt = makeTransformPromptFromGGWashArticle(article, provider, persona);
     console.log(`Stage 2 ${label}: "${article.title.slice(0, 60)}"`);
-    const raw = client
-      ? await client.complete(prompt, { endpoint: "dryrun-ggwash-transform" })
-      : null;
+    let raw: string | null = null;
+    let callError: string | null = null;
+    if (client) {
+      try {
+        raw = await client.complete(prompt, { endpoint: "dryrun-ggwash-transform" });
+      } catch (e) {
+        callError = e instanceof Error ? e.message : String(e);
+        console.warn(`  transform call failed: ${callError}`);
+      }
+    }
     const parsed = raw ? parseTransform(raw) : null;
     return {
       candidateIndex,
@@ -218,7 +229,9 @@ async function main() {
       prompt,
       raw,
       parsed,
-      reason: !raw
+      reason: callError
+        ? `LLM call failed — ${callError}`
+        : !raw
         ? "no LLM key — not transformed"
         : parsed
         ? "ok"
@@ -299,35 +312,34 @@ function image(url: string | undefined): string {
 }
 
 function renderMarkdown(d: ReportData): string {
-  const now = new Date().toISOString();
-  const wouldPublish = d.transforms.find((t) => t.wouldPublish);
   const out: string[] = [];
   const p = (s = "") => out.push(s);
+  const now = new Date().toISOString();
 
   p(`# GGWash importer — dry run`);
   p();
   p(`_No posts were published. Generated ${now}._`);
   p();
   if (d.clientError) {
-    p(`> ⚠ **No LLM key** (${esc(d.clientError)}). Feed, images, and prompts are shown; LLM responses are blank. Add a key to \`research/ggwash-importer/.env\` or the repo-root \`.env\` and re-run.`);
+    p(`> ⚠ **No LLM key** (${esc(d.clientError)}). Articles, images, and prompts are shown; LLM responses are blank. Add a key to \`research/ggwash-importer/.env\` or the repo-root \`.env\` and re-run.`);
     p();
   }
 
-  out.push(...summarySection(d, wouldPublish));
-  out.push(...headlineSection(wouldPublish));
-  out.push(...feedSection(d));
-  out.push(...selectionSection(d));
-  out.push(...transformsSection(d));
+  out.push(...summarySection(d));
+  out.push(...articlesSection(d));
+  out.push(...appendixSection(d));
 
   return out.join("\n");
 }
 
-function summarySection(
-  d: ReportData,
-  wouldPublish: TransformCapture | undefined,
-): string[] {
+function summarySection(d: ReportData): string[] {
   const out: string[] = [];
   const p = (s = "") => out.push(s);
+  const winner = d.transforms.find((t) => t.wouldPublish);
+  const winnerIdx = winner
+    ? d.articles.findIndex((a) => a.guid === winner.article.guid)
+    : -1;
+
   p(`## Summary`);
   p();
   p(`| field | value |`);
@@ -337,176 +349,171 @@ function summarySection(
   p(`| articles fetched | ${d.articles.length} |`);
   p(`| roundups auto-rejected | ${d.roundups.length} |`);
   p(`| candidates | ${d.candidates.length} |`);
-  p(`| ranked by LLM | ${d.ranked.length} |`);
-  p(`| would publish | ${wouldPublish ? 1 : 0} |`);
+  p(`| ranked by Stage 1 | ${d.ranked.length} |`);
+  p(`| would publish | ${winner ? 1 : 0} |`);
   p();
+  if (winner) {
+    p(`**🟢 Would publish:** #${winnerIdx} · ${esc(winner.article.title)} → community \`${POST_SUBHEARD}\`, author \`${POST_AUTHOR}\`, open one week.`);
+  } else {
+    p(`_Nothing would be published this run._`);
+  }
+  p();
+  p(`The shared prompts (the transform prompt is identical for every article; the Stage 1 selection call ranks them all together) are in the **Appendix** at the bottom — each article row below shows only its own inputs and results.`);
+  p();
+
+  const posts = d.transforms.filter((t) => t.parsed);
+  if (posts.length) {
+    p(`### All generated topics + seed statements (${posts.length})`);
+    p();
+    p(`🟢 would be posted this run · ☑️ valid but ranked lower · ⚪ valid but not selected by Stage 1`);
+    p();
+    const ordered = [...posts].sort(
+      (a, b) => (b.wouldPublish ? 1 : 0) - (a.wouldPublish ? 1 : 0),
+    );
+    for (const t of ordered) {
+      const mark = t.wouldPublish ? "🟢" : t.selectionRank !== null ? "☑️" : "⚪";
+      p(`**${mark} ${esc(t.parsed!.topic)}**${t.wouldPublish ? " — _would be posted_" : ""}`);
+      t.parsed!.statements.forEach((s) => p(`- ${esc(s)}`));
+      p();
+    }
+  }
   return out;
 }
 
-// The exact Heard post that would be created this run.
-function headlineSection(wouldPublish: TransformCapture | undefined): string[] {
+// One self-contained row per article: everything that happened to it, no shared
+// boilerplate repeated.
+function articlesSection(d: ReportData): string[] {
   const out: string[] = [];
-  const p = (s = "") => out.push(s);
-  p(`## Would-be-published Heard post`);
-  p();
-  if (!wouldPublish || !wouldPublish.parsed) {
-    p(`_Nothing would be published this run — no ranked candidate passed the transform gate._`);
-    p();
-    return out;
-  }
-  p(`The topic and seed statements that would be persisted this run — the first ranked candidate that passed the transform gate. Community \`${POST_SUBHEARD}\`, author \`${POST_AUTHOR}\`, open one week, image hotlinked from the source article.`);
-  p();
-  p(`**Source article:** [${esc(wouldPublish.article.title)}](<${wouldPublish.article.url}>)`);
-  p();
-  if (wouldPublish.article.imageUrl) {
-    p(image(wouldPublish.article.imageUrl));
-    p();
-  }
-  p(`**Topic:**`);
-  p();
-  p(fence(wouldPublish.parsed.topic));
-  p();
-  p(`**Seed statements (${wouldPublish.parsed.statements.length}):**`);
-  p();
-  p(fence(wouldPublish.parsed.statements.join("\n")));
-  p();
+  out.push(`## Articles — one row per article (${d.articles.length})`, ``);
+  const candIndex = new Map(d.candidates.map((a, i) => [a.guid, i]));
+  const txByGuid = new Map(d.transforms.map((t) => [t.article.guid, t]));
+  d.articles.forEach((a, feedIdx) => {
+    out.push(...articleCard(a, feedIdx, candIndex.get(a.guid), txByGuid.get(a.guid)));
+  });
   return out;
 }
 
-function feedSection(d: ReportData): string[] {
+function articleCard(
+  a: GGWashArticle,
+  feedIdx: number,
+  candIdx: number | undefined,
+  t: TransformCapture | undefined,
+): string[] {
   const out: string[] = [];
   const p = (s = "") => out.push(s);
-  p(`## Stage 0 · Feed (${d.articles.length} articles)`);
+  const isRoundup = isRoundupTitle(a.title);
+
+  let outcome: string;
+  if (isRoundup) {
+    outcome = "🚫 auto-rejected — link-roundup title, filtered before the LLM";
+  } else if (!t) {
+    outcome = "— not transformed";
+  } else if (t.wouldPublish) {
+    outcome = "🟢 WOULD BE PUBLISHED — the post that goes live this run";
+  } else if (t.parsed) {
+    outcome = t.selectionRank !== null
+      ? `☑️ valid topic, ranked #${t.selectionRank + 1} but not first — not chosen this run`
+      : "⚪ valid topic, but Stage 1 did not select it — would not publish";
+  } else {
+    outcome = `🚫 transform returned no post — ${esc(t.reason)}`;
+  }
+
+  p(`### ${feedIdx}. ${esc(a.title)}`);
   p();
-  p(`Each article shows the extracted image, the title, and the ${SELECTION_SNIPPET_CHARS}-char snippet the selection prompt sees. "Breakfast links" roundups are filtered deterministically before the LLM; the full body text appears inside each transform prompt in Stage 2.`);
+  p(`**${outcome}**`);
   p();
-  const candIndexByGuid = new Map(d.candidates.map((a, i) => [a.guid, i]));
-  for (const a of d.articles) {
-    const cIdx = candIndexByGuid.get(a.guid);
-    const disposition = isRoundupTitle(a.title)
-      ? `🚫 auto-rejected · Breakfast links roundup`
-      : `✅ candidate · selection #${cIdx}`;
+  const meta = [
+    new Date(a.publishedAt).toUTCString(),
+    `body ${a.body.length} chars`,
+    isRoundup ? "roundup (not a candidate)" : `candidate #${candIdx}`,
+  ];
+  if (t) {
+    meta.push(
+      t.selectionRank !== null
+        ? `Stage 1 rank #${t.selectionRank + 1}`
+        : "not ranked by Stage 1",
+    );
+    meta.push(`persona: ${esc(t.persona)}`);
+  }
+  p(meta.join(" · "));
+  p();
+  p(`[article link](<${a.url}>)`);
+  p();
+  p(image(a.imageUrl));
+  p();
+
+  if (!isRoundup) {
     const snippet = a.body.slice(0, SELECTION_SNIPPET_CHARS).replace(/\s+/g, " ").trim();
-    p(`### ${esc(a.title)}`);
-    p();
-    p(`${disposition}  `);
-    p(`${new Date(a.publishedAt).toUTCString()} · body ${a.body.length} chars · [article link](<${a.url}>)`);
-    p();
-    p(image(a.imageUrl));
-    p();
-    p(`**Selection snippet (first ${SELECTION_SNIPPET_CHARS} chars):**`);
-    p();
+    p(`**Snippet Stage 1 ranked on (first ${SELECTION_SNIPPET_CHARS} chars):**`);
     p(`> ${esc(snippet) || "_(empty)_"}`);
     p();
   }
+
+  if (t) {
+    p(`**Full body sent to the transform (${a.body.length} chars):**`);
+    p(fence(a.body));
+    p();
+    p(`**Raw transform response:**`);
+    p(t.raw === null ? "_No LLM key — transform not run._" : fence(t.raw));
+    p();
+    if (t.parsed) {
+      p(`**Resulting Heard post:**`);
+      p(`> **${esc(t.parsed.topic)}**`);
+      p(`>`);
+      t.parsed.statements.forEach((s) => p(`> - ${esc(s)}`));
+      p();
+    }
+  }
+  p(`---`);
+  p();
   return out;
 }
 
-function selectionSection(d: ReportData): string[] {
+// Shared prompts shown once (identical across articles), so the per-article rows
+// stay focused on each article's own inputs and results.
+function appendixSection(d: ReportData): string[] {
   const out: string[] = [];
   const p = (s = "") => out.push(s);
-  p(`## Stage 1 · Selection`);
+  p(`## Appendix — shared prompts`);
   p();
-  p(`**Prompt — system:**`);
+
+  p(`### Transform prompt (same for every article — only «PERSONA», «TITLE», «BODY» change)`);
   p();
+  const template = makeTransformPromptFromGGWashArticle(
+    { title: "«ARTICLE TITLE»", body: "«ARTICLE BODY»", url: "", guid: "", publishedAt: 0 },
+    d.provider,
+    "«PERSONA»",
+  );
+  p(`**System:**`);
+  p(fence(template.systemPrompt));
+  p();
+  p(`**User:**`);
+  p(fence(template.userPrompt));
+  p();
+
+  p(`### Stage 1 selection call (ranks all candidates together)`);
+  p();
+  p(`**System:**`);
   p(fence(d.selectionPrompt.systemPrompt));
   p();
-  p(`**Prompt — user:**`);
-  p();
+  p(`**User:**`);
   p(fence(d.selectionPrompt.userPrompt));
   p();
-  p(`**Raw LLM response:**`);
-  p();
+  p(`**Raw response:**`);
   if (d.rawSelection === null) {
     p(`_No LLM key — selection not run._`);
   } else {
     p(fence(d.rawSelection));
     p();
     p(`**Parsed ranking:**`);
-    p();
     if (d.ranked.length === 0) {
       p(`_(none qualified)_`);
     } else {
       d.ranked.forEach((ci, pos) =>
-        p(`${pos + 1}. candidate ${ci} — ${esc(d.candidates[ci]?.title ?? "?")}`)
+        p(`${pos + 1}. candidate #${ci} — ${esc(d.candidates[ci]?.title ?? "?")}`)
       );
     }
   }
-  p();
-  return out;
-}
-
-function transformsSection(d: ReportData): string[] {
-  const out: string[] = [];
-  const p = (s = "") => out.push(s);
-  const rankedCaps = d.transforms.filter((t) => t.selectionRank !== null);
-  const otherCaps = d.transforms.filter((t) => t.selectionRank === null);
-
-  p(`## Stage 2 · Transform & preview`);
-  p();
-  p(`### Selected by Stage 1 (ranked) — ${rankedCaps.length}`);
-  p();
-  p(`The real flow: ranked candidates are transformed in order and the first valid result (🟢) is the post that would go live today.`);
-  p();
-  if (rankedCaps.length === 0) {
-    p(`_Nothing ranked, so nothing was transformed._`);
-    p();
-  }
-  for (const t of rankedCaps) out.push(...transformCard(t));
-
-  if (otherCaps.length) {
-    p(`### Other candidates not selected by Stage 1 — ${otherCaps.length}`);
-    p();
-    p(`These passed the roundup filter but Stage 1 did **not** rank them, so the real importer would neither transform nor publish them. Shown so you can see the Heard post each non-selected candidate would generate. (Disable with \`GGWASH_SKIP_UNSELECTED=1\`.)`);
-    p();
-    for (const t of otherCaps) out.push(...transformCard(t));
-  }
-  return out;
-}
-
-function transformCard(t: TransformCapture): string[] {
-  const out: string[] = [];
-  const p = (s = "") => out.push(s);
-  const isRanked = t.selectionRank !== null;
-  const status = isRanked
-    ? (t.wouldPublish
-      ? `🟢 **would be published** (real run stops here)`
-      : t.parsed
-      ? `☑️ valid · ranked #${t.selectionRank! + 1}, not chosen this run`
-      : `🚫 skipped — ${esc(t.reason)}`)
-    : (t.parsed
-      ? `⚪ not selected by Stage 1 · would not be published`
-      : `🚫 not selected by Stage 1 · transform also rejected — ${esc(t.reason)}`);
-  p(`#### ${esc(t.article.title)}`);
-  p();
-  p(`${status}  `);
-  p(`candidate ${t.candidateIndex} · ${isRanked ? `rank #${t.selectionRank! + 1}` : "not ranked"} · persona: _${esc(t.persona)}_`);
-  p();
-  p(`**Transform prompt — system:**`);
-  p();
-  p(fence(t.prompt.systemPrompt));
-  p();
-  p(`**Transform prompt — user:**`);
-  p();
-  p(fence(t.prompt.userPrompt));
-  p();
-  p(`**Raw LLM response:**`);
-  p();
-  p(t.raw === null ? `_No LLM key — transform not run._` : fence(t.raw));
-  p();
-  if (t.parsed) {
-    p(`**Resulting Heard post${isRanked ? "" : " (exploratory)"} — topic + seed statements:**`);
-    p();
-    if (t.article.imageUrl) {
-      p(image(t.article.imageUrl));
-      p();
-    }
-    p(`> **${esc(t.parsed.topic)}**`);
-    p(`>`);
-    t.parsed.statements.forEach((s) => p(`> - ${esc(s)}`));
-    p();
-  }
-  p(`---`);
   p();
   return out;
 }
