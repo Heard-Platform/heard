@@ -82,7 +82,7 @@ stripePublicApi.post(`${API_URL_PREFIX}/stripe-webhook`, async (c) => {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(rawBody, sig, secret);
+    event = await stripe.webhooks.constructEventAsync(rawBody, sig, secret);
   } catch (err: any) {
     return c.json({ error: `Webhook signature verification failed: ${err.message}` }, 400);
   }
