@@ -97,7 +97,7 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
 
     </div>
 
-    ${getNewsletterFooter()}
+    ${getNewsletterFooter("#888")}
   </div>
 </body>
 </html>
