@@ -228,8 +228,8 @@ export function FundingPage({
         {cardStep === "done" && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", textAlign: "center" }}>
             <p style={{ fontSize: 48, marginBottom: 16 }}>🙏</p>
-            <p style={{ fontSize: 20, fontWeight: 600, color: C.slate700 }}>Thank you for donating</p>
-            <p style={{ color: C.slate400, fontSize: 14, marginTop: 4, marginBottom: 24 }}>It means everything.</p>
+            <p style={{ fontSize: 20, fontWeight: 600, color: C.slate700 }}>Thank you</p>
+            <p style={{ color: C.slate400, fontSize: 14, marginTop: 4, marginBottom: 24 }}>Here's a big virtual high five in thanks!</p>
             <a
               href="https://heard.vote"
               target="_blank"
