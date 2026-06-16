@@ -5,6 +5,7 @@ import Stripe from "npm:stripe";
 import { defineRoute } from "./route-wrapper.tsx";
 import { API_URL_PREFIX } from "./constants.tsx";
 import { createClientFromEnv } from "./db-utils.ts";
+import { sendEmailToDevs } from "./dev-utils.tsx";
 
 export const stripeApi = new Hono();
 export const stripePublicApi = new Hono();
@@ -90,16 +91,27 @@ stripePublicApi.post(`${API_URL_PREFIX}/stripe-webhook`, async (c) => {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     if (session.payment_status === "paid") {
+      const amountDollars = Math.round((session.amount_total ?? 0) / 100);
       const supabase = createClientFromEnv();
       const { error } = await supabase.from("donations").insert({
         stripeSessionId: session.id,
-        amount: Math.round((session.amount_total ?? 0) / 100),
+        amount: amountDollars,
         mode: isLive ? "live" : "test",
       });
       if (error && error.code !== "23505") {
         // 23505 = unique_violation (duplicate webhook), safe to ignore
         console.error("Failed to insert donation:", error);
         return c.json({ error: "DB insert failed" }, 500);
+      }
+
+      if (!error) {
+        await sendEmailToDevs({
+          from: "Heard Funding <alex@heard-now.com>",
+          subject: isLive
+            ? `🎉 New donation: $${amountDollars}`
+            : `🧪 [TEST] New donation: $${amountDollars}`,
+          html: `<p>Someone just donated <strong>$${amountDollars}</strong> to Heard via the funding page.</p>`,
+        });
       }
     }
   }
