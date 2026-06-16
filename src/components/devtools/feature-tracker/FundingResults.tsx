@@ -1,3 +1,5 @@
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../ui/table";
+
 interface FundingResultsProps {
   pageView: number;
   swipeDonate: number;
@@ -55,16 +57,25 @@ export function FundingResults({
   ];
 
   return (
-    <div className="flex flex-wrap gap-4">
-      {steps.map((step) => (
-        <div key={step.label} className="p-4 border rounded-lg">
-          <p className="text-sm text-muted-foreground">{step.label}</p>
-          <p className="text-2xl font-bold">{step.count}</p>
-          {step.rate !== undefined && (
-            <p className="text-xs text-muted-foreground">{step.rate}%</p>
-          )}
-        </div>
-      ))}
-    </div>
+    <Table className="w-72">
+      <TableHeader>
+        <TableRow>
+          <TableHead>Event</TableHead>
+          <TableHead className="text-right">Count</TableHead>
+          <TableHead className="text-right">Rate</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {steps.map((step) => (
+          <TableRow key={step.label}>
+            <TableCell className="text-muted-foreground">{step.label}</TableCell>
+            <TableCell className="text-right font-bold">{step.count}</TableCell>
+            <TableCell className="text-right text-muted-foreground">
+              {step.rate !== undefined ? `${step.rate}%` : "—"}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

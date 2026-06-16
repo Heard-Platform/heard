@@ -326,7 +326,7 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
                   )}
                 </div>
                 {stats && card.renderExtra && (
-                  <div className="shrink-0">
+                  <div className="shrink-0 max-h-56 overflow-y-auto">
                     {card.renderExtra(stats)}
                   </div>
                 )}
