@@ -78,6 +78,11 @@ export function FundingPage({
     }
   };
 
+  const handleFallbackDonate = () => {
+    api.trackEvent("funding_fallback_donate_clicked");
+    setShowDonationDialog(true);
+  };
+
   const applySuccessState = (donatedAmount: number) => {
     api.trackEvent("funding_donation_success");
     setTotalDonated((prev) => prev + donatedAmount);
@@ -203,7 +208,7 @@ export function FundingPage({
       </div>
 
       {/* Card stack */}
-      <div style={{ position: "relative", width: "100%", maxWidth: 384, height: 440, overflow: "hidden" }}>
+      <div style={{ position: "relative", width: "100%", maxWidth: 384, height: 410, overflow: "hidden" }}>
         {cardStep === "donate" && (
           <>
             <div style={{
@@ -269,6 +274,25 @@ export function FundingPage({
           </div>
         )}
       </div>
+
+      {cardStep === "donate" && (
+        <button
+          onClick={handleFallbackDonate}
+          style={{
+            marginBottom: 24,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: C.slate400,
+            fontSize: 14,
+            textDecoration: "underline",
+            textUnderlineOffset: 2,
+            padding: 0,
+          }}
+        >
+          Swipe not working? Click here to donate
+        </button>
+      )}
 
       <a
         href="https://alexlongheard.substack.com/p/the-future-of-dcs-next-community"
