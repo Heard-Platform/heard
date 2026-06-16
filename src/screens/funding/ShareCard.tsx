@@ -3,6 +3,7 @@ import { motion, useMotionValue, useTransform } from "motion/react";
 import type { PanInfo } from "motion/react";
 import { Copy, Check, Share2 } from "lucide-react";
 import { C, SHARE_URL } from "./constants";
+import { share } from "../../utils/share";
 
 interface ShareCardProps {
   onDismiss: () => void;
@@ -81,10 +82,10 @@ export function ShareCard({ onDismiss }: ShareCardProps) {
               {copied ? "Copied!" : "Copy link"}
             </button>
 
-            {navigator.share && (
+            {typeof navigator.share === "function" && (
               <button
                 onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => { e.stopPropagation(); navigator.share({ url: SHARE_URL, title: "Support Heard" }); }}
+                onClick={(e) => { e.stopPropagation(); share({ url: SHARE_URL, title: "Support Heard" }); }}
                 style={{
                   width: "100%",
                   display: "flex",
