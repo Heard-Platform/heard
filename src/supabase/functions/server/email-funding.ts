@@ -16,7 +16,7 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
 
     <div style="${styles.contentCard} padding: 0; box-shadow: none; border-radius: 0;">
 
-      <div style="${styles.intro}">
+      <div style="${styles.section}">
         <h2 style="color: #333; font-size: 2rem; margin: 0 0 8px 0; line-height: 1.2;">
           The Future of DC's Next Community App
         </h2>
