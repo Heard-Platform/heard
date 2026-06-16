@@ -30,6 +30,7 @@ export function UsersTable({
   const [hideAnonUsers, setHideAnonUsers] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortDesc, setSortDesc] = useState(true);
+  const [expandedJson, setExpandedJson] = useState<Set<string>>(new Set());
 
   const handleSortClick = (key: SortKey) => {
     if (sortKey === key) {
@@ -114,6 +115,22 @@ export function UsersTable({
               <th className="text-center p-3 font-medium">Test User</th>
               <th className="text-center p-3 font-medium">Unsubbed from Updates</th>
               <th className="text-center p-3 font-medium">Clear Phone Verification</th>
+              <th className="text-left p-3 font-medium">
+                <div className="flex items-center gap-2">
+                  Raw JSON
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs h-6 px-2 font-normal"
+                    onClick={() => {
+                      const allExpanded = filteredUsers.every(u => expandedJson.has(u.id));
+                      setExpandedJson(allExpanded ? new Set() : new Set(filteredUsers.map(u => u.id)));
+                    }}
+                  >
+                    {filteredUsers.every(u => expandedJson.has(u.id)) ? "Collapse All" : "Expand All"}
+                  </Button>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -171,6 +188,24 @@ export function UsersTable({
                       <span className="text-muted-foreground">-</span>
                     )}
                   </div>
+                </td>
+                <td className="p-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setExpandedJson(prev => {
+                      const next = new Set(prev);
+                      next.has(user.id) ? next.delete(user.id) : next.add(user.id);
+                      return next;
+                    })}
+                  >
+                    {expandedJson.has(user.id) ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </Button>
+                  {expandedJson.has(user.id) && (
+                    <pre className="font-mono text-xs text-muted-foreground whitespace-pre-wrap max-w-xs max-h-64 overflow-auto bg-muted/30 rounded p-1 mt-1">
+                      {JSON.stringify(user, null, 2)}
+                    </pre>
+                  )}
                 </td>
               </tr>
             ))}
