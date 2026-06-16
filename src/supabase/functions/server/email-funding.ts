@@ -1,6 +1,5 @@
 import { getNewsletterFooter, styles } from "./email-templates.tsx";
-
-const SUPABASE_URL = "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting";
+import { SUPABASE_URL } from "./constants.tsx";
 
 export const getSubstackArticleEmail = (): { subject: string; html: string } => {
   const subject = "The Future of DC's Next Community App";
@@ -27,6 +26,11 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
         <p style="${styles.paragraph}">
           When we first started putting up flyers asking people how they feel about Waymo in DC, rats in Dupont, or unleashed dogs in Kalorama Park, I didn't expect to get many responses. There are already plenty of flyers and ads shouting at us to vote for this person or buy that product, so it's easy to distrust that a flyer is genuinely asking you how you feel about things. And it's easy to assume they're just asking to figure out how to sell to you better.
         </p>
+        <a href="https://heard.vote">
+          <img src="${SUPABASE_URL}/fund-rats-flyer.jpeg"
+               alt="Heard flyer asking about rats in Dupont Circle"
+               style="${styles.image}" />
+        </a>
       </div>
 
       <div style="${styles.section}">
@@ -37,7 +41,7 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
           So where does that leave us? Well, after papering the city with hundreds of flyers asking people to vote on local topics, we're pretty proud with the numbers we've put on the board.
         </p>
         <a href="https://heard.vote">
-          <img src="${SUPABASE_URL}/nl-20-flyers.png"
+          <img src="${SUPABASE_URL}/fund-flyer-collage.png"
                alt="Collage of Heard flyers across DC"
                style="${styles.image}" />
         </a>
@@ -48,7 +52,7 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
           We've had 400+ DC residents who have probably never heard the phrase, "deliberative tech", participate in our posts. And they haven't just voted, they've added their own ideas, experiences, and opinions into the mix.
         </p>
         <a href="https://heard.vote">
-          <img src="${SUPABASE_URL}/nl-20-response-card.png"
+          <img src="${SUPABASE_URL}/fund-response.jpeg"
                alt="Example response card from a Heard post"
                style="${styles.image}" />
         </a>
@@ -56,7 +60,7 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
           We also had 307 animal rescuers from the Wisconsin Beagle Rescue Action use Heard to debrief a recent major operation.
         </p>
         <a href="https://heard.vote">
-          <img src="${SUPABASE_URL}/nl-20-beagle-spectrum.png"
+          <img src="${SUPABASE_URL}/fund-spectrum.jpeg"
                alt="Heard statement spectrum from the beagle rescue debrief"
                style="${styles.image}" />
         </a>
@@ -78,9 +82,6 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
             💜 Support Heard
           </a>
         </div>
-        <p style="color: #888; font-size: 0.9rem; text-align: center; margin: 0;">
-          Or visit <a href="https://heard.vote/fund" style="${styles.link}">heard.vote/fund</a>
-        </p>
       </div>
 
       <div style="${styles.closing}">

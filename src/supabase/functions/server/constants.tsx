@@ -12,3 +12,5 @@ export const VALID_AVATARS = [
   "sloth",
   "panda",
 ] as const;
+
+export const SUPABASE_URL = "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting";

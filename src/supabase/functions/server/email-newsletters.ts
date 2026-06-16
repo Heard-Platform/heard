@@ -1,8 +1,8 @@
 import { getParameterizedNewsletter } from "./email-newsletter-4.ts";
 import { GITHUB_URL, YT_SHORTS_URL } from "./email-templates.tsx";
 import { getSubstackArticleEmail } from "./email-funding.ts";
+import { SUPABASE_URL } from "./constants.tsx";
 
-const SUPABASE_URL = "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting";
 const YT_FIRST_VID_URL = "https://youtu.be/JM0WUrFkYZc";
 const YT_FLYERING_URL_NL12 = "https://www.youtube.com/shorts/wnFjDv0S4Bo";
 const YT_PUSHUPS_URL_NL12 = "https://www.youtube.com/shorts/JWv-IaL2jh4";
