@@ -8,6 +8,7 @@ interface DonationDialogProps {
   open: boolean;
   amount: number;
   createCheckoutSession?: (amount: number, successUrl: string, cancelUrl: string) => Promise<ApiResponse<{ url: string }>>;
+  onSuccess?: () => void;
   onClose: () => void;
 }
 
@@ -15,6 +16,7 @@ export function DonationDialog({
   open,
   amount,
   createCheckoutSession = (amount, successUrl, cancelUrl) => api.createCheckoutSession(amount, successUrl, cancelUrl),
+  onSuccess,
   onClose,
 }: DonationDialogProps) {
   const [loading, setLoading] = useState(false);
@@ -31,7 +33,11 @@ export function DonationDialog({
     createCheckoutSession(amount, successUrl, cancelUrl)
       .then((res) => {
         if (res.success && res.data?.url) {
-          window.location.href = res.data.url;
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            window.location.href = res.data.url;
+          }
         } else {
           setError(res.error ?? "Failed to start checkout");
           setLoading(false);

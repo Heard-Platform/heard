@@ -13,12 +13,14 @@ type CardStep = "donate" | "share" | "done";
 interface FundingPageProps {
   getFundingStats?: () => Promise<ApiResponse<{ totalDollars: number; donorCount: number }>>;
   createCheckoutSession?: (amount: number, successUrl: string, cancelUrl: string) => Promise<ApiResponse<{ url: string }>>;
+  simulateCheckoutSuccess?: boolean;
   onExit?: () => void;
 }
 
 export function FundingPage({
   getFundingStats = () => api.getFundingStats(),
   createCheckoutSession = (amount, successUrl, cancelUrl) => api.createCheckoutSession(amount, successUrl, cancelUrl),
+  simulateCheckoutSuccess = false,
   onExit,
 }: FundingPageProps) {
   const params = new URLSearchParams(window.location.search);
@@ -69,6 +71,16 @@ export function FundingPage({
       setShowAmountPicker(false);
       setCustomAmount("");
     }
+  };
+
+  const applySuccessState = (donatedAmount: number) => {
+    setTotalDonated((prev) => prev + donatedAmount);
+    setDonorCount((prev) => prev + 1);
+    setCardStep("share");
+    setShowDonationDialog(false);
+    setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }, 100);
   };
 
   return (
@@ -330,8 +342,9 @@ export function FundingPage({
       <DonationDialog
         open={showDonationDialog}
         amount={amount}
-        onClose={() => { setShowDonationDialog(false); setCardKey((k) => k + 1); }}
         createCheckoutSession={createCheckoutSession}
+        onSuccess={simulateCheckoutSuccess ? () => applySuccessState(amount) : undefined}
+        onClose={() => { setShowDonationDialog(false); setCardKey((k) => k + 1); }}
       />
     </div>
   );

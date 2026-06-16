@@ -11,8 +11,9 @@ export function FundingPageStory() {
           }}
           createCheckoutSession={async (amount) => {
             console.log("[Story] createCheckoutSession", { amount });
-            return { success: true, data: { url: "http://localhost:3000/fund" } };
+            return { success: true, data: { url: "#" } };
           }}
+          simulateCheckoutSuccess
         />
       </div>
     </div>
