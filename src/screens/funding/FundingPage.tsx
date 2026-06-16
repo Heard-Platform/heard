@@ -263,6 +263,15 @@ export function FundingPage({
         )}
       </div>
 
+      <a
+        href="https://substack.com/@alexlongheard"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ color: C.slate400, fontSize: 14, textDecoration: "underline" }}
+      >
+        Read the full story on Substack
+      </a>
+
       {/* Amount picker */}
       <Dialog open={showAmountPicker} onOpenChange={setShowAmountPicker}>
         <DialogContent>
