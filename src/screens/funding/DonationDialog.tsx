@@ -26,6 +26,7 @@ export function DonationDialog({
     if (!open) { setError(null); setLoading(false); return; }
     setLoading(true);
     setError(null);
+    api.trackEvent("funding_checkout_started");
 
     const successUrl = `${window.location.origin}${window.location.pathname}?payment=success&amount=${amount}`;
     const cancelUrl = `${window.location.origin}${window.location.pathname}`;
@@ -39,11 +40,13 @@ export function DonationDialog({
             window.location.href = res.data.url;
           }
         } else {
+          api.trackEvent("funding_checkout_error");
           setError(res.error ?? "Failed to start checkout");
           setLoading(false);
         }
       })
       .catch(() => {
+        api.trackEvent("funding_checkout_error");
         setError("Network error. Please try again.");
         setLoading(false);
       });

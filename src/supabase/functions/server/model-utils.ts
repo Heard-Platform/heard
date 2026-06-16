@@ -134,6 +134,14 @@ export const getOneBillionEvents = async () => {
   );
 };
 
+export const getFundingEvents = async () => {
+  return selectAll<UserEvent>(
+    "user_events",
+    {},
+    (q: any) => q.like("type", "funding_%").select("type, userId"),
+  );
+};
+
 export const insertAnalyticsEvent = async (event: NewUserEvent) => {
   return insert<NewUserEvent>( "user_events", event );
 };

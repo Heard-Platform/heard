@@ -39,6 +39,8 @@ export function FundingPage({
   const [nugMode, setNugMode] = useState(false);
 
   useEffect(() => {
+    api.trackEvent("funding_page_view");
+
     getFundingStats()
       .then((res) => {
         if (res.success && res.data) {
@@ -49,6 +51,7 @@ export function FundingPage({
       .finally(() => setStatsLoading(false));
 
     if (returnedWithSuccess) {
+      api.trackEvent("funding_donation_success");
       window.history.replaceState({}, "", window.location.pathname);
       setTimeout(() => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
@@ -59,6 +62,7 @@ export function FundingPage({
   const progressPct = Math.min((totalDonated / FUNDING_GOAL) * 100, 100);
 
   const handleAmountSelect = (val: number) => {
+    api.trackEvent("funding_amount_selected");
     setAmount(val);
     setShowAmountPicker(false);
     setCustomAmount("");
@@ -67,6 +71,7 @@ export function FundingPage({
   const handleCustomConfirm = () => {
     const val = parseInt(customAmount.replace(/\D/g, ""), 10);
     if (val > 0) {
+      api.trackEvent("funding_custom_amount_confirmed");
       setAmount(val);
       setShowAmountPicker(false);
       setCustomAmount("");
@@ -74,6 +79,7 @@ export function FundingPage({
   };
 
   const applySuccessState = (donatedAmount: number) => {
+    api.trackEvent("funding_donation_success");
     setTotalDonated((prev) => prev + donatedAmount);
     setDonorCount((prev) => prev + 1);
     setCardStep("share");
@@ -95,7 +101,7 @@ export function FundingPage({
     }}>
       {onExit && (
         <button
-          onClick={onExit}
+          onClick={() => { api.trackEvent("funding_exit_clicked"); onExit(); }}
           style={{ position: "absolute", top: 16, left: 16, background: "none", border: "none", cursor: "pointer", color: C.slate500, fontSize: 14, fontWeight: 500, padding: 8 }}
         >
           ← Back
@@ -177,7 +183,7 @@ export function FundingPage({
           </>
         )}
         <button
-          onClick={() => setNugMode((v) => !v)}
+          onClick={() => { api.trackEvent("funding_nugmode_toggled"); setNugMode((v) => !v); }}
           style={{
             marginTop: 8,
             fontSize: 12,
@@ -218,8 +224,8 @@ export function FundingPage({
               key={cardKey}
               amount={amount}
               nugMode={nugMode}
-              onSwipeRight={() => setShowDonationDialog(true)}
-              onTapAmount={() => setShowAmountPicker(true)}
+              onSwipeRight={() => { api.trackEvent("funding_swipe_donate"); setShowDonationDialog(true); }}
+              onTapAmount={() => { api.trackEvent("funding_amount_picker_opened"); setShowAmountPicker(true); }}
             />
           </>
         )}
@@ -233,7 +239,7 @@ export function FundingPage({
               boxShadow: "0 10px 15px -3px rgba(0,0,0,0.08)",
               transform: "translateY(10px) scale(0.965)", zIndex: 1,
             }} />
-            <ShareCard onDismiss={() => setCardStep("done")} />
+            <ShareCard onDismiss={() => { api.trackEvent("funding_share_dismissed"); setCardStep("done"); }} />
           </>
         )}
 
@@ -246,6 +252,7 @@ export function FundingPage({
               href="https://heard.vote"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => api.trackEvent("funding_go_to_heard_clicked")}
               style={{
                 display: "inline-block",
                 padding: "14px 28px",
@@ -267,6 +274,7 @@ export function FundingPage({
         href="https://substack.com/@alexlongheard"
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => api.trackEvent("funding_substack_link_clicked")}
         style={{ color: C.slate400, fontSize: 14, textDecoration: "underline" }}
       >
         Read the full story on Substack

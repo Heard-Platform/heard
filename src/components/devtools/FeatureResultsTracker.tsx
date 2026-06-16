@@ -24,12 +24,14 @@ import {
   Heart,
   ArrowRight,
   Cpu,
+  HeartHandshake,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
 import { AvatarAnimalChart } from "./feature-tracker/AvatarAnimalChart";
 import { CertifyCardResults } from "./feature-tracker/CertifyCardResults";
 import { OneBillionResults } from "./feature-tracker/OneBillionResults";
+import { FundingResults } from "./feature-tracker/FundingResults";
 
 interface FeatureResultsTrackerProps {
   onExit: () => void;
@@ -260,6 +262,16 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       description: "Total rows in the llm_api_calls table",
       getValue: (s) => s.llmApiCalls,
       getDate: (s) => s.llmApiCallsSince,
+    },
+    {
+      icon: HeartHandshake,
+      iconColor: "text-emerald-600",
+      bgColor: "bg-emerald-100",
+      title: "/fund Page",
+      description: "Funnel of events on the funding/donation page",
+      getValue: (s) => s.fundingEvents.pageView,
+      getDate: (s) => s.fundingEventsSince,
+      renderExtra: (s) => <FundingResults {...s.fundingEvents} />,
     },
   ]
 

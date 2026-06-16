@@ -4,6 +4,7 @@ import type { PanInfo } from "motion/react";
 import { Copy, Check, Share2 } from "lucide-react";
 import { C, SHARE_URL } from "./constants";
 import { share } from "../../utils/share";
+import { api } from "../../utils/api";
 
 interface ShareCardProps {
   onDismiss: () => void;
@@ -24,11 +25,18 @@ export function ShareCard({ onDismiss }: ShareCardProps) {
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    api.trackEvent("funding_share_copy");
     try {
       await navigator.clipboard.writeText(SHARE_URL);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch { /* ignore */ }
+  };
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    api.trackEvent("funding_share_native");
+    share({ url: SHARE_URL, title: "Support Heard" });
   };
 
   return (
@@ -85,7 +93,7 @@ export function ShareCard({ onDismiss }: ShareCardProps) {
             {typeof navigator.share === "function" && (
               <button
                 onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => { e.stopPropagation(); share({ url: SHARE_URL, title: "Support Heard" }); }}
+                onClick={handleShare}
                 style={{
                   width: "100%",
                   display: "flex",

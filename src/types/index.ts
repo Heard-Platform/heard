@@ -491,6 +491,24 @@ export interface FeatureResults {
     clickForm: number;
     clickCopy: number;
   };
+  fundingEvents: {
+    pageView: number;
+    swipeDonate: number;
+    amountPickerOpened: number;
+    amountSelected: number;
+    customAmountConfirmed: number;
+    checkoutStarted: number;
+    checkoutError: number;
+    donationSuccess: number;
+    shareCopy: number;
+    shareNative: number;
+    shareDismissed: number;
+    goToHeardClicked: number;
+    substackLinkClicked: number;
+    nugmodeToggled: number;
+    exitClicked: number;
+  };
+  fundingEventsSince: number;
   llmApiCalls: number;
   llmApiCallsSince: number;
 }
