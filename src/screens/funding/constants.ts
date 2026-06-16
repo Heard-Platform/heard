@@ -1,6 +1,6 @@
 export const PRESET_AMOUNTS = [10, 25, 50, 100];
 export const FUNDING_GOAL = 5000;
-export const SHARE_URL = "https://heard.vote/funding";
+export const SHARE_URL = "https://heard.vote/fund";
 
 export const C = {
   slate900: "#0f172a",

@@ -1,6 +1,6 @@
 import { getParameterizedNewsletter } from "./email-newsletter-4.ts";
 import { GITHUB_URL, YT_SHORTS_URL } from "./email-templates.tsx";
-import { getSubstackArticleEmail } from "./email-substack-article.ts";
+import { getSubstackArticleEmail } from "./email-funding.ts";
 
 const SUPABASE_URL = "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting";
 const YT_FIRST_VID_URL = "https://youtu.be/JM0WUrFkYZc";

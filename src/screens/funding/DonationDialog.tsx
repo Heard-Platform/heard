@@ -1,15 +1,22 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle } from "../../components/ui/dialog";
 import { api } from "../../utils/api";
+import type { ApiResponse } from "../../utils/api-client";
 import { C } from "./constants";
 
 interface DonationDialogProps {
   open: boolean;
   amount: number;
+  createCheckoutSession?: (amount: number, successUrl: string, cancelUrl: string) => Promise<ApiResponse<{ url: string }>>;
   onClose: () => void;
 }
 
-export function DonationDialog({ open, amount, onClose }: DonationDialogProps) {
+export function DonationDialog({
+  open,
+  amount,
+  createCheckoutSession = (amount, successUrl, cancelUrl) => api.createCheckoutSession(amount, successUrl, cancelUrl),
+  onClose,
+}: DonationDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +28,7 @@ export function DonationDialog({ open, amount, onClose }: DonationDialogProps) {
     const successUrl = `${window.location.origin}${window.location.pathname}?payment=success&amount=${amount}`;
     const cancelUrl = `${window.location.origin}${window.location.pathname}`;
 
-    api.createCheckoutSession(amount, successUrl, cancelUrl)
+    createCheckoutSession(amount, successUrl, cancelUrl)
       .then((res) => {
         if (res.success && res.data?.url) {
           window.location.href = res.data.url;

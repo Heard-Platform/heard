@@ -6,14 +6,21 @@ import { ShareCard } from "./ShareCard";
 import { DonationDialog } from "./DonationDialog";
 import { C, fmt, PRESET_AMOUNTS, FUNDING_GOAL } from "./constants";
 import { api } from "../../utils/api";
+import type { ApiResponse } from "../../utils/api-client";
 
 type CardStep = "donate" | "share" | "done";
 
 interface FundingPageProps {
+  getFundingStats?: () => Promise<ApiResponse<{ totalDollars: number; donorCount: number }>>;
+  createCheckoutSession?: (amount: number, successUrl: string, cancelUrl: string) => Promise<ApiResponse<{ url: string }>>;
   onExit?: () => void;
 }
 
-export function FundingPage({ onExit }: FundingPageProps) {
+export function FundingPage({
+  getFundingStats = () => api.getFundingStats(),
+  createCheckoutSession = (amount, successUrl, cancelUrl) => api.createCheckoutSession(amount, successUrl, cancelUrl),
+  onExit,
+}: FundingPageProps) {
   const params = new URLSearchParams(window.location.search);
   const returnedWithSuccess = params.get("payment") === "success";
   const returnedAmount = parseInt(params.get("amount") ?? "0", 10) || 0;
@@ -30,7 +37,7 @@ export function FundingPage({ onExit }: FundingPageProps) {
   const [nugMode, setNugMode] = useState(false);
 
   useEffect(() => {
-    api.getFundingStats()
+    getFundingStats()
       .then((res) => {
         if (res.success && res.data) {
           setTotalDonated(res.data.totalDollars);
@@ -324,6 +331,7 @@ export function FundingPage({ onExit }: FundingPageProps) {
         open={showDonationDialog}
         amount={amount}
         onClose={() => { setShowDonationDialog(false); setCardKey((k) => k + 1); }}
+        createCheckoutSession={createCheckoutSession}
       />
     </div>
   );

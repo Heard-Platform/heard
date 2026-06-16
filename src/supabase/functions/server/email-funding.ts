@@ -15,10 +15,6 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
 <body style="${styles.body}">
   <div style="${styles.container}">
 
-    <div style="${styles.header}">
-      <h1 style="${styles.headerTitle}">Heard</h1>
-    </div>
-
     <div style="${styles.contentCard}">
 
       <div style="${styles.intro}">
@@ -28,7 +24,7 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
         <p style="color: #888; font-style: italic; margin: 0 0 20px 0;">
           (I've got some real skin in the game)
         </p>
-        <p style="${styles.introParagraph}">
+        <p style="${styles.paragraph}">
           When we first started putting up flyers asking people how they feel about Waymo in DC, rats in Dupont, or unleashed dogs in Kalorama Park, I didn't expect to get many responses. There are already plenty of flyers and ads shouting at us to vote for this person or buy that product, so it's easy to distrust that a flyer is genuinely asking you how you feel about things. And it's easy to assume they're just asking to figure out how to sell to you better.
         </p>
       </div>
@@ -70,9 +66,6 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
       </div>
 
       <div style="${styles.section}">
-        <h2 style="${styles.sectionTitle}">
-          💸 $5k by July 4th — or Alex Gets a Tattoo
-        </h2>
         <p style="${styles.paragraph}">
           That all being said, I set some pretty ambitious goals for July 4th, and we're dangerously close to missing them. The #1 goal I need your help with is reaching <strong>$5k in funding</strong>. If I don't reach this goal, as I've previously committed, I will get a 1 year tattoo chosen by the users of Heard!
         </p>
@@ -83,13 +76,13 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
           So if you're up for it, I'd love for you to chip in whatever you feel inspired to give to help me keep going. Know you will have my eternal gratitude no matter what you're willing to offer.
         </p>
         <div style="text-align: center; margin: 32px 0;">
-          <a href="https://heard.vote/funding"
+          <a href="https://heard.vote/fund"
              style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 18px 56px; border-radius: 10px; font-weight: bold; font-size: 1.2rem; box-shadow: 0 4px 16px rgba(102,126,234,0.4);">
             💜 Support Heard
           </a>
         </div>
         <p style="color: #888; font-size: 0.9rem; text-align: center; margin: 0;">
-          Or visit <a href="https://heard.vote/funding" style="${styles.link}">heard.vote/funding</a>
+          Or visit <a href="https://heard.vote/fund" style="${styles.link}">heard.vote/fund</a>
         </p>
       </div>
 

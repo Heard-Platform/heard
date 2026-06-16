@@ -257,7 +257,7 @@ function AppContent() {
       const isOrgsRoute = route === "orgs";
       const isOneBillionRoute = route === "1billion";
       const isAiUsageRoute = route === "ai-usage";
-      const isFundingRoute = route === "funding";
+      const isFundingRoute = route === "fund";
       const newsletterMatch = pathname.match(/^\/newsletter\/(\d+)$/);
       const isParkletRoute = route === "parklet";
       const is2b04Route = route === "2b04";
