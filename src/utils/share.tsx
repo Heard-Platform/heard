@@ -13,23 +13,9 @@ const copyToClipboard = (text: string): Promise<void> => {
 };
 
 export const share = async (options: ShareOptions): Promise<boolean> => {
-  const isDesktop = window.innerWidth >= 768;
-  
   const contentToCopy = options.text || options.url || "";
 
-  if (isDesktop) {
-    try {
-      await copyToClipboard(contentToCopy);
-      options?.onSuccess?.();
-      return true;
-    } catch (error) {
-      console.error("Clipboard failed on desktop:", error);
-      options?.onError?.(error as Error);
-      return false;
-    }
-  }
-
-  // Mobile: try Web Share API first, then clipboard
+  // Try Web Share API first, then fall back to clipboard
   try {
     if (navigator.share) {
       const shareData: ShareData = {};
@@ -47,13 +33,12 @@ export const share = async (options: ShareOptions): Promise<boolean> => {
     console.log("Web Share API failed, using clipboard fallback:", shareError);
   }
 
-  // Mobile clipboard fallback
   try {
     await copyToClipboard(contentToCopy);
     options?.onSuccess?.();
     return true;
   } catch (clipboardError) {
-    console.error("Clipboard failed on mobile:", clipboardError);
+    console.error("Clipboard failed:", clipboardError);
     options?.onError?.(clipboardError as Error);
     return false;
   }

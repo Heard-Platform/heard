@@ -873,6 +873,20 @@ class ApiClient extends BaseApiClient {
     this.post("/analytics/event", { type, roomId })
       .catch(() => {});
   }
+
+  async createCheckoutSession(amount: number, successUrl: string, cancelUrl: string) {
+    const mode = import.meta.env.VITE_STRIPE_MODE ?? "test";
+    return this.request<{ url: string }>("/create-checkout-session", {
+      method: "POST",
+      body: JSON.stringify({ amount, mode, successUrl, cancelUrl }),
+    });
+  }
+
+  async getFundingStats() {
+    return this.request<{ totalDollars: number; donorCount: number }>("/funding-stats", {
+      method: "GET",
+    });
+  }
 }
 
 export const api = new ApiClient();

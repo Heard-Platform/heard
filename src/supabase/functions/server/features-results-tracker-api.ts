@@ -1,6 +1,6 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers } from "./kv-utils.tsx";
-import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getUniqueUserIdsForEvent } from "./model-utils.ts";
+import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getUniqueUserIdsForEvent } from "./model-utils.ts";
 import { countRecords } from "./db-utils.ts";
 
 const app = new Hono();
@@ -109,6 +109,30 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       clickCopy: oneBillionCounts["one_billion_click_copy"] ?? 0,
     };
 
+    const fundingEventRows = await getFundingEvents();
+    const fundingCounts: Record<string, number> = {};
+    for (const row of fundingEventRows) {
+      fundingCounts[row.type] = (fundingCounts[row.type] ?? 0) + 1;
+    }
+    const fundingEvents = {
+      pageView: fundingCounts["funding_page_view"] ?? 0,
+      swipeDonate: fundingCounts["funding_swipe_donate"] ?? 0,
+      amountPickerOpened: fundingCounts["funding_amount_picker_opened"] ?? 0,
+      amountSelected: fundingCounts["funding_amount_selected"] ?? 0,
+      customAmountConfirmed: fundingCounts["funding_custom_amount_confirmed"] ?? 0,
+      checkoutStarted: fundingCounts["funding_checkout_started"] ?? 0,
+      checkoutError: fundingCounts["funding_checkout_error"] ?? 0,
+      donationSuccess: fundingCounts["funding_donation_success"] ?? 0,
+      shareCopy: fundingCounts["funding_share_copy"] ?? 0,
+      shareNative: fundingCounts["funding_share_native"] ?? 0,
+      shareDismissed: fundingCounts["funding_share_dismissed"] ?? 0,
+      goToHeardClicked: fundingCounts["funding_go_to_heard_clicked"] ?? 0,
+      substackLinkClicked: fundingCounts["funding_substack_link_clicked"] ?? 0,
+      nugmodeToggled: fundingCounts["funding_nugmode_toggled"] ?? 0,
+      exitClicked: fundingCounts["funding_exit_clicked"] ?? 0,
+    };
+    const fundingEventsSince = new Date("2026-06-16").getTime();
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -168,6 +192,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       oneBillionEvents,
       llmApiCalls,
       llmApiCallsSince,
+      fundingEvents,
+      fundingEventsSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);
