@@ -31,7 +31,7 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
 
       <div style="${styles.section}">
         <p style="${styles.paragraph}">
-          But at Heard, we're asking because we believe that expressing your voice, when it's listened to, when it's heard, is addictive, is empowering. We're asking because we want to poke and tickle the cynicism in the system that tells us we can't really change things. We're asking because we believe that community that's connected, participating, and taking ownership in the world around it is the antidote to fascism. And we believe this idea is what the United States, for all its flaws, was built on. So what better way to celebrate our 250th birthday than to help reignite that flame?
+          But at Heard, we're asking because we believe that expressing your voice, when it's listened to, when it's heard, is addictive, is empowering. We're asking because we want to poke and tickle the cynicism in the system that tells us we can't really change things. We're asking because we believe a community that's connected, participating, and taking ownership in the world around it is the antidote to fascism. And we believe this idea is what the United States, for all its flaws, was built on. So what better way to celebrate our 250th birthday than to help reignite that flame?
         </p>
         <p style="${styles.paragraph}">
           So where does that leave us? Well, after papering the city with hundreds of flyers asking people to vote on local topics, we're pretty proud with the numbers we've put on the board.
@@ -45,7 +45,7 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
 
       <div style="${styles.section}">
         <p style="${styles.paragraph}">
-          We've had 400+ DC residents who have probably never heard the phrase "deliberative tech" participate in our posts. And they haven't just voted — they've added their own ideas, experiences, and opinions into the mix.
+          We've had 400+ DC residents who have probably never heard the phrase, "deliberative tech", participate in our posts. And they haven't just voted, they've added their own ideas, experiences, and opinions into the mix.
         </p>
         <a href="https://heard.vote">
           <img src="${SUPABASE_URL}/nl-20-response-card.png"
@@ -53,7 +53,7 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
                style="${styles.image}" />
         </a>
         <p style="${styles.paragraph}" style="margin-top: 16px;">
-          We also had 307 animal rescuers from the Wisconsin beagle rescue action use Heard to debrief how things went.
+          We also had 307 animal rescuers from the Wisconsin Beagle Rescue Action use Heard to debrief a recent major operation.
         </p>
         <a href="https://heard.vote">
           <img src="${SUPABASE_URL}/nl-20-beagle-spectrum.png"
@@ -67,13 +67,10 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
 
       <div style="${styles.section}">
         <p style="${styles.paragraph}">
-          That all being said, I set some pretty ambitious goals for July 4th, and we're dangerously close to missing them. The #1 goal I need your help with is reaching <strong>$5k in funding</strong>. If I don't reach this goal, as I've previously committed, I will get a 1 year tattoo chosen by the users of Heard!
+          That all being said, I set some pretty ambitious goals for July 4th, and we're dangerously close to missing them. The #1 goal I need your help with is reaching <strong>$5k in funding</strong>. If I don't reach this goal, I will get a 1 year tattoo chosen by the users of Heard, as promised! More importantly though, reaching this goal would validate that the hundreds of hours I've spent on this project over the past 6 months are actually the right thing for me to be doing. Your donation is a little, "keep going!", whispered in my ear for the months to come.
         </p>
         <p style="${styles.paragraph}">
-          More importantly though, reaching this goal would validate that the hundreds of hours I've spent on this project over the past 6 months are actually the right thing for me to be doing. Your donations would show me people really believe this platform might have some potential to make a real impact in the world — and they'd be a little "keep going!" whispered in my ear for the months to come.
-        </p>
-        <p style="${styles.paragraph}">
-          So if you're up for it, I'd love for you to chip in whatever you feel inspired to give to help me keep going. Know you will have my eternal gratitude no matter what you're willing to offer.
+          So if you're up for it, I'd love for you to chip in whatever you feel inspired to give. You can head over to <a href="https://heard.vote/fund" style="${styles.link}">heard.vote/fund</a> now to do that. Know you will have my eternal gratitude no matter what you're willing to offer. And I'll see you back out there with the next spicy topic to discuss soon.
         </p>
         <div style="text-align: center; margin: 32px 0;">
           <a href="https://heard.vote/fund"
@@ -87,9 +84,6 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
       </div>
 
       <div style="${styles.closing}">
-        <p style="${styles.closingText}">
-          And I'll see you back out there with the next spicy topic to discuss soon. 🌶️
-        </p>
         <p style="${styles.signature}">- Alex</p>
       </div>
 
