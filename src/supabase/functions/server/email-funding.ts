@@ -11,10 +11,10 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
   <meta charset="utf-8">
   <title>${subject}</title>
 </head>
-<body style="${styles.body}">
-  <div style="${styles.container}">
+<body style="${styles.body} background: white;">
+  <div style="${styles.container} padding: 24px 8px;">
 
-    <div style="${styles.contentCard}">
+    <div style="${styles.contentCard} padding: 0; box-shadow: none; border-radius: 0;">
 
       <div style="${styles.intro}">
         <h2 style="color: #333; font-size: 2rem; margin: 0 0 8px 0; line-height: 1.2;">
@@ -24,7 +24,7 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
           And why you may have seen our flyers about Waymo around DC
         </p>
         <p style="${styles.paragraph}">
-          When we first started putting up flyers asking people how they feel about Waymo in DC, rats in Dupont, or unleashed dogs in Kalorama Park, I didn't expect to get many responses. There are already plenty of flyers and ads shouting at us to vote for this person or buy that product, so it's easy to distrust that a flyer is genuinely asking you how you feel about things. And it's easy to assume they're just asking to figure out how to sell to you better.
+          When we first started putting up flyers asking people how they feel about Waymo in DC, rats in Dupont, or unleashed dogs in Kalorama Park, I didn't expect to get many responses. There are already plenty of flyers and ads shouting at us to vote for this person or buy that product, so it's easy to distrust that a flyer is genuinely asking you how you feel about things.
         </p>
         <a href="${SUPABASE_URL}/fund-rats-flyer.jpeg">
           <img src="${SUPABASE_URL}/fund-rats-flyer.jpeg"
@@ -57,6 +57,9 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
                alt="Example response card from a Heard post"
                style="${styles.image}" />
         </a>
+      </div>
+
+      <div style="${styles.section}">
         <p style="${styles.paragraph}" style="margin-top: 16px;">
           We also had 307 animal rescuers from the <a href="https://bfp.org/" style="${styles.link}">Wisconsin Beagle Rescue Action</a> use Heard to debrief a recent major operation.
         </p>
@@ -65,6 +68,9 @@ export const getSubstackArticleEmail = (): { subject: string; html: string } => 
                alt="Heard statement spectrum from the beagle rescue debrief"
                style="${styles.image}" />
         </a>
+      </div>
+
+      <div style="${styles.section}">
         <p style="${styles.paragraph}" style="margin-top: 16px;">
           We've had a ton of support from amazing allies, advisors, and fans, and even raised a few hundred dollars.
         </p>

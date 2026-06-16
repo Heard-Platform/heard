@@ -271,7 +271,7 @@ export function FundingPage({
       </div>
 
       <a
-        href="https://substack.com/@alexlongheard"
+        href="https://alexlongheard.substack.com/p/the-future-of-dcs-next-community"
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => api.trackEvent("funding_substack_link_clicked")}
