@@ -161,14 +161,14 @@ function autoRejectedRecord(
 
 function toScrapedRecord(article: GGWashArticle): ScrapedItem {
   return {
-    source: SCRAPE_SOURCE,
     guid: article.guid,
     title: article.title,
+    bodyExcerpt: article.body.slice(0, STORE_EXCERPT_CHARS),
+    source: SCRAPE_SOURCE,
     url: article.url,
     imageUrl: article.imageUrl,
     publishedAt: article.publishedAt,
     scrapedAt: Date.now(),
-    bodyExcerpt: article.body.slice(0, STORE_EXCERPT_CHARS),
     status: "scraped",
   };
 }

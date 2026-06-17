@@ -328,14 +328,14 @@ export type ScrapedItemStatus =
   | "rejected";
 
 export interface ScrapedItem {
-  source: string;
   guid: string;
   title: string;
+  bodyExcerpt: string;
+  source: string;
   url: string;
   imageUrl?: string;
   publishedAt: number;
   scrapedAt: number;
-  bodyExcerpt: string;
   status: ScrapedItemStatus;
   rank?: number;
   generatedTopic?: string;
