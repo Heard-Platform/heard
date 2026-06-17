@@ -26,10 +26,3 @@ export const saveScrapedItem = async (item: ScrapedItem): Promise<void> => {
   const { success, error } = await upsert(TABLE_NAME, item, CONFLICT_KEY);
   if (!success) throw new Error(error ?? "Failed to save scraped item");
 };
-
-export const getScrapedItems = async (
-  source: string,
-): Promise<ScrapedItem[]> => {
-  const rows = await selectAll<ScrapedItem>(TABLE_NAME, { source });
-  return rows.map(stripNulls);
-};
