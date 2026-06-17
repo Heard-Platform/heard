@@ -66,7 +66,7 @@ const INITIAL_FORM = {
   newSubHeardName: "",
   debateId: null as string | null,
   cover: null as Cover | null,
-  allowAnonymousVoting: false,
+  allowAnonymousVoting: true,
   demographicQuestions: [] as NewDemographicQuestion[],
   debateLength: ONE_WEEK_MIN,
   showComposeError: false,
