@@ -40,24 +40,23 @@ const LAST_VIEWED_ROOM_KEY = "lastViewedRoom";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
-const KALORAMA_ROOM_ID = "xo38wmfkm7bmo35js4i";
 const KALORAMA_COMMUNITIES = ["kalorama-park", "dupont-circle-neighborhoods", "washington-dc"];
 
-const WAYMO_ROOM_ID = "jhxaoh1a3bmq2fflpx";
-const WAYMO_STATEMENT_ID = "0d3m3yflnlc8mq2fflre";
+const WAYMO_DUPONT_ROOM_ID = "jhxaoh1a3bmq2fflpx";
+const WAYMO_DUPONT_STATEMENT_ID = "0d3m3yflnlc8mq2fflre";
+
+const WAYMO_DC_ROOM_ID = "s6r23ralcomq8l9p6p";
+const WAYMO_DC_STATEMENT_ID = "ecgld4qfclqmq8l9p82";
 
 const I_LOVE_CIVTECH_FLYER_ID = "gv7kmooa0lmom3pn2m";
 const I_LOVE_CIVTECH_STATEMENT_ID = "jg46pxp4fsmom3pn3c";
-
-const SHIRT_FLYER_ID = WAYMO_ROOM_ID;
-const SHIRT_STATEMENT_ID = WAYMO_STATEMENT_ID;
 
 const CLUB_FLYER_ID = "i2yo40k84womp72i2qi";
 const CLUB_STATEMENT_ID = "qkjea7qnj3mp72i2r3";
 
 const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: string }> = {
-  shirt: { flyerId: SHIRT_FLYER_ID, statementId: SHIRT_STATEMENT_ID },
-  sign: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
+  shirt: { flyerId: WAYMO_DC_ROOM_ID, statementId: WAYMO_DC_STATEMENT_ID },
+  sign: { flyerId: WAYMO_DC_ROOM_ID, statementId: WAYMO_DC_STATEMENT_ID },
   card: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
 };
 
@@ -244,58 +243,37 @@ function AppContent() {
       const urlParams = new URLSearchParams(
         window.location.search,
       );
+      const { pathname } = window.location;
+      const route = pathname.split("/")[1];
       const magicTokenFromUrl = urlParams.get("token");
-      const isMagicLinkRoute =
-        window.location.pathname.startsWith("/magic-link");
-      const isAdminRoute =
-        window.location.pathname.startsWith("/admin");
-      const isDevToolsRoute =
-        window.location.pathname.startsWith("/devtools");
-      const isUnsubscribeRoute =
-        window.location.pathname.startsWith("/unsubscribe");
-      const isTermsRoute =
-        window.location.pathname.startsWith("/terms");
-      const isPrivacyRoute =
-        window.location.pathname.startsWith("/privacy");
-      const isOrgsRoute =
-        window.location.pathname.startsWith("/orgs");
-      const isOneBillionRoute =
-        window.location.pathname.startsWith("/1billion");
-      const isAiUsageRoute =
-        window.location.pathname.startsWith("/ai-usage");
+      const isMagicLinkRoute = route === "magic-link";
+      const isAdminRoute = route === "admin";
+      const isDevToolsRoute = route === "devtools";
+      const isUnsubscribeRoute = route === "unsubscribe";
+      const isTermsRoute = route === "terms";
+      const isPrivacyRoute = route === "privacy";
+      const isOrgsRoute = route === "orgs";
+      const isOneBillionRoute = route === "1billion";
+      const isAiUsageRoute = route === "ai-usage";
 
-      const newsletterMatch = window.location.pathname.match(/^\/newsletter\/(\d+)$/);
-      const isKaloramaRoute =
-        window.location.pathname.startsWith("/kal");
-      const isParkletRoute =
-        window.location.pathname.startsWith("/parklet");
-      const is2b04Route =
-        window.location.pathname.startsWith("/2b04");
-      const isRatsRoute =
-        window.location.pathname.startsWith("/rats");
-      const isDogsRoute =
-        window.location.pathname.startsWith("/dogs");
-      const isMarketRoute =
-        window.location.pathname.startsWith("/market");
-      const is311Route =
-        window.location.pathname.startsWith("/311");
-      const isDataRoute =
-        window.location.pathname.startsWith("/data");
-      const isHeightRoute =
-        window.location.pathname.startsWith("/height");
-      const isDcRoute =
-        window.location.pathname.startsWith("/dc");
-      const isUdcRoute =
-        window.location.pathname.startsWith("/udc");
-      const isWaymoRoute =
-        window.location.pathname.startsWith("/waymo");
-      const hardcodedFlyerMatch = window.location.pathname.match(
+      const newsletterMatch = pathname.match(/^\/newsletter\/(\d+)$/);
+      const isParkletRoute = route === "parklet";
+      const is2b04Route = route === "2b04";
+      const isRatsRoute = route === "rats";
+      const isDogsRoute = route === "dogs";
+      const isMarketRoute = route === "market";
+      const is311Route = route === "311";
+      const isDataRoute = route === "data";
+      const isHeightRoute = route === "height";
+      const isDcRoute = route === "dc";
+      const isUdcRoute = route === "udc";
+      const isWaymoRoute = route === "waymo";
+      const isWaymoDcRoute = route === "waymodc";
+      const hardcodedFlyerMatch = pathname.match(
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
-      const clubFlyerMatch = window.location.pathname.match(
-        /^\/club-(yes|no)/,
-      );
-      const isClubRoute = /^\/club\/?$/.test(window.location.pathname);
+      const clubFlyerMatch = pathname.match(/^\/club-(yes|no)/);
+      const isClubRoute = /^\/club\/?$/.test(pathname);
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
@@ -320,10 +298,6 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
-      } else if (isKaloramaRoute) {
-        setPendingFlyerScan("kalorama");
-        setPendingCommunities(KALORAMA_COMMUNITIES);
-        startRoomJoin(KALORAMA_ROOM_ID);
       } else if (
         isParkletRoute ||
         is2b04Route ||
@@ -335,7 +309,8 @@ function AppContent() {
         isHeightRoute ||
         isUdcRoute ||
         isDcRoute ||
-        isWaymoRoute
+        isWaymoRoute ||
+        isWaymoDcRoute
       ) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
@@ -358,8 +333,10 @@ function AppContent() {
                           : isDcRoute
                             ? "0tlal5afi6mlmpbckaso"
                             : isWaymoRoute
-                              ? WAYMO_ROOM_ID
-                              : undefined;
+                              ? WAYMO_DUPONT_ROOM_ID
+                              : isWaymoDcRoute
+                                ? WAYMO_DC_ROOM_ID
+                                : null;
 
         const routeName = isParkletRoute
           ? "parklet"
@@ -380,8 +357,10 @@ function AppContent() {
                         : isUdcRoute
                           ? "udc"
                           : isWaymoRoute
-                          ? "waymo"
-                          : "dc";
+                            ? "waymo"
+                            : isWaymoDcRoute
+                              ? "waymodc"
+                              : "dc";
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
