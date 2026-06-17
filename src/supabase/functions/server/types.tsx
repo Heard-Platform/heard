@@ -321,13 +321,14 @@ export interface GGWashArticle {
   publishedAt: number;
 }
 
-export type GGWashArticleStatus =
+export type ScrapedItemStatus =
   | "scraped"
   | "attempting"
   | "published"
   | "rejected";
 
-export interface GGWashArticleRecord {
+export interface ScrapedItem {
+  source: string;
   guid: string;
   title: string;
   url: string;
@@ -335,7 +336,7 @@ export interface GGWashArticleRecord {
   publishedAt: number;
   scrapedAt: number;
   bodyExcerpt: string;
-  status: GGWashArticleStatus;
+  status: ScrapedItemStatus;
   rank?: number;
   generatedTopic?: string;
   generatedStatements?: string[];

@@ -15,7 +15,6 @@ import {
   Community,
   CommunityMembership,
   UserActivityRecord,
-  GGWashArticleRecord,
 } from "./types.tsx";
 
 /**
@@ -451,25 +450,6 @@ export const saveFeedback = async (feedback: { id: string; [key: string]: any })
 
 export const getFeedbackList = async (): Promise<any[]> => {
   return getByPrefixParsed<any>("feedback:");
-};
-
-const GGWASH_ARTICLE_PREFIX = "ggwash-article:";
-const ggwashArticleKey = (guid: string) => `${GGWASH_ARTICLE_PREFIX}${guid}`;
-
-export const getGGWashArticle = async (
-  guid: string,
-): Promise<GGWashArticleRecord | null> => {
-  return getParsedKvData<GGWashArticleRecord>(ggwashArticleKey(guid));
-};
-
-export const saveGGWashArticle = async (
-  record: GGWashArticleRecord,
-): Promise<void> => {
-  await upsert(record, (r) => ggwashArticleKey(r.guid));
-};
-
-export const getAllGGWashArticles = async (): Promise<GGWashArticleRecord[]> => {
-  return getByPrefixParsed<GGWashArticleRecord>(GGWASH_ARTICLE_PREFIX);
 };
 
 // Debate-ended email helpers

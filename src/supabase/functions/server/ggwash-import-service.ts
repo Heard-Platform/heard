@@ -6,13 +6,9 @@ import {
   parseSelectionResponse,
 } from "./ggwash-prompt-utils.ts";
 import { EnrichmentService } from "./enrichment-service.ts";
-import { GGWashArticle, GGWashArticleRecord } from "./types.tsx";
-import {
-  createRoom,
-  getGGWashArticle,
-  saveGGWashArticle,
-  saveStatement,
-} from "./kv-utils.tsx";
+import { GGWashArticle, ScrapedItem } from "./types.tsx";
+import { createRoom, saveStatement } from "./kv-utils.tsx";
+import { getScrapedItem, saveScrapedItem } from "./scraped-items-utils.ts";
 import { createNewRoomData } from "./room-utils.ts";
 import { ONE_WEEK_MS } from "./time-utils.ts";
 import { generateId } from "./utils.tsx";
@@ -25,6 +21,7 @@ const IMPORTER_AUTHOR = "enrichment-service";
 const MIN_STATEMENTS = 2;
 const MAX_STATEMENTS = 3;
 const STORE_EXCERPT_CHARS = 2000;
+const SCRAPE_SOURCE = "ggwash";
 
 export interface GGWashRunResult {
   posted: number;
@@ -59,18 +56,18 @@ export class GGWashImporter extends EnrichmentService {
   ): Promise<GGWashArticle[]> {
     const candidates: GGWashArticle[] = [];
     for (const article of articles) {
-      const existing = await getGGWashArticle(article.guid);
+      const existing = await getScrapedItem(SCRAPE_SOURCE, article.guid);
       if (existing) {
         if (existing.status === "scraped") candidates.push(article);
         continue;
       }
       if (isRoundupTitle(article.title)) {
-        await saveGGWashArticle(
+        await saveScrapedItem(
           autoRejectedRecord(article, "auto-excluded: links roundup"),
         );
         continue;
       }
-      await saveGGWashArticle(toScrapedRecord(article));
+      await saveScrapedItem(toScrapedRecord(article));
       candidates.push(article);
     }
     return candidates;
@@ -88,7 +85,7 @@ export class GGWashImporter extends EnrichmentService {
     article: GGWashArticle,
     rank: number,
   ): Promise<boolean> {
-    const record = (await getGGWashArticle(article.guid))!;
+    const record = (await getScrapedItem(SCRAPE_SOURCE, article.guid))!;
     // Mark as attempted BEFORE the transform, so a crash or double-fire can never re-post this article (at-most-once).
     await markAttempting(record, rank);
 
@@ -153,7 +150,7 @@ export class GGWashImporter extends EnrichmentService {
 function autoRejectedRecord(
   article: GGWashArticle,
   error: string,
-): GGWashArticleRecord {
+): ScrapedItem {
   return {
     ...toScrapedRecord(article),
     status: "rejected",
@@ -162,8 +159,9 @@ function autoRejectedRecord(
   };
 }
 
-function toScrapedRecord(article: GGWashArticle): GGWashArticleRecord {
+function toScrapedRecord(article: GGWashArticle): ScrapedItem {
   return {
+    source: SCRAPE_SOURCE,
     guid: article.guid,
     title: article.title,
     url: article.url,
@@ -176,16 +174,16 @@ function toScrapedRecord(article: GGWashArticle): GGWashArticleRecord {
 }
 
 async function markAttempting(
-  record: GGWashArticleRecord,
+  record: ScrapedItem,
   rank: number,
 ): Promise<void> {
   record.status = "attempting";
   record.rank = rank;
-  await saveGGWashArticle(record);
+  await saveScrapedItem(record);
 }
 
 async function recordRejection(
-  record: GGWashArticleRecord,
+  record: ScrapedItem,
   aiResponse: string,
 ): Promise<void> {
   record.status = "rejected";
@@ -193,11 +191,11 @@ async function recordRejection(
     ? "transform returned Error"
     : "invalid transform output";
   record.decidedAt = Date.now();
-  await saveGGWashArticle(record);
+  await saveScrapedItem(record);
 }
 
 async function recordPublished(
-  record: GGWashArticleRecord,
+  record: ScrapedItem,
   parsed: { topic: string; statements: string[] },
   roomId: string,
 ): Promise<void> {
@@ -206,7 +204,7 @@ async function recordPublished(
   record.generatedStatements = parsed.statements;
   record.publishedRoomId = roomId;
   record.decidedAt = Date.now();
-  await saveGGWashArticle(record);
+  await saveScrapedItem(record);
 }
 
 export function parseTransform(
