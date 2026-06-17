@@ -3,7 +3,7 @@ import { createClientFromEnv } from "./db-utils.ts";
 
 interface LlmApiCallRow {
   createdAt: string;
-  model: string;
+  endpoint: string;
   totalTokens: number;
   inputTokens: number;
   outputTokens: number;
@@ -16,27 +16,26 @@ app.get("/make-server-f1a393b4/public-ai-usage", async (c) => {
     const supabase = createClientFromEnv();
     const { data, error } = await supabase
       .from("llm_api_calls")
-      .select('"createdAt", model, "totalTokens", "inputTokens", "outputTokens"');
+      .select('"createdAt", endpoint, "totalTokens", "inputTokens", "outputTokens"');
 
     if (error) throw new Error(error.message);
 
     const rows = (data ?? []) as LlmApiCallRow[];
 
-    const byDateModel: Record<string, Record<string, number>> = {};
-    const modelSet = new Set<string>();
-
+    const tokensByDateAndEndpoint = new Map<string, Map<string, number>>();
     for (const row of rows) {
       const date = row.createdAt.slice(0, 10);
-      modelSet.add(row.model);
-      if (!byDateModel[date]) byDateModel[date] = {};
-      byDateModel[date][row.model] = (byDateModel[date][row.model] ?? 0) + row.totalTokens;
+      const endpoint = row.endpoint ?? "unknown";
+      if (!tokensByDateAndEndpoint.has(date)) tokensByDateAndEndpoint.set(date, new Map());
+      const tokens = tokensByDateAndEndpoint.get(date)!;
+      tokens.set(endpoint, (tokens.get(endpoint) ?? 0) + row.totalTokens);
     }
 
-    const timeline = Object.entries(byDateModel)
+    const timeline = [...tokensByDateAndEndpoint.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, models]) => ({ date, ...models }));
+      .map(([date, tokensByEndpoint]) => ({ date, ...Object.fromEntries(tokensByEndpoint) }));
 
-    const models = [...modelSet].sort();
+    const endpoints = [...new Set(rows.map((r) => r.endpoint ?? "unknown"))].sort();
 
     const totals = rows.reduce(
       (acc, row) => ({
@@ -48,7 +47,7 @@ app.get("/make-server-f1a393b4/public-ai-usage", async (c) => {
       { totalCalls: 0, totalTokens: 0, inputTokens: 0, outputTokens: 0 },
     );
 
-    return c.json({ timeline, models, totals });
+    return c.json({ timeline, endpoints, totals });
   } catch (error) {
     console.error("Error fetching AI usage data:", error);
     return c.json({ error: "Failed to fetch AI usage data" }, 500);

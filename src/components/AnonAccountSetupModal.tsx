@@ -428,7 +428,7 @@ export function AnonAccountSetupModal({
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="(555) 123-4567"
                         disabled={loading}
-                        className="bg-white dark:bg-gray-900"
+                        className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600"
                       />
                     )}
                     <p className="text-xs text-muted-foreground">
