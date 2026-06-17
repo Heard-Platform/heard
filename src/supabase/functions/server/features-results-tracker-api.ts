@@ -111,25 +111,48 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
 
     const fundingEventRows = await getFundingEvents();
     const fundingCounts: Record<string, number> = {};
+    const fundingUserSets: Record<string, Set<string>> = {};
     for (const row of fundingEventRows) {
       fundingCounts[row.type] = (fundingCounts[row.type] ?? 0) + 1;
+      if (row.userId) {
+        if (!fundingUserSets[row.type]) fundingUserSets[row.type] = new Set();
+        fundingUserSets[row.type].add(row.userId);
+      }
     }
+    const fu = (key: string) => fundingUserSets[key]?.size ?? 0;
     const fundingEvents = {
       pageView: fundingCounts["funding_page_view"] ?? 0,
+      pageViewUsers: fu("funding_page_view"),
       swipeDonate: fundingCounts["funding_swipe_donate"] ?? 0,
+      swipeDonateUsers: fu("funding_swipe_donate"),
       amountPickerOpened: fundingCounts["funding_amount_picker_opened"] ?? 0,
+      amountPickerOpenedUsers: fu("funding_amount_picker_opened"),
       amountSelected: fundingCounts["funding_amount_selected"] ?? 0,
+      amountSelectedUsers: fu("funding_amount_selected"),
       customAmountConfirmed: fundingCounts["funding_custom_amount_confirmed"] ?? 0,
+      customAmountConfirmedUsers: fu("funding_custom_amount_confirmed"),
       checkoutStarted: fundingCounts["funding_checkout_started"] ?? 0,
+      checkoutStartedUsers: fu("funding_checkout_started"),
       checkoutError: fundingCounts["funding_checkout_error"] ?? 0,
+      checkoutErrorUsers: fu("funding_checkout_error"),
       donationSuccess: fundingCounts["funding_donation_success"] ?? 0,
+      donationSuccessUsers: fu("funding_donation_success"),
       shareCopy: fundingCounts["funding_share_copy"] ?? 0,
+      shareCopyUsers: fu("funding_share_copy"),
       shareNative: fundingCounts["funding_share_native"] ?? 0,
+      shareNativeUsers: fu("funding_share_native"),
       shareDismissed: fundingCounts["funding_share_dismissed"] ?? 0,
+      shareDismissedUsers: fu("funding_share_dismissed"),
       goToHeardClicked: fundingCounts["funding_go_to_heard_clicked"] ?? 0,
+      goToHeardClickedUsers: fu("funding_go_to_heard_clicked"),
       substackLinkClicked: fundingCounts["funding_substack_link_clicked"] ?? 0,
+      substackLinkClickedUsers: fu("funding_substack_link_clicked"),
       nugmodeToggled: fundingCounts["funding_nugmode_toggled"] ?? 0,
+      nugmodeToggledUsers: fu("funding_nugmode_toggled"),
       exitClicked: fundingCounts["funding_exit_clicked"] ?? 0,
+      exitClickedUsers: fu("funding_exit_clicked"),
+      fallbackDonate: fundingCounts["funding_fallback_donate_clicked"] ?? 0,
+      fallbackDonateUsers: fu("funding_fallback_donate_clicked"),
     };
     const fundingEventsSince = new Date("2026-06-16").getTime();
 
