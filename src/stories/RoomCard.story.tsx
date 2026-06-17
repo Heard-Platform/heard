@@ -63,7 +63,6 @@ function RoomCardWrapper({
             console.log("Submit:", { roomId, text });
           }}
           onVoteOnStatement={handleVote}
-          onSwipedAllChange={(all) => console.log("Swiped all:", all)}
           onRefreshStatements={async () => {
             console.log("Refresh statements");
           }}

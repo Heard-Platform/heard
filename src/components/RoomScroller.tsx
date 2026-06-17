@@ -16,11 +16,9 @@ import type {
   EventSummary,
 } from "../types";
 import { RoomCard } from "./RoomCard";
-import { VineNavigator } from "./vine/VineNavigator";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { SwipeTutorialProvider, useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { CreateRoomCard } from "./CreateRoomCard";
-import { NextRoomNudge } from "./NextRoomNudge";
 import { EventCard } from "./events/EventCard";
 import { safelySetStorageItem } from "../utils/localStorage";
 import { api, safelyMakeApiCall } from "../utils/api";
@@ -103,9 +101,8 @@ const RoomScrollerInner = forwardRef<
     ref,
   ) => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [nudgeDismissed, setNudgeDismissed] = useState(false);
-    const [nudgeableRoomIds, setNudgeableRoomIds] = useState<Set<string>>(new Set());
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
     const isScrolling = useRef(false);
     const isPolling = useRef(false);
     const { clearAlert } = useRoomAlertsContext();
@@ -167,7 +164,6 @@ const RoomScrollerInner = forwardRef<
         clearAlert(card.id);
         safelyMakeApiCall(() => api.markRoomSeen(card.id));
       }
-      setNudgeDismissed(false);
     }, [currentIndex, rooms, events]);
 
     // Poll for updates on the currently visible room
@@ -207,16 +203,20 @@ const RoomScrollerInner = forwardRef<
         const container = scrollContainerRef.current;
         if (!container) return;
 
-        const scrollPosition = container.scrollTop;
-        const cardHeight = container.clientHeight;
-        const newIndex = Math.round(scrollPosition / cardHeight);
+        const scrollMid = container.scrollTop + container.clientHeight / 2;
+        let bestIndex = 0;
+        let bestDist = Infinity;
+        cardRefs.current.forEach((el, i) => {
+          if (!el) return;
+          const dist = Math.abs(el.offsetTop + el.offsetHeight / 2 - scrollMid);
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestIndex = i;
+          }
+        });
 
-        if (
-          newIndex !== currentIndexRef.current &&
-          newIndex >= 0 &&
-          newIndex < allCardsLengthRef.current
-        ) {
-          setCurrentIndex(newIndex);
+        if (bestIndex !== currentIndexRef.current) {
+          setCurrentIndex(bestIndex);
         }
       }, 150);
     }, []);
@@ -236,15 +236,11 @@ const RoomScrollerInner = forwardRef<
 
     const scrollToIndex = (index: number) => {
       const container = scrollContainerRef.current;
-      if (!container) return;
+      const card = cardRefs.current[index];
+      if (!container || !card) return;
 
       isScrolling.current = true;
-      const cardHeight = container.clientHeight;
-
-      container.scrollTo({
-        top: index * cardHeight,
-        behavior: "smooth",
-      });
+      container.scrollTo({ top: card.offsetTop, behavior: "smooth" });
 
       setTimeout(() => {
         isScrolling.current = false;
@@ -264,14 +260,6 @@ const RoomScrollerInner = forwardRef<
       scrollToIndex(0);
     }, [currentSubHeard, rooms.length]);
 
-    const handleSwipedAllChange = (roomId: string, allSwiped: boolean) => {
-      setNudgeableRoomIds((prev) => {
-        const next = new Set(prev);
-        allSwiped ? next.add(roomId) : next.delete(roomId);
-        return next;
-      });
-    };
-
     if (loading) {
       return (
         <div className="h-dvh w-full flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
@@ -288,30 +276,11 @@ const RoomScrollerInner = forwardRef<
       );
     }
 
-    const currentCard = allCards[currentIndex];
-    const currentRoom = currentCard && isRoomCard(currentCard) ? currentCard : null;
-
-    let nextRoomIndex = -1;
-    let nextRoom: DebateRoom | null = null;
-    for (let i = currentIndex + 1; i < allCards.length; i++) {
-      const card = allCards[i];
-      if (isRoomCard(card)) {
-        nextRoomIndex = i;
-        nextRoom = card;
-        break;
-      }
-    }
-
-    const showNudge =
-      currentRoom !== null &&
-      nudgeableRoomIds.has(currentRoom.id) &&
-      nextRoom !== null;
-
     return (
       <div className="relative h-dvh w-full overflow-hidden">
         <div
           ref={scrollContainerRef}
-          className="h-full w-full overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scroll-smooth relative"
+          className="h-full w-full overflow-y-scroll overflow-x-hidden relative"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
@@ -331,7 +300,8 @@ const RoomScrollerInner = forwardRef<
             return (
               <div
                 key={card.id}
-                className="h-dvh w-full snap-start snap-always flex items-start justify-center pt-13 pb-20 px-2"
+                ref={(el) => { cardRefs.current[index] = el; }}
+                className={`w-full flex justify-center px-2 py-3 ${index === 0 ? "pt-14" : ""}`}
               >
                 {isCreateCard(card) ? (
                   <CreateRoomCard onCreateRoom={onCreateRoom} onOpenExplorer={onOpenExplorer} />
@@ -353,9 +323,6 @@ const RoomScrollerInner = forwardRef<
                     onJoin={() => onJoinRoom(room.id)}
                     onSubmitStatement={onSubmitStatement}
                     onVoteOnStatement={onVoteOnStatement}
-                    onSwipedAllChange={(allSwiped) =>
-                      handleSwipedAllChange(room.id, allSwiped)
-                    }
                     onRefreshStatements={() =>
                       refreshRoomStatements(room.id)
                     }
@@ -368,14 +335,7 @@ const RoomScrollerInner = forwardRef<
           })}
         </div>
 
-        <NextRoomNudge
-          topic={nextRoom?.topic ?? ""}
-          visible={nextRoom !== null && !nudgeDismissed}
-          animate={showNudge}
-          subHeard={currentSubHeard ? undefined : nextRoom?.subHeard}
-          onDismiss={() => setNudgeDismissed(true)}
-          onClick={() => scrollToIndex(nextRoomIndex)}
-        />
+
       </div>
     );
   },
