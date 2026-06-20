@@ -7,17 +7,12 @@ import {
 } from "./ggwash-prompt-utils.ts";
 import { EnrichmentService } from "./enrichment-service.ts";
 import { GGWashArticle, ScrapedItem } from "./types.tsx";
-import { createRoom, saveStatement } from "./kv-utils.tsx";
 import { getScrapedItem, saveScrapedItem } from "./scraped-items-utils.ts";
-import { createNewRoomData } from "./room-utils.ts";
-import { ONE_WEEK_MS } from "./time-utils.ts";
-import { generateId } from "./utils.tsx";
 
 const SELECT_ENDPOINT = "ggwash-select";
 const TRANSFORM_ENDPOINT = "ggwash-transform";
 const TARGET_POSTS_PER_RUN = 1;
 const DEFAULT_SUBHEARD = "washington-dc";
-const IMPORTER_AUTHOR = "enrichment-service";
 const MIN_STATEMENTS = 2;
 const MAX_STATEMENTS = 3;
 const STORE_EXCERPT_CHARS = 2000;
@@ -30,6 +25,7 @@ export interface GGWashRunResult {
 }
 
 export class GGWashImporter extends EnrichmentService {
+  protected author = "ggwash-importer";
   async runOnce(): Promise<GGWashRunResult> {
     const articles = await fetchGGWashArticles();
     const candidates = await this.recordAndCollectCandidates(articles);
@@ -100,51 +96,17 @@ export class GGWashImporter extends EnrichmentService {
       return false;
     }
 
-    const roomId = await this.publish(article, parsed.topic, parsed.statements);
+    const roomId = await this.publishRoom(parsed.topic, parsed.statements, {
+      subHeard: DEFAULT_SUBHEARD,
+      imageUrl: article.imageUrl,
+    });
     await recordPublished(record, parsed, roomId);
 
     logSuccess(article, parsed.topic, parsed.statements);
     return true;
   }
 
-  private async publish(
-    article: GGWashArticle,
-    topic: string,
-    statements: string[],
-  ): Promise<string> {
-    const room = createNewRoomData({
-      id: generateId(),
-      topic,
-      participants: [],
-      hostId: IMPORTER_AUTHOR,
-      subHeard: DEFAULT_SUBHEARD,
-      endTime: Date.now() + ONE_WEEK_MS,
-      allowAnonymous: true,
-      imageUrl: article.imageUrl,
-    });
 
-    await createRoom(room);
-
-    await Promise.all(
-      statements.map((text) =>
-        saveStatement({
-          id: generateId(),
-          text,
-          author: IMPORTER_AUTHOR,
-          agrees: 0,
-          disagrees: 0,
-          passes: 0,
-          superAgrees: 0,
-          roomId: room.id,
-          timestamp: Date.now(),
-          round: 1,
-          voters: {},
-        })
-      ),
-    );
-
-    return room.id;
-  }
 }
 
 function autoRejectedRecord(
@@ -159,15 +121,11 @@ function autoRejectedRecord(
   };
 }
 
-function toScrapedRecord(article: GGWashArticle): ScrapedItem {
+function toScrapedRecord({ body, ...rest }: GGWashArticle): ScrapedItem {
   return {
-    guid: article.guid,
-    title: article.title,
-    bodyExcerpt: article.body.slice(0, STORE_EXCERPT_CHARS),
+    ...rest,
+    bodyExcerpt: body.slice(0, STORE_EXCERPT_CHARS),
     source: SCRAPE_SOURCE,
-    url: article.url,
-    imageUrl: article.imageUrl,
-    publishedAt: article.publishedAt,
     scrapedAt: Date.now(),
     status: "scraped",
   };
