@@ -493,6 +493,10 @@ export interface FeatureResults {
   };
   llmApiCalls: number;
   llmApiCallsSince: number;
+  ggwashPublished: number;
+  ggwashRejected: number;
+  ggwashPending: number;
+  ggwashSince: number;
 }
 
 export interface UserHistoryData {
