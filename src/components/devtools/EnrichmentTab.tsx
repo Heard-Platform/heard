@@ -35,6 +35,7 @@ export function EnrichmentTab() {
   const [running, setRunning] = useState(false);
   const [dryRunning, setDryRunning] = useState(false);
   const [dryRunResult, setDryRunResult] = useState<DryRunResult | null>(null);
+  const [isDryRun, setIsDryRun] = useState(true);
 
   const fetchConfig = async () => {
     setLoading(true);
@@ -78,19 +79,19 @@ export function EnrichmentTab() {
     setRunning(false);
   };
 
-  const handleDryRun = async () => {
+  const handleGGWashRun = async () => {
     setDryRunning(true);
     setDryRunResult(null);
     try {
-      const response = await api.runGGWashImport(true);
+      const response = await api.runGGWashImport(isDryRun);
       if (response?.success && response.data) {
         setDryRunResult(response.data);
       } else {
-        toast.error("Dry run failed");
+        toast.error("GGWash run failed");
       }
     } catch (e) {
-      console.error("Error running GGWash dry run:", e);
-      toast.error("Dry run failed");
+      console.error("Error running GGWash import:", e);
+      toast.error("GGWash run failed");
     }
     setDryRunning(false);
   };
@@ -201,14 +202,23 @@ export function EnrichmentTab() {
 
       <div className="space-y-4 bg-amber-50 p-4 rounded-lg border border-amber-200">
         <div>
-          <h3 className="font-medium text-amber-900 mb-1">GGWash Dry Run</h3>
+          <h3 className="font-medium text-amber-900 mb-1">GGWash Import</h3>
           <p className="text-sm text-amber-700">
-            Fetch articles, run LLM selection and transform — no DB writes
+            Fetch articles, run LLM selection and transform
           </p>
         </div>
 
+        <label className="flex items-center gap-2 text-sm text-amber-900 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isDryRun}
+            onChange={(e) => setIsDryRun(e.target.checked)}
+          />
+          Dry run (no DB writes)
+        </label>
+
         <Button
-          onClick={handleDryRun}
+          onClick={handleGGWashRun}
           disabled={dryRunning}
           variant="outline"
           className="w-full"
@@ -221,7 +231,7 @@ export function EnrichmentTab() {
           ) : (
             <>
               <FlaskConical className="w-4 h-4 mr-2" />
-              Dry Run GGWash
+              {isDryRun ? "Dry Run GGWash" : "Run GGWash"}
             </>
           )}
         </Button>
@@ -233,6 +243,13 @@ export function EnrichmentTab() {
             </p>
             {dryRunResult.preview?.article ? (
               <div className="bg-white border border-amber-200 rounded p-3 space-y-2">
+                {dryRunResult.preview.article.imageUrl && (
+                  <img
+                    src={dryRunResult.preview.article.imageUrl}
+                    alt=""
+                    className="w-full rounded object-cover max-h-40"
+                  />
+                )}
                 <a
                   href={dryRunResult.preview.article.url}
                   target="_blank"
