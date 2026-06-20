@@ -92,6 +92,11 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const llmApiCalls = await countRecords("llm_api_calls");
     const llmApiCallsSince = new Date("2026-06-04").getTime();
 
+    const ggwashPublished = await countRecords("scraped_items", { source: "ggwash", status: "published" });
+    const ggwashRejected = await countRecords("scraped_items", { source: "ggwash", status: "rejected" });
+    const ggwashPending = await countRecords("scraped_items", { source: "ggwash", status: "scraped" });
+    const ggwashSince = new Date("2026-06-20").getTime();
+
     const oneBillionEventRows = await getOneBillionEvents();
     const realNonDevUserIds = new Set(
       users.filter((u) => !u.isDeveloper).map((u) => u.id),
@@ -168,6 +173,10 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       oneBillionEvents,
       llmApiCalls,
       llmApiCallsSince,
+      ggwashPublished,
+      ggwashRejected,
+      ggwashPending,
+      ggwashSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);
