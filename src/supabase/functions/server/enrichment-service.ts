@@ -18,11 +18,12 @@ export class EnrichmentService {
   protected async publishRoom(
     topic: string,
     statements: string[],
-    options: { subHeard: string; imageUrl?: string },
+    options: { subHeard: string; imageUrl?: string; description?: string },
   ): Promise<string> {
     const room = createNewRoomData({
       id: generateId(),
       topic,
+      description: options.description,
       participants: [],
       hostId: this.author,
       subHeard: options.subHeard,

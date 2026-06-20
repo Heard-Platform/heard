@@ -25,6 +25,7 @@ export interface GGWashRunResult {
   preview?: {
     article: { title: string; url: string; imageUrl?: string } | null;
     topic: string | null;
+    description: string | null;
     statements: string[] | null;
     rejected: boolean;
   };
@@ -47,7 +48,7 @@ export class GGWashImporter extends EnrichmentService {
       if (posted >= TARGET_POSTS_PER_RUN) break;
       if (dryRun) {
         const article = candidates[index];
-        const { topic, statements, rejected } = await this.transformArticle(article);
+        const { topic, description, statements, rejected } = await this.transformArticle(article);
         if (!rejected && topic && statements) {
           return {
             posted: 0,
@@ -56,6 +57,7 @@ export class GGWashImporter extends EnrichmentService {
             preview: {
               article: { title: article.title, url: article.url, imageUrl: article.imageUrl },
               topic,
+              description,
               statements,
               rejected,
             },
@@ -99,6 +101,7 @@ export class GGWashImporter extends EnrichmentService {
     return {
       article: { title: article.title, url: article.url, imageUrl: article.imageUrl },
       topic: parsed?.topic ?? null,
+      description: parsed?.description ?? null,
       statements: parsed?.statements ?? null,
       rejected: !parsed,
       raw,
@@ -124,7 +127,7 @@ export class GGWashImporter extends EnrichmentService {
     // Mark as attempted BEFORE the transform, so a crash or double-fire can never re-post this article (at-most-once).
     await markAttempting(record, rank);
 
-    const { topic, statements, rejected, raw } =
+    const { topic, description, statements, rejected, raw } =
       await this.transformArticle(article);
     if (rejected || !topic || !statements) {
       await recordRejection(record, raw);
@@ -134,6 +137,7 @@ export class GGWashImporter extends EnrichmentService {
     const roomId = await this.publishRoom(topic, statements, {
       subHeard: DEFAULT_SUBHEARD,
       imageUrl: article.imageUrl,
+      description: description ?? undefined,
     });
     await recordPublished(record, { topic, statements }, roomId);
 
@@ -202,7 +206,7 @@ async function recordPublished(
 
 export function parseTransform(
   aiResponse: string,
-): { topic: string; statements: string[] } | null {
+): { topic: string; description: string; statements: string[] } | null {
   if (aiResponse.trim() === LLM_ERROR_SENTINEL) return null;
 
   const lines = aiResponse
@@ -211,9 +215,11 @@ export function parseTransform(
     .filter((line) => line.length > 0);
 
   const topic = lines[0] ?? "";
-  const statements = lines.slice(1);
+  const description = lines[1] ?? "";
+  const statements = lines.slice(2);
   if (
     topic === "" ||
+    description === "" ||
     statements.length < MIN_STATEMENTS ||
     statements.length > MAX_STATEMENTS
   ) {
@@ -221,6 +227,7 @@ export function parseTransform(
   }
   return {
     topic: toQuestion(topic),
+    description,
     statements: statements.map(stripTrailingPunctuation),
   };
 }

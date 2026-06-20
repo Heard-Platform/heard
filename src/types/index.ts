@@ -518,6 +518,19 @@ export interface FeatureResults {
   ggwashSince: number;
 }
 
+export interface GGWashImportResult {
+  posted: number;
+  considered: number;
+  skipped: number;
+  preview?: {
+    article: { title: string; url: string; imageUrl?: string } | null;
+    topic: string | null;
+    description: string | null;
+    statements: string[] | null;
+    rejected: boolean;
+  };
+}
+
 export interface UserHistoryData {
   rooms: any[];
   statements: any[];

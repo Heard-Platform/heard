@@ -121,7 +121,12 @@ Topic rules:
 
 ${RESPONSE_RULES}
 
-Format: no blank lines, topic on line 1, then exactly 3 responses on the following lines, nothing else.`;
+Format: no blank lines, topic on line 1, a one-sentence description on line 2, then exactly 3 responses on the following lines, nothing else.
+
+Description rules:
+- One sentence (max 20 words) that gives context for the topic question — what is it about, in plain language.
+- Write it in third person, as a neutral summary. No opinions, no "you" — just what the article is about.
+- The description may reference specific names, places, or details from the article.`;
 
   if (provider === "gemini" || provider === "anthropic") {
     userPrompt += `
@@ -131,7 +136,7 @@ CRITICAL REMINDERS — you MUST follow these exactly:
 - Each response MUST be a STRICT MAX of 8 words.
 - Each RESPONSE must have NO exclamation marks, question marks, end-of-line punctuation, or quotation marks. (The topic line is a question and MUST keep its question mark — this rule is only about the responses.)
 - No preambles like "I think" or "Honestly" — state the opinion directly.
-- No blank lines between the topic and the responses or between responses.`;
+- No blank lines between the topic, description, and the responses.`;
   }
 
   return { systemPrompt, userPrompt };

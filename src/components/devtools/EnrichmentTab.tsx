@@ -2,29 +2,16 @@ import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Play, Loader2, FlaskConical } from "lucide-react";
 import { useDebateSession } from "../../hooks/useDebateSession";
-import { EnrichmentConfig } from "../../types";
-import { api } from "../../utils/api";
-
+import { EnrichmentConfig, GGWashImportResult } from "../../types";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
-
-interface DryRunResult {
-  posted: number;
-  considered: number;
-  skipped: number;
-  preview?: {
-    article: { title: string; url: string; imageUrl?: string } | null;
-    topic: string | null;
-    statements: string[] | null;
-    rejected: boolean;
-  };
-}
 
 export function EnrichmentTab() {
   const {
     getEnrichmentConfig,
     setEnrichmentConfig,
     runEnrichmentNow,
+    runGGWashImport,
   } = useDebateSession();
   const [config, setConfig] = useState<EnrichmentConfig>({
     enabled: false,
@@ -34,7 +21,7 @@ export function EnrichmentTab() {
   const [saving, setSaving] = useState(false);
   const [running, setRunning] = useState(false);
   const [dryRunning, setDryRunning] = useState(false);
-  const [dryRunResult, setDryRunResult] = useState<DryRunResult | null>(null);
+  const [dryRunResult, setGGWashImportResult] = useState<GGWashImportResult | null>(null);
   const [isDryRun, setIsDryRun] = useState(true);
 
   const fetchConfig = async () => {
@@ -81,11 +68,11 @@ export function EnrichmentTab() {
 
   const handleGGWashRun = async () => {
     setDryRunning(true);
-    setDryRunResult(null);
+    setGGWashImportResult(null);
     try {
-      const response = await api.runGGWashImport(isDryRun);
+      const response = await runGGWashImport(isDryRun);
       if (response?.success && response.data) {
-        setDryRunResult(response.data);
+        setGGWashImportResult(response.data);
       } else {
         toast.error("GGWash run failed");
       }
@@ -263,6 +250,9 @@ export function EnrichmentTab() {
                 ) : (
                   <>
                     <p className="font-medium">{dryRunResult.preview.topic}</p>
+                    {dryRunResult.preview.description && (
+                      <p className="text-slate-500 text-xs">{dryRunResult.preview.description}</p>
+                    )}
                     <ul className="space-y-1">
                       {dryRunResult.preview.statements?.map((s: string, i: number) => (
                         <li key={i} className="text-slate-600">• {s}</li>

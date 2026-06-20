@@ -16,6 +16,7 @@ import type {
   EnrichmentConfig,
   Event,
   NewEvent,
+  GGWashImportResult,
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
@@ -129,6 +130,7 @@ interface DebateSessionContextType {
     roomId: string;
     statementIds: string[];
   }> | null>;
+  runGGWashImport: (dryRun?: boolean) => Promise<ApiResponse<GGWashImportResult> | null>;
 }
 
 export type OverridableApiMethods = Pick<
@@ -840,6 +842,10 @@ export function DebateSessionProvider(
     }>(() => api.runEnrichmentNow());
   }, []);
 
+  const runGGWashImport = useCallback(async (dryRun = false) => {
+    return safelyMakeApiCall<GGWashImportResult>(() => api.runGGWashImport(dryRun));
+  }, []);
+
   // Reset session (full logout)
   const resetSession = useCallback(() => {
     setUser(null);
@@ -944,6 +950,7 @@ export function DebateSessionProvider(
     getEnrichmentConfig,
     setEnrichmentConfig,
     runEnrichmentNow,
+    runGGWashImport,
   };
 
   if (showcase || showcaseOverrides) {
@@ -1100,6 +1107,10 @@ export function DebateSessionProvider(
       },
       runEnrichmentNow: async () => {
         console.log("[Showcase] runEnrichmentNow called");
+        return { success: true };
+      },
+      runGGWashImport: async () => {
+        console.log("[Showcase] runGGWashImport called");
         return { success: true };
       },
       ...showcaseOverrides,
