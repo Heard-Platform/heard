@@ -57,7 +57,6 @@ interface RoomCardProps {
     statementId: string,
     voteType: VoteType,
   ) => Promise<any>;
-  onSwipedAllChange: (allSwiped: boolean) => void;
   onRefreshStatements: () => Promise<void>;
   onDiscussStatement: (statementText: string, subHeard?: string) => void;
   onShowAccountSetupModal: (featureText: string) => void;
@@ -76,7 +75,6 @@ export function RoomCard({
   onJoin,
   onSubmitStatement,
   onVoteOnStatement,
-  onSwipedAllChange,
   onRefreshStatements,
   onDiscussStatement,
   onShowAccountSetupModal,
@@ -151,10 +149,6 @@ export function RoomCard({
       room.demographicQuestions.every((q) =>
         answeredQuestionIds.has(q.id),
       ));
-
-  useEffect(() => {
-    onSwipedAllChange(hasSwipedAll);
-  }, [hasSwipedAll]);
 
   const isRealtime = room.mode === "realtime";
 
@@ -358,6 +352,7 @@ export function RoomCard({
                     demographicQuestions={room.demographicQuestions}
                     answeredQuestionIds={answeredQuestionIds}
                     targetStatementId={targetStatementId}
+                    isActive={isActive}
                     onVote={handleVote}
                     onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}

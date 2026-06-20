@@ -39,6 +39,8 @@ import { API_URL_PREFIX } from "./constants.tsx";
 import { performanceTestApi } from "./performance-test-api.tsx";
 import { ogApi } from "./og-api.tsx";
 import { aiUsageApi } from "./ai-usage-api.ts";
+import { stripeApi, stripePublicApi } from "./stripe-api.tsx";
+import { fundingApi } from "./funding-api.tsx";
 
 type Variables = {
   userId?: string;
@@ -75,6 +77,7 @@ app.use(
 // Public routes — registered before the API key middleware so they require no auth.
 app.route("/", ogApi);
 app.route("/", aiUsageApi);
+app.route("/", stripePublicApi);
 
 app.use("*", async (c, next) => {
   const apiKey = c.req.header("X-API-Key");
@@ -174,5 +177,7 @@ app.route("/", ggwashImportApi);
 app.route("/", userRankApi);
 app.route("/", eventApi);
 app.route("/", performanceTestApi);
+app.route("/", stripeApi);
+app.route("/", fundingApi);
 
 Deno.serve(app.fetch);

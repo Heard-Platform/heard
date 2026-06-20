@@ -172,8 +172,8 @@ export const getSupportSection = () => `
   </div>
 `;
 
-export const getNewsletterFooter = () => `
-  <div style="${styles.footer}">
+export const getNewsletterFooter = (textColor?: string) => `
+  <div style="${styles.footer}${textColor ? ` color: ${textColor};` : ""}">
     <p>You're receiving this because you have an account on Heard</p>
     <p>If you don't want to receive newsletters anymore, just respond to this email and let me know. Thanks!</p>
   </div>

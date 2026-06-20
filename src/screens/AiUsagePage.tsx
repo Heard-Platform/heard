@@ -14,8 +14,8 @@ import { projectId, publicAnonKey } from "../utils/supabase/info";
 const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
 
 interface AiUsageData {
-  timeline: Array<{ date: string; [model: string]: number | string }>;
-  models: string[];
+  timeline: Array<{ date: string; [endpoint: string]: number | string }>;
+  endpoints: string[];
   totals: {
     totalCalls: number;
     totalTokens: number;
@@ -102,7 +102,7 @@ export function AiUsagePage() {
           <p style={{ fontSize: 18, color: "#475569", lineHeight: 1.7, maxWidth: 680 }}>
             We are committed to responsible AI usage and transparency in all our business practices.
             Heard uses AI to help moderate content and surface insights from community conversations.
-            This page shows our real-time API usage — tokens consumed by day and by model — so you can see
+            This page shows our real-time API usage — tokens consumed by day and by endpoint — so you can see
             exactly how we're using these tools.
           </p>
         </div>
@@ -129,7 +129,7 @@ export function AiUsagePage() {
                 Token Usage by Day
               </h2>
               <p style={{ fontSize: 14, color: "#94a3b8", marginBottom: 24 }}>
-                Total tokens consumed per day, broken down by AI model.
+                Total tokens consumed per day, broken down by endpoint.
               </p>
 
               {data.timeline.length === 0 ? (
@@ -138,8 +138,8 @@ export function AiUsagePage() {
                 <ResponsiveContainer width="100%" height={360}>
                   <AreaChart data={data.timeline} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
                     <defs>
-                      {data.models.map((model, i) => (
-                        <linearGradient key={model} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                      {data.endpoints.map((endpoint, i) => (
+                        <linearGradient key={endpoint} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor={COLORS[i % COLORS.length]} stopOpacity={0.15} />
                           <stop offset="95%" stopColor={COLORS[i % COLORS.length]} stopOpacity={0} />
                         </linearGradient>
@@ -168,11 +168,11 @@ export function AiUsagePage() {
                     <Legend
                       wrapperStyle={{ fontSize: 13, paddingTop: 16 }}
                     />
-                    {data.models.map((model, i) => (
+                    {data.endpoints.map((endpoint, i) => (
                       <Area
-                        key={model}
+                        key={endpoint}
                         type="monotone"
-                        dataKey={model}
+                        dataKey={endpoint}
                         stroke={COLORS[i % COLORS.length]}
                         strokeWidth={2}
                         fill={`url(#grad-${i})`}

@@ -491,6 +491,25 @@ export interface FeatureResults {
     clickForm: number;
     clickCopy: number;
   };
+  fundingEvents: {
+    pageView: number; pageViewUsers: number;
+    swipeDonate: number; swipeDonateUsers: number;
+    amountPickerOpened: number; amountPickerOpenedUsers: number;
+    amountSelected: number; amountSelectedUsers: number;
+    customAmountConfirmed: number; customAmountConfirmedUsers: number;
+    checkoutStarted: number; checkoutStartedUsers: number;
+    checkoutError: number; checkoutErrorUsers: number;
+    donationSuccess: number; donationSuccessUsers: number;
+    shareCopy: number; shareCopyUsers: number;
+    shareNative: number; shareNativeUsers: number;
+    shareDismissed: number; shareDismissedUsers: number;
+    goToHeardClicked: number; goToHeardClickedUsers: number;
+    substackLinkClicked: number; substackLinkClickedUsers: number;
+    nugmodeToggled: number; nugmodeToggledUsers: number;
+    exitClicked: number; exitClickedUsers: number;
+    fallbackDonate: number; fallbackDonateUsers: number;
+  };
+  fundingEventsSince: number;
   llmApiCalls: number;
   llmApiCallsSince: number;
   ggwashPublished: number;

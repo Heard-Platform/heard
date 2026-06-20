@@ -46,7 +46,6 @@ export function EventRoomView({
           onJoin={onJoin}
           onSubmitStatement={onSubmitStatement}
           onVoteOnStatement={onVoteOnStatement}
-          onSwipedAllChange={() => {}}
           onRefreshStatements={onRefreshStatements}
           onDiscussStatement={() => {}}
           onShowAccountSetupModal={onShowAccountSetupModal}

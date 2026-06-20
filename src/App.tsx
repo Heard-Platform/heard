@@ -6,6 +6,7 @@ import { TermsOfServicePage } from "./screens/TermsOfServicePage";
 import { PrivacyPolicyPage } from "./screens/PrivacyPolicyPage";
 import { OrgsLanding } from "./screens/OrgsLanding";
 import { OneBillionPage } from "./screens/OneBillionPage";
+import { FundingPage } from "./screens/funding/FundingPage";
 import { AiUsagePage } from "./screens/AiUsagePage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
@@ -85,6 +86,7 @@ function AppContent() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showOrgsPage, setShowOrgsPage] = useState(false);
   const [showOneBillion, setShowOneBillion] = useState(false);
+  const [showFundingPage, setShowFundingPage] = useState(false);
   const [showAiUsage, setShowAiUsage] = useState(false);
   const [newsletterEdition, setNewsletterEdition] = useState<number | null>(null);
   const [qrScanResult, setQrScanResult] =
@@ -255,7 +257,7 @@ function AppContent() {
       const isOrgsRoute = route === "orgs";
       const isOneBillionRoute = route === "1billion";
       const isAiUsageRoute = route === "ai-usage";
-
+      const isFundingRoute = route === "fund";
       const newsletterMatch = pathname.match(/^\/newsletter\/(\d+)$/);
       const isParkletRoute = route === "parklet";
       const is2b04Route = route === "2b04";
@@ -404,6 +406,8 @@ function AppContent() {
         setShowOneBillion(true);
       } else if (isAiUsageRoute) {
         setShowAiUsage(true);
+      } else if (isFundingRoute) {
+        setShowFundingPage(true);
       } else if (newsletterMatch) {
         const edition = parseInt(newsletterMatch[1]);
         setNewsletterEdition(edition);
@@ -632,6 +636,15 @@ function AppContent() {
 
   if (showOneBillion) {
     return <OneBillionPage />;
+  }
+
+  if (showFundingPage) {
+    return (
+      <>
+        <FundingPage onExit={() => { setShowFundingPage(false); window.history.pushState({}, "", "/"); }} />
+        <Toaster />
+      </>
+    );
   }
 
   if (showAiUsage) {

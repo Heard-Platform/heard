@@ -34,6 +34,7 @@ interface SwipeableStatementStackProps {
   demographicQuestions: DemographicQuestion[];
   answeredQuestionIds: Set<string>;
   targetStatementId?: string;
+  isActive: boolean;
   onVote: (
     id: string,
     voteType: VoteType,
@@ -60,6 +61,7 @@ export function SwipeableStatementStack({
   demographicQuestions,
   answeredQuestionIds,
   targetStatementId,
+  isActive,
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
@@ -422,7 +424,7 @@ export function SwipeableStatementStack({
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
       <div className="relative">
-        {showTutorial && cards[0]?.type === "statement" && (
+        {showTutorial && isActive && cards[0]?.type === "statement" && (
           <div className="absolute inset-0 z-20 pointer-events-none">
             <SwipeInstructions />
           </div>
