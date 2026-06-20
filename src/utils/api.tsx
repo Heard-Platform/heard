@@ -4,6 +4,7 @@ import {
   DevAnonDebate,
   DryRunResult,
   Feedback,
+  GGWashImportResult,
   FeatureResults,
   FunnelMetricsData,
   LiveActivityData,
@@ -769,6 +770,13 @@ class ApiClient extends BaseApiClient {
     return this.request<{ roomId: string; statementIds: string[] }>("/enrichment/run", {
       method: "POST",
       body: JSON.stringify({ forceRun: true }),
+    });
+  }
+
+  async runGGWashImport(dryRun = false) {
+    return this.request<GGWashImportResult>("/enrichment/ggwash-import/run", {
+      method: "POST",
+      body: JSON.stringify({ dryRun }),
     });
   }
 

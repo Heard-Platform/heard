@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
-import { Play, Loader2 } from "lucide-react";
+import { Play, Loader2, FlaskConical } from "lucide-react";
 import { useDebateSession } from "../../hooks/useDebateSession";
-import { EnrichmentConfig } from "../../types";
-
+import { EnrichmentConfig, GGWashImportResult } from "../../types";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
@@ -12,6 +11,7 @@ export function EnrichmentTab() {
     getEnrichmentConfig,
     setEnrichmentConfig,
     runEnrichmentNow,
+    runGGWashImport,
   } = useDebateSession();
   const [config, setConfig] = useState<EnrichmentConfig>({
     enabled: false,
@@ -20,6 +20,9 @@ export function EnrichmentTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [running, setRunning] = useState(false);
+  const [dryRunning, setDryRunning] = useState(false);
+  const [dryRunResult, setGGWashImportResult] = useState<GGWashImportResult | null>(null);
+  const [isDryRun, setIsDryRun] = useState(true);
 
   const fetchConfig = async () => {
     setLoading(true);
@@ -61,6 +64,23 @@ export function EnrichmentTab() {
       toast.error("Failed to run enrichment");
     }
     setRunning(false);
+  };
+
+  const handleGGWashRun = async () => {
+    setDryRunning(true);
+    setGGWashImportResult(null);
+    try {
+      const response = await runGGWashImport(isDryRun);
+      if (response?.success && response.data) {
+        setGGWashImportResult(response.data);
+      } else {
+        toast.error("GGWash run failed");
+      }
+    } catch (e) {
+      console.error("Error running GGWash import:", e);
+      toast.error("GGWash run failed");
+    }
+    setDryRunning(false);
   };
 
   if (loading) {
@@ -165,6 +185,87 @@ export function EnrichmentTab() {
             </>
           )}
         </Button>
+      </div>
+
+      <div className="space-y-4 bg-amber-50 p-4 rounded-lg border border-amber-200">
+        <div>
+          <h3 className="font-medium text-amber-900 mb-1">GGWash Import</h3>
+          <p className="text-sm text-amber-700">
+            Fetch articles, run LLM selection and transform
+          </p>
+        </div>
+
+        <label className="flex items-center gap-2 text-sm text-amber-900 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isDryRun}
+            onChange={(e) => setIsDryRun(e.target.checked)}
+          />
+          Dry run (no DB writes)
+        </label>
+
+        <Button
+          onClick={handleGGWashRun}
+          disabled={dryRunning}
+          variant="outline"
+          className="w-full"
+        >
+          {dryRunning ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Running...
+            </>
+          ) : (
+            <>
+              <FlaskConical className="w-4 h-4 mr-2" />
+              {isDryRun ? "Dry Run GGWash" : "Run GGWash"}
+            </>
+          )}
+        </Button>
+
+        {dryRunResult && (
+          <div className="text-sm space-y-2 pt-1">
+            <p className="text-amber-800">
+              <strong>{dryRunResult.considered}</strong> candidates considered
+            </p>
+            {dryRunResult.preview?.article ? (
+              <div className="bg-white border border-amber-200 rounded p-3 space-y-2">
+                {dryRunResult.preview.article.imageUrl && (
+                  <img
+                    src={dryRunResult.preview.article.imageUrl}
+                    alt=""
+                    className="w-full rounded object-cover max-h-40"
+                  />
+                )}
+                <a
+                  href={dryRunResult.preview.article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-blue-700 hover:underline block"
+                >
+                  {dryRunResult.preview.article.title}
+                </a>
+                {dryRunResult.preview.rejected ? (
+                  <p className="text-red-600 italic">LLM rejected this article</p>
+                ) : (
+                  <>
+                    <p className="font-medium">{dryRunResult.preview.topic}</p>
+                    {dryRunResult.preview.description && (
+                      <p className="text-slate-500 text-xs">{dryRunResult.preview.description}</p>
+                    )}
+                    <ul className="space-y-1">
+                      {dryRunResult.preview.statements?.map((s: string, i: number) => (
+                        <li key={i} className="text-slate-600">• {s}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            ) : (
+              <p className="text-slate-500 italic">No article selected</p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="text-xs text-slate-500 space-y-1">

@@ -311,3 +311,36 @@ export type AiPrompt = {
   systemPrompt: string;
   userPrompt: string;
 };
+
+export interface GGWashArticle {
+  title: string;
+  body: string;
+  url: string;
+  guid: string;
+  imageUrl?: string;
+  publishedAt: number;
+}
+
+export type ScrapedItemStatus =
+  | "scraped"
+  | "attempting"
+  | "published"
+  | "rejected";
+
+export interface ScrapedItem {
+  guid: string;
+  title: string;
+  bodyExcerpt: string;
+  source: string;
+  url: string;
+  imageUrl?: string;
+  publishedAt: number;
+  scrapedAt: number;
+  status: ScrapedItemStatus;
+  rank?: number;
+  generatedTopic?: string;
+  generatedStatements?: string[];
+  publishedRoomId?: string;
+  error?: string;
+  decidedAt?: number;
+}

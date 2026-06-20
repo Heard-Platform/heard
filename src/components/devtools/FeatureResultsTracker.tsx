@@ -24,6 +24,7 @@ import {
   Heart,
   ArrowRight,
   Cpu,
+  Newspaper,
   HeartHandshake,
 } from "lucide-react";
 import { api } from "../../utils/api";
@@ -262,6 +263,31 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       description: "Total rows in the llm_api_calls table",
       getValue: (s) => s.llmApiCalls,
       getDate: (s) => s.llmApiCallsSince,
+    },
+    {
+      icon: Newspaper,
+      iconColor: "text-green-700",
+      bgColor: "bg-green-100",
+      title: "GGWash Importer",
+      description: "Rooms published from Greater Greater Washington articles",
+      getValue: (s) => s.ggwashPublished,
+      getDate: (s) => s.ggwashSince,
+      renderExtra: (s) => (
+        <div className="flex gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Published</p>
+            <p className="text-2xl font-bold text-green-700">{s.ggwashPublished}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Rejected</p>
+            <p className="text-2xl font-bold text-red-500">{s.ggwashRejected}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Pending</p>
+            <p className="text-2xl font-bold text-slate-500">{s.ggwashPending}</p>
+          </div>
+        </div>
+      ),
     },
     {
       icon: HeartHandshake,

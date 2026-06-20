@@ -2,11 +2,7 @@ import { getRedditPosts } from "./reddit-scraper-utils.ts";
 import { makeTransformPromptFromRedditPost } from "./ai-prompt-utils.ts";
 import { EnrichmentService } from "./enrichment-service.ts";
 import { RedditPost, RedditScrapeCriteria } from "./types.tsx";
-import { createRoom } from "./kv-utils.tsx";
-import { createNewRoomData } from "./room-utils.ts";
-import { ONE_HOUR_MIN, ONE_WEEK_MS } from "./time-utils.ts";
-import { generateId } from "./utils.tsx";
-import { saveStatement } from "./kv-utils.tsx";
+import { ONE_HOUR_MIN } from "./time-utils.ts";
 
 const REDDIT_IMPORT_ENDPOINT = "reddit-import";
 
@@ -34,6 +30,7 @@ export function getRandomSubreddit(): string {
 }
 
 export class RedditImporter extends EnrichmentService {
+  protected author = "reddit-importer";
   async createPostFromRedditPost(
     redditPost: RedditPost,
   ): Promise<boolean> {
@@ -68,34 +65,7 @@ Post self-text: ${redditPost.selfText}
     console.debug(msg);
 
     const subHeard = subredditsToHerds[redditPost.subreddit] || "test";
-
-    const newPost = createNewRoomData({
-      id: generateId(),
-      topic: conversationTopic,
-      participants: [],
-      hostId: "enrichment-service",
-      subHeard,
-      endTime: Date.now() + ONE_WEEK_MS,
-      allowAnonymous: true,
-    });
-    
-    await createRoom(newPost);
-
-    await Promise.all(stmtTexts.map((stmtText) =>
-      saveStatement({
-        id: generateId(),
-        text: stmtText,
-        author: "enrichment-service",
-        agrees: 0,
-        disagrees: 0,
-        passes: 0,
-        superAgrees: 0,
-        roomId: newPost.id,
-        timestamp: Date.now(),
-        round: 1,
-        voters: {},
-      })
-    ));
+    await this.publishRoom(conversationTopic, stmtTexts, { subHeard });
 
     return true;
   }

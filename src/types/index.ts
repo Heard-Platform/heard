@@ -512,6 +512,23 @@ export interface FeatureResults {
   fundingEventsSince: number;
   llmApiCalls: number;
   llmApiCallsSince: number;
+  ggwashPublished: number;
+  ggwashRejected: number;
+  ggwashPending: number;
+  ggwashSince: number;
+}
+
+export interface GGWashImportResult {
+  posted: number;
+  considered: number;
+  skipped: number;
+  preview?: {
+    article: { title: string; url: string; imageUrl?: string } | null;
+    topic: string | null;
+    description: string | null;
+    statements: string[] | null;
+    rejected: boolean;
+  };
 }
 
 export interface UserHistoryData {
