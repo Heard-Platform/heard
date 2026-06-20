@@ -1,11 +1,24 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
-import { Play, Loader2 } from "lucide-react";
+import { Play, Loader2, FlaskConical } from "lucide-react";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { EnrichmentConfig } from "../../types";
+import { api } from "../../utils/api";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
+
+interface DryRunResult {
+  posted: number;
+  considered: number;
+  skipped: number;
+  preview?: {
+    article: { title: string; url: string; imageUrl?: string } | null;
+    topic: string | null;
+    statements: string[] | null;
+    rejected: boolean;
+  };
+}
 
 export function EnrichmentTab() {
   const {
@@ -20,6 +33,8 @@ export function EnrichmentTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [running, setRunning] = useState(false);
+  const [dryRunning, setDryRunning] = useState(false);
+  const [dryRunResult, setDryRunResult] = useState<DryRunResult | null>(null);
 
   const fetchConfig = async () => {
     setLoading(true);
@@ -61,6 +76,23 @@ export function EnrichmentTab() {
       toast.error("Failed to run enrichment");
     }
     setRunning(false);
+  };
+
+  const handleDryRun = async () => {
+    setDryRunning(true);
+    setDryRunResult(null);
+    try {
+      const response = await api.runGGWashImport(true);
+      if (response?.success && response.data) {
+        setDryRunResult(response.data);
+      } else {
+        toast.error("Dry run failed");
+      }
+    } catch (e) {
+      console.error("Error running GGWash dry run:", e);
+      toast.error("Dry run failed");
+    }
+    setDryRunning(false);
   };
 
   if (loading) {
@@ -165,6 +197,68 @@ export function EnrichmentTab() {
             </>
           )}
         </Button>
+      </div>
+
+      <div className="space-y-4 bg-amber-50 p-4 rounded-lg border border-amber-200">
+        <div>
+          <h3 className="font-medium text-amber-900 mb-1">GGWash Dry Run</h3>
+          <p className="text-sm text-amber-700">
+            Fetch articles, run LLM selection and transform — no DB writes
+          </p>
+        </div>
+
+        <Button
+          onClick={handleDryRun}
+          disabled={dryRunning}
+          variant="outline"
+          className="w-full"
+        >
+          {dryRunning ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Running...
+            </>
+          ) : (
+            <>
+              <FlaskConical className="w-4 h-4 mr-2" />
+              Dry Run GGWash
+            </>
+          )}
+        </Button>
+
+        {dryRunResult && (
+          <div className="text-sm space-y-2 pt-1">
+            <p className="text-amber-800">
+              <strong>{dryRunResult.considered}</strong> candidates considered
+            </p>
+            {dryRunResult.preview?.article ? (
+              <div className="bg-white border border-amber-200 rounded p-3 space-y-2">
+                <a
+                  href={dryRunResult.preview.article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-blue-700 hover:underline block"
+                >
+                  {dryRunResult.preview.article.title}
+                </a>
+                {dryRunResult.preview.rejected ? (
+                  <p className="text-red-600 italic">LLM rejected this article</p>
+                ) : (
+                  <>
+                    <p className="font-medium">{dryRunResult.preview.topic}</p>
+                    <ul className="space-y-1">
+                      {dryRunResult.preview.statements?.map((s: string, i: number) => (
+                        <li key={i} className="text-slate-600">• {s}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            ) : (
+              <p className="text-slate-500 italic">No article selected</p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="text-xs text-slate-500 space-y-1">

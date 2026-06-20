@@ -22,13 +22,19 @@ export interface GGWashRunResult {
   posted: number;
   considered: number;
   skipped: number;
+  preview?: {
+    article: { title: string; url: string; imageUrl?: string } | null;
+    topic: string | null;
+    statements: string[] | null;
+    rejected: boolean;
+  };
 }
 
 export class GGWashImporter extends EnrichmentService {
   protected author = "ggwash-importer";
-  async runOnce(): Promise<GGWashRunResult> {
+  async runOnce(dryRun = false): Promise<GGWashRunResult> {
     const articles = await fetchGGWashArticles();
-    const candidates = await this.recordAndCollectCandidates(articles);
+    const candidates = await this.recordAndCollectCandidates(articles, dryRun);
     if (candidates.length === 0) {
       return { posted: 0, considered: 0, skipped: 0 };
     }
@@ -39,16 +45,35 @@ export class GGWashImporter extends EnrichmentService {
     let skipped = 0;
     for (const index of ranked) {
       if (posted >= TARGET_POSTS_PER_RUN) break;
+      if (dryRun) {
+        const article = candidates[index];
+        const { topic, statements, rejected } = await this.transformArticle(article);
+        if (!rejected && topic && statements) {
+          return {
+            posted: 0,
+            considered: candidates.length,
+            skipped: 0,
+            preview: {
+              article: { title: article.title, url: article.url, imageUrl: article.imageUrl },
+              topic,
+              statements,
+              rejected,
+            },
+          };
+        }
+        continue;
+      }
+
       const published = await this.attemptPublish(candidates[index], index);
       if (published) posted++;
       else skipped++;
     }
-
     return { posted, considered: candidates.length, skipped };
   }
 
   private async recordAndCollectCandidates(
     articles: GGWashArticle[],
+    dryRun: boolean,
   ): Promise<GGWashArticle[]> {
     const candidates: GGWashArticle[] = [];
     for (const article of articles) {
@@ -58,15 +83,26 @@ export class GGWashImporter extends EnrichmentService {
         continue;
       }
       if (isRoundupTitle(article.title)) {
-        await saveScrapedItem(
-          autoRejectedRecord(article, "auto-excluded: links roundup"),
-        );
+        if (!dryRun) await saveScrapedItem(autoRejectedRecord(article, "auto-excluded: links roundup"));
         continue;
       }
-      await saveScrapedItem(toScrapedRecord(article));
+      if (!dryRun) await saveScrapedItem(toScrapedRecord(article));
       candidates.push(article);
     }
     return candidates;
+  }
+
+  private async transformArticle(article: GGWashArticle) {
+    const prompt = makeTransformPromptFromGGWashArticle(article, this.provider);
+    const raw = await this.aiClient.complete(prompt, { endpoint: TRANSFORM_ENDPOINT });
+    const parsed = parseTransform(raw);
+    return {
+      article: { title: article.title, url: article.url, imageUrl: article.imageUrl },
+      topic: parsed?.topic ?? null,
+      statements: parsed?.statements ?? null,
+      rejected: !parsed,
+      raw,
+    };
   }
 
   private async selectRanked(candidates: GGWashArticle[]): Promise<number[]> {
@@ -81,28 +117,27 @@ export class GGWashImporter extends EnrichmentService {
     article: GGWashArticle,
     rank: number,
   ): Promise<boolean> {
-    const record = (await getScrapedItem(SCRAPE_SOURCE, article.guid))!;
+    const record = (await getScrapedItem(
+      SCRAPE_SOURCE,
+      article.guid,
+    ))!;
     // Mark as attempted BEFORE the transform, so a crash or double-fire can never re-post this article (at-most-once).
     await markAttempting(record, rank);
 
-    const prompt = makeTransformPromptFromGGWashArticle(article, this.provider);
-    const aiResponse = await this.aiClient.complete(prompt, {
-      endpoint: TRANSFORM_ENDPOINT,
-    });
-
-    const parsed = parseTransform(aiResponse);
-    if (!parsed) {
-      await recordRejection(record, aiResponse);
+    const { topic, statements, rejected, raw } =
+      await this.transformArticle(article);
+    if (rejected || !topic || !statements) {
+      await recordRejection(record, raw);
       return false;
     }
 
-    const roomId = await this.publishRoom(parsed.topic, parsed.statements, {
+    const roomId = await this.publishRoom(topic, statements, {
       subHeard: DEFAULT_SUBHEARD,
       imageUrl: article.imageUrl,
     });
-    await recordPublished(record, parsed, roomId);
+    await recordPublished(record, { topic, statements }, roomId);
 
-    logSuccess(article, parsed.topic, parsed.statements);
+    logSuccess(article, topic, statements);
     return true;
   }
 

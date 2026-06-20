@@ -772,6 +772,23 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async runGGWashImport(dryRun = false) {
+    return this.request<{
+      posted: number;
+      considered: number;
+      skipped: number;
+      preview?: {
+        article: { title: string; url: string; imageUrl?: string } | null;
+        topic: string | null;
+        statements: string[] | null;
+        rejected: boolean;
+      };
+    }>("/enrichment/ggwash-import/run", {
+      method: "POST",
+      body: JSON.stringify({ dryRun }),
+    });
+  }
+
   async getUserRank() {
     return this.request<{ rank: number; totalUsers: number }>("/user-rank", {
       method: "POST",
