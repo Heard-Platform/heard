@@ -185,7 +185,7 @@ export function FundingPage({
         >
           <iframe
             style={{ width: "100%", height: "100%", border: "none" }}
-            src="https://www.youtube.com/embed/PLACEHOLDER_VIDEO_ID"
+            src="https://www.youtube.com/embed/jFzidavpm_4"
             title="Heard funding video"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
