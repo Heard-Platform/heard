@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogTitle } from "../../components/ui/dialog";
 import { DonationDialog } from "./DonationDialog";
 import { DonateCTA } from "./DonateCTA";
 import { Countdown, useCountdownDays } from "./Countdown";
-import { C, fmt, FUNDING_GOAL, SHARE_URL } from "./constants";
+import { C, fmt, FUNDING_GOAL, SHARE_URL, styles } from "./constants";
 import { share } from "../../utils/share";
 import { api } from "../../utils/api";
 import type { ApiResponse } from "../../utils/api-client";
@@ -158,7 +158,7 @@ export function FundingPage({
             marginBottom: 8,
           }}
         >
-          Save me from a tattoo chosen by the internet
+          Fund Heard. Pick my tattoo.
         </h1>
         <p
           style={{
@@ -168,7 +168,7 @@ export function FundingPage({
             marginBottom: 12,
           }}
         >
-          And support an app for talking across divides
+          If we get $5,000 in donations by July 4th, you vote on what I get inked
         </p>
 
         {/* YouTube video placeholder (portrait) */}
@@ -194,85 +194,23 @@ export function FundingPage({
 
         <Countdown />
         {/* Header */}
-        <p
-          style={{
-            color: C.slate600,
-            lineHeight: 1.625,
-            marginBottom: 16,
-          }}
-        >
-          At the start of 2026, I gave myself a deadline: raise{" "}
-          <strong style={{ color: C.slate800 }}>
-            $5,000 in funding by July 4th
-          </strong>
-          , or get a{" "}
-          <strong style={{ color: C.slate800 }}>
-            tattoo chosen by public vote
+        <p style={styles.paragraph}>
+          In January, I launched Heard as a way for people to talk to each other across divides.{" "}
+          <strong style={styles.strong}>
+            We've already had 400+ DC residents use it
           </strong>{" "}
-          on Heard. We're {daysLeft} days out, and I need your help
-          getting us into the endzone.
+           to discuss local matters and now I need to raise a little money.
         </p>
-        {showMore ? (
-          <>
-            <p
-              style={{
-                color: C.slate600,
-                lineHeight: 1.625,
-                marginBottom: 16,
-              }}
-            >
-              I'm building Heard because I think American communities
-              need a better way to talk to each other at scale and
-              across divides. So far{" "}
-              <strong style={{ color: C.slate800 }}>
-                we've had 400+ DC residents vote
-              </strong>{" "}
-              on local issues using Heard and 307 animal rescuers use
-              it to debrief an event.
-            </p>
-            <p
-              style={{
-                color: C.slate600,
-                lineHeight: 1.625,
-                marginBottom: 16,
-              }}
-            >
-              Your donation not only funds my vegan chicken nuggies
-              addiction 🍗. It also tells me there are others out
-              there crazy enough to think{" "}
-              <strong style={{ color: C.slate800 }}>
-                this is worth doing
-              </strong>
-              , and encourages me to keep going through the rest of
-              the year.
-            </p>
-            <p
-              style={{
-                color: C.slate500,
-                fontSize: 14,
-                fontStyle: "italic",
-                marginBottom: 4,
-              }}
-            >
-              — Alex Long, founder of Heard
-            </p>
-          </>
-        ) : (
-          <button
-            onClick={() => setShowMore(true)}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: C.slate400,
-              fontSize: 14,
-              padding: 0,
-              marginBottom: 4,
-            }}
-          >
-            read more...
-          </button>
-        )}
+        <p style={styles.paragraph}>
+          So here’s the deal: if Heard raises{" "}
+          <strong style={styles.strong}>
+            $5,000 by July 4th,{" "}
+          </strong>
+          I'll get a temporary tattoo (lasting 1-2 years), voted on by donors.          
+        </p>
+        <p style={styles.paragraph}>
+          Your donation not only buys you <strong style={styles.strong}>a vote on the design</strong>. It also funds my vegan chicken nuggies addiction 🍗 and encourages me as I continue forward with Heard.
+        </p>
       </div>
 
       <div

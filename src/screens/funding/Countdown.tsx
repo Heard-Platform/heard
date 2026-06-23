@@ -31,7 +31,7 @@ export function Countdown({ compact = false }: { compact?: boolean }) {
           <strong style={{ color: C.slate600 }}>
             {String(days).padStart(2, "0")}d {String(hours).padStart(2, "0")}h {String(minutes).padStart(2, "0")}m {String(seconds).padStart(2, "0")}s
           </strong>
-          {" "} till tattoo
+          {" "} left to donate
         </span>
       </div>
     );
@@ -40,7 +40,7 @@ export function Countdown({ compact = false }: { compact?: boolean }) {
   return (
     <div style={{ width: "100%", maxWidth: 384, marginBottom: 32, textAlign: "center" }}>
       <p style={{ color: C.slate500, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, marginBottom: 12 }}>
-        Time till tattoo
+        Time left to donate
       </p>
       <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
         {([

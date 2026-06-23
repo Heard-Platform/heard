@@ -105,7 +105,7 @@ export function DonateCTA({ nugMode, copied, onDonate, onShare }: DonateCTAProps
           marginTop: 2,
         }}
       >
-        Donate {fmt(amount, nugMode)}
+        Give {fmt(amount, nugMode)}
       </button>
 
       {/* Share CTA */}
