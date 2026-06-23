@@ -42,3 +42,14 @@ export function fmt(amount: number, nug: boolean) {
   const nuggies = Math.round(amount / 0.4);
   return `🍗${nuggies.toLocaleString()}`;
 }
+
+export const styles = {
+  paragraph: {
+    color: C.slate600,
+    lineHeight: 1.625,
+    marginBottom: 16,
+  },
+  strong: {
+    color: C.slate800
+  }
+};
