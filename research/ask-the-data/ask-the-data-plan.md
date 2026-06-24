@@ -1,8 +1,8 @@
 # Ask the Data: Implementation Plan
 
 A complete plan for an implementing agent. Read this end to end before writing any
-code. The feature is informally "Ask the Data"; the code modules are named
-`conversation-question-*` to match the page they live on ("Conversation Insights").
+code. The feature is "Ask the Data". It lives on the existing "Conversation Insights"
+page; its code modules are named `ask-the-data-*`.
 
 ## Goal
 
@@ -79,16 +79,16 @@ Read every file below before writing code. They establish the patterns this plan
 | Reuse as-is | UI primitives + spinner | [src/components/ui/](../../src/components/ui/), `Loader2` (`lucide-react`) |
 | Pattern to mirror | Endpoint shape | `POST /rant/extract` in [debate-api.tsx](../../src/supabase/functions/server/debate-api.tsx) |
 | Pattern to mirror | Reject-rules prompt style | `EXCLUSION_RULES` in [ggwash-prompt-utils.ts](../../src/supabase/functions/server/ggwash-prompt-utils.ts) |
-| New | Prompt builder + response parser + scope rules | `conversation-question-prompt-utils.ts` |
-| New | Endpoint | `conversation-question-api.ts` → `POST /room/:roomId/question` |
-| New | Tests | `conversation-question-test.tsx` |
-| New | UI card | `ConversationQuestionCard.tsx` |
+| New | Prompt builder + response parser + scope rules | `ask-the-data-prompt-utils.ts` |
+| New | Endpoint | `ask-the-data-api.ts` → `POST /room/:roomId/ask` |
+| New | Tests | `ask-the-data-test.tsx` |
+| New | UI card | `AskTheDataCard.tsx` |
 
 ## API endpoint
 
 All under the existing prefix `/make-server-f1a393b4`.
 
-`POST /make-server-f1a393b4/room/:roomId/question`
+`POST /make-server-f1a393b4/room/:roomId/ask`
 
 - Body: `{ "question": string }`.
 - Response (200): `{ "status": "answered" | "rejected", "response": string }`.
@@ -106,9 +106,9 @@ Handler logic (mirrors the rant endpoint + the analysis fetch):
    `agrees`/`disagrees`/`passes`/`superAgrees`).
 4. `const userId = c.get("userId")` (optional — for usage logging only, same as rant).
 5. `const client = createLlmClient();`
-   `const prompt = makeConversationQuestionPrompt(room.topic, statements, question);`
-   `const content = await client.completeJson(prompt, { userId, endpoint: CONVERSATION_QUESTION_ENDPOINT });`
-6. `const result = parseQuestionResponse(content);` → `c.json(result)`.
+   `const prompt = makeAskTheDataPrompt(room.topic, statements, question);`
+   `const content = await client.completeJson(prompt, { userId, endpoint: ASK_THE_DATA_ENDPOINT });`
+6. `const result = parseAskTheDataResponse(content);` → `c.json(result)`.
 7. Wrap in try/catch → 500 on throw.
 
 ## Data sent to the LLM
@@ -130,7 +130,7 @@ ids, voter ids, timestamps, cluster, or demographic data.
 
 ## LLM prompt
 
-`makeConversationQuestionPrompt(topic, statements, question)` returns an `AiPrompt`.
+`makeAskTheDataPrompt(topic, statements, question)` returns an `AiPrompt`.
 Keep the scope rules in exported named constants (`ALLOWED_AVENUES`, `REJECT_RULES`) so
 tests can assert on them and they can be tuned in one place. This prompt is the quality
 gate; expect to iterate on it in staging.
@@ -159,7 +159,7 @@ gate; expect to iterate on it in staging.
      most a few sentences. For a rejection, `response` is a short, friendly note that the
      question is outside what the assistant can answer about this conversation.
 
-`parseQuestionResponse(raw)`:
+`parseAskTheDataResponse(raw)`:
 - `JSON.parse(stripMarkdownFences(raw))`.
 - Validate `status` is exactly `"answered"` or `"rejected"` and `response` is a
   non-empty string.
@@ -172,21 +172,21 @@ gate; expect to iterate on it in staging.
 ### File map
 
 New files (in `src/supabase/functions/server/`):
-- `conversation-question-prompt-utils.ts`
-- `conversation-question-api.ts`
-- `conversation-question-test.tsx`
+- `ask-the-data-prompt-utils.ts`
+- `ask-the-data-api.ts`
+- `ask-the-data-test.tsx`
 
 Existing file to modify:
-- `index.tsx`: import `conversationQuestionApi` and add `app.route("/", conversationQuestionApi);` next to the `analysisApi` registration.
+- `index.tsx`: import `askTheDataApi` and add `app.route("/", askTheDataApi);` next to the `analysisApi` registration.
 
 ### Implementation order
 
 1. **Prompt utils.** Implement `ALLOWED_AVENUES`, `REJECT_RULES`,
-   `makeConversationQuestionPrompt`, and `parseQuestionResponse`. Reuse
+   `makeAskTheDataPrompt`, and `parseAskTheDataResponse`. Reuse
    `stripMarkdownFences` from `rant-prompt-utils.ts` (import it; do not re-implement).
 2. **Pure tests.** Write the always-run tests (below) and get them green before wiring
    the endpoint — the prompt builder and parser are fully testable without a network.
-3. **Endpoint.** Implement `conversation-question-api.ts` (Hono app, one route, logic
+3. **Endpoint.** Implement `ask-the-data-api.ts` (Hono app, one route, logic
    above). Import `getDebateRoom` / `getStatements` from `debate-api.tsx`.
 4. **Register.** Wire the app into `index.tsx`.
 5. **Frontend.** API method, component, insertion (below).
@@ -194,7 +194,7 @@ Existing file to modify:
 
 ### Key constants (named, not inlined)
 
-- `CONVERSATION_QUESTION_ENDPOINT = "/room/question"` (used as the `endpoint` for usage
+- `ASK_THE_DATA_ENDPOINT = "/room/ask"` (used as the `endpoint` for usage
   logging).
 - `MAX_QUESTION_CHARS` (bound prompt size / cost; e.g. 500).
 - `PARSE_FALLBACK_MESSAGE` (the graceful rejection used when the model reply can't be
@@ -207,20 +207,20 @@ Existing file to modify:
 Add near `getRoomAnalysis`:
 
 ```ts
-async askConversationQuestion(roomId: string, question: string) {
+async askTheData(roomId: string, question: string) {
   return this.request<{ status: "answered" | "rejected"; response: string }>(
-    `/room/${roomId}/question`,
+    `/room/${roomId}/ask`,
     { method: "POST", body: JSON.stringify({ question }) },
   );
 }
 ```
 
-### Component — `src/components/analysis/ConversationQuestionCard.tsx`
+### Component — `src/components/analysis/AskTheDataCard.tsx`
 
 - Props: `{ debateId: string }`.
 - State: `question: string`, `isAsking: boolean`, `result: { question, status, response } | null`, `error: string | null`.
 - `handleAsk`: ignore when `question.trim()` is empty; `setIsAsking(true)` and clear
-  `error`; call `api.askConversationQuestion(debateId, question)`; on `success` set
+  `error`; call `api.askTheData(debateId, question)`; on `success` set
   `result` (capture the submitted `question` text so the displayed question matches what
   was asked); on failure set `error`; `finally setIsAsking(false)`. (Same try/catch/finally
   shape used by callers of `extractTopicAndStatements`.)
@@ -238,18 +238,18 @@ Import the component and place it between the metric grid's closing `</div>` (li
 and `<StatementSpectrumCard statements={allStatements} />` (line 129):
 
 ```tsx
-<ConversationQuestionCard debateId={debateId} />
+<AskTheDataCard debateId={debateId} />
 ```
 
-## Testing — `conversation-question-test.tsx`
+## Testing — `ask-the-data-test.tsx`
 
 Conventions: `process.env.NODE_ENV = "test"` at top; BDD `describe`/`it` from
 `jsr:@std/testing/bdd`; asserts from `deno.land/std@0.208.0/assert`.
 
 **Always-run (pure, no network):**
-- `makeConversationQuestionPrompt` includes the topic, every statement's text, each
+- `makeAskTheDataPrompt` includes the topic, every statement's text, each
   statement's vote counts, the question, the allowlist phrasing, and the reject rules.
-- `parseQuestionResponse`: clean `answered` JSON; clean `rejected` JSON; markdown-fenced
+- `parseAskTheDataResponse`: clean `answered` JSON; clean `rejected` JSON; markdown-fenced
   JSON; malformed JSON → safe `rejected`; missing/invalid `status` → safe `rejected`.
 
 **Live behavioral suite (gated behind `if (false)`,** per the
@@ -264,7 +264,7 @@ labeled question sets, asserting only the returned `status` — **not** answer a
   ("who voted disagree on response 2?"), and unanswerable-from-data ("what do people in
   Texas think about this?").
 
-Each live case runs `createLlmClient()` → `completeJson` → `parseQuestionResponse` and
+Each live case runs `createLlmClient()` → `completeJson` → `parseAskTheDataResponse` and
 asserts `status === expected`; `console.log` the responses for manual inspection.
 
 ## Verification
@@ -272,7 +272,7 @@ asserts `status === expected`; `console.log` the responses for manual inspection
 ### Backend tests
 ```
 cd src/supabase/functions/server
-deno test conversation-question-test.tsx
+deno test ask-the-data-test.tsx
 ```
 For the live suite: flip `if (false)` → `if (true)`, set the provider key for the
 configured `LLM_PROVIDER` (default `gemini` → `GEMINI_API_KEY`; or `LLM_PROVIDER=anthropic`
@@ -313,9 +313,9 @@ Deliberately deferred — do not build these:
 - No magic numbers or strings — thresholds, endpoint name, and fallback message are named
   constants.
 - No defensive handling of impossible cases; the one defensive path that *is* required is
-  `parseQuestionResponse` degrading a malformed model reply to a graceful rejection.
-- Match sibling files: `conversation-question-api.ts` should read like `analysis-api.tsx`;
-  `conversation-question-prompt-utils.ts` like `rant-prompt-utils.ts` /
+  `parseAskTheDataResponse` degrading a malformed model reply to a graceful rejection.
+- Match sibling files: `ask-the-data-api.ts` should read like `analysis-api.tsx`;
+  `ask-the-data-prompt-utils.ts` like `rant-prompt-utils.ts` /
   `ggwash-prompt-utils.ts`.
 - No code comments unless the "why" is non-obvious.
 - Backend re-fetches data; never trust client-sent post data.
