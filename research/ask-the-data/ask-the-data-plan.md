@@ -96,6 +96,9 @@ All under the existing prefix `/make-server-f1a393b4`.
   on LLM or unexpected failure (generic message, matching sibling endpoints).
 - **The backend re-fetches the post data from `roomId`; it never trusts client-sent post
   data.** This matches `analysis-api.tsx` and keeps prompt assembly server-side.
+- **Auth:** the route sits under the `room/*` namespace, already behind `validateSession`
+  ([index.tsx](../../src/supabase/functions/server/index.tsx) protect list) — identical to
+  `/room/:roomId/analysis`. A valid session is required; no new middleware is added.
 
 Handler logic (mirrors the rant endpoint + the analysis fetch):
 
@@ -104,7 +107,8 @@ Handler logic (mirrors the rant endpoint + the analysis fetch):
 2. `const room = await getDebateRoom(roomId)` → 404 if falsy.
 3. `const statements = await getStatements(roomId)` (statements already carry
    `agrees`/`disagrees`/`passes`/`superAgrees`).
-4. `const userId = c.get("userId")` (optional — for usage logging only, same as rant).
+4. `const userId = c.get("userId")` — for usage logging. Guaranteed present because the
+   route inherits `validateSession` (see Auth above); same as the rant endpoint.
 5. `const client = createLlmClient();`
    `const prompt = makeAskTheDataPrompt(room.topic, statements, question);`
    `const content = await client.completeJson(prompt, { userId, endpoint: ASK_THE_DATA_ENDPOINT });`
@@ -174,7 +178,8 @@ gate; expect to iterate on it in staging.
 New files (in `src/supabase/functions/server/`):
 - `ask-the-data-prompt-utils.ts`
 - `ask-the-data-api.ts`
-- `ask-the-data-test.tsx`
+- `ask-the-data-prompt-utils.test.ts` — pure unit tests; auto-discovered by `deno test` (dot-`.test.ts` convention, like `voting-utils.test.ts`).
+- `ask-the-data-test.tsx` — gated live-LLM behavioral suite; run explicitly (hyphen-`-test.tsx` convention, like `rant-extraction-test.tsx`, so live calls never fire in a bare `deno test`).
 
 Existing file to modify:
 - `index.tsx`: import `askTheDataApi` and add `app.route("/", askTheDataApi);` next to the `analysisApi` registration.
@@ -184,13 +189,15 @@ Existing file to modify:
 1. **Prompt utils.** Implement `ALLOWED_AVENUES`, `REJECT_RULES`,
    `makeAskTheDataPrompt`, and `parseAskTheDataResponse`. Reuse
    `stripMarkdownFences` from `rant-prompt-utils.ts` (import it; do not re-implement).
-2. **Pure tests.** Write the always-run tests (below) and get them green before wiring
-   the endpoint — the prompt builder and parser are fully testable without a network.
+2. **Pure tests.** Write `ask-the-data-prompt-utils.test.ts` (below) and get it green
+   before wiring the endpoint — the prompt builder and parser are fully testable without a
+   network.
 3. **Endpoint.** Implement `ask-the-data-api.ts` (Hono app, one route, logic
    above). Import `getDebateRoom` / `getStatements` from `debate-api.tsx`.
 4. **Register.** Wire the app into `index.tsx`.
 5. **Frontend.** API method, component, insertion (below).
-6. **Live test suite.** Add the gated behavioral suite, then exercise it manually.
+6. **Live test suite.** Add `ask-the-data-test.tsx` (gated behavioral suite), then
+   exercise it manually.
 
 ### Key constants (named, not inlined)
 
@@ -241,21 +248,28 @@ and `<StatementSpectrumCard statements={allStatements} />` (line 129):
 <AskTheDataCard debateId={debateId} />
 ```
 
-## Testing — `ask-the-data-test.tsx`
+## Testing
 
-Conventions: `process.env.NODE_ENV = "test"` at top; BDD `describe`/`it` from
+Two files, matching the repo's split test convention. `deno test`'s default discovery
+matches `*.test.ts(x)` / `*_test.*` but **not** hyphenated `*-test.tsx` — which is exactly
+why the existing LLM suites (`rant-extraction-test.tsx`, `ggwash-import-test.tsx`) are
+hyphenated: they never fire in a bare `deno test`. We mirror that split so the cheap
+checks run with the suite and the live calls don't.
+
+Conventions for both: `process.env.NODE_ENV = "test"` at top; BDD `describe`/`it` from
 `jsr:@std/testing/bdd`; asserts from `deno.land/std@0.208.0/assert`.
 
-**Always-run (pure, no network):**
-- `makeAskTheDataPrompt` includes the topic, every statement's text, each
-  statement's vote counts, the question, the allowlist phrasing, and the reject rules.
+### `ask-the-data-prompt-utils.test.ts` — pure, auto-run (no network)
+Dot-`.test.ts` name so `deno test` discovers it (like `voting-utils.test.ts`).
+- `makeAskTheDataPrompt` includes the topic, every statement's text, each statement's
+  vote counts, the question, the allowlist phrasing, and the reject rules.
 - `parseAskTheDataResponse`: clean `answered` JSON; clean `rejected` JSON; markdown-fenced
   JSON; malformed JSON → safe `rejected`; missing/invalid `status` → safe `rejected`.
 
-**Live behavioral suite (gated behind `if (false)`,** per the
-[rant-extraction-test.tsx](../../src/supabase/functions/server/rant-extraction-test.tsx)
-**convention):** a fixed sample room (topic + a few statements with votes) plus two
-labeled question sets, asserting only the returned `status` — **not** answer accuracy:
+### `ask-the-data-test.tsx` — live behavioral suite, gated behind `if (false)`
+Hyphen-`-test.tsx` name (like `rant-extraction-test.tsx`) so it runs only when named
+explicitly. A fixed sample room (topic + a few statements with votes) plus two labeled
+question sets, asserting only the returned `status` — **not** answer accuracy:
 - `inScope` → expect `"answered"`: e.g. "Which response is most divisive?",
   "Summarize the main viewpoints", "What do people agree on most?"
 - `outOfScope` → expect `"rejected"`: general knowledge ("what's the capital of
@@ -272,12 +286,12 @@ asserts `status === expected`; `console.log` the responses for manual inspection
 ### Backend tests
 ```
 cd src/supabase/functions/server
-deno test ask-the-data-test.tsx
+deno test                       # runs ask-the-data-prompt-utils.test.ts with the rest of the dot-test suite
 ```
-For the live suite: flip `if (false)` → `if (true)`, set the provider key for the
-configured `LLM_PROVIDER` (default `gemini` → `GEMINI_API_KEY`; or `LLM_PROVIDER=anthropic`
-+ `ANTHROPIC_API_KEY`), then run with `--allow-net --allow-env`. Revert the flag before
-committing.
+For the live behavioral suite (hyphen file, not auto-discovered): flip `if (false)` →
+`if (true)`, set the provider key for the configured `LLM_PROVIDER` (default `gemini` →
+`GEMINI_API_KEY`; or `LLM_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`), then run it by name:
+`deno test --allow-net --allow-env ask-the-data-test.tsx`. Revert the flag before committing.
 
 ### End-to-end in staging (`heard-staging`, sibling directory)
 1. In `heard-staging/supabase/functions/.env`, set the LLM key for the configured
