@@ -8,7 +8,6 @@ import {
   GGWashImportResult,
   FeatureResults,
   FunnelMetricsData,
-  LiveActivityData,
   PublicStatsData,
   RetentionStatsData,
   RoomAlert,
@@ -633,10 +632,6 @@ class ApiClient extends BaseApiClient {
     return this.request<FunnelMetricsData>("/stats/funnel", {
       method: "GET",
     });
-  }
-
-  async getLiveActivity() {
-    return this.request<LiveActivityData>("/stats/live-activity");
   }
 
   async getActivityFeed() {
