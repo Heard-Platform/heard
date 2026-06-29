@@ -271,6 +271,7 @@ function AppContent() {
       const isUdcRoute = route === "udc";
       const isWaymoRoute = route === "waymo";
       const isWaymoDcRoute = route === "waymodc";
+      const isCongestionRoute = route === "congestion"
       const hardcodedFlyerMatch = pathname.match(
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
@@ -312,7 +313,8 @@ function AppContent() {
         isUdcRoute ||
         isDcRoute ||
         isWaymoRoute ||
-        isWaymoDcRoute
+        isWaymoDcRoute ||
+        isCongestionRoute
       ) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
@@ -338,36 +340,15 @@ function AppContent() {
                               ? WAYMO_DUPONT_ROOM_ID
                               : isWaymoDcRoute
                                 ? WAYMO_DC_ROOM_ID
-                                : null;
-
-        const routeName = isParkletRoute
-          ? "parklet"
-          : is2b04Route
-            ? "2b04"
-            : isRatsRoute
-              ? "rats"
-              : isDogsRoute
-                ? "dogs"
-                : isMarketRoute
-                  ? "market"
-                  : is311Route
-                    ? "311"
-                    : isDataRoute
-                      ? "data"
-                      : isHeightRoute
-                        ? "height"
-                        : isUdcRoute
-                          ? "udc"
-                          : isWaymoRoute
-                            ? "waymo"
-                            : isWaymoDcRoute
-                              ? "waymodc"
-                              : "dc";
+                                : isCongestionRoute
+                                  ? "9sptdy3zzq5mqz78fq5"
+                                  : null;
+                                
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
         } else {
-          setPendingFlyerScan(routeName);
+          setPendingFlyerScan(route);
           setPendingCommunities(KALORAMA_COMMUNITIES);
           startRoomJoin(hardcodedRoomId);
         }
@@ -641,7 +622,7 @@ function AppContent() {
   if (showFundingPage) {
     return (
       <>
-        <FundingPage onExit={() => { setShowFundingPage(false); window.history.pushState({}, "", "/"); }} />
+        <FundingPage />
         <Toaster />
       </>
     );
