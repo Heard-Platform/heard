@@ -823,6 +823,23 @@ class ApiClient extends BaseApiClient {
     );
   }
 
+  async createCoHostInvite(roomId: string) {
+    return this.request<{ token: string }>(
+      `/room/${roomId}/mod/cohost-invite`,
+      { method: "POST" },
+    );
+  }
+
+  async acceptCoHostInvite(roomId: string, token: string) {
+    return this.request<undefined>(
+      `/room/${roomId}/cohost-invite/accept`,
+      {
+        method: "POST",
+        body: JSON.stringify({ token }),
+      },
+    );
+  }
+
   async getStatementMerges(roomId: string) {
     return this.request<{ merges: StatementMerge[] }>(`/room/${roomId}/mod/statement-merges`);
   }

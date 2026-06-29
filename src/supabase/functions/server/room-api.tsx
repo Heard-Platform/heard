@@ -4,16 +4,22 @@ import {
   getUserSession,
   saveUserAndEmail,
 } from "./auth-api.tsx";
-import { generateId, saveDebateRoom } from "./debate-api.tsx";
+import { generateId, getDebateRoom, saveDebateRoom } from "./debate-api.tsx";
 import { normalizeCommunityName } from "./utils.tsx";
 import type {
   Community, DemographicQuestion,
   Statement
 } from "./types.tsx";
 import { ONE_WEEK_MS } from "./time-utils.ts";
-import { getCommunity, saveCommunity, saveStatement } from "./kv-utils.tsx";
+import {
+  deleteCoHostInvite,
+  getCommunity,
+  getCoHostInvite,
+  saveCommunity,
+  saveStatement,
+} from "./kv-utils.tsx";
 import { createNewRoomData } from "./room-utils.ts";
-import { insertDemographicQuestion, recordRoomEngagement, saveRoomView } from "./model-utils.ts";
+import { insertAnalyticsEvent, insertDemographicQuestion, recordRoomEngagement, saveRoomView } from "./model-utils.ts";
 
 
 const app = new Hono();
@@ -181,6 +187,52 @@ app.post(
       return {};
     },
     "Failed to mark room as seen",
+  ),
+);
+
+app.post(
+  "/make-server-f1a393b4/room/:roomId/cohost-invite/accept",
+  defineRoute(
+    {
+      roomId: { type: "string", required: true },
+      token: { type: "string", required: true },
+    },
+    async ({ roomId, token }: { roomId: string; token: string }, c: Context) => {
+      const userId = c.get("userId");
+      if (!userId) throw new Error("Not authenticated");
+
+      const user = await getUserSession(userId);
+      if (user?.isAnonymous) {
+        throw new Error("Anonymous users cannot become co-hosts. Create an account first.");
+      }
+
+      const invite = await getCoHostInvite(token);
+      if (!invite || invite.roomId !== roomId) {
+        throw new Error("Invalid or expired invite link");
+      }
+
+      if (Date.now() > invite.expiresAt) {
+        await deleteCoHostInvite(token);
+        throw new Error("This invite link has expired");
+      }
+
+      await deleteCoHostInvite(token);
+
+      const room = await getDebateRoom(roomId);
+      if (!room) throw new Error("Room not found");
+
+      if (room.hostId === userId) {
+        throw new Error("You're already the host of this room");
+      }
+
+      const coHostIds = new Set(room.coHostIds ?? []);
+      coHostIds.add(userId);
+      await saveDebateRoom({ ...room, coHostIds: Array.from(coHostIds) });
+      await insertAnalyticsEvent({ type: "cohost_invite_accepted", userId, roomId });
+
+      return {};
+    },
+    "Failed to accept co-host invite",
   ),
 );
 

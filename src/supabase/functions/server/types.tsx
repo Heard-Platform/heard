@@ -59,6 +59,12 @@ export type MagicLinkRecord = {
   expiresAt: number;
 };
 
+export type CoHostInviteRecord = {
+  roomId: string;
+  createdByUserId: string;
+  expiresAt: number;
+};
+
 export interface Session {
   id: string;
   userId: string;
@@ -204,6 +210,7 @@ export interface DebateRoom {
   roundStartTime: number;
   participants: string[];
   hostId: string;
+  coHostIds?: string[];
   isActive: boolean;
   createdAt: number;
   mode: DebateMode;

@@ -94,7 +94,8 @@ export function RoomCard({
   const [showEditRoom, setShowEditRoom] = useState(false);
   const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
 
-  const isHost = user.id === room.hostId;
+  const isTrueHost = user.id === room.hostId;
+  const isHost = isTrueHost || !!room.coHostIds?.includes(user.id);
 
   useEffect(() => {
     if (analysisRoomId === room.id) {
@@ -425,6 +426,7 @@ export function RoomCard({
               hasRealtimeEnded={hasRealtimeEnded}
               isDeveloper={isDeveloper}
               isHost={isHost}
+              isTrueHost={isTrueHost}
               isCompleted={!!isCompleted}
               onOpenEditRoom={() => setShowEditRoom(true)}
               onOpenDeduplication={() => setShowDeduplication(true)}

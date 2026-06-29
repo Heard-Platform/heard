@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import moment from "moment";
 import { Button } from "./ui/button";
-import { X, User, DoorOpen, FileText, ThumbsUp, RefreshCw, Users, LogIn } from "lucide-react";
+import { X, User, DoorOpen, FileText, ThumbsUp, RefreshCw, Users, LogIn, UserPlus } from "lucide-react";
 import { api } from "../utils/api";
 import type { ActivityFeedEvent, ActivityFeedEventType } from "../types";
 
@@ -19,9 +19,10 @@ const TYPE_CONFIG: Record<
   community: { label: "Community", icon: Users, color: "text-orange-700", bg: "bg-orange-100" },
   statement: { label: "Statement", icon: FileText, color: "text-purple-700", bg: "bg-purple-100" },
   vote: { label: "Vote", icon: ThumbsUp, color: "text-amber-700", bg: "bg-amber-100" },
+  cohost: { label: "Co-host", icon: UserPlus, color: "text-violet-700", bg: "bg-violet-100" },
 };
 
-const ALL_TYPES: ActivityFeedEventType[] = ["user", "session", "room", "community", "statement", "vote"];
+const ALL_TYPES: ActivityFeedEventType[] = ["user", "session", "room", "community", "statement", "vote", "cohost"];
 
 function formatTime(ts: number): string {
   return moment(ts).fromNow();

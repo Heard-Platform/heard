@@ -1,8 +1,10 @@
 import { Hono } from "npm:hono";
 import { deleteRecord, insert } from "./db-utils.ts";
+import { validateTrueHost } from "./auth-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { getMergesForRoom } from "./model-utils.ts";
 import {
+  generateId,
   getDebateRoom,
   getStatementById,
   getStatements,
@@ -12,9 +14,11 @@ import {
   getClusterAssignmentsBatch,
   getStatementsForRoomIncludingHidden,
   getUser,
+  saveCoHostInvite,
   saveStatement,
 } from "./kv-utils.tsx";
 import { markStatementHidden, markStatementVisible } from "./moderation-utils.ts";
+import { ONE_DAY_MS } from "./time-utils.ts";
 import { DebateRoom } from "./types.tsx";
 
 const app = new Hono();
@@ -209,6 +213,32 @@ app.post(
       return { room: updated };
     },
     "Failed to update responses paused state",
+  ),
+);
+
+app.post(
+  `${PREFIX}/cohost-invite`,
+  validateTrueHost,
+  defineRoute(
+    { roomId: { type: "string", required: true } },
+    async ({ roomId }: { roomId: string }, c) => {
+      const userId = c.get("userId");
+
+      const room = await getDebateRoom(roomId);
+      if (!room) {
+        throw new Error("Room not found");
+      }
+
+      const token = generateId();
+      await saveCoHostInvite(token, {
+        roomId,
+        createdByUserId: userId,
+        expiresAt: Date.now() + ONE_DAY_MS,
+      });
+
+      return { token };
+    },
+    "Failed to create co-host invite",
   ),
 );
 

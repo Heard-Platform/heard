@@ -11,6 +11,7 @@ import {
   type Rant,
   type YouTubeCardStatus,
   MagicLinkRecord,
+  CoHostInviteRecord,
   Session,
   Community,
   CommunityMembership,
@@ -190,6 +191,28 @@ export const deleteMagicLink = async (
   token: string,
 ) => {
   await kv.del(magicLinkKeyFn(token));
+};
+
+export const coHostInviteKeyFn = (token: string) =>
+  `cohost_invite:${token}`;
+
+export const saveCoHostInvite = async (
+  token: string,
+  data: CoHostInviteRecord,
+) => {
+  await kv.set(coHostInviteKeyFn(token), data);
+};
+
+export const getCoHostInvite = async (
+  token: string,
+) => {
+  return getParsedKvData<CoHostInviteRecord>(coHostInviteKeyFn(token));
+};
+
+export const deleteCoHostInvite = async (
+  token: string,
+) => {
+  await kv.del(coHostInviteKeyFn(token));
 };
 
 export const phoneKvKeyFn = (phone: string) =>

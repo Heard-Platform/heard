@@ -290,6 +290,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       ),
     },
     {
+      icon: UserPlus,
+      iconColor: "text-violet-600",
+      bgColor: "bg-violet-100",
+      title: "Co-host Invites Accepted",
+      description: "Times a co-host invite link was used to accept a co-host role",
+      getValue: (s) => s.coHostInviteAccepted,
+      getDate: (s) => s.coHostInviteAcceptedSince,
+    },
+    {
       icon: HeartHandshake,
       iconColor: "text-emerald-600",
       bgColor: "bg-emerald-100",

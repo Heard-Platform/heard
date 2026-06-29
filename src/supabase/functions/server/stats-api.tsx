@@ -6,8 +6,8 @@ import {
   getAllStatements,
   getAllVotes,
 } from "./kv-utils.tsx";
-import { getAllRecords } from "./db-utils.ts";
-import type { Session } from "./types.tsx";
+import { getAllRecords, selectAll } from "./db-utils.ts";
+import type { Session, UserEvent } from "./types.tsx";
 import { getFlyerEmails } from "./model-utils.ts";
 import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
@@ -202,18 +202,28 @@ app.get(
       const now = Date.now();
       const since = now - 7 * 24 * 60 * 60 * 1000;
 
-      const [users, rooms, statements, votes, subHeards, sessions] =
-        await Promise.all([
-          getAllRealUsers(),
-          getAllRealDebates(),
-          getAllStatements(),
-          getAllVotes(),
-          getAllSubHeards(),
-          getAllRecords<Session>("session:"),
-        ]);
+      const [
+        users,
+        rooms,
+        statements,
+        votes,
+        subHeards,
+        sessions,
+        cohostEvents,
+      ] = await Promise.all([
+        getAllRealUsers(),
+        getAllRealDebates(),
+        getAllStatements(),
+        getAllVotes(),
+        getAllSubHeards(),
+        getAllRecords<Session>("session:"),
+        selectAll<UserEvent>("user_events", {
+          type: "cohost_invite_accepted",
+        }),
+      ]);
 
       type FeedEvent = {
-        type: "user" | "room" | "statement" | "vote" | "community" | "session";
+        type: "user" | "room" | "statement" | "vote" | "community" | "session" | "cohost";
         timestamp: number;
         id: string;
         label: string;
@@ -300,6 +310,20 @@ app.get(
             timestamp: t,
             id: session.id,
             label: session.userId.substring(0, 8),
+          });
+        }
+      }
+
+      for (const event of cohostEvents) {
+        const t = ts(event.createdAt);
+        if (t > since) {
+          const roomTopic = event.roomId ? (roomMap.get(event.roomId) as any)?.topic : undefined;
+          events.push({
+            type: "cohost",
+            timestamp: t,
+            id: event.userId ?? event.roomId ?? String(t),
+            label: "Co-host accepted",
+            meta: { room: roomTopic || event.roomId || "" },
           });
         }
       }
