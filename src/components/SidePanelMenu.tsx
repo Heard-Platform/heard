@@ -74,6 +74,7 @@ interface SidePanelMenuProps {
   onOpenAdminDashboard?: () => void;
   onOpenFeatureTracker: () => void;
   onOpenDevTools?: () => void;
+  onOpenActivityFeed: () => void;
   onOpenAdminPanel?: () => void;
   onJumpToFinalResults?: () => void;
   onCreateAnonDebate?: () => void;
@@ -89,6 +90,7 @@ export function SidePanelMenu({
   onOpenAdminDashboard,
   onOpenFeatureTracker,
   onOpenDevTools,
+  onOpenActivityFeed,
   onOpenAdminPanel,
   onJumpToFinalResults,
   onCreateAnonDebate,
@@ -434,6 +436,19 @@ export function SidePanelMenu({
                         Dev Tools
                       </Button>
                     )}
+                    {
+                      <Button
+                        onClick={() =>
+                          closeMenuAndRun(onOpenActivityFeed)
+                        }
+                        variant="outline"
+                        size="sm"
+                        className="w-full bg-slate-50 border-slate-200 text-slate-800"
+                      >
+                        <Clock className="w-3 h-3 mr-2" />
+                        Activity Feed
+                      </Button>
+                    }
                     {onOpenAdminPanel && (
                       <Button
                         onClick={() =>

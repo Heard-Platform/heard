@@ -1,4 +1,5 @@
 import {
+  ActivityFeedData,
   ActivityMetricsData,
   AnalysisData,
   DevAnonDebate,
@@ -636,6 +637,10 @@ class ApiClient extends BaseApiClient {
 
   async getLiveActivity() {
     return this.request<LiveActivityData>("/stats/live-activity");
+  }
+
+  async getActivityFeed() {
+    return this.request<ActivityFeedData>("/stats/activity-feed");
   }
 
   async getUserTimeline() {

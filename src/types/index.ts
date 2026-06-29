@@ -424,6 +424,27 @@ export interface FunnelMetricsData {
   tookActionTenDays: number;
 }
 
+export type ActivityFeedEventType =
+  | "vote"
+  | "statement"
+  | "user"
+  | "room"
+  | "community"
+  | "session";
+
+export interface ActivityFeedEvent {
+  type: ActivityFeedEventType;
+  timestamp: number;
+  id: string;
+  label: string;
+  meta?: Record<string, string>;
+}
+
+export interface ActivityFeedData {
+  events: ActivityFeedEvent[];
+  fetchedAt: number;
+}
+
 export type ActivityEventType = "vote" | "statement" | "user" | "community" | "session";
 
 export interface ActivityEvent {

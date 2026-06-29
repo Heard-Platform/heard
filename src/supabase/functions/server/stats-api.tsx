@@ -10,6 +10,7 @@ import { getAllRecords } from "./db-utils.ts";
 import type { Session } from "./types.tsx";
 import { getFlyerEmails } from "./model-utils.ts";
 import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
+import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
 
@@ -293,6 +294,124 @@ app.get("/make-server-f1a393b4/stats/live-activity", async (c) => {
     return c.json({ error: "Failed to fetch live activity" }, 500);
   }
 });
+
+app.get(
+  "/make-server-f1a393b4/stats/activity-feed",
+  defineRoute(
+    {},
+    async () => {
+      const now = Date.now();
+      const since = now - 7 * 24 * 60 * 60 * 1000;
+
+      const [users, rooms, statements, votes, subHeards, sessions] =
+        await Promise.all([
+          getAllRealUsers(),
+          getAllRealDebates(),
+          getAllStatements(),
+          getAllVotes(),
+          getAllSubHeards(),
+          getAllRecords<Session>("session:"),
+        ]);
+
+      type FeedEvent = {
+        type: "user" | "room" | "statement" | "vote" | "community" | "session";
+        timestamp: number;
+        id: string;
+        label: string;
+        meta?: Record<string, string>;
+      };
+
+      const ts = (val: number | string | undefined): number => {
+        if (!val) return 0;
+        const n = Number(val);
+        return isNaN(n) ? new Date(val).getTime() : n;
+      };
+
+      const statementMap = new Map(statements.map((s: any) => [s.id, s]));
+      const roomMap = new Map(rooms.map((r: any) => [r.id, r]));
+
+      const events: FeedEvent[] = [];
+
+      for (const user of users) {
+        const t = ts(user.createdAt);
+        if (t > since) {
+          events.push({ type: "user", timestamp: t, id: user.id, label: user.nickname || user.email || user.id.substring(0, 8) });
+        }
+      }
+
+      for (const room of rooms) {
+        const t = ts(room.createdAt);
+        if (t > since) {
+          events.push({ type: "room", timestamp: t, id: room.id, label: room.topic || room.id });
+        }
+      }
+
+      for (const statement of statements) {
+        const t = ts(statement.timestamp);
+        if (t > since) {
+          const roomTopic = (roomMap.get(statement.roomId) as any)?.topic;
+          events.push({
+            type: "statement",
+            timestamp: t,
+            id: statement.id,
+            label: statement.text.length > 80 ? statement.text.substring(0, 80) + "…" : statement.text,
+            meta: { room: roomTopic || statement.roomId },
+          });
+        }
+      }
+
+      for (const vote of votes) {
+        const t = ts(vote.timestamp);
+        if (t > since) {
+          const stmtText = (statementMap.get(vote.statementId) as any)
+            ?.text;
+          events.push({
+            type: "vote",
+            timestamp: t,
+            id: vote.id,
+            label: vote.voteType,
+            meta: {
+              statement: stmtText
+                ? stmtText.length > 60
+                  ? stmtText.substring(0, 60) + "…"
+                  : stmtText
+                : vote.statementId,
+            },
+          });
+        }
+      }
+
+      for (const subHeard of subHeards) {
+        const t = ts(subHeard.createdAt);
+        if (t > since) {
+          events.push({
+            type: "community",
+            timestamp: t,
+            id: subHeard.name,
+            label: subHeard.name,
+          });
+        }
+      }
+
+      for (const session of sessions) {
+        const t = ts(session.createdAt);
+        if (t > since) {
+          events.push({
+            type: "session",
+            timestamp: t,
+            id: session.id,
+            label: session.userId.substring(0, 8),
+          });
+        }
+      }
+
+      events.sort((a, b) => b.timestamp - a.timestamp);
+
+      return { events: events.slice(0, 500), fetchedAt: now };
+    },
+    "Failed to fetch activity feed",
+  ),
+);
 
 app.get("/make-server-f1a393b4/stats/user-timeline", async (c) => {
   try {

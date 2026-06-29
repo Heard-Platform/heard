@@ -149,3 +149,8 @@ export const updateUrlForDevTools = (tab: string | null) => {
 export const clearRoomFromUrl = () => {
   updateUrlForRoom(null)
 }
+
+export const updateUrlForActivityFeed = (active: boolean) => {
+  if (typeof window === 'undefined') return
+  window.history.pushState(null, '', active ? '/activity-feed' : '/')
+}
