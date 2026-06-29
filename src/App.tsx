@@ -14,6 +14,7 @@ import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTracker";
 import { DevTools } from "./components/devtools/DevTools";
+import { AdminActivityFeed } from "./components/AdminActivityFeed";
 import { NewsletterViewer } from "./components/NewsletterViewer";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
@@ -26,6 +27,7 @@ import {
   clearRoomFromUrl,
   parseAnalysisRoomIdFromUrl,
   updateUrlForDevTools,
+  updateUrlForActivityFeed,
   parseFlyerDataFromUrl,
   updateUrlForRoom,
   parseEventIdFromUrl,
@@ -81,6 +83,7 @@ function AppContent() {
     useState(safelyGetStorageItem<boolean>("showAdminDashboard", false));
   const [showFeatureTracker, setShowFeatureTracker] = useState(false);
   const [showDevTools, setShowDevTools] = useState(false);
+  const [showActivityFeed, setShowActivityFeed] = useState(false);
   const [showUnsubscribe, setShowUnsubscribe] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
@@ -251,6 +254,7 @@ function AppContent() {
       const isMagicLinkRoute = route === "magic-link";
       const isAdminRoute = route === "admin";
       const isDevToolsRoute = route === "devtools";
+      const isActivityFeedRoute = route === "activity-feed";
       const isUnsubscribeRoute = route === "unsubscribe";
       const isTermsRoute = route === "terms";
       const isPrivacyRoute = route === "privacy";
@@ -301,6 +305,8 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
+      } else if (isActivityFeedRoute) {
+        setShowActivityFeed(true);
       } else if (
         isParkletRoute ||
         is2b04Route ||
@@ -548,6 +554,15 @@ function AppContent() {
     updateUrlForDevTools(null);
   };
 
+  const handleOpenActivityFeed = () => {
+    setShowActivityFeed(true);
+    updateUrlForActivityFeed(true);
+  };
+  const handleExitActivityFeed = () => {
+    setShowActivityFeed(false);
+    updateUrlForActivityFeed(false);
+  };
+
   const handleExitOrgs = () => {
     setShowOrgsPage(false);
     window.history.pushState({}, "", "/");
@@ -590,6 +605,15 @@ function AppContent() {
     return (
       <>
         <DevTools user={user} onExit={handleExitDevTools} />
+        <Toaster />
+      </>
+    );
+  }
+
+  if (showActivityFeed) {
+    return (
+      <>
+        <AdminActivityFeed onExit={handleExitActivityFeed} />
         <Toaster />
       </>
     );
@@ -679,6 +703,7 @@ function AppContent() {
         onOpenAdminDashboard={handleOpenAdminDashboard}
         onOpenFeatureTracker={handleOpenFeatureTracker}
         onOpenDevTools={handleOpenDevTools}
+        onOpenActivityFeed={handleOpenActivityFeed}
         onSubHeardChange={handleSubHeardChange}
         onOpenEvent={handleOpenEvent}
         onRefreshEvent={handleRefreshEvent}

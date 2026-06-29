@@ -424,20 +424,27 @@ export interface FunnelMetricsData {
   tookActionTenDays: number;
 }
 
-export type ActivityEventType = "vote" | "statement" | "user" | "community" | "session";
+export type ActivityFeedEventType =
+  | "vote"
+  | "statement"
+  | "user"
+  | "room"
+  | "community"
+  | "session";
 
-export interface ActivityEvent {
-  type: ActivityEventType;
+export interface ActivityFeedEvent {
+  type: ActivityFeedEventType;
   timestamp: number;
   id: string;
   label: string;
   meta?: Record<string, string>;
 }
 
-export interface LiveActivityData {
-  events: ActivityEvent[];
+export interface ActivityFeedData {
+  events: ActivityFeedEvent[];
   fetchedAt: number;
 }
+
 
 export interface FeatureResults {
   webDriverUsers: number;
