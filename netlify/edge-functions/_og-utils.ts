@@ -1,7 +1,3 @@
-// Netlify Edge Functions run in a Deno runtime — the Deno global below is
-// valid at deploy time but unknown to the project tsconfig.
-declare const Deno: { env: { get(key: string): string | undefined } };
-
 export type Context = { next(): Promise<Response> };
 
 const BOT_UA_PATTERNS = [
@@ -27,5 +23,3 @@ export function injectOgHead(spaHtml: string, headContent: string): string {
     .replace(/<title>.*?<\/title>/, "")
     .replace("</head>", `  ${headContent}\n  </head>`);
 }
-
-export { Deno };
