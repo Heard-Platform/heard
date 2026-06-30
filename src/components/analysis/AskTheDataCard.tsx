@@ -53,14 +53,14 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
         <Textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Ask a question about this conversation's topic, responses, and votes."
+          placeholder="Ask me any question about this conversation."
           disabled={isAsking}
           rows={3}
         />
 
-        <div className="flex justify-center">
+        <div className="flex">
           <Button onClick={handleAsk} disabled={!canAsk} className="w-32">
-            {isAsking ? <Loader2 className="w-4 h-4 animate-spin" /> : "Ask!"}
+            {isAsking ? <Loader2 className="w-4 h-4 animate-spin" /> : "Go"}
           </Button>
         </div>
 
