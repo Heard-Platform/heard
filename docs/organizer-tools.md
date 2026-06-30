@@ -6,6 +6,8 @@ Community admins can invite other users to become moderators. Moderators can adj
 
 ### How it works
 
+<img width="384" height="728" alt="mod" src="https://github.com/user-attachments/assets/aeac6116-a92e-4ea7-9415-bb8a569c7a20" />
+
 1. Open your community from the community picker and tap the **Settings** (⚙️) icon.
 2. Tap **Create Moderator Invite Link**. This generates a single-use link valid for **24 hours**.
 3. Share the link with the person you want to invite. When they open it, they'll be automatically added as a moderator as long as they have an account (anonymous users must sign up first).
@@ -26,6 +28,9 @@ Community admins can invite other users to become moderators. Moderators can adj
 Co-hosts have the same host tools as the room creator: they can merge statements, view the vote matrix, and pause/resume responses. Only the original room creator can invite co-hosts or deactivate the room.
 
 **How to invite a co-host:**
+
+<img width="450" height="390" alt="cohost" src="https://github.com/user-attachments/assets/76f167da-2d4e-4115-a440-93f957ca6e9a" />
+
 1. Open the room menu (⋯) and tap **Invite co-host** under Host Tools.
 2. Share the generated link with whoever you want to promote.
 3. When they open the link while signed in, they'll see a prompt to accept the co-host role.
