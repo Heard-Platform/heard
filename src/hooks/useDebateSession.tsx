@@ -112,6 +112,9 @@ interface DebateSessionContextType {
     roomId: string,
     paused: boolean,
   ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
+  createCohostInvite: (roomId: string) => Promise<ApiResponse<{ token: string }> | null>;
+  acceptCohostInvite: (roomId: string, token: string) => Promise<ApiResponse | null>;
+  clearRoomCohosts: (roomId: string) => Promise<ApiResponse | null>;
   listStatementsForModeration: (roomId: string) => Promise<Statement[]>;
   setStatementHidden: (
     roomId: string,
@@ -122,6 +125,14 @@ interface DebateSessionContextType {
   getExplorableSubHeards: () => Promise<ApiResponse<SubHeard[]> | null>;
   joinSubHeard: (subHeardName: string) => Promise<ApiResponse | null>;
   leaveSubHeard: (subHeardName: string) => Promise<ApiResponse | null>;
+  createModInvite: (
+    subHeardName: string,
+  ) => Promise<ApiResponse<{ token: string }> | null>;
+  acceptModInvite: (
+    subHeardName: string,
+    token: string,
+  ) => Promise<ApiResponse | null>;
+  clearSubHeardMods: (subHeardName: string) => Promise<ApiResponse | null>;
   getEnrichmentConfig: () => Promise<ApiResponse<EnrichmentConfig> | null>;
   setEnrichmentConfig: (
     config: EnrichmentConfig,
@@ -770,6 +781,24 @@ export function DebateSessionProvider(
     [callRoomMutation],
   );
 
+  const createCohostInvite = useCallback(
+    async (roomId: string) =>
+      safelyMakeApiCall<{ token: string }>(() => api.createCohostInvite(roomId)),
+    [safelyMakeApiCall],
+  );
+
+  const acceptCohostInvite = useCallback(
+    async (roomId: string, token: string) =>
+      safelyMakeApiCall(() => api.acceptCohostInvite(roomId, token)),
+    [safelyMakeApiCall],
+  );
+
+  const clearRoomCohosts = useCallback(
+    async (roomId: string) =>
+      safelyMakeApiCall(() => api.clearRoomCohosts(roomId)),
+    [safelyMakeApiCall],
+  );
+
   const listStatementsForModeration = useCallback(
     async (roomId: string) => {
       const response = await safelyMakeApiCall<{
@@ -818,6 +847,18 @@ export function DebateSessionProvider(
 
   const leaveSubHeard = useCallback(async (subHeardName: string) => {
     return safelyMakeApiCall<undefined>(() => api.leaveSubHeard(subHeardName))
+  }, []);
+
+  const createModInvite = useCallback(async (subHeardName: string) => {
+    return safelyMakeApiCall<{ token: string }>(() => api.createModInvite(subHeardName));
+  }, []);
+
+  const acceptModInvite = useCallback(async (subHeardName: string, token: string) => {
+    return safelyMakeApiCall<undefined>(() => api.acceptModInvite(subHeardName, token));
+  }, []);
+
+  const clearSubHeardMods = useCallback(async (subHeardName: string) => {
+    return safelyMakeApiCall<undefined>(() => api.clearSubHeardMods(subHeardName));
   }, []);
 
   const getEnrichmentConfig = useCallback(async () => {
@@ -938,6 +979,9 @@ export function DebateSessionProvider(
     createStatementMerge,
     deleteStatementMerge,
     setResponsesPaused,
+    createCohostInvite,
+    acceptCohostInvite,
+    clearRoomCohosts,
     listStatementsForModeration,
     setStatementHidden,
     markChanceCardSwiped,
@@ -947,6 +991,9 @@ export function DebateSessionProvider(
     getExplorableSubHeards,
     joinSubHeard,
     leaveSubHeard,
+    createModInvite,
+    acceptModInvite,
+    clearSubHeardMods,
     getEnrichmentConfig,
     setEnrichmentConfig,
     runEnrichmentNow,
@@ -1030,6 +1077,18 @@ export function DebateSessionProvider(
         console.log("[Showcase] setResponsesPaused called");
         return null;
       },
+      createCohostInvite: async () => {
+        console.log("[Showcase] createCohostInvite called");
+        return { success: true, data: { token: "showcase-token" } };
+      },
+      acceptCohostInvite: async () => {
+        console.log("[Showcase] acceptCohostInvite called");
+        return { success: true };
+      },
+      clearRoomCohosts: async (roomId: string) => {
+        console.log("[Showcase] clearRoomCohosts called", roomId);
+        return { success: true };
+      },
       listStatementsForModeration: async () => {
         console.log("[Showcase] listStatementsForModeration called");
         return [];
@@ -1082,6 +1141,18 @@ export function DebateSessionProvider(
       },
       leaveSubHeard: async (subHeardName: string) => {
         console.log("[Showcase] leaveSubHeard called");
+        return { success: true };
+      },
+      createModInvite: async (subHeardName: string) => {
+        console.log("[Showcase] createModInvite called", subHeardName);
+        return { success: true, data: { token: "showcase-mod-token" } };
+      },
+      acceptModInvite: async (subHeardName: string, token: string) => {
+        console.log("[Showcase] acceptModInvite called", subHeardName, token);
+        return { success: true };
+      },
+      clearSubHeardMods: async (subHeardName: string) => {
+        console.log("[Showcase] clearSubHeardMods called", subHeardName);
         return { success: true };
       },
       createEvent: async (newEvent: NewEvent): Promise<Event> => {

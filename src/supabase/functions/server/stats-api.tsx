@@ -6,10 +6,11 @@ import {
   getAllStatements,
   getAllVotes,
 } from "./kv-utils.tsx";
-import { getAllRecords } from "./db-utils.ts";
-import type { Session } from "./types.tsx";
-import { getFlyerEmails } from "./model-utils.ts";
+import { getAllRecords, selectAll } from "./db-utils.ts";
+import type { Session, UserEvent } from "./types.tsx";
+import { getEventsOfType, getFlyerEmails } from "./model-utils.ts";
 import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
+import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
 
@@ -192,107 +193,171 @@ app.get("/make-server-f1a393b4/stats/funnel", async (c) => {
   }
 });
 
-app.get("/make-server-f1a393b4/stats/live-activity", async (c) => {
-  try {
-    const now = Date.now();
-    const tenMinutesAgo = now - 10 * 60 * 1000;
-    console.log(`[LiveActivity] Fetching live activity since ${new Date(tenMinutesAgo).toISOString()}...`);
 
-    const [users, statements, votes, subHeards, sessions] = await Promise.all([
-      getAllRealUsers(),
-      getAllStatements(),
-      getAllVotes(),
-      getAllSubHeards(),
-      getAllRecords<Session>("session:"),
-    ]);
+app.get(
+  "/make-server-f1a393b4/stats/activity-feed",
+  defineRoute(
+    {},
+    async () => {
+      const now = Date.now();
+      const since = now - 7 * 24 * 60 * 60 * 1000;
 
-    type EventType = "vote" | "statement" | "user" | "community" | "session";
-    type ActivityEvent = {
-      type: EventType;
-      timestamp: number;
-      id: string;
-      label: string;
-      meta?: Record<string, string>;
-    };
+      const [
+        users,
+        rooms,
+        statements,
+        votes,
+        subHeards,
+        sessions,
+        modInviteAccepts,
+        cohostEvents,
+      ] = await Promise.all([
+        getAllRealUsers(),
+        getAllRealDebates(),
+        getAllStatements(),
+        getAllVotes(),
+        getAllSubHeards(),
+        getAllRecords<Session>("session:"),
+        getEventsOfType("mod_invite_accepted"),
+        selectAll<UserEvent>("user_events", {
+          type: "cohost_invite_accepted",
+        }),
+      ]);
 
-    const events: ActivityEvent[] = [];
+      type FeedEvent = {
+        type:
+          | "user"
+          | "room"
+          | "statement"
+          | "vote"
+          | "community"
+          | "session"
+          | "cohost"
+          | "modInviteAccept";
+        timestamp: number;
+        id: string;
+        label: string;
+        meta?: Record<string, string>;
+      };
 
-    const ts = (val: number | string | undefined): number => {
-      if (!val) return 0;
-      const n = Number(val);
-      return isNaN(n) ? new Date(val).getTime() : n;
-    };
+      const ts = (val: number | string | undefined): number => {
+        if (!val) return 0;
+        const n = Number(val);
+        return isNaN(n) ? new Date(val).getTime() : n;
+      };
 
-    for (const user of users) {
-      const t = ts(user.createdAt);
-      if (t > tenMinutesAgo) {
-        events.push({
-          type: "user",
-          timestamp: t,
-          id: user.id,
-          label: user.nickname || user.id.substring(0, 8),
-        });
+      const statementMap = new Map(statements.map((s: any) => [s.id, s]));
+      const roomMap = new Map(rooms.map((r: any) => [r.id, r]));
+
+      const events: FeedEvent[] = [];
+
+      for (const user of users) {
+        const t = ts(user.createdAt);
+        if (t > since) {
+          events.push({ type: "user", timestamp: t, id: user.id, label: user.nickname || user.email || user.id.substring(0, 8) });
+        }
       }
-    }
 
-    for (const statement of statements) {
-      const t = ts(statement.timestamp);
-      if (t > tenMinutesAgo) {
-        events.push({
-          type: "statement",
-          timestamp: t,
-          id: statement.id,
-          label: statement.text.length > 100 ? statement.text.substring(0, 100) + "…" : statement.text,
-          meta: { roomId: statement.roomId },
-        });
+      for (const room of rooms) {
+        const t = ts(room.createdAt);
+        if (t > since) {
+          events.push({ type: "room", timestamp: t, id: room.id, label: room.topic || room.id });
+        }
       }
-    }
 
-    for (const vote of votes) {
-      const t = ts(vote.timestamp);
-      if (t > tenMinutesAgo) {
-        events.push({
-          type: "vote",
-          timestamp: t,
-          id: vote.id,
-          label: vote.voteType,
-          meta: { statementId: vote.statementId },
-        });
+      for (const statement of statements) {
+        const t = ts(statement.timestamp);
+        if (t > since) {
+          const roomTopic = (roomMap.get(statement.roomId) as any)?.topic;
+          events.push({
+            type: "statement",
+            timestamp: t,
+            id: statement.id,
+            label: statement.text.length > 80 ? statement.text.substring(0, 80) + "…" : statement.text,
+            meta: { room: roomTopic || statement.roomId },
+          });
+        }
       }
-    }
 
-    for (const subHeard of subHeards) {
-      const t = ts(subHeard.createdAt);
-      if (t > tenMinutesAgo) {
-        events.push({
-          type: "community",
-          timestamp: t,
-          id: subHeard.name,
-          label: subHeard.name,
-        });
+      for (const vote of votes) {
+        const t = ts(vote.timestamp);
+        if (t > since) {
+          const stmtText = (statementMap.get(vote.statementId) as any)
+            ?.text;
+          events.push({
+            type: "vote",
+            timestamp: t,
+            id: vote.id,
+            label: vote.voteType,
+            meta: {
+              statement: stmtText
+                ? stmtText.length > 60
+                  ? stmtText.substring(0, 60) + "…"
+                  : stmtText
+                : vote.statementId,
+            },
+          });
+        }
       }
-    }
 
-    for (const session of sessions) {
-      const t = ts(session.createdAt);
-      if (t > tenMinutesAgo) {
-        events.push({
-          type: "session",
-          timestamp: t,
-          id: session.id,
-          label: session.userId.substring(0, 8),
-        });
+      for (const subHeard of subHeards) {
+        const t = ts(subHeard.createdAt);
+        if (t > since) {
+          events.push({
+            type: "community",
+            timestamp: t,
+            id: subHeard.name,
+            label: subHeard.name,
+          });
+        }
       }
-    }
 
-    events.sort((a, b) => b.timestamp - a.timestamp);
+      for (const session of sessions) {
+        const t = ts(session.createdAt);
+        if (t > since) {
+          events.push({
+            type: "session",
+            timestamp: t,
+            id: session.id,
+            label: session.userId.substring(0, 8),
+          });
+        }
+      }
 
-    return c.json({ events, fetchedAt: now });
-  } catch (error) {
-    console.error("Error fetching live activity:", error);
-    return c.json({ error: "Failed to fetch live activity" }, 500);
-  }
-});
+      for (const event of modInviteAccepts) {
+        const t = ts(event.createdAt);
+        if (t > since) {
+          events.push({
+            type: "modInviteAccept",
+            timestamp: t,
+            id: `${event.userId}-${event.roomId}-${t}`,
+            label: `Mod invite accepted`,
+            meta: { community: event.roomId ?? "", user: (event.userId ?? "").substring(0, 8) },
+          });
+        }
+      }
+
+      for (const event of cohostEvents) {
+        const t = ts(event.createdAt);
+        if (t > since) {
+          const roomTopic = event.roomId ? (roomMap.get(event.roomId) as any)?.topic : undefined;
+          events.push({
+            type: "cohost",
+            timestamp: t,
+            id: event.userId ?? event.roomId ?? String(t),
+            label: "Co-host accepted",
+            meta: { room: roomTopic || event.roomId || "" },
+          })
+        }
+      }
+
+      events.sort((a, b) => b.timestamp - a.timestamp);
+
+      return { events: events.slice(0, 500), fetchedAt: now };
+    },
+    "Failed to fetch activity feed",
+  ),
+);
 
 app.get("/make-server-f1a393b4/stats/user-timeline", async (c) => {
   try {

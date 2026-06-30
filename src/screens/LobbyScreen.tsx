@@ -60,6 +60,7 @@ interface LobbyScreenProps {
   onOpenAdminDashboard?: () => void;
   onOpenFeatureTracker: () => void;
   onOpenDevTools?: () => void;
+  onOpenActivityFeed: () => void;
   onSubHeardChange: (subHeard: string | null) => void;
   onOpenEvent: (eventId: string) => void;
   onRefreshEvent: () => void;
@@ -88,6 +89,7 @@ export function LobbyScreen({
   onOpenAdminDashboard,
   onOpenFeatureTracker,
   onOpenDevTools,
+  onOpenActivityFeed,
   onSubHeardChange,
   onOpenEvent,
   onRefreshEvent,
@@ -406,6 +408,7 @@ export function LobbyScreen({
                     onOpenAdminDashboard={onOpenAdminDashboard}
                     onOpenFeatureTracker={onOpenFeatureTracker}
                     onOpenDevTools={onOpenDevTools}
+                    onOpenActivityFeed={onOpenActivityFeed}
                     onOpenAdminPanel={onOpenAdminPanel}
                     onJumpToFinalResults={onJumpToFinalResults}
                     onCreateAnonDebate={handleCreateAnonDebate}

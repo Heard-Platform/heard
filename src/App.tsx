@@ -14,6 +14,7 @@ import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTracker";
 import { DevTools } from "./components/devtools/DevTools";
+import { AdminActivityFeed } from "./components/AdminActivityFeed";
 import { NewsletterViewer } from "./components/NewsletterViewer";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { Toaster } from "./components/ui/sonner";
@@ -26,11 +27,14 @@ import {
   clearRoomFromUrl,
   parseAnalysisRoomIdFromUrl,
   updateUrlForDevTools,
+  updateUrlForActivityFeed,
   parseFlyerDataFromUrl,
   updateUrlForRoom,
   parseEventIdFromUrl,
   updateUrlForEvent,
   parseStatementIdFromUrl,
+  parseModInviteTokenFromUrl,
+  parseCohostInviteTokenFromUrl,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
@@ -81,6 +85,7 @@ function AppContent() {
     useState(safelyGetStorageItem<boolean>("showAdminDashboard", false));
   const [showFeatureTracker, setShowFeatureTracker] = useState(false);
   const [showDevTools, setShowDevTools] = useState(false);
+  const [showActivityFeed, setShowActivityFeed] = useState(false);
   const [showUnsubscribe, setShowUnsubscribe] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
@@ -114,6 +119,8 @@ function AppContent() {
     setCurrentSubHeard,
     resetSession,
     roomStatements,
+    acceptModInvite,
+    acceptCohostInvite,
   } = useDebateSession();
 
   const startRoomJoin = (roomId: string) => {
@@ -123,6 +130,18 @@ function AppContent() {
 
   const handleMagicLinkSuccess = async () => {
     toast.success("Signed in successfully!");
+  };
+
+  const acceptCohostInviteFromUrl = async (roomId: string, token: string) => {
+    const response = await acceptCohostInvite(roomId, token);
+    if (response?.success) {
+      toast.success("You're now a co-host of this conversation!");
+    } else {
+      toast.error(response?.error || "This co-host invite link is invalid or has expired");
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.delete("cohostInvite");
+    window.history.replaceState({}, "", url.pathname + url.search);
   };
 
   const handleFlyerJoin = async (flyerData: {
@@ -231,6 +250,18 @@ function AppContent() {
     if (currentEventId) fetchEvent(currentEventId);
   };
 
+  const acceptModInviteFromUrl = async (subHeardName: string, token: string) => {
+    const response = await acceptModInvite(subHeardName, token);
+    if (response?.success) {
+      toast.success("You are now a moderator of this community!");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("modInvite");
+      window.history.replaceState(null, "", url.toString());
+    } else {
+      toast.error(response?.error || "Failed to accept mod invite.");
+    }
+  };
+
   const loginViaMagicTokenInUrl = async (magicToken: string) => {
     const response = await verifyMagicLink(magicToken);
     if (response && response.success) {
@@ -251,6 +282,7 @@ function AppContent() {
       const isMagicLinkRoute = route === "magic-link";
       const isAdminRoute = route === "admin";
       const isDevToolsRoute = route === "devtools";
+      const isActivityFeedRoute = route === "activity-feed";
       const isUnsubscribeRoute = route === "unsubscribe";
       const isTermsRoute = route === "terms";
       const isPrivacyRoute = route === "privacy";
@@ -279,6 +311,7 @@ function AppContent() {
       const isClubRoute = /^\/club\/?$/.test(pathname);
 
       const roomIdFromUrl = parseRoomIdFromUrl();
+      const cohostInviteTokenFromUrl = parseCohostInviteTokenFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl = parseAnalysisRoomIdFromUrl();
       const flyerDataFromUrl = parseFlyerDataFromUrl();
@@ -301,6 +334,8 @@ function AppContent() {
         setShowAdminPanel(true);
       } else if (isDevToolsRoute) {
         setShowDevTools(true);
+      } else if (isActivityFeedRoute) {
+        setShowActivityFeed(true);
       } else if (
         isParkletRoute ||
         is2b04Route ||
@@ -375,8 +410,27 @@ function AppContent() {
         setCurrentEventId(eventIdFromUrl);
       } else if (roomIdFromUrl) {
         startRoomJoin(roomIdFromUrl);
+        if (cohostInviteTokenFromUrl) {
+          if (!user) {
+            toast("Sign in to accept the co-host invite, then visit this link again.");
+          } else if (user.isAnonymous) {
+            toast("Create an account to accept the co-host invite, then visit this link again.");
+          } else {
+            acceptCohostInviteFromUrl(roomIdFromUrl, cohostInviteTokenFromUrl);
+          }
+        }
       } else if (subHeardFromUrl) {
         setCurrentSubHeard(subHeardFromUrl);
+        const modInviteToken = parseModInviteTokenFromUrl();
+        if (modInviteToken) {
+          if (!user) {
+            toast.error("Sign in to accept the moderator invite.");
+          } else if (user.isAnonymous) {
+            toast.error("Create an account to accept the moderator invite.");
+          } else {
+            acceptModInviteFromUrl(subHeardFromUrl, modInviteToken);
+          }
+        }
       } else if (isTermsRoute) {
         setShowTerms(true);
       } else if (isPrivacyRoute) {
@@ -548,6 +602,15 @@ function AppContent() {
     updateUrlForDevTools(null);
   };
 
+  const handleOpenActivityFeed = () => {
+    setShowActivityFeed(true);
+    updateUrlForActivityFeed(true);
+  };
+  const handleExitActivityFeed = () => {
+    setShowActivityFeed(false);
+    updateUrlForActivityFeed(false);
+  };
+
   const handleExitOrgs = () => {
     setShowOrgsPage(false);
     window.history.pushState({}, "", "/");
@@ -590,6 +653,15 @@ function AppContent() {
     return (
       <>
         <DevTools user={user} onExit={handleExitDevTools} />
+        <Toaster />
+      </>
+    );
+  }
+
+  if (showActivityFeed) {
+    return (
+      <>
+        <AdminActivityFeed onExit={handleExitActivityFeed} />
         <Toaster />
       </>
     );
@@ -679,6 +751,7 @@ function AppContent() {
         onOpenAdminDashboard={handleOpenAdminDashboard}
         onOpenFeatureTracker={handleOpenFeatureTracker}
         onOpenDevTools={handleOpenDevTools}
+        onOpenActivityFeed={handleOpenActivityFeed}
         onSubHeardChange={handleSubHeardChange}
         onOpenEvent={handleOpenEvent}
         onRefreshEvent={handleRefreshEvent}

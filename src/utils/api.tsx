@@ -1,4 +1,5 @@
 import {
+  ActivityFeedData,
   ActivityMetricsData,
   AnalysisData,
   DevAnonDebate,
@@ -7,7 +8,6 @@ import {
   GGWashImportResult,
   FeatureResults,
   FunnelMetricsData,
-  LiveActivityData,
   PublicStatsData,
   RetentionStatsData,
   RoomAlert,
@@ -266,6 +266,25 @@ class ApiClient extends BaseApiClient {
 
   async leaveSubHeard(name: string) {
     return this.request<undefined>(`/subheard/${name}/leave`, {
+      method: "DELETE",
+    });
+  }
+
+  async createModInvite(subHeardName: string) {
+    return this.request<{ token: string }>(`/subheard/${subHeardName}/mod-invite`, {
+      method: "POST",
+    });
+  }
+
+  async acceptModInvite(subHeardName: string, token: string) {
+    return this.request<undefined>(`/subheard/${subHeardName}/mod-invite/accept`, {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  }
+
+  async clearSubHeardMods(subHeardName: string) {
+    return this.request<undefined>(`/subheard/${subHeardName}/mods`, {
       method: "DELETE",
     });
   }
@@ -634,8 +653,8 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async getLiveActivity() {
-    return this.request<LiveActivityData>("/stats/live-activity");
+  async getActivityFeed() {
+    return this.request<ActivityFeedData>("/stats/activity-feed");
   }
 
   async getUserTimeline() {
@@ -821,6 +840,27 @@ class ApiClient extends BaseApiClient {
         body: JSON.stringify(updates),
       },
     );
+  }
+
+  async createCohostInvite(roomId: string) {
+    return this.request<{ token: string }>(
+      `/room/${roomId}/mod/cohost-invite`,
+      { method: "POST" },
+    );
+  }
+
+  async acceptCohostInvite(roomId: string, token: string) {
+    return this.request<undefined>(
+      `/room/${roomId}/cohost-invite/accept`,
+      {
+        method: "POST",
+        body: JSON.stringify({ token }),
+      },
+    );
+  }
+
+  async clearRoomCohosts(roomId: string) {
+    return this.request<undefined>(`/room/${roomId}/cohosts`, { method: "DELETE" });
   }
 
   async getStatementMerges(roomId: string) {
