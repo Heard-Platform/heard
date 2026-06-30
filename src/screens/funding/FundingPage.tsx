@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { Dialog, DialogContent, DialogTitle } from "../../components/ui/dialog";
 import { DonationDialog } from "./DonationDialog";
 import { DonateCTA } from "./DonateCTA";
-import { Countdown, useCountdownDays } from "./Countdown";
+import { Countdown } from "./Countdown";
 import { C, fmt, FUNDING_GOAL, SHARE_URL, styles } from "./constants";
 import { share } from "../../utils/share";
 import { api } from "../../utils/api";
@@ -33,8 +32,7 @@ export function FundingPage({
   const [nugMode, setNugMode] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showMore, setShowMore] = useState(false);
-  const [showMatchingInfo, setShowMatchingInfo] = useState(false);
-  const daysLeft = useCountdownDays();
+
 
   useEffect(() => {
     api.trackEvent("funding_page_view");
@@ -53,9 +51,7 @@ export function FundingPage({
     }
   }, []);
 
-  const matchedTotal = totalDonated * 2;
-  const activeGoal = daysLeft > 7 ? 1000 : FUNDING_GOAL;
-  const progressPct = Math.min((matchedTotal / activeGoal) * 100, 100);
+  const progressPct = Math.min((totalDonated / FUNDING_GOAL) * 100, 100);
 
   const handleDonate = (amt: number) => {
     api.trackEvent("funding_donate_clicked");
@@ -262,19 +258,15 @@ export function FundingPage({
                 animate={{ scale: [1, 1.15, 1] }}
                 transition={{ duration: 0.4 }}
               >
-                {fmt(matchedTotal, nugMode)} donated{" "}
+                {fmt(totalDonated, nugMode)} donated{" "}
                 {donorCount > 10 && (
-                  <span
-                    style={{ color: C.slate400, fontWeight: 400 }}
-                  >
+                  <span style={{ color: C.slate400, fontWeight: 400 }}>
                     by {donorCount} Hearos
                   </span>
                 )}
               </motion.span>
               <span style={{ color: C.slate400, fontWeight: 400 }}>
-                {daysLeft > 7
-                  ? `Week 1 goal of ${fmt(activeGoal, nugMode)}`
-                  : `${fmt(activeGoal, nugMode)} goal`}
+                {fmt(FUNDING_GOAL, nugMode)} goal
               </span>
             </div>
             <div
@@ -298,49 +290,27 @@ export function FundingPage({
             </div>
           </>
         )}
-        <div
+        <button
+          onClick={() => {
+            api.trackEvent("funding_nugmode_toggled");
+            setNugMode((v) => !v);
+          }}
           style={{
-            marginTop: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            marginTop: 8,
+            fontSize: 12,
+            color: C.slate400,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            textDecoration: "underline",
+            textUnderlineOffset: 2,
+            padding: 0,
+            width: "100%",
+            textAlign: "right",
           }}
         >
-          <button
-            onClick={() => setShowMatchingInfo(true)}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-              fontSize: 12,
-              color: C.emerald600,
-              fontWeight: 600,
-              textDecoration: "underline",
-              textUnderlineOffset: 2,
-            }}
-          >
-            🎉 Donations matched 2×
-          </button>
-          <button
-            onClick={() => {
-              api.trackEvent("funding_nugmode_toggled");
-              setNugMode((v) => !v);
-            }}
-            style={{
-              fontSize: 12,
-              color: C.slate400,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              textDecoration: "underline",
-              textUnderlineOffset: 2,
-              padding: 0,
-            }}
-          >
-            {nugMode ? "Show in dollars 💵" : "Show in nuggies 🍗"}
-          </button>
-        </div>
+          {nugMode ? "Show in dollars 💵" : "Show in nuggies 🍗"}
+        </button>
       </div>
 
       {/* Donate CTA or thank you */}
@@ -432,45 +402,6 @@ export function FundingPage({
         onClose={() => setShowDonationDialog(false)}
       />
 
-      <Dialog
-        open={showMatchingInfo}
-        onOpenChange={setShowMatchingInfo}
-      >
-        <DialogContent>
-          <DialogTitle
-            style={{
-              fontSize: 18,
-              fontWeight: 700,
-              color: C.slate800,
-            }}
-          >
-            🎉 Donation matching
-          </DialogTitle>
-          <p
-            style={{
-              color: C.slate600,
-              lineHeight: 1.625,
-              marginTop: 8,
-            }}
-          >
-            A generous friend of Heard has offered to{" "}
-            <strong style={{ color: C.slate800 }}>
-              match every donation dollar-for-dollar
-            </strong>{" "}
-            until we hit our $5,000 goal.
-          </p>
-          <p
-            style={{
-              color: C.slate600,
-              lineHeight: 1.625,
-              marginTop: 12,
-            }}
-          >
-            That means whatever you give, an extra dollar is given on
-            your behalf, doubling your impact. 💯
-          </p>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
