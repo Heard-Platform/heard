@@ -672,6 +672,16 @@ class ApiClient extends BaseApiClient {
     return this.request<AnalysisData>(`/room/${roomId}/analysis`);
   }
 
+  async askTheData(roomId: string, question: string) {
+    return this.request<{ status: "answered" | "rejected"; response: string }>(
+      `/room/${roomId}/ask`,
+      {
+        method: "POST",
+        body: JSON.stringify({ question }),
+      },
+    );
+  }
+
   async regenerateClusters(roomId: string) {
     return this.request(`/room/${roomId}/regenerate-clusters`, {
       method: "POST",

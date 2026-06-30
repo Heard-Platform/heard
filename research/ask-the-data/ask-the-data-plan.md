@@ -326,8 +326,11 @@ Deliberately deferred — do not build these:
 - TypeScript strict mode. No `any` in new code.
 - No magic numbers or strings — thresholds, endpoint name, and fallback message are named
   constants.
-- No defensive handling of impossible cases; the one defensive path that *is* required is
-  `parseAskTheDataResponse` degrading a malformed model reply to a graceful rejection.
+- No defensive handling of impossible cases. Two narrow exceptions are intentional:
+  `parseAskTheDataResponse` degrades a malformed model reply to a graceful rejection, and
+  the endpoint guards the `:roomId` param with `if (!roomId)` to narrow its
+  `string | undefined` type to `string` (required under `c: Context`; mirrors the same
+  guard in `debate-api.tsx`).
 - Match sibling files: `ask-the-data-api.ts` should read like `analysis-api.tsx`;
   `ask-the-data-prompt-utils.ts` like `rant-prompt-utils.ts` /
   `ggwash-prompt-utils.ts`.
