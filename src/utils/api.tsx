@@ -859,6 +859,10 @@ class ApiClient extends BaseApiClient {
     );
   }
 
+  async clearRoomCohosts(roomId: string) {
+    return this.request<undefined>(`/room/${roomId}/cohosts`, { method: "DELETE" });
+  }
+
   async getStatementMerges(roomId: string) {
     return this.request<{ merges: StatementMerge[] }>(`/room/${roomId}/mod/statement-merges`);
   }

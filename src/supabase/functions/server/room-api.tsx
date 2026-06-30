@@ -237,4 +237,24 @@ app.post(
   ),
 );
 
+app.delete(
+  "/make-server-f1a393b4/room/:roomId/cohosts",
+  defineRoute(
+    {},
+    async (_params, c: Context) => {
+      const userId = c.get("userId");
+      const roomId = c.req.param("roomId") as string;
+
+      const room = await getDebateRoom(roomId);
+      if (!room) throw new Error("Room not found");
+      if (room.hostId !== userId) throw new Error("Only the host can remove cohosts");
+
+      await saveDebateRoom({ ...room, cohostIds: [] });
+
+      return {};
+    },
+    "Failed to remove cohosts",
+  ),
+);
+
 export { app as roomApi };
