@@ -101,8 +101,14 @@ export function SubHeardBrowser({
     ? formatSubHeardDisplay(currentSubHeard)
     : "All Posts";
 
-  const currentSubHeardData = subHeards.find(sh => sh.name === currentSubHeard);
-  const isCurrentAdmin = currentSubHeardData?.adminId === user.id;
+  const handleRefreshManagingSubHeard = async () => {
+    const response = await getSubHeards();
+    if (response?.success && response.data) {
+      setSubHeards(response.data.subHeards);
+      const fresh = response.data.subHeards.find(sh => sh.name === managingSubHeard?.name);
+      if (fresh) setManagingSubHeard(fresh);
+    }
+  };
 
   const handleCommunityUpdate = async (update: SubHeard, userId: string) => {
     if (!onUpdateSubHeard) return false;
@@ -301,6 +307,7 @@ export function SubHeardBrowser({
           isOpen={true}
           onClose={() => setManagingSubHeard(null)}
           onUpdateSubHeard={handleCommunityUpdate}
+          onRefresh={handleRefreshManagingSubHeard}
           userId={user.id}
         />
       )}

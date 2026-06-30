@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Share2, Check, Crown, UserPlus } from "lucide-react";
+import { Share2, Check, Crown, UserPlus, Trash2 } from "lucide-react";
 import type { SubHeard } from "../../types";
 import { createSubHeardLink, createModInviteLink } from "../../utils/url";
 import { share } from "../../utils/share";
@@ -28,6 +28,7 @@ interface CommunityAdminDialogProps {
     updatedCommunity: SubHeard,
     userId: string,
   ) => Promise<boolean>;
+  onRefresh: () => Promise<void>;
   onClose: () => void;
 }
 
@@ -36,12 +37,14 @@ export function CommunityAdminDialog({
   userId,
   isOpen,
   onUpdateSubHeard,
+  onRefresh,
   onClose,
 }: CommunityAdminDialogProps) {
-  const { createModInvite } = useDebateSession();
+  const { createModInvite, clearSubHeardMods } = useDebateSession();
   const [isUpdating, setIsUpdating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
+  const [isClearingMods, setIsClearingMods] = useState(false);
 
   const handleUpdate = async (update: Partial<SubHeard>) => {
     setIsUpdating(true);
@@ -85,6 +88,21 @@ export function CommunityAdminDialog({
     }
   };
 
+  const handleClearMods = async () => {
+    setIsClearingMods(true);
+    try {
+      const response = await clearSubHeardMods(community.name);
+      if (response?.success) {
+        toast.success("All moderators removed");
+        await onRefresh();
+      } else {
+        toast.error("Failed to remove moderators");
+      }
+    } finally {
+      setIsClearingMods(false);
+    }
+  };
+
   const handleShareLink = async () => {
     const url = createSubHeardLink(community);
     
@@ -119,10 +137,14 @@ export function CommunityAdminDialog({
         <div className="space-y-6 py-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">Stats</Label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-1">
                 <p className="text-2xl font-bold">{community.count}</p>
                 <p className="text-xs text-muted-foreground">Total Posts</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-2xl font-bold">{community.modIds?.length ?? 0}</p>
+                <p className="text-xs text-muted-foreground">Moderators</p>
               </div>
               <div className="space-y-1">
                 <p className="text-2xl font-bold">{community.isPrivate ? 'Unlisted' : 'Public'}</p>
@@ -139,7 +161,7 @@ export function CommunityAdminDialog({
 
           {community.adminId === userId && (
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Invite Moderator</Label>
+              <Label className="text-sm font-medium">Moderators</Label>
               <Button
                 variant="outline"
                 className="w-full justify-start"
@@ -152,6 +174,15 @@ export function CommunityAdminDialog({
               <p className="text-xs text-muted-foreground">
                 Generates a single-use link valid for 24 hours. The recipient must have an account.
               </p>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-destructive hover:text-destructive"
+                onClick={handleClearMods}
+                disabled={isClearingMods || (community.modIds?.length ?? 0) === 0}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {isClearingMods ? "Removing…" : `Remove All Moderators (${community.modIds?.length ?? 0})`}
+              </Button>
             </div>
           )}
 

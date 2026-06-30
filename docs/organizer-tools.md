@@ -19,6 +19,7 @@ Community admins can invite other users to become moderators. Moderators can adj
 ### What only the admin can do
 
 - Invite new moderators
+- Remove all moderators at once (via the "Remove All Moderators" button in community settings, visible only when moderators exist)
 
 ## Statement Deduplication
 

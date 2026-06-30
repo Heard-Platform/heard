@@ -283,6 +283,12 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async clearSubHeardMods(subHeardName: string) {
+    return this.request<undefined>(`/subheard/${subHeardName}/mods`, {
+      method: "DELETE",
+    });
+  }
+
   // Statement management
   async submitStatement(
     roomId: string,

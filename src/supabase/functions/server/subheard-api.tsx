@@ -282,6 +282,31 @@ app.delete(
   },
 );
 
+// Remove all moderators (admin only)
+app.delete(
+  "/make-server-f1a393b4/subheard/:name/mods",
+  defineRoute(
+    {},
+    async (_params, c) => {
+      const userId = c.get("userId");
+      const name = c.req.param("name") as string;
+
+      const community = await getCommunity(name);
+      if (!community) throw new Error("Community not found");
+
+      const user = await getUserSession(userId);
+      if (!user?.isDeveloper && community.adminId !== userId) {
+        throw new Error("Only the admin can remove moderators");
+      }
+
+      await saveCommunity({ ...community, modIds: [] });
+
+      return {};
+    },
+    "Failed to remove moderators",
+  ),
+);
+
 // Create a mod invite link (admin only)
 app.post(
   "/make-server-f1a393b4/subheard/:name/mod-invite",
