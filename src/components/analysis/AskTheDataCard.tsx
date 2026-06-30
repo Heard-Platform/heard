@@ -104,13 +104,11 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
         {result && (
           <div className="space-y-3 border-t pt-4">
             <div>
-              <p className="text-sm text-muted-foreground">You asked</p>
+              <p className="text-sm text-muted-foreground">You asked:</p>
               <p className="text-sm">{result.question}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">
-                {result.status === "rejected" ? "Out of scope" : "Answer"}
-              </p>
+              <p className="text-sm text-muted-foreground">Answer:</p>
               <p
                 className={
                   result.status === "rejected"
