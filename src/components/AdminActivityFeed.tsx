@@ -20,6 +20,7 @@ const TYPE_CONFIG: Record<
   statement: { label: "Statement", icon: FileText, color: "text-purple-700", bg: "bg-purple-100" },
   vote: { label: "Vote", icon: ThumbsUp, color: "text-amber-700", bg: "bg-amber-100" },
   modInviteAccept: { label: "Mod Invite Accept", icon: UserPlus, color: "text-violet-700", bg: "bg-violet-100" },
+  cohost: { label: "Co-host", icon: UserPlus, color: "text-violet-700", bg: "bg-violet-100" },
 };
 
 const ALL_TYPES: ActivityFeedEventType[] = [
@@ -30,6 +31,7 @@ const ALL_TYPES: ActivityFeedEventType[] = [
   "statement",
   "vote",
   "modInviteAccept",
+  "cohost",
 ];
 
 function formatTime(ts: number): string {

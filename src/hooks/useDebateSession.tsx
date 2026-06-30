@@ -112,6 +112,8 @@ interface DebateSessionContextType {
     roomId: string,
     paused: boolean,
   ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
+  createCohostInvite: (roomId: string) => Promise<ApiResponse<{ token: string }> | null>;
+  acceptCohostInvite: (roomId: string, token: string) => Promise<ApiResponse | null>;
   listStatementsForModeration: (roomId: string) => Promise<Statement[]>;
   setStatementHidden: (
     roomId: string,
@@ -778,6 +780,18 @@ export function DebateSessionProvider(
     [callRoomMutation],
   );
 
+  const createCohostInvite = useCallback(
+    async (roomId: string) =>
+      safelyMakeApiCall<{ token: string }>(() => api.createCohostInvite(roomId)),
+    [safelyMakeApiCall],
+  );
+
+  const acceptCohostInvite = useCallback(
+    async (roomId: string, token: string) =>
+      safelyMakeApiCall(() => api.acceptCohostInvite(roomId, token)),
+    [safelyMakeApiCall],
+  );
+
   const listStatementsForModeration = useCallback(
     async (roomId: string) => {
       const response = await safelyMakeApiCall<{
@@ -958,6 +972,8 @@ export function DebateSessionProvider(
     createStatementMerge,
     deleteStatementMerge,
     setResponsesPaused,
+    createCohostInvite,
+    acceptCohostInvite,
     listStatementsForModeration,
     setStatementHidden,
     markChanceCardSwiped,
@@ -1052,6 +1068,14 @@ export function DebateSessionProvider(
       setResponsesPaused: async () => {
         console.log("[Showcase] setResponsesPaused called");
         return null;
+      },
+      createCohostInvite: async () => {
+        console.log("[Showcase] createCohostInvite called");
+        return { success: true, data: { token: "showcase-token" } };
+      },
+      acceptCohostInvite: async () => {
+        console.log("[Showcase] acceptCohostInvite called");
+        return { success: true };
       },
       listStatementsForModeration: async () => {
         console.log("[Showcase] listStatementsForModeration called");

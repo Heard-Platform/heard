@@ -3,7 +3,7 @@ import { getUserAndNewSession } from "./auth-api.tsx";
 import { getUser } from "./kv-utils.tsx";
 import { getDebateRoom } from "./debate-api.tsx";
 
-export async function validateHost(c: any, next: any) {
+async function validateHostImpl(c: any, next: any, trueHostOnly: boolean) {
   const userId = c.get("userId");
   if (!userId) return c.json({ error: "Unauthorized" }, 401);
 
@@ -16,10 +16,18 @@ export async function validateHost(c: any, next: any) {
   const roomId = c.req.param("roomId");
   const room = await getDebateRoom(roomId);
   if (!room) return c.json({ error: "Room not found" }, 404);
-  if (room.hostId !== userId) return c.json({ error: "Forbidden" }, 403);
+
+  const allowed = trueHostOnly
+    ? room.hostId === userId
+    : room.hostId === userId || !!room.cohostIds?.includes(userId);
+
+  if (!allowed) return c.json({ error: "Forbidden" }, 403);
 
   await next();
 }
+
+export const validateHost = (c: any, next: any) => validateHostImpl(c, next, false);
+export const validateTrueHost = (c: any, next: any) => validateHostImpl(c, next, true);
 
 export async function validateSession(c: any, next: any) {
   const userId = c.get("userId");

@@ -34,6 +34,7 @@ import {
   updateUrlForEvent,
   parseStatementIdFromUrl,
   parseModInviteTokenFromUrl,
+  parseCohostInviteTokenFromUrl,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
@@ -119,6 +120,7 @@ function AppContent() {
     resetSession,
     roomStatements,
     acceptModInvite,
+    acceptCohostInvite,
   } = useDebateSession();
 
   const startRoomJoin = (roomId: string) => {
@@ -128,6 +130,18 @@ function AppContent() {
 
   const handleMagicLinkSuccess = async () => {
     toast.success("Signed in successfully!");
+  };
+
+  const acceptCohostInviteFromUrl = async (roomId: string, token: string) => {
+    const response = await acceptCohostInvite(roomId, token);
+    if (response?.success) {
+      toast.success("You're now a co-host of this conversation!");
+    } else {
+      toast.error(response?.error || "This co-host invite link is invalid or has expired");
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.delete("cohostInvite");
+    window.history.replaceState({}, "", url.pathname + url.search);
   };
 
   const handleFlyerJoin = async (flyerData: {
@@ -297,6 +311,7 @@ function AppContent() {
       const isClubRoute = /^\/club\/?$/.test(pathname);
 
       const roomIdFromUrl = parseRoomIdFromUrl();
+      const cohostInviteTokenFromUrl = parseCohostInviteTokenFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl = parseAnalysisRoomIdFromUrl();
       const flyerDataFromUrl = parseFlyerDataFromUrl();
@@ -395,6 +410,15 @@ function AppContent() {
         setCurrentEventId(eventIdFromUrl);
       } else if (roomIdFromUrl) {
         startRoomJoin(roomIdFromUrl);
+        if (cohostInviteTokenFromUrl) {
+          if (!user) {
+            toast("Sign in to accept the co-host invite, then visit this link again.");
+          } else if (user.isAnonymous) {
+            toast("Create an account to accept the co-host invite, then visit this link again.");
+          } else {
+            acceptCohostInviteFromUrl(roomIdFromUrl, cohostInviteTokenFromUrl);
+          }
+        }
       } else if (subHeardFromUrl) {
         setCurrentSubHeard(subHeardFromUrl);
         const modInviteToken = parseModInviteTokenFromUrl();

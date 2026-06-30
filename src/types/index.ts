@@ -215,6 +215,7 @@ export interface DebateRoom {
   roundStartTime: number;
   participants: string[];
   hostId: string;
+  cohostIds?: string[];
   isActive: boolean;
   createdAt: number;
   mode: DebateMode;
@@ -432,7 +433,8 @@ export type ActivityFeedEventType =
   | "room"
   | "community"
   | "session"
-  | "modInviteAccept";
+  | "modInviteAccept"
+  | "cohost";
 
 export interface ActivityFeedEvent {
   type: ActivityFeedEventType;
@@ -519,6 +521,8 @@ export interface FeatureResults {
     fallbackDonate: number; fallbackDonateUsers: number;
   };
   fundingEventsSince: number;
+  cohostInviteAccepted: number;
+  cohostInviteAcceptedSince: number;
   llmApiCalls: number;
   llmApiCallsSince: number;
   ggwashPublished: number;

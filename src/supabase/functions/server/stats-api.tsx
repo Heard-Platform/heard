@@ -6,9 +6,9 @@ import {
   getAllStatements,
   getAllVotes,
 } from "./kv-utils.tsx";
-import { getAllRecords } from "./db-utils.ts";
-import type { Session } from "./types.tsx";
-import { getFlyerEmails, getEventsOfType } from "./model-utils.ts";
+import { getAllRecords, selectAll } from "./db-utils.ts";
+import type { Session, UserEvent } from "./types.tsx";
+import { getEventsOfType, getFlyerEmails } from "./model-utils.ts";
 import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 
@@ -210,6 +210,7 @@ app.get(
         subHeards,
         sessions,
         modInviteAccepts,
+        cohostEvents,
       ] = await Promise.all([
         getAllRealUsers(),
         getAllRealDebates(),
@@ -218,6 +219,9 @@ app.get(
         getAllSubHeards(),
         getAllRecords<Session>("session:"),
         getEventsOfType("mod_invite_accepted"),
+        selectAll<UserEvent>("user_events", {
+          type: "cohost_invite_accepted",
+        }),
       ]);
 
       type FeedEvent = {
@@ -228,6 +232,7 @@ app.get(
           | "vote"
           | "community"
           | "session"
+          | "cohost"
           | "modInviteAccept";
         timestamp: number;
         id: string;
@@ -329,6 +334,20 @@ app.get(
             label: `Mod invite accepted`,
             meta: { community: event.roomId ?? "", user: (event.userId ?? "").substring(0, 8) },
           });
+        }
+      }
+
+      for (const event of cohostEvents) {
+        const t = ts(event.createdAt);
+        if (t > since) {
+          const roomTopic = event.roomId ? (roomMap.get(event.roomId) as any)?.topic : undefined;
+          events.push({
+            type: "cohost",
+            timestamp: t,
+            id: event.userId ?? event.roomId ?? String(t),
+            label: "Co-host accepted",
+            meta: { room: roomTopic || event.roomId || "" },
+          })
         }
       }
 

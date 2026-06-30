@@ -1,7 +1,7 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers } from "./kv-utils.tsx";
 import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getUniqueUserIdsForEvent, getEventsOfType } from "./model-utils.ts";
-import { countRecords } from "./db-utils.ts";
+import { countRecords, selectAll } from "./db-utils.ts";
 
 const app = new Hono();
 
@@ -99,6 +99,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
 
     const modInvitesAccepted = (await getEventsOfType("mod_invite_accepted")).length;
     const modInvitesAcceptedSince = new Date("2026-06-29").getTime();
+
+    const cohostInviteAccepted = (await selectAll("user_events", { type: "cohost_invite_accepted" })).length;
+    const cohostInviteAcceptedSince = new Date("2026-06-29").getTime();
 
     const oneBillionEventRows = await getOneBillionEvents();
     const realNonDevUserIds = new Set(
@@ -231,6 +234,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       fundingEventsSince,
       modInvitesAccepted,
       modInvitesAcceptedSince,
+      cohostInviteAccepted,
+      cohostInviteAcceptedSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);
