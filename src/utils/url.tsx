@@ -95,9 +95,23 @@ export const createCoHostInviteLink = (roomId: string, token: string): string =>
 
 export const createSubHeardLink = (subHeard: SubHeard): string => {
   if (typeof window === 'undefined') return ''
-  
+
   const baseUrl = window.location.origin
   return `${baseUrl}/h/${subHeard.name}`
+}
+
+export const createModInviteLink = (subHeardName: string, token: string): string => {
+  if (typeof window === 'undefined') return ''
+
+  const baseUrl = window.location.origin
+  return `${baseUrl}/h/${subHeardName}?modInvite=${token}`
+}
+
+export const parseModInviteTokenFromUrl = (): string | null => {
+  if (typeof window === 'undefined') return null
+
+  const url = new URL(window.location.href)
+  return url.searchParams.get('modInvite')
 }
 
 export const updateUrlForRoom = (roomId: string | null) => {

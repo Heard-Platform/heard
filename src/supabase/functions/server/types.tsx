@@ -94,6 +94,13 @@ export type Community = {
   adminId: string;
   isPrivate: boolean;
   hostOnlyPosting: boolean;
+  modIds?: string[];
+}
+
+export type ModInviteRecord = {
+  subHeardName: string;
+  createdBy: string;
+  expiresAt: number;
 }
 
 export type CommunityMembership = {

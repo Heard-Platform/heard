@@ -260,6 +260,7 @@ export interface SubHeard {
   isPrivate: boolean;
   hostOnlyPosting: boolean;
   createdAt?: number;
+  modIds?: string[];
 }
 
 export interface Rant {
@@ -432,6 +433,7 @@ export type ActivityFeedEventType =
   | "room"
   | "community"
   | "session"
+  | "modInviteAccept"
   | "cohost";
 
 export interface ActivityFeedEvent {
@@ -527,6 +529,8 @@ export interface FeatureResults {
   ggwashRejected: number;
   ggwashPending: number;
   ggwashSince: number;
+  modInvitesAccepted: number;
+  modInvitesAcceptedSince: number;
 }
 
 export interface GGWashImportResult {

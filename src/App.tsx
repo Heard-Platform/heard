@@ -33,6 +33,7 @@ import {
   parseEventIdFromUrl,
   updateUrlForEvent,
   parseStatementIdFromUrl,
+  parseModInviteTokenFromUrl,
   parseCoHostInviteTokenFromUrl,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
@@ -118,6 +119,7 @@ function AppContent() {
     setCurrentSubHeard,
     resetSession,
     roomStatements,
+    acceptModInvite,
     acceptCoHostInvite,
   } = useDebateSession();
 
@@ -246,6 +248,18 @@ function AppContent() {
 
   const handleRefreshEvent = () => {
     if (currentEventId) fetchEvent(currentEventId);
+  };
+
+  const acceptModInviteFromUrl = async (subHeardName: string, token: string) => {
+    const response = await acceptModInvite(subHeardName, token);
+    if (response?.success) {
+      toast.success("You are now a moderator of this community!");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("modInvite");
+      window.history.replaceState(null, "", url.toString());
+    } else {
+      toast.error(response?.error || "Failed to accept mod invite.");
+    }
   };
 
   const loginViaMagicTokenInUrl = async (magicToken: string) => {
@@ -407,6 +421,16 @@ function AppContent() {
         }
       } else if (subHeardFromUrl) {
         setCurrentSubHeard(subHeardFromUrl);
+        const modInviteToken = parseModInviteTokenFromUrl();
+        if (modInviteToken) {
+          if (!user) {
+            toast.error("Sign in to accept the moderator invite.");
+          } else if (user.isAnonymous) {
+            toast.error("Create an account to accept the moderator invite.");
+          } else {
+            acceptModInviteFromUrl(subHeardFromUrl, modInviteToken);
+          }
+        }
       } else if (isTermsRoute) {
         setShowTerms(true);
       } else if (isPrivacyRoute) {

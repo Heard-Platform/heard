@@ -8,7 +8,7 @@ import {
 } from "./kv-utils.tsx";
 import { getAllRecords, selectAll } from "./db-utils.ts";
 import type { Session, UserEvent } from "./types.tsx";
-import { getFlyerEmails } from "./model-utils.ts";
+import { getEventsOfType, getFlyerEmails } from "./model-utils.ts";
 import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 
@@ -209,6 +209,7 @@ app.get(
         votes,
         subHeards,
         sessions,
+        modInviteAccepts,
         cohostEvents,
       ] = await Promise.all([
         getAllRealUsers(),
@@ -217,13 +218,22 @@ app.get(
         getAllVotes(),
         getAllSubHeards(),
         getAllRecords<Session>("session:"),
+        getEventsOfType("mod_invite_accepted"),
         selectAll<UserEvent>("user_events", {
           type: "cohost_invite_accepted",
         }),
       ]);
 
       type FeedEvent = {
-        type: "user" | "room" | "statement" | "vote" | "community" | "session" | "cohost";
+        type:
+          | "user"
+          | "room"
+          | "statement"
+          | "vote"
+          | "community"
+          | "session"
+          | "cohost"
+          | "modInviteAccept";
         timestamp: number;
         id: string;
         label: string;
@@ -314,6 +324,19 @@ app.get(
         }
       }
 
+      for (const event of modInviteAccepts) {
+        const t = ts(event.createdAt);
+        if (t > since) {
+          events.push({
+            type: "modInviteAccept",
+            timestamp: t,
+            id: `${event.userId}-${event.roomId}-${t}`,
+            label: `Mod invite accepted`,
+            meta: { community: event.roomId ?? "", user: (event.userId ?? "").substring(0, 8) },
+          });
+        }
+      }
+
       for (const event of cohostEvents) {
         const t = ts(event.createdAt);
         if (t > since) {
@@ -324,7 +347,7 @@ app.get(
             id: event.userId ?? event.roomId ?? String(t),
             label: "Co-host accepted",
             meta: { room: roomTopic || event.roomId || "" },
-          });
+          })
         }
       }
 

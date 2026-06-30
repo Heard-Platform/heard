@@ -9,11 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Share2, Check, Crown } from "lucide-react";
+import { Share2, Check, Crown, UserPlus, Trash2 } from "lucide-react";
 import type { SubHeard } from "../../types";
-import { createSubHeardLink } from "../../utils/url";
+import { createSubHeardLink, createModInviteLink } from "../../utils/url";
 import { share } from "../../utils/share";
 import { CommunitySettingsPanel } from "./CommunitySettingsPanel";
+import { useDebateSession } from "../../hooks/useDebateSession";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -27,6 +28,7 @@ interface CommunityAdminDialogProps {
     updatedCommunity: SubHeard,
     userId: string,
   ) => Promise<boolean>;
+  onRefresh: () => Promise<void>;
   onClose: () => void;
 }
 
@@ -35,10 +37,14 @@ export function CommunityAdminDialog({
   userId,
   isOpen,
   onUpdateSubHeard,
+  onRefresh,
   onClose,
 }: CommunityAdminDialogProps) {
+  const { createModInvite, clearSubHeardMods } = useDebateSession();
   const [isUpdating, setIsUpdating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isCreatingInvite, setIsCreatingInvite] = useState(false);
+  const [isClearingMods, setIsClearingMods] = useState(false);
 
   const handleUpdate = async (update: Partial<SubHeard>) => {
     setIsUpdating(true);
@@ -58,6 +64,42 @@ export function CommunityAdminDialog({
       toast.error("Failed to update community settings");
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleInviteMod = async () => {
+    setIsCreatingInvite(true);
+    try {
+      const response = await createModInvite(community.name);
+      if (!response?.success || !response.data?.token) {
+        toast.error("Failed to create invite link");
+        return;
+      }
+      const link = createModInviteLink(community.name, response.data.token);
+      await share({
+        title: `Join ${formatSubHeardDisplay(community.name)} as a Moderator`,
+        text: "You've been invited to moderate this community on HEARD!",
+        url: link,
+        onSuccess: () => toast.success("Moderator invite link shared!"),
+        onError: () => toast.error("Could not share link. Please manually copy the URL."),
+      });
+    } finally {
+      setIsCreatingInvite(false);
+    }
+  };
+
+  const handleClearMods = async () => {
+    setIsClearingMods(true);
+    try {
+      const response = await clearSubHeardMods(community.name);
+      if (response?.success) {
+        toast.success("All moderators removed");
+        await onRefresh();
+      } else {
+        toast.error("Failed to remove moderators");
+      }
+    } finally {
+      setIsClearingMods(false);
     }
   };
 
@@ -95,10 +137,14 @@ export function CommunityAdminDialog({
         <div className="space-y-6 py-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">Stats</Label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-1">
                 <p className="text-2xl font-bold">{community.count}</p>
                 <p className="text-xs text-muted-foreground">Total Posts</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-2xl font-bold">{community.modIds?.length ?? 0}</p>
+                <p className="text-xs text-muted-foreground">Moderators</p>
               </div>
               <div className="space-y-1">
                 <p className="text-2xl font-bold">{community.isPrivate ? 'Unlisted' : 'Public'}</p>
@@ -112,6 +158,33 @@ export function CommunityAdminDialog({
             isUpdating={isUpdating}
             onChange={handleUpdate}
           />
+
+          {community.adminId === userId && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Moderators</Label>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={handleInviteMod}
+                disabled={isCreatingInvite}
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                {isCreatingInvite ? "Creating invite…" : "Create Moderator Invite Link"}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Generates a single-use link valid for 24 hours. The recipient must have an account.
+              </p>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-destructive hover:text-destructive"
+                onClick={handleClearMods}
+                disabled={isClearingMods || (community.modIds?.length ?? 0) === 0}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {isClearingMods ? "Removing…" : `Remove All Moderators (${community.modIds?.length ?? 0})`}
+              </Button>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label className="text-sm font-medium">Share Link</Label>

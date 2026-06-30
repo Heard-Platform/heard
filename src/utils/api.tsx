@@ -270,6 +270,25 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async createModInvite(subHeardName: string) {
+    return this.request<{ token: string }>(`/subheard/${subHeardName}/mod-invite`, {
+      method: "POST",
+    });
+  }
+
+  async acceptModInvite(subHeardName: string, token: string) {
+    return this.request<undefined>(`/subheard/${subHeardName}/mod-invite/accept`, {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  }
+
+  async clearSubHeardMods(subHeardName: string) {
+    return this.request<undefined>(`/subheard/${subHeardName}/mods`, {
+      method: "DELETE",
+    });
+  }
+
   // Statement management
   async submitStatement(
     roomId: string,

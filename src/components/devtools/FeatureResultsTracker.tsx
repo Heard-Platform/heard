@@ -308,6 +308,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getDate: (s) => s.fundingEventsSince,
       renderExtra: (s) => <FundingResults {...s.fundingEvents} />,
     },
+    {
+      icon: UserPlus,
+      iconColor: "text-violet-600",
+      bgColor: "bg-violet-100",
+      title: "Mod Invites Accepted",
+      description: "Users who accepted a moderator invite to a community",
+      getValue: (s) => s.modInvitesAccepted,
+      getDate: (s) => s.modInvitesAcceptedSince,
+    },
   ]
 
   featureCards.sort((a, b) =>

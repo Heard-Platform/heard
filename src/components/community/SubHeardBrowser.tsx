@@ -10,7 +10,18 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import { Home, Hash, Plus, ChevronDown, EyeOff, Settings, Crown, LogOut, Compass } from "lucide-react";
+import {
+  Home,
+  Hash,
+  Plus,
+  ChevronDown,
+  EyeOff,
+  Settings,
+  Crown,
+  Shield,
+  LogOut,
+  Compass,
+} from "lucide-react";
 import { MessageSquare } from "lucide-react";
 import monkeyImg from "/monkey.png";
 import { useDebateSession } from "../../hooks/useDebateSession";
@@ -90,8 +101,14 @@ export function SubHeardBrowser({
     ? formatSubHeardDisplay(currentSubHeard)
     : "All Posts";
 
-  const currentSubHeardData = subHeards.find(sh => sh.name === currentSubHeard);
-  const isCurrentAdmin = currentSubHeardData?.adminId === user.id;
+  const handleRefreshManagingSubHeard = async () => {
+    const response = await getSubHeards();
+    if (response?.success && response.data) {
+      setSubHeards(response.data.subHeards);
+      const fresh = response.data.subHeards.find(sh => sh.name === managingSubHeard?.name);
+      if (fresh) setManagingSubHeard(fresh);
+    }
+  };
 
   const handleCommunityUpdate = async (update: SubHeard, userId: string) => {
     if (!onUpdateSubHeard) return false;
@@ -214,6 +231,7 @@ export function SubHeardBrowser({
               <div className="space-y-2">
                 {subHeards.map((subHeard) => {
                   const isAdmin = subHeard.adminId === user.id;
+                  const isMod = !isAdmin && !!subHeard.modIds?.includes(user.id);
                   const isSelected = currentSubHeard === subHeard.name;
                   
                   return (
@@ -237,11 +255,14 @@ export function SubHeardBrowser({
                         {isAdmin && (
                           <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />
                         )}
+                        {isMod && (
+                          <Shield className="w-3 h-3 text-blue-500 flex-shrink-0" />
+                        )}
                       </button>
-                      
+
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        {isAdmin && (
-                          <button 
+                        {(isAdmin || isMod) && (
+                          <button
                             className="h-7 w-7 inline-flex items-center justify-center rounded-md hover:bg-black/10"
                             onClick={() => setManagingSubHeard(subHeard)}
                           >
@@ -286,6 +307,7 @@ export function SubHeardBrowser({
           isOpen={true}
           onClose={() => setManagingSubHeard(null)}
           onUpdateSubHeard={handleCommunityUpdate}
+          onRefresh={handleRefreshManagingSubHeard}
           userId={user.id}
         />
       )}

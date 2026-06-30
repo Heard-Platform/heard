@@ -79,9 +79,10 @@ app.post(
           };
           await saveCommunity(newCommunity);
         } else {
-          if (community.hostOnlyPosting && community.adminId !== userId) {
+          const isModerator = community.adminId === userId || !!community.modIds?.includes(userId);
+          if (community.hostOnlyPosting && !isModerator) {
             return c.json(
-              { error: "Only the community host can create debates in this community" },
+              { error: "Only moderators can create debates in this community" },
               403,
             );
           }

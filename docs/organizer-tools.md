@@ -1,5 +1,26 @@
 # Organizer Tools
 
+## Community Moderators
+
+Community admins can invite other users to become moderators. Moderators can adjust community settings and create debates in communities with Mod-Only Posting enabled. Only the admin can invite additional moderators.
+
+### How it works
+
+1. Open your community from the community picker and tap the **Settings** (⚙️) icon.
+2. Tap **Create Moderator Invite Link**. This generates a single-use link valid for **24 hours**.
+3. Share the link with the person you want to invite. When they open it, they'll be automatically added as a moderator as long as they have an account (anonymous users must sign up first).
+4. The link is consumed on first use and cannot be reused.
+
+### What moderators can do
+
+- Change community settings (visibility, mod-only posting)
+- Create debates in the community, even when Mod-Only Posting is on
+
+### What only the admin can do
+
+- Invite new moderators
+- Remove all moderators at once (via the "Remove All Moderators" button in community settings, visible only when moderators exist)
+
 ## Co-hosts
 
 Co-hosts have the same moderator tools as the room creator: they can merge statements, view the vote matrix, and pause/resume responses. Only the original room creator can invite co-hosts or deactivate the room.
@@ -10,8 +31,6 @@ Co-hosts have the same moderator tools as the room creator: they can merge state
 3. When they open the link while signed in, they'll see a prompt to accept the co-host role.
 
 The invite link is **single-use**: it expires the moment it's successfully claimed, so it can't be forwarded or reused. It also expires automatically after 24 hours if unused.
-
----
 
 ## Statement Deduplication
 
