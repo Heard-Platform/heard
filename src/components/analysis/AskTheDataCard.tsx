@@ -48,17 +48,12 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
   return (
     <Card className="p-6">
       <div className="space-y-4">
-        <div>
-          <h2 className="text-xl">Ask the Data</h2>
-          <p className="text-sm text-muted-foreground">
-            Ask a question about this conversation's topic, responses, and votes.
-          </p>
-        </div>
+        <h2 className="text-xl">Ask the Data</h2>
 
         <Textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="e.g. Which response is the most divisive?"
+          placeholder="Ask a question about this conversation's topic, responses, and votes."
           disabled={isAsking}
           rows={3}
         />
