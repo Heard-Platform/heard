@@ -12,9 +12,9 @@ import type {
 } from "./types.tsx";
 import { ONE_WEEK_MS } from "./time-utils.ts";
 import {
-  deleteCoHostInvite,
+  deleteCohostInvite,
   getCommunity,
-  getCoHostInvite,
+  getCohostInvite,
   saveCommunity,
   saveStatement,
 } from "./kv-utils.tsx";
@@ -207,17 +207,17 @@ app.post(
         throw new Error("Anonymous users cannot become co-hosts. Create an account first.");
       }
 
-      const invite = await getCoHostInvite(token);
+      const invite = await getCohostInvite(token);
       if (!invite || invite.roomId !== roomId) {
         throw new Error("Invalid or expired invite link");
       }
 
       if (Date.now() > invite.expiresAt) {
-        await deleteCoHostInvite(token);
+        await deleteCohostInvite(token);
         throw new Error("This invite link has expired");
       }
 
-      await deleteCoHostInvite(token);
+      await deleteCohostInvite(token);
 
       const room = await getDebateRoom(roomId);
       if (!room) throw new Error("Room not found");
@@ -226,9 +226,9 @@ app.post(
         throw new Error("You're already the host of this room");
       }
 
-      const coHostIds = new Set(room.coHostIds ?? []);
-      coHostIds.add(userId);
-      await saveDebateRoom({ ...room, coHostIds: Array.from(coHostIds) });
+      const cohostIds = new Set(room.cohostIds ?? []);
+      cohostIds.add(userId);
+      await saveDebateRoom({ ...room, cohostIds: Array.from(cohostIds) });
       await insertAnalyticsEvent({ type: "cohost_invite_accepted", userId, roomId });
 
       return {};

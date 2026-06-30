@@ -23,11 +23,11 @@ Community admins can invite other users to become moderators. Moderators can adj
 
 ## Co-hosts
 
-Co-hosts have the same moderator tools as the room creator: they can merge statements, view the vote matrix, and pause/resume responses. Only the original room creator can invite co-hosts or deactivate the room.
+Co-hosts have the same host tools as the room creator: they can merge statements, view the vote matrix, and pause/resume responses. Only the original room creator can invite co-hosts or deactivate the room.
 
 **How to invite a co-host:**
-1. Open the room menu (⋯) and tap **Invite co-host** under Moderator Tools.
-2. Share the generated link with whoever you want to promote — via text, DM, or any messaging app.
+1. Open the room menu (⋯) and tap **Invite co-host** under Host Tools.
+2. Share the generated link with whoever you want to promote.
 3. When they open the link while signed in, they'll see a prompt to accept the co-host role.
 
 The invite link is **single-use**: it expires the moment it's successfully claimed, so it can't be forwarded or reused. It also expires automatically after 24 hours if unused.

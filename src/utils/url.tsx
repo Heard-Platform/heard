@@ -39,7 +39,7 @@ export const parseAnonymousLinkIdFromUrl = (): string | null => {
   return parseFromUrl('join');
 }
 
-export const parseCoHostInviteTokenFromUrl = (): string | null => {
+export const parseCohostInviteTokenFromUrl = (): string | null => {
   if (typeof window === 'undefined') return null
   return new URL(window.location.href).searchParams.get('cohostInvite')
 }
@@ -87,7 +87,7 @@ export const createShareableLink = (roomId: string): string => {
   return `${baseUrl}/room/${roomId}`
 }
 
-export const createCoHostInviteLink = (roomId: string, token: string): string => {
+export const createCohostInviteLink = (roomId: string, token: string): string => {
   if (typeof window === 'undefined') return ''
 
   return `${createShareableLink(roomId)}?cohostInvite=${token}`

@@ -34,7 +34,7 @@ import {
   updateUrlForEvent,
   parseStatementIdFromUrl,
   parseModInviteTokenFromUrl,
-  parseCoHostInviteTokenFromUrl,
+  parseCohostInviteTokenFromUrl,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
@@ -120,7 +120,7 @@ function AppContent() {
     resetSession,
     roomStatements,
     acceptModInvite,
-    acceptCoHostInvite,
+    acceptCohostInvite,
   } = useDebateSession();
 
   const startRoomJoin = (roomId: string) => {
@@ -132,8 +132,8 @@ function AppContent() {
     toast.success("Signed in successfully!");
   };
 
-  const acceptCoHostInviteFromUrl = async (roomId: string, token: string) => {
-    const response = await acceptCoHostInvite(roomId, token);
+  const acceptCohostInviteFromUrl = async (roomId: string, token: string) => {
+    const response = await acceptCohostInvite(roomId, token);
     if (response?.success) {
       toast.success("You're now a co-host of this conversation!");
     } else {
@@ -311,7 +311,7 @@ function AppContent() {
       const isClubRoute = /^\/club\/?$/.test(pathname);
 
       const roomIdFromUrl = parseRoomIdFromUrl();
-      const coHostInviteTokenFromUrl = parseCoHostInviteTokenFromUrl();
+      const cohostInviteTokenFromUrl = parseCohostInviteTokenFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl = parseAnalysisRoomIdFromUrl();
       const flyerDataFromUrl = parseFlyerDataFromUrl();
@@ -410,13 +410,13 @@ function AppContent() {
         setCurrentEventId(eventIdFromUrl);
       } else if (roomIdFromUrl) {
         startRoomJoin(roomIdFromUrl);
-        if (coHostInviteTokenFromUrl) {
+        if (cohostInviteTokenFromUrl) {
           if (!user) {
             toast("Sign in to accept the co-host invite, then visit this link again.");
           } else if (user.isAnonymous) {
             toast("Create an account to accept the co-host invite, then visit this link again.");
           } else {
-            acceptCoHostInviteFromUrl(roomIdFromUrl, coHostInviteTokenFromUrl);
+            acceptCohostInviteFromUrl(roomIdFromUrl, cohostInviteTokenFromUrl);
           }
         }
       } else if (subHeardFromUrl) {

@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { createShareableLink, createCoHostInviteLink } from "../../utils/url";
+import { createShareableLink, createCohostInviteLink } from "../../utils/url";
 import { share } from "../../utils/share";
 import { DebateRoom } from "../../types";
 import { useDebateSession } from "../../hooks/useDebateSession";
@@ -55,16 +55,16 @@ export function RoomCardMenu({
   onOpenDeduplication,
   onOpenVoteMatrix,
 }: RoomCardMenuProps) {
-  const { setRoomInactive, setResponsesPaused, createCoHostInvite } = useDebateSession();
+  const { setRoomInactive, setResponsesPaused, createCohostInvite } = useDebateSession();
 
-  const handleInviteCoHost = async (e: React.MouseEvent) => {
+  const handleInviteCohost = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const response = await createCoHostInvite(room.id);
+    const response = await createCohostInvite(room.id);
     if (!response?.success || !response.data) {
       toast.error("Failed to create invite link");
       return;
     }
-    const link = createCoHostInviteLink(room.id, response.data.token);
+    const link = createCohostInviteLink(room.id, response.data.token);
     await share({
       url: link,
       title: "Become a co-host on Heard",
@@ -136,10 +136,10 @@ export function RoomCardMenu({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs text-muted-foreground px-2 py-1">
-              Moderator Tools
+              Host Tools
             </DropdownMenuLabel>
             {isTrueHost && (
-              <DropdownMenuItem onClick={handleInviteCoHost}>
+              <DropdownMenuItem onClick={handleInviteCohost}>
                 <UserPlus className="w-4 h-4 mr-2" />
                 Invite co-host
               </DropdownMenuItem>

@@ -215,7 +215,7 @@ export interface DebateRoom {
   roundStartTime: number;
   participants: string[];
   hostId: string;
-  coHostIds?: string[];
+  cohostIds?: string[];
   isActive: boolean;
   createdAt: number;
   mode: DebateMode;
@@ -521,8 +521,8 @@ export interface FeatureResults {
     fallbackDonate: number; fallbackDonateUsers: number;
   };
   fundingEventsSince: number;
-  coHostInviteAccepted: number;
-  coHostInviteAcceptedSince: number;
+  cohostInviteAccepted: number;
+  cohostInviteAcceptedSince: number;
   llmApiCalls: number;
   llmApiCallsSince: number;
   ggwashPublished: number;

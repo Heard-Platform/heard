@@ -95,7 +95,7 @@ export function RoomCard({
   const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
 
   const isTrueHost = user.id === room.hostId;
-  const isHost = isTrueHost || !!room.coHostIds?.includes(user.id);
+  const isHost = isTrueHost || !!room.cohostIds?.includes(user.id);
 
   useEffect(() => {
     if (analysisRoomId === room.id) {

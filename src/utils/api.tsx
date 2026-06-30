@@ -842,14 +842,14 @@ class ApiClient extends BaseApiClient {
     );
   }
 
-  async createCoHostInvite(roomId: string) {
+  async createCohostInvite(roomId: string) {
     return this.request<{ token: string }>(
       `/room/${roomId}/mod/cohost-invite`,
       { method: "POST" },
     );
   }
 
-  async acceptCoHostInvite(roomId: string, token: string) {
+  async acceptCohostInvite(roomId: string, token: string) {
     return this.request<undefined>(
       `/room/${roomId}/cohost-invite/accept`,
       {

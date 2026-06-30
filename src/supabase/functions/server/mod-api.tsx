@@ -14,7 +14,7 @@ import {
   getClusterAssignmentsBatch,
   getStatementsForRoomIncludingHidden,
   getUser,
-  saveCoHostInvite,
+  saveCohostInvite,
   saveStatement,
 } from "./kv-utils.tsx";
 import { markStatementHidden, markStatementVisible } from "./moderation-utils.ts";
@@ -230,9 +230,9 @@ app.post(
       }
 
       const token = generateId();
-      await saveCoHostInvite(token, {
+      await saveCohostInvite(token, {
         roomId,
-        createdByUserId: userId,
+        createdBy: userId,
         expiresAt: Date.now() + ONE_DAY_MS,
       });
 

@@ -112,8 +112,8 @@ interface DebateSessionContextType {
     roomId: string,
     paused: boolean,
   ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
-  createCoHostInvite: (roomId: string) => Promise<ApiResponse<{ token: string }> | null>;
-  acceptCoHostInvite: (roomId: string, token: string) => Promise<ApiResponse | null>;
+  createCohostInvite: (roomId: string) => Promise<ApiResponse<{ token: string }> | null>;
+  acceptCohostInvite: (roomId: string, token: string) => Promise<ApiResponse | null>;
   listStatementsForModeration: (roomId: string) => Promise<Statement[]>;
   setStatementHidden: (
     roomId: string,
@@ -780,15 +780,15 @@ export function DebateSessionProvider(
     [callRoomMutation],
   );
 
-  const createCoHostInvite = useCallback(
+  const createCohostInvite = useCallback(
     async (roomId: string) =>
-      safelyMakeApiCall<{ token: string }>(() => api.createCoHostInvite(roomId)),
+      safelyMakeApiCall<{ token: string }>(() => api.createCohostInvite(roomId)),
     [safelyMakeApiCall],
   );
 
-  const acceptCoHostInvite = useCallback(
+  const acceptCohostInvite = useCallback(
     async (roomId: string, token: string) =>
-      safelyMakeApiCall(() => api.acceptCoHostInvite(roomId, token)),
+      safelyMakeApiCall(() => api.acceptCohostInvite(roomId, token)),
     [safelyMakeApiCall],
   );
 
@@ -972,8 +972,8 @@ export function DebateSessionProvider(
     createStatementMerge,
     deleteStatementMerge,
     setResponsesPaused,
-    createCoHostInvite,
-    acceptCoHostInvite,
+    createCohostInvite,
+    acceptCohostInvite,
     listStatementsForModeration,
     setStatementHidden,
     markChanceCardSwiped,
@@ -1069,12 +1069,12 @@ export function DebateSessionProvider(
         console.log("[Showcase] setResponsesPaused called");
         return null;
       },
-      createCoHostInvite: async () => {
-        console.log("[Showcase] createCoHostInvite called");
+      createCohostInvite: async () => {
+        console.log("[Showcase] createCohostInvite called");
         return { success: true, data: { token: "showcase-token" } };
       },
-      acceptCoHostInvite: async () => {
-        console.log("[Showcase] acceptCoHostInvite called");
+      acceptCohostInvite: async () => {
+        console.log("[Showcase] acceptCohostInvite called");
         return { success: true };
       },
       listStatementsForModeration: async () => {

@@ -19,7 +19,7 @@ async function validateHostImpl(c: any, next: any, trueHostOnly: boolean) {
 
   const allowed = trueHostOnly
     ? room.hostId === userId
-    : room.hostId === userId || !!room.coHostIds?.includes(userId);
+    : room.hostId === userId || !!room.cohostIds?.includes(userId);
 
   if (!allowed) return c.json({ error: "Forbidden" }, 403);
 

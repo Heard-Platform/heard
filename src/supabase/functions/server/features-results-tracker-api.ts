@@ -100,8 +100,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const modInvitesAccepted = (await getEventsOfType("mod_invite_accepted")).length;
     const modInvitesAcceptedSince = new Date("2026-06-29").getTime();
 
-    const coHostInviteAccepted = (await selectAll("user_events", { type: "cohost_invite_accepted" })).length;
-    const coHostInviteAcceptedSince = new Date("2026-06-29").getTime();
+    const cohostInviteAccepted = (await selectAll("user_events", { type: "cohost_invite_accepted" })).length;
+    const cohostInviteAcceptedSince = new Date("2026-06-29").getTime();
 
     const oneBillionEventRows = await getOneBillionEvents();
     const realNonDevUserIds = new Set(
@@ -234,8 +234,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       fundingEventsSince,
       modInvitesAccepted,
       modInvitesAcceptedSince,
-      coHostInviteAccepted,
-      coHostInviteAcceptedSince,
+      cohostInviteAccepted,
+      cohostInviteAcceptedSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);
