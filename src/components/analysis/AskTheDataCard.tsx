@@ -63,9 +63,9 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
           rows={3}
         />
 
-        <div className="flex justify-end">
-          <Button onClick={handleAsk} disabled={!canAsk}>
-            {isAsking ? <Loader2 className="w-4 h-4 animate-spin" /> : "Ask"}
+        <div className="flex justify-center">
+          <Button onClick={handleAsk} disabled={!canAsk} className="w-32">
+            {isAsking ? <Loader2 className="w-4 h-4 animate-spin" /> : "Ask!"}
           </Button>
         </div>
 
