@@ -54,7 +54,7 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
         <Textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Ask me any question about this conversation."
+          placeholder="Ask any question about this conversation."
           disabled={isAsking}
           rows={3}
         />
