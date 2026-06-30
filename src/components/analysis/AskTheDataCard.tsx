@@ -18,9 +18,9 @@ interface AskTheDataCardProps {
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 const STARTER_QUESTIONS = [
-  "Find the common ground",
-  "Summarize the opinion groups",
-  "What's most divisive?",
+  "What is an insight from this conversation?",
+  "Are there blindspots not covered by the responses?",
+  "What common ground could there be between people who disagreed?",
 ];
 
 export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
