@@ -1,5 +1,5 @@
-import { isCrawler, injectOgHead } from "./_og-utils.ts";
-import type { Context } from "./_og-utils.ts";
+import { isCrawler, injectOgHead } from "../og-utils.ts";
+import type { Context } from "../og-utils.ts";
 
 const TITLE = "Fund Heard"
 const DESCRIPTION =
