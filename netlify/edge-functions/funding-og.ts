@@ -3,7 +3,7 @@ import type { Context } from "../og-utils.ts";
 
 const TITLE = "Fund the future of deliberative tech!"
 const DESCRIPTION =
-  "Alex is close to his goal of raising $5,000 by July 4th, help get us across the finish line!"
+  "Alex is close to his goal of raising $5,000 by July 4th, help get him across the finish line!"
 const URL = "https://heard.vote/fund";
 const IMAGE = "https://img.youtube.com/vi/jFzidavpm_4/maxresdefault.jpg";
 
