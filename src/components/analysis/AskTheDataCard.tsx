@@ -70,7 +70,7 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
       <div className="space-y-4">
         <h2 className="text-xl">Ask the Data</h2>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2">
           {STARTER_QUESTIONS.map((starter) => (
             <Button
               key={starter}
@@ -78,6 +78,7 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
               size="sm"
               onClick={() => askQuestion(starter)}
               disabled={isAsking}
+              className="h-auto w-full justify-start whitespace-normal py-2 text-left"
             >
               {starter}
             </Button>
