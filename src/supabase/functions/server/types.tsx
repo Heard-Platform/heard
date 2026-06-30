@@ -59,6 +59,12 @@ export type MagicLinkRecord = {
   expiresAt: number;
 };
 
+export type CohostInviteRecord = {
+  roomId: string;
+  createdBy: string;
+  expiresAt: number;
+};
+
 export interface Session {
   id: string;
   userId: string;
@@ -88,6 +94,13 @@ export type Community = {
   adminId: string;
   isPrivate: boolean;
   hostOnlyPosting: boolean;
+  modIds?: string[];
+}
+
+export type ModInviteRecord = {
+  subHeardName: string;
+  createdBy: string;
+  expiresAt: number;
 }
 
 export type CommunityMembership = {
@@ -204,6 +217,7 @@ export interface DebateRoom {
   roundStartTime: number;
   participants: string[];
   hostId: string;
+  cohostIds?: string[];
   isActive: boolean;
   createdAt: number;
   mode: DebateMode;

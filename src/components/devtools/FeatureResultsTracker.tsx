@@ -290,6 +290,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       ),
     },
     {
+      icon: UserPlus,
+      iconColor: "text-violet-600",
+      bgColor: "bg-violet-100",
+      title: "Co-host Invites Accepted",
+      description: "Times a co-host invite link was used to accept a co-host role",
+      getValue: (s) => s.cohostInviteAccepted,
+      getDate: (s) => s.cohostInviteAcceptedSince,
+    },
+    {
       icon: HeartHandshake,
       iconColor: "text-emerald-600",
       bgColor: "bg-emerald-100",
@@ -298,6 +307,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.fundingEvents.pageView,
       getDate: (s) => s.fundingEventsSince,
       renderExtra: (s) => <FundingResults {...s.fundingEvents} />,
+    },
+    {
+      icon: UserPlus,
+      iconColor: "text-violet-600",
+      bgColor: "bg-violet-100",
+      title: "Mod Invites Accepted",
+      description: "Users who accepted a moderator invite to a community",
+      getValue: (s) => s.modInvitesAccepted,
+      getDate: (s) => s.modInvitesAcceptedSince,
     },
   ]
 

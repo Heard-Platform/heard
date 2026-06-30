@@ -2,6 +2,7 @@
 import { toast } from "sonner@2.0.3";
 
 import { Button } from "../ui/button";
+import { useState } from "react";
 import {
   Users,
   XCircle,
@@ -12,6 +13,8 @@ import {
   Pause,
   Play,
   Pencil,
+  UserPlus,
+  Trash2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -21,7 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { createShareableLink } from "../../utils/url";
+import { createShareableLink, createCohostInviteLink } from "../../utils/url";
 import { share } from "../../utils/share";
 import { DebateRoom } from "../../types";
 import { useDebateSession } from "../../hooks/useDebateSession";
@@ -34,6 +37,7 @@ interface RoomCardMenuProps {
   hasRealtimeEnded: boolean | number | undefined;
   isDeveloper: boolean;
   isHost: boolean;
+  isTrueHost: boolean;
   isCompleted: boolean;
   onOpenEditRoom: () => void;
   onOpenDeduplication: () => void;
@@ -47,12 +51,53 @@ export function RoomCardMenu({
   hasRealtimeEnded,
   isDeveloper,
   isHost,
+  isTrueHost,
   isCompleted,
   onOpenEditRoom,
   onOpenDeduplication,
   onOpenVoteMatrix,
 }: RoomCardMenuProps) {
-  const { setRoomInactive, setResponsesPaused } = useDebateSession();
+  const { setRoomInactive, setResponsesPaused, createCohostInvite, clearRoomCohosts } = useDebateSession();
+  const [cohostCount, setCohostCount] = useState(room.cohostIds?.length ?? 0);
+  const [isClearingCohosts, setIsClearingCohosts] = useState(false);
+
+  const handleInviteCohost = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const response = await createCohostInvite(room.id);
+    if (!response?.success || !response.data) {
+      toast.error("Failed to create invite link");
+      return;
+    }
+    const link = createCohostInviteLink(room.id, response.data.token);
+    await share({
+      url: link,
+      title: "Become a co-host on Heard",
+      text: "Use this link to become a co-host of this conversation. It only works once.",
+      onSuccess: () => {
+        toast.success("Co-host invite link copied to clipboard!");
+      },
+      onError: (error) => {
+        toast.error("Failed to share invite link");
+        console.error("Share error:", error);
+      },
+    });
+  };
+
+  const handleClearCohosts = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsClearingCohosts(true);
+    try {
+      const response = await clearRoomCohosts(room.id);
+      if (response?.success) {
+        toast.success("All cohosts removed");
+        setCohostCount(0);
+      } else {
+        toast.error("Failed to remove cohosts");
+      }
+    } finally {
+      setIsClearingCohosts(false);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -111,8 +156,24 @@ export function RoomCardMenu({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs text-muted-foreground px-2 py-1">
-              Moderator Tools
+              Host Tools
             </DropdownMenuLabel>
+            {isTrueHost && (
+              <>
+                <DropdownMenuItem onClick={handleInviteCohost}>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Invite co-host
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleClearCohosts}
+                  disabled={isClearingCohosts || cohostCount === 0}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {isClearingCohosts ? "Removing…" : `Remove all cohosts (${cohostCount})`}
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();

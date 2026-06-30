@@ -215,6 +215,7 @@ export interface DebateRoom {
   roundStartTime: number;
   participants: string[];
   hostId: string;
+  cohostIds?: string[];
   isActive: boolean;
   createdAt: number;
   mode: DebateMode;
@@ -259,6 +260,7 @@ export interface SubHeard {
   isPrivate: boolean;
   hostOnlyPosting: boolean;
   createdAt?: number;
+  modIds?: string[];
 }
 
 export interface Rant {
@@ -424,20 +426,29 @@ export interface FunnelMetricsData {
   tookActionTenDays: number;
 }
 
-export type ActivityEventType = "vote" | "statement" | "user" | "community" | "session";
+export type ActivityFeedEventType =
+  | "vote"
+  | "statement"
+  | "user"
+  | "room"
+  | "community"
+  | "session"
+  | "modInviteAccept"
+  | "cohost";
 
-export interface ActivityEvent {
-  type: ActivityEventType;
+export interface ActivityFeedEvent {
+  type: ActivityFeedEventType;
   timestamp: number;
   id: string;
   label: string;
   meta?: Record<string, string>;
 }
 
-export interface LiveActivityData {
-  events: ActivityEvent[];
+export interface ActivityFeedData {
+  events: ActivityFeedEvent[];
   fetchedAt: number;
 }
+
 
 export interface FeatureResults {
   webDriverUsers: number;
@@ -510,12 +521,16 @@ export interface FeatureResults {
     fallbackDonate: number; fallbackDonateUsers: number;
   };
   fundingEventsSince: number;
+  cohostInviteAccepted: number;
+  cohostInviteAcceptedSince: number;
   llmApiCalls: number;
   llmApiCallsSince: number;
   ggwashPublished: number;
   ggwashRejected: number;
   ggwashPending: number;
   ggwashSince: number;
+  modInvitesAccepted: number;
+  modInvitesAcceptedSince: number;
 }
 
 export interface GGWashImportResult {

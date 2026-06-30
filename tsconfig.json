@@ -23,6 +23,6 @@
   },
   "exclude": [
     "src/components/ui",
-    "src/supabase"
+    "netlify/edge-functions"
   ]
 }
