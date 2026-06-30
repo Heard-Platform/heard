@@ -6,3 +6,7 @@
 [[edge_functions]]
   path = "/room/*"
   function = "room-og"
+
+[[edge_functions]]
+  path = "/fund"
+  function = "funding-og"
