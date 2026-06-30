@@ -23,5 +23,6 @@
   },
   "exclude": [
     "src/components/ui",
+    "netlify/edge-functions"
   ]
 }
