@@ -122,6 +122,13 @@ interface DebateSessionContextType {
   getExplorableSubHeards: () => Promise<ApiResponse<SubHeard[]> | null>;
   joinSubHeard: (subHeardName: string) => Promise<ApiResponse | null>;
   leaveSubHeard: (subHeardName: string) => Promise<ApiResponse | null>;
+  createModInvite: (
+    subHeardName: string,
+  ) => Promise<ApiResponse<{ token: string }> | null>;
+  acceptModInvite: (
+    subHeardName: string,
+    token: string,
+  ) => Promise<ApiResponse | null>;
   getEnrichmentConfig: () => Promise<ApiResponse<EnrichmentConfig> | null>;
   setEnrichmentConfig: (
     config: EnrichmentConfig,
@@ -820,6 +827,14 @@ export function DebateSessionProvider(
     return safelyMakeApiCall<undefined>(() => api.leaveSubHeard(subHeardName))
   }, []);
 
+  const createModInvite = useCallback(async (subHeardName: string) => {
+    return safelyMakeApiCall<{ token: string }>(() => api.createModInvite(subHeardName));
+  }, []);
+
+  const acceptModInvite = useCallback(async (subHeardName: string, token: string) => {
+    return safelyMakeApiCall<undefined>(() => api.acceptModInvite(subHeardName, token));
+  }, []);
+
   const getEnrichmentConfig = useCallback(async () => {
     return safelyMakeApiCall<EnrichmentConfig>(() =>
       api.getEnrichmentConfig(),
@@ -947,6 +962,8 @@ export function DebateSessionProvider(
     getExplorableSubHeards,
     joinSubHeard,
     leaveSubHeard,
+    createModInvite,
+    acceptModInvite,
     getEnrichmentConfig,
     setEnrichmentConfig,
     runEnrichmentNow,
@@ -1082,6 +1099,14 @@ export function DebateSessionProvider(
       },
       leaveSubHeard: async (subHeardName: string) => {
         console.log("[Showcase] leaveSubHeard called");
+        return { success: true };
+      },
+      createModInvite: async (subHeardName: string) => {
+        console.log("[Showcase] createModInvite called", subHeardName);
+        return { success: true, data: { token: "showcase-mod-token" } };
+      },
+      acceptModInvite: async (subHeardName: string, token: string) => {
+        console.log("[Showcase] acceptModInvite called", subHeardName, token);
         return { success: true };
       },
       createEvent: async (newEvent: NewEvent): Promise<Event> => {

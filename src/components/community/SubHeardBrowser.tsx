@@ -10,7 +10,18 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import { Home, Hash, Plus, ChevronDown, EyeOff, Settings, Crown, LogOut, Compass } from "lucide-react";
+import {
+  Home,
+  Hash,
+  Plus,
+  ChevronDown,
+  EyeOff,
+  Settings,
+  Crown,
+  Shield,
+  LogOut,
+  Compass,
+} from "lucide-react";
 import { MessageSquare } from "lucide-react";
 import monkeyImg from "/monkey.png";
 import { useDebateSession } from "../../hooks/useDebateSession";
@@ -214,6 +225,7 @@ export function SubHeardBrowser({
               <div className="space-y-2">
                 {subHeards.map((subHeard) => {
                   const isAdmin = subHeard.adminId === user.id;
+                  const isMod = !isAdmin && !!subHeard.modIds?.includes(user.id);
                   const isSelected = currentSubHeard === subHeard.name;
                   
                   return (
@@ -237,11 +249,14 @@ export function SubHeardBrowser({
                         {isAdmin && (
                           <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />
                         )}
+                        {isMod && (
+                          <Shield className="w-3 h-3 text-blue-500 flex-shrink-0" />
+                        )}
                       </button>
-                      
+
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        {isAdmin && (
-                          <button 
+                        {(isAdmin || isMod) && (
+                          <button
                             className="h-7 w-7 inline-flex items-center justify-center rounded-md hover:bg-black/10"
                             onClick={() => setManagingSubHeard(subHeard)}
                           >

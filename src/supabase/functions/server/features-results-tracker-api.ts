@@ -1,6 +1,6 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers } from "./kv-utils.tsx";
-import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getUniqueUserIdsForEvent } from "./model-utils.ts";
+import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getUniqueUserIdsForEvent, getEventsOfType } from "./model-utils.ts";
 import { countRecords } from "./db-utils.ts";
 
 const app = new Hono();
@@ -96,6 +96,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const ggwashRejected = await countRecords("scraped_items", { source: "ggwash", status: "rejected" });
     const ggwashPending = await countRecords("scraped_items", { source: "ggwash", status: "scraped" });
     const ggwashSince = new Date("2026-06-20").getTime();
+
+    const modInvitesAccepted = (await getEventsOfType("mod_invite_accepted")).length;
+    const modInvitesAcceptedSince = new Date("2026-06-29").getTime();
 
     const oneBillionEventRows = await getOneBillionEvents();
     const realNonDevUserIds = new Set(
@@ -226,6 +229,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       ggwashSince,
       fundingEvents,
       fundingEventsSince,
+      modInvitesAccepted,
+      modInvitesAcceptedSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);

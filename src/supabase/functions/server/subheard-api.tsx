@@ -3,8 +3,11 @@ import { normalizeCommunityName } from "./utils.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
-import { getCommunities, getCommunity, saveCommunity, deleteMembership, getMembership, saveMembership } from "./kv-utils.tsx";
+import { getCommunities, getCommunity, saveCommunity, deleteMembership, getMembership, saveMembership, saveModInvite, getModInvite, deleteModInvite } from "./kv-utils.tsx";
 import { Community, CommunityMembership } from "./types.tsx";
+import { ONE_DAY_MS } from "./time-utils.ts";
+import { insertAnalyticsEvent } from "./model-utils.ts";
+import { defineRoute } from "./route-wrapper.tsx";
 
 // @ts-ignore
 import { Context, Hono } from "npm:hono";
@@ -218,15 +221,12 @@ app.patch(
         return c.json({ error: "Community not found" }, 404);
       }
 
-      // Verify user is admin
-      if (community.adminId !== userId) {
-        return c.json(
-          {
-            error:
-              "Only the admin can modify sub-heard settings",
-          },
-          403,
-        );
+      const isModerator =
+        community.adminId === userId ||
+        !!community.modIds?.includes(userId);
+
+      if (!isModerator) {
+        return c.json({ error: "Only moderators can modify sub-heard settings" }, 403);
       }
 
       const updatedCommunity = { ...community, ...settings};
@@ -280,6 +280,78 @@ app.delete(
       return c.json({ error: "Failed to leave sub-heard" }, 500);
     }
   },
+);
+
+// Create a mod invite link (admin only)
+app.post(
+  "/make-server-f1a393b4/subheard/:name/mod-invite",
+  defineRoute(
+    {},
+    async (_params, c) => {
+      const userId = c.get("userId");
+      const name = c.req.param("name") as string;
+
+      const community = await getCommunity(name);
+      if (!community) throw new Error("Community not found");
+
+      const user = await getUserSession(userId);
+      if (!user?.isDeveloper && community.adminId !== userId) {
+        throw new Error("Only the admin can create mod invites");
+      }
+
+      const token = crypto.randomUUID();
+      await saveModInvite(token, {
+        subHeardName: name,
+        createdBy: userId,
+        expiresAt: Date.now() + ONE_DAY_MS,
+      });
+
+      return { token };
+    },
+    "Failed to create mod invite",
+  ),
+);
+
+// Accept a mod invite
+app.post(
+  "/make-server-f1a393b4/subheard/:name/mod-invite/accept",
+  defineRoute(
+    { token: { type: "string", required: true } },
+    async ({ token }: { token: string }, c) => {
+      const userId = c.get("userId");
+      const name = c.req.param("name") as string;
+
+      const user = await getUserSession(userId);
+      if (!user) throw new Error("User not found");
+      if (user.isAnonymous) throw new Error(ANONYMOUS_ACTION_NOT_ALLOWED_ERROR);
+
+      const invite = await getModInvite(token);
+      if (!invite) throw new Error("Invalid or expired invite link");
+      if (invite.subHeardName !== name) throw new Error("Invite does not match this community");
+
+      if (Date.now() > invite.expiresAt) {
+        await deleteModInvite(token);
+        throw new Error("Invite link has expired");
+      }
+
+      await deleteModInvite(token);
+
+      const community = await getCommunity(name);
+      if (!community) throw new Error("Community not found");
+      if (community.adminId === userId) return {};
+
+      const modIds = community.modIds ?? [];
+      if (!modIds.includes(userId)) {
+        modIds.push(userId);
+        await saveCommunity({ ...community, modIds });
+      }
+
+      await insertAnalyticsEvent({ type: "mod_invite_accepted", userId, roomId: name });
+
+      return {};
+    },
+    "Failed to accept mod invite",
+  ),
 );
 
 export { app as subheardApi };

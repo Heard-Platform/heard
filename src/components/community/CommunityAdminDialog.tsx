@@ -9,11 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Share2, Check, Crown } from "lucide-react";
+import { Share2, Check, Crown, UserPlus } from "lucide-react";
 import type { SubHeard } from "../../types";
-import { createSubHeardLink } from "../../utils/url";
+import { createSubHeardLink, createModInviteLink } from "../../utils/url";
 import { share } from "../../utils/share";
 import { CommunitySettingsPanel } from "./CommunitySettingsPanel";
+import { useDebateSession } from "../../hooks/useDebateSession";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -37,8 +38,10 @@ export function CommunityAdminDialog({
   onUpdateSubHeard,
   onClose,
 }: CommunityAdminDialogProps) {
+  const { createModInvite } = useDebateSession();
   const [isUpdating, setIsUpdating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isCreatingInvite, setIsCreatingInvite] = useState(false);
 
   const handleUpdate = async (update: Partial<SubHeard>) => {
     setIsUpdating(true);
@@ -58,6 +61,27 @@ export function CommunityAdminDialog({
       toast.error("Failed to update community settings");
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleInviteMod = async () => {
+    setIsCreatingInvite(true);
+    try {
+      const response = await createModInvite(community.name);
+      if (!response?.success || !response.data?.token) {
+        toast.error("Failed to create invite link");
+        return;
+      }
+      const link = createModInviteLink(community.name, response.data.token);
+      await share({
+        title: `Join ${formatSubHeardDisplay(community.name)} as a Moderator`,
+        text: "You've been invited to moderate this community on HEARD!",
+        url: link,
+        onSuccess: () => toast.success("Moderator invite link shared!"),
+        onError: () => toast.error("Could not share link. Please manually copy the URL."),
+      });
+    } finally {
+      setIsCreatingInvite(false);
     }
   };
 
@@ -112,6 +136,24 @@ export function CommunityAdminDialog({
             isUpdating={isUpdating}
             onChange={handleUpdate}
           />
+
+          {community.adminId === userId && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Invite Moderator</Label>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={handleInviteMod}
+                disabled={isCreatingInvite}
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                {isCreatingInvite ? "Creating invite…" : "Create Moderator Invite Link"}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Generates a single-use link valid for 24 hours. The recipient must have an account.
+              </p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label className="text-sm font-medium">Share Link</Label>

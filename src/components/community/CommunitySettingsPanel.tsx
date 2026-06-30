@@ -18,8 +18,8 @@ const SETTINGS: SettingConfig[] = [
   },
   {
     id: "posting-permissions-toggle",
-    label: "Host-Only Posting",
-    description: "Only community hosts can create debates.",
+    label: "Mod-Only Posting",
+    description: "Only moderators can create debates.",
     key: "hostOnlyPosting",
   },
 ];
