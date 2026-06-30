@@ -35,6 +35,7 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
       const response = await api.askTheData(debateId, trimmedQuestion);
       if (response.success && response.data) {
         setResult({ question: trimmedQuestion, ...response.data });
+        setQuestion("");
       } else {
         setError(response.error || GENERIC_ERROR);
       }
