@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { Card } from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
@@ -57,6 +57,14 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
 
   const handleAsk = () => askQuestion(question);
 
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    // Enter submits; Shift+Enter inserts a newline. Ignore Enter while an IME is composing.
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      handleAsk();
+    }
+  };
+
   return (
     <Card className="p-6">
       <div className="space-y-4">
@@ -79,6 +87,7 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
         <Textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Ask any question about this conversation."
           disabled={isAsking}
           rows={3}
