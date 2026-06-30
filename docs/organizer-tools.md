@@ -1,5 +1,25 @@
 # Organizer Tools
 
+## Community Moderators
+
+Community admins can invite other users to become moderators. Moderators can adjust community settings and create debates in communities with Mod-Only Posting enabled. Only the admin can invite additional moderators.
+
+### How it works
+
+1. Open your community from the community picker and tap the **Settings** (⚙️) icon.
+2. Tap **Create Moderator Invite Link**. This generates a single-use link valid for **24 hours**.
+3. Share the link with the person you want to invite. When they open it, they'll be automatically added as a moderator as long as they have an account (anonymous users must sign up first).
+4. The link is consumed on first use and cannot be reused.
+
+### What moderators can do
+
+- Change community settings (visibility, mod-only posting)
+- Create debates in the community, even when Mod-Only Posting is on
+
+### What only the admin can do
+
+- Invite new moderators
+
 ## Statement Deduplication
 
 When participants submit statements, it's common for similar ideas to be expressed in different words. As the room creator, you can merge these duplicates together so that votes are consolidated under a single statement. This only affects the **insights view** — participants will still see and vote on statements as normal. Merges can be added or removed at any time.
