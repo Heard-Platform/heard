@@ -17,25 +17,32 @@ interface AskTheDataCardProps {
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 
+const STARTER_QUESTIONS = [
+  "Find the common ground",
+  "Summarize the opinion groups",
+  "What's most divisive?",
+];
+
 export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
   const [question, setQuestion] = useState("");
   const [isAsking, setIsAsking] = useState(false);
   const [result, setResult] = useState<AskResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const trimmedQuestion = question.trim();
-  const canAsk = trimmedQuestion.length > 0 && !isAsking;
+  const canAsk = question.trim().length > 0 && !isAsking;
 
-  const handleAsk = async () => {
-    if (!canAsk) return;
+  const askQuestion = async (raw: string) => {
+    const q = raw.trim();
+    if (q.length === 0 || isAsking) return;
 
     setIsAsking(true);
     setError(null);
+    let succeeded = false;
     try {
-      const response = await api.askTheData(debateId, trimmedQuestion);
+      const response = await api.askTheData(debateId, q);
       if (response.success && response.data) {
-        setResult({ question: trimmedQuestion, ...response.data });
-        setQuestion("");
+        setResult({ question: q, ...response.data });
+        succeeded = true;
       } else {
         setError(response.error || GENERIC_ERROR);
       }
@@ -43,13 +50,31 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
       setError(err instanceof Error ? err.message : GENERIC_ERROR);
     } finally {
       setIsAsking(false);
+      // Clear the box on success; keep the question on error so it can be edited and resubmitted.
+      setQuestion(succeeded ? "" : q);
     }
   };
+
+  const handleAsk = () => askQuestion(question);
 
   return (
     <Card className="p-6">
       <div className="space-y-4">
         <h2 className="text-xl">Ask the Data</h2>
+
+        <div className="flex flex-wrap gap-2">
+          {STARTER_QUESTIONS.map((starter) => (
+            <Button
+              key={starter}
+              variant="outline"
+              size="sm"
+              onClick={() => askQuestion(starter)}
+              disabled={isAsking}
+            >
+              {starter}
+            </Button>
+          ))}
+        </div>
 
         <Textarea
           value={question}
