@@ -2,6 +2,7 @@
 import { toast } from "sonner@2.0.3";
 
 import { Button } from "../ui/button";
+import { useState } from "react";
 import {
   Users,
   XCircle,
@@ -13,6 +14,7 @@ import {
   Play,
   Pencil,
   UserPlus,
+  Trash2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -55,7 +57,9 @@ export function RoomCardMenu({
   onOpenDeduplication,
   onOpenVoteMatrix,
 }: RoomCardMenuProps) {
-  const { setRoomInactive, setResponsesPaused, createCohostInvite } = useDebateSession();
+  const { setRoomInactive, setResponsesPaused, createCohostInvite, clearRoomCohosts } = useDebateSession();
+  const [cohostCount, setCohostCount] = useState(room.cohostIds?.length ?? 0);
+  const [isClearingCohosts, setIsClearingCohosts] = useState(false);
 
   const handleInviteCohost = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -77,6 +81,22 @@ export function RoomCardMenu({
         console.error("Share error:", error);
       },
     });
+  };
+
+  const handleClearCohosts = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsClearingCohosts(true);
+    try {
+      const response = await clearRoomCohosts(room.id);
+      if (response?.success) {
+        toast.success("All cohosts removed");
+        setCohostCount(0);
+      } else {
+        toast.error("Failed to remove cohosts");
+      }
+    } finally {
+      setIsClearingCohosts(false);
+    }
   };
 
   return (
@@ -139,10 +159,20 @@ export function RoomCardMenu({
               Host Tools
             </DropdownMenuLabel>
             {isTrueHost && (
-              <DropdownMenuItem onClick={handleInviteCohost}>
-                <UserPlus className="w-4 h-4 mr-2" />
-                Invite co-host
-              </DropdownMenuItem>
+              <>
+                <DropdownMenuItem onClick={handleInviteCohost}>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Invite co-host
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleClearCohosts}
+                  disabled={isClearingCohosts || cohostCount === 0}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {isClearingCohosts ? "Removing…" : `Remove all cohosts (${cohostCount})`}
+                </DropdownMenuItem>
+              </>
             )}
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
