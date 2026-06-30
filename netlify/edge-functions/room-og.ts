@@ -1,26 +1,7 @@
-// Netlify Edge Functions run in a Deno runtime — the Deno global below is
-// valid at deploy time but unknown to the project tsconfig.
+import { isCrawler, injectOgHead } from "./_og-utils";
+import type { Context } from "./_og-utils";
+
 declare const Deno: { env: { get(key: string): string | undefined } };
-
-type Context = { next(): Promise<Response> };
-
-const BOT_UA_PATTERNS = [
-  "twitterbot",
-  "facebookexternalhit",
-  "slackbot",
-  "whatsapp",
-  "linkedinbot",
-  "discordbot",
-  "telegrambot",
-  "facebot",
-  "googlebot",
-  "bingbot",
-];
-
-function isCrawler(userAgent: string): boolean {
-  const ua = userAgent.toLowerCase();
-  return BOT_UA_PATTERNS.some((pattern) => ua.includes(pattern));
-}
 
 export default async function handler(request: Request, context: Context): Promise<Response> {
   const userAgent = request.headers.get("user-agent") ?? "";
@@ -60,22 +41,15 @@ export default async function handler(request: Request, context: Context): Promi
       .replace(/<meta charset[^>]*>/i, "")
       .trim();
 
-    const spaStatus = spaResponse.status;
     const fallback = () => new Response(spaHtml, {
-      status: spaStatus,
+      status: spaResponse.status,
       headers: { "content-type": "text/html; charset=utf-8" },
     });
 
     if (!ogHeadContent) return fallback();
 
-    // Remove the static SPA title (the OG head content has the room-specific one)
-    // then inject everything before </head>.
-    const injected = spaHtml
-      .replace(/<title>.*?<\/title>/, "")
-      .replace("</head>", `  ${ogHeadContent}\n  </head>`);
-
-    return new Response(injected, {
-      status: spaStatus,
+    return new Response(injectOgHead(spaHtml, ogHeadContent), {
+      status: spaResponse.status,
       headers: { "content-type": "text/html; charset=utf-8" },
     });
   } catch {

@@ -1,32 +1,11 @@
-// Netlify Edge Functions run in a Deno runtime — the Deno global below is
-// valid at deploy time but unknown to the project tsconfig.
-declare const Deno: { env: { get(key: string): string | undefined } };
+import { isCrawler, injectOgHead } from "./_og-utils";
+import type { Context } from "./_og-utils";
 
-type Context = { next(): Promise<Response> };
-
-const BOT_UA_PATTERNS = [
-  "twitterbot",
-  "facebookexternalhit",
-  "slackbot",
-  "whatsapp",
-  "linkedinbot",
-  "discordbot",
-  "telegrambot",
-  "facebot",
-  "googlebot",
-  "bingbot",
-];
-
-function isCrawler(userAgent: string): boolean {
-  const ua = userAgent.toLowerCase();
-  return BOT_UA_PATTERNS.some((pattern) => ua.includes(pattern));
-}
-
-const TITLE = "Support Heard";
+const TITLE = "Fund Heard"
 const DESCRIPTION =
-  "Help us raise $5,000 to keep Heard running — a community platform for honest, structured local conversation.";
+  "We're close to our goal of raising $5,000 by July 4th, help us get to the finish line!"
 const URL = "https://heard.vote/fund";
-const IMAGE = "https://heard.vote/monkey.png";
+const IMAGE = "https://img.youtube.com/vi/jFzidavpm_4/maxresdefault.jpg";
 
 const OG_HEAD = `
     <title>${TITLE} | Heard</title>
@@ -50,11 +29,7 @@ export default async function handler(request: Request, context: Context): Promi
     const spaResponse = await context.next();
     const spaHtml = await spaResponse.text();
 
-    const injected = spaHtml
-      .replace(/<title>.*?<\/title>/, "")
-      .replace("</head>", `  ${OG_HEAD}\n  </head>`);
-
-    return new Response(injected, {
+    return new Response(injectOgHead(spaHtml, OG_HEAD), {
       status: spaResponse.status,
       headers: { "content-type": "text/html; charset=utf-8" },
     });
