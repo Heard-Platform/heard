@@ -8,7 +8,7 @@ import {
 } from "./kv-utils.tsx";
 import { getAllRecords } from "./db-utils.ts";
 import type { Session } from "./types.tsx";
-import { getFlyerEmails } from "./model-utils.ts";
+import { getFlyerEmails, getEventsOfType } from "./model-utils.ts";
 import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 
@@ -202,18 +202,33 @@ app.get(
       const now = Date.now();
       const since = now - 7 * 24 * 60 * 60 * 1000;
 
-      const [users, rooms, statements, votes, subHeards, sessions] =
-        await Promise.all([
-          getAllRealUsers(),
-          getAllRealDebates(),
-          getAllStatements(),
-          getAllVotes(),
-          getAllSubHeards(),
-          getAllRecords<Session>("session:"),
-        ]);
+      const [
+        users,
+        rooms,
+        statements,
+        votes,
+        subHeards,
+        sessions,
+        modInviteAccepts,
+      ] = await Promise.all([
+        getAllRealUsers(),
+        getAllRealDebates(),
+        getAllStatements(),
+        getAllVotes(),
+        getAllSubHeards(),
+        getAllRecords<Session>("session:"),
+        getEventsOfType("mod_invite_accepted"),
+      ]);
 
       type FeedEvent = {
-        type: "user" | "room" | "statement" | "vote" | "community" | "session";
+        type:
+          | "user"
+          | "room"
+          | "statement"
+          | "vote"
+          | "community"
+          | "session"
+          | "modInviteAccept";
         timestamp: number;
         id: string;
         label: string;
@@ -300,6 +315,19 @@ app.get(
             timestamp: t,
             id: session.id,
             label: session.userId.substring(0, 8),
+          });
+        }
+      }
+
+      for (const event of modInviteAccepts) {
+        const t = ts(event.createdAt);
+        if (t > since) {
+          events.push({
+            type: "modInviteAccept",
+            timestamp: t,
+            id: `${event.userId}-${event.roomId}-${t}`,
+            label: `Mod invite accepted`,
+            meta: { community: event.roomId ?? "", user: (event.userId ?? "").substring(0, 8) },
           });
         }
       }

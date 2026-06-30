@@ -44,8 +44,9 @@ app.post(
 
       const community = await getCommunity(normalizedCommunityName);
       if (!community) throw new Error("Community not found");
-      if (community.hostOnlyPosting && community.adminId !== userId) {
-        throw new Error("Only the community host can create events in this community");
+      const isModerator = community.adminId === userId || !!community.modIds?.includes(userId);
+      if (community.hostOnlyPosting && !isModerator) {
+        throw new Error("Only moderators can create events in this community");
       }
 
       const event: NewEvent = {
