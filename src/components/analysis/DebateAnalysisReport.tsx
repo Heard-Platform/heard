@@ -12,7 +12,7 @@ import { MetricCard } from "./MetricCard";
 import { StatementVotesTable } from "./StatementVotesTable";
 import { ShowNumbersToggle } from "./ShowNumbersToggle";
 import { StatementSpectrumCard } from "./StatementSpectrumCard";
-import { AskTheDataCard } from "./AskTheDataCard";
+import { AskTheData } from "./AskTheData";
 
 function opinionatedVotesOf(post: StatementVotes): number {
   return post.agreeVotes + post.disagreeVotes;
@@ -127,7 +127,7 @@ export function DebateAnalysisReport({
           />
         </div>
 
-        <AskTheDataCard debateId={debateId} />
+        <AskTheData debateId={debateId} />
 
         <StatementSpectrumCard statements={allStatements} />
 

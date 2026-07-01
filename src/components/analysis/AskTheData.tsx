@@ -10,7 +10,7 @@ interface AskResult extends AskTheDataResponse {
   question: string;
 }
 
-interface AskTheDataCardProps {
+interface AskTheDataProps {
   debateId: string;
 }
 
@@ -22,7 +22,7 @@ const STARTER_QUESTIONS = [
   "What common ground could there be between people who disagreed?",
 ];
 
-export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
+export function AskTheData({ debateId }: AskTheDataProps) {
   const [question, setQuestion] = useState("");
   const [isAsking, setIsAsking] = useState(false);
   const [result, setResult] = useState<AskResult | null>(null);
@@ -55,7 +55,7 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
 
   const handleAsk = () => askQuestion(question);
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+  const submitOnEnter = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleAsk();
@@ -85,7 +85,7 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
         <Textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          onKeyDown={handleKeyDown}
+          onKeyDown={submitOnEnter}
           placeholder="Ask any question about this conversation."
           disabled={isAsking}
           rows={3}
