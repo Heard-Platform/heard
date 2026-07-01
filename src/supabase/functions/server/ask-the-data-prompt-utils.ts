@@ -8,13 +8,8 @@ export interface AskTheDataResult {
   response: string;
 }
 
-export const PARSE_FALLBACK_MESSAGE =
-  "Sorry, I couldn't answer that. Please try rephrasing your question.";
-
-const PARSE_FALLBACK_RESULT: AskTheDataResult = {
-  status: "rejected",
-  response: PARSE_FALLBACK_MESSAGE,
-};
+const SYSTEM_PROMPT =
+`You are an assistant inside Heard, a discussion app. You answer questions about a single conversation using the topic, responses, and vote counts given in the user message. You may reason about and interpret that material — including pointing out gaps or perspectives it does not cover — but every claim must stay grounded in it: you never rely on outside facts and you never invent specific data. You always reply with JSON only.`;
 
 export const ALLOWED_AVENUES = `You may ONLY answer questions that fall within these avenues:
 - The topic or subject of this conversation.
@@ -32,8 +27,13 @@ export const REJECT_RULES = `Reply with "rejected" and do NOT answer if the ques
 - Otherwise falls outside the allowed avenues above.
 When rejecting, briefly and politely say the question is outside what you can answer about this conversation.`;
 
-const SYSTEM_PROMPT =
-  `You are an assistant inside Heard, a discussion app. You answer questions about a single conversation using the topic, responses, and vote counts given in the user message. You may reason about and interpret that material — including pointing out gaps or perspectives it does not cover — but every claim must stay grounded in it: you never rely on outside facts and you never invent specific data. You always reply with JSON only.`;
+export const PARSE_FALLBACK_MESSAGE =
+  "Sorry, I couldn't answer that. Please try rephrasing your question.";
+
+const PARSE_FALLBACK_RESULT: AskTheDataResult = {
+  status: "rejected",
+  response: PARSE_FALLBACK_MESSAGE,
+};
 
 function csvQuote(text: string): string {
   return `"${text.replace(/"/g, '""')}"`;
