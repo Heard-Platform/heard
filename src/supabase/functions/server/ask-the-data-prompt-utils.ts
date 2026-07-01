@@ -45,11 +45,11 @@ const CSV_FORMAT_DESCRIPTION = `The responses below are formatted as CSV with a 
 - disagree: how many participants voted that they disagree with this specific response's claim.
 - pass: how many participants voted to pass/skip this response.
 - super_agree: how many participants gave this response a stronger agree vote.
-- verdict: already computed for you from the vote counts above — either "majority agreed", "majority disagreed", "evenly split", or "no votes yet".
+- summary: already computed for you from the vote counts above — either "majority agreed", "majority disagreed", "evenly split", or "no votes yet".
 
-Always use the "verdict" column as the authoritative signal for what participants think of a response's claim — do not recompute it yourself from the raw counts, and never describe a response with "majority disagreed" as reflecting shared concern, agreement, or support. A large agree/disagree/super_agree number only means many people voted, not which way they leaned; "verdict" already tells you the direction.`;
+Always use the "summary" column as the authoritative signal for what participants think of a response's claim — do not recompute it yourself from the raw counts, and never describe a response with "majority disagreed" as reflecting shared concern, agreement, or support. A large agree/disagree/super_agree number only means many people voted, not which way they leaned; "summary" already tells you the direction.`;
 
-function computeVerdict(statement: Statement): string {
+function computeSummary(statement: Statement): string {
   const totalAgree = statement.agrees + statement.superAgrees;
   const totalDisagree = statement.disagrees;
   if (totalAgree === 0 && totalDisagree === 0) return "no votes yet";
@@ -59,7 +59,7 @@ function computeVerdict(statement: Statement): string {
 }
 
 function formatConversation(topic: string, statements: Statement[]): string {
-  const header = "id,response,agree,disagree,pass,super_agree,verdict";
+  const header = "id,response,agree,disagree,pass,super_agree,summary";
   const rows = statements.map((statement, index) =>
     [
       index + 1,
@@ -68,7 +68,7 @@ function formatConversation(topic: string, statements: Statement[]): string {
       statement.disagrees,
       statement.passes,
       statement.superAgrees,
-      computeVerdict(statement),
+      computeSummary(statement),
     ].join(","),
   );
   return `Topic: "${topic}"\n\n${CSV_FORMAT_DESCRIPTION}\n\nResponses (CSV):\n${header}\n${rows.join("\n")}`;
