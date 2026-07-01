@@ -17,6 +17,7 @@ import {
   Community,
   CommunityMembership,
   UserActivityRecord,
+  AskTheDataRecord,
 } from "./types.tsx";
 
 /**
@@ -412,6 +413,16 @@ export const saveDebate = async (debate: DebateRoom) => {
 
 export const rantKeyFn = (rant: Rant) =>
   `rant:${rant.roomId}:${rant.id}`;
+
+export const askTheDataKeyFn = (record: AskTheDataRecord) =>
+  `ask_the_data:${record.roomId}:${record.id}`;
+
+export const saveAskTheDataRecord = async (record: AskTheDataRecord) => {
+  await upsert(record, askTheDataKeyFn);
+};
+
+export const getAllAskTheDataRecords = async (): Promise<AskTheDataRecord[]> =>
+  getByPrefixParsed<AskTheDataRecord>("ask_the_data:");
 
 export const getRantsForRoom = async (roomId: string): Promise<Rant[]> => {
   return getByPrefixParsed<Rant>(`rant:${roomId}:`);

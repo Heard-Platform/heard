@@ -5,6 +5,7 @@ import {
   getAllRealDebates,
   getAllStatements,
   getAllVotes,
+  getAllAskTheDataRecords,
 } from "./kv-utils.tsx";
 import { getAllRecords, selectAll } from "./db-utils.ts";
 import type { Session, UserEvent } from "./types.tsx";
@@ -211,6 +212,7 @@ app.get(
         sessions,
         modInviteAccepts,
         cohostEvents,
+        askTheDataRecords,
       ] = await Promise.all([
         getAllRealUsers(),
         getAllRealDebates(),
@@ -222,6 +224,7 @@ app.get(
         selectAll<UserEvent>("user_events", {
           type: "cohost_invite_accepted",
         }),
+        getAllAskTheDataRecords(),
       ]);
 
       type FeedEvent = {
@@ -233,7 +236,8 @@ app.get(
           | "community"
           | "session"
           | "cohost"
-          | "modInviteAccept";
+          | "modInviteAccept"
+          | "askTheData";
         timestamp: number;
         id: string;
         label: string;
@@ -348,6 +352,20 @@ app.get(
             label: "Co-host accepted",
             meta: { room: roomTopic || event.roomId || "" },
           })
+        }
+      }
+
+      for (const record of askTheDataRecords) {
+        const t = ts(record.createdAt);
+        if (t > since) {
+          const roomTopic = (roomMap.get(record.roomId) as any)?.topic;
+          events.push({
+            type: "askTheData",
+            timestamp: t,
+            id: record.id,
+            label: record.question.length > 80 ? record.question.substring(0, 80) + "…" : record.question,
+            meta: { room: roomTopic || record.roomId, answer: record.answer.length > 80 ? record.answer.substring(0, 80) + "…" : record.answer },
+          });
         }
       }
 

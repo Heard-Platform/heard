@@ -434,7 +434,8 @@ export type ActivityFeedEventType =
   | "community"
   | "session"
   | "modInviteAccept"
-  | "cohost";
+  | "cohost"
+  | "askTheData";
 
 export interface ActivityFeedEvent {
   type: ActivityFeedEventType;
@@ -531,6 +532,8 @@ export interface FeatureResults {
   ggwashSince: number;
   modInvitesAccepted: number;
   modInvitesAcceptedSince: number;
+  askTheDataQuestions: number;
+  askTheDataQuestionsSince: number;
 }
 
 export interface GGWashImportResult {

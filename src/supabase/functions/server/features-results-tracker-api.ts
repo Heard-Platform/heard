@@ -1,5 +1,5 @@
 import { Hono } from "npm:hono";
-import { getAllRealUsers, getWebDriverUsers } from "./kv-utils.tsx";
+import { getAllRealUsers, getWebDriverUsers, getAllAskTheDataRecords } from "./kv-utils.tsx";
 import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getUniqueUserIdsForEvent, getEventsOfType } from "./model-utils.ts";
 import { countRecords, selectAll } from "./db-utils.ts";
 
@@ -167,6 +167,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     };
     const fundingEventsSince = new Date("2026-06-16").getTime();
 
+    const askTheDataQuestions = (await getAllAskTheDataRecords()).length;
+    const askTheDataQuestionsSince = new Date("2026-07-01").getTime();
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -236,6 +239,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       modInvitesAcceptedSince,
       cohostInviteAccepted,
       cohostInviteAcceptedSince,
+      askTheDataQuestions,
+      askTheDataQuestionsSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);
