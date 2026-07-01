@@ -11,6 +11,11 @@ export interface AskTheDataResult {
 export const PARSE_FALLBACK_MESSAGE =
   "Sorry, I couldn't answer that. Please try rephrasing your question.";
 
+const PARSE_FALLBACK_RESULT: AskTheDataResult = {
+  status: "rejected",
+  response: PARSE_FALLBACK_MESSAGE,
+};
+
 export const ALLOWED_AVENUES = `You may ONLY answer questions that fall within these avenues:
 - The topic or subject of this conversation.
 - What the responses say and the viewpoints they express.
@@ -79,11 +84,11 @@ export function parseAskTheDataResponse(raw: string): AskTheDataResult {
   try {
     parsed = JSON.parse(stripMarkdownFences(raw));
   } catch {
-    return { status: "rejected", response: PARSE_FALLBACK_MESSAGE };
+    return PARSE_FALLBACK_RESULT;
   }
 
   if (typeof parsed !== "object" || parsed === null) {
-    return { status: "rejected", response: PARSE_FALLBACK_MESSAGE };
+    return PARSE_FALLBACK_RESULT;
   }
 
   const { status, response } = parsed as {
@@ -96,7 +101,7 @@ export function parseAskTheDataResponse(raw: string): AskTheDataResult {
     response.trim().length > 0;
 
   if (!hasValidStatus || !hasValidResponse) {
-    return { status: "rejected", response: PARSE_FALLBACK_MESSAGE };
+    return PARSE_FALLBACK_RESULT;
   }
 
   return { status, response };
