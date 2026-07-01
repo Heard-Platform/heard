@@ -164,10 +164,11 @@ async function sendReportEmail({
     </html>
   `;
 
-  const preview = content.body.substring(0, 50);
+  const normalizedBody = content.body.replace(/\s+/g, " ").trim();
+  const preview = normalizedBody.substring(0, 50);
   await sendEmailToDevs({
     from: "Heard Reports <hello@heard-now.com>",
-    subject: `🚩 ${content.heading} reported: "${preview}${content.body.length > 50 ? "..." : ""}"`,
+    subject: `🚩 ${content.heading} reported: "${preview}${normalizedBody.length > 50 ? "..." : ""}"`,
     html: emailHtml,
   });
 }
