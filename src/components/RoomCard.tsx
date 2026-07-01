@@ -398,7 +398,7 @@ export function RoomCard({
           )}
 
           <div className="flex items-center gap-2 relative z-10">
-            {!isCompleted && (
+            {!isCompleted ? (
               <Button
                 variant="secondary"
                 className="heard-pill"
@@ -408,7 +408,7 @@ export function RoomCard({
                 <MessageCirclePlus className="w-4 h-4" />
                 Respond
               </Button>
-            )}
+            ) : <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>}
             <Button
               onClick={handleOpenAnalysis}
               variant="secondary"
@@ -417,7 +417,6 @@ export function RoomCard({
               <BarChart3 className="w-4 h-4" />
               Results
             </Button>
-            {isCompleted && <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>}
             <ShareButton roomId={room.id} roomTopic={room.topic} />
             <RoomCardMenu
               room={room}
