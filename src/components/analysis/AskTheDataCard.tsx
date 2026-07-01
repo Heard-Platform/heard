@@ -50,7 +50,6 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
       setError(err instanceof Error ? err.message : GENERIC_ERROR);
     } finally {
       setIsAsking(false);
-      // Clear the box on success; keep the question on error so it can be edited and resubmitted.
       setQuestion(succeeded ? "" : q);
     }
   };
@@ -58,7 +57,6 @@ export function AskTheDataCard({ debateId }: AskTheDataCardProps) {
   const handleAsk = () => askQuestion(question);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    // Enter submits; Shift+Enter inserts a newline. Ignore Enter while an IME is composing.
     if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleAsk();
