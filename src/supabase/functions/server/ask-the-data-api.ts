@@ -4,6 +4,7 @@ import { getDebateRoom, getStatements } from "./debate-api.tsx";
 import { createLlmClient } from "./llm-provider.ts";
 import { saveAskTheDataRecord } from "./kv-utils.tsx";
 import { generateId } from "./utils.tsx";
+import { buildDevAlertEmailHtml, sendEmailToDevs } from "./dev-utils.tsx";
 import {
   makeAskTheDataPrompt,
   parseAskTheDataResponse,
@@ -11,6 +12,41 @@ import {
 
 const ASK_THE_DATA_ENDPOINT = "ask-the-data";
 const MAX_QUESTION_CHARS = 500;
+
+async function sendRejectedQuestionEmail({
+  roomId,
+  userId,
+  question,
+  response,
+}: {
+  roomId: string;
+  userId: string;
+  question: string;
+  response: string;
+}) {
+  const emailHtml = buildDevAlertEmailHtml({
+    title: "⚠️ Ask the Data Question Rejected",
+    gradientFrom: "#f59e0b",
+    gradientTo: "#b45309",
+    metadata: [
+      { label: "Room ID", value: roomId },
+      { label: "User ID", value: userId || "unknown" },
+      { label: "Time", value: new Date().toISOString() },
+    ],
+    sections: [
+      { heading: "Question", body: question },
+      { heading: "Rejection message", body: response },
+    ],
+  });
+
+  const normalizedQuestion = question.replace(/\s+/g, " ").trim();
+  const preview = normalizedQuestion.substring(0, 50);
+  await sendEmailToDevs({
+    from: "Heard Reports <hello@heard-now.com>",
+    subject: `⚠️ Ask the Data question rejected: "${preview}${normalizedQuestion.length > 50 ? "..." : ""}"`,
+    html: emailHtml,
+  });
+}
 
 const app = new Hono();
 
@@ -53,6 +89,19 @@ app.post(
         status: result.status,
         createdAt: Date.now(),
       });
+
+      if (result.status === "rejected") {
+        try {
+          await sendRejectedQuestionEmail({
+            roomId,
+            userId,
+            question,
+            response: result.response,
+          });
+        } catch (emailError) {
+          console.error("Failed to send ask-the-data rejection email:", emailError);
+        }
+      }
 
       return { ...result, id };
     },

@@ -2,8 +2,7 @@ import { Context, Hono } from "npm:hono";
 import { insertUserReport } from "./model-utils.ts";
 import { NewUserReport, User } from "./types.tsx";
 import { getAskTheDataRecord, getStatement, getUser } from "./kv-utils.tsx";
-import { sendEmailToDevs } from "./dev-utils.tsx";
-import { escapeHtml } from "./utils.tsx";
+import { buildDevAlertEmailHtml, sendEmailToDevs } from "./dev-utils.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
@@ -113,56 +112,23 @@ async function sendReportEmail({
       ? `User ID: ${reportingUserId}`
       : "Anonymous";
 
-  const reasonBlock = reason
-    ? `
-          <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #1976d2; margin-top: 20px;">
-            <h2 style="margin: 0 0 15px 0; color: #333; font-size: 18px;">Reporter's reason:</h2>
-            <p style="margin: 0; white-space: pre-wrap; font-size: 16px; line-height: 1.8;">
-              ${escapeHtml(reason)}
-            </p>
-          </div>`
-    : "";
-
-  const emailHtml = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Content Reported - Heard</title>
-      </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">🚩 Content Reported</h1>
-        </div>
-
-        <div style="background: #f7f7f7; padding: 30px; border-radius: 0 0 10px 10px;">
-          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
-              <strong>Reported by:</strong> ${escapeHtml(reporterLabel)}
-            </p>
-            <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
-              <strong>Room ID:</strong> ${escapeHtml(roomId)}
-            </p>
-            <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
-              <strong>Target ID:</strong> ${escapeHtml(targetId)}
-            </p>
-            <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
-              <strong>Time:</strong> ${new Date().toISOString()}
-            </p>
-          </div>
-
-          <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #e53935;">
-            <h2 style="margin: 0 0 15px 0; color: #333; font-size: 18px;">${escapeHtml(content.heading)}:</h2>
-            <p style="margin: 0; white-space: pre-wrap; font-size: 16px; line-height: 1.8;">
-              ${escapeHtml(content.body)}
-            </p>
-          </div>
-          ${reasonBlock}
-        </div>
-      </body>
-    </html>
-  `;
+  const emailHtml = buildDevAlertEmailHtml({
+    title: "🚩 Content Reported",
+    gradientFrom: "#e53935",
+    gradientTo: "#b71c1c",
+    metadata: [
+      { label: "Reported by", value: reporterLabel },
+      { label: "Room ID", value: roomId },
+      { label: "Target ID", value: targetId },
+      { label: "Time", value: new Date().toISOString() },
+    ],
+    sections: [
+      { heading: content.heading, body: content.body },
+      ...(reason
+        ? [{ heading: "Reporter's reason", body: reason, borderColor: "#1976d2" }]
+        : []),
+    ],
+  });
 
   const normalizedBody = content.body.replace(/\s+/g, " ").trim();
   const preview = normalizedBody.substring(0, 50);
