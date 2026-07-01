@@ -11,6 +11,16 @@ export interface UserEvent {
 
 export type NewUserEvent = Omit<UserEvent, "createdAt">;
 
+export interface AskTheDataRecord {
+  id: string;
+  roomId: string;
+  userId: string;
+  question: string;
+  answer: string;
+  status: "answered" | "rejected";
+  createdAt: number;
+}
+
 export interface User {
   id: string;
   nickname: string;

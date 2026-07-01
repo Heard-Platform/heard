@@ -26,6 +26,7 @@ import {
   Cpu,
   Newspaper,
   HeartHandshake,
+  MessageCircleQuestion,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -167,7 +168,7 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       iconColor: "text-red-600",
       bgColor: "bg-red-100",
       title: "User Reports",
-      description: "Total number of statements flagged by users",
+      description: "Total number of user reports",
       getValue: (s) => s.userReports,
       getDate: (s) => s.userReportsSince,
     },
@@ -316,6 +317,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       description: "Users who accepted a moderator invite to a community",
       getValue: (s) => s.modInvitesAccepted,
       getDate: (s) => s.modInvitesAcceptedSince,
+    },
+    {
+      icon: MessageCircleQuestion,
+      iconColor: "text-blue-600",
+      bgColor: "bg-blue-100",
+      title: "Ask the Data Questions",
+      description: "Questions asked and answered via the Ask the Data feature",
+      getValue: (s) => s.askTheDataQuestions,
+      getDate: (s) => s.askTheDataQuestionsSince,
     },
   ]
 

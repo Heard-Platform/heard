@@ -25,7 +25,7 @@ import {
   EventSummary,
   StatementMerge,
 } from "../types";
-import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
+import { AskTheDataResponse, FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
   BaseApiClient,
   ApiResponse,
@@ -385,11 +385,24 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async flagStatement(statementId: string, roomId: string, reason: string) {
-    return this.request(`/statement/${statementId}/flag`, {
+  async reportContent(
+    type: "statement" | "ask-the-data",
+    targetId: string,
+    roomId: string,
+    reason: string,
+  ) {
+    return this.request(`/report`, {
       method: "POST",
-      body: JSON.stringify({ roomId, reason }),
+      body: JSON.stringify({ type, targetId, roomId, reason }),
     });
+  }
+
+  async flagStatement(statementId: string, roomId: string, reason: string) {
+    return this.reportContent("statement", statementId, roomId, reason);
+  }
+
+  async flagAskTheDataResponse(recordId: string, roomId: string, reason: string) {
+    return this.reportContent("ask-the-data", recordId, roomId, reason);
   }
 
   // Invite management
@@ -689,6 +702,16 @@ class ApiClient extends BaseApiClient {
 
   async getRoomAnalysis(roomId: string) {
     return this.request<AnalysisData>(`/room/${roomId}/analysis`);
+  }
+
+  async askTheData(roomId: string, question: string) {
+    return this.request<AskTheDataResponse>(
+      `/room/${roomId}/ask`,
+      {
+        method: "POST",
+        body: JSON.stringify({ question }),
+      },
+    );
   }
 
   async regenerateClusters(roomId: string) {

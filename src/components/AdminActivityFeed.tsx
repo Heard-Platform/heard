@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import moment from "moment";
 import { Button } from "./ui/button";
-import { X, User, DoorOpen, FileText, ThumbsUp, RefreshCw, Users, LogIn, UserPlus } from "lucide-react";
+import { X, User, DoorOpen, FileText, ThumbsUp, RefreshCw, Users, LogIn, UserPlus, MessageCircleQuestion, Flag } from "lucide-react";
 import { api } from "../utils/api";
 import type { ActivityFeedEvent, ActivityFeedEventType } from "../types";
 
@@ -21,6 +21,8 @@ const TYPE_CONFIG: Record<
   vote: { label: "Vote", icon: ThumbsUp, color: "text-amber-700", bg: "bg-amber-100" },
   modInviteAccept: { label: "Mod Invite Accept", icon: UserPlus, color: "text-violet-700", bg: "bg-violet-100" },
   cohost: { label: "Co-host", icon: UserPlus, color: "text-violet-700", bg: "bg-violet-100" },
+  askTheData: { label: "Ask the Data", icon: MessageCircleQuestion, color: "text-blue-700", bg: "bg-blue-100" },
+  userReport: { label: "Report", icon: Flag, color: "text-red-700", bg: "bg-red-100" },
 };
 
 const ALL_TYPES: ActivityFeedEventType[] = [
@@ -32,6 +34,8 @@ const ALL_TYPES: ActivityFeedEventType[] = [
   "vote",
   "modInviteAccept",
   "cohost",
+  "askTheData",
+  "userReport",
 ];
 
 function formatTime(ts: number): string {
