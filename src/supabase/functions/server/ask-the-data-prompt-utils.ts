@@ -8,7 +8,6 @@ export interface AskTheDataResult {
   response: string;
 }
 
-/** Shown to the user when the model's reply cannot be parsed into a valid result. */
 export const PARSE_FALLBACK_MESSAGE =
   "Sorry, I couldn't answer that. Please try rephrasing your question.";
 
