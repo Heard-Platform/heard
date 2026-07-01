@@ -2,7 +2,7 @@ import { useState, type KeyboardEvent } from "react";
 import { Card } from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
+import { ArrowUp, Loader2 } from "lucide-react";
 import { api } from "../../utils/api";
 import { AskTheDataResponse } from "../../types/api-responses";
 
@@ -67,7 +67,7 @@ export function AskTheData({ debateId }: AskTheDataProps) {
       <div className="space-y-4">
         <h2 className="text-xl">Ask the Data</h2>
 
-        <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
           {STARTER_QUESTIONS.map((starter) => (
             <Button
               key={starter}
@@ -82,18 +82,27 @@ export function AskTheData({ debateId }: AskTheDataProps) {
           ))}
         </div>
 
-        <Textarea
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          onKeyDown={submitOnEnter}
-          placeholder="Ask any question about this conversation."
-          disabled={isAsking}
-          rows={3}
-        />
-
-        <div className="flex">
-          <Button onClick={handleAsk} disabled={!canAsk} className="w-32">
-            {isAsking ? <Loader2 className="w-4 h-4 animate-spin" /> : "Go"}
+        <div className="relative">
+          <Textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            onKeyDown={submitOnEnter}
+            placeholder="Ask any question about this conversation."
+            disabled={isAsking}
+            rows={3}
+            className="pr-12"
+          />
+          <Button
+            onClick={handleAsk}
+            disabled={!canAsk}
+            size="icon"
+            className="absolute bottom-2 right-2 h-8 w-8 rounded-full"
+          >
+            {isAsking ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ArrowUp className="h-4 w-4" />
+            )}
           </Button>
         </div>
 
@@ -110,7 +119,7 @@ export function AskTheData({ debateId }: AskTheDataProps) {
               <p
                 className={
                   result.status === "rejected"
-                    ? "text-sm text-amber-600"
+                    ? "text-sm negative-text"
                     : "text-sm"
                 }
               >
@@ -119,6 +128,19 @@ export function AskTheData({ debateId }: AskTheDataProps) {
             </div>
           </div>
         )}
+
+        <p className="text-xs text-muted-foreground">
+          We are committed to using AI as responsibly as possible,{" "}
+          <a
+            href="https://heard.vote/ai-usage"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-foreground"
+          >
+            track our usage here
+          </a>
+          .
+        </p>
       </div>
     </Card>
   );
