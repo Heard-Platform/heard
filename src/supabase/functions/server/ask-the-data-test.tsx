@@ -61,6 +61,8 @@ const inScopeQuestions = [
   "Which response is the most divisive?",
   "Summarize the main viewpoints in this conversation.",
   "What do people agree on most?",
+  "Are there blindspots not covered by the responses?",
+  "What is an insight from this conversation?",
 ];
 
 const outOfScopeQuestions = [
