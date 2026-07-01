@@ -25,7 +25,7 @@ import {
   EventSummary,
   StatementMerge,
 } from "../types";
-import { FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
+import { AskTheDataResponse, FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import {
   BaseApiClient,
   ApiResponse,
@@ -692,7 +692,7 @@ class ApiClient extends BaseApiClient {
   }
 
   async askTheData(roomId: string, question: string) {
-    return this.request<{ status: "answered" | "rejected"; response: string }>(
+    return this.request<AskTheDataResponse>(
       `/room/${roomId}/ask`,
       {
         method: "POST",

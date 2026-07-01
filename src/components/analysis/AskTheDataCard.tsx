@@ -4,11 +4,10 @@ import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
 import { api } from "../../utils/api";
+import { AskTheDataResponse } from "../../types/api-responses";
 
-interface AskResult {
+interface AskResult extends AskTheDataResponse {
   question: string;
-  status: "answered" | "rejected";
-  response: string;
 }
 
 interface AskTheDataCardProps {

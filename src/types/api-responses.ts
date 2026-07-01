@@ -16,3 +16,8 @@ export type FlyerVoteResponse = QRScanResult & {
   user: UserSession;
   sessionId: string;
 };
+
+export type AskTheDataResponse = {
+  status: "answered" | "rejected";
+  response: string;
+};
