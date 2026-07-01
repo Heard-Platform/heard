@@ -58,9 +58,17 @@ describe("makeAskTheDataPrompt", () => {
     }
   });
 
-  it("includes each statement's vote counts", () => {
-    assert(userPrompt.includes("agree: 5, disagree: 2, pass: 1, super-agree: 3"));
-    assert(userPrompt.includes("agree: 4, disagree: 6, pass: 0, super-agree: 1"));
+  it("includes each statement as a CSV row with its vote counts", () => {
+    assert(userPrompt.includes('1,"Protected bike lanes make streets safer",5,2,1,3'));
+    assert(userPrompt.includes('2,"Parking is too scarce downtown",4,6,0,1'));
+  });
+
+  it("CSV-escapes commas and quotes inside a response", () => {
+    const tricky: Statement[] = [
+      { ...STATEMENT, id: "x", text: 'He said "lanes, yes", loudly', agrees: 1 },
+    ];
+    const { userPrompt: prompt } = makeAskTheDataPrompt("t", tricky, "q");
+    assert(prompt.includes('1,"He said ""lanes, yes"", loudly",1,0,0,0'));
   });
 
   it("includes the user's question", () => {

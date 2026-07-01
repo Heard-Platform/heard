@@ -31,14 +31,23 @@ When rejecting, briefly and politely say the question is outside what you can an
 const SYSTEM_PROMPT =
   `You are an assistant inside Heard, a discussion app. You answer questions about a single conversation using the topic, responses, and vote counts given in the user message. You may reason about and interpret that material — including pointing out gaps or perspectives it does not cover — but every claim must stay grounded in it: you never rely on outside facts and you never invent specific data. You always reply with JSON only.`;
 
-function formatStatement(statement: Statement, index: number): string {
-  const { text, agrees, disagrees, passes, superAgrees } = statement;
-  return `${index + 1}. "${text}" — agree: ${agrees}, disagree: ${disagrees}, pass: ${passes}, super-agree: ${superAgrees}`;
+function csvQuote(text: string): string {
+  return `"${text.replace(/"/g, '""')}"`;
 }
 
 function formatConversation(topic: string, statements: Statement[]): string {
-  const responses = statements.map(formatStatement).join("\n");
-  return `Topic: "${topic}"\n\nResponses (with vote counts):\n${responses}`;
+  const header = "id,response,agree,disagree,pass,super_agree";
+  const rows = statements.map((statement, index) =>
+    [
+      index + 1,
+      csvQuote(statement.text),
+      statement.agrees,
+      statement.disagrees,
+      statement.passes,
+      statement.superAgrees,
+    ].join(","),
+  );
+  return `Topic: "${topic}"\n\nResponses (CSV, with header row):\n${header}\n${rows.join("\n")}`;
 }
 
 export function makeAskTheDataPrompt(
