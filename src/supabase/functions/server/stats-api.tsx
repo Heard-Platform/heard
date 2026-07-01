@@ -9,7 +9,7 @@ import {
 } from "./kv-utils.tsx";
 import { getAllRecords, selectAll } from "./db-utils.ts";
 import type { Session, UserEvent } from "./types.tsx";
-import { getEventsOfType, getFlyerEmails } from "./model-utils.ts";
+import { getEventsOfType, getFlyerEmails, getUserReports } from "./model-utils.ts";
 import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 
@@ -213,6 +213,7 @@ app.get(
         modInviteAccepts,
         cohostEvents,
         askTheDataRecords,
+        userReports,
       ] = await Promise.all([
         getAllRealUsers(),
         getAllRealDebates(),
@@ -225,6 +226,7 @@ app.get(
           type: "cohost_invite_accepted",
         }),
         getAllAskTheDataRecords(),
+        getUserReports(),
       ]);
 
       type FeedEvent = {
@@ -237,7 +239,8 @@ app.get(
           | "session"
           | "cohost"
           | "modInviteAccept"
-          | "askTheData";
+          | "askTheData"
+          | "userReport";
         timestamp: number;
         id: string;
         label: string;
@@ -365,6 +368,22 @@ app.get(
             id: record.id,
             label: record.question.length > 80 ? record.question.substring(0, 80) + "…" : record.question,
             meta: { room: roomTopic || record.roomId, answer: record.answer.length > 80 ? record.answer.substring(0, 80) + "…" : record.answer },
+          });
+        }
+      }
+
+      for (const report of userReports) {
+        const t = ts(report.createdAt);
+        if (t > since) {
+          events.push({
+            type: "userReport",
+            timestamp: t,
+            id: report.id,
+            label: "Response flagged",
+            meta: {
+              responseId: report.responseId,
+              ...(report.reason ? { reason: report.reason } : {}),
+            },
           });
         }
       }

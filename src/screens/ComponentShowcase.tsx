@@ -9,6 +9,7 @@ import { VotesDrawerStory } from "../stories/VotesDrawer.story";
 import { DebateScrollerStory } from "../stories/DebateScroller.story";
 import { DebateAnalysisReportStory } from "../stories/DebateAnalysisReport.story";
 import { DebateAnalysisReportDemoStory } from "../stories/DebateAnalysisReportDemo.story";
+import { AskTheDataStory } from "../stories/AskTheData.story";
 import { UnsubscribePageStory } from "../stories/UnsubscribePage.story";
 import { SwipeableStatementStackStory } from "../stories/SwipeableStatementStack.story";
 import { MetricsCircleStory } from "../stories/MetricsCircle.story";
@@ -109,6 +110,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="debate-scroller">Debate Scroller</TabsTrigger>
                 <TabsTrigger value="debate-analysis-report">Debate Analysis Report</TabsTrigger>
                 <TabsTrigger value="debate-analysis-report-demo">Debate Analysis Report (Demo)</TabsTrigger>
+                <TabsTrigger value="ask-the-data">Ask the Data</TabsTrigger>
                 <TabsTrigger value="unsubscribe-page">Unsubscribe Page</TabsTrigger>
                 <TabsTrigger value="swipeable-statement-stack">Swipeable Statement Stack</TabsTrigger>
                 <TabsTrigger value="metrics-circle">Metrics Circle</TabsTrigger>
@@ -169,6 +171,10 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
 
               <TabsContent value="debate-analysis-report-demo">
                 <DebateAnalysisReportDemoStory />
+              </TabsContent>
+
+              <TabsContent value="ask-the-data">
+                <AskTheDataStory />
               </TabsContent>
 
               <TabsContent value="unsubscribe-page">

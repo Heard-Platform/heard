@@ -385,11 +385,24 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async flagStatement(statementId: string, roomId: string, reason: string) {
-    return this.request(`/statement/${statementId}/flag`, {
+  async reportContent(
+    type: "statement" | "ask-the-data",
+    targetId: string,
+    roomId: string,
+    reason: string,
+  ) {
+    return this.request(`/report`, {
       method: "POST",
-      body: JSON.stringify({ roomId, reason }),
+      body: JSON.stringify({ type, targetId, roomId, reason }),
     });
+  }
+
+  async flagStatement(statementId: string, roomId: string, reason: string) {
+    return this.reportContent("statement", statementId, roomId, reason);
+  }
+
+  async flagAskTheDataResponse(recordId: string, roomId: string, reason: string) {
+    return this.reportContent("ask-the-data", recordId, roomId, reason);
   }
 
   // Invite management

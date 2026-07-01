@@ -168,7 +168,7 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       iconColor: "text-red-600",
       bgColor: "bg-red-100",
       title: "User Reports",
-      description: "Total number of statements flagged by users",
+      description: "Total number of user reports",
       getValue: (s) => s.userReports,
       getDate: (s) => s.userReportsSince,
     },

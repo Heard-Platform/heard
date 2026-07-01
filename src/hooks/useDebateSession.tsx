@@ -19,7 +19,7 @@ import type {
   GGWashImportResult,
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
-import { FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
+import { AskTheDataResponse, FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
 import {
   ApiResponse,
   clearSessionId,
@@ -69,6 +69,11 @@ interface DebateSessionContextType {
     roomId: string,
     reason: string,
   ) => Promise<void>;
+  flagAskTheDataResponse: (
+    recordId: string,
+    roomId: string,
+    reason: string,
+  ) => Promise<void>;
   voteViaFlyer: (
     flyerId: string,
     statementId: string,
@@ -98,6 +103,7 @@ interface DebateSessionContextType {
   roomStatements: Record<string, Statement[]>;
   getRoomStatements: (roomId: string) => Promise<Statement[]>;
   getRoomAnalysis: (roomId: string) => Promise<AnalysisData | null>;
+  askTheData: (roomId: string, question: string) => Promise<ApiResponse<AskTheDataResponse>>;
   getStatementMerges: ( roomId: string ) => Promise<StatementMerge[]>;
   createStatementMerge: (
     roomId: string,
@@ -448,6 +454,22 @@ export function DebateSessionProvider(
           err instanceof Error ? err.message : "Unknown error";
         setError(errorMsg);
         console.error("Failed to flag statement:", errorMsg);
+      }
+    }, [],
+  );
+
+  const flagAskTheDataResponse = useCallback(
+    async (recordId: string, roomId: string, reason: string) => {
+      try {
+        const response = await api.flagAskTheDataResponse(recordId, roomId, reason);
+        if (!response.success) {
+          throw new Error(response.error || "Failed to flag response");
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error("Failed to flag ask-the-data response:", errorMsg);
       }
     }, [],
   );
@@ -832,6 +854,13 @@ export function DebateSessionProvider(
     return null;
   }, []);
 
+  const askTheData = useCallback(
+    async (roomId: string, question: string) => {
+      return api.askTheData(roomId, question);
+    },
+    [],
+  );
+
   const getSubHeards = useCallback(async () => {
     type Response = { subHeards: SubHeard[]; };
     return safelyMakeApiCall<Response>(() => api.getSubHeards());
@@ -960,6 +989,7 @@ export function DebateSessionProvider(
     submitStatement,
     voteOnStatement,
     flagStatement,
+    flagAskTheDataResponse,
     voteViaFlyer,
     submitFlyerEmail,
     getActiveRooms,
@@ -998,6 +1028,7 @@ export function DebateSessionProvider(
     setEnrichmentConfig,
     runEnrichmentNow,
     runGGWashImport,
+    askTheData,
   };
 
   if (showcase || showcaseOverrides) {
@@ -1056,6 +1087,9 @@ export function DebateSessionProvider(
       },
       flagStatement: async (statementId: string, roomId: string, reason: string) => {
         console.log("[Showcase] flagStatement called", { reason });
+      },
+      flagAskTheDataResponse: async (recordId: string, roomId: string, reason: string) => {
+        console.log("[Showcase] flagAskTheDataResponse called", { recordId, reason });
       },
       getRoomAnalysis: async () => {
         console.log("[Showcase] getRoomAnalysis called");
@@ -1183,6 +1217,18 @@ export function DebateSessionProvider(
       runGGWashImport: async () => {
         console.log("[Showcase] runGGWashImport called");
         return { success: true };
+      },
+      askTheData: async (roomId: string, question: string) => {
+        console.log("[Showcase] askTheData called", { roomId, question });
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        return {
+          success: true,
+          data: {
+            id: "showcase-ask-the-data-record",
+            status: "answered" as const,
+            response: `This is a demo answer to: "${question}"`,
+          },
+        };
       },
       ...showcaseOverrides,
     };

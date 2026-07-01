@@ -2,7 +2,8 @@ import { useState, type KeyboardEvent } from "react";
 import { Card } from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
-import { ArrowUp, Loader2 } from "lucide-react";
+import { ArrowUp, Flag, Loader2 } from "lucide-react";
+import { useDebateSession } from "../../hooks/useDebateSession";
 import { api } from "../../utils/api";
 import { AskTheDataResponse } from "../../types/api-responses";
 
@@ -23,10 +24,12 @@ const STARTER_QUESTIONS = [
 ];
 
 export function AskTheData({ debateId }: AskTheDataProps) {
+  const { askTheData, flagAskTheDataResponse } = useDebateSession();
   const [question, setQuestion] = useState("");
   const [isAsking, setIsAsking] = useState(false);
   const [result, setResult] = useState<AskResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [flagged, setFlagged] = useState(false);
 
   const canAsk = question.trim().length > 0 && !isAsking;
 
@@ -37,10 +40,12 @@ export function AskTheData({ debateId }: AskTheDataProps) {
     setIsAsking(true);
     setError(null);
     let succeeded = false;
+    api.trackEvent("ask_the_data_question_submitted", debateId);
     try {
-      const response = await api.askTheData(debateId, q);
+      const response = await askTheData(debateId, q);
       if (response.success && response.data) {
         setResult({ question: q, ...response.data });
+        setFlagged(false);
         succeeded = true;
       } else {
         setError(response.error || GENERIC_ERROR);
@@ -62,6 +67,22 @@ export function AskTheData({ debateId }: AskTheDataProps) {
     }
   };
 
+  const handlePresetClick = (preset: string) => {
+    api.trackEvent("ask_the_data_preset_clicked", debateId);
+    askQuestion(preset);
+  };
+
+  const handleFlag = () => {
+    if (!result || flagged) return;
+    setFlagged(true);
+    api.trackEvent("ask_the_data_flagged", debateId);
+    flagAskTheDataResponse(result.id, debateId, "");
+  };
+
+  const handleUsageClick = () => {
+    api.trackEvent("ask_the_data_ai_usage_link_clicked", debateId);
+  };
+
   return (
     <Card className="p-6">
       <div className="space-y-4">
@@ -73,7 +94,7 @@ export function AskTheData({ debateId }: AskTheDataProps) {
               key={starter}
               variant="outline"
               size="sm"
-              onClick={() => askQuestion(starter)}
+              onClick={() => handlePresetClick(starter)}
               disabled={isAsking}
               className="h-auto w-full justify-start whitespace-normal py-2 text-left"
             >
@@ -126,6 +147,16 @@ export function AskTheData({ debateId }: AskTheDataProps) {
                 {result.response}
               </p>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={flagged}
+              onClick={handleFlag}
+              className="h-auto gap-1.5 px-2 py-1 text-xs text-muted-foreground"
+            >
+              <Flag className="h-3 w-3" />
+              {flagged ? "Thanks for letting us know" : "Flag as unhelpful"}
+            </Button>
           </div>
         )}
 
@@ -135,6 +166,7 @@ export function AskTheData({ debateId }: AskTheDataProps) {
             href="https://heard.vote/ai-usage"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={handleUsageClick}
             className="underline hover:text-foreground"
           >
             track our usage here

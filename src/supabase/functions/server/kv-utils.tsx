@@ -424,6 +424,11 @@ export const saveAskTheDataRecord = async (record: AskTheDataRecord) => {
 export const getAllAskTheDataRecords = async (): Promise<AskTheDataRecord[]> =>
   getByPrefixParsed<AskTheDataRecord>("ask_the_data:");
 
+export const getAskTheDataRecord = async (id: string): Promise<AskTheDataRecord | null> => {
+  const matches = await getByPrefixParsed<AskTheDataRecord>(`ask_the_data:%:${id}`);
+  return matches[0] ?? null;
+};
+
 export const getRantsForRoom = async (roomId: string): Promise<Rant[]> => {
   return getByPrefixParsed<Rant>(`rant:${roomId}:`);
 };

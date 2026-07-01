@@ -42,9 +42,10 @@ app.post(
       });
 
       const result = parseAskTheDataResponse(content);
+      const id = generateId();
 
       await saveAskTheDataRecord({
-        id: generateId(),
+        id,
         roomId,
         userId,
         question,
@@ -53,7 +54,7 @@ app.post(
         createdAt: Date.now(),
       });
 
-      return result;
+      return { ...result, id };
     },
     "Failed to answer question",
   ),
