@@ -20,6 +20,7 @@ export interface EventViewProps {
   onShowAccountSetupModal: (featureText: string) => void;
   onCreateRoom: (newDebate: NewDebateRoom) => Promise<DebateRoom>;
   onRefreshEvent: () => void;
+  onSubHeardChange: (subHeard: string | null) => void;
 }
 
 export function EventView({
@@ -34,6 +35,7 @@ export function EventView({
   onShowAccountSetupModal,
   onCreateRoom,
   onRefreshEvent,
+  onSubHeardChange,
 }: EventViewProps) {
   const [selectedRoom, setSelectedRoom] = useState<{
     room: DebateRoom;
@@ -151,6 +153,7 @@ export function EventView({
               onVoteOnStatement={handleVoteOnStatement}
               onRefreshStatements={handleRefreshStatements}
               onShowAccountSetupModal={onShowAccountSetupModal}
+              onSubHeardChange={onSubHeardChange}
             />
           )}
         </div>

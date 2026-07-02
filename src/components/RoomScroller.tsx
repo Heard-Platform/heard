@@ -66,6 +66,7 @@ interface RoomScrollerProps {
   ) => void;
   onShowAccountSetupModal: (featureText: string) => void;
   onOpenEvent: (eventId: string) => void;
+  onSubHeardChange: (subHeard: string | null) => void;
 }
 
 export interface RoomScrollerRef {
@@ -97,6 +98,7 @@ const RoomScrollerInner = forwardRef<
       onUpdatePresence,
       onShowAccountSetupModal,
       onOpenEvent,
+      onSubHeardChange,
     },
     ref,
   ) => {
@@ -328,6 +330,7 @@ const RoomScrollerInner = forwardRef<
                     }
                     onDiscussStatement={onDiscussStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
+                    onSubHeardChange={onSubHeardChange}
                   />
                 ) : null}
               </div>
