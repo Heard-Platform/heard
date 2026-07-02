@@ -3,12 +3,14 @@ import { GITHUB_URL, YT_SHORTS_URL } from "./email-templates.tsx";
 import { getSubstackArticleEmail } from "./email-funding.ts";
 import { SUPABASE_URL } from "./constants.tsx";
 
+const HOMEPAGE_URL = "https://heard.vote";
 const YT_FIRST_VID_URL = "https://youtu.be/JM0WUrFkYZc";
 const YT_FLYERING_URL_NL12 = "https://www.youtube.com/shorts/wnFjDv0S4Bo";
 const YT_PUSHUPS_URL_NL12 = "https://www.youtube.com/shorts/JWv-IaL2jh4";
 const GITHUB_AI_PR_URL = "https://github.com/Heard-Platform/heard/pull/94";
 const YT_HAPPY_HOUR_URL_NL13 = "https://www.youtube.com/shorts/hNqqqJBIkQs";
 const SHORTS_URL = "https://www.youtube.com/shorts";
+const FUND_URL = `${HOMEPAGE_URL}/fund`
 
 const newsletters = [
   getParameterizedNewsletter({
@@ -241,7 +243,7 @@ const newsletters = [
     editionNumber: 17,
     section1: {
       title: "🎉 Heard hits 400 signups!",
-      text: `Thanks to two big Heard posts on unleashed dog policy and an animal rescue event (plus a little organic traction), we are currently at 406 signed up users. That’s 406 vetted real people that provided either an email or phone number and tried Heard! 💯 500 is our next big goal and I’m doing a <a href='${SHORTS_URL}/557972zpK4o'>daily shoot-till-I-make-it basketball challenge</a> until we get there. 🏀`,
+      text: `Thanks to two big Heard posts on unleashed dog policy and an animal rescue event (plus a little organic traction), we are currently at 406 signed up users. That's 406 vetted real people that provided either an email or phone number and tried Heard! 💯 500 is our next big goal and I'm doing a <a href='${SHORTS_URL}/557972zpK4o'>daily shoot-till-I-make-it basketball challenge</a> until we get there. 🏀`,
       imageUrl: `${SUPABASE_URL}/nl-17-400-users.png`,
       imageLink: `${SHORTS_URL}/557972zpK4o`,
       imageAlt: "Alex doing basketball challenge",
@@ -311,6 +313,32 @@ const newsletters = [
       imageUrl: `${SUPABASE_URL}/nl-19-dupont.jpeg`,
       imageLink: "https://heard.vote",
       imageAlt: "Dupont Farmers Market flyering results and ANC presentation",
+    },
+  }),
+  {}, // Blank because hardcoded funding email
+  getParameterizedNewsletter({
+    subject: "DC is split on Waymo - Ya' Heard #20",
+    editionNumber: 21,
+    section1: {
+      title: "🚕 DC is split on Waymo",
+      text: "137 people have scanned our Waymo flyers in DC and the results have been split, with about 60% of voters saying they were NOT in favor of having Waymo in DC. The biggest argument for Waymo seems to be around safety, especially for bikers. One person actually called us to order a Waymo and we had to sadly inform them we are not Waymo, womp womp.",
+      imageUrl: `${SUPABASE_URL}/nl-20-waymo.png`,
+      imageLink: HOMEPAGE_URL,
+      imageAlt: "Waymo flyer results",
+    },
+    section2: {
+      title: "🙏 We've raised $3,655 towards our $5k goal so far, with 2 days left!",
+      text: "Alex, the founder of Heard, has some literal skin in the game: If we hit $5k in donations by July 4th then he will get a tattoo chosen by donors, using Heard to discuss the design! We're already 73% of the way there, can you chip in? Your donations help pay for flyer printer paper, website costs, and Alex's frozen dinners while we build Heard. If you're up for supporting the future of pro-democracy deliberative tech in DC you can donate at <a href='https://heard.vote/fund'>https://heard.vote/fund</a>.",
+      imageUrl: `${SUPABASE_URL}/nl-20-fund.png`,
+      imageLink: FUND_URL,
+      imageAlt: "Alex talking about funding",
+    },
+    section3: {
+      title: "🔮 You can now “Ask the Data” on any Heard post",
+      text: "We just shipped a feature letting users ask an LLM any question they want about the results of a Heard post. 💡 Why did people disagree with my position? What's the common ground here? How can I add something juicy to the conversation? We think this powers up the analysis features of Heard, for organizers and participants. As we've said, we're committed to doing our best to use AI responsibly, and you can <a href='https://heard.vote/ai-usage'>track our usage here</a>.",
+      imageUrl: `${SUPABASE_URL}/nl-20-ask.gif`,
+      imageLink: HOMEPAGE_URL,
+      imageAlt: "Demo of new feature",
     },
   }),
 ]

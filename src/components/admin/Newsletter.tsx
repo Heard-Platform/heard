@@ -11,7 +11,7 @@ interface NewsletterProps {
   adminKey: string;
 }
 
-const NEWSLETTER_COUNT = 20;
+const NEWSLETTER_COUNT = 21;
 
 export function Newsletter({ adminKey }: NewsletterProps) {
   const [testEmail, setTestEmail] = useState("");
