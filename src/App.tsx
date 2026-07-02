@@ -522,6 +522,9 @@ function AppContent() {
         if (roomData) {
           if (roomData.subHeard) {
             await joinSubHeard(roomData.subHeard);
+            if (parseRoomIdFromUrl() === targetRoomId) {
+              setCurrentSubHeard(roomData.subHeard);
+            }
           }
         } else {
           setTargetRoomId(null);
@@ -531,7 +534,7 @@ function AppContent() {
         setIsJoiningRoom(false);
       }
     })();
-  }, [user, targetRoomId, joinRoom]);
+  }, [user, targetRoomId, joinRoom, joinSubHeard, setCurrentSubHeard]);
 
   useEffect(() => {
     if (user && hasCheckedUrl && pendingCommunities.length > 0) {
