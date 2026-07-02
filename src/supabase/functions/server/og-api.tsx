@@ -5,7 +5,7 @@ import { escapeHtml } from "./utils.tsx";
 
 const SITE_NAME = "Heard";
 const SITE_URL = "https://heard.vote";
-const FALLBACK_IMAGE = `${SITE_URL}/monkey.png`;
+const FALLBACK_IMAGE = `${SITE_URL}/default-link-preview.png`;
 
 function buildOgHtml(params: {
   topic: string;
