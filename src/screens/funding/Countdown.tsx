@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { C } from "./constants";
-
-const DEADLINE = new Date("2026-07-04T00:00:00");
+import { C, FUNDING_DEADLINE } from "./constants";
 
 function getTimeLeft() {
-  const diff = DEADLINE.getTime() - Date.now();
+  const diff = FUNDING_DEADLINE.getTime() - Date.now();
   if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
   return {
     days: Math.floor(diff / 86400000),

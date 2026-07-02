@@ -521,6 +521,8 @@ export interface FeatureResults {
     nugmodeToggled: number; nugmodeToggledUsers: number;
     exitClicked: number; exitClickedUsers: number;
     fallbackDonate: number; fallbackDonateUsers: number;
+    teaserClicked: number; teaserClickedUsers: number;
+    teaserDismissed: number; teaserDismissedUsers: number;
   };
   fundingEventsSince: number;
   cohostInviteAccepted: number;

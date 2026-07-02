@@ -19,6 +19,7 @@ import { CommunityExplorerDialog } from "../components/community/CommunityExplor
 import { IntroModal } from "../components/IntroModal";
 import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
 import { NewItemButton } from "../components/NewItemButton";
+import { FundingTeaser } from "../components/FundingTeaser";
 import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api, safelyMakeApiCall } from "../utils/api";
@@ -448,6 +449,8 @@ export function LobbyScreen({
           </div>
         </div>
       )}
+
+      {!currentEvent && !eventLoading && <FundingTeaser />}
 
       {/* Create room sheet */}
       <CreateRoomSheet

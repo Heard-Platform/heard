@@ -17,6 +17,8 @@ interface FundingResultsProps {
   nugmodeToggled: number; nugmodeToggledUsers: number;
   exitClicked: number; exitClickedUsers: number;
   fallbackDonate: number; fallbackDonateUsers: number;
+  teaserClicked: number; teaserClickedUsers: number;
+  teaserDismissed: number; teaserDismissedUsers: number;
 }
 
 export function FundingResults(props: FundingResultsProps) {
@@ -37,12 +39,16 @@ export function FundingResults(props: FundingResultsProps) {
     nugmodeToggled, nugmodeToggledUsers,
     exitClicked, exitClickedUsers,
     fallbackDonate, fallbackDonateUsers,
+    teaserClicked, teaserClickedUsers,
+    teaserDismissed, teaserDismissedUsers,
   } = props;
 
   const rate = (n: number, of: number) =>
     of === 0 ? undefined : ((n / of) * 100).toFixed(1);
 
   const steps = [
+    { label: "Feed Teaser Clicked", count: teaserClicked, users: teaserClickedUsers },
+    { label: "Feed Teaser Dismissed", count: teaserDismissed, users: teaserDismissedUsers },
     { label: "Page Views", count: pageView, users: pageViewUsers },
     { label: "Swiped to Donate", count: swipeDonate, users: swipeDonateUsers, rate: rate(swipeDonate, pageView) },
     { label: "Fallback Donate Clicked", count: fallbackDonate, users: fallbackDonateUsers, rate: rate(fallbackDonate, pageView) },
