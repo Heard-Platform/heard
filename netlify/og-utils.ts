@@ -21,5 +21,6 @@ export function isCrawler(userAgent: string): boolean {
 export function injectOgHead(spaHtml: string, headContent: string): string {
   return spaHtml
     .replace(/<title>.*?<\/title>/, "")
+    .replace(/<meta[^>]*(?:property="og:[^"]*"|name="twitter:[^"]*")[^>]*>\s*/gi, "")
     .replace("</head>", `  ${headContent}\n  </head>`);
 }
