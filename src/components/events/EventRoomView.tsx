@@ -13,6 +13,7 @@ export interface EventRoomViewProps {
   onVoteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
   onRefreshStatements: () => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
+  onSubHeardChange: (subHeard: string | null) => void;
 }
 
 export function EventRoomView({
@@ -25,6 +26,7 @@ export function EventRoomView({
   onVoteOnStatement,
   onRefreshStatements,
   onShowAccountSetupModal,
+  onSubHeardChange,
 }: EventRoomViewProps) {
   return (
     <motion.div
@@ -49,6 +51,7 @@ export function EventRoomView({
           onRefreshStatements={onRefreshStatements}
           onDiscussStatement={() => {}}
           onShowAccountSetupModal={onShowAccountSetupModal}
+          onSubHeardChange={onSubHeardChange}
         />
       </SwipeTutorialProvider>
     </motion.div>

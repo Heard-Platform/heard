@@ -337,6 +337,7 @@ export function LobbyScreen({
           onShowAccountSetupModal={handleShowAccountSetupModal}
           onCreateRoom={onCreateRoom}
           onRefreshEvent={onRefreshEvent}
+          onSubHeardChange={onSubHeardChange}
         />
       )}
 
@@ -442,6 +443,7 @@ export function LobbyScreen({
               onShowAccountSetupModal={handleShowAccountSetupModal}
               onOpenExplorer={() => setExplorerOpen(true)}
               onOpenEvent={onOpenEvent}
+              onSubHeardChange={onSubHeardChange}
             />
           </div>
         </div>

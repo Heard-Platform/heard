@@ -70,6 +70,9 @@ function RoomCardWrapper({
           onShowAccountSetupModal={(feature) =>
             console.log("Account setup:", feature)
           }
+          onSubHeardChange={(subHeard) =>
+            console.log("Subheard change:", subHeard)
+          }
         />
       </div>
     </div>
