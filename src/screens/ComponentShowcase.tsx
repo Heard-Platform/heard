@@ -46,6 +46,7 @@ import { StatementSpectrumStory } from "../stories/StatementSpectrum.story";
 import { UserTimelineChartStory } from "../stories/UserTimelineChart.story";
 import { RoomCardStory } from "../stories/RoomCard.story";
 import { FundingPageStory } from "../stories/FundingPage.story";
+import { FundingTeaserStory } from "../stories/FundingTeaser.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -146,6 +147,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="room-card">Room Card</TabsTrigger>
                 <TabsTrigger value="single-post-view">Single Post View</TabsTrigger>
                 <TabsTrigger value="funding-page">Funding Page</TabsTrigger>
+                <TabsTrigger value="funding-teaser">Funding Teaser</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -277,6 +279,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="funding-page">
                 <FundingPageStory />
+              </TabsContent>
+              <TabsContent value="funding-teaser">
+                <FundingTeaserStory />
               </TabsContent>
             </Tabs>
           </div>

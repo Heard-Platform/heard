@@ -164,6 +164,10 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       exitClickedUsers: fu("funding_exit_clicked"),
       fallbackDonate: fundingCounts["funding_fallback_donate_clicked"] ?? 0,
       fallbackDonateUsers: fu("funding_fallback_donate_clicked"),
+      teaserClicked: fundingCounts["funding_teaser_clicked"] ?? 0,
+      teaserClickedUsers: fu("funding_teaser_clicked"),
+      teaserDismissed: fundingCounts["funding_teaser_dismissed"] ?? 0,
+      teaserDismissedUsers: fu("funding_teaser_dismissed"),
     };
     const fundingEventsSince = new Date("2026-06-16").getTime();
 
