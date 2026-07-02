@@ -317,7 +317,7 @@ const newsletters = [
   }),
   {}, // Blank because hardcoded funding email
   getParameterizedNewsletter({
-    subject: "DC is split on Waymo - Heard Weekly #21",
+    subject: "DC is split on Waymo",
     editionNumber: 21,
     section1: {
       title: "🚕 DC is split on Waymo",
