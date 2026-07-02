@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from "motion/react";
 import { api } from "../utils/api";
 import type { ApiResponse } from "../utils/api-client";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
-import { FUNDING_GOAL, fmt } from "../screens/funding/constants";
+import { FUNDING_GOAL, FUNDING_DEADLINE, fmt } from "../screens/funding/constants";
 
 const DISMISSED_KEY = "funding_teaser_dismissed";
+const HIDE_AFTER = new Date(FUNDING_DEADLINE.getTime() + 24 * 60 * 60 * 1000);
 
 interface FundingTeaserProps {
   getFundingStats?: () => Promise<ApiResponse<{ totalDollars: number; donorCount: number }>>;
@@ -28,7 +29,12 @@ export function FundingTeaser({
     });
   }, []);
 
-  if (dismissed || totalDonated === null) return null;
+  if (
+    dismissed ||
+    totalDonated === null ||
+    Date.now() >= HIDE_AFTER.getTime()
+  )
+    return null;
 
   const progressPct = Math.min((totalDonated / FUNDING_GOAL) * 100, 100);
 
@@ -73,7 +79,7 @@ export function FundingTeaser({
             </button>
           </div>
           <p className="mb-2 text-xs text-slate-500">
-            We're raising {fmt(FUNDING_GOAL, false)} by July 4th to pay for flyer printer paper, website costs, and frozen dinners for the founder. Please consider helping us hit our goal!
+            We're raising $5k by July 4th to pay for flyer printer paper, website costs, and frozen dinners for the founder. Please consider helping us hit our goal!
           </p>
           <div className="mb-1 flex justify-between text-xs font-semibold">
             <span className="text-emerald-600">
