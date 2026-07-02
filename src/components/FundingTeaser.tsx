@@ -68,7 +68,7 @@ export function FundingTeaser({
         >
           <div className="flex items-start justify-between gap-2">
             <p className="text-sm font-bold text-slate-900">
-              🐒 Fund Heard for the 4th!
+              🇺🇸 Fund Heard for the 4th!
             </p>
             <button
               onClick={handleDismiss}
