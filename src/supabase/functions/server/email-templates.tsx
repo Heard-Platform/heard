@@ -114,9 +114,9 @@ const getOrdinalSuffix = (num: number): string => {
 export const getNewsletterHeader = (editionNumber: number) => `
   <div style="${styles.header}">
     <h1 style="${styles.headerTitle}">
-      Ya' Heard?
+      Heard Weekly
     </h1>
-    <p style="${styles.headerSubtitle}">The ${getOrdinalSuffix(editionNumber)} Edition of the Heard Newsletter!</p>
+    <p style="${styles.headerSubtitle}">A platform for community conversation</p>
   </div>
 `;
 
