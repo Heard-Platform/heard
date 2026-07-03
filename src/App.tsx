@@ -66,7 +66,9 @@ const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: str
 };
 
 function AppContent() {
-  const [isJoiningRoom, setIsJoiningRoom] = useState(false);
+  const [currentSubHeard, setCurrentSubHeard] = useState<
+    string | null
+  >(null);
   const [targetRoomId, setTargetRoomId] = useState<
     string | null
   >(null);
@@ -103,7 +105,6 @@ function AppContent() {
   const {
     user,
     activeRooms,
-    currentSubHeard,
     loading,
     roomsLoading,
     error,
@@ -114,7 +115,6 @@ function AppContent() {
     voteOnStatement,
     voteViaFlyer,
     loadActiveRooms,
-    setCurrentSubHeard,
     resetSession,
     roomStatements,
     acceptModInvite,
@@ -122,7 +122,6 @@ function AppContent() {
   } = useDebateSession();
 
   const startRoomJoin = (roomId: string) => {
-    setIsJoiningRoom(true);
     setTargetRoomId(roomId);
   }
 
@@ -171,8 +170,8 @@ function AppContent() {
     newDebate: NewDebateRoom,
   ): Promise<DebateRoom> => {
     const roomData = await createRoom(newDebate);
-    await loadActiveRooms();
     setCurrentSubHeard(roomData.subHeard || null);
+    await loadActiveRooms(roomData.subHeard || undefined);
     return roomData;
   };
 
@@ -186,6 +185,7 @@ function AppContent() {
     setCurrentSubHeard(subHeard);
     setTargetRoomId(null);
     updateUrlForSubHeard(subHeard);
+    loadActiveRooms(subHeard || undefined);
   };
 
   const handleQrComplete = ({ reason }: { reason: "signup" | "otp-login" | "continue" }) => {
@@ -485,60 +485,31 @@ function AppContent() {
     createAnonymousUser,
   ]);
 
-  useEffect(() => {
-    const autoJoinSubHeard = async () => {
-      if (user && currentSubHeard && hasCheckedUrl) {
-        try {
-          const response = await api.joinSubHeard(currentSubHeard);
-
-          if (!response.success) {
-            toast.error("Unable to join this community");
-            setCurrentSubHeard(null);
-            updateUrlForSubHeard(null);
-          }
-        } catch (error) {
-          console.error("Error auto-joining sub-heard:", error);
-        }
-      }
-    };
-    autoJoinSubHeard();
-  }, [
-    user,
-    currentSubHeard,
-    hasCheckedUrl,
-    setCurrentSubHeard,
-  ]);
-
   const loadRoomsAndResolveTarget = async () => {
-    const rooms = await loadActiveRooms(targetRoomId || undefined);
-    const isResolvingTarget = isJoiningRoom && !!targetRoomId;
-    if (isResolvingTarget) {
-      const room = rooms.find((r) => r.id === targetRoomId);
-      if (room) {
-        if (room.subHeard && parseRoomIdFromUrl() === targetRoomId) {
-          setCurrentSubHeard(room.subHeard);
-        }
-      } else {
-        setTargetRoomId(null);
-        clearRoomFromUrl();
+    const rooms = await loadActiveRooms(
+      currentSubHeard || undefined,
+      targetRoomId || undefined,
+    );
+    const room = rooms.find((r) => r.id === targetRoomId);
+    if (room) {
+      if (room.subHeard && parseRoomIdFromUrl() === targetRoomId) {
+        setCurrentSubHeard(room.subHeard);
       }
-      setIsJoiningAnonymously(false);
-      setIsJoiningRoom(false);
+    } else {
+      setTargetRoomId(null);
+      clearRoomFromUrl();
     }
+    setIsJoiningAnonymously(false);
   };
 
   useEffect(() => {
     if (!user || !hasCheckedUrl) return;
-    loadRoomsAndResolveTarget();
-  }, [
-    user?.id,
-    currentSubHeard,
-    hasCheckedUrl,
-    targetRoomId,
-    isJoiningRoom,
-    loadActiveRooms,
-    setCurrentSubHeard,
-  ]);
+    if (targetRoomId) {
+      loadRoomsAndResolveTarget();
+    } else {
+      loadActiveRooms(currentSubHeard || undefined);
+    }
+  }, [user?.id, hasCheckedUrl, targetRoomId]);
 
   useEffect(() => {
     if (user && hasCheckedUrl && pendingCommunities.length > 0) {
