@@ -1,9 +1,9 @@
 import { StoryContainer } from "./StoryContainer";
-import { EmailMonitoringTab } from "../components/devtools/EmailMonitoringTab";
+import { EmailMonitoringTab } from "../components/devtools/email-monitor/EmailMonitoringTab";
 import {
   healthySentEmails,
   atRiskSentEmails,
-} from "../components/devtools/emailMonitoringMockData";
+} from "../components/devtools/email-monitor/emailMonitoringMockData";
 
 export function EmailMonitoringTabStory() {
   return (

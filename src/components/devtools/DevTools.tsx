@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { X, Wrench } from "lucide-react";
 import { EmailPreviews } from "./EmailPreviews";
-import { EmailMonitoringTabContainer } from "./EmailMonitoringTabContainer";
+import { EmailMonitoringTabContainer } from "./email-monitor/EmailMonitoringTabContainer";
 import { EnrichmentTab } from "./EnrichmentTab";
 import { PostsTab } from "./PostsTab";
 import { FlyersTab } from "./FlyersTab";

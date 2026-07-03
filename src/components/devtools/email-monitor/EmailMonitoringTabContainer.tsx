@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import type { SentEmail } from "../../types";
+import type { SentEmail } from "../../../types";
 import { EmailMonitoringTab } from "./EmailMonitoringTab";
-import { api } from "../../utils/api";
+import { api } from "../../../utils/api";
 
 export function EmailMonitoringTabContainer() {
   const [sentEmails, setSentEmails] = useState<SentEmail[]>([]);

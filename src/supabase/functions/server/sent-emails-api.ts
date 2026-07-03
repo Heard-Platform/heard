@@ -9,8 +9,6 @@ const WINDOW_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MASK = "••••";
 
-// Never return a real email address over the wire — show up to the first 6
-// characters of the local part and always mask the rest, including the domain.
 function obfuscateEmail(email: string): string {
   const at = email.indexOf("@");
   if (at === -1) return `${MASK}@${MASK}`;
