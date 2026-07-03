@@ -306,7 +306,11 @@ const RoomScrollerInner = forwardRef<
                 className={`w-full flex justify-center px-2 py-3 ${index === 0 ? "pt-14" : ""}`}
               >
                 {isCreateCard(card) ? (
-                  <CreateRoomCard onCreateRoom={onCreateRoom} onOpenExplorer={onOpenExplorer} />
+                  <CreateRoomCard
+                    isActive={index === currentIndex}
+                    onCreateRoom={onCreateRoom}
+                    onOpenExplorer={onOpenExplorer}
+                  />
                 ) : event ? (
                   <EventCard event={event} onOpen={onOpenEvent} />
                 ) : room ? (
