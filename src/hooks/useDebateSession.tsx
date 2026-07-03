@@ -83,7 +83,7 @@ interface DebateSessionContextType {
     questionId: string,
     answer: string | null,
   ) => Promise<ApiResponse | null>;
-  loadActiveRooms: (targetRoomId?: string) => Promise<DebateRoom[]>;
+  loadActiveRooms: (subHeard?: string, targetRoomId?: string) => Promise<DebateRoom[]>;
   setCurrentSubHeard: (subHeard: string | null) => void;
   resetSession: () => void;
   createSeedData: () => Promise<any>;
@@ -505,12 +505,11 @@ export function DebateSessionProvider(
     [safelyMakeApiCall],
   );      
 
-  // Get active rooms - uses currentSubHeard from state
-  const loadActiveRooms = useCallback(async (targetRoomId?: string) => {
+  const loadActiveRooms = useCallback(async (subHeard?: string, targetRoomId?: string) => {
     setRoomsLoading(true);
     try {
       const response = await api.getActiveRooms(
-        currentSubHeard || undefined,
+        subHeard,
         targetRoomId,
       ) as any;
       if (response.success && response.data) {
@@ -523,7 +522,7 @@ export function DebateSessionProvider(
     }
     setRoomsLoading(false);
     return [];
-  }, [currentSubHeard]);
+  }, []);
 
   // Create seed data for testing
   const createSeedData = useCallback(async () => {

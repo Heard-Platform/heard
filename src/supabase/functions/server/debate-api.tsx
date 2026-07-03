@@ -8,6 +8,7 @@ import {
   getUsersChanceCardStatuses, getUsersYouTubeCardStatuses,
   getVotesForStatement,
   getCommunities,
+  getCommunity,
   getStatementsForRoom,
   saveRant,
   getRantsForRoom,
@@ -912,6 +913,7 @@ const getActiveRoomsHandler = async (c: Context) => {
     const targetRoomId = c.req.query("targetRoomId");
     const includeDemographics = c.req.query("includeDemographics") === "true";
 
+    let targetRoomSubHeard: string | undefined;
     if (userId && targetRoomId) {
       const targetRoom = await getDebateRoom(targetRoomId);
       if (targetRoom && targetRoom.isActive) {
@@ -920,17 +922,21 @@ const getActiveRoomsHandler = async (c: Context) => {
           await saveDebateRoom(targetRoom);
         }
         await recordRoomEngagement(userId, targetRoomId);
+        targetRoomSubHeard = targetRoom.subHeard;
+      }
+    }
 
-        if (targetRoom.subHeard) {
-          const existingMembership = await getMembership(userId, targetRoom.subHeard);
-          if (!existingMembership) {
-            const newMembership: CommunityMembership = {
-              userId,
-              subHeard: targetRoom.subHeard,
-              joinedAt: Date.now(),
-            };
-            await saveMembership(newMembership);
-          }
+    if (userId) {
+      const subHeardToJoin = targetRoomSubHeard || subHeard;
+      if (subHeardToJoin) {
+        const existingMembership = await getMembership(userId, subHeardToJoin);
+        if (!existingMembership && (await getCommunity(subHeardToJoin))) {
+          const newMembership: CommunityMembership = {
+            userId,
+            subHeard: subHeardToJoin,
+            joinedAt: Date.now(),
+          };
+          await saveMembership(newMembership);
         }
       }
     }
@@ -1028,7 +1034,6 @@ const getActiveRoomsHandler = async (c: Context) => {
   }
 };
 
-app.get("/make-server-f1a393b4/rooms/active", getActiveRoomsHandler);
 app.post("/make-server-f1a393b4/rooms/active", getActiveRoomsHandler);
 
 // Send email invites to join a room

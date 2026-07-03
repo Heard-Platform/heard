@@ -221,7 +221,7 @@ class ApiClient extends BaseApiClient {
     const queryString = params.toString();
     return this.request<{ rooms: DebateRoom[] }>(
       `/rooms/active${queryString ? `?${queryString}` : ""}`,
-      targetRoomId ? { method: "POST" } : undefined,
+      { method: "POST" },
     );
   }
 
