@@ -1,17 +1,15 @@
-import moment from "moment";
+import { useState } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
-import type { ActivityFeedEvent, ActivityFeedEventType } from "../../types";
+import type { ActivityDayCount, ActivityFeedEventType } from "../../types";
 
 const TYPE_LABEL: Record<ActivityFeedEventType, string> = {
   user: "User", session: "Session", room: "Room", community: "Community",
   statement: "Statement", vote: "Vote", modInviteAccept: "Mod Invite Accept",
   cohost: "Co-host", askTheData: "Ask the Data", userReport: "Report",
 };
-
-const ALL_TYPES = Object.keys(TYPE_LABEL) as ActivityFeedEventType[];
 
 // Validated categorical palette — fixed order, CVD-safe, worst adjacent ΔE 24.2
 const SERIES_COLOR: Record<ActivityFeedEventType, string> = {
@@ -27,34 +25,24 @@ const SERIES_COLOR: Record<ActivityFeedEventType, string> = {
   userReport:      "#e34948", // folds to slot 6 (shown only if data exists)
 };
 
-type ChartPoint = { day: string; [key: string]: string | number };
-
-function buildChartData(
-  events: ActivityFeedEvent[],
-  types: ActivityFeedEventType[],
-): ChartPoint[] {
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = moment().subtract(6 - i, "days");
-    return { key: d.format("YYYY-MM-DD"), label: d.format("M/D") };
-  });
-  return days.map(({ key, label }) => {
-    const point: ChartPoint = { day: label };
-    for (const t of types) {
-      point[t] = events.filter(
-        (e) => e.type === t && moment(e.timestamp).format("YYYY-MM-DD") === key,
-      ).length;
-    }
-    return point;
-  });
-}
-
 interface ActivityTimelineProps {
-  events: ActivityFeedEvent[];
+  dayCounts: ActivityDayCount[];
 }
 
-export function ActivityTimeline({ events }: ActivityTimelineProps) {
-  const activeTypes = ALL_TYPES.filter((t) => events.some((e) => e.type === t));
-  const chartData = buildChartData(events, activeTypes);
+export function ActivityTimeline({ dayCounts }: ActivityTimelineProps) {
+  const allTypes = Object.keys(TYPE_LABEL) as ActivityFeedEventType[];
+  const activeTypes = allTypes.filter((t) =>
+    dayCounts.some((d) => (d[t] ?? 0) > 0),
+  );
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+
+  const toggleType = (dataKey: string) => {
+    setHidden((prev) => {
+      const next = new Set(prev);
+      next.has(dataKey) ? next.delete(dataKey) : next.add(dataKey);
+      return next;
+    });
+  };
 
   return (
     <div style={{ backgroundColor: "white", borderBottom: "1px solid #e5e7eb", padding: "20px 24px" }}>
@@ -62,7 +50,7 @@ export function ActivityTimeline({ events }: ActivityTimelineProps) {
         Activity by day (last 7 days)
       </p>
       <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={chartData} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
+        <LineChart data={dayCounts} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
           <CartesianGrid stroke="#e1e0d9" strokeWidth={1} vertical={false} />
           <XAxis
             dataKey="day"
@@ -80,12 +68,21 @@ export function ActivityTimeline({ events }: ActivityTimelineProps) {
             contentStyle={{ fontSize: 12, border: "1px solid #e1e0d9", borderRadius: 6, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
             labelStyle={{ fontWeight: 600, color: "#0b0b0b", marginBottom: 4 }}
             cursor={{ stroke: "#c3c2b7", strokeWidth: 1 }}
+            itemSorter={(item) => -(item.value as number)}
           />
           <Legend
             iconType="plainline"
             iconSize={16}
-            wrapperStyle={{ fontSize: 12, color: "#52514e", paddingTop: 8 }}
-            formatter={(value) => TYPE_LABEL[value as ActivityFeedEventType] ?? value}
+            wrapperStyle={{ fontSize: 12, color: "#52514e", paddingTop: 8, cursor: "pointer" }}
+            formatter={(value) => {
+              const label = TYPE_LABEL[value as ActivityFeedEventType] ?? value;
+              return (
+                <span style={{ color: hidden.has(value) ? "#c3c2b7" : "#52514e" }}>
+                  {label}
+                </span>
+              );
+            }}
+            onClick={(e) => toggleType(e.dataKey as string)}
           />
           {activeTypes.map((t) => (
             <Line
@@ -95,6 +92,7 @@ export function ActivityTimeline({ events }: ActivityTimelineProps) {
               stroke={SERIES_COLOR[t]}
               strokeWidth={2}
               dot={false}
+              hide={hidden.has(t)}
               activeDot={{ r: 4, strokeWidth: 2, stroke: "#fcfcfb" }}
             />
           ))}

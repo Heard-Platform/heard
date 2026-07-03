@@ -3,7 +3,7 @@ import moment from "moment";
 import { Button } from "./ui/button";
 import { X, User, DoorOpen, FileText, ThumbsUp, RefreshCw, Users, LogIn, UserPlus, MessageCircleQuestion, Flag } from "lucide-react";
 import { api } from "../utils/api";
-import type { ActivityFeedEvent, ActivityFeedEventType } from "../types";
+import type { ActivityFeedEvent, ActivityFeedEventType, ActivityDayCount } from "../types";
 import { ActivityTimeline } from "./activity-feed/ActivityTimeline";
 
 interface AdminActivityFeedProps {
@@ -45,6 +45,7 @@ function formatTime(ts: number): string {
 
 export function AdminActivityFeed({ onExit }: AdminActivityFeedProps) {
   const [events, setEvents] = useState<ActivityFeedEvent[]>([]);
+  const [dayCounts, setDayCounts] = useState<ActivityDayCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<ActivityFeedEventType | "all">("all");
@@ -55,6 +56,7 @@ export function AdminActivityFeed({ onExit }: AdminActivityFeedProps) {
     const res = await api.getActivityFeed();
     if (res.success && res.data) {
       setEvents(res.data.events);
+      setDayCounts(res.data.dayCounts ?? []);
     } else {
       setError("Failed to load activity feed");
     }
@@ -90,8 +92,8 @@ export function AdminActivityFeed({ onExit }: AdminActivityFeedProps) {
         </div>
       </div>
 
-      {!loading && !error && events.length > 0 && (
-        <ActivityTimeline events={events} />
+      {!loading && !error && dayCounts.length > 0 && (
+        <ActivityTimeline dayCounts={dayCounts} />
       )}
 
       <div style={{ padding: "16px 24px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
