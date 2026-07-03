@@ -228,12 +228,12 @@ export function RoomCard({
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: isActive ? 1 : 0.95, opacity: 1 }}
-      transition={{ duration: 0.3 }}
+      animate={{ scale: isActive ? 1 : 0.95, opacity: isActive ? 1 : 0.35 }}
+      transition={{ duration: 0.2 }}
       className="w-full"
       style={{ maxWidth: "var(--room-card-max-width)" }}
     >
-      <div className="space-y-4 border rounded-2xl py-4 px-2" style={{ borderColor: "rgba(151, 107, 132, 0.2)", backgroundColor: "rgba(255, 255, 255, 0.45)" }}>
+      <div className="space-y-4 border rounded-2xl py-4 px-2 normal-border" style={{ backgroundColor: "rgba(255, 255, 255, 0.45)" }}>
           {/* Compact header */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}

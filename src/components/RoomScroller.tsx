@@ -110,9 +110,7 @@ const RoomScrollerInner = forwardRef<
     const { clearAlert } = useRoomAlertsContext();
     const currentIndexRef = useRef(0);
     const allCardsLengthRef = useRef(0);
-    const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(
-      undefined,
-    );
+    const scrollRafRef = useRef<number | undefined>(undefined);
     const [loadingRooms, setLoadingRooms] = useState<
       Record<string, boolean>
     >({});
@@ -200,8 +198,10 @@ const RoomScrollerInner = forwardRef<
       if (isScrolling.current) return;
       resetTutorialTimer();
 
-      clearTimeout(scrollTimeoutRef.current);
-      scrollTimeoutRef.current = setTimeout(() => {
+      if (scrollRafRef.current !== undefined) return;
+      scrollRafRef.current = requestAnimationFrame(() => {
+        scrollRafRef.current = undefined;
+
         const container = scrollContainerRef.current;
         if (!container) return;
 
@@ -220,7 +220,7 @@ const RoomScrollerInner = forwardRef<
         if (bestIndex !== currentIndexRef.current) {
           setCurrentIndex(bestIndex);
         }
-      }, 150);
+      });
     }, []);
 
     useEffect(() => {
@@ -232,7 +232,9 @@ const RoomScrollerInner = forwardRef<
       container.addEventListener("scroll", handleScroll, { passive: true });
       return () => {
         container.removeEventListener("scroll", handleScroll);
-        clearTimeout(scrollTimeoutRef.current);
+        if (scrollRafRef.current !== undefined) {
+          cancelAnimationFrame(scrollRafRef.current);
+        }
       };
     }, [handleScroll, loading]);
 

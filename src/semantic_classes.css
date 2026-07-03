@@ -6,6 +6,10 @@
   background-color: var(--color-white);
 }
 
+.normal-border {
+  border-color: var(--color-slate-300);
+}
+
 .invalid-text {
   color: var(--color-red-600);
 }
