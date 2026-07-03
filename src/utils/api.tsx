@@ -177,12 +177,6 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async joinRoom(roomId: string) {
-    return this.request(`/room/${roomId}/join`, {
-      method: "POST",
-    });
-  }
-
   async getRoomStatus(roomId: string) {
     return this.request<RoomStatusResponse>(`/room/${roomId}`);
   }
@@ -227,6 +221,7 @@ class ApiClient extends BaseApiClient {
     const queryString = params.toString();
     return this.request<{ rooms: DebateRoom[] }>(
       `/rooms/active${queryString ? `?${queryString}` : ""}`,
+      targetRoomId ? { method: "POST" } : undefined,
     );
   }
 

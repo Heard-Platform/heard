@@ -43,7 +43,6 @@ interface LobbyScreenProps {
   onCreateRoom: (
     newDebate: NewDebateRoom,
   ) => Promise<DebateRoom>;
-  onJoinRoom: (roomId: string) => Promise<void>;
   onJumpToRoom: (roomId: string, subHeard?: string) => void;
   onRefreshRooms: (subHeard?: string) => Promise<DebateRoom[]>;
   onJumpToFinalResults?: () => Promise<void>;
@@ -78,7 +77,6 @@ export function LobbyScreen({
   eventLoading,
   currentEvent,
   onCreateRoom,
-  onJoinRoom,
   onJumpToRoom,
   onRefreshRooms,
   onJumpToFinalResults,
@@ -254,10 +252,6 @@ export function LobbyScreen({
     }
   };
 
-  const handleJoinRoom = async (roomId: string) => {
-    await onJoinRoom(roomId);
-  };
-
   const handleOpenCreateSheet = () => {
     if (user.isAnonymous) {
       setShowAccountSetupAnonModal(true);
@@ -332,7 +326,6 @@ export function LobbyScreen({
           user={user}
           currentSubHeard={currentSubHeard}
           onExitEvent={onExitEvent}
-          onJoinRoom={onJoinRoom}
           onSubmitStatement={onSubmitStatement}
           onVoteOnStatement={onVoteOnStatement}
           onShowAccountSetupModal={handleShowAccountSetupModal}
@@ -435,7 +428,6 @@ export function LobbyScreen({
               analysisRoomId={analysisRoomId}
               targetStatementId={targetStatementId}
               presences={presences}
-              onJoinRoom={handleJoinRoom}
               onCreateRoom={handleOpenCreateSheet}
               onSubmitStatement={onSubmitStatement}
               onVoteOnStatement={onVoteOnStatement}

@@ -58,7 +58,6 @@ function RoomCardWrapper({
           isActive={true}
           user={mockUser}
           currentSubHeard={undefined}
-          onJoin={() => console.log("join")}
           onSubmitStatement={async (roomId, text) => {
             console.log("Submit:", { roomId, text });
           }}

@@ -14,7 +14,9 @@ import {
   bulkSaveStatements,
   saveUserWithEmailIndex,
   getClusterMetadataRecord,
-  getClusterAssignmentsBatch
+  getClusterAssignmentsBatch,
+  getMembership,
+  saveMembership,
 } from "./kv-utils.tsx";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
@@ -38,7 +40,8 @@ import type {
   Vote,
   Phase,
   SubPhase,
-  DebateRoom
+  DebateRoom,
+  CommunityMembership,
 } from "./types.tsx";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { calculateVoteStats, orderStatements, processVote } from "./voting-utils.ts";
@@ -558,57 +561,6 @@ app.get(
   },
 );
 
-// Join debate room
-app.post(
-  "/make-server-f1a393b4/room/:roomId/join",
-  async (c: Context) => {
-    try {
-      const userId = c.get("userId");
-      const roomId = c.req.param("roomId");
-
-      if (!roomId || typeof roomId !== "string") {
-        return c.json({ error: "Room ID is required" }, 400);
-      }
-      
-      const room = await getDebateRoom(roomId);
-      if (!room) {
-        return c.json({ error: "Room not found" }, 404);
-      }
-
-      if (!room.isActive) {
-        return c.json(
-          { error: "Room is no longer active" },
-          400,
-        );
-      }
-
-      const user = await getUserSession(userId);
-      if (!user) {
-        return c.json({ error: "User session not found" }, 404);
-      }
-
-      // Add user to participants if not already there
-      if (!room.participants.includes(userId)) {
-        room.participants.push(userId);
-        await saveDebateRoom(room);
-      }
-      await recordRoomEngagement(userId, roomId);
-
-      // Update user's current room
-      user.currentRoomId = roomId;
-      await saveUserSession(user);
-
-      return c.json({ room });
-    } catch (error) {
-      console.error("Error joining debate room:", error);
-      return c.json(
-        { error: "Failed to join debate room" },
-        500,
-      );
-    }
-  },
-);
-
 // Get room status
 app.get(
   "/make-server-f1a393b4/room/:roomId",
@@ -953,109 +905,131 @@ app.post(
   },
 );
 
-// Get active rooms
-app.get(
-  "/make-server-f1a393b4/rooms/active",
-  async (c: Context) => {
-    try {
-      const userId = c.get("userId");
-      const subHeard = c.req.query("subHeard");
-      const targetRoomId = c.req.query("targetRoomId");
-      const includeDemographics = c.req.query("includeDemographics") === "true";
+const getActiveRoomsHandler = async (c: Context) => {
+  try {
+    const userId = c.get("userId");
+    const subHeard = c.req.query("subHeard");
+    const targetRoomId = c.req.query("targetRoomId");
+    const includeDemographics = c.req.query("includeDemographics") === "true";
 
-      let rooms = await getActiveRooms();
-      let userMemberships = new Set<string>();
-      if (userId) {
-        userMemberships = await getUserMemberships(userId);
-
-        const communities = await getCommunities();
-        rooms = filterFeedRooms(
-          rooms,
-          communities,
-          userMemberships,
-          userId,
-          subHeard,
-        );
-
-        const statuses = await getUsersChanceCardStatuses(userId);
-
-        const swipedRoomIds = new Set(
-            statuses.map(status => status.roomId)
-        );
-
-        const [youtubeStatuses, swipedCoverCardRoomIds] = await Promise.all([
-          getUsersYouTubeCardStatuses(userId),
-          getCoverCardSwipedRoomIds(userId),
-        ]);
-
-        const swipedYoutubeRoomIds = new Set(youtubeStatuses.map((s: any) => s.roomId));
-
-        rooms = rooms.map((room) => ({
-          ...room,
-          chanceCardSwiped: swipedRoomIds.has(room.id),
-          coverCardSwiped: swipedCoverCardRoomIds.has(room.id) || swipedYoutubeRoomIds.has(room.id),
-        }));
-      }
-
-      rooms = rooms
-        .sort(
-          (a, b) =>
-            (b.lastActivityAt ?? b.createdAt) -
-            (a.lastActivityAt ?? a.createdAt),
-        )
-        .slice(0, 1000);
-      rooms = sortRoomsForFeed(rooms, userMemberships);
-      rooms = rooms.slice(0, 20);
-
-      if (targetRoomId && !rooms.some((r) => r.id === targetRoomId)) {
-        const targetRoom = await getDebateRoom(targetRoomId);
-        if (targetRoom) {
-          rooms = [targetRoom, ...rooms];
+    if (userId && targetRoomId) {
+      const targetRoom = await getDebateRoom(targetRoomId);
+      if (targetRoom && targetRoom.isActive) {
+        if (!targetRoom.participants.includes(userId)) {
+          targetRoom.participants.push(userId);
+          await saveDebateRoom(targetRoom);
         }
-      }
+        await recordRoomEngagement(userId, targetRoomId);
 
-      // Attach demographic questions to each room
-      if (includeDemographics) {
-        const roomIds = rooms.map((r) => r.id);
-        const [allQuestions, answeredQuestionIds] = await Promise.all([
-          getDemographicQuestionsForRooms(roomIds),
-          userId ? getAnsweredDemographicQuestionIds(userId) : Promise.resolve([]),
-        ]);
-        const answeredSet = new Set(answeredQuestionIds);
-
-        const questionsByRoom: Record<string, typeof allQuestions> = {};
-        for (const q of allQuestions) {
-          if (!questionsByRoom[q.roomId]) {
-            questionsByRoom[q.roomId] = [];
+        if (targetRoom.subHeard) {
+          const existingMembership = await getMembership(userId, targetRoom.subHeard);
+          if (!existingMembership) {
+            const newMembership: CommunityMembership = {
+              userId,
+              subHeard: targetRoom.subHeard,
+              joinedAt: Date.now(),
+            };
+            await saveMembership(newMembership);
           }
-          questionsByRoom[q.roomId].push(q);
         }
-  
-        rooms = rooms.map((room) => {
-          const questions = questionsByRoom[room.id] || [];
-          const unanswered = questions.filter((q) => !answeredSet.has(q.id));
-          return {
-            ...room,
-            demographicQuestions: unanswered,
-          };
-        });
-      } else {
-        rooms = rooms.map((room) => ({
-          ...room,
-          demographicQuestions: [],
-        }));
+      }
+    }
+
+    let rooms = await getActiveRooms();
+    let userMemberships = new Set<string>();
+    if (userId) {
+      userMemberships = await getUserMemberships(userId);
+
+      const communities = await getCommunities();
+      rooms = filterFeedRooms(
+        rooms,
+        communities,
+        userMemberships,
+        userId,
+        subHeard,
+      );
+
+      const statuses = await getUsersChanceCardStatuses(userId);
+
+      const swipedRoomIds = new Set(
+          statuses.map(status => status.roomId)
+      );
+
+      const [youtubeStatuses, swipedCoverCardRoomIds] = await Promise.all([
+        getUsersYouTubeCardStatuses(userId),
+        getCoverCardSwipedRoomIds(userId),
+      ]);
+
+      const swipedYoutubeRoomIds = new Set(youtubeStatuses.map((s: any) => s.roomId));
+
+      rooms = rooms.map((room) => ({
+        ...room,
+        chanceCardSwiped: swipedRoomIds.has(room.id),
+        coverCardSwiped: swipedCoverCardRoomIds.has(room.id) || swipedYoutubeRoomIds.has(room.id),
+      }));
+    }
+
+    rooms = rooms
+      .sort(
+        (a, b) =>
+          (b.lastActivityAt ?? b.createdAt) -
+          (a.lastActivityAt ?? a.createdAt),
+      )
+      .slice(0, 1000);
+    rooms = sortRoomsForFeed(rooms, userMemberships);
+    rooms = rooms.slice(0, 20);
+
+    if (targetRoomId && !rooms.some((r) => r.id === targetRoomId)) {
+      const targetRoom = await getDebateRoom(targetRoomId);
+      if (targetRoom && targetRoom.isActive) {
+        rooms = [targetRoom, ...rooms];
+      }
+    }
+
+    // Attach demographic questions to each room
+    if (includeDemographics) {
+      const roomIds = rooms.map((r) => r.id);
+      const [allQuestions, answeredQuestionIds] = await Promise.all([
+        getDemographicQuestionsForRooms(roomIds),
+        userId ? getAnsweredDemographicQuestionIds(userId) : Promise.resolve([]),
+      ]);
+      const answeredSet = new Set(answeredQuestionIds);
+
+      const questionsByRoom: Record<string, typeof allQuestions> = {};
+      for (const q of allQuestions) {
+        if (!questionsByRoom[q.roomId]) {
+          questionsByRoom[q.roomId] = [];
+        }
+        questionsByRoom[q.roomId].push(q);
       }
 
-      return c.json({ rooms });
-    } catch (error) {
-      console.error("Error fetching active rooms:", error);
-      return c.json(
-        { error: "Failed to fetch active rooms" },
-        500,
-      );
+      rooms = rooms.map((room) => {
+        const questions = questionsByRoom[room.id] || [];
+        const unanswered = questions.filter((q) => !answeredSet.has(q.id));
+        return {
+          ...room,
+          demographicQuestions: unanswered,
+        };
+      });
+    } else {
+      rooms = rooms.map((room) => ({
+        ...room,
+        demographicQuestions: [],
+      }));
     }
-  },
-);
+
+    return c.json({ rooms });
+  } catch (error) {
+    console.error("Error fetching active rooms:", error);
+    return c.json(
+      { error: "Failed to fetch active rooms" },
+      500,
+    );
+  }
+};
+
+app.get("/make-server-f1a393b4/rooms/active", getActiveRoomsHandler);
+app.post("/make-server-f1a393b4/rooms/active", getActiveRoomsHandler);
 
 // Send email invites to join a room
 app.post(

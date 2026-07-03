@@ -8,7 +8,6 @@ export interface EventRoomViewProps {
   statements: Statement[];
   user: UserSession;
   currentSubHeard?: string;
-  onJoin: () => void;
   onSubmitStatement: (roomId: string, text: string) => Promise<any>;
   onVoteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
   onRefreshStatements: () => Promise<void>;
@@ -21,7 +20,6 @@ export function EventRoomView({
   statements,
   user,
   currentSubHeard,
-  onJoin,
   onSubmitStatement,
   onVoteOnStatement,
   onRefreshStatements,
@@ -45,7 +43,6 @@ export function EventRoomView({
           isActive={true}
           user={user}
           currentSubHeard={currentSubHeard}
-          onJoin={onJoin}
           onSubmitStatement={onSubmitStatement}
           onVoteOnStatement={onVoteOnStatement}
           onRefreshStatements={onRefreshStatements}
