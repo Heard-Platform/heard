@@ -981,7 +981,7 @@ const getActiveRoomsHandler = async (c: Context) => {
 
     if (targetRoomId && !rooms.some((r) => r.id === targetRoomId)) {
       const targetRoom = await getDebateRoom(targetRoomId);
-      if (targetRoom) {
+      if (targetRoom && targetRoom.isActive) {
         rooms = [targetRoom, ...rooms];
       }
     }
