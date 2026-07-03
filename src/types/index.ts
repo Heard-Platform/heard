@@ -590,3 +590,13 @@ export interface VoteStats {
   byType: Record<string, number>;
   distributionByUser: Record<string, number>;
 }
+
+export interface SentEmail {
+  id: string;
+  recipientId: string;
+  recipientEmail: string;
+  template: string;
+  sentAt: number;
+  previewSubject?: string;
+  previewHtml?: string;
+}

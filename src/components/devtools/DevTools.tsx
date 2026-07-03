@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { X, Wrench } from "lucide-react";
 import { EmailPreviews } from "./EmailPreviews";
+import { EmailMonitoringTabContainer } from "./email-monitor/EmailMonitoringTabContainer";
 import { EnrichmentTab } from "./EnrichmentTab";
 import { PostsTab } from "./PostsTab";
 import { FlyersTab } from "./FlyersTab";
@@ -21,7 +22,7 @@ interface DevToolsProps {
   onExit?: () => void;
 }
 
-type TabType = "vote-matrix" | "clustering" | "email" | "enrichment" | "posts" | "flyers" | "vote-stats" | "performance" | "testing";
+type TabType = "vote-matrix" | "clustering" | "email" | "email-monitoring" | "enrichment" | "posts" | "flyers" | "vote-stats" | "performance" | "testing";
 
 export function DevTools({ user, onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
@@ -73,6 +74,11 @@ export function DevTools({ user, onExit }: DevToolsProps) {
                 onClick={() => handleTabChange("email")}
               />
               <TabButton
+                active={activeTab === "email-monitoring"}
+                label="Email Monitoring"
+                onClick={() => handleTabChange("email-monitoring")}
+              />
+              <TabButton
                 active={activeTab === "enrichment"}
                 label="Enrichment Service"
                 onClick={() => handleTabChange("enrichment")}
@@ -116,6 +122,9 @@ export function DevTools({ user, onExit }: DevToolsProps) {
               </div>
             )}
             {activeTab === "email" && <EmailPreviews user={user} />}
+            {activeTab === "email-monitoring" && (
+              <EmailMonitoringTabContainer />
+            )}
             {activeTab === "enrichment" && <EnrichmentTab />}
             {activeTab === "posts" && <PostsTab />}
             {activeTab === "flyers" && <FlyersTab />}
