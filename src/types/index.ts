@@ -446,8 +446,11 @@ export interface ActivityFeedEvent {
   meta?: Record<string, string>;
 }
 
+export type ActivityDayCount = { day: string } & Partial<Record<ActivityFeedEventType, number>>;
+
 export interface ActivityFeedData {
   events: ActivityFeedEvent[];
+  dayCounts: ActivityDayCount[];
   fetchedAt: number;
 }
 

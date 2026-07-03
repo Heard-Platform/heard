@@ -390,7 +390,26 @@ app.get(
 
       events.sort((a, b) => b.timestamp - a.timestamp);
 
-      return { events: events.slice(0, 500), fetchedAt: now };
+      const ALL_FEED_TYPES = [
+        "user", "session", "room", "community", "statement",
+        "vote", "modInviteAccept", "cohost", "askTheData", "userReport",
+      ];
+      const toDateKey = (t: number) => new Date(t).toISOString().split("T")[0];
+      const dayCounts = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(now - (6 - i) * 86_400_000);
+        const dayKey = toDateKey(d.getTime());
+        const point: Record<string, number | string> = {
+          day: `${d.getMonth() + 1}/${d.getDate()}`,
+        };
+        for (const t of ALL_FEED_TYPES) {
+          point[t] = events.filter(
+            (e) => e.type === t && toDateKey(e.timestamp) === dayKey,
+          ).length;
+        }
+        return point;
+      });
+
+      return { events: events.slice(0, 500), dayCounts, fetchedAt: now };
     },
     "Failed to fetch activity feed",
   ),
