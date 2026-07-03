@@ -11,6 +11,7 @@ import {
   PublicStatsData,
   RetentionStatsData,
   RoomAlert,
+  SentEmail,
   Statement,
   SubHeard,
   UserHistoryData,
@@ -788,6 +789,12 @@ class ApiClient extends BaseApiClient {
         id: string;
       }>;
     }>(`/dev/email-previews/count?${params.toString()}`);
+  }
+
+  async getSentEmails() {
+    return this.request<{ sentEmails: SentEmail[] }>(
+      "/dev/sent-emails",
+    );
   }
 
   async unsubscribe(userId: string) {
