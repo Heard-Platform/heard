@@ -110,12 +110,10 @@ function AppContent() {
     verifyMagicLink,
     createAnonymousUser,
     createRoom,
-    joinRoom,
-    joinSubHeard,
     submitStatement,
     voteOnStatement,
     voteViaFlyer,
-    getActiveRooms,
+    loadActiveRooms,
     setCurrentSubHeard,
     resetSession,
     roomStatements,
@@ -173,7 +171,7 @@ function AppContent() {
     newDebate: NewDebateRoom,
   ): Promise<DebateRoom> => {
     const roomData = await createRoom(newDebate);
-    await getActiveRooms();
+    await loadActiveRooms();
     setCurrentSubHeard(roomData.subHeard || null);
     return roomData;
   };
@@ -511,26 +509,36 @@ function AppContent() {
     setCurrentSubHeard,
   ]);
 
-  useEffect(() => {
-    (async () => {
-      if (user && targetRoomId) {
-        const roomData = await joinRoom(targetRoomId);
-        if (roomData) {
-          if (roomData.subHeard) {
-            await joinSubHeard(roomData.subHeard);
-            if (parseRoomIdFromUrl() === targetRoomId) {
-              setCurrentSubHeard(roomData.subHeard);
-            }
-          }
-        } else {
-          setTargetRoomId(null);
-          clearRoomFromUrl();
+  const loadRoomsAndResolveTarget = async () => {
+    const rooms = await loadActiveRooms(targetRoomId || undefined);
+    const isResolvingTarget = isJoiningRoom && !!targetRoomId;
+    if (isResolvingTarget) {
+      const room = rooms.find((r) => r.id === targetRoomId);
+      if (room) {
+        if (room.subHeard && parseRoomIdFromUrl() === targetRoomId) {
+          setCurrentSubHeard(room.subHeard);
         }
-        setIsJoiningAnonymously(false);
-        setIsJoiningRoom(false);
+      } else {
+        setTargetRoomId(null);
+        clearRoomFromUrl();
       }
-    })();
-  }, [user, targetRoomId, joinRoom, joinSubHeard, setCurrentSubHeard]);
+      setIsJoiningAnonymously(false);
+      setIsJoiningRoom(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!user || !hasCheckedUrl) return;
+    loadRoomsAndResolveTarget();
+  }, [
+    user?.id,
+    currentSubHeard,
+    hasCheckedUrl,
+    targetRoomId,
+    isJoiningRoom,
+    loadActiveRooms,
+    setCurrentSubHeard,
+  ]);
 
   useEffect(() => {
     if (user && hasCheckedUrl && pendingCommunities.length > 0) {
@@ -542,12 +550,6 @@ function AppContent() {
       setPendingCommunities([]);
     }
   }, [user, hasCheckedUrl, pendingCommunities, pendingFlyerScan]);
-
-  useEffect(() => {
-    if (user && hasCheckedUrl && !isJoiningRoom) {
-      getActiveRooms(targetRoomId || undefined);
-    }
-  }, [user?.id, currentSubHeard, getActiveRooms, hasCheckedUrl, isJoiningRoom, targetRoomId]);
 
   const handleOpenShowcase = () => {
     setShowComponentShowcase(true);
@@ -740,7 +742,7 @@ function AppContent() {
         currentEvent={currentEvent}
         onCreateRoom={handleCreateRoom}
         onJumpToRoom={handleJumpToRoom}
-        onRefreshRooms={getActiveRooms}
+        onRefreshRooms={loadActiveRooms}
         onSubmitStatement={submitStatement}
         onVoteOnStatement={voteOnStatement}
         onLogout={handleLogout}
