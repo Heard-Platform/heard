@@ -34,7 +34,6 @@ import { AvatarAnimal } from "../utils/constants/avatars";
 interface DebateSessionContextType {
   user: UserSession | null;
   activeRooms: DebateRoom[];
-  currentSubHeard: string | null;
   loading: boolean;
   roomsLoading: boolean;
   error: string | null;
@@ -84,7 +83,6 @@ interface DebateSessionContextType {
     answer: string | null,
   ) => Promise<ApiResponse | null>;
   loadActiveRooms: (subHeard?: string, targetRoomId?: string) => Promise<DebateRoom[]>;
-  setCurrentSubHeard: (subHeard: string | null) => void;
   resetSession: () => void;
   createSeedData: () => Promise<any>;
   createTestRoom: () => Promise<any>;
@@ -166,9 +164,6 @@ export function DebateSessionProvider(
   const [activeRooms, setActiveRooms] = useState<DebateRoom[]>(
     [],
   );
-  const [currentSubHeard, setCurrentSubHeard] = useState<
-    string | null
-  >(null);
   const [loading, setLoading] = useState(true);
   const [roomsLoading, setRoomsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -931,7 +926,6 @@ export function DebateSessionProvider(
   let returnObj: DebateSessionContextType = {
     user,
     activeRooms,
-    currentSubHeard,
     loading,
     roomsLoading,
     error,
@@ -954,7 +948,6 @@ export function DebateSessionProvider(
     voteViaFlyer,
     submitFlyerEmail,
     loadActiveRooms,
-    setCurrentSubHeard,
     resetSession,
     createSeedData,
     createTestRoom,

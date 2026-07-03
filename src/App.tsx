@@ -66,6 +66,9 @@ const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: str
 };
 
 function AppContent() {
+  const [currentSubHeard, setCurrentSubHeard] = useState<
+    string | null
+  >(null);
   const [targetRoomId, setTargetRoomId] = useState<
     string | null
   >(null);
@@ -102,7 +105,6 @@ function AppContent() {
   const {
     user,
     activeRooms,
-    currentSubHeard,
     loading,
     roomsLoading,
     error,
@@ -113,7 +115,6 @@ function AppContent() {
     voteOnStatement,
     voteViaFlyer,
     loadActiveRooms,
-    setCurrentSubHeard,
     resetSession,
     roomStatements,
     acceptModInvite,
