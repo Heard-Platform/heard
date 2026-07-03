@@ -180,7 +180,6 @@ export function DebateScrollerStory() {
                 loading={false}
                 currentSubHeard="food"
                 isDeveloper={true}
-                onJoinRoom={() => {}}
                 onCreateRoom={() => {}}
                 onSubmitStatement={handleSubmitStatement}
                 onVoteOnStatement={handleVoteOnStatement}
@@ -231,7 +230,6 @@ export function DebateScrollerStory() {
                 currentSubHeard="food"
                 isDeveloper={true}
                 loading={false}
-                onJoinRoom={() => {}}
                 onCreateRoom={() => {}}
                 onSubmitStatement={handleSubmitStatement}
                 onVoteOnStatement={handleVoteOnStatement}

@@ -178,10 +178,6 @@ function AppContent() {
     return roomData;
   };
 
-  const handleJoinRoom = async (roomId: string) => {
-    await joinRoom(roomId);
-  };
-
   const handleJumpToRoom = (roomId: string, subHeard?: string) => {
     setCurrentSubHeard(subHeard ?? null);
     startRoomJoin(roomId);
@@ -743,7 +739,6 @@ function AppContent() {
         eventLoading={eventLoading}
         currentEvent={currentEvent}
         onCreateRoom={handleCreateRoom}
-        onJoinRoom={handleJoinRoom}
         onJumpToRoom={handleJumpToRoom}
         onRefreshRooms={getActiveRooms}
         onSubmitStatement={submitStatement}

@@ -14,7 +14,6 @@ export interface EventViewProps {
   user: UserSession;
   currentSubHeard?: string;
   onExitEvent: () => void;
-  onJoinRoom: (roomId: string) => Promise<void>;
   onSubmitStatement: (roomId: string, text: string) => Promise<any>;
   onVoteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
   onShowAccountSetupModal: (featureText: string) => void;
@@ -29,7 +28,6 @@ export function EventView({
   user,
   currentSubHeard,
   onExitEvent,
-  onJoinRoom,
   onSubmitStatement,
   onVoteOnStatement,
   onShowAccountSetupModal,
@@ -148,7 +146,6 @@ export function EventView({
               statements={selectedRoom.statements}
               user={user}
               currentSubHeard={currentSubHeard}
-              onJoin={() => onJoinRoom(selectedRoom.room.id)}
               onSubmitStatement={onSubmitStatement}
               onVoteOnStatement={handleVoteOnStatement}
               onRefreshStatements={handleRefreshStatements}

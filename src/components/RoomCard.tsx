@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
-  ArrowRight,
   BarChart3,
   Loader2,
   Info,
@@ -48,7 +47,6 @@ interface RoomCardProps {
   currentSubHeard?: string;
   analysisRoomId?: string;
   targetStatementId?: string;
-  onJoin: () => void;
   onSubmitStatement: (
     roomId: string,
     text: string,
@@ -73,7 +71,6 @@ export function RoomCard({
   currentSubHeard,
   analysisRoomId,
   targetStatementId,
-  onJoin,
   onSubmitStatement,
   onVoteOnStatement,
   onRefreshStatements,
@@ -382,24 +379,13 @@ export function RoomCard({
                   </p>
                 </div>
               ) : (
-                <>
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">
-                      No responses yet to this post
-                    </p>
-                  </div>
-                  <Button
-                    onClick={onJoin}
-                    disabled={isCompleted}
-                    size="lg"
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                  >
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">
                     {isCompleted
-                      ? "Conversation Ended"
-                      : "Join to Add Responses"}
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </>
+                      ? "Conversation ended with no responses"
+                      : "No responses yet"}
+                  </p>
+                </div>
               )}
             </div>
           )}
