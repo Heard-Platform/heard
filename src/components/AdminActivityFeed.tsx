@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { X, User, DoorOpen, FileText, ThumbsUp, RefreshCw, Users, LogIn, UserPlus, MessageCircleQuestion, Flag } from "lucide-react";
 import { api } from "../utils/api";
 import type { ActivityFeedEvent, ActivityFeedEventType } from "../types";
+import { ActivityTimeline } from "./activity-feed/ActivityTimeline";
 
 interface AdminActivityFeedProps {
   onExit: () => void;
@@ -88,6 +89,10 @@ export function AdminActivityFeed({ onExit }: AdminActivityFeedProps) {
           </Button>
         </div>
       </div>
+
+      {!loading && !error && events.length > 0 && (
+        <ActivityTimeline events={events} />
+      )}
 
       <div style={{ padding: "16px 24px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
         <Button
