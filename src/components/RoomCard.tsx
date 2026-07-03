@@ -37,6 +37,11 @@ import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { getTotalVotes } from "../utils/votes";
+import {
+  FEED_CARD_INACTIVE_SCALE,
+  FEED_CARD_INACTIVE_OPACITY,
+  FEED_CARD_TRANSITION_DURATION,
+} from "../utils/constants/general";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -228,8 +233,11 @@ export function RoomCard({
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: isActive ? 1 : 0.95, opacity: isActive ? 1 : 0.35 }}
-      transition={{ duration: 0.2 }}
+      animate={{
+        scale: isActive ? 1 : FEED_CARD_INACTIVE_SCALE,
+        opacity: isActive ? 1 : FEED_CARD_INACTIVE_OPACITY,
+      }}
+      transition={{ duration: FEED_CARD_TRANSITION_DURATION }}
       className="w-full"
       style={{ maxWidth: "var(--room-card-max-width)" }}
     >
