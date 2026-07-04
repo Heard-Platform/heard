@@ -163,13 +163,15 @@ app.post(
       topic: { type: "string" },
       description: { type: "string" },
       imageUrl: { type: "string" },
+      endTime: { type: "number" },
     },
     async (
-      { roomId, topic, description, imageUrl }: {
+      { roomId, topic, description, imageUrl, endTime }: {
         roomId: string;
         topic?: string;
         description?: string;
         imageUrl?: string;
+        endTime?: number;
       },
     ) => {
       const room = await getDebateRoom(roomId);
@@ -180,6 +182,7 @@ app.post(
       if (topic !== undefined) room.topic = topic;
       if (description !== undefined) room.description = description;
       if (imageUrl !== undefined) room.imageUrl = imageUrl;
+      if (endTime !== undefined) room.endTime = endTime;
 
       await saveDebateRoom(room);
       return { room };
