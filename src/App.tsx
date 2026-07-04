@@ -66,7 +66,9 @@ const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: str
 };
 
 function AppContent() {
-  const [isJoiningRoom, setIsJoiningRoom] = useState(false);
+  const [currentSubHeard, setCurrentSubHeard] = useState<
+    string | null
+  >(null);
   const [targetRoomId, setTargetRoomId] = useState<
     string | null
   >(null);
@@ -103,20 +105,16 @@ function AppContent() {
   const {
     user,
     activeRooms,
-    currentSubHeard,
     loading,
     roomsLoading,
     error,
     verifyMagicLink,
     createAnonymousUser,
     createRoom,
-    joinRoom,
-    joinSubHeard,
     submitStatement,
     voteOnStatement,
     voteViaFlyer,
-    getActiveRooms,
-    setCurrentSubHeard,
+    loadActiveRooms,
     resetSession,
     roomStatements,
     acceptModInvite,
@@ -124,7 +122,6 @@ function AppContent() {
   } = useDebateSession();
 
   const startRoomJoin = (roomId: string) => {
-    setIsJoiningRoom(true);
     setTargetRoomId(roomId);
   }
 
@@ -173,13 +170,9 @@ function AppContent() {
     newDebate: NewDebateRoom,
   ): Promise<DebateRoom> => {
     const roomData = await createRoom(newDebate);
-    await getActiveRooms();
     setCurrentSubHeard(roomData.subHeard || null);
+    await loadActiveRooms(roomData.subHeard || undefined);
     return roomData;
-  };
-
-  const handleJoinRoom = async (roomId: string) => {
-    await joinRoom(roomId);
   };
 
   const handleJumpToRoom = (roomId: string, subHeard?: string) => {
@@ -192,6 +185,7 @@ function AppContent() {
     setCurrentSubHeard(subHeard);
     setTargetRoomId(null);
     updateUrlForSubHeard(subHeard);
+    loadActiveRooms(subHeard || undefined);
   };
 
   const handleQrComplete = ({ reason }: { reason: "signup" | "otp-login" | "continue" }) => {
@@ -273,6 +267,8 @@ function AppContent() {
 
   useEffect(() => {
     if (!hasCheckedUrl && !loading) {
+      api.trackEvent("initial_load");
+
       const urlParams = new URLSearchParams(
         window.location.search,
       );
@@ -491,50 +487,31 @@ function AppContent() {
     createAnonymousUser,
   ]);
 
-  useEffect(() => {
-    const autoJoinSubHeard = async () => {
-      if (user && currentSubHeard && hasCheckedUrl) {
-        try {
-          const response = await api.joinSubHeard(currentSubHeard);
-
-          if (!response.success) {
-            toast.error("Unable to join this community");
-            setCurrentSubHeard(null);
-            updateUrlForSubHeard(null);
-          }
-        } catch (error) {
-          console.error("Error auto-joining sub-heard:", error);
-        }
+  const loadRoomsAndResolveTarget = async () => {
+    const rooms = await loadActiveRooms(
+      currentSubHeard || undefined,
+      targetRoomId || undefined,
+    );
+    const room = rooms.find((r) => r.id === targetRoomId);
+    if (room) {
+      if (room.subHeard && parseRoomIdFromUrl() === targetRoomId) {
+        setCurrentSubHeard(room.subHeard);
       }
-    };
-    autoJoinSubHeard();
-  }, [
-    user,
-    currentSubHeard,
-    hasCheckedUrl,
-    setCurrentSubHeard,
-  ]);
+    } else {
+      setTargetRoomId(null);
+      clearRoomFromUrl();
+    }
+    setIsJoiningAnonymously(false);
+  };
 
   useEffect(() => {
-    (async () => {
-      if (user && targetRoomId) {
-        const roomData = await joinRoom(targetRoomId);
-        if (roomData) {
-          if (roomData.subHeard) {
-            await joinSubHeard(roomData.subHeard);
-            if (parseRoomIdFromUrl() === targetRoomId) {
-              setCurrentSubHeard(roomData.subHeard);
-            }
-          }
-        } else {
-          setTargetRoomId(null);
-          clearRoomFromUrl();
-        }
-        setIsJoiningAnonymously(false);
-        setIsJoiningRoom(false);
-      }
-    })();
-  }, [user, targetRoomId, joinRoom, joinSubHeard, setCurrentSubHeard]);
+    if (!user || !hasCheckedUrl) return;
+    if (targetRoomId) {
+      loadRoomsAndResolveTarget();
+    } else {
+      loadActiveRooms(currentSubHeard || undefined);
+    }
+  }, [user?.id, hasCheckedUrl, targetRoomId]);
 
   useEffect(() => {
     if (user && hasCheckedUrl && pendingCommunities.length > 0) {
@@ -546,12 +523,6 @@ function AppContent() {
       setPendingCommunities([]);
     }
   }, [user, hasCheckedUrl, pendingCommunities, pendingFlyerScan]);
-
-  useEffect(() => {
-    if (user && hasCheckedUrl && !isJoiningRoom) {
-      getActiveRooms(targetRoomId || undefined);
-    }
-  }, [user?.id, currentSubHeard, getActiveRooms, hasCheckedUrl, isJoiningRoom, targetRoomId]);
 
   const handleOpenShowcase = () => {
     setShowComponentShowcase(true);
@@ -743,9 +714,8 @@ function AppContent() {
         eventLoading={eventLoading}
         currentEvent={currentEvent}
         onCreateRoom={handleCreateRoom}
-        onJoinRoom={handleJoinRoom}
         onJumpToRoom={handleJumpToRoom}
-        onRefreshRooms={getActiveRooms}
+        onRefreshRooms={loadActiveRooms}
         onSubmitStatement={submitStatement}
         onVoteOnStatement={voteOnStatement}
         onLogout={handleLogout}

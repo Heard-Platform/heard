@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import moment from "moment";
 import { Button } from "./ui/button";
-import { X, User, DoorOpen, FileText, ThumbsUp, RefreshCw, Users, LogIn, UserPlus, MessageCircleQuestion, Flag } from "lucide-react";
+import { X, User, DoorOpen, FileText, ThumbsUp, RefreshCw, Users, LogIn, UserPlus, MessageCircleQuestion, Flag, Globe } from "lucide-react";
 import { api } from "../utils/api";
-import type { ActivityFeedEvent, ActivityFeedEventType } from "../types";
+import type { ActivityFeedEvent, ActivityFeedEventType, ActivityDayCount } from "../types";
+import { ActivityTimeline } from "./activity-feed/ActivityTimeline";
 
 interface AdminActivityFeedProps {
   onExit: () => void;
@@ -23,6 +24,7 @@ const TYPE_CONFIG: Record<
   cohost: { label: "Co-host", icon: UserPlus, color: "text-violet-700", bg: "bg-violet-100" },
   askTheData: { label: "Ask the Data", icon: MessageCircleQuestion, color: "text-blue-700", bg: "bg-blue-100" },
   userReport: { label: "Report", icon: Flag, color: "text-red-700", bg: "bg-red-100" },
+  pageLoad: { label: "Page Load", icon: Globe, color: "text-gray-700", bg: "bg-gray-100" },
 };
 
 const ALL_TYPES: ActivityFeedEventType[] = [
@@ -36,6 +38,7 @@ const ALL_TYPES: ActivityFeedEventType[] = [
   "cohost",
   "askTheData",
   "userReport",
+  "pageLoad",
 ];
 
 function formatTime(ts: number): string {
@@ -44,6 +47,7 @@ function formatTime(ts: number): string {
 
 export function AdminActivityFeed({ onExit }: AdminActivityFeedProps) {
   const [events, setEvents] = useState<ActivityFeedEvent[]>([]);
+  const [dayCounts, setDayCounts] = useState<ActivityDayCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<ActivityFeedEventType | "all">("all");
@@ -54,6 +58,7 @@ export function AdminActivityFeed({ onExit }: AdminActivityFeedProps) {
     const res = await api.getActivityFeed();
     if (res.success && res.data) {
       setEvents(res.data.events);
+      setDayCounts(res.data.dayCounts ?? []);
     } else {
       setError("Failed to load activity feed");
     }
@@ -88,6 +93,10 @@ export function AdminActivityFeed({ onExit }: AdminActivityFeedProps) {
           </Button>
         </div>
       </div>
+
+      {!loading && !error && dayCounts.length > 0 && (
+        <ActivityTimeline dayCounts={dayCounts} />
+      )}
 
       <div style={{ padding: "16px 24px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
         <Button

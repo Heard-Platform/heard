@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
-  ArrowRight,
   BarChart3,
   Loader2,
   Info,
@@ -32,11 +31,17 @@ import { ShareButton } from "./ShareButton";
 import { HideAndMergeModal } from "./room/mod/HideAndMergeModal";
 import { EditRoomModal } from "./room/mod/EditRoomModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
+import { DisplayModeScreen } from "./DisplayModeScreen";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { getTotalVotes } from "../utils/votes";
+import {
+  FEED_CARD_INACTIVE_SCALE,
+  FEED_CARD_INACTIVE_OPACITY,
+  FEED_CARD_TRANSITION_DURATION,
+} from "../utils/constants/general";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -48,7 +53,6 @@ interface RoomCardProps {
   currentSubHeard?: string;
   analysisRoomId?: string;
   targetStatementId?: string;
-  onJoin: () => void;
   onSubmitStatement: (
     roomId: string,
     text: string,
@@ -73,7 +77,6 @@ export function RoomCard({
   currentSubHeard,
   analysisRoomId,
   targetStatementId,
-  onJoin,
   onSubmitStatement,
   onVoteOnStatement,
   onRefreshStatements,
@@ -94,6 +97,7 @@ export function RoomCard({
   const [showDeduplication, setShowDeduplication] = useState(false);
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
   const [showEditRoom, setShowEditRoom] = useState(false);
+  const [showDisplayMode, setShowDisplayMode] = useState(false);
   const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
 
   const isTrueHost = user.id === room.hostId;
@@ -228,12 +232,15 @@ export function RoomCard({
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: isActive ? 1 : 0.95, opacity: 1 }}
-      transition={{ duration: 0.3 }}
+      animate={{
+        scale: isActive ? 1 : FEED_CARD_INACTIVE_SCALE,
+        opacity: isActive ? 1 : FEED_CARD_INACTIVE_OPACITY,
+      }}
+      transition={{ duration: FEED_CARD_TRANSITION_DURATION }}
       className="w-full"
       style={{ maxWidth: "var(--room-card-max-width)" }}
     >
-      <div className="space-y-4 border rounded-2xl py-4 px-2" style={{ borderColor: "rgba(151, 107, 132, 0.2)", backgroundColor: "rgba(255, 255, 255, 0.45)" }}>
+      <div className="space-y-4 border rounded-2xl py-4 px-2 normal-border" style={{ backgroundColor: "rgba(255, 255, 255, 0.45)" }}>
           {/* Compact header */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -382,24 +389,13 @@ export function RoomCard({
                   </p>
                 </div>
               ) : (
-                <>
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">
-                      No responses yet to this post
-                    </p>
-                  </div>
-                  <Button
-                    onClick={onJoin}
-                    disabled={isCompleted}
-                    size="lg"
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                  >
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">
                     {isCompleted
-                      ? "Conversation Ended"
-                      : "Join to Add Responses"}
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </>
+                      ? "Conversation ended with no responses"
+                      : "No responses yet"}
+                  </p>
+                </div>
               )}
             </div>
           )}
@@ -437,6 +433,7 @@ export function RoomCard({
               onOpenEditRoom={() => setShowEditRoom(true)}
               onOpenDeduplication={() => setShowDeduplication(true)}
               onOpenVoteMatrix={() => setShowVoteMatrix(true)}
+              onOpenDisplayMode={() => setShowDisplayMode(true)}
             />
           </div>
 
@@ -483,6 +480,14 @@ export function RoomCard({
           roomTopic={room.topic}
           participantCount={participantCount}
           onClose={() => setShowVoteMatrix(false)}
+        />
+      )}
+
+      {showDisplayMode && (
+        <DisplayModeScreen
+          room={room}
+          statements={statements}
+          onClose={() => setShowDisplayMode(false)}
         />
       )}
 

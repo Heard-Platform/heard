@@ -15,6 +15,7 @@ import {
   Pencil,
   UserPlus,
   Trash2,
+  Presentation,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -42,6 +43,7 @@ interface RoomCardMenuProps {
   onOpenEditRoom: () => void;
   onOpenDeduplication: () => void;
   onOpenVoteMatrix: () => void;
+  onOpenDisplayMode: () => void;
 }
 
 export function RoomCardMenu({
@@ -56,6 +58,7 @@ export function RoomCardMenu({
   onOpenEditRoom,
   onOpenDeduplication,
   onOpenVoteMatrix,
+  onOpenDisplayMode,
 }: RoomCardMenuProps) {
   const { setRoomInactive, setResponsesPaused, createCohostInvite, clearRoomCohosts } = useDebateSession();
   const [cohostCount, setCohostCount] = useState(room.cohostIds?.length ?? 0);
@@ -177,6 +180,15 @@ export function RoomCardMenu({
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
+                onOpenEditRoom();
+              }}
+            >
+              <Pencil className="w-4 h-4 mr-2" />
+              Edit post
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
                 onOpenDeduplication();
               }}
             >
@@ -191,6 +203,15 @@ export function RoomCardMenu({
             >
               <BarChart2 className="w-4 h-4 mr-2" />
               View Vote Matrix
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onOpenDisplayMode();
+              }}
+            >
+              <Presentation className="w-4 h-4 mr-2" />
+              Open Display Mode
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={async (e: React.MouseEvent) => {
@@ -219,15 +240,6 @@ export function RoomCardMenu({
         {isDeveloper && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                onOpenEditRoom();
-              }}
-            >
-              <Pencil className="w-4 h-4 mr-2" />
-              Edit post
-            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={async (e: React.MouseEvent) => {
                 e.stopPropagation();

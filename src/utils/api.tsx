@@ -11,6 +11,7 @@ import {
   PublicStatsData,
   RetentionStatsData,
   RoomAlert,
+  SentEmail,
   Statement,
   SubHeard,
   UserHistoryData,
@@ -176,12 +177,6 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async joinRoom(roomId: string) {
-    return this.request(`/room/${roomId}/join`, {
-      method: "POST",
-    });
-  }
-
   async getRoomStatus(roomId: string) {
     return this.request<RoomStatusResponse>(`/room/${roomId}`);
   }
@@ -226,6 +221,7 @@ class ApiClient extends BaseApiClient {
     const queryString = params.toString();
     return this.request<{ rooms: DebateRoom[] }>(
       `/rooms/active${queryString ? `?${queryString}` : ""}`,
+      { method: "POST" },
     );
   }
 
@@ -790,6 +786,12 @@ class ApiClient extends BaseApiClient {
     }>(`/dev/email-previews/count?${params.toString()}`);
   }
 
+  async getSentEmails() {
+    return this.request<{ sentEmails: SentEmail[] }>(
+      "/dev/sent-emails",
+    );
+  }
+
   async unsubscribe(userId: string) {
     return this.request("/unsubscribe", {
       method: "POST",
@@ -854,7 +856,12 @@ class ApiClient extends BaseApiClient {
 
   async updateRoom(
     roomId: string,
-    updates: { topic?: string; description?: string; imageUrl?: string },
+    updates: {
+      topic?: string;
+      description?: string;
+      imageUrl?: string;
+      endTime?: number;
+    },
   ) {
     return this.request<{ room: DebateRoom }>(
       `/room/${roomId}/mod/edit`,
@@ -941,7 +948,8 @@ class ApiClient extends BaseApiClient {
   trackEvent(type: string, roomId?: string): void {
     if (safelyGetStorageItem("showComponentShowcase", false))
       return;
-    this.post("/analytics/event", { type, roomId })
+    const url = typeof window !== "undefined" ? window.location.href : undefined;
+    this.post("/analytics/event", { type, roomId, url })
       .catch(() => {});
   }
 

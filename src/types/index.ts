@@ -436,7 +436,8 @@ export type ActivityFeedEventType =
   | "modInviteAccept"
   | "cohost"
   | "askTheData"
-  | "userReport";
+  | "userReport"
+  | "pageLoad";
 
 export interface ActivityFeedEvent {
   type: ActivityFeedEventType;
@@ -446,8 +447,11 @@ export interface ActivityFeedEvent {
   meta?: Record<string, string>;
 }
 
+export type ActivityDayCount = { day: string } & Partial<Record<ActivityFeedEventType, number>>;
+
 export interface ActivityFeedData {
   events: ActivityFeedEvent[];
+  dayCounts: ActivityDayCount[];
   fetchedAt: number;
 }
 
@@ -589,4 +593,14 @@ export interface VoteStats {
   avgVotesPerUser: number;
   byType: Record<string, number>;
   distributionByUser: Record<string, number>;
+}
+
+export interface SentEmail {
+  id: string;
+  recipientId: string;
+  recipientEmail: string;
+  template: string;
+  sentAt: number;
+  previewSubject?: string;
+  previewHtml?: string;
 }

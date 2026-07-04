@@ -47,6 +47,8 @@ import { UserTimelineChartStory } from "../stories/UserTimelineChart.story";
 import { RoomCardStory } from "../stories/RoomCard.story";
 import { FundingPageStory } from "../stories/FundingPage.story";
 import { FundingTeaserStory } from "../stories/FundingTeaser.story";
+import { EmailMonitoringTabStory } from "../stories/EmailMonitoringTab.story";
+import { DisplayModeScreenStory } from "../stories/DisplayModeScreen.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -148,6 +150,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="single-post-view">Single Post View</TabsTrigger>
                 <TabsTrigger value="funding-page">Funding Page</TabsTrigger>
                 <TabsTrigger value="funding-teaser">Funding Teaser</TabsTrigger>
+                <TabsTrigger value="email-monitoring">Email Monitoring</TabsTrigger>
+                <TabsTrigger value="display-mode-screen">Display Mode Screen</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -282,6 +286,12 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="funding-teaser">
                 <FundingTeaserStory />
+              </TabsContent>
+              <TabsContent value="email-monitoring">
+                <EmailMonitoringTabStory />
+              </TabsContent>
+              <TabsContent value="display-mode-screen">
+                <DisplayModeScreenStory />
               </TabsContent>
             </Tabs>
           </div>

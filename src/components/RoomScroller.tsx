@@ -46,7 +46,6 @@ interface RoomScrollerProps {
   analysisRoomId?: string;
   targetStatementId?: string;
   presences: UserPresence[];
-  onJoinRoom: (roomId: string) => void;
   onCreateRoom: () => void;
   onOpenExplorer: () => void;
   onSubmitStatement: (
@@ -81,7 +80,6 @@ const RoomScrollerInner = forwardRef<
     {
       rooms,
       events,
-      onJoinRoom,
       onCreateRoom,
       onOpenExplorer,
       onSubmitStatement,
@@ -110,9 +108,7 @@ const RoomScrollerInner = forwardRef<
     const { clearAlert } = useRoomAlertsContext();
     const currentIndexRef = useRef(0);
     const allCardsLengthRef = useRef(0);
-    const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(
-      undefined,
-    );
+    const scrollRafRef = useRef<number | undefined>(undefined);
     const [loadingRooms, setLoadingRooms] = useState<
       Record<string, boolean>
     >({});
@@ -200,8 +196,10 @@ const RoomScrollerInner = forwardRef<
       if (isScrolling.current) return;
       resetTutorialTimer();
 
-      clearTimeout(scrollTimeoutRef.current);
-      scrollTimeoutRef.current = setTimeout(() => {
+      if (scrollRafRef.current !== undefined) return;
+      scrollRafRef.current = requestAnimationFrame(() => {
+        scrollRafRef.current = undefined;
+
         const container = scrollContainerRef.current;
         if (!container) return;
 
@@ -220,7 +218,7 @@ const RoomScrollerInner = forwardRef<
         if (bestIndex !== currentIndexRef.current) {
           setCurrentIndex(bestIndex);
         }
-      }, 150);
+      });
     }, []);
 
     useEffect(() => {
@@ -232,7 +230,9 @@ const RoomScrollerInner = forwardRef<
       container.addEventListener("scroll", handleScroll, { passive: true });
       return () => {
         container.removeEventListener("scroll", handleScroll);
-        clearTimeout(scrollTimeoutRef.current);
+        if (scrollRafRef.current !== undefined) {
+          cancelAnimationFrame(scrollRafRef.current);
+        }
       };
     }, [handleScroll, loading]);
 
@@ -306,7 +306,11 @@ const RoomScrollerInner = forwardRef<
                 className={`w-full flex justify-center px-2 py-3 ${index === 0 ? "pt-14" : ""}`}
               >
                 {isCreateCard(card) ? (
-                  <CreateRoomCard onCreateRoom={onCreateRoom} onOpenExplorer={onOpenExplorer} />
+                  <CreateRoomCard
+                    isActive={index === currentIndex}
+                    onCreateRoom={onCreateRoom}
+                    onOpenExplorer={onOpenExplorer}
+                  />
                 ) : event ? (
                   <EventCard event={event} onOpen={onOpenEvent} />
                 ) : room ? (
@@ -322,7 +326,6 @@ const RoomScrollerInner = forwardRef<
                     }
                     analysisRoomId={analysisRoomId}
                     targetStatementId={targetStatementId}
-                    onJoin={() => onJoinRoom(room.id)}
                     onSubmitStatement={onSubmitStatement}
                     onVoteOnStatement={onVoteOnStatement}
                     onRefreshStatements={() =>

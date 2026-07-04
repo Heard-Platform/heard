@@ -34,7 +34,6 @@ import { AvatarAnimal } from "../utils/constants/avatars";
 interface DebateSessionContextType {
   user: UserSession | null;
   activeRooms: DebateRoom[];
-  currentSubHeard: string | null;
   loading: boolean;
   roomsLoading: boolean;
   error: string | null;
@@ -53,12 +52,8 @@ interface DebateSessionContextType {
   > | null>;
   createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
   updateAvatar: (avatarAnimal: AvatarAnimal) => Promise<void>;
-  createRoom: (
-    newDebate: NewDebateRoom,
-    autoJoin?: boolean,
-  ) => Promise<DebateRoom>;
+  createRoom: (newDebate: NewDebateRoom) => Promise<DebateRoom>;
   createEvent: (newEvent: NewEvent) => Promise<Event>;
-  joinRoom: (roomId: string) => Promise<any>;
   submitStatement: (roomId: string, text: string) => Promise<any>;
   voteOnStatement: (
     statementId: string,
@@ -87,8 +82,7 @@ interface DebateSessionContextType {
     questionId: string,
     answer: string | null,
   ) => Promise<ApiResponse | null>;
-  getActiveRooms: (targetRoomId?: string) => Promise<DebateRoom[]>;
-  setCurrentSubHeard: (subHeard: string | null) => void;
+  loadActiveRooms: (subHeard?: string, targetRoomId?: string) => Promise<DebateRoom[]>;
   resetSession: () => void;
   createSeedData: () => Promise<any>;
   createTestRoom: () => Promise<any>;
@@ -97,7 +91,12 @@ interface DebateSessionContextType {
   createScalabilityTest: () => Promise<any>;
   updateRoom: (
     roomId: string,
-    updates: { topic?: string; description?: string; imageUrl?: string },
+    updates: {
+      topic?: string;
+      description?: string;
+      imageUrl?: string;
+      endTime?: number;
+    },
   ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
   setRoomInactive: (roomId: string) => Promise<boolean>;
   roomStatements: Record<string, Statement[]>;
@@ -170,9 +169,6 @@ export function DebateSessionProvider(
   const [activeRooms, setActiveRooms] = useState<DebateRoom[]>(
     [],
   );
-  const [currentSubHeard, setCurrentSubHeard] = useState<
-    string | null
-  >(null);
   const [loading, setLoading] = useState(true);
   const [roomsLoading, setRoomsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -291,10 +287,7 @@ export function DebateSessionProvider(
 
   // Create room (does not join)
   const createRoom = useCallback(
-    async (
-      newDebate: NewDebateRoom,
-      autoJoin: boolean = false,
-    ): Promise<DebateRoom> => {
+    async (newDebate: NewDebateRoom): Promise<DebateRoom> => {
       if (!user) {
         throw new Error(
           "User must be logged in to create a room",
@@ -308,10 +301,6 @@ export function DebateSessionProvider(
         const roomData = response.data;
 
         updateUserScoreFromResponse(roomData);
-
-        if (autoJoin) {
-          await api.joinRoom(roomData.id);
-        }
 
         return roomData;
       } else {
@@ -341,32 +330,6 @@ export function DebateSessionProvider(
       }
     },
     [user, safelyMakeApiCall],
-  );
-
-  // Join room (backend only - no local state)
-  const joinRoom = useCallback(
-    async (roomId: string) => {
-      if (!user) return null;
-
-      try {
-        setError(null);
-        const response = await api.joinRoom(roomId) as any;
-        if (response.success && response.data) {
-          return response.data.room;
-        } else {
-          throw new Error(
-            response.error || "Failed to join room",
-          );
-        }
-      } catch (err) {
-        const errorMsg =
-          err instanceof Error ? err.message : "Unknown error";
-        setError(errorMsg);
-        console.error("Failed to join room:", errorMsg);
-      }
-      return null;
-    },
-    [user],
   );
 
   // Submit statement
@@ -542,12 +505,11 @@ export function DebateSessionProvider(
     [safelyMakeApiCall],
   );      
 
-  // Get active rooms - uses currentSubHeard from state
-  const getActiveRooms = useCallback(async (targetRoomId?: string) => {
+  const loadActiveRooms = useCallback(async (subHeard?: string, targetRoomId?: string) => {
     setRoomsLoading(true);
     try {
       const response = await api.getActiveRooms(
-        currentSubHeard || undefined,
+        subHeard,
         targetRoomId,
       ) as any;
       if (response.success && response.data) {
@@ -560,7 +522,7 @@ export function DebateSessionProvider(
     }
     setRoomsLoading(false);
     return [];
-  }, [currentSubHeard]);
+  }, []);
 
   // Create seed data for testing
   const createSeedData = useCallback(async () => {
@@ -569,7 +531,7 @@ export function DebateSessionProvider(
       const response = await api.createSeedData();
       if (response.success && response.data) {
         // Refresh active rooms to show the new test room
-        await getActiveRooms();
+        await loadActiveRooms();
         return response.data;
       } else {
         throw new Error(
@@ -583,7 +545,7 @@ export function DebateSessionProvider(
       console.error("Failed to create seed data:", errorMsg);
     }
     return null;
-  }, [getActiveRooms]);
+  }, [loadActiveRooms]);
 
   // Create test room with Q Street topic and players (no posts/votes)
   const createTestRoom = useCallback(async () => {
@@ -592,7 +554,7 @@ export function DebateSessionProvider(
       const response = await api.createTestRoom();
       if (response.success && response.data) {
         // Refresh active rooms to show the new test room
-        await getActiveRooms();
+        await loadActiveRooms();
         return response.data;
       } else {
         throw new Error(
@@ -606,7 +568,7 @@ export function DebateSessionProvider(
       console.error("Failed to create test room:", errorMsg);
     }
     return null;
-  }, [getActiveRooms]);
+  }, [loadActiveRooms]);
 
   // Create rant test room with Q Street topic and pre-filled rants
   const createRantTestRoom = useCallback(async () => {
@@ -615,7 +577,7 @@ export function DebateSessionProvider(
       const response = await api.createRantTestRoom();
       if (response.success && response.data) {
         // Refresh active rooms to show the new test room
-        await getActiveRooms();
+        await loadActiveRooms();
         return response.data;
       } else {
         throw new Error(
@@ -632,7 +594,7 @@ export function DebateSessionProvider(
       );
     }
     return null;
-  }, [getActiveRooms]);
+  }, [loadActiveRooms]);
 
   // Create realtime test room with seed data and 5-minute timer
   const createRealtimeTestRoom = useCallback(async () => {
@@ -641,7 +603,7 @@ export function DebateSessionProvider(
       const response = await api.createRealtimeTestRoom();
       if (response.success && response.data) {
         // Refresh active rooms to show the new test room
-        await getActiveRooms();
+        await loadActiveRooms();
         return response.data;
       } else {
         throw new Error(
@@ -659,7 +621,7 @@ export function DebateSessionProvider(
       );
     }
     return null;
-  }, [getActiveRooms]);
+  }, [loadActiveRooms]);
 
   const createScalabilityTest = useCallback(async () => {
     try {
@@ -717,7 +679,12 @@ export function DebateSessionProvider(
   const updateRoom = useCallback(
     (
       roomId: string,
-      updates: { topic?: string; description?: string; imageUrl?: string },
+      updates: {
+        topic?: string;
+        description?: string;
+        imageUrl?: string;
+        endTime?: number;
+      },
     ) => callRoomMutation(() => api.updateRoom(roomId, updates)),
     [callRoomMutation],
   );
@@ -730,7 +697,7 @@ export function DebateSessionProvider(
         const response = await api.setRoomInactive(roomId);
         if (response.success) {
           // Refresh active rooms to remove the inactive room
-          await getActiveRooms();
+          await loadActiveRooms();
           return true;
         } else {
           throw new Error(
@@ -748,7 +715,7 @@ export function DebateSessionProvider(
       }
       return false;
     },
-    [getActiveRooms],
+    [loadActiveRooms],
   );
 
   // Fetch statements for a specific room
@@ -969,7 +936,6 @@ export function DebateSessionProvider(
   let returnObj: DebateSessionContextType = {
     user,
     activeRooms,
-    currentSubHeard,
     loading,
     roomsLoading,
     error,
@@ -985,15 +951,13 @@ export function DebateSessionProvider(
     updateAvatar,
     createRoom,
     createEvent,
-    joinRoom,
     submitStatement,
     voteOnStatement,
     flagStatement,
     flagAskTheDataResponse,
     voteViaFlyer,
     submitFlyerEmail,
-    getActiveRooms,
-    setCurrentSubHeard,
+    loadActiveRooms,
     resetSession,
     createSeedData,
     createTestRoom,

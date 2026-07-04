@@ -3,22 +3,32 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Plus, Compass } from "lucide-react";
 import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
-import { FEED_CARD_WIDTH } from "../utils/constants/general";
+import {
+  FEED_CARD_WIDTH,
+  FEED_CARD_INACTIVE_SCALE,
+  FEED_CARD_INACTIVE_OPACITY,
+  FEED_CARD_TRANSITION_DURATION,
+} from "../utils/constants/general";
 
 interface CreateRoomCardProps {
+  isActive: boolean;
   onCreateRoom: () => void;
   onOpenExplorer: () => void;
 }
 
 export function CreateRoomCard({
+  isActive,
   onCreateRoom,
   onOpenExplorer,
 }: CreateRoomCardProps) {
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.3 }}
+      animate={{
+        scale: isActive ? 1 : FEED_CARD_INACTIVE_SCALE,
+        opacity: isActive ? 1 : FEED_CARD_INACTIVE_OPACITY,
+      }}
+      transition={{ duration: FEED_CARD_TRANSITION_DURATION }}
       className={FEED_CARD_WIDTH}
     >
       <Card className="relative overflow-hidden bg-gradient-to-br from-green-50 via-white to-emerald-50 border-2 border-green-200 shadow-2xl">
