@@ -31,6 +31,7 @@ import { ShareButton } from "./ShareButton";
 import { HideAndMergeModal } from "./room/mod/HideAndMergeModal";
 import { EditRoomModal } from "./room/mod/EditRoomModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
+import { DisplayModeScreen } from "./DisplayModeScreen";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
@@ -96,6 +97,7 @@ export function RoomCard({
   const [showDeduplication, setShowDeduplication] = useState(false);
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
   const [showEditRoom, setShowEditRoom] = useState(false);
+  const [showDisplayMode, setShowDisplayMode] = useState(false);
   const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
 
   const isTrueHost = user.id === room.hostId;
@@ -431,6 +433,7 @@ export function RoomCard({
               onOpenEditRoom={() => setShowEditRoom(true)}
               onOpenDeduplication={() => setShowDeduplication(true)}
               onOpenVoteMatrix={() => setShowVoteMatrix(true)}
+              onOpenDisplayMode={() => setShowDisplayMode(true)}
             />
           </div>
 
@@ -477,6 +480,14 @@ export function RoomCard({
           roomTopic={room.topic}
           participantCount={participantCount}
           onClose={() => setShowVoteMatrix(false)}
+        />
+      )}
+
+      {showDisplayMode && (
+        <DisplayModeScreen
+          room={room}
+          statements={statements}
+          onClose={() => setShowDisplayMode(false)}
         />
       )}
 

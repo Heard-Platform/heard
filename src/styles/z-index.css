@@ -14,4 +14,8 @@
   .modal-layer {
     z-index: 600;
   }
+
+  .display-layer {
+    z-index: 9999;
+  }
 }
