@@ -238,6 +238,7 @@
     --container-2xl: 42rem;
     --container-3xl: 48rem;
     --container-4xl: 56rem;
+    --container-5xl: 64rem;
     --container-6xl: 72rem;
     --container-7xl: 80rem;
     --text-xs: .75rem;
@@ -260,6 +261,8 @@
     --text-5xl--line-height: 1;
     --text-6xl: 3.75rem;
     --text-6xl--line-height: 1;
+    --text-7xl: 4.5rem;
+    --text-7xl--line-height: 1;
     --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
@@ -1043,6 +1046,10 @@
     margin-right: calc(var(--spacing) * 2);
   }
 
+  .mr-12 {
+    margin-right: calc(var(--spacing) * 12);
+  }
+
   .mb-1 {
     margin-bottom: calc(var(--spacing) * 1);
   }
@@ -1167,6 +1174,10 @@
   .size-9 {
     width: calc(var(--spacing) * 9);
     height: calc(var(--spacing) * 9);
+  }
+  
+  .h-1 {
+    height: calc(var(--spacing) * 1);
   }
 
   .h-1\.5 {
@@ -1541,6 +1552,10 @@
     max-width: var(--container-4xl);
   }
 
+  .max-w-5xl {
+    max-width: var(--container-5xl);
+  }
+
   .max-w-6xl {
     max-width: var(--container-6xl);
   }
@@ -1551,6 +1566,10 @@
 
   .max-w-\[80px\] {
     max-width: 80px;
+  }
+
+  .max-w-\[120px\] {
+    max-width: 120px;
   }
 
   .max-w-\[160px\] {
@@ -1765,6 +1784,10 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
   .grid-cols-\[60px_1fr_auto_auto\] {
     grid-template-columns: 60px 1fr auto auto;
   }
@@ -1847,6 +1870,10 @@
 
   .gap-8 {
     gap: calc(var(--spacing) * 8);
+  }
+
+  .gap-10 {
+    gap: calc(var(--spacing) * 10);
   }
 
   :where(.space-y-0\.5 > :not(:last-child)) {
@@ -3584,6 +3611,10 @@
     padding: calc(var(--spacing) * 12);
   }
 
+  .p-16 {
+    padding: calc(var(--spacing) * 16);
+  }
+
   .p-\[3px\] {
     padding: 3px;
   }
@@ -3622,6 +3653,10 @@
 
   .px-8 {
     padding-inline: calc(var(--spacing) * 8);
+  }
+
+  .px-12 {
+    padding-inline: calc(var(--spacing) * 12);
   }
 
   .py-0\.5 {
@@ -3670,6 +3705,10 @@
 
   .py-16 {
     padding-block: calc(var(--spacing) * 16);
+  }
+
+  .py-20 {
+    padding-block: calc(var(--spacing) * 20);
   }
 
   .pt-0 {
@@ -3815,9 +3854,19 @@
     line-height: var(--tw-leading, var(--text-4xl--line-height));
   }
 
+  .text-5xl {
+    font-size: var(--text-5xl);
+    line-height: var(--tw-leading, var(--text-5xl--line-height));
+  }
+
   .text-6xl {
     font-size: var(--text-6xl);
     line-height: var(--tw-leading, var(--text-6xl--line-height));
+  }
+
+  .text-7xl {
+    font-size: var(--text-7xl);
+    line-height: var(--tw-leading, var(--text-7xl--line-height));
   }
 
   .text-base {
