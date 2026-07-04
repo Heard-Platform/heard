@@ -1,5 +1,5 @@
 import { Button } from "../ui/button";
-import { X, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { DebateAnalysisReport } from "./DebateAnalysisReport";
 import { useState, useEffect } from "react";
