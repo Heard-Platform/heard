@@ -205,7 +205,7 @@ export function FundingPage({
           I'll get a temporary tattoo (lasting 1-2 years), voted on by donors.          
         </p>
         <p style={styles.paragraph}>
-          Your donation not only buys you <strong style={styles.strong}>a vote on the design</strong>. It also funds my vegan chicken nuggies addiction 🍗 and encourages me as I continue forward with Heard.
+          Your donation not only buys you <strong style={styles.strong}>a vote on the design</strong>. It also pays for flyer printer paper, website costs, and my vegan chicken nuggies addiction 🍗 and encourages me as I continue forward with Heard.
         </p>
       </div>
 

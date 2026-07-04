@@ -1,7 +1,7 @@
 export const PRESET_AMOUNTS = [10, 25, 50, 100];
 export const FUNDING_GOAL = 5000;
 export const SHARE_URL = "https://heard.vote/fund";
-export const FUNDING_DEADLINE = new Date("2026-07-04T00:00:00");
+export const FUNDING_DEADLINE = new Date("2026-07-05T00:00:00");
 
 export const C = {
   slate900: "#0f172a",
