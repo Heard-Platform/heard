@@ -8,6 +8,7 @@ interface CertifyEmailStepProps {
   email: string;
   error: string | null;
   loading: boolean;
+  isActive: boolean;
   onEmailChange: (email: string) => void;
   onSubmit: () => void;
 }
@@ -16,6 +17,7 @@ export function CertifyEmailStep({
   email,
   error,
   loading,
+  isActive,
   onEmailChange,
   onSubmit,
 }: CertifyEmailStepProps) {
@@ -35,7 +37,7 @@ export function CertifyEmailStep({
           Add your Seal of Approval 🦭
         </p>
         <p className="text-sm text-muted-foreground max-w-xs">
-          Drop your email to confirm your votes and see the results so far.
+          Drop your email below to verify your votes and see the results so far.
         </p>
       </div>
 
@@ -83,6 +85,14 @@ export function CertifyEmailStep({
       <div className="pt-2 border-t w-full text-center">
         <TOSText />
       </div>
+
+      {isActive && (
+        <div className="pt-2">
+          <p className="text-xs text-center secondary-text">
+            Swipe away to skip
+          </p>
+        </div>
+      )}
     </motion.div>
   );
 }

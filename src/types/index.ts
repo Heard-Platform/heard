@@ -93,8 +93,7 @@ export type DemographicsCard = {
   question: DemographicQuestion;
 }
 
-export type Card = (StatementCard | CertifyCard | ChanceCard | CoverCard | DemographicsCard)
-  & { isUnswipeable?: boolean };
+export type Card = StatementCard | CertifyCard | ChanceCard | CoverCard | DemographicsCard;
 
 export const isStatementCard = (card: Card): card is StatementCard => {
   return card.type === "statement";

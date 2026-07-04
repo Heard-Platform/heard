@@ -60,6 +60,7 @@ export function CertifyCard({ roomId, isActive, onSuccess }: CertifyCardProps) {
           email={email}
           error={error}
           loading={submitting}
+          isActive={isActive}
           onEmailChange={setEmail}
           onSubmit={handleEmailSubmit}
         />
