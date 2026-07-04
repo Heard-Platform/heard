@@ -436,7 +436,8 @@ export type ActivityFeedEventType =
   | "modInviteAccept"
   | "cohost"
   | "askTheData"
-  | "userReport";
+  | "userReport"
+  | "pageLoad";
 
 export interface ActivityFeedEvent {
   type: ActivityFeedEventType;

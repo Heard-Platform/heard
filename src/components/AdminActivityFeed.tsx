@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import moment from "moment";
 import { Button } from "./ui/button";
-import { X, User, DoorOpen, FileText, ThumbsUp, RefreshCw, Users, LogIn, UserPlus, MessageCircleQuestion, Flag } from "lucide-react";
+import { X, User, DoorOpen, FileText, ThumbsUp, RefreshCw, Users, LogIn, UserPlus, MessageCircleQuestion, Flag, Globe } from "lucide-react";
 import { api } from "../utils/api";
 import type { ActivityFeedEvent, ActivityFeedEventType, ActivityDayCount } from "../types";
 import { ActivityTimeline } from "./activity-feed/ActivityTimeline";
@@ -24,6 +24,7 @@ const TYPE_CONFIG: Record<
   cohost: { label: "Co-host", icon: UserPlus, color: "text-violet-700", bg: "bg-violet-100" },
   askTheData: { label: "Ask the Data", icon: MessageCircleQuestion, color: "text-blue-700", bg: "bg-blue-100" },
   userReport: { label: "Report", icon: Flag, color: "text-red-700", bg: "bg-red-100" },
+  pageLoad: { label: "Page Load", icon: Globe, color: "text-gray-700", bg: "bg-gray-100" },
 };
 
 const ALL_TYPES: ActivityFeedEventType[] = [
@@ -37,6 +38,7 @@ const ALL_TYPES: ActivityFeedEventType[] = [
   "cohost",
   "askTheData",
   "userReport",
+  "pageLoad",
 ];
 
 function formatTime(ts: number): string {

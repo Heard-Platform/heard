@@ -6,6 +6,7 @@ export interface UserEvent {
   type: string;
   userId: string | null;
   roomId?: string;
+  url?: string;
   createdAt: number;
 }
 

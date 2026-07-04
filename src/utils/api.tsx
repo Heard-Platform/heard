@@ -948,7 +948,8 @@ class ApiClient extends BaseApiClient {
   trackEvent(type: string, roomId?: string): void {
     if (safelyGetStorageItem("showComponentShowcase", false))
       return;
-    this.post("/analytics/event", { type, roomId })
+    const url = typeof window !== "undefined" ? window.location.href : undefined;
+    this.post("/analytics/event", { type, roomId, url })
       .catch(() => {});
   }
 

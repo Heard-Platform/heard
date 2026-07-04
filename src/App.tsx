@@ -267,6 +267,8 @@ function AppContent() {
 
   useEffect(() => {
     if (!hasCheckedUrl && !loading) {
+      api.trackEvent("initial_load");
+
       const urlParams = new URLSearchParams(
         window.location.search,
       );
