@@ -6528,22 +6528,6 @@
     }
   }
 
-  .controls-layer {
-    z-index: 500;
-  }
-
-  .vine-layer {
-    z-index: 400;
-  }
-
-  .drawer-layer {
-    z-index: 550;
-  }
-
-  .modal-layer {
-    z-index: 600;
-  }
-
   .line-clamp-3 {
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
