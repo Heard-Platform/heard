@@ -13,6 +13,7 @@ export function OtpCodeInput({ value, slotClassName, onChange }: OtpCodeInputPro
       value={value}
       onChange={onChange}
       pattern="^[A-Za-z0-9]+$"
+      inputMode="text"
     >
       <InputOTPGroup>
         {Array.from({ length: 6 }).map((_, i) => (
