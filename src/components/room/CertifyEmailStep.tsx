@@ -35,7 +35,7 @@ export function CertifyEmailStep({
           Add your Seal of Approval 🦭
         </p>
         <p className="text-sm text-muted-foreground max-w-xs">
-          Drop your email to confirm your votes and see the results so far.
+          Drop your email below to verify your votes and see the results so far.
         </p>
       </div>
 

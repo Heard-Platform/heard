@@ -42,28 +42,38 @@ export function CertifyCard({ roomId, isActive, onSuccess }: CertifyCardProps) {
   };
 
   return (
-    <AnimatePresence mode="wait">
-      {done ? (
-        <CertifyCelebrationStep onDone={onSuccess} />
-      ) : step === "otp" ? (
-        <CertifyOtpStep
-          email={email}
-          otp={otp}
-          error={error}
-          loading={submitting}
-          onOtpChange={setOtp}
-          onSubmit={submitOtp}
-          onBack={goBackToEmail}
-        />
-      ) : (
-        <CertifyEmailStep
-          email={email}
-          error={error}
-          loading={submitting}
-          onEmailChange={setEmail}
-          onSubmit={handleEmailSubmit}
-        />
+    <>
+      <AnimatePresence mode="wait">
+        {done ? (
+          <CertifyCelebrationStep onDone={onSuccess} />
+        ) : step === "otp" ? (
+          <CertifyOtpStep
+            email={email}
+            otp={otp}
+            error={error}
+            loading={submitting}
+            onOtpChange={setOtp}
+            onSubmit={submitOtp}
+            onBack={goBackToEmail}
+          />
+        ) : (
+          <CertifyEmailStep
+            email={email}
+            error={error}
+            loading={submitting}
+            onEmailChange={setEmail}
+            onSubmit={handleEmailSubmit}
+          />
+        )}
+      </AnimatePresence>
+
+      {isActive && !done && (
+        <div className="pt-2">
+          <p className="text-xs text-center secondary-text">
+            Swipe away to skip
+          </p>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }

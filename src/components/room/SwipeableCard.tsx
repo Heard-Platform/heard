@@ -109,7 +109,7 @@ export function SwipeableCard({
         pointerEvents: isTopCard ? "auto" : "none",
         touchAction: isTopCard ? "none" : "auto",
       }}
-      drag={isTopCard && !card.isUnswipeable ? "x" : false}
+      drag={isTopCard ? "x" : false}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={1}
       onDragEnd={isTopCard ? onDragEnd : undefined}
@@ -149,13 +149,12 @@ export function SwipeableCard({
             ? getPastelColor(card.statement.id)
             : ""
         } ${
-          isTopCard && !card.isUnswipeable
+          isTopCard
             ? "cursor-grab active:cursor-grabbing"
             : "cursor-default"
         }`}
         style={{
-          touchAction:
-            isTopCard && !card.isUnswipeable ? "none" : "auto",
+          touchAction: isTopCard ? "none" : "auto",
           height: !isTopCard ? "286px" : "auto",
           overflow: !isTopCard ? "hidden" : "visible",
         }}

@@ -122,7 +122,7 @@ export function SwipeableStatementStack({
   }
 
   if (isAnonymous && !certifyCardDismissed) {
-    const certifyCard: Card = { type: "certify", isUnswipeable: true };
+    const certifyCard: Card = { type: "certify" };
     const insertIndex = Math.min(3, cards.length);
     cards.splice(insertIndex, 0, certifyCard);
   }
@@ -297,7 +297,10 @@ export function SwipeableStatementStack({
         swipeDirection,
       );
       return;
-    } else if (card.type === "certify" || card.type === "chance" || card.type === "cover") {
+    } else if (card.type === "certify") {
+      swipeCertifyCard(swipeDirection);
+      return;
+    } else if (card.type === "chance" || card.type === "cover") {
       setIsVoting(true);
       setSwipedNoopCard(card.type);
       setSwipeDirection(swipeDirection);
