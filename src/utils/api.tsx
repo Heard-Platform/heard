@@ -856,7 +856,12 @@ class ApiClient extends BaseApiClient {
 
   async updateRoom(
     roomId: string,
-    updates: { topic?: string; description?: string; imageUrl?: string },
+    updates: {
+      topic?: string;
+      description?: string;
+      imageUrl?: string;
+      endTime?: number;
+    },
   ) {
     return this.request<{ room: DebateRoom }>(
       `/room/${roomId}/mod/edit`,

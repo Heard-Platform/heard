@@ -1,7 +1,7 @@
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AlertTriangle, Check, Image as ImageIcon, Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -15,6 +15,7 @@ import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { Textarea } from "../../ui/textarea";
+import { DebateLengthPicker } from "../../widgets/DebateLengthPicker";
 import { api } from "../../../utils/api";
 import { useDebateSession } from "../../../hooks/useDebateSession";
 import { DebateRoom } from "../../../types";
@@ -25,20 +26,28 @@ interface EditRoomModalProps {
   onClose: () => void;
 }
 
+function minutesFromNow(ms?: number): number {
+  if (!ms) return 60;
+  return Math.max(1, Math.round((ms - Date.now()) / 60000));
+}
+
 export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
   const { updateRoom } = useDebateSession();
 
   const [topic, setTopic] = useState(room.topic);
   const [description, setDescription] = useState<string>(room.description ?? "");
   const [imageUrl, setImageUrl] = useState<string>(room.imageUrl ?? "");
+  const initialDebateLength = useRef(minutesFromNow(room.endTime)).current;
+  const [debateLength, setDebateLength] = useState<number>(initialDebateLength);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const titleChanged = topic.trim() !== room.topic && topic.trim().length > 0;
   const descriptionChanged = description !== (room.description ?? "");
   const imageChanged = imageUrl !== (room.imageUrl ?? "");
+  const endDateChanged = debateLength !== initialDebateLength;
   const canSave =
-    (titleChanged || descriptionChanged || imageChanged) &&
+    (titleChanged || descriptionChanged || imageChanged || endDateChanged) &&
     !isUploading &&
     !isSaving;
 
@@ -65,10 +74,12 @@ export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
       topic?: string;
       description?: string;
       imageUrl?: string;
+      endTime?: number;
     } = {};
     if (titleChanged) updates.topic = topic.trim();
     if (descriptionChanged) updates.description = description;
     if (imageChanged) updates.imageUrl = imageUrl;
+    if (endDateChanged) updates.endTime = Date.now() + debateLength * 60000;
 
     setIsSaving(true);
     const response = await updateRoom(room.id, updates);
@@ -84,11 +95,12 @@ export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
 
   return (
     <Dialog open onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit post</DialogTitle>
           <DialogDescription>
-            Update the title, description, or cover image for this post.
+            Update the title, description, end date, or cover image for this
+            post.
           </DialogDescription>
         </DialogHeader>
 
@@ -97,7 +109,7 @@ export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
             <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
               <span>
-                Voting has already started. Editing the title or description
+                Voting has already started. Editing the title, description, or image
                 may mislead voters about what they're agreeing or disagreeing with.
               </span>
             </div>
@@ -123,6 +135,12 @@ export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
               rows={4}
             />
           </div>
+
+          <DebateLengthPicker
+            debateLength={debateLength}
+            onDebateLengthChange={setDebateLength}
+            currentEndTime={room.endTime}
+          />
 
           <div className="space-y-2">
             <Label>Cover image</Label>

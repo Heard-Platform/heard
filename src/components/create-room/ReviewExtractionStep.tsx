@@ -4,11 +4,12 @@ import { Input } from "../ui/input";
 import { TopicDescriptionFields } from "./TopicDescriptionFields";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
-import { Sparkles, Check, UserCheck, Clock, AlertCircle, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Sparkles, Check, UserCheck, Image as ImageIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
 import { AdvancedFeatures } from "./AdvancedFeatures";
 import { SeedStatements } from "./SeedStatements";
+import { DebateLengthPicker } from "../widgets/DebateLengthPicker";
 import type { NewDemographicQuestion, Cover, CoverType } from "../../types";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 
@@ -66,63 +67,12 @@ export function ReviewExtractionStep({
     if (type === "none") onCoverChange(null);
   };
 
-  const [showCustomDateTime, setShowCustomDateTime] = useState(false);
-  const [customDate, setCustomDate] = useState("");
-  const [customTime, setCustomTime] = useState("");
-
   const blueGradientBg = "bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100";
   const dashedBlueBorder = "border-2 border-dashed border-blue-300 hover:border-blue-400";
   const uploadButtonBase = "w-full h-auto py-4";
-  const statementCardBg = "bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 transition-all hover:border-blue-300";
   const iconBlue = "w-5 h-5 text-blue-500";
   const labelText = "text-base text-slate-700";
   const helperTextCenter = "text-xs text-slate-500 text-center";
-  const primaryButton = "bg-blue-600 hover:bg-blue-700";
-
-  const handleDateOrTimeChange = (date: string, time: string) => {
-    const dateTimeStr = `${date}T${time}`;
-    const selectedDate = new Date(dateTimeStr);
-    const now = new Date();
-    const diffInMinutes = Math.floor((selectedDate.getTime() - now.getTime()) / (1000 * 60));
-    if (diffInMinutes > 0) {
-      onDebateLengthChange(diffInMinutes);
-    }
-  };
-
-  const handleDateChange = (date: string) => {
-    setCustomDate(date);
-    if (date && customTime) {
-      handleDateOrTimeChange(date, customTime);
-    }
-  };
-
-  const handleTimeChange = (time: string) => {
-    setCustomTime(time);
-    if (customDate && time) {
-      handleDateOrTimeChange(customDate, time);
-    }
-  };
-
-  const getMinDate = () => {
-    const now = new Date();
-    return now.toISOString().split('T')[0];
-  };
-
-  const initializeCustomDateTime = () => {
-    const lengthInMins = debateLength || 60;
-    const lengthInMs = lengthInMins * 60 * 1000;
-    const date = new Date(Date.now() + lengthInMs);
-    setCustomDate(date.toISOString().split('T')[0]);
-    setCustomTime(date.toTimeString().slice(0, 5));
-  };
-
-  const isDateTimeInPast = () => {
-    if (!customDate || !customTime) return false;
-    const dateTimeStr = `${customDate}T${customTime}`;
-    const selectedDate = new Date(dateTimeStr);
-    const now = new Date();
-    return selectedDate.getTime() <= now.getTime();
-  };
 
   return (
     <>
@@ -252,109 +202,11 @@ export function ReviewExtractionStep({
       )}
 
       <FunSheetCard delay={0.3}>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Clock className={iconBlue} />
-            <Label className={labelText}>
-              Length
-            </Label>
-          </div>
-          
-          <p className={helperTextCenter}>
-            How long should this run before closing?
-          </p>
-          
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { minutes: 10, label: '10m' },
-              { minutes: 60, label: '1h' },
-              { minutes: 720, label: '12h' },
-              { minutes: 1440, label: '24h' },
-              { minutes: 4320, label: '3d' },
-              { minutes: 10080, label: '7d' },
-            ].map(({ minutes, label }) => (
-              <Button
-                key={minutes}
-                type="button"
-                variant={debateLength === minutes ? "default" : "outline"}
-                onClick={() => {
-                  onDebateLengthChange(minutes);
-                  setShowCustomDateTime(false);
-                }}
-                className={debateLength === minutes ? primaryButton : "hover:bg-blue-50"}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setShowCustomDateTime(!showCustomDateTime);
-                if (!showCustomDateTime) {
-                  initializeCustomDateTime();
-                }
-              }}
-              className="text-sm text-blue-600 hover:text-blue-700 underline"
-            >
-              {showCustomDateTime ? "Hide custom date" : "Set custom end date"}
-            </button>
-          </div>
-
-          {showCustomDateTime && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <div className={statementCardBg}>
-                <div className="space-y-3">
-                  <div>
-                    <Label htmlFor="custom-date" className="text-sm text-slate-700 block mb-2">
-                      Date
-                    </Label>
-                    <Input
-                      type="date"
-                      id="custom-date"
-                      min={getMinDate()}
-                      value={customDate}
-                      onChange={(e) => handleDateChange(e.target.value)}
-                      className="w-full bg-white border-blue-200"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="custom-time" className="text-sm text-slate-700 block mb-2">
-                      Time
-                    </Label>
-                    <Input
-                      type="time"
-                      id="custom-time"
-                      value={customTime}
-                      onChange={(e) => handleTimeChange(e.target.value)}
-                      className="w-full bg-white border-blue-200"
-                    />
-                  </div>
-                  {isDateTimeInPast() && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-red-50 border-2 border-red-200 rounded-lg p-3 flex items-start gap-2"
-                    >
-                      <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-red-700">
-                        The selected date and time is in the past. Please choose a future date and time.
-                      </p>
-                    </motion.div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-          
-        </div>
+        <DebateLengthPicker
+          debateLength={debateLength}
+          onDebateLengthChange={onDebateLengthChange}
+          variant="blue"
+        />
       </FunSheetCard>
 
       <FunSheetCard delay={0.35}>

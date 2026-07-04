@@ -177,6 +177,15 @@ export function RoomCardMenu({
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
+                onOpenEditRoom();
+              }}
+            >
+              <Pencil className="w-4 h-4 mr-2" />
+              Edit post
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
                 onOpenDeduplication();
               }}
             >
@@ -219,15 +228,6 @@ export function RoomCardMenu({
         {isDeveloper && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                onOpenEditRoom();
-              }}
-            >
-              <Pencil className="w-4 h-4 mr-2" />
-              Edit post
-            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={async (e: React.MouseEvent) => {
                 e.stopPropagation();

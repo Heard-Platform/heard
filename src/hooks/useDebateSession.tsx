@@ -91,7 +91,12 @@ interface DebateSessionContextType {
   createScalabilityTest: () => Promise<any>;
   updateRoom: (
     roomId: string,
-    updates: { topic?: string; description?: string; imageUrl?: string },
+    updates: {
+      topic?: string;
+      description?: string;
+      imageUrl?: string;
+      endTime?: number;
+    },
   ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
   setRoomInactive: (roomId: string) => Promise<boolean>;
   roomStatements: Record<string, Statement[]>;
@@ -674,7 +679,12 @@ export function DebateSessionProvider(
   const updateRoom = useCallback(
     (
       roomId: string,
-      updates: { topic?: string; description?: string; imageUrl?: string },
+      updates: {
+        topic?: string;
+        description?: string;
+        imageUrl?: string;
+        endTime?: number;
+      },
     ) => callRoomMutation(() => api.updateRoom(roomId, updates)),
     [callRoomMutation],
   );
