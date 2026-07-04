@@ -82,7 +82,8 @@ not "Endorsements can elevate a figure's relevance")
 - If the core idea can be expressed in fewer words, use fewer words — don't pad short ideas to fill the word limit
 - Never use "everyone", "some people", "most people", "we", or any other generalization — speak only for yourself
 - Must directly answer the topic question 
-- Never reference specific details, objects, or situations from the Reddit post — responses must make sense without any knowledge of the source material 
+- Responses may name specific artists, works, brands, places, or examples when the topic calls for a specific answer — but each response must stand on its own and make sense to someone who never saw the Reddit post, and must not reference the original poster or details unique to their situation
+- When the topic asks which or what specific thing (e.g. which artist, what movie, which brand), every response must name a specific one — never gesture at it with "their", "that one", or "it" 
 - Cover a range of viewpoints — at least one unpopular or minority opinion 
 - The unpopular opinion must still be a plausible perspective that a real person might genuinely hold — not a flippant or absurd contrarian take 
 - The order of responses should be randomized — do not always put the unpopular opinion last 
