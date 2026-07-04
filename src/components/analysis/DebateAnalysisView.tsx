@@ -1,5 +1,5 @@
 import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { DebateAnalysisReport } from "./DebateAnalysisReport";
 import { useState, useEffect } from "react";
@@ -63,7 +63,7 @@ export function DebateAnalysisView({
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent on className="p-0 border-0 shadow-2xl max-w-screen-2xl h-[95vh] overflow-hidden">
+      <DialogContent className="p-0 border-0 shadow-2xl max-w-screen-2xl h-[95vh] overflow-hidden">
         <DialogTitle className="sr-only">Conversation Analysis</DialogTitle>
 
         <div className="h-full overflow-y-auto bg-white">
