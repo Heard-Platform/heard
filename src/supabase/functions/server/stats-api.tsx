@@ -214,6 +214,7 @@ app.get(
         cohostEvents,
         askTheDataRecords,
         userReports,
+        pageLoadEvents,
       ] = await Promise.all([
         getAllRealUsers(),
         getAllRealDebates(),
@@ -227,6 +228,7 @@ app.get(
         }),
         getAllAskTheDataRecords(),
         getUserReports(),
+        selectAll<UserEvent>("user_events", { type: "initial_load" }),
       ]);
 
       type FeedEvent = {
@@ -240,7 +242,8 @@ app.get(
           | "cohost"
           | "modInviteAccept"
           | "askTheData"
-          | "userReport";
+          | "userReport"
+          | "pageLoad";
         timestamp: number;
         id: string;
         label: string;
@@ -388,11 +391,24 @@ app.get(
         }
       }
 
+      for (const event of pageLoadEvents) {
+        const t = ts(event.createdAt);
+        if (t > since) {
+          events.push({
+            type: "pageLoad",
+            timestamp: t,
+            id: `${event.userId ?? "anon"}-${t}`,
+            label: "Page load",
+            meta: event.url ? { url: event.url } : undefined,
+          });
+        }
+      }
+
       events.sort((a, b) => b.timestamp - a.timestamp);
 
       const ALL_FEED_TYPES = [
         "user", "session", "room", "community", "statement",
-        "vote", "modInviteAccept", "cohost", "askTheData", "userReport",
+        "vote", "modInviteAccept", "cohost", "askTheData", "userReport", "pageLoad",
       ];
       const toDateKey = (t: number) => new Date(t).toISOString().split("T")[0];
       const dayCounts = Array.from({ length: 7 }, (_, i) => {
