@@ -1,3 +1,8 @@
+:root {
+  --color-strong-agree: var(--color-green-600);
+  --color-strong-disagree: var(--color-red-600);
+}
+
 .normal-text {
   color: white;
 }
@@ -238,6 +243,10 @@
   --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
 }
 
+.strong-agree-bg {
+  background-color: var(--color-strong-agree);
+}
+
 .disagree-gradient-from {
   --tw-gradient-from: var(--color-rose-300);
   --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
@@ -278,6 +287,10 @@
 
 .disagree-fill {
   fill: var(--color-red-500);
+}
+
+.strong-disagree-bg {
+  background-color: var(--color-strong-disagree);
 }
 
 .pass-bg {
@@ -360,4 +373,20 @@
 
 .results-max-h {
   max-height: calc(100dvh - 400px);
+}
+
+.charge-glow-agree {
+  box-shadow: 0 0 0 3px var(--color-strong-agree), 0 0 28px 6px color-mix(in oklab, var(--color-strong-agree) 55%, transparent);
+}
+
+.charge-glow-agree-armed {
+  box-shadow: 0 0 0 4px var(--color-strong-agree), 0 0 40px 10px color-mix(in oklab, var(--color-strong-agree) 75%, transparent);
+}
+
+.charge-glow-disagree {
+  box-shadow: 0 0 0 3px var(--color-strong-disagree), 0 0 28px 6px color-mix(in oklab, var(--color-strong-disagree) 55%, transparent);
+}
+
+.charge-glow-disagree-armed {
+  box-shadow: 0 0 0 4px var(--color-strong-disagree), 0 0 40px 10px color-mix(in oklab, var(--color-strong-disagree) 75%, transparent);
 }

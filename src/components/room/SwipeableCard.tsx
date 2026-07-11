@@ -1,12 +1,8 @@
 import { useEffect } from "react";
-import {
-  motion,
-  useMotionValue,
-  useTransform,
-  PanInfo,
-} from "motion/react";
+import { motion, useMotionValue, useTransform, PanInfo } from "motion/react";
 import type { Card, DebateRoom } from "../../types";
 import { getPastelColor } from "../../utils/colors";
+import { useSuperCharge } from "../../hooks/useSuperCharge";
 import { ChanceCard } from "./ChanceCard";
 import { CoverCard } from "./CoverCard";
 import { DemographicsCard } from "./DemographicsCard";
@@ -19,6 +15,8 @@ interface SwipeableCardProps {
   index: number;
   isTopCard: boolean;
   direction: "left" | "right" | "down" | "up" | null;
+  isSuperExit: boolean;
+  superChargeEnabled: boolean;
   currentIndex: number;
   totalStatements: number;
   allowAnonymous: boolean;
@@ -32,7 +30,9 @@ interface SwipeableCardProps {
   onShowAccountSetupModal: (featureText: string) => void;
   onDemographicsAnswer?: (id: string, answer: string | null) => void;
   onCertifySuccess: () => void;
+  onChargingChange: (charging: boolean) => void;
   onSuperAgree: () => void;
+  onSuperDisagree: () => void;
   onSkip: () => void;
   onFlag: () => void;
 }
@@ -43,6 +43,8 @@ export function SwipeableCard({
   index,
   isTopCard,
   direction,
+  isSuperExit,
+  superChargeEnabled,
   currentIndex,
   totalStatements,
   allowAnonymous,
@@ -53,7 +55,9 @@ export function SwipeableCard({
   onShowAccountSetupModal,
   onDemographicsAnswer,
   onCertifySuccess,
+  onChargingChange,
   onSuperAgree,
+  onSuperDisagree,
   onSkip,
   onFlag,
 }: SwipeableCardProps) {
@@ -69,8 +73,26 @@ export function SwipeableCard({
 
   const disagreeOpacity = useTransform(x, [-100, 0], [1, 0]);
   const agreeOpacity = useTransform(x, [0, 100], [0, 1]);
-  const superAgreeOpacity = useTransform(y, [-100, 0], [1, 0]);
   const passOpacity = useTransform(y, [0, 100], [0, 1]);
+
+  const isChargeable =
+    isTopCard && card.type === "statement" && superChargeEnabled;
+
+  const {
+    charge,
+    chargeVisible,
+    chargeSide,
+    armed,
+    handleDragStart,
+    handleDragEnd: handleInternalDragEnd,
+  } = useSuperCharge({
+    x,
+    isTopCard,
+    isChargeable,
+    onSuperAgree,
+    onSuperDisagree,
+    onDragEnd,
+  });
 
   useEffect(() => {
     if (isTopCard) {
@@ -79,14 +101,21 @@ export function SwipeableCard({
     }
   }, [isTopCard, x, y]);
 
+  useEffect(() => {
+    onChargingChange(chargeVisible);
+  }, [chargeVisible, onChargingChange]);
+
   const getExitAnimation = () => {
     if (!direction) return {};
 
+    const magnitude = isSuperExit ? 640 : 500;
+    const spin = isSuperExit ? 60 : 45;
+
     switch (direction) {
       case "left":
-        return { x: -500, rotate: -45, opacity: 0 };
+        return { x: -magnitude, rotate: -spin, opacity: 0 };
       case "right":
-        return { x: 500, rotate: 45, opacity: 0 };
+        return { x: magnitude, rotate: spin, opacity: 0 };
       case "up":
         return { y: -500, opacity: 0, scale: 1.1 };
       case "down":
@@ -112,7 +141,8 @@ export function SwipeableCard({
       drag={isTopCard ? "x" : false}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={1}
-      onDragEnd={isTopCard ? onDragEnd : undefined}
+      onDragStart={isTopCard ? handleDragStart : undefined}
+      onDragEnd={isTopCard ? handleInternalDragEnd : undefined}
       animate={
         isTopCard && direction
           ? getExitAnimation()
@@ -159,6 +189,20 @@ export function SwipeableCard({
           overflow: !isTopCard ? "hidden" : "visible",
         }}
       >
+        {isChargeable && chargeVisible && (
+          <motion.div
+            className={`absolute inset-0 rounded-xl pointer-events-none ${
+              chargeSide === "agree"
+                ? armed
+                  ? "charge-glow-agree-armed"
+                  : "charge-glow-agree"
+                : armed
+                ? "charge-glow-disagree-armed"
+                : "charge-glow-disagree"
+            }`}
+            style={{ opacity: charge }}
+          />
+        )}
         {card.type === "chance" ? (
           <ChanceCard
             room={room}
@@ -195,9 +239,11 @@ export function SwipeableCard({
             getTypeIcon={getTypeIcon}
             disagreeOpacity={disagreeOpacity}
             agreeOpacity={agreeOpacity}
-            superAgreeOpacity={superAgreeOpacity}
             passOpacity={passOpacity}
-            onSuperAgree={onSuperAgree}
+            charge={charge}
+            chargeVisible={chargeVisible}
+            chargeSide={chargeSide}
+            armed={armed}
             onSkip={onSkip}
             onFlag={onFlag}
           />

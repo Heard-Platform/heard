@@ -49,6 +49,9 @@ interface SwipeableStatementStackProps {
 
 const SWIPE_THRESHOLD = 100;
 
+const POINTS_PER_VOTE = 10;
+const STRONG_VOTE_UNLOCK_SCORE = POINTS_PER_VOTE * 2;
+
 export function SwipeableStatementStack({
   room,
   statements,
@@ -70,7 +73,7 @@ export function SwipeableStatementStack({
   onCoverCardSwiped,
   onDemographicsAnswered,
 }: SwipeableStatementStackProps) {
-  const { flagStatement, saveDemographicAnswer } = useDebateSession();
+  const { safelyGetUser, flagStatement, saveDemographicAnswer } = useDebateSession();
 
   const { showTutorial, recordSwipe, resetTutorialTimer } = useSwipeTutorialContext();
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
@@ -85,6 +88,8 @@ export function SwipeableStatementStack({
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
+  const [isSuperSwipe, setIsSuperSwipe] = useState(false);
+  const [isCharging, setIsCharging] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [statementToFlag, setStatementToFlag] = useState<Statement | null>(null);
 
@@ -92,7 +97,8 @@ export function SwipeableStatementStack({
     .filter((statement) => {
       const hasVotedBefore = currentUserId && statement.voters?.[currentUserId];
       const justVoted = votedStatementIds.has(statement.id);
-      return !hasVotedBefore && !justVoted;
+      const isExiting = swipedCardId === statement.id;
+      return !hasVotedBefore && (!justVoted || isExiting);
     })
     .sort((a, b) =>
       targetStatementId
@@ -154,6 +160,7 @@ export function SwipeableStatementStack({
     setIsVoting(true);
     setSwipedCardId(statementId);
     setSwipeDirection(direction);
+    setIsSuperSwipe(voteType === "super_agree");
 
     setVotedStatementIds((prev) =>
       new Set(prev).add(statementId),
@@ -199,10 +206,10 @@ export function SwipeableStatementStack({
         toast.success(
           <div className="flex flex-col gap-1">
             <div>
-              🌟 You super agreed with "{truncatedText}"
+              🌟 You strongly agreed with "{truncatedText}"
             </div>
             <div className="text-xs text-muted-foreground">
-              {percentage}% super agree
+              {percentage}% strong agree
             </div>
           </div>,
           {
@@ -271,6 +278,47 @@ export function SwipeableStatementStack({
     setTimeout(() => {
       setSwipedCardId(null);
       setSwipeDirection(null);
+      setIsSuperSwipe(false);
+      setIsVoting(false);
+    }, 300);
+  };
+
+  const handleSuperDisagree = (card: Card) => {
+    if (card.type !== "statement") return;
+    const statement = card.statement;
+
+    if (isVoting) return;
+
+    setIsVoting(true);
+    setSwipedCardId(statement.id);
+    setSwipeDirection("left");
+    setIsSuperSwipe(true);
+
+    setVotedStatementIds((prev) => new Set(prev).add(statement.id));
+
+    recordSwipe();
+    resetTutorialTimer();
+
+    const truncatedText =
+      statement.text.length > 50
+        ? `${statement.text.substring(0, 50)}...`
+        : statement.text;
+
+    console.log("[super-disagree prototype]", statement.id, statement.text);
+    toast.error(
+      <div className="flex flex-col gap-1">
+        <div>⚡ Strongly disagreed with "{truncatedText}"</div>
+        <div className="text-xs text-muted-foreground">
+          Prototype only — not saved yet
+        </div>
+      </div>,
+      { duration: 5000 },
+    );
+
+    setTimeout(() => {
+      setSwipedCardId(null);
+      setSwipeDirection(null);
+      setIsSuperSwipe(false);
       setIsVoting(false);
     }, 300);
   };
@@ -304,6 +352,7 @@ export function SwipeableStatementStack({
       setIsVoting(true);
       setSwipedNoopCard(card.type);
       setSwipeDirection(swipeDirection);
+      setIsSuperSwipe(false);
 
       if (card.type === "chance") {
         onChanceCardSwiped();
@@ -330,6 +379,7 @@ export function SwipeableStatementStack({
   const swipeCertifyCard = (direction: "left" | "right") => {
     setSwipedNoopCard("certify");
     setSwipeDirection(direction);
+    setIsSuperSwipe(false);
     setTimeout(() => {
       setCertifyCardDismissed(true);
       setSwipedNoopCard(null);
@@ -355,6 +405,7 @@ export function SwipeableStatementStack({
     setSwipeDirection(
       direction ?? (answer === null ? "left" : "right"),
     );
+    setIsSuperSwipe(false);
     setSwipedCardId(`demographics-${questionId}`);
     saveDemographicAnswer(questionId, answer);
 
@@ -365,8 +416,19 @@ export function SwipeableStatementStack({
     }, 500);
   };
 
-  const handleFlagClick = (statement: Statement) => {
-    setStatementToFlag(statement);
+  const handleSkip = (card: Card) => {
+    if (card.type !== "statement") return;
+    handleVote(card.statement.id, "pass", "down");
+  };
+
+  const handleSuperAgree = (card: Card) => {
+    if (card.type !== "statement") return;
+    handleVote(card.statement.id, "super_agree", "right");
+  };
+
+  const handleFlag = (card: Card) => {
+    if (card.type !== "statement") return;
+    setStatementToFlag(card.statement);
     setShowFlagDialog(true);
   };
 
@@ -424,10 +486,18 @@ export function SwipeableStatementStack({
     }
   };
 
+  let userScore = 0;
+  try {
+    userScore = safelyGetUser().score;
+  } catch {
+    // User not loaded yet — treat strong votes as locked.
+  }
+  const superChargeEnabled = userScore >= STRONG_VOTE_UNLOCK_SCORE;
+
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
       <div className="relative">
-        {showTutorial && isActive && cards[0]?.type === "statement" && (
+        {showTutorial && isActive && !isCharging && cards[0]?.type === "statement" && (
           <div className="absolute inset-0 z-20 pointer-events-none">
             <SwipeInstructions />
           </div>
@@ -468,6 +538,9 @@ export function SwipeableStatementStack({
                 direction={
                   isBeingSwiped ? swipeDirection : null
                 }
+                isSuperExit={isBeingSwiped && isSuperSwipe}
+                superChargeEnabled={superChargeEnabled}
+                onChargingChange={setIsCharging}
                 currentIndex={
                   statements.length -
                   unvotedStatements.length +
@@ -480,21 +553,10 @@ export function SwipeableStatementStack({
                 onShowAccountSetupModal={onShowAccountSetupModal}
                 onDemographicsAnswer={handleDemographicsAnswer}
                 onCertifySuccess={handleSuccessCertifyCard}
-                onSkip={() => {
-                  if (card.type === "statement") {
-                    handleVote(card.statement.id, "pass", "down");
-                  }
-                }}
-                onSuperAgree={() => {
-                  if (card.type === "statement") {
-                    handleVote(card.statement.id, "super_agree", "up");
-                  }
-                }}
-                onFlag={() => {
-                  if (card.type === "statement") {
-                    handleFlagClick(card.statement);
-                  }
-                }}
+                onSkip={() => handleSkip(card)}
+                onSuperAgree={() => handleSuperAgree(card)}
+                onSuperDisagree={() => handleSuperDisagree(card)}
+                onFlag={() => handleFlag(card)}
               />
             );
           })}

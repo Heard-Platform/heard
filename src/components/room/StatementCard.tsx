@@ -1,7 +1,8 @@
 import type { Statement } from "../../types";
 import { SwipeIndicator } from "../SwipeIndicators";
+import { SuperChargeBadge } from "./SuperChargeBadge";
 import type { MotionValue } from "motion/react";
-import { Star, Flag, MoreVertical, EyeOff, Share, SkipForward } from "lucide-react";
+import { Flag, MoreVertical, EyeOff, Share, SkipForward } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,10 +24,12 @@ interface StatementCardProps {
   totalStatements: number;
   disagreeOpacity: MotionValue<number>;
   agreeOpacity: MotionValue<number>;
-  superAgreeOpacity: MotionValue<number>;
   passOpacity: MotionValue<number>;
+  charge: MotionValue<number>;
+  chargeVisible: boolean;
+  chargeSide: "agree" | "disagree" | null;
+  armed: boolean;
   getTypeIcon: (type?: string) => string | null;
-  onSuperAgree: () => void;
   onSkip: () => void;
   onFlag: () => void;
 }
@@ -38,10 +41,12 @@ export function StatementCard({
   totalStatements,
   disagreeOpacity,
   agreeOpacity,
-  superAgreeOpacity,
   passOpacity,
+  charge,
+  chargeVisible,
+  chargeSide,
+  armed,
   getTypeIcon,
-  onSuperAgree,
   onSkip,
   onFlag,
 }: StatementCardProps) {
@@ -84,17 +89,6 @@ export function StatementCard({
         </div>
         {isTopCard && (
           <div className="flex items-center gap-2">
-            {false && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSuperAgree();
-                }}
-                className={`${actionButtonBase} bg-amber-400 hover:bg-amber-500`}
-              >
-                <Star className="w-4 h-4 text-white" />
-              </button>
-            )}
             <button
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
@@ -177,10 +171,14 @@ export function StatementCard({
             direction="agree"
             opacity={agreeOpacity}
           />
-          <SwipeIndicator
-            direction="superAgree"
-            opacity={superAgreeOpacity}
-          />
+          {chargeSide && (
+            <SuperChargeBadge
+              side={chargeSide}
+              charge={charge}
+              armed={armed}
+              visible={chargeVisible}
+            />
+          )}
           <SwipeIndicator
             direction="pass"
             opacity={passOpacity}

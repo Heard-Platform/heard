@@ -11,7 +11,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import { mockRooms } from "./mockData";
+import { DebateSessionProvider } from "../hooks/useDebateSession";
+import { mockRooms, mockUser } from "./mockData";
+
+const safelyGetUser = () => mockUser;
 
 const mockStatements: Statement[] = [
   {
@@ -219,25 +222,28 @@ export function SwipeableStatementStackStory() {
             </Card>
 
             <div className="bg-slate-100 rounded-lg p-8 min-h-[600px] flex items-center justify-center">
-              <SwipeableStatementStack
-                room={storyRoom}
-                statements={mockStatements}
-                currentUserId="story-user"
-                allowAnonymous={true}
-                isAnonymous={false}
-                chanceCardSwiped={chanceCardSwiped}
-                cover={cover}
-                coverCardSwiped={coverCardSwiped}
-                demographicQuestions={[]}
-                answeredQuestionIds={new Set()}
-                onVote={handleVote}
-                onSubmitStatement={handleSubmitStatement}
-                onShowAccountSetupModal={() => {}}
-                onChanceCardSwiped={handleChanceCardSwiped}
-                onCoverCardSwiped={handleCoverCardSwiped}
-                onCertifyDone={async () => {}}
-                onDemographicsAnswered={async () => {}}
-              />
+              <DebateSessionProvider showcaseOverrides={{ safelyGetUser }}>
+                <SwipeableStatementStack
+                  room={storyRoom}
+                  statements={mockStatements}
+                  currentUserId="story-user"
+                  isActive={true}
+                  allowAnonymous={true}
+                  isAnonymous={false}
+                  chanceCardSwiped={chanceCardSwiped}
+                  cover={cover}
+                  coverCardSwiped={coverCardSwiped}
+                  demographicQuestions={[]}
+                  answeredQuestionIds={new Set()}
+                  onVote={handleVote}
+                  onSubmitStatement={handleSubmitStatement}
+                  onShowAccountSetupModal={() => {}}
+                  onChanceCardSwiped={handleChanceCardSwiped}
+                  onCoverCardSwiped={handleCoverCardSwiped}
+                  onCertifyDone={async () => {}}
+                  onDemographicsAnswered={async () => {}}
+                />
+              </DebateSessionProvider>
             </div>
           </div>
         </TabsContent>
