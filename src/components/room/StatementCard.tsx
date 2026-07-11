@@ -1,4 +1,4 @@
-import type { Statement } from "../../types";
+import type { DebateRoom, Statement } from "../../types";
 import { SwipeIndicator } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
 import { Star, Flag, MoreVertical, EyeOff, Share, SkipForward } from "lucide-react";
@@ -12,12 +12,14 @@ import { useDebateSession } from "../../hooks/useDebateSession";
 import { getTotalVotes } from "../../utils/votes";
 import { share } from "../../utils/share";
 import { createShareableLink } from "../../utils/url";
+import { YouTubeAudioEmbed } from "./YouTubeAudioEmbed";
 import moment from "moment";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
 interface StatementCardProps {
   statement: Statement;
+  room: DebateRoom;
   isTopCard: boolean;
   currentIndex: number;
   totalStatements: number;
@@ -33,6 +35,7 @@ interface StatementCardProps {
 
 export function StatementCard({
   statement,
+  room,
   isTopCard,
   currentIndex,
   totalStatements,
@@ -45,10 +48,10 @@ export function StatementCard({
   onSkip,
   onFlag,
 }: StatementCardProps) {
-  const { user, activeRooms, setStatementHidden } = useDebateSession();
-  const room = activeRooms.find((r) => r.id === statement.roomId);
-  const isHost = !!user && !!room && room.hostId === user.id;
+  const { user, setStatementHidden } = useDebateSession();
+  const isHost = !!user && room.hostId === user.id;
   const isDeveloper = !!user?.isDeveloper;
+  const isMusicLeague = room.mode === "music-league";
   const timeAgo = moment(statement.timestamp).fromNow();
 
   const handleHide = () => {
@@ -149,9 +152,13 @@ export function StatementCard({
       </div>
 
       <div className="flex min-h-190px items-center justify-center">
-        <p className="text-lg leading-relaxed text-center">
-          {statement.text}
-        </p>
+        {isMusicLeague ? (
+          <YouTubeAudioEmbed url={statement.text} isPlaying={isTopCard} />
+        ) : (
+          <p className="text-lg leading-relaxed text-center">
+            {statement.text}
+          </p>
+        )}
       </div>
 
       <div className="flex items-end justify-between">

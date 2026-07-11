@@ -189,6 +189,7 @@ export function SwipeableCard({
         ) : card.type === "statement" ? (
           <StatementCard
             statement={card.statement}
+            room={room}
             isTopCard={isTopCard}
             currentIndex={currentIndex}
             totalStatements={totalStatements}
