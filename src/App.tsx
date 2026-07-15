@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import * as Sentry from "@sentry/react";
+import posthog from "posthog-js";
 import { motion } from "motion/react";
 import { UnsubscribePage } from "./components/UnsubscribePage";
 import { TermsOfServicePage } from "./screens/TermsOfServicePage";
@@ -229,8 +230,10 @@ function AppContent() {
   useEffect(() => {
     if (user) {
       Sentry.setUser({ id: user.id });
+      posthog.identify(user.id);
     } else {
       Sentry.setUser(null);
+      posthog.reset();
     }
   }, [user?.id]);
 
