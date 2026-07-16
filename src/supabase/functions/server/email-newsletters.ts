@@ -347,7 +347,7 @@ const newsletters = [
     section1: {
       title: "⚽️ Who are you rooting for this Sunday, and why?",
       text: "The World Cup final is here 🏆 Got a hot take? A favorite player? See where you land in <a href='https://heard.vote/room/31m0twqkoo6mrnu69l0'>our latest discussion.</a>",
-      imageUrl: `${SUPABASE_URL}/nl-22-soccer.png`,
+      imageUrl: `${SUPABASE_URL}/nl-22-soccer.jpg`,
       imageLink: "https://heard.vote/room/31m0twqkoo6mrnu69l0",
       imageAlt: "Soccer final",
     },
@@ -361,7 +361,7 @@ const newsletters = [
     section3: {
       title: "🇺🇸 InterdepenDance conference uses Heard",
       text: "An <a href='http://interdependanceday.org/'>event about re-envisioning the future of the US and democracy</a> used Heard over the July 4th weekend. (I know that was two weeks ago, don’t hate me.) As part of that deployment, we added a projector-friendly display mode to show live results and co-host privileges. Big thanks to the organizers and participants there for giving Heard a try!",
-      imageUrl: `${SUPABASE_URL}/nl-inter.png`,
+      imageUrl: `${SUPABASE_URL}/nl-22-inter.png`,
       imageLink: HOMEPAGE_URL,
       imageAlt: "Conf results",
     },
