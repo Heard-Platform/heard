@@ -89,6 +89,7 @@ export function RoomCard({
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [coverCardSwiped, setCoverCardSwiped] = useState(room.coverCardSwiped || false);
+  const [shareCardSwiped, setShareCardSwiped] = useState(room.shareCardSwiped || false);
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
 
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -98,7 +99,7 @@ export function RoomCard({
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
   const [showEditRoom, setShowEditRoom] = useState(false);
   const [showDisplayMode, setShowDisplayMode] = useState(false);
-  const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
+  const { markChanceCardSwiped, markCoverCardSwiped, markShareCardSwiped } = useDebateSession();
 
   const isTrueHost = user.id === room.hostId;
   const isHost = isTrueHost || !!room.cohostIds?.includes(user.id);
@@ -116,6 +117,10 @@ export function RoomCard({
   useEffect(() => {
     setCoverCardSwiped(room.coverCardSwiped || false);
   }, [room.coverCardSwiped]);
+
+  useEffect(() => {
+    setShareCardSwiped(room.shareCardSwiped || false);
+  }, [room.shareCardSwiped]);
 
   const handleOpenAnalysis = () => {
     setShowAnalysis(true);
@@ -155,7 +160,8 @@ export function RoomCard({
     (!room.demographicQuestions.length ||
       room.demographicQuestions.every((q) =>
         answeredQuestionIds.has(q.id),
-      ));
+      )) &&
+    shareCardSwiped;
 
   const isRealtime = room.mode === "realtime";
 
@@ -207,6 +213,11 @@ export function RoomCard({
   const handleSwipeCoverCard = async () => {
     setCoverCardSwiped(true);
     await markCoverCardSwiped(room.id);
+  }
+
+  const handleSwipeShareCard = async () => {
+    setShareCardSwiped(true);
+    await markShareCardSwiped(room.id);
   }
 
   const handleDemographicsAnswered = (questionId: string) => {
@@ -364,6 +375,7 @@ export function RoomCard({
                     chanceCardSwiped={effectiveChanceCardSwiped}
                     cover={cover}
                     coverCardSwiped={coverCardSwiped}
+                    shareCardSwiped={shareCardSwiped}
                     demographicQuestions={room.demographicQuestions}
                     answeredQuestionIds={answeredQuestionIds}
                     targetStatementId={targetStatementId}
@@ -374,6 +386,7 @@ export function RoomCard({
                     onCertifyDone={() => setCertifyCardDismissed(true)}
                     onChanceCardSwiped={handleSwipeChanceCard}
                     onCoverCardSwiped={handleSwipeCoverCard}
+                    onShareCardSwiped={handleSwipeShareCard}
                     onDemographicsAnswered={handleDemographicsAnswered}
                   />
                 );

@@ -104,15 +104,19 @@ function DemographicsSwipeableStack() {
         allowAnonymous={true}
         isAnonymous={false}
         chanceCardSwiped={true}
+        cover={null}
         coverCardSwiped={true}
+        shareCardSwiped={true}
         demographicQuestions={questions}
         answeredQuestionIds={questionIds}
+        isActive={true}
         onVote={async () => { } }
         onSubmitStatement={async () => { } }
         onShowAccountSetupModal={() => { } }
         onCertifyDone={async () => { } }
         onChanceCardSwiped={async () => { } }
         onCoverCardSwiped={async () => { } }
+        onShareCardSwiped={async () => { } }
         onDemographicsAnswered={handleAnswer}
       />
     </div>

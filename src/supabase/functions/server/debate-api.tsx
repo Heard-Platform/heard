@@ -33,6 +33,8 @@ import {
   saveDemographicAnswer,
   saveCoverCardSwipe,
   getCoverCardSwipedRoomIds,
+  saveCardSwipe,
+  getCardSwipedRoomIds,
   getMergesForRoom,
   recordRoomEngagement,
 } from "./model-utils.ts";
@@ -961,9 +963,10 @@ const getActiveRoomsHandler = async (c: Context) => {
           statuses.map(status => status.roomId)
       );
 
-      const [youtubeStatuses, swipedCoverCardRoomIds] = await Promise.all([
+      const [youtubeStatuses, swipedCoverCardRoomIds, swipedShareCardRoomIds] = await Promise.all([
         getUsersYouTubeCardStatuses(userId),
         getCoverCardSwipedRoomIds(userId),
+        getCardSwipedRoomIds(userId, "share"),
       ]);
 
       const swipedYoutubeRoomIds = new Set(youtubeStatuses.map((s: any) => s.roomId));
@@ -972,6 +975,7 @@ const getActiveRoomsHandler = async (c: Context) => {
         ...room,
         chanceCardSwiped: swipedRoomIds.has(room.id),
         coverCardSwiped: swipedCoverCardRoomIds.has(room.id) || swipedYoutubeRoomIds.has(room.id),
+        shareCardSwiped: swipedShareCardRoomIds.has(room.id),
       }));
     }
 
@@ -2313,6 +2317,27 @@ app.post(
     } catch (error) {
       console.error("Error marking cover card as swiped:", error);
       return c.json({ error: "Failed to mark cover card as swiped" }, 500);
+    }
+  }
+);
+
+app.post(
+  "/make-server-f1a393b4/share-card/mark-swiped",
+  async (c: Context) => {
+    try {
+      const userId = c.get("userId");
+      const { roomId } = await c.req.json();
+
+      if (!roomId) {
+        return c.json({ error: "roomId is required" }, 400);
+      }
+
+      await saveCardSwipe(userId, roomId, "share");
+
+      return c.json({ success: true });
+    } catch (error) {
+      console.error("Error marking share card as swiped:", error);
+      return c.json({ error: "Failed to mark share card as swiped" }, 500);
     }
   }
 );

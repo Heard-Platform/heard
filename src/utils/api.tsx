@@ -372,6 +372,13 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async markShareCardSwiped(roomId: string) {
+    return this.request("/share-card/mark-swiped", {
+      method: "POST",
+      body: JSON.stringify({ roomId }),
+    });
+  }
+
   async saveDemographicAnswer(questionId: string, answer: string | null) {
     return this.request<undefined>("/demographic-answer", {
       method: "POST",
@@ -945,11 +952,11 @@ class ApiClient extends BaseApiClient {
     );
   }
 
-  trackEvent(type: string, roomId?: string): void {
+  trackEvent(type: string, roomId?: string, referralUserId?: string): void {
     if (safelyGetStorageItem("showComponentShowcase", false))
       return;
     const url = typeof window !== "undefined" ? window.location.href : undefined;
-    this.post("/analytics/event", { type, roomId, url })
+    this.post("/analytics/event", { type, roomId, url, referralUserId })
       .catch(() => {});
   }
 

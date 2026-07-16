@@ -174,6 +174,14 @@ export const getCoverCardSwipedRoomIds = async (userId: string): Promise<Set<str
   return new Set(rows.map((r) => r.roomId));
 };
 
+export const saveCardSwipe = async (userId: string, roomId: string, cardType: string) =>
+  upsert("card_swipes", { userId, roomId, cardType, swipedAt: Date.now() }, "userId,roomId,cardType");
+
+export const getCardSwipedRoomIds = async (userId: string, cardType: string): Promise<Set<string>> => {
+  const rows = await selectAll<{ roomId: string }>("card_swipes", { userId, cardType });
+  return new Set(rows.map((r) => r.roomId));
+};
+
 export const saveRoomView = async (view: RoomView) =>
   upsert("room_views", view, "userId,roomId");
 
