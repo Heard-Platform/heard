@@ -36,6 +36,7 @@ import {
   parseStatementIdFromUrl,
   parseModInviteTokenFromUrl,
   parseCohostInviteTokenFromUrl,
+  parseLinkSourceFromUrl,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
@@ -310,6 +311,7 @@ function AppContent() {
       const isClubRoute = /^\/club\/?$/.test(pathname);
 
       const roomIdFromUrl = parseRoomIdFromUrl();
+      const linkSourceFromUrl = parseLinkSourceFromUrl();
       const cohostInviteTokenFromUrl = parseCohostInviteTokenFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl = parseAnalysisRoomIdFromUrl();
@@ -409,6 +411,12 @@ function AppContent() {
         setCurrentEventId(eventIdFromUrl);
       } else if (roomIdFromUrl) {
         startRoomJoin(roomIdFromUrl);
+        if (linkSourceFromUrl) {
+          api.trackEvent(`referred_by_${linkSourceFromUrl}`, roomIdFromUrl);
+          const url = new URL(window.location.href);
+          url.searchParams.delete("src");
+          window.history.replaceState({}, "", url.pathname + url.search);
+        }
         if (cohostInviteTokenFromUrl) {
           if (!user) {
             toast("Sign in to accept the co-host invite, then visit this link again.");

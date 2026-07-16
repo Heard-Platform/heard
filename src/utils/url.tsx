@@ -44,6 +44,11 @@ export const parseCohostInviteTokenFromUrl = (): string | null => {
   return new URL(window.location.href).searchParams.get('cohostInvite')
 }
 
+export const parseLinkSourceFromUrl = (): string | null => {
+  if (typeof window === 'undefined') return null
+  return new URL(window.location.href).searchParams.get('src')
+}
+
 export const parseFlyerDataFromUrl = (): { flyerId: string; statementId: string; vote: VoteType; flyerGroup?: number } | null => {
   if (typeof window === 'undefined') return null
   
