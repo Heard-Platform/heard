@@ -346,9 +346,9 @@ const newsletters = [
     editionNumber: 22,
     section1: {
       title: "⚽️ Who are you rooting for this Sunday, and why?",
-      text: "The World Cup final is here 🏆 Got a hot take? A favorite player? See where you land in <a href='https://heard.vote/room/31m0twqkoo6mrnu69l0'>our latest discussion.</a>",
+      text: "The World Cup final is here 🏆 Got a hot take? A favorite player? See where you land in <a href='https://heard.vote/room/31m0twqkoo6mrnu69l0?src=newsletter'>our latest discussion.</a>",
       imageUrl: `${SUPABASE_URL}/nl-22-soccer.jpg`,
-      imageLink: "https://heard.vote/room/31m0twqkoo6mrnu69l0",
+      imageLink: "https://heard.vote/room/31m0twqkoo6mrnu69l0?src=newsletter",
       imageAlt: "Soccer final",
     },
     section2: {
