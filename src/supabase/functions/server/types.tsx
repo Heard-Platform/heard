@@ -7,6 +7,7 @@ export interface UserEvent {
   userId: string | null;
   roomId?: string;
   url?: string;
+  referralUserId?: string;
   createdAt: number;
 }
 

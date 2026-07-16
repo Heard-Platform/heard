@@ -37,6 +37,7 @@ import {
   parseModInviteTokenFromUrl,
   parseCohostInviteTokenFromUrl,
   parseLinkSourceFromUrl,
+  parseReferrerIdFromUrl,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
@@ -312,6 +313,7 @@ function AppContent() {
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const linkSourceFromUrl = parseLinkSourceFromUrl();
+      const referrerIdFromUrl = parseReferrerIdFromUrl();
       const cohostInviteTokenFromUrl = parseCohostInviteTokenFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl = parseAnalysisRoomIdFromUrl();
@@ -412,9 +414,14 @@ function AppContent() {
       } else if (roomIdFromUrl) {
         startRoomJoin(roomIdFromUrl);
         if (linkSourceFromUrl) {
-          api.trackEvent(`referred_by_${linkSourceFromUrl}`, roomIdFromUrl);
+          api.trackEvent(
+            `referred_by_${linkSourceFromUrl}`,
+            roomIdFromUrl,
+            referrerIdFromUrl ?? undefined,
+          );
           const url = new URL(window.location.href);
           url.searchParams.delete("src");
+          url.searchParams.delete("ref");
           window.history.replaceState({}, "", url.pathname + url.search);
         }
         if (cohostInviteTokenFromUrl) {

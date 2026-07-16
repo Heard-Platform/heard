@@ -93,10 +93,18 @@ export type DemographicsCard = {
   question: DemographicQuestion;
 }
 
-export type Card = StatementCard | CertifyCard | ChanceCard | CoverCard | DemographicsCard;
+export type ShareCard = {
+  type: "share";
+}
+
+export type Card = StatementCard | CertifyCard | ChanceCard | CoverCard | DemographicsCard | ShareCard;
 
 export const isStatementCard = (card: Card): card is StatementCard => {
   return card.type === "statement";
+};
+
+export const isShareCard = (card: Card): card is ShareCard => {
+  return card.type === "share";
 };
 
 export const isChanceCard = (card: Card): card is ChanceCard => {
@@ -226,6 +234,7 @@ export interface DebateRoom {
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
   coverCardSwiped?: boolean;
+  shareCardSwiped?: boolean;
   lastActivityAt?: number;
   totalVotes?: number;
   demographicQuestions: DemographicQuestion[];

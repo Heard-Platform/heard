@@ -114,14 +114,18 @@ function CertifyCardInStack() {
       allowAnonymous={true}
       isAnonymous={true}
       chanceCardSwiped={true}
+      cover={null}
       coverCardSwiped={true}
+      shareCardSwiped={true}
       demographicQuestions={[]}
       answeredQuestionIds={new Set()}
+      isActive={true}
       onVote={async () => {}}
       onSubmitStatement={async () => {}}
       onShowAccountSetupModal={() => {}}
       onChanceCardSwiped={async () => {}}
       onCoverCardSwiped={async () => {}}
+      onShareCardSwiped={async () => {}}
       onCertifyDone={async () => {}}
       onDemographicsAnswered={() => {}}
     />

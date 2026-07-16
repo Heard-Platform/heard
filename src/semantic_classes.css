@@ -346,6 +346,22 @@
   color: var(--color-red-500);
 }
 
+.share-bg {
+  background-color: var(--color-pink-600);
+}
+
+.share-bg-hover {
+  background-color: var(--color-pink-700);
+}
+
+.share-text {
+  color: var(--color-pink-700);
+}
+
+.share-border {
+  border-color: var(--color-pink-200);
+}
+
 .invisible {
   visibility: hidden;
 }
