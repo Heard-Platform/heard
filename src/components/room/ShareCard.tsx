@@ -54,7 +54,7 @@ export function ShareCard({
         <div className="text-3xl mb-2">👯</div>
         <h3 className="text-2xl">Where do your friends land?</h3>
         <p className="text-base text-muted-foreground max-w-sm">
-          Send this conversation to your friends to get more voices weighing in
+          Send this to your friends to find out where they land
         </p>
         <Button
           className="heard-pill share-bg hover:share-bg-hover normal-text"
