@@ -13,14 +13,12 @@ const copyToClipboard = (text: string): Promise<void> => {
 };
 
 export const share = async (options: ShareOptions): Promise<boolean> => {
-  const contentToCopy = options.text || options.url || "";
-
   // Try Web Share API first, then fall back to clipboard
   try {
     if (navigator.share) {
       const shareData: ShareData = {};
       if (options.title) shareData.title = options.title;
-      if (options.text) shareData.text = contentToCopy;
+      if (options.text) shareData.text = options.text;
       if (options.url) shareData.url = options.url;
 
       if (!navigator.canShare || navigator.canShare(shareData)) {
@@ -30,8 +28,15 @@ export const share = async (options: ShareOptions): Promise<boolean> => {
       }
     }
   } catch (shareError) {
+    if ((shareError as Error)?.name === "AbortError") {
+      return false;
+    }
     console.log("Web Share API failed, using clipboard fallback:", shareError);
   }
+
+  const parts = [options.title, options.text];
+  if (options.url && !options.text?.includes(options.url)) parts.push(options.url);
+  const contentToCopy = parts.filter(Boolean).join("\n\n");
 
   try {
     await copyToClipboard(contentToCopy);

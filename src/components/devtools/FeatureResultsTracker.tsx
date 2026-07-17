@@ -27,6 +27,7 @@ import {
   Newspaper,
   HeartHandshake,
   MessageCircleQuestion,
+  Megaphone,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -34,6 +35,7 @@ import { AvatarAnimalChart } from "./feature-tracker/AvatarAnimalChart";
 import { CertifyCardResults } from "./feature-tracker/CertifyCardResults";
 import { OneBillionResults } from "./feature-tracker/OneBillionResults";
 import { FundingResults } from "./feature-tracker/FundingResults";
+import { OrganizersResults } from "./feature-tracker/OrganizersResults";
 
 interface FeatureResultsTrackerProps {
   onExit: () => void;
@@ -326,6 +328,16 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       description: "Questions asked and answered via the Ask the Data feature",
       getValue: (s) => s.askTheDataQuestions,
       getDate: (s) => s.askTheDataQuestionsSince,
+    },
+    {
+      icon: Megaphone,
+      iconColor: "text-indigo-600",
+      bgColor: "bg-indigo-100",
+      title: "/organizers Page",
+      description: "Funnel of events on the organizer/civic-group pilot pitch page",
+      getValue: (s) => s.organizersEvents.pageView,
+      getDate: (s) => s.organizersEventsSince,
+      renderExtra: (s) => <OrganizersResults {...s.organizersEvents} />,
     },
   ]
 

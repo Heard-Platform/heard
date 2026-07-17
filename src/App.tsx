@@ -6,6 +6,7 @@ import { UnsubscribePage } from "./components/UnsubscribePage";
 import { TermsOfServicePage } from "./screens/TermsOfServicePage";
 import { PrivacyPolicyPage } from "./screens/PrivacyPolicyPage";
 import { OrgsLanding } from "./screens/OrgsLanding";
+import { OrganizersLanding } from "./screens/OrganizersLanding";
 import { OneBillionPage } from "./screens/OneBillionPage";
 import { FundingPage } from "./screens/funding/FundingPage";
 import { AiUsagePage } from "./screens/AiUsagePage";
@@ -95,6 +96,7 @@ function AppContent() {
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showOrgsPage, setShowOrgsPage] = useState(false);
+  const [showOrganizersPage, setShowOrganizersPage] = useState(false);
   const [showOneBillion, setShowOneBillion] = useState(false);
   const [showFundingPage, setShowFundingPage] = useState(false);
   const [showAiUsage, setShowAiUsage] = useState(false);
@@ -288,6 +290,7 @@ function AppContent() {
       const isTermsRoute = route === "terms";
       const isPrivacyRoute = route === "privacy";
       const isOrgsRoute = route === "orgs";
+      const isOrganizersRoute = route === "organizers";
       const isOneBillionRoute = route === "1billion";
       const isAiUsageRoute = route === "ai-usage";
       const isFundingRoute = route === "fund";
@@ -451,6 +454,8 @@ function AppContent() {
         setShowPrivacy(true);
       } else if (isOrgsRoute) {
         setShowOrgsPage(true);
+      } else if (isOrganizersRoute) {
+        setShowOrganizersPage(true);
       } else if (isOneBillionRoute) {
         setShowOneBillion(true);
       } else if (isAiUsageRoute) {
@@ -608,6 +613,11 @@ function AppContent() {
     window.history.pushState({}, "", "/");
   };
 
+  const handleExitOrganizers = () => {
+    setShowOrganizersPage(false);
+    window.history.pushState({}, "", "/");
+  };
+
   if (showAdminPanel) {
     return (
       <>
@@ -677,6 +687,10 @@ function AppContent() {
 
   if (showOrgsPage) {
     return <OrgsLanding onExit={handleExitOrgs} />;
+  }
+
+  if (showOrganizersPage) {
+    return <OrganizersLanding onExit={handleExitOrganizers} />;
   }
 
   if (showOneBillion) {

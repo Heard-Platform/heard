@@ -1,6 +1,6 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers, getAllAskTheDataRecords } from "./kv-utils.tsx";
-import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getUniqueUserIdsForEvent, getEventsOfType } from "./model-utils.ts";
+import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, getEventsOfType } from "./model-utils.ts";
 import { countRecords, selectAll } from "./db-utils.ts";
 
 const app = new Hono();
@@ -171,6 +171,44 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     };
     const fundingEventsSince = new Date("2026-06-16").getTime();
 
+    const organizersEventRows = await getOrganizersEvents();
+    const organizersCounts: Record<string, number> = {};
+    const organizersUserSets: Record<string, Set<string>> = {};
+    for (const row of organizersEventRows) {
+      organizersCounts[row.type] = (organizersCounts[row.type] ?? 0) + 1;
+      if (row.userId) {
+        if (!organizersUserSets[row.type]) organizersUserSets[row.type] = new Set();
+        organizersUserSets[row.type].add(row.userId);
+      }
+    }
+    const ou = (key: string) => organizersUserSets[key]?.size ?? 0;
+    const organizersEvents = {
+      pageView: organizersCounts["organizers_page_view"] ?? 0,
+      pageViewUsers: ou("organizers_page_view"),
+      scrolledBelowFold: organizersCounts["organizers_scrolled_below_fold"] ?? 0,
+      scrolledBelowFoldUsers: ou("organizers_scrolled_below_fold"),
+      demoVoteAgree: organizersCounts["organizers_demo_vote_agree"] ?? 0,
+      demoVoteDisagree: organizersCounts["organizers_demo_vote_disagree"] ?? 0,
+      demoVotePass: organizersCounts["organizers_demo_vote_pass"] ?? 0,
+      demoVoteSuperAgree: organizersCounts["organizers_demo_vote_super_agree"] ?? 0,
+      demoCompleted: organizersCounts["organizers_demo_completed"] ?? 0,
+      demoCompletedUsers: ou("organizers_demo_completed"),
+      clickSchedule: organizersCounts["organizers_click_schedule"] ?? 0,
+      clickScheduleUsers: ou("organizers_click_schedule"),
+      clickFounderLinkedin: organizersCounts["organizers_click_founder_linkedin"] ?? 0,
+      clickFounderInstagram: organizersCounts["organizers_click_founder_instagram"] ?? 0,
+      clickFounderYoutube: organizersCounts["organizers_click_founder_youtube"] ?? 0,
+      clickVtaiwanLink: organizersCounts["organizers_click_vtaiwan_link"] ?? 0,
+      clickExitLogo: organizersCounts["organizers_click_exit_logo"] ?? 0,
+      clickTestimonialBeagleFreedomProject: organizersCounts["organizers_click_testimonial_beagle_freedom_project"] ?? 0,
+      clickTestimonialInterdependanceDay: organizersCounts["organizers_click_testimonial_interdependance_day"] ?? 0,
+      resultsExpanded: organizersCounts["organizers_results_expanded"] ?? 0,
+      resultsExpandedUsers: ou("organizers_results_expanded"),
+      resultsCollapsed: organizersCounts["organizers_results_collapsed"] ?? 0,
+      resultsLoadError: organizersCounts["organizers_results_load_error"] ?? 0,
+    };
+    const organizersEventsSince = new Date("2026-07-17").getTime();
+
     const askTheDataQuestions = (await getAllAskTheDataRecords()).length;
     const askTheDataQuestionsSince = new Date("2026-07-01").getTime();
 
@@ -239,6 +277,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       ggwashSince,
       fundingEvents,
       fundingEventsSince,
+      organizersEvents,
+      organizersEventsSince,
       modInvitesAccepted,
       modInvitesAcceptedSince,
       cohostInviteAccepted,
