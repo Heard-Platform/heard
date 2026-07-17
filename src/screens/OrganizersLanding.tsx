@@ -470,7 +470,7 @@ function AboutSection() {
   return (
     <section style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       <SectionEyebrow>The founder</SectionEyebrow>
-      <SectionHeading>Built by a DC-native</SectionHeading>
+      <SectionHeading>Built by a DC local</SectionHeading>
 
       <div
         style={{
