@@ -1704,6 +1704,10 @@
     rotate: 45deg;
   }
 
+  .rotate-90 {
+    rotate: 90deg;
+  }
+
   .rotate-\[-25deg\] {
     rotate: -25deg;
   }
@@ -3685,6 +3689,10 @@
 
   .py-4 {
     padding-block: calc(var(--spacing) * 4);
+  }
+
+  .py-5 {
+    padding-block: calc(var(--spacing) * 5);
   }
 
   .py-6 {

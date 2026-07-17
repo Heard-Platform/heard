@@ -142,6 +142,14 @@ export const getFundingEvents = async () => {
   );
 };
 
+export const getOrganizersEvents = async () => {
+  return selectAll<UserEvent>(
+    "user_events",
+    {},
+    (q: any) => q.like("type", "organizers_%").select("type, userId"),
+  );
+};
+
 export const insertAnalyticsEvent = async (event: NewUserEvent) => {
   return insert<NewUserEvent>( "user_events", event );
 };

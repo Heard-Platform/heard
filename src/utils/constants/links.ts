@@ -5,3 +5,5 @@ export const SOCIAL_LINKS = {
   INSTAGRAM: "https://www.instagram.com/alexmasonlong/",
   YOUTUBE: "https://www.youtube.com/@AlexLongHeard/",
 } as const;
+
+export const CALENDLY_PILOT_URL = "https://calendly.com/alexmasonlong/15-minute";
