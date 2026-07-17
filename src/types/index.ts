@@ -566,8 +566,10 @@ export interface FeatureResults {
     demoVoteSuperAgree: number;
     demoCompleted: number;
     demoCompletedUsers: number;
-    clickSchedule: number;
-    clickScheduleUsers: number;
+    clickScheduleTop: number;
+    clickScheduleTopUsers: number;
+    clickScheduleBottom: number;
+    clickScheduleBottomUsers: number;
     clickFounderLinkedin: number;
     clickFounderInstagram: number;
     clickFounderYoutube: number;

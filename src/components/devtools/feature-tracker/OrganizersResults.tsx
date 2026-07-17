@@ -8,7 +8,8 @@ interface OrganizersResultsProps {
   demoVotePass: number;
   demoVoteSuperAgree: number;
   demoCompleted: number; demoCompletedUsers: number;
-  clickSchedule: number; clickScheduleUsers: number;
+  clickScheduleTop: number; clickScheduleTopUsers: number;
+  clickScheduleBottom: number; clickScheduleBottomUsers: number;
   clickFounderLinkedin: number;
   clickFounderInstagram: number;
   clickFounderYoutube: number;
@@ -30,7 +31,8 @@ export function OrganizersResults(props: OrganizersResultsProps) {
     demoVotePass,
     demoVoteSuperAgree,
     demoCompleted, demoCompletedUsers,
-    clickSchedule, clickScheduleUsers,
+    clickScheduleTop, clickScheduleTopUsers,
+    clickScheduleBottom, clickScheduleBottomUsers,
     clickFounderLinkedin,
     clickFounderInstagram,
     clickFounderYoutube,
@@ -56,7 +58,8 @@ export function OrganizersResults(props: OrganizersResultsProps) {
     { label: "Demo Votes — Pass", count: demoVotePass, rate: rate(demoVotePass, demoVotesTotal) },
     { label: "Demo Votes — Super Agree", count: demoVoteSuperAgree, rate: rate(demoVoteSuperAgree, demoVotesTotal) },
     { label: "Demo Completed", count: demoCompleted, users: demoCompletedUsers, rate: rate(demoCompleted, pageView) },
-    { label: "Schedule CTA Clicked", count: clickSchedule, users: clickScheduleUsers, rate: rate(clickSchedule, pageView) },
+    { label: "Schedule CTA Clicked — Top", count: clickScheduleTop, users: clickScheduleTopUsers, rate: rate(clickScheduleTop, pageView) },
+    { label: "Schedule CTA Clicked — Bottom", count: clickScheduleBottom, users: clickScheduleBottomUsers, rate: rate(clickScheduleBottom, pageView) },
     { label: "Results Expanded", count: resultsExpanded, users: resultsExpandedUsers, rate: rate(resultsExpanded, pageView) },
     { label: "Results Collapsed", count: resultsCollapsed, rate: rate(resultsCollapsed, resultsExpanded) },
     { label: "Results Load Errors", count: resultsLoadError, rate: rate(resultsLoadError, resultsExpanded) },

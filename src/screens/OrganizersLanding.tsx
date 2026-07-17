@@ -215,6 +215,7 @@ export function OrganizersLanding({ onExit }: OrganizersLandingProps) {
         <AboutSection />
         <TestimonialsSection />
         <InspiredBySection />
+        <ClosingCtaSection />
       </main>
 
       <Toaster />
@@ -357,22 +358,14 @@ function DemoSection() {
   );
 }
 
-function PrimaryCtaSection() {
+function PrimaryCtaButton({ location }: { location: "top" | "bottom" }) {
   return (
-    <section
-      style={{
-        textAlign: "center",
-        display: "flex",
-        flexDirection: "column",
-        gap: "16px",
-        padding: "16px 0",
-      }}
-    >
+    <>
       <a
         href={CALENDLY_PILOT_URL}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => api.trackEvent("organizers_click_schedule")}
+        onClick={() => api.trackEvent(`organizers_click_schedule_${location}`)}
         style={{
           display: "inline-block",
           backgroundColor: COLORS.indigo600,
@@ -394,10 +387,43 @@ function PrimaryCtaSection() {
       <p style={{ color: COLORS.gray600 }}>
         Free for nonprofits, unions, and civic groups.
       </p>
+    </>
+  );
+}
+
+function PrimaryCtaSection() {
+  return (
+    <section
+      style={{
+        textAlign: "center",
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px",
+        padding: "16px 0",
+      }}
+    >
+      <PrimaryCtaButton location="top" />
       <RoomAnalysisEmbed
         roomId={FEATURED_ROOM_ID}
         triggerLabel="See results from a real DC conversation on Waymo"
       />
+    </section>
+  );
+}
+
+function ClosingCtaSection() {
+  return (
+    <section
+      style={{
+        textAlign: "center",
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px",
+        padding: "16px 0",
+      }}
+    >
+      <SectionHeading>I'd love to give you a demo</SectionHeading>
+      <PrimaryCtaButton location="bottom" />
     </section>
   );
 }
