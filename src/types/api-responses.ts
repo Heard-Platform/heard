@@ -1,5 +1,5 @@
 import { DebateRoom, Rant, Statement, UserSession } from ".";
-import { QRScanResult } from "../components/room/QRScanResultDialog";
+import { SingleQRScanResult } from "../components/room/QRScanResultDialog";
 
 export type UserSessionResponse = {
   user: UserSession;
@@ -12,7 +12,7 @@ export type RoomStatusResponse = {
   rants: Rant[];
 };
 
-export type FlyerVoteResponse = QRScanResult & {
+export type FlyerVoteResponse = Omit<SingleQRScanResult, 'mode'> & {
   user: UserSession;
   sessionId: string;
 };

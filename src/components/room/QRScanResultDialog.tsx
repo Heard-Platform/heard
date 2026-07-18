@@ -1,48 +1,66 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "motion/react";
 import { X, ArrowRight, ChevronLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
-import { DebateRoom } from "../../types";
+import { DebateRoom, Statement } from "../../types";
 import { VoteType } from "../../types";
 import moment from "moment";
 import { api } from "../../utils/api";
 import { useEmailOtpFlow } from "../../hooks/useEmailOtpFlow";
 import { useDebateSession } from "../../hooks/useDebateSession";
 
-export type QRScanResult = {
+type TeaserStatement = { text: string; timestamp: number; voteCount: number };
+
+export type SingleQRScanResult = {
+  mode: "single";
   room: DebateRoom;
   agreePercent: number;
   disagreePercent: number;
   passPercent: number;
   userVote: VoteType;
   statementText: string;
-  teaserStatement?: { text: string; timestamp: number; voteCount: number };
-};
+  teaserStatement?: TeaserStatement;
+}
+
+export type QRScanResult =
+  SingleQRScanResult
+  | {
+      mode: "dual";
+      room: DebateRoom;
+      statements: Statement[];
+      statementId: string;
+      otherStatementId: string;
+    };
 
 type CompleteReason = "signup" | "otp-login" | "continue";
 
-interface QRScanResultDialogProps extends QRScanResult {
+type QRScanResultDialogProps = QRScanResult & {
   isOpen: boolean;
   onComplete: (result: { reason: CompleteReason }) => void;
   onClose: () => void;
-}
+};
 
-export function QRScanResultDialog({
-  room,
-  agreePercent,
-  disagreePercent,
-  passPercent,
-  userVote,
-  statementText,
-  teaserStatement,
-  isOpen,
-  onComplete,
-  onClose,
-}: QRScanResultDialogProps) {
+type Bar = {
+  label: string;
+  percent: number;
+  color: string;
+  glowColor: string;
+  isUserVote: boolean;
+};
+
+const DUAL_BAR_STYLES = [
+  { color: "bg-blue-500", glowColor: "shadow-blue-500/50" },
+  { color: "bg-orange-500", glowColor: "shadow-orange-500/50" },
+];
+
+export function QRScanResultDialog(props: QRScanResultDialogProps) {
+  const { mode, room, isOpen, onComplete, onClose } = props;
+
   const { user } = useDebateSession();
   const isAlreadyLoggedIn = user && !user.isAnonymous;
-
+  const isDual = mode === "dual";
+  
   const [showBars, setShowBars] = useState(false);
   const [showEmailCapture, setShowEmailCapture] = useState(false);
 
@@ -62,29 +80,90 @@ export function QRScanResultDialog({
     }
   }, [isOpen]);
 
-  const bars = [
-    {
-      label: "Agree",
-      percent: agreePercent,
-      color: "bg-green-500",
-      glowColor: "shadow-green-500/50",
-      isUserVote: userVote === "agree",
-    },
-    {
-      label: "Disagree",
-      percent: disagreePercent,
-      color: "bg-red-500",
-      glowColor: "shadow-red-500/50",
-      isUserVote: userVote === "disagree",
-    },
-    {
-      label: "Unsure",
-      percent: passPercent,
-      color: "bg-yellow-500",
-      glowColor: "shadow-yellow-500/50",
-      isUserVote: userVote === "pass",
-    },
-  ];
+  const dualStatements = isDual ? props.statements : undefined;
+  const dualStatementId = isDual ? props.statementId : undefined;
+  const dualOtherStatementId = isDual ? props.otherStatementId : undefined;
+
+  const dualTeaserCandidate = useMemo(() => {
+    if (!dualStatements || !dualStatementId || !dualOtherStatementId) return undefined;
+    const candidates = dualStatements.filter(
+      (s) => s.id !== dualStatementId && s.id !== dualOtherStatementId,
+    );
+    return candidates.length > 0
+      ? candidates[Math.floor(Math.random() * candidates.length)]
+      : undefined;
+  }, [dualStatements, dualStatementId, dualOtherStatementId]);
+
+  let title: string;
+  let bars: Bar[];
+  let teaserStatement: TeaserStatement | undefined;
+
+  if (isDual) {
+    const { statements, statementId, otherStatementId } = props;
+    const statement = statements.find((s) => s.id === statementId);
+    const otherStatement = statements.find((s) => s.id === otherStatementId);
+    const agreesFor = (s?: Statement) => s?.agrees ?? 0;
+    const totalVotes = agreesFor(statement) + agreesFor(otherStatement);
+    const percentFor = (s?: Statement) =>
+      totalVotes > 0 ? Math.round((agreesFor(s) / totalVotes) * 100) : 0;
+
+    title = room.topic;
+    bars = [
+      {
+        label: statement?.text ?? "",
+        percent: percentFor(statement),
+        color: DUAL_BAR_STYLES[0].color,
+        glowColor: DUAL_BAR_STYLES[0].glowColor,
+        isUserVote: true,
+      },
+      {
+        label: otherStatement?.text ?? "",
+        percent: percentFor(otherStatement),
+        color: DUAL_BAR_STYLES[1].color,
+        glowColor: DUAL_BAR_STYLES[1].glowColor,
+        isUserVote: false,
+      },
+    ];
+    teaserStatement = dualTeaserCandidate
+      ? {
+          text: dualTeaserCandidate.text,
+          timestamp: dualTeaserCandidate.timestamp,
+          voteCount:
+            dualTeaserCandidate.agrees +
+            dualTeaserCandidate.disagrees +
+            dualTeaserCandidate.passes +
+            dualTeaserCandidate.superAgrees,
+        }
+      : undefined;
+  } else {
+    const { agreePercent, disagreePercent, passPercent, userVote, statementText } = props;
+
+    title = statementText;
+    bars = [
+      {
+        label: "Agree",
+        percent: agreePercent,
+        color: "bg-green-500",
+        glowColor: "shadow-green-500/50",
+        isUserVote: userVote === "agree",
+      },
+      {
+        label: "Disagree",
+        percent: disagreePercent,
+        color: "bg-red-500",
+        glowColor: "shadow-red-500/50",
+        isUserVote: userVote === "disagree",
+      },
+      {
+        label: "Unsure",
+        percent: passPercent,
+        color: "bg-yellow-500",
+        glowColor: "shadow-yellow-500/50",
+        isUserVote: userVote === "pass",
+      },
+    ];
+    teaserStatement = props.teaserStatement;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -112,13 +191,13 @@ export function QRScanResultDialog({
                 transition={{ delay: 0.1 }}
                 className="text-2xl font-bold text-white leading-tight"
               >
-                {statementText}
+                {title}
               </motion.h2>
             </div>
 
             <div className="space-y-4">
               {bars.map((bar, index) => (
-                <div key={bar.label} className="space-y-2">
+                <div key={index} className="space-y-2">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-slate-200">
@@ -200,14 +279,16 @@ export function QRScanResultDialog({
               transition={{ delay: 1.5 }}
               className="space-y-4"
             >
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wider header-4">
-                  Part of the conversation on
-                </p>
-                <p className="text-base font-semibold normal-text leading-relaxed">
-                  {room.topic}
-                </p>
-              </div>
+              {!isDual && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider header-4">
+                    Part of the conversation on
+                  </p>
+                  <p className="text-base font-semibold normal-text leading-relaxed">
+                    {room.topic}
+                  </p>
+                </div>
+              )}
 
               {teaserStatement && !showEmailCapture && (
                 <div className="space-y-2">

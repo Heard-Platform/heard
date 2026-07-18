@@ -2,15 +2,16 @@ import { useState } from "react";
 import { QRScanResultDialog } from "../components/room/QRScanResultDialog";
 import { Button } from "../components/ui/button";
 import { QrCode } from "lucide-react";
-import { DebateRoom, VoteTypeNew, VoteType } from "../types";
+import { DebateRoom, Statement, VoteTypeNew, VoteType } from "../types";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { mockUser } from "./mockData";
 
 type AuthPath = "signup" | "otp";
+type DisplayMode = VoteType | "dual";
 
 export function QRScanResultDialogStory() {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [scenario, setScenario] = useState<VoteType>("agree");
+  const [scenario, setScenario] = useState<DisplayMode>("agree");
   const [authPath, setAuthPath] = useState<AuthPath>("signup");
 
   const overrides = {
@@ -74,8 +75,35 @@ export function QRScanResultDialogStory() {
     },
   };
 
+  const mockStatement = (
+    overrides: Pick<Statement, "id" | "text" | "agrees">,
+  ): Statement => ({
+    author: "story-user",
+    roomId: "world-cup-room",
+    timestamp: Date.now(),
+    disagrees: 0,
+    passes: 0,
+    superAgrees: 0,
+    voters: {},
+    round: 1,
+    ...overrides,
+  });
+
+  const dualScenario = {
+    room: "Who wins the World Cup final?",
+    statements: [
+      mockStatement({ id: "team-argentina", text: "Argentina will win the World Cup final.", agrees: 145 }),
+      mockStatement({ id: "team-spain", text: "Spain will win the World Cup final.", agrees: 105 }),
+      mockStatement({ id: "other-1", text: "The final should go to penalties if it's still tied after extra time.", agrees: 61 }),
+    ],
+    statementId: "team-argentina",
+    otherStatementId: "team-spain",
+  };
+
+  const isDualScenario = scenario === "dual";
+
   // @ts-ignore
-  const currentScenario = scenarios[scenario];
+  const currentScenario = isDualScenario ? undefined : scenarios[scenario];
 
   return (
     <div className="space-y-6">
@@ -130,6 +158,18 @@ export function QRScanResultDialogStory() {
               >
                 Unsure
               </Button>
+              <Button
+                onClick={() => setScenario("dual")}
+                variant={scenario === "dual" ? "default" : "outline"}
+                size="sm"
+                className={
+                  scenario === "dual"
+                    ? "bg-blue-500 hover:bg-blue-600"
+                    : ""
+                }
+              >
+                World Cup (dual)
+              </Button>
             </div>
           </div>
 
@@ -166,39 +206,73 @@ export function QRScanResultDialogStory() {
             <h3 className="font-semibold text-sm text-slate-700">
               Current Scenario:
             </h3>
-            <ul className="text-sm text-slate-600 space-y-1">
-              <li>
-                <strong>Topic:</strong> {currentScenario.topic}
-              </li>
-              <li>
-                <strong>Statement:</strong> {currentScenario.statementText}
-              </li>
-              <li>
-                <strong>Teaser:</strong> {currentScenario.teaserStatement.text}
-              </li>
-              <li>
-                <strong>User Vote:</strong> {currentScenario.userVote}
-              </li>
-              <li>
-                <strong>Results:</strong> {currentScenario.agreePercent}%
-                agree, {currentScenario.disagreePercent}% disagree,{" "}
-                {currentScenario.passPercent}% unsure
-              </li>
-            </ul>
+            {isDualScenario ? (
+              <ul className="text-sm text-slate-600 space-y-1">
+                <li>
+                  <strong>Room title:</strong> {dualScenario.room}
+                </li>
+                <li>
+                  <strong>Option A:</strong> {dualScenario.statements[0].text} ({dualScenario.statements[0].agrees} votes)
+                </li>
+                <li>
+                  <strong>Option B:</strong> {dualScenario.statements[1].text} ({dualScenario.statements[1].agrees} votes)
+                </li>
+                <li>
+                  <strong>User voted for:</strong> {dualScenario.statementId}
+                </li>
+              </ul>
+            ) : (
+              <ul className="text-sm text-slate-600 space-y-1">
+                <li>
+                  <strong>Topic:</strong> {currentScenario!.topic}
+                </li>
+                <li>
+                  <strong>Statement:</strong> {currentScenario!.statementText}
+                </li>
+                <li>
+                  <strong>Teaser:</strong> {currentScenario!.teaserStatement.text}
+                </li>
+                <li>
+                  <strong>User Vote:</strong> {currentScenario!.userVote}
+                </li>
+                <li>
+                  <strong>Results:</strong> {currentScenario!.agreePercent}%
+                  agree, {currentScenario!.disagreePercent}% disagree,{" "}
+                  {currentScenario!.passPercent}% unsure
+                </li>
+              </ul>
+            )}
           </div>
         </div>
       </div>
 
       <DebateSessionProvider showcaseOverrides={overrides}>
+        {isDualScenario ? (
+          <QRScanResultDialog
+            key={`${scenario}-${authPath}`}
+            mode="dual"
+            room={{ ...mockRoom, topic: dualScenario.room }}
+            statements={dualScenario.statements}
+            statementId={dualScenario.statementId}
+            otherStatementId={dualScenario.otherStatementId}
+            isOpen={dialogOpen}
+            onComplete={(result) => {
+              console.log("Completed", result);
+              setDialogOpen(false);
+            }}
+            onClose={() => setDialogOpen(false)}
+          />
+        ) : (
         <QRScanResultDialog
           key={`${scenario}-${authPath}`}
-          room={{ ...mockRoom, topic: currentScenario.topic }}
-          agreePercent={currentScenario.agreePercent}
-          disagreePercent={currentScenario.disagreePercent}
-          passPercent={currentScenario.passPercent}
-          userVote={currentScenario.userVote}
-          statementText={currentScenario.statementText}
-          teaserStatement={currentScenario.teaserStatement}
+          mode="single"
+          room={{ ...mockRoom, topic: currentScenario!.topic }}
+          agreePercent={currentScenario!.agreePercent}
+          disagreePercent={currentScenario!.disagreePercent}
+          passPercent={currentScenario!.passPercent}
+          userVote={currentScenario!.userVote}
+          statementText={currentScenario!.statementText}
+          teaserStatement={currentScenario!.teaserStatement}
           isOpen={dialogOpen}
           onComplete={(result) => {
             console.log("Completed", result);
@@ -206,6 +280,7 @@ export function QRScanResultDialogStory() {
           }}
           onClose={() => setDialogOpen(false)}
         />
+        )}
       </DebateSessionProvider>
     </div>
   );
