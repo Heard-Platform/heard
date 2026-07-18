@@ -352,6 +352,7 @@ function AppContent() {
       const clubFlyerMatch = pathname.match(/^\/club-(yes|no)/);
       const worldCupDualFlyerMatch = pathname.match(WORLD_CUP_DUAL_FLYER_REGEX);
       const isClubRoute = /^\/club\/?$/.test(pathname);
+      const isFinalRoute = /^\/final\/?$/.test(pathname);
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const linkSourceFromUrl = parseLinkSourceFromUrl();
@@ -452,6 +453,8 @@ function AppContent() {
         handleDualStatementFlyerJoin(teamSlug);
       } else if (isClubRoute) {
         startRoomJoin(CLUB_FLYER_ID);
+      } else if (isFinalRoute) {
+        startRoomJoin(WORLD_CUP_ROOM_ID);
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (eventIdFromUrl) {
