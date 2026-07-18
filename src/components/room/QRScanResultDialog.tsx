@@ -55,11 +55,12 @@ const DUAL_BAR_STYLES = [
 ];
 
 export function QRScanResultDialog(props: QRScanResultDialogProps) {
-  const { room, isOpen, onComplete, onClose } = props;
+  const { mode, room, isOpen, onComplete, onClose } = props;
 
   const { user } = useDebateSession();
   const isAlreadyLoggedIn = user && !user.isAnonymous;
-
+  const isDual = mode === "dual";
+  
   const [showBars, setShowBars] = useState(false);
   const [showEmailCapture, setShowEmailCapture] = useState(false);
 
@@ -79,9 +80,9 @@ export function QRScanResultDialog(props: QRScanResultDialogProps) {
     }
   }, [isOpen]);
 
-  const dualStatements = props.mode === "dual" ? props.statements : undefined;
-  const dualStatementId = props.mode === "dual" ? props.statementId : undefined;
-  const dualOtherStatementId = props.mode === "dual" ? props.otherStatementId : undefined;
+  const dualStatements = isDual ? props.statements : undefined;
+  const dualStatementId = isDual ? props.statementId : undefined;
+  const dualOtherStatementId = isDual ? props.otherStatementId : undefined;
 
   const dualTeaserCandidate = useMemo(() => {
     if (!dualStatements || !dualStatementId || !dualOtherStatementId) return undefined;
@@ -96,9 +97,8 @@ export function QRScanResultDialog(props: QRScanResultDialogProps) {
   let title: string;
   let bars: Bar[];
   let teaserStatement: TeaserStatement | undefined;
-  const isDual = props.mode === "dual";
 
-  if (props.mode === "dual") {
+  if (isDual) {
     const { statements, statementId, otherStatementId } = props;
     const statement = statements.find((s) => s.id === statementId);
     const otherStatement = statements.find((s) => s.id === otherStatementId);

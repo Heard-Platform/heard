@@ -69,7 +69,6 @@ const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: str
   card: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
 };
 
-// TODO: replace with the real room ID and the two statement IDs before this goes live.
 const WORLD_CUP_ROOM_ID = "31m0twqkoo6mrnu69l0";
 const WORLD_CUP_TEAM_STATEMENT_IDS: Record<string, string> = {
   argentina: "m91010yjsycmrnu69mi",
