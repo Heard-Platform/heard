@@ -69,6 +69,16 @@ const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: str
   card: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
 };
 
+// TODO: replace with the real room ID and the two statement IDs before this goes live.
+const WORLD_CUP_ROOM_ID = "31m0twqkoo6mrnu69l0";
+const WORLD_CUP_TEAM_STATEMENT_IDS: Record<string, string> = {
+  argentina: "m91010yjsycmrnu69mi",
+  spain: "71ov2zpokdkmrnu69mi",
+};
+const WORLD_CUP_DUAL_FLYER_REGEX = new RegExp(
+  `^/final-(${Object.keys(WORLD_CUP_TEAM_STATEMENT_IDS).join("|")})`,
+);
+
 function AppContent() {
   const [currentSubHeard, setCurrentSubHeard] = useState<
     string | null
@@ -122,6 +132,7 @@ function AppContent() {
     loadActiveRooms,
     resetSession,
     roomStatements,
+    getRoomStatements,
     acceptModInvite,
     acceptCohostInvite,
   } = useDebateSession();
@@ -165,7 +176,35 @@ function AppContent() {
       toast.error("Failed to process flyer vote");
     } else {
       startRoomJoin(response.room.id);
-      setQrScanResult(response);
+      setQrScanResult({ ...response, mode: "single" });
+    }
+
+    setIsJoiningAnonymously(false);
+  };
+
+  const handleDualStatementFlyerJoin = async (teamSlug: string) => {
+    const statementId = WORLD_CUP_TEAM_STATEMENT_IDS[teamSlug];
+    const otherStatementId = Object.values(WORLD_CUP_TEAM_STATEMENT_IDS).find(
+      (id) => id !== statementId,
+    )!;
+
+    setIsJoiningAnonymously(true);
+
+    const response = await voteViaFlyer(WORLD_CUP_ROOM_ID, statementId, "agree");
+
+    if (!response || !response.user) {
+      toast.error("Failed to process flyer vote");
+    } else {
+      startRoomJoin(response.room.id);
+      const statements = await getRoomStatements(WORLD_CUP_ROOM_ID);
+
+      setQrScanResult({
+        mode: "dual",
+        room: response.room,
+        statements,
+        statementId,
+        otherStatementId,
+      });
     }
 
     setIsJoiningAnonymously(false);
@@ -312,6 +351,7 @@ function AppContent() {
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
       const clubFlyerMatch = pathname.match(/^\/club-(yes|no)/);
+      const worldCupDualFlyerMatch = pathname.match(WORLD_CUP_DUAL_FLYER_REGEX);
       const isClubRoute = /^\/club\/?$/.test(pathname);
 
       const roomIdFromUrl = parseRoomIdFromUrl();
@@ -408,6 +448,9 @@ function AppContent() {
           statementId: CLUB_STATEMENT_ID,
           vote: voteWord === "yes" ? "agree" : "disagree",
         });
+      } else if (worldCupDualFlyerMatch) {
+        const [, teamSlug] = worldCupDualFlyerMatch;
+        handleDualStatementFlyerJoin(teamSlug);
       } else if (isClubRoute) {
         startRoomJoin(CLUB_FLYER_ID);
       } else if (flyerDataFromUrl) {
@@ -765,13 +808,7 @@ function AppContent() {
       <Toaster />
       {qrScanResult && (
         <QRScanResultDialog
-          room={qrScanResult.room}
-          agreePercent={qrScanResult.agreePercent}
-          disagreePercent={qrScanResult.disagreePercent}
-          passPercent={qrScanResult.passPercent}
-          userVote={qrScanResult.userVote}
-          statementText={qrScanResult.statementText}
-          teaserStatement={qrScanResult.teaserStatement}
+          {...qrScanResult}
           isOpen={true}
           onComplete={handleQrComplete}
           onClose={() => handleQrComplete({ reason: "continue" })}
