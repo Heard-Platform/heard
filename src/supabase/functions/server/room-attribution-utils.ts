@@ -167,9 +167,6 @@ export interface ReferralEventSourceCount {
   count: number;
 }
 
-// One row per person who arrived via a referred_by_* event, whatever the
-// source — referrer fields are only populated for source === "user", the
-// only source that has a sharer to attribute.
 export interface ReferralEventDetail {
   refereeUserId: string;
   refereeEmail?: string;

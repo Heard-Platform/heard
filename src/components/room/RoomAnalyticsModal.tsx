@@ -29,10 +29,6 @@ export interface ReferrerShareCount {
   shares: number;
 }
 
-// Fixed hue per source key so a color always means the same thing, regardless
-// of how the rows are sorted or which sources are present for a given room.
-// `trackedYet: false` sources still show up (as a reminder to build tracking
-// for them) but never carry real data.
 const SOURCE_META: Record<
   TrafficSourceKey,
   { label: string; icon: typeof Link2; color: string; trackedYet?: boolean }
