@@ -26,6 +26,7 @@ import {
   parallelBulkUpsert,
 } from "./kv-utils.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
+import { getReferralEventSummary } from "./room-attribution-utils.ts";
 
 const app = new Hono();
 
@@ -219,6 +220,17 @@ app.get(
       return { flyerRoomData };
     },
     "Failed to fetch flyer stats"
+  )
+);
+
+app.get(
+  `${API_URL_PREFIX}/dev/referral-events`,
+  defineRoute(
+    {},
+    async () => {
+      return await getReferralEventSummary();
+    },
+    "Failed to fetch referral events"
   )
 );
 

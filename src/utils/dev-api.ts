@@ -7,6 +7,21 @@ interface FlyerRoomData {
   lastUserCreated: number;
 }
 
+interface ReferralEventDetail {
+  refereeUserId: string;
+  refereeEmail?: string;
+  source: string;
+  referrerUserId?: string;
+  referrerEmail?: string;
+  roomId?: string;
+  createdAt: number;
+}
+
+interface ReferralEventSummary {
+  bySource: { source: string; count: number }[];
+  referrals: ReferralEventDetail[];
+}
+
 class DevApiClient extends BaseApiClient {
   async getFlyerStats() {
     return this.request<{ flyerRoomData: Record<string, FlyerRoomData> }>(
@@ -15,6 +30,12 @@ class DevApiClient extends BaseApiClient {
         method: "GET",
       },
     );
+  }
+
+  async getReferralEvents() {
+    return this.request<ReferralEventSummary>("/dev/referral-events", {
+      method: "GET",
+    });
   }
 
   async getVoteStats() {

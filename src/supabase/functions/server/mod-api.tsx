@@ -3,6 +3,7 @@ import { deleteRecord, insert } from "./db-utils.ts";
 import { validateTrueHost } from "./auth-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { getMergesForRoom } from "./model-utils.ts";
+import { getRoomTrafficSources } from "./room-attribution-utils.ts";
 import {
   generateId,
   getDebateRoom,
@@ -107,6 +108,20 @@ app.get(
       return { statements, merges, phoneVerified, userClusters };
     },
     "Failed to fetch vote matrix",
+  ),
+);
+
+app.get(
+  `${PREFIX}/traffic-sources`,
+  defineRoute(
+    {},
+    async (_params, c) => {
+      const roomId = c.req.param("roomId") as string;
+      const room = await getDebateRoom(roomId);
+      if (!room) throw new Error("Room not found");
+      return getRoomTrafficSources(room);
+    },
+    "Failed to fetch traffic sources",
   ),
 );
 

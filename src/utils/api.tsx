@@ -27,6 +27,7 @@ import {
   StatementMerge,
 } from "../types";
 import { AskTheDataResponse, FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
+import type { ReferrerShareCount, TrafficSourceCount } from "../components/room/RoomAnalyticsModal";
 import {
   BaseApiClient,
   ApiResponse,
@@ -924,6 +925,13 @@ class ApiClient extends BaseApiClient {
       phoneVerified: Record<string, boolean>;
       userClusters: Record<string, number>;
     }>(`/room/${roomId}/mod/vote-matrix`);
+  }
+
+  async getRoomTrafficSources(roomId: string) {
+    return this.request<{
+      trafficSources: TrafficSourceCount[];
+      referrers: ReferrerShareCount[];
+    }>(`/room/${roomId}/mod/traffic-sources`);
   }
 
   async setResponsesPaused(roomId: string, paused: boolean) {
