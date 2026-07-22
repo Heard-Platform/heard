@@ -91,6 +91,26 @@ export const selectAll = async <T>(
   return (data ?? []) as T[];
 };
 
+export const update = async (
+  tableName: string,
+  conditions: Record<string, any>,
+  patch: Record<string, any>,
+): Promise<{ success: boolean; error?: string }> => {
+  const supabase = createClientFromEnv();
+
+  const { error } = await supabase
+    .from(tableName)
+    .update(patch)
+    .match(conditions);
+
+  if (error) {
+    console.error(`Error updating ${tableName} table:`, error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+};
+
 export const deleteRecord = async (
   tableName: string,
   conditions: Record<string, any>,

@@ -1,5 +1,4 @@
 import { sanitizeUser } from "./user-utils.ts";
-import { normalizeCommunityName } from "./utils.tsx";
 import { getActiveRooms } from "./debate-api.tsx";
 import {
   getAllRealDebates,
@@ -13,9 +12,6 @@ import {
   saveDebate, deletePhone,
   getCommunity,
   saveCommunity,
-  deleteCommunity,
-  deleteMembership,
-  saveMembership,
   getAllActivityRecords,
   getVotesForUser,
   getUserActivityRecords,
@@ -27,6 +23,7 @@ import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 import { getNewsletterByEdition, getNewsletterRecipients } from "./newsletter-utils.ts";
 import { getFlyerEmails } from "./model-utils.ts";
 import { buildActiveDaysMap } from "./stats-utils.ts";
+import { performSubHeardRename } from "./subheard-rename-utils.tsx";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
@@ -201,84 +198,19 @@ app.patch(
         return c.json({ error: "New sub-heard name is required" }, 400);
       }
 
-      // Normalize the new name (lowercase, replace spaces with hyphens)
-      const normalizedNewName = normalizeCommunityName(newName);
-
-      if (normalizedNewName.length < 2) {
-        return c.json({ error: "Sub-heard name must be at least 2 characters" }, 400);
-      }
-
-      // Check if new name already exists
-      const newCommunity = await getCommunity(normalizedNewName);
-      if (newCommunity) {
-        return c.json({ error: "A sub-heard with that name already exists" }, 409);
-      }
-
-      // Get existing sub-heard data
-      const oldCommunity = await getCommunity(oldName);
-
-      if (!oldCommunity) {
-        return c.json({ error: "Sub-heard not found" }, 404);
-      }
-
-      // Update the name
-      oldCommunity.name = normalizedNewName;
-
-      // Save under new key
-      await saveCommunity(oldCommunity);
-
-      // Delete old key
-      await deleteCommunity(oldName);
-
-      // Update all memberships
-      const memberships = await getByPrefixParsed<any>("subheard_member:");
-      let updatedMemberships = 0;
-
-      for (const membership of memberships) {
-        try {
-          if (membership.subHeard === oldName) {
-            // Delete old membership key and save under new key
-            await deleteMembership(membership.userId, oldName);
-            membership.subHeard = normalizedNewName;
-            await saveMembership(membership);
-
-            updatedMemberships++;
-          }
-        } catch (error) {
-          console.error("Error updating membership:", error);
-        }
-      }
-
-      // Update all active rooms
-      const rooms = await getActiveRooms();
-      let updatedRooms = 0;
-
-      for (const room of rooms) {
-        try {
-          if (room.subHeard === oldName) {
-            room.subHeard = normalizedNewName;
-            await saveDebate(room);
-            updatedRooms++;
-          }
-        } catch (error) {
-          console.error("Error updating room:", error);
-        }
-      }
-
-      console.log(`Renamed sub-heard from "${oldName}" to "${normalizedNewName}"`);
-      console.log(`Updated ${updatedMemberships} memberships and ${updatedRooms} rooms`);
+      const result = await performSubHeardRename(oldName, newName);
 
       return c.json({
         success: true,
         oldName,
-        newName: normalizedNewName,
-        updatedMemberships,
-        updatedRooms,
+        newName: result.newName,
+        updatedMemberships: result.updatedMemberships,
+        updatedRooms: result.updatedRooms,
       });
     } catch (error) {
       console.error("Error renaming sub-heard:", error);
       return c.json(
-        { error: "Failed to rename sub-heard" },
+        { error: error instanceof Error ? error.message : "Failed to rename sub-heard" },
         500,
       );
     }
