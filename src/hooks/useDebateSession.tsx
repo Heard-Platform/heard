@@ -139,6 +139,10 @@ interface DebateSessionContextType {
     token: string,
   ) => Promise<ApiResponse | null>;
   clearSubHeardMods: (subHeardName: string) => Promise<ApiResponse | null>;
+  renameSubHeard: (
+    subHeardName: string,
+    newName: string,
+  ) => Promise<ApiResponse<{ newName: string }> | null>;
   getEnrichmentConfig: () => Promise<ApiResponse<EnrichmentConfig> | null>;
   setEnrichmentConfig: (
     config: EnrichmentConfig,
@@ -874,6 +878,10 @@ export function DebateSessionProvider(
     return safelyMakeApiCall<undefined>(() => api.clearSubHeardMods(subHeardName));
   }, []);
 
+  const renameSubHeard = useCallback(async (subHeardName: string, newName: string) => {
+    return safelyMakeApiCall<{ newName: string }>(() => api.renameSubHeard(subHeardName, newName));
+  }, []);
+
   const getEnrichmentConfig = useCallback(async () => {
     return safelyMakeApiCall<EnrichmentConfig>(() =>
       api.getEnrichmentConfig(),
@@ -1006,6 +1014,7 @@ export function DebateSessionProvider(
     createModInvite,
     acceptModInvite,
     clearSubHeardMods,
+    renameSubHeard,
     getEnrichmentConfig,
     setEnrichmentConfig,
     runEnrichmentNow,
@@ -1173,6 +1182,10 @@ export function DebateSessionProvider(
       clearSubHeardMods: async (subHeardName: string) => {
         console.log("[Showcase] clearSubHeardMods called", subHeardName);
         return { success: true };
+      },
+      renameSubHeard: async (subHeardName: string, newName: string) => {
+        console.log("[Showcase] renameSubHeard called", subHeardName, newName);
+        return { success: true, data: { newName } };
       },
       createEvent: async (newEvent: NewEvent): Promise<Event> => {
         console.log("[Showcase] createEvent called", newEvent);

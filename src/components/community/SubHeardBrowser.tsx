@@ -52,7 +52,7 @@ export function SubHeardBrowser({
   onOpenExplorer,
   onLogoClick,
 }: SubHeardBrowserProps) {
-  const { getSubHeards, leaveSubHeard } = useDebateSession();
+  const { getSubHeards, leaveSubHeard, renameSubHeard } = useDebateSession();
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -138,6 +138,20 @@ export function SubHeardBrowser({
       setManagingSubHeard(oldCommunity);
     }
     return success;
+  };
+
+  const handleRenameSubHeard = async (oldName: string, newName: string): Promise<boolean> => {
+    const response = await renameSubHeard(oldName, newName);
+    if (!response?.success) return false;
+
+    await loadSubHeards();
+    setManagingSubHeard(null);
+
+    if (currentSubHeard === oldName) {
+      onSubHeardChange(newName);
+    }
+
+    return true;
   };
 
   const handleLeaveSubHeard = async (subHeardName: string) => {
@@ -307,6 +321,7 @@ export function SubHeardBrowser({
           isOpen={true}
           onClose={() => setManagingSubHeard(null)}
           onUpdateSubHeard={handleCommunityUpdate}
+          onRenameSubHeard={handleRenameSubHeard}
           onRefresh={handleRefreshManagingSubHeard}
           userId={user.id}
         />

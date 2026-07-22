@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Share2, Check, Crown, UserPlus, Trash2 } from "lucide-react";
+import { Share2, Check, Crown, UserPlus, Trash2, Pencil } from "lucide-react";
 import type { SubHeard } from "../../types";
 import { createSubHeardLink, createModInviteLink } from "../../utils/url";
 import { share } from "../../utils/share";
@@ -18,7 +18,7 @@ import { useDebateSession } from "../../hooks/useDebateSession";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
-import { formatSubHeardDisplay } from "../../utils/subheard";
+import { formatSubHeardDisplay, normalizeSubHeardName } from "../../utils/subheard";
 
 interface CommunityAdminDialogProps {
   community: SubHeard;
@@ -27,6 +27,10 @@ interface CommunityAdminDialogProps {
   onUpdateSubHeard: (
     updatedCommunity: SubHeard,
     userId: string,
+  ) => Promise<boolean>;
+  onRenameSubHeard: (
+    oldName: string,
+    newName: string,
   ) => Promise<boolean>;
   onRefresh: () => Promise<void>;
   onClose: () => void;
@@ -37,6 +41,7 @@ export function CommunityAdminDialog({
   userId,
   isOpen,
   onUpdateSubHeard,
+  onRenameSubHeard,
   onRefresh,
   onClose,
 }: CommunityAdminDialogProps) {
@@ -45,6 +50,10 @@ export function CommunityAdminDialog({
   const [copied, setCopied] = useState(false);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
   const [isClearingMods, setIsClearingMods] = useState(false);
+  const [newSubHeardName, setNewSubHeardName] = useState(() =>
+    formatSubHeardDisplay(community.name),
+  );
+  const [isRenaming, setIsRenaming] = useState(false);
 
   const handleUpdate = async (update: Partial<SubHeard>) => {
     setIsUpdating(true);
@@ -85,6 +94,27 @@ export function CommunityAdminDialog({
       });
     } finally {
       setIsCreatingInvite(false);
+    }
+  };
+
+  const handleRename = async () => {
+    const normalized = normalizeSubHeardName(newSubHeardName);
+    if (!normalized || normalized === community.name) return;
+
+    setIsRenaming(true);
+    try {
+      const success = await onRenameSubHeard(community.name, normalized);
+      if (success) {
+        toast.success("Community renamed");
+        setNewSubHeardName("");
+      } else {
+        toast.error("Failed to rename community");
+      }
+    } catch (error) {
+      console.error("Failed to rename sub-heard:", error);
+      toast.error("Failed to rename community");
+    } finally {
+      setIsRenaming(false);
     }
   };
 
@@ -158,6 +188,35 @@ export function CommunityAdminDialog({
             isUpdating={isUpdating}
             onChange={handleUpdate}
           />
+
+          {community.adminId === userId && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Rename Community</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={newSubHeardName}
+                  onChange={(e) => setNewSubHeardName(e.target.value)}
+                  disabled={isRenaming}
+                />
+                <Button
+                  variant="outline"
+                  className="shrink-0 text-destructive hover:text-destructive"
+                  onClick={handleRename}
+                  disabled={
+                    isRenaming ||
+                    !normalizeSubHeardName(newSubHeardName) ||
+                    normalizeSubHeardName(newSubHeardName) === community.name
+                  }
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  {isRenaming ? "Renaming…" : "Rename"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Existing links to this community will stop working once it's renamed.
+              </p>
+            </div>
+          )}
 
           {community.adminId === userId && (
             <div className="space-y-2">

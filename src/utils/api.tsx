@@ -286,6 +286,13 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async renameSubHeard(subHeardName: string, newName: string) {
+    return this.request<{ newName: string }>(`/subheard/${subHeardName}/rename`, {
+      method: "PATCH",
+      body: JSON.stringify({ newName }),
+    });
+  }
+
   // Statement management
   async submitStatement(
     roomId: string,

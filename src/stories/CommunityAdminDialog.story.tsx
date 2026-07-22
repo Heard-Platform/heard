@@ -24,6 +24,13 @@ export function CommunityAdminDialogStory() {
     return true;
   };
 
+  const handleRenameSubHeard = async (oldName: string, newName: string): Promise<boolean> => {
+    console.log("Rename called:", { oldName, newName });
+    setMockCommunity(prev => ({ ...prev, name: newName }));
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return true;
+  };
+
   const variants = [
     {
       id: "base",
@@ -39,6 +46,8 @@ export function CommunityAdminDialogStory() {
             userId="demo-user-123"
             isOpen={isOpen}
             onUpdateSubHeard={handleUpdateSubHeard}
+            onRenameSubHeard={handleRenameSubHeard}
+            onRefresh={async () => {}}
             onClose={() => setIsOpen(false)}
           />
         </>

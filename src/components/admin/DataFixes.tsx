@@ -27,6 +27,28 @@ interface ScriptConfig {
 
 const SCRIPTS: ScriptConfig[] = [
   {
+    id: "fix-interdependance-day-memberships",
+    title: "Fix Interdependance Day Memberships",
+    description: "One-time fix for community memberships left behind under the old 'interdependance-day' name after the rename to 'interdependance' — an unpaginated scan silently dropped rows past its row cap. Idempotent — safe to re-run.",
+    dryRunMessage: "Run DRY RUN?\n\nPreviews how many memberships would be renamed from 'interdependance-day' to 'interdependance'.\n\nNo changes will be made.\n\nContinue?",
+    liveRunMessage: "Run LIVE FIX?\n\nThis will rename any remaining 'interdependance-day' membership records to 'interdependance', deleting duplicates where a correct record already exists.\n\nContinue?",
+    successMessageDryRun: (stats) =>
+      `DRY RUN complete!\n\n` +
+      `Would rename: ${stats.renamed}\n` +
+      `Would delete as duplicates: ${stats.deletedDuplicates}\n\n` +
+      `No changes were made.`,
+    successMessageLive: (stats) =>
+      `Done!\n\n` +
+      `Renamed: ${stats.renamed}\n` +
+      `Deleted duplicates: ${stats.deletedDuplicates}`,
+    statsDisplay: (stats) =>
+      stats.dryRun
+        ? `Last dry run: ${stats.renamed} would be renamed, ${stats.deletedDuplicates} would be deleted as duplicates`
+        : `Last run: ${stats.renamed} renamed, ${stats.deletedDuplicates} deleted as duplicates`,
+    apiCall: (adminKey, dryRun) => adminApi.fixInterdependanceDayMemberships(adminKey, dryRun),
+    bgColor: "bg-teal-50",
+  },
+  {
     id: "backfill-room-engagement",
     title: "Backfill Room Engagement (Views + Follows)",
     description: "Seeds the room_views and room_follows tables from each room's participants list. Marks every (user, room) pair as seen-now and followed-now so the alert center starts from a clean baseline. Idempotent.",
