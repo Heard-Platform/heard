@@ -88,6 +88,10 @@ export type NewDemographicQuestion =
 export type NewCustomDemographicQuestion = NewDemographicQuestion &
   Required<Pick<DemographicQuestion, "text" | "options">>;
 
+export const isCustomDemographicQuestion = (
+  q: NewDemographicQuestion,
+): q is NewCustomDemographicQuestion => q.type === "custom";
+
 export type DemographicsCard = {
   type: "demographics";
   question: DemographicQuestion;

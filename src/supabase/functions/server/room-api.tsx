@@ -52,6 +52,20 @@ app.post(
         );
       }
 
+      if (Array.isArray(demographicQuestions)) {
+        const invalidCustomQuestion = demographicQuestions.find(
+          (q: DemographicQuestion) =>
+            q.type === "custom" &&
+            (!q.text?.trim() || (q.options ?? []).filter((o) => o.trim() !== "").length < 2),
+        );
+        if (invalidCustomQuestion) {
+          return c.json(
+            { error: "Custom demographic questions require text and at least 2 answer options" },
+            400,
+          );
+        }
+      }
+
       const user = await getUserSession(userId);
       if (!user) {
         return c.json({ error: "User session not found" }, 404);
