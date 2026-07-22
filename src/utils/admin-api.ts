@@ -139,6 +139,21 @@ class AdminApiClient extends BaseApiClient {
     );
   }
 
+  async addWhereDoYouLiveQuestion(adminKey: string) {
+    interface Result {
+      added: boolean;
+      alreadyExists?: boolean;
+    }
+
+    return this.request<Result>(
+      "/one-time-fixes/add-where-do-you-live-question",
+      {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+      },
+    );
+  }
+
   async backfillMemberships(adminKey: string, dryRun: boolean) {
     interface Result {
       totalUsers: number;
