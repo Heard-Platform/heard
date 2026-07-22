@@ -11,6 +11,7 @@ import {
 import { X, Info, ChevronDown } from "lucide-react";
 import type { DemographicQuestion } from "../../../types";
 import { DataPrivacyModal } from "./DataPrivacyModal";
+import { Input } from "../../ui/input";
 
 interface Answer {
   questionId: string;
@@ -68,6 +69,10 @@ const standardQuestionsByType: Record<
       { label: "Other", value: "other" },
       { label: "Prefer not to say", value: PREFER_NOT_TO_SAY },
     ],
+  },
+  zip_code: {
+    text: "What zipcode do you live in?",
+    options: [],
   },
 };
 
@@ -157,37 +162,57 @@ export function EditAnswersModal({
                   <h4 className="text-sm font-medium mb-2">
                     {questionText}
                   </h4>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-between"
+                  {question.type === "zip_code" ? (
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="Enter zip code"
+                      value={
+                        currentAnswer === PREFER_NOT_TO_SAY
+                          ? ""
+                          : currentAnswer
+                      }
+                      onChange={(e) =>
+                        handleUpdateAnswer(
+                          question.id,
+                          e.target.value.replace(/\D/g, "") ||
+                            PREFER_NOT_TO_SAY,
+                        )
+                      }
+                    />
+                  ) : (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-between"
+                        >
+                          {getOptionLabel(question, currentAnswer)}
+                          <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className="w-56 z-[9999]"
+                        align="start"
                       >
-                        {getOptionLabel(question, currentAnswer)}
-                        <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      className="w-56 z-[9999]"
-                      align="start"
-                    >
-                      <DropdownMenuRadioGroup
-                        value={currentAnswer}
-                        onValueChange={(value: string) =>
-                          handleUpdateAnswer(question.id, value)
-                        }
-                      >
-                        {options.map((option) => (
-                          <DropdownMenuRadioItem
-                            key={option.value}
-                            value={option.value}
-                          >
-                            {option.label}
-                          </DropdownMenuRadioItem>
-                        ))}
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <DropdownMenuRadioGroup
+                          value={currentAnswer}
+                          onValueChange={(value: string) =>
+                            handleUpdateAnswer(question.id, value)
+                          }
+                        >
+                          {options.map((option) => (
+                            <DropdownMenuRadioItem
+                              key={option.value}
+                              value={option.value}
+                            >
+                              {option.label}
+                            </DropdownMenuRadioItem>
+                          ))}
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
                 {currentAnswer !== PREFER_NOT_TO_SAY && (
                   <Button

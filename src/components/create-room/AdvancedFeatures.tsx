@@ -19,6 +19,7 @@ const STANDARD_QUESTIONS: Array<{
   { type: "gender", label: "Gender" },
   { type: "age_range", label: "Age Range" },
   { type: "occupation", label: "Employment Status" },
+  { type: "zip_code", label: "Zip Code" },
 ];
 
 export function AdvancedFeatures({
