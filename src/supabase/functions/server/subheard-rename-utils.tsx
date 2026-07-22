@@ -1,10 +1,9 @@
 import { normalizeCommunityName } from "./utils.tsx";
-import { update } from "./db-utils.ts";
+import { update, getAllRecords } from "./db-utils.ts";
 import {
   getCommunity,
   saveCommunity,
   deleteCommunity,
-  getByPrefixParsed,
   deleteMembership,
   saveMembership,
   getAllDebates,
@@ -44,7 +43,7 @@ export async function performSubHeardRename(
   await saveCommunity({ ...oldCommunity, name: newName });
   await deleteCommunity(oldName);
 
-  const memberships = await getByPrefixParsed<CommunityMembership>("subheard_member:");
+  const memberships = await getAllRecords<CommunityMembership>("subheard_member:");
   let updatedMemberships = 0;
 
   for (const membership of memberships) {

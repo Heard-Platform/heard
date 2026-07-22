@@ -1,16 +1,62 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
-import { getByPrefixParsed, getActiveRoomValues, saveActiveRoomPointer, saveDebate } from "./kv-utils.tsx";
+import { getByPrefixParsed, getActiveRoomValues, saveActiveRoomPointer, saveDebate, getMembership, saveMembership, deleteMembership } from "./kv-utils.tsx";
+import { getAllRecords } from "./db-utils.ts";
+import { CommunityMembership } from "./types.tsx";
 import { backfillUserCreatedAtApi } from "./backfill-user-created-at.tsx";
 import { backfillMembershipsApi } from "./script-backfill-memberships.tsx";
 import { backfillVotesToTableApi } from "./backfill-votes-to-table.tsx";
 import { backfillRoomEngagementApi } from "./backfill-room-engagement.tsx";
 import { unsubApril26SignupsApi } from "./unsub-april-26-signups.tsx";
 import { verifyAdminKey } from "./admin-api.tsx";
+import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
 
 app.use("/make-server-f1a393b4/one-time-fixes/*", verifyAdminKey);
+
+app.post(
+  "/make-server-f1a393b4/one-time-fixes/fix-interdependance-day-memberships",
+  defineRoute(
+    { dryRun: { type: "boolean", required: false } },
+    async ({ dryRun }: { dryRun?: boolean }, _c) => {
+      const oldName = "interdependance-day";
+      const newName = "interdependance";
+
+      const memberships = await getAllRecords<CommunityMembership>("subheard_member:");
+      let renamed = 0;
+      let deletedDuplicates = 0;
+      const affectedUserIds: string[] = [];
+
+      for (const membership of memberships) {
+        if (membership.subHeard !== oldName) continue;
+
+        try {
+          const existingAtNewName = await getMembership(membership.userId, newName);
+          affectedUserIds.push(membership.userId);
+
+          if (existingAtNewName) {
+            deletedDuplicates++;
+            if (!dryRun) await deleteMembership(membership.userId, oldName);
+            continue;
+          }
+
+          renamed++;
+          if (!dryRun) {
+            await deleteMembership(membership.userId, oldName);
+            membership.subHeard = newName;
+            await saveMembership(membership);
+          }
+        } catch (error) {
+          console.error("Error fixing up membership:", error);
+        }
+      }
+
+      return { dryRun: !!dryRun, renamed, deletedDuplicates, affectedUserIds };
+    },
+    "Failed to fix up interdependance-day memberships",
+  ),
+);
 
 app.post(
   "/make-server-f1a393b4/one-time-fixes/fix-active-room-pointers",

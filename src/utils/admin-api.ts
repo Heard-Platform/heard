@@ -121,6 +121,24 @@ class AdminApiClient extends BaseApiClient {
     );
   }
 
+  async fixInterdependanceDayMemberships(adminKey: string, dryRun: boolean) {
+    interface Result {
+      dryRun: boolean;
+      renamed: number;
+      deletedDuplicates: number;
+      affectedUserIds: string[];
+    }
+
+    return this.request<Result>(
+      "/one-time-fixes/fix-interdependance-day-memberships",
+      {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+        body: JSON.stringify({ dryRun }),
+      },
+    );
+  }
+
   async backfillMemberships(adminKey: string, dryRun: boolean) {
     interface Result {
       totalUsers: number;
