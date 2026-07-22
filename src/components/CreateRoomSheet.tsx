@@ -12,6 +12,7 @@ import {
   type DebateRoom,
   type NewDemographicQuestion,
   type Cover,
+  isCustomDemographicQuestion,
 } from "../types";
 import { FunSheet, FunSheetRef } from "./FunSheet";
 import {
@@ -167,7 +168,16 @@ export function CreateRoomSheet({
     }
   };
 
+  const blockIfIncompleteCustomQuestion = () => {
+    if (hasIncompleteCustomQuestion) {
+      toast.error("Finish or remove the incomplete custom question before posting.");
+      return true;
+    }
+    return false;
+  };
+
   const handleProceedToSubHeard = () => {
+    if (blockIfIncompleteCustomQuestion()) return;
     setCurrentStep("select-community");
   };
 
@@ -186,6 +196,7 @@ export function CreateRoomSheet({
 
   const handleCreateRoom = async () => {
     if (!editedTopic.trim() || isCreating || !subHeard) return;
+    if (blockIfIncompleteCustomQuestion()) return;
 
     setIsCreating(true);
     try {
@@ -284,6 +295,10 @@ export function CreateRoomSheet({
       setTitleClickTimer(timer);
     }
   };
+
+  const hasIncompleteCustomQuestion = demographicQuestions
+    .filter(isCustomDemographicQuestion)
+    .some((q) => !q.text.trim() || q.options.filter((o) => o.trim()).length < 2);
 
   // Determine sheet props based on current step
   const getSheetProps = () => {
