@@ -50,7 +50,9 @@ export function CommunityAdminDialog({
   const [copied, setCopied] = useState(false);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
   const [isClearingMods, setIsClearingMods] = useState(false);
-  const [newSubHeardName, setNewSubHeardName] = useState("");
+  const [newSubHeardName, setNewSubHeardName] = useState(() =>
+    formatSubHeardDisplay(community.name),
+  );
   const [isRenaming, setIsRenaming] = useState(false);
 
   const handleUpdate = async (update: Partial<SubHeard>) => {
@@ -194,7 +196,6 @@ export function CommunityAdminDialog({
                 <Input
                   value={newSubHeardName}
                   onChange={(e) => setNewSubHeardName(e.target.value)}
-                  placeholder={community.name}
                   disabled={isRenaming}
                 />
                 <Button
