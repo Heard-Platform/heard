@@ -69,7 +69,7 @@ export type FullCoverData =
   Cover & { description?: string };
 
 export type StandardDemographicQuestionType =
-  "gender" | "age_range" | "occupation";
+  "gender" | "age_range" | "occupation" | "zip_code";
 
 export type DemographicQuestionType =
   StandardDemographicQuestionType | "custom";

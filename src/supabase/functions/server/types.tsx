@@ -162,6 +162,7 @@ export type DemographicQuestionType =
   | "gender"
   | "age_range"
   | "occupation"
+  | "zip_code"
   | "custom";
 
 export interface DemographicQuestion {
