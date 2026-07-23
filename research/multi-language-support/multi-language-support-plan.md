@@ -17,7 +17,7 @@ A quick tour of the relevant parts of the codebase, because each one shaped a de
 - **Frontend:** Vite + React 18 + TypeScript, a **pure client-side SPA** (no Next.js / SSR). Routing is hand-rolled in `src/App.tsx` (`pathname.split("/")[1]`), not react-router. → *A `/es/…` URL-prefix scheme would mean rewriting that parser and every `updateUrlFor*` helper in `src/utils/url.tsx`. Not worth it; we keep language in state + storage instead of the URL.*
 - **UI copy today:** hardcoded inline across 42+ `.tsx` files (button text, placeholders, `toast.*`, headings). There is **no** existing string catalog and **no** i18n library. → *System A is a genuine greenfield extraction effort — the single largest chunk of labor.*
 - **Backend:** Supabase **Deno edge functions** (Hono). User content (topics, statements, users, votes) lives as **schemaless JSONB blobs** in one key-value table, `kv_store_f1a393b4`, keyed `room:{id}` and `statement:{roomId}:{id}`. → *Because it's schemaless, we can add translation fields to the blob with **no database migration**. Every read already loads the whole blob, so inline translations come along for free — no join, no second query.*
-- **LLM abstraction already exists** (`src/supabase/functions/server/llm-provider.ts`): `createLlmClient().complete()/completeJson()` with automatic usage logging. Anthropic path uses `claude-haiku-4-5-20251001`. → *We reuse this verbatim for translation — no new LLM plumbing.*
+- **LLM abstraction already exists** (`src/supabase/functions/server/llm-provider.ts`): `createLlmClient().complete()/completeJson()` with automatic usage logging. Anthropic path uses `claude-haiku-4-5-20251001`. → *We reuse this for translation — injecting the client for testability and threading a `maxTokens` parameter — but add no new provider plumbing.*
 - **State & persistence:** React Context (clean example: `src/contexts/RoomAlertsContext.tsx`); client persistence via `src/utils/localStorage.ts`. No user-level `language` field exists yet. → *We copy the context pattern and the storage helpers rather than inventing anything.*
 
 ## 3. Decisions (agreed with the user)
@@ -26,7 +26,7 @@ A quick tour of the relevant parts of the codebase, because each one shaped a de
 |---|---|---|
 | UI-copy tooling | **react-i18next** | Standard for React SPAs; gives interpolation, Spanish pluralization, missing-key fallback to English, and lazy-loaded language bundles — all the messy realities we'd otherwise hand-roll. |
 | Content-translation timing | **Synchronous on submit** | Guarantees no untranslated post is ever visible — directly upholds the "never see English" goal. Haiku on one short string is fast (~1s). |
-| Direction | **Bidirectional** | Detect the author's language and translate into the other, so English and Spanish readers each always see their own language — regardless of who wrote the post. Same LLM call, negligible extra cost. |
+| Direction | **Bidirectional** | Detect the author's language and translate into every other supported language (just the other one while we have two), so each reader always sees their own — regardless of who wrote the post. Same LLM call, negligible extra cost; generalizes to N via the supported set. |
 
 Two independent systems fall out of this, sharing one language selector. See the diagram.
 
@@ -52,23 +52,31 @@ Two independent systems fall out of this, sharing one language selector. See the
 
 ---
 
-## 5. System B — User content (stored, synchronous, bidirectional)
+## 5. System B — User content (stored, synchronous, idempotent, multi-language-ready)
 
-**Schema — inline in the existing JSONB (no migration).** Extend both server `types.tsx` and frontend `src/types/index.ts`:
-- `Statement`: `sourceLang?: 'en' | 'es'`, `i18n?: { en?: { text: string }, es?: { text: string } }` (also translate `mergedFrom[].text`).
-- `DebateRoom`: `sourceLang?: 'en' | 'es'`, `i18n?: { en?: {topic; description}, es?: {topic; description} }`.
+**Language codes as an open set.** `type LangCode = 'en' | 'es'` — a third language is one edit to the union, not a rewrite. Everything below keys off `LangCode` instead of hardcoded `en`/`es` pairs.
+
+**Schema — inline in the existing JSONB (no migration).** Extend both server `types.tsx` and frontend `src/types/index.ts`. These two definitions duplicate across a client/server boundary with no shared package — that is the one place duplication is accepted here, so treat them as a seam to keep in sync, not as independent types:
+- `Statement`: `sourceLang?: LangCode`, `i18n?: Partial<Record<LangCode, { text: string }>>` (also translate `mergedFrom[].text`).
+- `DebateRoom`: `sourceLang?: LangCode`, `i18n?: Partial<Record<LangCode, { topic: string; description: string }>>`.
+- `needsTranslation?: boolean` on both — set when a translation attempt fails, so a missing translation lives **in the data** (queryable, backfillable) instead of only in a log line.
+
+Modeling `i18n` as an open `Record<LangCode, …>` map — not named `{ en, es }` keys — is what keeps the "generalize to more languages" goal actually true: adding a language never migrates existing records.
 
 **Translation service (server)** — new `src/supabase/functions/server/translation-service.ts`:
-- `translateContent(fields, ctx)` builds an `AiPrompt` (via a new builder in `ai-prompt-utils.ts`) that tells the model to **detect the source language and translate to the other supported language**, returning strict JSON `{ sourceLang, translations: { es|en: {…} } }`. Calls `createLlmClient().completeJson(...)`.
-- **Defensive:** parse the JSON safely; on any failure, save the original untranslated and log it (never block the post outright). Two known rough edges in the reused client: `anthropic-client.ts` hardcodes `max_tokens: 500` (raise it for topic+description and for batch backfill) and its `completeJson` does not actually force JSON (so parse tolerantly).
+- `translateContent(fields, client, ctx)` — the `LlmClient` is **injected** (default `= createLlmClient()`), so the service is unit-testable with a fake and never has to reach a live LLM under `deno test`. It builds an `AiPrompt` (new builder in `ai-prompt-utils.ts`) instructing the model to **detect the source language and translate into every other language in the supported set**, returning strict JSON `{ sourceLang, translations: Partial<Record<LangCode, {…}>> }`.
+- **Idempotent by design.** The service is keyed on the source text: if `i18n` already covers the current `text` for the needed targets, it is a no-op. This is what makes it safe to call from any authoring path without re-translating (or re-billing) on unrelated updates — see the write path.
+- **Defensive parsing / graceful degradation.** Parse the JSON tolerantly; on any failure, save the original with `needsTranslation: true` and log — never block the post. Fix the two rough edges in the reused client **at the boundary, not globally**: thread a `maxTokens` **parameter** through the client call (default stays the current 500) rather than bumping the shared `max_tokens` constant that rant/enrichment/ask-the-data all depend on; and treat `completeJson` as best-effort JSON (parse tolerantly), since it does not truly force JSON.
 
-**Write path (synchronous).** In `room-api.tsx` `POST /room/create` (≈ line 28) and `debate-api.tsx` `POST /room/:roomId/statement` (≈ line 661), call the service after building the object and populate `sourceLang` + `i18n` **before** `saveDebateRoom`/`saveStatement`. Also wire the **AI content generators** — `enrichment-service.ts`, `reddit-import-service.ts`, `ggwash-import-service.ts`, rant extraction — since they insert through the same helpers.
+**Write path — one idempotent step at the authoring choke point (not scattered per-endpoint).** `saveStatement` (`kv-utils.tsx:383`) has **six** callers and `saveDebate` (`:410`) several more, so "call the translator in each create handler" is shotgun surgery — miss one authoring path and untranslated content leaks. But translating *inside* `saveStatement` is equally wrong: `voting-utils` re-saves through it on **every vote**, which would re-translate on each click.
+- Resolution: a thin **`createStatement` / `createRoom`** authoring wrapper (or an explicit `translateOnCreate` step) that the *authoring* paths flow through — `room-api.tsx` `POST /room/create` (≈ line 28), `debate-api.tsx` `POST /room/:roomId/statement` (≈ line 661), and the AI generators (`enrichment-service.ts`, `reddit-import-service.ts`, `ggwash-import-service.ts`, rant extraction) — while the vote/merge **update** paths keep calling `saveStatement` untouched. Because the step is idempotent (keyed on text), correctness does not hinge on enumerating every caller perfectly.
+- **Edits are a write path too.** `EditRoomModal` mutates the source text, which makes the stored translation stale — so the edit endpoint must run the same translation step. Idempotency handles it for free: text changed → the existing translation no longer matches → re-translate. Editing is not a render-swap site alone.
 
-**Read path — one centralized selector (no scattered logic).** New `src/utils/i18n/localizeContent.ts`:
-- `localizedTopic(room, lang)` and `localizedStatementText(statement, lang)` → return the original when `lang === sourceLang` or no translation exists, otherwise `i18n[lang]`, always falling back to the original.
+**Read path — one selector, one algorithm.** New `src/utils/i18n/localizeContent.ts`:
+- A single `localize(item, field, lang)` holds the rule (return `i18n[lang][field]` when present and `lang !== sourceLang`, else the original — always falling back to the original). `localizedTopic(room, lang)` and `localizedStatementText(statement, lang)` are one-line delegations to it, so the fallback logic lives in exactly one function.
 - Swap render sites to call these with the current `useLanguage()` value: primary `RoomCard.tsx` (`room.topic`) and `room/StatementCard.tsx` (`statement.text`); secondary `SwipeableStatementStack.tsx`, `results/StatementMini.tsx`, `results/ConcludedResults.tsx`/`InProgressResults.tsx`, `analysis/StatementSpectrum*.tsx`, `room/mod/StatementRow.tsx`, `EditRoomModal.tsx`.
 
-**Backfill existing content.** A dev/admin endpoint (or Deno script) iterates `getByPrefix('room:')` and `getByPrefix('statement:')`, skips already-translated records, translates, and re-saves — batched/rate-limited. Usage is logged automatically by the reused client.
+**Backfill existing content.** A dev/admin endpoint (or Deno script) iterates `getByPrefix('room:')` and `getByPrefix('statement:')`, prioritizes `needsTranslation` records, skips already-translated ones, translates, and re-saves — batched/rate-limited. It reuses the same idempotent `translateContent`, so backfill and live writes share one code path. Usage is logged automatically by the reused client.
 
 ---
 
@@ -76,7 +84,7 @@ Two independent systems fall out of this, sharing one language selector. See the
 
 1. **Foundation** — i18next init, `LanguageContext`/`useLanguage`, `LanguageSelector` in the header, localStorage + user-record persistence, dynamic `<html lang>`. The switcher works end-to-end even before any copy is extracted.
 2. **UI copy extraction** — core flow first, then the full sweep (largest effort).
-3. **Content write path** — schema fields, `translation-service`, wire into create endpoints + AI generators, `localizeContent` helpers, render swaps.
+3. **Content write path** — schema fields (`LangCode`, open `i18n` map, `needsTranslation`), idempotent `translation-service` with an injected client, a `createStatement`/`createRoom` authoring wrapper wired into the create endpoints + AI generators + the edit path (vote/update paths left untouched), `localizeContent` helpers, render swaps.
 4. **Backfill** existing topics/statements.
 5. **Polish** — locale-aware number/date formatting (`Intl`/moment), decide on emails (likely out of scope for v1), a future "report bad translation" review mechanism, and additional languages.
 
@@ -93,4 +101,7 @@ Two independent systems fall out of this, sharing one language selector. See the
 - **Bidirectional check:** author a response in Spanish, switch to English, confirm it renders in English.
 - **Determinism check:** two sessions render an identical translation of the same post.
 - **Fallback check:** remove one `es` key → confirm English fallback (react-i18next).
-- `deno test` for `translation-service`; unit tests for `localizeContent` and the translation prompt builder.
+- **Idempotency check:** vote on a statement repeatedly → confirm no re-translation (no new LLM usage); re-submitting unchanged text is a no-op.
+- **Edit check:** edit a topic → confirm the stored translation is refreshed, not left stale.
+- **Failure check:** force a translation failure → confirm the post still saves with `needsTranslation: true`, and backfill later picks it up.
+- `deno test` for `translation-service` **using an injected fake `LlmClient`** (no live LLM); unit tests for `localize`/`localizeContent` and the translation prompt builder.
