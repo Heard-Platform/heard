@@ -69,6 +69,8 @@ const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: str
   card: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
 };
 
+const IDEAS_ROOM_ID = "zmai0sb2fbemrxm4yc6";
+
 const WORLD_CUP_ROOM_ID = "31m0twqkoo6mrnu69l0";
 const WORLD_CUP_TEAM_STATEMENT_IDS: Record<string, string> = {
   argentina: "m91010yjsycmrnu69mi",
@@ -346,6 +348,7 @@ function AppContent() {
       const isWaymoRoute = route === "waymo";
       const isWaymoDcRoute = route === "waymodc";
       const isCongestionRoute = route === "congestion"
+      const isIdeasRoute = route === "ideas";
       const hardcodedFlyerMatch = pathname.match(
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
@@ -455,6 +458,8 @@ function AppContent() {
         startRoomJoin(CLUB_FLYER_ID);
       } else if (isFinalRoute) {
         startRoomJoin(WORLD_CUP_ROOM_ID);
+      } else if (isIdeasRoute) {
+        startRoomJoin(IDEAS_ROOM_ID);
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (eventIdFromUrl) {
