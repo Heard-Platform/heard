@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import { useState } from "react";
 import { createShareableLink } from "../../utils/url";
 import { share } from "../../utils/share";
+import { useTranslation } from "react-i18next";
 
 interface ShareDebateStepProps {
   debateId: string | null;
@@ -13,6 +14,7 @@ interface ShareDebateStepProps {
 }
 
 export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
+  const { t } = useTranslation("toast");
   const [copied, setCopied] = useState(false);
   
   if (!debateId) {
@@ -25,10 +27,10 @@ export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
     try {
       await navigator.clipboard.writeText(shareLink);
       setCopied(true);
-      toast.success("Link copied to clipboard!");
+      toast.success(t("linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      toast.error("Failed to copy link");
+      toast.error(t("copyLinkFailed"));
       console.error("Copy error:", error);
     }
   };
@@ -39,10 +41,10 @@ export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
       title: `Join this conversation on Heard`,
       text: `Check out this conversation: "${topic}"`,
       onSuccess: () => {
-        toast.success("Link shared!");
+        toast.success(t("linkShared"));
       },
       onError: (error) => {
-        toast.error("Failed to share link");
+        toast.error(t("shareLinkFailed"));
         console.error("Share error:", error);
       },
     });

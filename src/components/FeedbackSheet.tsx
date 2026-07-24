@@ -6,6 +6,7 @@ import { MessageSquare, Heart, Phone, Linkedin, Instagram, Youtube, LucideIcon }
 import { motion } from "motion/react";
 import { api } from "../utils/api";
 import { FunSheet, FunSheetCard } from "./FunSheet";
+import { useTranslation } from "react-i18next";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -32,6 +33,7 @@ export function FeedbackSheet({
   open: controlledOpen,
   onOpenChange,
 }: FeedbackSheetProps) {
+  const { t } = useTranslation("toast");
   const [internalOpen, setInternalOpen] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -45,7 +47,7 @@ export function FeedbackSheet({
 
   const handleSubmit = async () => {
     if (!feedbackText.trim()) {
-      toast.error("Please write something!");
+      toast.error(t("feedbackEmpty"));
       return;
     }
 
@@ -56,13 +58,13 @@ export function FeedbackSheet({
 
       if (response.success) {
         toast.success(
-          "Feedback sent! We read every single one 💜",
+          t("feedbackSent"),
         );
         setFeedbackText("");
         setOpen(false);
       } else {
         toast.error(
-          "Failed to send feedback. Please try again!",
+          t("feedbackFailed"),
         );
         console.error(
           "Feedback submission error:",
@@ -70,7 +72,7 @@ export function FeedbackSheet({
         );
       }
     } catch (error) {
-      toast.error("Something went wrong. Please try again!");
+      toast.error(t("genericError"));
       console.error("Error submitting feedback:", error);
     } finally {
       setSubmitting(false);

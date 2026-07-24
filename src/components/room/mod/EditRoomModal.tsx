@@ -2,6 +2,7 @@
 import { toast } from "sonner@2.0.3";
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, Check, Image as ImageIcon, Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -26,6 +27,7 @@ interface EditRoomModalProps {
 }
 
 export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
+  const { t } = useTranslation("toast");
   const { updateRoom } = useDebateSession();
 
   const [topic, setTopic] = useState(room.topic);
@@ -48,13 +50,13 @@ export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
       const result = await api.uploadDebateImage(file);
       if (result.success && result.data?.imageUrl) {
         setImageUrl(result.data.imageUrl);
-        toast.success("Image uploaded!");
+        toast.success(t("imageUploaded"));
       } else {
-        toast.error(result.error || "Failed to upload image");
+        toast.error(result.error || t("imageUploadFailed"));
       }
     } catch (error) {
       console.error("Image upload error:", error);
-      toast.error("Failed to upload image");
+      toast.error(t("imageUploadFailed"));
     } finally {
       setIsUploading(false);
     }
@@ -75,10 +77,10 @@ export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
     setIsSaving(false);
 
     if (response?.success) {
-      toast.success("Post updated");
+      toast.success(t("postUpdated"));
       onClose();
     } else {
-      toast.error(response?.error || "Failed to update post");
+      toast.error(response?.error || t("postUpdateFailed"));
     }
   };
 

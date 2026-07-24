@@ -23,6 +23,7 @@ import {
 } from "./create-room";
 import { normalizeSubHeardName } from "../utils/subheard";
 import { api } from "../utils/api";
+import { useTranslation } from "react-i18next";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -83,6 +84,7 @@ export function CreateRoomSheet({
   onCreateRoom,
   onExtractTopicAndStatements,
 }: CreateRoomSheetProps) {
+  const { t } = useTranslation("toast");
   const [currentStep, setCurrentStep] = useState(INITIAL_FORM.currentStep);
   const [rant, setRant] = useState(INITIAL_FORM.rant);
   const [extractedData, setExtractedData] = useState(INITIAL_FORM.extractedData);
@@ -213,7 +215,7 @@ export function CreateRoomSheet({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to create post. Please try again.",
+          : t("createRoomFailed"),
       );
     } finally {
       setIsCreating(false);
@@ -226,13 +228,13 @@ export function CreateRoomSheet({
       const result = await api.uploadDebateImage(file);
       if (result.success && result.data?.imageUrl) {
         setCover({ type: "image", url: result.data.imageUrl });
-        toast.success("Image uploaded!");
+        toast.success(t("imageUploaded"));
       } else {
-        toast.error(result.error || "Failed to upload image");
+        toast.error(result.error || t("imageUploadFailed"));
       }
     } catch (error) {
       console.error("Image upload error:", error);
-      toast.error("Failed to upload image");
+      toast.error(t("imageUploadFailed"));
     } finally {
       setIsUploadingImage(false);
     }

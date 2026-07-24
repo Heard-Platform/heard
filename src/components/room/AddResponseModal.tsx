@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MessageSquare } from "lucide-react";
 import { motion } from "motion/react";
 import { Button } from "../ui/button";
@@ -33,6 +34,7 @@ export function AddResponseModal({
   onSubmitStatement,
   onShowAccountSetupModal,
 }: AddResponseModalProps) {
+  const { t } = useTranslation("toast");
   const [text, setText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -50,7 +52,7 @@ export function AddResponseModal({
     if (!trimmed) return;
 
     if (trimmed.length > 500) {
-      toast.error("Statement must be 500 characters or less");
+      toast.error(t("responseTooLong"));
       return;
     }
 
@@ -59,9 +61,9 @@ export function AddResponseModal({
       await onSubmitStatement(trimmed);
       setText("");
       onOpenChange(false);
-      toast.success("Response submitted!");
+      toast.success(t("responseSubmitted"));
     } catch {
-      toast.error("Failed to submit response");
+      toast.error(t("responseSubmitFailed"));
     } finally {
       setIsSubmitting(false);
     }

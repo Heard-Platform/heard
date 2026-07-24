@@ -15,6 +15,7 @@ import { createSubHeardLink, createModInviteLink } from "../../utils/url";
 import { share } from "../../utils/share";
 import { CommunitySettingsPanel } from "./CommunitySettingsPanel";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import { useTranslation } from "react-i18next";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -40,6 +41,7 @@ export function CommunityAdminDialog({
   onRefresh,
   onClose,
 }: CommunityAdminDialogProps) {
+  const { t } = useTranslation("toast");
   const { createModInvite, clearSubHeardMods } = useDebateSession();
   const [isUpdating, setIsUpdating] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -55,13 +57,13 @@ export function CommunityAdminDialog({
     try {
       const success = await onUpdateSubHeard(updatedCommunity, userId);
       if (success) {
-        toast.success("Community settings updated");
+        toast.success(t("settingsUpdated"));
       } else {
-        toast.error("Failed to update community settings");
+        toast.error(t("settingsUpdateFailed"));
       }
     } catch (error) {
       console.error("Failed to update sub-heard:", error);
-      toast.error("Failed to update community settings");
+      toast.error(t("settingsUpdateFailed"));
     } finally {
       setIsUpdating(false);
     }
@@ -72,7 +74,7 @@ export function CommunityAdminDialog({
     try {
       const response = await createModInvite(community.name);
       if (!response?.success || !response.data?.token) {
-        toast.error("Failed to create invite link");
+        toast.error(t("inviteLinkFailed"));
         return;
       }
       const link = createModInviteLink(community.name, response.data.token);
@@ -80,8 +82,8 @@ export function CommunityAdminDialog({
         title: `Join ${formatSubHeardDisplay(community.name)} as a Moderator`,
         text: "You've been invited to moderate this community on HEARD!",
         url: link,
-        onSuccess: () => toast.success("Moderator invite link shared!"),
-        onError: () => toast.error("Could not share link. Please manually copy the URL."),
+        onSuccess: () => toast.success(t("modInviteShared")),
+        onError: () => toast.error(t("shareLinkManual")),
       });
     } finally {
       setIsCreatingInvite(false);
@@ -93,10 +95,10 @@ export function CommunityAdminDialog({
     try {
       const response = await clearSubHeardMods(community.name);
       if (response?.success) {
-        toast.success("All moderators removed");
+        toast.success(t("allModsRemoved"));
         await onRefresh();
       } else {
-        toast.error("Failed to remove moderators");
+        toast.error(t("removeModsFailed"));
       }
     } finally {
       setIsClearingMods(false);
@@ -112,11 +114,11 @@ export function CommunityAdminDialog({
       url,
       onSuccess: () => {
         setCopied(true);
-        toast.success("Link shared successfully!");
+        toast.success(t("linkSharedSuccess"));
         setTimeout(() => setCopied(false), 2000);
       },
       onError: (error) => {
-        toast.error("Could not share link. Please manually copy the URL.");
+        toast.error(t("shareLinkManual"));
       },
     });
   };

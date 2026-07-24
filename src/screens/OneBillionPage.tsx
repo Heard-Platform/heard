@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../components/ui/button";
 import { Copy, Check, ExternalLink } from "lucide-react";
 import alexPointingImg from "figma:asset/alex-pointing.png";
@@ -71,6 +72,7 @@ function ScreenshotPlaceholder({ src, alt }: { src: string; alt: string }) {
 }
 
 export function OneBillionPage() {
+  const { t } = useTranslation("toast");
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -82,10 +84,10 @@ export function OneBillionPage() {
     try {
       await navigator.clipboard.writeText(SHARE_URL);
       setCopied(true);
-      toast.success("Link copied!");
+      toast.success(t("linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Couldn't copy. Try selecting the link manually.");
+      toast.error(t("copyFailedManual"));
     }
   };
 

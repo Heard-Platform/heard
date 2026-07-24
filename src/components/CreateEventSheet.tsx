@@ -12,6 +12,7 @@ import { EventDetailsStep } from "./create-event/EventDetailsStep";
 import { EventCreatedStep } from "./create-event/EventCreatedStep";
 import { useDebateSession } from "../hooks/useDebateSession";
 import type { Event } from "../types";
+import { useTranslation } from "react-i18next";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -33,6 +34,7 @@ export function CreateEventSheet({
   onOpenChange,
   onGoToEvent,
 }: CreateEventSheetProps) {
+  const { t } = useTranslation("toast");
   const { createEvent } = useDebateSession();
   const [currentStep, setCurrentStep] = useState<Step>("event-details");
   const [name, setName] = useState("");
@@ -91,7 +93,7 @@ export function CreateEventSheet({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to create event. Please try again.",
+          : t("createEventFailed"),
       );
     } finally {
       setIsCreating(false);

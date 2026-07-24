@@ -3,6 +3,7 @@ import { toast } from "sonner@2.0.3";
 import { Badge } from "../ui/badge";
 import { getTimeRemaining, ONE_WEEK_MS } from "../../utils/time";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import moment from "moment";
 
 interface TimeLeftBadgeProps {
@@ -18,6 +19,7 @@ export function TimeLeftBadge({
   isRealtime,
   variant = "badge",
 }: TimeLeftBadgeProps) {
+  const { t } = useTranslation("toast");
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export function TimeLeftBadge({
 
   const handleTap = () => {
     const humanized = moment.duration(effectiveEndTime - currentTime).humanize();
-    toast(`Voting ends in ${humanized}`);
+    toast(t("votingEndsIn", { time: humanized }));
   };
 
   if (variant === "text") {

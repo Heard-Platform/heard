@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { SubHeard } from "../../types";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { CommunityListing } from "./CommunityListing";
+import { useTranslation } from "react-i18next";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -30,6 +31,7 @@ export function CommunityExplorerDialog({
   onCommunitiesJoined,
   cancelButtonText,
 }: CommunityExplorerDialogProps) {
+  const { t } = useTranslation("toast");
   const { getExplorableSubHeards, joinSubHeard } = useDebateSession();
   const [communities, setCommunities] = useState<SubHeard[]>([]);
   const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]);
@@ -73,17 +75,15 @@ export function CommunityExplorerDialog({
       const successCount = results.filter((r) => r?.success).length;
 
       if (successCount > 0) {
-        toast.success(
-          `Joined ${successCount} ${successCount === 1 ? "community" : "communities"}!`
-        );
+        toast.success(t("communitiesJoined", { count: successCount }));
         onCommunitiesJoined();
         onClose();
       } else {
-        toast.error("Failed to join communities");
+        toast.error(t("joinCommunitiesFailed"));
       }
     } catch (error) {
       console.error("Failed to join communities:", error);
-      toast.error("Failed to join communities");
+      toast.error(t("joinCommunitiesFailed"));
     } finally {
       setJoining(false);
     }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { PanInfo } from "motion/react";
 import { useSwipeTutorialContext } from "../../contexts/SwipeTutorialContext";
 import {
@@ -70,6 +71,7 @@ export function SwipeableStatementStack({
   onCoverCardSwiped,
   onDemographicsAnswered,
 }: SwipeableStatementStackProps) {
+  const { t } = useTranslation("toast");
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
 
   const { showTutorial, recordSwipe, resetTutorialTimer } = useSwipeTutorialContext();
@@ -374,7 +376,7 @@ export function SwipeableStatementStack({
     handleVote(statementToFlag.id, "pass", "down");
 
     await flagStatement(statementToFlag.id, statementToFlag.roomId, reason);
-    toast.success("🙏 Thank you for reporting. Our team will review this shortly.");
+    toast.success(t("reportThanks"));
 
     setStatementToFlag(null);
   };

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import * as Sentry from "@sentry/react";
 import { motion } from "motion/react";
 import { UnsubscribePage } from "./components/UnsubscribePage";
@@ -67,6 +68,7 @@ const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: str
 };
 
 function AppContent() {
+  const { t } = useTranslation("toast");
   const [isJoiningRoom, setIsJoiningRoom] = useState(false);
   const [targetRoomId, setTargetRoomId] = useState<
     string | null
@@ -130,15 +132,15 @@ function AppContent() {
   }
 
   const handleMagicLinkSuccess = async () => {
-    toast.success("Signed in successfully!");
+    toast.success(t("signedIn"));
   };
 
   const acceptCohostInviteFromUrl = async (roomId: string, token: string) => {
     const response = await acceptCohostInvite(roomId, token);
     if (response?.success) {
-      toast.success("You're now a co-host of this conversation!");
+      toast.success(t("cohostJoined"));
     } else {
-      toast.error(response?.error || "This co-host invite link is invalid or has expired");
+      toast.error(response?.error || t("cohostInviteInvalid"));
     }
     const url = new URL(window.location.href);
     url.searchParams.delete("cohostInvite");
@@ -161,7 +163,7 @@ function AppContent() {
     );
 
     if (!response || !response.user) {
-      toast.error("Failed to process flyer vote");
+      toast.error(t("flyerVoteFailed"));
     } else {
       startRoomJoin(response.room.id);
       setQrScanResult(response);
@@ -196,8 +198,8 @@ function AppContent() {
   };
 
   const handleQrComplete = ({ reason }: { reason: "signup" | "otp-login" | "continue" }) => {
-    if (reason === "signup") toast.success("Welcome to Heard! 🎉");
-    if (reason === "otp-login") toast.success("Welcome back! 🎉");
+    if (reason === "signup") toast.success(t("welcomeNew"));
+    if (reason === "otp-login") toast.success(t("welcomeBack"));
     updateUrlForRoom(qrScanResult!.room.id);
     setQrScanResult(null);
   };
@@ -254,12 +256,12 @@ function AppContent() {
   const acceptModInviteFromUrl = async (subHeardName: string, token: string) => {
     const response = await acceptModInvite(subHeardName, token);
     if (response?.success) {
-      toast.success("You are now a moderator of this community!");
+      toast.success(t("modJoined"));
       const url = new URL(window.location.href);
       url.searchParams.delete("modInvite");
       window.history.replaceState(null, "", url.toString());
     } else {
-      toast.error(response?.error || "Failed to accept mod invite.");
+      toast.error(response?.error || t("modInviteFailed"));
     }
   };
 
@@ -382,7 +384,7 @@ function AppContent() {
                                 
 
         if (!hardcodedRoomId) {
-          toast.error("Invalid route");
+          toast.error(t("invalidRoute"));
         } else {
           setPendingFlyerScan(route);
           setPendingCommunities(KALORAMA_COMMUNITIES);
@@ -413,9 +415,9 @@ function AppContent() {
         startRoomJoin(roomIdFromUrl);
         if (cohostInviteTokenFromUrl) {
           if (!user) {
-            toast("Sign in to accept the co-host invite, then visit this link again.");
+            toast(t("signInForCohost"));
           } else if (user.isAnonymous) {
-            toast("Create an account to accept the co-host invite, then visit this link again.");
+            toast(t("createAccountForCohost"));
           } else {
             acceptCohostInviteFromUrl(roomIdFromUrl, cohostInviteTokenFromUrl);
           }
@@ -425,9 +427,9 @@ function AppContent() {
         const modInviteToken = parseModInviteTokenFromUrl();
         if (modInviteToken) {
           if (!user) {
-            toast.error("Sign in to accept the moderator invite.");
+            toast.error(t("signInForMod"));
           } else if (user.isAnonymous) {
-            toast.error("Create an account to accept the moderator invite.");
+            toast.error(t("createAccountForMod"));
           } else {
             acceptModInviteFromUrl(subHeardFromUrl, modInviteToken);
           }
@@ -499,7 +501,7 @@ function AppContent() {
           const response = await api.joinSubHeard(currentSubHeard);
 
           if (!response.success) {
-            toast.error("Unable to join this community");
+            toast.error(t("joinCommunityFailed"));
             setCurrentSubHeard(null);
             updateUrlForSubHeard(null);
           }

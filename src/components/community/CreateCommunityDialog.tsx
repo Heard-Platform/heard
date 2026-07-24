@@ -14,6 +14,7 @@ import { CommunitySettingsPanel } from "./CommunitySettingsPanel";
 import type { SubHeard } from "../../types";
 import { api } from "../../utils/api";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { normalizeSubHeardName } from "../../utils/subheard";
 
 interface CreateCommunityDialogProps {
@@ -29,6 +30,7 @@ export function CreateCommunityDialog({
   onCreated,
   onClose,
 }: CreateCommunityDialogProps) {
+  const { t } = useTranslation("toast");
   const [community, setCommunity] = useState<Partial<SubHeard>>({
     name: "",
     isPrivate: false,
@@ -52,13 +54,13 @@ export function CreateCommunityDialog({
         });
         onCreated(normalizedName);
         onClose();
-        toast.success(`Community created: ${community.name}`);
+        toast.success(t("communityCreated", { name: community.name }));
       } else {
         throw new Error(response?.error || "Failed to create community");
       }
     } catch (error) {
       console.error("Failed to create community:", error);
-      toast.error("Failed to create community. Please try again.");
+      toast.error(t("createCommunityFailed"));
     } finally {
       setIsCreating(false);
     }

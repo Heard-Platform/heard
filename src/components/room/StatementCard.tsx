@@ -13,6 +13,7 @@ import { getTotalVotes } from "../../utils/votes";
 import { share } from "../../utils/share";
 import { createShareableLink } from "../../utils/url";
 import moment from "moment";
+import { useTranslation } from "react-i18next";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
@@ -45,6 +46,7 @@ export function StatementCard({
   onSkip,
   onFlag,
 }: StatementCardProps) {
+  const { t } = useTranslation("toast");
   const { user, activeRooms, setStatementHidden } = useDebateSession();
   const room = activeRooms.find((r) => r.id === statement.roomId);
   const isHost = !!user && !!room && room.hostId === user.id;
@@ -113,8 +115,8 @@ export function StatementCard({
                   url: link,
                   title: "Come vote on this",
                   text: `Come vote on "${statement.text}"! ${link}`,
-                  onSuccess: () => toast.success("Link copied to clipboard!"),
-                  onError: (e) => toast.error("Failed to share link"),
+                  onSuccess: () => toast.success(t("linkCopied")),
+                  onError: (e) => toast.error(t("shareLinkFailed")),
                 });
               }}
               className={`${actionButtonBase} hover:bg-gray-100`}

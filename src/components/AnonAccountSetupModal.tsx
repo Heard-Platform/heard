@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Sparkles, Users, Award, Mail, Phone } from "lucide-react";
 import { isValidEmail, isValidPhone, formatPhone } from "../utils/validation";
 import { useDebateSession } from "../hooks/useDebateSession";
@@ -24,6 +25,7 @@ export function AnonAccountSetupModal({
   isOpen,
   onClose,
 }: AnonAccountSetupModalProps) {
+  const { t } = useTranslation("toast");
   const { sendMagicLink, verifyMagicLink, sendSmsCode, verifySmsCode, addEmailToAccount } = useDebateSession();
   const [showEmailFlow, setShowEmailFlow] = useState(false);
   const [email, setEmail] = useState("");
@@ -120,7 +122,7 @@ export function AnonAccountSetupModal({
   };
 
   const handleSuccessfulLogin = () => {
-    toast.success("Successfully signed in!");
+    toast.success(t("signedIn"));
     onClose();
   };
 

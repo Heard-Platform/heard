@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Share } from "lucide-react";
 import { createShareableLink } from "../utils/url";
 import { share } from "../utils/share";
+import { useTranslation } from "react-i18next";
 
 interface ShareButtonProps {
   roomId: string;
@@ -12,6 +13,7 @@ interface ShareButtonProps {
 }
 
 export function ShareButton({ roomId, roomTopic }: ShareButtonProps) {
+  const { t } = useTranslation("toast");
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const link = createShareableLink(roomId);
@@ -21,10 +23,10 @@ export function ShareButton({ roomId, roomTopic }: ShareButtonProps) {
       title: roomTopic,
       text: `Come vote on "${roomTopic}"! ${link}`,
       onSuccess: () => {
-        toast.success("Link copied to clipboard!");
+        toast.success(t("linkCopied"));
       },
       onError: (error) => {
-        toast.error("Failed to share link");
+        toast.error(t("shareLinkFailed"));
         console.error("Share error:", error);
       },
     });

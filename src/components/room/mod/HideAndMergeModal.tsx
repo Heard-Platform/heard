@@ -2,6 +2,7 @@
 import { toast } from "sonner@2.0.3";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent } from "../../ui/dialog";
 import { useDebateSession } from "../../../hooks/useDebateSession";
 import { Statement, StatementMerge } from "../../../types";
@@ -16,6 +17,7 @@ interface HideAndMergeModalProps {
 }
 
 export function HideAndMergeModal({ roomId, onClose }: HideAndMergeModalProps) {
+  const { t } = useTranslation("toast");
   const [statements, setStatements] = useState<Statement[]>([]);
   const [merges, setMerges] = useState<StatementMerge[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,12 +71,12 @@ export function HideAndMergeModal({ roomId, onClose }: HideAndMergeModalProps) {
     const result = await createStatementMerge(roomId, source.id, target.id);
     setSubmitting(false);
     if (result) {
-      toast.success("Statements merged.");
+      toast.success(t("statementsMerged"));
       setSource(null);
       setTarget(null);
       await fetchData();
     } else {
-      toast.error("Failed to merge.");
+      toast.error(t("mergeFailed"));
     }
   };
 
@@ -86,10 +88,10 @@ export function HideAndMergeModal({ roomId, onClose }: HideAndMergeModalProps) {
   const handleDeleteMerge = async (mergeId: string) => {
     const ok = await deleteStatementMerge(roomId, mergeId);
     if (ok) {
-      toast.success("Merge removed.");
+      toast.success(t("mergeRemoved"));
       await fetchData();
     } else {
-      toast.error("Failed to remove merge.");
+      toast.error(t("removeMergeFailed"));
     }
   };
 
@@ -113,10 +115,10 @@ export function HideAndMergeModal({ roomId, onClose }: HideAndMergeModalProps) {
     });
 
     if (result?.success) {
-      toast.success(nextHidden ? "Response hidden." : "Response restored.");
+      toast.success(nextHidden ? t("responseHidden") : t("responseRestored"));
       await fetchData();
     } else {
-      toast.error("Failed to update visibility.");
+      toast.error(t("visibilityUpdateFailed"));
     }
   };
 

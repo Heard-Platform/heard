@@ -3,6 +3,7 @@ import { toast } from "sonner@2.0.3";
 
 import { Button } from "../ui/button";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Users,
   XCircle,
@@ -57,6 +58,7 @@ export function RoomCardMenu({
   onOpenDeduplication,
   onOpenVoteMatrix,
 }: RoomCardMenuProps) {
+  const { t } = useTranslation("toast");
   const { setRoomInactive, setResponsesPaused, createCohostInvite, clearRoomCohosts } = useDebateSession();
   const [cohostCount, setCohostCount] = useState(room.cohostIds?.length ?? 0);
   const [isClearingCohosts, setIsClearingCohosts] = useState(false);
@@ -65,7 +67,7 @@ export function RoomCardMenu({
     e.stopPropagation();
     const response = await createCohostInvite(room.id);
     if (!response?.success || !response.data) {
-      toast.error("Failed to create invite link");
+      toast.error(t("inviteLinkFailed"));
       return;
     }
     const link = createCohostInviteLink(room.id, response.data.token);
@@ -74,10 +76,10 @@ export function RoomCardMenu({
       title: "Become a co-host on Heard",
       text: "Use this link to become a co-host of this conversation. It only works once.",
       onSuccess: () => {
-        toast.success("Co-host invite link copied to clipboard!");
+        toast.success(t("cohostInviteCopied"));
       },
       onError: (error) => {
-        toast.error("Failed to share invite link");
+        toast.error(t("shareInviteLinkFailed"));
         console.error("Share error:", error);
       },
     });
@@ -89,10 +91,10 @@ export function RoomCardMenu({
     try {
       const response = await clearRoomCohosts(room.id);
       if (response?.success) {
-        toast.success("All cohosts removed");
+        toast.success(t("allCohostsRemoved"));
         setCohostCount(0);
       } else {
-        toast.error("Failed to remove cohosts");
+        toast.error(t("removeCohostsFailed"));
       }
     } finally {
       setIsClearingCohosts(false);
@@ -135,10 +137,10 @@ export function RoomCardMenu({
               title: "Join this conversation on Heard",
               text: "Check out this conversation!",
               onSuccess: () => {
-                toast.success("Link copied to clipboard!");
+                toast.success(t("linkCopied"));
               },
               onError: (error) => {
-                toast.error("Failed to share link");
+                toast.error(t("shareLinkFailed"));
                 console.error("Share error:", error);
               },
             });
@@ -201,9 +203,9 @@ export function RoomCardMenu({
                 )) return;
                 const response = await setResponsesPaused(room.id, !isPaused);
                 if (response?.success) {
-                  toast.success(isPaused ? "Responses resumed" : "Responses paused");
+                  toast.success(isPaused ? t("responsesResumed") : t("responsesPaused"));
                 } else {
-                  toast.error(isPaused ? "Failed to resume responses" : "Failed to pause responses");
+                  toast.error(isPaused ? t("resumeResponsesFailed") : t("pauseResponsesFailed"));
                 }
               }}
             >
