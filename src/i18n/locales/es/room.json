@@ -1,0 +1,10 @@
+{
+  "respond": "Responder",
+  "results": "Resultados",
+  "completed": "Finalizada",
+  "voteOnResponsesBelow": "Vota las respuestas de abajo",
+  "noResponsesYet": "Aún no hay respuestas a esta publicación",
+  "loadingStatements": "Cargando respuestas…",
+  "joinToAddResponses": "Únete para añadir respuestas",
+  "conversationEnded": "Conversación finalizada"
+}

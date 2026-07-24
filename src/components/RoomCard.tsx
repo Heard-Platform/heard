@@ -37,6 +37,7 @@ import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { getTotalVotes } from "../utils/votes";
+import { useTranslation } from "react-i18next";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -82,7 +83,8 @@ export function RoomCard({
   onSubHeardChange,
 }: RoomCardProps) {
   const { resetTutorialTimer } = useSwipeTutorialContext();
-  
+  const { t } = useTranslation("room");
+
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [coverCardSwiped, setCoverCardSwiped] = useState(room.coverCardSwiped || false);
@@ -317,7 +319,7 @@ export function RoomCard({
 
           {/* Statement Stack or Results */}
           {!isCompleted && statements.length > 0 && !hasSwipedAll && (
-            <p className="text-center text-s text-muted-foreground/60">Vote on responses below</p>
+            <p className="text-center text-s text-muted-foreground/60">{t("voteOnResponsesBelow")}</p>
           )}
           {isCompleted && statements.length > 0 ? (
             <ConcludedResults
@@ -378,14 +380,14 @@ export function RoomCard({
                 <div className="text-center py-8">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto text-purple-600" />
                   <p className="text-muted-foreground mt-2">
-                    Loading statements...
+                    {t("loadingStatements")}
                   </p>
                 </div>
               ) : (
                 <>
                   <div className="text-center py-4">
                     <p className="text-muted-foreground">
-                      No responses yet to this post
+                      {t("noResponsesYet")}
                     </p>
                   </div>
                   <Button
@@ -395,8 +397,8 @@ export function RoomCard({
                     className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
                   >
                     {isCompleted
-                      ? "Conversation Ended"
-                      : "Join to Add Responses"}
+                      ? t("conversationEnded")
+                      : t("joinToAddResponses")}
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </>
@@ -413,16 +415,16 @@ export function RoomCard({
                 onClick={() => setShowAddResponseModal(true)}
               >
                 <MessageCirclePlus className="w-4 h-4" />
-                Respond
+                {t("respond")}
               </Button>
-            ) : <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>}
+            ) : <Badge className="heard-pill bg-gray-600 text-white">{t("completed")}</Badge>}
             <Button
               onClick={handleOpenAnalysis}
               variant="secondary"
               className="heard-pill hover:bg-secondary/60"
             >
               <BarChart3 className="w-4 h-4" />
-              Results
+              {t("results")}
             </Button>
             <ShareButton roomId={room.id} roomTopic={room.topic} />
             <RoomCardMenu
