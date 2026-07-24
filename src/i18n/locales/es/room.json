@@ -6,5 +6,10 @@
   "noResponsesYet": "Aún no hay respuestas a esta publicación",
   "loadingStatements": "Cargando respuestas…",
   "joinToAddResponses": "Únete para añadir respuestas",
-  "conversationEnded": "Conversación finalizada"
+  "conversationEnded": "Conversación finalizada",
+  "voteCount_one": "{{count, number}} voto",
+  "voteCount_other": "{{count, number}} votos",
+  "responseCount_one": "{{count, number}} respuesta",
+  "responseCount_other": "{{count, number}} respuestas",
+  "votesOnResponses": "<0>{{votes}}</0> en <1>{{responses}}</1>"
 }

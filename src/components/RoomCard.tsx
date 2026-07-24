@@ -37,7 +37,7 @@ import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { getTotalVotes } from "../utils/votes";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -83,7 +83,7 @@ export function RoomCard({
   onSubHeardChange,
 }: RoomCardProps) {
   const { resetTutorialTimer } = useSwipeTutorialContext();
-  const { t } = useTranslation("room");
+  const { t } = useTranslation(["room", "toast"]);
 
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
@@ -176,10 +176,10 @@ export function RoomCard({
     } catch (error: any) {
       if (error.message === ANONYMOUS_ACTION_NOT_ALLOWED_ERROR) {
         onShowAccountSetupModal("voting in this conversation");
-        toast.error("⚠️ This discussion requires an account.");
+        toast.error(t("toast:accountRequired"));
       } else {
         toast.error(
-          "⚠️ Your vote couldn't be saved. Please try again.",
+          t("toast:voteFailed"),
           { duration: 3000 },
         );
         console.error("Error voting on statement:", error);
@@ -274,7 +274,14 @@ export function RoomCard({
               const totalVotes = statements.reduce((sum, s) => sum + getTotalVotes(s), 0);
               return (
                 <p className="text-center text-foreground">
-                  <strong>{totalVotes.toLocaleString()}</strong> votes on <strong>{statements.length.toLocaleString()}</strong> responses
+                  <Trans
+                    i18nKey="room:votesOnResponses"
+                    values={{
+                      votes: t("voteCount", { count: totalVotes }),
+                      responses: t("responseCount", { count: statements.length }),
+                    }}
+                    components={[<strong key="votes" />, <strong key="responses" />]}
+                  />
                 </p>
               );
             })()}

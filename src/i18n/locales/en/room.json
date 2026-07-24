@@ -6,5 +6,10 @@
   "noResponsesYet": "No responses yet to this post",
   "loadingStatements": "Loading statements…",
   "joinToAddResponses": "Join to Add Responses",
-  "conversationEnded": "Conversation Ended"
+  "conversationEnded": "Conversation Ended",
+  "voteCount_one": "{{count, number}} vote",
+  "voteCount_other": "{{count, number}} votes",
+  "responseCount_one": "{{count, number}} response",
+  "responseCount_other": "{{count, number}} responses",
+  "votesOnResponses": "<0>{{votes}}</0> on <1>{{responses}}</1>"
 }
