@@ -21,6 +21,7 @@ import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
 import { NewItemButton } from "../components/NewItemButton";
 import { FundingTeaser } from "../components/FundingTeaser";
 import { SidePanelMenu } from "../components/SidePanelMenu";
+import { LanguageSelector } from "../components/LanguageSelector";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
 import { api, safelyMakeApiCall } from "../utils/api";
 import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
@@ -400,6 +401,8 @@ export function LobbyScreen({
                   onNewConversation={handleOpenCreateSheet}
                   onNewEvent={handleOpenCreateEventSheet}
                 />
+
+                <LanguageSelector />
 
                 {onLogout && (
                   <SidePanelMenu
