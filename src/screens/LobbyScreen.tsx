@@ -8,6 +8,7 @@ import type {
 } from "../types";
 import { EventView } from "../components/events/EventView";
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   RoomScroller,
   RoomScrollerRef,
@@ -101,6 +102,7 @@ export function LobbyScreen({
   analysisRoomId,
   targetStatementId,
 }: LobbyScreenProps) {
+  const { t } = useTranslation("common");
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
     useState(false);
   const [createEventSheetOpen, setCreateEventSheetOpen] =
@@ -516,7 +518,7 @@ export function LobbyScreen({
       <CommunityExplorerDialog
         isOpen={explorerOpen}
         userId={user.id}
-        cancelButtonText={"Close"}
+        cancelButtonText={t("close")}
         onCommunitiesJoined={handleExplorerCommunitiesJoined}
         onClose={handleCloseExplorer}
       />
