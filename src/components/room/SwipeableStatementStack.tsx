@@ -71,7 +71,7 @@ export function SwipeableStatementStack({
   onCoverCardSwiped,
   onDemographicsAnswered,
 }: SwipeableStatementStackProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["toast", "room"]);
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
 
   const { showTutorial, recordSwipe, resetTutorialTimer } = useSwipeTutorialContext();
@@ -200,11 +200,9 @@ export function SwipeableStatementStack({
             : 0;
         toast.success(
           <div className="flex flex-col gap-1">
-            <div>
-              🌟 You super agreed with "{truncatedText}"
-            </div>
+            <div>{t("superAgreedWith", { text: truncatedText })}</div>
             <div className="text-xs text-muted-foreground">
-              {percentage}% super agree
+              {t("superAgreePercent", { percent: percentage })}
             </div>
           </div>,
           {
@@ -218,9 +216,9 @@ export function SwipeableStatementStack({
             : 0;
         toast.success(
           <div className="flex flex-col gap-1">
-            <div>✅ You agreed with "{truncatedText}"</div>
+            <div>{t("agreedWith", { text: truncatedText })}</div>
             <div className="text-xs text-muted-foreground">
-              {percentage}% agree
+              {t("agreePercent", { percent: percentage })}
             </div>
           </div>,
           {
@@ -234,9 +232,9 @@ export function SwipeableStatementStack({
             : 0;
         toast.error(
           <div className="flex flex-col gap-1">
-            <div>❌ You disagreed with "{truncatedText}"</div>
+            <div>{t("disagreedWith", { text: truncatedText })}</div>
             <div className="text-xs text-muted-foreground">
-              {percentage}% disagree
+              {t("disagreePercent", { percent: percentage })}
             </div>
           </div>,
           {
@@ -250,9 +248,9 @@ export function SwipeableStatementStack({
             : 0;
         toast(
           <div className="flex flex-col gap-1">
-            <div>⏭️ You passed on "{truncatedText}"</div>
+            <div>{t("passedOn", { text: truncatedText })}</div>
             <div className="text-xs text-muted-foreground">
-              {percentage}% passed
+              {t("passPercent", { percent: percentage })}
             </div>
           </div>,
           {
@@ -387,10 +385,10 @@ export function SwipeableStatementStack({
         <div className="text-center space-y-4">
           <div className="text-6xl mb-4">🎉</div>
           <h3 className="text-2xl text-primary">
-            Loading results...
+            {t("room:loadingResults")}
           </h3>
           <p className="text-muted-foreground">
-            You've voted on all available statements.
+            {t("room:votedAllStatements")}
           </p>
         </div>
       </div>

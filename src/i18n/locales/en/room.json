@@ -23,5 +23,7 @@
   "topic": "Topic",
   "responsePlaceholder": "What do you think?",
   "submitResponse": "Submit response",
-  "submitting": "Submitting…"
+  "submitting": "Submitting…",
+  "loadingResults": "Loading results…",
+  "votedAllStatements": "You've voted on all available statements."
 }

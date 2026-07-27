@@ -23,5 +23,7 @@
   "topic": "Tema",
   "responsePlaceholder": "¿Qué opinas?",
   "submitResponse": "Enviar respuesta",
-  "submitting": "Enviando…"
+  "submitting": "Enviando…",
+  "loadingResults": "Cargando resultados…",
+  "votedAllStatements": "Ya votaste todas las respuestas disponibles."
 }
