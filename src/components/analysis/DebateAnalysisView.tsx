@@ -1,5 +1,6 @@
 import { Button } from "../ui/button";
 import { X, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { DebateAnalysisReport } from "./DebateAnalysisReport";
 import { useState, useEffect } from "react";
@@ -17,6 +18,7 @@ export function DebateAnalysisView({
   isDeveloper,
   onClose,
 }: DebateAnalysisViewProps) {
+  const { t } = useTranslation(["analysis", "common"]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
@@ -31,7 +33,7 @@ export function DebateAnalysisView({
     if (response.success && response.data) {
       setAnalysisData(response.data);
     } else {
-      setError(response.error || "Failed to load analysis");
+      setError(response.error || t("failedToLoad"));
     }
 
     setLoading(false);
@@ -64,7 +66,7 @@ export function DebateAnalysisView({
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="p-0 border-0 shadow-2xl max-w-screen-2xl h-[95vh] overflow-hidden">
-        <DialogTitle className="sr-only">Conversation Analysis</DialogTitle>
+        <DialogTitle className="sr-only">{t("conversationAnalysis")}</DialogTitle>
         <div className="absolute top-4 right-4 z-10">
           <Button
             variant="ghost"
@@ -82,7 +84,7 @@ export function DebateAnalysisView({
               <div className="flex flex-col items-center gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
                 <p className="text-sm text-muted-foreground">
-                  Loading analysis...
+                  {t("loadingAnalysis")}
                 </p>
               </div>
             </div>
@@ -93,7 +95,7 @@ export function DebateAnalysisView({
               <div className="text-center">
                 <p className="text-sm text-red-600">{error}</p>
                 <Button onClick={onClose} className="mt-4">
-                  Close
+                  {t("common:close")}
                 </Button>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import { useState, type KeyboardEvent } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { Card } from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
@@ -15,15 +16,10 @@ interface AskTheDataProps {
   debateId: string;
 }
 
-const GENERIC_ERROR = "Something went wrong. Please try again.";
-
-const STARTER_QUESTIONS = [
-  "What is an insight from this conversation?",
-  "Are there blindspots not covered by the responses?",
-  "What common ground could there be between people who disagreed?",
-];
+const STARTER_KEYS = ["starter1", "starter2", "starter3"];
 
 export function AskTheData({ debateId }: AskTheDataProps) {
+  const { t } = useTranslation("analysis");
   const { askTheData, flagAskTheDataResponse } = useDebateSession();
   const [question, setQuestion] = useState("");
   const [isAsking, setIsAsking] = useState(false);
@@ -48,10 +44,10 @@ export function AskTheData({ debateId }: AskTheDataProps) {
         setFlagged(false);
         succeeded = true;
       } else {
-        setError(response.error || GENERIC_ERROR);
+        setError(response.error || t("genericError"));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : GENERIC_ERROR);
+      setError(err instanceof Error ? err.message : t("genericError"));
     } finally {
       setIsAsking(false);
       setQuestion(succeeded ? "" : q);
@@ -86,21 +82,24 @@ export function AskTheData({ debateId }: AskTheDataProps) {
   return (
     <Card className="p-6">
       <div className="space-y-4">
-        <h2 className="text-xl">Ask the Data</h2>
+        <h2 className="text-xl">{t("askTheDataTitle")}</h2>
 
         <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-          {STARTER_QUESTIONS.map((starter) => (
-            <Button
-              key={starter}
-              variant="outline"
-              size="sm"
-              onClick={() => handlePresetClick(starter)}
-              disabled={isAsking}
-              className="h-auto w-full justify-start whitespace-normal py-2 text-left"
-            >
-              {starter}
-            </Button>
-          ))}
+          {STARTER_KEYS.map((key) => {
+            const starter = t(key);
+            return (
+              <Button
+                key={key}
+                variant="outline"
+                size="sm"
+                onClick={() => handlePresetClick(starter)}
+                disabled={isAsking}
+                className="h-auto w-full justify-start whitespace-normal py-2 text-left"
+              >
+                {starter}
+              </Button>
+            );
+          })}
         </div>
 
         <div className="relative">
@@ -108,7 +107,7 @@ export function AskTheData({ debateId }: AskTheDataProps) {
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={submitOnEnter}
-            placeholder="Ask any question about this conversation."
+            placeholder={t("askPlaceholder")}
             disabled={isAsking}
             rows={3}
             className="pr-12"
@@ -132,11 +131,11 @@ export function AskTheData({ debateId }: AskTheDataProps) {
         {result && (
           <div className="space-y-3 border-t pt-4">
             <div>
-              <p className="text-sm text-muted-foreground">You asked:</p>
+              <p className="text-sm text-muted-foreground">{t("youAsked")}</p>
               <p className="text-sm">{result.question}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Answer:</p>
+              <p className="text-sm text-muted-foreground">{t("answerLabel")}</p>
               <p
                 className={
                   result.status === "rejected"
@@ -155,23 +154,27 @@ export function AskTheData({ debateId }: AskTheDataProps) {
               className="h-auto gap-1.5 px-2 py-1 text-xs text-muted-foreground"
             >
               <Flag className="h-3 w-3" />
-              {flagged ? "Thanks for letting us know" : "Flag as unhelpful"}
+              {flagged ? t("thanksForFeedback") : t("flagUnhelpful")}
             </Button>
           </div>
         )}
 
         <p className="text-xs text-muted-foreground">
-          We are committed to using AI as responsibly as possible,{" "}
-          <a
-            href="https://heard.vote/ai-usage"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleUsageClick}
-            className="underline hover:text-foreground"
-          >
-            track our usage here
-          </a>
-          .
+          <Trans
+            t={t}
+            i18nKey="aiResponsibility"
+            components={{
+              link: (
+                <a
+                  href="https://heard.vote/ai-usage"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleUsageClick}
+                  className="underline hover:text-foreground"
+                />
+              ),
+            }}
+          />
         </p>
       </div>
     </Card>

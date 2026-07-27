@@ -1,4 +1,5 @@
 import { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { StatementVotes } from "../../types";
 
 export type SpectrumMode = "agree" | "split";
@@ -20,7 +21,7 @@ interface Point {
 }
 
 interface AnchorBand {
-  label: string;
+  labelKey: string;
   target: number;
   min: number;
   max: number;
@@ -30,24 +31,24 @@ interface AnchorBand {
 
 const ANCHOR_BANDS: Record<SpectrumMode, AnchorBand[]> = {
   agree: [
-    { label: "most agreement", target: 0, min: 0, max: 0.12, useLowestIdx: true },
-    { label: "high agreement", target: 0.25, min: 0.18, max: 0.36 },
-    { label: "split", target: 0.5, min: 0.42, max: 0.58 },
-    { label: "high disagreement", target: 0.75, min: 0.64, max: 0.82 },
-    { label: "most disagreement", target: 1, min: 0.88, max: 1, useHighestIdx: true },
+    { labelKey: "anchorMostAgreement", target: 0, min: 0, max: 0.12, useLowestIdx: true },
+    { labelKey: "anchorHighAgreement", target: 0.25, min: 0.18, max: 0.36 },
+    { labelKey: "anchorSplit", target: 0.5, min: 0.42, max: 0.58 },
+    { labelKey: "anchorHighDisagreement", target: 0.75, min: 0.64, max: 0.82 },
+    { labelKey: "anchorMostDisagreement", target: 1, min: 0.88, max: 1, useHighestIdx: true },
   ],
   split: [
-    { label: "strongest consensus", target: 0, min: 0, max: 0.12, useLowestIdx: true },
-    { label: "high consensus", target: 0.25, min: 0.18, max: 0.36 },
-    { label: "leaning split", target: 0.5, min: 0.42, max: 0.58 },
-    { label: "divided", target: 0.75, min: 0.64, max: 0.82 },
-    { label: "most divided", target: 1, min: 0.88, max: 1, useHighestIdx: true },
+    { labelKey: "anchorStrongestConsensus", target: 0, min: 0, max: 0.12, useLowestIdx: true },
+    { labelKey: "anchorHighConsensus", target: 0.25, min: 0.18, max: 0.36 },
+    { labelKey: "anchorLeaningSplit", target: 0.5, min: 0.42, max: 0.58 },
+    { labelKey: "anchorDivided", target: 0.75, min: 0.64, max: 0.82 },
+    { labelKey: "anchorMostDivided", target: 1, min: 0.88, max: 1, useHighestIdx: true },
   ],
 };
 
 const MODE_LABELS: Record<SpectrumMode, { left: string; right: string }> = {
-  agree: { left: "← agree", right: "disagree →" },
-  split: { left: "← consensus", right: "split →" },
+  agree: { left: "spectrumAgreeLeft", right: "spectrumDisagreeRight" },
+  split: { left: "spectrumConsensusLeft", right: "spectrumSplitRight" },
 };
 
 const SCRUB_HALF_WIDTH_PCT = 0.055;
@@ -188,6 +189,7 @@ const styles: Record<string, CSSProperties> = {
 };
 
 export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) {
+  const { t } = useTranslation("analysis");
   const stripWrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -230,11 +232,11 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
     setDragStart(null);
   }, [mode]);
 
-  const anchors = useMemo<{ label: string; point: Point }[]>(() => {
+  const anchors = useMemo<{ labelKey: string; point: Point }[]>(() => {
     if (points.length === 0) return [];
     const used = new Set<Point>();
-    const result: { label: string; point: Point }[] = [];
-    for (const { label, target, min, max, useLowestIdx: lowestIndex, useHighestIdx: highestIndex } of ANCHOR_BANDS[mode]) {
+    const result: { labelKey: string; point: Point }[] = [];
+    for (const { labelKey, target, min, max, useLowestIdx: lowestIndex, useHighestIdx: highestIndex } of ANCHOR_BANDS[mode]) {
       const pick = points
         .filter((p) => p.nx >= min && p.nx <= max && !used.has(p))
         .sort((a, b) =>
@@ -247,7 +249,7 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
         .shift();
       if (pick) {
         used.add(pick);
-        result.push({ label, point: pick });
+        result.push({ labelKey, point: pick });
       }
     }
     return result;
@@ -443,8 +445,8 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
   return (
     <div style={styles.wrap}>
       <div style={styles.header}>
-        <span>{MODE_LABELS[mode].left}</span>
-        <span>{MODE_LABELS[mode].right}</span>
+        <span>{t(MODE_LABELS[mode].left)}</span>
+        <span>{t(MODE_LABELS[mode].right)}</span>
       </div>
 
       <div
@@ -463,7 +465,7 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
         {pinned && (
           <div style={styles.pinBar}>
             <span>
-              {nearby.length} statement{nearby.length !== 1 ? "s" : ""} pinned
+              {t("statementsPinned", { count: nearby.length })}
             </span>
             <button
               type="button"
@@ -474,13 +476,13 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
               }}
               style={styles.pinButton}
             >
-              ✕ unpin
+              ✕ {t("unpin")}
             </button>
           </div>
         )}
 
         {activeRange !== null && nearby.length === 0 && (
-          <div style={styles.hint}>— no statements here —</div>
+          <div style={styles.hint}>{t("noStatementsHere")}</div>
         )}
 
         {activeRange !== null && nearby.length > 0 && (
@@ -501,10 +503,10 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
                     {Math.round(p.disagreePct)}%
                   </span>
                   <span style={{ color: COLOR_MUTED_FG }}>
-                    {Math.round(p.passPct)}% pass
+                    {t("passPct", { pct: Math.round(p.passPct) })}
                   </span>
                   <span style={{ color: COLOR_MUTED_FG }}>
-                    · {Math.round(p.total)} votes
+                    · {t("votesLabel", { count: Math.round(p.total) })}
                   </span>
                 </div>
               </div>
@@ -514,9 +516,9 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
 
         {activeRange === null && anchors.length > 0 && (
           <div style={styles.bricksScroll}>
-            {anchors.map(({ label, point: p }, i) => (
+            {anchors.map(({ labelKey, point: p }, i) => (
               <div key={i} style={styles.brick}>
-                <div style={styles.anchorBadge}>{label}</div>
+                <div style={styles.anchorBadge}>{t(labelKey)}</div>
                 <div style={styles.brickText}>{p.statement.text}</div>
                 <div style={styles.brickBarWrap}>
                   <div className="positive-bg" style={{ flex: p.agreePct }} />
@@ -531,10 +533,10 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
                     {Math.round(p.disagreePct)}%
                   </span>
                   <span style={{ color: COLOR_MUTED_FG }}>
-                    {Math.round(p.passPct)}% pass
+                    {t("passPct", { pct: Math.round(p.passPct) })}
                   </span>
                   <span style={{ color: COLOR_MUTED_FG }}>
-                    · {Math.round(p.total)} votes
+                    · {t("votesLabel", { count: Math.round(p.total) })}
                   </span>
                 </div>
               </div>
@@ -544,13 +546,13 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
 
         {activeRange === null && anchors.length === 0 && (
           <div style={styles.hint}>
-            hover the strip to read statements · click to pin
+            {t("hoverHint")}
           </div>
         )}
       </div>
 
       <div style={{ ...styles.scrubHint, opacity: hintHidden ? 0 : 1 }}>
-        drag to explore · click to pin
+        {t("dragHint")}
       </div>
     </div>
   );

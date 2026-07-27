@@ -1,4 +1,5 @@
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useTranslation } from "react-i18next";
 import { Card } from "../ui/card";
 import { Users } from "lucide-react";
 
@@ -23,17 +24,19 @@ interface CustomTooltipProps {
 }
 
 function CustomTooltip({ active, payload }: CustomTooltipProps) {
+  const { t } = useTranslation("analysis");
   if (!active || !payload?.length) return null;
   const { name, value, payload: data } = payload[0];
   return (
     <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm text-sm">
       <p className="font-medium">{name}</p>
-      <p className="text-muted-foreground">{data.count} responses ({value.toFixed(1)}%)</p>
+      <p className="text-muted-foreground">{t("responsesPct", { count: data.count, pct: value.toFixed(1) })}</p>
     </div>
   );
 }
 
 export function DemographicsPieCharts({ demographics }: DemographicsPieChartsProps) {
+  const { t } = useTranslation("analysis");
   const questions = Object.entries(demographics).filter(([, options]) =>
     Object.values(options).some((count) => count > 0)
   );
@@ -47,9 +50,9 @@ export function DemographicsPieCharts({ demographics }: DemographicsPieChartsPro
           <Users className="w-5 h-5 prefix-icon" />
         </div>
         <div>
-          <h2 className="text-xl text-left">Demographic Breakdown</h2>
+          <h2 className="text-xl text-left">{t("demographicBreakdown")}</h2>
           <p className="text-sm text-muted-foreground text-left">
-            Participant responses to demographic questions
+            {t("demographicSubtitle")}
           </p>
         </div>
       </div>
@@ -105,7 +108,7 @@ export function DemographicsPieCharts({ demographics }: DemographicsPieChartsPro
                 </PieChart>
               </ResponsiveContainer>
               <p className="text-xs text-center text-muted-foreground -mt-2">
-                {total} responses
+                {t("responseCount", { count: total })}
               </p>
             </div>
           );

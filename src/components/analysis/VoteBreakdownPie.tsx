@@ -1,4 +1,5 @@
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import { useTranslation } from "react-i18next";
 
 interface VoteBreakdownPieProps {
   rawAgree: number;
@@ -28,6 +29,7 @@ export function VoteBreakdownPie({
   pass,
   size,
 }: VoteBreakdownPieProps) {
+  const { t } = useTranslation("analysis");
   const voted = rawAgree + superAgree + disagree + pass;
   const didntVote = Math.max(size - voted, 0);
 
@@ -79,19 +81,19 @@ export function VoteBreakdownPie({
             return (
               <div className="bg-popover text-popover-foreground border border-border rounded-md px-2.5 py-1.5 shadow-md text-xs whitespace-nowrap tabular-nums">
                 <div className="agree-text">
-                  Agree: {pct(rawAgree)}% ({rawAgree})
+                  {t("pieAgree", { pct: pct(rawAgree), count: rawAgree })}
                 </div>
                 <div className="super-agree-text">
-                  Super agree: {pct(superAgree)}% ({superAgree})
+                  {t("pieSuperAgree", { pct: pct(superAgree), count: superAgree })}
                 </div>
                 <div className="disagree-text">
-                  Disagree: {pct(disagree)}% ({disagree})
+                  {t("pieDisagree", { pct: pct(disagree), count: disagree })}
                 </div>
                 <div className="pass-text">
-                  Pass: {pct(pass)}% ({pass})
+                  {t("piePass", { pct: pct(pass), count: pass })}
                 </div>
                 <div className="text-muted-foreground">
-                  Didn't vote: {pct(didntVote)}% ({didntVote})
+                  {t("pieDidntVote", { pct: pct(didntVote), count: didntVote })}
                 </div>
               </div>
             );

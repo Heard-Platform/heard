@@ -1,8 +1,9 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { MetricsCircle } from "./MetricsCircle";
-import { scoreToWord } from "../../utils/analysis";
+import { scoreToWordKey } from "../../utils/analysis";
 import { AnalysisData } from "../../types";
 
 interface MetricsExplainerModalProps {
@@ -14,6 +15,7 @@ export function MetricsExplainerModal({
   analysisData,
   onClose,
 }: MetricsExplainerModalProps) {
+  const { t } = useTranslation("analysis");
   const {
     participation,
     consensusData: { consensus, highConsensusPostCount },
@@ -26,7 +28,7 @@ export function MetricsExplainerModal({
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="p-0 border-0 shadow-2xl max-w-md overflow-hidden max-h-[90vh]">
-        <DialogTitle className="sr-only">Room Vibes Metrics</DialogTitle>
+        <DialogTitle className="sr-only">{t("roomVibesMetrics")}</DialogTitle>
         <div className="absolute top-4 right-4 z-10">
           <Button
             variant="ghost"
@@ -41,7 +43,7 @@ export function MetricsExplainerModal({
         <div className="overflow-y-auto max-h-[90vh] pb-6">
           <div className="bg-gradient-to-br from-purple-500 to-blue-500 p-8 pb-4">
             <h2 className="text-2xl text-white mb-6 pr-8">
-              Room Vibes 🎯
+              {t("roomVibes")}
             </h2>
             <div className="flex justify-center">
               <MetricsCircle
@@ -58,20 +60,19 @@ export function MetricsExplainerModal({
             <div className="bg-white rounded-2xl p-5 shadow-lg border-2 border-purple-200">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full bg-purple-400"></div>
-                <h3 className="text-lg">Participation</h3>
+                <h3 className="text-lg">{t("participation")}</h3>
               </div>
               <p className="text-sm text-muted-foreground mb-2">
-                Are we hearing from everyone? Compares how many people
-                are posting to people voting.
+                {t("participationDesc")}
               </p>
               <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
                 <div className="text-sm">
                   <span className="text-purple-700">
-                    {scoreToWord(participation)}
+                    {t(scoreToWordKey(participation))}
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {totalPosters} posters, {totalVoters} voters
+                  {t("postersVoters", { posters: totalPosters, voters: totalVoters })}
                 </div>
               </div>
             </div>
@@ -79,20 +80,19 @@ export function MetricsExplainerModal({
             <div className="bg-white rounded-2xl p-5 shadow-lg border-2 border-blue-200">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full bg-blue-400"></div>
-                <h3 className="text-lg">Consensus</h3>
+                <h3 className="text-lg">{t("consensus")}</h3>
               </div>
               <p className="text-sm text-muted-foreground mb-2">
-                Are people vibing? Shows how many posts got strong
-                agreement from the crowd.
+                {t("consensusDesc")}
               </p>
               <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
                 <div className="text-sm">
                   <span className="text-blue-700">
-                    {scoreToWord(consensus)}
+                    {t(scoreToWordKey(consensus))}
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {highConsensusPostCount} takes with high agreement
+                  {t("highAgreementTakes", { count: highConsensusPostCount })}
                 </div>
               </div>
             </div>
@@ -100,20 +100,19 @@ export function MetricsExplainerModal({
             <div className="bg-white rounded-2xl p-5 shadow-lg border-2 border-red-200">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                <h3 className="text-lg">Spiciness</h3>
+                <h3 className="text-lg">{t("spiciness")}</h3>
               </div>
               <p className="text-sm text-muted-foreground mb-2">
-                What's life without a little spice? This shows if
-                there's a good mix of differing opinions.
+                {t("spicinessDesc")}
               </p>
               <div className="bg-red-50 rounded-lg p-3 border border-red-200">
                 <div className="text-sm">
                   <span className="text-red-700">
-                    {scoreToWord(spiciness)}
+                    {t(scoreToWordKey(spiciness))}
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {lowConsensusPostCount} spicy takes
+                  {t("spicyTakesCount", { count: lowConsensusPostCount })}
                 </div>
               </div>
             </div>
@@ -121,22 +120,19 @@ export function MetricsExplainerModal({
             <div className="bg-white rounded-2xl p-5 shadow-lg border-2 border-green-200">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                <h3 className="text-lg">Reach</h3>
+                <h3 className="text-lg">{t("reach")}</h3>
               </div>
               <p className="text-sm text-muted-foreground mb-2">
-                Are quieter voices being heard? Shows how many
-                different people dropped a take that resonated with
-                the crowd.
+                {t("reachDesc")}
               </p>
               <div className="bg-green-50 rounded-lg p-3 border border-green-200">
                 <div className="text-sm">
                   <span className="text-green-700">
-                    {scoreToWord(reach)}
+                    {t(scoreToWordKey(reach))}
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {postersWithHighConsensusPost} posters with a
-                  high-agreement take
+                  {t("postersHighAgreement", { count: postersWithHighConsensusPost })}
                 </div>
               </div>
             </div>

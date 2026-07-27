@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ShowNumbersToggleProps {
   showNumbers: boolean;
@@ -6,6 +7,7 @@ interface ShowNumbersToggleProps {
 }
 
 export function ShowNumbersToggle({ showNumbers, onShowNumbersChange }: ShowNumbersToggleProps) {
+  const { t } = useTranslation("analysis");
   return (
     <button
       type="button"
@@ -15,12 +17,12 @@ export function ShowNumbersToggle({ showNumbers, onShowNumbersChange }: ShowNumb
       {showNumbers ? (
         <>
           <ChevronUp className="w-3 h-3" />
-          Hide numbers
+          {t("hideNumbers")}
         </>
       ) : (
         <>
           <ChevronDown className="w-3 h-3" />
-          Show numbers
+          {t("showNumbers")}
         </>
       )}
     </button>

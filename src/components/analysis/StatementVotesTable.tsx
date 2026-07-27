@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "../ui/card";
 import { List } from "lucide-react";
 import { StatementVotes } from "../../types";
@@ -21,6 +22,7 @@ export function StatementVotesTable({
   showNumbers,
   onShowNumbersChange,
 }: StatementVotesTableProps) {
+  const { t } = useTranslation("analysis");
   const [sortCol, setSortCol] = useState<SortColumn | null>("rawAgreeVotes");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -47,8 +49,8 @@ export function StatementVotesTable({
           <List className="w-5 h-5 normal-text" />
         </div>
         <div className="flex-1">
-          <h2 className="text-xl">All Statements</h2>
-          <p className="text-sm text-muted-foreground">Vote breakdown for every statement</p>
+          <h2 className="text-xl">{t("allStatementsTitle")}</h2>
+          <p className="text-sm text-muted-foreground">{t("voteBreakdownSubtitle")}</p>
         </div>
         <ShowNumbersToggle showNumbers={showNumbers} onShowNumbersChange={onShowNumbersChange} />
       </div>

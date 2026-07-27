@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { StatementVotes } from "../../types";
@@ -25,6 +26,7 @@ export function ClusterConsensusBox({
   statements,
   showNumbers,
 }: ClusterConsensusBoxProps) {
+  const { t } = useTranslation("analysis");
   const colors = getClusterColor(clusterIndex);
   const [expanded, setExpanded] = useState(false);
   const visibleStatements = expanded ? statements : statements.slice(0, VISIBLE_STATEMENTS);
@@ -35,15 +37,15 @@ export function ClusterConsensusBox({
       <div className="heard-between mb-1">
         <div className="flex items-center gap-2">
           <h3 className={`font-medium ${colors.text}`}>
-            Cluster {clusterLabel(clusterIndex)}
+            {t("cluster", { label: clusterLabel(clusterIndex) })}
           </h3>
           <Badge variant="outline" className={colors.badge}>
-            {clusterSize} users
+            {t("userCount", { count: clusterSize })}
           </Badge>
         </div>
       </div>
       <p className="text-sm text-muted-foreground mb-3">
-        Distinguishing statements of this cluster
+        {t("distinguishingStatements")}
       </p>
 
       {statements.length > 0 ? (
@@ -76,12 +78,12 @@ export function ClusterConsensusBox({
               {expanded ? (
                 <>
                   <ChevronUp className="w-3 h-3" />
-                  See less
+                  {t("seeLess")}
                 </>
               ) : (
                 <>
                   <ChevronDown className="w-3 h-3" />
-                  See more
+                  {t("seeMore")}
                 </>
               )}
             </button>
@@ -89,7 +91,7 @@ export function ClusterConsensusBox({
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">
-          No consensus statements found for this cluster
+          {t("noConsensusStatements")}
         </p>
       )}
     </div>

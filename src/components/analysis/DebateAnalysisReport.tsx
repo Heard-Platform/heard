@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "../ui/card";
 import { Users, MessageSquare, Target, GitBranch, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "../ui/button";
@@ -56,6 +57,7 @@ export function DebateAnalysisReport({
   regenerating,
   onRegenerateClusters,
 }: DebateAnalysisReportProps) {
+  const { t } = useTranslation("analysis");
   const clusterSizes = clusterConsensus?.clusters.map((c) => c.size) ?? [];
   const statementVotesById = new Map(allStatements.map((s) => [s.id, s]));
   const [showNumbers, setShowNumbers] = useState(false);
@@ -64,7 +66,7 @@ export function DebateAnalysisReport({
     <div className="heard-page-bg p-4">
       <div className="mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl">Conversation Insights</h1>
+          <h1 className="text-3xl">{t("conversationInsights")}</h1>
           <p className="text-muted-foreground mt-1">{debateTopic}</p>
         </div>
 
@@ -72,21 +74,21 @@ export function DebateAnalysisReport({
           <StatBox
             icon={Users}
             value={totalParticipants}
-            label="Participants"
+            label={t("participants")}
             gradientFrom="from-purple-500"
             gradientTo="to-purple-600"
           />
           <StatBox
             icon={MessageSquare}
             value={totalStatements}
-            label="Statements"
+            label={t("statements")}
             gradientFrom="from-blue-500"
             gradientTo="to-blue-600"
           />
           <StatBox
             icon={Target}
             value={totalVotes}
-            label="Votes"
+            label={t("votes")}
             gradientFrom="from-green-500"
             gradientTo="to-green-600"
           />
@@ -98,32 +100,32 @@ export function DebateAnalysisReport({
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           <MetricCard
-            label="Participation"
+            label={t("participation")}
             viz="dots"
             filled={totalPosters}
             total={totalParticipants}
-            description={`${totalPosters} out of ${totalParticipants} people posted a statement`}
+            description={t("participationDescReport", { posters: totalPosters, total: totalParticipants })}
           />
           <MetricCard
-            label="Consensus"
+            label={t("consensus")}
             viz="bar"
             score={consensusData.consensus}
             count={consensusData.highConsensusPostCount}
-            description={`${consensusData.highConsensusPostCount} high consensus statements`}
+            description={t("consensusDescReport", { count: consensusData.highConsensusPostCount })}
           />
           <MetricCard
-            label="Spiciness"
+            label={t("spiciness")}
             viz="bar"
             score={spicinessData.spiciness}
             count={spicinessData.lowConsensusPostCount}
-            description={`${spicinessData.lowConsensusPostCount} low consensus statements`}
+            description={t("spicinessDescReport", { count: spicinessData.lowConsensusPostCount })}
           />
           <MetricCard
-            label="Reach"
+            label={t("reach")}
             viz="bar"
             score={reachData.reach}
             count={reachData.postersWithHighConsensusPost}
-            description={`${reachData.postersWithHighConsensusPost} ${reachData.postersWithHighConsensusPost === 1 ? "person" : "people"} with a high consensus response`}
+            description={t("reachDescReport", { count: reachData.postersWithHighConsensusPost })}
           />
         </div>
 
@@ -133,23 +135,23 @@ export function DebateAnalysisReport({
 
         <TopPostsByMetric
           posts={topAgreedPosts}
-          title="Top Agreed Upon Statements"
-          subtitle="Super agrees are counted as agrees"
+          title={t("topAgreed")}
+          subtitle={t("superAgreesCounted")}
           metric={agreementRate}
-          metricLabel="agreement"
+          metricLabel={t("agreementLabel")}
           badgeClassName="bg-green-50 text-green-700 border-green-200"
         />
         <TopPostsByMetric
           posts={topDisagreedPosts}
-          title="Top Disagreed Upon Statements"
+          title={t("topDisagreed")}
           metric={disagreementRate}
-          metricLabel="disagreement"
+          metricLabel={t("disagreementLabel")}
           badgeClassName="bg-red-50 text-red-700 border-red-200"
         />
         <TopPostsByMetric
           posts={spiciestPosts}
-          title="Spiciest Statements"
-          subtitle="Most controversial takes"
+          title={t("spiciestStatements")}
+          subtitle={t("mostControversial")}
           numberBadgeClassName="absolute top-2 right-2 w-6 h-6 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white text-xs"
         />
 
@@ -160,9 +162,9 @@ export function DebateAnalysisReport({
                 <AlertCircle className="w-5 h-5 text-yellow-600" />
               </div>
               <div>
-                <h2 className="text-xl text-yellow-900">No Cluster Data Available</h2>
+                <h2 className="text-xl text-yellow-900">{t("noClusterData")}</h2>
                 <p className="text-sm text-yellow-700 mt-1">
-                  Cluster consensus analysis is not available for this conversation.
+                  {t("noClusterDataDesc")}
                 </p>
               </div>
             </div>
@@ -174,9 +176,9 @@ export function DebateAnalysisReport({
                 <GitBranch className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <h2 className="text-xl">Cluster Consensus</h2>
+                <h2 className="text-xl">{t("clusterConsensusTitle")}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Top consensus statements by opinion cluster
+                  {t("clusterConsensusSubtitle")}
                 </p>
               </div>
               <ShowNumbersToggle showNumbers={showNumbers} onShowNumbersChange={setShowNumbers} />

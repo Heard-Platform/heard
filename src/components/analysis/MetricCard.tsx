@@ -1,9 +1,10 @@
+import { useTranslation } from "react-i18next";
 import { Card } from "../ui/card";
 
-function scoreLabel(score: number) {
-  if (score < 0.33) return "low";
-  if (score < 0.66) return "medium";
-  return "high";
+function scoreLabelKey(score: number) {
+  if (score < 0.33) return "scoreLow";
+  if (score < 0.66) return "scoreMedium";
+  return "scoreHigh";
 }
 
 interface MetricCardDotsProps {
@@ -26,6 +27,7 @@ type MetricCardProps = {
 } & (MetricCardDotsProps | MetricCardBarProps);
 
 export function MetricCard(props: MetricCardProps) {
+  const { t } = useTranslation("analysis");
   const { label, description } = props;
 
   return (
@@ -52,7 +54,7 @@ export function MetricCard(props: MetricCardProps) {
                 style={{ width: `${props.score * 100}%` }}
               />
             </div>
-            <span className="text-xs font-medium text-muted-foreground">{scoreLabel(props.score)}</span>
+            <span className="text-xs font-medium text-muted-foreground">{t(scoreLabelKey(props.score))}</span>
           </>
         )}
       </div>

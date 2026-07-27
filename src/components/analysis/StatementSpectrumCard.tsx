@@ -1,18 +1,17 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { StatementSpectrum, SpectrumMode } from "./StatementSpectrum";
 import { StatementVotes } from "../../types";
 
-const MODE_DESCRIPTIONS: Record<SpectrumMode, string> = {
-  agree:
-    "Every statement plotted from most agreed to most disagreed; dot size reflects total votes. Drag across the strip to inspect a range.",
-  split:
-    "Every statement plotted from strongest consensus to most divided; dot size reflects total votes. Drag across the strip to inspect a range.",
+const MODE_DESCRIPTION_KEYS: Record<SpectrumMode, string> = {
+  agree: "spectrumDescAgree",
+  split: "spectrumDescSplit",
 };
 
-const MODE_OPTIONS: Array<{ value: SpectrumMode; label: string }> = [
-  { value: "agree", label: "Agree / Disagree" },
-  { value: "split", label: "Consensus / Split" },
+const MODE_OPTIONS: Array<{ value: SpectrumMode; labelKey: string }> = [
+  { value: "agree", labelKey: "modeAgree" },
+  { value: "split", labelKey: "modeSplit" },
 ];
 
 interface StatementSpectrumCardProps {
@@ -21,13 +20,14 @@ interface StatementSpectrumCardProps {
 }
 
 export function StatementSpectrumCard({ statements, className }: StatementSpectrumCardProps) {
+  const { t } = useTranslation("analysis");
   const [mode, setMode] = useState<SpectrumMode>("agree");
 
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="text-xl">Statement Spectrum</CardTitle>
-        <CardDescription className="text-sm">{MODE_DESCRIPTIONS[mode]}</CardDescription>
+        <CardTitle className="text-xl">{t("statementSpectrum")}</CardTitle>
+        <CardDescription className="text-sm">{t(MODE_DESCRIPTION_KEYS[mode])}</CardDescription>
         <div className="inline-flex gap-0.5 rounded-md bg-muted p-0.5 text-xs mt-1 w-fit">
           {MODE_OPTIONS.map((option) => (
             <button
@@ -40,7 +40,7 @@ export function StatementSpectrumCard({ statements, className }: StatementSpectr
                   : "text-muted-foreground"
               }`}
             >
-              {option.label}
+              {t(option.labelKey)}
             </button>
           ))}
         </div>
