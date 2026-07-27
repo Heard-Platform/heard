@@ -84,7 +84,7 @@ export function CreateRoomSheet({
   onCreateRoom,
   onExtractTopicAndStatements,
 }: CreateRoomSheetProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["create", "toast"]);
   const [currentStep, setCurrentStep] = useState(INITIAL_FORM.currentStep);
   const [rant, setRant] = useState(INITIAL_FORM.rant);
   const [extractedData, setExtractedData] = useState(INITIAL_FORM.extractedData);
@@ -215,7 +215,7 @@ export function CreateRoomSheet({
       toast.error(
         error instanceof Error
           ? error.message
-          : t("createRoomFailed"),
+          : t("toast:createRoomFailed"),
       );
     } finally {
       setIsCreating(false);
@@ -228,13 +228,13 @@ export function CreateRoomSheet({
       const result = await api.uploadDebateImage(file);
       if (result.success && result.data?.imageUrl) {
         setCover({ type: "image", url: result.data.imageUrl });
-        toast.success(t("imageUploaded"));
+        toast.success(t("toast:imageUploaded"));
       } else {
-        toast.error(result.error || t("imageUploadFailed"));
+        toast.error(result.error || t("toast:imageUploadFailed"));
       }
     } catch (error) {
       console.error("Image upload error:", error);
-      toast.error(t("imageUploadFailed"));
+      toast.error(t("toast:imageUploadFailed"));
     } finally {
       setIsUploadingImage(false);
     }
@@ -292,11 +292,11 @@ export function CreateRoomSheet({
     switch (currentStep) {
       case "compose-post":
         return {
-          title: "New Conversation",
-          description: "What do you want to talk about?",
+          title: t("newConversation"),
+          description: t("composeDescription"),
           leftIcon: Sparkles,
           theme: "green" as const,
-          buttonText: "Continue →",
+          buttonText: t("continue"),
           buttonIcon: Sparkles,
           onButtonClick: handleComposePostProceed,
           buttonDisabled: false,
@@ -304,39 +304,36 @@ export function CreateRoomSheet({
         };
       case "write-rant":
         return {
-          title: "Start with a Rant",
-          description:
-            "Let it all out! We'll help you turn it into a structured discussion.",
+          title: t("startWithRant"),
+          description: t("rantDescription"),
           leftIcon: Sparkles,
           theme: "green" as const,
-          buttonText: isExtracting
-            ? "Working on it..."
-            : "Continue →",
-          buttonLoadingText: "Working on it...",
+          buttonText: isExtracting ? t("workingOnIt") : t("continue"),
+          buttonLoadingText: t("workingOnIt"),
           buttonIcon: Wand2,
           onButtonClick: handleExtractClick,
           buttonDisabled: !isRantValid || isExtracting,
           isLoading: isExtracting,
           showBackButton: true,
-          backButtonText: "Back to Compose",
+          backButtonText: t("backToCompose"),
           onBackClick: () => handleBackToCompose(),
         };
       case "review-details":
         return {
-          title: cameFromRantMode ? "Review & Edit" : "Add Details",
+          title: cameFromRantMode ? t("reviewAndEdit") : t("addDetails"),
           description: cameFromRantMode
-            ? "Look good? Edit anything that needs tweaking."
-            : "Add any additional details to your post.",
+            ? t("reviewDescription")
+            : t("addDetailsDescription"),
           leftIcon: CheckCircle2,
           theme: "blue" as const,
           ...(eventId ? {
-            buttonText: "Create Post! 🚀",
-            buttonLoadingText: "Creating...",
+            buttonText: t("createPost"),
+            buttonLoadingText: t("creating"),
             buttonIcon: Plus,
             onButtonClick: handleCreateRoom,
             isLoading: isCreating,
           } : {
-            buttonText: "Choose Community →",
+            buttonText: t("chooseCommunity"),
             buttonIcon: Hash,
             onButtonClick: handleProceedToSubHeard,
           }),
@@ -345,17 +342,17 @@ export function CreateRoomSheet({
             editedStatements.length === 0 ||
             (!!eventId && isCreating),
           showBackButton: true,
-          backButtonText: cameFromRantMode ? "Back to Rant" : "Back to Compose",
+          backButtonText: cameFromRantMode ? t("backToRant") : t("backToCompose"),
           onBackClick: cameFromRantMode ? handleBackToRant : handleBackToCompose,
         };
       case "select-community":
         return {
-          title: "Pick a Community",
-          description: "Where should this post live?",
+          title: t("pickCommunity"),
+          description: t("pickCommunityDescription"),
           leftIcon: Hash,
           theme: "purple" as const,
-          buttonText: "Create Post! 🚀",
-          buttonLoadingText: "Creating...",
+          buttonText: t("createPost"),
+          buttonLoadingText: t("creating"),
           buttonIcon: Plus,
           onButtonClick: handleCreateRoom,
           buttonDisabled:
@@ -365,17 +362,17 @@ export function CreateRoomSheet({
             isCreating,
           isLoading: isCreating,
           showBackButton: true,
-          backButtonText: "Back to Details",
+          backButtonText: t("backToDetails"),
           onBackClick: handleBackToReview,
         };
       case "share":
         return {
-          title: "Share Your Conversation",
-          description: "Spread the word about your new post!",
+          title: t("shareTitle"),
+          description: t("shareDescription"),
           leftIcon: PartyPopper,
           theme: "orange" as const,
-          buttonText: "Let's Go! 🔥",
-          buttonLoadingText: "Closing...",
+          buttonText: t("letsGo"),
+          buttonLoadingText: t("closing"),
           buttonIcon: Plus,
           onButtonClick: () => onOpenChange(false),
           buttonDisabled: false,
