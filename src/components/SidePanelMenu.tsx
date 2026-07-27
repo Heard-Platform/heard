@@ -118,7 +118,7 @@ export function SidePanelMenu({
   if (user.isAnonymous) {
     return (
       <Button
-        onClick={() => onShowAccountSetupModal("save your progress")}
+        onClick={() => onShowAccountSetupModal("saveProgress")}
         variant="outline"
         className="controls-layer rounded-full bg-gradient-to-r from-orange-500 to-amber-500 backdrop-blur-sm shadow-lg h-[30px] px-4 gap-2 border border-orange-400 hover:from-orange-600 hover:to-amber-600 transition-all"
       >
@@ -269,7 +269,7 @@ export function SidePanelMenu({
                 <Button
                   onClick={() => {
                     setMenuOpen(false);
-                    onShowAccountSetupModal("save your progress");
+                    onShowAccountSetupModal("saveProgress");
                   }}
                   size="sm"
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white"

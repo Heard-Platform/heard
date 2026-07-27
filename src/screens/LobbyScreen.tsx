@@ -129,7 +129,7 @@ export function LobbyScreen({
   );
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [showAccountSetupAnonModal, setShowAccountSetupAnonModal] = useState(false);
-  const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
+  const [accountSetupReason, setAccountSetupReason] = useState("");
   const [explorerOpen, setExplorerOpen] = useState(false);
   type Steps = "tutorial" | "explorer" | "complete";
 
@@ -264,7 +264,7 @@ export function LobbyScreen({
   const handleOpenCreateSheet = () => {
     if (user.isAnonymous) {
       setShowAccountSetupAnonModal(true);
-      setAccountSetupFeatureText("make a post");
+      setAccountSetupReason("createPost");
     } else {
       setDiscussTopic(undefined);
       setDiscussSubHeard(undefined);
@@ -306,8 +306,8 @@ export function LobbyScreen({
     return result;
   };
 
-  const handleShowAccountSetupModal = (featureText: string) => {
-    setAccountSetupFeatureText(featureText);
+  const handleShowAccountSetupModal = (reason: string) => {
+    setAccountSetupReason(reason);
     setShowAccountSetupAnonModal(true);
   };
 
@@ -509,7 +509,7 @@ export function LobbyScreen({
 
       {/* Account Setup Modal */}
       <AnonAccountSetupModal
-        featureText={accountSetupFeatureText}
+        reason={accountSetupReason}
         isOpen={showAccountSetupAnonModal}
         onClose={() => setShowAccountSetupAnonModal(false)}
       />

@@ -199,7 +199,7 @@ export function SubHeardBrowser({
               className="w-full justify-start p-3 bg-green-50 border-green-300 hover:bg-green-100 hover:border-green-400"
               onClick={() => {
                 if (user.isAnonymous) {
-                  onShowAccountSetupModal("creating communities");
+                  onShowAccountSetupModal("createCommunity");
                 } else {
                   setShowCreateDialog(true);
                 }

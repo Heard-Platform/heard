@@ -14,18 +14,35 @@ import { TOSText } from "./onboarding/TOSText";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
+export type AccountSetupReason =
+  | "createPost"
+  | "saveProgress"
+  | "vote"
+  | "certifyVotes"
+  | "respond"
+  | "createCommunity";
+
+const PROMPT_KEY = {
+  createPost: "promptCreatePost",
+  saveProgress: "promptSaveProgress",
+  vote: "promptVote",
+  certifyVotes: "promptCertifyVotes",
+  respond: "promptRespond",
+  createCommunity: "promptCreateCommunity",
+} as const;
+
 interface AnonAccountSetupModalProps {
-  featureText: string;
+  reason: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export function AnonAccountSetupModal({
-  featureText,
+  reason,
   isOpen,
   onClose,
 }: AnonAccountSetupModalProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["account", "toast"]);
   const { sendMagicLink, verifyMagicLink, sendSmsCode, verifySmsCode, addEmailToAccount } = useDebateSession();
   const [showEmailFlow, setShowEmailFlow] = useState(false);
   const [email, setEmail] = useState("");
@@ -44,7 +61,7 @@ export function AnonAccountSetupModal({
   const handleSendMagicLink = async () => {
     const emailValid = isValidEmail(email.trim());
     if (!emailValid) {
-      setError("Please enter a valid email");
+      setError(t("errInvalidEmail"));
       return;
     }
 
@@ -54,7 +71,7 @@ export function AnonAccountSetupModal({
     if (response && response.success) {
       setMagicLinkSent(true);
     } else {
-      setError(response?.error || "Failed to send magic link");
+      setError(response?.error || t("errMagicLinkFailed"));
     }
     setLoading(false);
   };
@@ -62,7 +79,7 @@ export function AnonAccountSetupModal({
   const handleSendSMS = async () => {
     const phoneValid = isValidPhone(phone);
     if (!phoneValid) {
-      setError("Please enter a valid phone number");
+      setError(t("errInvalidPhone"));
       return;
     }
 
@@ -73,11 +90,11 @@ export function AnonAccountSetupModal({
       if (response && response.success) {
         setSmsSent(true);
       } else {
-        setError(response?.error || "Failed to send SMS code");
+        setError(response?.error || t("errSmsFailed"));
       }
     } catch (error) {
       console.error("Failed to send SMS:", error);
-      setError("Failed to send SMS code");
+      setError(t("errSmsFailed"));
     }
     setLoading(false);
   };
@@ -99,11 +116,11 @@ export function AnonAccountSetupModal({
             setShowOptionalEmailScreen(true);
           }
         } else {
-          setError(response?.error || "Invalid or expired code");
+          setError(response?.error || t("errInvalidCode"));
         }
       } catch (error) {
         console.error("Failed to verify SMS code:", error);
-        setError("Failed to verify code");
+        setError(t("errVerifyFailed"));
       }
     } else {
       const response = await verifyMagicLink(magicCode.toUpperCase());
@@ -115,21 +132,21 @@ export function AnonAccountSetupModal({
           handleSuccessfulLogin();
         }
       } else {
-        setError(response?.error || "Invalid or expired code");
+        setError(response?.error || t("errInvalidCode"));
       }
     }
     setVerifyingCode(false);
   };
 
   const handleSuccessfulLogin = () => {
-    toast.success(t("signedIn"));
+    toast.success(t("toast:signedIn"));
     onClose();
   };
 
   const handleSaveEmail = async () => {
     const emailValid = isValidEmail(optionalEmail.trim());
     if (!emailValid) {
-      setError("Please enter a valid email");
+      setError(t("errInvalidEmail"));
       return;
     }
 
@@ -139,7 +156,7 @@ export function AnonAccountSetupModal({
     if (response && response.success) {
       handleSuccessfulLogin();
     } else {
-      setError(response?.error || "Failed to add email");
+      setError(response?.error || t("errAddEmailFailed"));
     }
     setSavingEmail(false);
   };
@@ -159,16 +176,16 @@ export function AnonAccountSetupModal({
           <Mail className="w-6 h-6 text-green-600" />
         </div>
         <p className="text-lg font-semibold text-green-900 mb-1">
-          You're in! 🎉
+          {t("youreIn")}
         </p>
         <p className="text-sm text-green-800">
-          Want to get updates about discussions you're involved in?
+          {t("wantUpdates")}
         </p>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="optionalEmail" className="text-sm">
-          Email (Optional)
+          {t("emailOptional")}
         </Label>
         <Input
           id="optionalEmail"
@@ -180,7 +197,7 @@ export function AnonAccountSetupModal({
           className="bg-white dark:bg-gray-900"
         />
         <p className="text-xs text-muted-foreground">
-          We'll only send you updates about discussions you participate in
+          {t("emailUpdatesNote")}
         </p>
       </div>
 
@@ -202,7 +219,7 @@ export function AnonAccountSetupModal({
           disabled={savingEmail}
           className="flex-1"
         >
-          Skip
+          {t("skip")}
         </Button>
         <Button
           type="submit"
@@ -222,12 +239,12 @@ export function AnonAccountSetupModal({
               >
                 <Mail className="w-4 h-4" />
               </motion.div>
-              Saving...
+              {t("saving")}
             </>
           ) : (
             <>
               <Mail className="w-4 h-4 mr-2" />
-              Save Email
+              {t("saveEmail")}
             </>
           )}
         </Button>
@@ -238,9 +255,9 @@ export function AnonAccountSetupModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md overflow-hidden p-0 border-0 bg-transparent">
-        <DialogTitle className="sr-only">Setup Account</DialogTitle>
+        <DialogTitle className="sr-only">{t("srTitle")}</DialogTitle>
         <DialogDescription className="sr-only">
-          Create an account to create discussions, explore communities, and get recognized for your contributions!
+          {t("srDescription")}
         </DialogDescription>
         <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -282,7 +299,7 @@ export function AnonAccountSetupModal({
                     transition={{ delay: 0.2 }}
                     className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
                   >
-                    Signup or Login ✨
+                    {t("signupOrLogin")}
                   </motion.h2>
                   <motion.p
                     initial={{ opacity: 0, y: 10 }}
@@ -290,7 +307,9 @@ export function AnonAccountSetupModal({
                     transition={{ delay: 0.3 }}
                     className="text-muted-foreground"
                   >
-                    Hey there, new friend! To {featureText}, just enter your {showEmailFlow ? "email" : "phone number"} below.
+                    {t(PROMPT_KEY[reason as AccountSetupReason] ?? "promptCreatePost", {
+                      contact: showEmailFlow ? t("contactEmail") : t("contactPhone"),
+                    })}
                   </motion.p>
                 </div>
 
@@ -300,9 +319,9 @@ export function AnonAccountSetupModal({
                   transition={{ delay: 0.4 }}
                   className="grid grid-cols-3 gap-4"
                 >
-                  <FeatureBadge icon={Sparkles} label="Start Discussions" />
-                  <FeatureBadge icon={Users} label="Explore Communities" />
-                  <FeatureBadge icon={Award} label="Get Recognized" />
+                  <FeatureBadge icon={Sparkles} label={t("badgeStartDiscussions")} />
+                  <FeatureBadge icon={Users} label={t("badgeExploreCommunities")} />
+                  <FeatureBadge icon={Award} label={t("badgeGetRecognized")} />
                 </motion.div>
               </>
             )}
@@ -339,18 +358,16 @@ export function AnonAccountSetupModal({
                   <div className="p-4 bg-green-50 border border-green-200 rounded-md text-center">
                     <IconComponent className="w-8 h-8 mx-auto text-green-600 mb-2" />
                     <p className="text-sm font-medium text-green-900">
-                      {showEmailFlow ? "Code sent to your email!" : "Code sent via SMS!"}
+                      {showEmailFlow ? t("codeSentEmail") : t("codeSentSms")}
                     </p>
                     <p className="text-xs text-green-700 mt-1">
-                      {showEmailFlow
-                        ? "Check your email for the 6-character code"
-                        : "Check your phone for the 6-character code"}
+                      {showEmailFlow ? t("checkEmailCode") : t("checkPhoneCode")}
                     </p>
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="magicCode" className="text-xs text-center block">
-                      Enter the 6-character code:
+                      {t("enterCode")}
                     </Label>
                     <div className="flex gap-2">
                       <Input
@@ -387,7 +404,7 @@ export function AnonAccountSetupModal({
                             className="w-4 h-4 heard-spinner-white"
                           />
                         ) : (
-                          "Verify"
+                          t("verify")
                         )}
                       </Button>
                     </div>
@@ -401,7 +418,7 @@ export function AnonAccountSetupModal({
                       }}
                       className="text-xs text-muted-foreground hover:text-foreground transition-colors underline w-full text-center"
                     >
-                      Go back
+                      {t("goBack")}
                     </button>
                   </div>
                 </motion.div>
@@ -409,7 +426,7 @@ export function AnonAccountSetupModal({
                 <>
                   <div className="space-y-2">
                     <Label htmlFor={showEmailFlow ? "email" : "phone"}>
-                      {showEmailFlow ? "Email" : "Phone Number"}
+                      {showEmailFlow ? t("emailLabel") : t("phoneLabel")}
                     </Label>
                     {showEmailFlow ? (
                       <Input
@@ -434,9 +451,7 @@ export function AnonAccountSetupModal({
                       />
                     )}
                     <p className="text-xs text-muted-foreground">
-                      {showEmailFlow
-                        ? "We'll send you a code to verify your email"
-                        : "We'll send you a code to verify your phone"}
+                      {showEmailFlow ? t("sendCodeEmailNote") : t("sendCodePhoneNote")}
                     </p>
                     <TOSText />
                     {showEmailFlow ? (
@@ -445,7 +460,7 @@ export function AnonAccountSetupModal({
                         onClick={() => setShowEmailFlow(false)}
                         className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
                       >
-                        Use phone instead
+                        {t("usePhoneInstead")}
                       </button>
                     ) : (
                       <button
@@ -453,7 +468,7 @@ export function AnonAccountSetupModal({
                         onClick={() => setShowEmailFlow(true)}
                         className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
                       >
-                        Use email instead
+                        {t("useEmailInstead")}
                       </button>
                     )}
                   </div>
@@ -476,7 +491,7 @@ export function AnonAccountSetupModal({
                       disabled={loading}
                       className="flex-1"
                     >
-                      Maybe Later
+                      {t("maybeLater")}
                     </Button>
                     <Button
                       type="submit"
@@ -496,12 +511,12 @@ export function AnonAccountSetupModal({
                           >
                             <IconComponent className="w-4 h-4" />
                           </motion.div>
-                          Sending Code...
+                          {t("sendingCode")}
                         </>
                       ) : (
                         <>
                           <IconComponent className="w-4 h-4 mr-2" />
-                          Send Code
+                          {t("sendCode")}
                         </>
                       )}
                     </Button>

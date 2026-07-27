@@ -5,7 +5,7 @@ import { Card } from "../components/ui/card";
 
 export function AnonAccountSetupModalStory() {
   const [isOpen, setIsOpen] = useState(false);
-  const [featureText, setFeatureText] = useState("start a conversation");
+  const [reason, setReason] = useState("createPost");
 
   return (
     <div className="space-y-6">
@@ -13,7 +13,7 @@ export function AnonAccountSetupModalStory() {
         <Button
           variant="outline"
           onClick={() => {
-            setFeatureText("start a conversation");
+            setReason("createPost");
             setIsOpen(true);
           }}
           className="justify-start"
@@ -23,7 +23,7 @@ export function AnonAccountSetupModalStory() {
       </Card>
 
       <AnonAccountSetupModal
-        featureText={featureText}
+        reason={reason}
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
       />

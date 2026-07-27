@@ -175,7 +175,7 @@ export function RoomCard({
       );
     } catch (error: any) {
       if (error.message === ANONYMOUS_ACTION_NOT_ALLOWED_ERROR) {
-        onShowAccountSetupModal("voting in this conversation");
+        onShowAccountSetupModal("vote");
         toast.error(t("toast:accountRequired"));
       } else {
         toast.error(
@@ -347,9 +347,7 @@ export function RoomCard({
                     debateTitle={room.topic}
                     isAnonymous={!!user?.isAnonymous}
                     onFollowDiscussion={() =>
-                      onShowAccountSetupModal(
-                        "certify your votes",
-                      )
+                      onShowAccountSetupModal("certifyVotes")
                     }
                     onChangeVote={handleVote}
                   />

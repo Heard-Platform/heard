@@ -40,7 +40,7 @@ export function AddResponseModal({
 
   const handleTextChange = (value: string) => {
     if (!allowAnonymous && isAnonymous && value.length > 0) {
-      onShowAccountSetupModal("responding to this post");
+      onShowAccountSetupModal("respond");
       return;
     }
     setText(value);
