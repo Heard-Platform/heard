@@ -18,10 +18,12 @@ import enAnalysis from "./locales/en/analysis.json";
 import esAnalysis from "./locales/es/analysis.json";
 import enEvents from "./locales/en/events.json";
 import esEvents from "./locales/es/events.json";
+import enDialog from "./locales/en/dialog.json";
+import esDialog from "./locales/es/dialog.json";
 
 export const defaultNS = "common";
 
 export const resources = {
-  en: { common: enCommon, room: enRoom, toast: enToast, create: enCreate, menu: enMenu, account: enAccount, community: enCommunity, results: enResults, analysis: enAnalysis, events: enEvents },
-  es: { common: esCommon, room: esRoom, toast: esToast, create: esCreate, menu: esMenu, account: esAccount, community: esCommunity, results: esResults, analysis: esAnalysis, events: esEvents },
+  en: { common: enCommon, room: enRoom, toast: enToast, create: enCreate, menu: enMenu, account: enAccount, community: enCommunity, results: enResults, analysis: enAnalysis, events: enEvents, dialog: enDialog },
+  es: { common: esCommon, room: esRoom, toast: esToast, create: esCreate, menu: esMenu, account: esAccount, community: esCommunity, results: esResults, analysis: esAnalysis, events: esEvents, dialog: esDialog },
 } as const;

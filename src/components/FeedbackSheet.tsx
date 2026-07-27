@@ -6,7 +6,7 @@ import { MessageSquare, Heart, Phone, Linkedin, Instagram, Youtube, LucideIcon }
 import { motion } from "motion/react";
 import { api } from "../utils/api";
 import { FunSheet, FunSheetCard } from "./FunSheet";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -33,7 +33,7 @@ export function FeedbackSheet({
   open: controlledOpen,
   onOpenChange,
 }: FeedbackSheetProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["dialog", "toast"]);
   const [internalOpen, setInternalOpen] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -47,7 +47,7 @@ export function FeedbackSheet({
 
   const handleSubmit = async () => {
     if (!feedbackText.trim()) {
-      toast.error(t("feedbackEmpty"));
+      toast.error(t("toast:feedbackEmpty"));
       return;
     }
 
@@ -58,13 +58,13 @@ export function FeedbackSheet({
 
       if (response.success) {
         toast.success(
-          t("feedbackSent"),
+          t("toast:feedbackSent"),
         );
         setFeedbackText("");
         setOpen(false);
       } else {
         toast.error(
-          t("feedbackFailed"),
+          t("toast:feedbackFailed"),
         );
         console.error(
           "Feedback submission error:",
@@ -72,7 +72,7 @@ export function FeedbackSheet({
         );
       }
     } catch (error) {
-      toast.error(t("genericError"));
+      toast.error(t("toast:genericError"));
       console.error("Error submitting feedback:", error);
     } finally {
       setSubmitting(false);
@@ -83,8 +83,8 @@ export function FeedbackSheet({
     <FunSheet
       open={open}
       onOpenChange={setOpen}
-      title="Talk to Alex"
-      description="Hey! I'm Alex, the creator of Heard 👋"
+      title={t("feedbackTitle")}
+      description={t("feedbackDescription")}
       avatar={alexAvatar}
       socialButtons={
         <div className="flex items-center gap-2 mb-[-10px]">
@@ -105,8 +105,8 @@ export function FeedbackSheet({
       leftIcon={Heart}
       rightIcon={Phone}
       theme="purple"
-      buttonText="Send Message 💜"
-      buttonLoadingText="Sending your message..."
+      buttonText={t("feedbackButton")}
+      buttonLoadingText={t("feedbackButtonLoading")}
       buttonIcon={Heart}
       onButtonClick={handleSubmit}
       buttonDisabled={!feedbackText.trim()}
@@ -117,33 +117,41 @@ export function FeedbackSheet({
           <div className="flex items-center gap-2">
             <Phone className="w-5 h-5 text-purple-600" />
             <Label className="text-base text-slate-700">
-              Text or call me!
+              {t("feedbackContactLabel")}
             </Label>
           </div>
           <p className="text-slate-600 leading-relaxed">
-            I'd love to hear from you! Text or call Alex at{" "}
-            <a
-              href="tel:916-234-3273"
-              className="font-bold heard-link underline decoration-2 decoration-purple-300 underline-offset-2"
-            >
-              916-BE-HEARD (234-3273)
-            </a>{" "}
-            with feedback, questions, bugs, interesting stories
-            about your great grandma, or just to say hi.
+            <Trans
+              t={t}
+              i18nKey="feedbackCallText"
+              components={{
+                phone: (
+                  <a
+                    href="tel:916-234-3273"
+                    className="font-bold heard-link underline decoration-2 decoration-purple-300 underline-offset-2"
+                  />
+                ),
+              }}
+            />
           </p>
           <p className="text-slate-600 leading-relaxed">
-            If you're in D.C. let's grab coffee! Here's a calendar booking link:{" "}
-            <a
-              href="https://calendly.com/alexmasonlong/30-minute"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-bold heard-link underline decoration-2 decoration-purple-300 underline-offset-2"
-            >
-              Book a time
-            </a>
+            <Trans
+              t={t}
+              i18nKey="feedbackCoffeeText"
+              components={{
+                link: (
+                  <a
+                    href="https://calendly.com/alexmasonlong/30-minute"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold heard-link underline decoration-2 decoration-purple-300 underline-offset-2"
+                  />
+                ),
+              }}
+            />
           </p>
           <p className="text-slate-600 leading-relaxed">
-            Or you can send a message directly below:
+            {t("feedbackOrSend")}
           </p>
         </div>
       </FunSheetCard>
@@ -154,20 +162,20 @@ export function FeedbackSheet({
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-purple-600" />
             <Label className="text-base text-slate-700">
-              Send a message
+              {t("feedbackSendLabel")}
             </Label>
           </div>
           <Textarea
             value={feedbackText}
             onChange={(e) => setFeedbackText(e.target.value)}
-            placeholder="Bug report? Feature idea? Just saying hi? Tell us anything! The more details, the better. 💜"
+            placeholder={t("feedbackPlaceholder")}
             className="w-full min-h-[120px] resize-none bg-white border-purple-200 hover:border-purple-300 transition-colors placeholder:text-slate-400"
             disabled={submitting}
             rows={5}
           />
           <div className="flex justify-between items-center text-xs">
             <span className="text-slate-500">
-              No idea is too wild! 💡
+              {t("feedbackNoIdea")}
             </span>
             {feedbackText.length > 0 && (
               <motion.span
@@ -175,7 +183,7 @@ export function FeedbackSheet({
                 animate={{ opacity: 1 }}
                 className="text-slate-400"
               >
-                {feedbackText.length} characters
+                {t("feedbackChars", { count: feedbackText.length })}
               </motion.span>
             )}
           </div>
