@@ -1,5 +1,6 @@
 import { useState, ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { Trans, useTranslation } from "react-i18next";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { CheckCircle, Linkedin, Instagram, Youtube } from "lucide-react";
@@ -137,6 +138,7 @@ function BulletItem({ children }: BulletItemProps) {
 }
 
 export function OrgsLanding({ onExit }: OrgsLandingProps) {
+  const { t } = useTranslation("screens");
   const [currentSlide, setCurrentSlide] = useState(0);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -170,7 +172,7 @@ export function OrgsLanding({ onExit }: OrgsLandingProps) {
         <button
           onClick={onExit}
           className="absolute top-6 left-6 z-50 text-2xl font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
-          aria-label="Return to Heard"
+          aria-label={t("orgsReturnAria")}
         >
           Heard
         </button>
@@ -221,7 +223,7 @@ export function OrgsLanding({ onExit }: OrgsLandingProps) {
                     : "bg-indigo-200 hover:bg-indigo-300"
                 }`}
                 onClick={() => setCurrentSlide(index)}
-                aria-label={`Go to slide ${index + 1}`}
+                aria-label={t("orgsGoToSlide", { number: index + 1 })}
               />
             ))}
           </div>
@@ -232,19 +234,22 @@ export function OrgsLanding({ onExit }: OrgsLandingProps) {
 }
 
 export function Slide1({ onNext }: { onNext: () => void }) {
+  const { t } = useTranslation("screens");
   return (
     <SlideWrapper>
       <SlideContent maxWidth="md">
         <div className="text-center space-y-8">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
-            Heard is a platform for{" "}
-            <span className="text-indigo-600">conversational voting surveys</span>
+            <Trans
+              t={t}
+              i18nKey="orgsSlide1Title"
+              components={{ em: <span className="text-indigo-600" /> }}
+            />
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-xl mx-auto">
-            Instead of static surveys, Heard lets a community vote, add their own
-            responses, and watch a living conversation emerge in real time.
+            {t("orgsSlide1Body")}
           </p>
-          <CTAButton onClick={onNext}>How does it work?</CTAButton>
+          <CTAButton onClick={onNext}>{t("orgsSlide1Cta")}</CTAButton>
         </div>
       </SlideContent>
     </SlideWrapper>
@@ -252,31 +257,32 @@ export function Slide1({ onNext }: { onNext: () => void }) {
 }
 
 export function Slide2({ onNext }: { onNext: () => void }) {
+  const { t } = useTranslation("screens");
   return (
     <SlideWrapper>
       <SlideContent maxWidth="lg">
-        <SlideHeading>How it works</SlideHeading>
+        <SlideHeading>{t("orgsSlide2Heading")}</SlideHeading>
 
         <div className="space-y-8">
           <NumberedStep
             number={1}
-            title="Create a survey"
-            description="You create a survey with a topic and a handful of seed statements to get the conversation started."
+            title={t("orgsStep1Title")}
+            description={t("orgsStep1Desc")}
           />
           <NumberedStep
             number={2}
-            title="Participants vote"
-            description="Participants swipe to agree or disagree with each statement."
+            title={t("orgsStep2Title")}
+            description={t("orgsStep2Desc")}
           />
           <NumberedStep
             number={3}
-            title="Real-time engagement"
-            description="Participants can add their own statements for others to vote on, and watch results update in real time."
+            title={t("orgsStep3Title")}
+            description={t("orgsStep3Desc")}
           />
         </div>
 
         <div className="flex justify-center pt-8">
-          <CTAButton onClick={onNext}>Why this is better</CTAButton>
+          <CTAButton onClick={onNext}>{t("orgsSlide2Cta")}</CTAButton>
         </div>
       </SlideContent>
     </SlideWrapper>
@@ -284,35 +290,36 @@ export function Slide2({ onNext }: { onNext: () => void }) {
 }
 
 export function Slide3({ onNext }: { onNext: () => void }) {
+  const { t } = useTranslation("screens");
   return (
     <SlideWrapper>
       <SlideContent maxWidth="lg">
         <div className="space-y-6 text-center">
-          <SlideHeading>Why Heard is better than traditional surveys</SlideHeading>
+          <SlideHeading>{t("orgsSlide3Heading")}</SlideHeading>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Heard makes collecting feedback easier, faster, and more engaging for everyone involved.
+            {t("orgsSlide3Body")}
           </p>
         </div>
 
         <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm p-6 border-2 border-indigo-200 max-w-2xl mx-auto">
           <ul className="space-y-5 text-left">
             <BulletItem>
-              <span className="font-semibold text-gray-900">Less upfront work for you</span>
-              <span className="text-gray-700"> — just seed the conversation with a topic and a few starter statements, then let participants add their own responses</span>
+              <span className="font-semibold text-gray-900">{t("orgsBullet3aBold")}</span>
+              <span className="text-gray-700">{t("orgsBullet3aRest")}</span>
             </BulletItem>
             <BulletItem>
-              <span className="font-semibold text-gray-900">Higher response rates</span>
-              <span className="text-gray-700"> — people feel ownership over the conversation and come back to see how their statements are performing</span>
+              <span className="font-semibold text-gray-900">{t("orgsBullet3bBold")}</span>
+              <span className="text-gray-700">{t("orgsBullet3bRest")}</span>
             </BulletItem>
             <BulletItem>
-              <span className="font-semibold text-gray-900">No expensive marketing campaigns needed</span>
-              <span className="text-gray-700"> — there's already an engaged pool of people on the platform ready to participate</span>
+              <span className="font-semibold text-gray-900">{t("orgsBullet3cBold")}</span>
+              <span className="text-gray-700">{t("orgsBullet3cRest")}</span>
             </BulletItem>
           </ul>
         </div>
 
         <div className="flex justify-center pt-6">
-          <CTAButton onClick={onNext}>What makes us different?</CTAButton>
+          <CTAButton onClick={onNext}>{t("orgsSlide3Cta")}</CTAButton>
         </div>
       </SlideContent>
     </SlideWrapper>
@@ -320,13 +327,14 @@ export function Slide3({ onNext }: { onNext: () => void }) {
 }
 
 export function Slide4({ onNext }: { onNext: () => void }) {
+  const { t } = useTranslation("screens");
   return (
     <SlideWrapper>
       <SlideContent maxWidth="lg">
         <div className="space-y-6 text-center">
-          <SlideHeading>How we know this works</SlideHeading>
+          <SlideHeading>{t("orgsSlide4Heading")}</SlideHeading>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Tools like these have already been used by governments and civic bodies to gather input from millions of people.
+            {t("orgsSlide4Body")}
           </p>
         </div>
 
@@ -343,7 +351,7 @@ export function Slide4({ onNext }: { onNext: () => void }) {
                   vTaiwan
                 </a>
               </span>
-              <span className="text-gray-700"> — used by the Taiwanese government to crowdsource policy on ride-sharing and other issues, with millions of participants</span>
+              <span className="text-gray-700">{t("orgsBullet4aRest")}</span>
             </BulletItem>
             <BulletItem>
               <span className="font-semibold text-gray-900">
@@ -356,7 +364,7 @@ export function Slide4({ onNext }: { onNext: () => void }) {
                   Decidim / Participativo
                 </a>
               </span>
-              <span className="text-gray-700"> — large-scale participatory platforms used across Latin America and Europe to engage citizens in policy-making processes</span>
+              <span className="text-gray-700">{t("orgsBullet4bRest")}</span>
             </BulletItem>
             <BulletItem>
               <span className="font-semibold text-gray-900">
@@ -369,13 +377,13 @@ export function Slide4({ onNext }: { onNext: () => void }) {
                   Bowling Green, Kentucky
                 </a>
               </span>
-              <span className="text-gray-700"> — a domestic US example of a local government using this approach to meaningfully engage residents in community decisions</span>
+              <span className="text-gray-700">{t("orgsBullet4cRest")}</span>
             </BulletItem>
           </ul>
         </div>
 
         <div className="flex justify-center pt-6">
-          <CTAButton onClick={onNext}>Why we built Heard</CTAButton>
+          <CTAButton onClick={onNext}>{t("orgsSlide4Cta")}</CTAButton>
         </div>
       </SlideContent>
     </SlideWrapper>
@@ -383,48 +391,55 @@ export function Slide4({ onNext }: { onNext: () => void }) {
 }
 
 export function Slide5({ onNext }: { onNext: () => void }) {
+  const { t } = useTranslation("screens");
   return (
     <SlideWrapper>
       <SlideContent maxWidth="lg">
         <div className="space-y-6 text-center">
-          <SlideHeading>Built with a purpose</SlideHeading>
+          <SlideHeading>{t("orgsSlide5Heading")}</SlideHeading>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Heard is more than just a tool, it's a commitment to strengthening democratic engagement and civic participation.
+            {t("orgsSlide5Body")}
           </p>
         </div>
 
         <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm p-6 border-2 border-indigo-200 max-w-2xl mx-auto">
           <ul className="space-y-5 text-left">
             <BulletItem>
-              <span className="font-semibold text-gray-900">Public Benefit Corporation</span>
-              <span className="text-gray-700"> — legally structured to prioritize public benefit alongside profit</span>
+              <span className="font-semibold text-gray-900">{t("orgsBullet5aBold")}</span>
+              <span className="text-gray-700">{t("orgsBullet5aRest")}</span>
             </BulletItem>
             <BulletItem>
-              <span className="font-semibold text-gray-900">Committed to Open Source</span>
-              <span className="text-gray-700"> — working toward transparency and community ownership</span>
+              <span className="font-semibold text-gray-900">{t("orgsBullet5bBold")}</span>
+              <span className="text-gray-700">{t("orgsBullet5bRest")}</span>
             </BulletItem>
             <BulletItem>
-              <span className="font-semibold text-gray-900">Pro-Democracy by Design</span>
-              <span className="text-gray-700"> — built to amplify voices and foster productive dialogue</span>
+              <span className="font-semibold text-gray-900">{t("orgsBullet5cBold")}</span>
+              <span className="text-gray-700">{t("orgsBullet5cRest")}</span>
             </BulletItem>
             <BulletItem>
-              <span className="font-semibold text-gray-900">Founded by{" "}
-                <a 
-                  href={SOCIAL_LINKS.LINKEDIN}
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 hover:text-indigo-700 underline decoration-indigo-300"
-                >
-                  a local DC resident
-                </a>
+              <span className="font-semibold text-gray-900">
+                <Trans
+                  t={t}
+                  i18nKey="orgsBullet5dBold"
+                  components={{
+                    link: (
+                      <a
+                        href={SOCIAL_LINKS.LINKEDIN}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-indigo-600 hover:text-indigo-700 underline decoration-indigo-300"
+                      />
+                    ),
+                  }}
+                />
               </span>
-              <span className="text-gray-700"> — with a background in civic tech and impact-focused startups</span>
+              <span className="text-gray-700">{t("orgsBullet5dRest")}</span>
             </BulletItem>
           </ul>
         </div>
 
         <div className="flex justify-center pt-6">
-          <CTAButton onClick={onNext}>Running a pilot program</CTAButton>
+          <CTAButton onClick={onNext}>{t("orgsSlide5Cta")}</CTAButton>
         </div>
       </SlideContent>
     </SlideWrapper>
@@ -444,14 +459,14 @@ export function Slide6({
   onEmailChange,
   onSubmit,
 }: Slide6Props) {
+  const { t } = useTranslation("screens");
   return (
     <SlideWrapper>
       <SlideContent maxWidth="sm">
         <div className="text-center space-y-8">
-          <SlideHeading>Start a pilot program</SlideHeading>
+          <SlideHeading>{t("orgsSlide6Heading")}</SlideHeading>
           <p className="text-lg text-gray-600">
-            We are running pilot programs for organizations to see how Heard can work for your community.
-            Share your email and we'll reach out to learn more about your needs.
+            {t("orgsSlide6Body")}
           </p>
           <form onSubmit={onSubmit} className="space-y-4">
             <Input
@@ -468,7 +483,7 @@ export function Slide6({
               disabled={submitting || !email.trim()}
               fullWidth
             >
-              {submitting ? "Submitting..." : "Submit"}
+              {submitting ? t("orgsSubmitting") : t("orgsSubmit")}
             </CTAButton>
           </form>
         </div>
@@ -482,6 +497,7 @@ interface Slide7Props {
 }
 
 export function Slide7({ onExit }: Slide7Props) {
+  const { t } = useTranslation("screens");
   const socials = [
     { href: SOCIAL_LINKS.LINKEDIN, Icon: Linkedin, label: "LinkedIn" },
     { href: SOCIAL_LINKS.INSTAGRAM, Icon: Instagram, label: "Instagram" },
@@ -496,13 +512,13 @@ export function Slide7({ onExit }: Slide7Props) {
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
           <SlideHeading size="medium">
-            Thanks for signing up for the pilot program!
+            {t("orgsSlide7Heading")}
           </SlideHeading>
           <p className="text-lg text-gray-600">
-            We'll reach out soon to get you started. In the meantime, feel free to explore Heard and see what the community is talking about.
+            {t("orgsSlide7Body")}
           </p>
 
-          <CTAButton onClick={onExit}>Start exploring Heard</CTAButton>
+          <CTAButton onClick={onExit}>{t("orgsSlide7Cta")}</CTAButton>
           
           <div className="flex justify-center gap-3">
             {socials.map(({ href, Icon, label }) => (
