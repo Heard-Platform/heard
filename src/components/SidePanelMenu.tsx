@@ -473,6 +473,15 @@ export function SidePanelMenu({
                         Admin Panel
                       </Button>
                     )}
+                    <Button
+                      onClick={handleTestPushNotification}
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-indigo-50 border-indigo-200 text-indigo-800"
+                    >
+                      <Bell className="w-3 h-3 mr-2" />
+                      Test Push Notification
+                    </Button>
                     {onJumpToFinalResults && (
                       <Button
                         onClick={onJumpToFinalResults}
@@ -539,15 +548,6 @@ export function SidePanelMenu({
                     >
                       <Database className="w-3 h-3 mr-2" />
                       Scalability Test (1k users)
-                    </Button>
-                    <Button
-                      onClick={handleTestPushNotification}
-                      variant="outline"
-                      size="sm"
-                      className="w-full bg-indigo-50 border-indigo-200 text-indigo-800"
-                    >
-                      <Bell className="w-3 h-3 mr-2" />
-                      Test Push Notification
                     </Button>
                   </div>
                 </div>
