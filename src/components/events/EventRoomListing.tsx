@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { CheckCircle2, MessageSquare } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { TimeLeftBadge } from "../room/TimeLeftBadge";
@@ -20,24 +21,25 @@ export function EventRoomListing({
   index: number;
   onCtaClick: () => void;
 }) {
-  const t = themeForIndex(index);
+  const { t } = useTranslation("events");
+  const theme = themeForIndex(index);
   const isCaughtUp = room.status === "caught_up";
   const isCompleted = room.status === "completed";
 
   const actionDescription = isCompleted
-    ? "Conversation ended"
+    ? t("conversationEnded")
     : isCaughtUp
-      ? "Nothing new since you voted"
+      ? t("nothingNew")
       : room.newStatementCount
-        ? `${room.newStatementCount} new statement${room.newStatementCount === 1 ? "" : "s"} to vote on`
-        : "You haven't voted yet";
+        ? t("newStatements", { count: room.newStatementCount })
+        : t("notVotedYet");
 
   const userActivityPill = !isCompleted && room.userHasVoted
-    ? "initial votes added"
+    ? t("initialVotesAdded")
     : undefined;
   const ctaLabel = room.userHasVoted
-    ? "vote on new statements"
-    : "add your votes";
+    ? t("ctaVoteNew")
+    : t("ctaAddVotes");
   const ctaBg = room.userHasVoted
     ? "mid-priority-bg"
     : "high-priority-bg";
@@ -49,12 +51,12 @@ export function EventRoomListing({
       transition={{ duration: 0.35, delay: 0.08 * index }}
     >
       <Card
-        className={`overflow-hidden bg-gradient-to-br ${t.cardBg} border ${t.border} shadow-sm`}
+        className={`overflow-hidden bg-gradient-to-br ${theme.cardBg} border ${theme.border} shadow-sm`}
       >
         <div className="p-4 space-y-2">
           <div className="flex items-start gap-3">
             <div
-              className={`shrink-0 w-11 h-11 rounded-2xl bg-gradient-to-br ${t.iconGradient} flex items-center justify-center text-xl shadow-md`}
+              className={`shrink-0 w-11 h-11 rounded-2xl bg-gradient-to-br ${theme.iconGradient} flex items-center justify-center text-xl shadow-md`}
             >
               {room.emoji ?? <MessageSquare className="w-5 h-5 text-white/80" />}
             </div>
@@ -86,11 +88,11 @@ export function EventRoomListing({
                     onClick={onCtaClick}
                     className="text-xs px-4 h-8 rounded-full"
                   >
-                    View results
+                    {t("viewResults")}
                   </Button>
                 ) : isCaughtUp ? (
                   <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full bg-green-100 text-green-700">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> caught up
+                    <CheckCircle2 className="w-3.5 h-3.5" /> {t("caughtUpPill")}
                   </span>
                 ) : (
                   <Button
@@ -112,17 +114,19 @@ export function EventRoomListing({
                 .map((animal, i) => (
                   <div
                     key={i}
-                    className={`w-7 h-7 rounded-full bg-white ring-2 ${t.avatarRing} flex items-center justify-center text-sm leading-none shadow-sm`}
+                    className={`w-7 h-7 rounded-full bg-white ring-2 ${theme.avatarRing} flex items-center justify-center text-sm leading-none shadow-sm`}
                   >
                     {AVATAR_EMOJIS[animal]}
                   </div>
                 ))}
             </div>
             <span className="text-xs text-muted-foreground font-medium">
-              <span className="font-bold text-foreground">
-                {room.participants.length}
-              </span>{" "}
-              of {event.totalMembers} voted
+              <Trans
+                t={t}
+                i18nKey="votedRatio"
+                values={{ voted: room.participants.length, total: event.totalMembers }}
+                components={{ b: <span className="font-bold text-foreground" /> }}
+              />
             </span>
           </div>
         </div>

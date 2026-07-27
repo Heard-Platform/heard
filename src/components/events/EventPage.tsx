@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Users, Sparkles, CheckCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card } from "../ui/card";
 import { AddConversationCard } from "./AddConversationCard";
 import { EventRoomListing } from "./EventRoomListing";
@@ -12,24 +13,24 @@ const STATS = (
 ) => [
   {
     value: needsInput,
-    label: "to vote on",
+    labelKey: "statToVote",
     g: "attention-gradient",
     bg: "attention-bg",
-    t: "attention-text",
+    textColor: "attention-text",
   },
   {
     value: caughtUp,
-    label: "caught up",
+    labelKey: "statCaughtUp",
     g: "resolved-gradient",
     bg: "resolved-bg",
-    t: "resolved-text",
+    textColor: "resolved-text",
   },
   {
     value: total,
-    label: "completed",
+    labelKey: "statCompleted",
     g: "neutral-gradient",
     bg: "neutral-background",
-    t: "neutral-text",
+    textColor: "neutral-text",
   },
 ];
 
@@ -44,6 +45,7 @@ export function EventPage({
   onAddRoom,
   onOpenRoom,
 }: EventPageProps) {
+  const { t } = useTranslation("events");
   const {
     name: eventName,
     subtitle: eventSubtitle,
@@ -76,7 +78,7 @@ export function EventPage({
                 )}
               </div>
               <span className="shrink-0 inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-full text-white heard-primary-gradient shadow-md whitespace-nowrap">
-                <Users className="w-3 h-3" /> {totalMembers} people
+                <Users className="w-3 h-3" /> {t("peopleCount", { count: totalMembers })}
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -84,9 +86,9 @@ export function EventPage({
                 needsInput.length,
                 caughtUp.length,
                 completed.length,
-              ).map(({ value, label, g, bg, t }) => (
+              ).map(({ value, labelKey, g, bg, textColor }) => (
                 <div
-                  key={label}
+                  key={labelKey}
                   className={`rounded-xl ${bg} p-2 text-center`}
                 >
                   <p
@@ -95,9 +97,9 @@ export function EventPage({
                     {value}
                   </p>
                   <p
-                    className={`text-[10px] font-semibold ${t} leading-tight`}
+                    className={`text-[10px] font-semibold ${textColor} leading-tight`}
                   >
-                    {label}
+                    {t(labelKey)}
                   </p>
                 </div>
               ))}
@@ -109,7 +111,7 @@ export function EventPage({
       {[
         {
           rooms: needsInput,
-          label: "Needs your votes",
+          labelKey: "sectionNeedsVotes",
           icon: (
             <Sparkles className="w-3 h-3 inline-block mr-1 text-orange-400" />
           ),
@@ -117,14 +119,14 @@ export function EventPage({
         },
         {
           rooms: caughtUp,
-          label: "Caught up",
+          labelKey: "sectionCaughtUp",
           icon: null,
           delay: 0.25,
           offset: needsInput.length,
         },
         {
           rooms: completed,
-          label: "Completed",
+          labelKey: "sectionCompleted",
           icon: (
             <CheckCheck className="w-3 h-3 inline-block mr-1 text-muted-foreground" />
           ),
@@ -132,10 +134,10 @@ export function EventPage({
           offset: needsInput.length + caughtUp.length,
         },
       ].map(
-        ({ rooms: group, label, icon, delay, offset = 0 }) =>
+        ({ rooms: group, labelKey, icon, delay, offset = 0 }) =>
           group.length > 0 && (
             <motion.div
-              key={label}
+              key={labelKey}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3, delay }}
@@ -144,7 +146,7 @@ export function EventPage({
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold tracking-widest uppercase text-muted-foreground">
                   {icon}
-                  {label}
+                  {t(labelKey)}
                 </span>
                 <div className="flex-1 h-px bg-border" />
               </div>

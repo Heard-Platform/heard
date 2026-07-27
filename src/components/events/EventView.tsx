@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { ChevronLeft } from "lucide-react";
 import { Event, DebateRoom, NewDebateRoom, Statement, UserSession, VoteType } from "../../types";
 import { EventPage } from "./EventPage";
@@ -37,6 +38,7 @@ export function EventView({
   onRefreshEvent,
   onSubHeardChange,
 }: EventViewProps) {
+  const { t } = useTranslation("events");
   const [selectedRoom, setSelectedRoom] = useState<{
     room: DebateRoom;
     statements: Statement[];
@@ -124,8 +126,8 @@ export function EventView({
             <ChevronLeft className="w-4 h-4 shrink-0" />
             <span className="truncate">
               {showingRoom
-                ? (event?.name ?? "Back to event")
-                : `Back to ${formatSubHeardDisplay(event?.communityName ?? "feed")}`}
+                ? (event?.name ?? t("backToEvent"))
+                : t("backToNamed", { name: formatSubHeardDisplay(event?.communityName ?? "feed") })}
             </span>
           </motion.button>
         </div>

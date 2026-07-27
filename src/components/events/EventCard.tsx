@@ -1,5 +1,6 @@
 import { CalendarDays, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { Card } from "../ui/card";
 import { FEED_CARD_WIDTH } from "../../utils/constants/general";
 import { EventSummary } from "../../types";
@@ -10,6 +11,7 @@ export interface EventCardProps {
 }
 
 export function EventCard({ event, onOpen }: EventCardProps) {
+  const { t } = useTranslation("events");
   return (
     <motion.div
       onClick={() => onOpen(event.id)}
@@ -26,7 +28,7 @@ export function EventCard({ event, onOpen }: EventCardProps) {
 
           <div className="flex-1 min-w-0">
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Event
+              {t("eventLabel")}
             </span>
             <p className="font-bold text-foreground leading-snug truncate">
               {event.name}

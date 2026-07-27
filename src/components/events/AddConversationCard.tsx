@@ -1,20 +1,21 @@
 import { motion } from "motion/react";
 import { PlusCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 
 const EMPTY_STATE = {
   emoji: "🎉",
-  heading: "Get started",
-  subtext: "Add a topic for your group to discuss and vote on",
-  buttonLabel: "Add first conversation",
+  headingKey: "emptyHeading",
+  subtextKey: "emptySubtext",
+  buttonKey: "emptyButton",
 };
 
 const DEFAULT_STATE = {
   emoji: "💬",
-  heading: "Keep the conversations flowing",
-  subtext: "Is there something else the group needs to talk about?",
-  buttonLabel: "Add new conversation",
+  headingKey: "defaultHeading",
+  subtextKey: "defaultSubtext",
+  buttonKey: "defaultButton",
 };
 
 export function AddConversationCard({
@@ -24,7 +25,8 @@ export function AddConversationCard({
   isEmpty: boolean;
   onAddRoom: () => void;
 }) {
-  const { emoji, heading, subtext, buttonLabel } = isEmpty ? EMPTY_STATE : DEFAULT_STATE;
+  const { t } = useTranslation("events");
+  const { emoji, headingKey, subtextKey, buttonKey } = isEmpty ? EMPTY_STATE : DEFAULT_STATE;
 
   return (
     <motion.div
@@ -38,12 +40,12 @@ export function AddConversationCard({
             {emoji}
           </div>
           <div className="space-y-1">
-            <p className="text-base font-bold text-foreground">{heading}</p>
-            <p className="text-sm text-muted-foreground">{subtext}</p>
+            <p className="text-base font-bold text-foreground">{t(headingKey)}</p>
+            <p className="text-sm text-muted-foreground">{t(subtextKey)}</p>
           </div>
           <Button onClick={onAddRoom} className="gap-2 heard-primary-gradient normal-text shadow-md">
             <PlusCircle className="w-4 h-4" />
-            {buttonLabel}
+            {t(buttonKey)}
           </Button>
         </div>
       </Card>
