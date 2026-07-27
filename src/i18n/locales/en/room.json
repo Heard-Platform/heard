@@ -11,5 +11,12 @@
   "voteCount_other": "{{count, number}} votes",
   "responseCount_one": "{{count, number}} response",
   "responseCount_other": "{{count, number}} responses",
-  "votesOnResponses": "<0>{{votes}}</0> on <1>{{responses}}</1>"
+  "votesOnResponses": "<0>{{votes}}</0> on <1>{{responses}}</1>",
+  "skip": "Skip",
+  "shareResponse": "Share response",
+  "report": "Report",
+  "hideResponse": "Hide response",
+  "hideResponseConfirm": "Hide this response? It will no longer appear to anyone. You can undo this from the Hide and Merge Statements moderator tool.",
+  "shareVoteTitle": "Come vote on this",
+  "shareVoteText": "Come vote on \"{{text}}\"! {{link}}"
 }

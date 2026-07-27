@@ -11,5 +11,12 @@
   "voteCount_other": "{{count, number}} votos",
   "responseCount_one": "{{count, number}} respuesta",
   "responseCount_other": "{{count, number}} respuestas",
-  "votesOnResponses": "<0>{{votes}}</0> en <1>{{responses}}</1>"
+  "votesOnResponses": "<0>{{votes}}</0> en <1>{{responses}}</1>",
+  "skip": "Saltar",
+  "shareResponse": "Compartir respuesta",
+  "report": "Reportar",
+  "hideResponse": "Ocultar respuesta",
+  "hideResponseConfirm": "¿Ocultar esta respuesta? Ya no aparecerá para nadie. Puedes deshacerlo desde la herramienta de moderación Ocultar y combinar respuestas.",
+  "shareVoteTitle": "Ven a votar sobre esto",
+  "shareVoteText": "¡Ven a votar sobre «{{text}}»! {{link}}"
 }

@@ -46,7 +46,7 @@ export function StatementCard({
   onSkip,
   onFlag,
 }: StatementCardProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["room", "toast"]);
   const { user, activeRooms, setStatementHidden } = useDebateSession();
   const room = activeRooms.find((r) => r.id === statement.roomId);
   const isHost = !!user && !!room && room.hostId === user.id;
@@ -54,11 +54,7 @@ export function StatementCard({
   const timeAgo = moment(statement.timestamp).fromNow();
 
   const handleHide = () => {
-    if (
-      !window.confirm(
-        "Hide this response? It will no longer appear to anyone. You can undo this from the Hide and Merge Statements moderator tool.",
-      )
-    ) {
+    if (!window.confirm(t("hideResponseConfirm"))) {
       return;
     }
     setStatementHidden(statement.roomId, statement.id, true);
@@ -103,7 +99,7 @@ export function StatementCard({
                 onSkip();
               }}
               className={`${actionButtonBase} hover:bg-gray-100`}
-              title="Skip"
+              title={t("skip")}
             >
               <SkipForward className="w-4 h-4 text-gray-700" />
             </button>
@@ -113,14 +109,14 @@ export function StatementCard({
                 const link = `${createShareableLink(statement.roomId)}?statement=${statement.id}`;
                 share({
                   url: link,
-                  title: "Come vote on this",
-                  text: `Come vote on "${statement.text}"! ${link}`,
-                  onSuccess: () => toast.success(t("linkCopied")),
-                  onError: (e) => toast.error(t("shareLinkFailed")),
+                  title: t("shareVoteTitle"),
+                  text: t("shareVoteText", { text: statement.text, link }),
+                  onSuccess: () => toast.success(t("toast:linkCopied")),
+                  onError: (e) => toast.error(t("toast:shareLinkFailed")),
                 });
               }}
               className={`${actionButtonBase} hover:bg-gray-100`}
-              title="Share response"
+              title={t("shareResponse")}
             >
               <Share className="w-4 h-4 text-gray-700" />
             </button>
@@ -136,12 +132,12 @@ export function StatementCard({
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onSelect={() => onFlag()}>
                   <Flag className="w-4 h-4 mr-2 report-text" />
-                  Report
+                  {t("report")}
                 </DropdownMenuItem>
                 {(isHost || isDeveloper) && (
                   <DropdownMenuItem onSelect={handleHide}>
                     <EyeOff className="w-4 h-4 mr-2" />
-                    Hide response
+                    {t("hideResponse")}
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -162,7 +158,7 @@ export function StatementCard({
           const totalVotes = getTotalVotes(statement);
           return (
             <span className="text-xs text-muted-foreground">
-              {totalVotes.toLocaleString()} votes
+              {t("voteCount", { count: totalVotes })}
             </span>
           );
         })()}
