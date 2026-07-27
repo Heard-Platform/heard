@@ -30,7 +30,7 @@ export function CreateCommunityDialog({
   onCreated,
   onClose,
 }: CreateCommunityDialogProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["community", "common", "toast"]);
   const [community, setCommunity] = useState<Partial<SubHeard>>({
     name: "",
     isPrivate: false,
@@ -54,13 +54,13 @@ export function CreateCommunityDialog({
         });
         onCreated(normalizedName);
         onClose();
-        toast.success(t("communityCreated", { name: community.name }));
+        toast.success(t("toast:communityCreated", { name: community.name }));
       } else {
         throw new Error(response?.error || "Failed to create community");
       }
     } catch (error) {
       console.error("Failed to create community:", error);
-      toast.error(t("createCommunityFailed"));
+      toast.error(t("toast:createCommunityFailed"));
     } finally {
       setIsCreating(false);
     }
@@ -87,19 +87,19 @@ export function CreateCommunityDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="w-5 h-5 text-purple-600" />
-            Create New Community
+            {t("createNewCommunity")}
           </DialogTitle>
           <DialogDescription>
-            Set up your new community with a name and initial settings
+            {t("createDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           <div className="space-y-2">
-            <Label htmlFor="community-name">Community Name</Label>
+            <Label htmlFor="community-name">{t("communityName")}</Label>
             <Input
               id="community-name"
-              placeholder="e.g., politics, technology, food..."
+              placeholder={t("namePlaceholder")}
               value={community.name || ""}
               onChange={(e) => handleCommunityChange({ name: e.target.value })}
               onKeyDown={(e) => {
@@ -111,7 +111,7 @@ export function CreateCommunityDialog({
               autoFocus
             />
             <p className="text-xs text-muted-foreground">
-              Choose a clear, concise name for your community
+              {t("nameHelper")}
             </p>
           </div>
 
@@ -124,13 +124,13 @@ export function CreateCommunityDialog({
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
-            Cancel
+            {t("common:cancel")}
           </Button>
           <Button
             onClick={handleCreate}
             disabled={!community.name?.trim() || isCreating}
           >
-            {isCreating ? "Creating..." : "Create Community"}
+            {isCreating ? t("creating") : t("createCommunityButton")}
           </Button>
         </div>
       </DialogContent>

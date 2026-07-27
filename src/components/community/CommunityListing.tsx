@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Check, MessageSquare } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { getPastelColor } from "../../utils/colors";
 import { SubHeard } from "../../types";
 import { formatSubHeardDisplay } from "../../utils/subheard";
@@ -22,6 +23,7 @@ export function CommunityListing({
   isSelected,
   onToggle,
 }: CommunityListingProps) {
+  const { t } = useTranslation("community");
   const communityColor = getPastelColor(community.name);
   const displayName = formatSubHeardDisplay(community.name);
   const postCount = community.count || 0;
@@ -55,7 +57,7 @@ export function CommunityListing({
           <div className="flex items-center gap-4 mt-2">
             <span className={`${textMuted} flex items-center gap-1`}>
               <MessageSquare className="w-3 h-3" />
-              {postCount.toLocaleString()} posts
+              {t("postCount", { count: postCount })}
             </span>
           </div>
         </div>

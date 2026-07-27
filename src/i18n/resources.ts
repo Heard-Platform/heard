@@ -10,10 +10,12 @@ import enMenu from "./locales/en/menu.json";
 import esMenu from "./locales/es/menu.json";
 import enAccount from "./locales/en/account.json";
 import esAccount from "./locales/es/account.json";
+import enCommunity from "./locales/en/community.json";
+import esCommunity from "./locales/es/community.json";
 
 export const defaultNS = "common";
 
 export const resources = {
-  en: { common: enCommon, room: enRoom, toast: enToast, create: enCreate, menu: enMenu, account: enAccount },
-  es: { common: esCommon, room: esRoom, toast: esToast, create: esCreate, menu: esMenu, account: esAccount },
+  en: { common: enCommon, room: enRoom, toast: enToast, create: enCreate, menu: enMenu, account: enAccount, community: enCommunity },
+  es: { common: esCommon, room: esRoom, toast: esToast, create: esCreate, menu: esMenu, account: esAccount, community: esCommunity },
 } as const;

@@ -1,0 +1,20 @@
+{
+  "createNewCommunity": "Create New Community",
+  "createDescription": "Set up your new community with a name and initial settings",
+  "communityName": "Community Name",
+  "namePlaceholder": "e.g., politics, technology, food...",
+  "nameHelper": "Choose a clear, concise name for your community",
+  "creating": "Creating…",
+  "createCommunityButton": "Create Community",
+  "postCount_one": "{{count, number}} post",
+  "postCount_other": "{{count, number}} posts",
+  "browseCommunities": "Browse Communities",
+  "browseDescription": "Explore and join public communities to expand your feed",
+  "noCommunities": "No new communities to explore right now",
+  "communitiesSelected_one": "{{count}} community selected",
+  "communitiesSelected_other": "{{count}} communities selected",
+  "selectedHelper": "You'll see content from these communities in your feed",
+  "joining": "Joining…",
+  "joinCount_one": "Join {{count}} community",
+  "joinCount_other": "Join {{count}} communities"
+}

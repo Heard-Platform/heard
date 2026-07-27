@@ -31,7 +31,7 @@ export function CommunityExplorerDialog({
   onCommunitiesJoined,
   cancelButtonText,
 }: CommunityExplorerDialogProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["community", "toast"]);
   const { getExplorableSubHeards, joinSubHeard } = useDebateSession();
   const [communities, setCommunities] = useState<SubHeard[]>([]);
   const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]);
@@ -75,15 +75,15 @@ export function CommunityExplorerDialog({
       const successCount = results.filter((r) => r?.success).length;
 
       if (successCount > 0) {
-        toast.success(t("communitiesJoined", { count: successCount }));
+        toast.success(t("toast:communitiesJoined", { count: successCount }));
         onCommunitiesJoined();
         onClose();
       } else {
-        toast.error(t("joinCommunitiesFailed"));
+        toast.error(t("toast:joinCommunitiesFailed"));
       }
     } catch (error) {
       console.error("Failed to join communities:", error);
-      toast.error(t("joinCommunitiesFailed"));
+      toast.error(t("toast:joinCommunitiesFailed"));
     } finally {
       setJoining(false);
     }
@@ -99,10 +99,10 @@ export function CommunityExplorerDialog({
             <div className="p-2 bg-white/20 rounded-xl">
               <Compass className="w-6 h-6" />
             </div>
-            <DialogTitle className="text-2xl font-bold">Browse Communities</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">{t("browseCommunities")}</DialogTitle>
           </div>
           <DialogDescription className="text-green-100">
-            Explore and join public communities to expand your feed
+            {t("browseDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -120,7 +120,7 @@ export function CommunityExplorerDialog({
             <div className="text-center py-12">
               <Compass className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">
-                No new communities to explore right now
+                {t("noCommunities")}
               </p>
             </div>
           ) : (
@@ -150,11 +150,11 @@ export function CommunityExplorerDialog({
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className={iconGreen} />
                 <span className={textPrimary}>
-                  {selectedCommunities.length} {selectedCommunities.length === 1 ? 'community' : 'communities'} selected
+                  {t("communitiesSelected", { count: selectedCommunities.length })}
                 </span>
               </div>
               <p className={textMuted}>
-                You'll see content from these communities in your feed
+                {t("selectedHelper")}
               </p>
             </motion.div>
           )}
@@ -173,9 +173,9 @@ export function CommunityExplorerDialog({
             disabled={selectedCommunities.length === 0 || joining}
             className={`flex-1 ${primaryButton}`}
           >
-            {joining 
-              ? "Joining..." 
-              : `Join ${selectedCommunities.length} ${selectedCommunities.length === 1 ? "community" : "communities"}`
+            {joining
+              ? t("joining")
+              : t("joinCount", { count: selectedCommunities.length })
             }
           </Button>
         </div>
