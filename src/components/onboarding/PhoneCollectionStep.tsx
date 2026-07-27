@@ -4,6 +4,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Phone } from "lucide-react";
 import { motion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { isValidPhone, formatPhone } from "../../utils/validation";
 import { useDebateSession } from "../../hooks/useDebateSession";
 
@@ -16,6 +17,7 @@ export function PhoneCollectionStep({
   onSkip,
   onSuccess,
 }: PhoneCollectionStepProps) {
+  const { t } = useTranslation("account");
   const { sendSmsCode, verifySmsCode } = useDebateSession();
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,7 +29,7 @@ export function PhoneCollectionStep({
   const handleSendSMS = async () => {
     const phoneValid = isValidPhone(phone);
     if (!phoneValid) {
-      setError("Please enter a valid phone number");
+      setError(t("errInvalidPhone"));
       return;
     }
 
@@ -38,11 +40,11 @@ export function PhoneCollectionStep({
       if (response && response.success) {
         setSmsSent(true);
       } else {
-        setError(response?.error || "Failed to send SMS code");
+        setError(response?.error || t("errSmsFailed"));
       }
     } catch (error) {
       console.error("Failed to send SMS:", error);
-      setError("Failed to send SMS code");
+      setError(t("errSmsFailed"));
     }
     setLoading(false);
   };
@@ -59,11 +61,11 @@ export function PhoneCollectionStep({
       if (response && response.success) {
         onSuccess();
       } else {
-        setError(response?.error || "Invalid or expired code");
+        setError(response?.error || t("errInvalidCode"));
       }
     } catch (error) {
       console.error("Failed to verify SMS code:", error);
-      setError("Failed to verify code");
+      setError(t("errVerifyFailed"));
     }
     setVerifyingCode(false);
   };
@@ -86,16 +88,16 @@ export function PhoneCollectionStep({
             <Phone className="w-6 h-6 text-green-600" />
           </div>
           <p className="text-lg font-semibold text-green-900 mb-1">
-            You're in! 🎉
+            {t("youreIn")}
           </p>
           <p className="text-sm text-green-800">
-            Secure your account with phone verification?
+            {t("phoneSecurePrompt")}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="phone" className="text-sm">
-            Phone Number (Optional)
+            {t("phoneNumberOptional")}
           </Label>
           <Input
             id="phone"
@@ -108,7 +110,7 @@ export function PhoneCollectionStep({
             className="bg-white dark:bg-gray-900"
           />
           <p className="text-xs text-muted-foreground">
-            Verify your account and get notified about discussions
+            {t("phoneVerifyNote")}
           </p>
         </div>
 
@@ -130,7 +132,7 @@ export function PhoneCollectionStep({
             disabled={loading}
             className="flex-1"
           >
-            Skip
+            {t("skip")}
           </Button>
           <Button
             type="submit"
@@ -151,12 +153,12 @@ export function PhoneCollectionStep({
                 >
                   <Phone className="w-4 h-4" />
                 </motion.div>
-                Sending Code...
+                {t("sendingCode")}
               </>
             ) : (
               <>
                 <Phone className="w-4 h-4 mr-2" />
-                Send Code
+                {t("sendCode")}
               </>
             )}
           </Button>
@@ -174,16 +176,16 @@ export function PhoneCollectionStep({
       <div className="p-4 bg-green-50 border border-green-200 rounded-md text-center">
         <Phone className="w-8 h-8 mx-auto text-green-600 mb-2" />
         <p className="text-sm font-medium text-green-900">
-          Code sent via SMS!
+          {t("codeSentSms")}
         </p>
         <p className="text-xs text-green-700 mt-1">
-          Check your phone for the 6-digit code
+          {t("phoneCheckSixDigit")}
         </p>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="code" className="text-xs text-center block">
-          Enter the 6-digit code:
+          {t("phoneEnterSixDigit")}
         </Label>
         <div className="flex gap-2">
           <Input
@@ -216,7 +218,7 @@ export function PhoneCollectionStep({
                 className="w-4 h-4 heard-spinner-white"
               />
             ) : (
-              "Verify"
+              t("verify")
             )}
           </Button>
         </div>
@@ -225,7 +227,7 @@ export function PhoneCollectionStep({
           onClick={handleGoBack}
           className="text-xs text-muted-foreground hover:text-foreground transition-colors underline w-full text-center"
         >
-          Go back
+          {t("goBack")}
         </button>
       </div>
 

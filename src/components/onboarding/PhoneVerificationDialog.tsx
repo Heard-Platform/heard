@@ -10,8 +10,8 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Smartphone, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useDebateSession } from "../../hooks/useDebateSession";
-import { VERIFY_TEXT } from "../../utils/constants/text";
 
 interface PhoneVerificationDialogProps {
   open: boolean;
@@ -26,6 +26,7 @@ export function PhoneVerificationDialog({
   onClose,
   onSuccess,
 }: PhoneVerificationDialogProps) {
+  const { t } = useTranslation("account");
   const { sendSmsCode, addPhoneToAccount } = useDebateSession();
   const [step, setStep] = useState<Step>("enter-phone");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -41,14 +42,14 @@ export function PhoneVerificationDialog({
       const response = await sendSmsCode(phoneNumber);
 
       if (!response || !response.success) {
-        setError(response?.error || "Failed to send code");
+        setError(response?.error || t("errSendCode"));
         return;
       }
 
       setStep("verify-code");
     } catch (err) {
       console.error("Error sending code:", err);
-      setError("Failed to send code. Please try again.");
+      setError(t("errSendCodeRetry"));
     } finally {
       setLoading(false);
     }
@@ -62,7 +63,7 @@ export function PhoneVerificationDialog({
       const response = await addPhoneToAccount(phoneNumber, code);
 
       if (!response || !response.success) {
-        setError(response?.error || "Invalid code");
+        setError(response?.error || t("errInvalidCodeShort"));
         return;
       }
 
@@ -70,7 +71,7 @@ export function PhoneVerificationDialog({
       handleClose();
     } catch (err) {
       console.error("Error verifying code:", err);
-      setError("Failed to verify code. Please try again.");
+      setError(t("errVerifyRetry"));
     } finally {
       setLoading(false);
     }
@@ -90,12 +91,12 @@ export function PhoneVerificationDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Smartphone className="w-5 h-5" />
-            Verify Your Phone Number
+            {t("verifyPhoneTitle")}
           </DialogTitle>
           <DialogDescription>
             {step === "enter-phone"
-              ? VERIFY_TEXT
-              : "Enter the verification code sent to your phone."}
+              ? t("verifyText")
+              : t("verifyEnterCodeDesc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -103,7 +104,7 @@ export function PhoneVerificationDialog({
           {step === "enter-phone" ? (
             <>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone">{t("phoneLabel")}</Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -114,7 +115,7 @@ export function PhoneVerificationDialog({
                   disabled={loading}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Only US phone numbers are supported currently.
+                  {t("usPhoneOnly")}
                 </p>
               </div>
 
@@ -130,13 +131,13 @@ export function PhoneVerificationDialog({
                 disabled={loading || !phoneNumber}
                 className="w-full"
               >
-                {loading ? "Sending..." : "Send Verification Code"}
+                {loading ? t("sending") : t("sendVerificationCode")}
               </Button>
             </>
           ) : (
             <>
               <div className="space-y-2">
-                <Label htmlFor="code">Verification Code</Label>
+                <Label htmlFor="code">{t("verificationCodeLabel")}</Label>
                 <Input
                   id="code"
                   type="text"
@@ -148,7 +149,7 @@ export function PhoneVerificationDialog({
                   maxLength={6}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Sent to {phoneNumber}
+                  {t("sentToPhone", { phone: phoneNumber })}
                 </p>
               </div>
 
@@ -165,7 +166,7 @@ export function PhoneVerificationDialog({
                   disabled={loading || !code}
                   className="w-full"
                 >
-                  {loading ? "Verifying..." : "Verify Code"}
+                  {loading ? t("verifying") : t("verifyCode")}
                 </Button>
                 <Button
                   onClick={() => {
@@ -177,7 +178,7 @@ export function PhoneVerificationDialog({
                   disabled={loading}
                   className="w-full"
                 >
-                  Change Phone Number
+                  {t("changePhoneNumber")}
                 </Button>
               </div>
             </>
