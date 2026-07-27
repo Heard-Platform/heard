@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { Button } from "../components/ui/button";
 import { Copy, Check, ExternalLink } from "lucide-react";
 import alexPointingImg from "figma:asset/alex-pointing.png";
@@ -72,7 +72,7 @@ function ScreenshotPlaceholder({ src, alt }: { src: string; alt: string }) {
 }
 
 export function OneBillionPage() {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["screens", "toast"]);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -84,10 +84,10 @@ export function OneBillionPage() {
     try {
       await navigator.clipboard.writeText(SHARE_URL);
       setCopied(true);
-      toast.success(t("linkCopied"));
+      toast.success(t("toast:linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error(t("copyFailedManual"));
+      toast.error(t("toast:copyFailedManual"));
     }
   };
 
@@ -97,24 +97,28 @@ export function OneBillionPage() {
         <header className="text-center mb-12">
           <div className="text-6xl mb-4">🐒</div>
           <div className="inline-block px-4 py-1 mb-4 rounded-full bg-indigo-100 text-indigo-700 text-sm font-semibold uppercase tracking-wide">
-            We're in the top 10!
+            {t("obTopTen")}
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-            Help Heard win {ORG_NAME}'s contest
+            {t("obTitle", { org: ORG_NAME })}
           </h1>
           <p className="text-xl text-slate-600 leading-relaxed max-w-2xl mx-auto mb-8">
-            Heard is one of 10 finalists chosen by{" "}
-            <a
-              href={ORG_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => api.trackEvent("one_billion_click_org")}
-              className="text-indigo-600 hover:text-indigo-700 underline"
-            >
-              {ORG_NAME}
-            </a>
-            , an initiative funding projects that strengthen democracy. A few
-            quick votes could push us over the top.
+            <Trans
+              t={t}
+              i18nKey="obIntro"
+              values={{ org: ORG_NAME }}
+              components={{
+                org: (
+                  <a
+                    href={ORG_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => api.trackEvent("one_billion_click_org")}
+                    className="text-indigo-600 hover:text-indigo-700 underline"
+                  />
+                ),
+              }}
+            />
           </p>
           <a
             href={CONTEST_URL}
@@ -123,19 +127,19 @@ export function OneBillionPage() {
             onClick={() => api.trackEvent("one_billion_click_projects")}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full border-2 border-indigo-600 text-indigo-700 hover:bg-indigo-50 font-semibold transition-colors"
           >
-            See all 10 projects first
+            {t("obSeeProjects")}
             <ExternalLink className="w-5 h-5" />
           </a>
         </header>
 
         <p className="text-center text-slate-500 text-sm mb-2">
-          Voting takes about 30 seconds. Here's how:
+          {t("obVotingTakes")}
         </p>
 
         <StepRow
           number={1}
-          title="Open the form"
-          description="It's a Google Form. No login needed."
+          title={t("obStep1Title")}
+          description={t("obStep1Desc")}
         >
           <a
             href={FORM_URL}
@@ -144,30 +148,30 @@ export function OneBillionPage() {
             onClick={() => api.trackEvent("one_billion_click_form")}
             className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-semibold shadow-lg transition-colors"
           >
-            Open the voting form
+            {t("obOpenForm")}
             <ExternalLink className="w-5 h-5" />
           </a>
         </StepRow>
 
         <StepRow
           number={2}
-          title="Scroll down"
-          description="Past the intro and the project descriptions, until you reach the voting question."
+          title={t("obStep2Title")}
+          description={t("obStep2Desc")}
         >
           <ScreenshotPlaceholder
             src={step2Img}
-            alt="Screenshot showing where to scroll on the form"
+            alt={t("obStep2Alt")}
           />
         </StepRow>
 
         <StepRow
           number={3}
-          title={`Enter "${HEARD_NUMBER}" and submit`}
-          description={`Type the number ${HEARD_NUMBER} (that's Heard) in the first box, then hit submit. You can also put numbers in the next fields to vote for other projects. That's it!`}
+          title={t("obStep3Title", { number: HEARD_NUMBER })}
+          description={t("obStep3Desc", { number: HEARD_NUMBER })}
         >
           <ScreenshotPlaceholder
             src={step3Img}
-            alt={`Screenshot showing the number ${HEARD_NUMBER} entered in the first box`}
+            alt={t("obStep3Alt", { number: HEARD_NUMBER })}
           />
         </StepRow>
 
@@ -180,11 +184,10 @@ export function OneBillionPage() {
             />
             <div className="text-center sm:text-left">
               <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
-                You rock 🎸
+                {t("obYouRock")}
               </h2>
               <p className="text-slate-700 leading-relaxed mb-2">
-                If you want to be even more of a rock star, send this to one other
-                person and ask them to vote too. You have my everlasting gratitude. 🙏
+                {t("obRockStar")}
               </p>
               <p>- Alex</p>
             </div>
@@ -204,12 +207,12 @@ export function OneBillionPage() {
               {copied ? (
                 <>
                   <Check className="w-5 h-5 mr-2" />
-                  Copied
+                  {t("obCopied")}
                 </>
               ) : (
                 <>
                   <Copy className="w-5 h-5 mr-2" />
-                  Copy link
+                  {t("obCopyLink")}
                 </>
               )}
             </Button>
@@ -217,7 +220,7 @@ export function OneBillionPage() {
         </section>
 
         <footer className="text-center mt-16 text-slate-400 text-sm">
-          Thanks for helping out. The Heard Team 🐒
+          {t("obFooter")}
         </footer>
       </div>
     </div>

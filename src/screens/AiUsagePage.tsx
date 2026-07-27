@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   AreaChart,
   Area,
@@ -64,6 +65,7 @@ function StatCard({ label, value }: StatCardProps) {
 }
 
 export function AiUsagePage() {
+  const { t } = useTranslation("screens");
   const [data, setData] = useState<AiUsageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -97,43 +99,40 @@ export function AiUsagePage() {
             ← heard.vote
           </a>
           <h1 style={{ fontSize: 36, fontWeight: 700, color: "#0f172a", margin: "16px 0 12px" }}>
-            AI Usage
+            {t("aiUsageTitle")}
           </h1>
           <p style={{ fontSize: 18, color: "#475569", lineHeight: 1.7, maxWidth: 680 }}>
-            We are committed to responsible AI usage and transparency in all our business practices.
-            Heard uses AI to help moderate content and surface insights from community conversations.
-            This page shows our real-time API usage — tokens consumed by day and by endpoint — so you can see
-            exactly how we're using these tools.
+            {t("aiUsageIntro")}
           </p>
         </div>
 
         {loading && (
-          <p style={{ color: "#94a3b8", fontSize: 16 }}>Loading usage data...</p>
+          <p style={{ color: "#94a3b8", fontSize: 16 }}>{t("aiUsageLoading")}</p>
         )}
 
         {error && (
-          <p style={{ color: "#dc2626", fontSize: 16 }}>Error: {error}</p>
+          <p style={{ color: "#dc2626", fontSize: 16 }}>{t("aiUsageError", { error })}</p>
         )}
 
         {data && (
           <>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 48 }}>
-              <StatCard label="Total API Calls" value={data.totals.totalCalls.toLocaleString()} />
-              <StatCard label="Total Tokens" value={formatTokens(data.totals.totalTokens)} />
-              <StatCard label="Input Tokens" value={formatTokens(data.totals.inputTokens)} />
-              <StatCard label="Output Tokens" value={formatTokens(data.totals.outputTokens)} />
+              <StatCard label={t("aiStatTotalCalls")} value={data.totals.totalCalls.toLocaleString()} />
+              <StatCard label={t("aiStatTotalTokens")} value={formatTokens(data.totals.totalTokens)} />
+              <StatCard label={t("aiStatInputTokens")} value={formatTokens(data.totals.inputTokens)} />
+              <StatCard label={t("aiStatOutputTokens")} value={formatTokens(data.totals.outputTokens)} />
             </div>
 
             <div style={{ backgroundColor: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: 32, marginBottom: 48 }}>
               <h2 style={{ fontSize: 20, fontWeight: 600, color: "#0f172a", marginBottom: 8 }}>
-                Token Usage by Day
+                {t("aiUsageChartTitle")}
               </h2>
               <p style={{ fontSize: 14, color: "#94a3b8", marginBottom: 24 }}>
-                Total tokens consumed per day, broken down by endpoint.
+                {t("aiUsageChartSubtitle")}
               </p>
 
               {data.timeline.length === 0 ? (
-                <p style={{ color: "#94a3b8", fontSize: 14 }}>No usage recorded yet.</p>
+                <p style={{ color: "#94a3b8", fontSize: 14 }}>{t("aiUsageNoData")}</p>
               ) : (
                 <ResponsiveContainer width="100%" height={360}>
                   <AreaChart data={data.timeline} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
@@ -186,7 +185,7 @@ export function AiUsagePage() {
             </div>
 
             <p style={{ fontSize: 13, color: "#94a3b8", textAlign: "center" }}>
-              Data updates in real time. Tracking began June 2026.
+              {t("aiUsageFooter")}
             </p>
           </>
         )}
