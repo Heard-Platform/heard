@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { flushSync } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
@@ -8,17 +9,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
 import { useVoiceTranscription } from "../../hooks/useVoiceTranscription";
 import _ from "lodash";
-
-const topicExamples = _.shuffle([
-  "The 14th St Trader Joe's parking lot is a mess and they should limit its use",
-  "Pineapple on pizza is actually good, even if it's a little weird",
-  "Men In Black 3 is an underrated sequel! (But MIB 2 was no good)",
-  "The best way to eat Oreos is to dunk them in orange juice",
-  "We need more green spaces around the city, even if it means fewer parking spots",
-  "People who don't like cats just haven't met the right one yet",
-  "The DC Metro needs to run 24/7 like NYC to support nightlife and shift workers",
-  "Breakfast foods are superior to all other meals and should be eaten at any time",
-]);
 
 type EntryMode = "voice" | "text";
 
@@ -38,6 +28,11 @@ export function WriteRantStep({
   remainingChars,
   onRantChange,
 }: WriteRantStepProps) {
+  const { t, i18n } = useTranslation("create");
+  const topicExamples = useMemo(
+    () => _.shuffle(t("rantExamples", { returnObjects: true }) as string[]),
+    [i18n.language],
+  );
   const [showExamples, setShowExamples] = useState(false);
   const [mode, setMode] = useState<EntryMode>(() =>
     rant.length > 0 ? "text" : "voice",
@@ -88,7 +83,7 @@ export function WriteRantStep({
       <button
         type="button"
         onClick={handleStartRecording}
-        aria-label="Start recording"
+        aria-label={t("startRecording")}
         style={{
           width: MIC_BUTTON_SIZE_PX,
           height: MIC_BUTTON_SIZE_PX,
@@ -109,7 +104,7 @@ export function WriteRantStep({
         onClick={handleSwitchToText}
         className="text-slate-700 border-slate-300 hover:bg-slate-50"
       >
-        Type it out instead
+        {t("typeItOut")}
       </Button>
     </div>
   );
@@ -141,7 +136,7 @@ export function WriteRantStep({
       >
         <Textarea
           id="rant-input"
-          placeholder="Let it all out... tell us what you really think! 🔥"
+          placeholder={t("rantPlaceholder")}
           maxLength={2000}
           value={rant}
           onChange={(e) => onRantChange(e.target.value)}
@@ -166,7 +161,7 @@ export function WriteRantStep({
             onClick={() => onRantChange("")}
             className="absolute bottom-3 right-3 text-xs text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
           >
-            Tap to start over
+            {t("tapToStartOver")}
           </motion.button>
         )}
       </AnimatePresence>
@@ -189,7 +184,7 @@ export function WriteRantStep({
                 htmlFor="rant-input"
                 className="text-base text-slate-700"
               >
-                What's got you fired up?
+                {t("whatsGotYouFiredUp")}
               </Label>
             </div>
             {mode === "text" && (
@@ -209,7 +204,7 @@ export function WriteRantStep({
                 ) : (
                   <Mic className="w-3.5 h-3.5" />
                 )}
-                {isRecording ? "Stop recording" : "Begin recording"}
+                {isRecording ? t("stopRecording") : t("beginRecording")}
               </Button>
             )}
           </div>
@@ -235,7 +230,7 @@ export function WriteRantStep({
                 className="text-xs text-teal-700 hover:text-teal-900 hover:bg-teal-100/50 flex items-center gap-1 h-auto px-2 py-1 -ml-2"
               >
                 <Lightbulb className="w-3.5 h-3.5" />
-                {showExamples ? "Hide" : "Need inspiration?"}
+                {showExamples ? t("hideExamples") : t("needInspiration")}
               </Button>
             )}
             {mode === "text" &&
@@ -247,8 +242,7 @@ export function WriteRantStep({
                   className="text-orange-600 flex items-center gap-1"
                 >
                   <span>⏳</span>
-                  Need {remainingChars} more character
-                  {remainingChars !== 1 ? "s" : ""}
+                  {t("needMoreChars", { count: remainingChars })}
                 </motion.span>
               )}
             {mode === "text" && isRantValid && (
@@ -257,7 +251,7 @@ export function WriteRantStep({
                 animate={{ scale: 1 }}
                 className="text-emerald-600 flex items-center gap-1"
               >
-                <span>🔥</span> That's the spirit!
+                <span>🔥</span> {t("thatsTheSpirit")}
               </motion.span>
             )}
             {mode === "text" && (
@@ -269,8 +263,7 @@ export function WriteRantStep({
           <div className="flex items-start gap-2 px-3 py-2 bg-teal-50/50 border border-teal-100 rounded-lg">
             <span className="text-xs">🔒</span>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Your rant is private — it's just used to draft the post
-              topic and won't be visible to other users.
+              {t("rantPrivateNote")}
             </p>
           </div>
         </div>

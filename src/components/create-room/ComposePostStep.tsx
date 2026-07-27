@@ -4,6 +4,7 @@ import { TopicDescriptionFields } from "./TopicDescriptionFields";
 import { FunSheetCard } from "../FunSheet";
 import { SeedStatements } from "./SeedStatements";
 import { useState } from "react";
+import { useTranslation, Trans } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ export function ComposePostStep({
   onSwitchToRantMode,
   showError,
 }: ComposePostStepProps) {
+  const { t } = useTranslation("create");
   const iconGreen = "w-5 h-5 text-green-500";
   const labelText = "text-base text-slate-700";
 
@@ -44,7 +46,7 @@ export function ComposePostStep({
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Sparkles className={iconGreen} />
-            <span className={labelText}>Conversation</span>
+            <span className={labelText}>{t("conversationLabel")}</span>
           </div>
           <TopicDescriptionFields
             topic={topic}
@@ -60,7 +62,7 @@ export function ComposePostStep({
             onClick={() => setIsHelpDialogOpen(true)}
           >
             <HelpCircle className="w-3.5 h-3.5" />
-            How does this work?
+            {t("howDoesThisWork")}
           </Button>
         </div>
       </FunSheetCard>
@@ -76,7 +78,7 @@ export function ComposePostStep({
         <div className="text-center space-y-3">
           <div className="border-t border-slate-200 pt-4">
             <p className="text-sm text-slate-600 mb-3">
-              Prefer to start with a free-form rant instead?
+              {t("preferRant")}
             </p>
             <Button
               type="button"
@@ -85,7 +87,7 @@ export function ComposePostStep({
               className="bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border-2 border-purple-300 hover:border-purple-400"
             >
               <Wand2 className="w-4 h-4 mr-2 text-purple-600" />
-              <span className="text-purple-700">Switch to Rant Mode</span>
+              <span className="text-purple-700">{t("switchToRantMode")}</span>
             </Button>
           </div>
         </div>
@@ -94,9 +96,9 @@ export function ComposePostStep({
       <Dialog open={isHelpDialogOpen} onOpenChange={setIsHelpDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-slate-800">Example: How It Works</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-slate-800">{t("helpDialogTitle")}</DialogTitle>
             <DialogDescription className="text-slate-600">
-              Your <strong>topic</strong> describes what the conversation is about. Your <strong>seed statements</strong> are what people will vote on (agree/disagree/pass). People can also add their own statements to be voted on.
+              <Trans t={t} i18nKey="helpDialogDescription" components={{ strong: <strong /> }} />
             </DialogDescription>
           </DialogHeader>
           
@@ -104,34 +106,34 @@ export function ComposePostStep({
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="w-4 h-4 text-blue-500" />
-                <span className="font-semibold text-sm text-slate-700">Topic (not voted on)</span>
+                <span className="font-semibold text-sm text-slate-700">{t("helpTopicLabel")}</span>
               </div>
               <p className="text-sm text-slate-700 leading-relaxed">
-                Should our city invest more in public transportation?
+                {t("helpExampleTopic")}
               </p>
             </div>
 
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="w-4 h-4 text-green-500" />
-                <span className="font-semibold text-sm text-slate-700">Seed Statements</span>
+                <span className="font-semibold text-sm text-slate-700">{t("seedStatementsLabel")}</span>
               </div>
               <div className="space-y-2">
                 <div className="bg-white rounded-md p-3 border border-green-200">
-                  <p className="text-sm text-slate-700">Public transportation reduces traffic congestion and improves air quality</p>
+                  <p className="text-sm text-slate-700">{t("helpExampleStatement1")}</p>
                 </div>
                 <div className="bg-white rounded-md p-3 border border-green-200">
-                  <p className="text-sm text-slate-700">The cost of expanding public transit is too high for our city's budget</p>
+                  <p className="text-sm text-slate-700">{t("helpExampleStatement2")}</p>
                 </div>
                 <div className="bg-white rounded-md p-3 border border-green-200">
-                  <p className="text-sm text-slate-700">Investing in bike lanes would be more cost-effective than buses or trains</p>
+                  <p className="text-sm text-slate-700">{t("helpExampleStatement3")}</p>
                 </div>
               </div>
             </div>
 
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
               <p className="text-xs text-slate-600 leading-relaxed">
-                💡 People will see the topic at the top, then vote agree/disagree/pass on each statement. The system clusters people by how they vote to find common ground.
+                {t("helpClusterNote")}
               </p>
             </div>
           </div>
