@@ -16,5 +16,12 @@
   "selectedHelper": "Verás contenido de estas comunidades en tu feed",
   "joining": "Uniéndote…",
   "joinCount_one": "Unirte a {{count}} comunidad",
-  "joinCount_other": "Unirte a {{count}} comunidades"
+  "joinCount_other": "Unirte a {{count}} comunidades",
+  "allPosts": "Todas las publicaciones",
+  "browseSheetDescription": "Selecciona una comunidad para filtrar las publicaciones por tema",
+  "browseNewCommunities": "Explorar nuevas comunidades",
+  "unlistedCommunity": "Comunidad no listada",
+  "unlistedDesc": "No aparecerá en la lista pública. Solo quienes tengan el enlace podrán verla.",
+  "modOnlyPosting": "Publicación solo para moderadores",
+  "modOnlyDesc": "Solo los moderadores pueden crear conversaciones."
 }

@@ -1,5 +1,6 @@
 import type { SubHeard, UserSession } from "../../types";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import {
@@ -52,6 +53,7 @@ export function SubHeardBrowser({
   onOpenExplorer,
   onLogoClick,
 }: SubHeardBrowserProps) {
+  const { t } = useTranslation("community");
   const { getSubHeards, leaveSubHeard } = useDebateSession();
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,7 +101,7 @@ export function SubHeardBrowser({
 
   const displayText = currentSubHeard
     ? formatSubHeardDisplay(currentSubHeard)
-    : "All Posts";
+    : t("allPosts");
 
   const handleRefreshManagingSubHeard = async () => {
     const response = await getSubHeards();
@@ -173,9 +175,9 @@ export function SubHeardBrowser({
 
         <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>Browse Communities</SheetTitle>
+            <SheetTitle>{t("browseCommunities")}</SheetTitle>
             <SheetDescription>
-              Select a community to filter posts by topic
+              {t("browseSheetDescription")}
             </SheetDescription>
           </SheetHeader>
 
@@ -190,7 +192,7 @@ export function SubHeardBrowser({
                 }}
               >
                 <Compass className="w-4 h-4 mr-2 text-green-600" />
-                <span className="text-green-700">Browse New Communities</span>
+                <span className="text-green-700">{t("browseNewCommunities")}</span>
               </Button>
             )}
 
@@ -206,7 +208,7 @@ export function SubHeardBrowser({
               }}
             >
               <Plus className="w-4 h-4 mr-2 text-green-600" />
-              <span className="text-green-700">Create New Community</span>
+              <span className="text-green-700">{t("createNewCommunity")}</span>
             </Button>
 
             <Button
@@ -215,7 +217,7 @@ export function SubHeardBrowser({
               onClick={() => handleSelectSubHeard(null)}
             >
               <Home className="w-4 h-4 mr-2" />
-              All Posts
+              {t("allPosts")}
             </Button>
 
             {loading ? (

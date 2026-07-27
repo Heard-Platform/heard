@@ -1,5 +1,6 @@
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
+import { useTranslation } from "react-i18next";
 import type { SubHeard } from "../../types";
 
 interface SettingConfig {
@@ -8,21 +9,6 @@ interface SettingConfig {
   description: string;
   key: keyof Pick<SubHeard, 'isPrivate' | 'hostOnlyPosting'>;
 }
-
-const SETTINGS: SettingConfig[] = [
-  {
-    id: "privacy-toggle",
-    label: "Unlisted Community",
-    description: "Won't appear in public list. Only people with the link can see it.",
-    key: "isPrivate",
-  },
-  {
-    id: "posting-permissions-toggle",
-    label: "Mod-Only Posting",
-    description: "Only moderators can create debates.",
-    key: "hostOnlyPosting",
-  },
-];
 
 interface CommunitySettingsPanelProps {
   community: Partial<SubHeard>;
@@ -35,6 +21,21 @@ export function CommunitySettingsPanel({
   isUpdating,
   onChange,
 }: CommunitySettingsPanelProps) {
+  const { t } = useTranslation("community");
+  const SETTINGS: SettingConfig[] = [
+    {
+      id: "privacy-toggle",
+      label: t("unlistedCommunity"),
+      description: t("unlistedDesc"),
+      key: "isPrivate",
+    },
+    {
+      id: "posting-permissions-toggle",
+      label: t("modOnlyPosting"),
+      description: t("modOnlyDesc"),
+      key: "hostOnlyPosting",
+    },
+  ];
   return (
     <div className="space-y-6">
       {SETTINGS.map((setting) => (

@@ -16,5 +16,12 @@
   "selectedHelper": "You'll see content from these communities in your feed",
   "joining": "Joining…",
   "joinCount_one": "Join {{count}} community",
-  "joinCount_other": "Join {{count}} communities"
+  "joinCount_other": "Join {{count}} communities",
+  "allPosts": "All Posts",
+  "browseSheetDescription": "Select a community to filter posts by topic",
+  "browseNewCommunities": "Browse New Communities",
+  "unlistedCommunity": "Unlisted Community",
+  "unlistedDesc": "Won't appear in public list. Only people with the link can see it.",
+  "modOnlyPosting": "Mod-Only Posting",
+  "modOnlyDesc": "Only moderators can create debates."
 }
