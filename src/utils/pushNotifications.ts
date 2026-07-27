@@ -17,10 +17,7 @@ export async function sendTestPushNotification(): Promise<void> {
   }
 
   const registration = await navigator.serviceWorker.ready;
-  await registration.showNotification("Heard", {
-    body: "This is a test push notification 🎉",
-    icon: "/monkey.png",
-    badge: "/monkey.png",
-    data: { url: window.location.href },
-  });
+  const delayMs = 3000;
+  alert(`Notification will fire in ${delayMs / 1000}s — background the app now to see it as a banner.`);
+  registration.active?.postMessage({ type: "SCHEDULE_TEST_NOTIFICATION", delayMs });
 }
