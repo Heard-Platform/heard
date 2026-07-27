@@ -1,21 +1,18 @@
 import { motion } from "motion/react";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-
-interface MenuItem {
-  label: string;
-  href: string;
-}
-
-const menuItems: MenuItem[] = [
-  { label: "About Heard", href: "https://www.heardapp.org" },
-  { label: "About the Team", href: "https://www.heardapp.org/team" },
-  { label: "Read the Heardifesto", href: "https://www.heardapp.org/heardifesto" },
-  { label: "Help & Support", href: "https://www.heardapp.org/support" },
-];
+import { useTranslation } from "react-i18next";
 
 export function HamburgerMenu() {
+  const { t } = useTranslation("menu");
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const menuItems = [
+    { label: t("aboutHeard"), href: "https://www.heardapp.org" },
+    { label: t("aboutTeam"), href: "https://www.heardapp.org/team" },
+    { label: t("heardifesto"), href: "https://www.heardapp.org/heardifesto" },
+    { label: t("helpSupport"), href: "https://www.heardapp.org/support" },
+  ];
 
   return (
     <>
@@ -42,7 +39,7 @@ export function HamburgerMenu() {
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-pink-50 opacity-50" />
           {menuItems.map((item) => (
             <a
-              key={item.label}
+              key={item.href}
               href={item.href}
               target="_blank"
               rel="noopener noreferrer"

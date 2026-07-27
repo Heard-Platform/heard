@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
 import {
   Sheet,
@@ -39,32 +40,8 @@ import { AvatarAlertDot } from "./side-panel/AvatarAlertDot";
 import { useRoomAlertsContext } from "../contexts/RoomAlertsContext";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { PhoneVerificationDialog } from "./onboarding/PhoneVerificationDialog";
-import { VERIFY_TEXT } from "../utils/constants/text";
 import { UserRankDisplay } from "./side-panel/UserRankDisplay";
 import { FeedbackSheet } from "./FeedbackSheet";
-
-const learnMoreLinks = [
-  {
-    icon: Info,
-    label: "About Heard",
-    url: "https://amasonlong.notion.site/About-Heard-2cc4ab4bf00380a9b63ce3b83234ae02?pvs=73",
-  },
-  {
-    icon: Target,
-    label: "Founder's July 4th Goals",
-    url: "https://youtu.be/JM0WUrFkYZc",
-  },
-  {
-    icon: Heart,
-    label: "Support Heard on GoFundMe",
-    url: "https://www.gofundme.com/f/support-heard-making-democracy-fun-and-engaging",
-  },
-  {
-    icon: Video,
-    label: "Live Streams",
-    url: "https://www.youtube.com/@AlexLongHeard",
-  },
-];
 
 interface SidePanelMenuProps {
   user: UserSession;
@@ -97,10 +74,34 @@ export function SidePanelMenu({
   onShowAccountSetupModal,
   onJumpToRoom,
 }: SidePanelMenuProps) {
+  const { t } = useTranslation("menu");
   const [menuOpen, setMenuOpen] = useState(false);
   const [phoneVerificationOpen, setPhoneVerificationOpen] = useState(false);
   const [feedbackSheetOpen, setFeedbackSheetOpen] = useState(false);
   const { refresh: refreshAlerts } = useRoomAlertsContext();
+
+  const learnMoreLinks = [
+    {
+      icon: Info,
+      label: t("aboutHeard"),
+      url: "https://amasonlong.notion.site/About-Heard-2cc4ab4bf00380a9b63ce3b83234ae02?pvs=73",
+    },
+    {
+      icon: Target,
+      label: t("founderGoals"),
+      url: "https://youtu.be/JM0WUrFkYZc",
+    },
+    {
+      icon: Heart,
+      label: t("supportGoFundMe"),
+      url: "https://www.gofundme.com/f/support-heard-making-democracy-fun-and-engaging",
+    },
+    {
+      icon: Video,
+      label: t("liveStreams"),
+      url: "https://www.youtube.com/@AlexLongHeard",
+    },
+  ];
 
   const handleSheetOpenChange = (open: boolean) => {
     setMenuOpen(open);
@@ -123,7 +124,7 @@ export function SidePanelMenu({
       >
         <div className="flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-white" />
-          <span className="font-bold text-sm text-white">Sign Up</span>
+          <span className="font-bold text-sm text-white">{t("signUp")}</span>
         </div>
       </Button>
     );
@@ -230,9 +231,9 @@ export function SidePanelMenu({
         </SheetTrigger>
         <SheetContent side="right" className="flex flex-col">
           <SheetHeader>
-            <SheetTitle>Menu</SheetTitle>
+            <SheetTitle>{t("title")}</SheetTitle>
             <SheetDescription>
-              User settings and options
+              {t("subtitle")}
             </SheetDescription>
           </SheetHeader>
 
@@ -248,7 +249,7 @@ export function SidePanelMenu({
 
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-sm text-green-600 mt-1">
-                Score: {user.score}
+                {t("score", { score: user.score })}
               </p>
             </div>
 
@@ -258,11 +259,10 @@ export function SidePanelMenu({
                   <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-orange-800 font-medium text-sm">
-                      Your score isn't being saved
+                      {t("anonScoreNotSaved")}
                     </p>
                     <p className="text-orange-700 text-xs mt-1">
-                      Sign in or setup an account to save your score,
-                      make rooms, and access more features.
+                      {t("anonScoreHelp")}
                     </p>
                   </div>
                 </div>
@@ -274,7 +274,7 @@ export function SidePanelMenu({
                   size="sm"
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                 >
-                  Signup or Login
+                  {t("signupOrLogin")}
                 </Button>
               </div>
             )}
@@ -285,10 +285,10 @@ export function SidePanelMenu({
                   <ShieldAlert className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-amber-900 font-medium text-sm">
-                      Verify your account
+                      {t("verifyAccount")}
                     </p>
                     <p className="text-amber-700 text-xs mt-1">
-                      {VERIFY_TEXT}
+                      {t("verifyText")}
                     </p>
                   </div>
                 </div>
@@ -301,7 +301,7 @@ export function SidePanelMenu({
                   className="w-full bg-amber-600 hover:bg-amber-700 text-white"
                 >
                   <Smartphone className="w-3 h-3 mr-2" />
-                  Add Phone Number
+                  {t("addPhoneNumber")}
                 </Button>
               </div>
             )}
@@ -311,7 +311,7 @@ export function SidePanelMenu({
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   <p className="text-emerald-900 font-medium text-sm">
-                    Verified
+                    {t("verified")}
                   </p>
                 </div>
               </div>
@@ -323,7 +323,7 @@ export function SidePanelMenu({
               className="w-full"
             >
               <HelpCircle className="w-4 h-4 mr-2" />
-              Help
+              {t("help")}
             </Button>
 
             {!user.isAnonymous && (
@@ -333,7 +333,7 @@ export function SidePanelMenu({
                 className="w-full"
               >
                 <LogOut className="w-4 h-4 mr-2" />
-                Logout
+                {t("logout")}
               </Button>
             )}
 
@@ -372,7 +372,7 @@ export function SidePanelMenu({
 
             <div className="border-t pt-4">
               <h3 className="font-medium mb-3 text-sm text-muted-foreground">
-                Learn More
+                {t("learnMore")}
               </h3>
               <div className="space-y-2">
                 <Button
@@ -389,10 +389,10 @@ export function SidePanelMenu({
                     </div>
                     <div className="flex flex-col items-start flex-1">
                       <span className="font-bold text-purple-900">
-                        Talk to Founder
+                        {t("talkToFounder")}
                       </span>
                       <span className="text-xs text-purple-600">
-                        Chat with Alex!
+                        {t("chatWithAlex")}
                       </span>
                     </div>
                     <span className="text-xl">💜</span>
