@@ -20,4 +20,8 @@ export async function sendTestPushNotification(): Promise<void> {
   const delayMs = 3000;
   alert(`Notification will fire in ${delayMs / 1000}s — background the app now to see it as a banner.`);
   registration.active?.postMessage({ type: "SCHEDULE_TEST_NOTIFICATION", delayMs });
+
+  if ("setAppBadge" in navigator) {
+    navigator.setAppBadge(1);
+  }
 }

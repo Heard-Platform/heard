@@ -35,6 +35,9 @@ self.addEventListener("message", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+  if ("clearAppBadge" in navigator) {
+    navigator.clearAppBadge();
+  }
   const url = event.notification.data?.url || "/";
   event.waitUntil(
     self.clients
