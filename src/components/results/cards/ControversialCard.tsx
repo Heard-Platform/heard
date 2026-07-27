@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Flame, MessageCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../../ui/button";
 import { Progress } from "../../ui/progress";
 import type { Statement } from "../../../types";
@@ -15,14 +16,15 @@ export function ControversialCard({
   statements,
   onDiscuss,
 }: ControversialCardProps) {
+  const { t } = useTranslation("results");
   const analysis = analyzeStatements(statements);
 
   return (
     <div className="space-y-4">
       <CardHeader
         icon={<Flame className="w-6 h-6 text-orange-500" />}
-        title="Spicy Takes"
-        subtitle="Where opinions got heated"
+        title={t("spicyTakesTitle")}
+        subtitle={t("spicyTakesSubtitle")}
         gradientFrom="from-orange-600"
         gradientTo="to-red-600"
       />
@@ -45,10 +47,10 @@ export function ControversialCard({
               <div className="flex-1 space-y-2">
                 <div className="heard-between text-xs">
                   <span className="text-green-600 font-medium">
-                    {statement.agrees} agreed
+                    {t("agreedCount", { count: statement.agrees })}
                   </span>
                   <span className="text-red-600 font-medium">
-                    {statement.disagrees} disagreed
+                    {t("disagreedCount", { count: statement.disagrees })}
                   </span>
                 </div>
                 <Progress
@@ -69,14 +71,14 @@ export function ControversialCard({
                 onClick={() => onDiscuss(statement.text)}
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
-                Discuss This
+                {t("discussThis")}
               </Button>
             )}
           </motion.div>
         ))}
         {analysis.controversial.length === 0 && (
           <p className="text-center text-muted-foreground py-8">
-            No controversial statements found
+            {t("noControversial")}
           </p>
         )}
       </div>

@@ -3,7 +3,7 @@ import type { Statement } from "../../types";
 
 export interface ClusterData {
   id: string;
-  theme: string;
+  themeKey: string;
   statements: Statement[];
   avgVotes: number;
   size: number;
@@ -113,7 +113,7 @@ export const analyzeStatements = (statements: Statement[]) => {
   const clusters: ClusterData[] = [
     {
       id: "pro",
-      theme: "Supportive Views",
+      themeKey: "clusterSupportive",
       statements: statements.filter(
         (s) =>
           s.text.toLowerCase().includes("good") ||
@@ -125,7 +125,7 @@ export const analyzeStatements = (statements: Statement[]) => {
     },
     {
       id: "against",
-      theme: "Critical Views",
+      themeKey: "clusterCritical",
       statements: statements.filter(
         (s) =>
           s.text.toLowerCase().includes("bad") ||
@@ -137,7 +137,7 @@ export const analyzeStatements = (statements: Statement[]) => {
     },
     {
       id: "nuanced",
-      theme: "Nuanced Views",
+      themeKey: "clusterNuanced",
       statements: statements.filter(
         (s) =>
           s.text.toLowerCase().includes("but") ||

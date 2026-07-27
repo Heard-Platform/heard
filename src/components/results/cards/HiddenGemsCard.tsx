@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Sparkles, ThumbsUp, ThumbsDown, MessageCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import type { Statement } from "../../../types";
@@ -15,6 +16,7 @@ export function HiddenGemsCard({
   statements,
   onDiscuss,
 }: HiddenGemsCardProps) {
+  const { t } = useTranslation("results");
   const analysis = analyzeStatements(statements);
   const smallestCluster = analysis.clusters.sort((a, b) => a.size - b.size)[0];
   const minorityStatements = smallestCluster?.statements || [];
@@ -23,8 +25,8 @@ export function HiddenGemsCard({
     <div className="space-y-4">
       <CardHeader
         icon={<Sparkles className="w-6 h-6 text-purple-500" />}
-        title="Hidden Gems"
-        subtitle="Fresh perspectives worth exploring"
+        title={t("hiddenGemsTitle")}
+        subtitle={t("hiddenGemsSubtitle")}
         gradientFrom="from-purple-600"
         gradientTo="to-pink-600"
       />
@@ -39,14 +41,14 @@ export function HiddenGemsCard({
           >
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium text-purple-800">
-                {smallestCluster?.theme}
+                {smallestCluster ? t(smallestCluster.themeKey) : null}
               </h3>
               <Badge variant="secondary" className="bg-purple-100">
-                {smallestCluster?.size} statements
+                {t("statementCount", { count: smallestCluster?.size ?? 0 })}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
-              A rare take that brings something different to the conversation—and we love it.
+              {t("rareTake")}
             </p>
           </motion.div>
 
@@ -80,7 +82,7 @@ export function HiddenGemsCard({
                     onClick={() => onDiscuss(statement.text)}
                   >
                     <MessageCircle className="w-3 h-3 mr-1" />
-                    Discuss
+                    {t("discuss")}
                   </Button>
                 )}
               </motion.div>
@@ -90,7 +92,7 @@ export function HiddenGemsCard({
           {/* Cluster visualization */}
           <div className="space-y-2">
             <h4 className="text-xs font-medium text-center">
-              Opinion Clusters
+              {t("opinionClusters")}
             </h4>
             <div className="flex items-center justify-center gap-2 flex-wrap">
               {analysis.clusters.map((cluster, index) => (
@@ -112,7 +114,7 @@ export function HiddenGemsCard({
                     {cluster.size}
                   </motion.div>
                   <p className="text-xs text-muted-foreground mt-1 max-w-[80px] text-center line-clamp-1">
-                    {cluster.theme}
+                    {t(cluster.themeKey)}
                   </p>
                 </motion.div>
               ))}
@@ -121,7 +123,7 @@ export function HiddenGemsCard({
         </div>
       ) : (
         <p className="text-center text-muted-foreground py-8">
-          Not enough data to identify clusters yet
+          {t("notEnoughClusters")}
         </p>
       )}
     </div>

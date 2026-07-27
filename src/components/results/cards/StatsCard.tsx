@@ -1,4 +1,5 @@
 import { Zap } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { Statement } from "../../../types";
 import { analyzeStatements } from "../utils";
 import { CardHeader } from "../CardHeader";
@@ -9,14 +10,15 @@ interface StatsCardProps {
 }
 
 export function StatsCard({ statements }: StatsCardProps) {
+  const { t } = useTranslation("results");
   const analysis = analyzeStatements(statements);
 
   return (
     <div className="space-y-4">
       <CardHeader
         icon={<Zap className="w-6 h-6 text-blue-500" />}
-        title="By The Numbers"
-        subtitle="The stats behind the conversation"
+        title={t("statsTitle")}
+        subtitle={t("statsSubtitle")}
         gradientFrom="from-blue-600"
         gradientTo="to-green-600"
       />
@@ -24,7 +26,7 @@ export function StatsCard({ statements }: StatsCardProps) {
       <div className="grid grid-cols-2 gap-3">
         <StatCard
           value={statements.filter((s) => s.agrees > 0).length}
-          label="✨ Statements with agrees"
+          label={t("statAgrees")}
           gradientFrom="from-blue-50"
           gradientTo="to-blue-100"
           borderColor="border-blue-300"
@@ -37,7 +39,7 @@ export function StatsCard({ statements }: StatsCardProps) {
             (sum, s) => sum + s.agrees + s.disagrees + s.passes,
             0
           )}
-          label="🗳️ Total votes cast"
+          label={t("statTotalVotes")}
           gradientFrom="from-purple-50"
           gradientTo="to-purple-100"
           borderColor="border-purple-300"
@@ -47,7 +49,7 @@ export function StatsCard({ statements }: StatsCardProps) {
 
         <StatCard
           value={analysis.byType.bridge.length}
-          label="🌉 Bridges found"
+          label={t("statBridges")}
           gradientFrom="from-green-50"
           gradientTo="to-green-100"
           borderColor="border-green-300"
@@ -57,7 +59,7 @@ export function StatsCard({ statements }: StatsCardProps) {
 
         <StatCard
           value={analysis.byType.crux.length}
-          label="🎯 Cruxes identified"
+          label={t("statCruxes")}
           gradientFrom="from-red-50"
           gradientTo="to-red-100"
           borderColor="border-red-300"
@@ -67,7 +69,7 @@ export function StatsCard({ statements }: StatsCardProps) {
 
         <StatCard
           value={analysis.controversial.length}
-          label="🌶️ Spicy takes"
+          label={t("statSpicy")}
           gradientFrom="from-orange-50"
           gradientTo="to-orange-100"
           borderColor="border-orange-300"
@@ -77,7 +79,7 @@ export function StatsCard({ statements }: StatsCardProps) {
 
         <StatCard
           value={analysis.clusters.length}
-          label="🎯 Opinion clusters"
+          label={t("statClusters")}
           gradientFrom="from-pink-50"
           gradientTo="to-pink-100"
           borderColor="border-pink-300"

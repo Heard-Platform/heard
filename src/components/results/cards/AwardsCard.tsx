@@ -1,4 +1,5 @@
 import { Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { Statement } from "../../../types";
 import { analyzeStatements } from "../utils";
 import { CardHeader } from "../CardHeader";
@@ -9,6 +10,7 @@ interface AwardsCardProps {
 }
 
 export function AwardsCard({ statements }: AwardsCardProps) {
+  const { t } = useTranslation("results");
   const analysis = analyzeStatements(statements);
 
   // Find the most controversial (spiciest) statement
@@ -28,8 +30,8 @@ export function AwardsCard({ statements }: AwardsCardProps) {
     <div className="space-y-4">
       <CardHeader
         icon={<Trophy className="w-6 h-6 text-purple-500" />}
-        title="🎉 AWARDS 🎉"
-        subtitle="Celebrating the best contributions"
+        title={t("awardsTitle")}
+        subtitle={t("awardsSubtitle")}
         gradientFrom="from-purple-600"
         gradientTo="to-pink-600"
       />
@@ -39,7 +41,7 @@ export function AwardsCard({ statements }: AwardsCardProps) {
         {analysis.byAgrees[0] && (
           <AwardCard
             emoji="👑"
-            title="Most Persuasive"
+            title={t("mostPersuasive")}
             value={analysis.byAgrees[0].agrees}
             text={analysis.byAgrees[0].text}
             gradientFrom="from-yellow-50"
@@ -56,7 +58,7 @@ export function AwardsCard({ statements }: AwardsCardProps) {
         {spiciestTake && (
           <AwardCard
             emoji="🌶️"
-            title="Spiciest Take"
+            title={t("spiciestTake")}
             value={spiciestTake.agrees + spiciestTake.disagrees}
             text={spiciestTake.text}
             gradientFrom="from-orange-50"
@@ -72,7 +74,7 @@ export function AwardsCard({ statements }: AwardsCardProps) {
         {unicornOpinion && (
           <AwardCard
             emoji="🦄"
-            title="Unicorn Opinion"
+            title={t("unicornOpinion")}
             value={unicornOpinion.agrees}
             text={unicornOpinion.text}
             gradientFrom="from-purple-50"
@@ -88,7 +90,7 @@ export function AwardsCard({ statements }: AwardsCardProps) {
         {bestBridge && (
           <AwardCard
             emoji="🌉"
-            title="Bridge Builder"
+            title={t("bridgeBuilder")}
             value={bestBridge.agrees}
             text={bestBridge.text}
             gradientFrom="from-green-50"

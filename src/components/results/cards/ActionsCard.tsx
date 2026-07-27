@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Heart, Share2, MessageCircle, Home } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card } from "../../ui/card";
 import { Button } from "../../ui/button";
 import type { Statement } from "../../../types";
@@ -19,14 +20,15 @@ export function ActionsCard({
   onShare,
   onBackToLobby,
 }: ActionsCardProps) {
+  const { t } = useTranslation("results");
   const analysis = analyzeStatements(statements);
 
   return (
     <div className="space-y-4">
       <CardHeader
         icon={<Heart className="w-6 h-6 text-pink-500" />}
-        title="Keep The Conversation Going"
-        subtitle="What would you like to do next?"
+        title={t("actionsTitle")}
+        subtitle={t("actionsSubtitle")}
         gradientFrom="from-purple-600"
         gradientTo="to-blue-600"
       />
@@ -45,14 +47,14 @@ export function ActionsCard({
                   <Share2 className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium">Share Results</h3>
+                  <h3 className="font-medium">{t("shareResults")}</h3>
                   <p className="text-xs text-muted-foreground">
-                    Show others what we discussed
+                    {t("shareResultsDesc")}
                   </p>
                 </div>
               </div>
               <Button onClick={onShare} className="w-full">
-                Share Conversation
+                {t("shareConversation")}
               </Button>
             </Card>
           </motion.div>
@@ -71,9 +73,9 @@ export function ActionsCard({
                   <MessageCircle className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium">Continue the Conversation</h3>
+                  <h3 className="font-medium">{t("continueConversation")}</h3>
                   <p className="text-xs text-muted-foreground">
-                    Dive deeper into the top statement
+                    {t("continueDesc")}
                   </p>
                 </div>
               </div>
@@ -82,7 +84,7 @@ export function ActionsCard({
                 variant="outline"
                 className="w-full"
               >
-                Discuss "{analysis.byAgrees[0].text.substring(0, 30)}..."
+                {t("discussStatement", { text: analysis.byAgrees[0].text.substring(0, 30) })}
               </Button>
             </Card>
           </motion.div>
@@ -101,14 +103,14 @@ export function ActionsCard({
                   <Home className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium">Browse Posts</h3>
+                  <h3 className="font-medium">{t("browsePosts")}</h3>
                   <p className="text-xs text-muted-foreground">
-                    Find other active discussions
+                    {t("browsePostsDesc")}
                   </p>
                 </div>
               </div>
               <Button onClick={onBackToLobby} variant="outline" className="w-full">
-                Back to Lobby
+                {t("backToLobby")}
               </Button>
             </Card>
           </motion.div>

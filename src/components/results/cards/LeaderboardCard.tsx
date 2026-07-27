@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { TrendingUp, ThumbsUp, ThumbsDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { Statement } from "../../../types";
 import { analyzeStatements } from "../utils";
 import { CardHeader } from "../CardHeader";
@@ -9,14 +10,15 @@ interface LeaderboardCardProps {
 }
 
 export function LeaderboardCard({ statements }: LeaderboardCardProps) {
+  const { t } = useTranslation("results");
   const analysis = analyzeStatements(statements);
 
   return (
     <div className="space-y-4">
       <CardHeader
         icon={<TrendingUp className="w-6 h-6 text-blue-500" />}
-        title="Top Performers"
-        subtitle="The full leaderboard"
+        title={t("topPerformers")}
+        subtitle={t("leaderboardSubtitle")}
         gradientFrom="from-blue-600"
         gradientTo="to-purple-600"
       />
