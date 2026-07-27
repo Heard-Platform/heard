@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { TopicDescriptionFields } from "./TopicDescriptionFields";
@@ -54,6 +55,7 @@ export function ReviewExtractionStep({
   onAllowAnonymousVotingChange,
   onDemographicQuestionsChange,
 }: ReviewExtractionStepProps) {
+  const { t } = useTranslation("create");
   const showAdvancedFeatures = isFeatureEnabled(FeatureFlags.DEMOGRAPHICS);
 
   const [coverType, setCoverType] = useState<CoverOptions>(
@@ -131,14 +133,14 @@ export function ReviewExtractionStep({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Sparkles className={iconBlue} />
-              <span className={labelText}>Conversation</span>
+              <span className={labelText}>{t("conversationLabel")}</span>
             </div>
             <TopicDescriptionFields
               topic={topic}
               description={description}
               topicBorderColor="border-blue-200 hover:border-blue-300 focus:border-blue-400"
               descriptionBorderColor="border-blue-200 hover:border-blue-300 focus:border-blue-400"
-              topicPlaceholder="Edit the conversation topic..."
+              topicPlaceholder={t("editTopicPlaceholder")}
               onTopicChange={onTopicChange}
               onDescriptionChange={onDescriptionChange}
             />
@@ -150,7 +152,7 @@ export function ReviewExtractionStep({
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <ImageIcon className={iconBlue} />
-            <Label className={labelText}>Cover Card (optional)</Label>
+            <Label className={labelText}>{t("coverCardOptional")}</Label>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
@@ -165,7 +167,7 @@ export function ReviewExtractionStep({
                     : "border-blue-200 bg-white text-slate-500 hover:border-blue-300"
                 }`}
               >
-                {type === "none" ? "None" : type === "image" ? "📷 Image" : "▶️ YouTube"}
+                {type === "none" ? t("coverNone") : type === "image" ? t("coverImage") : t("coverYoutube")}
               </button>
             ))}
           </div>
@@ -196,17 +198,17 @@ export function ReviewExtractionStep({
                 {isUploadingImage ? (
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-                    <span className="text-blue-700">Uploading...</span>
+                    <span className="text-blue-700">{t("uploading")}</span>
                   </div>
                 ) : cover?.type === "image" ? (
                   <div className="flex items-center gap-2">
                     <Check className="w-5 h-5 text-green-600" />
-                    <span className="text-green-700">Image uploaded! Click to change</span>
+                    <span className="text-green-700">{t("imageUploadedChange")}</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <ImageIcon className="w-5 h-5 text-blue-600" />
-                    <span className="text-blue-700">Choose an image</span>
+                    <span className="text-blue-700">{t("chooseImage")}</span>
                   </div>
                 )}
               </Button>
@@ -237,7 +239,7 @@ export function ReviewExtractionStep({
                 onChange={(e) => onCoverChange(e.target.value ? { type: "youtube", url: e.target.value } : null)}
                 className={`${blueGradientBg} ${dashedBlueBorder}`}
               />
-              <p className={helperTextCenter}>Paste a YouTube URL to show as an intro video</p>
+              <p className={helperTextCenter}>{t("youtubeHelper")}</p>
             </motion.div>
           )}
         </div>
@@ -256,12 +258,12 @@ export function ReviewExtractionStep({
           <div className="flex items-center gap-2">
             <Clock className={iconBlue} />
             <Label className={labelText}>
-              Length
+              {t("length")}
             </Label>
           </div>
-          
+
           <p className={helperTextCenter}>
-            How long should this run before closing?
+            {t("lengthHelper")}
           </p>
           
           <div className="grid grid-cols-3 gap-3">
@@ -299,7 +301,7 @@ export function ReviewExtractionStep({
               }}
               className="text-sm text-blue-600 hover:text-blue-700 underline"
             >
-              {showCustomDateTime ? "Hide custom date" : "Set custom end date"}
+              {showCustomDateTime ? t("hideCustomDate") : t("setCustomEndDate")}
             </button>
           </div>
 
@@ -314,7 +316,7 @@ export function ReviewExtractionStep({
                 <div className="space-y-3">
                   <div>
                     <Label htmlFor="custom-date" className="text-sm text-slate-700 block mb-2">
-                      Date
+                      {t("dateLabel")}
                     </Label>
                     <Input
                       type="date"
@@ -327,7 +329,7 @@ export function ReviewExtractionStep({
                   </div>
                   <div>
                     <Label htmlFor="custom-time" className="text-sm text-slate-700 block mb-2">
-                      Time
+                      {t("timeLabel")}
                     </Label>
                     <Input
                       type="time"
@@ -345,7 +347,7 @@ export function ReviewExtractionStep({
                     >
                       <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                       <p className="text-sm text-red-700">
-                        The selected date and time is in the past. Please choose a future date and time.
+                        {t("dateInPast")}
                       </p>
                     </motion.div>
                   )}
@@ -369,10 +371,10 @@ export function ReviewExtractionStep({
             <div className="flex-1">
               <Label htmlFor="require-account" className={`${labelText} flex items-center gap-2 cursor-pointer`}>
                 <UserCheck className={iconBlue} />
-                Require account to vote or respond
+                {t("requireAccount")}
               </Label>
               <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                Remove this requirement to encourage more rapid participation and allow people with the link to vote and post immediately, without being asked to create an account. Only disable for trusted groups that won't attempt to double vote or post harmful content.
+                {t("requireAccountHelper")}
               </p>
             </div>
           </div>

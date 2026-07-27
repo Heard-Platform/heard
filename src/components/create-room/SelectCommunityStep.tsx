@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Hash, Plus, Check } from "lucide-react";
@@ -22,6 +23,7 @@ export function SelectCommunityStep({
   userId,
   onSubHeardChange,
 }: SelectCommunityStepProps) {
+  const { t } = useTranslation("create");
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [loadingSubHeards, setLoadingSubHeards] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -88,7 +90,7 @@ export function SelectCommunityStep({
           <div className="flex items-center gap-2 mb-2">
             <Hash className="w-5 h-5 text-purple-600" />
             <Label className="text-base text-slate-700">
-              Choose a community
+              {t("chooseCommunityLabel")}
             </Label>
           </div>
 
@@ -121,7 +123,7 @@ export function SelectCommunityStep({
                       <Plus className="w-4 h-4" />
                     </div>
                     <span className="text-purple-700">
-                      Create New Community
+                      {t("createNewCommunity")}
                     </span>
                   </div>
                   <span className="text-xl">✨</span>
@@ -170,12 +172,12 @@ export function SelectCommunityStep({
                               <span className="break-words">{formatSubHeardDisplay(sh.name)}</span>
                               {isDefault && (
                                 <span className="text-xs px-2 py-0.5 rounded-full bg-purple-200 text-purple-700 whitespace-nowrap">
-                                  Current
+                                  {t("current")}
                                 </span>
                               )}
                             </div>
                             <div className="text-xs mt-1 text-slate-500">
-                              {sh.count} {sh.count === 1 ? "post" : "posts"}
+                              {t("postCount", { count: sh.count })}
                             </div>
                           </div>
                         </div>

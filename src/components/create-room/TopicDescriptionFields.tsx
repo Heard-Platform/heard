@@ -1,5 +1,6 @@
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
+import { useTranslation } from "react-i18next";
 
 interface TopicDescriptionFieldsProps {
   topic: string;
@@ -13,22 +14,23 @@ interface TopicDescriptionFieldsProps {
 
 export function TopicDescriptionFields({
   topic,
-  topicPlaceholder = "Enter your conversation topic...",
+  topicPlaceholder,
   description,
   topicBorderColor = "border-green-200 hover:border-green-300 focus:border-green-400",
   descriptionBorderColor = "border-green-200 hover:border-green-300 focus:border-green-400",
   onTopicChange,
   onDescriptionChange,
 }: TopicDescriptionFieldsProps) {
+  const { t } = useTranslation("create");
   return (
     <div className="space-y-1">
       <div className="space-y-2">
         <Label htmlFor="topic-input" className="text-sm text-slate-500">
-          Topic
+          {t("topicLabel")}
         </Label>
         <Textarea
           id="topic-input"
-          placeholder={topicPlaceholder}
+          placeholder={topicPlaceholder ?? t("topicPlaceholder")}
           maxLength={200}
           value={topic}
           rows={2}
@@ -42,11 +44,11 @@ export function TopicDescriptionFields({
 
       <div className="space-y-2 pt-2">
         <Label htmlFor="description-input" className="text-sm text-slate-500">
-          Description <span className="text-slate-400">(optional)</span>
+          {t("descriptionLabel")} <span className="text-slate-400">{t("optionalParen")}</span>
         </Label>
         <Textarea
           id="description-input"
-          placeholder="Add more context for participants..."
+          placeholder={t("descriptionPlaceholder")}
           maxLength={500}
           value={description}
           rows={2}

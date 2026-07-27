@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
@@ -19,6 +20,7 @@ export function SeedStatements({
   showError = false,
   onStatementsChange,
 }: SeedStatementsProps) {
+  const { t } = useTranslation(["create", "common"]);
   const [editingStatementIndex, setEditingStatementIndex] = useState<number | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newStatementText, setNewStatementText] = useState("");
@@ -62,11 +64,11 @@ export function SeedStatements({
         <div className="flex items-center gap-2">
           <Sparkles className={colors.iconColor} />
           <Label className="text-base text-slate-700">
-            Seed Statements
+            {t("seedStatementsLabel")}
           </Label>
         </div>
         <p className="text-xs text-slate-500">
-          People will vote on these statements (agree or disagree). Add at least 1 to kickstart the conversation.
+          {t("seedStatementsHelper")}
         </p>
         
         <div className="space-y-3">
@@ -99,14 +101,14 @@ export function SeedStatements({
                         className={colors.primaryButton}
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        Save
+                        {t("common:save")}
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => setEditingStatementIndex(null)}
                       >
-                        Cancel
+                        {t("common:cancel")}
                       </Button>
                     </div>
                   </div>
@@ -145,7 +147,7 @@ export function SeedStatements({
         {statements.length === 0 && (
           <div className="text-center py-8 text-slate-500 border-2 border-dashed border-slate-200 rounded-xl">
             <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No statements yet</p>
+            <p className="text-sm">{t("noStatementsYet")}</p>
           </div>
         )}
 
@@ -157,7 +159,7 @@ export function SeedStatements({
                 onChange={(e) => setNewStatementText(e.target.value)}
                 className="w-full min-h-[80px] resize-none bg-white border-blue-200 mb-3"
                 autoFocus
-                placeholder="Enter a statement to kickstart the conversation..."
+                placeholder={t("statementPlaceholder")}
               />
               <div className="flex gap-2">
                 <Button
@@ -166,7 +168,7 @@ export function SeedStatements({
                   className={colors.primaryButton}
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  Add
+                  {t("add")}
                 </Button>
                 <Button
                   size="sm"
@@ -176,7 +178,7 @@ export function SeedStatements({
                     setNewStatementText("");
                   }}
                 >
-                  Cancel
+                  {t("common:cancel")}
                 </Button>
               </div>
             </div>
@@ -189,7 +191,7 @@ export function SeedStatements({
             className={`w-full h-auto py-4 ${colors.buttonBg} ${colors.buttonBorder}`}
           >
             <Plus className={`w-5 h-5 ${colors.iconBlue}`} />
-            Add New Statement
+            {t("addNewStatement")}
           </Button>
         )}
         
@@ -197,7 +199,7 @@ export function SeedStatements({
           <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 flex items-start gap-2">
             <span className="text-red-600 font-semibold text-sm">⚠️</span>
             <p className="text-sm text-red-700">
-              Please add at least 1 seed statement to continue.
+              {t("seedStatementsError")}
             </p>
           </div>
         )}

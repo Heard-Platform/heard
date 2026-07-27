@@ -14,11 +14,11 @@ interface ShareDebateStepProps {
 }
 
 export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["create", "toast"]);
   const [copied, setCopied] = useState(false);
-  
+
   if (!debateId) {
-    return <div>Error: No post ID available</div>;
+    return <div>{t("noPostId")}</div>;
   }
   
   const shareLink = createShareableLink(debateId);
@@ -27,10 +27,10 @@ export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
     try {
       await navigator.clipboard.writeText(shareLink);
       setCopied(true);
-      toast.success(t("linkCopied"));
+      toast.success(t("toast:linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      toast.error(t("copyLinkFailed"));
+      toast.error(t("toast:copyLinkFailed"));
       console.error("Copy error:", error);
     }
   };
@@ -38,13 +38,13 @@ export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
   const handleShare = async () => {
     await share({
       url: shareLink,
-      title: `Join this conversation on Heard`,
-      text: `Check out this conversation: "${topic}"`,
+      title: t("shareInviteTitle"),
+      text: t("shareInviteText", { topic }),
       onSuccess: () => {
-        toast.success(t("linkShared"));
+        toast.success(t("toast:linkShared"));
       },
       onError: (error) => {
-        toast.error(t("shareLinkFailed"));
+        toast.error(t("toast:shareLinkFailed"));
         console.error("Share error:", error);
       },
     });
@@ -59,10 +59,10 @@ export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
         </div>
         <div>
           <h3 className="font-medium text-lg text-green-900">
-            Conversation Created! 🎉
+            {t("conversationCreated")}
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Share it with friends to get the conversation started
+            {t("shareWithFriends")}
           </p>
         </div>
       </div>
@@ -71,7 +71,7 @@ export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
       <div className="space-y-3">
         <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-3">
           <p className="text-xs text-purple-700 mb-2 font-medium">
-            Shareable Link
+            {t("shareableLink")}
           </p>
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0 bg-white px-3 py-2 rounded border border-purple-200">
@@ -105,12 +105,12 @@ export function ShareDebateStep({ debateId, topic }: ShareDebateStepProps) {
       {/* Tips */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h4 className="text-sm font-medium text-blue-900 mb-2">
-          💡 Pro Tips
+          {t("proTips")}
         </h4>
         <ul className="text-xs text-blue-800 space-y-1.5">
-          <li>• Share in group chats for instant engagement</li>
-          <li>• Post on social media to reach a wider audience</li>
-          <li>• Your post is live right now!</li>
+          <li>• {t("proTip1")}</li>
+          <li>• {t("proTip2")}</li>
+          <li>• {t("proTip3")}</li>
         </ul>
       </div>
     </div>
