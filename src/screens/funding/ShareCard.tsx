@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, useMotionValue, useTransform } from "motion/react";
 import type { PanInfo } from "motion/react";
 import { Copy, Check, Share2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { C, SHARE_URL } from "./constants";
 import { share } from "../../utils/share";
 import { api } from "../../utils/api";
@@ -11,6 +12,7 @@ interface ShareCardProps {
 }
 
 export function ShareCard({ onDismiss }: ShareCardProps) {
+  const { t } = useTranslation("funding");
   const [copied, setCopied] = useState(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -36,7 +38,7 @@ export function ShareCard({ onDismiss }: ShareCardProps) {
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     api.trackEvent("funding_share_native");
-    share({ url: SHARE_URL, title: "Support Heard" });
+    share({ url: SHARE_URL, title: t("fundSupportHeard") });
   };
 
   return (
@@ -61,10 +63,10 @@ export function ShareCard({ onDismiss }: ShareCardProps) {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", minHeight: 316 }}>
           <div style={{ fontSize: 36, marginBottom: 16 }}>📣</div>
           <p style={{ fontSize: 22, fontWeight: 700, color: C.slate800, lineHeight: 1.375, marginBottom: 12 }}>
-            Spread the word
+            {t("fundSpreadWord")}
           </p>
           <p style={{ color: C.slate600, lineHeight: 1.625, marginBottom: 32 }}>
-            Know someone who'd want to help Heard reach its goal? Send them this link.
+            {t("fundKnowSomeone")}
           </p>
 
           <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
@@ -87,7 +89,7 @@ export function ShareCard({ onDismiss }: ShareCardProps) {
               }}
             >
               {copied ? <Check size={16} /> : <Copy size={16} />}
-              {copied ? "Copied!" : "Copy link"}
+              {copied ? t("fundCopied") : t("fundCopyLink")}
             </button>
 
             {typeof navigator.share === "function" && (
@@ -110,12 +112,12 @@ export function ShareCard({ onDismiss }: ShareCardProps) {
                 }}
               >
                 <Share2 size={16} />
-                Share
+                {t("fundShare")}
               </button>
             )}
           </div>
 
-          <p style={{ color: C.slate400, fontSize: 12, marginTop: 24 }}>swipe to dismiss</p>
+          <p style={{ color: C.slate400, fontSize: 12, marginTop: 24 }}>{t("fundSwipeDismiss")}</p>
         </div>
       </div>
     </motion.div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, fmt, PRESET_AMOUNTS } from "./constants";
 
 interface DonateCTAProps {
@@ -9,6 +10,7 @@ interface DonateCTAProps {
 }
 
 export function DonateCTA({ nugMode, copied, onDonate, onShare }: DonateCTAProps) {
+  const { t } = useTranslation("funding");
   const [amount, setAmount] = useState(25);
   const [showCustom, setShowCustom] = useState(false);
   const [customInput, setCustomInput] = useState("");
@@ -63,7 +65,7 @@ export function DonateCTA({ nugMode, copied, onDonate, onShare }: DonateCTAProps
             transition: "all 0.15s",
           }}
         >
-          Other
+          {t("fundOther")}
         </button>
       </div>
 
@@ -71,7 +73,7 @@ export function DonateCTA({ nugMode, copied, onDonate, onShare }: DonateCTAProps
       {showCustom && (
         <input
           type="number"
-          placeholder="Enter amount"
+          placeholder={t("fundEnterAmount")}
           value={customInput}
           autoFocus
           onChange={(e) => handleCustomChange(e.target.value)}
@@ -105,7 +107,7 @@ export function DonateCTA({ nugMode, copied, onDonate, onShare }: DonateCTAProps
           marginTop: 2,
         }}
       >
-        Give {fmt(amount, nugMode)}
+        {t("fundGive", { amount: fmt(amount, nugMode) })}
       </button>
 
       {/* Share CTA */}
@@ -113,7 +115,7 @@ export function DonateCTA({ nugMode, copied, onDonate, onShare }: DonateCTAProps
         onClick={onShare}
         style={{ background: "none", border: "none", cursor: "pointer", color: C.slate500, fontSize: 13, textDecoration: "underline", textUnderlineOffset: 2, padding: 0 }}
       >
-        {copied ? "Link copied!" : "📣 Share with a friend"}
+        {copied ? t("fundLinkCopied") : t("fundShareFriend")}
       </button>
     </div>
   );

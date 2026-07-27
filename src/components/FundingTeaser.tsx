@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { api } from "../utils/api";
 import type { ApiResponse } from "../utils/api-client";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
@@ -15,6 +16,7 @@ interface FundingTeaserProps {
 export function FundingTeaser({
   getFundingStats = () => api.getFundingStats(),
 }: FundingTeaserProps) {
+  const { t } = useTranslation("funding");
   const [totalDonated, setTotalDonated] = useState<number | null>(null);
   const [dismissed, setDismissed] = useState(() =>
     safelyGetStorageItem(DISMISSED_KEY, false),
@@ -68,25 +70,25 @@ export function FundingTeaser({
         >
           <div className="flex items-start justify-between gap-2">
             <p className="text-sm font-bold text-slate-900">
-              🇺🇸 Fund Heard for the 4th!
+              {t("fundTeaserTitle")}
             </p>
             <button
               onClick={handleDismiss}
-              aria-label="Dismiss"
+              aria-label={t("fundDismiss")}
               className="-mr-1 -mt-1 shrink-0 rounded-full px-2 text-lg leading-none text-slate-300 hover:text-slate-500"
             >
               ×
             </button>
           </div>
           <p className="mb-2 text-xs text-slate-500">
-            We're raising $5k by July 4th to pay for flyer printer paper, website costs, and frozen dinners for the founder. Please consider helping us hit our goal!
+            {t("fundTeaserBody")}
           </p>
           <div className="mb-1 flex justify-between text-xs font-semibold">
             <span className="text-emerald-600">
-              {fmt(totalDonated, false)} raised
+              {t("fundRaised", { amount: fmt(totalDonated, false) })}
             </span>
             <span className="text-slate-400">
-              {fmt(FUNDING_GOAL, false)} goal
+              {t("fundGoal", { amount: fmt(FUNDING_GOAL, false) })}
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-slate-200">

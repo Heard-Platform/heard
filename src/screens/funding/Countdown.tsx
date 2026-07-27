@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { C, FUNDING_DEADLINE } from "./constants";
 
 function getTimeLeft() {
@@ -13,6 +14,7 @@ function getTimeLeft() {
 }
 
 export function Countdown({ compact = false }: { compact?: boolean }) {
+  const { t } = useTranslation("funding");
   const [timeLeft, setTimeLeft] = useState(getTimeLeft);
 
   useEffect(() => {
@@ -22,14 +24,17 @@ export function Countdown({ compact = false }: { compact?: boolean }) {
 
   if (compact) {
     const { days, hours, minutes, seconds } = timeLeft;
+    const timeStr = `${String(days).padStart(2, "0")}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
     return (
       <div style={{ textAlign: "center", marginBottom: 16 }}>
         <span style={{ fontSize: 12, color: C.slate400, fontVariantNumeric: "tabular-nums" } as React.CSSProperties}>
           {" "}
-          <strong style={{ color: C.slate600 }}>
-            {String(days).padStart(2, "0")}d {String(hours).padStart(2, "0")}h {String(minutes).padStart(2, "0")}m {String(seconds).padStart(2, "0")}s
-          </strong>
-          {" "} left to donate
+          <Trans
+            t={t}
+            i18nKey="fundCompactCountdown"
+            values={{ time: timeStr }}
+            components={{ b: <strong style={{ color: C.slate600 }} /> }}
+          />
         </span>
       </div>
     );
@@ -38,14 +43,14 @@ export function Countdown({ compact = false }: { compact?: boolean }) {
   return (
     <div style={{ width: "100%", maxWidth: 384, marginBottom: 32, textAlign: "center" }}>
       <p style={{ color: C.slate500, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, marginBottom: 12 }}>
-        Time left to donate
+        {t("fundTimeLeft")}
       </p>
       <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
         {([
-          { value: timeLeft.days, label: "days" },
-          { value: timeLeft.hours, label: "hrs" },
-          { value: timeLeft.minutes, label: "min" },
-          { value: timeLeft.seconds, label: "sec" },
+          { value: timeLeft.days, label: t("fundDays") },
+          { value: timeLeft.hours, label: t("fundHrs") },
+          { value: timeLeft.minutes, label: t("fundMin") },
+          { value: timeLeft.seconds, label: t("fundSec") },
         ] as const).map(({ value, label }, i) => (
           <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 64 }}>

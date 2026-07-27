@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogTitle } from "../../components/ui/dialog";
 import { api } from "../../utils/api";
 import type { ApiResponse } from "../../utils/api-client";
@@ -19,6 +20,7 @@ export function DonationDialog({
   onSuccess,
   onClose,
 }: DonationDialogProps) {
+  const { t } = useTranslation(["funding", "common"]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,13 +43,13 @@ export function DonationDialog({
           }
         } else {
           api.trackEvent("funding_checkout_error");
-          setError(res.error ?? "Failed to start checkout");
+          setError(res.error ?? t("fundCheckoutFailed"));
           setLoading(false);
         }
       })
       .catch(() => {
         api.trackEvent("funding_checkout_error");
-        setError("Network error. Please try again.");
+        setError(t("fundNetworkError"));
         setLoading(false);
       });
   }, [open, amount]);
@@ -55,12 +57,12 @@ export function DonationDialog({
   return (
     <Dialog open={open} onOpenChange={(o: boolean) => { if (!o) onClose(); }}>
       <DialogContent>
-        <DialogTitle style={{ display: "none" }}>Redirecting to checkout</DialogTitle>
+        <DialogTitle style={{ display: "none" }}>{t("fundRedirectTitle")}</DialogTitle>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "24px 0" }}>
           {loading && !error && (
             <>
               <div style={{ fontSize: 36, marginBottom: 16 }}>⏳</div>
-              <p style={{ color: C.slate600, fontSize: 16 }}>Redirecting to Stripe...</p>
+              <p style={{ color: C.slate600, fontSize: 16 }}>{t("fundRedirectingStripe")}</p>
             </>
           )}
           {error && (
@@ -70,7 +72,7 @@ export function DonationDialog({
                 onClick={onClose}
                 style={{ padding: "10px 24px", borderRadius: 8, border: "none", background: C.slate200, color: C.slate700, cursor: "pointer", fontWeight: 600 }}
               >
-                Close
+                {t("common:close")}
               </button>
             </>
           )}

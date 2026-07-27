@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
+import { Trans, useTranslation } from "react-i18next";
 import { DonationDialog } from "./DonationDialog";
 import { DonateCTA } from "./DonateCTA";
 import { Countdown } from "./Countdown";
@@ -19,6 +20,7 @@ export function FundingPage({
   createCheckoutSession = (amount, successUrl, cancelUrl) => api.createCheckoutSession(amount, successUrl, cancelUrl),
   simulateCheckoutSuccess = false,
 }: FundingPageProps) {
+  const { t } = useTranslation("funding");
   const params = new URLSearchParams(window.location.search);
   const returnedWithSuccess = params.get("payment") === "success";
   const returnedAmount = parseInt(params.get("amount") ?? "0", 10) || 0;
@@ -63,7 +65,7 @@ export function FundingPage({
     api.trackEvent("funding_share_clicked");
     share({
       url: SHARE_URL,
-      title: "Support Heard",
+      title: t("fundSupportHeard"),
       onSuccess: () => { setCopied(true); setTimeout(() => setCopied(false), 2000); },
     });
   };
@@ -154,7 +156,7 @@ export function FundingPage({
             marginBottom: 8,
           }}
         >
-          Fund Heard. Pick my tattoo.
+          {t("fundTitle")}
         </h1>
         <p
           style={{
@@ -164,7 +166,7 @@ export function FundingPage({
             marginBottom: 12,
           }}
         >
-          If we get $5,000 in donations by July 4th, you vote on what I get inked
+          {t("fundSubtitle")}
         </p>
 
         {/* YouTube video placeholder (portrait) */}
@@ -182,30 +184,21 @@ export function FundingPage({
           <iframe
             style={{ width: "100%", height: "100%", border: "none" }}
             src="https://www.youtube.com/embed/jFzidavpm_4"
-            title="Heard funding video"
+            title={t("fundVideoTitle")}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
         </div>
 
         <Countdown />
-        {/* Header */}
         <p style={styles.paragraph}>
-          In January, I launched Heard as a way for people to talk to each other across divides.{" "}
-          <strong style={styles.strong}>
-            We've already had 400+ DC residents use it
-          </strong>{" "}
-           to discuss local matters and now I need to raise a little money.
+          <Trans t={t} i18nKey="fundP1" components={{ strong: <strong style={styles.strong} /> }} />
         </p>
         <p style={styles.paragraph}>
-          So here’s the deal: if Heard raises{" "}
-          <strong style={styles.strong}>
-            $5,000 by July 4th,{" "}
-          </strong>
-          I'll get a temporary tattoo (lasting 1-2 years), voted on by donors.          
+          <Trans t={t} i18nKey="fundP2" components={{ strong: <strong style={styles.strong} /> }} />
         </p>
         <p style={styles.paragraph}>
-          Your donation not only buys you <strong style={styles.strong}>a vote on the design</strong>. It also funds my vegan chicken nuggies addiction 🍗 and encourages me as I continue forward with Heard.
+          <Trans t={t} i18nKey="fundP3" components={{ strong: <strong style={styles.strong} /> }} />
         </p>
       </div>
 
@@ -258,15 +251,15 @@ export function FundingPage({
                 animate={{ scale: [1, 1.15, 1] }}
                 transition={{ duration: 0.4 }}
               >
-                {fmt(totalDonated, nugMode)} donated{" "}
+                {t("fundDonated", { amount: fmt(totalDonated, nugMode) })}{" "}
                 {donorCount > 10 && (
                   <span style={{ color: C.slate400, fontWeight: 400 }}>
-                    by {donorCount} Hearos
+                    {t("fundByHearos", { count: donorCount })}
                   </span>
                 )}
               </motion.span>
               <span style={{ color: C.slate400, fontWeight: 400 }}>
-                {fmt(FUNDING_GOAL, nugMode)} goal
+                {t("fundGoal", { amount: fmt(FUNDING_GOAL, nugMode) })}
               </span>
             </div>
             <div
@@ -309,7 +302,7 @@ export function FundingPage({
             textAlign: "right",
           }}
         >
-          {nugMode ? "Show in dollars 💵" : "Show in nuggies 🍗"}
+          {nugMode ? t("fundShowDollars") : t("fundShowNuggies")}
         </button>
       </div>
 
@@ -331,7 +324,7 @@ export function FundingPage({
               color: C.slate700,
             }}
           >
-            Thank you!
+            {t("fundThankYou")}
           </p>
           <p
             style={{
@@ -341,7 +334,7 @@ export function FundingPage({
               marginBottom: 24,
             }}
           >
-            Your support means everything.
+            {t("fundSupportMeans")}
           </p>
           <a
             href="https://heard.vote"
@@ -361,7 +354,7 @@ export function FundingPage({
               textDecoration: "none",
             }}
           >
-            Go to Heard →
+            {t("fundGoToHeard")}
           </a>
         </div>
       ) : (
@@ -387,7 +380,7 @@ export function FundingPage({
           textDecoration: "underline",
         }}
       >
-        Read the full story on Substack
+        {t("fundReadStory")}
       </a>
 
       <DonationDialog

@@ -22,10 +22,12 @@ import enDialog from "./locales/en/dialog.json";
 import esDialog from "./locales/es/dialog.json";
 import enScreens from "./locales/en/screens.json";
 import esScreens from "./locales/es/screens.json";
+import enFunding from "./locales/en/funding.json";
+import esFunding from "./locales/es/funding.json";
 
 export const defaultNS = "common";
 
 export const resources = {
-  en: { common: enCommon, room: enRoom, toast: enToast, create: enCreate, menu: enMenu, account: enAccount, community: enCommunity, results: enResults, analysis: enAnalysis, events: enEvents, dialog: enDialog, screens: enScreens },
-  es: { common: esCommon, room: esRoom, toast: esToast, create: esCreate, menu: esMenu, account: esAccount, community: esCommunity, results: esResults, analysis: esAnalysis, events: esEvents, dialog: esDialog, screens: esScreens },
+  en: { common: enCommon, room: enRoom, toast: enToast, create: enCreate, menu: enMenu, account: enAccount, community: enCommunity, results: enResults, analysis: enAnalysis, events: enEvents, dialog: enDialog, screens: enScreens, funding: enFunding },
+  es: { common: esCommon, room: esRoom, toast: esToast, create: esCreate, menu: esMenu, account: esAccount, community: esCommunity, results: esResults, analysis: esAnalysis, events: esEvents, dialog: esDialog, screens: esScreens, funding: esFunding },
 } as const;

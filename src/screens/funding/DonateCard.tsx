@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, useMotionValue, useTransform } from "motion/react";
 import type { PanInfo } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { C, fmt } from "./constants";
 
 interface DonateCardProps {
@@ -11,6 +12,7 @@ interface DonateCardProps {
 }
 
 export function DonateCard({ amount, nugMode, onSwipeRight, onTapAmount }: DonateCardProps) {
+  const { t } = useTranslation("funding");
   const [swiped, setSwiped] = useState(false);
   const x = useMotionValue(0);
   const dragRef = useRef<HTMLDivElement>(null);
@@ -81,12 +83,12 @@ export function DonateCard({ amount, nugMode, onSwipeRight, onTapAmount }: Donat
           boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
           whiteSpace: "nowrap",
         }}>
-          DONATE ✓
+          {t("fundDonateBadge")}
         </motion.div>
 
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", minHeight: 316 }}>
           <p style={{ fontSize: 22, fontWeight: 700, color: C.slate800, lineHeight: 1.375, marginBottom: 16 }}>
-            I want to donate
+            {t("fundIWantToDonate")}
           </p>
 
           <button
@@ -108,11 +110,11 @@ export function DonateCard({ amount, nugMode, onSwipeRight, onTapAmount }: Donat
             {fmt(amount, nugMode)}
           </button>
           <p style={{ fontSize: 12, color: C.emerald600, marginBottom: 16, marginTop: -10, fontWeight: 500 }}>
-            ✏️ tap to change
+            {t("fundTapToChange")}
           </p>
 
           <p style={{ fontSize: 22, fontWeight: 700, color: C.slate800, lineHeight: 1.375, marginBottom: 40 }}>
-            to Heard
+            {t("fundToHeard")}
           </p>
 
           <motion.p
@@ -120,7 +122,7 @@ export function DonateCard({ amount, nugMode, onSwipeRight, onTapAmount }: Donat
             animate={{ x: [0, 8, 0] }}
             transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
           >
-            swipe right to donate 👉
+            {t("fundSwipeRight")}
           </motion.p>
         </div>
       </div>
