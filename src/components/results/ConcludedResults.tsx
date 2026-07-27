@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../ui/button";
 import type { Statement } from "../../types";
 import {
@@ -25,6 +26,7 @@ export function ConcludedResults({
   onShare,
   onBackToLobby,
 }: ConcludedResultsProps) {
+  const { t } = useTranslation("results");
   const [currentCard, setCurrentCard] = useState(0);
   const [direction, setDirection] = useState(0);
   const totalCards = 6;
@@ -181,7 +183,7 @@ export function ConcludedResults({
                   ? "w-8 h-2 bg-purple-600"
                   : "w-2 h-2 bg-purple-300 hover:bg-purple-400"
               } rounded-full`}
-              aria-label={`Go to card ${index + 1}`}
+              aria-label={t("goToCard", { number: index + 1 })}
             />
           ))}
         </div>
@@ -199,7 +201,7 @@ export function ConcludedResults({
             transition={{ delay: 2, duration: 0.5 }}
             className="absolute bottom-16 right-6 text-xs text-muted-foreground flex items-center gap-1"
           >
-            Swipe for more <ChevronRight className="w-3 h-3" />
+            {t("swipeForMore")} <ChevronRight className="w-3 h-3" />
           </motion.div>
         )}
       </div>

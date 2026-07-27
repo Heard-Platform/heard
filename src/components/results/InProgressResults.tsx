@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card } from "../ui/card";
 import { VotesDrawer } from "./VotesDrawer";
 import type { Statement, VoteType } from "../../types";
@@ -44,6 +45,7 @@ export function InProgressResults({
   onFollowDiscussion,
   onChangeVote,
 }: InProgressResultsProps) {
+  const { t } = useTranslation(["results", "room"]);
   const totalVotes = statements.reduce(
     (sum, s) => sum + s.agrees + s.superAgrees + s.disagrees + s.passes,
     0,
@@ -90,9 +92,9 @@ export function InProgressResults({
             <h3 className="flex items-center gap-1.5 md:gap-2 text-base sm:text-lg md:text-2xl">
               <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
                 <span className="hidden sm:inline">
-                  ⚡ VOTING IN PROGRESS! ⚡
+                  {t("votingInProgress")}
                 </span>
-                <span className="sm:hidden">⚡ LIVE! ⚡</span>
+                <span className="sm:hidden">{t("live")}</span>
               </span>
             </h3>
             <VotesDrawer
@@ -108,12 +110,12 @@ export function InProgressResults({
               <h4 className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
                 <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
                 <span className="hidden sm:inline">
-                  Live Standings
+                  {t("liveStandings")}
                 </span>
-                <span className="sm:hidden">Standings</span>
+                <span className="sm:hidden">{t("standings")}</span>
               </h4>
               <span className="text-[10px] sm:text-xs text-muted-foreground">
-                Most popular opinions
+                {t("mostPopularOpinions")}
               </span>
             </div>
 
@@ -134,7 +136,7 @@ export function InProgressResults({
                       {s.text}
                     </p>
                     <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
-                      {decisive} vote{decisive === 1 ? "" : "s"}
+                      {t("room:voteCount", { count: decisive })}
                     </span>
                   </div>
 
@@ -148,10 +150,10 @@ export function InProgressResults({
 
                   <div className="flex items-center justify-between text-[10px] sm:text-xs">
                     <span className="text-emerald-700 font-medium">
-                      ✅ {agrees} agree{agrees === 1 ? "" : "s"}
+                      ✅ {t("agreeCount", { count: agrees })}
                     </span>
                     <span className="text-rose-700 font-medium">
-                      {disagrees} disagree{disagrees === 1 ? "" : "s"} ❌
+                      {t("disagreeCount", { count: disagrees })} ❌
                     </span>
                   </div>
                 </motion.div>
@@ -160,7 +162,7 @@ export function InProgressResults({
 
             {topStatements.length === 0 && (
               <p className="text-xs sm:text-sm text-center text-muted-foreground py-2">
-                Waiting for the first decisive votes…
+                {t("waitingFirstVotes")}
               </p>
             )}
           </div>
@@ -196,7 +198,7 @@ export function InProgressResults({
                   repeat: Infinity,
                 }}
               >
-                Certify your vote
+                {t("certifyYourVote")}
               </motion.span>
             </motion.button>
           )}
@@ -219,12 +221,12 @@ export function InProgressResults({
               }}
             >
               {totalVotes === 0
-                ? "🎯 Waiting for votes to roll in..."
+                ? t("encourageNone")
                 : totalVotes < 5
-                  ? "🔥 The race is heating up!"
+                  ? t("encourageFew")
                   : totalVotes < 10
-                    ? "⚡ Votes are pouring in!"
-                    : "💥 EPIC vote-fest in progress!"}
+                    ? t("encourageSome")
+                    : t("encourageMany")}
             </motion.p>
           </motion.div>
         </div>

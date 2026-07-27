@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { MessageCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import type { Statement } from "../../types";
@@ -12,6 +13,7 @@ interface StatementMiniProps {
 }
 
 export function StatementMini({ statement, showVotes = true, onDiscuss }: StatementMiniProps) {
+  const { t } = useTranslation("results");
   return (
     <motion.div
       layout
@@ -19,16 +21,16 @@ export function StatementMini({ statement, showVotes = true, onDiscuss }: Statem
       whileHover={{ scale: 1.02 }}
     >
       <div className="flex items-start justify-between">
-        <span className="text-xs text-muted-foreground">Anonymous</span>
+        <span className="text-xs text-muted-foreground">{t("anonymous")}</span>
         <div className="flex items-center gap-1">
           {statement.type && (
             <Badge variant="secondary" className="text-xs">
-              {getTypeInfo(statement.type).label}
+              {t(getTypeInfo(statement.type).labelKey)}
             </Badge>
           )}
           {showVotes && (
             <Badge variant="outline" className="text-xs">
-              {statement.agrees} agrees
+              {t("agreeCount", { count: statement.agrees })}
             </Badge>
           )}
         </div>
@@ -42,7 +44,7 @@ export function StatementMini({ statement, showVotes = true, onDiscuss }: Statem
           onClick={() => onDiscuss(statement.text)}
         >
           <MessageCircle className="w-3 h-3" />
-          Discuss This
+          {t("discussThis")}
         </Button>
       )}
     </motion.div>

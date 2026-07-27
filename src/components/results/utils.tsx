@@ -16,28 +16,28 @@ export const getTypeInfo = (type: string) => {
         icon: Users,
         color: "text-blue-600",
         bg: "bg-blue-50",
-        label: "Bridges",
+        labelKey: "typeBridges",
       };
     case "crux":
       return {
         icon: Target,
         color: "text-red-600",
         bg: "bg-red-50",
-        label: "Cruxes",
+        labelKey: "typeCruxes",
       };
     case "plurality":
       return {
         icon: Zap,
         color: "text-purple-600",
         bg: "bg-purple-50",
-        label: "Pluralities",
+        labelKey: "typePluralities",
       };
     default:
       return {
         icon: Eye,
         color: "text-gray-600",
         bg: "bg-gray-50",
-        label: "General",
+        labelKey: "typeGeneral",
       };
   }
 };
