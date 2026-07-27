@@ -18,7 +18,7 @@ This means a Spanish user will read every **button, label, and system message** 
 ## 2. Definition of done
 
 Phase 1 ships when:
-1. A language selector (flag + label) sits in the lobby toolbar; picking **Español** switches all extracted UI copy instantly, with **no reload**.
+1. A text-only language selector sits in the lobby toolbar — the current language's ISO code (`EN` / `ES`) when closed, native names (`English` / `Español`) in the open menu; picking **Español** switches all extracted UI copy instantly, with **no reload**.
 2. The choice **persists** across reloads (localStorage) and sets `<html lang>` correctly.
 3. The **core user journey is fully Spanish** with zero English leaking: lobby → open a topic → vote → add a response → create a conversation → main menu, including all toasts on those paths.
 4. Everything **not yet extracted falls back to English** gracefully (never a raw `key` string, never a crash).
@@ -52,7 +52,7 @@ Add to `package.json` and import **plainly** (the versioned-alias convention in 
 
 **Deliberately skipped:** `i18next-browser-languagedetector`. With only two languages and our own persistence, first-visit detection is a three-line read of `navigator.language`. Skipping the package keeps dependencies minimal and the detection logic explicit and self-documenting.
 
-No flag-icon dependency either — we inline two small SVGs (§5, Step 3). Unicode flag emoji render as bare letters ("ES"/"US") on Chrome-on-Windows, so emoji are not an option.
+No flag assets either — the selector is text-only (§5, Step 3): the uppercased ISO code on the trigger, native language names in the menu. This sidesteps the country≠language trap entirely and needs no icon dependency. (Unicode flag emoji were a non-starter anyway — they render as bare letters "ES"/"US" on Chrome-on-Windows.)
 
 ## 5. Build order
 
@@ -94,7 +94,7 @@ export const applyDocumentLanguage = (code: string): void => {
 };
 ```
 
-`dir` and `normalizeToLangCode` are the cheap-now, painful-later hooks: they keep the door open for a right-to-left language and for collapsing regional variants (`es-419` → `es`) without touching call sites. `label` is the primary affordance in the selector — **the flag is optional decoration** (see Step 3), because "one flag per language" is both code-per-language and a country≠language UX trap.
+`dir` and `normalizeToLangCode` are the cheap-now, painful-later hooks: they keep the door open for a right-to-left language and for collapsing regional variants (`es-419` → `es`) without touching call sites. `label` (the native name) is what the selector menu shows, and `code` (uppercased) is what the closed trigger shows — **the selector is text-only, no flags** (see Step 3), because "one flag per language" is both code-per-language and a country≠language UX trap.
 
 - `src/i18n/locales/{en,es}/*.json` — resource catalogs, namespaced by area: `common`, `lobby`, `room`, `create`, `menu`, `results`, `toast`. Start each `es` file as a copy of `en` so nothing is missing during the sweep.
 - `src/i18n/resources.ts` — imports the `en` JSON namespaces and exports a `resources` object plus `defaultNS`. This object also becomes the **type source** for typed keys.
@@ -197,8 +197,8 @@ export const useProvideLanguage = (): LanguageState => {
 ### Step 3 — Selector UI
 
 - `src/components/LanguageSelector.tsx` — built from `ui/dropdown-menu`'s `DropdownMenuRadioGroup`/`DropdownMenuRadioItem`, driven by `SUPPORTED_LANGUAGES`, reading/writing via `useLanguage()`. Styled as a compact `rounded-full bg-white/90 …` pill to match the toolbar.
-- **Label-primary, flag-optional.** Each row shows the **native label** ("English" / "Español") as the primary affordance, with an optional decorative flag. Keep two inline SVG flags (`src/components/flags/EsFlag.tsx`, `EnFlag.tsx`) for the current pair if desired — trivial, no dependency, no CSP concern — but the selector must render fine for a language that has *no* flag (a neutral globe glyph is the fallback). Rationale: "one flag per language" is both code-per-language and a country≠language trap (Spanish isn't only Spain; English isn't only the US/UK). This keeps the selector open for the many-languages future.
-- **Placement:** the lobby floating header (`src/screens/LobbyScreen.tsx:350–423`) is crowded on mobile (`max-w-[420px]`: `SubHeardBrowser` + `NewItemButton` + `SidePanelMenu`). Use a **compact flag-only trigger** to fit. If it's too tight, the fallback is a language row **inside `SidePanelMenu`** (still a `DropdownMenuRadioGroup`). Primary recommendation: compact pill in the header, matching the user's "classic top-toolbar dropdown" vision.
+- **Text-only, no flags.** The closed trigger shows the current language's **uppercased ISO code** (`EN` / `ES`, from `code`); the open menu shows each language's **native name** (`English` / `Español`, from `label`). No flag assets, no globe fallback, no per-language icon code. Rationale: "one flag per language" is both code-per-language and a country≠language trap (Spanish isn't only Spain; English isn't only the US/UK). A code + native-name pair is unambiguous, self-documenting, and scales to the many-languages future purely as data.
+- **Placement:** the lobby floating header (`src/screens/LobbyScreen.tsx:350–423`) is crowded on mobile (`max-w-[420px]`: `SubHeardBrowser` + `NewItemButton` + `SidePanelMenu`). The **compact code-only trigger** (two-letter pill) is narrow enough to fit. If it's ever too tight, the fallback is a language row **inside `SidePanelMenu`** (still a `DropdownMenuRadioGroup`). Primary recommendation: compact pill in the header, matching the user's "classic top-toolbar dropdown" vision.
 - Also mount it in the `EventView` toolbar (secondary; P1). Standalone landing screens (`OrgsLanding`, `FundingPage`, etc.) render without the lobby header — they're P1 and can get the selector when their copy is extracted.
 
 ### Step 4 — Walking skeleton (prove the loop)
@@ -256,7 +256,7 @@ localStorage covers the requirement for a single device. To make the choice foll
 - **Fragment concatenation & plurals** (Step 5 refactors) are the two places a naive extraction produces broken Spanish. Handle them inline.
 - **Module-scope `t()`** is a silent trap — top-level constants can't translate and won't react to a switch. The Step 5 #3 refactor and the §6 rule exist to catch this; watch for it in every constants file and label map.
 - **One source of truth, enforced.** The language lives only in the i18next singleton (read via `useSyncExternalStore`); the `<html lang>`/`dir` write has one owner (the init listener). Don't reintroduce a mirrored `useState` or a second DOM write.
-- **Crowded mobile header** — mitigated by a compact flag-only trigger; in-menu fallback exists.
+- **Crowded mobile header** — mitigated by a compact code-only trigger (two-letter pill); in-menu fallback exists.
 - **`moment` global locale** — `moment.locale()` is global; set it from the language hook so relative times match the UI.
 - **Scale** — ~1,200–1,800 literals is a real effort. Phase 1's *shippable* milestone is the P0 core journey, not 100% coverage; the rest lands incrementally behind the English fallback.
 
@@ -264,7 +264,7 @@ localStorage covers the requirement for a single device. To make the choice foll
 
 1. deps + `src/i18n/*` bootstrap + typed-keys augmentation + init in `main.tsx`.
 2. `useLanguageState` + `LanguageContext` + provider in `App.tsx`.
-3. `LanguageSelector` + inline flag SVGs + mount in lobby header.
+3. `LanguageSelector` (text-only: code trigger, native-name menu) + mount in lobby header.
 4. Walking skeleton (RoomCard ~5 strings, en+es).
 5. P0 extraction: toast namespace.
 6. P0 extraction: core-flow files, incl. the fragment + plural refactors and moment locale.
@@ -279,7 +279,7 @@ localStorage covers the requirement for a single device. To make the choice foll
 - **`LangCode` granularity:** language-only 2-letter codes; regional variants normalized down centrally (`normalizeToLangCode`).
 - **Catalog loading:** bundle both languages for Phase 1, behind a `loadCatalog(lang)` seam so lazy-loading is a later one-file change.
 - **RTL:** `dir` carried in the language config now (all `ltr`); the DOM write handles it. No RTL language yet, but the seam exists.
-- **Selector:** label-primary, flag-optional.
+- **Selector:** text-only — ISO code trigger, native-name menu.
 - **Key hygiene:** typed keys (compile-time) + an `en`/`es` parity check in CI. Unused-key detection deferred.
 
 **Still genuinely open (one, and it's a process call, not code):**
@@ -291,7 +291,6 @@ The design is built so a new language is a bounded, mostly-data change. To add o
 1. Add the code to the `LangCode` union and an entry (with `dir`) to `SUPPORTED_LANGUAGES` — the selector picks it up automatically.
 2. Add a `src/i18n/locales/<code>/` folder (seed from `en`, translate). `fallbackLng` covers any gaps.
 3. If the language needs relative-time formatting, add its moment locale to the `applyMomentLocale` map (one line).
-4. Optionally add a flag SVG — **or don't** (label + globe fallback).
-5. Nothing else. No component edits, no render-site changes, no schema.
+4. Nothing else. No component edits, no render-site changes, no schema — the selector reads `code` and `label` straight from `SUPPORTED_LANGUAGES`.
 
-The three spots that are *code* per language (not pure data) — the moment-locale map, an optional flag, and (at scale) the lazy-load registration — are each centralized to one file, so this list stays short as languages accumulate.
+The two spots that are *code* per language (not pure data) — the moment-locale map and (at scale) the lazy-load registration — are each centralized to one file, so this list stays short as languages accumulate.
