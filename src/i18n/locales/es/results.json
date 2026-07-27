@@ -66,5 +66,9 @@
   "leaderboardSubtitle": "La clasificación completa",
   "clusterSupportive": "Opiniones a favor",
   "clusterCritical": "Opiniones críticas",
-  "clusterNuanced": "Opiniones matizadas"
+  "clusterNuanced": "Opiniones matizadas",
+  "drawerVotes_one": "{{count}} voto 🔥",
+  "drawerVotes_other": "{{count}} votos 🔥",
+  "tapToChangeVote": "Toca un botón de voto debajo de cualquier respuesta para cambiar tu voto.",
+  "sortByLabel": "Ordenar por:"
 }

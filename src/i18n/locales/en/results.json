@@ -66,5 +66,9 @@
   "leaderboardSubtitle": "The full leaderboard",
   "clusterSupportive": "Supportive Views",
   "clusterCritical": "Critical Views",
-  "clusterNuanced": "Nuanced Views"
+  "clusterNuanced": "Nuanced Views",
+  "drawerVotes_one": "{{count}} vote 🔥",
+  "drawerVotes_other": "{{count}} votes 🔥",
+  "tapToChangeVote": "Tap a vote button below any statement to change your vote.",
+  "sortByLabel": "Sort by:"
 }

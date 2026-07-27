@@ -8,6 +8,7 @@ import {
   Copy,
   QrCode,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import {
@@ -120,6 +121,7 @@ export function VotesDrawer({
   debateTitle,
   onChangeVote,
 }: VotesDrawerProps) {
+  const { t } = useTranslation("results");
   const { safelyGetUser } = useDebateSession();
   const user = safelyGetUser();
 
@@ -203,7 +205,7 @@ export function VotesDrawer({
           transition={{ duration: 1.5, repeat: Infinity }}
           className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-2 py-0.5 whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
         >
-          {totalVoteCount} votes 🔥
+          {t("drawerVotes", { count: totalVoteCount })}
         </motion.button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-lg p-0 flex flex-col h-full">
@@ -212,17 +214,17 @@ export function VotesDrawer({
             <SheetTitle className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{debateTitle}</SheetTitle>
             <SheetDescription className="pt-1">
               <Badge variant="secondary" className="text-xs">
-                {statements.length} statements
+                {t("statementCount", { count: statements.length })}
               </Badge>
             </SheetDescription>
             <p className="text-xs text-gray-600 mt-2">
-              Tap a vote button below any statement to change your vote.
+              {t("tapToChangeVote")}
             </p>
           </div>
           
           {/* Sort buttons */}
           <div className="space-y-1.5">
-            <p className="text-xs text-gray-600">Sort by:</p>
+            <p className="text-xs text-gray-600">{t("sortByLabel")}</p>
             <div className="flex flex-wrap gap-1.5">
               <SortButton
                 type="agree"
