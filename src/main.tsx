@@ -5,6 +5,7 @@ import App from "./App.tsx";
 import "./index.css";
 import "./semantic_classes.css";
 import "./styles/z-index.css";
+import { registerServiceWorker } from "./utils/pushNotifications";
 
 const environment = import.meta.env.VITE_HEARD_ENV ?? import.meta.env.MODE;
 
@@ -32,3 +33,5 @@ if (posthogEnabled) {
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
+
+registerServiceWorker();

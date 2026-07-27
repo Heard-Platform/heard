@@ -32,8 +32,10 @@ import {
   ShieldAlert,
   TrendingUp,
   MessageCircle,
+  Bell,
 } from "lucide-react";
 import type { UserSession } from "../types";
+import { sendTestPushNotification } from "../utils/pushNotifications";
 import { RoomAlertsList } from "./side-panel/RoomAlertsList";
 import { AvatarAlertDot } from "./side-panel/AvatarAlertDot";
 import { useRoomAlertsContext } from "../contexts/RoomAlertsContext";
@@ -181,6 +183,15 @@ export function SidePanelMenu({
     } catch (error) {
       console.error("Error running scalability test:", error);
       alert("❌ Failed to run scalability test");
+    }
+  };
+
+  const handleTestPushNotification = async () => {
+    try {
+      await sendTestPushNotification();
+    } catch (error) {
+      console.error("Error sending test push notification:", error);
+      alert(`❌ ${error instanceof Error ? error.message : "Failed to send test push notification"}`);
     }
   };
 
@@ -462,6 +473,15 @@ export function SidePanelMenu({
                         Admin Panel
                       </Button>
                     )}
+                    <Button
+                      onClick={handleTestPushNotification}
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-indigo-50 border-indigo-200 text-indigo-800"
+                    >
+                      <Bell className="w-3 h-3 mr-2" />
+                      Test Push Notification
+                    </Button>
                     {onJumpToFinalResults && (
                       <Button
                         onClick={onJumpToFinalResults}
