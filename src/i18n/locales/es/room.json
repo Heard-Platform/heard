@@ -18,5 +18,10 @@
   "hideResponse": "Ocultar respuesta",
   "hideResponseConfirm": "¿Ocultar esta respuesta? Ya no aparecerá para nadie. Puedes deshacerlo desde la herramienta de moderación Ocultar y combinar respuestas.",
   "shareVoteTitle": "Ven a votar sobre esto",
-  "shareVoteText": "¡Ven a votar sobre «{{text}}»! {{link}}"
+  "shareVoteText": "¡Ven a votar sobre «{{text}}»! {{link}}",
+  "addYourResponse": "Añade tu respuesta",
+  "topic": "Tema",
+  "responsePlaceholder": "¿Qué opinas?",
+  "submitResponse": "Enviar respuesta",
+  "submitting": "Enviando…"
 }

@@ -34,7 +34,7 @@ export function AddResponseModal({
   onSubmitStatement,
   onShowAccountSetupModal,
 }: AddResponseModalProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["room", "common", "toast"]);
   const [text, setText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,7 +52,7 @@ export function AddResponseModal({
     if (!trimmed) return;
 
     if (trimmed.length > 500) {
-      toast.error(t("responseTooLong"));
+      toast.error(t("toast:responseTooLong"));
       return;
     }
 
@@ -61,9 +61,9 @@ export function AddResponseModal({
       await onSubmitStatement(trimmed);
       setText("");
       onOpenChange(false);
-      toast.success(t("responseSubmitted"));
+      toast.success(t("toast:responseSubmitted"));
     } catch {
-      toast.error(t("responseSubmitFailed"));
+      toast.error(t("toast:responseSubmitFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -92,7 +92,7 @@ export function AddResponseModal({
               <MessageSquare className="w-6 h-6 text-emerald-600" />
             </motion.div>
             <DialogTitle className="text-2xl bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-              Add your response
+              {t("addYourResponse")}
             </DialogTitle>
           </div>
         </DialogHeader>
@@ -104,7 +104,7 @@ export function AddResponseModal({
             transition={{ delay: 0.1 }}
             className="bg-white/70 rounded-2xl px-4 py-3 border border-emerald-100"
           >
-            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 mb-1">Topic</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 mb-1">{t("topic")}</p>
             <p className="text-sm text-slate-700 font-medium leading-snug">{room.topic}</p>
           </motion.div>
           <motion.div
@@ -116,7 +116,7 @@ export function AddResponseModal({
             <Textarea
               value={text}
               onChange={(e) => handleTextChange(e.target.value)}
-              placeholder="What do you think?"
+              placeholder={t("responsePlaceholder")}
               disabled={isSubmitting}
               maxLength={500}
               rows={4}
@@ -145,7 +145,7 @@ export function AddResponseModal({
               className="w-full h-12 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-200 disabled:opacity-50 disabled:shadow-none transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
               size="lg"
             >
-              {isSubmitting ? "Submitting..." : "Submit response"}
+              {isSubmitting ? t("submitting") : t("submitResponse")}
             </Button>
             <Button
               variant="outline"
@@ -153,7 +153,7 @@ export function AddResponseModal({
               disabled={isSubmitting}
               className="w-full h-11 border-slate-300 hover:border-slate-400 bg-white"
             >
-              Cancel
+              {t("common:cancel")}
             </Button>
           </motion.div>
         </div>

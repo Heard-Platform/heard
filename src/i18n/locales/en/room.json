@@ -18,5 +18,10 @@
   "hideResponse": "Hide response",
   "hideResponseConfirm": "Hide this response? It will no longer appear to anyone. You can undo this from the Hide and Merge Statements moderator tool.",
   "shareVoteTitle": "Come vote on this",
-  "shareVoteText": "Come vote on \"{{text}}\"! {{link}}"
+  "shareVoteText": "Come vote on \"{{text}}\"! {{link}}",
+  "addYourResponse": "Add your response",
+  "topic": "Topic",
+  "responsePlaceholder": "What do you think?",
+  "submitResponse": "Submit response",
+  "submitting": "Submitting…"
 }
