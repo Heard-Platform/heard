@@ -1,0 +1,23 @@
+{
+  "name": "Heard - A Place to Be Heard",
+  "short_name": "Heard",
+  "description": "Heard - A Place to Be Heard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/monkey.png",
+      "sizes": "802x802",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/monkey.png",
+      "sizes": "802x802",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
