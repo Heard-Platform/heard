@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
@@ -14,17 +15,18 @@ interface AdvancedFeaturesProps {
 
 const STANDARD_QUESTIONS: Array<{
   type: StandardDemographicQuestionType;
-  label: string;
+  labelKey: string;
 }> = [
-  { type: "gender", label: "Gender" },
-  { type: "age_range", label: "Age Range" },
-  { type: "occupation", label: "Employment Status" },
+  { type: "gender", labelKey: "afQGender" },
+  { type: "age_range", labelKey: "afQAgeRange" },
+  { type: "occupation", labelKey: "afQEmployment" },
 ];
 
 export function AdvancedFeatures({
   demographicQuestions,
   onDemographicQuestionsChange,
 }: AdvancedFeaturesProps) {
+  const { t } = useTranslation("create");
   const [isExpanded, setIsExpanded] = useState(false);
 
   const isStandardQuestionSelected = (
@@ -92,7 +94,7 @@ export function AdvancedFeatures({
         className="w-full px-4 py-3 heard-between hover:bg-slate-100/50 transition-colors rounded-lg"
       >
         <span className="text-sm text-slate-500 font-medium">
-          Advanced Features
+          {t("afTitle")}
         </span>
         {isExpanded ? (
           <ChevronUp className="w-4 h-4 text-slate-500" />
@@ -107,20 +109,20 @@ export function AdvancedFeatures({
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-purple-600" />
               <Label className="text-sm font-medium text-slate-700">
-                Demographic Questions
+                {t("afDemographicQuestions")}
               </Label>
             </div>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Add questions to understand who's participating in this conversation. These questions will be interspersed throughout the conversation deck and are optional for participants to answer.
+              {t("afDemographicDesc")}
             </p>
           </div>
 
           <div className="space-y-2">
             <Label className="text-xs font-medium text-slate-600 uppercase tracking-wide">
-              Standard Questions
+              {t("afStandardQuestions")}
             </Label>
             <div className="space-y-2">
-              {STANDARD_QUESTIONS.map(({ type, label }) => (
+              {STANDARD_QUESTIONS.map(({ type, labelKey }) => (
                 <div key={type} className="flex items-center gap-3">
                   <Checkbox
                     id={`question-${type}`}
@@ -131,7 +133,7 @@ export function AdvancedFeatures({
                     htmlFor={`question-${type}`}
                     className="text-sm text-slate-700 cursor-pointer"
                   >
-                    {label}
+                    {t(labelKey)}
                   </Label>
                 </div>
               ))}
@@ -141,7 +143,7 @@ export function AdvancedFeatures({
           <div className="space-y-3">
             <div className="heard-between">
               <Label className="text-xs font-medium text-slate-600 uppercase tracking-wide">
-                Custom Questions
+                {t("afCustomQuestions")}
               </Label>
               <Button
                 type="button"
@@ -151,7 +153,7 @@ export function AdvancedFeatures({
                 className="h-7 text-xs border-purple-300 hover:bg-purple-50 text-purple-700"
               >
                 <Plus className="w-3.5 h-3.5 mr-1" />
-                Add Custom
+                {t("afAddCustom")}
               </Button>
             </div>
 

@@ -2,6 +2,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { X, Plus } from "lucide-react";
 import { Label } from "../ui/label";
+import { useTranslation } from "react-i18next";
 import { hasDuplicates } from "../../utils/validation";
 
 interface CustomDemographicQuestionProps {
@@ -21,6 +22,7 @@ export function CustomDemographicQuestion({
   onOptionsChange,
   onRemove,
 }: CustomDemographicQuestionProps) {
+  const { t } = useTranslation("create");
   const handleOptionChange = (index: number, value: string) => {
     const updated = [...options];
     updated[index] = value;
@@ -50,16 +52,16 @@ export function CustomDemographicQuestion({
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 space-y-1">
           <Label className="text-sm font-medium text-purple-900">
-            Question
+            {t("cdqQuestion")}
           </Label>
           <Input
-            placeholder="e.g., What neighborhood do you live in?"
+            placeholder={t("cdqQuestionPlaceholder")}
             value={questionText}
             onChange={(e) => onQuestionTextChange(e.target.value)}
             className={`bg-white ${questionBorderStyling}`}
           />
           {isDuplicate && (
-            <p className="text-xs invalid-text">Duplicate question</p>
+            <p className="text-xs invalid-text">{t("cdqDuplicateQuestion")}</p>
           )}
         </div>
         <Button
@@ -74,7 +76,7 @@ export function CustomDemographicQuestion({
 
       <div className="space-y-2">
         <Label className="text-sm font-medium text-purple-900">
-          Answer Options
+          {t("cdqAnswerOptions")}
         </Label>
         {options.length > 0 && (
           <div className="space-y-2">
@@ -89,7 +91,7 @@ export function CustomDemographicQuestion({
                 <div key={index} className="flex items-center gap-2">
                   <div className="flex-1 space-y-1">
                     <Input
-                      placeholder={`Option ${index + 1}`}
+                      placeholder={t("cdqOptionPlaceholder", { number: index + 1 })}
                       value={option}
                       onChange={(e) =>
                         handleOptionChange(index, e.target.value)
@@ -98,7 +100,7 @@ export function CustomDemographicQuestion({
                     />
                     {isOptionDuplicate && (
                       <p className="text-xs invalid-text">
-                        Duplicate option
+                        {t("cdqDuplicateOption")}
                       </p>
                     )}
                   </div>
@@ -123,11 +125,11 @@ export function CustomDemographicQuestion({
           className="h-7 text-xs border-purple-300 hover:bg-purple-50 text-purple-700"
         >
           <Plus className="w-3.5 h-3.5 mr-1" />
-          Add option
+          {t("cdqAddOption")}
         </Button>
         {nonBlankCount < 2 && (
           <p className="text-xs text-purple-600 italic">
-            Add at least 2 answer options
+            {t("cdqMinOptions")}
           </p>
         )}
       </div>

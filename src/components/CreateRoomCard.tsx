@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Plus, Compass } from "lucide-react";
@@ -14,6 +15,7 @@ export function CreateRoomCard({
   onCreateRoom,
   onOpenExplorer,
 }: CreateRoomCardProps) {
+  const { t } = useTranslation("create");
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
@@ -33,10 +35,10 @@ export function CreateRoomCard({
 
           <div className="space-y-2">
             <h2 className="text-3xl font-bold text-foreground">
-              Start a New Conversation
+              {t("crcTitle")}
             </h2>
             <p className="text-muted-foreground">
-              Create your own conversation and invite others to join
+              {t("crcSubtitle")}
             </p>
           </div>
 
@@ -46,7 +48,7 @@ export function CreateRoomCard({
               size="lg"
               className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-lg py-6 px-8"
             >
-              New Conversation
+              {t("crcNewConversation")}
               <Plus className="w-5 h-5 ml-2" />
             </Button>
             
@@ -57,7 +59,7 @@ export function CreateRoomCard({
                 variant="outline"
                 className="border-2 border-green-500 text-green-700 hover:bg-green-50 text-lg py-6 px-8"
               >
-                Browse Communities
+                {t("crcBrowseCommunities")}
                 <Compass className="w-5 h-5 ml-2" />
               </Button>
             }

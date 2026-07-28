@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SquarePlus, MessageSquare, Calendar, ChevronDown, type LucideIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
 
 interface NewItemButtonProps {
@@ -37,12 +38,13 @@ function MenuItemButton({ label, description, icon: Icon, iconClass, bgClass, ho
 const eventsEnabled = isFeatureEnabled(FeatureFlags.EVENTS);
 
 export function NewItemButton({ onNewConversation, onNewEvent }: NewItemButtonProps) {
+  const { t } = useTranslation("create");
   const [menuOpen, setMenuOpen] = useState(false);
 
   const items: MenuItem[] = [
     {
-      label: "Conversation",
-      description: "Start a discussion",
+      label: t("niConversation"),
+      description: t("niConversationDesc"),
       icon: MessageSquare,
       iconClass: "text-emerald-600",
       bgClass: "bg-emerald-100",
@@ -50,8 +52,8 @@ export function NewItemButton({ onNewConversation, onNewEvent }: NewItemButtonPr
       onClick: () => { setMenuOpen(false); onNewConversation(); },
     },
     {
-      label: "Event",
-      description: "Organize multiple conversations",
+      label: t("niEvent"),
+      description: t("niEventDesc"),
       icon: Calendar,
       iconClass: "text-orange-500",
       bgClass: "bg-orange-100",
@@ -72,7 +74,7 @@ export function NewItemButton({ onNewConversation, onNewEvent }: NewItemButtonPr
         }
       >
         <SquarePlus className="w-4 h-4 text-gray-600 shrink-0" />
-        <span className="text-gray-700 text-sm font-medium">New</span>
+        <span className="text-gray-700 text-sm font-medium">{t("niNew")}</span>
         <ChevronDown className="w-3 h-3 text-gray-500 shrink-0" />
       </button>
 
