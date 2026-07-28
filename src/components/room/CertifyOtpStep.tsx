@@ -1,6 +1,7 @@
 import { Button } from "../ui/button";
 import { motion } from "motion/react";
 import { Send, Sparkles } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
 import { OtpCodeInput } from "../auth/OtpCodeInput";
 
 interface CertifyOtpStepProps {
@@ -22,6 +23,7 @@ export function CertifyOtpStep({
   onSubmit,
   onBack,
 }: CertifyOtpStepProps) {
+  const { t } = useTranslation("room");
   return (
     <motion.div
       key="otp"
@@ -35,10 +37,15 @@ export function CertifyOtpStep({
           className="text-lg text-foreground"
           style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 800 }}
         >
-          Welcome back! 👋
+          {t("certifyWelcomeBack")}
         </p>
         <p className="text-sm text-muted-foreground max-w-xs">
-          We sent a 6-character code to <span className="font-semibold">{email}</span>. Enter it to log in.
+          <Trans
+            t={t}
+            i18nKey="certifyCodeSent"
+            values={{ email }}
+            components={{ email: <span className="font-semibold" /> }}
+          />
         </p>
       </div>
 
@@ -64,7 +71,7 @@ export function CertifyOtpStep({
             </motion.div>
           ) : (
             <span className="flex items-center gap-2">
-              <Send className="w-4 h-4" /> Log in
+              <Send className="w-4 h-4" /> {t("certifyLogIn")}
             </span>
           )}
         </Button>
@@ -78,7 +85,7 @@ export function CertifyOtpStep({
           onClick={onBack}
           className="text-xs text-muted-foreground hover:text-foreground underline"
         >
-          Use a different email
+          {t("certifyDifferentEmail")}
         </button>
       </div>
     </motion.div>

@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { motion } from "motion/react";
 import { PartyPopper } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface CertifyCelebrationStepProps {
   onDone: () => void;
 }
 
 export function CertifyCelebrationStep({ onDone }: CertifyCelebrationStepProps) {
+  const { t } = useTranslation("room");
   useEffect(() => {
     const timer = setTimeout(onDone, 1500);
     return () => clearTimeout(timer);
@@ -28,9 +30,9 @@ export function CertifyCelebrationStep({ onDone }: CertifyCelebrationStepProps) 
         <PartyPopper className="w-14 h-14 creation-text" />
       </motion.div>
       <div>
-        <h3 className="text-2xl font-semibold">You're officially part of Heard! 🎊</h3>
+        <h3 className="text-2xl font-semibold">{t("certifyOfficial")}</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Welcome — check your inbox for a note from us.
+          {t("certifyWelcomeInbox")}
         </p>
       </div>
     </motion.div>

@@ -25,5 +25,13 @@
   "submitResponse": "Submit response",
   "submitting": "Submitting…",
   "loadingResults": "Loading results…",
-  "votedAllStatements": "You've voted on all available statements."
+  "votedAllStatements": "You've voted on all available statements.",
+  "certifySealTitle": "Add your Seal of Approval 🦭",
+  "certifySealDesc": "Drop your email to confirm your votes and see the results so far.",
+  "certifyWelcomeBack": "Welcome back! 👋",
+  "certifyCodeSent": "We sent a 6-character code to <email>{{email}}</email>. Enter it to log in.",
+  "certifyLogIn": "Log in",
+  "certifyDifferentEmail": "Use a different email",
+  "certifyOfficial": "You're officially part of Heard! 🎊",
+  "certifyWelcomeInbox": "Welcome — check your inbox for a note from us."
 }

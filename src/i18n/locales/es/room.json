@@ -25,5 +25,13 @@
   "submitResponse": "Enviar respuesta",
   "submitting": "Enviando…",
   "loadingResults": "Cargando resultados…",
-  "votedAllStatements": "Ya votaste todas las respuestas disponibles."
+  "votedAllStatements": "Ya votaste todas las respuestas disponibles.",
+  "certifySealTitle": "Añade tu sello de aprobación 🦭",
+  "certifySealDesc": "Deja tu correo para confirmar tus votos y ver los resultados hasta ahora.",
+  "certifyWelcomeBack": "¡Bienvenido de nuevo! 👋",
+  "certifyCodeSent": "Enviamos un código de 6 caracteres a <email>{{email}}</email>. Ingrésalo para iniciar sesión.",
+  "certifyLogIn": "Iniciar sesión",
+  "certifyDifferentEmail": "Usar otro correo",
+  "certifyOfficial": "¡Ya eres oficialmente parte de Heard! 🎊",
+  "certifyWelcomeInbox": "Bienvenido: revisa tu bandeja de entrada para ver una nota nuestra."
 }

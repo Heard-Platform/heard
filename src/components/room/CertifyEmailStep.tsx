@@ -2,6 +2,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { motion } from "motion/react";
 import { Send, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { TOSText } from "../onboarding/TOSText";
 
 interface CertifyEmailStepProps {
@@ -19,6 +20,7 @@ export function CertifyEmailStep({
   onEmailChange,
   onSubmit,
 }: CertifyEmailStepProps) {
+  const { t } = useTranslation("room");
   return (
     <motion.div
       key="email"
@@ -32,10 +34,10 @@ export function CertifyEmailStep({
           className="text-lg text-foreground"
           style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 800 }}
         >
-          Add your Seal of Approval 🦭
+          {t("certifySealTitle")}
         </p>
         <p className="text-sm text-muted-foreground max-w-xs">
-          Drop your email to confirm your votes and see the results so far.
+          {t("certifySealDesc")}
         </p>
       </div>
 
