@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "../../ui/dropdown-menu";
 import { X, Info, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { DemographicQuestion } from "../../../types";
 import { DataPrivacyModal } from "./DataPrivacyModal";
 
@@ -28,25 +29,31 @@ interface EditAnswersModalProps {
 
 const PREFER_NOT_TO_SAY = "prefer_not_to_say";
 
+interface StandardOption {
+  labelKey?: string;
+  label?: string;
+  value: string;
+}
+
 const standardQuestionsByType: Record<
   Exclude<DemographicQuestion["type"], "custom">,
-  { 
-    text: string;
-    options: Array<{ label: string; value: string }>;
+  {
+    textKey: string;
+    options: StandardOption[];
   }
 > = {
   gender: {
-    text: "What is your gender?",
+    textKey: "demoGenderQ",
     options: [
-      { label: "Male", value: "male" },
-      { label: "Female", value: "female" },
-      { label: "Non-binary", value: "non_binary" },
-      { label: "Prefer not to say", value: PREFER_NOT_TO_SAY },
-      { label: "Other", value: "other" },
+      { labelKey: "demoMale", value: "male" },
+      { labelKey: "demoFemale", value: "female" },
+      { labelKey: "demoNonBinary", value: "non_binary" },
+      { labelKey: "demoPreferNotToSay", value: PREFER_NOT_TO_SAY },
+      { labelKey: "demoOther", value: "other" },
     ],
   },
   age_range: {
-    text: "What is your age range?",
+    textKey: "demoAgeQ",
     options: [
       { label: "18-24", value: "18_24" },
       { label: "25-34", value: "25_34" },
@@ -54,19 +61,19 @@ const standardQuestionsByType: Record<
       { label: "45-54", value: "45_54" },
       { label: "55-64", value: "55_64" },
       { label: "65+", value: "65_plus" },
-      { label: "Prefer not to say", value: PREFER_NOT_TO_SAY },
+      { labelKey: "demoPreferNotToSay", value: PREFER_NOT_TO_SAY },
     ],
   },
   occupation: {
-    text: "What is your current employment status?",
+    textKey: "demoOccupationQ",
     options: [
-      { label: "Student", value: "student" },
-      { label: "Employed", value: "employed" },
-      { label: "Self-employed", value: "self_employed" },
-      { label: "Unemployed", value: "unemployed" },
-      { label: "Retired", value: "retired" },
-      { label: "Other", value: "other" },
-      { label: "Prefer not to say", value: PREFER_NOT_TO_SAY },
+      { labelKey: "demoStudent", value: "student" },
+      { labelKey: "demoEmployed", value: "employed" },
+      { labelKey: "demoSelfEmployed", value: "self_employed" },
+      { labelKey: "demoUnemployed", value: "unemployed" },
+      { labelKey: "demoRetired", value: "retired" },
+      { labelKey: "demoOther", value: "other" },
+      { labelKey: "demoPreferNotToSay", value: PREFER_NOT_TO_SAY },
     ],
   },
 };
@@ -79,6 +86,7 @@ export function EditAnswersModal({
   onUpdateAnswer,
   onRemoveAnswer,
 }: EditAnswersModalProps) {
+  const { t } = useTranslation("room");
   const [localAnswers, setLocalAnswers] = useState<Map<string, string>>(
     new Map(answers.map(a => [a.questionId, a.answer]))
   );
@@ -96,14 +104,18 @@ export function EditAnswersModal({
 
   const getQuestionText = (question: DemographicQuestion) => {
     if (question.type !== "custom") {
-      return standardQuestionsByType[question.type]?.text || question.text;
+      const sq = standardQuestionsByType[question.type];
+      return sq ? t(sq.textKey) : question.text;
     }
     return question.text;
   };
 
   const getQuestionOptions = (question: DemographicQuestion) => {
     if (question.type !== "custom") {
-      return standardQuestionsByType[question.type]?.options || [];
+      return (standardQuestionsByType[question.type]?.options || []).map((o) => ({
+        label: o.labelKey ? t(o.labelKey) : (o.label ?? o.value),
+        value: o.value,
+      }));
     }
     return question.options?.map(opt => ({ label: opt, value: opt.toLowerCase().replace(/\s+/g, '_') })) || [];
   };
@@ -118,10 +130,10 @@ export function EditAnswersModal({
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="text-2xl font-bold">
-            Your Answers
+            {t("eaTitle")}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Manage your answers for this discussion
+            {t("eaSrDesc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -129,15 +141,13 @@ export function EditAnswersModal({
           <div className="flex gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-blue-900 leading-relaxed">
-              This information helps the community understand what voices are being represented in the discussion. 
-              Your data is only ever displayed in aggregate to protect your privacy, and you can change or remove 
-              your answers at any time.
+              {t("eaInfo")}
             </p>
           </div>
 
           <p className="text-xs text-muted-foreground leading-relaxed text-center">
             <button className="hover:text-foreground transition-colors underline decoration-dotted underline-offset-2" onClick={() => setIsPrivacyModalOpen(true)}>
-              Learn more about how we protect your privacy
+              {t("eaLearnMore")}
             </button>
           </p>
         </div>
@@ -208,7 +218,7 @@ export function EditAnswersModal({
 
         <div className="p-6 pt-4 border-t border-border bg-muted/30">
           <Button onClick={onClose} className="w-full">
-            Done
+            {t("done")}
           </Button>
         </div>
       </DialogContent>

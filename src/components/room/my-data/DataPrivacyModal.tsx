@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } f
 import { Button } from "../../ui/button";
 import { Shield, Eye, Lock, DollarSign } from "lucide-react";
 import { LucideIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface DataPrivacyModalProps {
   variant: "decision" | "learn more";
@@ -70,6 +71,7 @@ export function DataPrivacyModal({
   onDeclineToShare,
   onClose,
 }: DataPrivacyModalProps) {
+  const { t } = useTranslation(["room", "common"]);
   const handleDecline = () => {
     onDeclineToShare?.();
     onClose();
@@ -87,40 +89,40 @@ export function DataPrivacyModal({
           <DialogHeader className="p-6 pb-4">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Shield className="w-6 h-6 text-purple-600" />
-              Your data on Heard
+              {t("dpTitle")}
             </DialogTitle>
             <DialogDescription className="sr-only">
-              Information about how we handle your demographic data
+              {t("dpSrDesc")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto px-6 space-y-6 min-h-0 relative">
             <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
-              <h4 className="font-semibold text-purple-900 mb-2">How your answers help</h4>
+              <h4 className="font-semibold text-purple-900 mb-2">{t("dpHowHelpTitle")}</h4>
               <p className="text-sm text-purple-800 leading-relaxed">
-                Demographics like gender, age, and occupation help the community understand which voices are being represented in this discussion. 
+                {t("dpHowHelpBody")}
               </p>
             </div>
 
             <div className="grid gap-4">
               <InfoBlock
                 icon={Eye}
-                title="Only shown in aggregate"
-                description="Your individual responses are never shown. We only display aggregate statistics like '40% of participants identified as...'"
+                title={t("dpAggregateTitle")}
+                description={t("dpAggregateBody")}
                 colorScheme="green"
               />
 
               <InfoBlock
                 icon={Lock}
-                title="Always anonymized"
-                description="Your answers are never shared in a way that can link them back to you."
+                title={t("dpAnonTitle")}
+                description={t("dpAnonBody")}
                 colorScheme="blue"
               />
 
               <InfoBlock
                 icon={DollarSign}
-                title="We don't sell your data"
-                description="Heard does not sell user data. Read our Privacy Policy at heard.vote/privacy to learn more."
+                title={t("dpNoSellTitle")}
+                description={t("dpNoSellBody")}
                 colorScheme="orange"
               />
             </div>
@@ -136,7 +138,7 @@ export function DataPrivacyModal({
                   className="w-full bg-purple-600 hover:bg-purple-700"
                   size="lg"
                 >
-                  Got it, I'm willing to reconsider
+                  {t("dpReconsider")}
                 </Button>
                 <Button
                   onClick={handleDecline}
@@ -144,7 +146,7 @@ export function DataPrivacyModal({
                   className="w-full"
                   size="lg"
                 >
-                  I still prefer not to answer
+                  {t("dpStillPreferNot")}
                 </Button>
               </>
             ) : (
@@ -154,7 +156,7 @@ export function DataPrivacyModal({
                 className="w-full"
                 size="lg"
               >
-                Close
+                {t("common:close")}
               </Button>
             )}
           </div>
