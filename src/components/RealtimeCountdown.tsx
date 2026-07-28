@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Clock, Zap, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface RealtimeCountdownProps {
   endTime: number;
@@ -9,6 +10,7 @@ interface RealtimeCountdownProps {
 }
 
 export function RealtimeCountdown({ endTime, startTime, onTimeUp }: RealtimeCountdownProps) {
+  const { t } = useTranslation("room");
   const [timeLeft, setTimeLeft] = useState(Math.max(0, endTime - Date.now()));
   const [hasCalledOnTimeUp, setHasCalledOnTimeUp] = useState(false);
 
@@ -53,7 +55,7 @@ export function RealtimeCountdown({ endTime, startTime, onTimeUp }: RealtimeCoun
       >
         <div className="flex items-center justify-center gap-2 text-white">
           <AlertCircle className="w-4 h-4 animate-pulse" />
-          <span className="font-bold text-sm">TIME'S UP! 🎉</span>
+          <span className="font-bold text-sm">{t("countdownTimeUp")}</span>
           <AlertCircle className="w-4 h-4 animate-pulse" />
         </div>
       </motion.div>
@@ -186,7 +188,7 @@ export function RealtimeCountdown({ endTime, startTime, onTimeUp }: RealtimeCoun
 
         {/* Label */}
         <div className="text-xs text-white font-medium whitespace-nowrap leading-none">
-          {isCritical ? "HURRY!" : isUrgent ? "Almost done" : "Time left"}
+          {isCritical ? t("countdownHurry") : isUrgent ? t("countdownAlmostDone") : t("countdownTimeLeft")}
         </div>
       </div>
     </motion.div>

@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { FullCoverData } from "../../types";
 import { openImageOverlay } from "../../utils/image-overlay";
 
@@ -20,10 +21,11 @@ export function extractYouTubeVideoId(url: string): string | null {
 }
 
 export function CoverCard({ cover, isTopCard }: CoverCardProps) {
+  const { t } = useTranslation("room");
   const { type, url, description } = cover;
   const isYouTube = type === "youtube";
 
-  const label = isYouTube ? "Intro Video" : "Cover Image";
+  const label = isYouTube ? t("coverIntroVideo") : t("coverImage");
   const icon = isYouTube ? "📺" : "🖼️";
   const accentColor = isYouTube ? "purple" : "indigo";
   
@@ -33,7 +35,7 @@ export function CoverCard({ cover, isTopCard }: CoverCardProps) {
       if (!videoId) {
         return (
           <div className="min-h-[200px] flex items-center justify-center">
-            <p className="text-red-600 font-medium">Invalid YouTube URL</p>
+            <p className="text-red-600 font-medium">{t("coverInvalidYoutube")}</p>
           </div>
         );
       }
@@ -42,7 +44,7 @@ export function CoverCard({ cover, isTopCard }: CoverCardProps) {
           <iframe
             className="absolute top-0 left-0 w-full h-full"
             src={`https://www.youtube.com/embed/${videoId}`}
-            title="YouTube video player"
+            title={t("coverVideoPlayer")}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
           />
@@ -57,7 +59,7 @@ export function CoverCard({ cover, isTopCard }: CoverCardProps) {
       >
         <img
           src={url}
-          alt="Room cover"
+          alt={t("coverAlt")}
           draggable={false}
           className="absolute inset-0 w-full h-full object-cover select-none"
         />
@@ -81,7 +83,7 @@ export function CoverCard({ cover, isTopCard }: CoverCardProps) {
       {isTopCard && (
         <div className={`pt-2 border-t border-${accentColor}-200`}>
           <p className={`text-xs text-center text-${accentColor}-700`}>
-            Swipe this card away to begin voting
+            {t("coverSwipeToBegin")}
           </p>
         </div>
       )}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AddResponseModal } from "./AddResponseModal";
 import type { DebateRoom } from "../../types";
 import { AddResponseButton } from "../widgets/AddResponseButton";
@@ -20,6 +21,7 @@ export function ChanceCard({
   onSubmitStatement,
   onShowAccountSetupModal,
 }: ChanceCardProps) {
+  const { t } = useTranslation("room");
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -27,15 +29,15 @@ export function ChanceCard({
       <div className="heard-between mb-2">
         <div className="flex items-center gap-2">
           <span className="text-2xl">🎲</span>
-          <span className="text-sm text-orange-700">Chance Card!</span>
+          <span className="text-sm text-orange-700">{t("chanceTitle")}</span>
         </div>
       </div>
 
       <div className="mb-4 min-h-[120px] flex flex-col items-center justify-center space-y-4">
         <div className="text-3xl mb-2">💬</div>
-        <h3 className="text-2xl text-center">What do you think?</h3>
+        <h3 className="text-2xl text-center">{t("chanceWhatThink")}</h3>
         <p className="text-base text-center text-muted-foreground max-w-sm">
-          Share your take on the topic.
+          {t("chanceShareTake")}
         </p>
         <AddResponseButton onClick={() => setShowModal(true)} />
       </div>
@@ -53,7 +55,7 @@ export function ChanceCard({
       {isTopCard && (
         <div className="pt-2 border-t border-orange-200">
           <p className="text-xs text-center text-orange-700">
-            Swipe away to continue
+            {t("chanceSwipeContinue")}
           </p>
         </div>
       )}

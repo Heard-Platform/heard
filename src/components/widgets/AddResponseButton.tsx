@@ -1,4 +1,5 @@
 import { MessageCirclePlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../ui/button";
 
 export const AddResponseButton = ({
@@ -10,6 +11,7 @@ export const AddResponseButton = ({
   disabledLabel?: string;
   onClick: () => void;
 }) => {
+  const { t } = useTranslation("room");
   return (
     <div className="flex">
       <Button
@@ -19,7 +21,7 @@ export const AddResponseButton = ({
         onClick={onClick}
       >
         <MessageCirclePlus />
-        {disabled && disabledLabel ? disabledLabel : "Add response"}
+        {disabled && disabledLabel ? disabledLabel : t("addResponse")}
       </Button>
     </div>
   );

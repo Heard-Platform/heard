@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { X } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
 import { formatSubHeardDisplay } from "../utils/subheard";
 
 const ENTER_DELAY = 1;
@@ -14,6 +15,7 @@ interface NextRoomNudgeProps {
 }
 
 export function NextRoomNudge({ topic, visible, animate, subHeard, onDismiss, onClick }: NextRoomNudgeProps) {
+  const { t } = useTranslation("room");
   return (
     <motion.button
       initial={{ opacity: 0, y: 20, scale: 0.85 }}
@@ -55,14 +57,14 @@ export function NextRoomNudge({ topic, visible, animate, subHeard, onDismiss, on
       <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
         <span className="text-xs opacity-75 font-medium leading-none">
           {subHeard ? (
-            <>
-              next post in{" "}
-              <span className="opacity-100 font-bold tracking-wide">
-                {formatSubHeardDisplay(subHeard)}
-              </span>
-            </>
+            <Trans
+              t={t}
+              i18nKey="nudgeNextPostIn"
+              values={{ name: formatSubHeardDisplay(subHeard) }}
+              components={{ sub: <span className="opacity-100 font-bold tracking-wide" /> }}
+            />
           ) : (
-            "next post"
+            t("nudgeNextPost")
           )}
         </span>
         <span className="w-full truncate text-sm font-semibold leading-snug text-left">
@@ -72,7 +74,7 @@ export function NextRoomNudge({ topic, visible, animate, subHeard, onDismiss, on
       <button
         onClick={(e) => { e.stopPropagation(); onDismiss(); }}
         className="shrink-0 ml-1 p-1 rounded-full hover:bg-white/20 transition-colors"
-        aria-label="Dismiss"
+        aria-label={t("nudgeDismiss")}
       >
         <X className="w-3.5 h-3.5 opacity-70" />
       </button>

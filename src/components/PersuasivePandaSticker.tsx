@@ -1,5 +1,6 @@
 import { useDrag } from "react-dnd";
 import { motion } from "motion/react";
+import { useTranslation } from "react-i18next";
 
 interface PandaStickerProps {
   id: string;
@@ -58,6 +59,7 @@ interface PandaStickerDockProps {
 }
 
 export function PandaStickerDock({ roomId }: PandaStickerDockProps) {
+  const { t } = useTranslation("room");
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
@@ -66,7 +68,7 @@ export function PandaStickerDock({ roomId }: PandaStickerDockProps) {
       className="flex flex-col gap-0.5 sm:gap-1 items-center bg-gradient-to-br from-purple-100/90 to-pink-100/90 backdrop-blur-sm p-1 sm:p-1.5 rounded-lg sm:rounded-xl border border-purple-200 shadow-lg"
     >
       <div className="text-[7px] sm:text-[8px] font-bold text-purple-700 uppercase tracking-wide">
-        Persuasive
+        {t("pandaPersuasive")}
       </div>
       <div className="flex gap-1 sm:gap-1.5">
         <PandaSticker id={`${roomId}-panda-1`} index={1} />
@@ -74,7 +76,7 @@ export function PandaStickerDock({ roomId }: PandaStickerDockProps) {
         <PandaSticker id={`${roomId}-panda-3`} index={3} />
       </div>
       <div className="text-[6px] sm:text-[7px] text-purple-600 text-center leading-tight">
-        Drag
+        {t("pandaDrag")}
       </div>
     </motion.div>
   );

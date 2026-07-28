@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const DURATION = 5;
 const times = [0, 0.1, 0.26, 0.4, 0.56, 0.66, 0.82, 0.92, 1];
@@ -7,20 +8,21 @@ const directions = [
   {
     side: "left" as const,
     color: "bg-red-500",
-    label: "Swipe left",
-    sublabel: "to disagree",
+    labelKey: "swipeLeft",
+    sublabelKey: "swipeToDisagree",
     opacity: [0, 0, 0, 0, 0, 0, 1, 1, 0],
   },
   {
     side: "right" as const,
     color: "bg-green-500",
-    label: "Swipe right",
-    sublabel: "to agree",
+    labelKey: "swipeRight",
+    sublabelKey: "swipeToAgree",
     opacity: [0, 0, 1, 1, 0, 0, 0, 0, 0],
   },
 ];
 
 export function SwipeInstructions() {
+  const { t } = useTranslation("room");
   return (
     <div
       style={{
@@ -31,7 +33,7 @@ export function SwipeInstructions() {
       }}
     >
       {directions.map(
-        ({ side, color, label, sublabel, opacity }) => (
+        ({ side, color, labelKey, sublabelKey, opacity }) => (
           <motion.div
             key={side}
             style={{ position: "absolute", [side]: 12, top: "25%" }}
@@ -47,9 +49,9 @@ export function SwipeInstructions() {
             <span
               className={`flex flex-col leading-tight ${side === "right" ? "items-end" : ""}`}
             >
-              <span>{label}</span>
+              <span>{t(labelKey)}</span>
               <span className="font-normal normal-case tracking-normal text-sm">
-                {sublabel}
+                {t(sublabelKey)}
               </span>
             </span>
           </motion.div>
