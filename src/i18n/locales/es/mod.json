@@ -23,5 +23,6 @@
   "modRemoveMerge": "Quitar combinación",
   "modNoStatements": "Aún no hay respuestas.",
   "modAllUnmerged": "Todas las respuestas sin combinar",
-  "modTapToMerge": "Toca para empezar a combinar, o usa el icono para ocultar."
+  "modTapToMerge": "Toca para empezar a combinar, o usa el icono para ocultar.",
+  "modHideConfirm": "¿Ocultar esta respuesta? Ya no aparecerá para nadie."
 }

@@ -218,7 +218,7 @@ export function ReviewExtractionStep({
                   animate={{ opacity: 1, scale: 1 }}
                   className="rounded-xl overflow-hidden border-2 border-blue-200"
                 >
-                  <img src={cover.url} alt="Preview" className="w-full h-48 object-cover" />
+                  <img src={cover.url} alt={t("previewAlt")} className="w-full h-48 object-cover" />
                 </motion.div>
               )}
             </motion.div>

@@ -58,7 +58,7 @@ export function RoomCardMenu({
   onOpenDeduplication,
   onOpenVoteMatrix,
 }: RoomCardMenuProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["room", "toast"]);
   const { setRoomInactive, setResponsesPaused, createCohostInvite, clearRoomCohosts } = useDebateSession();
   const [cohostCount, setCohostCount] = useState(room.cohostIds?.length ?? 0);
   const [isClearingCohosts, setIsClearingCohosts] = useState(false);
@@ -67,19 +67,19 @@ export function RoomCardMenu({
     e.stopPropagation();
     const response = await createCohostInvite(room.id);
     if (!response?.success || !response.data) {
-      toast.error(t("inviteLinkFailed"));
+      toast.error(t("toast:inviteLinkFailed"));
       return;
     }
     const link = createCohostInviteLink(room.id, response.data.token);
     await share({
       url: link,
-      title: "Become a co-host on Heard",
-      text: "Use this link to become a co-host of this conversation. It only works once.",
+      title: t("cohostInviteTitle"),
+      text: t("cohostInviteText"),
       onSuccess: () => {
-        toast.success(t("cohostInviteCopied"));
+        toast.success(t("toast:cohostInviteCopied"));
       },
       onError: (error) => {
-        toast.error(t("shareInviteLinkFailed"));
+        toast.error(t("toast:shareInviteLinkFailed"));
         console.error("Share error:", error);
       },
     });
@@ -91,10 +91,10 @@ export function RoomCardMenu({
     try {
       const response = await clearRoomCohosts(room.id);
       if (response?.success) {
-        toast.success(t("allCohostsRemoved"));
+        toast.success(t("toast:allCohostsRemoved"));
         setCohostCount(0);
       } else {
-        toast.error(t("removeCohostsFailed"));
+        toast.error(t("toast:removeCohostsFailed"));
       }
     } finally {
       setIsClearingCohosts(false);
@@ -116,14 +116,14 @@ export function RoomCardMenu({
       <DropdownMenuContent align="end">
         <DropdownMenuItem disabled>
           <span className="text-xs text-muted-foreground">
-            {timeAgoShort(room.createdAt)} ago
+            {t("rcmAgo", { time: timeAgoShort(room.createdAt) })}
             {room.endTime && !isCompleted && (() => {
               const timeLeft = Math.max(0, room.endTime - Date.now());
               const days = Math.floor(timeLeft / (24 * 60 * 60 * 1000));
               const hours = Math.floor((timeLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
               const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / 60000);
               const label = days > 0 ? `${days}d` : hours > 0 ? `${hours}h` : `${minutes}m`;
-              return ` · ${label} left`;
+              return t("rcmLeftSuffix", { label });
             })()}
           </span>
         </DropdownMenuItem>
@@ -134,37 +134,37 @@ export function RoomCardMenu({
             const link = createShareableLink(room.id);
             await share({
               url: link,
-              title: "Join this conversation on Heard",
-              text: "Check out this conversation!",
+              title: t("joinConvoTitle"),
+              text: t("joinConvoText"),
               onSuccess: () => {
-                toast.success(t("linkCopied"));
+                toast.success(t("toast:linkCopied"));
               },
               onError: (error) => {
-                toast.error(t("shareLinkFailed"));
+                toast.error(t("toast:shareLinkFailed"));
                 console.error("Share error:", error);
               },
             });
           }}
         >
           <Link2 className="w-4 h-4 mr-2" />
-          Share Link
+          {t("rcmShareLink")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled>
           <Users className="w-4 h-4 mr-2" />
-          {participantCount} {participantCount === 1 ? 'person' : 'people'}
+          {t("rcmParticipants", { count: participantCount })}
         </DropdownMenuItem>
         {(isHost || isDeveloper) && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs text-muted-foreground px-2 py-1">
-              Host Tools
+              {t("rcmHostTools")}
             </DropdownMenuLabel>
             {isTrueHost && (
               <>
                 <DropdownMenuItem onClick={handleInviteCohost}>
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Invite co-host
+                  {t("rcmInviteCohost")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleClearCohosts}
@@ -172,7 +172,7 @@ export function RoomCardMenu({
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  {isClearingCohosts ? "Removing…" : `Remove all cohosts (${cohostCount})`}
+                  {isClearingCohosts ? t("rcmRemoving") : t("rcmRemoveCohosts", { count: cohostCount })}
                 </DropdownMenuItem>
               </>
             )}
@@ -183,7 +183,7 @@ export function RoomCardMenu({
               }}
             >
               <GitMerge className="w-4 h-4 mr-2" />
-              Hide and Merge Statements
+              {t("rcmHideMerge")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
@@ -192,20 +192,18 @@ export function RoomCardMenu({
               }}
             >
               <BarChart2 className="w-4 h-4 mr-2" />
-              View Vote Matrix
+              {t("rcmVoteMatrix")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={async (e: React.MouseEvent) => {
                 e.stopPropagation();
                 const isPaused = !!room.responsesPaused;
-                if (!isPaused && !window.confirm(
-                  "No one will be able to add new responses until you resume. Voting continues as normal.",
-                )) return;
+                if (!isPaused && !window.confirm(t("rcmPauseConfirm"))) return;
                 const response = await setResponsesPaused(room.id, !isPaused);
                 if (response?.success) {
-                  toast.success(isPaused ? t("responsesResumed") : t("responsesPaused"));
+                  toast.success(isPaused ? t("toast:responsesResumed") : t("toast:responsesPaused"));
                 } else {
-                  toast.error(isPaused ? t("resumeResponsesFailed") : t("pauseResponsesFailed"));
+                  toast.error(isPaused ? t("toast:resumeResponsesFailed") : t("toast:pauseResponsesFailed"));
                 }
               }}
             >
@@ -214,7 +212,7 @@ export function RoomCardMenu({
               ) : (
                 <Pause className="w-4 h-4 mr-2" />
               )}
-              {room.responsesPaused ? "Resume responses" : "Pause responses"}
+              {room.responsesPaused ? t("rcmResumeResponses") : t("rcmPauseResponses")}
             </DropdownMenuItem>
           </>
         )}

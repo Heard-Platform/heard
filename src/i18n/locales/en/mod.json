@@ -23,5 +23,6 @@
   "modRemoveMerge": "Remove merge",
   "modNoStatements": "No statements yet.",
   "modAllUnmerged": "All Unmerged Statements",
-  "modTapToMerge": "Tap to start merging, or use the icon to hide."
+  "modTapToMerge": "Tap to start merging, or use the icon to hide.",
+  "modHideConfirm": "Hide this response? It will no longer appear to anyone."
 }

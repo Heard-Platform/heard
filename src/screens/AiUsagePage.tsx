@@ -79,7 +79,7 @@ export function AiUsagePage() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         setData(await response.json());
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load data");
+        setError(err instanceof Error ? err.message : t("aiUsageLoadFailed"));
       } finally {
         setLoading(false);
       }

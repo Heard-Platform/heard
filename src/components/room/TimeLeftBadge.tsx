@@ -19,7 +19,7 @@ export function TimeLeftBadge({
   isRealtime,
   variant = "badge",
 }: TimeLeftBadgeProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["room", "toast"]);
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export function TimeLeftBadge({
 
   const handleTap = () => {
     const humanized = moment.duration(effectiveEndTime - currentTime).humanize();
-    toast(t("votingEndsIn", { time: humanized }));
+    toast(t("toast:votingEndsIn", { time: humanized }));
   };
 
   if (variant === "text") {
@@ -57,7 +57,7 @@ export function TimeLeftBadge({
 
     return (
       <span className={`text-sm shrink-0 cursor-pointer ${getTextStyles()}`} onClick={handleTap}>
-        {timeRemaining.formatted} left
+        {t("timeLeftText", { time: timeRemaining.formatted })}
       </span>
     );
   } else {

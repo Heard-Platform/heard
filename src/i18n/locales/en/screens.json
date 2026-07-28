@@ -2,6 +2,7 @@
   "aiUsageTitle": "AI Usage",
   "aiUsageIntro": "We are committed to responsible AI usage and transparency in all our business practices. Heard uses AI to help moderate content and surface insights from community conversations. This page shows our real-time API usage — tokens consumed by day and by endpoint — so you can see exactly how we're using these tools.",
   "aiUsageLoading": "Loading usage data...",
+  "aiUsageLoadFailed": "Failed to load data",
   "aiUsageError": "Error: {{error}}",
   "aiStatTotalCalls": "Total API Calls",
   "aiStatTotalTokens": "Total Tokens",

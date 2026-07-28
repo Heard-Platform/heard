@@ -144,5 +144,6 @@
   "niConversation": "Conversation",
   "niConversationDesc": "Start a discussion",
   "niEvent": "Event",
-  "niEventDesc": "Organize multiple conversations"
+  "niEventDesc": "Organize multiple conversations",
+  "previewAlt": "Preview"
 }

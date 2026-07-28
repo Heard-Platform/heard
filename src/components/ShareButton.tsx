@@ -13,7 +13,7 @@ interface ShareButtonProps {
 }
 
 export function ShareButton({ roomId, roomTopic }: ShareButtonProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["room", "toast"]);
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const link = createShareableLink(roomId);
@@ -21,12 +21,12 @@ export function ShareButton({ roomId, roomTopic }: ShareButtonProps) {
     await share({
       url: link,
       title: roomTopic,
-      text: `Come vote on "${roomTopic}"! ${link}`,
+      text: t("shareText", { topic: roomTopic, link }),
       onSuccess: () => {
-        toast.success(t("linkCopied"));
+        toast.success(t("toast:linkCopied"));
       },
       onError: (error) => {
-        toast.error(t("shareLinkFailed"));
+        toast.error(t("toast:shareLinkFailed"));
         console.error("Share error:", error);
       },
     });

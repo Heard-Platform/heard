@@ -17,7 +17,7 @@ interface HideAndMergeModalProps {
 }
 
 export function HideAndMergeModal({ roomId, onClose }: HideAndMergeModalProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["mod", "toast"]);
   const [statements, setStatements] = useState<Statement[]>([]);
   const [merges, setMerges] = useState<StatementMerge[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,12 +71,12 @@ export function HideAndMergeModal({ roomId, onClose }: HideAndMergeModalProps) {
     const result = await createStatementMerge(roomId, source.id, target.id);
     setSubmitting(false);
     if (result) {
-      toast.success(t("statementsMerged"));
+      toast.success(t("toast:statementsMerged"));
       setSource(null);
       setTarget(null);
       await fetchData();
     } else {
-      toast.error(t("mergeFailed"));
+      toast.error(t("toast:mergeFailed"));
     }
   };
 
@@ -88,10 +88,10 @@ export function HideAndMergeModal({ roomId, onClose }: HideAndMergeModalProps) {
   const handleDeleteMerge = async (mergeId: string) => {
     const ok = await deleteStatementMerge(roomId, mergeId);
     if (ok) {
-      toast.success(t("mergeRemoved"));
+      toast.success(t("toast:mergeRemoved"));
       await fetchData();
     } else {
-      toast.error(t("removeMergeFailed"));
+      toast.error(t("toast:removeMergeFailed"));
     }
   };
 
@@ -99,7 +99,7 @@ export function HideAndMergeModal({ roomId, onClose }: HideAndMergeModalProps) {
     const nextHidden = !s.isHidden;
     if (
       nextHidden &&
-      !window.confirm("Hide this response? It will no longer appear to anyone.")
+      !window.confirm(t("modHideConfirm"))
     ) {
       return;
     }
@@ -115,10 +115,10 @@ export function HideAndMergeModal({ roomId, onClose }: HideAndMergeModalProps) {
     });
 
     if (result?.success) {
-      toast.success(nextHidden ? t("responseHidden") : t("responseRestored"));
+      toast.success(nextHidden ? t("toast:responseHidden") : t("toast:responseRestored"));
       await fetchData();
     } else {
-      toast.error(t("visibilityUpdateFailed"));
+      toast.error(t("toast:visibilityUpdateFailed"));
     }
   };
 
