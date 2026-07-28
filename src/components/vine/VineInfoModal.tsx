@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../ui/dialog";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { AvatarCarousel } from "./AvatarCarousel";
 import { AvatarAnimal } from "../../utils/constants/avatars";
 
@@ -19,6 +20,7 @@ export function VineInfoModal({
   onFeed,
   onClose,
 }: VineInfoModalProps) {
+  const { t } = useTranslation("vine");
   const [screenTimeEnd, setScreenTimeEnd] = useState<number | null>(null);
   const [remainingMinutes, setRemainingMinutes] = useState<number>(0);
 
@@ -82,10 +84,10 @@ export function VineInfoModal({
         onPointerDownOutside={(e: Event) => e.preventDefault()}
       >
         <DialogTitle className="sr-only">
-          Your Animal Friend
+          {t("vineFriendTitle")}
         </DialogTitle>
         <DialogDescription className="sr-only">
-          Learn about your animal companion in Heard
+          {t("vineSrDesc")}
         </DialogDescription>
         <div className="relative bg-gradient-to-br from-green-400 via-emerald-400 to-teal-500 pt-8 pb-6 px-6">
           <button
@@ -101,21 +103,18 @@ export function VineInfoModal({
         </div>
         <div className="p-6 space-y-4 bg-white">
           <h2 className="text-center text-xl text-gray-900">
-            Your Animal Friend 🐒
+            {t("vineFriendHeading")}
           </h2>
           <p className="text-center text-sm text-gray-600 leading-relaxed">
-            We thought everyone could use an animal friend to help
-            them navigate the twists and turns of healthy and
-            sometimes challenging discourse.
+            {t("vineInfoP1")}
           </p>
           <p className="text-center text-sm text-gray-600 leading-relaxed">
-            You can also see other people's animals to see who else is
-            "hanging" around! 🙈
+            {t("vineInfoP2")}
           </p>
 
           <div className="pt-2 border-t border-gray-200">
             <h3 className="text-sm text-gray-700 mb-2">
-              Screen Time Warning{" "}
+              {t("vineScreenTimeWarning")}{" "}
               <span
                 onClick={() => {
                   const endTime = Date.now() + 10_000;
@@ -133,14 +132,14 @@ export function VineInfoModal({
               <div className="space-y-2">
                 <div className="text-center py-2 px-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-sm text-yellow-800">
-                    {remainingMinutes} min remaining
+                    {t("vineMinRemaining", { count: remainingMinutes })}
                   </p>
                 </div>
                 <button
                   onClick={handleClearScreenTime}
                   className="w-full py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-all text-sm"
                 >
-                  Clear Warning
+                  {t("vineClearWarning")}
                 </button>
               </div>
             ) : (
@@ -154,10 +153,10 @@ export function VineInfoModal({
                 value=""
                 className="w-full py-2 px-4 bg-blue-50 border border-blue-200 text-blue-700 rounded-full hover:bg-blue-100 transition-all text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
-                <option value="">Set a time limit...</option>
-                <option value="15">15 minutes</option>
-                <option value="30">30 minutes</option>
-                <option value="60">60 minutes</option>
+                <option value="">{t("vineSetTimeLimit")}</option>
+                <option value="15">{t("vineMinutesOption", { count: 15 })}</option>
+                <option value="30">{t("vineMinutesOption", { count: 30 })}</option>
+                <option value="60">{t("vineMinutesOption", { count: 60 })}</option>
               </select>
             )}
           </div>
@@ -167,7 +166,7 @@ export function VineInfoModal({
               onClick={onClose}
               className="flex-1 py-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full hover:from-green-500 hover:to-emerald-600 transition-all shadow-md"
             >
-              Got it!
+              {t("vineGotIt")}
             </button>
           </div>
         </div>

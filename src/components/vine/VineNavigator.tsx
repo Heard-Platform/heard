@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { UserPresence, UserSession } from "../../types";
 import { VineInfoModal } from "./VineInfoModal";
 import { TalkBubble } from "../TalkBubble";
@@ -34,6 +35,7 @@ export function VineNavigator({
   presences,
   onUpdatePresence,
 }: VineNavigatorProps) {
+  const { t } = useTranslation("vine");
   const isLoggedIn = !currentUser.isAnonymous;
   const [avatarPosition, setAvatarPosition] =
     useState(currentIndex);
@@ -284,7 +286,7 @@ export function VineNavigator({
         >
           <motion.img
             src={currentUserImg}
-            alt="Avatar"
+            alt={t("vineAvatarAlt")}
             className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
             style={{ scaleX: -1, opacity: 1 }}
             animate={
@@ -324,7 +326,7 @@ export function VineNavigator({
             />
           )}
           <TalkBubble
-            text="Yum!"
+            text={t("vineYum")}
             isVisible={showSpeechBubble}
             color="text-amber-600"
             borderColor="border-amber-200"
@@ -371,7 +373,7 @@ export function VineNavigator({
                 <div className="relative">
                   <motion.img
                     src={getAvatarImage(presence.avatarAnimal)}
-                    alt={`${presence.userId} avatar`}
+                    alt={t("vineUserAvatarAlt", { user: presence.userId })}
                     className="w-full h-full object-contain drop-shadow-lg cursor-pointer"
                     style={{ scaleX: -1 }}
                   />

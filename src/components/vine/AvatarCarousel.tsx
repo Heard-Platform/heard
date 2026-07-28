@@ -1,8 +1,18 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { AVATAR_OPTIONS, getAvatarImage } from "../../utils/constants/avatars";
 import { useCallback, useEffect, useState } from "react";
 import { useDebateSession } from "../../hooks/useDebateSession";
+
+const ANIMAL_LABEL_KEYS = {
+  monkey: "vineAnimalMonkey",
+  koala: "vineAnimalKoala",
+  rhino: "vineAnimalRhino",
+  elephant: "vineAnimalElephant",
+  sloth: "vineAnimalSloth",
+  panda: "vineAnimalPanda",
+} as const;
 
 const VISIBLE_SLOTS = [-2, -1, 0, 1, 2] as const;
 
@@ -28,7 +38,13 @@ export function AvatarCarousel({
   currentAvatar: string;
   isLoggedIn: boolean;
 }) {
+  const { t } = useTranslation("vine");
   const { updateAvatar } = useDebateSession();
+
+  const animalLabel = (value: string, fallback: string) =>
+    value in ANIMAL_LABEL_KEYS
+      ? t(ANIMAL_LABEL_KEYS[value as keyof typeof ANIMAL_LABEL_KEYS])
+      : fallback;
 
   const [selectedIndex, setSelectedIndex] = useState(() =>
     Math.max(
@@ -84,13 +100,13 @@ export function AvatarCarousel({
             >
               <img
                 src={option.img}
-                alt={option.label}
+                alt={animalLabel(option.value, option.label)}
                 className="w-20 h-24 object-contain drop-shadow-2xl"
                 style={{ transform: "scaleX(-1)" }}
               />
               {offset === 0 && (
                 <span className="text-xs text-white font-medium mt-1 drop-shadow">
-                  {option.label}
+                  {animalLabel(option.value, option.label)}
                 </span>
               )}
             </motion.div>
@@ -134,7 +150,7 @@ export function AvatarCarousel({
     <div className="flex justify-center">
       <motion.img
         src={getAvatarImage(selectedAvatar)}
-        alt="Your Animal Friend"
+        alt={t("vineFriendTitle")}
         className="w-24 h-28 object-contain drop-shadow-2xl"
         style={{ scaleX: -1 }}
         animate={{ rotate: [-5, 5, -5] }}
