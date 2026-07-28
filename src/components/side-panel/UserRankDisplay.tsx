@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { UserSession } from "../../types";
 import { api, safelyMakeApiCall } from "../../utils/api";
 
@@ -8,6 +9,7 @@ interface UserRankDisplayProps {
 }
 
 export function UserRankDisplay({ user }: UserRankDisplayProps) {
+  const { t } = useTranslation("menu");
   const [rank, setRank] = useState<number | null>(null);
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -47,7 +49,7 @@ export function UserRankDisplay({ user }: UserRankDisplayProps) {
         <Trophy className="w-4 h-4 text-purple-600 flex-shrink-0" />
         <div>
           <p className="text-purple-900 font-bold text-sm">
-            Rank #{rank} of {totalUsers}
+            {t("rankLabel", { rank, total: totalUsers })}
           </p>
           {user.isDeveloper && (
             <p className="text-blue-700 text-xs mt-0.5">

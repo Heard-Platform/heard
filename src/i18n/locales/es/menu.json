@@ -21,5 +21,11 @@
   "logout": "Cerrar sesión",
   "learnMore": "Más información",
   "talkToFounder": "Habla con el fundador",
-  "chatWithAlex": "¡Chatea con Alex!"
+  "chatWithAlex": "¡Chatea con Alex!",
+  "alertsUpdates": "Novedades",
+  "alertsNoUpdates": "No hay novedades de las salas que sigues.",
+  "alertsEnded": "finalizada",
+  "alertsNew": "nueva",
+  "alertsDismiss": "Descartar aviso",
+  "rankLabel": "Puesto n.º {{rank}} de {{total}}"
 }

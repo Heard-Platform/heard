@@ -21,5 +21,11 @@
   "logout": "Logout",
   "learnMore": "Learn More",
   "talkToFounder": "Talk to Founder",
-  "chatWithAlex": "Chat with Alex!"
+  "chatWithAlex": "Chat with Alex!",
+  "alertsUpdates": "Updates",
+  "alertsNoUpdates": "No updates from rooms you follow.",
+  "alertsEnded": "ended",
+  "alertsNew": "new",
+  "alertsDismiss": "Dismiss alert",
+  "rankLabel": "Rank #{{rank}} of {{total}}"
 }

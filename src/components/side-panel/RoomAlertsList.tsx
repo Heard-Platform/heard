@@ -1,4 +1,5 @@
 import { Bell, Flag, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useRoomAlertsContext } from "../../contexts/RoomAlertsContext";
 import { api, safelyMakeApiCall } from "../../utils/api";
 
@@ -7,6 +8,7 @@ interface RoomAlertsListProps {
 }
 
 export function RoomAlertsList({ onJumpToRoom }: RoomAlertsListProps) {
+  const { t } = useTranslation("menu");
   const { alerts, clearAlert } = useRoomAlertsContext();
 
   const handleTap = (roomId: string, subHeard?: string) => {
@@ -32,14 +34,14 @@ export function RoomAlertsList({ onJumpToRoom }: RoomAlertsListProps) {
     <div className={`border rounded-lg overflow-hidden ${containerStyles}`}>
       <div className={`flex items-center gap-2 px-3 py-2 ${headerStyles}`}>
         <Bell className={`w-4 h-4 ${iconStyles}`} />
-        <span className={`text-sm font-medium ${labelStyles}`}>Updates</span>
+        <span className={`text-sm font-medium ${labelStyles}`}>{t("alertsUpdates")}</span>
         {hasAlerts && (
           <span className="text-xs text-red-700 ml-auto">{alerts.length}</span>
         )}
       </div>
       {!hasAlerts && (
         <div className="px-3 py-4 text-center text-sm text-gray-500">
-          No updates from rooms you follow.
+          {t("alertsNoUpdates")}
         </div>
       )}
       <div className="max-h-72 overflow-y-auto divide-y divide-gray-100">
@@ -54,18 +56,18 @@ export function RoomAlertsList({ onJumpToRoom }: RoomAlertsListProps) {
               {reason === "ended" ? (
                 <span className="flex items-center gap-1 text-xs text-gray-600 flex-shrink-0">
                   <Flag className="w-3 h-3" />
-                  ended
+                  {t("alertsEnded")}
                 </span>
               ) : (
                 <span className="flex items-center gap-1 text-xs text-red-600 flex-shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                  new
+                  {t("alertsNew")}
                 </span>
               )}
             </button>
             <button
               onClick={() => handleDismiss(roomId)}
-              aria-label="Dismiss alert"
+              aria-label={t("alertsDismiss")}
               className="flex items-center justify-center px-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
             >
               <X className="w-4 h-4" />
