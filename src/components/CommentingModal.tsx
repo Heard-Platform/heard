@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Send, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { useTranslation } from "react-i18next";
 import type { Statement, Comment } from "../types";
 
 interface CommentingModalProps {
@@ -17,14 +18,14 @@ interface CommentingModalProps {
 }
 
 const ANON_AVATARS = [
-  { emoji: "🐼", name: "Panda" },
-  { emoji: "🦊", name: "Fox" },
-  { emoji: "🐸", name: "Frog" },
-  { emoji: "🐙", name: "Octopus" },
-  { emoji: "🦋", name: "Butterfly" },
-  { emoji: "🦁", name: "Lion" },
-  { emoji: "🐢", name: "Turtle" },
-  { emoji: "🦉", name: "Owl" },
+  { emoji: "🐼", nameKey: "cmPanda" },
+  { emoji: "🦊", nameKey: "cmFox" },
+  { emoji: "🐸", nameKey: "cmFrog" },
+  { emoji: "🐙", nameKey: "cmOctopus" },
+  { emoji: "🦋", nameKey: "cmButterfly" },
+  { emoji: "🦁", nameKey: "cmLion" },
+  { emoji: "🐢", nameKey: "cmTurtle" },
+  { emoji: "🦉", nameKey: "cmOwl" },
 ];
 
 const ANON_COLORS = [
@@ -48,7 +49,7 @@ const ANON_COLORS = [
 
 type AnonIdentity = {
   emoji: string;
-  name: string;
+  nameKey: string;
   number?: number;
   color: string;
 };
@@ -75,7 +76,7 @@ function generateAnonymousIdentities(comments: Comment[], statementId: string): 
     
     identitiesByUserId.set(userId, {
       emoji: avatar.emoji,
-      name: avatar.name,
+      nameKey: avatar.nameKey,
       number: sameAvatarCount > 1 ? sameAvatarCount : undefined,
       color: ANON_COLORS[colorIndex],
     });
@@ -93,6 +94,7 @@ export function CommentingModal({
   onClose,
   onSubmitComment,
 }: CommentingModalProps) {
+  const { t } = useTranslation("misc");
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -111,16 +113,16 @@ export function CommentingModal({
   const identitiesByUserId = generateAnonymousIdentities(comments, statement.id);
   const currentUserIdentity = identitiesByUserId.get(currentUserId) || {
     emoji: "🐼",
-    name: "Panda",
+    nameKey: "cmPanda",
     color: "bg-purple-100 text-purple-700",
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
-        <DialogTitle className="sr-only">Comments on statement</DialogTitle>
+        <DialogTitle className="sr-only">{t("cmSrTitle")}</DialogTitle>
         <DialogDescription className="sr-only">
-          View and add comments to this statement
+          {t("cmSrDesc")}
         </DialogDescription>
 
         <div className="p-6 border-b border-border">
@@ -146,16 +148,16 @@ export function CommentingModal({
                 className="text-center py-12"
               >
                 <MessageCircle className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground">No comments yet</p>
+                <p className="text-muted-foreground">{t("cmNoComments")}</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Be the first to share your thoughts!
+                  {t("cmBeFirst")}
                 </p>
               </motion.div>
             ) : (
               comments.map((comment) => {
                 const identity = identitiesByUserId.get(comment.userId) || {
                   emoji: "🐼",
-                  name: "Panda",
+                  nameKey: "cmPanda",
                   color: "bg-purple-100 text-purple-700",
                 };
                 const isCurrentUser = comment.userId === currentUserId;
@@ -174,9 +176,9 @@ export function CommentingModal({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm font-medium">
-                          {isCurrentUser 
-                            ? "You" 
-                            : `Anonymous ${identity.name}${identity.number ? ` #${identity.number}` : ""}`
+                          {isCurrentUser
+                            ? t("cmYou")
+                            : `${t("cmAnonymousName", { name: t(identity.nameKey) })}${identity.number ? ` #${identity.number}` : ""}`
                           }
                         </span>
                         <span className="text-xs text-muted-foreground">
@@ -203,14 +205,14 @@ export function CommentingModal({
               {currentUserIdentity.emoji}
             </div>
             <span className="text-sm font-medium text-muted-foreground">
-              Commenting as Anonymous {currentUserIdentity.name}{currentUserIdentity.number ? ` #${currentUserIdentity.number}` : ""}
+              {t("cmCommentingAs", { name: t(currentUserIdentity.nameKey) })}{currentUserIdentity.number ? ` #${currentUserIdentity.number}` : ""}
             </span>
           </div>
           <div className="flex gap-2">
             <Textarea
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Share your thoughts..."
+              placeholder={t("cmPlaceholder")}
               className="flex-1 min-h-[80px] resize-none"
               disabled={isSubmitting}
               onKeyDown={(e) => {
@@ -229,7 +231,7 @@ export function CommentingModal({
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            Press Cmd/Ctrl + Enter to send
+            {t("cmSendHint")}
           </p>
         </div>
       </DialogContent>

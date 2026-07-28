@@ -13,31 +13,18 @@ import { MessageCircle, Zap, Heart, Users } from "lucide-react";
 import { getPastelColor } from "../utils/colors";
 import { SwipeIndicatorCompact } from "./SwipeIndicators";
 import { SwipeInstructions } from "./SwipeInstructions";
+import { useTranslation } from "react-i18next";
 
 interface IntroModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const DEMO_TOPIC = "What are the best pizza toppings? 🍕";
-
 const DEMO_STATEMENTS = [
-  {
-    id: "demo-1",
-    text: "Pineapple belongs on pizza and makes it sweet and savory perfection!",
-  },
-  {
-    id: "demo-2",
-    text: "Pepperoni is the only topping you ever really need on a pizza.",
-  },
-  {
-    id: "demo-3",
-    text: "White pizza is great if tomatoes give you acid reflux.",
-  },
-  {
-    id: "demo-4",
-    text: "Mushrooms are underrated! They'll 'grow' on you.",
-  },
+  { id: "demo-1", textKey: "imDemo1" },
+  { id: "demo-2", textKey: "imDemo2" },
+  { id: "demo-3", textKey: "imDemo3" },
+  { id: "demo-4", textKey: "imDemo4" },
 ];
 
 const animatedIcons = [
@@ -54,6 +41,7 @@ const DISAGREE_TRIGGER_MS = 0.82 * CYCLE_MS;
 const CARD_EXIT_MS = 500;
 
 function DemoSwipeCard() {
+  const { t } = useTranslation("misc");
   const [cardIndex, setCardIndex] = useState(0);
   const [animating, setAnimating] = useState<"left" | "right" | null>(null);
 
@@ -100,7 +88,7 @@ function DemoSwipeCard() {
       >
         <div className="flex items-center justify-center min-h-[140px]">
           <p className="text-sm text-center leading-relaxed">
-            {nextStatement.text}
+            {t(nextStatement.textKey)}
           </p>
         </div>
       </motion.div>
@@ -118,7 +106,7 @@ function DemoSwipeCard() {
       >
         <div className="flex items-center justify-center min-h-[140px]">
           <p className="text-sm text-center leading-relaxed">
-            {currentStatement.text}
+            {t(currentStatement.textKey)}
           </p>
         </div>
 
@@ -142,6 +130,7 @@ export function IntroModal({
   isOpen,
   onClose,
 }: IntroModalProps) {
+  const { t } = useTranslation("misc");
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md bg-gradient-to-br from-purple-600 via-pink-500 to-orange-500 border-2 border-purple-300 overflow-hidden">
@@ -164,7 +153,7 @@ export function IntroModal({
                 <div className="flex items-center justify-center gap-2">
                   <span className="text-4xl">👋</span>
                   <span className="text-3xl font-bold bg-gradient-to-r from-yellow-200 via-pink-200 to-white bg-clip-text text-transparent drop-shadow-lg">
-                    Welcome to Heard
+                    {t("imWelcome")}
                   </span>
                 </div>
                 
@@ -186,7 +175,7 @@ export function IntroModal({
                 </motion.div>
                 
                 <p className="text-base text-white/95 font-medium drop-shadow-md max-w-sm mx-auto leading-relaxed">
-                  Heard is a platform for communities to vote on ideas, topics, and questions, and have fun doing it!
+                  {t("imTagline")}
                 </p>
                 
                 <p className="text-xs text-white/70">
@@ -196,13 +185,13 @@ export function IntroModal({
                     rel="noopener noreferrer"
                     className="hover:text-white/90 underline underline-offset-2 transition-colors"
                   >
-                    Learn more
+                    {t("imLearnMore")}
                   </a>
                 </p>
               </motion.div>
             </DialogTitle>
             <DialogDescription className="sr-only">
-              Learn how to use Heard by swiping on statements
+              {t("imSrDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -214,7 +203,7 @@ export function IntroModal({
               className="space-y-3"
             >
               <h3 className="text-sm font-medium text-left text-white/90">
-                How to Use
+                {t("imHowToUse")}
               </h3>
 
               <Card className="heard-card-bg">
@@ -223,17 +212,17 @@ export function IntroModal({
                     <MessageCircle className="w-4 h-4 text-purple-600 flex-shrink-0 mt-1" />
                     <div className="flex-1">
                       <p className="text-xs text-muted-foreground mb-1">
-                        Conversation topic
+                        {t("imConversationTopic")}
                       </p>
                       <h2 className="font-bold text-foreground text-sm">
-                        {DEMO_TOPIC}
+                        {t("imDemoTopic")}
                       </h2>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">
-                      4 responses
+                      {t("imResponses", { count: DEMO_STATEMENTS.length })}
                     </span>
                   </div>
 
@@ -251,7 +240,7 @@ export function IntroModal({
                 onClick={onClose}
                 className="w-full bg-white text-purple-600 hover:bg-white/90 font-bold shadow-lg"
               >
-                Let's Go! 🚀
+                {t("imLetsGo")}
               </Button>
             </motion.div>
           </div>

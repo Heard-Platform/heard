@@ -26,10 +26,12 @@ import enFunding from "./locales/en/funding.json";
 import esFunding from "./locales/es/funding.json";
 import enVine from "./locales/en/vine.json";
 import esVine from "./locales/es/vine.json";
+import enMisc from "./locales/en/misc.json";
+import esMisc from "./locales/es/misc.json";
 
 export const defaultNS = "common";
 
 export const resources = {
-  en: { common: enCommon, room: enRoom, toast: enToast, create: enCreate, menu: enMenu, account: enAccount, community: enCommunity, results: enResults, analysis: enAnalysis, events: enEvents, dialog: enDialog, screens: enScreens, funding: enFunding, vine: enVine },
-  es: { common: esCommon, room: esRoom, toast: esToast, create: esCreate, menu: esMenu, account: esAccount, community: esCommunity, results: esResults, analysis: esAnalysis, events: esEvents, dialog: esDialog, screens: esScreens, funding: esFunding, vine: esVine },
+  en: { common: enCommon, room: enRoom, toast: enToast, create: enCreate, menu: enMenu, account: enAccount, community: enCommunity, results: enResults, analysis: enAnalysis, events: enEvents, dialog: enDialog, screens: enScreens, funding: enFunding, vine: enVine, misc: enMisc },
+  es: { common: esCommon, room: esRoom, toast: esToast, create: esCreate, menu: esMenu, account: esAccount, community: esCommunity, results: esResults, analysis: esAnalysis, events: esEvents, dialog: esDialog, screens: esScreens, funding: esFunding, vine: esVine, misc: esMisc },
 } as const;

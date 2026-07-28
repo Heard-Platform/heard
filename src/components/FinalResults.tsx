@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { Trans, useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -44,6 +45,7 @@ export function FinalResults({
   onNextGame,
   onBackToLobby,
 }: FinalResultsProps) {
+  const { t } = useTranslation("misc");
   const [currentActivity, setCurrentActivity] =
     useState<ActivityType>("overview");
   const [breathingPhase, setBreathingPhase] = useState<
@@ -123,22 +125,21 @@ export function FinalResults({
               <span className="text-lg">#{rank + 1}</span>
               {statement.type && (
                 <Badge variant="secondary">
-                  {statement.type === "bridge" && "🌉 Bridge"}
-                  {statement.type === "crux" && "⚡ Crux"}
-                  {statement.type === "plurality" &&
-                    "💎 Plurality"}
+                  {statement.type === "bridge" && t("frBridge")}
+                  {statement.type === "crux" && t("frCrux")}
+                  {statement.type === "plurality" && t("frPlurality")}
                 </Badge>
               )}
               {statement.isSpicy && (
-                <Badge variant="destructive">🌶️ Spicy</Badge>
+                <Badge variant="destructive">{t("frSpicy")}</Badge>
               )}
               <Badge variant="outline">
-                {statement.agrees} agrees, {statement.disagrees} disagrees
+                {t("frAgreesDisagrees", { agrees: statement.agrees, disagrees: statement.disagrees })}
               </Badge>
             </div>
             <p className="text-sm mb-2">{statement.text}</p>
             <p className="text-xs text-muted-foreground">
-              by Anonymous
+              {t("frByAnonymous")}
             </p>
           </div>
           <Button
@@ -148,7 +149,7 @@ export function FinalResults({
             className="shrink-0 hover:bg-purple-50 hover:border-purple-400 hover:text-purple-700 transition-colors"
           >
             <MessageSquarePlus className="w-4 h-4 mr-1" />
-            Discuss
+            {t("frDiscuss")}
           </Button>
         </div>
       </Card>
@@ -170,12 +171,12 @@ export function FinalResults({
               className="self-start"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
-              Back
+              {t("frBack")}
             </Button>
 
-            <h2>Breathing Exercise</h2>
+            <h2>{t("frBreathingExercise")}</h2>
             <p className="text-muted-foreground">
-              Cycle {breathingCycle + 1} of 3
+              {t("frCycleOf", { current: breathingCycle + 1, total: 3 })}
             </p>
           </div>
 
@@ -202,24 +203,20 @@ export function FinalResults({
             <div className="text-white text-center">
               <Timer className="w-8 h-8 mx-auto mb-2" />
               <p className="text-sm font-medium">
-                {breathingPhase === "inhale" && "Breathe In"}
-                {breathingPhase === "hold" && "Hold"}
-                {breathingPhase === "exhale" && "Breathe Out"}
-                {breathingPhase === "rest" && "Rest"}
+                {breathingPhase === "inhale" && t("frBreatheIn")}
+                {breathingPhase === "hold" && t("frHold")}
+                {breathingPhase === "exhale" && t("frBreatheOut")}
+                {breathingPhase === "rest" && t("frRest")}
               </p>
             </div>
           </motion.div>
 
           <div className="space-y-2">
             <p>
-              {breathingPhase === "inhale" &&
-                "Slowly inhale through your nose..."}
-              {breathingPhase === "hold" &&
-                "Hold your breath gently..."}
-              {breathingPhase === "exhale" &&
-                "Slowly exhale through your mouth..."}
-              {breathingPhase === "rest" &&
-                "Rest and feel calm..."}
+              {breathingPhase === "inhale" && t("frInhaleMsg")}
+              {breathingPhase === "hold" && t("frHoldMsg")}
+              {breathingPhase === "exhale" && t("frExhaleMsg")}
+              {breathingPhase === "rest" && t("frRestMsg")}
             </p>
           </div>
 
@@ -230,12 +227,12 @@ export function FinalResults({
               className="space-y-4"
             >
               <p className="text-green-600 font-medium">
-                ✨ Great job! You're all set.
+                {t("frGreatJob")}
               </p>
               <Button
                 onClick={() => setCurrentActivity("overview")}
               >
-                Return to Results
+                {t("frReturnResults")}
               </Button>
             </motion.div>
           )}
@@ -258,37 +255,36 @@ export function FinalResults({
             className="self-start"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
-            Back
+            {t("frBack")}
           </Button>
 
           <div className="space-y-4">
             <Flower2 className="w-12 h-12 mx-auto text-green-600" />
-            <h2>Nature Break</h2>
+            <h2>{t("frNatureBreak")}</h2>
             <p className="text-muted-foreground">
-              Take a moment to appreciate the calm beauty of
-              nature
+              {t("frNatureDesc")}
             </p>
           </div>
 
           <div className="rounded-xl overflow-hidden shadow-lg">
             <ImageWithFallback
               src="https://images.unsplash.com/photo-1730963782375-f40cffade823?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxuYXR1cmUlMjBmb3Jlc3QlMjBwZWFjZWZ1bHxlbnwxfHx8fDE3NTc5NDcwODZ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-              alt="Peaceful forest scene"
+              alt={t("frForestAlt")}
               className="w-full h-64 object-cover"
             />
           </div>
 
           <div className="space-y-3 text-sm text-muted-foreground">
-            <p>🌲 Notice the peaceful stillness</p>
-            <p>🌿 Feel the calm energy of growth</p>
-            <p>☀️ Breathe in the fresh perspective</p>
+            <p>{t("frNature1")}</p>
+            <p>{t("frNature2")}</p>
+            <p>{t("frNature3")}</p>
           </div>
 
           <Button
             onClick={() => setCurrentActivity("overview")}
             className="mt-6"
           >
-            Feeling Refreshed
+            {t("frRefreshed")}
           </Button>
         </motion.div>
       </div>
@@ -309,29 +305,29 @@ export function FinalResults({
             className="self-start"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
-            Back
+            {t("frBack")}
           </Button>
 
           <div className="space-y-4">
             <Cat className="w-12 h-12 mx-auto text-orange-600" />
-            <h2>Cuteness Overload</h2>
+            <h2>{t("frCuteness")}</h2>
             <p className="text-muted-foreground">
-              Sometimes we all need a dose of pure joy
+              {t("frCuteDesc")}
             </p>
           </div>
 
           <div className="rounded-xl overflow-hidden shadow-lg">
             <ImageWithFallback
               src="https://images.unsplash.com/photo-1619774946815-3e1eeeb445fe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjdXRlJTIwY2F0JTIwcGVhY2VmdWx8ZW58MXx8fHwxNzU3OTQ3NDczfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-              alt="Cute peaceful cat"
+              alt={t("frCatAlt")}
               className="w-full h-64 object-cover"
             />
           </div>
 
           <div className="space-y-3 text-sm text-muted-foreground">
-            <p>😺 Pure contentment in fuzzy form</p>
-            <p>💕 Reminder that simple joy exists</p>
-            <p>✨ Reset your emotional state</p>
+            <p>{t("frCute1")}</p>
+            <p>{t("frCute2")}</p>
+            <p>{t("frCute3")}</p>
           </div>
 
           <Button
@@ -339,7 +335,7 @@ export function FinalResults({
             className="mt-6"
           >
             <Heart className="w-4 h-4 mr-1" />
-            Feeling Better
+            {t("frBetter")}
           </Button>
         </motion.div>
       </div>
@@ -357,15 +353,16 @@ export function FinalResults({
         >
           <div className="flex items-center justify-center gap-3">
             <Trophy className="w-8 h-8 text-yellow-500" />
-            <h1>Game {gameNumber} Complete!</h1>
+            <h1>{t("frGameComplete", { number: gameNumber })}</h1>
             <Trophy className="w-8 h-8 text-yellow-500" />
           </div>
           <p className="text-muted-foreground">
-            You earned{" "}
-            <span className="font-medium text-primary">
-              {score} points
-            </span>{" "}
-            this game
+            <Trans
+              t={t}
+              i18nKey="frEarnedPoints"
+              values={{ count: score }}
+              components={{ b: <span className="font-medium text-primary" /> }}
+            />
           </p>
         </motion.div>
 
@@ -373,16 +370,16 @@ export function FinalResults({
 
         {/* Top Statements */}
         <div className="space-y-6">
-          <h2 className="text-center">🏆 Top Statements</h2>
+          <h2 className="text-center">{t("frTopStatements")}</h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Bridges */}
             {topBridges.length > 0 && (
               <div className="space-y-3">
                 <h3 className="flex items-center gap-2">
-                  <span>🌉 Best Bridges</span>
+                  <span>{t("frBestBridges")}</span>
                   <Badge variant="secondary">
-                    Consensus Building
+                    {t("frConsensusBuilding")}
                   </Badge>
                 </h3>
                 <div className="space-y-2">
@@ -397,8 +394,8 @@ export function FinalResults({
             {topCruxes.length > 0 && (
               <div className="space-y-3">
                 <h3 className="flex items-center gap-2">
-                  <span>⚡ Key Cruxes</span>
-                  <Badge variant="secondary">Core Issues</Badge>
+                  <span>{t("frKeyCruxes")}</span>
+                  <Badge variant="secondary">{t("frCoreIssues")}</Badge>
                 </h3>
                 <div className="space-y-2">
                   {topCruxes.map((statement, index) =>
@@ -412,9 +409,9 @@ export function FinalResults({
             {topPluralities.length > 0 && (
               <div className="space-y-3">
                 <h3 className="flex items-center gap-2">
-                  <span>💎 Fresh Perspectives</span>
+                  <span>{t("frFreshPerspectives")}</span>
                   <Badge variant="secondary">
-                    Underrepresented
+                    {t("frUnderrepresented")}
                   </Badge>
                 </h3>
                 <div className="space-y-2">
@@ -429,9 +426,9 @@ export function FinalResults({
             {topGeneral.length > 0 && (
               <div className="space-y-3">
                 <h3 className="flex items-center gap-2">
-                  <span>🗣️ Most Popular</span>
+                  <span>{t("frMostPopular")}</span>
                   <Badge variant="secondary">
-                    Community Favorites
+                    {t("frCommunityFavorites")}
                   </Badge>
                 </h3>
                 <div className="space-y-2">
@@ -448,7 +445,7 @@ export function FinalResults({
 
         {/* Action Options */}
         <div className="space-y-6">
-          <h2 className="text-center">What's Next?</h2>
+          <h2 className="text-center">{t("frWhatsNext")}</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Continue This Topic */}
@@ -457,13 +454,13 @@ export function FinalResults({
                 <Sparkles className="w-6 h-6 text-blue-600" />
               </div>
               <div className="space-y-2">
-                <h3>Continue This Topic</h3>
+                <h3>{t("frContinueTopic")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Start another round with the same participants
+                  {t("frContinueDesc")}
                 </p>
               </div>
               <Button onClick={onNextGame} className="w-full">
-                Next Round
+                {t("frNextRound")}
               </Button>
             </Card>
 
@@ -473,13 +470,13 @@ export function FinalResults({
                 <Home className="w-6 h-6 text-orange-600" />
               </div>
               <div className="space-y-2">
-                <h3>Browse Other Posts</h3>
+                <h3>{t("frBrowsePosts")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  See what other conversations are happening now
+                  {t("frBrowseDesc")}
                 </p>
               </div>
               <Button onClick={onBackToLobby} variant="outline" className="w-full">
-                Back to Lobby
+                {t("frBackToLobby")}
               </Button>
             </Card>
 
@@ -489,9 +486,9 @@ export function FinalResults({
                 <Calendar className="w-6 h-6 text-green-600" />
               </div>
               <div className="space-y-2">
-                <h3>Join Scheduled Conversations</h3>
+                <h3>{t("frJoinScheduled")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Get notified about upcoming discussions
+                  {t("frJoinDesc")}
                 </p>
               </div>
               <Button
@@ -499,7 +496,7 @@ export function FinalResults({
                 variant="outline"
                 className="w-full"
               >
-                Sign Me Up
+                {t("frSignUp")}
               </Button>
             </Card>
 
@@ -509,9 +506,9 @@ export function FinalResults({
                 <Heart className="w-6 h-6 text-purple-600" />
               </div>
               <div className="space-y-2">
-                <h3>Take a Breather</h3>
+                <h3>{t("frTakeBreather")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Calm activities to reset your mindset
+                  {t("frBreatherDesc")}
                 </p>
               </div>
               <div className="space-y-2">
@@ -521,7 +518,7 @@ export function FinalResults({
                   size="sm"
                   className="w-full"
                 >
-                  Guided Breathing
+                  {t("frGuidedBreathing")}
                 </Button>
                 <Button
                   onClick={() => setCurrentActivity("nature")}
@@ -529,7 +526,7 @@ export function FinalResults({
                   size="sm"
                   className="w-full"
                 >
-                  Nature Scenes
+                  {t("frNatureScenes")}
                 </Button>
                 <Button
                   onClick={() =>
@@ -539,7 +536,7 @@ export function FinalResults({
                   size="sm"
                   className="w-full"
                 >
-                  Cute Animals
+                  {t("frCuteAnimals")}
                 </Button>
               </div>
             </Card>

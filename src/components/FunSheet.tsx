@@ -10,6 +10,7 @@ import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "motion/react";
 import { LucideIcon, Sparkles, ArrowLeft } from "lucide-react";
 import { useState, useRef, useImperativeHandle, forwardRef } from "react";
+import { useTranslation } from "react-i18next";
 
 export const themes = {
   green: {
@@ -97,16 +98,17 @@ export const FunSheet = forwardRef<FunSheetRef, FunSheetProps>(({
   theme: themeKey,
   children,
   buttonText,
-  buttonLoadingText = "Loading...",
+  buttonLoadingText,
   buttonIcon: ButtonIcon,
   buttonDisabled = false,
   isLoading = false,
   showBackButton = false,
-  backButtonText = "Back",
+  backButtonText,
   onButtonClick,
   onBackClick,
   onTitleClick,
 }, ref) => {
+  const { t } = useTranslation("misc");
   const theme = themes[themeKey];
   const [showGreeting, setShowGreeting] = useState(false);
   const [greeting, setGreeting] = useState("");
@@ -124,14 +126,14 @@ export const FunSheet = forwardRef<FunSheetRef, FunSheetProps>(({
   }));
 
   const greetings = [
-    "Hey!",
-    "Hi!",
-    "Howdy!",
-    "Hello!",
-    "Yo!",
-    "Sup!",
-    "Heya!",
-    "What's up?",
+    t("fsGreet1"),
+    t("fsGreet2"),
+    t("fsGreet3"),
+    t("fsGreet4"),
+    t("fsGreet5"),
+    t("fsGreet6"),
+    t("fsGreet7"),
+    t("fsGreet8"),
   ];
 
   const handleAvatarClick = () => {
@@ -143,7 +145,7 @@ export const FunSheet = forwardRef<FunSheetRef, FunSheetProps>(({
     setClickCount(newClickCount);
 
     if (newClickCount > 3) {
-      setGreeting("Just give me a call already!");
+      setGreeting(t("fsCallAlready"));
       setShowGreeting(true);
       setJiggleKey((prev) => prev + 1);
       setClickCount(0);
@@ -212,7 +214,7 @@ export const FunSheet = forwardRef<FunSheetRef, FunSheetProps>(({
                 >
                   <img
                     src={avatar}
-                    alt="Avatar"
+                    alt={t("fsAvatarAlt")}
                     className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
                   />
                 </motion.button>
@@ -271,7 +273,7 @@ export const FunSheet = forwardRef<FunSheetRef, FunSheetProps>(({
                       <Sparkles className="w-5 h-5" />
                     </motion.div>
                     <span className="text-base">
-                      {buttonLoadingText}
+                      {buttonLoadingText ?? t("fsLoading")}
                     </span>
                   </>
                 ) : (
@@ -299,7 +301,7 @@ export const FunSheet = forwardRef<FunSheetRef, FunSheetProps>(({
                   className="w-full h-12 flex items-center justify-center gap-2 border-slate-300 hover:border-slate-400 bg-white"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  {backButtonText}
+                  {backButtonText ?? t("fsBack")}
                 </Button>
               </motion.div>
             )}
