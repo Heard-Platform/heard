@@ -1,5 +1,6 @@
 import { Label } from "../ui/label";
 import { Calendar } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { FunSheetCard } from "../FunSheet";
 
 interface EventDetailsStepProps {
@@ -52,36 +53,37 @@ export function EventDetailsStep({
   onSubtitleChange,
   showError,
 }: EventDetailsStepProps) {
+  const { t } = useTranslation("create");
   return (
     <FunSheetCard delay={0.1}>
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <Calendar className="w-5 h-5 text-orange-600" />
-          <Label className="text-base text-slate-700">Event details</Label>
+          <Label className="text-base text-slate-700">{t("ceEventDetails")}</Label>
         </div>
 
         <Field
           id="event-name"
-          label="Name"
+          label={t("ceNameLabel")}
           required
           value={name}
-          placeholder="What's the event called?"
+          placeholder={t("ceNamePlaceholder")}
           maxLength={100}
           onChange={onNameChange}
         />
 
         <Field
           id="event-subtitle"
-          label="Subtitle"
+          label={t("ceSubtitleLabel")}
           value={subtitle}
-          placeholder="A short description (optional)"
+          placeholder={t("ceSubtitlePlaceholder")}
           maxLength={200}
           onChange={onSubtitleChange}
         />
 
         {showError && (
           <p className="text-sm text-red-500">
-            Please enter a name for your event.
+            {t("ceNameError")}
           </p>
         )}
       </div>

@@ -1,10 +1,12 @@
 import { Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface EventCreatedStepProps {
   eventName: string;
 }
 
 export function EventCreatedStep({ eventName }: EventCreatedStepProps) {
+  const { t } = useTranslation("create");
   return (
     <div className="text-center space-y-3">
       <div className="w-16 h-16 created-bg rounded-full flex items-center justify-center mx-auto">
@@ -15,7 +17,7 @@ export function EventCreatedStep({ eventName }: EventCreatedStepProps) {
           {eventName}
         </h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Your event is live. Now add your first conversation to get things started.
+          {t("ceCreatedBody")}
         </p>
       </div>
     </div>

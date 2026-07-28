@@ -34,7 +34,7 @@ export function CreateEventSheet({
   onOpenChange,
   onGoToEvent,
 }: CreateEventSheetProps) {
-  const { t } = useTranslation("toast");
+  const { t } = useTranslation(["create", "toast"]);
   const { createEvent } = useDebateSession();
   const [currentStep, setCurrentStep] = useState<Step>("event-details");
   const [name, setName] = useState("");
@@ -93,7 +93,7 @@ export function CreateEventSheet({
       toast.error(
         error instanceof Error
           ? error.message
-          : t("createEventFailed"),
+          : t("toast:createEventFailed"),
       );
     } finally {
       setIsCreating(false);
@@ -116,11 +116,11 @@ export function CreateEventSheet({
     switch (currentStep) {
       case "event-details":
         return {
-          title: "New Event",
-          description: "What are you organizing?",
+          title: t("ceNewEvent"),
+          description: t("ceWhatOrganizing"),
           leftIcon: Calendar,
           theme: "orange" as const,
-          buttonText: "Choose Community →",
+          buttonText: t("ceChooseCommunity"),
           buttonIcon: Hash,
           buttonDisabled: false,
           showBackButton: false,
@@ -128,27 +128,27 @@ export function CreateEventSheet({
         };
       case "select-community":
         return {
-          title: "Pick a Community",
-          description: "Where should this event live?",
+          title: t("cePickCommunity"),
+          description: t("ceWhereLive"),
           leftIcon: Hash,
           theme: "purple" as const,
-          buttonText: "Create Event! 🎉",
-          buttonLoadingText: "Creating...",
+          buttonText: t("ceCreateEvent"),
+          buttonLoadingText: t("ceCreating"),
           buttonIcon: Plus,
           buttonDisabled: !community || isCreating,
           isLoading: isCreating,
           showBackButton: true,
-          backButtonText: "Back to Details",
+          backButtonText: t("ceBackToDetails"),
           onButtonClick: handleCreateEvent,
           onBackClick: () => setCurrentStep("event-details"),
         };
       case "done":
         return {
-          title: "Event Created!",
-          description: "Your event is live.",
+          title: t("ceEventCreated"),
+          description: t("ceEventLive"),
           leftIcon: PartyPopper,
           theme: "orange" as const,
-          buttonText: "Go to event page",
+          buttonText: t("ceGoToEventPage"),
           buttonIcon: MessageSquarePlus,
           buttonDisabled: false,
           isLoading: false,
