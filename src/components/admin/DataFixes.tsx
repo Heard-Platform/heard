@@ -249,6 +249,36 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
     }
   };
 
+  const handleAddWhereDoYouLiveQuestion = async () => {
+    if (
+      !confirm(
+        "Add the \"Where do you live?\" demographic question to room h722fdmwizvmrwlgokq? Safe to run multiple times.",
+      )
+    ) {
+      return;
+    }
+
+    setDataFixLoading("add-where-do-you-live-question");
+    try {
+      const res = await adminApi.addWhereDoYouLiveQuestion(adminKey);
+      if (res.success) {
+        alert(
+          res.data?.alreadyExists
+            ? "Question already exists on this room — no changes made."
+            : "Question added to room h722fdmwizvmrwlgokq.",
+        );
+        await fetchAdminData();
+      } else {
+        alert(`Failed to add question: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error adding demographic question:", error);
+      alert("Failed to add question");
+    } finally {
+      setDataFixLoading(null);
+    }
+  };
+
   const handleBackfillUserCreatedAt = async () => {
     if (
       !confirm(
@@ -489,6 +519,31 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
             size="sm"
           >
             Disabled
+          </Button>
+        </div>
+        <div className="heard-between p-4 border rounded-lg bg-indigo-50">
+          <div className="flex-1">
+            <h3 className="font-medium">
+              Add "Where Do You Live?" Question
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Adds a custom demographic question ("Where do you
+              live?" with LA/California/elsewhere-in-US/Other
+              options) to room h722fdmwizvmrwlgokq. Safe to run
+              multiple times.
+            </p>
+          </div>
+          <Button
+            onClick={handleAddWhereDoYouLiveQuestion}
+            disabled={
+              dataFixLoading === "add-where-do-you-live-question"
+            }
+            variant="outline"
+            size="sm"
+          >
+            {dataFixLoading === "add-where-do-you-live-question"
+              ? "Running..."
+              : "Add Question"}
           </Button>
         </div>
         <div className="heard-between p-4 border rounded-lg bg-blue-50">

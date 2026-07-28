@@ -2,7 +2,8 @@
 import { Hono } from "npm:hono";
 import { getByPrefixParsed, getActiveRoomValues, saveActiveRoomPointer, saveDebate, getMembership, saveMembership, deleteMembership } from "./kv-utils.tsx";
 import { getAllRecords } from "./db-utils.ts";
-import { CommunityMembership } from "./types.tsx";
+import { getDemographicQuestionsForRoom, insertDemographicQuestion } from "./model-utils.ts";
+import { CommunityMembership, DemographicQuestion } from "./types.tsx";
 import { backfillUserCreatedAtApi } from "./backfill-user-created-at.tsx";
 import { backfillMembershipsApi } from "./script-backfill-memberships.tsx";
 import { backfillVotesToTableApi } from "./backfill-votes-to-table.tsx";
@@ -55,6 +56,42 @@ app.post(
       return { dryRun: !!dryRun, renamed, deletedDuplicates, affectedUserIds };
     },
     "Failed to fix up interdependance-day memberships",
+  ),
+);
+
+app.post(
+  "/make-server-f1a393b4/one-time-fixes/add-where-do-you-live-question",
+  defineRoute(
+    {},
+    async (_params, _c) => {
+      const roomId = "h722fdmwizvmrwlgokq";
+      const text = "Where do you live?";
+      const options = [
+        "In or near LA",
+        "In California",
+        "Somewhere else in US",
+        "Other",
+      ];
+
+      const existingQuestions =
+        await getDemographicQuestionsForRoom(roomId);
+      const alreadyExists = existingQuestions.some(
+        (q) => q.text === text,
+      );
+      if (alreadyExists) {
+        return { added: false, alreadyExists: true };
+      }
+
+      await insertDemographicQuestion({
+        roomId,
+        type: "custom",
+        text,
+        options,
+      } as DemographicQuestion);
+
+      return { added: true };
+    },
+    "Failed to add demographic question",
   ),
 );
 
