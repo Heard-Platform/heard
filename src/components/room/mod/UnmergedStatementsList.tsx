@@ -1,4 +1,5 @@
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Statement } from "../../../types";
 import { StatementRow } from "./StatementRow";
 
@@ -21,6 +22,7 @@ export function UnmergedStatementsList({
   onSelect,
   onToggleHidden,
 }: UnmergedStatementsListProps) {
+  const { t } = useTranslation("mod");
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -32,7 +34,7 @@ export function UnmergedStatementsList({
   if (statements.length === 0) {
     return (
       <p className="text-sm text-muted-foreground text-center py-8">
-        No statements yet.
+        {t("modNoStatements")}
       </p>
     );
   }
@@ -41,10 +43,10 @@ export function UnmergedStatementsList({
     <>
       <div className="pb-1 pt-4">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          All Unmerged Statements
+          {t("modAllUnmerged")}
         </p>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Tap to start merging, or use the icon to hide.
+          {t("modTapToMerge")}
         </p>
       </div>
       {statements.map((s) => (

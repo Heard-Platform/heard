@@ -1,4 +1,5 @@
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../../ui/button";
 import { Statement } from "../../../types";
 
@@ -19,14 +20,18 @@ export function HideAndMergeFooter({
   onConfirmMerge,
   onClose,
 }: HideAndMergeFooterProps) {
+  const { t } = useTranslation("mod");
   const prompt = !source
-    ? "Select a duplicate to merge, or hide a response."
+    ? t("modSelectDuplicate")
     : !target
-    ? "Now tap the statement you want to keep."
+    ? t("modTapToKeep")
     : null;
 
   const confirmText = source && target
-    ? `Merge "${source.text.slice(0, 50)}${source.text.length > 50 ? "…" : ""}" into "${target.text.slice(0, 50)}${target.text.length > 50 ? "…" : ""}"?`
+    ? t("modConfirmQuestion", {
+        source: `${source.text.slice(0, 50)}${source.text.length > 50 ? "…" : ""}`,
+        target: `${target.text.slice(0, 50)}${target.text.length > 50 ? "…" : ""}`,
+      })
     : null;
 
   return (
@@ -40,18 +45,18 @@ export function HideAndMergeFooter({
       <div className="flex justify-end gap-2">
         {source && (
           <Button variant="ghost" size="sm" onClick={onClearSelection}>
-            Clear selection
+            {t("modClearSelection")}
           </Button>
         )}
         {source && target && (
           <Button size="sm" onClick={onConfirmMerge} disabled={submitting}>
             {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Confirm Merge
+            {t("modConfirmMerge")}
           </Button>
         )}
         {!source && (
           <Button variant="outline" size="sm" onClick={onClose}>
-            Done
+            {t("modDone")}
           </Button>
         )}
       </div>

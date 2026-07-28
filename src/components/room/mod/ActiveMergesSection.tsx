@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Statement, StatementMerge } from "../../../types";
 import { MergeGroup } from "./MergeGroup";
 
@@ -12,6 +13,7 @@ export function ActiveMergesSection({
   merges,
   onDeleteMerge,
 }: ActiveMergesSectionProps) {
+  const { t } = useTranslation("mod");
   if (merges.length === 0) return null;
 
   const sourcesByTarget = new Map<string, StatementMerge[]>();
@@ -26,7 +28,7 @@ export function ActiveMergesSection({
 
   return (
     <div className="info-bg rounded-lg px-3 py-3 space-y-3 mb-2">
-      <p className="text-xs font-semibold uppercase tracking-wide">Active merges</p>
+      <p className="text-xs font-semibold uppercase tracking-wide">{t("modActiveMerges")}</p>
       {targetIds.map((targetId) => (
         <MergeGroup
           key={targetId}

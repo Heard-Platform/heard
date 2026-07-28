@@ -1,4 +1,5 @@
 import { CornerLeftUp, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../../ui/button";
 import { Statement, StatementMerge } from "../../../types";
 
@@ -17,12 +18,13 @@ export function MergeGroup({
   sources,
   onDeleteMerge,
 }: MergeGroupProps) {
+  const { t } = useTranslation("mod");
   return (
     <div className="space-y-1">
       <p className="text-sm font-medium leading-snug">
         {target?.text ?? targetId}
         {target?.isHidden && (
-          <span className="text-muted-foreground font-normal"> (Hidden)</span>
+          <span className="text-muted-foreground font-normal"> {t("modHidden")}</span>
         )}
       </p>
       {merges.map((m) => {
@@ -33,7 +35,7 @@ export function MergeGroup({
             <span className="flex-1 text-sm line-clamp-2">
               {src?.text ?? m.sourceStatementId}
               {src?.isHidden && (
-                <span className="text-muted-foreground"> (Hidden)</span>
+                <span className="text-muted-foreground"> {t("modHidden")}</span>
               )}
             </span>
             <Button
@@ -41,7 +43,7 @@ export function MergeGroup({
               size="icon"
               onClick={() => onDeleteMerge(m.id)}
               className="hover:text-destructive shrink-0 w-8 h-8"
-              aria-label="Remove merge"
+              aria-label={t("modRemoveMerge")}
             >
               <Trash2 className="w-4 h-4" />
             </Button>

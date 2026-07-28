@@ -1,4 +1,5 @@
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../../ui/button";
 import { Statement } from "../../../types";
 
@@ -11,11 +12,6 @@ interface StatementRowProps {
   onToggleHidden: () => void;
 }
 
-function voteSummary(s: Statement): string {
-  const total = s.agrees + s.disagrees + s.passes + s.superAgrees;
-  return `${s.agrees} agree · ${s.disagrees} disagree · ${total} total`;
-}
-
 export function StatementRow({
   statement,
   isSource,
@@ -24,7 +20,13 @@ export function StatementRow({
   onSelect,
   onToggleHidden,
 }: StatementRowProps) {
+  const { t } = useTranslation("mod");
   const isHidden = !!statement.isHidden;
+  const voteSummary = t("modVoteSummary", {
+    agrees: statement.agrees,
+    disagrees: statement.disagrees,
+    total: statement.agrees + statement.disagrees + statement.passes + statement.superAgrees,
+  });
 
   const containerClass = [
     "rounded-lg border text-sm transition-colors flex items-stretch",
@@ -49,18 +51,18 @@ export function StatementRow({
         ].join(" ")}
       >
         <p className="font-medium leading-snug">{statement.text}</p>
-        <p className="text-xs text-muted-foreground mt-1">{voteSummary(statement)}</p>
+        <p className="text-xs text-muted-foreground mt-1">{voteSummary}</p>
         {isHidden && (
-          <p className="text-xs text-muted-foreground mt-1 font-medium">Hidden</p>
+          <p className="text-xs text-muted-foreground mt-1 font-medium">{t("modHiddenLabel")}</p>
         )}
         {!isHidden && isSource && (
           <p className="text-xs attention-text mt-1 font-medium">
-            Merging from this statement
+            {t("modMergingFrom")}
           </p>
         )}
         {!isHidden && isTarget && (
           <p className="text-xs resolved-text mt-1 font-medium">
-            Merging into this statement
+            {t("modMergingInto")}
           </p>
         )}
       </button>
@@ -70,8 +72,8 @@ export function StatementRow({
         onClick={onToggleHidden}
         disabled={isPending}
         className="shrink-0 self-center mr-2"
-        aria-label={isHidden ? "Unhide response" : "Hide response"}
-        title={isHidden ? "Unhide" : "Hide"}
+        aria-label={isHidden ? t("modUnhide") : t("modHide")}
+        title={isHidden ? t("modUnhideShort") : t("modHideShort")}
       >
         {isPending ? (
           <Loader2 className="w-4 h-4 animate-spin" />
