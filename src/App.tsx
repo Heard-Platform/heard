@@ -349,6 +349,7 @@ function AppContent() {
       const isWaymoDcRoute = route === "waymodc";
       const isCongestionRoute = route === "congestion"
       const isIdeasRoute = route === "ideas";
+      const isDupontRoute = route === "dupont";
       const hardcodedFlyerMatch = pathname.match(
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
@@ -398,7 +399,8 @@ function AppContent() {
         isDcRoute ||
         isWaymoRoute ||
         isWaymoDcRoute ||
-        isCongestionRoute
+        isCongestionRoute ||
+        isDupontRoute
       ) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
@@ -426,7 +428,9 @@ function AppContent() {
                                 ? WAYMO_DC_ROOM_ID
                                 : isCongestionRoute
                                   ? "9sptdy3zzq5mqz78fq5"
-                                  : null;
+                                  : isDupontRoute
+                                    ? "rrgipbk19vmms7ry4cv"
+                                    : null;
                                 
 
         if (!hardcodedRoomId) {
