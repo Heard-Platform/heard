@@ -1,4 +1,4 @@
-import { User } from "./types.tsx";
+import { User, Vote, Statement, DebateRoom } from "./types.tsx";
 
 export function buildActiveDaysMap(
   votes: Array<{ userId: string; timestamp: number }>,
@@ -126,4 +126,127 @@ export function calculateRetention({
     retained,
     totalInCohort: cohortUsers.length,
   };
+}
+
+export function getWeekStart(timestamp: number): number {
+  const d = new Date(timestamp);
+  d.setUTCHours(0, 0, 0, 0);
+  const day = d.getUTCDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setUTCDate(d.getUTCDate() + diff);
+  return d.getTime();
+}
+
+export function formatCohortLabel(weekStart: number): string {
+  return new Date(weekStart).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+const pct = (count: number, total: number): number =>
+  total === 0 ? 0 : Math.round((count / total) * 1000) / 10;
+
+export interface CohortBucket {
+  cohortStart: number;
+  cohortLabel: string;
+  totalUsers: number;
+  votedCount: number;
+  respondedCount: number;
+  nonAnonCount: number;
+  multiRoomCount: number;
+  multiCommunityCount: number;
+  votedPct: number;
+  respondedPct: number;
+  nonAnonPct: number;
+  multiRoomPct: number;
+  multiCommunityPct: number;
+}
+
+export function buildCohortFunnelData(
+  users: User[],
+  votes: Vote[],
+  statements: Statement[],
+  rooms: DebateRoom[],
+): { cohorts: CohortBucket[] } {
+  const roomSubHeard = new Map<string, string | undefined>();
+  for (const room of rooms) roomSubHeard.set(room.id, room.subHeard);
+
+  const statementRoomMap = new Map<string, string>();
+  for (const s of statements) statementRoomMap.set(s.id, s.roomId);
+
+  const votedUserIds = new Set<string>();
+  const roomsVotedByUser = new Map<string, Set<string>>();
+  for (const v of votes) {
+    votedUserIds.add(v.userId);
+    const roomId = statementRoomMap.get(v.statementId);
+    if (!roomId) continue;
+    if (!roomsVotedByUser.has(v.userId)) roomsVotedByUser.set(v.userId, new Set());
+    roomsVotedByUser.get(v.userId)!.add(roomId);
+  }
+
+  const respondedUserIds = new Set<string>();
+  const roomsRespondedByUser = new Map<string, Set<string>>();
+  for (const s of statements) {
+    respondedUserIds.add(s.author);
+    if (!roomsRespondedByUser.has(s.author)) roomsRespondedByUser.set(s.author, new Set());
+    roomsRespondedByUser.get(s.author)!.add(s.roomId);
+  }
+
+  type MutableBucket = Omit<
+    CohortBucket,
+    "cohortLabel" | "votedPct" | "respondedPct" | "nonAnonPct" | "multiRoomPct" | "multiCommunityPct"
+  >;
+
+  const cohortBuckets = new Map<number, MutableBucket>();
+
+  for (const user of users) {
+    if (!user.createdAt) continue;
+    const cohortStart = getWeekStart(user.createdAt);
+    if (!cohortBuckets.has(cohortStart)) {
+      cohortBuckets.set(cohortStart, {
+        cohortStart,
+        totalUsers: 0,
+        votedCount: 0,
+        respondedCount: 0,
+        nonAnonCount: 0,
+        multiRoomCount: 0,
+        multiCommunityCount: 0,
+      });
+    }
+    const bucket = cohortBuckets.get(cohortStart)!;
+    bucket.totalUsers++;
+
+    if (votedUserIds.has(user.id)) bucket.votedCount++;
+    if (respondedUserIds.has(user.id)) bucket.respondedCount++;
+    if (user.email || user.phoneNumber) bucket.nonAnonCount++;
+
+    const participatedRooms = new Set<string>([
+      ...(roomsVotedByUser.get(user.id) ?? []),
+      ...(roomsRespondedByUser.get(user.id) ?? []),
+    ]);
+    if (participatedRooms.size > 1) bucket.multiRoomCount++;
+
+    const communities = new Set<string>();
+    for (const roomId of participatedRooms) {
+      const subHeard = roomSubHeard.get(roomId);
+      if (subHeard) communities.add(subHeard);
+    }
+    if (communities.size > 1) bucket.multiCommunityCount++;
+  }
+
+  const cohorts: CohortBucket[] = Array.from(cohortBuckets.values())
+    .sort((a, b) => a.cohortStart - b.cohortStart)
+    .map((bucket) => ({
+      ...bucket,
+      cohortLabel: formatCohortLabel(bucket.cohortStart),
+      votedPct: pct(bucket.votedCount, bucket.totalUsers),
+      respondedPct: pct(bucket.respondedCount, bucket.totalUsers),
+      nonAnonPct: pct(bucket.nonAnonCount, bucket.totalUsers),
+      multiRoomPct: pct(bucket.multiRoomCount, bucket.totalUsers),
+      multiCommunityPct: pct(bucket.multiCommunityCount, bucket.totalUsers),
+    }));
+
+  return { cohorts };
 }

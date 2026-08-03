@@ -56,6 +56,7 @@ interface LobbyScreenProps {
   ) => Promise<any>;
   onLogout?: () => void;
   onOpenShowcase?: () => void;
+  onOpenRetentionDashboard?: () => void;
   onOpenAdminPanel?: () => void;
   onOpenAdminDashboard?: () => void;
   onOpenFeatureTracker: () => void;
@@ -84,6 +85,7 @@ export function LobbyScreen({
   onVoteOnStatement,
   onLogout,
   onOpenShowcase,
+  onOpenRetentionDashboard,
   onOpenAdminPanel,
   onOpenAdminDashboard,
   onOpenFeatureTracker,
@@ -400,6 +402,7 @@ export function LobbyScreen({
                     onLogout={onLogout}
                     onOpenHelp={() => setHelpModalOpen(true)}
                     onOpenShowcase={onOpenShowcase}
+                    onOpenRetentionDashboard={onOpenRetentionDashboard}
                     onOpenAdminDashboard={onOpenAdminDashboard}
                     onOpenFeatureTracker={onOpenFeatureTracker}
                     onOpenDevTools={onOpenDevTools}
