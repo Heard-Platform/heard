@@ -438,6 +438,34 @@ export interface FunnelMetricsData {
   tookActionTenDays: number;
 }
 
+export interface CohortTopPost {
+  id: string;
+  topic: string;
+  votes: number;
+  subHeard?: string;
+}
+
+export interface CohortFunnelEntry {
+  cohortStart: number;
+  cohortLabel: string;
+  totalUsers: number;
+  votedCount: number;
+  respondedCount: number;
+  nonAnonCount: number;
+  multiRoomCount: number;
+  multiCommunityCount: number;
+  votedPct: number;
+  respondedPct: number;
+  nonAnonPct: number;
+  multiRoomPct: number;
+  multiCommunityPct: number;
+  topPosts: CohortTopPost[];
+}
+
+export interface CohortFunnelData {
+  cohorts: CohortFunnelEntry[];
+}
+
 export type ActivityFeedEventType =
   | "vote"
   | "statement"

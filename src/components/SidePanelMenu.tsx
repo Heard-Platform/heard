@@ -13,6 +13,7 @@ import {
   HelpCircle,
   Code2,
   BarChart3,
+  LineChart,
   Wrench,
   Shield,
   SkipForward,
@@ -73,6 +74,7 @@ interface SidePanelMenuProps {
   onLogout: () => void;
   onOpenHelp: () => void;
   onOpenShowcase?: () => void;
+  onOpenRetentionDashboard?: () => void;
   onOpenAdminDashboard?: () => void;
   onOpenFeatureTracker: () => void;
   onOpenDevTools?: () => void;
@@ -89,6 +91,7 @@ export function SidePanelMenu({
   onLogout,
   onOpenHelp,
   onOpenShowcase,
+  onOpenRetentionDashboard,
   onOpenAdminDashboard,
   onOpenFeatureTracker,
   onOpenDevTools,
@@ -345,6 +348,17 @@ export function SidePanelMenu({
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
+              </Button>
+            )}
+
+            {user.isDeveloper && onOpenRetentionDashboard && (
+              <Button
+                onClick={() => closeMenuAndRun(onOpenRetentionDashboard)}
+                variant="outline"
+                className="w-full bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200"
+              >
+                <LineChart className="w-4 h-4 mr-2 text-purple-600" />
+                Retention Dashboard
               </Button>
             )}
 

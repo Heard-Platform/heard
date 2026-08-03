@@ -11,6 +11,7 @@ import { getAllRecords, selectAll } from "./db-utils.ts";
 import type { Session, UserEvent } from "./types.tsx";
 import { getEventsOfType, getFlyerEmails, getUserReports } from "./model-utils.ts";
 import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
+import { buildCohortFunnelData } from "./cohort-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
@@ -194,6 +195,25 @@ app.get("/make-server-f1a393b4/stats/funnel", async (c) => {
   }
 });
 
+
+app.get(
+  "/make-server-f1a393b4/stats/cohort-funnel",
+  defineRoute(
+    {},
+    async () => {
+      const [allUsers, allVotes, allStatements, allRooms] = await Promise.all([
+        getAllRealUsers(),
+        getAllVotes(),
+        getAllStatements(),
+        getAllRealDebates(),
+      ]);
+
+      const nonDevUsers = allUsers.filter(user => !user.isDeveloper);
+      return buildCohortFunnelData(nonDevUsers, allVotes, allStatements, allRooms);
+    },
+    "Failed to calculate cohort funnel data",
+  ),
+);
 
 app.get(
   "/make-server-f1a393b4/stats/activity-feed",

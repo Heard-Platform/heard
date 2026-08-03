@@ -14,6 +14,7 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
+import { RetentionDashboard } from "./components/RetentionDashboard";
 import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTracker";
 import { DevTools } from "./components/devtools/DevTools";
 import { AdminActivityFeed } from "./components/AdminActivityFeed";
@@ -100,6 +101,8 @@ function AppContent() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] =
     useState(safelyGetStorageItem<boolean>("showAdminDashboard", false));
+  const [showRetentionDashboard, setShowRetentionDashboard] =
+    useState(safelyGetStorageItem<boolean>("showRetentionDashboard", false));
   const [showFeatureTracker, setShowFeatureTracker] = useState(false);
   const [showDevTools, setShowDevTools] = useState(false);
   const [showActivityFeed, setShowActivityFeed] = useState(false);
@@ -633,6 +636,18 @@ function AppContent() {
     window.history.pushState({}, "", "/");
   };
 
+  const handleOpenRetentionDashboard = () => {
+    setShowRetentionDashboard(true);
+    localStorage.setItem("showRetentionDashboard", "true");
+    window.history.pushState({}, "", "/retention");
+  };
+
+  const handleExitRetentionDashboard = () => {
+    setShowRetentionDashboard(false);
+    localStorage.setItem("showRetentionDashboard", "false");
+    window.history.pushState({}, "", "/");
+  };
+
   const handleOpenFeatureTracker = () => {
     setShowFeatureTracker(true);
     window.history.pushState({}, "", "/features");
@@ -688,6 +703,15 @@ function AppContent() {
           onExit={handleExitAdminDashboard}
           currentUserId={user.id}
         />
+        <Toaster />
+      </>
+    );
+  }
+
+  if (showRetentionDashboard && user) {
+    return (
+      <>
+        <RetentionDashboard onExit={handleExitRetentionDashboard} />
         <Toaster />
       </>
     );
@@ -806,6 +830,7 @@ function AppContent() {
         onVoteOnStatement={voteOnStatement}
         onLogout={handleLogout}
         onOpenShowcase={handleOpenShowcase}
+        onOpenRetentionDashboard={handleOpenRetentionDashboard}
         onOpenAdminPanel={handleOpenAdminPanel}
         onOpenAdminDashboard={handleOpenAdminDashboard}
         onOpenFeatureTracker={handleOpenFeatureTracker}

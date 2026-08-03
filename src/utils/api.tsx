@@ -2,6 +2,7 @@ import {
   ActivityFeedData,
   ActivityMetricsData,
   AnalysisData,
+  CohortFunnelData,
   DevAnonDebate,
   DryRunResult,
   Feedback,
@@ -673,6 +674,12 @@ class ApiClient extends BaseApiClient {
 
   async getFunnelMetrics() {
     return this.request<FunnelMetricsData>("/stats/funnel", {
+      method: "GET",
+    });
+  }
+
+  async getCohortFunnel() {
+    return this.request<CohortFunnelData>("/stats/cohort-funnel", {
       method: "GET",
     });
   }
