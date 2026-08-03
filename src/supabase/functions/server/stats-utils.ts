@@ -1,4 +1,5 @@
 import { User, Vote, Statement, DebateRoom } from "./types.tsx";
+import { getTotalVoteCount } from "./statement-utils.tsx";
 
 export function buildActiveDaysMap(
   votes: Array<{ userId: string; timestamp: number }>,
@@ -148,6 +149,13 @@ export function formatCohortLabel(weekStart: number): string {
 const pct = (count: number, total: number): number =>
   total === 0 ? 0 : Math.round((count / total) * 1000) / 10;
 
+export interface CohortTopPost {
+  id: string;
+  topic: string;
+  votes: number;
+  subHeard?: string;
+}
+
 export interface CohortBucket {
   cohortStart: number;
   cohortLabel: string;
@@ -162,6 +170,44 @@ export interface CohortBucket {
   nonAnonPct: number;
   multiRoomPct: number;
   multiCommunityPct: number;
+  topPosts: CohortTopPost[];
+}
+
+const TOP_POSTS_PER_COHORT = 3;
+
+function computeTopPostsByWeek(
+  rooms: DebateRoom[],
+  statements: Statement[],
+): Map<number, CohortTopPost[]> {
+  const votesByRoom = new Map<string, number>();
+  for (const s of statements) {
+    if (s.isHidden) continue;
+    votesByRoom.set(s.roomId, (votesByRoom.get(s.roomId) ?? 0) + getTotalVoteCount(s));
+  }
+
+  const roomsByWeek = new Map<number, DebateRoom[]>();
+  for (const room of rooms) {
+    if (!room.createdAt) continue;
+    const week = getWeekStart(room.createdAt);
+    if (!roomsByWeek.has(week)) roomsByWeek.set(week, []);
+    roomsByWeek.get(week)!.push(room);
+  }
+
+  const topPostsByWeek = new Map<number, CohortTopPost[]>();
+  for (const [week, roomsInWeek] of roomsByWeek.entries()) {
+    const top = [...roomsInWeek]
+      .map((room) => ({ room, votes: votesByRoom.get(room.id) ?? 0 }))
+      .sort((a, b) => b.votes - a.votes)
+      .slice(0, TOP_POSTS_PER_COHORT)
+      .map(({ room, votes }) => ({
+        id: room.id,
+        topic: room.topic,
+        votes,
+        subHeard: room.subHeard,
+      }));
+    topPostsByWeek.set(week, top);
+  }
+  return topPostsByWeek;
 }
 
 export function buildCohortFunnelData(
@@ -194,9 +240,17 @@ export function buildCohortFunnelData(
     roomsRespondedByUser.get(s.author)!.add(s.roomId);
   }
 
+  const topPostsByWeek = computeTopPostsByWeek(rooms, statements);
+
   type MutableBucket = Omit<
     CohortBucket,
-    "cohortLabel" | "votedPct" | "respondedPct" | "nonAnonPct" | "multiRoomPct" | "multiCommunityPct"
+    | "cohortLabel"
+    | "votedPct"
+    | "respondedPct"
+    | "nonAnonPct"
+    | "multiRoomPct"
+    | "multiCommunityPct"
+    | "topPosts"
   >;
 
   const cohortBuckets = new Map<number, MutableBucket>();
@@ -246,6 +300,7 @@ export function buildCohortFunnelData(
       nonAnonPct: pct(bucket.nonAnonCount, bucket.totalUsers),
       multiRoomPct: pct(bucket.multiRoomCount, bucket.totalUsers),
       multiCommunityPct: pct(bucket.multiCommunityCount, bucket.totalUsers),
+      topPosts: topPostsByWeek.get(bucket.cohortStart) ?? [],
     }));
 
   return { cohorts };

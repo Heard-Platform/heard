@@ -41,6 +41,10 @@ const TEXT_MUTED = "#898781";
 const GRIDLINE = "#e1e0d9";
 const BASELINE = "#c3c2b7";
 
+function truncate(text: string, max: number): string {
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload || !payload.length) return null;
   const entry: CohortFunnelEntry = payload[0]?.payload;
@@ -80,6 +84,26 @@ function CustomTooltip({ active, payload, label }: any) {
           </span>
         </div>
       ))}
+
+      {entry.topPosts.length > 0 && (
+        <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${GRIDLINE}` }}>
+          <p style={{ color: TEXT_SECONDARY, fontSize: 11, marginBottom: 4 }}>
+            Top posts that week
+          </p>
+          {entry.topPosts.map((post) => (
+            <div key={post.id} style={{ marginTop: 3, maxWidth: 260 }}>
+              <span style={{ color: TEXT_PRIMARY, fontSize: 12, fontWeight: 600 }}>
+                {post.votes} votes
+              </span>
+              <span style={{ color: TEXT_SECONDARY, fontSize: 12 }}>
+                {" "}
+                &middot; {truncate(post.topic, 70)}
+                {post.subHeard ? ` (${post.subHeard})` : ""}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

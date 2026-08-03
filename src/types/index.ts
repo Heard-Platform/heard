@@ -438,6 +438,13 @@ export interface FunnelMetricsData {
   tookActionTenDays: number;
 }
 
+export interface CohortTopPost {
+  id: string;
+  topic: string;
+  votes: number;
+  subHeard?: string;
+}
+
 export interface CohortFunnelEntry {
   cohortStart: number;
   cohortLabel: string;
@@ -452,6 +459,7 @@ export interface CohortFunnelEntry {
   nonAnonPct: number;
   multiRoomPct: number;
   multiCommunityPct: number;
+  topPosts: CohortTopPost[];
 }
 
 export interface CohortFunnelData {
