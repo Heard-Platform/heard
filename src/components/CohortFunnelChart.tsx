@@ -2,6 +2,8 @@ import { useState } from "react";
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -144,18 +146,18 @@ export function CohortFunnelChart({ cohorts }: CohortFunnelChartProps) {
       <p className="text-xs" style={{ color: TEXT_MUTED }}>
         Each line is the % of that week's signups reaching a stage, in order of typical
         usage maturity. Stages overlap rather than strictly nest (e.g. a user can add an
-        email without voting), so lines can cross.
+        email without voting), so lines can cross. The bars below show cohort size, so
+        thin weeks can be read with appropriate skepticism.
       </p>
 
-      <ResponsiveContainer width="100%" height={420}>
-        <LineChart data={cohorts} margin={{ top: 10, right: 16, left: 0, bottom: 8 }}>
+      <ResponsiveContainer width="100%" height={380}>
+        <LineChart
+          data={cohorts}
+          syncId="cohort-funnel"
+          margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
+        >
           <CartesianGrid vertical={false} stroke={GRIDLINE} />
-          <XAxis
-            dataKey="cohortLabel"
-            tick={{ fontSize: 12, fill: TEXT_MUTED }}
-            axisLine={{ stroke: BASELINE }}
-            tickLine={false}
-          />
+          <XAxis dataKey="cohortLabel" tick={false} axisLine={{ stroke: BASELINE }} tickLine={false} />
           <YAxis
             domain={[0, "auto"]}
             tick={{ fontSize: 12, fill: TEXT_MUTED }}
@@ -178,6 +180,32 @@ export function CohortFunnelChart({ cohorts }: CohortFunnelChartProps) {
             />
           ))}
         </LineChart>
+      </ResponsiveContainer>
+
+      <p style={{ color: TEXT_SECONDARY, fontSize: 11 }}>Cohort size (users joined that week)</p>
+
+      <ResponsiveContainer width="100%" height={90}>
+        <BarChart
+          data={cohorts}
+          syncId="cohort-funnel"
+          margin={{ top: 0, right: 16, left: 0, bottom: 8 }}
+        >
+          <CartesianGrid vertical={false} stroke={GRIDLINE} />
+          <XAxis
+            dataKey="cohortLabel"
+            tick={{ fontSize: 12, fill: TEXT_MUTED }}
+            axisLine={{ stroke: BASELINE }}
+            tickLine={false}
+          />
+          <YAxis
+            tick={{ fontSize: 10, fill: TEXT_MUTED }}
+            axisLine={{ stroke: BASELINE }}
+            tickLine={false}
+            width={44}
+          />
+          <Tooltip content={() => null} cursor={{ fill: GRIDLINE, opacity: 0.5 }} />
+          <Bar dataKey="totalUsers" name="Cohort size" fill={BASELINE} radius={[2, 2, 0, 0]} />
+        </BarChart>
       </ResponsiveContainer>
 
       <Legend />
