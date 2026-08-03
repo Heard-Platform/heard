@@ -10,7 +10,8 @@ import {
 import { getAllRecords, selectAll } from "./db-utils.ts";
 import type { Session, UserEvent } from "./types.tsx";
 import { getEventsOfType, getFlyerEmails, getUserReports } from "./model-utils.ts";
-import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap, buildCohortFunnelData } from "./stats-utils.ts";
+import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
+import { buildCohortFunnelData } from "./cohort-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
