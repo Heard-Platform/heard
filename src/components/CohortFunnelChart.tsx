@@ -14,6 +14,7 @@ import type { CohortFunnelEntry } from "../types";
 
 interface CohortFunnelChartProps {
   cohorts: CohortFunnelEntry[];
+  cohortMode?: "joined" | "active";
 }
 
 interface Stage {
@@ -175,13 +176,14 @@ function Legend() {
   );
 }
 
-export function CohortFunnelChart({ cohorts }: CohortFunnelChartProps) {
+export function CohortFunnelChart({ cohorts, cohortMode = "joined" }: CohortFunnelChartProps) {
   const [showTable, setShowTable] = useState(false);
+  const cohortNoun = cohortMode === "joined" ? "signups" : "active users";
 
   if (cohorts.length === 0) {
     return (
       <p className="text-center text-muted-foreground py-8">
-        Not enough signup data yet to build cohorts.
+        Not enough {cohortMode === "joined" ? "signup" : "activity"} data yet to build cohorts.
       </p>
     );
   }
@@ -189,7 +191,7 @@ export function CohortFunnelChart({ cohorts }: CohortFunnelChartProps) {
   return (
     <div className="space-y-3">
       <p className="text-xs" style={{ color: TEXT_MUTED }}>
-        Each solid line is the % of that week's signups reaching a stage, in order of
+        Each solid line is the % of that week's {cohortNoun} reaching a stage, in order of
         typical usage maturity. Stages overlap rather than strictly nest (e.g. a user can
         add an email without voting), so lines can cross. The two dashed lines are a
         different kind of measure &mdash; return behavior, not maturity &mdash; showing the % who
@@ -230,7 +232,9 @@ export function CohortFunnelChart({ cohorts }: CohortFunnelChartProps) {
         </LineChart>
       </ResponsiveContainer>
 
-      <p style={{ color: TEXT_SECONDARY, fontSize: 11 }}>Cohort size (users joined that week)</p>
+      <p style={{ color: TEXT_SECONDARY, fontSize: 11 }}>
+        Cohort size ({cohortMode === "joined" ? "users joined" : "users active"} that week)
+      </p>
 
       <ResponsiveContainer width="100%" height={90}>
         <BarChart

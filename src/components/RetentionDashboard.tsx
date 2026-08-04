@@ -6,6 +6,8 @@ import { api } from "../utils/api";
 import type { CohortFunnelEntry } from "../types";
 import { CohortFunnelChart } from "./CohortFunnelChart";
 
+type CohortMode = "joined" | "active";
+
 interface RetentionDashboardProps {
   onExit?: () => void;
 }
@@ -13,13 +15,14 @@ interface RetentionDashboardProps {
 export function RetentionDashboard({ onExit }: RetentionDashboardProps) {
   const [cohorts, setCohorts] = useState<CohortFunnelEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cohortMode, setCohortMode] = useState<CohortMode>("joined");
 
   useEffect(() => {
     let cancelled = false;
 
     const fetchData = async () => {
       setLoading(true);
-      const res = await api.getCohortFunnel();
+      const res = await api.getCohortFunnel(cohortMode);
       if (!cancelled && res.success) {
         setCohorts(res.data?.cohorts ?? []);
       }
@@ -30,7 +33,7 @@ export function RetentionDashboard({ onExit }: RetentionDashboardProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [cohortMode]);
 
   return (
     <div className="heard-page-bg p-4">
@@ -49,14 +52,32 @@ export function RetentionDashboard({ onExit }: RetentionDashboardProps) {
         </div>
 
         <Card className="p-6">
-          <h2 className="text-xl mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-purple-600" />
-            Cohort Funnel by Join Week
-          </h2>
+          <div className="heard-between mb-4">
+            <h2 className="text-xl flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-purple-600" />
+              Cohort Funnel by {cohortMode === "joined" ? "Join Week" : "Activity Week"}
+            </h2>
+            <div className="flex gap-1">
+              <Button
+                variant={cohortMode === "joined" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCohortMode("joined")}
+              >
+                Joined that week
+              </Button>
+              <Button
+                variant={cohortMode === "active" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCohortMode("active")}
+              >
+                Active that week
+              </Button>
+            </div>
+          </div>
           {loading ? (
             <p className="text-center text-muted-foreground py-8">Loading cohorts...</p>
           ) : (
-            <CohortFunnelChart cohorts={cohorts} />
+            <CohortFunnelChart cohorts={cohorts} cohortMode={cohortMode} />
           )}
         </Card>
       </div>
