@@ -1,5 +1,6 @@
 import { User, Vote, Statement, DebateRoom } from "./types.tsx";
 import { getTotalVoteCount } from "./statement-utils.tsx";
+import { buildActiveDaysMap } from "./stats-utils.ts";
 
 export function getWeekStart(timestamp: number): number {
   const d = new Date(timestamp);
@@ -37,11 +38,15 @@ export interface CohortBucket {
   nonAnonCount: number;
   multiRoomCount: number;
   multiCommunityCount: number;
+  multiDayCount: number;
+  multiWeekCount: number;
   votedPct: number;
   respondedPct: number;
   nonAnonPct: number;
   multiRoomPct: number;
   multiCommunityPct: number;
+  multiDayPct: number;
+  multiWeekPct: number;
   topPosts: CohortTopPost[];
 }
 
@@ -113,6 +118,7 @@ export function buildCohortFunnelData(
   }
 
   const topPostsByWeek = computeTopPostsByWeek(rooms, statements);
+  const activeDaysByUser = buildActiveDaysMap(votes, statements);
 
   type MutableBucket = Omit<
     CohortBucket,
@@ -122,6 +128,8 @@ export function buildCohortFunnelData(
     | "nonAnonPct"
     | "multiRoomPct"
     | "multiCommunityPct"
+    | "multiDayPct"
+    | "multiWeekPct"
     | "topPosts"
   >;
 
@@ -139,6 +147,8 @@ export function buildCohortFunnelData(
         nonAnonCount: 0,
         multiRoomCount: 0,
         multiCommunityCount: 0,
+        multiDayCount: 0,
+        multiWeekCount: 0,
       });
     }
     const bucket = cohortBuckets.get(cohortStart)!;
@@ -160,6 +170,15 @@ export function buildCohortFunnelData(
       if (subHeard) communities.add(subHeard);
     }
     if (communities.size > 1) bucket.multiCommunityCount++;
+
+    const activeDays = activeDaysByUser.get(user.id);
+    if (activeDays) {
+      if (activeDays.size > 1) bucket.multiDayCount++;
+
+      const activeWeeks = new Set<number>();
+      for (const day of activeDays) activeWeeks.add(getWeekStart(day));
+      if (activeWeeks.size > 1) bucket.multiWeekCount++;
+    }
   }
 
   const cohorts: CohortBucket[] = Array.from(cohortBuckets.values())
@@ -172,6 +191,8 @@ export function buildCohortFunnelData(
       nonAnonPct: pct(bucket.nonAnonCount, bucket.totalUsers),
       multiRoomPct: pct(bucket.multiRoomCount, bucket.totalUsers),
       multiCommunityPct: pct(bucket.multiCommunityCount, bucket.totalUsers),
+      multiDayPct: pct(bucket.multiDayCount, bucket.totalUsers),
+      multiWeekPct: pct(bucket.multiWeekCount, bucket.totalUsers),
       topPosts: topPostsByWeek.get(bucket.cohortStart) ?? [],
     }));
 
