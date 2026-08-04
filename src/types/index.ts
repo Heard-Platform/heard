@@ -454,11 +454,15 @@ export interface CohortFunnelEntry {
   nonAnonCount: number;
   multiRoomCount: number;
   multiCommunityCount: number;
+  multiDayCount: number;
+  multiWeekCount: number;
   votedPct: number;
   respondedPct: number;
   nonAnonPct: number;
   multiRoomPct: number;
   multiCommunityPct: number;
+  multiDayPct: number;
+  multiWeekPct: number;
   topPosts: CohortTopPost[];
 }
 

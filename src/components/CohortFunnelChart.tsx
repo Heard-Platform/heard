@@ -19,23 +19,43 @@ interface CohortFunnelChartProps {
 interface Stage {
   key: keyof Pick<
     CohortFunnelEntry,
-    "votedPct" | "respondedPct" | "nonAnonPct" | "multiRoomPct" | "multiCommunityPct"
+    | "votedPct"
+    | "respondedPct"
+    | "nonAnonPct"
+    | "multiRoomPct"
+    | "multiCommunityPct"
+    | "multiDayPct"
+    | "multiWeekPct"
   >;
   countKey: keyof Pick<
     CohortFunnelEntry,
-    "votedCount" | "respondedCount" | "nonAnonCount" | "multiRoomCount" | "multiCommunityCount"
+    | "votedCount"
+    | "respondedCount"
+    | "nonAnonCount"
+    | "multiRoomCount"
+    | "multiCommunityCount"
+    | "multiDayCount"
+    | "multiWeekCount"
   >;
   label: string;
   color: string;
+  dashed?: boolean;
 }
 
-const STAGES: Stage[] = [
+const FUNNEL_STAGES: Stage[] = [
   { key: "votedPct", countKey: "votedCount", label: "Voted", color: "#2a78d6" },
   { key: "respondedPct", countKey: "respondedCount", label: "Responded", color: "#eb6834" },
   { key: "nonAnonPct", countKey: "nonAnonCount", label: "Added email/phone", color: "#1baf7a" },
   { key: "multiRoomPct", countKey: "multiRoomCount", label: "Active in 2+ rooms", color: "#eda100" },
   { key: "multiCommunityPct", countKey: "multiCommunityCount", label: "Active in 2+ communities", color: "#e87ba4" },
 ];
+
+const RETENTION_STAGES: Stage[] = [
+  { key: "multiDayPct", countKey: "multiDayCount", label: "Active on 2+ days", color: "#008300", dashed: true },
+  { key: "multiWeekPct", countKey: "multiWeekCount", label: "Active in 2+ weeks", color: "#4a3aa7", dashed: true },
+];
+
+const ALL_STAGES: Stage[] = [...FUNNEL_STAGES, ...RETENTION_STAGES];
 
 const TEXT_PRIMARY = "#0b0b0b";
 const TEXT_SECONDARY = "#52514e";
@@ -45,6 +65,36 @@ const BASELINE = "#c3c2b7";
 
 function truncate(text: string, max: number): string {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+function LineSwatch({ color, dashed, width = 14 }: { color: string; dashed?: boolean; width?: number }) {
+  return (
+    <svg width={width} height={4} style={{ display: "block", flexShrink: 0 }}>
+      <line
+        x1={0}
+        y1={2}
+        x2={width}
+        y2={2}
+        stroke={color}
+        strokeWidth={2}
+        strokeDasharray={dashed ? "3 2" : undefined}
+      />
+    </svg>
+  );
+}
+
+function StageRow({ stage, entry }: { stage: Stage; entry: CohortFunnelEntry }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+      <LineSwatch color={stage.color} dashed={stage.dashed} width={12} />
+      <span style={{ color: TEXT_PRIMARY, fontSize: 13, fontWeight: 600 }}>
+        {entry[stage.key]}%
+      </span>
+      <span style={{ color: TEXT_SECONDARY, fontSize: 12 }}>
+        {stage.label} ({entry[stage.countKey]})
+      </span>
+    </div>
+  );
 }
 
 function CustomTooltip({ active, payload, label }: any) {
@@ -65,27 +115,18 @@ function CustomTooltip({ active, payload, label }: any) {
       <p style={{ color: TEXT_SECONDARY, fontSize: 12, marginBottom: 6 }}>
         Cohort of {label} &middot; {entry.totalUsers} users
       </p>
-      {STAGES.map((stage) => (
-        <div
-          key={stage.key}
-          style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}
-        >
-          <span
-            style={{
-              display: "inline-block",
-              width: 12,
-              height: 2,
-              background: stage.color,
-            }}
-          />
-          <span style={{ color: TEXT_PRIMARY, fontSize: 13, fontWeight: 600 }}>
-            {entry[stage.key]}%
-          </span>
-          <span style={{ color: TEXT_SECONDARY, fontSize: 12 }}>
-            {stage.label} ({entry[stage.countKey]})
-          </span>
-        </div>
+      {FUNNEL_STAGES.map((stage) => (
+        <StageRow key={stage.key} stage={stage} entry={entry} />
       ))}
+
+      <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${GRIDLINE}` }}>
+        <p style={{ color: TEXT_SECONDARY, fontSize: 11, marginBottom: 4 }}>
+          Return behavior
+        </p>
+        {RETENTION_STAGES.map((stage) => (
+          <StageRow key={stage.key} stage={stage} entry={entry} />
+        ))}
+      </div>
 
       {entry.topPosts.length > 0 && (
         <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${GRIDLINE}` }}>
@@ -112,17 +153,21 @@ function CustomTooltip({ active, payload, label }: any) {
 
 function Legend() {
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center mt-2">
-      {STAGES.map((stage) => (
+    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-2">
+      {FUNNEL_STAGES.map((stage) => (
         <div key={stage.key} className="flex items-center gap-1.5">
-          <span
-            style={{
-              display: "inline-block",
-              width: 14,
-              height: 2,
-              background: stage.color,
-            }}
-          />
+          <LineSwatch color={stage.color} dashed={stage.dashed} />
+          <span style={{ color: TEXT_SECONDARY, fontSize: 12 }}>{stage.label}</span>
+        </div>
+      ))}
+
+      <span style={{ color: BASELINE, fontSize: 12 }} aria-hidden>
+        |
+      </span>
+
+      {RETENTION_STAGES.map((stage) => (
+        <div key={stage.key} className="flex items-center gap-1.5">
+          <LineSwatch color={stage.color} dashed={stage.dashed} />
           <span style={{ color: TEXT_SECONDARY, fontSize: 12 }}>{stage.label}</span>
         </div>
       ))}
@@ -144,10 +189,12 @@ export function CohortFunnelChart({ cohorts }: CohortFunnelChartProps) {
   return (
     <div className="space-y-3">
       <p className="text-xs" style={{ color: TEXT_MUTED }}>
-        Each line is the % of that week's signups reaching a stage, in order of typical
-        usage maturity. Stages overlap rather than strictly nest (e.g. a user can add an
-        email without voting), so lines can cross. The bars below show cohort size, so
-        thin weeks can be read with appropriate skepticism.
+        Each solid line is the % of that week's signups reaching a stage, in order of
+        typical usage maturity. Stages overlap rather than strictly nest (e.g. a user can
+        add an email without voting), so lines can cross. The two dashed lines are a
+        different kind of measure &mdash; return behavior, not maturity &mdash; showing the % who
+        came back and used the app on more than one distinct day or week. The bars below
+        show cohort size, so thin weeks can be read with appropriate skepticism.
       </p>
 
       <ResponsiveContainer width="100%" height={380}>
@@ -167,7 +214,7 @@ export function CohortFunnelChart({ cohorts }: CohortFunnelChartProps) {
             unit="%"
           />
           <Tooltip content={<CustomTooltip />} cursor={{ stroke: BASELINE, strokeWidth: 1 }} />
-          {STAGES.map((stage) => (
+          {ALL_STAGES.map((stage) => (
             <Line
               key={stage.key}
               type="monotone"
@@ -175,6 +222,7 @@ export function CohortFunnelChart({ cohorts }: CohortFunnelChartProps) {
               name={stage.label}
               stroke={stage.color}
               strokeWidth={2}
+              strokeDasharray={stage.dashed ? "6 4" : undefined}
               dot={false}
               activeDot={{ r: 4, fill: stage.color, stroke: "#fcfcfb", strokeWidth: 2 }}
             />
@@ -231,11 +279,23 @@ export function CohortFunnelChart({ cohorts }: CohortFunnelChartProps) {
                 <th className="text-right py-2 pr-3" style={{ color: TEXT_SECONDARY }}>
                   Users
                 </th>
-                {STAGES.map((stage) => (
+                {FUNNEL_STAGES.map((stage) => (
                   <th
                     key={stage.key}
                     className="text-right py-2 pr-3"
                     style={{ color: TEXT_SECONDARY }}
+                  >
+                    {stage.label}
+                  </th>
+                ))}
+                {RETENTION_STAGES.map((stage, i) => (
+                  <th
+                    key={stage.key}
+                    className="text-right py-2 pr-3"
+                    style={{
+                      color: TEXT_SECONDARY,
+                      borderLeft: i === 0 ? `1px dashed ${GRIDLINE}` : undefined,
+                    }}
                   >
                     {stage.label}
                   </th>
@@ -251,11 +311,23 @@ export function CohortFunnelChart({ cohorts }: CohortFunnelChartProps) {
                   <td className="py-2 pr-3 text-right" style={{ color: TEXT_PRIMARY }}>
                     {entry.totalUsers}
                   </td>
-                  {STAGES.map((stage) => (
+                  {FUNNEL_STAGES.map((stage) => (
                     <td
                       key={stage.key}
                       className="py-2 pr-3 text-right"
                       style={{ color: TEXT_PRIMARY }}
+                    >
+                      {entry[stage.key]}% ({entry[stage.countKey]})
+                    </td>
+                  ))}
+                  {RETENTION_STAGES.map((stage, i) => (
+                    <td
+                      key={stage.key}
+                      className="py-2 pr-3 text-right"
+                      style={{
+                        color: TEXT_PRIMARY,
+                        borderLeft: i === 0 ? `1px dashed ${GRIDLINE}` : undefined,
+                      }}
                     >
                       {entry[stage.key]}% ({entry[stage.countKey]})
                     </td>
