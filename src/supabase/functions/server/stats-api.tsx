@@ -200,7 +200,7 @@ app.get(
   "/make-server-f1a393b4/stats/cohort-funnel",
   defineRoute(
     {},
-    async () => {
+    async (_params, c) => {
       const [allUsers, allVotes, allStatements, allRooms] = await Promise.all([
         getAllRealUsers(),
         getAllVotes(),
@@ -208,8 +208,9 @@ app.get(
         getAllRealDebates(),
       ]);
 
+      const mode = c.req.query("mode") === "active" ? "active" : "joined";
       const nonDevUsers = allUsers.filter(user => !user.isDeveloper);
-      return buildCohortFunnelData(nonDevUsers, allVotes, allStatements, allRooms);
+      return buildCohortFunnelData(nonDevUsers, allVotes, allStatements, allRooms, mode);
     },
     "Failed to calculate cohort funnel data",
   ),

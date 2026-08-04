@@ -87,11 +87,14 @@ function computeTopPostsByWeek(
   return topPostsByWeek;
 }
 
+export type CohortMode = "joined" | "active";
+
 export function buildCohortFunnelData(
   users: User[],
   votes: Vote[],
   statements: Statement[],
   rooms: DebateRoom[],
+  mode: CohortMode = "joined",
 ): { cohorts: CohortBucket[] } {
   const roomSubHeard = new Map<string, string | undefined>();
   for (const room of rooms) roomSubHeard.set(room.id, room.subHeard);
@@ -135,9 +138,7 @@ export function buildCohortFunnelData(
 
   const cohortBuckets = new Map<number, MutableBucket>();
 
-  for (const user of users) {
-    if (!user.createdAt) continue;
-    const cohortStart = getWeekStart(user.createdAt);
+  const addUserToBucket = (cohortStart: number, user: User) => {
     if (!cohortBuckets.has(cohortStart)) {
       cohortBuckets.set(cohortStart, {
         cohortStart,
@@ -178,6 +179,21 @@ export function buildCohortFunnelData(
       const activeWeeks = new Set<number>();
       for (const day of activeDays) activeWeeks.add(getWeekStart(day));
       if (activeWeeks.size > 1) bucket.multiWeekCount++;
+    }
+  };
+
+  if (mode === "active") {
+    for (const user of users) {
+      const activeDays = activeDaysByUser.get(user.id);
+      if (!activeDays || activeDays.size === 0) continue;
+      const activeWeeksForUser = new Set<number>();
+      for (const day of activeDays) activeWeeksForUser.add(getWeekStart(day));
+      for (const week of activeWeeksForUser) addUserToBucket(week, user);
+    }
+  } else {
+    for (const user of users) {
+      if (!user.createdAt) continue;
+      addUserToBucket(getWeekStart(user.createdAt), user);
     }
   }
 
