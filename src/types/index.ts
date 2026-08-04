@@ -470,6 +470,22 @@ export interface CohortFunnelData {
   cohorts: CohortFunnelEntry[];
 }
 
+export interface UserRetentionRow {
+  id: string;
+  idPrefix: string;
+  nickname: string;
+  obfuscatedEmail: string;
+  obfuscatedPhone: string;
+  createdAt: number;
+  activeDays: number;
+  activeWeeks: number;
+  topPosts: CohortTopPost[];
+}
+
+export interface UserRetentionTableData {
+  users: UserRetentionRow[];
+}
+
 export type ActivityFeedEventType =
   | "vote"
   | "statement"

@@ -20,6 +20,13 @@ export function obfuscateEmail(email: string): string {
   return `${visible}${EMAIL_MASK}@${EMAIL_MASK}`;
 }
 
+const PHONE_MASK = "•••-•••-";
+
+export function obfuscatePhone(phone: string): string {
+  if (phone.length < 4) return `${PHONE_MASK}••••`;
+  return `${PHONE_MASK}${phone.slice(-4)}`;
+}
+
 export function escapeHtml(input: string): string {
   return input
     .replace(/&/g, "&amp;")

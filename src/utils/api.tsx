@@ -3,6 +3,7 @@ import {
   ActivityMetricsData,
   AnalysisData,
   CohortFunnelData,
+  UserRetentionTableData,
   DevAnonDebate,
   DryRunResult,
   Feedback,
@@ -680,6 +681,12 @@ class ApiClient extends BaseApiClient {
 
   async getCohortFunnel() {
     return this.request<CohortFunnelData>("/stats/cohort-funnel", {
+      method: "GET",
+    });
+  }
+
+  async getUserRetentionTable() {
+    return this.request<UserRetentionTableData>("/stats/user-retention-table", {
       method: "GET",
     });
   }

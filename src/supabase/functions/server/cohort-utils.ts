@@ -50,17 +50,44 @@ export interface CohortBucket {
   topPosts: CohortTopPost[];
 }
 
+function buildVotesByRoom(statements: Statement[]): Map<string, number> {
+  const votesByRoom = new Map<string, number>();
+  for (const s of statements) {
+    if (s.isHidden) continue;
+    votesByRoom.set(s.roomId, (votesByRoom.get(s.roomId) ?? 0) + getTotalVoteCount(s));
+  }
+  return votesByRoom;
+}
+
+export function buildParticipatedRoomsByUser(
+  votes: Vote[],
+  statements: Statement[],
+): Map<string, Set<string>> {
+  const statementRoomMap = new Map<string, string>();
+  for (const s of statements) statementRoomMap.set(s.id, s.roomId);
+
+  const roomsByUser = new Map<string, Set<string>>();
+  const addRoom = (userId: string, roomId: string) => {
+    if (!roomsByUser.has(userId)) roomsByUser.set(userId, new Set());
+    roomsByUser.get(userId)!.add(roomId);
+  };
+
+  for (const v of votes) {
+    const roomId = statementRoomMap.get(v.statementId);
+    if (roomId) addRoom(v.userId, roomId);
+  }
+  for (const s of statements) addRoom(s.author, s.roomId);
+
+  return roomsByUser;
+}
+
 const TOP_POSTS_PER_COHORT = 3;
 
 function computeTopPostsByWeek(
   rooms: DebateRoom[],
   statements: Statement[],
 ): Map<number, CohortTopPost[]> {
-  const votesByRoom = new Map<string, number>();
-  for (const s of statements) {
-    if (s.isHidden) continue;
-    votesByRoom.set(s.roomId, (votesByRoom.get(s.roomId) ?? 0) + getTotalVoteCount(s));
-  }
+  const votesByRoom = buildVotesByRoom(statements);
 
   const roomsByWeek = new Map<number, DebateRoom[]>();
   for (const room of rooms) {
