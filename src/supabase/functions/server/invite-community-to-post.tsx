@@ -1,7 +1,7 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
 import { getAllRecords } from "./db-utils.ts";
-import { getDebate, getUser, getSentEmails, saveSentEmail } from "./kv-utils.tsx";
+import { getDebate, getAllRealUsers, getSentEmails, saveSentEmail } from "./kv-utils.tsx";
 import { getStatements } from "./debate-api.tsx";
 import { getTotalVoteCount, rankStatements } from "./statement-utils.tsx";
 import { CommunityMembership } from "./types.tsx";
@@ -54,10 +54,12 @@ app.post(
       if (testEmail) {
         recipients = [{ id: "test", email: testEmail }];
       } else {
-        const [allMemberships, sentEmails] = await Promise.all([
+        const [allMemberships, sentEmails, allUsers] = await Promise.all([
           getAllRecords<CommunityMembership>("subheard_member:"),
           getSentEmails(),
+          getAllRealUsers(),
         ]);
+        const usersById = new Map(allUsers.map((u) => [u.id, u]));
         const alreadyEmailedUserIds = new Set(
           sentEmails.filter((e) => e.emailType === emailType).map((e) => e.userId),
         );
@@ -75,7 +77,7 @@ app.post(
             alreadyEmailed++;
             continue;
           }
-          const user = await getUser(userId);
+          const user = usersById.get(userId);
           if (!user || !user.email) continue;
           if (user.emailDigestsEnabled === false) continue;
           if (user.isUnsubbedFromUpdates) continue;
