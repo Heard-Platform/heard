@@ -83,7 +83,7 @@ export const generateCommunityPostInviteEmailHtml = (
         </div>
 
         <div style="padding: 24px; text-align: center; color: #717182; font-size: 14px; background-color: #f8f9fa;">
-          <p style="margin: 0 0 8px 0;">Heard - Conversation made fun</p>
+          <p style="margin: 0 0 8px 0;">Heard - A Place to Be Heard</p>
           <p style="margin: 0; font-size: 12px;">
             <a href="${frontendUrl}/unsubscribe?userId=${userId}" style="color: #667eea; text-decoration: none;">Unsubscribe</a>
           </p>
