@@ -51,6 +51,7 @@ const LAST_VIEWED_ROOM_KEY = "lastViewedRoom";
 import { toast } from "sonner@2.0.3";
 
 const KALORAMA_COMMUNITIES = ["kalorama-park", "dupont-circle-neighborhoods", "washington-dc"];
+const LA_COMMUNITIES = ["los-angeles"];
 
 const WAYMO_DUPONT_ROOM_ID = "jhxaoh1a3bmq2fflpx";
 const WAYMO_DUPONT_STATEMENT_ID = "0d3m3yflnlc8mq2fflre";
@@ -353,6 +354,8 @@ function AppContent() {
       const isCongestionRoute = route === "congestion"
       const isIdeasRoute = route === "ideas";
       const isDupontRoute = route === "dupont";
+      const isLaRoute = route === "la";
+      const isTopangaRoute = route === "topanga";
       const hardcodedFlyerMatch = pathname.match(
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
@@ -434,7 +437,7 @@ function AppContent() {
                                   : isDupontRoute
                                     ? "rrgipbk19vmms7ry4cv"
                                     : null;
-                                
+
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
@@ -443,6 +446,16 @@ function AppContent() {
           setPendingCommunities(KALORAMA_COMMUNITIES);
           startRoomJoin(hardcodedRoomId);
         }
+      } else if (isLaRoute || isTopangaRoute) {
+        const hardcodedRoomId = isLaRoute
+          ? "trf8ala3gfhmsg2gi8b"
+          : isTopangaRoute
+            ? "09pptwy6avwtmsg3b3wa"
+            : null;
+
+        setPendingFlyerScan(route);
+        setPendingCommunities(LA_COMMUNITIES);
+        startRoomJoin(hardcodedRoomId!);
       } else if (hardcodedFlyerMatch) {
         const [, routeKey, voteWord] = hardcodedFlyerMatch;
         const flyerConfig = HARDCODED_FLYER_ROUTES[routeKey];
