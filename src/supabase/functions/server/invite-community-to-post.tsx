@@ -16,7 +16,7 @@ import {
 
 const app = new Hono();
 
-const MAX_TOP_STATEMENTS = 3;
+const TOP_STATEMENTS_PER_CATEGORY = 1;
 
 app.post(
   "/make-server-f1a393b4/one-time-fixes/invite-community-to-post",
@@ -43,7 +43,11 @@ app.post(
       }
 
       const statements = await getStatements(roomId);
-      const { topStatements } = rankStatements(statements, MAX_TOP_STATEMENTS);
+      const { topStatements, mostDisagreed, mostSplit } = rankStatements(
+        statements,
+        TOP_STATEMENTS_PER_CATEGORY,
+      );
+      const topAgree = topStatements[0] ?? null;
       const frontendUrl = getFrontendUrl();
       const subject = getCommunityPostInviteSubject(room.topic);
       const emailType = `${COMMUNITY_POST_INVITE_EMAIL_TYPE}:${roomId}`;
@@ -99,7 +103,9 @@ app.post(
         try {
           const html = generateCommunityPostInviteEmailHtml({
             room,
-            topStatements,
+            topAgree,
+            topDisagree: mostDisagreed,
+            mostSplit,
             participantCount: room.participants.length,
             frontendUrl,
             userId: recipient.id,
