@@ -14,6 +14,12 @@ import {
   generateFakeDebateEndedData,
   getDebateEndedSubject,
 } from "./email-debate-ended-template.tsx";
+import {
+  COMMUNITY_POST_INVITE_EMAIL_TYPE,
+  generateCommunityPostInviteEmailHtml,
+  generateFakeCommunityPostInviteData,
+  getCommunityPostInviteSubject,
+} from "./email-community-post-invite-template.tsx";
 import { getFrontendUrl } from "./utils.tsx";
 
 const app = new Hono();
@@ -62,6 +68,15 @@ app.get(
       return c.json({
         subject: getDebateEndedSubject(data.room.topic),
         html: generateDebateEndedEmailHtml(data),
+      });
+    }
+
+    if (digestType === COMMUNITY_POST_INVITE_EMAIL_TYPE) {
+      console.log("[email-previews GET] Generating community-post-invite email preview");
+      const data = generateFakeCommunityPostInviteData(getFrontendUrl());
+      return c.json({
+        subject: getCommunityPostInviteSubject(data.room.topic),
+        html: generateCommunityPostInviteEmailHtml(data),
       });
     }
 
@@ -153,6 +168,11 @@ app.post(
         const data = generateFakeDebateEndedData(getFrontendUrl());
         emailHtml = generateDebateEndedEmailHtml({ ...data, userId });
         subject = getDebateEndedSubject(data.room.topic);
+      } else if (digestType === COMMUNITY_POST_INVITE_EMAIL_TYPE) {
+        console.log("[send-email] Generating community-post-invite email for test email");
+        const data = generateFakeCommunityPostInviteData(getFrontendUrl());
+        emailHtml = generateCommunityPostInviteEmailHtml({ ...data, userId });
+        subject = getCommunityPostInviteSubject(data.room.topic);
       } else {
         let emailData: EmailData;
         if (useMockData) {

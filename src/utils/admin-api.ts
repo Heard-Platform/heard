@@ -121,6 +121,36 @@ class AdminApiClient extends BaseApiClient {
     );
   }
 
+  async inviteCommunityToPost(
+    adminKey: string,
+    roomId: string,
+    communities: string[],
+    dryRun: boolean,
+    testEmail?: string,
+  ) {
+    interface Result {
+      dryRun: boolean;
+      roomId: string;
+      topic: string;
+      communities: string[];
+      recipientCount: number;
+      alreadyEmailed: number;
+      sent: number;
+      failed: number;
+      errors: string[];
+      message: string;
+    }
+
+    return this.request<Result>(
+      "/one-time-fixes/invite-community-to-post",
+      {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+        body: JSON.stringify({ roomId, communities, dryRun, testEmail }),
+      },
+    );
+  }
+
   async fixInterdependanceDayMemberships(adminKey: string, dryRun: boolean) {
     interface Result {
       dryRun: boolean;

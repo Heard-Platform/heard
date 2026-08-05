@@ -9,6 +9,7 @@ import { backfillMembershipsApi } from "./script-backfill-memberships.tsx";
 import { backfillVotesToTableApi } from "./backfill-votes-to-table.tsx";
 import { backfillRoomEngagementApi } from "./backfill-room-engagement.tsx";
 import { unsubApril26SignupsApi } from "./unsub-april-26-signups.tsx";
+import { inviteCommunityToPostApi } from "./invite-community-to-post.tsx";
 import { verifyAdminKey } from "./admin-api.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 
@@ -198,5 +199,6 @@ app.route("/", backfillMembershipsApi);
 app.route("/", backfillVotesToTableApi);
 app.route("/", backfillRoomEngagementApi);
 app.route("/", unsubApril26SignupsApi);
+app.route("/", inviteCommunityToPostApi);
 
 export { app as oneTimeFixesApi };

@@ -151,7 +151,13 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
   };
 
   const fetchCountData = async () => {
-    if (useMockData || digestType === "admin_daily_digest" || digestType === "welcome" || digestType === "debate_ended") {
+    if (
+      useMockData ||
+      digestType === "admin_daily_digest" ||
+      digestType === "welcome" ||
+      digestType === "debate_ended" ||
+      digestType === "community_post_invite"
+    ) {
       setCountData(null);
       setEligibleUsers([]);
       setConsideredUsers([]);
@@ -189,7 +195,10 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
       <div className="heard-between">
         <h3>Email Previews</h3>
         <div className="flex items-center gap-3">
-          {digestType !== "admin_daily_digest" && digestType !== "welcome" && digestType !== "debate_ended" && (
+          {digestType !== "admin_daily_digest" &&
+            digestType !== "welcome" &&
+            digestType !== "debate_ended" &&
+            digestType !== "community_post_invite" && (
             <div className="flex items-center gap-2">
               <label className="text-sm text-slate-600">
                 Mock Data
@@ -224,6 +233,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
               <option value="admin_daily_digest">Admin Daily Digest</option>
               <option value="welcome">Welcome Email</option>
               <option value="debate_ended">Debate Ended</option>
+              <option value="community_post_invite">Community Post Invite</option>
             </select>
           </div>
           <Button
