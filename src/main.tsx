@@ -13,6 +13,7 @@ Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
   environment,
   enabled: import.meta.env.PROD,
+  integrations: [Sentry.captureConsoleIntegration({ levels: ["error"] })],
 });
 
 const posthogEnabled =
