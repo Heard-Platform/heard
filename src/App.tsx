@@ -356,6 +356,7 @@ function AppContent() {
       const isDupontRoute = route === "dupont";
       const isLaRoute = route === "la";
       const isTopangaRoute = route === "topanga";
+      const isAiRoute = route === "ai";
       const hardcodedFlyerMatch = pathname.match(
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
@@ -446,12 +447,14 @@ function AppContent() {
           setPendingCommunities(KALORAMA_COMMUNITIES);
           startRoomJoin(hardcodedRoomId);
         }
-      } else if (isLaRoute || isTopangaRoute) {
+      } else if (isLaRoute || isTopangaRoute || isAiRoute) {
         const hardcodedRoomId = isLaRoute
           ? "trf8ala3gfhmsg2gi8b"
           : isTopangaRoute
             ? "09pptwy6avwtmsg3b3wa"
-            : null;
+            : isAiRoute
+              ? "f2kd1oylmmomsm0bwje"
+              : null;
 
         setPendingFlyerScan(route);
         setPendingCommunities(LA_COMMUNITIES);
