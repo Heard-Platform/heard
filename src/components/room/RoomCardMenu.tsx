@@ -17,6 +17,7 @@ import {
   Trash2,
   Presentation,
   PieChart,
+  ListChecks,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -36,6 +37,7 @@ import { RoomAnalyticsModalContainer } from "./RoomAnalyticsModalContainer";
 interface RoomCardMenuProps {
   room: DebateRoom;
   participantCount: number;
+  statementCount: number;
   isRealtime: boolean;
   hasRealtimeEnded: boolean | number | undefined;
   isDeveloper: boolean;
@@ -46,11 +48,13 @@ interface RoomCardMenuProps {
   onOpenDeduplication: () => void;
   onOpenVoteMatrix: () => void;
   onOpenDisplayMode: () => void;
+  onOpenVotesDrawer: () => void;
 }
 
 export function RoomCardMenu({
   room,
   participantCount,
+  statementCount,
   isRealtime,
   hasRealtimeEnded,
   isDeveloper,
@@ -61,6 +65,7 @@ export function RoomCardMenu({
   onOpenDeduplication,
   onOpenVoteMatrix,
   onOpenDisplayMode,
+  onOpenVotesDrawer,
 }: RoomCardMenuProps) {
   const { setRoomInactive, setResponsesPaused, createCohostInvite, clearRoomCohosts } = useDebateSession();
   const [cohostCount, setCohostCount] = useState(room.cohostIds?.length ?? 0);
@@ -153,6 +158,17 @@ export function RoomCardMenu({
           <Link2 className="w-4 h-4 mr-2" />
           Share Link
         </DropdownMenuItem>
+        {statementCount > 0 && !isCompleted && (
+          <DropdownMenuItem
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              onOpenVotesDrawer();
+            }}
+          >
+            <ListChecks className="w-4 h-4 mr-2" />
+            Vote on All Statements
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled>
           <Users className="w-4 h-4 mr-2" />

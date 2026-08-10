@@ -20,6 +20,7 @@ import { SwipeableStatementStack } from "./room/SwipeableStatementStack";
 import { extractYouTubeVideoId } from "./room/CoverCard";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
+import { VotesDrawer } from "./results/VotesDrawer";
 import { AddResponseModal } from "./room/AddResponseModal";
 import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
 import { useState, useEffect } from "react";
@@ -99,6 +100,7 @@ export function RoomCard({
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
   const [showEditRoom, setShowEditRoom] = useState(false);
   const [showDisplayMode, setShowDisplayMode] = useState(false);
+  const [showVotesDrawer, setShowVotesDrawer] = useState(false);
   const { markChanceCardSwiped, markCoverCardSwiped, markShareCardSwiped } = useDebateSession();
 
   const isTrueHost = user.id === room.hostId;
@@ -437,6 +439,7 @@ export function RoomCard({
             <RoomCardMenu
               room={room}
               participantCount={participantCount}
+              statementCount={statements.length}
               isRealtime={isRealtime}
               hasRealtimeEnded={hasRealtimeEnded}
               isDeveloper={isDeveloper}
@@ -447,6 +450,7 @@ export function RoomCard({
               onOpenDeduplication={() => setShowDeduplication(true)}
               onOpenVoteMatrix={() => setShowVoteMatrix(true)}
               onOpenDisplayMode={() => setShowDisplayMode(true)}
+              onOpenVotesDrawer={() => setShowVotesDrawer(true)}
             />
           </div>
 
@@ -503,6 +507,15 @@ export function RoomCard({
           onClose={() => setShowDisplayMode(false)}
         />
       )}
+
+      <VotesDrawer
+        statements={statements}
+        debateTitle={room.topic}
+        open={showVotesDrawer}
+        showTrigger={false}
+        onChangeVote={handleVote}
+        onOpenChange={setShowVotesDrawer}
+      />
 
       <AddResponseModal
         room={room}
