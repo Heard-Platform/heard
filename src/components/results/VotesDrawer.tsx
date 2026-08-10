@@ -25,7 +25,10 @@ import { QRGenerationPage } from "./QRGenerationPage";
 interface VotesDrawerProps {
   statements: Statement[];
   debateTitle: string;
+  open?: boolean;
+  showTrigger?: boolean;
   onChangeVote: (statementId: string, newVote: VoteType) => Promise<void>;
+  onOpenChange?: (open: boolean) => void;
 }
 
 type DisplayVoteType = Exclude<VoteType, "super_agree">;
@@ -116,14 +119,26 @@ function VoteButton({
 }
 
 export function VotesDrawer({
+  open,
   statements,
   debateTitle,
+  showTrigger = true,
+  onOpenChange,
   onChangeVote,
 }: VotesDrawerProps) {
   const { safelyGetUser } = useDebateSession();
   const user = safelyGetUser();
 
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [internalSheetOpen, setInternalSheetOpen] = useState(false);
+  const isOpenControlled = open !== undefined;
+  const isSheetOpen = isOpenControlled ? open : internalSheetOpen;
+  const setIsSheetOpen = (value: boolean) => {
+    if (isOpenControlled) {
+      onOpenChange?.(value);
+    } else {
+      setInternalSheetOpen(value);
+    }
+  };
   const [changingVoteId, setChangingVoteId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("agree");
   const [qrDialogStatement, setQrDialogStatement] = useState<Statement | null>(null);
@@ -196,16 +211,18 @@ export function VotesDrawer({
   return (
     <>
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-      <SheetTrigger asChild>
-        <motion.button
-          type="button"
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-2 py-0.5 whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
-        >
-          {totalVoteCount} votes 🔥
-        </motion.button>
-      </SheetTrigger>
+      {showTrigger && (
+        <SheetTrigger asChild>
+          <motion.button
+            type="button"
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-2 py-0.5 whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+          >
+            {totalVoteCount} votes 🔥
+          </motion.button>
+        </SheetTrigger>
+      )}
       <SheetContent className="w-full sm:max-w-lg p-0 flex flex-col h-full">
         <SheetHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 pr-12 border-b flex-shrink-0 space-y-3">
           <div>
