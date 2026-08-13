@@ -396,6 +396,12 @@ export const getAllDebates = async (): Promise<DebateRoom[]> => {
   return getAllRecords<DebateRoom>("room:");
 };
 
+export const SCRAPER_AUTHOR_IDS = new Set([
+  "reddit-importer",
+  "ggwash-importer",
+  "enrichment-service",
+]);
+
 export const getAllRealDebates = async (): Promise<DebateRoom[]> => {
   const allRooms = await getAllRecords<DebateRoom>("room:");
   return allRooms.filter(room => !room.isTestRoom);
