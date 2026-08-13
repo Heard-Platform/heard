@@ -975,6 +975,8 @@ class ApiClient extends BaseApiClient {
   }
 
   trackEvent(type: string, roomId?: string, referralUserId?: string): void {
+    if (getEnvironment() !== "production")
+      return;
     if (safelyGetStorageItem("showComponentShowcase", false))
       return;
     const url = typeof window !== "undefined" ? window.location.href : undefined;
