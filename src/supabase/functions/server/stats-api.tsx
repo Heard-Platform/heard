@@ -201,16 +201,17 @@ app.get(
   defineRoute(
     {},
     async (_params, c) => {
-      const [allUsers, allVotes, allStatements, allRooms] = await Promise.all([
+      const [allUsers, allVotes, allStatements, allRooms, allViews] = await Promise.all([
         getAllRealUsers(),
         getAllVotes(),
         getAllStatements(),
         getAllRealDebates(),
+        getAllRoomViews(),
       ]);
 
       const mode = c.req.query("mode") === "active" ? "active" : "joined";
       const nonDevUsers = allUsers.filter(user => !user.isDeveloper);
-      return buildCohortFunnelData(nonDevUsers, allVotes, allStatements, allRooms, mode);
+      return buildCohortFunnelData(nonDevUsers, allVotes, allStatements, allRooms, allViews, mode);
     },
     "Failed to calculate cohort funnel data",
   ),

@@ -20,6 +20,7 @@ interface CohortFunnelChartProps {
 interface Stage {
   key: keyof Pick<
     CohortFunnelEntry,
+    | "multiPostViewPct"
     | "votedPct"
     | "respondedPct"
     | "nonAnonPct"
@@ -30,6 +31,7 @@ interface Stage {
   >;
   countKey: keyof Pick<
     CohortFunnelEntry,
+    | "multiPostViewCount"
     | "votedCount"
     | "respondedCount"
     | "nonAnonCount"
@@ -44,6 +46,7 @@ interface Stage {
 }
 
 const FUNNEL_STAGES: Stage[] = [
+  { key: "multiPostViewPct", countKey: "multiPostViewCount", label: "Viewed 2+ posts", color: "#e34948" },
   { key: "votedPct", countKey: "votedCount", label: "Voted", color: "#2a78d6" },
   { key: "respondedPct", countKey: "respondedCount", label: "Responded", color: "#eb6834" },
   { key: "nonAnonPct", countKey: "nonAnonCount", label: "Added email/phone", color: "#1baf7a" },
@@ -98,10 +101,13 @@ function StageRow({ stage, entry }: { stage: Stage; entry: CohortFunnelEntry }) 
   );
 }
 
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label, hiddenStages }: any) {
   if (!active || !payload || !payload.length) return null;
   const entry: CohortFunnelEntry = payload[0]?.payload;
   if (!entry) return null;
+
+  const visibleFunnelStages = FUNNEL_STAGES.filter((stage) => !hiddenStages.has(stage.key));
+  const visibleRetentionStages = RETENTION_STAGES.filter((stage) => !hiddenStages.has(stage.key));
 
   return (
     <div
@@ -116,18 +122,20 @@ function CustomTooltip({ active, payload, label }: any) {
       <p style={{ color: TEXT_SECONDARY, fontSize: 12, marginBottom: 6 }}>
         Cohort of {label} &middot; {entry.totalUsers} users
       </p>
-      {FUNNEL_STAGES.map((stage) => (
+      {visibleFunnelStages.map((stage) => (
         <StageRow key={stage.key} stage={stage} entry={entry} />
       ))}
 
-      <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${GRIDLINE}` }}>
-        <p style={{ color: TEXT_SECONDARY, fontSize: 11, marginBottom: 4 }}>
-          Return behavior
-        </p>
-        {RETENTION_STAGES.map((stage) => (
-          <StageRow key={stage.key} stage={stage} entry={entry} />
-        ))}
-      </div>
+      {visibleRetentionStages.length > 0 && (
+        <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${GRIDLINE}` }}>
+          <p style={{ color: TEXT_SECONDARY, fontSize: 11, marginBottom: 4 }}>
+            Return behavior
+          </p>
+          {visibleRetentionStages.map((stage) => (
+            <StageRow key={stage.key} stage={stage} entry={entry} />
+          ))}
+        </div>
+      )}
 
       {entry.topPosts.length > 0 && (
         <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${GRIDLINE}` }}>
@@ -152,14 +160,53 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
-function Legend() {
+function LegendItem({
+  stage,
+  isHidden,
+  onToggle,
+}: {
+  stage: Stage;
+  isHidden: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={!isHidden}
+      className="flex items-center gap-1.5 bg-transparent border-0 p-0 cursor-pointer"
+      style={{ opacity: isHidden ? 0.35 : 1 }}
+    >
+      <LineSwatch color={stage.color} dashed={stage.dashed} />
+      <span
+        style={{
+          color: TEXT_SECONDARY,
+          fontSize: 12,
+          textDecoration: isHidden ? "line-through" : undefined,
+        }}
+      >
+        {stage.label}
+      </span>
+    </button>
+  );
+}
+
+function Legend({
+  hiddenStages,
+  onToggleStage,
+}: {
+  hiddenStages: Set<string>;
+  onToggleStage: (key: string) => void;
+}) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-2">
       {FUNNEL_STAGES.map((stage) => (
-        <div key={stage.key} className="flex items-center gap-1.5">
-          <LineSwatch color={stage.color} dashed={stage.dashed} />
-          <span style={{ color: TEXT_SECONDARY, fontSize: 12 }}>{stage.label}</span>
-        </div>
+        <LegendItem
+          key={stage.key}
+          stage={stage}
+          isHidden={hiddenStages.has(stage.key)}
+          onToggle={() => onToggleStage(stage.key)}
+        />
       ))}
 
       <span style={{ color: BASELINE, fontSize: 12 }} aria-hidden>
@@ -167,10 +214,12 @@ function Legend() {
       </span>
 
       {RETENTION_STAGES.map((stage) => (
-        <div key={stage.key} className="flex items-center gap-1.5">
-          <LineSwatch color={stage.color} dashed={stage.dashed} />
-          <span style={{ color: TEXT_SECONDARY, fontSize: 12 }}>{stage.label}</span>
-        </div>
+        <LegendItem
+          key={stage.key}
+          stage={stage}
+          isHidden={hiddenStages.has(stage.key)}
+          onToggle={() => onToggleStage(stage.key)}
+        />
       ))}
     </div>
   );
@@ -178,7 +227,17 @@ function Legend() {
 
 export function CohortFunnelChart({ cohorts, cohortMode = "joined" }: CohortFunnelChartProps) {
   const [showTable, setShowTable] = useState(false);
+  const [hiddenStages, setHiddenStages] = useState<Set<string>>(new Set());
   const cohortNoun = cohortMode === "joined" ? "signups" : "active users";
+
+  const toggleStage = (key: string) => {
+    setHiddenStages((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   if (cohorts.length === 0) {
     return (
@@ -215,7 +274,10 @@ export function CohortFunnelChart({ cohorts, cohortMode = "joined" }: CohortFunn
             width={44}
             unit="%"
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: BASELINE, strokeWidth: 1 }} />
+          <Tooltip
+            content={(props) => <CustomTooltip {...props} hiddenStages={hiddenStages} />}
+            cursor={{ stroke: BASELINE, strokeWidth: 1 }}
+          />
           {ALL_STAGES.map((stage) => (
             <Line
               key={stage.key}
@@ -227,6 +289,7 @@ export function CohortFunnelChart({ cohorts, cohortMode = "joined" }: CohortFunn
               strokeDasharray={stage.dashed ? "6 4" : undefined}
               dot={false}
               activeDot={{ r: 4, fill: stage.color, stroke: "#fcfcfb", strokeWidth: 2 }}
+              hide={hiddenStages.has(stage.key)}
             />
           ))}
         </LineChart>
@@ -260,7 +323,7 @@ export function CohortFunnelChart({ cohorts, cohortMode = "joined" }: CohortFunn
         </BarChart>
       </ResponsiveContainer>
 
-      <Legend />
+      <Legend hiddenStages={hiddenStages} onToggleStage={toggleStage} />
 
       <div className="flex justify-center">
         <button

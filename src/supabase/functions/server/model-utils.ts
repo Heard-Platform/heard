@@ -1,4 +1,4 @@
-import { insert, selectAll, upsert } from "./db-utils.ts";
+import { insert, selectAll, selectAllWithoutLimit, upsert } from "./db-utils.ts";
 import {
   AvatarAnimal,
   DemographicAnswer,
@@ -195,6 +195,9 @@ export const saveRoomView = async (view: RoomView) =>
 
 export const getRoomViewsForUser = async (userId: string): Promise<RoomView[]> =>
   selectAll<RoomView>("room_views", { userId });
+
+export const getAllRoomViews = async (): Promise<RoomView[]> =>
+  selectAllWithoutLimit<RoomView>("room_views");
 
 export const bulkUpsertRoomViews = async (views: RoomView[]) =>
   upsert("room_views", views as any, "userId,roomId");

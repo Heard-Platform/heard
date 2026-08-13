@@ -449,6 +449,7 @@ export interface CohortFunnelEntry {
   cohortStart: number;
   cohortLabel: string;
   totalUsers: number;
+  multiPostViewCount: number;
   votedCount: number;
   respondedCount: number;
   nonAnonCount: number;
@@ -456,6 +457,7 @@ export interface CohortFunnelEntry {
   multiCommunityCount: number;
   multiDayCount: number;
   multiWeekCount: number;
+  multiPostViewPct: number;
   votedPct: number;
   respondedPct: number;
   nonAnonPct: number;
