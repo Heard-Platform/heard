@@ -91,6 +91,43 @@ export const selectAll = async <T>(
   return (data ?? []) as T[];
 };
 
+const paginatedQueryRunner = async <R>(
+  query: (offset: number, limit: number) => Promise<{ data: R[] | null; error: { message: string } | null }>,
+): Promise<R[]> => {
+  const records: R[] = [];
+  const limit = 1000;
+  let offset = 0;
+
+  while (true) {
+    const { data, error } = await query(offset, limit);
+
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) break;
+
+    records.push(...data);
+    if (data.length < limit) break;
+    offset += limit;
+  }
+
+  return records;
+};
+
+export const selectAllWithoutLimit = async <T>(
+  tableName: string,
+  conditions?: Record<string, any>,
+  orderColumn = "id",
+): Promise<T[]> => {
+  const supabase = createClientFromEnv();
+  return paginatedQueryRunner<T>((offset, limit) =>
+    supabase
+      .from(tableName)
+      .select("*")
+      .match(conditions || {})
+      .order(orderColumn, { ascending: true })
+      .range(offset, offset + limit - 1),
+  );
+};
+
 export const update = async (
   tableName: string,
   conditions: Record<string, any>,
@@ -171,29 +208,13 @@ export const getAllRecords = async <T>(
   prefix: string,
 ): Promise<T[]> => {
   const supabase = createClientFromEnv();
-  const records: T[] = [];
-  let offset = 0;
-  const limit = 1000;
-  while (true) {
-    const { data, error } = await supabase
+  const rows = await paginatedQueryRunner<{ value: any }>((offset, limit) =>
+    supabase
       .from(TABLE_NAME)
       .select("value")
       .like("key", `${prefix}%`)
       .order("key")
-      .range(offset, offset + limit - 1);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-    if (data && data.length > 0) {
-      const batchRecords = parseKvDataArray<T>(
-        data.map((d) => d.value),
-      );
-      records.push(...batchRecords);
-      offset += limit;
-    } else {
-      break;
-    }
-  }
-  return records;
+      .range(offset, offset + limit - 1),
+  );
+  return parseKvDataArray<T>(rows.map((row) => row.value));
 };

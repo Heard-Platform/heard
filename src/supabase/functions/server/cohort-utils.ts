@@ -1,4 +1,4 @@
-import { User, Vote, Statement, DebateRoom } from "./types.tsx";
+import { User, Vote, Statement, DebateRoom, RoomView } from "./types.tsx";
 import { getTotalVoteCount } from "./statement-utils.tsx";
 import { buildActiveDaysMap } from "./stats-utils.ts";
 
@@ -33,6 +33,7 @@ export interface CohortBucket {
   cohortStart: number;
   cohortLabel: string;
   totalUsers: number;
+  multiPostViewCount: number;
   votedCount: number;
   respondedCount: number;
   nonAnonCount: number;
@@ -40,6 +41,7 @@ export interface CohortBucket {
   multiCommunityCount: number;
   multiDayCount: number;
   multiWeekCount: number;
+  multiPostViewPct: number;
   votedPct: number;
   respondedPct: number;
   nonAnonPct: number;
@@ -94,10 +96,17 @@ export function buildCohortFunnelData(
   votes: Vote[],
   statements: Statement[],
   rooms: DebateRoom[],
+  views: RoomView[],
   mode: CohortMode = "joined",
 ): { cohorts: CohortBucket[] } {
   const roomSubHeard = new Map<string, string | undefined>();
   for (const room of rooms) roomSubHeard.set(room.id, room.subHeard);
+
+  const viewedRoomsByUser = new Map<string, Set<string>>();
+  for (const v of views) {
+    if (!viewedRoomsByUser.has(v.userId)) viewedRoomsByUser.set(v.userId, new Set());
+    viewedRoomsByUser.get(v.userId)!.add(v.roomId);
+  }
 
   const statementRoomMap = new Map<string, string>();
   for (const s of statements) statementRoomMap.set(s.id, s.roomId);
@@ -126,6 +135,7 @@ export function buildCohortFunnelData(
   type MutableBucket = Omit<
     CohortBucket,
     | "cohortLabel"
+    | "multiPostViewPct"
     | "votedPct"
     | "respondedPct"
     | "nonAnonPct"
@@ -143,6 +153,7 @@ export function buildCohortFunnelData(
       cohortBuckets.set(cohortStart, {
         cohortStart,
         totalUsers: 0,
+        multiPostViewCount: 0,
         votedCount: 0,
         respondedCount: 0,
         nonAnonCount: 0,
@@ -154,6 +165,9 @@ export function buildCohortFunnelData(
     }
     const bucket = cohortBuckets.get(cohortStart)!;
     bucket.totalUsers++;
+
+    const viewedRooms = viewedRoomsByUser.get(user.id);
+    if (viewedRooms && viewedRooms.size > 1) bucket.multiPostViewCount++;
 
     if (votedUserIds.has(user.id)) bucket.votedCount++;
     if (respondedUserIds.has(user.id)) bucket.respondedCount++;
@@ -202,6 +216,7 @@ export function buildCohortFunnelData(
     .map((bucket) => ({
       ...bucket,
       cohortLabel: formatCohortLabel(bucket.cohortStart),
+      multiPostViewPct: pct(bucket.multiPostViewCount, bucket.totalUsers),
       votedPct: pct(bucket.votedCount, bucket.totalUsers),
       respondedPct: pct(bucket.respondedCount, bucket.totalUsers),
       nonAnonPct: pct(bucket.nonAnonCount, bucket.totalUsers),
