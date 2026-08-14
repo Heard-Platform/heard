@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
+import { RenderedStatement } from "../RenderedStatement";
 import {
   BarChart3,
   TrendingUp,
@@ -365,7 +366,7 @@ export function DebateAnalysisReportDemo({
                       {index + 1}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm mb-2">{statement.text}</p>
+                      <p className="text-sm mb-2"><RenderedStatement text={statement.text} /></p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <ThumbsUp className="w-3 h-3" />

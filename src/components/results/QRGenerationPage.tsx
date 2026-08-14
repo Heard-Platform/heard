@@ -3,6 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Button } from "../ui/button";
 import type { Statement } from "../../types";
 import { useState } from "react";
+import { RenderedStatement } from "../RenderedStatement";
 
 const baseImageUrl = "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/qr-keys";
 
@@ -150,7 +151,7 @@ export function QRGenerationPage({ statement, onClose }: QRGenerationPageProps) 
             <h1 className="text-3xl font-bold mb-4">QR Code Flyer</h1>
             <div className="p-4 bg-orange-50 border-2 border-orange-200 rounded-lg">
               <p className="text-base leading-relaxed text-gray-900">
-                {statement.text}
+                <RenderedStatement text={statement.text} />
               </p>
             </div>
           </div>

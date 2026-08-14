@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { TrendingUp } from "lucide-react";
 import { Card } from "../ui/card";
 import { VotesDrawer } from "./VotesDrawer";
+import { RenderedStatement } from "../RenderedStatement";
 import type { Statement, VoteType } from "../../types";
 
 interface InProgressResultsProps {
@@ -131,7 +132,7 @@ export function InProgressResults({
                 >
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-[10px] sm:text-xs truncate min-w-0 flex-1">
-                      {s.text}
+                      <RenderedStatement text={s.text} />
                     </p>
                     <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
                       {decisive} vote{decisive === 1 ? "" : "s"}

@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { ReactNode } from "react";
+import { RenderedStatement } from "../RenderedStatement";
 
 interface AwardCardProps {
   emoji: string;
@@ -62,7 +63,7 @@ export function AwardCard({
           >
             {value}
           </div>
-          <p className="text-xs line-clamp-2">{text}</p>
+          <p className="text-xs line-clamp-2"><RenderedStatement text={text} /></p>
         </div>
       </div>
     </motion.div>

@@ -1,5 +1,6 @@
 import { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StatementVotes } from "../../types";
+import { RenderedStatement } from "../RenderedStatement";
 
 export type SpectrumMode = "agree" | "split";
 
@@ -487,7 +488,7 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
           <div style={styles.bricksScroll}>
             {nearby.map((p, i) => (
               <div key={i} style={styles.brick}>
-                <div style={styles.brickText}>{p.statement.text}</div>
+                <div style={styles.brickText}><RenderedStatement text={p.statement.text} /></div>
                 <div style={styles.brickBarWrap}>
                   <div className="positive-bg" style={{ flex: p.agreePct }} />
                   <div className="negative-bg" style={{ flex: p.disagreePct }} />
@@ -517,7 +518,7 @@ export function StatementSpectrum({ statements, mode }: StatementSpectrumProps) 
             {anchors.map(({ label, point: p }, i) => (
               <div key={i} style={styles.brick}>
                 <div style={styles.anchorBadge}>{label}</div>
-                <div style={styles.brickText}>{p.statement.text}</div>
+                <div style={styles.brickText}><RenderedStatement text={p.statement.text} /></div>
                 <div style={styles.brickBarWrap}>
                   <div className="positive-bg" style={{ flex: p.agreePct }} />
                   <div className="negative-bg" style={{ flex: p.disagreePct }} />

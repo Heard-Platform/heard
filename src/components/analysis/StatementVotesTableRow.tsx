@@ -2,6 +2,7 @@ import { CornerLeftUp } from "lucide-react";
 import { StatementVotes } from "../../types";
 import { VoteBreakdownPie } from "./VoteBreakdownPie";
 import { getClusterColor } from "../../utils/colors";
+import { RenderedStatement } from "../RenderedStatement";
 
 interface StatementVotesTableRowProps {
   statement: StatementVotes;
@@ -44,13 +45,13 @@ export function StatementVotesTableRow({
   return (
     <tr className="border-b last:border-0 hover:bg-muted/30 transition-colors">
       <td className="py-3 pr-4 text-sm leading-snug">
-        <span>{statement.text}</span>
+        <span><RenderedStatement text={statement.text} /></span>
         {statement.mergedFrom && statement.mergedFrom.length > 0 && (
           <div className="mt-1 space-y-0.5">
             {statement.mergedFrom.map((merged) => (
               <div key={merged.id} className="flex items-start gap-1 text-xs text-muted-foreground">
                 <CornerLeftUp className="w-3 h-3 mt-0.5" />
-                <span>{merged.text}</span>
+                <span><RenderedStatement text={merged.text} /></span>
               </div>
             ))}
           </div>

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { createShareableLink } from "../utils/url";
 import { analyzeStatements } from "./results/utils";
+import { RenderedStatement } from "./RenderedStatement";
 import type { DebateRoom, Statement } from "../types";
 
 type Analysis = ReturnType<typeof analyzeStatements>;
@@ -256,7 +257,7 @@ function LeaderboardSlide({ analysis }: { analysis: Analysis }) {
                 : `#${index + 1}`}
             </div>
             <div className="flex-1 text-2xl leading-snug">
-              {statement.text}
+              <RenderedStatement text={statement.text} />
             </div>
             <div className="flex items-center gap-6 shrink-0">
               <span className="agree-text text-2xl font-bold flex items-center gap-2">
@@ -342,7 +343,7 @@ function AwardsSlide({ analysis }: { analysis: Analysis }) {
                 {award.value}
               </div>
               <p className="text-xl line-clamp-3 text-slate-200">
-                {award.text}
+                <RenderedStatement text={award.text} />
               </p>
             </div>
           ))}
@@ -370,7 +371,7 @@ function ControversialSlide({ analysis }: { analysis: Analysis }) {
                 key={statement.id}
                 className="display-panel-bg rounded-2xl p-8 display-stack-4"
               >
-                <p className="text-2xl">{statement.text}</p>
+                <p className="text-2xl"><RenderedStatement text={statement.text} /></p>
                 <div className="heard-between text-lg">
                   <span className="agree-text font-medium">
                     {statement.agrees} agreed
@@ -425,7 +426,7 @@ function HiddenGemsSlide({ analysis }: { analysis: Analysis }) {
                 key={statement.id}
                 className="display-panel-bg rounded-2xl p-6 text-2xl"
               >
-                {statement.text}
+                <RenderedStatement text={statement.text} />
               </div>
             ))}
           </div>

@@ -21,6 +21,7 @@ import {
 import type { Statement, VoteType, SortBy } from "../../types";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { QRGenerationPage } from "./QRGenerationPage";
+import { RenderedStatement } from "../RenderedStatement";
 
 interface VotesDrawerProps {
   statements: Statement[];
@@ -299,7 +300,7 @@ export function VotesDrawer({
                   )}
 
                   <p className={`text-sm leading-relaxed ${user.isDeveloper ? "pr-16" : ""}`}>
-                    {statement.text}
+                    <RenderedStatement text={statement.text} />
                   </p>
 
                   <div className="flex gap-2">

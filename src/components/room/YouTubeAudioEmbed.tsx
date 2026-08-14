@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Play, Pause, Rewind, FastForward, Eye, EyeOff } from "lucide-react";
 import { extractYouTubeVideoId } from "./CoverCard";
 import { useShowVideoSetting } from "../../hooks/useShowVideoSetting";
+import { formatYouTubeTitle } from "../../hooks/useYouTubeTitle";
 
 const SKIP_SECONDS = 10;
 
@@ -183,11 +184,13 @@ export function YouTubeAudioEmbed({ url, isPlaying }: YouTubeAudioEmbedProps) {
         playerVars: { controls: 0, modestbranding: 1, playsinline: 1 },
         events: {
           onReady: (event: any) => {
-            setTitle(event.target.getVideoData?.()?.title || "");
+            const videoData = event.target.getVideoData?.();
+            setTitle(videoData?.title ? formatYouTubeTitle(videoData.title, videoData.author) : "");
           },
           onStateChange: (event: any) => {
             setPlaying(event.data === window.YT.PlayerState.PLAYING);
-            setTitle(event.target.getVideoData?.()?.title || "");
+            const videoData = event.target.getVideoData?.();
+            setTitle(videoData?.title ? formatYouTubeTitle(videoData.title, videoData.author) : "");
           },
         },
       });

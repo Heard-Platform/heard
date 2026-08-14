@@ -2,6 +2,7 @@ import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { CheckCircle, XCircle, MinusCircle } from "lucide-react";
 import { StatementVotes } from "../../types";
+import { RenderedStatement } from "../RenderedStatement";
 
 interface TopPostsByMetricProps {
   posts: StatementVotes[];
@@ -40,7 +41,7 @@ export function TopPostsByMetric({
         {posts.slice(0, 3).map((post, index) => (
           <Card key={post.id} className="p-4 hover:shadow-md transition-shadow relative">
             <div className={numberBadgeClassName}>{index + 1}</div>
-            <p className="text-sm mb-3 pr-8">{post.text}</p>
+            <p className="text-sm mb-3 pr-8"><RenderedStatement text={post.text} /></p>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <div className="flex items-center gap-1 agree-text">
                 <CheckCircle className="w-3 h-3" />
