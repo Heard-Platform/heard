@@ -3,6 +3,7 @@ import { TrendingUp, ThumbsUp, ThumbsDown } from "lucide-react";
 import type { Statement } from "../../../types";
 import { analyzeStatements } from "../utils";
 import { CardHeader } from "../CardHeader";
+import { RenderedStatement } from "../../RenderedStatement";
 
 interface LeaderboardCardProps {
   statements: Statement[];
@@ -39,7 +40,7 @@ export function LeaderboardCard({ statements }: LeaderboardCardProps) {
                 ? "🥉"
                 : `#${index + 1}`}
             </div>
-            <div className="flex-1 text-sm">{statement.text}</div>
+            <div className="flex-1 text-sm"><RenderedStatement text={statement.text} /></div>
             <div className="flex flex-col items-end gap-1">
               <div className="flex items-center gap-1 text-green-600">
                 <ThumbsUp className="w-4 h-4" />

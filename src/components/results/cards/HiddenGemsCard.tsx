@@ -5,6 +5,7 @@ import { Button } from "../../ui/button";
 import type { Statement } from "../../../types";
 import { analyzeStatements } from "../utils";
 import { CardHeader } from "../CardHeader";
+import { RenderedStatement } from "../../RenderedStatement";
 
 interface HiddenGemsCardProps {
   statements: Statement[];
@@ -59,7 +60,7 @@ export function HiddenGemsCard({
                 transition={{ delay: 0.3 + index * 0.1 }}
                 className="p-3 bg-white border-2 border-purple-200 rounded-lg space-y-2"
               >
-                <p className="text-sm">{statement.text}</p>
+                <p className="text-sm"><RenderedStatement text={statement.text} /></p>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <ThumbsUp className="w-3 h-3" />

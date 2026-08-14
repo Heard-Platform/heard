@@ -4,6 +4,7 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import type { Statement } from "../../types";
 import { getTypeInfo } from "./utils";
+import { RenderedStatement } from "../RenderedStatement";
 
 interface StatementMiniProps {
   statement: Statement;
@@ -33,7 +34,7 @@ export function StatementMini({ statement, showVotes = true, onDiscuss }: Statem
           )}
         </div>
       </div>
-      <p className="leading-relaxed">{statement.text}</p>
+      <p className="leading-relaxed"><RenderedStatement text={statement.text} /></p>
       {onDiscuss && (
         <Button
           variant="ghost"
