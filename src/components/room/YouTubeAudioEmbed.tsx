@@ -145,7 +145,7 @@ export function YouTubeAudioEmbed({ url, isPlaying }: YouTubeAudioEmbedProps) {
                 background: "rgba(255,255,255,0.8)",
                 height: "100%",
                 animation: playing
-                  ? `music-league-bar 0.9s ease-in-out ${bar * 0.12}s infinite`
+                  ? `audio-bar 0.9s ease-in-out ${bar * 0.12}s infinite`
                   : "none",
                 transform: playing ? undefined : "scaleY(0.25)",
                 transformOrigin: "bottom",
@@ -243,7 +243,7 @@ export function YouTubeAudioEmbed({ url, isPlaying }: YouTubeAudioEmbedProps) {
       </div>
 
       <style>{`
-        @keyframes music-league-bar {
+        @keyframes audio-bar {
           0%, 100% { transform: scaleY(0.25); }
           50% { transform: scaleY(1); }
         }

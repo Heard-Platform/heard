@@ -7,7 +7,6 @@ const musicLeagueRoom = {
   ...mockRooms[0],
   id: "music-league-room",
   topic: "Songs that instantly make you dance",
-  mode: "music-league" as const,
   imageUrl: undefined,
 };
 
@@ -67,9 +66,9 @@ export function MusicLeagueCardStackStory() {
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground">
-        Mock preview of the Music League card stack. Each card hides its YouTube
-        player behind a simple placeholder and only the top card autoplays.
-        Swipe/vote to see the next song play.
+        Mock preview of a card stack whose statements are YouTube URLs. Any
+        room now renders these behind the audio player, and only the top card
+        autoplays. Swipe/vote to see the next song play.
       </p>
       <div className="bg-slate-100 rounded-lg p-8 min-h-[600px] flex items-center justify-center">
         <SwipeableStatementStack

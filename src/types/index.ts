@@ -211,7 +211,7 @@ export interface UserSession {
   avatarAnimal?: AvatarAnimal;
 }
 
-export type DebateMode = "realtime" | "host-controlled" | "music-league";
+export type DebateMode = "realtime" | "host-controlled";
 
 export interface DebateRoom {
   id: string;

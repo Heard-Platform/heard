@@ -13,6 +13,7 @@ import { getTotalVotes } from "../../utils/votes";
 import { share } from "../../utils/share";
 import { createShareableLink } from "../../utils/url";
 import { YouTubeAudioEmbed } from "./YouTubeAudioEmbed";
+import { extractYouTubeVideoId } from "./CoverCard";
 import moment from "moment";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -51,7 +52,7 @@ export function StatementCard({
   const { user, setStatementHidden } = useDebateSession();
   const isHost = !!user && room.hostId === user.id;
   const isDeveloper = !!user?.isDeveloper;
-  const isMusicLeague = room.mode === "music-league";
+  const youtubeVideoId = extractYouTubeVideoId(statement.text);
   const timeAgo = moment(statement.timestamp).fromNow();
 
   const handleHide = () => {
@@ -152,7 +153,7 @@ export function StatementCard({
       </div>
 
       <div className="flex min-h-190px items-center justify-center">
-        {isMusicLeague ? (
+        {youtubeVideoId ? (
           <YouTubeAudioEmbed url={statement.text} isPlaying={isTopCard} />
         ) : (
           <p className="text-lg leading-relaxed text-center">
