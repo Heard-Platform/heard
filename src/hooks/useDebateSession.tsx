@@ -78,6 +78,7 @@ interface DebateSessionContextType {
   submitFlyerEmail: (email: string) => Promise<ApiResponse | null>;
   markChanceCardSwiped: (roomId: string) => Promise<void>;
   markCoverCardSwiped: (roomId: string) => Promise<void>;
+  markShareCardSwiped: (roomId: string) => Promise<void>;
   saveDemographicAnswer: (
     questionId: string,
     answer: string | null,
@@ -138,6 +139,10 @@ interface DebateSessionContextType {
     token: string,
   ) => Promise<ApiResponse | null>;
   clearSubHeardMods: (subHeardName: string) => Promise<ApiResponse | null>;
+  renameSubHeard: (
+    subHeardName: string,
+    newName: string,
+  ) => Promise<ApiResponse<{ newName: string }> | null>;
   getEnrichmentConfig: () => Promise<ApiResponse<EnrichmentConfig> | null>;
   setEnrichmentConfig: (
     config: EnrichmentConfig,
@@ -495,6 +500,22 @@ export function DebateSessionProvider(
           err instanceof Error ? err.message : "Unknown error";
         setError(errorMsg);
         console.error("Failed to mark cover card as swiped:", errorMsg);
+      }
+    }, [],
+  );
+
+  const markShareCardSwiped = useCallback(
+    async (roomId: string) => {
+      try {
+        const response = await api.markShareCardSwiped(roomId);
+        if (!response.success) {
+          throw new Error(response.error || "Failed to mark share card as swiped");
+        }
+      } catch (err) {
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        console.error("Failed to mark share card as swiped:", errorMsg);
       }
     }, [],
   );
@@ -857,6 +878,10 @@ export function DebateSessionProvider(
     return safelyMakeApiCall<undefined>(() => api.clearSubHeardMods(subHeardName));
   }, []);
 
+  const renameSubHeard = useCallback(async (subHeardName: string, newName: string) => {
+    return safelyMakeApiCall<{ newName: string }>(() => api.renameSubHeard(subHeardName, newName));
+  }, []);
+
   const getEnrichmentConfig = useCallback(async () => {
     return safelyMakeApiCall<EnrichmentConfig>(() =>
       api.getEnrichmentConfig(),
@@ -980,6 +1005,7 @@ export function DebateSessionProvider(
     setStatementHidden,
     markChanceCardSwiped,
     markCoverCardSwiped,
+    markShareCardSwiped,
     saveDemographicAnswer,
     getSubHeards,
     getExplorableSubHeards,
@@ -988,6 +1014,7 @@ export function DebateSessionProvider(
     createModInvite,
     acceptModInvite,
     clearSubHeardMods,
+    renameSubHeard,
     getEnrichmentConfig,
     setEnrichmentConfig,
     runEnrichmentNow,
@@ -1121,6 +1148,9 @@ export function DebateSessionProvider(
       markCoverCardSwiped: async () => {
         console.log("[Showcase] markCoverCardSwiped called");
       },
+      markShareCardSwiped: async () => {
+        console.log("[Showcase] markShareCardSwiped called");
+      },
       saveDemographicAnswer: async (questionId: string, answer: string | null) => {
         console.log("[Showcase] saveDemographicAnswer called");
         return { success: true };
@@ -1152,6 +1182,10 @@ export function DebateSessionProvider(
       clearSubHeardMods: async (subHeardName: string) => {
         console.log("[Showcase] clearSubHeardMods called", subHeardName);
         return { success: true };
+      },
+      renameSubHeard: async (subHeardName: string, newName: string) => {
+        console.log("[Showcase] renameSubHeard called", subHeardName, newName);
+        return { success: true, data: { newName } };
       },
       createEvent: async (newEvent: NewEvent): Promise<Event> => {
         console.log("[Showcase] createEvent called", newEvent);

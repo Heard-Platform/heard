@@ -16,6 +16,8 @@ import {
   UserPlus,
   Trash2,
   Presentation,
+  PieChart,
+  ListChecks,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -30,10 +32,12 @@ import { share } from "../../utils/share";
 import { DebateRoom } from "../../types";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { timeAgoShort } from "../../utils/time";
+import { RoomAnalyticsModalContainer } from "./RoomAnalyticsModalContainer";
 
 interface RoomCardMenuProps {
   room: DebateRoom;
   participantCount: number;
+  statementCount: number;
   isRealtime: boolean;
   hasRealtimeEnded: boolean | number | undefined;
   isDeveloper: boolean;
@@ -44,11 +48,13 @@ interface RoomCardMenuProps {
   onOpenDeduplication: () => void;
   onOpenVoteMatrix: () => void;
   onOpenDisplayMode: () => void;
+  onOpenVotesDrawer: () => void;
 }
 
 export function RoomCardMenu({
   room,
   participantCount,
+  statementCount,
   isRealtime,
   hasRealtimeEnded,
   isDeveloper,
@@ -59,10 +65,12 @@ export function RoomCardMenu({
   onOpenDeduplication,
   onOpenVoteMatrix,
   onOpenDisplayMode,
+  onOpenVotesDrawer,
 }: RoomCardMenuProps) {
   const { setRoomInactive, setResponsesPaused, createCohostInvite, clearRoomCohosts } = useDebateSession();
   const [cohostCount, setCohostCount] = useState(room.cohostIds?.length ?? 0);
   const [isClearingCohosts, setIsClearingCohosts] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   const handleInviteCohost = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -150,6 +158,17 @@ export function RoomCardMenu({
           <Link2 className="w-4 h-4 mr-2" />
           Share Link
         </DropdownMenuItem>
+        {statementCount > 0 && !isCompleted && (
+          <DropdownMenuItem
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              onOpenVotesDrawer();
+            }}
+          >
+            <ListChecks className="w-4 h-4 mr-2" />
+            Vote on All Statements
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled>
           <Users className="w-4 h-4 mr-2" />
@@ -207,6 +226,15 @@ export function RoomCardMenu({
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
+                setShowAnalytics(true);
+              }}
+            >
+              <PieChart className="w-4 h-4 mr-2" />
+              Room analytics
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
                 onOpenDisplayMode();
               }}
             >
@@ -253,6 +281,13 @@ export function RoomCardMenu({
           </>
         )}
       </DropdownMenuContent>
+      {showAnalytics && (
+        <RoomAnalyticsModalContainer
+          roomId={room.id}
+          roomTopic={room.topic}
+          onClose={() => setShowAnalytics(false)}
+        />
+      )}
     </DropdownMenu>
   );
 }

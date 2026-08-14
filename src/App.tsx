@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import * as Sentry from "@sentry/react";
+import posthog from "posthog-js";
 import { motion } from "motion/react";
 import { UnsubscribePage } from "./components/UnsubscribePage";
 import { TermsOfServicePage } from "./screens/TermsOfServicePage";
 import { PrivacyPolicyPage } from "./screens/PrivacyPolicyPage";
 import { OrgsLanding } from "./screens/OrgsLanding";
+import { OrganizersLanding } from "./screens/OrganizersLanding";
 import { OneBillionPage } from "./screens/OneBillionPage";
 import { FundingPage } from "./screens/funding/FundingPage";
 import { AiUsagePage } from "./screens/AiUsagePage";
@@ -12,11 +14,13 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
+import { RetentionDashboard } from "./components/RetentionDashboard";
 import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTracker";
 import { DevTools } from "./components/devtools/DevTools";
 import { AdminActivityFeed } from "./components/AdminActivityFeed";
 import { NewsletterViewer } from "./components/NewsletterViewer";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import { Toaster } from "./components/ui/sonner";
 import { api } from "./utils/api";
 import type { NewDebateRoom, DebateRoom, VoteType, Event } from "./types";
@@ -35,6 +39,8 @@ import {
   parseStatementIdFromUrl,
   parseModInviteTokenFromUrl,
   parseCohostInviteTokenFromUrl,
+  parseLinkSourceFromUrl,
+  parseReferrerIdFromUrl,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
@@ -46,6 +52,7 @@ const LAST_VIEWED_ROOM_KEY = "lastViewedRoom";
 import { toast } from "sonner@2.0.3";
 
 const KALORAMA_COMMUNITIES = ["kalorama-park", "dupont-circle-neighborhoods", "washington-dc"];
+const LA_COMMUNITIES = ["los-angeles"];
 
 const WAYMO_DUPONT_ROOM_ID = "jhxaoh1a3bmq2fflpx";
 const WAYMO_DUPONT_STATEMENT_ID = "0d3m3yflnlc8mq2fflre";
@@ -60,10 +67,21 @@ const CLUB_FLYER_ID = "i2yo40k84womp72i2qi";
 const CLUB_STATEMENT_ID = "qkjea7qnj3mp72i2r3";
 
 const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: string }> = {
-  shirt: { flyerId: WAYMO_DC_ROOM_ID, statementId: WAYMO_DC_STATEMENT_ID },
+  shirt: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
   sign: { flyerId: WAYMO_DC_ROOM_ID, statementId: WAYMO_DC_STATEMENT_ID },
   card: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
 };
+
+const IDEAS_ROOM_ID = "zmai0sb2fbemrxm4yc6";
+
+const WORLD_CUP_ROOM_ID = "31m0twqkoo6mrnu69l0";
+const WORLD_CUP_TEAM_STATEMENT_IDS: Record<string, string> = {
+  argentina: "m91010yjsycmrnu69mi",
+  spain: "71ov2zpokdkmrnu69mi",
+};
+const WORLD_CUP_DUAL_FLYER_REGEX = new RegExp(
+  `^/final-(${Object.keys(WORLD_CUP_TEAM_STATEMENT_IDS).join("|")})`,
+);
 
 function AppContent() {
   const [currentSubHeard, setCurrentSubHeard] = useState<
@@ -85,6 +103,8 @@ function AppContent() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] =
     useState(safelyGetStorageItem<boolean>("showAdminDashboard", false));
+  const [showRetentionDashboard, setShowRetentionDashboard] =
+    useState(safelyGetStorageItem<boolean>("showRetentionDashboard", false));
   const [showFeatureTracker, setShowFeatureTracker] = useState(false);
   const [showDevTools, setShowDevTools] = useState(false);
   const [showActivityFeed, setShowActivityFeed] = useState(false);
@@ -92,6 +112,7 @@ function AppContent() {
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showOrgsPage, setShowOrgsPage] = useState(false);
+  const [showOrganizersPage, setShowOrganizersPage] = useState(false);
   const [showOneBillion, setShowOneBillion] = useState(false);
   const [showFundingPage, setShowFundingPage] = useState(false);
   const [showAiUsage, setShowAiUsage] = useState(false);
@@ -117,6 +138,7 @@ function AppContent() {
     loadActiveRooms,
     resetSession,
     roomStatements,
+    getRoomStatements,
     acceptModInvite,
     acceptCohostInvite,
   } = useDebateSession();
@@ -160,7 +182,35 @@ function AppContent() {
       toast.error("Failed to process flyer vote");
     } else {
       startRoomJoin(response.room.id);
-      setQrScanResult(response);
+      setQrScanResult({ ...response, mode: "single" });
+    }
+
+    setIsJoiningAnonymously(false);
+  };
+
+  const handleDualStatementFlyerJoin = async (teamSlug: string) => {
+    const statementId = WORLD_CUP_TEAM_STATEMENT_IDS[teamSlug];
+    const otherStatementId = Object.values(WORLD_CUP_TEAM_STATEMENT_IDS).find(
+      (id) => id !== statementId,
+    )!;
+
+    setIsJoiningAnonymously(true);
+
+    const response = await voteViaFlyer(WORLD_CUP_ROOM_ID, statementId, "agree");
+
+    if (!response || !response.user) {
+      toast.error("Failed to process flyer vote");
+    } else {
+      startRoomJoin(response.room.id);
+      const statements = await getRoomStatements(WORLD_CUP_ROOM_ID);
+
+      setQrScanResult({
+        mode: "dual",
+        room: response.room,
+        statements,
+        statementId,
+        otherStatementId,
+      });
     }
 
     setIsJoiningAnonymously(false);
@@ -229,8 +279,10 @@ function AppContent() {
   useEffect(() => {
     if (user) {
       Sentry.setUser({ id: user.id });
+      posthog.identify(user.id);
     } else {
       Sentry.setUser(null);
+      posthog.reset();
     }
   }, [user?.id]);
 
@@ -283,6 +335,7 @@ function AppContent() {
       const isTermsRoute = route === "terms";
       const isPrivacyRoute = route === "privacy";
       const isOrgsRoute = route === "orgs";
+      const isOrganizersRoute = route === "organizers";
       const isOneBillionRoute = route === "1billion";
       const isAiUsageRoute = route === "ai-usage";
       const isFundingRoute = route === "fund";
@@ -300,13 +353,22 @@ function AppContent() {
       const isWaymoRoute = route === "waymo";
       const isWaymoDcRoute = route === "waymodc";
       const isCongestionRoute = route === "congestion"
+      const isIdeasRoute = route === "ideas";
+      const isDupontRoute = route === "dupont";
+      const isLaRoute = route === "la";
+      const isTopangaRoute = route === "topanga";
+      const isAiRoute = route === "ai";
       const hardcodedFlyerMatch = pathname.match(
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
       const clubFlyerMatch = pathname.match(/^\/club-(yes|no)/);
+      const worldCupDualFlyerMatch = pathname.match(WORLD_CUP_DUAL_FLYER_REGEX);
       const isClubRoute = /^\/club\/?$/.test(pathname);
+      const isFinalRoute = /^\/final\/?$/.test(pathname);
 
       const roomIdFromUrl = parseRoomIdFromUrl();
+      const linkSourceFromUrl = parseLinkSourceFromUrl();
+      const referrerIdFromUrl = parseReferrerIdFromUrl();
       const cohostInviteTokenFromUrl = parseCohostInviteTokenFromUrl();
       const subHeardFromUrl = parseSubHeardFromUrl();
       const analysisRoomIdFromUrl = parseAnalysisRoomIdFromUrl();
@@ -345,7 +407,8 @@ function AppContent() {
         isDcRoute ||
         isWaymoRoute ||
         isWaymoDcRoute ||
-        isCongestionRoute
+        isCongestionRoute ||
+        isDupontRoute
       ) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
@@ -373,8 +436,10 @@ function AppContent() {
                                 ? WAYMO_DC_ROOM_ID
                                 : isCongestionRoute
                                   ? "9sptdy3zzq5mqz78fq5"
-                                  : null;
-                                
+                                  : isDupontRoute
+                                    ? "rrgipbk19vmms7ry4cv"
+                                    : null;
+
 
         if (!hardcodedRoomId) {
           toast.error("Invalid route");
@@ -383,6 +448,18 @@ function AppContent() {
           setPendingCommunities(KALORAMA_COMMUNITIES);
           startRoomJoin(hardcodedRoomId);
         }
+      } else if (isLaRoute || isTopangaRoute || isAiRoute) {
+        const hardcodedRoomId = isLaRoute
+          ? "trf8ala3gfhmsg2gi8b"
+          : isTopangaRoute
+            ? "09pptwy6avwtmsg3b3wa"
+            : isAiRoute
+              ? "f2kd1oylmmomsm0bwje"
+              : null;
+
+        setPendingFlyerScan(route);
+        setPendingCommunities(LA_COMMUNITIES);
+        startRoomJoin(hardcodedRoomId!);
       } else if (hardcodedFlyerMatch) {
         const [, routeKey, voteWord] = hardcodedFlyerMatch;
         const flyerConfig = HARDCODED_FLYER_ROUTES[routeKey];
@@ -398,14 +475,32 @@ function AppContent() {
           statementId: CLUB_STATEMENT_ID,
           vote: voteWord === "yes" ? "agree" : "disagree",
         });
+      } else if (worldCupDualFlyerMatch) {
+        const [, teamSlug] = worldCupDualFlyerMatch;
+        handleDualStatementFlyerJoin(teamSlug);
       } else if (isClubRoute) {
         startRoomJoin(CLUB_FLYER_ID);
+      } else if (isFinalRoute) {
+        startRoomJoin(WORLD_CUP_ROOM_ID);
+      } else if (isIdeasRoute) {
+        startRoomJoin(IDEAS_ROOM_ID);
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (eventIdFromUrl) {
         setCurrentEventId(eventIdFromUrl);
       } else if (roomIdFromUrl) {
         startRoomJoin(roomIdFromUrl);
+        if (linkSourceFromUrl) {
+          api.trackEvent(
+            `referred_by_${linkSourceFromUrl}`,
+            roomIdFromUrl,
+            referrerIdFromUrl ?? undefined,
+          );
+          const url = new URL(window.location.href);
+          url.searchParams.delete("src");
+          url.searchParams.delete("ref");
+          window.history.replaceState({}, "", url.pathname + url.search);
+        }
         if (cohostInviteTokenFromUrl) {
           if (!user) {
             toast("Sign in to accept the co-host invite, then visit this link again.");
@@ -433,6 +528,8 @@ function AppContent() {
         setShowPrivacy(true);
       } else if (isOrgsRoute) {
         setShowOrgsPage(true);
+      } else if (isOrganizersRoute) {
+        setShowOrganizersPage(true);
       } else if (isOneBillionRoute) {
         setShowOneBillion(true);
       } else if (isAiUsageRoute) {
@@ -556,6 +653,18 @@ function AppContent() {
     window.history.pushState({}, "", "/");
   };
 
+  const handleOpenRetentionDashboard = () => {
+    setShowRetentionDashboard(true);
+    localStorage.setItem("showRetentionDashboard", "true");
+    window.history.pushState({}, "", "/retention");
+  };
+
+  const handleExitRetentionDashboard = () => {
+    setShowRetentionDashboard(false);
+    localStorage.setItem("showRetentionDashboard", "false");
+    window.history.pushState({}, "", "/");
+  };
+
   const handleOpenFeatureTracker = () => {
     setShowFeatureTracker(true);
     window.history.pushState({}, "", "/features");
@@ -590,6 +699,11 @@ function AppContent() {
     window.history.pushState({}, "", "/");
   };
 
+  const handleExitOrganizers = () => {
+    setShowOrganizersPage(false);
+    window.history.pushState({}, "", "/");
+  };
+
   if (showAdminPanel) {
     return (
       <>
@@ -606,6 +720,15 @@ function AppContent() {
           onExit={handleExitAdminDashboard}
           currentUserId={user.id}
         />
+        <Toaster />
+      </>
+    );
+  }
+
+  if (showRetentionDashboard && user) {
+    return (
+      <>
+        <RetentionDashboard onExit={handleExitRetentionDashboard} />
         <Toaster />
       </>
     );
@@ -659,6 +782,10 @@ function AppContent() {
 
   if (showOrgsPage) {
     return <OrgsLanding onExit={handleExitOrgs} />;
+  }
+
+  if (showOrganizersPage) {
+    return <OrganizersLanding onExit={handleExitOrganizers} />;
   }
 
   if (showOneBillion) {
@@ -720,6 +847,7 @@ function AppContent() {
         onVoteOnStatement={voteOnStatement}
         onLogout={handleLogout}
         onOpenShowcase={handleOpenShowcase}
+        onOpenRetentionDashboard={handleOpenRetentionDashboard}
         onOpenAdminPanel={handleOpenAdminPanel}
         onOpenAdminDashboard={handleOpenAdminDashboard}
         onOpenFeatureTracker={handleOpenFeatureTracker}
@@ -733,13 +861,7 @@ function AppContent() {
       <Toaster />
       {qrScanResult && (
         <QRScanResultDialog
-          room={qrScanResult.room}
-          agreePercent={qrScanResult.agreePercent}
-          disagreePercent={qrScanResult.disagreePercent}
-          passPercent={qrScanResult.passPercent}
-          userVote={qrScanResult.userVote}
-          statementText={qrScanResult.statementText}
-          teaserStatement={qrScanResult.teaserStatement}
+          {...qrScanResult}
           isOpen={true}
           onComplete={handleQrComplete}
           onClose={() => handleQrComplete({ reason: "continue" })}
@@ -752,7 +874,9 @@ function AppContent() {
 export default Sentry.withErrorBoundary(function App() {
   return (
     <DebateSessionProvider>
-      <AppContent />
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
     </DebateSessionProvider>
   );
 }, {

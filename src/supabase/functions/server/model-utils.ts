@@ -1,4 +1,4 @@
-import { insert, selectAll, upsert } from "./db-utils.ts";
+import { insert, selectAll, selectAllWithoutLimit, upsert } from "./db-utils.ts";
 import {
   AvatarAnimal,
   DemographicAnswer,
@@ -142,6 +142,14 @@ export const getFundingEvents = async () => {
   );
 };
 
+export const getOrganizersEvents = async () => {
+  return selectAll<UserEvent>(
+    "user_events",
+    {},
+    (q: any) => q.like("type", "organizers_%").select("type, userId"),
+  );
+};
+
 export const insertAnalyticsEvent = async (event: NewUserEvent) => {
   return insert<NewUserEvent>( "user_events", event );
 };
@@ -174,11 +182,22 @@ export const getCoverCardSwipedRoomIds = async (userId: string): Promise<Set<str
   return new Set(rows.map((r) => r.roomId));
 };
 
+export const saveCardSwipe = async (userId: string, roomId: string, cardType: string) =>
+  upsert("card_swipes", { userId, roomId, cardType, swipedAt: Date.now() }, "userId,roomId,cardType");
+
+export const getCardSwipedRoomIds = async (userId: string, cardType: string): Promise<Set<string>> => {
+  const rows = await selectAll<{ roomId: string }>("card_swipes", { userId, cardType });
+  return new Set(rows.map((r) => r.roomId));
+};
+
 export const saveRoomView = async (view: RoomView) =>
   upsert("room_views", view, "userId,roomId");
 
 export const getRoomViewsForUser = async (userId: string): Promise<RoomView[]> =>
   selectAll<RoomView>("room_views", { userId });
+
+export const getAllRoomViews = async (): Promise<RoomView[]> =>
+  selectAllWithoutLimit<RoomView>("room_views");
 
 export const bulkUpsertRoomViews = async (views: RoomView[]) =>
   upsert("room_views", views as any, "userId,roomId");

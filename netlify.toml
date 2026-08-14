@@ -10,3 +10,7 @@
 [[edge_functions]]
   path = "/fund"
   function = "funding-og"
+
+[[edge_functions]]
+  path = "/organizers"
+  function = "organizers-og"

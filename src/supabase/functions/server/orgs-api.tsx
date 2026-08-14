@@ -108,7 +108,7 @@ async function sendOrgSignupNotification(orgEmail: string) {
           </p>
         </div>
         <div class="footer">
-          <p>Heard - Making conversations count</p>
+          <p>Heard - A Place to Be Heard</p>
         </div>
       </body>
     </html>

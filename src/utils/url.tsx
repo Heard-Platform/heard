@@ -44,6 +44,16 @@ export const parseCohostInviteTokenFromUrl = (): string | null => {
   return new URL(window.location.href).searchParams.get('cohostInvite')
 }
 
+export const parseLinkSourceFromUrl = (): string | null => {
+  if (typeof window === 'undefined') return null
+  return new URL(window.location.href).searchParams.get('src')
+}
+
+export const parseReferrerIdFromUrl = (): string | null => {
+  if (typeof window === 'undefined') return null
+  return new URL(window.location.href).searchParams.get('ref')
+}
+
 export const parseFlyerDataFromUrl = (): { flyerId: string; statementId: string; vote: VoteType; flyerGroup?: number } | null => {
   if (typeof window === 'undefined') return null
   
@@ -91,6 +101,12 @@ export const createCohostInviteLink = (roomId: string, token: string): string =>
   if (typeof window === 'undefined') return ''
 
   return `${createShareableLink(roomId)}?cohostInvite=${token}`
+}
+
+export const createReferralLink = (roomId: string, referrerId: string): string => {
+  if (typeof window === 'undefined') return ''
+
+  return `${createShareableLink(roomId)}?src=user&ref=${referrerId}`
 }
 
 export const createSubHeardLink = (subHeard: SubHeard): string => {

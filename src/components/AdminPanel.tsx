@@ -827,6 +827,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         {activeTab === "fixes" && (
           <DataFixes
             adminKey={adminKey}
+            subHeards={subHeards}
             fetchAdminData={fetchAdminData}
           />
         )}

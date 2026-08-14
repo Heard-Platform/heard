@@ -12,6 +12,7 @@ import { CoverCard } from "./CoverCard";
 import { DemographicsCard } from "./DemographicsCard";
 import { StatementCard } from "./StatementCard";
 import { CertifyCard } from "./CertifyCard";
+import { ShareCard } from "./ShareCard";
 
 interface SwipeableCardProps {
   card: Card;
@@ -23,6 +24,7 @@ interface SwipeableCardProps {
   totalStatements: number;
   allowAnonymous: boolean;
   isAnonymous: boolean;
+  currentUserId?: string;
   getTypeIcon: (type?: string) => string | null;
   onDragEnd: (
     event: MouseEvent | TouchEvent | PointerEvent,
@@ -35,6 +37,7 @@ interface SwipeableCardProps {
   onSuperAgree: () => void;
   onSkip: () => void;
   onFlag: () => void;
+  onShareInvite: () => void;
 }
 
 export function SwipeableCard({
@@ -47,6 +50,7 @@ export function SwipeableCard({
   totalStatements,
   allowAnonymous,
   isAnonymous,
+  currentUserId,
   getTypeIcon,
   onDragEnd,
   onSubmitStatement,
@@ -56,6 +60,7 @@ export function SwipeableCard({
   onSuperAgree,
   onSkip,
   onFlag,
+  onShareInvite,
 }: SwipeableCardProps) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -143,6 +148,8 @@ export function SwipeableCard({
             ? "bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300"
             : card.type === "cover" && card.cover.type === "image"
             ? "bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-300"
+            : card.type === "share"
+            ? "bg-gradient-to-br from-pink-50 to-rose-50 border-pink-300"
             : card.type === "demographics"
             ? "border-transparent p-0"
             : card.type === "statement"
@@ -185,6 +192,13 @@ export function SwipeableCard({
             roomId={room.id}
             isActive={isTopCard}
             onSuccess={onCertifySuccess}
+          />
+        ) : card.type === "share" ? (
+          <ShareCard
+            room={room}
+            currentUserId={currentUserId}
+            isTopCard={isTopCard}
+            onInvite={onShareInvite}
           />
         ) : card.type === "statement" ? (
           <StatementCard

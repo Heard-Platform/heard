@@ -341,6 +341,31 @@ const newsletters = [
       imageAlt: "Demo of new feature",
     },
   }),
+  getParameterizedNewsletter({
+    subject: "Who are you rooting for this Sunday?",
+    editionNumber: 22,
+    section1: {
+      title: "⚽️ Who are you rooting for this Sunday, and why?",
+      text: "The World Cup final is here 🏆 Got a hot take? A favorite player? See where you land in <a href='https://heard.vote/room/31m0twqkoo6mrnu69l0?src=newsletter'>our latest discussion.</a>",
+      imageUrl: `${SUPABASE_URL}/nl-22-soccer.jpg`,
+      imageLink: "https://heard.vote/room/31m0twqkoo6mrnu69l0?src=newsletter",
+      imageAlt: "Soccer final",
+    },
+    section2: {
+      title: "✍️ People donated $4,685 for the chance to tattoo my body",
+      text: "I did a July 4th goal of raising $5k to support my democracy-saving, hot-take-swiping, uh, vegan-nuggie-fueled platform. I made the promise that if we hit $5k, donors could vote on my tattoo design and… we hit $4,685. A HUGE thank you to the 31 amazing people who donated. 🙏 Stay tuned for more tattoo-related news.",
+      imageUrl: `${SUPABASE_URL}/nl-22-tattoo.png`,
+      imageLink: FUND_URL,
+      imageAlt: "Funding progress",
+    },
+    section3: {
+      title: "🇺🇸 InterdepenDance conference uses Heard",
+      text: "An <a href='http://interdependanceday.org/'>event about re-envisioning the future of the US and democracy</a> used Heard over the July 4th weekend. (I know that was two weeks ago, don’t hate me.) As part of that deployment, we added a projector-friendly display mode to show live results and co-host privileges. Big thanks to the organizers and participants there for giving Heard a try!",
+      imageUrl: `${SUPABASE_URL}/nl-22-inter.png`,
+      imageLink: HOMEPAGE_URL,
+      imageAlt: "Conf results",
+    },
+  }),
 ]
 
 const offset = 8

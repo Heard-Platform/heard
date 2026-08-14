@@ -20,6 +20,7 @@ import { SwipeableStatementStack } from "./room/SwipeableStatementStack";
 import { extractYouTubeVideoId } from "./room/CoverCard";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
+import { VotesDrawer } from "./results/VotesDrawer";
 import { AddResponseModal } from "./room/AddResponseModal";
 import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
 import { useState, useEffect } from "react";
@@ -36,6 +37,7 @@ import { useDebateSession } from "../hooks/useDebateSession";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
 import { formatSubHeardDisplay } from "../utils/subheard";
+import { useTranslation, Trans } from "react-i18next";
 import { getTotalVotes } from "../utils/votes";
 import {
   FEED_CARD_INACTIVE_SCALE,
@@ -85,10 +87,12 @@ export function RoomCard({
   onSubHeardChange,
 }: RoomCardProps) {
   const { resetTutorialTimer } = useSwipeTutorialContext();
-  
+  const { t } = useTranslation(["postControls"]);
+
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [coverCardSwiped, setCoverCardSwiped] = useState(room.coverCardSwiped || false);
+  const [shareCardSwiped, setShareCardSwiped] = useState(room.shareCardSwiped || false);
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
 
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -98,7 +102,8 @@ export function RoomCard({
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
   const [showEditRoom, setShowEditRoom] = useState(false);
   const [showDisplayMode, setShowDisplayMode] = useState(false);
-  const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
+  const [showVotesDrawer, setShowVotesDrawer] = useState(false);
+  const { markChanceCardSwiped, markCoverCardSwiped, markShareCardSwiped } = useDebateSession();
 
   const isTrueHost = user.id === room.hostId;
   const isHost = isTrueHost || !!room.cohostIds?.includes(user.id);
@@ -116,6 +121,10 @@ export function RoomCard({
   useEffect(() => {
     setCoverCardSwiped(room.coverCardSwiped || false);
   }, [room.coverCardSwiped]);
+
+  useEffect(() => {
+    setShareCardSwiped(room.shareCardSwiped || false);
+  }, [room.shareCardSwiped]);
 
   const handleOpenAnalysis = () => {
     setShowAnalysis(true);
@@ -155,7 +164,8 @@ export function RoomCard({
     (!room.demographicQuestions.length ||
       room.demographicQuestions.every((q) =>
         answeredQuestionIds.has(q.id),
-      ));
+      )) &&
+    shareCardSwiped;
 
   const isRealtime = room.mode === "realtime";
 
@@ -207,6 +217,11 @@ export function RoomCard({
   const handleSwipeCoverCard = async () => {
     setCoverCardSwiped(true);
     await markCoverCardSwiped(room.id);
+  }
+
+  const handleSwipeShareCard = async () => {
+    setShareCardSwiped(true);
+    await markShareCardSwiped(room.id);
   }
 
   const handleDemographicsAnswered = (questionId: string) => {
@@ -364,6 +379,7 @@ export function RoomCard({
                     chanceCardSwiped={effectiveChanceCardSwiped}
                     cover={cover}
                     coverCardSwiped={coverCardSwiped}
+                    shareCardSwiped={shareCardSwiped}
                     demographicQuestions={room.demographicQuestions}
                     answeredQuestionIds={answeredQuestionIds}
                     targetStatementId={targetStatementId}
@@ -374,6 +390,7 @@ export function RoomCard({
                     onCertifyDone={() => setCertifyCardDismissed(true)}
                     onChanceCardSwiped={handleSwipeChanceCard}
                     onCoverCardSwiped={handleSwipeCoverCard}
+                    onShareCardSwiped={handleSwipeShareCard}
                     onDemographicsAnswered={handleDemographicsAnswered}
                   />
                 );
@@ -409,21 +426,22 @@ export function RoomCard({
                 onClick={() => setShowAddResponseModal(true)}
               >
                 <MessageCirclePlus className="w-4 h-4" />
-                Respond
+                {t("respond")}
               </Button>
-            ) : <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>}
+            ) : <Badge className="heard-pill bg-gray-600 text-white">{t("completed")}</Badge>}
             <Button
               onClick={handleOpenAnalysis}
               variant="secondary"
               className="heard-pill hover:bg-secondary/60"
             >
               <BarChart3 className="w-4 h-4" />
-              Results
+              {t("results")}
             </Button>
             <ShareButton roomId={room.id} roomTopic={room.topic} />
             <RoomCardMenu
               room={room}
               participantCount={participantCount}
+              statementCount={statements.length}
               isRealtime={isRealtime}
               hasRealtimeEnded={hasRealtimeEnded}
               isDeveloper={isDeveloper}
@@ -434,6 +452,7 @@ export function RoomCard({
               onOpenDeduplication={() => setShowDeduplication(true)}
               onOpenVoteMatrix={() => setShowVoteMatrix(true)}
               onOpenDisplayMode={() => setShowDisplayMode(true)}
+              onOpenVotesDrawer={() => setShowVotesDrawer(true)}
             />
           </div>
 
@@ -490,6 +509,15 @@ export function RoomCard({
           onClose={() => setShowDisplayMode(false)}
         />
       )}
+
+      <VotesDrawer
+        statements={statements}
+        debateTitle={room.topic}
+        open={showVotesDrawer}
+        showTrigger={false}
+        onChangeVote={handleVote}
+        onOpenChange={setShowVotesDrawer}
+      />
 
       <AddResponseModal
         room={room}

@@ -2,6 +2,7 @@ import {
   ActivityFeedData,
   ActivityMetricsData,
   AnalysisData,
+  CohortFunnelData,
   DevAnonDebate,
   DryRunResult,
   Feedback,
@@ -27,6 +28,7 @@ import {
   StatementMerge,
 } from "../types";
 import { AskTheDataResponse, FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
+import type { ReferrerShareCount, TrafficSourceCount } from "../components/room/RoomAnalyticsModal";
 import {
   BaseApiClient,
   ApiResponse,
@@ -285,6 +287,13 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async renameSubHeard(subHeardName: string, newName: string) {
+    return this.request<{ newName: string }>(`/subheard/${subHeardName}/rename`, {
+      method: "PATCH",
+      body: JSON.stringify({ newName }),
+    });
+  }
+
   // Statement management
   async submitStatement(
     roomId: string,
@@ -367,6 +376,13 @@ class ApiClient extends BaseApiClient {
 
   async markCoverCardSwiped(roomId: string) {
     return this.request("/cover-card/mark-swiped", {
+      method: "POST",
+      body: JSON.stringify({ roomId }),
+    });
+  }
+
+  async markShareCardSwiped(roomId: string) {
+    return this.request("/share-card/mark-swiped", {
       method: "POST",
       body: JSON.stringify({ roomId }),
     });
@@ -662,6 +678,12 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async getCohortFunnel(mode: "joined" | "active" = "joined") {
+    return this.request<CohortFunnelData>(`/stats/cohort-funnel?mode=${mode}`, {
+      method: "GET",
+    });
+  }
+
   async getActivityFeed() {
     return this.request<ActivityFeedData>("/stats/activity-feed");
   }
@@ -919,6 +941,13 @@ class ApiClient extends BaseApiClient {
     }>(`/room/${roomId}/mod/vote-matrix`);
   }
 
+  async getRoomTrafficSources(roomId: string) {
+    return this.request<{
+      trafficSources: TrafficSourceCount[];
+      referrers: ReferrerShareCount[];
+    }>(`/room/${roomId}/mod/traffic-sources`);
+  }
+
   async setResponsesPaused(roomId: string, paused: boolean) {
     return this.request<{ room: DebateRoom }>(
       `/room/${roomId}/mod/responses-paused`,
@@ -945,11 +974,13 @@ class ApiClient extends BaseApiClient {
     );
   }
 
-  trackEvent(type: string, roomId?: string): void {
+  trackEvent(type: string, roomId?: string, referralUserId?: string): void {
+    if (getEnvironment() !== "production")
+      return;
     if (safelyGetStorageItem("showComponentShowcase", false))
       return;
     const url = typeof window !== "undefined" ? window.location.href : undefined;
-    this.post("/analytics/event", { type, roomId, url })
+    this.post("/analytics/event", { type, roomId, url, referralUserId })
       .catch(() => {});
   }
 

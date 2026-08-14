@@ -13,6 +13,7 @@ import {
   HelpCircle,
   Code2,
   BarChart3,
+  LineChart,
   Wrench,
   Shield,
   SkipForward,
@@ -32,8 +33,10 @@ import {
   ShieldAlert,
   TrendingUp,
   MessageCircle,
+  Bell,
 } from "lucide-react";
 import type { UserSession } from "../types";
+import { sendTestPushNotification } from "../utils/pushNotifications";
 import { RoomAlertsList } from "./side-panel/RoomAlertsList";
 import { AvatarAlertDot } from "./side-panel/AvatarAlertDot";
 import { useRoomAlertsContext } from "../contexts/RoomAlertsContext";
@@ -42,6 +45,7 @@ import { PhoneVerificationDialog } from "./onboarding/PhoneVerificationDialog";
 import { VERIFY_TEXT } from "../utils/constants/text";
 import { UserRankDisplay } from "./side-panel/UserRankDisplay";
 import { FeedbackSheet } from "./FeedbackSheet";
+import { LanguageSelector } from "./LanguageSelector";
 
 const learnMoreLinks = [
   {
@@ -71,6 +75,7 @@ interface SidePanelMenuProps {
   onLogout: () => void;
   onOpenHelp: () => void;
   onOpenShowcase?: () => void;
+  onOpenRetentionDashboard?: () => void;
   onOpenAdminDashboard?: () => void;
   onOpenFeatureTracker: () => void;
   onOpenDevTools?: () => void;
@@ -87,6 +92,7 @@ export function SidePanelMenu({
   onLogout,
   onOpenHelp,
   onOpenShowcase,
+  onOpenRetentionDashboard,
   onOpenAdminDashboard,
   onOpenFeatureTracker,
   onOpenDevTools,
@@ -181,6 +187,15 @@ export function SidePanelMenu({
     } catch (error) {
       console.error("Error running scalability test:", error);
       alert("❌ Failed to run scalability test");
+    }
+  };
+
+  const handleTestPushNotification = async () => {
+    try {
+      await sendTestPushNotification();
+    } catch (error) {
+      console.error("Error sending test push notification:", error);
+      alert(`❌ ${error instanceof Error ? error.message : "Failed to send test push notification"}`);
     }
   };
 
@@ -326,6 +341,8 @@ export function SidePanelMenu({
               Help
             </Button>
 
+            {user.isDeveloper && <LanguageSelector />}
+
             {!user.isAnonymous && (
               <Button
                 onClick={onLogout}
@@ -334,6 +351,17 @@ export function SidePanelMenu({
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
+              </Button>
+            )}
+
+            {user.isDeveloper && onOpenRetentionDashboard && (
+              <Button
+                onClick={() => closeMenuAndRun(onOpenRetentionDashboard)}
+                variant="outline"
+                className="w-full bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200"
+              >
+                <LineChart className="w-4 h-4 mr-2 text-purple-600" />
+                Retention Dashboard
               </Button>
             )}
 
@@ -462,6 +490,15 @@ export function SidePanelMenu({
                         Admin Panel
                       </Button>
                     )}
+                    <Button
+                      onClick={handleTestPushNotification}
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-indigo-50 border-indigo-200 text-indigo-800"
+                    >
+                      <Bell className="w-3 h-3 mr-2" />
+                      Test Push Notification
+                    </Button>
                     {onJumpToFinalResults && (
                       <Button
                         onClick={onJumpToFinalResults}

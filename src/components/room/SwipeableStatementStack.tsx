@@ -31,6 +31,7 @@ interface SwipeableStatementStackProps {
   chanceCardSwiped: boolean;
   cover: FullCoverData | null;
   coverCardSwiped: boolean;
+  shareCardSwiped: boolean;
   demographicQuestions: DemographicQuestion[];
   answeredQuestionIds: Set<string>;
   targetStatementId?: string;
@@ -44,6 +45,7 @@ interface SwipeableStatementStackProps {
   onCertifyDone: () => void;
   onChanceCardSwiped: () => Promise<void>;
   onCoverCardSwiped: () => Promise<void>;
+  onShareCardSwiped: () => Promise<void>;
   onDemographicsAnswered: (questionId: string) => void;
 }
 
@@ -58,6 +60,7 @@ export function SwipeableStatementStack({
   chanceCardSwiped,
   cover,
   coverCardSwiped,
+  shareCardSwiped,
   demographicQuestions,
   answeredQuestionIds,
   targetStatementId,
@@ -68,6 +71,7 @@ export function SwipeableStatementStack({
   onCertifyDone,
   onChanceCardSwiped,
   onCoverCardSwiped,
+  onShareCardSwiped,
   onDemographicsAnswered,
 }: SwipeableStatementStackProps) {
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
@@ -81,7 +85,7 @@ export function SwipeableStatementStack({
   const [swipedCardId, setSwipedCardId] = useState<
     string | null
   >(null);
-  const [swipedNoopCard, setSwipedNoopCard] = useState<"certify" | "chance" | "cover" | null>(null);
+  const [swipedNoopCard, setSwipedNoopCard] = useState<"certify" | "chance" | "cover" | "share" | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
@@ -140,6 +144,10 @@ export function SwipeableStatementStack({
       cover,
     };
     cards.unshift(coverCard);
+  }
+
+  if (!shareCardSwiped) {
+    cards.push({ type: "share" });
   }
 
   const hasMoreCards = cards.length > 0;
@@ -300,6 +308,9 @@ export function SwipeableStatementStack({
     } else if (card.type === "certify") {
       swipeCertifyCard(swipeDirection);
       return;
+    } else if (card.type === "share") {
+      swipeShareCard(swipeDirection);
+      return;
     } else if (card.type === "chance" || card.type === "cover") {
       setIsVoting(true);
       setSwipedNoopCard(card.type);
@@ -337,6 +348,20 @@ export function SwipeableStatementStack({
       onCertifyDone();
     }, 300);
   }
+
+  const swipeShareCard = (direction: "left" | "right") => {
+    setSwipedNoopCard("share");
+    setSwipeDirection(direction);
+    setTimeout(() => {
+      setSwipedNoopCard(null);
+      setSwipeDirection(null);
+      onShareCardSwiped();
+    }, 300);
+  }
+
+  const handleShareCardInvite = () => {
+    swipeShareCard("right");
+  };
 
   const handleSuccessCertifyCard = () => {
     swipeCertifyCard("right");
@@ -450,6 +475,7 @@ export function SwipeableStatementStack({
               if (card.type === "certify") return "certify";
               if (card.type === "chance") return "chance";
               if (card.type === "cover") return "cover";
+              if (card.type === "share") return "share";
               if (card.type === "demographics") return `demographics-${card.question.id}`;
               return "unknown";
             };
@@ -476,10 +502,12 @@ export function SwipeableStatementStack({
                 totalStatements={statements.length}
                 allowAnonymous={allowAnonymous}
                 isAnonymous={isAnonymous}
+                currentUserId={currentUserId}
                 onSubmitStatement={handleSubmitFromChanceCard}
                 onShowAccountSetupModal={onShowAccountSetupModal}
                 onDemographicsAnswer={handleDemographicsAnswer}
                 onCertifySuccess={handleSuccessCertifyCard}
+                onShareInvite={handleShareCardInvite}
                 onSkip={() => {
                   if (card.type === "statement") {
                     handleVote(card.statement.id, "pass", "down");

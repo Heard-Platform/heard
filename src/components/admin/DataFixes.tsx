@@ -6,9 +6,12 @@ import { Label } from "../ui/label";
 import { Shield } from "lucide-react";
 import { api } from "../../utils/api";
 import { adminApi } from "../../utils/admin-api";
+import { ScriptFieldList, type ScriptField } from "./ScriptFieldInputs";
+import type { SubHeard } from "../../types";
 
 interface DataFixesProps {
   adminKey: string;
+  subHeards: SubHeard[];
   fetchAdminData: () => Promise<void>;
 }
 
@@ -16,16 +19,39 @@ interface ScriptConfig {
   id: string;
   title: string;
   description: string;
+  fields?: ScriptField[];
   dryRunMessage: string;
   liveRunMessage: string;
   successMessageDryRun: (stats: any) => string;
   successMessageLive: (stats: any) => string;
   statsDisplay: (stats: any) => string;
-  apiCall: (adminKey: string, dryRun: boolean) => Promise<any>;
+  apiCall: (adminKey: string, dryRun: boolean, fields: Record<string, string>) => Promise<any>;
   bgColor: string;
 }
 
-const SCRIPTS: ScriptConfig[] = [
+const buildScripts = (communityOptions: string[]): ScriptConfig[] => [
+  {
+    id: "fix-interdependance-day-memberships",
+    title: "Fix Interdependance Day Memberships",
+    description: "One-time fix for community memberships left behind under the old 'interdependance-day' name after the rename to 'interdependance' — an unpaginated scan silently dropped rows past its row cap. Idempotent — safe to re-run.",
+    dryRunMessage: "Run DRY RUN?\n\nPreviews how many memberships would be renamed from 'interdependance-day' to 'interdependance'.\n\nNo changes will be made.\n\nContinue?",
+    liveRunMessage: "Run LIVE FIX?\n\nThis will rename any remaining 'interdependance-day' membership records to 'interdependance', deleting duplicates where a correct record already exists.\n\nContinue?",
+    successMessageDryRun: (stats) =>
+      `DRY RUN complete!\n\n` +
+      `Would rename: ${stats.renamed}\n` +
+      `Would delete as duplicates: ${stats.deletedDuplicates}\n\n` +
+      `No changes were made.`,
+    successMessageLive: (stats) =>
+      `Done!\n\n` +
+      `Renamed: ${stats.renamed}\n` +
+      `Deleted duplicates: ${stats.deletedDuplicates}`,
+    statsDisplay: (stats) =>
+      stats.dryRun
+        ? `Last dry run: ${stats.renamed} would be renamed, ${stats.deletedDuplicates} would be deleted as duplicates`
+        : `Last run: ${stats.renamed} renamed, ${stats.deletedDuplicates} deleted as duplicates`,
+    apiCall: (adminKey, dryRun) => adminApi.fixInterdependanceDayMemberships(adminKey, dryRun),
+    bgColor: "bg-teal-50",
+  },
   {
     id: "backfill-room-engagement",
     title: "Backfill Room Engagement (Views + Follows)",
@@ -127,9 +153,51 @@ const SCRIPTS: ScriptConfig[] = [
     apiCall: (adminKey, dryRun) => adminApi.copyVotesToTable(adminKey, dryRun),
     bgColor: "bg-amber-50",
   },
+  {
+    id: "invite-community-to-post",
+    title: "Invite Community to Post",
+    description: "Emails every eligible member of the selected community(s) (excluding existing participants) inviting them to join a room's conversation, with the room's title and top takes included. Idempotent — members already emailed for this room are skipped on re-run.",
+    fields: [
+      { key: "roomId", placeholder: "Room ID", required: true },
+      { key: "communities", placeholder: "Communities to invite", required: true, options: communityOptions },
+      { key: "testEmail", placeholder: "Test email (optional — sends one live email here instead of the whole community)" },
+    ],
+    dryRunMessage: "Run DRY RUN?\n\nPreviews how many members of the selected community(s) would be emailed an invite to participate.\n\nNo emails will be sent.\n\nContinue?",
+    liveRunMessage: "Run LIVE SEND?\n\nThis will email every eligible member of the selected community(s) (excluding existing participants and anyone already emailed for this room) inviting them to participate.\n\nIf a test email is filled in, only that address will receive a live email instead of the whole community.\n\nContinue?",
+    successMessageDryRun: (stats) =>
+      `DRY RUN complete!\n\n` +
+      `Recipients: ${stats.recipientCount}\n` +
+      `Already emailed: ${stats.alreadyEmailed}\n\n` +
+      `No emails were sent.`,
+    successMessageLive: (stats) =>
+      `Done!\n\n` +
+      `Sent: ${stats.sent}\n` +
+      `Already emailed: ${stats.alreadyEmailed}\n` +
+      `Failed: ${stats.failed}` +
+      (stats.errors?.length ? `\n\nErrors:\n${stats.errors.join("\n")}` : ""),
+    statsDisplay: (stats) =>
+      stats.dryRun
+        ? `Last dry run: ${stats.recipientCount} recipient(s), ${stats.alreadyEmailed} already emailed`
+        : `Last run: ${stats.sent} sent, ${stats.alreadyEmailed} already emailed, ${stats.failed} failed`,
+    apiCall: (adminKey, dryRun, fields) => {
+      const testEmail = fields.testEmail?.trim();
+      const communities = fields.communities.split(",").map(s => s.trim()).filter(Boolean);
+      return adminApi.inviteCommunityToPost(
+        adminKey,
+        fields.roomId.trim(),
+        communities,
+        testEmail ? false : dryRun,
+        testEmail || undefined,
+      );
+    },
+    bgColor: "bg-fuchsia-50",
+  },
 ];
 
-export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
+export function DataFixes({ adminKey, subHeards, fetchAdminData }: DataFixesProps) {
+  const communityOptions = [...subHeards].map(sh => sh.name).sort();
+  const SCRIPTS = buildScripts(communityOptions);
+
   const [dataFixLoading, setDataFixLoading] = useState<string | null>(null);
   const [migrationStats, setMigrationStats] = useState<any>(null);
   const [isMigrating, setIsMigrating] = useState(false);
@@ -140,6 +208,7 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
     Object.fromEntries(SCRIPTS.map(s => [s.id, true])),
   );
   const [currentScript, setCurrentScript] = useState<string>(SCRIPTS[0]?.id || "");
+  const [scriptFieldValues, setScriptFieldValues] = useState<Record<string, Record<string, string>>>({});
 
   const handleDataFixNormalizeDupontCircle = async () => {
     if (
@@ -222,6 +291,36 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
     } catch (error) {
       console.error("Error running migration:", error);
       alert("Failed to run migration");
+    } finally {
+      setDataFixLoading(null);
+    }
+  };
+
+  const handleAddWhereDoYouLiveQuestion = async () => {
+    if (
+      !confirm(
+        "Add the \"Where do you live?\" demographic question to room h722fdmwizvmrwlgokq? Safe to run multiple times.",
+      )
+    ) {
+      return;
+    }
+
+    setDataFixLoading("add-where-do-you-live-question");
+    try {
+      const res = await adminApi.addWhereDoYouLiveQuestion(adminKey);
+      if (res.success) {
+        alert(
+          res.data?.alreadyExists
+            ? "Question already exists on this room — no changes made."
+            : "Question added to room h722fdmwizvmrwlgokq.",
+        );
+        await fetchAdminData();
+      } else {
+        alert(`Failed to add question: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error adding demographic question:", error);
+      alert("Failed to add question");
     } finally {
       setDataFixLoading(null);
     }
@@ -311,6 +410,14 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
   };
 
   const handleRunScript = async (script: ScriptConfig) => {
+    const fields = scriptFieldValues[script.id] || {};
+    for (const field of script.fields || []) {
+      if (field.required && !fields[field.key]?.trim()) {
+        alert(`${field.placeholder} is required.`);
+        return;
+      }
+    }
+
     const dryRun = scriptDryRun[script.id];
     const confirmMessage = dryRun ? script.dryRunMessage : script.liveRunMessage;
 
@@ -322,7 +429,7 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
     setIsRunningScript(true);
     setScriptStats(prev => ({ ...prev, [script.id]: null }));
     try {
-      const res = await script.apiCall(adminKey, dryRun);
+      const res = await script.apiCall(adminKey, dryRun, fields);
 
       if (res.success && res.data) {
         setScriptStats(prev => ({ ...prev, [script.id]: res.data }));
@@ -366,6 +473,20 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
                 <p className="text-sm text-muted-foreground">
                   {script.description}
                 </p>
+                {script.fields && script.fields.length > 0 && (
+                  <ScriptFieldList
+                    scriptId={script.id}
+                    fields={script.fields}
+                    values={scriptFieldValues[script.id] || {}}
+                    disabled={isRunningScript}
+                    onChange={(key, value) =>
+                      setScriptFieldValues(prev => ({
+                        ...prev,
+                        [script.id]: { ...prev[script.id], [key]: value },
+                      }))
+                    }
+                  />
+                )}
                 <div className="flex items-center gap-2 mt-3">
                   <Checkbox
                     id={`script-dry-run-${script.id}`}
@@ -467,6 +588,31 @@ export function DataFixes({ adminKey, fetchAdminData }: DataFixesProps) {
             size="sm"
           >
             Disabled
+          </Button>
+        </div>
+        <div className="heard-between p-4 border rounded-lg bg-indigo-50">
+          <div className="flex-1">
+            <h3 className="font-medium">
+              Add "Where Do You Live?" Question
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Adds a custom demographic question ("Where do you
+              live?" with LA/California/elsewhere-in-US/Other
+              options) to room h722fdmwizvmrwlgokq. Safe to run
+              multiple times.
+            </p>
+          </div>
+          <Button
+            onClick={handleAddWhereDoYouLiveQuestion}
+            disabled={
+              dataFixLoading === "add-where-do-you-live-question"
+            }
+            variant="outline"
+            size="sm"
+          >
+            {dataFixLoading === "add-where-do-you-live-question"
+              ? "Running..."
+              : "Add Question"}
           </Button>
         </div>
         <div className="heard-between p-4 border rounded-lg bg-blue-50">

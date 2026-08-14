@@ -21,6 +21,7 @@ export const subredditsToHerds: { [key: string]: string } = {
   "newyorkcity": "new-york-city",
   "entertainment": "entertainment",
   "todayilearned": "learning",
+  "sports": "sports"
 };
 
 export function getRandomSubreddit(): string {

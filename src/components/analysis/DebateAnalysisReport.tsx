@@ -64,8 +64,8 @@ export function DebateAnalysisReport({
     <div className="heard-page-bg p-4">
       <div className="mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl">Conversation Insights</h1>
-          <p className="text-muted-foreground mt-1">{debateTopic}</p>
+          <p className="text-muted-foreground text-sm uppercase tracking-wide">Conversation Insights</p>
+          <h1 className="text-3xl mt-1">{debateTopic}</h1>
         </div>
 
         <div className="grid grid-cols-3 gap-2">

@@ -59,11 +59,11 @@ export const getMagicLinkEmail = (magicLinkUrl: string, code: string): string =>
 
 export const styles = {
   body: "margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;",
-  container: "max-width: 600px; margin: 0 auto; padding: 40px 20px;",
+  container: "max-width: 600px; margin: 0 auto; padding: 40px 10px;",
   header: "text-align: center; margin-bottom: 40px;",
   headerTitle: "color: white; font-size: 4rem; font-weight: 900; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); letter-spacing: 1px;",
   headerSubtitle: "color: rgba(255,255,255,0.9); font-size: 1.2rem; margin-top: 10px;",
-  contentCard: "background: white; border-radius: 16px; padding: 40px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);",
+  contentCard: "background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);",
   intro: "margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid #e9ecef;",
   introParagraph: "color: #555; line-height: 1.7; margin: 0; font-size: 1.05rem;",
   section: "margin-bottom: 32px;",

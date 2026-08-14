@@ -8,6 +8,7 @@ import { Community, CommunityMembership } from "./types.tsx";
 import { ONE_DAY_MS } from "./time-utils.ts";
 import { insertAnalyticsEvent } from "./model-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
+import { performSubHeardRename } from "./subheard-rename-utils.tsx";
 
 // @ts-ignore
 import { Context, Hono } from "npm:hono";
@@ -304,6 +305,28 @@ app.delete(
       return {};
     },
     "Failed to remove moderators",
+  ),
+);
+
+app.patch(
+  "/make-server-f1a393b4/subheard/:name/rename",
+  defineRoute(
+    { newName: { type: "string", required: true } },
+    async ({ newName }: { newName: string }, c) => {
+      const userId = c.get("userId");
+      const name = c.req.param("name") as string;
+
+      const community = await getCommunity(name);
+      if (!community) throw new Error("Community not found");
+
+      const user = await getUserSession(userId);
+      if (!user?.isDeveloper && community.adminId !== userId) {
+        throw new Error("Only the admin can rename this community");
+      }
+
+      return performSubHeardRename(name, newName);
+    },
+    "Failed to rename sub-heard",
   ),
 );
 

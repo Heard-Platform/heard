@@ -11,6 +11,15 @@ export const getFrontendUrl = (): string => {
   );
 };
 
+const EMAIL_MASK = "••••";
+
+export function obfuscateEmail(email: string): string {
+  const at = email.indexOf("@");
+  if (at === -1) return `${EMAIL_MASK}@${EMAIL_MASK}`;
+  const visible = email.slice(0, at).slice(0, 6);
+  return `${visible}${EMAIL_MASK}@${EMAIL_MASK}`;
+}
+
 export function escapeHtml(input: string): string {
   return input
     .replace(/&/g, "&amp;")

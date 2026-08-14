@@ -239,7 +239,10 @@ const RoomScrollerInner = forwardRef<
     const scrollToIndex = (index: number) => {
       const container = scrollContainerRef.current;
       const card = cardRefs.current[index];
-      if (!container || !card) return;
+      if (!container || !card) {
+        setCurrentIndex(index);
+        return;
+      }
 
       isScrolling.current = true;
       container.scrollTo({ top: card.offsetTop, behavior: "smooth" });

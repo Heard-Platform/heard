@@ -1,16 +1,100 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
-import { getByPrefixParsed, getActiveRoomValues, saveActiveRoomPointer, saveDebate } from "./kv-utils.tsx";
+import { getByPrefixParsed, getActiveRoomValues, saveActiveRoomPointer, saveDebate, getMembership, saveMembership, deleteMembership } from "./kv-utils.tsx";
+import { getAllRecords } from "./db-utils.ts";
+import { getDemographicQuestionsForRoom, insertDemographicQuestion } from "./model-utils.ts";
+import { CommunityMembership, DemographicQuestion } from "./types.tsx";
 import { backfillUserCreatedAtApi } from "./backfill-user-created-at.tsx";
 import { backfillMembershipsApi } from "./script-backfill-memberships.tsx";
 import { backfillVotesToTableApi } from "./backfill-votes-to-table.tsx";
 import { backfillRoomEngagementApi } from "./backfill-room-engagement.tsx";
 import { unsubApril26SignupsApi } from "./unsub-april-26-signups.tsx";
+import { inviteCommunityToPostApi } from "./invite-community-to-post.tsx";
 import { verifyAdminKey } from "./admin-api.tsx";
+import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
 
 app.use("/make-server-f1a393b4/one-time-fixes/*", verifyAdminKey);
+
+app.post(
+  "/make-server-f1a393b4/one-time-fixes/fix-interdependance-day-memberships",
+  defineRoute(
+    { dryRun: { type: "boolean", required: false } },
+    async ({ dryRun }: { dryRun?: boolean }, _c) => {
+      const oldName = "interdependance-day";
+      const newName = "interdependance";
+
+      const memberships = await getAllRecords<CommunityMembership>("subheard_member:");
+      let renamed = 0;
+      let deletedDuplicates = 0;
+      const affectedUserIds: string[] = [];
+
+      for (const membership of memberships) {
+        if (membership.subHeard !== oldName) continue;
+
+        try {
+          const existingAtNewName = await getMembership(membership.userId, newName);
+          affectedUserIds.push(membership.userId);
+
+          if (existingAtNewName) {
+            deletedDuplicates++;
+            if (!dryRun) await deleteMembership(membership.userId, oldName);
+            continue;
+          }
+
+          renamed++;
+          if (!dryRun) {
+            await deleteMembership(membership.userId, oldName);
+            membership.subHeard = newName;
+            await saveMembership(membership);
+          }
+        } catch (error) {
+          console.error("Error fixing up membership:", error);
+        }
+      }
+
+      return { dryRun: !!dryRun, renamed, deletedDuplicates, affectedUserIds };
+    },
+    "Failed to fix up interdependance-day memberships",
+  ),
+);
+
+app.post(
+  "/make-server-f1a393b4/one-time-fixes/add-where-do-you-live-question",
+  defineRoute(
+    {},
+    async (_params, _c) => {
+      const roomId = "h722fdmwizvmrwlgokq";
+      const text = "Where do you live?";
+      const options = [
+        "In or near LA",
+        "In California",
+        "Somewhere else in US",
+        "Other",
+      ];
+
+      const existingQuestions =
+        await getDemographicQuestionsForRoom(roomId);
+      const alreadyExists = existingQuestions.some(
+        (q) => q.text === text,
+      );
+      if (alreadyExists) {
+        return { added: false, alreadyExists: true };
+      }
+
+      await insertDemographicQuestion({
+        roomId,
+        type: "custom",
+        text,
+        options,
+      } as DemographicQuestion);
+
+      return { added: true };
+    },
+    "Failed to add demographic question",
+  ),
+);
 
 app.post(
   "/make-server-f1a393b4/one-time-fixes/fix-active-room-pointers",
@@ -115,5 +199,6 @@ app.route("/", backfillMembershipsApi);
 app.route("/", backfillVotesToTableApi);
 app.route("/", backfillRoomEngagementApi);
 app.route("/", unsubApril26SignupsApi);
+app.route("/", inviteCommunityToPostApi);
 
 export { app as oneTimeFixesApi };
