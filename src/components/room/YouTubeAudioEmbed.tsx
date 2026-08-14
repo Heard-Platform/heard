@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Play, Pause, Rewind, FastForward } from "lucide-react";
+import { Play, Pause, Rewind, FastForward, Eye, EyeOff } from "lucide-react";
 import { extractYouTubeVideoId } from "./CoverCard";
+import { useShowVideoSetting } from "../../hooks/useShowVideoSetting";
 
 const SKIP_SECONDS = 10;
 
@@ -43,6 +44,7 @@ export function YouTubeAudioEmbed({ url, isPlaying }: YouTubeAudioEmbedProps) {
   const playerRef = useRef<any>(null);
   const [playing, setPlaying] = useState(false);
   const [title, setTitle] = useState("");
+  const [showVideo, toggleShowVideo] = useShowVideoSetting();
 
   useEffect(() => {
     if (!videoId) return;
@@ -114,47 +116,82 @@ export function YouTubeAudioEmbed({ url, isPlaying }: YouTubeAudioEmbedProps) {
         overflow: "hidden",
       }}
     >
-      {/* Real YT.Player lives here (for audio + ToS-compliant playback). It is
-          never meant to be seen — the opaque overlay below always covers it,
-          rather than relying on opacity alone to hide a third-party iframe. */}
-      <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}>
+      <div
+        className="yt-audio-embed-frame"
+        style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}
+      >
         <div ref={containerRef} />
       </div>
 
-      {/* Custom, opaque, full-bleed control surface. */}
+      {/* Custom control surface, opaque when hiding the video, a bottom scrim otherwise. */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           zIndex: 1,
-          background: "linear-gradient(to bottom right, #a855f7, #4f46e5)",
+          background: showVideo
+            ? "linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0) 50%)"
+            : "linear-gradient(to bottom right, #a855f7, #4f46e5)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
-          gap: 20,
+          justifyContent: showVideo ? "flex-end" : "center",
+          gap: showVideo ? 12 : 20,
+          paddingBottom: showVideo ? 16 : 0,
+          pointerEvents: showVideo ? "none" : "auto",
         }}
       >
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 48 }}>
-          {[0, 1, 2, 3, 4].map((bar) => (
-            <span
-              key={bar}
-              style={{
-                width: 8,
-                borderRadius: 9999,
-                background: "rgba(255,255,255,0.8)",
-                height: "100%",
-                animation: playing
-                  ? `audio-bar 0.9s ease-in-out ${bar * 0.12}s infinite`
-                  : "none",
-                transform: playing ? undefined : "scaleY(0.25)",
-                transformOrigin: "bottom",
-              }}
-            />
-          ))}
-        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleShowVideo();
+          }}
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            background: "rgba(0,0,0,0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            border: "none",
+            cursor: "pointer",
+            pointerEvents: "auto",
+          }}
+          title={showVideo ? "Hide video" : "Show video"}
+        >
+          {showVideo ? (
+            <EyeOff size={16} color="white" />
+          ) : (
+            <Eye size={16} color="white" />
+          )}
+        </button>
 
-        {title && (
+        {!showVideo && (
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 48 }}>
+            {[0, 1, 2, 3, 4].map((bar) => (
+              <span
+                key={bar}
+                style={{
+                  width: 8,
+                  borderRadius: 9999,
+                  background: "rgba(255,255,255,0.8)",
+                  height: "100%",
+                  animation: playing
+                    ? `audio-bar 0.9s ease-in-out ${bar * 0.12}s infinite`
+                    : "none",
+                  transform: playing ? undefined : "scaleY(0.25)",
+                  transformOrigin: "bottom",
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {!showVideo && title && (
           <p
             style={{
               color: "white",
@@ -172,7 +209,7 @@ export function YouTubeAudioEmbed({ url, isPlaying }: YouTubeAudioEmbedProps) {
           </p>
         )}
 
-        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 24, pointerEvents: "auto" }}>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -246,6 +283,11 @@ export function YouTubeAudioEmbed({ url, isPlaying }: YouTubeAudioEmbedProps) {
         @keyframes audio-bar {
           0%, 100% { transform: scaleY(0.25); }
           50% { transform: scaleY(1); }
+        }
+        .yt-audio-embed-frame iframe {
+          width: 100%;
+          height: 100%;
+          display: block;
         }
       `}</style>
     </div>
