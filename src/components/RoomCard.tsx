@@ -37,6 +37,7 @@ import { useDebateSession } from "../hooks/useDebateSession";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
 import { formatSubHeardDisplay } from "../utils/subheard";
+import { useTranslation, Trans } from "react-i18next";
 import { getTotalVotes } from "../utils/votes";
 import {
   FEED_CARD_INACTIVE_SCALE,
@@ -86,7 +87,8 @@ export function RoomCard({
   onSubHeardChange,
 }: RoomCardProps) {
   const { resetTutorialTimer } = useSwipeTutorialContext();
-  
+  const { t } = useTranslation(["postControls"]);
+
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [coverCardSwiped, setCoverCardSwiped] = useState(room.coverCardSwiped || false);
@@ -424,16 +426,16 @@ export function RoomCard({
                 onClick={() => setShowAddResponseModal(true)}
               >
                 <MessageCirclePlus className="w-4 h-4" />
-                Respond
+                {t("respond")}
               </Button>
-            ) : <Badge className="heard-pill bg-gray-600 text-white">Completed</Badge>}
+            ) : <Badge className="heard-pill bg-gray-600 text-white">{t("completed")}</Badge>}
             <Button
               onClick={handleOpenAnalysis}
               variant="secondary"
               className="heard-pill hover:bg-secondary/60"
             >
               <BarChart3 className="w-4 h-4" />
-              Results
+              {t("results")}
             </Button>
             <ShareButton roomId={room.id} roomTopic={room.topic} />
             <RoomCardMenu
