@@ -45,6 +45,7 @@ import { PhoneVerificationDialog } from "./onboarding/PhoneVerificationDialog";
 import { VERIFY_TEXT } from "../utils/constants/text";
 import { UserRankDisplay } from "./side-panel/UserRankDisplay";
 import { FeedbackSheet } from "./FeedbackSheet";
+import { LanguageSelector } from "./LanguageSelector";
 
 const learnMoreLinks = [
   {
@@ -339,6 +340,8 @@ export function SidePanelMenu({
               <HelpCircle className="w-4 h-4 mr-2" />
               Help
             </Button>
+
+            {user.isDeveloper && <LanguageSelector />}
 
             {!user.isAnonymous && (
               <Button

@@ -20,6 +20,7 @@ import { DevTools } from "./components/devtools/DevTools";
 import { AdminActivityFeed } from "./components/AdminActivityFeed";
 import { NewsletterViewer } from "./components/NewsletterViewer";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import { Toaster } from "./components/ui/sonner";
 import { api } from "./utils/api";
 import type { NewDebateRoom, DebateRoom, VoteType, Event } from "./types";
@@ -873,7 +874,9 @@ function AppContent() {
 export default Sentry.withErrorBoundary(function App() {
   return (
     <DebateSessionProvider>
-      <AppContent />
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
     </DebateSessionProvider>
   );
 }, {

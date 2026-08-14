@@ -402,7 +402,6 @@ export function LobbyScreen({
                     onLogout={onLogout}
                     onOpenHelp={() => setHelpModalOpen(true)}
                     onOpenShowcase={onOpenShowcase}
-                    onOpenRetentionDashboard={onOpenRetentionDashboard}
                     onOpenAdminDashboard={onOpenAdminDashboard}
                     onOpenFeatureTracker={onOpenFeatureTracker}
                     onOpenDevTools={onOpenDevTools}
