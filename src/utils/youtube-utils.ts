@@ -1,4 +1,4 @@
-// This file is duplicated on frontend
+// This file is duplicated on backend
 
 const titleCache = new Map<string, string | null>();
 const pendingFetches = new Map<string, Promise<string | null>>();

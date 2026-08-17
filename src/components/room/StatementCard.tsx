@@ -13,7 +13,7 @@ import { getTotalVotes } from "../../utils/votes";
 import { share } from "../../utils/share";
 import { createShareableLink } from "../../utils/url";
 import { YouTubeAudioEmbed } from "./YouTubeAudioEmbed";
-import { extractYouTubeVideoId } from "./CoverCard";
+import { extractYouTubeVideoId } from "../../utils/youtube-utils";
 import moment from "moment";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";

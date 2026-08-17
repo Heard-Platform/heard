@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { extractYouTubeVideoId } from "./room/CoverCard";
+import { extractYouTubeVideoId } from "../utils/youtube-utils";
 import { useYouTubeTitle } from "../hooks/useYouTubeTitle";
 
 interface RenderedStatementProps {
