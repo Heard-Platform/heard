@@ -1,6 +1,7 @@
 import type { DebateRoom, Statement } from "./types.tsx";
 import { escapeHtml } from "./utils.tsx";
 import { getTotalVoteCount, rankStatements } from "./statement-utils.tsx";
+import { renderStatementText } from "./email-statement-text.tsx";
 
 export const COMMUNITY_POST_INVITE_EMAIL_TYPE = "community_post_invite";
 
@@ -27,15 +28,16 @@ const formatSubHeardDisplay = (name: string): string =>
 const PURPLE_GRADIENT =
   "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);";
 
-const renderStatement = (
+const renderStatement = async (
   s: Statement,
   accentColor: string,
   bgColor: string,
-): string => {
+): Promise<string> => {
   const total = getTotalVoteCount(s);
+  const body = await renderStatementText(s.text);
   return `
     <div style="background-color: ${bgColor}; border-left: 4px solid ${accentColor}; padding: 16px; margin-bottom: 12px; border-radius: 8px;">
-      <div style="color: #2d3748; font-size: 15px; line-height: 1.5; margin-bottom: 10px;">"${escapeHtml(s.text)}"</div>
+      <div style="color: #2d3748; font-size: 15px; line-height: 1.5; margin-bottom: 10px;">${body}</div>
       <div style="color: #4a5568; font-size: 13px;">
         <span style="color: #48bb78; margin-right: 12px;">👍 ${s.agrees + s.superAgrees} agree</span>
         <span style="color: #f56565; margin-right: 12px;">👎 ${s.disagrees} disagree</span>
@@ -45,21 +47,21 @@ const renderStatement = (
   `;
 };
 
-const renderSection = (
+const renderSection = async (
   title: string,
   statement: Statement,
   accentColor: string,
   bgColor: string,
-): string => `
+): Promise<string> => `
   <div style="margin-bottom: 32px;">
     <h2 style="color: #030213; font-size: 20px; margin: 0 0 16px 0;">${title}</h2>
-    ${renderStatement(statement, accentColor, bgColor)}
+    ${await renderStatement(statement, accentColor, bgColor)}
   </div>
 `;
 
-export const generateCommunityPostInviteEmailHtml = (
+export const generateCommunityPostInviteEmailHtml = async (
   data: CommunityPostInviteEmailData,
-): string => {
+): Promise<string> => {
   const { room, topAgree, topDisagree, mostSplit, participantCount, frontendUrl, userId } = data;
 
   const topicEscaped = escapeHtml(room.topic);
@@ -67,15 +69,15 @@ export const generateCommunityPostInviteEmailHtml = (
   const subHeardDisplay = subHeard ? formatSubHeardDisplay(subHeard) : "";
 
   const topAgreeHtml = topAgree
-    ? renderSection("👍 Most Agreed Response", topAgree, "#667eea", "#f8f9ff")
+    ? await renderSection("👍 Most Agreed Response", topAgree, "#667eea", "#f8f9ff")
     : "";
 
   const topDisagreeHtml = topDisagree
-    ? renderSection("👎 Most Disagreed Response", topDisagree, "#f5576c", "#fff5f7")
+    ? await renderSection("👎 Most Disagreed Response", topDisagree, "#f5576c", "#fff5f7")
     : "";
 
   const mostSplitHtml = mostSplit
-    ? renderSection("⚖️ Most Split Response", mostSplit, "#fa709a", "#fffbf0")
+    ? await renderSection("⚖️ Most Split Response", mostSplit, "#fa709a", "#fffbf0")
     : "";
 
   return `

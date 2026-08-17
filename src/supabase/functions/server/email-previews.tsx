@@ -67,7 +67,7 @@ app.get(
       const data = generateFakeDebateEndedData(getFrontendUrl());
       return c.json({
         subject: getDebateEndedSubject(data.room.topic),
-        html: generateDebateEndedEmailHtml(data),
+        html: await generateDebateEndedEmailHtml(data),
       });
     }
 
@@ -76,7 +76,7 @@ app.get(
       const data = generateFakeCommunityPostInviteData(getFrontendUrl());
       return c.json({
         subject: getCommunityPostInviteSubject(data.room.topic),
-        html: generateCommunityPostInviteEmailHtml(data),
+        html: await generateCommunityPostInviteEmailHtml(data),
       });
     }
 
@@ -166,12 +166,12 @@ app.post(
       } else if (digestType === "debate_ended") {
         console.log("[send-email] Generating debate-ended email for test email");
         const data = generateFakeDebateEndedData(getFrontendUrl());
-        emailHtml = generateDebateEndedEmailHtml({ ...data, userId });
+        emailHtml = await generateDebateEndedEmailHtml({ ...data, userId });
         subject = getDebateEndedSubject(data.room.topic);
       } else if (digestType === COMMUNITY_POST_INVITE_EMAIL_TYPE) {
         console.log("[send-email] Generating community-post-invite email for test email");
         const data = generateFakeCommunityPostInviteData(getFrontendUrl());
-        emailHtml = generateCommunityPostInviteEmailHtml({ ...data, userId });
+        emailHtml = await generateCommunityPostInviteEmailHtml({ ...data, userId });
         subject = getCommunityPostInviteSubject(data.room.topic);
       } else {
         let emailData: EmailData;
