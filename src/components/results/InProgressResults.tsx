@@ -3,6 +3,7 @@ import { Card } from "../ui/card";
 import { VotesDrawer } from "./VotesDrawer";
 import { RenderedStatement } from "../RenderedStatement";
 import type { Statement, VoteType } from "../../types";
+import { isDefined } from "../../utils/array";
 
 interface InProgressResultsProps {
   statements: Statement[];
@@ -49,7 +50,7 @@ export function InProgressResults({
     0,
   );
 
-  const decisiveStats = statements
+  const decisiveStmts = statements
     .map((s) => ({
       statement: s,
       agrees: s.agrees + s.superAgrees,
@@ -58,12 +59,12 @@ export function InProgressResults({
     }))
     .filter((s) => s.decisive > 0);
 
-  const topAgreed = [...decisiveStats].sort((a, b) => {
+  const topAgreed = [...decisiveStmts].sort((a, b) => {
     const pctDiff = b.agrees / b.decisive - a.agrees / a.decisive;
     return pctDiff !== 0 ? pctDiff : b.decisive - a.decisive;
   })[0];
 
-  const remainingAfterAgreed = decisiveStats.filter(
+  const remainingAfterAgreed = decisiveStmts.filter(
     (s) => s.statement.id !== topAgreed?.statement.id,
   );
 
@@ -86,9 +87,7 @@ export function InProgressResults({
     topAgreed && { ...topAgreed, label: "Top Agreed", icon: "🏆" },
     topDisagreed && { ...topDisagreed, label: "Top Disagreed", icon: "👎" },
     mostSplit && { ...mostSplit, label: "Most Split", icon: "⚖️" },
-  ].filter(
-    (h): h is NonNullable<typeof h> => h !== undefined && h !== null,
-  );
+  ].filter(isDefined);
 
   return (
     <motion.div
