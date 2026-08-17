@@ -1,5 +1,4 @@
 import { motion } from "motion/react";
-import { TrendingUp } from "lucide-react";
 import { Card } from "../ui/card";
 import { VotesDrawer } from "./VotesDrawer";
 import { RenderedStatement } from "../RenderedStatement";
@@ -50,16 +49,46 @@ export function InProgressResults({
     0,
   );
 
-  const topStatements = [...statements]
+  const decisiveStats = statements
     .map((s) => ({
       statement: s,
       agrees: s.agrees + s.superAgrees,
       disagrees: s.disagrees,
       decisive: s.agrees + s.superAgrees + s.disagrees,
     }))
-    .filter((s) => s.decisive > 0)
-    .sort((a, b) => b.decisive - a.decisive)
-    .slice(0, 3);
+    .filter((s) => s.decisive > 0);
+
+  const topAgreed = [...decisiveStats].sort((a, b) => {
+    const pctDiff = b.agrees / b.decisive - a.agrees / a.decisive;
+    return pctDiff !== 0 ? pctDiff : b.decisive - a.decisive;
+  })[0];
+
+  const remainingAfterAgreed = decisiveStats.filter(
+    (s) => s.statement.id !== topAgreed?.statement.id,
+  );
+
+  const topDisagreed = [...remainingAfterAgreed].sort((a, b) => {
+    const pctDiff = b.disagrees / b.decisive - a.disagrees / a.decisive;
+    return pctDiff !== 0 ? pctDiff : b.decisive - a.decisive;
+  })[0];
+
+  const remainingAfterDisagreed = remainingAfterAgreed.filter(
+    (s) => s.statement.id !== topDisagreed?.statement.id,
+  );
+
+  const mostSplit = [...remainingAfterDisagreed].sort((a, b) => {
+    const splitA = Math.abs(a.agrees / a.decisive - 0.5);
+    const splitB = Math.abs(b.agrees / b.decisive - 0.5);
+    return splitA !== splitB ? splitA - splitB : b.decisive - a.decisive;
+  })[0];
+
+  const highlights = [
+    topAgreed && { ...topAgreed, label: "Top Agreed", icon: "🏆" },
+    topDisagreed && { ...topDisagreed, label: "Top Disagreed", icon: "👎" },
+    mostSplit && { ...mostSplit, label: "Most Split", icon: "⚖️" },
+  ].filter(
+    (h): h is NonNullable<typeof h> => h !== undefined && h !== null,
+  );
 
   return (
     <motion.div
@@ -103,63 +132,58 @@ export function InProgressResults({
             />
           </motion.div>
 
-          {/* Live Leaderboard - Racing Bars */}
+          {/* Live Highlights */}
           <div className="space-y-3 md:space-y-4 mb-4">
-            <div className="heard-between mb-2">
-              <h4 className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
-                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
-                <span className="hidden sm:inline">
-                  Live Standings
-                </span>
-                <span className="sm:hidden">Standings</span>
-              </h4>
-              <span className="text-[10px] sm:text-xs text-muted-foreground">
-                Most popular opinions
-              </span>
-            </div>
+            {highlights.map(
+              ({ statement: s, agrees, disagrees, decisive, label, icon }, index) => {
+                const agreePct = (agrees / decisive) * 100;
+                const disagreePct = 100 - agreePct;
 
-            {topStatements.map(({ statement: s, agrees, disagrees, decisive }, index) => {
-              const agreePct = (agrees / decisive) * 100;
-              const disagreePct = 100 - agreePct;
+                return (
+                  <motion.div
+                    key={s.id}
+                    initial={{ x: -50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="space-y-1.5"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] sm:text-xs font-semibold text-orange-700">
+                        {icon} {label}
+                      </span>
+                    </div>
 
-              return (
-                <motion.div
-                  key={s.id}
-                  initial={{ x: -50, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="space-y-1.5"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-[10px] sm:text-xs truncate min-w-0 flex-1">
-                      <RenderedStatement text={s.text} />
-                    </p>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
-                      {decisive} vote{decisive === 1 ? "" : "s"}
-                    </span>
-                  </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[10px] sm:text-xs truncate min-w-0 flex-1">
+                        <RenderedStatement text={s.text} />
+                      </p>
+                      <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
+                        {decisive} vote{decisive === 1 ? "" : "s"}
+                      </span>
+                    </div>
 
-                  {/* Tug-of-war bar */}
-                  <div className="relative h-3 sm:h-4 bg-gray-200 rounded-full overflow-hidden">
-                    <TugBar side="agree" percentage={agreePct} />
-                    <TugBar side="disagree" percentage={disagreePct} />
-                    {/* Center reference line */}
-                    <div className="absolute left-1/2 top-0 h-full w-px bg-white/80 -translate-x-1/2 z-10" />
-                  </div>
+                    {/* Tug-of-war bar */}
+                    <div className="relative h-3 sm:h-4 bg-gray-200 rounded-full overflow-hidden">
+                      <TugBar side="agree" percentage={agreePct} />
+                      <TugBar side="disagree" percentage={disagreePct} />
+                      {/* Center reference line */}
+                      <div className="absolute left-1/2 top-0 h-full w-px bg-white/80 -translate-x-1/2 z-10" />
+                    </div>
 
-                  <div className="flex items-center justify-between text-[10px] sm:text-xs">
-                    <span className="text-emerald-700 font-medium">
-                      ✅ {agrees} agree{agrees === 1 ? "" : "s"}
-                    </span>
-                    <span className="text-rose-700 font-medium">
-                      {disagrees} disagree{disagrees === 1 ? "" : "s"} ❌
-                    </span>
-                  </div>
-                </motion.div>
-              );
-            })}
+                    <div className="flex items-center justify-between text-[10px] sm:text-xs">
+                      <span className="text-emerald-700 font-medium">
+                        ✅ {agrees} agree{agrees === 1 ? "" : "s"}
+                      </span>
+                      <span className="text-rose-700 font-medium">
+                        {disagrees} disagree{disagrees === 1 ? "" : "s"} ❌
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              },
+            )}
 
-            {topStatements.length === 0 && (
+            {highlights.length === 0 && (
               <p className="text-xs sm:text-sm text-center text-muted-foreground py-2">
                 Waiting for the first decisive votes…
               </p>
