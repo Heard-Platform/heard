@@ -1,5 +1,5 @@
 // Utility functions for working with KV store data
-import { getAllRecords } from "./db-utils.ts";
+import { getAllRecords, getAllKvRecordsWithPrefix } from "./db-utils.ts";
 import * as kv from "./kv_store.tsx";
 import {
   type User,
@@ -563,16 +563,18 @@ export const getClusterAssignmentsBatch = async (
   roomId: string,
   userIds: string[],
 ): Promise<Map<string, { clusterId: number; distance: number; timestamp: number }>> => {
-  const keys = userIds.map((userId) => `cluster_assignment:${roomId}:${userId}`);
-  const values = await kv.mget(keys);
+  if (userIds.length === 0) return new Map();
+  const prefix = `cluster_assignment:${roomId}:`;
+  const rows = await getAllKvRecordsWithPrefix(prefix);
+  const userIdSet = new Set(userIds);
 
   const clusters = new Map<string, { clusterId: number; distance: number; timestamp: number }>();
-  for (let i = 0; i < userIds.length; i++) {
-    if (values[i]) {
-      const parsed = parseKvData<{ clusterId: number; distance: number; timestamp: number }>(values[i]);
-      if (parsed) {
-        clusters.set(userIds[i], parsed);
-      }
+  for (const [key, raw] of rows) {
+    const userId = key.slice(prefix.length);
+    if (!userIdSet.has(userId)) continue;
+    const parsed = parseKvData<{ clusterId: number; distance: number; timestamp: number }>(raw);
+    if (parsed) {
+      clusters.set(userId, parsed);
     }
   }
   return clusters;
