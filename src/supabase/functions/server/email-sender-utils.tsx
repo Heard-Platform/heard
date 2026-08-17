@@ -1,4 +1,14 @@
 import { getAllRealUsers, getSentEmails } from "./kv-utils.tsx";
+import { User } from "./types.tsx";
+
+export const isEligibleEmailRecipient = (
+  user: User | undefined,
+): user is User & { email: string } =>
+  !!user &&
+  !!user.email &&
+  user.emailDigestsEnabled !== false &&
+  !user.isUnsubbedFromUpdates &&
+  !user.isTestUser;
 
 export interface SendEmailParams {
   to: string;

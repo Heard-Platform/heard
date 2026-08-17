@@ -11,6 +11,7 @@ export function formatYouTubeTitle(title: string, author?: string | null): strin
   return author ? `${title} by ${cleanAuthorName(author)}` : title;
 }
 
+// NOTE: Duplicated on backend
 function fetchYouTubeTitle(videoId: string): Promise<string | null> {
   const pending = pendingFetches.get(videoId);
   if (pending) return pending;

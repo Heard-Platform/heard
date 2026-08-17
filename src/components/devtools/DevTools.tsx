@@ -11,6 +11,7 @@ import { VoteStatsTab } from "./VoteStatsTab";
 import { ReferralEventsTab } from "./ReferralEventsTab";
 import { PerformanceTestTab } from "./PerformanceTestTab";
 import { TestingTab } from "./TestingTab";
+import { NotificationSystemTab } from "./NotificationSystemTab";
 import { TabButton } from "./TabButton";
 import {
   parseDevToolsTabFromUrl,
@@ -23,7 +24,7 @@ interface DevToolsProps {
   onExit?: () => void;
 }
 
-type TabType = "vote-matrix" | "clustering" | "email" | "email-monitoring" | "enrichment" | "posts" | "flyers" | "vote-stats" | "referral-events" | "performance" | "testing";
+type TabType = "vote-matrix" | "clustering" | "email" | "email-monitoring" | "notification-system" | "enrichment" | "posts" | "flyers" | "vote-stats" | "referral-events" | "performance" | "testing";
 
 export function DevTools({ user, onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
@@ -80,6 +81,11 @@ export function DevTools({ user, onExit }: DevToolsProps) {
                 onClick={() => handleTabChange("email-monitoring")}
               />
               <TabButton
+                active={activeTab === "notification-system"}
+                label="Notification System"
+                onClick={() => handleTabChange("notification-system")}
+              />
+              <TabButton
                 active={activeTab === "enrichment"}
                 label="Enrichment Service"
                 onClick={() => handleTabChange("enrichment")}
@@ -130,6 +136,9 @@ export function DevTools({ user, onExit }: DevToolsProps) {
             {activeTab === "email" && <EmailPreviews user={user} />}
             {activeTab === "email-monitoring" && (
               <EmailMonitoringTabContainer />
+            )}
+            {activeTab === "notification-system" && (
+              <NotificationSystemTab user={user} />
             )}
             {activeTab === "enrichment" && <EnrichmentTab />}
             {activeTab === "posts" && <PostsTab />}
