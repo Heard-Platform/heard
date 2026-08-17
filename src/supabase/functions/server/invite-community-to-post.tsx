@@ -6,7 +6,7 @@ import { getStatements } from "./debate-api.tsx";
 import { getTotalVoteCount, rankStatements } from "./statement-utils.tsx";
 import { CommunityMembership } from "./types.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
-import { sendEmailViaResend } from "./email-sender-utils.tsx";
+import { isEligibleEmailRecipient, sendEmailViaResend } from "./email-sender-utils.tsx";
 import { getFrontendUrl } from "./utils.tsx";
 import {
   COMMUNITY_POST_INVITE_EMAIL_TYPE,
@@ -82,10 +82,7 @@ app.post(
             continue;
           }
           const user = usersById.get(userId);
-          if (!user || !user.email) continue;
-          if (user.emailDigestsEnabled === false) continue;
-          if (user.isUnsubbedFromUpdates) continue;
-          if (user.isTestUser) continue;
+          if (!isEligibleEmailRecipient(user)) continue;
           recipients.push({ id: user.id, email: user.email });
         }
       }

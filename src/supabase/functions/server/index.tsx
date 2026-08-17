@@ -16,6 +16,7 @@ import { analysisApi } from "./analysis-api.tsx";
 import { askTheDataApi } from "./ask-the-data-api.ts";
 import { vineApi } from "./vine-api.tsx";
 import { emailPreviewsApi } from "./email-previews.tsx";
+import { notificationApi } from "./notification-api.tsx";
 import { sentEmailsApi } from "./sent-emails-api.ts";
 import { digestEmailOrchestratorApi } from "./email-digest-orchestrator.tsx";
 import { adminDigestCronApi } from "./admin-digest-cron-api.tsx";
@@ -131,7 +132,7 @@ protect(validateSession, [
 protect(validateDeveloper, [
   "dev/*", "internal/*", "stats/*", "reddit/*",
   "test-room/*", "rant-test-room/*", "realtime-test-room/*", "seed/*",
-  "performance-test/*",
+  "performance-test/*", "notification/*",
 ]);
 
 // Host-only mod routes
@@ -168,6 +169,7 @@ app.route("/", askTheDataApi);
 app.route("/", modApi);
 app.route("/", vineApi);
 app.route("/", emailPreviewsApi);
+app.route("/", notificationApi);
 app.route("/", sentEmailsApi);
 app.route("/", digestEmailOrchestratorApi);
 app.route("/", adminDigestCronApi);

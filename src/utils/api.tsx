@@ -856,6 +856,42 @@ class ApiClient extends BaseApiClient {
     return this.request<{posts: DebateRoom[]}>("/dev/posts");
   }
 
+  async getNotifyRoomPreview(roomId: string) {
+    return this.request<{
+      subject: string;
+      html: string;
+      newStatementCount: number;
+      participantCount: number;
+      recipientCount: number;
+    }>(`/notification/room/preview?roomId=${encodeURIComponent(roomId)}`);
+  }
+
+  async sendNotifyRoomTestEmail(roomId: string) {
+    return this.request<{ message: string; emailId?: string }>(
+      "/notification/room/send-test",
+      {
+        method: "POST",
+        body: JSON.stringify({ roomId }),
+      },
+    );
+  }
+
+  async sendNotifyRoomEmail(roomId: string, dryRun: boolean) {
+    return this.request<{
+      dryRun: boolean;
+      roomId: string;
+      topic: string;
+      recipientCount: number;
+      sent: number;
+      failed: number;
+      errors: string[];
+      message: string;
+    }>("/notification/room/send", {
+      method: "POST",
+      body: JSON.stringify({ roomId, dryRun }),
+    });
+  }
+
   async recordFlyerScan(flyer: string) {
     return this.request("/flyer/scan", {
       method: "POST",

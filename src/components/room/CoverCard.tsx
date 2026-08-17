@@ -1,22 +1,11 @@
 import { motion } from "motion/react";
 import { FullCoverData } from "../../types";
 import { openImageOverlay } from "../../utils/image-overlay";
+import { extractYouTubeVideoId } from "../../utils/youtube-utils";
 
 interface CoverCardProps {
   cover: FullCoverData;
   isTopCard: boolean;
-}
-
-export function extractYouTubeVideoId(url: string): string | null {
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&\n?#]+)/,
-    /youtube\.com\/embed\/([^&\n?#]+)/,
-  ];
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match?.[1]) return match[1];
-  }
-  return null;
 }
 
 export function CoverCard({ cover, isTopCard }: CoverCardProps) {

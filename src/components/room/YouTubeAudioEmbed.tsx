@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Play, Pause, Rewind, FastForward, Eye, EyeOff } from "lucide-react";
-import { extractYouTubeVideoId } from "./CoverCard";
 import { useShowVideoSetting } from "../../hooks/useShowVideoSetting";
-import { formatYouTubeTitle } from "../../hooks/useYouTubeTitle";
+import { extractYouTubeVideoId, formatYouTubeTitle } from "../../utils/youtube-utils";
 
 const SKIP_SECONDS = 10;
 
