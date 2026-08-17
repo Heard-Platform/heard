@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { api, safelyMakeApiCall } from "../../utils/api";
 import { RoomAnalyticsModal } from "./RoomAnalyticsModal";
-import type { ReferrerShareCount, TrafficSourceCount } from "./RoomAnalyticsModal";
+import type { AnonymityBreakdown, ReferrerShareCount, TrafficSourceCount } from "./RoomAnalyticsModal";
 
 interface RoomAnalyticsModalContainerProps {
   roomId: string;
@@ -18,6 +18,7 @@ export function RoomAnalyticsModalContainer({
   const [data, setData] = useState<{
     trafficSources: TrafficSourceCount[];
     referrers: ReferrerShareCount[];
+    anonymity: AnonymityBreakdown;
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -50,6 +51,7 @@ export function RoomAnalyticsModalContainer({
       roomTopic={roomTopic}
       trafficSources={data.trafficSources}
       referrers={data.referrers}
+      anonymity={data.anonymity}
       onClose={onClose}
     />
   );

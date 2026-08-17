@@ -351,6 +351,43 @@ describe("computeRoomTrafficSources", () => {
     assertEquals(result.referrers, []);
   });
 
+  it("defaults everyone to named when no anonymous set is given", () => {
+    const room = makeRoom({ participants: ["user-1", "user-2"] });
+    const result = computeRoomTrafficSources(room, [], noFlyerUsers());
+
+    assertEquals(result.anonymity, { anonymous: 0, named: 2 });
+  });
+
+  it("splits participants into anonymous and named", () => {
+    const room = makeRoom({
+      participants: ["user-1", "user-2", "user-3"],
+    });
+    const result = computeRoomTrafficSources(
+      room,
+      [],
+      noFlyerUsers(),
+      new Set(["user-1", "user-2"]),
+    );
+
+    assertEquals(result.anonymity, { anonymous: 2, named: 1 });
+  });
+
+  it("excludes the host and cohosts from the anonymity breakdown", () => {
+    const room = makeRoom({
+      hostId: "host-1",
+      cohostIds: ["cohost-1"],
+      participants: ["host-1", "cohost-1", "user-1"],
+    });
+    const result = computeRoomTrafficSources(
+      room,
+      [],
+      noFlyerUsers(),
+      new Set(["host-1", "cohost-1"]),
+    );
+
+    assertEquals(result.anonymity, { anonymous: 0, named: 1 });
+  });
+
   it("dedupes repeat events from the same user, keeping only the earliest", () => {
     const room = makeRoom({ participants: ["user-1"] });
     const events: UserEvent[] = [

@@ -21,9 +21,15 @@ export interface ReferrerShareCount {
   shares: number;
 }
 
+export interface AnonymityBreakdown {
+  anonymous: number;
+  named: number;
+}
+
 export interface RoomTrafficSources {
   trafficSources: TrafficSourceCount[];
   referrers: ReferrerShareCount[];
+  anonymity: AnonymityBreakdown;
 }
 
 export interface FlyerUser {
@@ -80,11 +86,21 @@ export function computeRoomTrafficSources(
   >,
   events: UserEvent[],
   flyerUsers: FlyerUser[],
+  anonymousUserIds: Set<string> = new Set(),
 ): RoomTrafficSources {
   const excluded = new Set([room.hostId, ...(room.cohostIds ?? [])]);
   const participantIds = new Set(
     room.participants.filter((id) => !excluded.has(id)),
   );
+
+  let anonymous = 0;
+  for (const id of participantIds) {
+    if (anonymousUserIds.has(id)) anonymous++;
+  }
+  const anonymity: AnonymityBreakdown = {
+    anonymous,
+    named: participantIds.size - anonymous,
+  };
 
   const flyerEvents: UserEvent[] = flyerUsers.map((flyerUser) => ({
     type: FLYER_SIGNUP_EVENT_TYPE,
@@ -159,6 +175,7 @@ export function computeRoomTrafficSources(
       { key: "other", count: otherCount },
     ],
     referrers,
+    anonymity,
   };
 }
 
@@ -258,6 +275,9 @@ export async function getRoomTrafficSources(
     ]);
 
   const realUserIds = new Set(users.map((user) => user.id));
+  const anonymousUserIds = new Set(
+    users.filter((user) => user.isAnonymous).map((user) => user.id),
+  );
 
   const flyerUsers: FlyerUser[] = users
     .filter((user) => user.flyerId === room.id)
@@ -272,5 +292,6 @@ export async function getRoomTrafficSources(
     realRoom,
     [...referredByEvents, ...initialLoadEvents],
     flyerUsers,
+    anonymousUserIds,
   );
 }
