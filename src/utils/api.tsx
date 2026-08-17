@@ -28,7 +28,7 @@ import {
   StatementMerge,
 } from "../types";
 import { AskTheDataResponse, FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
-import type { ReferrerShareCount, TrafficSourceCount } from "../components/room/RoomAnalyticsModal";
+import type { AnonymityBreakdown, ReferrerShareCount, TrafficSourceCount } from "../components/room/RoomAnalyticsModal";
 import {
   BaseApiClient,
   ApiResponse,
@@ -981,6 +981,7 @@ class ApiClient extends BaseApiClient {
     return this.request<{
       trafficSources: TrafficSourceCount[];
       referrers: ReferrerShareCount[];
+      anonymity: AnonymityBreakdown;
     }>(`/room/${roomId}/mod/traffic-sources`);
   }
 

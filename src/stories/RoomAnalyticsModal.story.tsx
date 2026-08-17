@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { RoomAnalyticsModal } from "../components/room/RoomAnalyticsModal";
 import type {
+  AnonymityBreakdown,
   ReferrerShareCount,
   TrafficSourceCount,
 } from "../components/room/RoomAnalyticsModal";
 import {
   generateMockTrafficSources,
   generateMockReferrers,
+  generateMockAnonymity,
 } from "../components/room/analytics-mock";
 import { StoryContainer } from "./StoryContainer";
 
@@ -16,6 +18,7 @@ const mixedReferrers: ReferrerShareCount[] = generateMockReferrers(
   "room-mixed-referrers",
   mixedSources.find((s) => s.key === "referral")?.count ?? 0,
 );
+const mixedAnonymity: AnonymityBreakdown = generateMockAnonymity("room-mixed-anonymity", 214);
 
 const newsletterDominant: TrafficSourceCount[] = [
   { key: "newsletter", count: 312 },
@@ -28,6 +31,10 @@ const newsletterReferrers: ReferrerShareCount[] = generateMockReferrers(
   "newsletter-referrers",
   18,
 );
+const newsletterAnonymity: AnonymityBreakdown = generateMockAnonymity(
+  "newsletter-anonymity",
+  379,
+);
 
 const flyerCampaign: TrafficSourceCount[] = [
   { key: "flyer", count: 88 },
@@ -35,6 +42,7 @@ const flyerCampaign: TrafficSourceCount[] = [
   { key: "direct", count: 15 },
 ];
 const flyerReferrers: ReferrerShareCount[] = generateMockReferrers("flyer-referrers", 22);
+const flyerAnonymity: AnonymityBreakdown = generateMockAnonymity("flyer-anonymity", 125);
 
 const emptyState: TrafficSourceCount[] = [];
 
@@ -43,11 +51,13 @@ function ModalTrigger({
   roomTopic,
   trafficSources,
   referrers,
+  anonymity,
 }: {
   label: string;
   roomTopic: string;
   trafficSources: TrafficSourceCount[];
   referrers?: ReferrerShareCount[];
+  anonymity?: AnonymityBreakdown;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
@@ -58,6 +68,7 @@ function ModalTrigger({
           roomTopic={roomTopic}
           trafficSources={trafficSources}
           referrers={referrers}
+          anonymity={anonymity}
           onClose={() => setIsOpen(false)}
         />
       )}
@@ -80,6 +91,7 @@ export function RoomAnalyticsModalStory() {
               roomTopic="Should the city add more bike lanes downtown?"
               trafficSources={mixedSources}
               referrers={mixedReferrers}
+              anonymity={mixedAnonymity}
             />
           ),
         },
@@ -92,6 +104,7 @@ export function RoomAnalyticsModalStory() {
               roomTopic="What should the new community center prioritize?"
               trafficSources={newsletterDominant}
               referrers={newsletterReferrers}
+              anonymity={newsletterAnonymity}
             />
           ),
         },
@@ -104,6 +117,7 @@ export function RoomAnalyticsModalStory() {
               roomTopic="World Cup: who do you want to win?"
               trafficSources={flyerCampaign}
               referrers={flyerReferrers}
+              anonymity={flyerAnonymity}
             />
           ),
         },
@@ -115,6 +129,7 @@ export function RoomAnalyticsModalStory() {
               label="Open modal"
               roomTopic="Brand new room with no joins yet"
               trafficSources={emptyState}
+              anonymity={{ anonymous: 0, named: 0 }}
             />
           ),
         },

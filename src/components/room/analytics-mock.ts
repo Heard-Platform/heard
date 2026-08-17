@@ -1,4 +1,5 @@
 import type {
+  AnonymityBreakdown,
   ReferrerShareCount,
   TrafficSourceCount,
   TrafficSourceKey,
@@ -56,4 +57,10 @@ export function generateMockReferrers(seed: string, totalShares: number): Referr
     remaining -= shares;
     return { id: `${seed}-referrer-${i}`, shares: Math.max(0, shares) };
   }).filter((r) => r.shares > 0);
+}
+
+export function generateMockAnonymity(seed: string, total: number): AnonymityBreakdown {
+  const rng = makeSeededRng(seed);
+  const anonymous = Math.round(total * (0.15 + rng() * 0.35));
+  return { anonymous, named: total - anonymous };
 }

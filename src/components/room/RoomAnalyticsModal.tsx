@@ -8,6 +8,8 @@ import {
   HelpCircle,
   ChevronRight,
   ChevronDown,
+  User,
+  EyeOff,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 
@@ -27,6 +29,11 @@ export interface TrafficSourceCount {
 export interface ReferrerShareCount {
   id: string;
   shares: number;
+}
+
+export interface AnonymityBreakdown {
+  anonymous: number;
+  named: number;
 }
 
 const SOURCE_META: Record<
@@ -171,10 +178,55 @@ function TrafficSourcesSection({
   );
 }
 
+function AnonymitySection({ anonymous, named }: AnonymityBreakdown) {
+  const total = anonymous + named;
+  const rows = [
+    { label: "Non-anonymous", count: named, icon: User, color: "#2a78d6" },
+    { label: "Anonymous", count: anonymous, icon: EyeOff, color: "#8a8a8a" },
+  ];
+
+  return (
+    <div>
+      <h3 className="text-sm font-medium mb-3">Anonymous vs. non-anonymous</h3>
+      {total === 0 ? (
+        <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+          No participant data yet.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {rows.map(({ label, count, icon: Icon, color }) => {
+            const pct = Math.round((count / total) * 100);
+            return (
+              <div key={label} className="flex items-center gap-3">
+                <Icon className="w-4 h-4 shrink-0 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="truncate">{label}</span>
+                    <span className="text-muted-foreground text-xs shrink-0 ml-2">
+                      {count} · {pct}%
+                    </span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${pct}%`, backgroundColor: color }}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface RoomAnalyticsModalProps {
   roomTopic: string;
   trafficSources: TrafficSourceCount[];
   referrers?: ReferrerShareCount[];
+  anonymity?: AnonymityBreakdown;
   onClose: () => void;
 }
 
@@ -182,6 +234,7 @@ export function RoomAnalyticsModal({
   roomTopic,
   trafficSources,
   referrers,
+  anonymity,
   onClose,
 }: RoomAnalyticsModalProps) {
   return (
@@ -190,8 +243,9 @@ export function RoomAnalyticsModal({
         <DialogTitle className="line-clamp-1 pr-8">Room analytics</DialogTitle>
         <p className="text-xs text-muted-foreground line-clamp-1 -mt-2">{roomTopic}</p>
 
-        <div className="py-2">
+        <div className="py-2 space-y-6">
           <TrafficSourcesSection sources={trafficSources} referrers={referrers} />
+          {anonymity && <AnonymitySection {...anonymity} />}
         </div>
       </DialogContent>
     </Dialog>
