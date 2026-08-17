@@ -72,6 +72,7 @@ export const generateNewStatementsEmailHtml = async (
         </div>
 
         <div style="padding: 32px 24px;">
+          <h2 style="margin: 0 0 16px 0; color: #030213; font-size: 18px;">New statements</h2>
           ${previewHtml}
 
           <div style="text-align: center; margin-top: 24px;">
