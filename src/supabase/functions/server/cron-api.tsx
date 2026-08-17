@@ -102,7 +102,7 @@ export async function sendDebateEndedEmails(
         continue;
       }
 
-      const html = generateDebateEndedEmailHtml({
+      const html = await generateDebateEndedEmailHtml({
         room,
         topStatements,
         mostDisagreed,

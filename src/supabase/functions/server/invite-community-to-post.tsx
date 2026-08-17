@@ -98,7 +98,7 @@ app.post(
         }
 
         try {
-          const html = generateCommunityPostInviteEmailHtml({
+          const html = await generateCommunityPostInviteEmailHtml({
             room,
             topAgree,
             topDisagree: mostDisagreed,
