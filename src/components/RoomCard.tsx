@@ -7,23 +7,15 @@ import { Button } from "./ui/button";
 import {
   BarChart3,
   Loader2,
-  Info,
   MessageCirclePlus,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
 import { SwipeableStatementStack } from "./room/SwipeableStatementStack";
-import { extractYouTubeVideoId } from "./room/CoverCard";
 import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { VotesDrawer } from "./results/VotesDrawer";
 import { AddResponseModal } from "./room/AddResponseModal";
 import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType, UserSession, FullCoverData } from "../types";
@@ -96,7 +88,10 @@ export function RoomCard({
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
 
   const [showAnalysis, setShowAnalysis] = useState(false);
-  const [showDescriptionModal, setShowDescriptionModal] = useState(false);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [canExpandDescription, setCanExpandDescription] = useState(false);
+  const descriptionRef = useRef<HTMLSpanElement>(null);
+  const [showFullscreenImage, setShowFullscreenImage] = useState(false);
   const [showAddResponseModal, setShowAddResponseModal] = useState(false);
   const [showDeduplication, setShowDeduplication] = useState(false);
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
@@ -125,6 +120,13 @@ export function RoomCard({
   useEffect(() => {
     setShareCardSwiped(room.shareCardSwiped || false);
   }, [room.shareCardSwiped]);
+
+  useEffect(() => {
+    const el = descriptionRef.current;
+    if (el) {
+      setCanExpandDescription(el.scrollWidth > el.clientWidth);
+    }
+  }, [room.description]);
 
   const handleOpenAnalysis = () => {
     setShowAnalysis(true);
@@ -263,84 +265,99 @@ export function RoomCard({
             transition={{ delay: 0.1 }}
             className="space-y-2"
           >
-            {/* Subheard label */}
-            {!currentSubHeard && room.subHeard && (
-              <p className="text-center text-xs text-muted-foreground/60 font-medium tracking-wide uppercase">
-                <button
-                  onClick={() => onSubHeardChange(room.subHeard!)}
-                  className="underline decoration-dotted underline-offset-2 hover:text-muted-foreground"
-                >
-                  {formatSubHeardDisplay(room.subHeard)}
-                </button>
-              </p>
-            )}
+            {/* Subheard, image, title, and description */}
+            <div className="grid grid-cols-[auto_1fr] items-start gap-x-3 gap-y-1">
+              {!currentSubHeard && room.subHeard && (
+                <>
+                  <div />
+                  <p className="text-left text-xs text-muted-foreground/60 font-medium tracking-wide uppercase">
+                    <button
+                      onClick={() => onSubHeardChange(room.subHeard!)}
+                      className="underline decoration-dotted underline-offset-2 hover:text-muted-foreground"
+                    >
+                      {formatSubHeardDisplay(room.subHeard)}
+                    </button>
+                  </p>
+                </>
+              )}
 
-            {/* Title */}
-            <div className="flex items-start justify-center gap-1">
-              <h2 className="font-bold text-foreground text-xl text-center leading-tight">
-                {room.topic}
-              </h2>
-              {(room.description || room.imageUrl || room.youtubeUrl) && (
+              {room.imageUrl && (
                 <button
-                  onClick={() => setShowDescriptionModal(true)}
-                  className="mt-1 shrink-0 text-foreground/40 hover:text-foreground/70 transition-colors"
+                  onClick={() => setShowFullscreenImage(true)}
+                  className="shrink-0 w-16 h-16 rounded-lg overflow-hidden"
                 >
-                  <Info className="w-5 h-5" />
+                  <img
+                    src={room.imageUrl}
+                    alt={room.topic}
+                    className="w-full h-full object-cover"
+                  />
                 </button>
               )}
-            </div>
-
-            {statements.length > 0 && (() => {
-              const totalVotes = statements.reduce((sum, s) => sum + getTotalVotes(s), 0);
-              return (
-                <p className="text-center text-foreground">
-                  <strong>{totalVotes.toLocaleString()}</strong> votes on <strong>{statements.length.toLocaleString()}</strong> responses
-                </p>
-              );
-            })()}
-
-            {(room.description || room.imageUrl || room.youtubeUrl) && (
-              <Dialog open={showDescriptionModal} onOpenChange={setShowDescriptionModal}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{room.topic}</DialogTitle>
-                  </DialogHeader>
-                  {room.imageUrl && (
-                    <img
-                      src={room.imageUrl}
-                      alt={room.topic}
-                      className="w-full rounded-lg object-cover max-h-48"
-                    />
-                  )}
-                  {room.youtubeUrl && (() => {
-                    const videoId = extractYouTubeVideoId(room.youtubeUrl!);
-                    return videoId ? (
-                      <div className="relative w-full overflow-hidden rounded-lg" style={{ paddingBottom: "56.25%" }}>
-                        <iframe
-                          className="absolute inset-0 w-full h-full"
-                          src={`https://www.youtube.com/embed/${videoId}`}
-                          title="Intro video"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
+              <div className="min-w-0 col-start-2 text-left">
+                <h2 className="font-bold text-foreground text-xl leading-tight">
+                  {room.topic}
+                </h2>
+                {room.description && (
+                  <div className="mt-1">
+                    {descriptionExpanded ? (
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          <LinkedText text={room.description} />
+                        </p>
+                        <button
+                          onClick={() => setDescriptionExpanded(false)}
+                          className="text-sm text-foreground/60 hover:text-foreground underline underline-offset-2"
+                        >
+                          see less
+                        </button>
                       </div>
-                    ) : null;
-                  })()}
-                  {room.description && (
-                    <p className="text-sm text-muted-foreground">
-                      <LinkedText text={room.description} />
-                    </p>
-                  )}
-                </DialogContent>
-              </Dialog>
-            )}
+                    ) : (
+                      <div className="flex items-baseline gap-1">
+                        <span
+                          ref={descriptionRef}
+                          className="min-w-0 flex-1 truncate text-sm text-muted-foreground"
+                        >
+                          <LinkedText text={room.description} />
+                        </span>
+                        {canExpandDescription && (
+                          <button
+                            onClick={() => setDescriptionExpanded(true)}
+                            className="shrink-0 text-sm text-foreground/60 hover:text-foreground underline underline-offset-2"
+                          >
+                            see more
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
+                {statements.length > 0 && (() => {
+                  const totalVotes = statements.reduce((sum, s) => sum + getTotalVotes(s), 0);
+                  return (
+                    <p className="text-left text-foreground mt-1">
+                      <strong>{totalVotes.toLocaleString()}</strong> votes on <strong>{statements.length.toLocaleString()}</strong> responses
+                    </p>
+                  );
+                })()}
+              </div>
+            </div>
           </motion.div>
 
-          {/* Statement Stack or Results */}
-          {!isCompleted && statements.length > 0 && !hasSwipedAll && (
-            <p className="text-center text-s text-muted-foreground/60">Vote on responses below</p>
+          {room.imageUrl && showFullscreenImage && (
+            <div
+              className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+              onClick={() => setShowFullscreenImage(false)}
+            >
+              <img
+                src={room.imageUrl}
+                alt={room.topic}
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            </div>
           )}
+
+          {/* Statement Stack or Results */}
           {isCompleted && statements.length > 0 ? (
             <ConcludedResults
               statements={statements}
