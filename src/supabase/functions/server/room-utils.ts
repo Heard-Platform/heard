@@ -1,4 +1,8 @@
 import {
+  getStatementsForRoomIncludingHidden,
+  getVotesForStatement,
+} from "./kv-utils.tsx";
+import {
   DebateRoom,
   Statement,
   StatementMerge,
@@ -49,6 +53,26 @@ export const createNewRoomData = (
 
 export function isRoomEnded(room: DebateRoom): boolean {
   return !!room.endTime && Date.now() >= room.endTime;
+}
+
+export async function getRoomParticipants(
+  roomId: string,
+): Promise<string[]> {
+  const statements = await getStatementsForRoomIncludingHidden(roomId);
+  const votesByStatement = await Promise.all(
+    statements.map((statement) => getVotesForStatement(statement.id)),
+  );
+
+  const participantIds = new Set<string>();
+  for (const statement of statements) {
+    participantIds.add(statement.author);
+  }
+  for (const votes of votesByStatement) {
+    for (const vote of votes) {
+      participantIds.add(vote.userId);
+    }
+  }
+  return Array.from(participantIds);
 }
 
 export function applyStatementMerges(

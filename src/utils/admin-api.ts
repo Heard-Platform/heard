@@ -169,6 +169,33 @@ class AdminApiClient extends BaseApiClient {
     );
   }
 
+  async cleanupOrphanedAnonymousVotesForRoom(
+    adminKey: string,
+    roomId: string,
+    dryRun: boolean,
+  ) {
+    interface Result {
+      roomId: string;
+      dryRun: boolean;
+      orphansFound: number;
+      orphans: {
+        statementId: string;
+        anonymousUserId: string;
+        mergedIntoUserId: string;
+      }[];
+      message: string;
+    }
+
+    return this.request<Result>(
+      "/one-time-fixes/cleanup-orphaned-anonymous-votes-for-room",
+      {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+        body: JSON.stringify({ roomId, dryRun }),
+      },
+    );
+  }
+
   async addWhereDoYouLiveQuestion(adminKey: string) {
     interface Result {
       added: boolean;
