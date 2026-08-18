@@ -127,6 +127,10 @@ export const getUser = async (userId: string) => {
   return getParsedKvData<User>(`user:${userId}`);
 };
 
+export const getAllUsers = async (): Promise<User[]> => {
+  return getAllRecords<User>("user:");
+};
+
 export const getAllRealUsers = async (): Promise<User[]> => {
   const allUsers = await getAllRecords<User>("user:");
   return allUsers.filter(user => !user.isTestUser && !user.webdriver);

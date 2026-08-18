@@ -31,6 +31,34 @@ interface ScriptConfig {
 
 const buildScripts = (communityOptions: string[]): ScriptConfig[] => [
   {
+    id: "cleanup-orphaned-anonymous-votes-for-room",
+    title: "Cleanup Orphaned Anonymous Votes (Single Room)",
+    description: "Fixes a bug where converting from anonymous to signed-in left the old anonymous vote record behind instead of replacing it, causing that person to still show up as an anonymous participant in room attribution. Scoped to one room. Idempotent.",
+    fields: [
+      { key: "roomId", placeholder: "Room ID", required: true },
+    ],
+    dryRunMessage: "Run DRY RUN?\n\nPreviews how many orphaned anonymous vote records would be deleted for this room.\n\nNo changes will be made.\n\nContinue?",
+    liveRunMessage: "Run LIVE FIX?\n\nThis will delete orphaned anonymous vote records left behind for this room from earlier anonymous-to-signed-in conversions.\n\nContinue?",
+    successMessageDryRun: (stats) =>
+      `DRY RUN complete!\n\n` +
+      `Orphaned votes found: ${stats.orphansFound}\n\n` +
+      `No changes were made.`,
+    successMessageLive: (stats) =>
+      `Done!\n\n` +
+      `Orphaned votes deleted: ${stats.orphansFound}`,
+    statsDisplay: (stats) =>
+      stats.dryRun
+        ? `Last dry run: ${stats.orphansFound} orphaned vote(s) found for room ${stats.roomId}`
+        : `Last run: ${stats.orphansFound} orphaned vote(s) deleted for room ${stats.roomId}`,
+    apiCall: (adminKey, dryRun, fields) =>
+      adminApi.cleanupOrphanedAnonymousVotesForRoom(
+        adminKey,
+        fields.roomId.trim(),
+        dryRun,
+      ),
+    bgColor: "bg-cyan-50",
+  },
+  {
     id: "fix-interdependance-day-memberships",
     title: "Fix Interdependance Day Memberships",
     description: "One-time fix for community memberships left behind under the old 'interdependance-day' name after the rename to 'interdependance' — an unpaginated scan silently dropped rows past its row cap. Idempotent — safe to re-run.",

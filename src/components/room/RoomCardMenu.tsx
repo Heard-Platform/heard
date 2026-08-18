@@ -230,7 +230,7 @@ export function RoomCardMenu({
               }}
             >
               <PieChart className="w-4 h-4 mr-2" />
-              Room analytics
+              Room Analytics
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {

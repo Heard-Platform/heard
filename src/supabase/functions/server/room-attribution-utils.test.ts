@@ -3,23 +3,32 @@ import { describe, it } from "@std/testing/bdd";
 import {
   computeReferralEventSummary,
   computeRoomTrafficSources,
-  FlyerUser,
 } from "./room-attribution-utils.ts";
-import { DebateRoom, UserEvent } from "./types.tsx";
+import { DebateRoom, User, UserEvent } from "./types.tsx";
 
 const ROOM_ID = "room-1";
 
 const makeRoom = (
   overrides: Partial<DebateRoom> = {},
-): Pick<
-  DebateRoom,
-  "id" | "hostId" | "cohostIds" | "participants"
-> => ({
+): Pick<DebateRoom, "id" | "hostId" | "cohostIds"> => ({
   id: ROOM_ID,
   hostId: "host-1",
-  participants: [],
   ...overrides,
 });
+
+const makeUser = (id: string, overrides: Partial<User> = {}): User => ({
+  id,
+  nickname: id,
+  email: `${id}@example.com`,
+  score: 0,
+  streak: 0,
+  lastActive: 0,
+  emailDigestsEnabled: false,
+  createdAt: 0,
+  ...overrides,
+});
+
+const makeUsers = (ids: string[]): User[] => ids.map((id) => makeUser(id));
 
 const makeEvent = (
   overrides: Partial<UserEvent> = {},
@@ -42,15 +51,14 @@ const makeDirectLinkEvent = (
   createdAt,
 });
 
-const noFlyerUsers = (): FlyerUser[] => [];
-
 describe("computeRoomTrafficSources", () => {
   it("counts a newsletter join", () => {
-    const room = makeRoom({ participants: ["user-1"] });
+    const room = makeRoom();
     const result = computeRoomTrafficSources(
       room,
+      ["user-1"],
       [makeEvent()],
-      noFlyerUsers(),
+      makeUsers(["user-1"]),
     );
 
     assertEquals(result.trafficSources, [
@@ -65,9 +73,8 @@ describe("computeRoomTrafficSources", () => {
   });
 
   it("counts a referral join and groups shares by referrer", () => {
-    const room = makeRoom({
-      participants: ["user-1", "user-2", "user-3"],
-    });
+    const room = makeRoom();
+    const participantIds = ["user-1", "user-2", "user-3"];
     const events: UserEvent[] = [
       makeEvent({
         type: "referred_by_user",
@@ -87,8 +94,9 @@ describe("computeRoomTrafficSources", () => {
     ];
     const result = computeRoomTrafficSources(
       room,
+      participantIds,
       events,
-      noFlyerUsers(),
+      makeUsers(participantIds),
     );
 
     assertEquals(result.trafficSources[2], {
@@ -102,14 +110,15 @@ describe("computeRoomTrafficSources", () => {
   });
 
   it("counts a social join", () => {
-    const room = makeRoom({ participants: ["user-1"] });
+    const room = makeRoom();
     const events: UserEvent[] = [
       makeEvent({ type: "referred_by_social", userId: "user-1" }),
     ];
     const result = computeRoomTrafficSources(
       room,
+      ["user-1"],
       events,
-      noFlyerUsers(),
+      makeUsers(["user-1"]),
     );
 
     assertEquals(result.trafficSources[4], {
@@ -119,11 +128,17 @@ describe("computeRoomTrafficSources", () => {
   });
 
   it("counts a flyer signup", () => {
-    const room = makeRoom({ participants: ["user-1", "user-2"] });
-    const flyerUsers: FlyerUser[] = [
-      { userId: "user-1", createdAt: 500 },
+    const room = makeRoom();
+    const users = [
+      makeUser("user-1", { flyerId: ROOM_ID, createdAt: 500 }),
+      makeUser("user-2"),
     ];
-    const result = computeRoomTrafficSources(room, [], flyerUsers);
+    const result = computeRoomTrafficSources(
+      room,
+      ["user-1", "user-2"],
+      [],
+      users,
+    );
 
     assertEquals(result.trafficSources[3], {
       key: "flyer",
@@ -136,11 +151,12 @@ describe("computeRoomTrafficSources", () => {
   });
 
   it("ignores a flyer signup for a user who isn't a participant of this room", () => {
-    const room = makeRoom({ participants: ["user-1"] });
-    const flyerUsers: FlyerUser[] = [
-      { userId: "some-other-user", createdAt: 500 },
+    const room = makeRoom();
+    const users = [
+      makeUser("user-1"),
+      makeUser("some-other-user", { flyerId: ROOM_ID, createdAt: 500 }),
     ];
-    const result = computeRoomTrafficSources(room, [], flyerUsers);
+    const result = computeRoomTrafficSources(room, ["user-1"], [], users);
 
     assertEquals(result.trafficSources[3], {
       key: "flyer",
@@ -149,12 +165,13 @@ describe("computeRoomTrafficSources", () => {
   });
 
   it("counts a direct link landing (plain /room/:id, no ?src=)", () => {
-    const room = makeRoom({ participants: ["user-1"] });
+    const room = makeRoom();
     const events: UserEvent[] = [makeDirectLinkEvent("user-1", 1000)];
     const result = computeRoomTrafficSources(
       room,
+      ["user-1"],
       events,
-      noFlyerUsers(),
+      makeUsers(["user-1"]),
     );
 
     assertEquals(result.trafficSources[0], {
@@ -164,7 +181,7 @@ describe("computeRoomTrafficSources", () => {
   });
 
   it("does not count a tagged link's initial_load as direct", () => {
-    const room = makeRoom({ participants: ["user-1"] });
+    const room = makeRoom();
     const events: UserEvent[] = [
       {
         ...makeDirectLinkEvent("user-1", 1000),
@@ -173,8 +190,9 @@ describe("computeRoomTrafficSources", () => {
     ];
     const result = computeRoomTrafficSources(
       room,
+      ["user-1"],
       events,
-      noFlyerUsers(),
+      makeUsers(["user-1"]),
     );
 
     assertEquals(result.trafficSources[0], {
@@ -188,14 +206,15 @@ describe("computeRoomTrafficSources", () => {
   });
 
   it("ignores an initial_load for a different room", () => {
-    const room = makeRoom({ participants: ["user-1"] });
+    const room = makeRoom();
     const events: UserEvent[] = [
       makeDirectLinkEvent("user-1", 1000, "some-other-room"),
     ];
     const result = computeRoomTrafficSources(
       room,
+      ["user-1"],
       events,
-      noFlyerUsers(),
+      makeUsers(["user-1"]),
     );
 
     assertEquals(result.trafficSources[0], {
@@ -209,11 +228,13 @@ describe("computeRoomTrafficSources", () => {
   });
 
   it("buckets an unattributed participant as other", () => {
-    const room = makeRoom({ participants: ["user-1", "user-2"] });
+    const room = makeRoom();
+    const participantIds = ["user-1", "user-2"];
     const result = computeRoomTrafficSources(
       room,
+      participantIds,
       [makeEvent({ userId: "user-1" })],
-      noFlyerUsers(),
+      makeUsers(participantIds),
     );
 
     assertEquals(result.trafficSources[1], {
@@ -227,13 +248,13 @@ describe("computeRoomTrafficSources", () => {
   });
 
   it("buckets everyone as other when there are no signals at all", () => {
-    const room = makeRoom({
-      participants: ["user-1", "user-2", "user-3"],
-    });
+    const room = makeRoom();
+    const participantIds = ["user-1", "user-2", "user-3"];
     const result = computeRoomTrafficSources(
       room,
+      participantIds,
       [],
-      noFlyerUsers(),
+      makeUsers(participantIds),
     );
 
     assertEquals(result.trafficSources[5], {
@@ -244,15 +265,16 @@ describe("computeRoomTrafficSources", () => {
   });
 
   it("ignores events for users who never actually joined the room", () => {
-    const room = makeRoom({ participants: ["user-1"] });
+    const room = makeRoom();
     const events: UserEvent[] = [
       makeEvent({ userId: "user-1" }),
       makeEvent({ userId: "user-not-a-participant" }),
     ];
     const result = computeRoomTrafficSources(
       room,
+      ["user-1"],
       events,
-      noFlyerUsers(),
+      makeUsers(["user-1"]),
     );
 
     assertEquals(result.trafficSources[1], {
@@ -265,16 +287,32 @@ describe("computeRoomTrafficSources", () => {
     });
   });
 
+  it("excludes participants who aren't in the provided real users list", () => {
+    const room = makeRoom();
+    const result = computeRoomTrafficSources(
+      room,
+      ["user-1", "bot-user"],
+      [],
+      makeUsers(["user-1"]),
+    );
+
+    assertEquals(result.trafficSources[5], {
+      key: "other",
+      count: 1,
+    });
+  });
+
   it("excludes the host and cohosts from participants and from other", () => {
     const room = makeRoom({
       hostId: "host-1",
       cohostIds: ["cohost-1"],
-      participants: ["host-1", "cohost-1", "user-1"],
     });
+    const participantIds = ["host-1", "cohost-1", "user-1"];
     const result = computeRoomTrafficSources(
       room,
+      participantIds,
       [],
-      noFlyerUsers(),
+      makeUsers(participantIds),
     );
 
     assertEquals(result.trafficSources[5], {
@@ -284,7 +322,7 @@ describe("computeRoomTrafficSources", () => {
   });
 
   it("attributes a user to their earliest signal across all signal types", () => {
-    const room = makeRoom({ participants: ["user-1"] });
+    const room = makeRoom();
     const events: UserEvent[] = [
       makeEvent({
         type: "referred_by_newsletter",
@@ -299,13 +337,14 @@ describe("computeRoomTrafficSources", () => {
       }),
       makeDirectLinkEvent("user-1", 1000),
     ];
-    const flyerUsers: FlyerUser[] = [
-      { userId: "user-1", createdAt: 500 },
+    const users = [
+      makeUser("user-1", { flyerId: ROOM_ID, createdAt: 500 }),
     ];
     const result = computeRoomTrafficSources(
       room,
+      ["user-1"],
       events,
-      flyerUsers,
+      users,
     );
 
     // Flyer signup (500) predates everything else, so it wins even though a
@@ -330,7 +369,7 @@ describe("computeRoomTrafficSources", () => {
   });
 
   it("handles a referral event with no referralUserId without crashing", () => {
-    const room = makeRoom({ participants: ["user-1"] });
+    const room = makeRoom();
     const events: UserEvent[] = [
       makeEvent({
         type: "referred_by_user",
@@ -340,8 +379,9 @@ describe("computeRoomTrafficSources", () => {
     ];
     const result = computeRoomTrafficSources(
       room,
+      ["user-1"],
       events,
-      noFlyerUsers(),
+      makeUsers(["user-1"]),
     );
 
     assertEquals(result.trafficSources[2], {
@@ -351,22 +391,30 @@ describe("computeRoomTrafficSources", () => {
     assertEquals(result.referrers, []);
   });
 
-  it("defaults everyone to named when no anonymous set is given", () => {
-    const room = makeRoom({ participants: ["user-1", "user-2"] });
-    const result = computeRoomTrafficSources(room, [], noFlyerUsers());
+  it("defaults everyone to named when no one is anonymous", () => {
+    const room = makeRoom();
+    const participantIds = ["user-1", "user-2"];
+    const result = computeRoomTrafficSources(
+      room,
+      participantIds,
+      [],
+      makeUsers(participantIds),
+    );
 
     assertEquals(result.anonymity, { anonymous: 0, named: 2 });
   });
 
   it("splits participants into anonymous and named", () => {
-    const room = makeRoom({
-      participants: ["user-1", "user-2", "user-3"],
-    });
+    const users = [
+      makeUser("user-1", { isAnonymous: true }),
+      makeUser("user-2", { isAnonymous: true }),
+      makeUser("user-3"),
+    ];
     const result = computeRoomTrafficSources(
-      room,
+      makeRoom(),
+      ["user-1", "user-2", "user-3"],
       [],
-      noFlyerUsers(),
-      new Set(["user-1", "user-2"]),
+      users,
     );
 
     assertEquals(result.anonymity, { anonymous: 2, named: 1 });
@@ -376,20 +424,24 @@ describe("computeRoomTrafficSources", () => {
     const room = makeRoom({
       hostId: "host-1",
       cohostIds: ["cohost-1"],
-      participants: ["host-1", "cohost-1", "user-1"],
     });
+    const users = [
+      makeUser("host-1", { isAnonymous: true }),
+      makeUser("cohost-1", { isAnonymous: true }),
+      makeUser("user-1"),
+    ];
     const result = computeRoomTrafficSources(
       room,
+      ["host-1", "cohost-1", "user-1"],
       [],
-      noFlyerUsers(),
-      new Set(["host-1", "cohost-1"]),
+      users,
     );
 
     assertEquals(result.anonymity, { anonymous: 0, named: 1 });
   });
 
   it("dedupes repeat events from the same user, keeping only the earliest", () => {
-    const room = makeRoom({ participants: ["user-1"] });
+    const room = makeRoom();
     const events: UserEvent[] = [
       makeEvent({ userId: "user-1", createdAt: 3000 }),
       makeEvent({ userId: "user-1", createdAt: 1000 }),
@@ -397,8 +449,9 @@ describe("computeRoomTrafficSources", () => {
     ];
     const result = computeRoomTrafficSources(
       room,
+      ["user-1"],
       events,
-      noFlyerUsers(),
+      makeUsers(["user-1"]),
     );
 
     assertEquals(result.trafficSources[1], {

@@ -1,4 +1,4 @@
-import { getVotesForUser, saveVote, deleteVote, getStatement, saveStatement, getVote, getUser, saveUser } from "./kv-utils.tsx";
+import { getVotesForUser, saveVote, deleteVote, getStatement, saveStatement, getUser, saveUser } from "./kv-utils.tsx";
 import { getAllStatements } from "./kv-utils.tsx";
 import type { Vote, Statement, AnonCreatableRecords } from "./types.tsx";
 
@@ -12,17 +12,13 @@ type MergeHandlers = {
 const mergeVotes = async (anonymousUserId: string, targetUserId: string) => {
   const anonymousVotes = await getVotesForUser(anonymousUserId);
   for (const anonVote of anonymousVotes) {
-    const existingVote = await getVote(anonVote.statementId, targetUserId);
-    if (existingVote) {
-      await deleteVote(existingVote.statementId, anonymousUserId);
-    }
-
     const updatedAnonVote: Vote = {
       ...anonVote,
       userId: targetUserId,
       anonymousUserId: anonymousUserId,
     };
     await saveVote(updatedAnonVote);
+    await deleteVote(anonVote.statementId, anonymousUserId);
 
     const statement = await getStatement(anonVote.statementId);
     if (!statement) {

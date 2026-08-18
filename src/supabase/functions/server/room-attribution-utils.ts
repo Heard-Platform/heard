@@ -1,6 +1,7 @@
 import { selectAll } from "./db-utils.ts";
-import { getAllRealUsers } from "./kv-utils.tsx";
-import { DebateRoom, UserEvent } from "./types.tsx";
+import { getAllRealUsers, getAllUsers } from "./kv-utils.tsx";
+import { getRoomParticipants } from "./room-utils.ts";
+import { DebateRoom, User, UserEvent } from "./types.tsx";
 import { obfuscateEmail } from "./utils.tsx";
 
 export type TrafficSourceKey =
@@ -30,11 +31,6 @@ export interface RoomTrafficSources {
   trafficSources: TrafficSourceCount[];
   referrers: ReferrerShareCount[];
   anonymity: AnonymityBreakdown;
-}
-
-export interface FlyerUser {
-  userId: string;
-  createdAt: number | string;
 }
 
 export const REFERRAL_EVENT_TYPES = [
@@ -74,96 +70,86 @@ function isDirectRoomLoad(event: UserEvent, roomId: string): boolean {
   }
 }
 
-interface Attribution {
-  key: Exclude<TrafficSourceKey, "other">;
-  referralUserId?: string;
-}
-
 export function computeRoomTrafficSources(
-  room: Pick<
-    DebateRoom,
-    "id" | "hostId" | "cohostIds" | "participants"
-  >,
+  room: Pick<DebateRoom, "id" | "hostId" | "cohostIds">,
+  participantIds: string[],
   events: UserEvent[],
-  flyerUsers: FlyerUser[],
-  anonymousUserIds: Set<string> = new Set(),
+  users: User[],
 ): RoomTrafficSources {
   const excluded = new Set([room.hostId, ...(room.cohostIds ?? [])]);
-  const participantIds = new Set(
-    room.participants.filter((id) => !excluded.has(id)),
-  );
+  const usersById = new Map(users.map((user) => [user.id, user]));
 
-  let anonymous = 0;
-  for (const id of participantIds) {
-    if (anonymousUserIds.has(id)) anonymous++;
-  }
-  const anonymity: AnonymityBreakdown = {
-    anonymous,
-    named: participantIds.size - anonymous,
-  };
-
-  const flyerEvents: UserEvent[] = flyerUsers.map((flyerUser) => ({
-    type: FLYER_SIGNUP_EVENT_TYPE,
-    userId: flyerUser.userId,
-    createdAt: toTimestamp(flyerUser.createdAt),
-  }));
-
-  const allEvents = [...events, ...flyerEvents].sort(
-    (a, b) => toTimestamp(a.createdAt) - toTimestamp(b.createdAt),
-  );
-
-  const firstByUser = new Map<string, Attribution>();
-  for (const event of allEvents) {
-    if (!event.userId || !participantIds.has(event.userId)) continue;
-    if (firstByUser.has(event.userId)) continue;
-
-    const key = isDirectRoomLoad(event, room.id)
-      ? "direct"
-      : EVENT_TYPE_TO_KEY[event.type];
-    if (!key) continue;
-
-    firstByUser.set(event.userId, {
-      key,
-      referralUserId:
-        key === "referral" ? event.referralUserId : undefined,
-    });
+  const eventsByUserId = new Map<string, UserEvent[]>();
+  for (const event of events) {
+    if (!event.userId) continue;
+    const userEvents = eventsByUserId.get(event.userId);
+    if (userEvents) userEvents.push(event);
+    else eventsByUserId.set(event.userId, [event]);
   }
 
-  const counts: Record<Exclude<TrafficSourceKey, "other">, number> = {
+  const roomParticipantIds = participantIds.filter(
+    (id) => usersById.has(id) && !excluded.has(id),
+  );
+
+  const counts: Record<TrafficSourceKey, number> = {
     direct: 0,
     newsletter: 0,
     referral: 0,
     flyer: 0,
     social: 0,
+    other: 0,
   };
   const sharesByReferrer = new Map<string, number>();
+  let anonymous = 0;
 
-  for (const attribution of firstByUser.values()) {
-    counts[attribution.key]++;
-    if (
-      attribution.key === "referral" &&
-      attribution.referralUserId
-    ) {
+  for (const participantId of roomParticipantIds) {
+    const user = usersById.get(participantId)!;
+    if (user.isAnonymous) anonymous++;
+
+    const signals = [...(eventsByUserId.get(participantId) ?? [])];
+    if (user.flyerId === room.id) {
+      signals.push({
+        type: FLYER_SIGNUP_EVENT_TYPE,
+        userId: participantId,
+        createdAt: toTimestamp(user.createdAt),
+      });
+    }
+    signals.sort(
+      (a, b) => toTimestamp(a.createdAt) - toTimestamp(b.createdAt),
+    );
+
+    let key: TrafficSourceKey = "other";
+    let referralUserId: string | undefined;
+    for (const signal of signals) {
+      const signalKey = isDirectRoomLoad(signal, room.id)
+        ? "direct"
+        : EVENT_TYPE_TO_KEY[signal.type];
+      if (!signalKey) continue;
+      key = signalKey;
+      referralUserId =
+        signalKey === "referral" ? signal.referralUserId : undefined;
+      break;
+    }
+
+    counts[key]++;
+    if (key === "referral" && referralUserId) {
       sharesByReferrer.set(
-        attribution.referralUserId,
-        (sharesByReferrer.get(attribution.referralUserId) ?? 0) + 1,
+        referralUserId,
+        (sharesByReferrer.get(referralUserId) ?? 0) + 1,
       );
     }
   }
+
+  const anonymity: AnonymityBreakdown = {
+    anonymous,
+    named: roomParticipantIds.length - anonymous,
+  };
 
   const referrers: ReferrerShareCount[] = Array.from(
     sharesByReferrer.values(),
   )
     .sort((a, b) => b - a)
     .map((shares, i) => ({ id: `referrer-${i}`, shares }));
-
-  const attributed =
-    counts.direct +
-    counts.newsletter +
-    counts.referral +
-    counts.flyer +
-    counts.social;
-  const otherCount = Math.max(0, participantIds.size - attributed);
 
   return {
     trafficSources: [
@@ -172,7 +158,7 @@ export function computeRoomTrafficSources(
       { key: "referral", count: counts.referral },
       { key: "flyer", count: counts.flyer },
       { key: "social", count: counts.social },
-      { key: "other", count: otherCount },
+      { key: "other", count: counts.other },
     ],
     referrers,
     anonymity,
@@ -259,7 +245,7 @@ export async function getReferralEventSummary(): Promise<ReferralEventSummary> {
 export async function getRoomTrafficSources(
   room: DebateRoom,
 ): Promise<RoomTrafficSources> {
-  const [referredByEvents, initialLoadEvents, users] =
+  const [referredByEvents, initialLoadEvents, users, participantIds] =
     await Promise.all([
       selectAll<UserEvent>(
         "user_events",
@@ -271,27 +257,14 @@ export async function getRoomTrafficSources(
         { type: "initial_load" },
         (q: any) => q.like("url", `%/room/${room.id}%`),
       ),
-      getAllRealUsers(),
+      getAllUsers(),
+      getRoomParticipants(room.id),
     ]);
 
-  const realUserIds = new Set(users.map((user) => user.id));
-  const anonymousUserIds = new Set(
-    users.filter((user) => user.isAnonymous).map((user) => user.id),
-  );
-
-  const flyerUsers: FlyerUser[] = users
-    .filter((user) => user.flyerId === room.id)
-    .map((user) => ({ userId: user.id, createdAt: user.createdAt }));
-
-  const realRoom = {
-    ...room,
-    participants: room.participants.filter((id) => realUserIds.has(id)),
-  };
-
   return computeRoomTrafficSources(
-    realRoom,
+    room,
+    participantIds,
     [...referredByEvents, ...initialLoadEvents],
-    flyerUsers,
-    anonymousUserIds,
+    users,
   );
 }

@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
-import { getByPrefixParsed, getActiveRoomValues, saveActiveRoomPointer, saveDebate, getMembership, saveMembership, deleteMembership } from "./kv-utils.tsx";
+import { getByPrefixParsed, getActiveRoomValues, saveActiveRoomPointer, saveDebate, getMembership, saveMembership, deleteMembership, getStatementsForRoomIncludingHidden, getVotesForStatement, deleteVote } from "./kv-utils.tsx";
 import { getAllRecords } from "./db-utils.ts";
 import { getDemographicQuestionsForRoom, insertDemographicQuestion } from "./model-utils.ts";
 import { CommunityMembership, DemographicQuestion } from "./types.tsx";
@@ -192,6 +192,56 @@ app.post(
       );
     }
   },
+);
+
+app.post(
+  "/make-server-f1a393b4/one-time-fixes/cleanup-orphaned-anonymous-votes-for-room",
+  defineRoute(
+    {
+      roomId: { type: "string", required: true },
+      dryRun: { type: "boolean", required: true },
+    },
+    async ({ roomId, dryRun }: { roomId: string; dryRun: boolean }) => {
+      const statements = await getStatementsForRoomIncludingHidden(roomId);
+
+      const orphans: {
+        statementId: string;
+        anonymousUserId: string;
+        mergedIntoUserId: string;
+      }[] = [];
+
+      for (const statement of statements) {
+        const votes = await getVotesForStatement(statement.id);
+        const voteUserIds = new Set(votes.map((vote) => vote.userId));
+
+        for (const vote of votes) {
+          if (!vote.anonymousUserId) continue;
+          if (!voteUserIds.has(vote.anonymousUserId)) continue;
+
+          orphans.push({
+            statementId: statement.id,
+            anonymousUserId: vote.anonymousUserId,
+            mergedIntoUserId: vote.userId,
+          });
+
+          if (!dryRun) {
+            await deleteVote(statement.id, vote.anonymousUserId);
+          }
+        }
+      }
+
+      return {
+        roomId,
+        dryRun,
+        orphansFound: orphans.length,
+        orphans,
+        message: dryRun
+          ? `Dry run: found ${orphans.length} orphaned anonymous vote(s) in room ${roomId}.`
+          : `Deleted ${orphans.length} orphaned anonymous vote(s) in room ${roomId}.`,
+      };
+    },
+    "Failed to clean up orphaned anonymous votes for room",
+  ),
 );
 
 app.route("/", backfillUserCreatedAtApi);
