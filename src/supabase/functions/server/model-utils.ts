@@ -1,4 +1,4 @@
-import { insert, selectAll, selectAllWithoutLimit, upsert } from "./db-utils.ts";
+import { insert, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
 import {
   AvatarAnimal,
   DemographicAnswer,
@@ -162,6 +162,16 @@ export const getUniqueUserIdsForEvent = async (type: string): Promise<Set<string
 export const getEventsOfType = async (type: string): Promise<UserEvent[]> => {
   return selectAll<UserEvent>("user_events", { type });
 };
+
+export const getRecentUserEvents = async (sinceTs: number): Promise<UserEvent[]> =>
+  selectAll<UserEvent>(
+    "user_events",
+    {},
+    (q: any) => q.gte("createdAt", new Date(sinceTs).toISOString()),
+  );
+
+export const tagEventsWithSession = async (eventIds: string[], sessionId: string) =>
+  updateMany("user_events", eventIds, { sessionId });
 
 export const setInternalVar = async (key: InternalVarKey, value: any) =>
   upsert(

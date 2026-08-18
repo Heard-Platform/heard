@@ -148,6 +148,27 @@ export const update = async (
   return { success: true };
 };
 
+export const updateMany = async (
+  tableName: string,
+  ids: string[],
+  patch: Record<string, any>,
+  idColumn = "id",
+): Promise<{ success: boolean; error?: string }> => {
+  const supabase = createClientFromEnv();
+
+  const { error } = await supabase
+    .from(tableName)
+    .update(patch)
+    .in(idColumn, ids);
+
+  if (error) {
+    console.error(`Error updating ${tableName} table:`, error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+};
+
 export const deleteRecord = async (
   tableName: string,
   conditions: Record<string, any>,

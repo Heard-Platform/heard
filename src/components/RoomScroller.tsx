@@ -161,6 +161,7 @@ const RoomScrollerInner = forwardRef<
         safelySetStorageItem(LAST_VIEWED_ROOM_KEY, card.id);
         clearAlert(card.id);
         safelyMakeApiCall(() => api.markRoomSeen(card.id));
+        api.trackEvent("post_viewed", card.id);
       }
     }, [currentIndex, rooms, events]);
 

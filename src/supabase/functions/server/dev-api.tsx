@@ -27,6 +27,7 @@ import {
 } from "./kv-utils.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 import { getReferralEventSummary } from "./room-attribution-utils.ts";
+import { computeAndGetSessions } from "./session-utils.ts";
 
 const app = new Hono();
 
@@ -231,6 +232,19 @@ app.get(
       return await getReferralEventSummary();
     },
     "Failed to fetch referral events"
+  )
+);
+
+app.get(
+  `${API_URL_PREFIX}/dev/sessions`,
+  defineRoute(
+    {},
+    async (_params, c) => {
+      const sinceParam = c.req.query("since");
+      const sinceTs = sinceParam ? new Date(sinceParam).getTime() : NaN;
+      return await computeAndGetSessions(isNaN(sinceTs) ? undefined : sinceTs);
+    },
+    "Failed to fetch sessions"
   )
 );
 
