@@ -51,6 +51,7 @@ import { FundingTeaserStory } from "../stories/FundingTeaser.story";
 import { EmailMonitoringTabStory } from "../stories/EmailMonitoringTab.story";
 import { DisplayModeScreenStory } from "../stories/DisplayModeScreen.story";
 import { RoomAnalyticsModalStory } from "../stories/RoomAnalyticsModal.story";
+import { StatementVoterAnimalsStory } from "../stories/StatementVoterAnimals.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -156,6 +157,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="email-monitoring">Email Monitoring</TabsTrigger>
                 <TabsTrigger value="display-mode-screen">Display Mode Screen</TabsTrigger>
                 <TabsTrigger value="room-analytics">Room Analytics</TabsTrigger>
+                <TabsTrigger value="statement-voter-animals">Statement Voter Animals</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -303,6 +305,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="room-analytics">
                 <RoomAnalyticsModalStory />
+              </TabsContent>
+              <TabsContent value="statement-voter-animals">
+                <StatementVoterAnimalsStory />
               </TabsContent>
             </Tabs>
           </div>
