@@ -14,7 +14,7 @@ interface CommunityExplorerDialogProps {
   userId: string;
   isOpen: boolean;
   cancelButtonText: string;
-  onCommunitiesJoined: () => void;
+  onCommunitiesJoined: (joinedCommunityNames: string[]) => void;
   onClose: () => void;
 }
 
@@ -65,18 +65,21 @@ export function CommunityExplorerDialog({
 
     try {
       setJoining(true);
-      const joinPromises = selectedCommunities.map((communityName) =>
-        joinSubHeard(communityName)
+      const results = await Promise.all(
+        selectedCommunities.map(async (communityName) => ({
+          communityName,
+          response: await joinSubHeard(communityName),
+        }))
       );
+      const joinedCommunityNames = results
+        .filter(({ response }) => response?.success)
+        .map(({ communityName }) => communityName);
 
-      const results = await Promise.all(joinPromises);
-      const successCount = results.filter((r) => r?.success).length;
-
-      if (successCount > 0) {
+      if (joinedCommunityNames.length > 0) {
         toast.success(
-          `Joined ${successCount} ${successCount === 1 ? "community" : "communities"}!`
+          `Joined ${joinedCommunityNames.length} ${joinedCommunityNames.length === 1 ? "community" : "communities"}!`
         );
-        onCommunitiesJoined();
+        onCommunitiesJoined(joinedCommunityNames);
         onClose();
       } else {
         toast.error("Failed to join communities");
