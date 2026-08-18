@@ -14,6 +14,7 @@ import { share } from "../../utils/share";
 import { createShareableLink } from "../../utils/url";
 import { YouTubeAudioEmbed } from "./YouTubeAudioEmbed";
 import { extractYouTubeVideoId } from "../../utils/youtube-utils";
+import { StatementVoterAnimals } from "./StatementVoterAnimals";
 import moment from "moment";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -174,6 +175,10 @@ export function StatementCard({
         })()}
       </div>
 
+      <StatementVoterAnimals
+        statementId={statement.id}
+        voterIds={Object.keys(statement.voters)}
+      />
 
       {isTopCard && (
         <>
