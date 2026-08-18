@@ -304,9 +304,13 @@ export function LobbyScreen({
     setShowAccountSetupAnonModal(true);
   };
 
-  const handleExplorerCommunitiesJoined = () => {
-    onRefreshRooms(currentSubHeard);
+  const handleExplorerCommunitiesJoined = (joinedCommunityNames: string[]) => {
     setExplorerOpen(false);
+    onSubHeardChange(
+      joinedCommunityNames.length === 1
+        ? joinedCommunityNames[0]
+        : null,
+    );
   };
 
   const handleCloseExplorer = () => {
