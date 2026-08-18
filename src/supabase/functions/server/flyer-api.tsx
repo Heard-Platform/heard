@@ -1,9 +1,10 @@
 import { Context, Hono } from "npm:hono";
-import { getDebate, getStatementsForRoom } from "./kv-utils.tsx";
+import { getDebate } from "./kv-utils.tsx";
 import type { DebateRoom, User, VoteType } from "./types.tsx";
 import { processVote, countStatementVotes } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
 import { insertFlyerEmail, insertFlyerScan } from "./model-utils.ts";
+import { getUsableStatementsForRoom } from "./room-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { validateSession } from "./auth-utils.ts";
 
@@ -77,10 +78,10 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         400,
       );
     } else {
-      const [room, session, roomStatements] = await Promise.all([
+      const [room, session, teaserCandidates] = await Promise.all([
         getDebate(result.statement.roomId),
         createSession(userId),
-        getStatementsForRoom(result.statement.roomId),
+        getUsableStatementsForRoom(result.statement.roomId),
       ]);
 
       if (!room) {
@@ -110,7 +111,7 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
           : 0;
 
       const makeTeaserStatement = () => {
-        const other = roomStatements.filter(
+        const other = teaserCandidates.filter(
           (s) => s.id !== result.statement.id,
         );
 

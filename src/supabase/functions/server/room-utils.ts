@@ -1,7 +1,9 @@
 import {
+  getStatementsForRoom,
   getStatementsForRoomIncludingHidden,
   getVotesForStatement,
 } from "./kv-utils.tsx";
+import { getMergesForRoom } from "./model-utils.ts";
 import {
   DebateRoom,
   Statement,
@@ -134,4 +136,14 @@ export function applyStatementMerges(
         mergedFrom,
       };
     });
+}
+
+export async function getUsableStatementsForRoom(
+  roomId: string,
+): Promise<Statement[]> {
+  const [statements, merges] = await Promise.all([
+    getStatementsForRoom(roomId),
+    getMergesForRoom(roomId),
+  ]);
+  return applyStatementMerges(statements, merges);
 }
