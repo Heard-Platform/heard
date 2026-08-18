@@ -75,7 +75,7 @@ interface SidePanelMenuProps {
   onLogout: () => void;
   onOpenHelp: () => void;
   onOpenShowcase?: () => void;
-  onOpenRetentionDashboard?: () => void;
+  onOpenRetentionDashboard: () => void;
   onOpenAdminDashboard?: () => void;
   onOpenFeatureTracker: () => void;
   onOpenDevTools?: () => void;

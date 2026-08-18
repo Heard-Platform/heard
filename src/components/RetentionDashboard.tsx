@@ -15,7 +15,7 @@ interface RetentionDashboardProps {
 export function RetentionDashboard({ onExit }: RetentionDashboardProps) {
   const [cohorts, setCohorts] = useState<CohortFunnelEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cohortMode, setCohortMode] = useState<CohortMode>("joined");
+  const [cohortMode, setCohortMode] = useState<CohortMode>("active");
 
   useEffect(() => {
     let cancelled = false;
@@ -35,6 +35,8 @@ export function RetentionDashboard({ onExit }: RetentionDashboardProps) {
     };
   }, [cohortMode]);
 
+  const latestCohort = cohorts.length > 0 ? cohorts[cohorts.length - 1] : null;
+
   return (
     <div className="heard-page-bg p-4">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -50,6 +52,24 @@ export function RetentionDashboard({ onExit }: RetentionDashboardProps) {
             </Button>
           )}
         </div>
+
+        {!loading && latestCohort && (
+          <Card className="p-6 bg-gradient-to-br from-orange-50/50 to-amber-50/50 border-orange-100">
+            <p className="text-sm text-muted-foreground mb-1">
+              Active users &mdash; week of {latestCohort.cohortLabel}
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Users who returned on more than one day during that same week, out of{" "}
+              {latestCohort.totalUsers} {cohortMode === "joined" ? "users who joined" : "users active"} that week
+            </p>
+            <p className="text-3xl mb-2">
+              {latestCohort.activeThisWeekCount}{" "}
+              <span className="text-lg text-muted-foreground">
+                ({latestCohort.activeThisWeekPct}%)
+              </span>
+            </p>
+          </Card>
+        )}
 
         <Card className="p-6">
           <div className="heard-between mb-4">

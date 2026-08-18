@@ -28,6 +28,7 @@ interface Stage {
     | "multiCommunityPct"
     | "multiDayPct"
     | "multiWeekPct"
+    | "activeThisWeekPct"
   >;
   countKey: keyof Pick<
     CohortFunnelEntry,
@@ -39,6 +40,7 @@ interface Stage {
     | "multiCommunityCount"
     | "multiDayCount"
     | "multiWeekCount"
+    | "activeThisWeekCount"
   >;
   label: string;
   color: string;
@@ -49,7 +51,7 @@ const FUNNEL_STAGES: Stage[] = [
   { key: "multiPostViewPct", countKey: "multiPostViewCount", label: "Viewed 2+ posts", color: "#e34948" },
   { key: "votedPct", countKey: "votedCount", label: "Voted", color: "#2a78d6" },
   { key: "respondedPct", countKey: "respondedCount", label: "Responded", color: "#eb6834" },
-  { key: "nonAnonPct", countKey: "nonAnonCount", label: "Added email/phone", color: "#1baf7a" },
+  { key: "nonAnonPct", countKey: "nonAnonCount", label: "Has email/phone", color: "#1baf7a" },
   { key: "multiRoomPct", countKey: "multiRoomCount", label: "Active in 2+ rooms", color: "#eda100" },
   { key: "multiCommunityPct", countKey: "multiCommunityCount", label: "Active in 2+ communities", color: "#e87ba4" },
 ];
@@ -57,6 +59,7 @@ const FUNNEL_STAGES: Stage[] = [
 const RETENTION_STAGES: Stage[] = [
   { key: "multiDayPct", countKey: "multiDayCount", label: "Active on 2+ days", color: "#008300", dashed: true },
   { key: "multiWeekPct", countKey: "multiWeekCount", label: "Active in 2+ weeks", color: "#4a3aa7", dashed: true },
+  { key: "activeThisWeekPct", countKey: "activeThisWeekCount", label: "Active 2+ days that week", color: "#c2410c", dashed: true },
 ];
 
 const ALL_STAGES: Stage[] = [...FUNNEL_STAGES, ...RETENTION_STAGES];
@@ -252,10 +255,11 @@ export function CohortFunnelChart({ cohorts, cohortMode = "joined" }: CohortFunn
       <p className="text-xs" style={{ color: TEXT_MUTED }}>
         Each solid line is the % of that week's {cohortNoun} reaching a stage, in order of
         typical usage maturity. Stages overlap rather than strictly nest (e.g. a user can
-        add an email without voting), so lines can cross. The two dashed lines are a
+        add an email without voting), so lines can cross. The three dashed lines are a
         different kind of measure &mdash; return behavior, not maturity &mdash; showing the % who
-        came back and used the app on more than one distinct day or week. The bars below
-        show cohort size, so thin weeks can be read with appropriate skepticism.
+        came back and used the app on more than one distinct day or week, including the % who
+        were active on more than one day within that same cohort week ("active users"). The
+        bars below show cohort size, so thin weeks can be read with appropriate skepticism.
       </p>
 
       <ResponsiveContainer width="100%" height={380}>
