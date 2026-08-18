@@ -41,6 +41,7 @@ export interface CohortBucket {
   multiCommunityCount: number;
   multiDayCount: number;
   multiWeekCount: number;
+  activeThisWeekCount: number;
   multiPostViewPct: number;
   votedPct: number;
   respondedPct: number;
@@ -49,6 +50,7 @@ export interface CohortBucket {
   multiCommunityPct: number;
   multiDayPct: number;
   multiWeekPct: number;
+  activeThisWeekPct: number;
   topPosts: CohortTopPost[];
 }
 
@@ -143,6 +145,7 @@ export function buildCohortFunnelData(
     | "multiCommunityPct"
     | "multiDayPct"
     | "multiWeekPct"
+    | "activeThisWeekPct"
     | "topPosts"
   >;
 
@@ -161,6 +164,7 @@ export function buildCohortFunnelData(
         multiCommunityCount: 0,
         multiDayCount: 0,
         multiWeekCount: 0,
+        activeThisWeekCount: 0,
       });
     }
     const bucket = cohortBuckets.get(cohortStart)!;
@@ -193,6 +197,12 @@ export function buildCohortFunnelData(
       const activeWeeks = new Set<number>();
       for (const day of activeDays) activeWeeks.add(getWeekStart(day));
       if (activeWeeks.size > 1) bucket.multiWeekCount++;
+
+      let daysActiveThisWeek = 0;
+      for (const day of activeDays) {
+        if (getWeekStart(day) === cohortStart) daysActiveThisWeek++;
+      }
+      if (daysActiveThisWeek > 1) bucket.activeThisWeekCount++;
     }
   };
 
@@ -224,6 +234,7 @@ export function buildCohortFunnelData(
       multiCommunityPct: pct(bucket.multiCommunityCount, bucket.totalUsers),
       multiDayPct: pct(bucket.multiDayCount, bucket.totalUsers),
       multiWeekPct: pct(bucket.multiWeekCount, bucket.totalUsers),
+      activeThisWeekPct: pct(bucket.activeThisWeekCount, bucket.totalUsers),
       topPosts: topPostsByWeek.get(bucket.cohortStart) ?? [],
     }));
 

@@ -457,6 +457,7 @@ export interface CohortFunnelEntry {
   multiCommunityCount: number;
   multiDayCount: number;
   multiWeekCount: number;
+  activeThisWeekCount: number;
   multiPostViewPct: number;
   votedPct: number;
   respondedPct: number;
@@ -465,6 +466,7 @@ export interface CohortFunnelEntry {
   multiCommunityPct: number;
   multiDayPct: number;
   multiWeekPct: number;
+  activeThisWeekPct: number;
   topPosts: CohortTopPost[];
 }
 
