@@ -3,15 +3,17 @@ import { ClusterConsensus } from "./cluster-analysis.tsx";
 import { VALID_AVATARS } from "./constants.tsx";
 
 export interface UserEvent {
+  id?: string;
   type: string;
   userId: string | null;
   roomId?: string;
   url?: string;
   referralUserId?: string;
   createdAt: number;
+  sessionId?: string | null;
 }
 
-export type NewUserEvent = Omit<UserEvent, "createdAt">;
+export type NewUserEvent = Omit<UserEvent, "createdAt" | "id" | "sessionId">;
 
 export interface AskTheDataRecord {
   id: string;

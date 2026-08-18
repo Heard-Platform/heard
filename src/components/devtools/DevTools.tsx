@@ -9,6 +9,7 @@ import { FlyersTab } from "./FlyersTab";
 import { VoteMatrixTab } from "./VoteMatrixTab";
 import { VoteStatsTab } from "./VoteStatsTab";
 import { ReferralEventsTab } from "./ReferralEventsTab";
+import { SessionsTab } from "./SessionsTab";
 import { PerformanceTestTab } from "./PerformanceTestTab";
 import { TestingTab } from "./TestingTab";
 import { NotificationSystemTab } from "./NotificationSystemTab";
@@ -24,7 +25,7 @@ interface DevToolsProps {
   onExit?: () => void;
 }
 
-type TabType = "vote-matrix" | "clustering" | "email" | "email-monitoring" | "notification-system" | "enrichment" | "posts" | "flyers" | "vote-stats" | "referral-events" | "performance" | "testing";
+type TabType = "vote-matrix" | "clustering" | "email" | "email-monitoring" | "notification-system" | "enrichment" | "posts" | "flyers" | "vote-stats" | "referral-events" | "session" | "performance" | "testing";
 
 export function DevTools({ user, onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
@@ -111,6 +112,11 @@ export function DevTools({ user, onExit }: DevToolsProps) {
                 onClick={() => handleTabChange("referral-events")}
               />
               <TabButton
+                active={activeTab === "session"}
+                label="Session"
+                onClick={() => handleTabChange("session")}
+              />
+              <TabButton
                 active={activeTab === "performance"}
                 label="Performance"
                 onClick={() => handleTabChange("performance")}
@@ -145,6 +151,7 @@ export function DevTools({ user, onExit }: DevToolsProps) {
             {activeTab === "flyers" && <FlyersTab />}
             {activeTab === "vote-stats" && <VoteStatsTab />}
             {activeTab === "referral-events" && <ReferralEventsTab />}
+            {activeTab === "session" && <SessionsTab />}
             {activeTab === "performance" && <PerformanceTestTab />}
             {activeTab === "testing" && <TestingTab />}
           </div>

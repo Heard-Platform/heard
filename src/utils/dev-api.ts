@@ -22,6 +22,23 @@ interface ReferralEventSummary {
   referrals: ReferralEventDetail[];
 }
 
+interface SessionSummary {
+  sessionId: string;
+  userId: string;
+  userLabel: string;
+  startedAt: number;
+  endedAt: number | null;
+  durationMs: number;
+  eventCount: number;
+  eventTypes: string[];
+  isActive: boolean;
+}
+
+interface SessionsResponse {
+  sessions: SessionSummary[];
+  fetchedAt: number;
+}
+
 class DevApiClient extends BaseApiClient {
   async getFlyerStats() {
     return this.request<{ flyerRoomData: Record<string, FlyerRoomData> }>(
@@ -40,6 +57,13 @@ class DevApiClient extends BaseApiClient {
 
   async getVoteStats() {
     return this.request<VoteStats>("/dev/vote-stats", { method: "GET" });
+  }
+
+  async getSessions(sinceTs?: number) {
+    const query = sinceTs ? `?since=${new Date(sinceTs).toISOString()}` : "";
+    return this.request<SessionsResponse>(`/dev/sessions${query}`, {
+      method: "GET",
+    });
   }
 
   async timedGet(endpoint: string): Promise<{ success: boolean; durationMs: number }> {
