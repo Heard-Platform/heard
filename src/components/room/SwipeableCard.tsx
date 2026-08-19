@@ -26,6 +26,7 @@ interface SwipeableCardProps {
   isAnonymous: boolean;
   currentUserId?: string;
   getTypeIcon: (type?: string) => string | null;
+  onDragStart: () => void;
   onDragEnd: (
     event: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo,
@@ -52,6 +53,7 @@ export function SwipeableCard({
   isAnonymous,
   currentUserId,
   getTypeIcon,
+  onDragStart,
   onDragEnd,
   onSubmitStatement,
   onShowAccountSetupModal,
@@ -117,6 +119,7 @@ export function SwipeableCard({
       drag={isTopCard ? "x" : false}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={1}
+      onDragStart={isTopCard ? onDragStart : undefined}
       onDragEnd={isTopCard ? onDragEnd : undefined}
       animate={
         isTopCard && direction

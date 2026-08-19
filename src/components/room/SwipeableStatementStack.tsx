@@ -77,6 +77,7 @@ export function SwipeableStatementStack({
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
 
   const { showTutorial, recordSwipe, resetTutorialTimer } = useSwipeTutorialContext();
+  const [isDragging, setIsDragging] = useState(false);
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
@@ -452,7 +453,7 @@ export function SwipeableStatementStack({
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
       <div className="relative">
-        {showTutorial && isActive && cards[0]?.type === "statement" && (
+        {showTutorial && !isDragging && isActive && cards[0]?.type === "statement" && (
           <div className="absolute inset-0 z-20 pointer-events-none">
             <SwipeInstructions />
           </div>
@@ -487,9 +488,11 @@ export function SwipeableStatementStack({
                 room={room}
                 index={index}
                 isTopCard={isTopCard}
-                onDragEnd={(event, info) =>
-                  handleDragEnd(card, event, info)
-                }
+                onDragStart={() => setIsDragging(true)}
+                onDragEnd={(event, info) => {
+                  setIsDragging(false);
+                  handleDragEnd(card, event, info);
+                }}
                 getTypeIcon={getTypeIcon}
                 direction={
                   isBeingSwiped ? swipeDirection : null
