@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 
 const STORAGE_KEY = "heard_swipe_count";
-const REQUIRED_SWIPES = 2;
+const REQUIRED_SWIPES = 1;
 const REMINDER_INTERVAL_MS = 10000;
 const REMINDER_SHOW_MS = 5000;
 

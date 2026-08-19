@@ -34,7 +34,7 @@ export function SwipeInstructions() {
         ({ side, color, label, sublabel, opacity }) => (
           <motion.div
             key={side}
-            style={{ position: "absolute", [side]: 12, top: "25%" }}
+            style={{ position: "absolute", [side]: 12, top: "70%" }}
             className={`heard-row ${color} text-white font-black px-4 py-2 rounded-xl shadow-lg text-lg uppercase tracking-wide`}
             animate={{ opacity }}
             transition={{
@@ -60,13 +60,13 @@ export function SwipeInstructions() {
         style={{
           position: "absolute",
           left: "50%",
-          top: "60%",
+          top: "90%",
           transform: "translate(-50%, -50%)",
         }}
       >
         <motion.div
           className="flex flex-col items-center gap-1"
-          animate={{ x: [0, 0, 80, 80, 0, 0, -80, -80, 0] }}
+          animate={{ x: [0, 80, 80, 0, -80, -80, 0] }}
           transition={{
             duration: DURATION,
             repeat: Infinity,
@@ -74,7 +74,7 @@ export function SwipeInstructions() {
             ease: "easeInOut",
           }}
         >
-          <span className="text-6xl select-none">👆</span>
+          <span className="text-4xl select-none">👆</span>
         </motion.div>
       </div>
     </div>

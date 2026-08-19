@@ -12,6 +12,7 @@ import { DebateAnalysisReportDemoStory } from "../stories/DebateAnalysisReportDe
 import { AskTheDataStory } from "../stories/AskTheData.story";
 import { UnsubscribePageStory } from "../stories/UnsubscribePage.story";
 import { SwipeableStatementStackStory } from "../stories/SwipeableStatementStack.story";
+import { SwipeInstructionsStory } from "../stories/SwipeInstructions.story";
 import { MusicLeagueCardStackStory } from "../stories/YouTubeCardStack";
 import { MetricsCircleStory } from "../stories/MetricsCircle.story";
 import { TimeLeftBadgeStory } from "../stories/TimeLeftBadge.story";
@@ -119,6 +120,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="ask-the-data">Ask the Data</TabsTrigger>
                 <TabsTrigger value="unsubscribe-page">Unsubscribe Page</TabsTrigger>
                 <TabsTrigger value="swipeable-statement-stack">Swipeable Statement Stack</TabsTrigger>
+                <TabsTrigger value="swipe-instructions">Swipe Instructions</TabsTrigger>
                 <TabsTrigger value="music-league-card-stack">YouTube Card Stack</TabsTrigger>
                 <TabsTrigger value="metrics-circle">Metrics Circle</TabsTrigger>
                 <TabsTrigger value="time-left-badge">Time Left Badge</TabsTrigger>
@@ -195,6 +197,10 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
 
               <TabsContent value="swipeable-statement-stack">
                 <SwipeableStatementStackStory />
+              </TabsContent>
+
+              <TabsContent value="swipe-instructions">
+                <SwipeInstructionsStory />
               </TabsContent>
 
               <TabsContent value="music-league-card-stack">
