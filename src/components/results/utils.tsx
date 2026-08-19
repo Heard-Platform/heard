@@ -1,5 +1,14 @@
 import { Users, Target, Zap, Eye, Crown, Medal, Award, Star } from "lucide-react";
 import type { Statement } from "../../types";
+import { getUniqueParticipants } from "../../utils/room";
+import { getAllAgrees } from "../../utils/statement";
+
+export const getAgreePercent = (statement: Statement) => {
+  const agrees = getAllAgrees(statement);
+  const total = agrees + statement.disagrees + statement.passes;
+
+  return total > 0 ? Math.round((agrees / total) * 100) : 0;
+};
 
 export interface ClusterData {
   id: string;
@@ -83,9 +92,24 @@ export const getPodiumPosition = (index: number) => {
   }
 };
 
+const MIN_AGREES_SHARE = 0.05;
+const MAX_UNICORN_VOTER_SHARE = 0.15;
+
 export const analyzeStatements = (statements: Statement[]) => {
   // Sort by agrees
   const byAgrees = [...statements].sort((a, b) => b.agrees - a.agrees);
+
+  const totalParticipants = getUniqueParticipants(statements).size;
+
+  // Sort by persuasiveness
+  const minAgrees = totalParticipants * MIN_AGREES_SHARE;
+  const byPersuasiveness = statements
+    .filter((s) => getAllAgrees(s) >= minAgrees && getAllAgrees(s) + s.disagrees > 0)
+    .sort(
+      (a, b) =>
+        getAllAgrees(b) / (getAllAgrees(b) + b.disagrees) -
+        getAllAgrees(a) / (getAllAgrees(a) + a.disagrees)
+    );
 
   // Group by type
   const byType = {
@@ -105,9 +129,9 @@ export const analyzeStatements = (statements: Statement[]) => {
 
   // Calculate consensus (statements with high agrees)
   const consensus = byAgrees.filter((s) => s.agrees >= 3);
-  const controversial = statements.filter(
-    (s) => s.agrees === 0 || s.disagrees > s.agrees
-  );
+  const controversial = statements
+    .filter((s) => s.agrees === 0 || s.disagrees > s.agrees)
+    .sort((a, b) => b.agrees + b.disagrees - (a.agrees + a.disagrees));
 
   // Simple clustering by keywords (mock implementation)
   const clusters: ClusterData[] = [
@@ -159,11 +183,49 @@ export const analyzeStatements = (statements: Statement[]) => {
     }))
     .filter((cluster) => cluster.size > 0);
 
+  // A "unicorn opinion" is a statement only a small slice of participants
+  // voted on (at most 15% of them), but who agreed on it strongly. Ranked
+  // by consensus (agree %) among that small-voter pool.
+  const maxUnicornVoters = totalParticipants * MAX_UNICORN_VOTER_SHARE;
+  const unicornCandidates = statements
+    .filter((s) => {
+      const decisive = getAllAgrees(s) + s.disagrees;
+      return decisive > 0 && decisive <= maxUnicornVoters;
+    })
+    .sort((a, b) => getAgreePercent(b) - getAgreePercent(a));
+
   return {
     byAgrees,
+    byPersuasiveness,
     byType,
     consensus,
     controversial,
     clusters,
+    unicornCandidates,
+  };
+};
+
+export type Analysis = ReturnType<typeof analyzeStatements>;
+
+export interface AwardWinners {
+  mostPersuasive?: Statement;
+  spiciest?: Statement;
+  unicorn?: Statement;
+  bridge?: Statement;
+}
+
+export const getAwardWinners = (analysis: Analysis): AwardWinners => {
+  const used = new Set<string>();
+  const pick = (candidates: Statement[]) => {
+    const winner = candidates.find((s) => !used.has(s.id));
+    if (winner) used.add(winner.id);
+    return winner;
+  };
+
+  return {
+    mostPersuasive: pick(analysis.byPersuasiveness),
+    spiciest: pick(analysis.controversial),
+    unicorn: pick(analysis.unicornCandidates),
+    bridge: pick(analysis.byType.bridge),
   };
 };
