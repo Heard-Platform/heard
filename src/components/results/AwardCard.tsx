@@ -1,11 +1,10 @@
 import { motion } from "motion/react";
-import { ReactNode } from "react";
 import { RenderedStatement } from "../RenderedStatement";
 
 interface AwardCardProps {
   emoji: string;
   title: string;
-  value: number | string;
+  value: number;
   text: string;
   gradientFrom: string;
   gradientTo: string;
@@ -61,7 +60,7 @@ export function AwardCard({
           <div
             className={`text-2xl font-bold ${valueColor} mb-2`}
           >
-            {value}
+            {value}%<span className="text-sm font-normal opacity-70"> agreed</span>
           </div>
           <p className="text-xs line-clamp-2"><RenderedStatement text={text} /></p>
         </div>
