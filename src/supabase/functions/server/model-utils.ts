@@ -1,4 +1,4 @@
-import { insert, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
+import { deleteRecord, insert, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
 import {
   AvatarAnimal,
   DemographicAnswer,
@@ -200,13 +200,17 @@ export const getCoverCardSwipedRoomIds = async (userId: string): Promise<Set<str
   return new Set(rows.map((r) => r.roomId));
 };
 
+export const deleteCoverCardSwipesForUser = async (userId: string) =>
+  deleteRecord("cover_card_swipes", { userId });
+
 export const saveCardSwipe = async (userId: string, roomId: string, cardType: string) =>
   upsert("card_swipes", { userId, roomId, cardType, swipedAt: Date.now() }, "userId,roomId,cardType");
 
-export const getCardSwipedRoomIds = async (userId: string, cardType: string): Promise<Set<string>> => {
-  const rows = await selectAll<{ roomId: string }>("card_swipes", { userId, cardType });
-  return new Set(rows.map((r) => r.roomId));
-};
+export const getCardSwipesForUser = async (userId: string): Promise<{ roomId: string; cardType: string }[]> =>
+  selectAll<{ roomId: string; cardType: string }>("card_swipes", { userId });
+
+export const deleteCardSwipesForUser = async (userId: string) =>
+  deleteRecord("card_swipes", { userId });
 
 export const saveRoomView = async (view: RoomView) =>
   upsert("room_views", view, "userId,roomId");

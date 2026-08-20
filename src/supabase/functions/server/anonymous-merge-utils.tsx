@@ -1,5 +1,27 @@
-import { getVotesForUser, saveVote, deleteVote, getStatement, saveStatement, getUser, saveUser } from "./kv-utils.tsx";
+import {
+  getVotesForUser,
+  saveVote,
+  deleteVote,
+  getStatement,
+  saveStatement,
+  getUser,
+  saveUser,
+  getUsersChanceCardStatuses,
+  saveChanceCardStatus,
+  deleteChanceCardStatus,
+  getUsersYouTubeCardStatuses,
+  saveYouTubeCardStatus,
+  deleteYouTubeCardStatus,
+} from "./kv-utils.tsx";
 import { getAllStatements } from "./kv-utils.tsx";
+import {
+  getCoverCardSwipedRoomIds,
+  saveCoverCardSwipe,
+  deleteCoverCardSwipesForUser,
+  getCardSwipesForUser,
+  saveCardSwipe,
+  deleteCardSwipesForUser,
+} from "./model-utils.ts";
 import type { Vote, Statement, AnonCreatableRecords } from "./types.tsx";
 
 type MergeHandlers = {
@@ -62,10 +84,46 @@ const mergeScore = async (anonymousUserId: string, targetUserId: string) => {
   await saveUser(targetUser);
 }
 
+const mergeCoverCardSwipes = async (anonymousUserId: string, targetUserId: string) => {
+  const roomIds = await getCoverCardSwipedRoomIds(anonymousUserId);
+  for (const roomId of roomIds) {
+    await saveCoverCardSwipe(targetUserId, roomId);
+  }
+  await deleteCoverCardSwipesForUser(anonymousUserId);
+}
+
+const mergeCardSwipes = async (anonymousUserId: string, targetUserId: string) => {
+  const swipes = await getCardSwipesForUser(anonymousUserId);
+  for (const swipe of swipes) {
+    await saveCardSwipe(targetUserId, swipe.roomId, swipe.cardType);
+  }
+  await deleteCardSwipesForUser(anonymousUserId);
+}
+
+const mergeChanceCardStatuses = async (anonymousUserId: string, targetUserId: string) => {
+  const statuses = await getUsersChanceCardStatuses(anonymousUserId);
+  for (const status of statuses) {
+    await saveChanceCardStatus({ ...status, userId: targetUserId });
+    await deleteChanceCardStatus(status);
+  }
+}
+
+const mergeYoutubeCardStatuses = async (anonymousUserId: string, targetUserId: string) => {
+  const statuses = await getUsersYouTubeCardStatuses(anonymousUserId);
+  for (const status of statuses) {
+    await saveYouTubeCardStatus({ ...status, userId: targetUserId });
+    await deleteYouTubeCardStatus(status);
+  }
+}
+
 const mergeHandlers: MergeHandlers = {
   votes: mergeVotes,
   statements: mergeStatements,
   score: mergeScore,
+  coverCardSwipes: mergeCoverCardSwipes,
+  cardSwipes: mergeCardSwipes,
+  chanceCardStatuses: mergeChanceCardStatuses,
+  youtubeCardStatuses: mergeYoutubeCardStatuses,
 };
 
 export const mergeAnonymousUserActivity = async (

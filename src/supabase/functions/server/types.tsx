@@ -265,7 +265,14 @@ export interface RoomFollow {
   followedAt: number;
 }
 
-export type AnonCreatableRecords = "votes" | "statements" | "score";
+export type AnonCreatableRecords =
+  | "votes"
+  | "statements"
+  | "score"
+  | "coverCardSwipes"
+  | "cardSwipes"
+  | "chanceCardStatuses"
+  | "youtubeCardStatuses";
 
 export interface Rant {
   id: string;
