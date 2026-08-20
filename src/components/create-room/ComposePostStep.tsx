@@ -52,6 +52,14 @@ export function ComposePostStep({
             onTopicChange={onTopicChange}
             onDescriptionChange={onDescriptionChange}
           />
+          {showError && topic.trim().length < 10 && (
+            <div className="error-bg border-2 error-border rounded-lg p-3 flex items-start gap-2">
+              <span className="text-sm">⚠️</span>
+              <p className="text-sm error-text">
+                Topic must be at least 10 characters.
+              </p>
+            </div>
+          )}
           <Button
             type="button"
             variant="ghost"
