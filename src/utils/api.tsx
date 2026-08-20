@@ -576,6 +576,20 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async adminUpdateUserDeveloperStatus(
+    userId: string,
+    isDeveloper: boolean,
+    adminKey: string,
+  ) {
+    return this.request(`/admin/user/${userId}/developer-status`, {
+      method: "PATCH",
+      body: JSON.stringify({ isDeveloper }),
+      headers: {
+        "X-Admin-Key": adminKey,
+      },
+    });
+  }
+
   async adminUpdateDebateSubHeard(
     debateId: string,
     newSubHeard: string | null,

@@ -361,6 +361,26 @@ app.patch(
   },
 );
 
+app.patch(
+  "/make-server-f1a393b4/admin/user/:userId/developer-status",
+  defineRoute(
+    {
+      userId: { type: "string", required: true },
+      isDeveloper: { type: "boolean", required: true },
+    },
+    async ({ userId, isDeveloper }: { userId: string; isDeveloper: boolean }) => {
+      const user = await getUser(userId);
+      if (!user) throw new Error("User not found");
+
+      user.isDeveloper = isDeveloper;
+      await saveUser(user);
+
+      return { user };
+    },
+    "Failed to update user developer status",
+  ),
+);
+
 app.delete(
   "/make-server-f1a393b4/admin/user/:userId/clear-phone",
   async (c) => {

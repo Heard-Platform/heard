@@ -318,6 +318,24 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
+  const handleUpdateUserDeveloperStatus = async (userId: string, isDeveloper: boolean) => {
+    try {
+      const res = await api.adminUpdateUserDeveloperStatus(userId, isDeveloper, adminKey);
+      if (res.success) {
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === userId ? { ...u, isDeveloper } : u
+          )
+        );
+      } else {
+        alert(`Failed to update developer status: ${res.error}`);
+      }
+    } catch (error) {
+      console.error("Error updating developer status:", error);
+      alert("Failed to update developer status");
+    }
+  };
+
   const handleClearPhoneVerification = async (userId: string) => {
     const user = users.find(u => u.id === userId);
     if (!user) return;
@@ -839,6 +857,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             adminKey={adminKey}
             onUserUpdate={handleUpdateUserTestStatus}
             onUserUnsubUpdate={handleUpdateUserUnsubStatus}
+            onUserDeveloperUpdate={handleUpdateUserDeveloperStatus}
             onClearPhoneVerification={handleClearPhoneVerification}
           />
         )}

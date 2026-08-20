@@ -16,6 +16,7 @@ interface UsersTableProps {
   onClearPhoneVerification: (userId: string) => void;
   onUserUpdate: (userId: string, isTestUser: boolean) => void;
   onUserUnsubUpdate: (userId: string, isUnsubbedFromUpdates: boolean) => void;
+  onUserDeveloperUpdate: (userId: string, isDeveloper: boolean) => void;
 }
 
 export function UsersTable({
@@ -25,6 +26,7 @@ export function UsersTable({
   onClearPhoneVerification,
   onUserUpdate,
   onUserUnsubUpdate,
+  onUserDeveloperUpdate,
 }: UsersTableProps) {
   const [hideTestUsers, setHideTestUsers] = useState(true);
   const [hideAnonUsers, setHideAnonUsers] = useState(true);
@@ -114,6 +116,7 @@ export function UsersTable({
               <th className="text-center p-3 font-medium">Anonymous</th>
               <th className="text-center p-3 font-medium">Test User</th>
               <th className="text-center p-3 font-medium">Unsubbed from Updates</th>
+              <th className="text-center p-3 font-medium">Developer</th>
               <th className="text-center p-3 font-medium">Clear Phone Verification</th>
               <th className="text-left p-3 font-medium">
                 <div className="flex items-center gap-2">
@@ -172,6 +175,12 @@ export function UsersTable({
                   <Checkbox
                     checked={user.isUnsubbedFromUpdates || false}
                     onCheckedChange={(checked: boolean) => onUserUnsubUpdate(user.id, checked)}
+                  />
+                </td>
+                <td className="p-3 text-center">
+                  <Checkbox
+                    checked={user.isDeveloper || false}
+                    onCheckedChange={(checked: boolean) => onUserDeveloperUpdate(user.id, checked)}
                   />
                 </td>
                 <td className="p-3 text-center">
