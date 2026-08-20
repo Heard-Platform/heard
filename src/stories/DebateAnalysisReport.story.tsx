@@ -270,9 +270,6 @@ const defaultAnalysisData: AnalysisData = {
   totalVoters: 220,
   demographics: {},
   participation: 0.71,
-  consensusData: { consensus: 0.62, highConsensusPostCount: 48 },
-  spicinessData: { spiciness: 0.35, lowConsensusPostCount: 11 },
-  reachData: { reach: 0.42, postersWithHighConsensusPost: 66 },
   topAgreedPosts: mockTopAgreedPosts,
   topDisagreedPosts: mockTopDisagreedPosts,
   spiciestPosts: [],
@@ -308,9 +305,6 @@ export const NoClusters = () => {
       debateId="demo-debate-456"
       debateTopic="Should our neighborhood allow food trucks?"
       participation={0.74}
-      consensusData={{ consensus: 0.45, highConsensusPostCount: 12 }}
-      spicinessData={{ spiciness: 0.68, lowConsensusPostCount: 19 }}
-      reachData={{ reach: 0.28, postersWithHighConsensusPost: 15 }}
       topAgreedPosts={[
         {
           id: "post-a",
