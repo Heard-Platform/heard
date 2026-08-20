@@ -483,6 +483,10 @@ export const saveChanceCardStatus = async (status: ChanceCardStatus) => {
   await upsert(status, chanceCardStatusKeyFn);
 };
 
+export const deleteChanceCardStatus = async (status: ChanceCardStatus) => {
+  await kv.del(chanceCardStatusKeyFn(status));
+};
+
 export const youtubeCardStatusKeyFn = (status: YouTubeCardStatus) =>
   `youtube_card_status:${status.userId}:${status.roomId}`;
 
@@ -494,6 +498,10 @@ export const getUsersYouTubeCardStatuses = async (
 
 export const saveYouTubeCardStatus = async (status: YouTubeCardStatus) => {
   await upsert(status, youtubeCardStatusKeyFn);
+};
+
+export const deleteYouTubeCardStatus = async (status: YouTubeCardStatus) => {
+  await kv.del(youtubeCardStatusKeyFn(status));
 };
 
 export const getSentEmails = async (): Promise<
