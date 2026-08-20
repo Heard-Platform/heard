@@ -258,6 +258,7 @@ export type CoverType = "youtube" | "image";
 
 export interface SubHeard {
   name: string;
+  displayName?: string;
   count?: number;
   adminId: string;
   isPrivate: boolean;

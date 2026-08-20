@@ -99,11 +99,16 @@ export function CommunityAdminDialog({
 
   const handleRename = async () => {
     const normalized = normalizeSubHeardName(newSubHeardName);
-    if (!normalized || normalized === community.name) return;
+    const trimmed = newSubHeardName.trim();
+    const currentDisplayName =
+      community.displayName ?? formatSubHeardDisplay(community.name);
+    if (!normalized || (normalized === community.name && trimmed === currentDisplayName)) {
+      return;
+    }
 
     setIsRenaming(true);
     try {
-      const success = await onRenameSubHeard(community.name, normalized);
+      const success = await onRenameSubHeard(community.name, trimmed);
       if (success) {
         toast.success("Community renamed");
         setNewSubHeardName("");

@@ -21,18 +21,10 @@ export async function performSubHeardRename(
   updatedEvents: boolean;
 }> {
   const newName = normalizeCommunityName(newNameRaw);
+  const displayName = newNameRaw.trim();
 
   if (newName.length < 2) {
     throw new Error("Sub-heard name must be at least 2 characters");
-  }
-
-  if (newName === oldName) {
-    throw new Error("New name must be different from the current name");
-  }
-
-  const existingCommunity = await getCommunity(newName);
-  if (existingCommunity) {
-    throw new Error("A sub-heard with that name already exists");
   }
 
   const oldCommunity = await getCommunity(oldName);
@@ -40,8 +32,29 @@ export async function performSubHeardRename(
     throw new Error("Sub-heard not found");
   }
 
-  await saveCommunity({ ...oldCommunity, name: newName });
-  await deleteCommunity(oldName);
+  const isSlugChange = newName !== oldName;
+  const isDisplayNameChange = displayName !== (oldCommunity.displayName ?? oldCommunity.name);
+
+  if (!isSlugChange && !isDisplayNameChange) {
+    throw new Error("New name must be different from the current name");
+  }
+
+  if (isSlugChange) {
+    const existingCommunity = await getCommunity(newName);
+    if (existingCommunity) {
+      throw new Error("A sub-heard with that name already exists");
+    }
+  }
+
+  await saveCommunity({ ...oldCommunity, name: newName, displayName });
+  if (isSlugChange) {
+    await deleteCommunity(oldName);
+  }
+
+  if (!isSlugChange) {
+    console.log(`Updated display name for sub-heard "${oldName}" to "${displayName}"`);
+    return { newName, updatedMemberships: 0, updatedRooms: 0, updatedEvents: false };
+  }
 
   const memberships = await getAllRecords<CommunityMembership>("subheard_member:");
   let updatedMemberships = 0;

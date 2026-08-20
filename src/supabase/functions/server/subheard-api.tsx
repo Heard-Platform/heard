@@ -135,6 +135,7 @@ app.post(
 
       const newCommunity = {
         name: normalized,
+        displayName: name.trim(),
         createdAt: Date.now(),
         isPrivate: isPrivate || false,
         hostOnlyPosting: hostOnlyPosting || false,
