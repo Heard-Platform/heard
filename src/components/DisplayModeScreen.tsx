@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { createShareableLink } from "../utils/url";
-import { analyzeStatements } from "./results/utils";
+import { analyzeStatements, getAgreePercent, getAwardWinners } from "./results/utils";
 import { RenderedStatement } from "./RenderedStatement";
 import type { DebateRoom, Statement } from "../types";
 
@@ -277,41 +277,34 @@ function LeaderboardSlide({ analysis }: { analysis: Analysis }) {
 }
 
 function AwardsSlide({ analysis }: { analysis: Analysis }) {
-  const mostPersuasive = analysis.byAgrees[0];
-  const spiciest = analysis.controversial[0];
-  const unicorn =
-    analysis.clusters.length > 0
-      ? [...analysis.clusters].sort((a, b) => a.size - b.size)[0]
-          ?.statements[0]
-      : null;
-  const bridge = analysis.byType.bridge[0];
+  const { mostPersuasive, spiciest, unicorn, bridge } = getAwardWinners(analysis);
 
   const awards = [
     mostPersuasive && {
       emoji: "👑",
       title: "Most Persuasive",
-      value: mostPersuasive.agrees,
+      value: getAgreePercent(mostPersuasive),
       text: mostPersuasive.text,
       colorClass: "agree-text",
     },
     spiciest && {
       emoji: "🌶️",
       title: "Spiciest Take",
-      value: spiciest.agrees + spiciest.disagrees,
+      value: getAgreePercent(spiciest),
       text: spiciest.text,
       colorClass: "attention-text",
     },
     unicorn && {
       emoji: "🦄",
       title: "Unicorn Opinion",
-      value: unicorn.agrees,
+      value: getAgreePercent(unicorn),
       text: unicorn.text,
       colorClass: "super-agree-text",
     },
     bridge && {
       emoji: "🌉",
       title: "Bridge Builder",
-      value: bridge.agrees,
+      value: getAgreePercent(bridge),
       text: bridge.text,
       colorClass: "neutral-text",
     },
@@ -340,7 +333,8 @@ function AwardsSlide({ analysis }: { analysis: Analysis }) {
                 {award.title}
               </div>
               <div className={`text-4xl font-bold ${award.colorClass}`}>
-                {award.value}
+                {award.value}%
+                <span className="text-xl font-normal opacity-70"> agreed</span>
               </div>
               <p className="text-xl line-clamp-3 text-slate-200">
                 <RenderedStatement text={award.text} />
