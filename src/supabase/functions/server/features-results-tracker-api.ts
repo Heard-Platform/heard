@@ -1,6 +1,6 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers, getAllAskTheDataRecords } from "./kv-utils.tsx";
-import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, getEventsOfType } from "./model-utils.ts";
+import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, getEventsOfType, getCommunityTeaserEvents } from "./model-utils.ts";
 import { countRecords, selectAll } from "./db-utils.ts";
 
 const app = new Hono();
@@ -214,6 +214,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const askTheDataQuestions = (await getAllAskTheDataRecords()).length;
     const askTheDataQuestionsSince = new Date("2026-07-01").getTime();
 
+    const communityTeaserEvents = (await getCommunityTeaserEvents()).length;
+    const communityTeaserEventsSince = new Date("2026-08-19").getTime();
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -287,6 +290,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       cohostInviteAcceptedSince,
       askTheDataQuestions,
       askTheDataQuestionsSince,
+      communityTeaserEvents,
+      communityTeaserEventsSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);

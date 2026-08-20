@@ -636,6 +636,8 @@ export interface FeatureResults {
   modInvitesAcceptedSince: number;
   askTheDataQuestions: number;
   askTheDataQuestionsSince: number;
+  communityTeaserEvents: number;
+  communityTeaserEventsSince: number;
 }
 
 export interface GGWashImportResult {

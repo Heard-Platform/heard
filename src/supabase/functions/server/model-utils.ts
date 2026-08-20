@@ -126,6 +126,14 @@ export const getCertifyCardEvents = async () => {
   );
 };
 
+export const getCommunityTeaserEvents = async () => {
+  return selectAll<UserEvent>(
+    "user_events",
+    {},
+    (q: any) => q.like("type", "community_teaser_%").select("type"),
+  );
+};
+
 export const getOneBillionEvents = async () => {
   return selectAll<UserEvent>(
     "user_events",
