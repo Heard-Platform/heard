@@ -589,10 +589,10 @@ function AppContent() {
       currentSubHeard || undefined,
       targetRoomId || undefined,
     );
-    const room = rooms.find((r) => r.id === targetRoomId);
-    if (room) {
-      if (room.subHeard && parseRoomIdFromUrl() === targetRoomId) {
-        setCurrentSubHeard(room.subHeard);
+    const targetRoom = rooms.find((r) => r.id === targetRoomId);
+    if (targetRoom) {
+      if (targetRoom.subHeard && targetRoom.subHeard !== currentSubHeard) {
+        setCurrentSubHeard(targetRoom.subHeard);
       }
     } else {
       setTargetRoomId(null);
