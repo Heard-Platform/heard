@@ -16,6 +16,8 @@ import type {
   EventSummary,
 } from "../types";
 import { RoomCard } from "./RoomCard";
+import { CommunityTeaser } from "./room/CommunityTeaser";
+import { FeedCardMotion } from "./FeedCardMotion";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { SwipeTutorialProvider, useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { CreateRoomCard } from "./CreateRoomCard";
@@ -25,15 +27,19 @@ import { api, safelyMakeApiCall } from "../utils/api";
 import { useRoomAlertsContext } from "../contexts/RoomAlertsContext";
 
 const LAST_VIEWED_ROOM_KEY = "lastViewedRoom";
+const COMMUNITY_TEASER_AFTER_ROOM_COUNT = 2;
 
 type EventCard = EventSummary & { cardType: "event" };
 type CreateCard = { id: string; cardType: "create" };
 type RoomCard = DebateRoom & { cardType: "room" };
-type Card = EventCard | RoomCard | CreateCard;
+type CommunityTeaser = { id: string; cardType: "community_teaser" };
+type Card = EventCard | RoomCard | CreateCard | CommunityTeaser;
 
 const isEventCard = (card: Card): card is EventCard => card.cardType === "event";
 const isCreateCard = (card: Card): card is CreateCard => card.cardType === "create";
 const isRoomCard = (card: Card): card is RoomCard => card.cardType === "room";
+const isCommunityTeaser = (card: Card): card is CommunityTeaser =>
+  card.cardType === "community_teaser";
 
 interface RoomScrollerProps {
   rooms: DebateRoom[];
@@ -121,6 +127,12 @@ const RoomScrollerInner = forwardRef<
       ...rooms.map((r) => ({ ...r, cardType: "room" as const })),
       { id: "create-new", cardType: "create" as const },
     ];
+
+    const communityTeaserInsertIndex = events.length + COMMUNITY_TEASER_AFTER_ROOM_COUNT;
+    allCards.splice(communityTeaserInsertIndex, 0, {
+      id: "community-teaser",
+      cardType: "community_teaser" as const,
+    });
 
     currentIndexRef.current = currentIndex;
     allCardsLengthRef.current = allCards.length;
@@ -315,6 +327,14 @@ const RoomScrollerInner = forwardRef<
                     onCreateRoom={onCreateRoom}
                     onOpenExplorer={onOpenExplorer}
                   />
+                ) : isCommunityTeaser(card) ? (
+                  <FeedCardMotion isActive={index === currentIndex}>
+                    <CommunityTeaser
+                      currentUserId={user.id}
+                      currentSubHeard={currentSubHeard}
+                      onSelectCommunity={onSubHeardChange}
+                    />
+                  </FeedCardMotion>
                 ) : event ? (
                   <EventCard event={event} onOpen={onOpenEvent} />
                 ) : room ? (

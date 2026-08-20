@@ -28,6 +28,7 @@ import {
   HeartHandshake,
   MessageCircleQuestion,
   Megaphone,
+  Compass,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -338,6 +339,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.organizersEvents.pageView,
       getDate: (s) => s.organizersEventsSince,
       renderExtra: (s) => <OrganizersResults {...s.organizersEvents} />,
+    },
+    {
+      icon: Compass,
+      iconColor: "text-emerald-600",
+      bgColor: "bg-emerald-100",
+      title: "Community Teaser Events",
+      description: "Taps and browse-all clicks on the in-feed community discovery teaser",
+      getValue: (s) => s.communityTeaserEvents,
+      getDate: (s) => s.communityTeaserEventsSince,
     },
   ]
 

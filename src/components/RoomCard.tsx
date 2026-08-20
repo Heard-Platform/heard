@@ -31,11 +31,7 @@ import { LinkedText } from "./widgets/LinkedText";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { useTranslation, Trans } from "react-i18next";
 import { getTotalVotes } from "../utils/votes";
-import {
-  FEED_CARD_INACTIVE_SCALE,
-  FEED_CARD_INACTIVE_OPACITY,
-  FEED_CARD_TRANSITION_DURATION,
-} from "../utils/constants/general";
+import { FeedCardMotion } from "./FeedCardMotion";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -247,16 +243,7 @@ export function RoomCard({
   };
 
   return (
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{
-        scale: isActive ? 1 : FEED_CARD_INACTIVE_SCALE,
-        opacity: isActive ? 1 : FEED_CARD_INACTIVE_OPACITY,
-      }}
-      transition={{ duration: FEED_CARD_TRANSITION_DURATION }}
-      className="w-full"
-      style={{ maxWidth: "var(--room-card-max-width)" }}
-    >
+    <FeedCardMotion isActive={isActive}>
       <div className="space-y-4 border rounded-2xl py-4 px-2 normal-border" style={{ backgroundColor: "rgba(255, 255, 255, 0.45)" }}>
           {/* Compact header */}
           <motion.div
@@ -546,6 +533,6 @@ export function RoomCard({
         onShowAccountSetupModal={onShowAccountSetupModal}
       />
 
-    </motion.div>
+    </FeedCardMotion>
   );
 }
