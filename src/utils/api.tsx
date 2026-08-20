@@ -381,13 +381,6 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async markShareCardSwiped(roomId: string) {
-    return this.request("/share-card/mark-swiped", {
-      method: "POST",
-      body: JSON.stringify({ roomId }),
-    });
-  }
-
   async saveDemographicAnswer(questionId: string, answer: string | null) {
     return this.request<undefined>("/demographic-answer", {
       method: "POST",
