@@ -548,28 +548,14 @@ class ApiClient extends BaseApiClient {
     );
   }
 
-  async adminUpdateUserTestStatus(
+  async adminUpdateUser(
     userId: string,
-    isTestUser: boolean,
+    updates: Partial<Pick<UserSession, "isDeveloper" | "isTestUser" | "isUnsubbedFromUpdates">>,
     adminKey: string,
   ) {
-    return this.request(`/admin/user/${userId}/test-status`, {
+    return this.request(`/admin/user/${userId}`, {
       method: "PATCH",
-      body: JSON.stringify({ isTestUser }),
-      headers: {
-        "X-Admin-Key": adminKey,
-      },
-    });
-  }
-
-  async adminUpdateUserUnsubStatus(
-    userId: string,
-    isUnsubbedFromUpdates: boolean,
-    adminKey: string,
-  ) {
-    return this.request(`/admin/user/${userId}/unsub-status`, {
-      method: "PATCH",
-      body: JSON.stringify({ isUnsubbedFromUpdates }),
+      body: JSON.stringify({ updates }),
       headers: {
         "X-Admin-Key": adminKey,
       },

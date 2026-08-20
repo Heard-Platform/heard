@@ -14,8 +14,10 @@ interface UsersTableProps {
   activeDayCounts: Record<string, number>;
   adminKey: string;
   onClearPhoneVerification: (userId: string) => void;
-  onUserUpdate: (userId: string, isTestUser: boolean) => void;
-  onUserUnsubUpdate: (userId: string, isUnsubbedFromUpdates: boolean) => void;
+  onUserUpdate: (
+    userId: string,
+    updates: Partial<Pick<UserSession, "isDeveloper" | "isTestUser" | "isUnsubbedFromUpdates">>,
+  ) => void;
 }
 
 export function UsersTable({
@@ -24,7 +26,6 @@ export function UsersTable({
   adminKey,
   onClearPhoneVerification,
   onUserUpdate,
-  onUserUnsubUpdate,
 }: UsersTableProps) {
   const [hideTestUsers, setHideTestUsers] = useState(true);
   const [hideAnonUsers, setHideAnonUsers] = useState(true);
@@ -114,6 +115,7 @@ export function UsersTable({
               <th className="text-center p-3 font-medium">Anonymous</th>
               <th className="text-center p-3 font-medium">Test User</th>
               <th className="text-center p-3 font-medium">Unsubbed from Updates</th>
+              <th className="text-center p-3 font-medium">Developer</th>
               <th className="text-center p-3 font-medium">Clear Phone Verification</th>
               <th className="text-left p-3 font-medium">
                 <div className="flex items-center gap-2">
@@ -165,13 +167,19 @@ export function UsersTable({
                 <td className="p-3 text-center">
                   <Checkbox
                     checked={user.isTestUser || false}
-                    onCheckedChange={(checked: boolean) => onUserUpdate(user.id, checked)}
+                    onCheckedChange={(checked: boolean) => onUserUpdate(user.id, { isTestUser: checked })}
                   />
                 </td>
                 <td className="p-3 text-center">
                   <Checkbox
                     checked={user.isUnsubbedFromUpdates || false}
-                    onCheckedChange={(checked: boolean) => onUserUnsubUpdate(user.id, checked)}
+                    onCheckedChange={(checked: boolean) => onUserUpdate(user.id, { isUnsubbedFromUpdates: checked })}
+                  />
+                </td>
+                <td className="p-3 text-center">
+                  <Checkbox
+                    checked={user.isDeveloper || false}
+                    onCheckedChange={(checked: boolean) => onUserUpdate(user.id, { isDeveloper: checked })}
                   />
                 </td>
                 <td className="p-3 text-center">

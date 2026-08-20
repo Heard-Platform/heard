@@ -282,39 +282,22 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     }
   };
 
-  const handleUpdateUserTestStatus = async (userId: string, isTestUser: boolean) => {
+  const handleUpdateUser = async (
+    userId: string,
+    updates: Partial<Pick<UserSession, "isDeveloper" | "isTestUser" | "isUnsubbedFromUpdates">>,
+  ) => {
     try {
-      const res = await api.adminUpdateUserTestStatus(userId, isTestUser, adminKey);
+      const res = await api.adminUpdateUser(userId, updates, adminKey);
       if (res.success) {
         setUsers((prev) =>
-          prev.map((u) =>
-            u.id === userId ? { ...u, isTestUser } : u
-          )
+          prev.map((u) => (u.id === userId ? { ...u, ...updates } : u))
         );
       } else {
-        alert(`Failed to update test user status: ${res.error}`);
+        alert(`Failed to update user: ${res.error}`);
       }
     } catch (error) {
-      console.error("Error updating test user status:", error);
-      alert("Failed to update test user status");
-    }
-  };
-
-  const handleUpdateUserUnsubStatus = async (userId: string, isUnsubbedFromUpdates: boolean) => {
-    try {
-      const res = await api.adminUpdateUserUnsubStatus(userId, isUnsubbedFromUpdates, adminKey);
-      if (res.success) {
-        setUsers((prev) =>
-          prev.map((u) =>
-            u.id === userId ? { ...u, isUnsubbedFromUpdates } : u
-          )
-        );
-      } else {
-        alert(`Failed to update user unsub status: ${res.error}`);
-      }
-    } catch (error) {
-      console.error("Error updating user unsub status:", error);
-      alert("Failed to update user unsub status");
+      console.error("Error updating user:", error);
+      alert("Failed to update user");
     }
   };
 
@@ -837,8 +820,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             users={users}
             activeDayCounts={activeDayCounts}
             adminKey={adminKey}
-            onUserUpdate={handleUpdateUserTestStatus}
-            onUserUnsubUpdate={handleUpdateUserUnsubStatus}
+            onUserUpdate={handleUpdateUser}
             onClearPhoneVerification={handleClearPhoneVerification}
           />
         )}
