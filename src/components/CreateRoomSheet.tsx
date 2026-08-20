@@ -195,7 +195,7 @@ export function CreateRoomSheet({
   };
 
   const handleCreateRoom = async () => {
-    if (!editedTopic.trim() || isCreating || !subHeard) return;
+    if (editedTopic.trim().length < 10 || isCreating || !subHeard) return;
     if (blockIfIncompleteCustomQuestion()) return;
 
     setIsCreating(true);
@@ -257,7 +257,7 @@ export function CreateRoomSheet({
   };
 
   const handleComposePostProceed = () => {
-    if (!editedTopic.trim() || editedStatements.length < 1) {
+    if (editedTopic.trim().length < 10 || editedStatements.length < 1) {
       setShowComposeError(true);
       return;
     }
@@ -354,7 +354,7 @@ export function CreateRoomSheet({
             onButtonClick: handleProceedToSubHeard,
           }),
           buttonDisabled:
-            !editedTopic.trim() ||
+            editedTopic.trim().length < 10 ||
             editedStatements.length === 0 ||
             (!!eventId && isCreating),
           showBackButton: true,
