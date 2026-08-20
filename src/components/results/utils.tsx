@@ -1,7 +1,7 @@
 import { Users, Target, Zap, Eye, Crown, Medal, Award, Star } from "lucide-react";
 import type { Statement } from "../../types";
 import { getUniqueParticipants } from "../../utils/room";
-import { getAllAgrees } from "../../utils/statement";
+import { getAllAgrees, getDecisiveVotes } from "../../utils/statement";
 
 export const getAgreePercent = (statement: Statement) => {
   const agrees = getAllAgrees(statement);
@@ -104,11 +104,11 @@ export const analyzeStatements = (statements: Statement[]) => {
   // Sort by persuasiveness
   const minAgrees = totalParticipants * MIN_AGREES_SHARE;
   const byPersuasiveness = statements
-    .filter((s) => getAllAgrees(s) >= minAgrees && getAllAgrees(s) + s.disagrees > 0)
+    .filter((s) => getAllAgrees(s) >= minAgrees && getDecisiveVotes(s) > 0)
     .sort(
       (a, b) =>
-        getAllAgrees(b) / (getAllAgrees(b) + b.disagrees) -
-        getAllAgrees(a) / (getAllAgrees(a) + a.disagrees)
+        getAllAgrees(b) / getDecisiveVotes(b) -
+        getAllAgrees(a) / getDecisiveVotes(a)
     );
 
   // Group by type
@@ -186,18 +186,17 @@ export const analyzeStatements = (statements: Statement[]) => {
   // Unicorn statements
   const maxUnicornVoters = totalParticipants * MAX_UNICORN_VOTER_SHARE;
   const decisiveStatements = statements.filter(
-    (s) => getAllAgrees(s) + s.disagrees > 0
+    (s) => getDecisiveVotes(s) > 0
   );
-  const voterCount = (s: Statement) => getAllAgrees(s) + s.disagrees;
 
   const belowThreshold = decisiveStatements
-    .filter((s) => voterCount(s) <= maxUnicornVoters)
+    .filter((s) => getDecisiveVotes(s) <= maxUnicornVoters)
     .sort((a, b) => getAgreePercent(b) - getAgreePercent(a));
 
   const aboveThreshold = decisiveStatements
-    .filter((s) => voterCount(s) > maxUnicornVoters)
+    .filter((s) => getDecisiveVotes(s) > maxUnicornVoters)
     .sort((a, b) => {
-      const voterDiff = voterCount(a) - voterCount(b);
+      const voterDiff = getDecisiveVotes(a) - getDecisiveVotes(b);
       return voterDiff !== 0 ? voterDiff : getAgreePercent(b) - getAgreePercent(a);
     });
 

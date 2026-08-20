@@ -4,6 +4,7 @@ import { VotesDrawer } from "./VotesDrawer";
 import { RenderedStatement } from "../RenderedStatement";
 import type { Statement, VoteType } from "../../types";
 import { isDefined } from "../../utils/array";
+import { getAllAgrees, getDecisiveVotes } from "../../utils/statement";
 
 interface InProgressResultsProps {
   statements: Statement[];
@@ -53,9 +54,9 @@ export function InProgressResults({
   const decisiveStmts = statements
     .map((s) => ({
       statement: s,
-      agrees: s.agrees + s.superAgrees,
+      agrees: getAllAgrees(s),
       disagrees: s.disagrees,
-      decisive: s.agrees + s.superAgrees + s.disagrees,
+      decisive: getDecisiveVotes(s),
     }))
     .filter((s) => s.decisive > 0);
 
