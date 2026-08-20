@@ -24,20 +24,23 @@ export function ChanceCard({
 
   return (
     <>
-      <div className="heard-between mb-2">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🎲</span>
-          <span className="text-sm text-orange-700">Chance Card!</span>
+      <div className="flex flex-col min-h-[238px]">
+        <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+          <div className="text-3xl mb-2">💬</div>
+          <h3 className="text-2xl text-center">What do you think?</h3>
+          <p className="text-base text-center text-muted-foreground max-w-sm">
+            Share your take on the topic.
+          </p>
+          <AddResponseButton onClick={() => setShowModal(true)} />
         </div>
-      </div>
 
-      <div className="mb-4 min-h-[120px] flex flex-col items-center justify-center space-y-4">
-        <div className="text-3xl mb-2">💬</div>
-        <h3 className="text-2xl text-center">What do you think?</h3>
-        <p className="text-base text-center text-muted-foreground max-w-sm">
-          Share your take on the topic.
-        </p>
-        <AddResponseButton onClick={() => setShowModal(true)} />
+        {isTopCard && (
+          <div className="pt-2 mt-4 border-t border-orange-200">
+            <p className="text-xs text-center text-orange-700">
+              Swipe away to continue
+            </p>
+          </div>
+        )}
       </div>
 
       <AddResponseModal
@@ -49,14 +52,6 @@ export function ChanceCard({
         onSubmitStatement={onSubmitStatement}
         onShowAccountSetupModal={onShowAccountSetupModal}
       />
-
-      {isTopCard && (
-        <div className="pt-2 border-t border-orange-200">
-          <p className="text-xs text-center text-orange-700">
-            Swipe away to continue
-          </p>
-        </div>
-      )}
     </>
   );
 }
