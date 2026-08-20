@@ -926,14 +926,15 @@ const getActiveRoomsHandler = async (c: Context) => {
       }
     }
 
+    const effectiveSubHeard = targetRoomSubHeard || subHeard;
+
     if (userId) {
-      const subHeardToJoin = targetRoomSubHeard || subHeard;
-      if (subHeardToJoin) {
-        const existingMembership = await getMembership(userId, subHeardToJoin);
-        if (!existingMembership && (await getCommunity(subHeardToJoin))) {
+      if (effectiveSubHeard) {
+        const existingMembership = await getMembership(userId, effectiveSubHeard);
+        if (!existingMembership && (await getCommunity(effectiveSubHeard))) {
           const newMembership: CommunityMembership = {
             userId,
-            subHeard: subHeardToJoin,
+            subHeard: effectiveSubHeard,
             joinedAt: Date.now(),
           };
           await saveMembership(newMembership);
@@ -952,7 +953,7 @@ const getActiveRoomsHandler = async (c: Context) => {
         communities,
         userMemberships,
         userId,
-        subHeard,
+        effectiveSubHeard,
       );
 
       const statuses = await getUsersChanceCardStatuses(userId);
