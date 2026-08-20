@@ -1058,6 +1058,10 @@
     margin-bottom: calc(var(--spacing) * 1);
   }
 
+  .mb-1\.5 {
+    margin-bottom: calc(var(--spacing) * 1.5);
+  }
+
   .mb-2 {
     margin-bottom: calc(var(--spacing) * 2);
   }
@@ -1622,6 +1626,10 @@
 
   .min-w-0 {
     min-width: calc(var(--spacing) * 0);
+  }
+
+  .min-w-1\.5 {
+    min-width: calc(var(--spacing) * 1.5);
   }
 
   .min-w-\[8rem\] {
