@@ -22,7 +22,6 @@ import {
   ShareDebateStep,
   ComposePostStep,
 } from "./create-room";
-import { normalizeSubHeardName } from "../utils/subheard";
 import { api } from "../utils/api";
 
 // @ts-ignore
@@ -202,7 +201,7 @@ export function CreateRoomSheet({
     try {
       const communityName =
         subHeard === "create-new" && newSubHeardName.trim()
-          ? normalizeSubHeardName(newSubHeardName)
+          ? newSubHeardName.trim()
           : subHeard;
 
       const result = await onCreateRoom({

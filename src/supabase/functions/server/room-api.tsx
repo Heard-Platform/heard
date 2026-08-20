@@ -87,6 +87,7 @@ app.post(
         if (!community) {
           const newCommunity: Community = {
             name: normalizedCommunityName,
+            displayName: communityName.trim(),
             isPrivate: false,
             adminId: userId,
             hostOnlyPosting: false,

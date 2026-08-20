@@ -105,6 +105,7 @@ export type NewUserReport = Omit<UserReport, "id" | "createdAt">;
 
 export type Community = {
   name: string;
+  displayName?: string;
   adminId: string;
   isPrivate: boolean;
   hostOnlyPosting: boolean;
