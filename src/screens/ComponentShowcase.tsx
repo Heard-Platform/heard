@@ -14,7 +14,6 @@ import { UnsubscribePageStory } from "../stories/UnsubscribePage.story";
 import { SwipeableStatementStackStory } from "../stories/SwipeableStatementStack.story";
 import { SwipeInstructionsStory } from "../stories/SwipeInstructions.story";
 import { MusicLeagueCardStackStory } from "../stories/YouTubeCardStack";
-import { MetricsCircleStory } from "../stories/MetricsCircle.story";
 import { TimeLeftBadgeStory } from "../stories/TimeLeftBadge.story";
 import { QRScanResultDialogStory } from "../stories/QRScanResultDialog.story";
 import { YouTubeCardStory } from "../stories/YouTubeCard.story";
@@ -122,7 +121,6 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="swipeable-statement-stack">Swipeable Statement Stack</TabsTrigger>
                 <TabsTrigger value="swipe-instructions">Swipe Instructions</TabsTrigger>
                 <TabsTrigger value="music-league-card-stack">YouTube Card Stack</TabsTrigger>
-                <TabsTrigger value="metrics-circle">Metrics Circle</TabsTrigger>
                 <TabsTrigger value="time-left-badge">Time Left Badge</TabsTrigger>
                 <TabsTrigger value="qr-generator">QR Generator Page</TabsTrigger>
                 <TabsTrigger value="qr-scan-result-dialog">QR Scan Result Dialog</TabsTrigger>
@@ -207,9 +205,6 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <MusicLeagueCardStackStory />
               </TabsContent>
 
-              <TabsContent value="metrics-circle">
-                <MetricsCircleStory />
-              </TabsContent>
               <TabsContent value="time-left-badge">
                 <TimeLeftBadgeStory />
               </TabsContent>

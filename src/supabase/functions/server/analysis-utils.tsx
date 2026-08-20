@@ -29,18 +29,6 @@ export interface AnalysisMetrics {
   totalVotes: number;
   demographics: DemographicBreakdown;
   participation: number;
-  consensusData: {
-    highConsensusPostCount: number;
-    consensus: number;
-  };
-  spicinessData: {
-    lowConsensusPostCount: number;
-    spiciness: number;
-  };
-  reachData: {
-    postersWithHighConsensusPost: number;
-    reach: number;
-  };
   topAgreedPosts: StatementVotes[];
   topDisagreedPosts: StatementVotes[];
   spiciestPosts: StatementVotes[];
@@ -78,16 +66,6 @@ function statementQualifiesForConsensus(
     statementMetrics.opinionatedRate >= OPINIONATED_RATE_THRESHOLD;
 }
 
-function statementIsHighConsensus(
-  statement: Statement
-) {
-  const HIGH_CONSENSUS_PERCENTAGE_THRESHOLD = 0.7;
-
-  const statementMetrics = calcStatementMetrics(statement);
-  return statementMetrics.agreePercentage > HIGH_CONSENSUS_PERCENTAGE_THRESHOLD || 
-    statementMetrics.disagreePercentage > HIGH_CONSENSUS_PERCENTAGE_THRESHOLD;
-}
-
 function statementIsLowConsensus(
   statement: Statement
 ) {
@@ -99,61 +77,13 @@ function statementIsLowConsensus(
     statementMetrics.agreePercentage < LOW_CONSENSUS_PERCENTAGE_UPPER_BOUND;
 }
 
-function getHighConsensusStatements(
-  statements: Statement[]
-) {
-  return statements.filter((statement) => 
-    statementQualifiesForConsensus(statement) && 
-      statementIsHighConsensus(statement)
-  );
-}
-
 function getLowConsensusStatements(
   statements: Statement[]
 ) {
   return statements.filter((statement) =>
-    statementQualifiesForConsensus(statement) && 
+    statementQualifiesForConsensus(statement) &&
       statementIsLowConsensus(statement)
   );
-}
-
-export function calcConsensus(
-  statements: Statement[],
-) {
-  const highConsensusStatements = getHighConsensusStatements(statements);
-  const highConsensusPostCount = highConsensusStatements.length;
-
-  const consensusPercentage = statements.length > 0
-    ? (highConsensusPostCount / statements.length)
-    : 0;
-
-  const CONSENSUS_THRESHOLD = 0.25;
-  const normalizedConsensus = Math.min(consensusPercentage * 1 / CONSENSUS_THRESHOLD, 1);
-
-  return {
-    highConsensusPostCount,
-    consensus: normalizedConsensus,
-  }
-}
-
-export function calcSpiciness(
-  statements: Statement[],
-) {
-  
-  const lowConsensusStatements = getLowConsensusStatements(statements);
-  const lowConsensusPostCount = lowConsensusStatements.length;
-
-  const spicinessPercentage = statements.length > 0
-    ? (lowConsensusPostCount / statements.length)
-    : 0;
-
-  const SPICY_THRESHOLD = 0.25;
-  const normalizedSpiciness = Math.min(spicinessPercentage * 1 / SPICY_THRESHOLD, 1);
-
-  return {
-    lowConsensusPostCount,
-    spiciness: normalizedSpiciness,
-  }
 }
 
 export function calculateAnalysisMetrics(
@@ -186,9 +116,6 @@ export function calculateAnalysisMetrics(
   const participation = uniqueVoters.size > 0
     ? Math.min(uniquePosters.size / uniqueVoters.size, 1)
     : 0;
-
-  const consensusData = calcConsensus(statements);
-  const spicinessData = calcSpiciness(statements);
 
   const serialized = statements.map(serializeStatement);
 
@@ -229,15 +156,6 @@ export function calculateAnalysisMetrics(
     })
     .slice(0, 3);
 
-  const highConsensusStatements = getHighConsensusStatements(statements);
-  const postersWithHighConsensusPost = new Set(
-    highConsensusStatements.map((statement) => statement.author)
-  );
-
-  const reach = uniquePosters.size > 0
-    ? Math.min(postersWithHighConsensusPost.size / uniquePosters.size, 1)
-    : 0;
-
   const allStatements = serialized;
 
   return {
@@ -247,12 +165,6 @@ export function calculateAnalysisMetrics(
     totalVotes,
     demographics,
     participation,
-    consensusData,
-    spicinessData,
-    reachData: {
-      postersWithHighConsensusPost: postersWithHighConsensusPost.size,
-      reach,
-    },
     topAgreedPosts,
     topDisagreedPosts,
     spiciestPosts,

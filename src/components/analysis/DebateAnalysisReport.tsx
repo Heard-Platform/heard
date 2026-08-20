@@ -43,9 +43,6 @@ export function DebateAnalysisReport({
   totalStatements,
   totalVotes,
   totalPosters,
-  consensusData,
-  spicinessData,
-  reachData,
   topAgreedPosts,
   topDisagreedPosts,
   spiciestPosts,
@@ -96,36 +93,13 @@ export function DebateAnalysisReport({
           <DemographicsPieCharts demographics={demographics} />
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <MetricCard
-            label="Participation"
-            viz="dots"
-            filled={totalPosters}
-            total={totalParticipants}
-            description={`${totalPosters} out of ${totalParticipants} people posted a statement`}
-          />
-          <MetricCard
-            label="Consensus"
-            viz="bar"
-            score={consensusData.consensus}
-            count={consensusData.highConsensusPostCount}
-            description={`${consensusData.highConsensusPostCount} high consensus statements`}
-          />
-          <MetricCard
-            label="Spiciness"
-            viz="bar"
-            score={spicinessData.spiciness}
-            count={spicinessData.lowConsensusPostCount}
-            description={`${spicinessData.lowConsensusPostCount} low consensus statements`}
-          />
-          <MetricCard
-            label="Reach"
-            viz="bar"
-            score={reachData.reach}
-            count={reachData.postersWithHighConsensusPost}
-            description={`${reachData.postersWithHighConsensusPost} ${reachData.postersWithHighConsensusPost === 1 ? "person" : "people"} with a high consensus response`}
-          />
-        </div>
+        <MetricCard
+          label="Participation"
+          viz="dots"
+          filled={totalPosters}
+          total={totalParticipants}
+          description={`${totalPosters} people posted a response out of ${totalParticipants} total participants`}
+        />
 
         <AskTheData debateId={debateId} />
 
