@@ -30,7 +30,8 @@ import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { LinkedText } from "./widgets/LinkedText";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { useTranslation, Trans } from "react-i18next";
-import { getTotalVotes } from "../utils/votes";
+import { getUniqueVoterCount } from "../utils/room";
+import { pluralizePerson } from "../utils/text";
 import { FeedCardMotion } from "./FeedCardMotion";
 
 interface RoomCardProps {
@@ -309,10 +310,15 @@ export function RoomCard({
                 )}
 
                 {statements.length > 0 && (() => {
-                  const totalVotes = statements.reduce((sum, s) => sum + getTotalVotes(s), 0);
+                  const voterCount = getUniqueVoterCount(statements);
                   return (
                     <p className="text-left text-foreground mt-1">
-                      <strong>{totalVotes.toLocaleString()}</strong> votes on <strong>{statements.length.toLocaleString()}</strong> responses
+                      <strong>{voterCount.toLocaleString()}</strong>{" "}
+                      {pluralizePerson(voterCount)} voted on{" "}
+                      <strong>
+                        {statements.length.toLocaleString()}
+                      </strong>{" "}
+                      responses
                     </p>
                   );
                 })()}
