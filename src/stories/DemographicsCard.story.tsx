@@ -106,7 +106,6 @@ function DemographicsSwipeableStack() {
         chanceCardSwiped={true}
         cover={null}
         coverCardSwiped={true}
-        shareCardSwiped={true}
         demographicQuestions={questions}
         answeredQuestionIds={questionIds}
         isActive={true}
@@ -116,7 +115,6 @@ function DemographicsSwipeableStack() {
         onCertifyDone={async () => { } }
         onChanceCardSwiped={async () => { } }
         onCoverCardSwiped={async () => { } }
-        onShareCardSwiped={async () => { } }
         onDemographicsAnswered={handleAnswer}
       />
     </div>

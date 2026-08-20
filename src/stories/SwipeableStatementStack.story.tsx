@@ -113,25 +113,9 @@ const mockStatements: Statement[] = [
   },
 ];
 
-const shareStoryStatement: Statement = {
-  id: "share-story-stmt-1",
-  text: "Pineapple belongs on pizza.",
-  author: "user-1",
-  agrees: 45,
-  disagrees: 52,
-  passes: 3,
-  superAgrees: 8,
-  roomId: "room-1",
-  timestamp: Date.now() - 60000,
-  round: 1,
-  voters: {},
-};
-
 export function SwipeableStatementStackStory() {
   const [chanceCardSwiped, setChanceCardSwiped] = useState(false);
   const [coverCardSwiped, setCoverCardSwiped] = useState(false);
-  const [shareCardSwiped, setShareCardSwiped] = useState(false);
-  const [shareStoryKey, setShareStoryKey] = useState(0);
 
   const storyRoom = mockRooms[0];
   const cover = storyRoom.imageUrl
@@ -178,20 +162,9 @@ export function SwipeableStatementStackStory() {
     setCoverCardSwiped(true);
   };
 
-  const handleShareCardSwiped = async () => {
-    console.log("Mark share card swiped");
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    setShareCardSwiped(true);
-  };
-
   const handleReset = () => {
     setChanceCardSwiped(false);
     setCoverCardSwiped(false);
-    setShareCardSwiped(false);
-  };
-
-  const handleResetShareStory = () => {
-    setShareStoryKey((key) => key + 1);
   };
 
   return (
@@ -202,7 +175,6 @@ export function SwipeableStatementStackStory() {
         <TabsList className="mb-6">
           <TabsTrigger value="stack">Swipeable Stack</TabsTrigger>
           <TabsTrigger value="chance-card">Chance Card Only</TabsTrigger>
-          <TabsTrigger value="share-card">Share Card</TabsTrigger>
         </TabsList>
 
         <TabsContent value="stack">
@@ -242,12 +214,6 @@ export function SwipeableStatementStackStory() {
                       {coverCardSwiped ? "Swiped" : "Not Swiped"}
                     </span>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">Share Card:</span>{" "}
-                    <span className="font-medium">
-                      {shareCardSwiped ? "Swiped" : "Not Swiped"}
-                    </span>
-                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -262,7 +228,6 @@ export function SwipeableStatementStackStory() {
                 chanceCardSwiped={chanceCardSwiped}
                 cover={cover}
                 coverCardSwiped={coverCardSwiped}
-                shareCardSwiped={shareCardSwiped}
                 demographicQuestions={[]}
                 answeredQuestionIds={new Set()}
                 isActive={true}
@@ -271,51 +236,6 @@ export function SwipeableStatementStackStory() {
                 onShowAccountSetupModal={() => {}}
                 onChanceCardSwiped={handleChanceCardSwiped}
                 onCoverCardSwiped={handleCoverCardSwiped}
-                onShareCardSwiped={handleShareCardSwiped}
-                onCertifyDone={async () => {}}
-                onDemographicsAnswered={async () => {}}
-              />
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="share-card">
-          <div className="space-y-6">
-            <Card>
-              <CardContent className="space-y-4">
-                <div className="flex gap-2 flex-wrap">
-                  <Button onClick={handleResetShareStory} variant="outline" size="sm">
-                    Reset Story
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Vote on the one statement below to reveal the share card,
-                  which invites the voter to find out where their friends land.
-                </p>
-              </CardContent>
-            </Card>
-
-            <div className="bg-slate-100 rounded-lg p-8 min-h-[600px] flex items-center justify-center">
-              <SwipeableStatementStack
-                key={shareStoryKey}
-                room={storyRoom}
-                statements={[shareStoryStatement]}
-                currentUserId="story-user"
-                allowAnonymous={true}
-                isAnonymous={false}
-                chanceCardSwiped={true}
-                cover={null}
-                coverCardSwiped={true}
-                shareCardSwiped={false}
-                demographicQuestions={[]}
-                answeredQuestionIds={new Set()}
-                isActive={true}
-                onVote={handleVote}
-                onSubmitStatement={handleSubmitStatement}
-                onShowAccountSetupModal={() => {}}
-                onChanceCardSwiped={handleChanceCardSwiped}
-                onCoverCardSwiped={handleCoverCardSwiped}
-                onShareCardSwiped={async () => console.log("Mark share card swiped")}
                 onCertifyDone={async () => {}}
                 onDemographicsAnswered={async () => {}}
               />

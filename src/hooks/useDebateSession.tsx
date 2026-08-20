@@ -78,7 +78,6 @@ interface DebateSessionContextType {
   submitFlyerEmail: (email: string) => Promise<ApiResponse | null>;
   markChanceCardSwiped: (roomId: string) => Promise<void>;
   markCoverCardSwiped: (roomId: string) => Promise<void>;
-  markShareCardSwiped: (roomId: string) => Promise<void>;
   saveDemographicAnswer: (
     questionId: string,
     answer: string | null,
@@ -500,22 +499,6 @@ export function DebateSessionProvider(
           err instanceof Error ? err.message : "Unknown error";
         setError(errorMsg);
         console.error("Failed to mark cover card as swiped:", errorMsg);
-      }
-    }, [],
-  );
-
-  const markShareCardSwiped = useCallback(
-    async (roomId: string) => {
-      try {
-        const response = await api.markShareCardSwiped(roomId);
-        if (!response.success) {
-          throw new Error(response.error || "Failed to mark share card as swiped");
-        }
-      } catch (err) {
-        const errorMsg =
-          err instanceof Error ? err.message : "Unknown error";
-        setError(errorMsg);
-        console.error("Failed to mark share card as swiped:", errorMsg);
       }
     }, [],
   );
@@ -1005,7 +988,6 @@ export function DebateSessionProvider(
     setStatementHidden,
     markChanceCardSwiped,
     markCoverCardSwiped,
-    markShareCardSwiped,
     saveDemographicAnswer,
     getSubHeards,
     getExplorableSubHeards,
@@ -1147,9 +1129,6 @@ export function DebateSessionProvider(
       },
       markCoverCardSwiped: async () => {
         console.log("[Showcase] markCoverCardSwiped called");
-      },
-      markShareCardSwiped: async () => {
-        console.log("[Showcase] markShareCardSwiped called");
       },
       saveDemographicAnswer: async (questionId: string, answer: string | null) => {
         console.log("[Showcase] saveDemographicAnswer called");

@@ -116,7 +116,6 @@ function CertifyCardInStack() {
       chanceCardSwiped={true}
       cover={null}
       coverCardSwiped={true}
-      shareCardSwiped={true}
       demographicQuestions={[]}
       answeredQuestionIds={new Set()}
       isActive={true}
@@ -125,7 +124,6 @@ function CertifyCardInStack() {
       onShowAccountSetupModal={() => {}}
       onChanceCardSwiped={async () => {}}
       onCoverCardSwiped={async () => {}}
-      onShareCardSwiped={async () => {}}
       onCertifyDone={async () => {}}
       onDemographicsAnswered={() => {}}
     />
