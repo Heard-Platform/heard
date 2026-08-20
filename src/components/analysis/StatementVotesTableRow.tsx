@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { CornerLeftUp } from "lucide-react";
 import { StatementVotes } from "../../types";
 import { VoteBreakdownPie } from "./VoteBreakdownPie";
@@ -9,7 +10,9 @@ interface StatementVotesTableRowProps {
   totalParticipants: number;
   showNumbers: boolean;
   clusterIndex?: number;
+  highlightClusterIndices?: number[];
   colorAllClusters?: boolean;
+  caption?: ReactNode;
 }
 
 function rowCounts(statement: StatementVotes, clusterIndex: number | undefined) {
@@ -39,12 +42,15 @@ export function StatementVotesTableRow({
   totalParticipants,
   showNumbers,
   clusterIndex,
+  highlightClusterIndices,
   colorAllClusters,
+  caption,
 }: StatementVotesTableRowProps) {
   const counts = rowCounts(statement, clusterIndex);
   return (
     <tr className="border-b last:border-0 hover:bg-muted/30 transition-colors">
       <td className="py-3 pr-4 text-sm leading-snug">
+        {caption}
         <span><RenderedStatement text={statement.text} /></span>
         {statement.mergedFrom && statement.mergedFrom.length > 0 && (
           <div className="mt-1 space-y-0.5">
@@ -78,7 +84,8 @@ export function StatementVotesTableRow({
       {statement.clusterVotes.map((cv, idx) => {
         const cvSuper = cv.superAgreeVotes;
         const cvRawAgree = cv.agreeVotes - cvSuper;
-        const colored = colorAllClusters || idx === clusterIndex;
+        const colored =
+          colorAllClusters || idx === clusterIndex || highlightClusterIndices?.includes(idx);
         return (
           <td
             key={idx}
