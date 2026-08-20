@@ -183,16 +183,25 @@ export const analyzeStatements = (statements: Statement[]) => {
     }))
     .filter((cluster) => cluster.size > 0);
 
-  // A "unicorn opinion" is a statement only a small slice of participants
-  // voted on (at most 15% of them), but who agreed on it strongly. Ranked
-  // by consensus (agree %) among that small-voter pool.
+  // Unicorn statements
   const maxUnicornVoters = totalParticipants * MAX_UNICORN_VOTER_SHARE;
-  const unicornCandidates = statements
-    .filter((s) => {
-      const decisive = getAllAgrees(s) + s.disagrees;
-      return decisive > 0 && decisive <= maxUnicornVoters;
-    })
+  const decisiveStatements = statements.filter(
+    (s) => getAllAgrees(s) + s.disagrees > 0
+  );
+  const voterCount = (s: Statement) => getAllAgrees(s) + s.disagrees;
+
+  const belowThreshold = decisiveStatements
+    .filter((s) => voterCount(s) <= maxUnicornVoters)
     .sort((a, b) => getAgreePercent(b) - getAgreePercent(a));
+
+  const aboveThreshold = decisiveStatements
+    .filter((s) => voterCount(s) > maxUnicornVoters)
+    .sort((a, b) => {
+      const voterDiff = voterCount(a) - voterCount(b);
+      return voterDiff !== 0 ? voterDiff : getAgreePercent(b) - getAgreePercent(a);
+    });
+
+  const unicornCandidates = [...belowThreshold, ...aboveThreshold];
 
   return {
     byAgrees,
