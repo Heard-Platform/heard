@@ -28,6 +28,7 @@ interface StatementVotesTableHeadProps {
   clusterSizes: number[];
   showNumbers: boolean;
   highlightClusterIndex?: number;
+  highlightClusterIndices?: number[];
   colorAllClusters?: boolean;
   sort?: SortState;
 }
@@ -37,6 +38,7 @@ export function StatementVotesTableHead({
   clusterSizes,
   showNumbers,
   highlightClusterIndex,
+  highlightClusterIndices,
   colorAllClusters,
   sort,
 }: StatementVotesTableHeadProps) {
@@ -69,7 +71,8 @@ export function StatementVotesTableHead({
           <div className="text-xs text-muted-foreground font-normal">{totalParticipants} users</div>
         </th>
         {clusterSizes.map((size, idx) => {
-          const colored = colorAllClusters || idx === highlightClusterIndex;
+          const colored =
+            colorAllClusters || idx === highlightClusterIndex || highlightClusterIndices?.includes(idx);
           return (
             <th
               key={idx}

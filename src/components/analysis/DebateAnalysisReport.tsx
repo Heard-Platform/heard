@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { StatBox } from "./StatBox";
 import { TopPostsByMetric } from "./TopPostsByMetric";
 import { ClusterConsensusBox } from "./ClusterConsensusBox";
+import { BridgeStatementsSection } from "./BridgeStatementsSection";
 import { DemographicsPieCharts } from "./DemographicsPieCharts";
 import { AnalysisData, StatementVotes } from "../../types";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
@@ -174,6 +175,13 @@ export function DebateAnalysisReport({
                 );
               })}
             </div>
+
+            <BridgeStatementsSection
+              statements={allStatements}
+              totalParticipants={totalParticipants}
+              clusterSizes={clusterSizes}
+              showNumbers={showNumbers}
+            />
 
             {isDeveloper && (
               <div className="mt-6">

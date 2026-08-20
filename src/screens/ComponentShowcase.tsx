@@ -43,6 +43,7 @@ import { EventCardStory } from "../stories/EventCard.story";
 import { HideAndMergeModalStory } from "../stories/HideAndMergeModal.story";
 import { VoteMatrixStory } from "../stories/VoteMatrix.story";
 import { StatementVotesTableStory } from "../stories/StatementVotesTable.story";
+import { BridgeStatementsSectionStory } from "../stories/BridgeStatementsSection.story";
 import { StatementSpectrumStory } from "../stories/StatementSpectrum.story";
 import { UserTimelineChartStory } from "../stories/UserTimelineChart.story";
 import { RoomCardStory } from "../stories/RoomCard.story";
@@ -148,6 +149,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="hide-and-merge-modal">Hide & Merge Modal</TabsTrigger>
                 <TabsTrigger value="vote-matrix">Vote Matrix</TabsTrigger>
                 <TabsTrigger value="statement-votes-table">Statement Votes Table</TabsTrigger>
+                <TabsTrigger value="bridge-statements-section">Bridge Statements Section</TabsTrigger>
                 <TabsTrigger value="statement-spectrum">Statement Spectrum</TabsTrigger>
                 <TabsTrigger value="user-timeline">User Timeline</TabsTrigger>
                 <TabsTrigger value="room-card">Room Card</TabsTrigger>
@@ -282,6 +284,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="statement-votes-table">
                 <StatementVotesTableStory />
+              </TabsContent>
+              <TabsContent value="bridge-statements-section">
+                <BridgeStatementsSectionStory />
               </TabsContent>
               <TabsContent value="statement-spectrum">
                 <StatementSpectrumStory />
