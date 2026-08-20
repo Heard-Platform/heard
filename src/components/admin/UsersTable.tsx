@@ -14,9 +14,10 @@ interface UsersTableProps {
   activeDayCounts: Record<string, number>;
   adminKey: string;
   onClearPhoneVerification: (userId: string) => void;
-  onUserUpdate: (userId: string, isTestUser: boolean) => void;
-  onUserUnsubUpdate: (userId: string, isUnsubbedFromUpdates: boolean) => void;
-  onUserDeveloperUpdate: (userId: string, isDeveloper: boolean) => void;
+  onUserUpdate: (
+    userId: string,
+    updates: Partial<Pick<UserSession, "isDeveloper" | "isTestUser" | "isUnsubbedFromUpdates">>,
+  ) => void;
 }
 
 export function UsersTable({
@@ -25,8 +26,6 @@ export function UsersTable({
   adminKey,
   onClearPhoneVerification,
   onUserUpdate,
-  onUserUnsubUpdate,
-  onUserDeveloperUpdate,
 }: UsersTableProps) {
   const [hideTestUsers, setHideTestUsers] = useState(true);
   const [hideAnonUsers, setHideAnonUsers] = useState(true);
@@ -168,19 +167,19 @@ export function UsersTable({
                 <td className="p-3 text-center">
                   <Checkbox
                     checked={user.isTestUser || false}
-                    onCheckedChange={(checked: boolean) => onUserUpdate(user.id, checked)}
+                    onCheckedChange={(checked: boolean) => onUserUpdate(user.id, { isTestUser: checked })}
                   />
                 </td>
                 <td className="p-3 text-center">
                   <Checkbox
                     checked={user.isUnsubbedFromUpdates || false}
-                    onCheckedChange={(checked: boolean) => onUserUnsubUpdate(user.id, checked)}
+                    onCheckedChange={(checked: boolean) => onUserUpdate(user.id, { isUnsubbedFromUpdates: checked })}
                   />
                 </td>
                 <td className="p-3 text-center">
                   <Checkbox
                     checked={user.isDeveloper || false}
-                    onCheckedChange={(checked: boolean) => onUserDeveloperUpdate(user.id, checked)}
+                    onCheckedChange={(checked: boolean) => onUserUpdate(user.id, { isDeveloper: checked })}
                   />
                 </td>
                 <td className="p-3 text-center">

@@ -18,7 +18,7 @@ import {
   saveUser,
   saveNewsletterSentUsers,
 } from "./kv-utils.tsx";
-import { DebateRoom, Rant, Statement } from "./types.tsx";
+import { DebateRoom, Rant, Statement, User } from "./types.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 import { getNewsletterByEdition, getNewsletterRecipients } from "./newsletter-utils.ts";
 import { getFlyerEmails } from "./model-utils.ts";
@@ -291,93 +291,40 @@ app.patch(
   },
 );
 
-app.patch(
-  "/make-server-f1a393b4/admin/user/:userId/test-status",
-  async (c) => {
-    try {
-      const userId = c.req.param("userId");
-      const { isTestUser } = await c.req.json();
+const ADMIN_EDITABLE_USER_FIELDS = [
+  "isDeveloper",
+  "isTestUser",
+  "isUnsubbedFromUpdates",
+] as const satisfies readonly (keyof User)[];
 
-      if (typeof isTestUser !== "boolean") {
-        return c.json({ error: "isTestUser must be a boolean" }, 400);
-      }
-
-      const user = await getUser(userId);
-
-      if (!user) {
-        return c.json({ error: "User not found" }, 404);
-      }
-
-      user.isTestUser = isTestUser;
-
-      await saveUser(user);
-
-      return c.json({
-        success: true,
-        user: user,
-      });
-    } catch (error) {
-      console.error("Error updating user test status:", error);
-      return c.json(
-        { error: "Failed to update user test status" },
-        500,
-      );
-    }
-  },
-);
+type AdminEditableUserField = typeof ADMIN_EDITABLE_USER_FIELDS[number];
 
 app.patch(
-  "/make-server-f1a393b4/admin/user/:userId/unsub-status",
-  async (c) => {
-    try {
-      const userId = c.req.param("userId");
-      const { isUnsubbedFromUpdates } = await c.req.json();
-
-      if (typeof isUnsubbedFromUpdates !== "boolean") {
-        return c.json({ error: "isUnsubbedFromUpdates must be a boolean" }, 400);
-      }
-
-      const user = await getUser(userId);
-
-      if (!user) {
-        return c.json({ error: "User not found" }, 404);
-      }
-
-      user.isUnsubbedFromUpdates = isUnsubbedFromUpdates;
-
-      await saveUser(user);
-
-      return c.json({
-        success: true,
-        user: user,
-      });
-    } catch (error) {
-      console.error("Error updating user unsub status:", error);
-      return c.json(
-        { error: "Failed to update user unsub status" },
-        500,
-      );
-    }
-  },
-);
-
-app.patch(
-  "/make-server-f1a393b4/admin/user/:userId/developer-status",
+  "/make-server-f1a393b4/admin/user/:userId",
   defineRoute(
     {
       userId: { type: "string", required: true },
-      isDeveloper: { type: "boolean", required: true },
+      updates: { type: "object", required: true },
     },
-    async ({ userId, isDeveloper }: { userId: string; isDeveloper: boolean }) => {
+    async ({ userId, updates }: { userId: string; updates: Record<string, unknown> }) => {
       const user = await getUser(userId);
       if (!user) throw new Error("User not found");
 
-      user.isDeveloper = isDeveloper;
+      for (const [field, value] of Object.entries(updates)) {
+        if (!ADMIN_EDITABLE_USER_FIELDS.includes(field as AdminEditableUserField)) {
+          throw new Error(`Field "${field}" is not editable via this endpoint`);
+        }
+        if (typeof value !== "boolean") {
+          throw new Error(`Field "${field}" must be a boolean`);
+        }
+        user[field as AdminEditableUserField] = value;
+      }
+
       await saveUser(user);
 
       return { user };
     },
-    "Failed to update user developer status",
+    "Failed to update user",
   ),
 );
 
