@@ -1,4 +1,7 @@
-# Organizer Tools
+---
+layout: page
+title: Organizer Tools
+---
 
 ## Community Moderators
 
