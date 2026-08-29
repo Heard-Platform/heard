@@ -4,6 +4,8 @@ import { getByPrefixParsed } from "./kv-utils.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { generateId, getDebateRoom, getStatementById, saveDebateRoom } from "./debate-api.tsx";
 import { recordRoomEngagement } from "./model-utils.ts";
+import { queueEmail } from "./email-queue-db.ts";
+import { EMAIL_PRIORITY } from "./email-queue-types.ts";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 
 export const countStatementVotes = (statement: Statement): number =>
@@ -159,6 +161,8 @@ export const processVote = async (
     timestamp: Date.now(),
   }
 
+  let statementAuthorUser: User | undefined;
+
   if (currentVote?.voteType === voteType && !allowIdempotent) {
     // Same vote type - undo vote (delete the vote record)
     await deleteVote(statementId, userId);
@@ -197,7 +201,7 @@ export const processVote = async (
     pointsEarned = 10;
 
     const allUsers = await getByPrefixParsed<User>("user:");
-    const statementAuthorUser = allUsers.find(
+    statementAuthorUser = allUsers.find(
       (u) => u.id === statement.author,
     );
 
@@ -239,6 +243,15 @@ export const processVote = async (
   console.log(
     `Final vote count for statement ${statementId}: ${voteStats.agrees} agree, ${voteStats.disagrees} disagree, ${voteStats.passes} pass (${updatedVotes.length} total votes)`,
   );
+
+  if (voteCountChange === 1 && updatedVotes.length === 3 && statementAuthorUser) {
+    await queueEmail(statementAuthorUser, {
+      emailType: "response_getting_traction",
+      priority: EMAIL_PRIORITY.MID,
+      postId: statement.roomId,
+      data: { postTitle: room.topic, statementText: statement.text, statementId },
+    });
+  }
 
   if (pointsEarned > 0) {
     user.score += pointsEarned;
