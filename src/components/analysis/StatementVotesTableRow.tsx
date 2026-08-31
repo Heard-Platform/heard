@@ -79,6 +79,7 @@ export function StatementVotesTableRow({
           disagree={statement.disagreeVotes}
           pass={statement.passVotes}
           size={totalParticipants}
+          showNumbers={showNumbers}
         />
       </td>
       {statement.clusterVotes.map((cv, idx) => {
@@ -97,6 +98,7 @@ export function StatementVotesTableRow({
               disagree={cv.disagreeVotes}
               pass={cv.passVotes}
               size={cv.clusterSize}
+              showNumbers={showNumbers}
             />
           </td>
         );
