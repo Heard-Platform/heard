@@ -1,4 +1,5 @@
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import { VoteBreakdownLegend } from "./VoteBreakdownLegend";
 
 interface VoteBreakdownPieProps {
   rawAgree: number;
@@ -6,6 +7,7 @@ interface VoteBreakdownPieProps {
   disagree: number;
   pass: number;
   size: number;
+  showNumbers: boolean;
 }
 
 const PIE_DIAMETER = 44;
@@ -27,6 +29,7 @@ export function VoteBreakdownPie({
   disagree,
   pass,
   size,
+  showNumbers,
 }: VoteBreakdownPieProps) {
   const voted = rawAgree + superAgree + disagree + pass;
   const didntVote = Math.max(size - voted, 0);
@@ -46,7 +49,7 @@ export function VoteBreakdownPie({
   const renderData = allZero ? [{ name: "none", value: 1 }] : data;
 
   return (
-    <div className="flex justify-center min-w-[48px]">
+    <div className="flex flex-col items-center min-w-[48px]">
       <PieChart width={PIE_DIAMETER} height={PIE_DIAMETER}>
         <Pie
           data={renderData}
@@ -98,6 +101,15 @@ export function VoteBreakdownPie({
           }}
         />
       </PieChart>
+      {showNumbers && (
+        <VoteBreakdownLegend
+          rawAgree={rawAgree}
+          disagree={disagree}
+          pass={pass}
+          didntVote={didntVote}
+          size={size}
+        />
+      )}
     </div>
   );
 }
