@@ -14,6 +14,7 @@ import { StatementVotesTable } from "./StatementVotesTable";
 import { ShowNumbersToggle } from "./ShowNumbersToggle";
 import { StatementSpectrumCard } from "./StatementSpectrumCard";
 import { AskTheData } from "./AskTheData";
+import { TagFilterControl } from "./TagFilterControl";
 
 function opinionatedVotesOf(post: StatementVotes): number {
   return post.agreeVotes + post.disagreeVotes;
@@ -33,8 +34,13 @@ interface DebateAnalysisReportProps extends AnalysisData {
   debateId: string;
   debateTopic: string;
   isDeveloper?: boolean;
+  isModerator: boolean;
   regenerating?: boolean;
   onRegenerateClusters?: () => void;
+  onAddStatementTag?: (statementId: string, name: string) => Promise<boolean>;
+  onRemoveStatementTag?: (statementId: string, tagId: string) => Promise<boolean>;
+  selectedTags: string[];
+  onSelectedTagsChange: (tags: string[]) => void;
 }
 
 export function DebateAnalysisReport({
@@ -51,12 +57,27 @@ export function DebateAnalysisReport({
   demographics,
   allStatements,
   isDeveloper,
+  isModerator,
   regenerating,
   onRegenerateClusters,
+  onAddStatementTag,
+  onRemoveStatementTag,
+  selectedTags,
+  onSelectedTagsChange,
 }: DebateAnalysisReportProps) {
   const clusterSizes = clusterConsensus?.clusters.map((c) => c.size) ?? [];
-  const statementVotesById = new Map(allStatements.map((s) => [s.id, s]));
   const [showNumbers, setShowNumbers] = useState(false);
+  const canEditTags = isModerator || !!isDeveloper;
+
+  const availableTagNames = Array.from(
+    new Set(allStatements.flatMap((s) => (s.tags ?? []).map((t) => t.name))),
+  ).sort();
+
+  const filteredStatements = selectedTags.length
+    ? allStatements.filter((s) => (s.tags ?? []).some((t) => selectedTags.includes(t.name)))
+    : allStatements;
+
+  const statementVotesById = new Map(filteredStatements.map((s) => [s.id, s]));
 
   return (
     <div className="heard-page-bg p-4">
@@ -65,6 +86,12 @@ export function DebateAnalysisReport({
           <p className="text-muted-foreground text-sm uppercase tracking-wide">Conversation Insights</p>
           <h1 className="text-3xl mt-1">{debateTopic}</h1>
         </div>
+
+        <TagFilterControl
+          availableTags={availableTagNames}
+          selectedTags={selectedTags}
+          onChange={onSelectedTagsChange}
+        />
 
         <div className="grid grid-cols-3 gap-2">
           <StatBox
@@ -104,7 +131,7 @@ export function DebateAnalysisReport({
 
         <AskTheData debateId={debateId} />
 
-        <StatementSpectrumCard statements={allStatements} />
+        <StatementSpectrumCard statements={filteredStatements} />
 
         <TopPostsByMetric
           posts={topAgreedPosts}
@@ -177,7 +204,7 @@ export function DebateAnalysisReport({
             </div>
 
             <BridgeStatementsSection
-              statements={allStatements}
+              statements={filteredStatements}
               totalParticipants={totalParticipants}
               clusterSizes={clusterSizes}
               showNumbers={showNumbers}
@@ -202,11 +229,15 @@ export function DebateAnalysisReport({
         )}
 
         <StatementVotesTable
-          statements={allStatements}
+          statements={filteredStatements}
           totalParticipants={totalParticipants}
           clusterSizes={clusterSizes}
           showNumbers={showNumbers}
           onShowNumbersChange={setShowNumbers}
+          isModerator={canEditTags}
+          availableTagNames={availableTagNames}
+          onAddTag={onAddStatementTag}
+          onRemoveTag={onRemoveStatementTag}
         />
 
       </div>

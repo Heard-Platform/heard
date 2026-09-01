@@ -2,40 +2,98 @@ import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { DebateAnalysisReport } from "./DebateAnalysisReport";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api } from "../../utils/api";
+import { useDebateSession } from "../../hooks/useDebateSession";
 import { AnalysisData } from "../../types";
 
 interface DebateAnalysisViewProps {
   roomId: string;
   isDeveloper: boolean;
+  isModerator: boolean;
   onClose: () => void;
 }
 
 export function DebateAnalysisView({
   roomId,
   isDeveloper,
+  isModerator,
   onClose,
 }: DebateAnalysisViewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  const { getStatementTags, addStatementTag, removeStatementTag } =
+    useDebateSession();
+
+  const applyStatementTags = useCallback(
+    (data: AnalysisData, tagsByStatementId: Map<string, Array<{ id: string; name: string }>>) => ({
+      ...data,
+      allStatements: data.allStatements.map((s) => ({
+        ...s,
+        tags: tagsByStatementId.get(s.id) ?? [],
+      })),
+    }),
+    [],
+  );
+
+  const fetchStatementTagsMap = useCallback(async () => {
+    const { tags, links } = await getStatementTags(roomId);
+    const tagsById = new Map(tags.map((t) => [t.id, t]));
+    const tagsByStatementId = new Map<string, Array<{ id: string; name: string }>>();
+    for (const link of links) {
+      const tag = tagsById.get(link.tagId);
+      if (!tag) continue;
+      const existing = tagsByStatementId.get(link.statementId) ?? [];
+      existing.push({ id: tag.id, name: tag.name });
+      tagsByStatementId.set(link.statementId, existing);
+    }
+    return tagsByStatementId;
+  }, [roomId, getStatementTags]);
 
   const fetchAnalysis = async () => {
     setLoading(true);
     setError(null);
 
-    const response = await api.getRoomAnalysis(roomId);
+    const [response, tagsByStatementId] = await Promise.all([
+      api.getRoomAnalysis(roomId, selectedTags),
+      fetchStatementTagsMap(),
+    ]);
 
     if (response.success && response.data) {
-      setAnalysisData(response.data);
+      setAnalysisData(applyStatementTags(response.data, tagsByStatementId));
     } else {
       setError(response.error || "Failed to load analysis");
     }
 
     setLoading(false);
   };
+
+  const refreshStatementTags = useCallback(async () => {
+    const tagsByStatementId = await fetchStatementTagsMap();
+    setAnalysisData((prev) => (prev ? applyStatementTags(prev, tagsByStatementId) : prev));
+  }, [fetchStatementTagsMap, applyStatementTags]);
+
+  const handleAddStatementTag = useCallback(
+    async (statementId: string, name: string) => {
+      const result = await addStatementTag(roomId, statementId, name);
+      if (result?.success) await refreshStatementTags();
+      return !!result?.success;
+    },
+    [roomId, addStatementTag, refreshStatementTags],
+  );
+
+  const handleRemoveStatementTag = useCallback(
+    async (statementId: string, tagId: string) => {
+      const result = await removeStatementTag(roomId, statementId, tagId);
+      if (result?.success) await refreshStatementTags();
+      return !!result?.success;
+    },
+    [roomId, removeStatementTag, refreshStatementTags],
+  );
 
   const handleRegenerateClusters = async () => {
     setRegenerating(true);
@@ -59,7 +117,7 @@ export function DebateAnalysisView({
 
   useEffect(() => {
     fetchAnalysis();
-  }, [roomId]);
+  }, [roomId, selectedTags]);
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -95,8 +153,13 @@ export function DebateAnalysisView({
               debateId={roomId}
               debateTopic={analysisData.debateTopic}
               isDeveloper={isDeveloper}
+              isModerator={isModerator}
               regenerating={regenerating}
               onRegenerateClusters={handleRegenerateClusters}
+              onAddStatementTag={handleAddStatementTag}
+              onRemoveStatementTag={handleRemoveStatementTag}
+              selectedTags={selectedTags}
+              onSelectedTagsChange={setSelectedTags}
             />
           )}
         </div>

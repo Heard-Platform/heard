@@ -3,13 +3,82 @@ import { StatementVotesTable } from "../components/analysis/StatementVotesTable"
 import { StatementVotes } from "../types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 
+type TagRef = { id: string; name: string };
+
 function StatefulStatementVotesTable(props: {
   statements: StatementVotes[];
   totalParticipants: number;
   clusterSizes: number[];
+  seed?: boolean;
 }) {
   const [showNumbers, setShowNumbers] = useState(false);
-  return <StatementVotesTable {...props} showNumbers={showNumbers} onShowNumbersChange={setShowNumbers} />;
+  const [isModerator, setIsModerator] = useState(true);
+  const seed = props.seed ?? true;
+  const seedTags: Record<string, TagRef[]> = seed
+    ? {
+        "s-1": [{ id: "seed-actionable", name: "actionable" }],
+        "s-3": [
+          { id: "seed-needs-clarification", name: "needs clarification" },
+          { id: "seed-actionable-2", name: "actionable" },
+        ],
+      }
+    : {};
+  const [tagsByStatementId, setTagsByStatementId] = useState<Record<string, TagRef[]>>(() =>
+    Object.fromEntries(props.statements.map((s) => [s.id, s.tags ?? seedTags[s.id] ?? []])),
+  );
+
+  const statements = props.statements.map((s) => ({
+    ...s,
+    tags: tagsByStatementId[s.id] ?? [],
+  }));
+
+  const availableTagNames = Array.from(
+    new Set(Object.values(tagsByStatementId).flatMap((tags) => tags.map((t) => t.name))),
+  ).sort();
+
+  const handleAddTag = async (statementId: string, name: string) => {
+    setTagsByStatementId((prev) => {
+      const existing = prev[statementId] ?? [];
+      if (existing.some((t) => t.name === name)) return prev;
+      return {
+        ...prev,
+        [statementId]: [...existing, { id: `${statementId}-${name}-${Date.now()}`, name }],
+      };
+    });
+    return true;
+  };
+
+  const handleRemoveTag = async (statementId: string, tagId: string) => {
+    setTagsByStatementId((prev) => ({
+      ...prev,
+      [statementId]: (prev[statementId] ?? []).filter((t) => t.id !== tagId),
+    }));
+    return true;
+  };
+
+  return (
+    <div className="space-y-3">
+      <label className="flex items-center gap-2 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={isModerator}
+          onChange={(e) => setIsModerator(e.target.checked)}
+        />
+        Moderator mode (tag editing enabled)
+      </label>
+      <StatementVotesTable
+        statements={statements}
+        totalParticipants={props.totalParticipants}
+        clusterSizes={props.clusterSizes}
+        showNumbers={showNumbers}
+        onShowNumbersChange={setShowNumbers}
+        isModerator={isModerator}
+        availableTagNames={availableTagNames}
+        onAddTag={handleAddTag}
+        onRemoveTag={handleRemoveTag}
+      />
+    </div>
+  );
 }
 
 export default {
@@ -206,20 +275,40 @@ export const Empty = () => (
 
 export function StatementVotesTableStory() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Statement Votes Table</CardTitle>
-        <CardDescription>
-          Sortable breakdown of all statements and their vote counts
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <StatefulStatementVotesTable
-          statements={mockStatements}
-          totalParticipants={totalParticipants}
-          clusterSizes={clusterSizes}
-        />
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Statement Votes Table</CardTitle>
+          <CardDescription>
+            Sortable breakdown of all statements and their vote counts
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <StatefulStatementVotesTable
+            statements={mockStatements}
+            totalParticipants={totalParticipants}
+            clusterSizes={clusterSizes}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Statement Votes Table (no tags yet)</CardTitle>
+          <CardDescription>
+            Room has zero existing tags — every "+ tag" popover starts with no suggestions,
+            only the "Create ..." option once you type.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <StatefulStatementVotesTable
+            statements={mockStatements}
+            totalParticipants={totalParticipants}
+            clusterSizes={clusterSizes}
+            seed={false}
+          />
+        </CardContent>
+      </Card>
+    </div>
   );
 }

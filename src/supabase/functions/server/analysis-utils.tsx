@@ -86,37 +86,7 @@ function getLowConsensusStatements(
   );
 }
 
-export function calculateAnalysisMetrics(
-  statements: Statement[],
-  questions: DemographicQuestion[],
-  answers: DemographicAnswer[],
-): AnalysisMetrics {
-  const uniqueParticipants = new Set<string>();
-  const uniquePosters = new Set<string>();
-  const uniqueVoters = new Set<string>();
-  let totalVotes = 0;
-
-  statements.forEach((statement) => {
-    uniqueParticipants.add(statement.author);
-    uniquePosters.add(statement.author);
-    if (statement.voters) {
-      Object.keys(statement.voters).forEach((userId) => {
-        uniqueParticipants.add(userId);
-        uniqueVoters.add(userId);
-      });
-    }
-    totalVotes +=
-      statement.agrees +
-      statement.disagrees +
-      statement.passes;
-  });
-
-  const demographics = calcDemographicBreakdown(questions, answers);
-
-  const participation = uniqueVoters.size > 0
-    ? Math.min(uniquePosters.size / uniqueVoters.size, 1)
-    : 0;
-
+export function computeTopPosts(statements: Statement[]) {
   const serialized = statements.map(serializeStatement);
 
   const opinionatedVotesOf = (s: StatementVotes) => s.agreeVotes + s.disagreeVotes;
@@ -156,6 +126,42 @@ export function calculateAnalysisMetrics(
     })
     .slice(0, 3);
 
+  return { topAgreedPosts, topDisagreedPosts, spiciestPosts };
+}
+
+export function calculateAnalysisMetrics(
+  statements: Statement[],
+  questions: DemographicQuestion[],
+  answers: DemographicAnswer[],
+): AnalysisMetrics {
+  const uniqueParticipants = new Set<string>();
+  const uniquePosters = new Set<string>();
+  const uniqueVoters = new Set<string>();
+  let totalVotes = 0;
+
+  statements.forEach((statement) => {
+    uniqueParticipants.add(statement.author);
+    uniquePosters.add(statement.author);
+    if (statement.voters) {
+      Object.keys(statement.voters).forEach((userId) => {
+        uniqueParticipants.add(userId);
+        uniqueVoters.add(userId);
+      });
+    }
+    totalVotes +=
+      statement.agrees +
+      statement.disagrees +
+      statement.passes;
+  });
+
+  const demographics = calcDemographicBreakdown(questions, answers);
+
+  const participation = uniqueVoters.size > 0
+    ? Math.min(uniquePosters.size / uniqueVoters.size, 1)
+    : 0;
+
+  const serialized = statements.map(serializeStatement);
+  const { topAgreedPosts, topDisagreedPosts, spiciestPosts } = computeTopPosts(statements);
   const allStatements = serialized;
 
   return {

@@ -1,4 +1,4 @@
-import { deleteRecord, insert, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
+import { createClientFromEnv, deleteRecord, insert, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
 import {
   AvatarAnimal,
   DemographicAnswer,
@@ -11,6 +11,8 @@ import {
   RoomFollow,
   RoomView,
   StatementMerge,
+  StatementTag,
+  StatementTagLink,
   UserEvent,
   UserPresence,
   UserReport
@@ -117,6 +119,48 @@ export const getOrgEmails = async () => {
 export const getMergesForRoom = async (roomId: string): Promise<StatementMerge[]> => {
   return selectAll<StatementMerge>("statement_merges", { roomId });
 };
+
+export const getStatementTagsForRoom = async (roomId: string): Promise<StatementTag[]> => {
+  return selectAll<StatementTag>("statement_tags", { roomId });
+};
+
+export const getStatementTagLinksForRoom = async (roomId: string): Promise<StatementTagLink[]> => {
+  return selectAll<StatementTagLink>("statement_tag_links", { roomId });
+};
+
+export const getOrCreateStatementTag = async (
+  roomId: string,
+  name: string,
+  userId: string,
+): Promise<StatementTag> => {
+  const supabase = createClientFromEnv();
+
+  const { data: existing } = await supabase
+    .from("statement_tags")
+    .select("*")
+    .eq("roomId", roomId)
+    .eq("name", name)
+    .maybeSingle();
+  if (existing) return existing as StatementTag;
+
+  const { data: created, error } = await supabase
+    .from("statement_tags")
+    .insert({ roomId, name, createdBy: userId })
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return created as StatementTag;
+};
+
+export const addStatementTagLink = async (
+  roomId: string,
+  statementId: string,
+  tagId: string,
+  userId: string,
+) => insert("statement_tag_links", { roomId, statementId, tagId, createdBy: userId });
+
+export const removeStatementTagLink = async (statementId: string, tagId: string) =>
+  deleteRecord("statement_tag_links", { statementId, tagId });
 
 export const getCertifyCardEvents = async () => {
   return selectAll<UserEvent>(
