@@ -96,6 +96,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const modInvitesAccepted = (await getEventsOfType("mod_invite_accepted")).length;
     const modInvitesAcceptedSince = new Date("2026-06-29").getTime();
 
+    const roomAnalyticsOpened = (await getEventsOfType("room_analytics_opened")).length;
+    const roomAnalyticsOpenedSince = new Date("2026-09-01").getTime();
+
     const cohostInviteAccepted = (await selectAll("user_events", { type: "cohost_invite_accepted" })).length;
     const cohostInviteAcceptedSince = new Date("2026-06-29").getTime();
 
@@ -279,6 +282,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       organizersEventsSince,
       modInvitesAccepted,
       modInvitesAcceptedSince,
+      roomAnalyticsOpened,
+      roomAnalyticsOpenedSince,
       cohostInviteAccepted,
       cohostInviteAcceptedSince,
       askTheDataQuestions,
