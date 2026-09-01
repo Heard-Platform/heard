@@ -152,7 +152,7 @@ function TrafficSourcesSection({
   referrers,
 }: {
   sources: TrafficSourceCount[];
-  referrers?: ReferrerShareCount[];
+  referrers: ReferrerShareCount[];
 }) {
   const total = sources.reduce((sum, s) => sum + s.count, 0);
   const countByKey = new Map(sources.map((s) => [s.key, s.count]));
@@ -275,15 +275,15 @@ function AnalyticsContent({
   participation,
 }: {
   trafficSources: TrafficSourceCount[];
-  referrers?: ReferrerShareCount[];
-  anonymity?: AnonymityBreakdown;
-  participation?: ParticipationBreakdown;
+  referrers: ReferrerShareCount[];
+  anonymity: AnonymityBreakdown;
+  participation: ParticipationBreakdown;
 }) {
   return (
     <div className="py-2 space-y-6">
       <TrafficSourcesSection sources={trafficSources} referrers={referrers} />
-      {participation && <ParticipationSection {...participation} />}
-      {anonymity && <AnonymitySection {...anonymity} />}
+      <ParticipationSection {...participation} />
+      <AnonymitySection {...anonymity} />
     </div>
   );
 }
@@ -291,9 +291,9 @@ function AnalyticsContent({
 interface RoomAnalyticsModalProps {
   roomTopic: string;
   trafficSources: TrafficSourceCount[];
-  referrers?: ReferrerShareCount[];
-  anonymity?: AnonymityBreakdown;
-  participation?: ParticipationBreakdown;
+  referrers: ReferrerShareCount[];
+  anonymity: AnonymityBreakdown;
+  participation: ParticipationBreakdown;
   isDeveloper?: boolean;
   debugData?: RoomDebugData | null;
   debugLoading?: boolean;

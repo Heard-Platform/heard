@@ -71,9 +71,9 @@ function ModalTrigger({
   label: string;
   roomTopic: string;
   trafficSources: TrafficSourceCount[];
-  referrers?: ReferrerShareCount[];
-  anonymity?: AnonymityBreakdown;
-  participation?: ParticipationBreakdown;
+  referrers: ReferrerShareCount[];
+  anonymity: AnonymityBreakdown;
+  participation: ParticipationBreakdown;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
@@ -149,6 +149,7 @@ export function RoomAnalyticsModalStory() {
               label="Open modal"
               roomTopic="Brand new room with no joins yet"
               trafficSources={emptyState}
+              referrers={[]}
               anonymity={{ anonymous: 0, named: 0 }}
               participation={{ participating: 0, lurking: 0 }}
             />
