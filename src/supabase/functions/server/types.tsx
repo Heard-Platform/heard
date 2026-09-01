@@ -48,7 +48,7 @@ export interface User {
   isAnonymous?: boolean;
   flyerId?: string;
   flyerGroup?: number;
-  convertedFromAnonAt?: number;
+  mergedIntoUserId?: string;
   createdInEnvironment?: string;
   tosAgreedToAt?: number;
   tosVersion?: string;

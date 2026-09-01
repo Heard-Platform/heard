@@ -36,8 +36,6 @@ const USER_SESSION_FIELD_VALIDATORS: {
     v === undefined || typeof v === "boolean",
   flyerId: (v): v is string | undefined =>
     v === undefined || typeof v === "string",
-  convertedFromAnonAt: (v): v is number | undefined =>
-    v === undefined || typeof v === "number",
   createdInEnvironment: (v): v is string | undefined =>
     v === undefined || typeof v === "string",
   avatarAnimal: (v): v is AvatarAnimal | undefined =>
