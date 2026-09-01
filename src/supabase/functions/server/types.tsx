@@ -273,7 +273,8 @@ export type AnonCreatableRecords =
   | "coverCardSwipes"
   | "cardSwipes"
   | "chanceCardStatuses"
-  | "youtubeCardStatuses";
+  | "youtubeCardStatuses"
+  | "roomViews";
 
 export interface Rant {
   id: string;

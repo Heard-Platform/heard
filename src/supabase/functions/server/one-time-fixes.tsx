@@ -9,6 +9,7 @@ import { backfillMembershipsApi } from "./script-backfill-memberships.tsx";
 import { backfillVotesToTableApi } from "./backfill-votes-to-table.tsx";
 import { backfillRoomEngagementApi } from "./backfill-room-engagement.tsx";
 import { backfillAnonMergeLinksApi } from "./backfill-anon-merge-links.tsx";
+import { backfillUserDataApi } from "./script-backfill-user-data.ts";
 import { unsubApril26SignupsApi } from "./unsub-april-26-signups.tsx";
 import { inviteCommunityToPostApi } from "./invite-community-to-post.tsx";
 import { verifyAdminKey } from "./admin-api.tsx";
@@ -250,6 +251,7 @@ app.route("/", backfillMembershipsApi);
 app.route("/", backfillVotesToTableApi);
 app.route("/", backfillRoomEngagementApi);
 app.route("/", backfillAnonMergeLinksApi);
+app.route("/", backfillUserDataApi);
 app.route("/", unsubApril26SignupsApi);
 app.route("/", inviteCommunityToPostApi);
 
