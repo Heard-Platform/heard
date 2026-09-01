@@ -302,7 +302,7 @@ describe("computeRoomTrafficSources", () => {
     });
   });
 
-  it("excludes the host and cohosts from participants and from other", () => {
+  it("includes the host and cohosts as participants and in other", () => {
     const room = makeRoom({
       hostId: "host-1",
       cohostIds: ["cohost-1"],
@@ -317,7 +317,7 @@ describe("computeRoomTrafficSources", () => {
 
     assertEquals(result.trafficSources[5], {
       key: "other",
-      count: 1,
+      count: 3,
     });
   });
 
@@ -420,7 +420,7 @@ describe("computeRoomTrafficSources", () => {
     assertEquals(result.anonymity, { anonymous: 2, named: 1 });
   });
 
-  it("excludes the host and cohosts from the anonymity breakdown", () => {
+  it("includes the host and cohosts in the anonymity breakdown", () => {
     const room = makeRoom({
       hostId: "host-1",
       cohostIds: ["cohost-1"],
@@ -437,7 +437,45 @@ describe("computeRoomTrafficSources", () => {
       users,
     );
 
-    assertEquals(result.anonymity, { anonymous: 0, named: 1 });
+    assertEquals(result.anonymity, { anonymous: 2, named: 1 });
+  });
+
+  it("defaults to zero lurkers when no viewer ids are passed", () => {
+    const result = computeRoomTrafficSources(
+      makeRoom(),
+      ["user-1", "user-2"],
+      [],
+      makeUsers(["user-1", "user-2"]),
+    );
+
+    assertEquals(result.participation, { participating: 2, lurking: 0 });
+  });
+
+  it("counts viewers who never voted or posted as lurking", () => {
+    const users = makeUsers(["user-1", "user-2", "user-3"]);
+    const result = computeRoomTrafficSources(
+      makeRoom(),
+      ["user-1"],
+      [],
+      users,
+      ["user-1", "user-2", "user-3"],
+    );
+
+    assertEquals(result.participation, { participating: 1, lurking: 2 });
+  });
+
+  it("includes the host and cohosts but excludes unknown users from the lurking count", () => {
+    const room = makeRoom({ hostId: "host-1", cohostIds: ["cohost-1"] });
+    const users = makeUsers(["host-1", "cohost-1", "user-1"]);
+    const result = computeRoomTrafficSources(
+      room,
+      [],
+      [],
+      users,
+      ["host-1", "cohost-1", "user-1", "bot-user"],
+    );
+
+    assertEquals(result.participation, { participating: 0, lurking: 3 });
   });
 
   it("dedupes repeat events from the same user, keeping only the earliest", () => {

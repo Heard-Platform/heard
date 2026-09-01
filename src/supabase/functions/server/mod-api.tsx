@@ -4,6 +4,7 @@ import { validateTrueHost } from "./auth-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { getMergesForRoom } from "./model-utils.ts";
 import { getRoomTrafficSources } from "./room-attribution-utils.ts";
+import { getRoomDebugData } from "./room-debug-utils.ts";
 import {
   generateId,
   getDebateRoom,
@@ -122,6 +123,26 @@ app.get(
       return getRoomTrafficSources(room);
     },
     "Failed to fetch traffic sources",
+  ),
+);
+
+app.get(
+  `${PREFIX}/debug-data`,
+  defineRoute(
+    {},
+    async (_params, c) => {
+      const userId = c.get("userId");
+      const requester = await getUser(userId);
+      if (!requester?.isDeveloper) {
+        throw new Error("Developer access required");
+      }
+
+      const roomId = c.req.param("roomId") as string;
+      const room = await getDebateRoom(roomId);
+      if (!room) throw new Error("Room not found");
+      return getRoomDebugData(room);
+    },
+    "Failed to fetch room debug data",
   ),
 );
 

@@ -285,6 +285,7 @@ export function RoomCardMenu({
         <RoomAnalyticsModalContainer
           roomId={room.id}
           roomTopic={room.topic}
+          isDeveloper={isDeveloper}
           onClose={() => setShowAnalytics(false)}
         />
       )}
