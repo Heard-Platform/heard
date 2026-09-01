@@ -214,6 +214,25 @@ class AdminApiClient extends BaseApiClient {
     );
   }
 
+  async backfillUserData(adminKey: string, dryRun: boolean) {
+    interface Result {
+      dryRun: boolean;
+      candidateUsers: number;
+      usersWithOrphanedViews: number;
+      viewsMerged: number;
+      message: string;
+    }
+
+    return this.request<Result>(
+      "/one-time-fixes/backfill-user-data",
+      {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+        body: JSON.stringify({ dryRun }),
+      },
+    );
+  }
+
   async addWhereDoYouLiveQuestion(adminKey: string) {
     interface Result {
       added: boolean;

@@ -30,6 +30,29 @@ interface ScriptConfig {
 }
 
 const buildScripts = (communityOptions: string[]): ScriptConfig[] => [
+    {
+    id: "backfill-user-data",
+    title: "Backfill Room Views",
+    description: "For every anonymous user with mergedIntoUserId set (see Backfill Anonymous User Merge Links above — run that first), merges their orphaned room_views rows into their linked account. Fixes participants who show up as extra \"lurkers\" in room analytics because their pre-merge anonymous room views were never carried over. Idempotent.",
+    dryRunMessage: "Run DRY RUN?\n\nPreviews how many linked anonymous users have orphaned room_views that would be merged into their account.\n\nNo changes will be made.\n\nContinue?",
+    liveRunMessage: "Run LIVE FIX?\n\nThis will merge orphaned room_views rows for every anonymous user with a known mergedIntoUserId into their linked account.\n\nContinue?",
+    successMessageDryRun: (stats) =>
+      `DRY RUN complete!\n\n` +
+      `Linked anonymous users: ${stats.candidateUsers}\n` +
+      `With orphaned views: ${stats.usersWithOrphanedViews}\n` +
+      `Views that would be merged: ${stats.viewsMerged}\n\n` +
+      `No changes were made.`,
+    successMessageLive: (stats) =>
+      `Done!\n\n` +
+      `Users updated: ${stats.usersWithOrphanedViews}\n` +
+      `Views merged: ${stats.viewsMerged}`,
+    statsDisplay: (stats) =>
+      stats.dryRun
+        ? `Last dry run: ${stats.usersWithOrphanedViews} user(s) with ${stats.viewsMerged} orphaned view(s) found`
+        : `Last run: ${stats.usersWithOrphanedViews} user(s) updated, ${stats.viewsMerged} view(s) merged`,
+    apiCall: (adminKey, dryRun) => adminApi.backfillUserData(adminKey, dryRun),
+    bgColor: "bg-green-50",
+  },
   {
     id: "backfill-anon-merge-links",
     title: "Backfill Anonymous User Merge Links",
