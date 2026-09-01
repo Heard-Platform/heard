@@ -10,8 +10,12 @@ import {
   ChevronDown,
   User,
   EyeOff,
+  MessageSquare,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { RoomDebugDataPanel } from "./RoomDebugDataPanel";
+import type { RoomDebugData } from "./RoomDebugDataPanel";
 
 export type TrafficSourceKey =
   | "direct"
@@ -34,6 +38,11 @@ export interface ReferrerShareCount {
 export interface AnonymityBreakdown {
   anonymous: number;
   named: number;
+}
+
+export interface ParticipationBreakdown {
+  participating: number;
+  lurking: number;
 }
 
 const SOURCE_META: Record<
@@ -143,7 +152,7 @@ function TrafficSourcesSection({
   referrers,
 }: {
   sources: TrafficSourceCount[];
-  referrers?: ReferrerShareCount[];
+  referrers: ReferrerShareCount[];
 }) {
   const total = sources.reduce((sum, s) => sum + s.count, 0);
   const countByKey = new Map(sources.map((s) => [s.key, s.count]));
@@ -222,11 +231,73 @@ function AnonymitySection({ anonymous, named }: AnonymityBreakdown) {
   );
 }
 
+function ParticipationSection({ participating, lurking }: ParticipationBreakdown) {
+  const total = participating + lurking;
+  const pct = total > 0 ? Math.round((participating / total) * 100) : 0;
+
+  return (
+    <div>
+      <h3 className="text-sm font-medium mb-3">Participating vs. lurking</h3>
+      {total === 0 ? (
+        <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+          No participant data yet.
+        </div>
+      ) : (
+        <div className="flex items-center gap-3">
+          <MessageSquare className="w-4 h-4 shrink-0 text-muted-foreground" />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between text-sm mb-1">
+              <span className="truncate">Participating</span>
+              <span className="text-muted-foreground text-xs shrink-0 ml-2">
+                {participating} · {pct}%
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${pct}%`, backgroundColor: "#2a78d6" }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground pt-3 mt-3 border-t">
+        {participating} participating · {lurking} lurking
+      </p>
+    </div>
+  );
+}
+
+function AnalyticsContent({
+  trafficSources,
+  referrers,
+  anonymity,
+  participation,
+}: {
+  trafficSources: TrafficSourceCount[];
+  referrers: ReferrerShareCount[];
+  anonymity: AnonymityBreakdown;
+  participation: ParticipationBreakdown;
+}) {
+  return (
+    <div className="py-2 space-y-6">
+      <TrafficSourcesSection sources={trafficSources} referrers={referrers} />
+      <ParticipationSection {...participation} />
+      <AnonymitySection {...anonymity} />
+    </div>
+  );
+}
+
 interface RoomAnalyticsModalProps {
   roomTopic: string;
   trafficSources: TrafficSourceCount[];
-  referrers?: ReferrerShareCount[];
-  anonymity?: AnonymityBreakdown;
+  referrers: ReferrerShareCount[];
+  anonymity: AnonymityBreakdown;
+  participation: ParticipationBreakdown;
+  isDeveloper?: boolean;
+  debugData?: RoomDebugData | null;
+  debugLoading?: boolean;
+  onDebugTabOpen?: () => void;
   onClose: () => void;
 }
 
@@ -235,18 +306,68 @@ export function RoomAnalyticsModal({
   trafficSources,
   referrers,
   anonymity,
+  participation,
+  isDeveloper,
+  debugData,
+  debugLoading,
+  onDebugTabOpen,
   onClose,
 }: RoomAnalyticsModalProps) {
   return (
     <Dialog open onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="max-w-md w-full">
+      <DialogContent
+        className={
+          isDeveloper
+            ? "max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            : "max-w-md w-full max-h-[90vh] overflow-y-auto"
+        }
+      >
         <DialogTitle className="line-clamp-1 pr-8">Room analytics</DialogTitle>
         <p className="text-xs text-muted-foreground line-clamp-1 -mt-2">{roomTopic}</p>
 
-        <div className="py-2 space-y-6">
-          <TrafficSourcesSection sources={trafficSources} referrers={referrers} />
-          {anonymity && <AnonymitySection {...anonymity} />}
-        </div>
+        {isDeveloper ? (
+          <Tabs
+            defaultValue="analytics"
+            onValueChange={(value: string) => {
+              if (value === "debug") onDebugTabOpen?.();
+            }}
+          >
+            <TabsList>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="debug">Debug data</TabsTrigger>
+            </TabsList>
+            <TabsContent value="analytics">
+              <AnalyticsContent
+                trafficSources={trafficSources}
+                referrers={referrers}
+                anonymity={anonymity}
+                participation={participation}
+              />
+            </TabsContent>
+            <TabsContent value="debug">
+              <div className="py-2">
+                {debugLoading && (
+                  <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+                    Loading…
+                  </div>
+                )}
+                {!debugLoading && debugData && <RoomDebugDataPanel data={debugData} />}
+                {!debugLoading && !debugData && (
+                  <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+                    Failed to load debug data.
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <AnalyticsContent
+            trafficSources={trafficSources}
+            referrers={referrers}
+            anonymity={anonymity}
+            participation={participation}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

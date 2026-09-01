@@ -1,5 +1,6 @@
 import type {
   AnonymityBreakdown,
+  ParticipationBreakdown,
   ReferrerShareCount,
   TrafficSourceCount,
   TrafficSourceKey,
@@ -63,4 +64,10 @@ export function generateMockAnonymity(seed: string, total: number): AnonymityBre
   const rng = makeSeededRng(seed);
   const anonymous = Math.round(total * (0.15 + rng() * 0.35));
   return { anonymous, named: total - anonymous };
+}
+
+export function generateMockParticipation(seed: string, viewerTotal: number): ParticipationBreakdown {
+  const rng = makeSeededRng(seed);
+  const participating = Math.round(viewerTotal * (0.2 + rng() * 0.4));
+  return { participating, lurking: viewerTotal - participating };
 }

@@ -29,6 +29,7 @@ import {
   MessageCircleQuestion,
   Megaphone,
   Compass,
+  PieChart,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -311,6 +312,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       description: "Users who accepted a moderator invite to a community",
       getValue: (s) => s.modInvitesAccepted,
       getDate: (s) => s.modInvitesAcceptedSince,
+    },
+    {
+      icon: PieChart,
+      iconColor: "text-indigo-600",
+      bgColor: "bg-indigo-100",
+      title: "Room Analytics Opened",
+      description: "Times a host or developer opened the Room Analytics modal from a room's menu",
+      getValue: (s) => s.roomAnalyticsOpened,
+      getDate: (s) => s.roomAnalyticsOpenedSince,
     },
     {
       icon: MessageCircleQuestion,

@@ -27,6 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { api } from "../../utils/api";
 import { createShareableLink, createCohostInviteLink } from "../../utils/url";
 import { share } from "../../utils/share";
 import { DebateRoom } from "../../types";
@@ -226,6 +227,7 @@ export function RoomCardMenu({
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
+                api.trackEvent("room_analytics_opened", room.id);
                 setShowAnalytics(true);
               }}
             >
@@ -285,6 +287,7 @@ export function RoomCardMenu({
         <RoomAnalyticsModalContainer
           roomId={room.id}
           roomTopic={room.topic}
+          isDeveloper={isDeveloper}
           onClose={() => setShowAnalytics(false)}
         />
       )}

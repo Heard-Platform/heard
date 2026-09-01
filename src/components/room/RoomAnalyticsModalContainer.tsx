@@ -2,25 +2,32 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { api, safelyMakeApiCall } from "../../utils/api";
 import { RoomAnalyticsModal } from "./RoomAnalyticsModal";
-import type { AnonymityBreakdown, ReferrerShareCount, TrafficSourceCount } from "./RoomAnalyticsModal";
+import type { AnonymityBreakdown, ParticipationBreakdown, ReferrerShareCount, TrafficSourceCount } from "./RoomAnalyticsModal";
+import type { RoomDebugData } from "./RoomDebugDataPanel";
 
 interface RoomAnalyticsModalContainerProps {
   roomId: string;
   roomTopic: string;
+  isDeveloper?: boolean;
   onClose: () => void;
 }
 
 export function RoomAnalyticsModalContainer({
   roomId,
   roomTopic,
+  isDeveloper,
   onClose,
 }: RoomAnalyticsModalContainerProps) {
   const [data, setData] = useState<{
     trafficSources: TrafficSourceCount[];
     referrers: ReferrerShareCount[];
     anonymity: AnonymityBreakdown;
+    participation: ParticipationBreakdown;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [debugData, setDebugData] = useState<RoomDebugData | null>(null);
+  const [debugLoading, setDebugLoading] = useState(false);
+  const [debugRequested, setDebugRequested] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -32,6 +39,19 @@ export function RoomAnalyticsModalContainer({
     };
     load();
   }, [roomId]);
+
+  const handleDebugTabOpen = () => {
+    if (debugRequested) return;
+    setDebugRequested(true);
+    setDebugLoading(true);
+    (async () => {
+      const response = await safelyMakeApiCall(() => api.getRoomDebugData(roomId));
+      if (response?.success && response.data) {
+        setDebugData(response.data);
+      }
+      setDebugLoading(false);
+    })();
+  };
 
   if (loading || !data) {
     return (
@@ -52,6 +72,11 @@ export function RoomAnalyticsModalContainer({
       trafficSources={data.trafficSources}
       referrers={data.referrers}
       anonymity={data.anonymity}
+      participation={data.participation}
+      isDeveloper={isDeveloper}
+      debugData={debugData}
+      debugLoading={debugLoading}
+      onDebugTabOpen={handleDebugTabOpen}
       onClose={onClose}
     />
   );

@@ -1,7 +1,7 @@
 import { selectAll } from "./db-utils.ts";
 import { getAllRealUsers, getAllUsers } from "./kv-utils.tsx";
 import { getRoomParticipants } from "./room-utils.ts";
-import { DebateRoom, User, UserEvent } from "./types.tsx";
+import { DebateRoom, RoomView, User, UserEvent } from "./types.tsx";
 import { obfuscateEmail } from "./utils.tsx";
 
 export type TrafficSourceKey =
@@ -27,10 +27,16 @@ export interface AnonymityBreakdown {
   named: number;
 }
 
+export interface ParticipationBreakdown {
+  participating: number;
+  lurking: number;
+}
+
 export interface RoomTrafficSources {
   trafficSources: TrafficSourceCount[];
   referrers: ReferrerShareCount[];
   anonymity: AnonymityBreakdown;
+  participation: ParticipationBreakdown;
 }
 
 export const REFERRAL_EVENT_TYPES = [
@@ -71,12 +77,12 @@ function isDirectRoomLoad(event: UserEvent, roomId: string): boolean {
 }
 
 export function computeRoomTrafficSources(
-  room: Pick<DebateRoom, "id" | "hostId" | "cohostIds">,
+  room: Pick<DebateRoom, "id">,
   participantIds: string[],
   events: UserEvent[],
   users: User[],
+  viewerIds: string[] = [],
 ): RoomTrafficSources {
-  const excluded = new Set([room.hostId, ...(room.cohostIds ?? [])]);
   const usersById = new Map(users.map((user) => [user.id, user]));
 
   const eventsByUserId = new Map<string, UserEvent[]>();
@@ -88,7 +94,7 @@ export function computeRoomTrafficSources(
   }
 
   const roomParticipantIds = participantIds.filter(
-    (id) => usersById.has(id) && !excluded.has(id),
+    (id) => usersById.has(id),
   );
 
   const counts: Record<TrafficSourceKey, number> = {
@@ -145,6 +151,15 @@ export function computeRoomTrafficSources(
     named: roomParticipantIds.length - anonymous,
   };
 
+  const participantIdSet = new Set(roomParticipantIds);
+  const lurkerIds = new Set(
+    viewerIds.filter((id) => usersById.has(id) && !participantIdSet.has(id)),
+  );
+  const participation: ParticipationBreakdown = {
+    participating: roomParticipantIds.length,
+    lurking: lurkerIds.size,
+  };
+
   const referrers: ReferrerShareCount[] = Array.from(
     sharesByReferrer.values(),
   )
@@ -162,6 +177,7 @@ export function computeRoomTrafficSources(
     ],
     referrers,
     anonymity,
+    participation,
   };
 }
 
@@ -245,7 +261,7 @@ export async function getReferralEventSummary(): Promise<ReferralEventSummary> {
 export async function getRoomTrafficSources(
   room: DebateRoom,
 ): Promise<RoomTrafficSources> {
-  const [referredByEvents, initialLoadEvents, users, participantIds] =
+  const [referredByEvents, initialLoadEvents, users, participantIds, roomViews] =
     await Promise.all([
       selectAll<UserEvent>(
         "user_events",
@@ -259,6 +275,7 @@ export async function getRoomTrafficSources(
       ),
       getAllUsers(),
       getRoomParticipants(room.id),
+      selectAll<RoomView>("room_views", { roomId: room.id }),
     ]);
 
   return computeRoomTrafficSources(
@@ -266,5 +283,6 @@ export async function getRoomTrafficSources(
     participantIds,
     [...referredByEvents, ...initialLoadEvents],
     users,
+    roomViews.map((view) => view.userId),
   );
 }

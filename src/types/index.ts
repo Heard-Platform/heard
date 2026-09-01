@@ -627,6 +627,8 @@ export interface FeatureResults {
   askTheDataQuestionsSince: number;
   communityTeaserEvents: number;
   communityTeaserEventsSince: number;
+  roomAnalyticsOpened: number;
+  roomAnalyticsOpenedSince: number;
 }
 
 export interface GGWashImportResult {

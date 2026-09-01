@@ -40,6 +40,12 @@ Co-hosts have the same host tools as the room creator: they can merge statements
 
 The invite link is **single-use**: it expires the moment it's successfully claimed, so it can't be forwarded or reused. It also expires automatically after 24 hours if unused.
 
+## Room Analytics
+
+Room creators (and developers) can open **Room Analytics** from the room menu (⋯) to see traffic sources, anonymous vs. non-anonymous participation, and a **Participating vs. lurking** breakdown — how many people voted or posted versus how many just viewed the room without engaging. Take the lurker count as directional rather than exact: it can run roughly 25-50% high, since the same person returning on a different device or browser session currently gets counted as a separate lurker each time rather than being recognized as one visitor.
+
+<img width="265" height="211" alt="image" src="https://github.com/user-attachments/assets/aa49d7b4-3acd-41ad-baa7-3a2f809e4679" />
+
 ## Statement Deduplication
 
 When participants submit statements, it's common for similar ideas to be expressed in different words. As the room creator, you can merge these duplicates together so that votes are consolidated under a single statement. This only affects the **insights view** — participants will still see and vote on statements as normal. Merges can be added or removed at any time.
