@@ -221,6 +221,9 @@ export const getRoomViewsForUser = async (userId: string): Promise<RoomView[]> =
 export const getAllRoomViews = async (): Promise<RoomView[]> =>
   selectAllWithoutLimit<RoomView>("room_views");
 
+export const deleteRoomView = async (userId: string, roomId: string) =>
+  deleteRecord("room_views", { userId, roomId });
+
 export const bulkUpsertRoomViews = async (views: RoomView[]) =>
   upsert("room_views", views as any, "userId,roomId");
 

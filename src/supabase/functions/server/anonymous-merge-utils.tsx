@@ -21,6 +21,9 @@ import {
   getCardSwipesForUser,
   saveCardSwipe,
   deleteCardSwipesForUser,
+  getRoomViewsForUser,
+  saveRoomView,
+  deleteRoomView,
 } from "./model-utils.ts";
 import type { Vote, Statement, AnonCreatableRecords } from "./types.tsx";
 
@@ -100,6 +103,21 @@ const mergeCardSwipes = async (anonymousUserId: string, targetUserId: string) =>
   await deleteCardSwipesForUser(anonymousUserId);
 }
 
+export const mergeRoomViews = async (anonymousUserId: string, targetUserId: string) => {
+  const [anonymousViews, targetViews] = await Promise.all([
+    getRoomViewsForUser(anonymousUserId),
+    getRoomViewsForUser(targetUserId),
+  ]);
+  const targetViewByRoom = new Map(targetViews.map((view) => [view.roomId, view]));
+
+  for (const anonView of anonymousViews) {
+    const targetView = targetViewByRoom.get(anonView.roomId);
+    const lastSeenAt = Math.max(anonView.lastSeenAt, targetView?.lastSeenAt ?? 0);
+    await saveRoomView({ userId: targetUserId, roomId: anonView.roomId, lastSeenAt });
+    await deleteRoomView(anonymousUserId, anonView.roomId);
+  }
+}
+
 const mergeChanceCardStatuses = async (anonymousUserId: string, targetUserId: string) => {
   const statuses = await getUsersChanceCardStatuses(anonymousUserId);
   for (const status of statuses) {
@@ -124,6 +142,7 @@ const mergeHandlers: MergeHandlers = {
   cardSwipes: mergeCardSwipes,
   chanceCardStatuses: mergeChanceCardStatuses,
   youtubeCardStatuses: mergeYoutubeCardStatuses,
+  roomViews: mergeRoomViews,
 };
 
 export const mergeAnonymousUserActivity = async (

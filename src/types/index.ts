@@ -198,7 +198,6 @@ export interface UserSession {
   isUnsubbedFromUpdates?: boolean;
   phoneVerified?: boolean;
   flyerId?: string;
-  convertedFromAnonAt?: number;
   createdInEnvironment?: string;
   avatarAnimal?: AvatarAnimal;
 }
@@ -516,8 +515,6 @@ export interface FeatureResults {
   userReportsSince: number;
   phoneVerifiedUsers: number;
   phoneVerifiedSince: number;
-  convertedFromAnonUsers: number;
-  convertedFromAnonSince: number;
   flyerUsers: number;
   flyerUsersSince: number;
   avatarAnimalUsers: number;

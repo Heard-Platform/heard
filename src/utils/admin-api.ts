@@ -196,6 +196,43 @@ class AdminApiClient extends BaseApiClient {
     );
   }
 
+  async backfillAnonMergeLinks(adminKey: string, dryRun: boolean) {
+    interface Result {
+      dryRun: boolean;
+      updatedCount: number;
+      updated: { anonymousUserId: string; mergedIntoUserId: string }[];
+      message: string;
+    }
+
+    return this.request<Result>(
+      "/one-time-fixes/backfill-anon-merge-links",
+      {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+        body: JSON.stringify({ dryRun }),
+      },
+    );
+  }
+
+  async backfillUserData(adminKey: string, dryRun: boolean) {
+    interface Result {
+      dryRun: boolean;
+      candidateUsers: number;
+      usersWithOrphanedViews: number;
+      viewsMerged: number;
+      message: string;
+    }
+
+    return this.request<Result>(
+      "/one-time-fixes/backfill-user-data",
+      {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+        body: JSON.stringify({ dryRun }),
+      },
+    );
+  }
+
   async addWhereDoYouLiveQuestion(adminKey: string) {
     interface Result {
       added: boolean;

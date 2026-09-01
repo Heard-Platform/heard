@@ -48,7 +48,7 @@ export interface User {
   isAnonymous?: boolean;
   flyerId?: string;
   flyerGroup?: number;
-  convertedFromAnonAt?: number;
+  mergedIntoUserId?: string;
   createdInEnvironment?: string;
   tosAgreedToAt?: number;
   tosVersion?: string;
@@ -273,7 +273,8 @@ export type AnonCreatableRecords =
   | "coverCardSwipes"
   | "cardSwipes"
   | "chanceCardStatuses"
-  | "youtubeCardStatuses";
+  | "youtubeCardStatuses"
+  | "roomViews";
 
 export interface Rant {
   id: string;
