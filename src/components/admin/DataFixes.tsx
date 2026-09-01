@@ -31,6 +31,26 @@ interface ScriptConfig {
 
 const buildScripts = (communityOptions: string[]): ScriptConfig[] => [
   {
+    id: "backfill-anon-merge-links",
+    title: "Backfill Anonymous User Merge Links",
+    description: "Sets mergedIntoUserId on anonymous user records that were already merged into an account, using the anonymousUserId breadcrumb left behind on their merged statements/votes. Only catches anon users who voted or posted before merging — pure lurkers with no vote/statement history can't be recovered this way. Idempotent — already-linked users are skipped.",
+    dryRunMessage: "Run DRY RUN?\n\nPreviews how many anonymous users would get mergedIntoUserId set.\n\nNo changes will be made.\n\nContinue?",
+    liveRunMessage: "Run LIVE FIX?\n\nThis will set mergedIntoUserId on anonymous user records that have a known merge target inferred from their statements/votes.\n\nContinue?",
+    successMessageDryRun: (stats) =>
+      `DRY RUN complete!\n\n` +
+      `Would update: ${stats.updatedCount}\n\n` +
+      `No changes were made.`,
+    successMessageLive: (stats) =>
+      `Done!\n\n` +
+      `Updated: ${stats.updatedCount}`,
+    statsDisplay: (stats) =>
+      stats.dryRun
+        ? `Last dry run: ${stats.updatedCount} anonymous user(s) would get mergedIntoUserId set`
+        : `Last run: ${stats.updatedCount} anonymous user(s) updated`,
+    apiCall: (adminKey, dryRun) => adminApi.backfillAnonMergeLinks(adminKey, dryRun),
+    bgColor: "bg-emerald-50",
+  },
+  {
     id: "cleanup-orphaned-anonymous-votes-for-room",
     title: "Cleanup Orphaned Anonymous Votes (Single Room)",
     description: "Fixes a bug where converting from anonymous to signed-in left the old anonymous vote record behind instead of replacing it, causing that person to still show up as an anonymous participant in room attribution. Scoped to one room. Idempotent.",
