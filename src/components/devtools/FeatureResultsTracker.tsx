@@ -185,15 +185,6 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getDate: (s) => s.phoneVerifiedSince,
     },
     {
-      icon: UserPlus,
-      iconColor: "text-blue-600",
-      bgColor: "bg-blue-100",
-      title: "Converted from Anonymous",
-      description: "Users who started anonymous and later created an account",
-      getValue: (s) => s.convertedFromAnonUsers,
-      getDate: (s) => s.convertedFromAnonSince,
-    },
-    {
       icon: Tag,
       iconColor: "text-purple-600",
       bgColor: "bg-purple-100",

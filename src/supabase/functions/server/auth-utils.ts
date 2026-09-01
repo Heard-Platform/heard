@@ -1,6 +1,6 @@
 import { mergeAnonymousUserActivity } from "./anonymous-merge-utils.tsx";
 import { getUserAndNewSession } from "./auth-api.tsx";
-import { getUser } from "./kv-utils.tsx";
+import { getUser, saveUser } from "./kv-utils.tsx";
 import { getDebateRoom } from "./debate-api.tsx";
 
 async function validateHostImpl(c: any, next: any, trueHostOnly: boolean) {
@@ -61,6 +61,9 @@ export const loginUserWithMerge = async (userId: string, currentUserId: string |
   if (currentUserId) {
     const currentUser = await getUser(currentUserId);
     if (currentUser?.isAnonymous) {
+      currentUser.mergedIntoUserId = userId;
+      await saveUser(currentUser);
+
       try {
         await mergeAnonymousUserActivity(currentUserId, userId);
       } catch (error) {

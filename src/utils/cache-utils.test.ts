@@ -28,7 +28,6 @@ describe("isValidCachedUser", () => {
       isUnsubbedFromUpdates: false,
       phoneVerified: true,
       flyerId: "flyer-xyz",
-      convertedFromAnonAt: 1700000001000,
       createdInEnvironment: "production",
       avatarAnimal: "koala",
     };
