@@ -2,7 +2,7 @@ export interface RoomDebugParticipant {
   id: string;
   nickname: string;
   isAnonymous: boolean;
-  convertedFromAnonAt?: number;
+  mergedIntoUserId?: string;
   createdAt: number;
   isHost: boolean;
   isCohost: boolean;
@@ -119,12 +119,12 @@ export function RoomDebugDataPanel({ data }: { data: RoomDebugData }) {
     <div className="space-y-4">
       <DebugSection title="Participants (room.participants)" count={data.participants.length}>
         <Table
-          headers={["id", "nickname", "anon", "convertedFromAnonAt", "host", "cohost", "test/bot", "fingerprint", "ip"]}
+          headers={["id", "nickname", "anon", "mergedIntoUserId", "host", "cohost", "test/bot", "fingerprint", "ip"]}
           rows={data.participants.map((p) => [
             p.id,
             p.nickname,
             p.isAnonymous ? "yes" : "no",
-            p.convertedFromAnonAt ? formatTs(p.convertedFromAnonAt) : "—",
+            p.mergedIntoUserId ?? "—",
             p.isHost ? "yes" : "",
             p.isCohost ? "yes" : "",
             p.isTestUser || p.webdriver ? "yes" : "",

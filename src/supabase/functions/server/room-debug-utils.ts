@@ -8,7 +8,7 @@ export interface RoomDebugParticipant {
   id: string;
   nickname: string;
   isAnonymous: boolean;
-  convertedFromAnonAt?: number;
+  mergedIntoUserId?: string;
   createdAt: number;
   isHost: boolean;
   isCohost: boolean;
@@ -87,7 +87,7 @@ export async function getRoomDebugData(room: DebateRoom): Promise<RoomDebugData>
       id,
       nickname: user?.nickname ?? "(user not found)",
       isAnonymous: !!user?.isAnonymous,
-      convertedFromAnonAt: user?.convertedFromAnonAt,
+      mergedIntoUserId: user?.mergedIntoUserId,
       createdAt: user?.createdAt ?? 0,
       isHost: id === room.hostId,
       isCohost: !!room.cohostIds?.includes(id),
