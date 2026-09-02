@@ -459,6 +459,7 @@ export function RoomCard({
               <DebateAnalysisView
                 roomId={room.id}
                 isDeveloper={isDeveloper}
+                isModerator={isHost}
                 onClose={handleCloseAnalysis}
               />
             </div>
@@ -469,6 +470,7 @@ export function RoomCard({
         <DebateAnalysisView
           roomId={room.id}
           isDeveloper={isDeveloper}
+          isModerator={isHost}
           onClose={handleCloseAnalysis}
         />
       )}

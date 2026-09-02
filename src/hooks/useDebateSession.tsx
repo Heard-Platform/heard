@@ -10,6 +10,8 @@ import type {
   NewDebateRoom,
   Statement,
   StatementMerge,
+  StatementTag,
+  StatementTagLink,
   VoteType,
   AnalysisData,
   SubHeard,
@@ -104,6 +106,19 @@ interface DebateSessionContextType {
   getRoomAnalysis: (roomId: string) => Promise<AnalysisData | null>;
   askTheData: (roomId: string, question: string) => Promise<ApiResponse<AskTheDataResponse>>;
   getStatementMerges: ( roomId: string ) => Promise<StatementMerge[]>;
+  getStatementTags: (
+    roomId: string,
+  ) => Promise<{ tags: StatementTag[]; links: StatementTagLink[] }>;
+  addStatementTag: (
+    roomId: string,
+    statementId: string,
+    name: string,
+  ) => Promise<ApiResponse<{ tag: StatementTag }> | null>;
+  removeStatementTag: (
+    roomId: string,
+    statementId: string,
+    tagId: string,
+  ) => Promise<ApiResponse | null>;
   createStatementMerge: (
     roomId: string,
     sourceStatementId: string,
@@ -768,6 +783,31 @@ export function DebateSessionProvider(
       safelyMakeApiCall<undefined>(() => api.deleteStatementMerge(roomId, mergeId))
   , [safelyMakeApiCall]);
 
+  const getStatementTags = useCallback(
+    async (roomId: string) => {
+      const response = await safelyMakeApiCall<{
+        tags: StatementTag[];
+        links: StatementTagLink[];
+      }>(() => api.getStatementTags(roomId));
+
+      return response?.data || { tags: [], links: [] };
+    }
+  , [safelyMakeApiCall]);
+
+  const addStatementTag = useCallback(
+    async (roomId: string, statementId: string, name: string) =>
+      safelyMakeApiCall<{ tag: StatementTag }>(() =>
+        api.addStatementTag(roomId, statementId, name),
+      ),
+    [safelyMakeApiCall],
+  );
+
+  const removeStatementTag = useCallback(
+    async (roomId: string, statementId: string, tagId: string) =>
+      safelyMakeApiCall(() => api.removeStatementTag(roomId, statementId, tagId)),
+    [safelyMakeApiCall],
+  );
+
   const setResponsesPaused = useCallback(
     (roomId: string, paused: boolean) =>
       callRoomMutation(() => api.setResponsesPaused(roomId, paused)),
@@ -980,6 +1020,9 @@ export function DebateSessionProvider(
     getStatementMerges,
     createStatementMerge,
     deleteStatementMerge,
+    getStatementTags,
+    addStatementTag,
+    removeStatementTag,
     setResponsesPaused,
     createCohostInvite,
     acceptCohostInvite,
@@ -1078,6 +1121,18 @@ export function DebateSessionProvider(
       },
       deleteStatementMerge: async () => {
         console.log("[Showcase] deleteStatementMerge called");
+        return { success: true };
+      },
+      getStatementTags: async () => {
+        console.log("[Showcase] getStatementTags called");
+        return { tags: [], links: [] };
+      },
+      addStatementTag: async () => {
+        console.log("[Showcase] addStatementTag called");
+        return { success: true };
+      },
+      removeStatementTag: async () => {
+        console.log("[Showcase] removeStatementTag called");
         return { success: true };
       },
       setResponsesPaused: async () => {

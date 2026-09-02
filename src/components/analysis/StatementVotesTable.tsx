@@ -12,6 +12,10 @@ interface StatementVotesTableProps {
   clusterSizes: number[];
   showNumbers: boolean;
   onShowNumbersChange: (show: boolean) => void;
+  isModerator: boolean;
+  availableTagNames?: string[];
+  onAddTag?: (statementId: string, name: string) => Promise<boolean>;
+  onRemoveTag?: (statementId: string, tagId: string) => Promise<boolean>;
 }
 
 export function StatementVotesTable({
@@ -20,6 +24,10 @@ export function StatementVotesTable({
   clusterSizes,
   showNumbers,
   onShowNumbersChange,
+  isModerator,
+  availableTagNames,
+  onAddTag,
+  onRemoveTag,
 }: StatementVotesTableProps) {
   const [sortCol, setSortCol] = useState<SortColumn | null>("rawAgreeVotes");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -70,6 +78,10 @@ export function StatementVotesTable({
                 totalParticipants={totalParticipants}
                 showNumbers={showNumbers}
                 colorAllClusters
+                isModerator={isModerator}
+                availableTagNames={availableTagNames}
+                onAddTag={onAddTag}
+                onRemoveTag={onRemoveTag}
               />
             ))}
           </tbody>

@@ -283,6 +283,9 @@ export const WithClusters = () => {
       {...defaultAnalysisData}
       debateId="demo-debate-123"
       debateTopic="What should our city prioritize in the next budget?"
+      isModerator={false}
+      selectedTags={[]}
+      onSelectedTagsChange={() => {}}
     />
   );
 };
@@ -294,6 +297,9 @@ export const WithDemographics = () => {
       debateId="demo-debate-789"
       debateTopic="What should our city prioritize in the next budget?"
       demographics={mockDemographics}
+      isModerator={false}
+      selectedTags={[]}
+      onSelectedTagsChange={() => {}}
     />
   );
 };
@@ -350,6 +356,9 @@ export const NoClusters = () => {
       ]}
       spiciestPosts={[]}
       clusterConsensus={null}
+      isModerator={false}
+      selectedTags={[]}
+      onSelectedTagsChange={() => {}}
     />
   );
 };

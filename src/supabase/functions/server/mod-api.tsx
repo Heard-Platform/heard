@@ -2,7 +2,12 @@ import { Hono } from "npm:hono";
 import { deleteRecord, insert } from "./db-utils.ts";
 import { validateTrueHost } from "./auth-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
-import { getMergesForRoom } from "./model-utils.ts";
+import {
+  addStatementTagLink,
+  getMergesForRoom,
+  getOrCreateStatementTag,
+  removeStatementTagLink,
+} from "./model-utils.ts";
 import { getRoomTrafficSources } from "./room-attribution-utils.ts";
 import { getRoomDebugData } from "./room-debug-utils.ts";
 import {
@@ -188,6 +193,48 @@ app.post(
       return { statement: updated };
     },
     "Failed to update statement visibility",
+  ),
+);
+
+app.post(
+  `${PREFIX}/statement/:statementId/tags`,
+  defineRoute(
+    {
+      roomId: { type: "string", required: true },
+      statementId: { type: "string", required: true },
+      name: { type: "string", required: true },
+    },
+    async (
+      { roomId, statementId, name }: { roomId: string; statementId: string; name: string },
+      c,
+    ) => {
+      const userId = c.get("userId");
+      const trimmed = name.trim();
+      if (!trimmed) throw new Error("Tag name is required");
+
+      const statement = await getStatementById(statementId);
+      if (!statement || statement.roomId !== roomId) {
+        throw new Error("Statement not found");
+      }
+
+      const tag = await getOrCreateStatementTag(roomId, trimmed, userId);
+      await addStatementTagLink(roomId, statementId, tag.id, userId);
+      return { tag };
+    },
+    "Failed to add tag",
+  ),
+);
+
+app.delete(
+  `${PREFIX}/statement/:statementId/tags/:tagId`,
+  defineRoute(
+    {},
+    async (_params, c) => {
+      const statementId = c.req.param("statementId") as string;
+      const tagId = c.req.param("tagId") as string;
+      await removeStatementTagLink(statementId, tagId);
+    },
+    "Failed to remove tag",
   ),
 );
 

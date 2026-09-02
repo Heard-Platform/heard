@@ -26,6 +26,8 @@ import {
   type NewEvent,
   EventSummary,
   StatementMerge,
+  StatementTag,
+  StatementTagLink,
 } from "../types";
 import { AskTheDataResponse, FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import type { AnonymityBreakdown, ParticipationBreakdown, ReferrerShareCount, TrafficSourceCount } from "../components/room/RoomAnalyticsModal";
@@ -698,8 +700,9 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async getRoomAnalysis(roomId: string) {
-    return this.request<AnalysisData>(`/room/${roomId}/analysis`);
+  async getRoomAnalysis(roomId: string, tags?: string[]) {
+    const query = tags && tags.length > 0 ? `?tags=${encodeURIComponent(tags.join(","))}` : "";
+    return this.request<AnalysisData>(`/room/${roomId}/analysis${query}`);
   }
 
   async askTheData(roomId: string, question: string) {
@@ -946,6 +949,29 @@ class ApiClient extends BaseApiClient {
     return this.request<undefined>(`/room/${roomId}/mod/statement-merges/${mergeId}`, {
       method: "DELETE",
     });
+  }
+
+  async getStatementTags(roomId: string) {
+    return this.request<{ tags: StatementTag[]; links: StatementTagLink[] }>(
+      `/room/${roomId}/statement-tags`,
+    );
+  }
+
+  async addStatementTag(roomId: string, statementId: string, name: string) {
+    return this.request<{ tag: StatementTag }>(
+      `/room/${roomId}/mod/statement/${statementId}/tags`,
+      {
+        method: "POST",
+        body: JSON.stringify({ name }),
+      },
+    );
+  }
+
+  async removeStatementTag(roomId: string, statementId: string, tagId: string) {
+    return this.request<undefined>(
+      `/room/${roomId}/mod/statement/${statementId}/tags/${tagId}`,
+      { method: "DELETE" },
+    );
   }
 
   async getVoteMatrix(roomId: string) {

@@ -7,10 +7,17 @@ import {
 } from "./clustering.tsx";
 import { calculateClusterConsensus } from "./cluster-analysis.tsx";
 import { getParsedKvData } from "./kv-utils.tsx";
-import { calculateAnalysisMetrics, getStatementVoterIds } from "./analysis-utils.tsx";
+import { calculateAnalysisMetrics, computeTopPosts, getStatementVoterIds } from "./analysis-utils.tsx";
 import { applyStatementMerges } from "./room-utils.ts";
 import { AnalysisData } from "./types.tsx";
-import { getDemographicAnswersForQuestionIds, getDemographicQuestionsForRoom, getMergesForRoom } from "./model-utils.ts";
+import {
+  getDemographicAnswersForQuestionIds,
+  getDemographicQuestionsForRoom,
+  getMergesForRoom,
+  getStatementTagLinksForRoom,
+  getStatementTagsForRoom,
+} from "./model-utils.ts";
+import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
 
@@ -100,11 +107,38 @@ app.get(
           }))
         : metrics.allStatements;
 
+      const tagNames = (c.req.query("tags") ?? "")
+        .split(",")
+        .map((t: string) => t.trim())
+        .filter(Boolean);
+
+      let topPosts = {
+        topAgreedPosts: metrics.topAgreedPosts,
+        topDisagreedPosts: metrics.topDisagreedPosts,
+        spiciestPosts: metrics.spiciestPosts,
+      };
+
+      if (tagNames.length > 0) {
+        const [roomTags, roomTagLinks] = await Promise.all([
+          getStatementTagsForRoom(roomId),
+          getStatementTagLinksForRoom(roomId),
+        ]);
+        const matchingTagIds = new Set(
+          roomTags.filter((t) => tagNames.includes(t.name)).map((t) => t.id),
+        );
+        const taggedStatementIds = new Set(
+          roomTagLinks.filter((l) => matchingTagIds.has(l.tagId)).map((l) => l.statementId),
+        );
+        const taggedStatements = mergedStatements.filter((s) => taggedStatementIds.has(s.id));
+        topPosts = computeTopPosts(taggedStatements);
+      }
+
       const analysisData: AnalysisData = {
         debateTopic: room.topic,
         totalStatements: mergedStatements.length,
         clusterConsensus,
         ...metrics,
+        ...topPosts,
         allStatements: allStatementsWithClusters,
       };
 
@@ -117,6 +151,22 @@ app.get(
       );
     }
   },
+);
+
+app.get(
+  "/make-server-f1a393b4/room/:roomId/statement-tags",
+  defineRoute(
+    {},
+    async (_params, c) => {
+      const roomId = c.req.param("roomId") as string;
+      const [tags, links] = await Promise.all([
+        getStatementTagsForRoom(roomId),
+        getStatementTagLinksForRoom(roomId),
+      ]);
+      return { tags, links };
+    },
+    "Failed to fetch statement tags",
+  ),
 );
 
 app.post(

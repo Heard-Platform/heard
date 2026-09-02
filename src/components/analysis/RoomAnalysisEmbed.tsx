@@ -72,6 +72,9 @@ export function RoomAnalysisEmbed({ roomId, triggerLabel }: RoomAnalysisEmbedPro
               debateId={roomId}
               debateTopic={analysisData.debateTopic}
               isDeveloper={false}
+              isModerator={false}
+              selectedTags={[]}
+              onSelectedTagsChange={() => {}}
             />
           )}
         </div>

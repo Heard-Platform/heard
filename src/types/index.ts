@@ -124,6 +124,22 @@ export interface StatementMerge {
   createdAt: string;
 }
 
+export interface StatementTag {
+  id: string;
+  roomId: string;
+  name: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface StatementTagLink {
+  statementId: string;
+  tagId: string;
+  roomId: string;
+  createdBy: string;
+  createdAt: string;
+}
+
 export interface Event {
   id: string;
   name: string;
@@ -295,6 +311,7 @@ export interface StatementVotes {
   totalVotes: number;
   mergedFrom: Array<{ id: string; text: string }>;
   clusterVotes: ClusterVoteBreakdown[];
+  tags?: Array<{ id: string; name: string }>;
 }
 
 export interface ClusterStatement {

@@ -196,6 +196,22 @@ export interface StatementMerge {
   createdAt: string;
 }
 
+export interface StatementTag {
+  id: string;
+  roomId: string;
+  name: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface StatementTagLink {
+  statementId: string;
+  tagId: string;
+  roomId: string;
+  createdBy: string;
+  createdAt: string;
+}
+
 export type Event = {
   id: number;
   name: string;

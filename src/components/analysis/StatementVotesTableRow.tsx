@@ -4,6 +4,7 @@ import { StatementVotes } from "../../types";
 import { VoteBreakdownPie } from "./VoteBreakdownPie";
 import { getClusterColor } from "../../utils/colors";
 import { RenderedStatement } from "../RenderedStatement";
+import { StatementTagEditor } from "./StatementTagEditor";
 
 interface StatementVotesTableRowProps {
   statement: StatementVotes;
@@ -13,6 +14,10 @@ interface StatementVotesTableRowProps {
   highlightClusterIndices?: number[];
   colorAllClusters?: boolean;
   caption?: ReactNode;
+  isModerator?: boolean;
+  availableTagNames?: string[];
+  onAddTag?: (statementId: string, name: string) => Promise<boolean>;
+  onRemoveTag?: (statementId: string, tagId: string) => Promise<boolean>;
 }
 
 function rowCounts(statement: StatementVotes, clusterIndex: number | undefined) {
@@ -45,13 +50,29 @@ export function StatementVotesTableRow({
   highlightClusterIndices,
   colorAllClusters,
   caption,
+  isModerator,
+  availableTagNames,
+  onAddTag,
+  onRemoveTag,
 }: StatementVotesTableRowProps) {
   const counts = rowCounts(statement, clusterIndex);
   return (
     <tr className="border-b last:border-0 hover:bg-muted/30 transition-colors">
       <td className="py-3 pr-4 text-sm leading-snug">
         {caption}
-        <span><RenderedStatement text={statement.text} /></span>
+        <span>
+          <RenderedStatement text={statement.text} />
+          {onAddTag && onRemoveTag && (
+            <StatementTagEditor
+              statementId={statement.id}
+              tags={statement.tags ?? []}
+              isModerator={!!isModerator}
+              availableTagNames={availableTagNames ?? []}
+              onAddTag={onAddTag}
+              onRemoveTag={onRemoveTag}
+            />
+          )}
+        </span>
         {statement.mergedFrom && statement.mergedFrom.length > 0 && (
           <div className="mt-1 space-y-0.5">
             {statement.mergedFrom.map((merged) => (
