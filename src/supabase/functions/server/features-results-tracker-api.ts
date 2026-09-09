@@ -216,6 +216,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const communityTeaserEvents = (await getCommunityTeaserEvents()).length;
     const communityTeaserEventsSince = new Date("2026-08-19").getTime();
 
+    const subscribeUpdatesClicked = (await getEventsOfType("subscribe_updates_clicked")).length;
+    const subscribeUpdatesClickedSince = new Date("2026-09-09").getTime();
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -290,6 +293,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       askTheDataQuestionsSince,
       communityTeaserEvents,
       communityTeaserEventsSince,
+      subscribeUpdatesClicked,
+      subscribeUpdatesClickedSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);

@@ -36,6 +36,7 @@ import {
   Bell,
 } from "lucide-react";
 import type { UserSession } from "../types";
+import { api } from "../utils/api";
 import { sendTestPushNotification } from "../utils/pushNotifications";
 import { RoomAlertsList } from "./side-panel/RoomAlertsList";
 import { AvatarAlertDot } from "./side-panel/AvatarAlertDot";
@@ -182,6 +183,7 @@ export function SidePanelMenu({
   };
 
   const handleSubscribeToUpdates = async () => {
+    api.trackEvent("subscribe_updates_clicked");
     try {
       await subscribeToUpdates();
     } catch (error) {

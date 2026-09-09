@@ -350,6 +350,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.communityTeaserEvents,
       getDate: (s) => s.communityTeaserEventsSince,
     },
+    {
+      icon: Bell,
+      iconColor: "text-amber-600",
+      bgColor: "bg-amber-100",
+      title: "Subscribe to Updates Clicks",
+      description: "Clicks on the \"Subscribe to the Heard Weekly Newsletter\" link shown to unsubbed users in the side panel",
+      getValue: (s) => s.subscribeUpdatesClicked,
+      getDate: (s) => s.subscribeUpdatesClickedSince,
+    },
   ]
 
   featureCards.sort((a, b) =>
