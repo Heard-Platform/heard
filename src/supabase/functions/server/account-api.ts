@@ -45,7 +45,7 @@ app.post(
 );
 
 app.post(
-  "/make-server-f1a393b4/account/resubscribe-updates",
+  "/make-server-f1a393b4/account/subscribe-updates",
   defineRoute(
     {},
     async (_params, c: Context) => {
@@ -57,7 +57,7 @@ app.post(
 
       return { user: sanitizeUser(user) };
     },
-    "Failed to resubscribe to updates",
+    "Failed to subscribe to updates",
   ),
 );
 

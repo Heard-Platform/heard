@@ -118,7 +118,7 @@ export function SidePanelMenu({
     createRantTestRoom,
     createRealtimeTestRoom,
     createScalabilityTest,
-    resubscribeToUpdates,
+    subscribeToUpdates,
   } = useDebateSession();
 
   if (user.isAnonymous) {
@@ -181,12 +181,12 @@ export function SidePanelMenu({
     }
   };
 
-  const handleResubscribeToUpdates = async () => {
+  const handleSubscribeToUpdates = async () => {
     try {
-      await resubscribeToUpdates();
+      await subscribeToUpdates();
     } catch (error) {
-      console.error("Error resubscribing to updates:", error);
-      alert("❌ Failed to resubscribe to updates");
+      console.error("Error subscribing to updates:", error);
+      alert("❌ Failed to subscribe to updates");
     }
   };
 
@@ -271,7 +271,7 @@ export function SidePanelMenu({
 
             {user.isUnsubbedFromUpdates && (
               <button
-                onClick={handleResubscribeToUpdates}
+                onClick={handleSubscribeToUpdates}
                 className="w-full text-xs text-muted-foreground underline text-center"
               >
                 Subscribe to the Heard Weekly Newsletter!

@@ -123,8 +123,8 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async resubscribeToUpdates() {
-    return this.request<{ user: UserSession }>("/account/resubscribe-updates", {
+  async subscribeToUpdates() {
+    return this.request<{ user: UserSession }>("/account/subscribe-updates", {
       method: "POST",
     });
   }

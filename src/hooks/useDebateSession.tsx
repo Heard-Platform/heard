@@ -54,7 +54,7 @@ interface DebateSessionContextType {
   > | null>;
   createAnonymousUser: () => Promise<ApiResponse<UserSessionResponse> | null>;
   updateAvatar: (avatarAnimal: AvatarAnimal) => Promise<void>;
-  resubscribeToUpdates: () => Promise<void>;
+  subscribeToUpdates: () => Promise<void>;
   createRoom: (newDebate: NewDebateRoom) => Promise<DebateRoom>;
   createEvent: (newEvent: NewEvent) => Promise<Event>;
   submitStatement: (roomId: string, text: string) => Promise<any>;
@@ -305,8 +305,8 @@ export function DebateSessionProvider(
     }
   }, [safelyMakeApiCall]);
 
-  const resubscribeToUpdates = useCallback(async () => {
-    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.resubscribeToUpdates());
+  const subscribeToUpdates = useCallback(async () => {
+    const response = await safelyMakeApiCall<{ user: UserSession }>(() => api.subscribeToUpdates());
     if (response?.data?.user) {
       setUser(response.data.user);
     }
@@ -1005,7 +1005,7 @@ export function DebateSessionProvider(
     anonAddEmailAndLogin,
     createAnonymousUser,
     updateAvatar,
-    resubscribeToUpdates,
+    subscribeToUpdates,
     createRoom,
     createEvent,
     submitStatement,
@@ -1090,8 +1090,8 @@ export function DebateSessionProvider(
       updateAvatar: async (avatarAnimal: AvatarAnimal) => {
         console.log("[Showcase] updateAvatar called");
       },
-      resubscribeToUpdates: async () => {
-        console.log("[Showcase] resubscribeToUpdates called");
+      subscribeToUpdates: async () => {
+        console.log("[Showcase] subscribeToUpdates called");
       },
       submitFlyerEmail: async (email: string) => {
         console.log("[Showcase] submitFlyerEmail called");
