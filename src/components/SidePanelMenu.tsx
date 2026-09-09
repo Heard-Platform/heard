@@ -118,6 +118,7 @@ export function SidePanelMenu({
     createRantTestRoom,
     createRealtimeTestRoom,
     createScalabilityTest,
+    resubscribeToUpdates,
   } = useDebateSession();
 
   if (user.isAnonymous) {
@@ -177,6 +178,15 @@ export function SidePanelMenu({
     } catch (error) {
       console.error("Error creating realtime test room:", error);
       alert("❌ Failed to create realtime test room");
+    }
+  };
+
+  const handleResubscribeToUpdates = async () => {
+    try {
+      await resubscribeToUpdates();
+    } catch (error) {
+      console.error("Error resubscribing to updates:", error);
+      alert("❌ Failed to resubscribe to updates");
     }
   };
 
@@ -258,6 +268,15 @@ export function SidePanelMenu({
                 onJumpToRoom(roomId, subHeard);
               }}
             />
+
+            {user.isUnsubbedFromUpdates && (
+              <button
+                onClick={handleResubscribeToUpdates}
+                className="text-xs text-muted-foreground underline text-left"
+              >
+                Resubscribe to Heard updates
+              </button>
+            )}
 
             <UserRankDisplay user={user} />
 

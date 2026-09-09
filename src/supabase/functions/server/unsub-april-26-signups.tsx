@@ -69,4 +69,67 @@ app.post(
   ),
 );
 
-export { app as unsubApril26SignupsApi };
+const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
+
+app.post(
+  "/make-server-f1a393b4/one-time-fixes/unsub-flyer-users-last-3-months",
+  defineRoute(
+    { dryRun: { type: "boolean", required: true } },
+    async ({ dryRun }: { dryRun: boolean }) => {
+      const cutoffMs = Date.now() - THREE_MONTHS_MS;
+      const users = await getAllRealUsers();
+
+      let updatedCount = 0;
+      let alreadyUnsubbedCount = 0;
+      let errorCount = 0;
+      const updatedUserIds: string[] = [];
+
+      for (const user of users) {
+        try {
+          if (
+            !user.flyerId ||
+            typeof user.createdAt !== "number" ||
+            user.createdAt < cutoffMs ||
+            user.isAnonymous === true
+          ) {
+            continue;
+          }
+
+          if (user.isUnsubbedFromUpdates === true) {
+            alreadyUnsubbedCount++;
+            continue;
+          }
+
+          if (!dryRun) {
+            user.isUnsubbedFromUpdates = true;
+            await saveUser(user);
+          }
+
+          updatedCount++;
+          updatedUserIds.push(user.id);
+          console.log(
+            `[unsub-flyer-users]${dryRun ? " [dry-run]" : ""} ${
+              dryRun ? "Would unsub" : "Unsubbed"
+            } user ${user.id} (${user.email}), flyerId=${user.flyerId}, createdAt=${user.createdAt}`,
+          );
+        } catch (error) {
+          errorCount++;
+          console.error(`[unsub-flyer-users] Error processing user ${user?.id}:`, error);
+        }
+      }
+
+      const verb = dryRun ? "Would unsub" : "Unsubbed";
+      return {
+        dryRun,
+        updated: updatedCount,
+        alreadyUnsubbed: alreadyUnsubbedCount,
+        errors: errorCount,
+        updatedUserIds,
+        message: `${verb} ${updatedCount} flyer user(s) from updates (signed up in the last 3 months), ${alreadyUnsubbedCount} already unsubbed, ${errorCount} error(s)`,
+      };
+    },
+    "Failed to run unsub-flyer-users-last-3-months",
+  ),
+);
+
+export { app as subscriptionFixesApi };

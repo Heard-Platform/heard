@@ -44,4 +44,21 @@ app.post(
   ),
 );
 
+app.post(
+  "/make-server-f1a393b4/account/resubscribe-updates",
+  defineRoute(
+    {},
+    async (_params, c: Context) => {
+      const userId = c.get("userId");
+      const user = (await getUser(userId))!;
+
+      user.isUnsubbedFromUpdates = false;
+      await saveUser(user);
+
+      return { user: sanitizeUser(user) };
+    },
+    "Failed to resubscribe to updates",
+  ),
+);
+
 export { app as accountApi };

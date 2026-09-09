@@ -175,6 +175,30 @@ const buildScripts = (communityOptions: string[]): ScriptConfig[] => [
     bgColor: "bg-rose-50",
   },
   {
+    id: "unsub-flyer-users-last-3-months",
+    title: "Unsub Flyer Users (Last 3 Months) from Updates",
+    description: "Sets isUnsubbedFromUpdates=true for all users with a flyerId who signed up in the last 3 months. Idempotent — already-unsubbed users are skipped.",
+    dryRunMessage: "Run DRY RUN?\n\nPreviews how many flyer users who signed up in the last 3 months would be unsubscribed from updates.\n\nNo changes will be made.\n\nContinue?",
+    liveRunMessage: "Run LIVE SCRIPT?\n\nThis will set isUnsubbedFromUpdates=true for all flyer users who signed up in the last 3 months.\n\n- Idempotent (already-unsubbed users skipped)\n- Affects only users with a flyerId\n\nContinue?",
+    successMessageDryRun: (stats) =>
+      `DRY RUN complete!\n\n` +
+      `Would unsub: ${stats.updated}\n` +
+      `Already unsubbed: ${stats.alreadyUnsubbed}\n` +
+      `Errors: ${stats.errors}\n\n` +
+      `No changes were made.`,
+    successMessageLive: (stats) =>
+      `Done!\n\n` +
+      `Unsubbed: ${stats.updated}\n` +
+      `Already unsubbed: ${stats.alreadyUnsubbed}\n` +
+      `Errors: ${stats.errors}`,
+    statsDisplay: (stats) =>
+      stats.dryRun
+        ? `Last dry run: ${stats.updated} would be unsubbed, ${stats.alreadyUnsubbed} already unsubbed, ${stats.errors} errors`
+        : `Last run: ${stats.updated} unsubbed, ${stats.alreadyUnsubbed} already unsubbed, ${stats.errors} errors`,
+    apiCall: (adminKey, dryRun) => adminApi.unsubFlyerUsersLast3Months(adminKey, dryRun),
+    bgColor: "bg-rose-50",
+  },
+  {
     id: "backfill-memberships",
     title: "Backfill Community Memberships",
     description: "Create membership records for all non-anonymous users based on their room participation. Required after enabling the \"only joined communities\" feature. Safe to run multiple times.",

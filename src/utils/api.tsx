@@ -123,6 +123,12 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async resubscribeToUpdates() {
+    return this.request<{ user: UserSession }>("/account/resubscribe-updates", {
+      method: "POST",
+    });
+  }
+
   // Room management
   async createRoom(
     newDebate: NewDebateRoom,
