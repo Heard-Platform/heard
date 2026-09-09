@@ -11,6 +11,7 @@ const GITHUB_AI_PR_URL = "https://github.com/Heard-Platform/heard/pull/94";
 const YT_HAPPY_HOUR_URL_NL13 = "https://www.youtube.com/shorts/hNqqqJBIkQs";
 const SHORTS_URL = "https://www.youtube.com/shorts";
 const FUND_URL = `${HOMEPAGE_URL}/fund`
+const YT_VLOG_URL_NL23 = "https://www.youtube.com/watch?v=lXqcqcYXlrQ";
 
 const newsletters = [
   getParameterizedNewsletter({
@@ -364,6 +365,32 @@ const newsletters = [
       imageUrl: `${SUPABASE_URL}/nl-22-inter.png`,
       imageLink: HOMEPAGE_URL,
       imageAlt: "Conf results",
+    },
+  }),
+  getParameterizedNewsletter({
+    subject: "The Heard Weekly is Back!",
+    editionNumber: 23,
+    section1: {
+      title: "🌴 Heard in Los Angeles!",
+      text: "August was a big month, personally and professionally, but the Heard weekly newsletter is now back! In mid August I took a trip out to Los Angeles to bring Heard to a live public civic jam. Had a great time meeting all my West Coast civic tech homies and feeling inspired to run something similar here in DC.",
+      imageUrl: `${SUPABASE_URL}/nl-23-la.png`,
+      imageLink: HOMEPAGE_URL,
+      imageAlt: "Collage of Heard's LA trip",
+    },
+    debate: {
+      title: "🤔 Should Heard's top focus be user retention?",
+      question: "They say that startups don't starve, they drown, and I feel that! There are about a million different directions I could take Heard in, whether that's working with politicians, doing more on-the-street flyering and user tests, or building out features to increase retention and virality. What do you think should be the top focus for the remaining 4 months of 2026?",
+      flyerId: "2i299gmkqxxmtu63i5m",
+      statementId: "bph0pw0mba6mtu63i9w",
+      agreeLabel: "Yes!",
+      disagreeLabel: "No!"
+    },
+    section2: {
+      title: "🎥 The best time to start a vlog is 2010, or now",
+      text: `I posted my first "vlog" video last week, talking about my thoughts for the rest of 2026. It's an unedited 10 minute screen share thinking out loud. If you really want to see how the sausage is getting made <a href='${YT_VLOG_URL_NL23}'>check it out</a>.`,
+      imageUrl: `${SUPABASE_URL}/nl-23-vlog.png`,
+      imageLink: YT_VLOG_URL_NL23,
+      imageAlt: "Vlog thumbnail",
     },
   }),
 ]
