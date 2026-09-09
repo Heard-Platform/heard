@@ -533,7 +533,9 @@ export function DataFixes({ adminKey, subHeards, fetchAdminData }: DataFixesProp
           : script.successMessageLive(res.data);
 
         alert(resultMessage);
-        await fetchAdminData();
+        if (!dryRun) {
+          await fetchAdminData();
+        }
       } else {
         alert(`Failed to run script: ${res.error}`);
       }
