@@ -84,17 +84,16 @@ app.post(
       let errorCount = 0;
       const updatedUserIds: string[] = [];
 
-      for (const user of users) {
-        try {
-          if (
-            !user.flyerId ||
-            typeof user.createdAt !== "number" ||
-            user.createdAt < cutoffMs ||
-            user.isAnonymous === true
-          ) {
-            continue;
-          }
+      const usersToSub = users.filter(
+        (user) =>
+          !!user.flyerId &&
+          typeof user.createdAt === "number" &&
+          user.createdAt >= cutoffMs &&
+          user.isAnonymous !== true,
+      );
 
+      for (const user of usersToSub) {
+        try {
           if (user.isUnsubbedFromUpdates === true) {
             alreadyUnsubbedCount++;
             continue;
