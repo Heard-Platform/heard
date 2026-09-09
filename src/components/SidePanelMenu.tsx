@@ -272,9 +272,9 @@ export function SidePanelMenu({
             {user.isUnsubbedFromUpdates && (
               <button
                 onClick={handleResubscribeToUpdates}
-                className="text-xs text-muted-foreground underline text-left"
+                className="w-full text-xs text-muted-foreground underline text-center"
               >
-                Resubscribe to Heard updates
+                Subscribe to the Heard Weekly Newsletter!
               </button>
             )}
 
