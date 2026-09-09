@@ -18,11 +18,15 @@ const mockUser: UserSession = {
   isDeveloper: false,
 };
 
-export default function SidePanelMenuStory() {
-  const variants = [
-    { id: "unverified", label: "Unverified User" },
-  ];
+const unsubbedMockUser: UserSession = {
+  ...mockUser,
+  id: "user-456",
+  nickname: "UnsubbedUser",
+  phoneVerified: true,
+  isUnsubbedFromUpdates: true,
+};
 
+export default function SidePanelMenuStory() {
   const handleLogout = () => {
     console.log("Logout clicked");
     alert("Logout clicked");
@@ -38,13 +42,11 @@ export default function SidePanelMenuStory() {
     alert(`Show account setup modal: ${featureText}`);
   };
 
-  return (
-    <div className="p-8 min-h-screen bg-gradient-to-b from-purple-50 to-blue-50">
-      <StoryContainer
-        title="SidePanelMenu"
-        description="Side panel menu showing unverified user with verification prompt"
-        variants={variants}
-      >
+  const variants = [
+    {
+      id: "unverified",
+      label: "Unverified User",
+      children: (
         <div className="flex items-center justify-center p-12">
           <RoomAlertsProvider>
             <SidePanelMenu
@@ -57,7 +59,35 @@ export default function SidePanelMenuStory() {
             />
           </RoomAlertsProvider>
         </div>
-      </StoryContainer>
+      ),
+    },
+    {
+      id: "unsubbed",
+      label: "Unsubbed from Updates",
+      children: (
+        <div className="flex items-center justify-center p-12">
+          <RoomAlertsProvider>
+            <SidePanelMenu
+              user={unsubbedMockUser}
+              onLogout={handleLogout}
+              onOpenHelp={handleOpenHelp}
+              onShowAccountSetupModal={handleShowAccountSetupModal}
+              onOpenFeatureTracker={() => alert("Open Feature Tracker clicked")}
+              onJumpToRoom={(roomId) => alert(`Jump to room: ${roomId}`)}
+            />
+          </RoomAlertsProvider>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="p-8 min-h-screen bg-gradient-to-b from-purple-50 to-blue-50">
+      <StoryContainer
+        title="SidePanelMenu"
+        description="Side panel menu showing unverified and newsletter-unsubbed user states"
+        variants={variants}
+      />
     </div>
   );
 }

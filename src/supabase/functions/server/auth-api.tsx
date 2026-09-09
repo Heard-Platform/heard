@@ -142,6 +142,7 @@ export const createUserAccount = async (userProps: Partial<User>): Promise<User>
     isTestUser: false,
     isDeveloper: false,
     emailDigestsEnabled: true,
+    isUnsubbedFromUpdates: true,
     passwordHash: undefined,
     createdAt: Date.now(),
     ...userProps,

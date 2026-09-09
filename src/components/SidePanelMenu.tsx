@@ -36,6 +36,7 @@ import {
   Bell,
 } from "lucide-react";
 import type { UserSession } from "../types";
+import { api } from "../utils/api";
 import { sendTestPushNotification } from "../utils/pushNotifications";
 import { RoomAlertsList } from "./side-panel/RoomAlertsList";
 import { AvatarAlertDot } from "./side-panel/AvatarAlertDot";
@@ -118,6 +119,7 @@ export function SidePanelMenu({
     createRantTestRoom,
     createRealtimeTestRoom,
     createScalabilityTest,
+    subscribeToUpdates,
   } = useDebateSession();
 
   if (user.isAnonymous) {
@@ -177,6 +179,16 @@ export function SidePanelMenu({
     } catch (error) {
       console.error("Error creating realtime test room:", error);
       alert("❌ Failed to create realtime test room");
+    }
+  };
+
+  const handleSubscribeToUpdates = async () => {
+    api.trackEvent("subscribe_updates_clicked");
+    try {
+      await subscribeToUpdates();
+    } catch (error) {
+      console.error("Error subscribing to updates:", error);
+      alert("❌ Failed to subscribe to updates");
     }
   };
 
@@ -258,6 +270,15 @@ export function SidePanelMenu({
                 onJumpToRoom(roomId, subHeard);
               }}
             />
+
+            {user.isUnsubbedFromUpdates && (
+              <button
+                onClick={handleSubscribeToUpdates}
+                className="w-full text-xs text-muted-foreground underline text-center"
+              >
+                Subscribe to the Heard Weekly Newsletter!
+              </button>
+            )}
 
             <UserRankDisplay user={user} />
 
