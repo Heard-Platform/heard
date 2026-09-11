@@ -248,6 +248,10 @@
   --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
 }
 
+.dark-neutral-gradient {
+  background: linear-gradient(to bottom right, var(--color-slate-700), var(--color-slate-800), var(--color-slate-900));
+}
+
 .super-agree-bg {
   background-color: var(--color-purple-500);
 }

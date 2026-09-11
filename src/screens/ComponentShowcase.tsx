@@ -53,6 +53,7 @@ import { EmailMonitoringTabStory } from "../stories/EmailMonitoringTab.story";
 import { DisplayModeScreenStory } from "../stories/DisplayModeScreen.story";
 import { RoomAnalyticsModalStory } from "../stories/RoomAnalyticsModal.story";
 import { StatementVoterAnimalsStory } from "../stories/StatementVoterAnimals.story";
+import { VoteSwingOverlayStory } from "../stories/VoteSwingOverlay.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -160,6 +161,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="display-mode-screen">Display Mode Screen</TabsTrigger>
                 <TabsTrigger value="room-analytics">Room Analytics</TabsTrigger>
                 <TabsTrigger value="statement-voter-animals">Statement Voter Animals</TabsTrigger>
+                <TabsTrigger value="vote-swing-overlay">Vote Swing Overlay</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -314,6 +316,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="statement-voter-animals">
                 <StatementVoterAnimalsStory />
+              </TabsContent>
+              <TabsContent value="vote-swing-overlay">
+                <VoteSwingOverlayStory />
               </TabsContent>
             </Tabs>
           </div>
