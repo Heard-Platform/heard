@@ -7,7 +7,7 @@ import { RenderedStatement } from "./RenderedStatement";
 
 interface VoteSwingOverlayProps {
   isOpen: boolean;
-  statementText?: string;
+  statementText: string;
   beforeAgreePercent: number;
   afterAgreePercent: number;
   onClose: () => void;
@@ -144,16 +144,14 @@ export function VoteSwingOverlay({
                 One person really can make a difference sometimes.
               </motion.p>
 
-              {statementText && (
-                <motion.p
-                  className="text-xs sm:text-sm bg-white/15 rounded-xl px-4 py-2 max-w-sm"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  “<RenderedStatement text={statementText} />”
-                </motion.p>
-              )}
+              <motion.p
+                className="text-xs sm:text-sm bg-white/15 rounded-xl px-4 py-2 max-w-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                “<RenderedStatement text={statementText} />”
+              </motion.p>
 
               <motion.div
                 className="w-full mt-2"

@@ -9,7 +9,7 @@ export default {
 
 interface Scenario {
   label: string;
-  statementText?: string;
+  statementText: string;
   beforeAgreePercent: number;
   afterAgreePercent: number;
 }
@@ -32,11 +32,6 @@ const SCENARIOS: Scenario[] = [
     statementText: "Cereal is a soup.",
     beforeAgreePercent: 49,
     afterAgreePercent: 50.5,
-  },
-  {
-    label: "No statement text",
-    beforeAgreePercent: 40,
-    afterAgreePercent: 55,
   },
 ];
 
