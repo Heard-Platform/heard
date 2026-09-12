@@ -374,6 +374,7 @@ function AppContent() {
       const isCongestionRoute = route === "congestion"
       const isIdeasRoute = route === "ideas";
       const isDupontRoute = route === "dupont";
+      const isBottleRoute = route === "bottle";
       const isLaRoute = route === "la";
       const isTopangaRoute = route === "topanga";
       const isAiRoute = route === "ai";
@@ -427,7 +428,8 @@ function AppContent() {
         isWaymoRoute ||
         isWaymoDcRoute ||
         isCongestionRoute ||
-        isDupontRoute
+        isDupontRoute ||
+        isBottleRoute
       ) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
@@ -457,7 +459,9 @@ function AppContent() {
                                   ? "9sptdy3zzq5mqz78fq5"
                                   : isDupontRoute
                                     ? "rrgipbk19vmms7ry4cv"
-                                    : null;
+                                    : isBottleRoute
+                                      ? "lkxobfvrzqjmtyjy1hw"
+                                      : null;
 
 
         if (!hardcodedRoomId) {
