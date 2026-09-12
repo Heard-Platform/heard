@@ -19,11 +19,13 @@ import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTrack
 import { DevTools } from "./components/devtools/DevTools";
 import { AdminActivityFeed } from "./components/AdminActivityFeed";
 import { NewsletterViewer } from "./components/NewsletterViewer";
+import { VoteSwingOverlay } from "./components/VoteSwingOverlay";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { Toaster } from "./components/ui/sonner";
 import { api } from "./utils/api";
-import type { NewDebateRoom, DebateRoom, VoteType, Event } from "./types";
+import type { NewDebateRoom, DebateRoom, Statement, VoteType, Event } from "./types";
+import { isSwingVote } from "./utils/statement";
 import {
   parseRoomIdFromUrl,
   parseSubHeardFromUrl,
@@ -122,6 +124,10 @@ function AppContent() {
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
+  const [voteSwing, setVoteSwing] = useState<{
+    statement: Statement;
+    voteType: VoteType;
+  } | null>(null);
 
   const {
     user,
@@ -223,6 +229,14 @@ function AppContent() {
     setCurrentSubHeard(roomData.subHeard || null);
     await loadActiveRooms(roomData.subHeard || undefined);
     return roomData;
+  };
+
+  const handleVoteOnStatement = (statement: Statement, voteType: VoteType) => {
+    const isFirstVote = !user || !statement.voters[user.id];
+    if (isFirstVote && isSwingVote(statement, voteType)) {
+      setVoteSwing({ statement, voteType });
+    }
+    return voteOnStatement(statement.id, voteType);
   };
 
   const handleJumpToRoom = (roomId: string, subHeard?: string) => {
@@ -844,7 +858,7 @@ function AppContent() {
         onJumpToRoom={handleJumpToRoom}
         onRefreshRooms={loadActiveRooms}
         onSubmitStatement={submitStatement}
-        onVoteOnStatement={voteOnStatement}
+        onVoteOnStatement={handleVoteOnStatement}
         onLogout={handleLogout}
         onOpenShowcase={handleOpenShowcase}
         onOpenRetentionDashboard={handleOpenRetentionDashboard}
@@ -865,6 +879,13 @@ function AppContent() {
           isOpen={true}
           onComplete={handleQrComplete}
           onClose={() => handleQrComplete({ reason: "continue" })}
+        />
+      )}
+      {voteSwing && (
+        <VoteSwingOverlay
+          statement={voteSwing.statement}
+          voteType={voteSwing.voteType}
+          onClose={() => setVoteSwing(null)}
         />
       )}
     </>

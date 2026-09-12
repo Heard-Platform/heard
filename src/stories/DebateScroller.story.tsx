@@ -1,5 +1,5 @@
 import { RoomScroller } from "../components/RoomScroller";
-import type { UserPresence, VoteType } from "../types";
+import type { Statement, UserPresence, VoteType } from "../types";
 import { useState, useCallback, useEffect } from "react";
 import { mockStatements, mockRooms } from "./mockData";
 import { AvatarAnimal } from "../utils/constants/avatars";
@@ -12,8 +12,8 @@ export function DebateScrollerStory() {
     return { success: true };
   };
 
-  const handleVoteOnStatement = async (statementId: string, voteType: VoteType) => {
-    console.log("Vote on statement:", statementId, voteType);
+  const handleVoteOnStatement = async (statement: Statement, voteType: VoteType) => {
+    console.log("Vote on statement:", statement.id, voteType);
     return { success: true };
   };
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { VoteSwingOverlay } from "../components/VoteSwingOverlay";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import type { Statement, VoteType } from "../types";
 
 export default {
   title: "Voting/VoteSwingOverlay",
@@ -9,62 +10,88 @@ export default {
 
 interface Scenario {
   label: string;
-  statementText: string;
-  beforeAgreePercent: number;
-  afterAgreePercent: number;
+  statement: Statement;
+  voteType: VoteType;
 }
+
+const baseStatement: Omit<Statement, "id" | "text" | "agrees" | "disagrees" | "superAgrees"> = {
+  author: "someone",
+  passes: 2,
+  roomId: "mock-room",
+  timestamp: Date.now(),
+  round: 1,
+  voters: {},
+};
 
 const SCENARIOS: Scenario[] = [
   {
-    label: "Disagree → Agree",
-    statementText: "Pineapple belongs on pizza and makes it sweet and savory perfection!",
-    beforeAgreePercent: 46,
-    afterAgreePercent: 52,
+    label: "Agree breaks the tie",
+    statement: {
+      ...baseStatement,
+      id: "stmt-pineapple",
+      text: "Pineapple belongs on pizza and makes it sweet and savory perfection!",
+      agrees: 5,
+      disagrees: 5,
+      superAgrees: 0,
+    },
+    voteType: "agree",
   },
   {
-    label: "Agree → Disagree",
-    statementText: "Remote work should be the default for every company.",
-    beforeAgreePercent: 51,
-    afterAgreePercent: 45,
+    label: "Disagree breaks the tie",
+    statement: {
+      ...baseStatement,
+      id: "stmt-remote-work",
+      text: "Remote work should be the default for every company.",
+      agrees: 4,
+      disagrees: 4,
+      superAgrees: 0,
+    },
+    voteType: "disagree",
   },
   {
-    label: "Nail-biter (Disagree → Agree)",
-    statementText: "Cereal is a soup.",
-    beforeAgreePercent: 49,
-    afterAgreePercent: 50.5,
+    label: "Super agree breaks the tie",
+    statement: {
+      ...baseStatement,
+      id: "stmt-cereal",
+      text: "Cereal is a soup.",
+      agrees: 2,
+      disagrees: 3,
+      superAgrees: 1,
+    },
+    voteType: "super_agree",
   },
 ];
 
-export const DisagreeToAgree = () => {
+export const AgreeBreaksTie = () => {
   const [isOpen, setIsOpen] = useState(true);
   const scenario = SCENARIOS[0];
   return (
     <div className="min-h-[400px] flex items-center justify-center">
       <Button onClick={() => setIsOpen(true)}>Replay</Button>
-      <VoteSwingOverlay
-        isOpen={isOpen}
-        statementText={scenario.statementText}
-        beforeAgreePercent={scenario.beforeAgreePercent}
-        afterAgreePercent={scenario.afterAgreePercent}
-        onClose={() => setIsOpen(false)}
-      />
+      {isOpen && (
+        <VoteSwingOverlay
+          statement={scenario.statement}
+          voteType={scenario.voteType}
+          onClose={() => setIsOpen(false)}
+        />
+      )}
     </div>
   );
 };
 
-export const AgreeToDisagree = () => {
+export const DisagreeBreaksTie = () => {
   const [isOpen, setIsOpen] = useState(true);
   const scenario = SCENARIOS[1];
   return (
     <div className="min-h-[400px] flex items-center justify-center">
       <Button onClick={() => setIsOpen(true)}>Replay</Button>
-      <VoteSwingOverlay
-        isOpen={isOpen}
-        statementText={scenario.statementText}
-        beforeAgreePercent={scenario.beforeAgreePercent}
-        afterAgreePercent={scenario.afterAgreePercent}
-        onClose={() => setIsOpen(false)}
-      />
+      {isOpen && (
+        <VoteSwingOverlay
+          statement={scenario.statement}
+          voteType={scenario.voteType}
+          onClose={() => setIsOpen(false)}
+        />
+      )}
     </div>
   );
 };
@@ -77,8 +104,8 @@ export function VoteSwingOverlayStory() {
       <CardHeader>
         <CardTitle>Vote Swing Overlay</CardTitle>
         <CardDescription>
-          Celebration screen shown when a vote flips a statement's majority from agree
-          to disagree, or vice versa. Click a scenario to trigger it full-screen.
+          Celebration screen shown when a user's vote breaks an exact tie and decides
+          the statement's majority. Click a scenario to trigger it full-screen.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -96,10 +123,8 @@ export function VoteSwingOverlayStory() {
 
         {openIndex !== null && (
           <VoteSwingOverlay
-            isOpen={openIndex !== null}
-            statementText={SCENARIOS[openIndex].statementText}
-            beforeAgreePercent={SCENARIOS[openIndex].beforeAgreePercent}
-            afterAgreePercent={SCENARIOS[openIndex].afterAgreePercent}
+            statement={SCENARIOS[openIndex].statement}
+            voteType={SCENARIOS[openIndex].voteType}
             onClose={() => setOpenIndex(null)}
           />
         )}

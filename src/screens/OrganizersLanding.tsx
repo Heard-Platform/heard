@@ -277,7 +277,7 @@ function DemoSection() {
     }
   }, [votesCast]);
 
-  const handleVote = async (_id: string, voteType: VoteType) => {
+  const handleVote = async (_statement: Statement, voteType: VoteType) => {
     api.trackEvent(`organizers_demo_vote_${voteType}`);
     setVotesCast((n) => n + 1);
   };

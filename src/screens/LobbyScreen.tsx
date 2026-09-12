@@ -1,6 +1,7 @@
 import type {
   UserSession,
   DebateRoom, NewDebateRoom,
+  Statement,
   VoteType,
   UserPresence, SubHeard,
   EventSummary,
@@ -51,7 +52,7 @@ interface LobbyScreenProps {
     text: string,
   ) => Promise<any>;
   onVoteOnStatement: (
-    statementId: string,
+    statement: Statement,
     voteType: VoteType,
   ) => Promise<any>;
   onLogout?: () => void;

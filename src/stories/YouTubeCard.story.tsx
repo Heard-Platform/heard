@@ -50,8 +50,8 @@ const mockStatements: Statement[] = [
 export function YouTubeCardStory() {
   const [coverCardSwiped, setCoverCardSwiped] = useState(false);
 
-  const handleVote = async (statementId: string, voteType: VoteType) => {
-    console.log("Vote:", { statementId, voteType });
+  const handleVote = async (statement: Statement, voteType: VoteType) => {
+    console.log("Vote:", { statementId: statement.id, voteType });
   };
 
   const handleSubmitStatement = async (text: string) => {

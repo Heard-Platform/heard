@@ -9,7 +9,7 @@ export interface EventRoomViewProps {
   user: UserSession;
   currentSubHeard?: string;
   onSubmitStatement: (roomId: string, text: string) => Promise<any>;
-  onVoteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
+  onVoteOnStatement: (statement: Statement, voteType: VoteType) => Promise<any>;
   onRefreshStatements: () => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
   onSubHeardChange: (subHeard: string | null) => void;
