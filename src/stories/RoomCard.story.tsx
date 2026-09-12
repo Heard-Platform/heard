@@ -4,7 +4,7 @@ import { StoryContainer } from "./StoryContainer";
 import { mockRooms, mockStatements } from "./mockData";
 import { RoomAlertsProvider } from "../contexts/RoomAlertsContext";
 import { Toaster } from "../components/ui/sonner";
-import type { VoteType, UserSession } from "../types";
+import type { Statement, VoteType, UserSession } from "../types";
 
 const mockUser: UserSession = {
   id: "story-user",
@@ -36,11 +36,11 @@ function RoomCardWrapper({
 }) {
   const [localStatements, setLocalStatements] = useState(statements);
 
-  const handleVote = async (statementId: string, voteType: VoteType) => {
-    console.log("Vote:", { statementId, voteType });
+  const handleVote = async (statement: Statement, voteType: VoteType) => {
+    console.log("Vote:", { statementId: statement.id, voteType });
     setLocalStatements((prev) =>
       prev.map((s) =>
-        s.id === statementId
+        s.id === statement.id
           ? { ...s, voters: { ...s.voters, [mockUser.id]: voteType } }
           : s,
       ),

@@ -49,7 +49,7 @@ interface RoomCardProps {
     text: string,
   ) => Promise<any>;
   onVoteOnStatement: (
-    statementId: string,
+    statement: Statement,
     voteType: VoteType,
   ) => Promise<any>;
   onRefreshStatements: () => Promise<void>;
@@ -170,12 +170,12 @@ export function RoomCard({
 
   // Handle voting
   const handleVote = async (
-    statementId: string,
+    statement: Statement,
     voteType: "agree" | "disagree" | "pass" | "super_agree",
   ) => {
     try {
       await onVoteOnStatement(
-        statementId,
+        statement,
         voteType,
       );
     } catch (error: any) {
@@ -191,6 +191,15 @@ export function RoomCard({
       }
       throw error;
     }
+  };
+
+  const handleChangeVote = async (
+    statementId: string,
+    voteType: VoteType,
+  ) => {
+    const statement = statements.find((s) => s.id === statementId);
+    if (!statement) return;
+    await handleVote(statement, voteType);
   };
 
   const handleSwipeChanceCard = async () => {
@@ -363,7 +372,7 @@ export function RoomCard({
                         "certify your votes",
                       )
                     }
-                    onChangeVote={handleVote}
+                    onChangeVote={handleChangeVote}
                   />
                 );
               } else {
@@ -514,7 +523,7 @@ export function RoomCard({
         debateTitle={room.topic}
         open={showVotesDrawer}
         showTrigger={false}
-        onChangeVote={handleVote}
+        onChangeVote={handleChangeVote}
         onOpenChange={setShowVotesDrawer}
       />
 

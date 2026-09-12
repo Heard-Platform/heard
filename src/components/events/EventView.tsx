@@ -15,7 +15,7 @@ export interface EventViewProps {
   currentSubHeard?: string;
   onExitEvent: () => void;
   onSubmitStatement: (roomId: string, text: string) => Promise<any>;
-  onVoteOnStatement: (statementId: string, voteType: VoteType) => Promise<any>;
+  onVoteOnStatement: (statement: Statement, voteType: VoteType) => Promise<any>;
   onShowAccountSetupModal: (featureText: string) => void;
   onCreateRoom: (newDebate: NewDebateRoom) => Promise<DebateRoom>;
   onRefreshEvent: () => void;
@@ -74,8 +74,8 @@ export function EventView({
   // Use the hook for the full vote flow (error handling, score updates, etc.)
   // then sync the updated statement into local state, since the hook's
   // roomStatements map has no entry for event rooms.
-  const handleVoteOnStatement = async (statementId: string, voteType: VoteType) => {
-    const result = await onVoteOnStatement(statementId, voteType);
+  const handleVoteOnStatement = async (statement: Statement, voteType: VoteType) => {
+    const result = await onVoteOnStatement(statement, voteType);
     if (result?.statement) {
       const updated = result.statement;
       setSelectedRoom((prev) => {

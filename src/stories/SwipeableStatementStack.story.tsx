@@ -139,10 +139,10 @@ export function SwipeableStatementStackStory() {
   }, [chanceCardSwiped]);
 
   const handleVote = async (
-    statementId: string,
+    statement: Statement,
     voteType: VoteType,
   ) => {
-    console.log("Vote:", { statementId, voteType });
+    console.log("Vote:", { statementId: statement.id, voteType });
   };
 
   const handleSubmitStatement = async (text: string) => {

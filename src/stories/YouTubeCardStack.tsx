@@ -55,8 +55,8 @@ const mockSongs: Statement[] = [
 export function MusicLeagueCardStackStory() {
   const [log, setLog] = useState<string[]>([]);
 
-  const handleVote = async (statementId: string, voteType: VoteType) => {
-    setLog((prev) => [`Vote: ${statementId} -> ${voteType}`, ...prev].slice(0, 5));
+  const handleVote = async (statement: Statement, voteType: VoteType) => {
+    setLog((prev) => [`Vote: ${statement.id} -> ${voteType}`, ...prev].slice(0, 5));
   };
 
   const handleSubmitStatement = async (text: string) => {

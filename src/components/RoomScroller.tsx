@@ -59,7 +59,7 @@ interface RoomScrollerProps {
     text: string,
   ) => Promise<any>;
   onVoteOnStatement: (
-    statementId: string,
+    statement: Statement,
     voteType: VoteType,
   ) => Promise<any>;
   onDiscussStatement: (

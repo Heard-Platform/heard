@@ -36,7 +36,7 @@ interface SwipeableStatementStackProps {
   targetStatementId?: string;
   isActive: boolean;
   onVote: (
-    id: string,
+    statement: Statement,
     voteType: VoteType,
   ) => Promise<void>;
   onSubmitStatement: (text: string) => Promise<void>;
@@ -261,13 +261,15 @@ export function SwipeableStatementStack({
       }
     }
 
-    onVote(statementId, voteType).catch(() => {
-      setVotedStatementIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(statementId);
-        return newSet;
+    if (statement) {
+      onVote(statement, voteType).catch(() => {
+        setVotedStatementIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(statementId);
+          return newSet;
+        });
       });
-    });
+    }
 
     setTimeout(() => {
       setSwipedCardId(null);
