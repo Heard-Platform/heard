@@ -49,6 +49,8 @@ import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage
 
 const LAST_VIEWED_SUBHEARD_KEY = "lastViewedSubHeard";
 const LAST_VIEWED_ROOM_KEY = "lastViewedRoom";
+const VOTE_SWING_LAST_SHOWN_KEY = "voteSwingLastShownAt";
+const VOTE_SWING_THROTTLE_MS = 60_000;
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -233,8 +235,11 @@ function AppContent() {
 
   const handleVoteOnStatement = (statement: Statement, voteType: VoteType) => {
     const isFirstVote = !user || !statement.voters[user.id];
-    if (isFirstVote && isSwingVote(statement, voteType)) {
+    const lastShownAt = safelyGetStorageItem(VOTE_SWING_LAST_SHOWN_KEY, 0);
+    const isThrottled = Date.now() - lastShownAt < VOTE_SWING_THROTTLE_MS;
+    if (isFirstVote && !isThrottled && isSwingVote(statement, voteType)) {
       setVoteSwing({ statement, voteType });
+      safelySetStorageItem(VOTE_SWING_LAST_SHOWN_KEY, Date.now());
     }
     return voteOnStatement(statement.id, voteType);
   };
