@@ -648,6 +648,10 @@ export interface FeatureResults {
   roomAnalyticsOpenedSince: number;
   subscribeUpdatesClicked: number;
   subscribeUpdatesClickedSince: number;
+  voteSwingSeen: number;
+  voteSwingSeenSince: number;
+  voteSwingShareClicked: number;
+  voteSwingShareClickedSince: number;
 }
 
 export interface GGWashImportResult {

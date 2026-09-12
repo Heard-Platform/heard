@@ -30,6 +30,7 @@ import {
   Megaphone,
   Compass,
   PieChart,
+  RefreshCw,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -358,6 +359,21 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       description: "Clicks on the \"Subscribe to the Heard Weekly Newsletter\" link shown to unsubbed users in the side panel",
       getValue: (s) => s.subscribeUpdatesClicked,
       getDate: (s) => s.subscribeUpdatesClickedSince,
+    },
+    {
+      icon: RefreshCw,
+      iconColor: "text-teal-600",
+      bgColor: "bg-teal-100",
+      title: "Vote Swing Overlay",
+      description: "Shown when a user's own vote breaks a tie and decides a statement's majority",
+      getValue: (s) => s.voteSwingSeen,
+      getDate: (s) => s.voteSwingSeenSince,
+      renderExtra: (s) => (
+        <div>
+          <p className="text-xs text-muted-foreground">Shared</p>
+          <p className="text-2xl font-bold text-teal-600">{s.voteSwingShareClicked}</p>
+        </div>
+      ),
     },
   ]
 
