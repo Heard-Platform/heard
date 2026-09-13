@@ -18,6 +18,7 @@ if (window.location.pathname === "/app-bypass") {
     dsn: import.meta.env.VITE_SENTRY_DSN,
     environment,
     enabled: import.meta.env.PROD,
+    tracesSampleRate: 1.0,
     integrations: [Sentry.captureConsoleIntegration({ levels: ["error"] })],
   });
 

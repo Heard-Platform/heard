@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/react";
+import { getEnvironment } from "./constants/general";
 import { safelyDelStorageItem, safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
 import { projectId, publicAnonKey } from "./supabase/info";
 import type { UserSession } from "../types";
@@ -54,6 +56,23 @@ const buildHeaders = (extraHeaders?: HeadersDict): HeadersDict => {
 };
 
 export class BaseApiClient {
+  private async instrumentedFetch(
+    endpoint: string,
+    options: RequestInit,
+  ): Promise<Response> {
+    const label = `${options.method ?? "GET"} ${endpoint}`;
+    const start = performance.now();
+    return Sentry.startSpan({ name: label, op: "http.client" }, async () => {
+      try {
+        return await fetch(`${API_BASE_URL}${endpoint}`, options);
+      } finally {
+        if (getEnvironment() === "development") {
+          console.log(`[api] ${label} — ${(performance.now() - start).toFixed(0)}ms`);
+        }
+      }
+    });
+  }
+
   protected async request<T>(
     endpoint: string,
     options: RequestInit = {},
@@ -64,13 +83,10 @@ export class BaseApiClient {
       if (isFormData) {
         delete headers["Content-Type"];
       }
-      const response = await fetch(
-        `${API_BASE_URL}${endpoint}`,
-        {
-          ...options,
-          headers,
-        },
-      );
+      const response = await this.instrumentedFetch(endpoint, {
+        ...options,
+        headers,
+      });
 
       const data = await response.json();
 
@@ -108,13 +124,13 @@ export class BaseApiClient {
   }
 
   async get(endpoint: string, headers?: HeadersDict) {
-    return fetch(`${API_BASE_URL}${endpoint}`, {
+    return this.instrumentedFetch(endpoint, {
       headers: buildHeaders(headers),
     });
   }
 
   async post(endpoint: string, body?: any, headers?: HeadersDict) {
-    return fetch(`${API_BASE_URL}${endpoint}`, {
+    return this.instrumentedFetch(endpoint, {
       method: "POST",
       headers: buildHeaders(headers),
       body: body ? JSON.stringify(body) : undefined,
@@ -122,7 +138,7 @@ export class BaseApiClient {
   }
 
   async patch(endpoint: string, body?: any, headers?: HeadersDict) {
-    return fetch(`${API_BASE_URL}${endpoint}`, {
+    return this.instrumentedFetch(endpoint, {
       method: "PATCH",
       headers: buildHeaders(headers),
       body: body ? JSON.stringify(body) : undefined,
