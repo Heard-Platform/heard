@@ -282,14 +282,11 @@ app.post(
         webdriver: webdriver || false, // CN-5
       });
 
-      const userResult = await getUserAndNewSession(user.id);
-      if ("error" in userResult) {
-        return c.json({ error: userResult.error }, userResult.status);
-      }
+      const session = await createSession(user.id);
 
       return c.json({
-        user: userResult.user,
-        sessionId: userResult.sessionId,
+        user: sanitizeUser(user),
+        sessionId: session.id,
       });
     } catch (error) {
       console.error("Error creating anonymous user:", error);

@@ -160,8 +160,15 @@ export const saveUser = async (user: User) => {
 };
 
 export const saveUserWithEmailIndex = async (user: User): Promise<void> => {
-  await kv.set(userKeyFn(user), JSON.stringify(user));
-  await kv.set(`user_email:${user.email}`, user.id);
+  const saveUser = () => kv.set(userKeyFn(user), JSON.stringify(user));
+  if (!user.email) {
+    await saveUser();
+    return;
+  }
+  await Promise.all([
+    saveUser(),
+    kv.set(`user_email:${user.email}`, user.id),
+  ]);
 };
 
 export const updateUserField = async <K extends keyof User>(
