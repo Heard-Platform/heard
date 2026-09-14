@@ -82,7 +82,7 @@ export function NewItemButton({ onNewConversation, onNewEvent }: NewItemButtonPr
           className="text-sm font-black italic bg-gradient-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent"
           style={{
             display: "inline-block",
-            transform: "rotate(-6deg) translateX(2px)",
+            transform: "rotate(-6deg) translateX(-2px) translateY(-1px)",
             letterSpacing: "-0.02em",
           }}
         >
