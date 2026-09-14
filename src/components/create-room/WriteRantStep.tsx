@@ -3,7 +3,7 @@ import { flushSync } from "react-dom";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
-import { MessageCircle, Lightbulb, Mic, Square } from "lucide-react";
+import { MessageCircle, Lightbulb, Mic, Square, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { FunSheetCard } from "../FunSheet";
 import { useVoiceTranscription } from "../../hooks/useVoiceTranscription";
@@ -30,6 +30,7 @@ interface WriteRantStepProps {
   isRantValid: boolean;
   remainingChars: number;
   onRantChange: (rant: string) => void;
+  onSwitchToCompose: () => void;
 }
 
 export function WriteRantStep({
@@ -37,6 +38,7 @@ export function WriteRantStep({
   isRantValid,
   remainingChars,
   onRantChange,
+  onSwitchToCompose,
 }: WriteRantStepProps) {
   const [showExamples, setShowExamples] = useState(false);
   const [mode, setMode] = useState<EntryMode>(() =>
@@ -109,7 +111,7 @@ export function WriteRantStep({
         onClick={handleSwitchToText}
         className="text-slate-700 border-slate-300 hover:bg-slate-50"
       >
-        Type it out instead
+        Switch to typing mode
       </Button>
     </div>
   );
@@ -272,6 +274,25 @@ export function WriteRantStep({
               Your rant is private — it's just used to draft the post
               topic and won't be visible to other users.
             </p>
+          </div>
+        </div>
+      </FunSheetCard>
+
+      <FunSheetCard delay={0.25}>
+        <div className="text-center space-y-3">
+          <div className="border-t border-slate-200 pt-4">
+            <p className="text-sm text-slate-600 mb-3">
+              Prefer to write the title and statements yourself?
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onSwitchToCompose}
+              className="bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border-2 border-green-300 hover:border-green-400"
+            >
+              <Sparkles className="w-4 h-4 mr-2 text-green-600" />
+              <span className="text-green-700">Switch to Manual Mode</span>
+            </Button>
           </div>
         </div>
       </FunSheetCard>

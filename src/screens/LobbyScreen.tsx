@@ -103,6 +103,7 @@ export function LobbyScreen({
 }: LobbyScreenProps) {
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
     useState(false);
+  const [startInRantMode, setStartInRantMode] = useState(false);
   const [createEventSheetOpen, setCreateEventSheetOpen] =
     useState(false);
 
@@ -255,7 +256,7 @@ export function LobbyScreen({
     }
   };
 
-  const handleOpenCreateSheet = () => {
+  const openCreateSheet = () => {
     if (user.isAnonymous) {
       setShowAccountSetupAnonModal(true);
       setAccountSetupFeatureText("make a post");
@@ -265,6 +266,16 @@ export function LobbyScreen({
       setCreateRoomSheetOpen(true);
     }
   };
+
+  const handleOpenCreateSheetComposing = () => {
+    setStartInRantMode(false);
+    openCreateSheet();
+  }
+
+  const handleOpenCreateSheetRanting = () => {
+    setStartInRantMode(true);
+    openCreateSheet();
+  }
 
   const handleOpenCreateEventSheet = () => {
     setCreateEventSheetOpen(true);
@@ -276,6 +287,7 @@ export function LobbyScreen({
   ) => {
     setDiscussTopic(statementText);
     setDiscussSubHeard(subHeard);
+    setStartInRantMode(false);
     setCreateRoomSheetOpen(true);
   };
 
@@ -397,7 +409,7 @@ export function LobbyScreen({
                 )}
 
                 <NewItemButton
-                  onNewConversation={handleOpenCreateSheet}
+                  onNewConversation={handleOpenCreateSheetRanting}
                   onNewEvent={handleOpenCreateEventSheet}
                 />
 
@@ -436,7 +448,7 @@ export function LobbyScreen({
               analysisRoomId={analysisRoomId}
               targetStatementId={targetStatementId}
               presences={presences}
-              onCreateRoom={handleOpenCreateSheet}
+              onCreateRoom={handleOpenCreateSheetComposing}
               onSubmitStatement={onSubmitStatement}
               onVoteOnStatement={onVoteOnStatement}
               onDiscussStatement={handleDiscussStatement}
@@ -455,6 +467,7 @@ export function LobbyScreen({
       {/* Create room sheet */}
       <CreateRoomSheet
         open={createRoomSheetOpen}
+        startInRantMode={startInRantMode}
         userId={user.id}
         onOpenChange={handleCreateRoomSheetChange}
         onCreateRoom={handleCreateRoom}
