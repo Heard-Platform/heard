@@ -32,6 +32,7 @@ interface CreateRoomSheetProps {
   open: boolean;
   defaultSubHeard?: string;
   defaultTopic?: string;
+  startInRantMode?: boolean;
   userId: string;
   eventId?: number;
   onOpenChange: (open: boolean) => void;
@@ -77,6 +78,7 @@ export function CreateRoomSheet({
   open,
   defaultSubHeard,
   defaultTopic,
+  startInRantMode,
   userId,
   eventId,
   onOpenChange,
@@ -142,7 +144,10 @@ export function CreateRoomSheet({
     if (defaultTopic) {
       setEditedTopic(defaultTopic);
     }
-  }, [resetForm, defaultTopic]);
+    if (startInRantMode) {
+      setCurrentStep("write-rant");
+    }
+  }, [resetForm, defaultTopic, startInRantMode]);
 
   // Reset form when sheet opens
   useEffect(() => {
@@ -318,7 +323,7 @@ export function CreateRoomSheet({
         return {
           title: "Start with a Rant",
           description:
-            "Let it all out! We'll help you turn it into a structured discussion.",
+            "We'll help you turn your rant into a structured discussion.",
           leftIcon: Sparkles,
           theme: "green" as const,
           buttonText: isExtracting
@@ -329,9 +334,7 @@ export function CreateRoomSheet({
           onButtonClick: handleExtractClick,
           buttonDisabled: !isRantValid || isExtracting,
           isLoading: isExtracting,
-          showBackButton: true,
-          backButtonText: "Back to Compose",
-          onBackClick: () => handleBackToCompose(),
+          showBackButton: false,
         };
       case "review-details":
         return {
@@ -438,6 +441,7 @@ export function CreateRoomSheet({
           isRantValid={isRantValid}
           remainingChars={remainingChars}
           onRantChange={setRant}
+          onSwitchToCompose={handleBackToCompose}
         />
       )}
 

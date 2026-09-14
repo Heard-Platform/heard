@@ -224,6 +224,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const voteSwingShareClicked = (await getEventsOfType("vote_swing_share_clicked")).length;
     const voteSwingShareClickedSince = new Date("2026-09-11").getTime();
 
+    const newPostButtonTapped = (await getEventsOfType("new_post_button_tapped")).length;
+    const newPostButtonTappedSince = new Date("2026-09-14").getTime();
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -304,6 +307,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       voteSwingSeenSince,
       voteSwingShareClicked,
       voteSwingShareClickedSince,
+      newPostButtonTapped,
+      newPostButtonTappedSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);

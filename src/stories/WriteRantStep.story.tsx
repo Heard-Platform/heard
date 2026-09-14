@@ -84,6 +84,7 @@ export function WriteRantStepStory() {
             isRantValid={isRantValid}
             remainingChars={remainingChars}
             onRantChange={setRant}
+            onSwitchToCompose={() => {}}
           />
         </TabsContent>
 

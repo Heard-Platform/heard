@@ -460,6 +460,7 @@ export interface CohortFunnelEntry {
   multiPostViewCount: number;
   votedCount: number;
   respondedCount: number;
+  createdRoomCount: number;
   nonAnonCount: number;
   multiRoomCount: number;
   multiCommunityCount: number;
@@ -469,6 +470,7 @@ export interface CohortFunnelEntry {
   multiPostViewPct: number;
   votedPct: number;
   respondedPct: number;
+  createdRoomPct: number;
   nonAnonPct: number;
   multiRoomPct: number;
   multiCommunityPct: number;
@@ -652,6 +654,8 @@ export interface FeatureResults {
   voteSwingSeenSince: number;
   voteSwingShareClicked: number;
   voteSwingShareClickedSince: number;
+  newPostButtonTapped: number;
+  newPostButtonTappedSince: number;
 }
 
 export interface GGWashImportResult {
