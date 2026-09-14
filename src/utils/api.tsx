@@ -666,8 +666,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async getCohortFunnel(mode: "joined" | "active" = "joined") {
-    return this.request<CohortFunnelData>(`/stats/cohort-funnel?mode=${mode}`, {
+  async getCohortFunnel(mode: "joined" | "active" = "joined", sinceMs?: number) {
+    const params = new URLSearchParams({ mode: mode });
+    if (sinceMs !== undefined) params.set("since", sinceMs.toString());
+    return this.request<CohortFunnelData>(`/stats/cohort-funnel?${params.toString()}`, {
       method: "GET",
     });
   }

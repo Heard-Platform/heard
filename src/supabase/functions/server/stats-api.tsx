@@ -211,8 +211,22 @@ app.get(
       ]);
 
       const mode = c.req.query("mode") === "active" ? "active" : "joined";
-      const nonDevUsers = allUsers.filter(user => !user.isDeveloper);
-      return buildCohortFunnelData(nonDevUsers, allVotes, allStatements, allRooms, allViews, mode);
+      let nonDevUsers = allUsers.filter(user => !user.isDeveloper);
+      let votes = allVotes;
+      let statements = allStatements;
+      let views = allViews;
+
+      const sinceParam = Number(c.req.query("since"));
+      if (Number.isFinite(sinceParam) && sinceParam > 0) {
+        votes = votes.filter(v => v.timestamp >= sinceParam);
+        statements = statements.filter(s => s.timestamp >= sinceParam);
+        views = views.filter(v => v.lastSeenAt >= sinceParam);
+        if (mode === "joined") {
+          nonDevUsers = nonDevUsers.filter(u => u.createdAt >= sinceParam);
+        }
+      }
+
+      return buildCohortFunnelData(nonDevUsers, votes, statements, allRooms, views, mode);
     },
     "Failed to calculate cohort funnel data",
   ),
