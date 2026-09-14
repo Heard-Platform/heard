@@ -36,6 +36,7 @@ export interface CohortBucket {
   multiPostViewCount: number;
   votedCount: number;
   respondedCount: number;
+  createdRoomCount: number;
   nonAnonCount: number;
   multiRoomCount: number;
   multiCommunityCount: number;
@@ -45,6 +46,7 @@ export interface CohortBucket {
   multiPostViewPct: number;
   votedPct: number;
   respondedPct: number;
+  createdRoomPct: number;
   nonAnonPct: number;
   multiRoomPct: number;
   multiCommunityPct: number;
@@ -131,6 +133,9 @@ export function buildCohortFunnelData(
     roomsRespondedByUser.get(s.author)!.add(s.roomId);
   }
 
+  const createdRoomUserIds = new Set<string>();
+  for (const room of rooms) createdRoomUserIds.add(room.hostId);
+
   const topPostsByWeek = computeTopPostsByWeek(rooms, statements);
   const activeDaysByUser = buildActiveDaysMap(votes, statements);
 
@@ -140,6 +145,7 @@ export function buildCohortFunnelData(
     | "multiPostViewPct"
     | "votedPct"
     | "respondedPct"
+    | "createdRoomPct"
     | "nonAnonPct"
     | "multiRoomPct"
     | "multiCommunityPct"
@@ -159,6 +165,7 @@ export function buildCohortFunnelData(
         multiPostViewCount: 0,
         votedCount: 0,
         respondedCount: 0,
+        createdRoomCount: 0,
         nonAnonCount: 0,
         multiRoomCount: 0,
         multiCommunityCount: 0,
@@ -175,6 +182,7 @@ export function buildCohortFunnelData(
 
     if (votedUserIds.has(user.id)) bucket.votedCount++;
     if (respondedUserIds.has(user.id)) bucket.respondedCount++;
+    if (createdRoomUserIds.has(user.id)) bucket.createdRoomCount++;
     if (user.email || user.phoneNumber) bucket.nonAnonCount++;
 
     const participatedRooms = new Set<string>([
@@ -229,6 +237,7 @@ export function buildCohortFunnelData(
       multiPostViewPct: pct(bucket.multiPostViewCount, bucket.totalUsers),
       votedPct: pct(bucket.votedCount, bucket.totalUsers),
       respondedPct: pct(bucket.respondedCount, bucket.totalUsers),
+      createdRoomPct: pct(bucket.createdRoomCount, bucket.totalUsers),
       nonAnonPct: pct(bucket.nonAnonCount, bucket.totalUsers),
       multiRoomPct: pct(bucket.multiRoomCount, bucket.totalUsers),
       multiCommunityPct: pct(bucket.multiCommunityCount, bucket.totalUsers),
