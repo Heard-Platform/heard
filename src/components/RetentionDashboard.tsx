@@ -1,12 +1,29 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { X, TrendingUp } from "lucide-react";
 import { api } from "../utils/api";
 import type { CohortFunnelEntry } from "../types";
 import { CohortFunnelChart } from "./CohortFunnelChart";
 
 type CohortMode = "joined" | "active";
+type TimeFrame = "1m" | "3m" | "6m" | "all";
+
+const TIME_FRAME_OPTIONS: { value: TimeFrame; label: string }[] = [
+  { value: "1m", label: "Last month" },
+  { value: "3m", label: "Last 3 months" },
+  { value: "6m", label: "Last 6 months" },
+  { value: "all", label: "All time" },
+];
+
+function getCutoffTimestamp(timeFrame: TimeFrame): number | null {
+  if (timeFrame === "all") return null;
+  const months = timeFrame === "1m" ? 1 : timeFrame === "3m" ? 3 : 6;
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - months);
+  return cutoff.getTime();
+}
 
 interface RetentionDashboardProps {
   onExit?: () => void;
@@ -16,13 +33,15 @@ export function RetentionDashboard({ onExit }: RetentionDashboardProps) {
   const [cohorts, setCohorts] = useState<CohortFunnelEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [cohortMode, setCohortMode] = useState<CohortMode>("active");
+  const [timeFrame, setTimeFrame] = useState<TimeFrame>("1m");
 
   useEffect(() => {
     let cancelled = false;
 
     const fetchData = async () => {
       setLoading(true);
-      const res = await api.getCohortFunnel(cohortMode);
+      const cutoff = getCutoffTimestamp(timeFrame);
+      const res = await api.getCohortFunnel(cohortMode, cutoff ?? undefined);
       if (!cancelled && res.success) {
         setCohorts(res.data?.cohorts ?? []);
       }
@@ -33,7 +52,7 @@ export function RetentionDashboard({ onExit }: RetentionDashboardProps) {
     return () => {
       cancelled = true;
     };
-  }, [cohortMode]);
+  }, [cohortMode, timeFrame]);
 
   const latestCohort = cohorts.length > 0 ? cohorts[cohorts.length - 1] : null;
 
@@ -77,21 +96,35 @@ export function RetentionDashboard({ onExit }: RetentionDashboardProps) {
               <TrendingUp className="w-5 h-5 text-purple-600" />
               Cohort Funnel by {cohortMode === "joined" ? "Join Week" : "Activity Week"}
             </h2>
-            <div className="flex gap-1">
-              <Button
-                variant={cohortMode === "joined" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCohortMode("joined")}
-              >
-                Joined that week
-              </Button>
-              <Button
-                variant={cohortMode === "active" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCohortMode("active")}
-              >
-                Active that week
-              </Button>
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1">
+                <Button
+                  variant={cohortMode === "joined" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCohortMode("joined")}
+                >
+                  Joined that week
+                </Button>
+                <Button
+                  variant={cohortMode === "active" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCohortMode("active")}
+                >
+                  Active that week
+                </Button>
+              </div>
+              <Select value={timeFrame} onValueChange={(value: string) => setTimeFrame(value as TimeFrame)}>
+                <SelectTrigger size="sm" className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIME_FRAME_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           {loading ? (
