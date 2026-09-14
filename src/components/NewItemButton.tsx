@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Flame, MessageSquare, Calendar, ChevronDown, type LucideIcon } from "lucide-react";
+import { Flame, MessageSquare, Calendar, type LucideIcon } from "lucide-react";
 import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
 
 interface NewItemButtonProps {
@@ -82,7 +82,6 @@ export function NewItemButton({ onNewConversation, onNewEvent }: NewItemButtonPr
         >
           Rant!
         </span>
-        {/* <ChevronDown className="w-3 h-3 text-gray-500 shrink-0" /> */}
       </button>
 
       {menuOpen && (
