@@ -31,6 +31,7 @@ import {
   Compass,
   PieChart,
   RefreshCw,
+  Flame,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -374,6 +375,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
           <p className="text-2xl font-bold text-teal-600">{s.voteSwingShareClicked}</p>
         </div>
       ),
+    },
+    {
+      icon: Flame,
+      iconColor: "text-orange-600",
+      bgColor: "bg-orange-100",
+      title: "Top Bar New Post Button Taps",
+      description: "Taps on the topbar button that starts a new post",
+      getValue: (s) => s.newPostButtonTapped,
+      getDate: (s) => s.newPostButtonTappedSince,
     },
   ]
 

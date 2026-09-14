@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Flame, MessageSquare, Calendar, type LucideIcon } from "lucide-react";
 import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
+import { api } from "../utils/api";
 
 interface NewItemButtonProps {
   onNewConversation: () => void;
@@ -39,6 +40,11 @@ const eventsEnabled = isFeatureEnabled(FeatureFlags.EVENTS);
 export function NewItemButton({ onNewConversation, onNewEvent }: NewItemButtonProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const handleStartConversation = () => {
+    api.trackEvent("new_post_button_tapped");
+    onNewConversation();
+  };
+
   const items: MenuItem[] = [
     {
       label: "Conversation",
@@ -47,7 +53,7 @@ export function NewItemButton({ onNewConversation, onNewEvent }: NewItemButtonPr
       iconClass: "text-emerald-600",
       bgClass: "bg-emerald-100",
       hoverClass: "hover:bg-emerald-50",
-      onClick: () => { setMenuOpen(false); onNewConversation(); },
+      onClick: () => { setMenuOpen(false); handleStartConversation(); },
     },
     {
       label: "Event",
@@ -68,7 +74,7 @@ export function NewItemButton({ onNewConversation, onNewEvent }: NewItemButtonPr
         onClick={() =>
           eventsEnabled
             ? setMenuOpen((prev) => !prev)
-            : onNewConversation()
+            : handleStartConversation()
         }
       >
         <Flame className="w-4 h-4 text-orange-500 shrink-0" />
