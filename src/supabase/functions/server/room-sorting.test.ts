@@ -1,9 +1,4 @@
-import {
-  assertEquals,
-  assertAlmostEquals,
-  assertGreater,
-  assertLess,
-} from "https://deno.land/std@0.208.0/assert/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { describe, it } from "@std/testing/bdd";
 import {
   recencyScore,
@@ -38,63 +33,60 @@ describe("recencyScore", () => {
     assertEquals(recencyScore(0), 1);
   });
 
-  it("returns 0.5 at the 30-minute half-life", () => {
-    assertEquals(recencyScore(30), 0.5);
+  it("returns 0.5 at the 12-hour half-life", () => {
+    assertEquals(recencyScore(12 * 60), 0.5);
   });
 
-  it("returns 0.25 at 90 minutes", () => {
-    assertEquals(recencyScore(90), 0.25);
+  it("returns 1/3 at 24 hours", () => {
+    assertEquals(recencyScore(24 * 60), 1 / 3);
   });
 
-  it("returns 1/3 at 60 minutes", () => {
-    assertEquals(recencyScore(60), 1 / 3);
+  it("returns 0.25 at 36 hours", () => {
+    assertEquals(recencyScore(36 * 60), 0.25);
   });
 
   it("decreases as time increases", () => {
-    assertEquals(recencyScore(10) > recencyScore(30), true);
-    assertEquals(recencyScore(30) > recencyScore(60), true);
-    assertEquals(recencyScore(60) > recencyScore(120), true);
+    assertEquals(recencyScore(60) > recencyScore(360), true);
+    assertEquals(recencyScore(360) > recencyScore(720), true);
+    assertEquals(recencyScore(720) > recencyScore(1440), true);
   });
 
   it("approaches zero for very old activity", () => {
-    assertEquals(recencyScore(10_000) < 0.01, true);
+    assertEquals(recencyScore(100_000) < 0.01, true);
   });
 });
 
 describe("scoreRoom", () => {
-  it("scores 120 when both signals are current", () => {
+  it("scores 100 when lastActivityAt is current", () => {
     const now = Date.now();
     const room = makeRoom(now, { lastActivityAt: now, totalVotes: 0 });
-    assertEquals(scoreRoom(room, now), 120);
+    assertEquals(scoreRoom(room, now), 100);
   });
 
-  it("scores 60 at the 30-minute half-life", () => {
+  it("scores 0 for a room that has never had activity", () => {
     const now = Date.now();
-    const createdAt = now - 30 * MIN;
-    const lastActivityAt = now - 30 * MIN;
-    const totalVotes = 0;
-    const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
-    assertEquals(scoreRoom(room, now), 60);
+    const room = makeRoom(now - 10 * DAY, { totalVotes: 50 });
+    assertEquals(scoreRoom(room, now), 0);
+  });
+
+  it("scores 50 at the 12-hour half-life", () => {
+    const now = Date.now();
+    const room = makeRoom(now - 20 * HOUR, { lastActivityAt: now - 12 * HOUR });
+    assertEquals(scoreRoom(room, now), 50);
   });
 
   it("adds votes to the activity weight", () => {
     const now = Date.now();
-    const createdAt = now;
-    const lastActivityAt = now;
-    const totalVotes = 10;
-    const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
-    const score = scoreRoom(room, now);
-    assertGreater(score, 110);
-    assertLess(score, 130);
+    const room = makeRoom(now, { lastActivityAt: now, totalVotes: 10 });
+    assertEquals(scoreRoom(room, now), 106);
   });
 
-  it("treats lastActivity and createdAt as independent signals", () => {
+  it("is unaffected by createdAt", () => {
     const now = Date.now();
-    const createdAt = now - 60 * MIN;
-    const lastActivityAt = now;
-    const totalVotes = 0;
-    const room = makeRoom(createdAt, { lastActivityAt, totalVotes });
-    assertAlmostEquals(scoreRoom(room, now), 106 + 2 / 3, 1e-9);
+    const lastActivityAt = now - 2 * HOUR;
+    const recentlyCreated = makeRoom(now, { lastActivityAt });
+    const longAgoCreated = makeRoom(now - 10 * DAY, { lastActivityAt });
+    assertEquals(scoreRoom(recentlyCreated, now), scoreRoom(longAgoCreated, now));
   });
 });
 
@@ -115,23 +107,23 @@ describe("sortRoomsByActivity", () => {
   });
 
   describe("Ordering by last activity", () => {
-    it("favors new over old if some activity", () => {
+    it("favors more recent activity over older activity", () => {
       const now = Date.now();
-      const oldActive = makeRoom(now - 2 * HOUR, {lastActivityAt: now - 1 * MIN });
-      const newQuiet = makeRoom(now - 1 * HOUR, {lastActivityAt: now - 10 * MIN });
+      const oldActive = makeRoom(now - 2 * HOUR, { lastActivityAt: now - 1 * MIN });
+      const newQuiet = makeRoom(now - 1 * HOUR, { lastActivityAt: now - 10 * MIN });
 
       const result = sortRoomsByActivity([newQuiet, oldActive], now);
       assertEquals(result[0], oldActive);
       assertEquals(result[1], newQuiet);
     });
 
-    it("falls back to createdAt when no activity", () => {
+    it("does not fall back to createdAt for rooms that have never had activity", () => {
       const now = Date.now();
       const olderRoom = makeRoom(now - 2 * HOUR);
       const newerRoom = makeRoom(now - 1 * HOUR);
 
       const result = sortRoomsByActivity([olderRoom, newerRoom], now);
-      assertEquals(result, [newerRoom, olderRoom]);
+      assertEquals(result, [olderRoom, newerRoom]);
     });
 
     it("active old room outranks newer empty room", () => {
@@ -143,26 +135,22 @@ describe("sortRoomsByActivity", () => {
       assertEquals(result, [olderRoom, newerRoom]);
     });
 
-    it("inactive old room ranks below brand-new empty room", () => {
+    it("a room with any activity, however old, outranks a room that has never been touched", () => {
       const now = Date.now();
-      const newRoom = makeRoom(now);
-      const olderRoom = makeRoom(now - 24 * HOUR);
+      const ancientlyActive = makeRoom(now - 30 * DAY, { lastActivityAt: now - 20 * DAY });
+      const brandNewEmpty = makeRoom(now);
 
-      const result = sortRoomsByActivity([olderRoom, newRoom], now);
-      assertEquals(result, [newRoom, olderRoom]);
+      const result = sortRoomsByActivity([brandNewEmpty, ancientlyActive], now);
+      assertEquals(result, [ancientlyActive, brandNewEmpty]);
     });
 
-    it("puts very new room above huge slightly dormant older room, until it ages", () => {
+    it("a very new empty room does not outrank an old but active room", () => {
       const now = Date.now();
       const newRoom = makeRoom(now - 5 * MIN);
-      const olderRoom = makeRoom(now - 48 * HOUR, { lastActivityAt: now - 3 * HOUR, totalVotes: 300 });
+      const olderActiveRoom = makeRoom(now - 48 * HOUR, { lastActivityAt: now - 3 * HOUR, totalVotes: 300 });
 
-      const result = sortRoomsByActivity([olderRoom, newRoom], now);
-      assertEquals(result, [newRoom, olderRoom]);
-
-      const agedNewRoom = { ...newRoom, lastActivityAt: now - 2 * HOUR, totalVotes: 2 };
-      const resultAfterAging = sortRoomsByActivity([olderRoom, agedNewRoom], now);
-      assertEquals(resultAfterAging, [olderRoom, agedNewRoom]);
+      const result = sortRoomsByActivity([olderActiveRoom, newRoom], now);
+      assertEquals(result, [olderActiveRoom, newRoom]);
     });
   });
 
@@ -170,25 +158,25 @@ describe("sortRoomsByActivity", () => {
     it("room with more votes ranks above room with equal activity but fewer votes", () => {
       const now = Date.now();
       const lastActivityAt = now - 5 * MIN;
-      const manyVotesRoom = makeRoom(now - 2 * HOUR, {lastActivityAt, totalVotes: 70})
-      const fewVotesRoom = makeRoom(now - 2 * HOUR, {lastActivityAt, totalVotes: 7});
+      const manyVotesRoom = makeRoom(now - 2 * HOUR, { lastActivityAt, totalVotes: 70 });
+      const fewVotesRoom = makeRoom(now - 2 * HOUR, { lastActivityAt, totalVotes: 7 });
 
       const result = sortRoomsByActivity([fewVotesRoom, manyVotesRoom], now);
       assertEquals(result, [manyVotesRoom, fewVotesRoom]);
     });
 
-    it("votes do not rescue a dormant room from a new active room", () => {
+    it("votes do not rescue a very stale room from a fresh active room", () => {
       const now = Date.now();
-      const dormantRoom = makeRoom(now - 12 * HOUR, {lastActivityAt: now - 3 * HOUR, totalVotes: 300});
-      const activeRoom = makeRoom(now - 30 * MIN, {lastActivityAt: now - 2 * MIN, totalVotes: 0});
+      const staleRoom = makeRoom(now - 6 * DAY, { lastActivityAt: now - 5 * DAY, totalVotes: 300 });
+      const activeRoom = makeRoom(now - 30 * MIN, { lastActivityAt: now - 2 * MIN, totalVotes: 0 });
 
-      const result = sortRoomsByActivity([dormantRoom, activeRoom], now);
-      assertEquals(result, [activeRoom, dormantRoom]);
+      const result = sortRoomsByActivity([staleRoom, activeRoom], now);
+      assertEquals(result, [activeRoom, staleRoom]);
     });
   });
 
   describe("Mixed scenarios", () => {
-    it("ranks recently active > brand-new > dormant", () => {
+    it("any real activity outranks a brand-new untouched room, no matter how stale", () => {
       const now = Date.now();
       const rwsActive = makeRoom(now - 5 * HOUR, { lastActivityAt: now - 2 * MIN });
       const rwsBrandNew = makeRoom(now - 10 * MIN);
@@ -196,10 +184,10 @@ describe("sortRoomsByActivity", () => {
 
       const result = sortRoomsByActivity([rwsDormant, rwsBrandNew, rwsActive], now);
 
-      assertEquals(result, [rwsActive, rwsBrandNew, rwsDormant]);
+      assertEquals(result, [rwsActive, rwsDormant, rwsBrandNew]);
     });
 
-    it("revived old room jumps above newer inactive rooms", () => {
+    it("revived old room jumps above untouched newer rooms", () => {
       const now = Date.now();
       const rwsRevived = makeRoom(now - 6 * DAY, { lastActivityAt: now - 3 * MIN });
       const rwsQuietNew = makeRoom(now - 30 * MIN);
@@ -207,7 +195,7 @@ describe("sortRoomsByActivity", () => {
 
       const result = sortRoomsByActivity([rwsQuietNew, rwsQuietNewer, rwsRevived], now);
 
-      assertEquals(result, [rwsRevived, rwsQuietNewer, rwsQuietNew]);
+      assertEquals(result, [rwsRevived, rwsQuietNew, rwsQuietNewer]);
     });
   });
 
@@ -221,6 +209,7 @@ describe("sortRoomsForFeed", () => {
     });
     const betterRoom = makeRoom(now - 1 * MIN, {
       subHeard: "sports",
+      lastActivityAt: now - 1 * MIN,
     });
 
     const result = sortRoomsForFeed(
@@ -284,6 +273,7 @@ describe("sortRoomsForFeed", () => {
     });
     const newerOther = makeRoom(now - 1 * MIN, {
       subHeard: "sports",
+      lastActivityAt: now - 1 * MIN,
     });
 
     const result = sortRoomsForFeed(

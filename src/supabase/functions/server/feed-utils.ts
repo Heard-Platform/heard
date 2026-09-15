@@ -2,22 +2,24 @@ import _ from "lodash";
 import { ONE_MIN_MS } from "./time-utils.ts";
 import { Community, DebateRoom } from "./types.tsx";
 
+const ACTIVITY_HALF_LIFE_MIN = 60 * 12;
+
 export const recencyScore = (minutesAgo: number): number =>
-  1 / (1 + minutesAgo / 30);
+  1 / (1 + minutesAgo / ACTIVITY_HALF_LIFE_MIN);
 
 const ACTIVITY_WEIGHT = 100;
-const CREATION_WEIGHT = 20;
 const VOTE_WEIGHT = 0.6;
 
 export const scoreRoom = (
   room: DebateRoom,
   now: number,
 ): number => {
-  const lastActivity = room.lastActivityAt ?? room.createdAt;
+  if (room.lastActivityAt == null) return 0;
+
   const totalVotes = room.totalVotes ?? 0;
   return (
-    recencyScore((now - lastActivity) / ONE_MIN_MS) * (ACTIVITY_WEIGHT + (totalVotes * VOTE_WEIGHT)) +
-    recencyScore((now - room.createdAt) / ONE_MIN_MS) * CREATION_WEIGHT
+    recencyScore((now - room.lastActivityAt) / ONE_MIN_MS) *
+    (ACTIVITY_WEIGHT + totalVotes * VOTE_WEIGHT)
   );
 };
 
