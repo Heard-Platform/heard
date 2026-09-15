@@ -48,7 +48,6 @@ import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResult
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
 
 const LAST_VIEWED_SUBHEARD_KEY = "lastViewedSubHeard";
-const LAST_VIEWED_ROOM_KEY = "lastViewedRoom";
 const VOTE_SWING_LAST_SHOWN_KEY = "voteSwingLastShownAt";
 const VOTE_SWING_THROTTLE_MS = 60_000;
 
@@ -567,12 +566,7 @@ function AppContent() {
           LAST_VIEWED_SUBHEARD_KEY,
           null,
         );
-        const lastRoomId = safelyGetStorageItem<string | null>(
-          LAST_VIEWED_ROOM_KEY,
-          null,
-        );
         if (lastSubHeard) setCurrentSubHeard(lastSubHeard);
-        if (lastRoomId) startRoomJoin(lastRoomId);
       }
       setHasCheckedUrl(true);
     }
