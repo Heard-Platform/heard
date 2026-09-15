@@ -2,6 +2,17 @@ import { motion } from "motion/react";
 import { FullCoverData } from "../../types";
 import { openImageOverlay } from "../../utils/image-overlay";
 import { extractYouTubeVideoId } from "../../utils/youtube-utils";
+import { useSwipeTutorialContext } from "../../contexts/SwipeTutorialContext";
+import { SwipeHint } from "../SwipeHint";
+
+const startVotingSides = [
+  {
+    side: "right" as const,
+    color: "bg-gray-700",
+    label: "Swipe right",
+    sublabel: "to start voting",
+  },
+];
 
 interface CoverCardProps {
   cover: FullCoverData;
@@ -9,6 +20,7 @@ interface CoverCardProps {
 }
 
 export function CoverCard({ cover, isTopCard }: CoverCardProps) {
+  const { showTutorial } = useSwipeTutorialContext();
   const { type, url, description } = cover;
   const isYouTube = type === "youtube";
 
@@ -65,15 +77,14 @@ export function CoverCard({ cover, isTopCard }: CoverCardProps) {
         </div>
       )}
 
-      <div className="mb-4">{renderMedia()}</div>
-
-      {isTopCard && (
-        <div className={`pt-2 border-t border-${accentColor}-200`}>
-          <p className={`text-xs text-center text-${accentColor}-700`}>
-            Swipe this card away to begin voting
-          </p>
-        </div>
-      )}
+      <div className="mb-4 relative">
+        {renderMedia()}
+        {isTopCard && showTutorial && (
+          <div className="absolute inset-0 pointer-events-none">
+            <SwipeHint sides={startVotingSides} />
+          </div>
+        )}
+      </div>
     </>
   );
 }
