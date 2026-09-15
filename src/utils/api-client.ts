@@ -67,7 +67,7 @@ export class BaseApiClient {
         return await fetch(`${API_BASE_URL}${endpoint}`, options);
       } finally {
         if (getEnvironment() === "development") {
-          console.log(`[api] ${label} — ${(performance.now() - start).toFixed(0)}ms`);
+          console.debug(`[api] ${label} — ${(performance.now() - start).toFixed(0)}ms`);
         }
       }
     });
