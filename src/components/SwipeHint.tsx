@@ -48,7 +48,7 @@ export function SwipeHint({ sides }: SwipeHintProps) {
         <motion.div
           key={side}
           style={{ position: "absolute", [side]: 12, top: "70%" }}
-          className={`heard-row ${color} text-white font-black px-4 py-2 rounded-xl shadow-lg text-lg uppercase tracking-wide`}
+          className={`heard-row ${color} font-black px-4 py-2 rounded-xl shadow-lg text-lg uppercase tracking-wide`}
           animate={{
             opacity: isSingleSide ? SINGLE_SIDE_OPACITY : BOTH_SIDES_OPACITY[side],
           }}

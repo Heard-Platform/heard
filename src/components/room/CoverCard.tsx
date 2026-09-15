@@ -8,7 +8,7 @@ import { SwipeHint } from "../SwipeHint";
 const startVotingSides = [
   {
     side: "right" as const,
-    color: "bg-gray-700",
+    color: "bg-pink-100 text-gray-800",
     label: "Swipe right",
     sublabel: "to start voting",
   },
