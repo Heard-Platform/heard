@@ -8,15 +8,21 @@ interface NewsletterSection {
   imageLink?: string;
 }
 
+interface NewsletterDebateStatement {
+  statementId: string;
+  label: string;
+}
+
 interface NewsletterDebate {
   title: string;
   question: string;
   flyerId: string;
-  statementId: string;
+  statementId?: string;
   imageUrl?: string;
   imageAlt?: string;
   agreeLabel?: string;
   disagreeLabel?: string;
+  statements?: NewsletterDebateStatement[];
 }
 
 export interface NewsletterParams {
@@ -42,14 +48,24 @@ const renderDebateSection = (debate: NewsletterDebate): string => `
            style="${styles.image}" />
     ` : ""}
     <div style="${styles.debateButtons}">
-      <a href="https://heard.vote/flyer/${debate.flyerId}/${debate.statementId}/agree"
-         style="${styles.buttonAgree}">
-        👍 ${debate.agreeLabel || "Agree"}
-      </a>
-      <a href="https://heard.vote/flyer/${debate.flyerId}/${debate.statementId}/disagree"
-         style="${styles.buttonDisagree}">
-        👎 ${debate.disagreeLabel || "Disagree"}
-      </a>
+      ${debate.statements
+        ? debate.statements.map(statement => `
+          <a href="https://heard.vote/flyer/${debate.flyerId}/${statement.statementId}/agree"
+             style="${styles.buttonAgree}">
+            ${statement.label}
+          </a>
+        `).join("")
+        : `
+          <a href="https://heard.vote/flyer/${debate.flyerId}/${debate.statementId}/agree"
+             style="${styles.buttonAgree}">
+            👍 ${debate.agreeLabel || "Agree"}
+          </a>
+          <a href="https://heard.vote/flyer/${debate.flyerId}/${debate.statementId}/disagree"
+             style="${styles.buttonDisagree}">
+            👎 ${debate.disagreeLabel || "Disagree"}
+          </a>
+        `
+      }
     </div>
   </div>
 `;

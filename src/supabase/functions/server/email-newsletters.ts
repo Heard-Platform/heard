@@ -12,6 +12,11 @@ const YT_HAPPY_HOUR_URL_NL13 = "https://www.youtube.com/shorts/hNqqqJBIkQs";
 const SHORTS_URL = "https://www.youtube.com/shorts";
 const FUND_URL = `${HOMEPAGE_URL}/fund`
 const YT_VLOG_URL_NL23 = "https://www.youtube.com/watch?v=lXqcqcYXlrQ";
+const BOTTLE_POST_URL_NL24 = "https://heard.vote/room/lkxobfvrzqjmtyjy1hw";
+const BREAD_LOAF_FLYER_ID_NL24 = "pc8w6bziklmu4a36qs";
+const BREAD_LOAF_FOLD_STATEMENT_ID_NL24 = "yikrfwk3qzgmu4a36t9";
+const BREAD_LOAF_CLIP_STATEMENT_ID_NL24 = "9l4f98xxa5kmu4a36t9";
+const BREAD_LOAF_KNOT_STATEMENT_ID_NL24 = "ekigl2a5f24mu4a36t9";
 
 const newsletters = [
   getParameterizedNewsletter({
@@ -391,6 +396,35 @@ const newsletters = [
       imageUrl: `${SUPABASE_URL}/nl-23-vlog.png`,
       imageLink: YT_VLOG_URL_NL23,
       imageAlt: "Vlog thumbnail",
+    },
+  }),
+  getParameterizedNewsletter({
+    subject: "New Heard Analysis Features (+ Bread Loaf Debate)",
+    editionNumber: 24,
+    section1: {
+      title: "📊 In case you missed it, Heard supports demographics!",
+      text: "When you start a new post on Heard you can add demographic questions, such as gender, age range, job occupation, or something custom like what neighborhood do you live in? These render as distinct cards mixed in with the statements. Give it a try! We also recently added statement tagging and bridging analysis features!",
+      imageUrl: `${SUPABASE_URL}/nl-24-demographics.jpg`,
+      imageLink: HOMEPAGE_URL,
+      imageAlt: "Demographics feature",
+    },
+    debate: {
+      title: "🍞 How do you store a bread loaf?",
+      question: "Obviously you just fold the bag over on itself and store it that way right? I mean, that's the quickest way to do it! Or do you use the little clip? Don't tell me you tie a knot! PLEASE don't tell me you tie a knot.",
+      imageUrl: `${SUPABASE_URL}/nl-24-bread-loaf.jpg`,
+      flyerId: BREAD_LOAF_FLYER_ID_NL24,
+      statements: [
+        { statementId: BREAD_LOAF_FOLD_STATEMENT_ID_NL24, label: "🌀 Fold the bag" },
+        { statementId: BREAD_LOAF_CLIP_STATEMENT_ID_NL24, label: "📎 Use the clip" },
+        { statementId: BREAD_LOAF_KNOT_STATEMENT_ID_NL24, label: "🪢 Tie a knot" },
+      ],
+    },
+    section2: {
+      title: "🚮 We put up flyers about DC's bottle pickup program",
+      text: `It's been a minute since we put up any flyers, so last weekend my girlfriend and I put up about 30 asking people how they feel about DC's new bottle bill. We've had roughly 20 people vote so far. If you're in DC, let us know what you think! <a href='${BOTTLE_POST_URL_NL24}'>Check out the post here</a>.`,
+      imageUrl: `${SUPABASE_URL}/nl-24-bottle-flyers.png`,
+      imageLink: BOTTLE_POST_URL_NL24,
+      imageAlt: "Flyer collage for DC's bottle pickup program",
     },
   }),
 ]
