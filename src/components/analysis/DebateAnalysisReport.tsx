@@ -9,7 +9,6 @@ import { BridgeStatementsSection } from "./BridgeStatementsSection";
 import { DemographicsPieCharts } from "./DemographicsPieCharts";
 import { AnalysisData, StatementVotes } from "../../types";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
-import { MetricCard } from "./MetricCard";
 import { StatementVotesTable } from "./StatementVotesTable";
 import { ShowNumbersToggle } from "./ShowNumbersToggle";
 import { StatementSpectrumCard } from "./StatementSpectrumCard";
@@ -49,7 +48,6 @@ export function DebateAnalysisReport({
   totalParticipants,
   totalStatements,
   totalVotes,
-  totalPosters,
   topAgreedPosts,
   topDisagreedPosts,
   spiciestPosts,
@@ -120,14 +118,6 @@ export function DebateAnalysisReport({
         {isFeatureEnabled(FeatureFlags.DEMOGRAPHICS) && (
           <DemographicsPieCharts demographics={demographics} />
         )}
-
-        <MetricCard
-          label="Participation"
-          viz="dots"
-          filled={totalPosters}
-          total={totalParticipants}
-          description={`${totalPosters} people posted a response out of ${totalParticipants} total participants`}
-        />
 
         <AskTheData debateId={debateId} />
 
