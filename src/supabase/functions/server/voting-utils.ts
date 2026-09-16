@@ -5,6 +5,7 @@ import { getUserSession } from "./auth-api.tsx";
 import { generateId, getDebateRoom, getStatementById, saveDebateRoom } from "./debate-api.tsx";
 import { recordRoomEngagement } from "./model-utils.ts";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
+import { maybeEmailResponseVotesNotif } from "./email-notifs-utils.ts";
 
 export const countStatementVotes = (statement: Statement): number =>
   statement.agrees + statement.disagrees + statement.passes + statement.superAgrees;
@@ -239,6 +240,15 @@ export const processVote = async (
   console.log(
     `Final vote count for statement ${statementId}: ${voteStats.agrees} agree, ${voteStats.disagrees} disagree, ${voteStats.passes} pass (${updatedVotes.length} total votes)`,
   );
+
+  try {
+    await maybeEmailResponseVotesNotif(
+      updatedStatement,
+      statement.agrees + statement.disagrees,
+    );
+  } catch (error) {
+    console.error("[response-votes-notif] Failed to process notif:", error);
+  }
 
   if (pointsEarned > 0) {
     user.score += pointsEarned;

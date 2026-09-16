@@ -156,7 +156,8 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
       digestType === "admin_daily_digest" ||
       digestType === "welcome" ||
       digestType === "debate_ended" ||
-      digestType === "community_post_invite"
+      digestType === "community_post_invite" ||
+      digestType === "response_votes_notif"
     ) {
       setCountData(null);
       setEligibleUsers([]);
@@ -198,7 +199,8 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
           {digestType !== "admin_daily_digest" &&
             digestType !== "welcome" &&
             digestType !== "debate_ended" &&
-            digestType !== "community_post_invite" && (
+            digestType !== "community_post_invite" &&
+            digestType !== "response_votes_notif" && (
             <div className="flex items-center gap-2">
               <label className="text-sm text-slate-600">
                 Mock Data
@@ -234,6 +236,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
               <option value="welcome">Welcome Email</option>
               <option value="debate_ended">Debate Ended</option>
               <option value="community_post_invite">Community Post Invite</option>
+              <option value="response_votes_notif">Response Votes Notification</option>
             </select>
           </div>
           <Button

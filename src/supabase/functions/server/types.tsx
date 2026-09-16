@@ -323,6 +323,7 @@ export interface SentEmail {
   userId: string;
   sentAt: number;
   emailType: string;
+  roomId?: string;
 }
 
 export enum InternalVarKey {

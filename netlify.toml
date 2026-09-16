@@ -14,3 +14,7 @@
 [[edge_functions]]
   path = "/organizers"
   function = "organizers-og"
+
+[[edge_functions]]
+  path = "/email/click"
+  function = "email-click"

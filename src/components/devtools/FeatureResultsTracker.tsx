@@ -32,6 +32,7 @@ import {
   PieChart,
   RefreshCw,
   Flame,
+  Sparkles,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -384,6 +385,27 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       description: "Taps on the topbar button that starts a new post",
       getValue: (s) => s.newPostButtonTapped,
       getDate: (s) => s.newPostButtonTappedSince,
+    },
+    {
+      icon: Sparkles,
+      iconColor: "text-fuchsia-600",
+      bgColor: "bg-fuchsia-100",
+      title: "Response Votes Notification Emails",
+      description: "Emails sent to statement authors once their response crosses 3 opinionated votes, throttled to 1 per 24h",
+      getValue: (s) => s.responseVotesNotifEmailsSent,
+      getDate: (s) => s.responseVotesNotifEmailsSentSince,
+      renderExtra: (s) => (
+        <div className="flex gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Button Clicks</p>
+            <p className="text-2xl font-bold text-fuchsia-600">{s.responseVotesNotifButtonClicks}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Returned within a week</p>
+            <p className="text-2xl font-bold text-fuchsia-600">{s.responseVotesNotifReturnedWithinWeek}</p>
+          </div>
+        </div>
+      ),
     },
   ]
 
