@@ -138,10 +138,10 @@ describe("sortRoomsByActivity", () => {
     it("a room with any activity, however old, outranks a room that has never been touched", () => {
       const now = Date.now();
       const ancientlyActive = makeRoom(now - 30 * DAY, { lastActivityAt: now - 20 * DAY });
-      const brandNewEmpty = makeRoom(now);
+      const staleEmpty = makeRoom(now - 10 * MIN);
 
-      const result = sortRoomsByActivity([brandNewEmpty, ancientlyActive], now);
-      assertEquals(result, [ancientlyActive, brandNewEmpty]);
+      const result = sortRoomsByActivity([staleEmpty, ancientlyActive], now);
+      assertEquals(result, [ancientlyActive, staleEmpty]);
     });
 
     it("a very new empty room does not outrank an old but active room", () => {
@@ -199,6 +199,35 @@ describe("sortRoomsByActivity", () => {
     });
   });
 
+  describe("Brand-new rooms", () => {
+    it("puts a room created moments ago above a highly-active older room", () => {
+      const now = Date.now();
+      const brandNew = makeRoom(now - 1 * MIN);
+      const heavilyActive = makeRoom(now - 3 * HOUR, { lastActivityAt: now - 1 * MIN, totalVotes: 500 });
+
+      const result = sortRoomsByActivity([heavilyActive, brandNew], now);
+      assertEquals(result, [brandNew, heavilyActive]);
+    });
+
+    it("orders multiple brand-new rooms by most recently created first", () => {
+      const now = Date.now();
+      const justCreated = makeRoom(now - 30_000);
+      const almostFiveMinOld = makeRoom(now - 4 * MIN);
+
+      const result = sortRoomsByActivity([almostFiveMinOld, justCreated], now);
+      assertEquals(result, [justCreated, almostFiveMinOld]);
+    });
+
+    it("does not apply once a room ages past the 5-minute window", () => {
+      const now = Date.now();
+      const justOverFiveMin = makeRoom(now - 5 * MIN - 1);
+      const active = makeRoom(now - 1 * HOUR, { lastActivityAt: now - 1 * MIN, totalVotes: 10 });
+
+      const result = sortRoomsByActivity([justOverFiveMin, active], now);
+      assertEquals(result, [active, justOverFiveMin]);
+    });
+  });
+
 });
 
 describe("sortRoomsForFeed", () => {
@@ -207,7 +236,7 @@ describe("sortRoomsForFeed", () => {
     const joinedRoom = makeRoom(now - 2 * HOUR, {
       subHeard: "politics",
     });
-    const betterRoom = makeRoom(now - 1 * MIN, {
+    const betterRoom = makeRoom(now - 6 * MIN, {
       subHeard: "sports",
       lastActivityAt: now - 1 * MIN,
     });
@@ -271,7 +300,7 @@ describe("sortRoomsForFeed", () => {
     const olderJoined = makeRoom(now - 2 * HOUR, {
       subHeard: "politics",
     });
-    const newerOther = makeRoom(now - 1 * MIN, {
+    const newerOther = makeRoom(now - 6 * MIN, {
       subHeard: "sports",
       lastActivityAt: now - 1 * MIN,
     });
@@ -284,6 +313,41 @@ describe("sortRoomsForFeed", () => {
 
     assertEquals(result[0], newerOther);
     assertEquals(result[1], olderJoined);
+  });
+
+  it("does not let a brand-new non-joined room jump ahead of joined rooms", () => {
+    const now = Date.now();
+    const brandNewOther = makeRoom(now - 1 * MIN, { subHeard: "tech" });
+    const joinedDormant = makeRoom(now - 2 * HOUR, { subHeard: "politics" });
+
+    const result = sortRoomsForFeed(
+      [brandNewOther, joinedDormant],
+      new Set(["politics"]),
+      now,
+    );
+
+    assertEquals(result, [joinedDormant, brandNewOther]);
+  });
+
+  it("bubbles a brand-new joined room to the top of the joined group only", () => {
+    const now = Date.now();
+    const brandNewJoined = makeRoom(now - 1 * MIN, { subHeard: "politics" });
+    const joinedActive = makeRoom(now - 3 * HOUR, {
+      subHeard: "politics",
+      lastActivityAt: now - 1 * MIN,
+      totalVotes: 500,
+    });
+    const otherRoom = makeRoom(now - 10 * MIN, { subHeard: "sports" });
+
+    const result = sortRoomsForFeed(
+      [otherRoom, joinedActive, brandNewJoined],
+      new Set(["politics"]),
+      now,
+    );
+
+    assertEquals(result[0], brandNewJoined);
+    assertEquals(result[1], joinedActive);
+    assertEquals(result[2], otherRoom);
   });
 });
 

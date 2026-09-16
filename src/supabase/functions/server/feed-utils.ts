@@ -23,14 +23,24 @@ export const scoreRoom = (
   );
 };
 
+const BRAND_NEW_WINDOW_MS = 5 * ONE_MIN_MS;
+
 export const sortRoomsByActivity = (
   rooms: DebateRoom[],
   now: number = Date.now(),
-): DebateRoom[] =>
-  rooms
-    .map((room) => ({ room, score: scoreRoom(room, now) }))
-    .sort((a, b) => b.score - a.score)
-    .map(({ room }) => room);
+): DebateRoom[] => {
+  const [brandNew, rest] = _.partition(
+    rooms,
+    (r: DebateRoom) => now - r.createdAt < BRAND_NEW_WINDOW_MS,
+  );
+  return [
+    ..._.orderBy(brandNew, "createdAt", "desc"),
+    ...rest
+      .map((room) => ({ room, score: scoreRoom(room, now) }))
+      .sort((a, b) => b.score - a.score)
+      .map(({ room }) => room),
+  ];
+};
 
 export const filterFeedRooms = (
   rooms: DebateRoom[],
