@@ -378,11 +378,21 @@ export const getStatement = async (statementId: string): Promise<Statement | nul
 export const filterVisibleStatements = (statements: Statement[]): Statement[] =>
   statements.filter((s) => !s.isHidden);
 
+const hashId = (id: string): number => {
+  let hash = 5381;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 33) ^ id.charCodeAt(i);
+  }
+  return hash >>> 0;
+};
+
 export const getStatementsForRoom = async (
   roomId: string,
 ): Promise<Statement[]> => {
   const statements = await getByPrefixParsed<Statement>(`statement:${roomId}:`);
-  return filterVisibleStatements(statements);
+  return filterVisibleStatements(statements).sort(
+    (a, b) => hashId(a.id) - hashId(b.id),
+  );
 };
 
 export const getStatementsForRoomIncludingHidden = async (
