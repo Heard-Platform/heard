@@ -656,6 +656,10 @@ export interface FeatureResults {
   voteSwingShareClickedSince: number;
   newPostButtonTapped: number;
   newPostButtonTappedSince: number;
+  responseVotesNotifEmailsSent: number;
+  responseVotesNotifEmailsSentSince: number;
+  responseVotesNotifButtonClicks: number;
+  responseVotesNotifReturnedWithinWeek: number;
 }
 
 export interface GGWashImportResult {

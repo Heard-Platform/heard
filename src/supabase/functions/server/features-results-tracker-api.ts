@@ -2,6 +2,7 @@ import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers, getAllAskTheDataRecords } from "./kv-utils.tsx";
 import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, getEventsOfType, getCommunityTeaserEvents } from "./model-utils.ts";
 import { countRecords, selectAll } from "./db-utils.ts";
+import { getResponseVotesNotifStats } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
 
@@ -227,6 +228,12 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const newPostButtonTapped = (await getEventsOfType("new_post_button_tapped")).length;
     const newPostButtonTappedSince = new Date("2026-09-14").getTime();
 
+    const responseVotesNotifStats = await getResponseVotesNotifStats();
+    const responseVotesNotifEmailsSent = responseVotesNotifStats.emailsSent;
+    const responseVotesNotifEmailsSentSince = new Date("2026-09-16").getTime();
+    const responseVotesNotifButtonClicks = responseVotesNotifStats.buttonClicks;
+    const responseVotesNotifReturnedWithinWeek = responseVotesNotifStats.returnedWithinWeek;
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -309,6 +316,10 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       voteSwingShareClickedSince,
       newPostButtonTapped,
       newPostButtonTappedSince,
+      responseVotesNotifEmailsSent,
+      responseVotesNotifEmailsSentSince,
+      responseVotesNotifButtonClicks,
+      responseVotesNotifReturnedWithinWeek,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);
