@@ -175,6 +175,15 @@ export function RoomCardMenu({
           <Users className="w-4 h-4 mr-2" />
           {participantCount} {participantCount === 1 ? 'person' : 'people'}
         </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={(e: React.MouseEvent) => {
+            e.stopPropagation();
+            onOpenDisplayMode();
+          }}
+        >
+          <Presentation className="w-4 h-4 mr-2" />
+          Open Display Mode
+        </DropdownMenuItem>
         {(isHost || isDeveloper) && (
           <>
             <DropdownMenuSeparator />
@@ -233,15 +242,6 @@ export function RoomCardMenu({
             >
               <PieChart className="w-4 h-4 mr-2" />
               Room Analytics
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                onOpenDisplayMode();
-              }}
-            >
-              <Presentation className="w-4 h-4 mr-2" />
-              Open Display Mode
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={async (e: React.MouseEvent) => {
