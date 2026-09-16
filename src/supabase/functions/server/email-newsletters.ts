@@ -410,7 +410,7 @@ const newsletters = [
     },
     debate: {
       title: "🍞 How do you store a bread loaf?",
-      question: "Obviously you just fold the bag over on itself and store it that way right? I mean, that's the quickest way to do it! Or do you use the little clip? Don't tell me you tie a knot! PLEASE don't tell me you tie a knot.",
+      question: "Obviously you just fold the bag over on itself, right? I mean, that's the quickest way to do it! Or do you use the little clip? Don't tell me you tie a knot! PLEASE don't tell me you tie a knot.",
       imageUrl: `${SUPABASE_URL}/nl-24-bread-loaf.jpg`,
       flyerId: BREAD_LOAF_FLYER_ID_NL24,
       statements: [
