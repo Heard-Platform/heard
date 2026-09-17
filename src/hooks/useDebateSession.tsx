@@ -982,6 +982,7 @@ export function DebateSessionProvider(
       if (result) {
         api.trackEvent("session_expired_recovered");
       } else {
+        console.error("Session expired and anonymous re-auth failed; couldn't track session_expired_recovered (no session to authenticate the call)");
         setUser(null);
       }
     }

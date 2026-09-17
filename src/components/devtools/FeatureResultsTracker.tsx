@@ -391,7 +391,7 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       iconColor: "text-blue-600",
       bgColor: "bg-blue-100",
       title: "Expired Sessions Recovered",
-      description: "Times a returning user's stale/expired session was silently replaced with a fresh anonymous one",
+      description: "Times a returning user's stale/expired session was detected and silently replaced with a fresh anonymous one",
       getValue: (s) => s.sessionExpiredRecovered,
       getDate: (s) => s.sessionExpiredRecoveredSince,
     },
