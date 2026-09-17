@@ -976,9 +976,15 @@ export function DebateSessionProvider(
         console.error("Failed to track activity:", err);
       });
     } else if (response.error === "SESSION_EXPIRED") {
-      console.warn("Session expired, clearing local data");
+      console.warn("Session expired, creating a new anonymous session");
       clearSessionId();
-      setUser(null);
+      const result = await createAnonymousUser();
+      if (result) {
+        api.trackEvent("session_expired_recovered");
+      } else {
+        console.error("Session expired and anonymous re-auth failed; couldn't track session_expired_recovered (no session to authenticate the call)");
+        setUser(null);
+      }
     }
   };
 

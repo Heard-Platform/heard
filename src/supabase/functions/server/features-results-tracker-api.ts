@@ -228,6 +228,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const newPostButtonTapped = (await getEventsOfType("new_post_button_tapped")).length;
     const newPostButtonTappedSince = new Date("2026-09-14").getTime();
 
+    const sessionExpiredRecovered = (await getEventsOfType("session_expired_recovered")).length;
+    const sessionExpiredRecoveredSince = new Date("2026-09-17").getTime();
+
     const responseVotesNotifStats = await getResponseVotesNotifStats();
     const responseVotesNotifEmailsSent = responseVotesNotifStats.emailsSent;
     const responseVotesNotifEmailsSentSince = new Date("2026-09-16").getTime();
@@ -320,6 +323,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       responseVotesNotifEmailsSentSince,
       responseVotesNotifButtonClicks,
       responseVotesNotifReturnedWithinWeek,
+      sessionExpiredRecovered,
+      sessionExpiredRecoveredSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);

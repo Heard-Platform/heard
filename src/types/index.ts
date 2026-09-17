@@ -661,6 +661,8 @@ export interface FeatureResults {
   responseVotesNotifEmailsSentSince: number;
   responseVotesNotifButtonClicks: number;
   responseVotesNotifReturnedWithinWeek: number;
+  sessionExpiredRecovered: number;
+  sessionExpiredRecoveredSince: number;
 }
 
 export interface GGWashImportResult {
