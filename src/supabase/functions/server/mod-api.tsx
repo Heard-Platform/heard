@@ -265,8 +265,8 @@ app.post(
         throw new Error("Room not found");
       }
 
-      if (isRoomEnded(room)) {
-        throw new Error("Completed rooms can't be edited. Restart the room first.");
+      if (isRoomEnded(room) || room.restartedAt) {
+        throw new Error("This room has already completed and can no longer be edited.");
       }
 
       if (topic !== undefined) room.topic = topic;

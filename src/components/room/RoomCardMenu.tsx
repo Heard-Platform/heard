@@ -221,7 +221,7 @@ export function RoomCardMenu({
                 </DropdownMenuItem>
               </>
             )}
-            {!isCompleted && (
+            {!isCompleted && !room.restartedAt && (
               <DropdownMenuItem
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
