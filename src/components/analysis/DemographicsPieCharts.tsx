@@ -54,7 +54,7 @@ export function DemographicsPieCharts({ demographics }: DemographicsPieChartsPro
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8">
         {questions.map(([question, options]) => {
           const total = Object.values(options).reduce((sum, n) => sum + n, 0);
           const data = Object.entries(options)
