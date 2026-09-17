@@ -921,6 +921,16 @@ class ApiClient extends BaseApiClient {
     );
   }
 
+  async restartRoom(roomId: string, endTime: number) {
+    return this.request<{ room: DebateRoom }>(
+      `/room/${roomId}/mod/restart`,
+      {
+        method: "POST",
+        body: JSON.stringify({ endTime }),
+      },
+    );
+  }
+
   async createCohostInvite(roomId: string) {
     return this.request<{ token: string }>(
       `/room/${roomId}/mod/cohost-invite`,

@@ -23,6 +23,7 @@ import { RoomCardMenu } from "./room/RoomCardMenu";
 import { ShareButton } from "./ShareButton";
 import { HideAndMergeModal } from "./room/mod/HideAndMergeModal";
 import { EditRoomModal } from "./room/mod/EditRoomModal";
+import { RestartRoomModal } from "./room/mod/RestartRoomModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
 import { DisplayModeScreen } from "./DisplayModeScreen";
 import { useDebateSession } from "../hooks/useDebateSession";
@@ -92,6 +93,7 @@ export function RoomCard({
   const [showDeduplication, setShowDeduplication] = useState(false);
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
   const [showEditRoom, setShowEditRoom] = useState(false);
+  const [showRestartRoom, setShowRestartRoom] = useState(false);
   const [showDisplayMode, setShowDisplayMode] = useState(false);
   const [showVotesDrawer, setShowVotesDrawer] = useState(false);
   const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
@@ -459,6 +461,7 @@ export function RoomCard({
               onOpenVoteMatrix={() => setShowVoteMatrix(true)}
               onOpenDisplayMode={() => setShowDisplayMode(true)}
               onOpenVotesDrawer={() => setShowVotesDrawer(true)}
+              onOpenRestartRoom={() => setShowRestartRoom(true)}
             />
           </div>
 
@@ -491,6 +494,13 @@ export function RoomCard({
             (s) => s.voters && Object.keys(s.voters).length > 0,
           )}
           onClose={() => setShowEditRoom(false)}
+        />
+      )}
+
+      {showRestartRoom && (
+        <RestartRoomModal
+          room={room}
+          onClose={() => setShowRestartRoom(false)}
         />
       )}
 

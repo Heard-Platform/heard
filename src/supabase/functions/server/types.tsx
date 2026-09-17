@@ -268,6 +268,7 @@ export interface DebateRoom {
   responsesPaused?: boolean | null;
   responsesPausedAt?: number | null;
   responsesPausedBy?: string | null;
+  restartedAt?: number;
 }
 
 export interface RoomView {

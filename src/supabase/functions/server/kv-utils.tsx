@@ -560,6 +560,10 @@ export const saveDebateEndedEmailSent = async (roomId: string): Promise<void> =>
   await kv.set(`debate-end-email-sent:${roomId}`, "true");
 };
 
+export const clearDebateEndedEmailSent = async (roomId: string): Promise<void> => {
+  await kv.del(`debate-end-email-sent:${roomId}`);
+};
+
 // Newsletter sent tracking
 
 export const newsletterSentKeyFn = (edition: number) =>

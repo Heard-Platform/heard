@@ -18,6 +18,7 @@ import {
   Presentation,
   PieChart,
   ListChecks,
+  RotateCcw,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -50,6 +51,7 @@ interface RoomCardMenuProps {
   onOpenVoteMatrix: () => void;
   onOpenDisplayMode: () => void;
   onOpenVotesDrawer: () => void;
+  onOpenRestartRoom: () => void;
 }
 
 export function RoomCardMenu({
@@ -67,6 +69,7 @@ export function RoomCardMenu({
   onOpenVoteMatrix,
   onOpenDisplayMode,
   onOpenVotesDrawer,
+  onOpenRestartRoom,
 }: RoomCardMenuProps) {
   const { setRoomInactive, setResponsesPaused, createCohostInvite, clearRoomCohosts } = useDebateSession();
   const [cohostCount, setCohostCount] = useState(room.cohostIds?.length ?? 0);
@@ -135,6 +138,7 @@ export function RoomCardMenu({
               const label = days > 0 ? `${days}d` : hours > 0 ? `${hours}h` : `${minutes}m`;
               return ` · ${label} left`;
             })()}
+            {room.restartedAt && ` · restarted ${timeAgoShort(room.restartedAt)} ago`}
           </span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -190,6 +194,17 @@ export function RoomCardMenu({
             <DropdownMenuLabel className="text-xs text-muted-foreground px-2 py-1">
               Host Tools
             </DropdownMenuLabel>
+            {isCompleted && isRealtime && (
+              <DropdownMenuItem
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  onOpenRestartRoom();
+                }}
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Restart room
+              </DropdownMenuItem>
+            )}
             {isTrueHost && (
               <>
                 <DropdownMenuItem onClick={handleInviteCohost}>
@@ -206,15 +221,17 @@ export function RoomCardMenu({
                 </DropdownMenuItem>
               </>
             )}
-            <DropdownMenuItem
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                onOpenEditRoom();
-              }}
-            >
-              <Pencil className="w-4 h-4 mr-2" />
-              Edit post
-            </DropdownMenuItem>
+            {!isCompleted && !room.restartedAt && (
+              <DropdownMenuItem
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  onOpenEditRoom();
+                }}
+              >
+                <Pencil className="w-4 h-4 mr-2" />
+                Edit post
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
