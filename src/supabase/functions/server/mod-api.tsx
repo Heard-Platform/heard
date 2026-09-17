@@ -1,6 +1,6 @@
 import { Hono } from "npm:hono";
 import { deleteRecord, insert } from "./db-utils.ts";
-import { validateTrueHost } from "./auth-utils.ts";
+import { validateHost, validateTrueHost } from "./auth-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import {
   addStatementTagLink,
@@ -18,6 +18,7 @@ import {
   saveDebateRoom,
 } from "./debate-api.tsx";
 import {
+  clearDebateEndedEmailSent,
   getClusterAssignmentsBatch,
   getStatementsForRoomIncludingHidden,
   getUser,
@@ -25,6 +26,7 @@ import {
   saveStatement,
 } from "./kv-utils.tsx";
 import { markStatementHidden, markStatementVisible } from "./moderation-utils.ts";
+import { isRoomEnded } from "./room-utils.ts";
 import { ONE_DAY_MS } from "./time-utils.ts";
 import { DebateRoom } from "./types.tsx";
 
@@ -240,6 +242,7 @@ app.delete(
 
 app.post(
   `${PREFIX}/edit`,
+  validateHost,
   defineRoute(
     {
       roomId: { type: "string", required: true },
@@ -262,6 +265,10 @@ app.post(
         throw new Error("Room not found");
       }
 
+      if (isRoomEnded(room)) {
+        throw new Error("Completed rooms can't be edited. Restart the room first.");
+      }
+
       if (topic !== undefined) room.topic = topic;
       if (description !== undefined) room.description = description;
       if (imageUrl !== undefined) room.imageUrl = imageUrl;
@@ -275,7 +282,41 @@ app.post(
 );
 
 app.post(
+  `${PREFIX}/restart`,
+  validateHost,
+  defineRoute(
+    {
+      roomId: { type: "string", required: true },
+      endTime: { type: "number", required: true },
+    },
+    async ({ roomId, endTime }: { roomId: string; endTime: number }) => {
+      const room = await getDebateRoom(roomId);
+      if (!room) {
+        throw new Error("Room not found");
+      }
+
+      if (!isRoomEnded(room)) {
+        throw new Error("Room is not completed");
+      }
+
+      if (endTime <= Date.now()) {
+        throw new Error("New end time must be in the future");
+      }
+
+      room.endTime = endTime;
+      room.restartedAt = Date.now();
+      await clearDebateEndedEmailSent(roomId);
+
+      await saveDebateRoom(room);
+      return { room };
+    },
+    "Failed to restart room",
+  ),
+);
+
+app.post(
   `${PREFIX}/responses-paused`,
+  validateHost,
   defineRoute(
     {
       roomId: { type: "string", required: true },

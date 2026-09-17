@@ -101,6 +101,10 @@ interface DebateSessionContextType {
       endTime?: number;
     },
   ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
+  restartRoom: (
+    roomId: string,
+    endTime: number,
+  ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
   setRoomInactive: (roomId: string) => Promise<boolean>;
   roomStatements: Record<string, Statement[]>;
   getRoomStatements: (roomId: string) => Promise<Statement[]>;
@@ -716,6 +720,12 @@ export function DebateSessionProvider(
     [callRoomMutation],
   );
 
+  const restartRoom = useCallback(
+    (roomId: string, endTime: number) =>
+      callRoomMutation(() => api.restartRoom(roomId, endTime)),
+    [callRoomMutation],
+  );
+
   // Mark room as inactive (dev tool)
   const setRoomInactive = useCallback(
     async (roomId: string) => {
@@ -1022,6 +1032,7 @@ export function DebateSessionProvider(
     createRealtimeTestRoom,
     createScalabilityTest,
     updateRoom,
+    restartRoom,
     setRoomInactive,
     roomStatements,
     getRoomStatements,
@@ -1103,6 +1114,10 @@ export function DebateSessionProvider(
       },
       updateRoom: async () => {
         console.log("[Showcase] updateRoom called");
+        return null;
+      },
+      restartRoom: async () => {
+        console.log("[Showcase] restartRoom called");
         return null;
       },
       setRoomInactive: async () => {
