@@ -32,8 +32,10 @@ import { LinkedText } from "./widgets/LinkedText";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { useTranslation, Trans } from "react-i18next";
 import { getUniqueVoterCount } from "../utils/room";
+import { getRoomVoteCount } from "../utils/votes";
 import { pluralizePerson } from "../utils/text";
 import { FeedCardMotion } from "./FeedCardMotion";
+import { RollingNumber } from "./widgets/RollingNumber";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -96,6 +98,7 @@ export function RoomCard({
   const [showRestartRoom, setShowRestartRoom] = useState(false);
   const [showDisplayMode, setShowDisplayMode] = useState(false);
   const [showVotesDrawer, setShowVotesDrawer] = useState(false);
+  const [pendingVoteBump, setPendingVoteBump] = useState(0);
   const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
 
   const isTrueHost = user.id === room.hostId;
@@ -192,6 +195,18 @@ export function RoomCard({
         console.error("Error voting on statement:", error);
       }
       throw error;
+    }
+  };
+
+  const handleSwipeVote = async (
+    statement: Statement,
+    voteType: VoteType,
+  ) => {
+    setPendingVoteBump((n) => n + 1);
+    try {
+      await handleVote(statement, voteType);
+    } finally {
+      setPendingVoteBump((n) => n - 1);
     }
   };
 
@@ -322,14 +337,21 @@ export function RoomCard({
 
                 {statements.length > 0 && (() => {
                   const voterCount = getUniqueVoterCount(statements);
+                  const voteCount = getRoomVoteCount(statements) + pendingVoteBump;
                   return (
                     <p className="text-left text-foreground mt-1">
-                      <strong>{voterCount.toLocaleString()}</strong>{" "}
-                      {pluralizePerson(voterCount)} voted on{" "}
                       <strong>
-                        {statements.length.toLocaleString()}
+                        <RollingNumber value={voterCount} />
                       </strong>{" "}
-                      responses
+                      {pluralizePerson(voterCount)} cast{" "}
+                      <strong>
+                        <RollingNumber value={voteCount} />
+                      </strong>{" "}
+                      {voteCount === 1 ? "vote" : "votes"} on{" "}
+                      <strong>
+                        <RollingNumber value={statements.length} />
+                      </strong>{" "}
+                      statements
                     </p>
                   );
                 })()}
@@ -393,7 +415,7 @@ export function RoomCard({
                     answeredQuestionIds={answeredQuestionIds}
                     targetStatementId={targetStatementId}
                     isActive={isActive}
-                    onVote={handleVote}
+                    onVote={handleSwipeVote}
                     onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
                     onCertifyDone={() => setCertifyCardDismissed(true)}
