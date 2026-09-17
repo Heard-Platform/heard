@@ -1,18 +1,25 @@
 import { RoomScroller } from "../components/RoomScroller";
 import type { Statement, UserPresence, VoteType } from "../types";
 import { useState, useCallback, useEffect } from "react";
-import { mockStatements, mockRooms } from "./mockData";
+import { mockStatements, mockRooms, mockUser } from "./mockData";
 import { AvatarAnimal } from "../utils/constants/avatars";
 import { StoryContainer } from "./StoryContainer";
 import { RoomAlertsProvider } from "../contexts/RoomAlertsContext";
+import { DebateSessionProvider } from "../hooks/useDebateSession";
 
 export function DebateScrollerStory() {
-  const handleSubmitStatement = async (roomId: string, text: string) => {
+  const handleSubmitStatement = async (
+    roomId: string,
+    text: string,
+  ) => {
     console.log("Submit statement:", roomId, text);
     return { success: true };
   };
 
-  const handleVoteOnStatement = async (statement: Statement, voteType: VoteType) => {
+  const handleVoteOnStatement = async (
+    statement: Statement,
+    voteType: VoteType,
+  ) => {
     console.log("Vote on statement:", statement.id, voteType);
     return { success: true };
   };
@@ -90,9 +97,7 @@ export function DebateScrollerStory() {
         const shouldAddRemoveUser = Math.random() < 0.2;
 
         if (shouldAddRemoveUser) {
-          const existingUsers = new Set(
-            prev.map((p) => p.userId),
-          );
+          const existingUsers = new Set(prev.map((p) => p.userId));
           const allPossibleUsers = [
             "user2",
             "user3",
@@ -118,11 +123,16 @@ export function DebateScrollerStory() {
           } else if (availableUsers.length > 0) {
             const newUser =
               availableUsers[
-                Math.floor(
-                  Math.random() * availableUsers.length,
-                )
+                Math.floor(Math.random() * availableUsers.length)
               ];
-            const avatars: AvatarAnimal[] = ["monkey", "koala", "rhino", "elephant", "sloth", "panda"];
+            const avatars: AvatarAnimal[] = [
+              "monkey",
+              "koala",
+              "rhino",
+              "elephant",
+              "sloth",
+              "panda",
+            ];
             return [
               ...prev,
               {
@@ -131,15 +141,14 @@ export function DebateScrollerStory() {
                   Math.random() * mockRooms.length,
                 ),
                 lastUpdated: Date.now(),
-                avatarAnimal: avatars[Math.floor(Math.random() * avatars.length)],
+                avatarAnimal:
+                  avatars[Math.floor(Math.random() * avatars.length)],
               },
             ];
           }
         }
 
-        const randomIndex = Math.floor(
-          Math.random() * prev.length,
-        );
+        const randomIndex = Math.floor(Math.random() * prev.length);
         const randomUser = prev[randomIndex];
         const newRoomIndex = Math.floor(
           Math.random() * mockRooms.length,
@@ -163,86 +172,90 @@ export function DebateScrollerStory() {
   }, [mockRooms.length]);
 
   return (
-    <RoomAlertsProvider>
-      <StoryContainer
-        title="Debate Scroller"
-        variants={[
-          {
-            id: "default",
-            label: "Default",
-            children: (
-              <RoomScroller
-                user={{} as any}
-                rooms={mockRooms}
-                events={[]}
-                roomStatements={mockStatements}
-                presences={presences}
-                loading={false}
-                currentSubHeard="food"
-                isDeveloper={true}
-                onCreateRoom={() => {}}
-                onSubmitStatement={handleSubmitStatement}
-                onVoteOnStatement={handleVoteOnStatement}
-                onUpdatePresence={handleUpdatePresence}
-                onDiscussStatement={() => {}}
-                onShowAccountSetupModal={() => {}}
-                onOpenExplorer={() => {}}
-                onOpenEvent={() => {}}
-              />
-            ),
-          },
-          {
-            id: "in-progress-results",
-            label: "In-progress results",
-            children: (
-              <RoomScroller
-                user={{ id: "user1" } as any}
-                rooms={mockRooms}
-                events={[]}
-                roomStatements={Object.fromEntries(
-                  Object.entries(mockStatements).map(
-                    ([roomId, stmts]) => [
-                      roomId,
-                      stmts.map((s) => ({
-                        ...s,
-                        voters: {
-                          ...s.voters,
-                          user1: "agree" as const,
-                        },
-                      })),
-                    ],
-                  ),
-                )}
-                presences={[
-                  {
-                    userId: "user2",
-                    currentRoomIndex: 0,
-                    lastUpdated: Date.now(),
-                    avatarAnimal: "koala",
-                  },
-                  {
-                    userId: "user3",
-                    currentRoomIndex: 1,
-                    lastUpdated: Date.now(),
-                    avatarAnimal: "rhino",
-                  },
-                ]}
-                currentSubHeard="food"
-                isDeveloper={true}
-                loading={false}
-                onCreateRoom={() => {}}
-                onSubmitStatement={handleSubmitStatement}
-                onVoteOnStatement={handleVoteOnStatement}
-                onUpdatePresence={() => {}}
-                onDiscussStatement={() => {}}
-                onShowAccountSetupModal={() => {}}
-                onOpenExplorer={() => {}}
-                onOpenEvent={() => {}}
-              />
-            ),
-          },
-        ]}
-      />
-    </RoomAlertsProvider>
+    <DebateSessionProvider
+      showcaseOverrides={{ safelyGetUser: () => mockUser }}
+    >
+      <RoomAlertsProvider>
+        <StoryContainer
+          title="Debate Scroller"
+          variants={[
+            {
+              id: "default",
+              label: "Default",
+              children: (
+                <RoomScroller
+                  user={{} as any}
+                  rooms={mockRooms}
+                  events={[]}
+                  roomStatements={mockStatements}
+                  presences={presences}
+                  loading={false}
+                  currentSubHeard="food"
+                  isDeveloper={true}
+                  onCreateRoom={() => {}}
+                  onSubmitStatement={handleSubmitStatement}
+                  onVoteOnStatement={handleVoteOnStatement}
+                  onUpdatePresence={handleUpdatePresence}
+                  onDiscussStatement={() => {}}
+                  onShowAccountSetupModal={() => {}}
+                  onOpenExplorer={() => {}}
+                  onOpenEvent={() => {}}
+                />
+              ),
+            },
+            {
+              id: "in-progress-results",
+              label: "In-progress results",
+              children: (
+                <RoomScroller
+                  user={{ id: "user1" } as any}
+                  rooms={mockRooms}
+                  events={[]}
+                  roomStatements={Object.fromEntries(
+                    Object.entries(mockStatements).map(
+                      ([roomId, stmts]) => [
+                        roomId,
+                        stmts.map((s) => ({
+                          ...s,
+                          voters: {
+                            ...s.voters,
+                            user1: "agree" as const,
+                          },
+                        })),
+                      ],
+                    ),
+                  )}
+                  presences={[
+                    {
+                      userId: "user2",
+                      currentRoomIndex: 0,
+                      lastUpdated: Date.now(),
+                      avatarAnimal: "koala",
+                    },
+                    {
+                      userId: "user3",
+                      currentRoomIndex: 1,
+                      lastUpdated: Date.now(),
+                      avatarAnimal: "rhino",
+                    },
+                  ]}
+                  currentSubHeard="food"
+                  isDeveloper={true}
+                  loading={false}
+                  onCreateRoom={() => {}}
+                  onSubmitStatement={handleSubmitStatement}
+                  onVoteOnStatement={handleVoteOnStatement}
+                  onUpdatePresence={() => {}}
+                  onDiscussStatement={() => {}}
+                  onShowAccountSetupModal={() => {}}
+                  onOpenExplorer={() => {}}
+                  onOpenEvent={() => {}}
+                />
+              ),
+            },
+          ]}
+        />
+      </RoomAlertsProvider>
+    </DebateSessionProvider>
   );
 }
