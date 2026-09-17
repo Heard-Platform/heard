@@ -12,6 +12,7 @@ interface FeedCardMotionProps {
 }
 
 export function FeedCardMotion({ isActive, children }: FeedCardMotionProps) {
+  const inert = (isActive ? undefined : "") as unknown as boolean | undefined;
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
@@ -22,6 +23,7 @@ export function FeedCardMotion({ isActive, children }: FeedCardMotionProps) {
       transition={{ duration: FEED_CARD_TRANSITION_DURATION }}
       className="w-full"
       style={{ maxWidth: "var(--room-card-max-width)" }}
+      inert={inert}
     >
       {children}
     </motion.div>
