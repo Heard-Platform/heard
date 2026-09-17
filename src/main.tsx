@@ -14,12 +14,21 @@ if (window.location.pathname === "/app-bypass") {
 } else {
   const environment = import.meta.env.VITE_HEARD_ENV ?? import.meta.env.MODE;
 
+  const genericFetchErrorPattern = /Load failed|Failed to fetch|NetworkError when attempting to fetch resource/;
+
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
     environment,
     enabled: import.meta.env.PROD,
     tracesSampleRate: 1.0,
     integrations: [Sentry.captureConsoleIntegration({ levels: ["error"] })],
+    beforeSend(event) {
+      const message = event.exception?.values?.[0]?.value;
+      if (message && genericFetchErrorPattern.test(message)) {
+        event.fingerprint = ["generic-fetch-network-error"];
+      }
+      return event;
+    },
   });
 
   const posthogEnabled =
