@@ -87,6 +87,7 @@ interface DebateSessionContextType {
   ) => Promise<ApiResponse | null>;
   loadActiveRooms: (subHeard?: string, targetRoomId?: string) => Promise<DebateRoom[]>;
   resetSession: () => void;
+  logout: () => Promise<void>;
   createSeedData: () => Promise<any>;
   createTestRoom: () => Promise<any>;
   createRantTestRoom: () => Promise<any>;
@@ -958,6 +959,11 @@ export function DebateSessionProvider(
     clearSessionId();
   }, []);
 
+  const logout = useCallback(async () => {
+    await api.logout();
+    resetSession();
+  }, [resetSession]);
+
   useEffect(() => {
     if (user) {
       setCachedUser(user);
@@ -1032,6 +1038,7 @@ export function DebateSessionProvider(
     submitFlyerEmail,
     loadActiveRooms,
     resetSession,
+    logout,
     createSeedData,
     createTestRoom,
     createRantTestRoom,
@@ -1103,6 +1110,9 @@ export function DebateSessionProvider(
       anonAddEmailAndLogin: async (_email: string) => {
         console.log("[Showcase] anonAddEmailAndLogin called");
         return { success: true };
+      },
+      logout: async () => {
+        console.log("[Showcase] logout called");
       },
       updateAvatar: async (avatarAnimal: AvatarAnimal) => {
         console.log("[Showcase] updateAvatar called");

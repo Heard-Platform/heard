@@ -84,6 +84,7 @@ export interface Session {
   userId: string;
   createdAt: number;
   expiresAt: number;
+  expiryBypassedAt?: number;
 }
 
 export interface UserPresence {

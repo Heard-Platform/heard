@@ -1,7 +1,7 @@
 import { Context, Hono } from "npm:hono";
 import { defineRoute } from "./route-wrapper.tsx";
 import { VALID_AVATARS } from "./constants.tsx";
-import { getUser, saveUser } from "./kv-utils.tsx";
+import { deleteSession, getUser, saveUser } from "./kv-utils.tsx";
 import { AvatarAnimal, UserPresence } from "./types.tsx";
 import { sanitizeUser } from "./user-utils.ts";
 import { selectAll, upsert } from "./db-utils.ts";
@@ -41,6 +41,21 @@ app.post(
       return { user: sanitizeUser(user) };
     },
     "Failed to update avatar",
+  ),
+);
+
+app.post(
+  "/make-server-f1a393b4/account/logout",
+  defineRoute(
+    {},
+    async (_params, c: Context) => {
+      const sessionId = c.req.header("X-Session-Id");
+      if (sessionId) {
+        await deleteSession(sessionId);
+      }
+      return {};
+    },
+    "Failed to log out",
   ),
 );
 

@@ -396,6 +396,21 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getDate: (s) => s.sessionExpiredRecoveredSince,
     },
     {
+      icon: Shield,
+      iconColor: "text-red-600",
+      bgColor: "bg-red-100",
+      title: "Session Expiry Bypassed",
+      description: "Non-developer sessions revived after going 30+ days unused, since expiry is only enforced for developers (once per session)",
+      getValue: (s) => s.sessionExpiryBypassed,
+      getDate: (s) => s.sessionExpiryBypassedSince,
+      renderExtra: (s) => (
+        <div>
+          <p className="text-xs text-muted-foreground">Unique users</p>
+          <p className="text-2xl font-bold text-red-600">{s.sessionExpiryBypassedUsers}</p>
+        </div>
+      ),
+    },
+    {
       icon: Sparkles,
       iconColor: "text-fuchsia-600",
       bgColor: "bg-fuchsia-100",
