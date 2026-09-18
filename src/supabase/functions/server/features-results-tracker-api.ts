@@ -231,6 +231,10 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const sessionExpiredRecovered = (await getEventsOfType("session_expired_recovered")).length;
     const sessionExpiredRecoveredSince = new Date("2026-09-17").getTime();
 
+    const sessionExpiryBypassed = (await getEventsOfType("session_expiry_bypassed")).length;
+    const sessionExpiryBypassedUsers = (await getUniqueUserIdsForEvent("session_expiry_bypassed")).size;
+    const sessionExpiryBypassedSince = new Date("2026-09-18").getTime();
+
     const responseVotesNotifStats = await getResponseVotesNotifStats();
     const responseVotesNotifEmailsSent = responseVotesNotifStats.emailsSent;
     const responseVotesNotifEmailsSentSince = new Date("2026-09-16").getTime();
@@ -325,6 +329,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       responseVotesNotifReturnedWithinWeek,
       sessionExpiredRecovered,
       sessionExpiredRecoveredSince,
+      sessionExpiryBypassed,
+      sessionExpiryBypassedUsers,
+      sessionExpiryBypassedSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);

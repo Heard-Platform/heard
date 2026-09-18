@@ -279,6 +279,10 @@ export const saveSession = async (
   await kv.set(sessionKeyFn(session), session);
 };
 
+export const deleteSession = async (sessionId: string) => {
+  await kv.del(`session:${sessionId}`);
+};
+
 export const getCommunity = async (name: string) => {
   return getParsedKvData<Community>(`subheard:${name}`);
 };

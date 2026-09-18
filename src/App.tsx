@@ -143,7 +143,7 @@ function AppContent() {
     voteOnStatement,
     voteViaFlyer,
     loadActiveRooms,
-    resetSession,
+    logout,
     roomStatements,
     getRoomStatements,
     acceptModInvite,
@@ -263,8 +263,8 @@ function AppContent() {
     setQrScanResult(null);
   };
 
-  const handleLogout = () => {
-    resetSession();
+  const handleLogout = async () => {
+    await logout();
     setTargetRoomId(null);
     clearRoomFromUrl();
   };

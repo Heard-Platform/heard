@@ -123,6 +123,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async logout() {
+    return this.request<undefined>("/account/logout", { method: "POST" });
+  }
+
   async subscribeToUpdates() {
     return this.request<{ user: UserSession }>("/account/subscribe-updates", {
       method: "POST",

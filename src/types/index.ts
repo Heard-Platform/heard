@@ -663,6 +663,9 @@ export interface FeatureResults {
   responseVotesNotifReturnedWithinWeek: number;
   sessionExpiredRecovered: number;
   sessionExpiredRecoveredSince: number;
+  sessionExpiryBypassed: number;
+  sessionExpiryBypassedUsers: number;
+  sessionExpiryBypassedSince: number;
 }
 
 export interface GGWashImportResult {
