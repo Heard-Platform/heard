@@ -5,6 +5,7 @@ import { RenderedStatement } from "../RenderedStatement";
 import type { Statement, VoteType } from "../../types";
 import { isDefined } from "../../utils/array";
 import { getAllAgrees, getDecisiveVotes } from "../../utils/statement";
+import { getLiveHighlights } from "./utils";
 
 interface InProgressResultsProps {
   statements: Statement[];
@@ -51,43 +52,16 @@ export function InProgressResults({
     0,
   );
 
-  const decisiveStmts = statements
-    .map((s) => ({
-      statement: s,
-      agrees: getAllAgrees(s),
-      disagrees: s.disagrees,
-      decisive: getDecisiveVotes(s),
-    }))
-    .filter((s) => s.decisive > 0);
-
-  const topAgreed = [...decisiveStmts].sort((a, b) => {
-    const pctDiff = b.agrees / b.decisive - a.agrees / a.decisive;
-    return pctDiff !== 0 ? pctDiff : b.decisive - a.decisive;
-  })[0];
-
-  const remainingAfterAgreed = decisiveStmts.filter(
-    (s) => s.statement.id !== topAgreed?.statement.id,
-  );
-
-  const topDisagreed = [...remainingAfterAgreed].sort((a, b) => {
-    const pctDiff = b.disagrees / b.decisive - a.disagrees / a.decisive;
-    return pctDiff !== 0 ? pctDiff : b.decisive - a.decisive;
-  })[0];
-
-  const remainingAfterDisagreed = remainingAfterAgreed.filter(
-    (s) => s.statement.id !== topDisagreed?.statement.id,
-  );
-
-  const mostSplit = [...remainingAfterDisagreed].sort((a, b) => {
-    const splitA = Math.abs(a.agrees / a.decisive - 0.5);
-    const splitB = Math.abs(b.agrees / b.decisive - 0.5);
-    return splitA !== splitB ? splitA - splitB : b.decisive - a.decisive;
-  })[0];
+  const { topAgreed, topDisagreed, mostSplit } = getLiveHighlights(statements);
 
   const highlights = [
-    topAgreed && { ...topAgreed, label: "Top Agreed", icon: "🏆" },
-    topDisagreed && { ...topDisagreed, label: "Top Disagreed", icon: "👎" },
-    mostSplit && { ...mostSplit, label: "Most Split", icon: "⚖️" },
+    topAgreed && { statement: topAgreed, label: "Top Agreed", icon: "🏆" },
+    topDisagreed && {
+      statement: topDisagreed,
+      label: "Top Disagreed",
+      icon: "👎",
+    },
+    mostSplit && { statement: mostSplit, label: "Most Split", icon: "⚖️" },
   ].filter(isDefined);
 
   return (
@@ -135,7 +109,10 @@ export function InProgressResults({
           {/* Live Highlights */}
           <div className="space-y-3 md:space-y-4 mb-4">
             {highlights.map(
-              ({ statement: s, agrees, disagrees, decisive, label, icon }, index) => {
+              ({ statement: s, label, icon }, index) => {
+                const agrees = getAllAgrees(s);
+                const disagrees = s.disagrees;
+                const decisive = getDecisiveVotes(s);
                 const agreePct = (agrees / decisive) * 100;
                 const disagreePct = 100 - agreePct;
 
