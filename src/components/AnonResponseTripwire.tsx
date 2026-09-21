@@ -131,7 +131,7 @@ function TripwireCard({
               <p className="text-xs text-muted-foreground">
                 We'll only use your email to tell you about votes, never for anything else. Unsubscribe anytime.
               </p>
-              <TOSText />
+              {!isPhoneOnlyUser && <TOSText />}
 
               {emailFlow.error && (
                 <motion.p
