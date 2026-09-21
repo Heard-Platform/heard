@@ -290,6 +290,20 @@ export const WithClusters = () => {
   );
 };
 
+export const WithCurrentUserCluster = () => {
+  return (
+    <DebateAnalysisReport
+      {...defaultAnalysisData}
+      clusterConsensus={{ ...mockClusterConsensus, currentUserClusterId: 1 }}
+      debateId="demo-debate-321"
+      debateTopic="What should our city prioritize in the next budget?"
+      isModerator={false}
+      selectedTags={[]}
+      onSelectedTagsChange={() => {}}
+    />
+  );
+};
+
 export const WithDemographics = () => {
   return (
     <DebateAnalysisReport
@@ -374,9 +388,12 @@ export function DebateAnalysisReportStory() {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="with-demographics" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="with-clusters">
               With Clusters
+            </TabsTrigger>
+            <TabsTrigger value="current-user-cluster">
+              Your Cluster
             </TabsTrigger>
             <TabsTrigger value="no-clusters">No Clusters</TabsTrigger>
             <TabsTrigger value="with-demographics">
@@ -386,6 +403,10 @@ export function DebateAnalysisReportStory() {
 
           <TabsContent value="with-clusters">
             <WithClusters />
+          </TabsContent>
+
+          <TabsContent value="current-user-cluster">
+            <WithCurrentUserCluster />
           </TabsContent>
 
           <TabsContent value="no-clusters">

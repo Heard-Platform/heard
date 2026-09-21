@@ -188,6 +188,7 @@ export function DebateAnalysisReport({
                     totalParticipants={totalParticipants}
                     statements={clusterStatements}
                     showNumbers={showNumbers}
+                    isCurrentUserCluster={cluster.id === clusterConsensus.currentUserClusterId}
                   />
                 );
               })}

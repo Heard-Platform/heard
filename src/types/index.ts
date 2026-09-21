@@ -333,6 +333,7 @@ export interface Cluster {
 export interface ClusterConsensus {
   totalClusters: number;
   clusters: Cluster[];
+  currentUserClusterId?: number | null;
 }
 
 export type DemographicBreakdown = Record<
