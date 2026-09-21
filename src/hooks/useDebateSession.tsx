@@ -181,6 +181,7 @@ export type OverridableApiMethods = Pick<
   | "getExplorableSubHeards"
   | "createEvent"
   | "anonAddEmailAndLogin"
+  | "addEmailToAccount"
   | "verifyMagicLink"
 >;
 

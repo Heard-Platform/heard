@@ -9,7 +9,7 @@ interface UseEmailOtpFlowOptions {
 }
 
 export function useEmailOtpFlow({ onComplete }: UseEmailOtpFlowOptions) {
-  const { anonAddEmailAndLogin, verifyMagicLink } = useDebateSession();
+  const { user, anonAddEmailAndLogin, addEmailToAccount, verifyMagicLink } = useDebateSession();
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -24,6 +24,15 @@ export function useEmailOtpFlow({ onComplete }: UseEmailOtpFlowOptions) {
     setSubmitting(true);
     setError(null);
     try {
+      if (user && !user.isAnonymous) {
+        const accountResponse = await addEmailToAccount(email.trim());
+        if (!accountResponse?.success) {
+          throw new Error(accountResponse?.error || "Couldn't save email. Please try again.");
+        }
+        onComplete({ wasOtpLogin: false });
+        return;
+      }
+
       const response = await anonAddEmailAndLogin(email.trim());
       if (!response?.success) {
         throw new Error(response?.error || "Couldn't save email. Please try again.");
