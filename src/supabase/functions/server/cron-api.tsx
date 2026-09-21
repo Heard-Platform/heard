@@ -19,6 +19,7 @@ import {
   type OtherConvo,
 } from "./email-debate-ended-template.tsx";
 import { getTotalVoteCount, rankStatements } from "./statement-utils.tsx";
+import { getRoomParticipants } from "./room-utils.ts";
 
 const app = new Hono();
 
@@ -37,12 +38,12 @@ export async function validateCronAuth(c: any, next: any) {
 const MAX_OTHER_CONVOS = 3;
 const MAX_TOP_STATEMENTS = 3;
 
-const findOtherConvosInSubHeard = (
+const findOtherConvosInSubHeard = async (
   endedRoom: DebateRoom,
   allRooms: DebateRoom[],
-): OtherConvo[] => {
+): Promise<OtherConvo[]> => {
   if (!endedRoom.subHeard) return [];
-  return allRooms
+  const otherRooms = allRooms
     .filter(
       (r) =>
         r.id !== endedRoom.id &&
@@ -54,12 +55,14 @@ const findOtherConvosInSubHeard = (
         (b.lastActivityAt ?? b.createdAt) -
         (a.lastActivityAt ?? a.createdAt),
     )
-    .slice(0, MAX_OTHER_CONVOS)
-    .map((r) => ({
+    .slice(0, MAX_OTHER_CONVOS);
+  return Promise.all(
+    otherRooms.map(async (r) => ({
       id: r.id,
       topic: r.topic,
-      participantCount: r.participants.length,
-    }));
+      participantCount: (await getRoomParticipants(r.id)).length,
+    })),
+  );
 };
 
 export async function sendDebateEndedEmails(
@@ -78,7 +81,8 @@ export async function sendDebateEndedEmails(
     statements,
     MAX_TOP_STATEMENTS,
   );
-  const otherConvos = findOtherConvosInSubHeard(room, allRooms);
+  const participantCount = (await getRoomParticipants(room.id)).length;
+  const otherConvos = await findOtherConvosInSubHeard(room, allRooms);
   const subject = getDebateEndedSubject(room.topic);
   const frontendUrl = getFrontendUrl();
 
@@ -108,7 +112,7 @@ export async function sendDebateEndedEmails(
         mostDisagreed,
         mostSplit,
         totalVotes,
-        participantCount: room.participants.length,
+        participantCount,
         otherConvos,
         frontendUrl,
         userId: user.id,
