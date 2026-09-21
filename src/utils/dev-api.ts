@@ -5,6 +5,7 @@ interface FlyerRoomData {
   topic: string;
   groups: Record<number, number>;
   lastUserCreated: number;
+  convertedUsers: number;
 }
 
 interface ReferralEventDetail {

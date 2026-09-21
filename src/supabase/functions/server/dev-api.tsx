@@ -193,7 +193,7 @@ app.get(
     async () => {
       const users = await getAllRealUsers();
       
-      const flyerRoomData: Record<string, { topic: string; groups: Record<number, number>; lastUserCreated: number }> = {};
+      const flyerRoomData: Record<string, { topic: string; groups: Record<number, number>; lastUserCreated: number; convertedUsers: number }> = {};
       
       for (const user of users) {
         if (user.flyerId) {
@@ -202,7 +202,8 @@ app.get(
             flyerRoomData[user.flyerId] = {
               topic: room?.topic || user.flyerId,
               groups: {},
-              lastUserCreated: 0
+              lastUserCreated: 0,
+              convertedUsers: 0
             };
           }
           
@@ -211,6 +212,10 @@ app.get(
             flyerRoomData[user.flyerId].groups[group] = 0;
           }
           flyerRoomData[user.flyerId].groups[group]++;
+
+          if (!user.isAnonymous) {
+            flyerRoomData[user.flyerId].convertedUsers++;
+          }
           
           if (user.createdAt && user.createdAt > flyerRoomData[user.flyerId].lastUserCreated) {
             flyerRoomData[user.flyerId].lastUserCreated = user.createdAt;

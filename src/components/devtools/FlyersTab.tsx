@@ -6,6 +6,7 @@ interface FlyerRoomData {
   topic: string;
   groups: Record<number, number>;
   lastUserCreated: number;
+  convertedUsers: number;
 }
 
 export function FlyersTab() {
@@ -75,6 +76,8 @@ export function FlyersTab() {
                 </th>
               ))}
               <th className="text-center p-2 font-semibold bg-gray-100">Total</th>
+              <th className="text-center p-2 font-semibold">Converted</th>
+              <th className="text-center p-2 font-semibold">Conversion Rate</th>
               <th className="text-left p-2 font-semibold">Last User Created</th>
             </tr>
           </thead>
@@ -92,6 +95,14 @@ export function FlyersTab() {
                   ))}
                   <td className="text-center p-2 font-semibold bg-gray-100">
                     {rowTotal}
+                  </td>
+                  <td className="text-center p-2">
+                    {roomData.convertedUsers}
+                  </td>
+                  <td className="text-center p-2 font-semibold">
+                    {rowTotal > 0
+                      ? `${Math.round((roomData.convertedUsers / rowTotal) * 100)}%`
+                      : "N/A"}
                   </td>
                   <td className="p-2 text-xs text-gray-600">
                     {formatDate(roomData.lastUserCreated)}
