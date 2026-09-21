@@ -7,6 +7,10 @@ import { sanitizeUser } from "./user-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { isValidEmail } from "./validation-utils.ts";
 import { insertAnalyticsEvent } from "./model-utils.ts";
+import {
+  DUPLICATE_ACCOUNT_ERROR,
+  notifyDevsOfDuplicateEmail,
+} from "./duplicate-email-alert.ts";
 
 const app = new Hono();
 
@@ -465,7 +469,12 @@ export const attachEmailToAccount = async (
 
   const existingUser = await getUserByEmail(normalizedEmail);
   if (existingUser && existingUser.id !== userId) {
-    return { error: "This email is already registered to another account", status: 409 };
+    await notifyDevsOfDuplicateEmail(
+      await getUserSession(userId),
+      existingUser,
+      normalizedEmail,
+    );
+    return { error: DUPLICATE_ACCOUNT_ERROR, status: 409 };
   }
 
   const user = await getUserSession(userId);

@@ -8,6 +8,7 @@ import { Sparkles, Users, Award, Mail, Phone } from "lucide-react";
 import { isValidEmail, isValidPhone, formatPhone } from "../utils/validation";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { PhoneCollectionStep } from "./onboarding/PhoneCollectionStep";
+import { EmailInputField } from "./onboarding/EmailInputField";
 import { TOSText } from "./onboarding/TOSText";
 
 // @ts-ignore
@@ -164,23 +165,14 @@ export function AnonAccountSetupModal({
         </p>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="optionalEmail" className="text-sm">
-          Email (Optional)
-        </Label>
-        <Input
-          id="optionalEmail"
-          type="email"
-          value={optionalEmail}
-          onChange={(e) => setOptionalEmail(e.target.value)}
-          placeholder="you@example.com"
-          disabled={savingEmail}
-          className="bg-white dark:bg-gray-900"
-        />
-        <p className="text-xs text-muted-foreground">
-          We'll only send you updates about discussions you participate in
-        </p>
-      </div>
+      <EmailInputField
+        id="optionalEmail"
+        label="Email (Optional)"
+        value={optionalEmail}
+        onChange={setOptionalEmail}
+        disabled={savingEmail}
+        helperText="We'll only send you updates about discussions you participate in"
+      />
 
       {error && (
         <motion.p

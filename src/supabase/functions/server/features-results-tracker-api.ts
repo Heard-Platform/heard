@@ -241,6 +241,10 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const responseVotesNotifButtonClicks = responseVotesNotifStats.buttonClicks;
     const responseVotesNotifReturnedWithinWeek = responseVotesNotifStats.returnedWithinWeek;
 
+    const anonResponseTripwireShown = (await getEventsOfType("anon_response_tripwire_shown")).length;
+    const anonResponseTripwireEmailSubmitted = (await getEventsOfType("anon_response_tripwire_submitted")).length;
+    const anonResponseTripwireSince = new Date("2026-09-21").getTime();
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -332,6 +336,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       sessionExpiryBypassed,
       sessionExpiryBypassedUsers,
       sessionExpiryBypassedSince,
+      anonResponseTripwireShown,
+      anonResponseTripwireEmailSubmitted,
+      anonResponseTripwireSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);
