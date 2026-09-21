@@ -1,5 +1,6 @@
 import {
   getAllRealUsers,
+  getDevUsers,
   getAllVotes,
   getAllStatements,
   getAllRealDebates,
@@ -38,6 +39,9 @@ export async function getAdminDailyStats(
   const cutoffTime = Date.now() - timePeriodMs;
   const timePeriodHours = timePeriodMs / (60 * 60 * 1000);
 
+  const devUsers = await getDevUsers();
+  const devUserIds = new Set(devUsers.map((user) => user.id));
+
   const [
     emailsSent,
     newSignups,
@@ -47,13 +51,13 @@ export async function getAdminDailyStats(
     newStatementsList,
     newCommunitiesList,
   ] = await Promise.all([
-    getEmailsSentSince(cutoffTime),
-    getNewSignupsSince(cutoffTime),
-    getSessionStatsSince(cutoffTime),
-    getNewVotesSince(cutoffTime),
-    getNewPostsSince(cutoffTime),
-    getNewStatementsSince(cutoffTime),
-    getNewCommunitiesSince(cutoffTime),
+    getEmailsSentSince(cutoffTime, devUserIds),
+    getNewSignupsSince(cutoffTime, devUserIds),
+    getSessionStatsSince(cutoffTime, devUserIds),
+    getNewVotesSince(cutoffTime, devUserIds),
+    getNewPostsSince(cutoffTime, devUserIds),
+    getNewStatementsSince(cutoffTime, devUserIds),
+    getNewCommunitiesSince(cutoffTime, devUserIds),
   ]);
 
   return {
@@ -73,22 +77,33 @@ export async function getAdminDailyStats(
   };
 }
 
-async function getEmailsSentSince(cutoffTime: number): Promise<number> {
+async function getEmailsSentSince(
+  cutoffTime: number,
+  devUserIds: Set<string>
+): Promise<number> {
   try {
     const allEmails = await getSentEmails();
-    return allEmails.filter((email: any) => email.sentAt >= cutoffTime).length;
+    return allEmails.filter(
+      (email) => email.sentAt >= cutoffTime && !devUserIds.has(email.userId)
+    ).length;
   } catch (error) {
     console.error("Error counting emails sent:", error);
     return 0;
   }
 }
 
-async function getNewSignupsSince(cutoffTime: number): Promise<number> {
+async function getNewSignupsSince(
+  cutoffTime: number,
+  devUserIds: Set<string>
+): Promise<number> {
   try {
     const allUsers = await getAllRealUsers();
     return allUsers.filter(
       (user: User) =>
-        user.createdAt && user.createdAt >= cutoffTime && !user.isAnonymous
+        user.createdAt &&
+        user.createdAt >= cutoffTime &&
+        !user.isAnonymous &&
+        !devUserIds.has(user.id)
     ).length;
   } catch (error) {
     console.error("Error counting new signups:", error);
@@ -97,7 +112,8 @@ async function getNewSignupsSince(cutoffTime: number): Promise<number> {
 }
 
 async function getSessionStatsSince(
-  cutoffTime: number
+  cutoffTime: number,
+  devUserIds: Set<string>
 ): Promise<{ total: number; anonymous: number; signedIn: number }> {
   try {
     const [pageLoadEvents, allUsers] = await Promise.all([
@@ -115,6 +131,7 @@ async function getSessionStatsSince(
     for (const event of pageLoadEvents) {
       const user = event.userId ? userMap.get(event.userId) : undefined;
       if (event.userId && !user) continue;
+      if (event.userId && devUserIds.has(event.userId)) continue;
       if (!user || user.isAnonymous) {
         anonymous++;
       } else {
@@ -129,21 +146,34 @@ async function getSessionStatsSince(
   }
 }
 
-async function getNewVotesSince(cutoffTime: number): Promise<number> {
+async function getNewVotesSince(
+  cutoffTime: number,
+  devUserIds: Set<string>
+): Promise<number> {
   try {
     const allVotes = await getAllVotes();
-    return allVotes.filter((vote) => vote.timestamp >= cutoffTime).length;
+    return allVotes.filter(
+      (vote) => vote.timestamp >= cutoffTime && !devUserIds.has(vote.userId)
+    ).length;
   } catch (error) {
     console.error("Error counting new votes:", error);
     return 0;
   }
 }
 
-async function getNewPostsSince(cutoffTime: number): Promise<AdminDigestListItem[]> {
+async function getNewPostsSince(
+  cutoffTime: number,
+  devUserIds: Set<string>
+): Promise<AdminDigestListItem[]> {
   try {
     const allRooms = await getAllRealDebates();
     return allRooms
-      .filter((room) => room.createdAt >= cutoffTime && !SCRAPER_AUTHOR_IDS.has(room.hostId))
+      .filter(
+        (room) =>
+          room.createdAt >= cutoffTime &&
+          !SCRAPER_AUTHOR_IDS.has(room.hostId) &&
+          !devUserIds.has(room.hostId)
+      )
       .map((room) => ({ title: room.topic, url: `${getFrontendUrl()}/room/${room.id}` }));
   } catch (error) {
     console.error("Error listing new posts:", error);
@@ -151,12 +181,18 @@ async function getNewPostsSince(cutoffTime: number): Promise<AdminDigestListItem
   }
 }
 
-async function getNewStatementsSince(cutoffTime: number): Promise<AdminDigestListItem[]> {
+async function getNewStatementsSince(
+  cutoffTime: number,
+  devUserIds: Set<string>
+): Promise<AdminDigestListItem[]> {
   try {
     const allStatements = await getAllStatements();
     return allStatements
       .filter(
-        (statement) => statement.timestamp >= cutoffTime && !SCRAPER_AUTHOR_IDS.has(statement.author)
+        (statement) =>
+          statement.timestamp >= cutoffTime &&
+          !SCRAPER_AUTHOR_IDS.has(statement.author) &&
+          !devUserIds.has(statement.author)
       )
       .map((statement) => ({
         title: statement.text,
@@ -168,11 +204,17 @@ async function getNewStatementsSince(cutoffTime: number): Promise<AdminDigestLis
   }
 }
 
-async function getNewCommunitiesSince(cutoffTime: number): Promise<AdminDigestListItem[]> {
+async function getNewCommunitiesSince(
+  cutoffTime: number,
+  devUserIds: Set<string>
+): Promise<AdminDigestListItem[]> {
   try {
     const allCommunities = await getAllSubHeards<Community & { createdAt: number }>();
     return allCommunities
-      .filter((community) => community.createdAt >= cutoffTime)
+      .filter(
+        (community) =>
+          community.createdAt >= cutoffTime && !devUserIds.has(community.adminId)
+      )
       .map((community) => ({
         title: community.displayName || community.name,
         url: `${getFrontendUrl()}/h/${community.name}`,
