@@ -94,6 +94,7 @@ export function AnonResponseTripwireStory() {
         {scenario && (
           <DebateSessionProvider key={scenario} showcaseOverrides={buildOverrides(scenario)}>
             <AnonResponseTripwire
+              roomId="story-room"
               statementText={STATEMENT_TEXT}
               isOpen
               onComplete={() => {

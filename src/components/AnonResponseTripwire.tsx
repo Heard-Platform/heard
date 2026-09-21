@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { motion } from "motion/react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -9,8 +10,10 @@ import { TOSText } from "./onboarding/TOSText";
 import { CertifyOtpStep } from "./room/CertifyOtpStep";
 import { useEmailOtpFlow } from "../hooks/useEmailOtpFlow";
 import { useDebateSession } from "../hooks/useDebateSession";
+import { api } from "../utils/api";
 
 interface AnonResponseTripwireProps {
+  roomId: string;
   statementText: string;
   isOpen: boolean;
   onComplete: () => void;
@@ -18,6 +21,7 @@ interface AnonResponseTripwireProps {
 }
 
 export function AnonResponseTripwire({
+  roomId,
   statementText,
   isOpen,
   onComplete,
@@ -31,6 +35,7 @@ export function AnonResponseTripwire({
           Add your email to see who agrees and disagrees with the statement you just posted.
         </DialogDescription>
         <TripwireCard
+          roomId={roomId}
           statementText={statementText}
           onComplete={onComplete}
           onDismiss={onDismiss}
@@ -41,6 +46,7 @@ export function AnonResponseTripwire({
 }
 
 function TripwireCard({
+  roomId,
   statementText,
   onComplete,
   onDismiss,
@@ -49,8 +55,13 @@ function TripwireCard({
   const emailFlow = useEmailOtpFlow({ onComplete: () => onComplete() });
   const isPhoneOnlyUser = !!user && !user.isAnonymous;
 
+  useEffect(() => {
+    api.trackEvent("anon_response_tripwire_shown", roomId);
+  }, [roomId]);
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    api.trackEvent("anon_response_tripwire_submitted", roomId);
     emailFlow.submitEmail();
   };
 

@@ -666,6 +666,9 @@ export interface FeatureResults {
   sessionExpiryBypassed: number;
   sessionExpiryBypassedUsers: number;
   sessionExpiryBypassedSince: number;
+  anonResponseTripwireShown: number;
+  anonResponseTripwireEmailSubmitted: number;
+  anonResponseTripwireSince: number;
 }
 
 export interface GGWashImportResult {

@@ -33,6 +33,7 @@ import {
   RefreshCw,
   Flame,
   Sparkles,
+  Mail,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -428,6 +429,21 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
             <p className="text-xs text-muted-foreground">Returned within a week</p>
             <p className="text-2xl font-bold text-fuchsia-600">{s.responseVotesNotifReturnedWithinWeek}</p>
           </div>
+        </div>
+      ),
+    },
+    {
+      icon: Mail,
+      iconColor: "text-emerald-600",
+      bgColor: "bg-emerald-100",
+      title: "Anon Response Tripwire",
+      description: "Signup modal shown after a user without an email posts a statement, inviting them to add an email to see who agrees",
+      getValue: (s) => s.anonResponseTripwireShown,
+      getDate: (s) => s.anonResponseTripwireSince,
+      renderExtra: (s) => (
+        <div>
+          <p className="text-xs text-muted-foreground">Emails submitted</p>
+          <p className="text-2xl font-bold text-emerald-600">{s.anonResponseTripwireEmailSubmitted}</p>
         </div>
       ),
     },
