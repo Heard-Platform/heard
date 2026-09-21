@@ -20,6 +20,12 @@ import {
   generateFakeCommunityPostInviteData,
   getCommunityPostInviteSubject,
 } from "./email-community-post-invite-template.tsx";
+import {
+  RESPONSE_VOTES_NOTIF_EMAIL_TYPE,
+  generateResponseVotesNotifHtml,
+  generateFakeResponseVotesNotifData,
+  getResponseVotesNotifSubject,
+} from "./email-response-votes-notif-template.ts";
 import { getFrontendUrl } from "./utils.tsx";
 
 const app = new Hono();
@@ -77,6 +83,15 @@ app.get(
       return c.json({
         subject: getCommunityPostInviteSubject(data.room.topic),
         html: await generateCommunityPostInviteEmailHtml(data),
+      });
+    }
+
+    if (digestType === RESPONSE_VOTES_NOTIF_EMAIL_TYPE) {
+      console.log("[email-previews GET] Generating response-votes-notif email preview");
+      const data = generateFakeResponseVotesNotifData(getFrontendUrl());
+      return c.json({
+        subject: getResponseVotesNotifSubject(),
+        html: await generateResponseVotesNotifHtml(data),
       });
     }
 
@@ -173,6 +188,11 @@ app.post(
         const data = generateFakeCommunityPostInviteData(getFrontendUrl());
         emailHtml = await generateCommunityPostInviteEmailHtml({ ...data, userId });
         subject = getCommunityPostInviteSubject(data.room.topic);
+      } else if (digestType === RESPONSE_VOTES_NOTIF_EMAIL_TYPE) {
+        console.log("[send-email] Generating response-votes-notif email for test email");
+        const data = generateFakeResponseVotesNotifData(getFrontendUrl());
+        emailHtml = await generateResponseVotesNotifHtml({ ...data, userId });
+        subject = getResponseVotesNotifSubject();
       } else {
         let emailData: EmailData;
         if (useMockData) {

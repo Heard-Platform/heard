@@ -22,11 +22,9 @@ import { useDebateSession } from "../hooks/useDebateSession";
 import { SwipeTutorialProvider, useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { CreateRoomCard } from "./CreateRoomCard";
 import { EventCard } from "./events/EventCard";
-import { safelySetStorageItem } from "../utils/localStorage";
 import { api, safelyMakeApiCall } from "../utils/api";
 import { useRoomAlertsContext } from "../contexts/RoomAlertsContext";
 
-const LAST_VIEWED_ROOM_KEY = "lastViewedRoom";
 const COMMUNITY_TEASER_AFTER_ROOM_COUNT = 2;
 
 type EventCard = EventSummary & { cardType: "event" };
@@ -170,7 +168,6 @@ const RoomScrollerInner = forwardRef<
     useEffect(() => {
       const card = allCards[currentIndex];
       if (card && isRoomCard(card)) {
-        safelySetStorageItem(LAST_VIEWED_ROOM_KEY, card.id);
         clearAlert(card.id);
         safelyMakeApiCall(() => api.markRoomSeen(card.id));
         api.trackEvent("post_viewed", card.id);

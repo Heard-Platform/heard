@@ -23,6 +23,7 @@ interface Stage {
     | "multiPostViewPct"
     | "votedPct"
     | "respondedPct"
+    | "createdRoomPct"
     | "nonAnonPct"
     | "multiRoomPct"
     | "multiCommunityPct"
@@ -35,6 +36,7 @@ interface Stage {
     | "multiPostViewCount"
     | "votedCount"
     | "respondedCount"
+    | "createdRoomCount"
     | "nonAnonCount"
     | "multiRoomCount"
     | "multiCommunityCount"
@@ -51,6 +53,7 @@ const FUNNEL_STAGES: Stage[] = [
   { key: "multiPostViewPct", countKey: "multiPostViewCount", label: "Viewed 2+ posts", color: "#e34948" },
   { key: "votedPct", countKey: "votedCount", label: "Voted", color: "#2a78d6" },
   { key: "respondedPct", countKey: "respondedCount", label: "Responded", color: "#eb6834" },
+  { key: "createdRoomPct", countKey: "createdRoomCount", label: "Created a post", color: "#8b5cf6" },
   { key: "nonAnonPct", countKey: "nonAnonCount", label: "Has email/phone", color: "#1baf7a" },
   { key: "multiRoomPct", countKey: "multiRoomCount", label: "Active in 2+ rooms", color: "#eda100" },
   { key: "multiCommunityPct", countKey: "multiCommunityCount", label: "Active in 2+ communities", color: "#e87ba4" },

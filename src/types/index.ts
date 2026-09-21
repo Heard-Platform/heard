@@ -252,6 +252,7 @@ export interface DebateRoom {
   responsesPaused?: boolean | null;
   responsesPausedAt?: number | null;
   responsesPausedBy?: string | null;
+  restartedAt?: number;
 }
 
 export type NewDebateRoom = Pick<
@@ -460,6 +461,7 @@ export interface CohortFunnelEntry {
   multiPostViewCount: number;
   votedCount: number;
   respondedCount: number;
+  createdRoomCount: number;
   nonAnonCount: number;
   multiRoomCount: number;
   multiCommunityCount: number;
@@ -469,6 +471,7 @@ export interface CohortFunnelEntry {
   multiPostViewPct: number;
   votedPct: number;
   respondedPct: number;
+  createdRoomPct: number;
   nonAnonPct: number;
   multiRoomPct: number;
   multiCommunityPct: number;
@@ -652,6 +655,17 @@ export interface FeatureResults {
   voteSwingSeenSince: number;
   voteSwingShareClicked: number;
   voteSwingShareClickedSince: number;
+  newPostButtonTapped: number;
+  newPostButtonTappedSince: number;
+  responseVotesNotifEmailsSent: number;
+  responseVotesNotifEmailsSentSince: number;
+  responseVotesNotifButtonClicks: number;
+  responseVotesNotifReturnedWithinWeek: number;
+  sessionExpiredRecovered: number;
+  sessionExpiredRecoveredSince: number;
+  sessionExpiryBypassed: number;
+  sessionExpiryBypassedUsers: number;
+  sessionExpiryBypassedSince: number;
 }
 
 export interface GGWashImportResult {

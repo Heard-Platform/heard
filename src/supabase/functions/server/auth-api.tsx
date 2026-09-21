@@ -6,6 +6,7 @@ import { loginUserWithMerge, validateSession } from "./auth-utils.ts";
 import { sanitizeUser } from "./user-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { isValidEmail } from "./validation-utils.ts";
+import { insertAnalyticsEvent } from "./model-utils.ts";
 
 const app = new Hono();
 
@@ -39,6 +40,41 @@ export const createSession = async (userId: string): Promise<Session> => {
   return session;
 };
 
+const SESSION_EXTENSION_THRESHOLD_MS = SESSION_DURATION_MS / 2;
+const SESSION_EXPIRY_BYPASSED_EVENT = "session_expiry_bypassed";
+
+const isExpiryEnforcedFor = async (userId: string): Promise<boolean> => {
+  const user = await getUser(userId);
+  return user?.isDeveloper === true;
+};
+
+const isDueForExtension = (session: Session, now: number): boolean =>
+  session.expiresAt - now < SESSION_EXTENSION_THRESHOLD_MS;
+
+const extendSession = async (session: Session, now: number): Promise<Session> => {
+  const extended = { ...session, expiresAt: now + SESSION_DURATION_MS };
+  try {
+    await saveSession(extended);
+  } catch (error) {
+    console.error("Failed to extend session:", error);
+  }
+  return extended;
+};
+
+const trackExpiryBypass = async (session: Session, now: number): Promise<Session> => {
+  const marked = { ...session, expiryBypassedAt: now };
+  try {
+    await saveSession(marked);
+    await insertAnalyticsEvent({
+      type: SESSION_EXPIRY_BYPASSED_EVENT,
+      userId: session.userId,
+    });
+  } catch (error) {
+    console.error("Failed to track session expiry bypass:", error);
+  }
+  return marked;
+};
+
 export const validateSessionId = async (sessionId: string): Promise<{ valid: boolean; userId?: string; error?: string }> => {
   try {
     const session = await getSession(sessionId);
@@ -46,11 +82,22 @@ export const validateSessionId = async (sessionId: string): Promise<{ valid: boo
     if (!session) {
       return { valid: false, error: "Session not found" };
     }
-    
-    if (Date.now() > session.expiresAt) {
-      return { valid: false, error: "Session expired" };
+
+    const now = Date.now();
+    let current = session;
+
+    if (now > session.expiresAt) {
+      if (await isExpiryEnforcedFor(session.userId)) {
+        return { valid: false, error: "Session expired" };
+      } else if (!session.expiryBypassedAt) {
+        current = await trackExpiryBypass(session, now);
+      }
     }
-    
+
+    if (isDueForExtension(current, now)) {
+      await extendSession(current, now);
+    }
+
     return { valid: true, userId: session.userId };
   } catch (error) {
     console.error("Error validating session ID:", error);
@@ -282,14 +329,11 @@ app.post(
         webdriver: webdriver || false, // CN-5
       });
 
-      const userResult = await getUserAndNewSession(user.id);
-      if ("error" in userResult) {
-        return c.json({ error: userResult.error }, userResult.status);
-      }
+      const session = await createSession(user.id);
 
       return c.json({
-        user: userResult.user,
-        sessionId: userResult.sessionId,
+        user: sanitizeUser(user),
+        sessionId: session.id,
       });
     } catch (error) {
       console.error("Error creating anonymous user:", error);

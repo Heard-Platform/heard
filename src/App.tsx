@@ -48,7 +48,6 @@ import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResult
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
 
 const LAST_VIEWED_SUBHEARD_KEY = "lastViewedSubHeard";
-const LAST_VIEWED_ROOM_KEY = "lastViewedRoom";
 const VOTE_SWING_LAST_SHOWN_KEY = "voteSwingLastShownAt";
 const VOTE_SWING_THROTTLE_MS = 60_000;
 
@@ -144,7 +143,7 @@ function AppContent() {
     voteOnStatement,
     voteViaFlyer,
     loadActiveRooms,
-    resetSession,
+    logout,
     roomStatements,
     getRoomStatements,
     acceptModInvite,
@@ -264,8 +263,8 @@ function AppContent() {
     setQrScanResult(null);
   };
 
-  const handleLogout = () => {
-    resetSession();
+  const handleLogout = async () => {
+    await logout();
     setTargetRoomId(null);
     clearRoomFromUrl();
   };
@@ -374,6 +373,7 @@ function AppContent() {
       const isCongestionRoute = route === "congestion"
       const isIdeasRoute = route === "ideas";
       const isDupontRoute = route === "dupont";
+      const isBottleRoute = route === "bottle";
       const isLaRoute = route === "la";
       const isTopangaRoute = route === "topanga";
       const isAiRoute = route === "ai";
@@ -427,7 +427,8 @@ function AppContent() {
         isWaymoRoute ||
         isWaymoDcRoute ||
         isCongestionRoute ||
-        isDupontRoute
+        isDupontRoute ||
+        isBottleRoute
       ) {
         const hardcodedRoomId = isParkletRoute
           ? "aocxafg7tnpmmv7j6sh"
@@ -457,7 +458,9 @@ function AppContent() {
                                   ? "9sptdy3zzq5mqz78fq5"
                                   : isDupontRoute
                                     ? "rrgipbk19vmms7ry4cv"
-                                    : null;
+                                    : isBottleRoute
+                                      ? "lkxobfvrzqjmtyjy1hw"
+                                      : null;
 
 
         if (!hardcodedRoomId) {
@@ -563,12 +566,7 @@ function AppContent() {
           LAST_VIEWED_SUBHEARD_KEY,
           null,
         );
-        const lastRoomId = safelyGetStorageItem<string | null>(
-          LAST_VIEWED_ROOM_KEY,
-          null,
-        );
         if (lastSubHeard) setCurrentSubHeard(lastSubHeard);
-        if (lastRoomId) startRoomJoin(lastRoomId);
       }
       setHasCheckedUrl(true);
     }

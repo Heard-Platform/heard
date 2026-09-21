@@ -84,6 +84,7 @@ export interface Session {
   userId: string;
   createdAt: number;
   expiresAt: number;
+  expiryBypassedAt?: number;
 }
 
 export interface UserPresence {
@@ -268,6 +269,7 @@ export interface DebateRoom {
   responsesPaused?: boolean | null;
   responsesPausedAt?: number | null;
   responsesPausedBy?: string | null;
+  restartedAt?: number;
 }
 
 export interface RoomView {
@@ -323,6 +325,7 @@ export interface SentEmail {
   userId: string;
   sentAt: number;
   emailType: string;
+  roomId?: string;
 }
 
 export enum InternalVarKey {

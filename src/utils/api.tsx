@@ -123,6 +123,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async logout() {
+    return this.request<undefined>("/account/logout", { method: "POST" });
+  }
+
   async subscribeToUpdates() {
     return this.request<{ user: UserSession }>("/account/subscribe-updates", {
       method: "POST",
@@ -666,8 +670,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async getCohortFunnel(mode: "joined" | "active" = "joined") {
-    return this.request<CohortFunnelData>(`/stats/cohort-funnel?mode=${mode}`, {
+  async getCohortFunnel(mode: "joined" | "active" = "joined", sinceMs?: number) {
+    const params = new URLSearchParams({ mode: mode });
+    if (sinceMs !== undefined) params.set("since", sinceMs.toString());
+    return this.request<CohortFunnelData>(`/stats/cohort-funnel?${params.toString()}`, {
       method: "GET",
     });
   }
@@ -915,6 +921,16 @@ class ApiClient extends BaseApiClient {
       {
         method: "POST",
         body: JSON.stringify(updates),
+      },
+    );
+  }
+
+  async restartRoom(roomId: string, endTime: number) {
+    return this.request<{ room: DebateRoom }>(
+      `/room/${roomId}/mod/restart`,
+      {
+        method: "POST",
+        body: JSON.stringify({ endTime }),
       },
     );
   }

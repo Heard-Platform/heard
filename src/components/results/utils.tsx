@@ -95,6 +95,59 @@ export const getPodiumPosition = (index: number) => {
 const MIN_AGREES_SHARE = 0.05;
 const MAX_UNICORN_VOTER_SHARE = 0.15;
 
+const getMinVotes = (totalParticipants: number) =>
+  totalParticipants * MIN_AGREES_SHARE;
+
+const getAgreeShare = (statement: Statement) =>
+  getAllAgrees(statement) / getDecisiveVotes(statement);
+
+const getDisagreeShare = (statement: Statement) =>
+  statement.disagrees / getDecisiveVotes(statement);
+
+const getSplitDistance = (statement: Statement) =>
+  Math.abs(getAgreeShare(statement) - 0.5);
+
+const byMostDecisiveVotes = (a: Statement, b: Statement) =>
+  getDecisiveVotes(b) - getDecisiveVotes(a);
+
+const rankByPersuasiveness = (statements: Statement[], minVotes: number) =>
+  statements
+    .filter((s) => getAllAgrees(s) >= minVotes && getDecisiveVotes(s) > 0)
+    .sort(
+      (a, b) =>
+        getAgreeShare(b) - getAgreeShare(a) || byMostDecisiveVotes(a, b)
+    );
+
+const rankByDisagreement = (statements: Statement[], minVotes: number) =>
+  statements
+    .filter((s) => s.disagrees >= minVotes && getDecisiveVotes(s) > 0)
+    .sort(
+      (a, b) =>
+        getDisagreeShare(b) - getDisagreeShare(a) || byMostDecisiveVotes(a, b)
+    );
+
+const rankBySplit = (statements: Statement[], minVotes: number) =>
+  statements
+    .filter(
+      (s) =>
+        getAllAgrees(s) >= minVotes &&
+        s.disagrees >= minVotes &&
+        getDecisiveVotes(s) > 0
+    )
+    .sort(
+      (a, b) =>
+        getSplitDistance(a) - getSplitDistance(b) || byMostDecisiveVotes(a, b)
+    );
+
+const createPicker = () => {
+  const used = new Set<string>();
+  return (candidates: Statement[]) => {
+    const winner = candidates.find((s) => !used.has(s.id));
+    if (winner) used.add(winner.id);
+    return winner;
+  };
+};
+
 export const analyzeStatements = (statements: Statement[]) => {
   // Sort by agrees
   const byAgrees = [...statements].sort((a, b) => b.agrees - a.agrees);
@@ -102,14 +155,10 @@ export const analyzeStatements = (statements: Statement[]) => {
   const totalParticipants = getUniqueParticipants(statements).size;
 
   // Sort by persuasiveness
-  const minAgrees = totalParticipants * MIN_AGREES_SHARE;
-  const byPersuasiveness = statements
-    .filter((s) => getAllAgrees(s) >= minAgrees && getDecisiveVotes(s) > 0)
-    .sort(
-      (a, b) =>
-        getAllAgrees(b) / getDecisiveVotes(b) -
-        getAllAgrees(a) / getDecisiveVotes(a)
-    );
+  const byPersuasiveness = rankByPersuasiveness(
+    statements,
+    getMinVotes(totalParticipants)
+  );
 
   // Group by type
   const byType = {
@@ -223,17 +272,29 @@ export interface AwardWinners {
 }
 
 export const getAwardWinners = (analysis: Analysis): AwardWinners => {
-  const used = new Set<string>();
-  const pick = (candidates: Statement[]) => {
-    const winner = candidates.find((s) => !used.has(s.id));
-    if (winner) used.add(winner.id);
-    return winner;
-  };
+  const pick = createPicker();
 
   return {
     mostPersuasive: pick(analysis.byPersuasiveness),
     spiciest: pick(analysis.controversial),
     unicorn: pick(analysis.unicornCandidates),
     bridge: pick(analysis.byType.bridge),
+  };
+};
+
+export interface LiveHighlights {
+  topAgreed?: Statement;
+  topDisagreed?: Statement;
+  mostSplit?: Statement;
+}
+
+export const getLiveHighlights = (statements: Statement[]): LiveHighlights => {
+  const minVotes = getMinVotes(getUniqueParticipants(statements).size);
+  const pick = createPicker();
+
+  return {
+    topAgreed: pick(rankByPersuasiveness(statements, minVotes)),
+    topDisagreed: pick(rankByDisagreement(statements, minVotes)),
+    mostSplit: pick(rankBySplit(statements, minVotes)),
   };
 };

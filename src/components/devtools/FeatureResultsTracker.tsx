@@ -31,6 +31,8 @@ import {
   Compass,
   PieChart,
   RefreshCw,
+  Flame,
+  Sparkles,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -372,6 +374,60 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
         <div>
           <p className="text-xs text-muted-foreground">Shared</p>
           <p className="text-2xl font-bold text-teal-600">{s.voteSwingShareClicked}</p>
+        </div>
+      ),
+    },
+    {
+      icon: Flame,
+      iconColor: "text-orange-600",
+      bgColor: "bg-orange-100",
+      title: "Top Bar New Post Button Taps",
+      description: "Taps on the topbar button that starts a new post",
+      getValue: (s) => s.newPostButtonTapped,
+      getDate: (s) => s.newPostButtonTappedSince,
+    },
+    {
+      icon: RefreshCw,
+      iconColor: "text-blue-600",
+      bgColor: "bg-blue-100",
+      title: "Expired Sessions Recovered",
+      description: "Times a returning user's stale/expired session was detected and silently replaced with a fresh anonymous one",
+      getValue: (s) => s.sessionExpiredRecovered,
+      getDate: (s) => s.sessionExpiredRecoveredSince,
+    },
+    {
+      icon: Shield,
+      iconColor: "text-red-600",
+      bgColor: "bg-red-100",
+      title: "Session Expiry Bypassed",
+      description: "Non-developer sessions revived after going 30+ days unused, since expiry is only enforced for developers (once per session)",
+      getValue: (s) => s.sessionExpiryBypassed,
+      getDate: (s) => s.sessionExpiryBypassedSince,
+      renderExtra: (s) => (
+        <div>
+          <p className="text-xs text-muted-foreground">Unique users</p>
+          <p className="text-2xl font-bold text-red-600">{s.sessionExpiryBypassedUsers}</p>
+        </div>
+      ),
+    },
+    {
+      icon: Sparkles,
+      iconColor: "text-fuchsia-600",
+      bgColor: "bg-fuchsia-100",
+      title: "Response Votes Notification Emails",
+      description: "Emails sent to statement authors once their response crosses 3 opinionated votes, throttled to 1 per 24h",
+      getValue: (s) => s.responseVotesNotifEmailsSent,
+      getDate: (s) => s.responseVotesNotifEmailsSentSince,
+      renderExtra: (s) => (
+        <div className="flex gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Button Clicks</p>
+            <p className="text-2xl font-bold text-fuchsia-600">{s.responseVotesNotifButtonClicks}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Returned within a week</p>
+            <p className="text-2xl font-bold text-fuchsia-600">{s.responseVotesNotifReturnedWithinWeek}</p>
+          </div>
         </div>
       ),
     },

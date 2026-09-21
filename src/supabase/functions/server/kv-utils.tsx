@@ -160,8 +160,15 @@ export const saveUser = async (user: User) => {
 };
 
 export const saveUserWithEmailIndex = async (user: User): Promise<void> => {
-  await kv.set(userKeyFn(user), JSON.stringify(user));
-  await kv.set(`user_email:${user.email}`, user.id);
+  const saveUser = () => kv.set(userKeyFn(user), JSON.stringify(user));
+  if (!user.email) {
+    await saveUser();
+    return;
+  }
+  await Promise.all([
+    saveUser(),
+    kv.set(`user_email:${user.email}`, user.id),
+  ]);
 };
 
 export const updateUserField = async <K extends keyof User>(
@@ -272,6 +279,10 @@ export const saveSession = async (
   await kv.set(sessionKeyFn(session), session);
 };
 
+export const deleteSession = async (sessionId: string) => {
+  await kv.del(`session:${sessionId}`);
+};
+
 export const getCommunity = async (name: string) => {
   return getParsedKvData<Community>(`subheard:${name}`);
 };
@@ -371,11 +382,21 @@ export const getStatement = async (statementId: string): Promise<Statement | nul
 export const filterVisibleStatements = (statements: Statement[]): Statement[] =>
   statements.filter((s) => !s.isHidden);
 
+const hashId = (id: string): number => {
+  let hash = 5381;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 33) ^ id.charCodeAt(i);
+  }
+  return hash >>> 0;
+};
+
 export const getStatementsForRoom = async (
   roomId: string,
 ): Promise<Statement[]> => {
   const statements = await getByPrefixParsed<Statement>(`statement:${roomId}:`);
-  return filterVisibleStatements(statements);
+  return filterVisibleStatements(statements).sort(
+    (a, b) => hashId(a.id) - hashId(b.id),
+  );
 };
 
 export const getStatementsForRoomIncludingHidden = async (
@@ -541,6 +562,10 @@ export const getDebateEndedEmailSent = async (roomId: string): Promise<boolean> 
 
 export const saveDebateEndedEmailSent = async (roomId: string): Promise<void> => {
   await kv.set(`debate-end-email-sent:${roomId}`, "true");
+};
+
+export const clearDebateEndedEmailSent = async (roomId: string): Promise<void> => {
+  await kv.del(`debate-end-email-sent:${roomId}`);
 };
 
 // Newsletter sent tracking

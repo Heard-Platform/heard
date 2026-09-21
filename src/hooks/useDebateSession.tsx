@@ -87,6 +87,7 @@ interface DebateSessionContextType {
   ) => Promise<ApiResponse | null>;
   loadActiveRooms: (subHeard?: string, targetRoomId?: string) => Promise<DebateRoom[]>;
   resetSession: () => void;
+  logout: () => Promise<void>;
   createSeedData: () => Promise<any>;
   createTestRoom: () => Promise<any>;
   createRantTestRoom: () => Promise<any>;
@@ -100,6 +101,10 @@ interface DebateSessionContextType {
       imageUrl?: string;
       endTime?: number;
     },
+  ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
+  restartRoom: (
+    roomId: string,
+    endTime: number,
   ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
   setRoomInactive: (roomId: string) => Promise<boolean>;
   roomStatements: Record<string, Statement[]>;
@@ -716,6 +721,12 @@ export function DebateSessionProvider(
     [callRoomMutation],
   );
 
+  const restartRoom = useCallback(
+    (roomId: string, endTime: number) =>
+      callRoomMutation(() => api.restartRoom(roomId, endTime)),
+    [callRoomMutation],
+  );
+
   // Mark room as inactive (dev tool)
   const setRoomInactive = useCallback(
     async (roomId: string) => {
@@ -948,6 +959,11 @@ export function DebateSessionProvider(
     clearSessionId();
   }, []);
 
+  const logout = useCallback(async () => {
+    await api.logout();
+    resetSession();
+  }, [resetSession]);
+
   useEffect(() => {
     if (user) {
       setCachedUser(user);
@@ -966,9 +982,15 @@ export function DebateSessionProvider(
         console.error("Failed to track activity:", err);
       });
     } else if (response.error === "SESSION_EXPIRED") {
-      console.warn("Session expired, clearing local data");
+      console.warn("Session expired, creating a new anonymous session");
       clearSessionId();
-      setUser(null);
+      const result = await createAnonymousUser();
+      if (result) {
+        api.trackEvent("session_expired_recovered");
+      } else {
+        console.error("Session expired and anonymous re-auth failed; couldn't track session_expired_recovered (no session to authenticate the call)");
+        setUser(null);
+      }
     }
   };
 
@@ -1016,12 +1038,14 @@ export function DebateSessionProvider(
     submitFlyerEmail,
     loadActiveRooms,
     resetSession,
+    logout,
     createSeedData,
     createTestRoom,
     createRantTestRoom,
     createRealtimeTestRoom,
     createScalabilityTest,
     updateRoom,
+    restartRoom,
     setRoomInactive,
     roomStatements,
     getRoomStatements,
@@ -1087,6 +1111,9 @@ export function DebateSessionProvider(
         console.log("[Showcase] anonAddEmailAndLogin called");
         return { success: true };
       },
+      logout: async () => {
+        console.log("[Showcase] logout called");
+      },
       updateAvatar: async (avatarAnimal: AvatarAnimal) => {
         console.log("[Showcase] updateAvatar called");
       },
@@ -1103,6 +1130,10 @@ export function DebateSessionProvider(
       },
       updateRoom: async () => {
         console.log("[Showcase] updateRoom called");
+        return null;
+      },
+      restartRoom: async () => {
+        console.log("[Showcase] restartRoom called");
         return null;
       },
       setRoomInactive: async () => {
