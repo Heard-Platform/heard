@@ -33,7 +33,7 @@ export function EmailInputField({
         placeholder="you@example.com"
         disabled={disabled}
         autoFocus={autoFocus}
-        className="bg-white dark:bg-gray-900"
+        className="bg-white dark:bg-gray-900 border-gray-300 dark:border-input"
       />
       {helperText && (
         <p className="text-xs text-muted-foreground">{helperText}</p>

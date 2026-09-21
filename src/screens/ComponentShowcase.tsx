@@ -54,7 +54,7 @@ import { DisplayModeScreenStory } from "../stories/DisplayModeScreen.story";
 import { RoomAnalyticsModalStory } from "../stories/RoomAnalyticsModal.story";
 import { StatementVoterAnimalsStory } from "../stories/StatementVoterAnimals.story";
 import { VoteSwingOverlayStory } from "../stories/VoteSwingOverlay.story";
-import { FindOutWhoAgreesTripwireStory } from "../stories/FindOutWhoAgreesTripwire.story";
+import { AnonResponseTripwireStory } from "../stories/AnonResponseTripwire.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -163,7 +163,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="room-analytics">Room Analytics</TabsTrigger>
                 <TabsTrigger value="statement-voter-animals">Statement Voter Animals</TabsTrigger>
                 <TabsTrigger value="vote-swing-overlay">Vote Swing Overlay</TabsTrigger>
-                <TabsTrigger value="find-out-who-agrees-tripwire">Find Out Who Agrees Tripwire</TabsTrigger>
+                <TabsTrigger value="anon-response-tripwire">Anon Response Tripwire</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -322,8 +322,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsContent value="vote-swing-overlay">
                 <VoteSwingOverlayStory />
               </TabsContent>
-              <TabsContent value="find-out-who-agrees-tripwire">
-                <FindOutWhoAgreesTripwireStory />
+              <TabsContent value="anon-response-tripwire">
+                <AnonResponseTripwireStory />
               </TabsContent>
             </Tabs>
           </div>

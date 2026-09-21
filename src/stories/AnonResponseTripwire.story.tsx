@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { FindOutWhoAgreesTripwire } from "../components/FindOutWhoAgreesTripwire";
+import { AnonResponseTripwire } from "../components/AnonResponseTripwire";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 
 export default {
-  title: "Onboarding/FindOutWhoAgreesTripwire",
+  title: "Onboarding/AnonResponseTripwire",
 };
 
 const STATEMENT_TEXT =
   "Pineapple belongs on pizza and makes it sweet and savory perfection!";
 
-export function FindOutWhoAgreesTripwireStory() {
+export function AnonResponseTripwireStory() {
   const [isOpen, setIsOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export function FindOutWhoAgreesTripwireStory() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Find Out Who Agrees Tripwire</CardTitle>
+        <CardTitle>Anon Response Tripwire</CardTitle>
         <CardDescription>
           Shown right after an anonymous or no-email user posts a statement — timed to
           their moment of buy-in — inviting them to add an email to see who agrees and
@@ -63,7 +63,7 @@ export function FindOutWhoAgreesTripwireStory() {
           </Button>
         </div>
 
-        <FindOutWhoAgreesTripwire
+        <AnonResponseTripwire
           statementText={STATEMENT_TEXT}
           isOpen={isOpen}
           submitting={submitting}
