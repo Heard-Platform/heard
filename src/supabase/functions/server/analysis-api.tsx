@@ -97,6 +97,7 @@ app.get(
           clusterMetadata,
           assignments,
           voterIds,
+          c.get("userId") ?? null,
         );
       }
 

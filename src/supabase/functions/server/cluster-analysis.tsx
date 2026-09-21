@@ -34,6 +34,7 @@ export interface ClusterConsensus {
   totalClusters: number;
   clusters: Cluster[];
   statementBreakdowns: Record<string, ClusterVoteBreakdown[]>;
+  currentUserClusterId: number | null;
 }
 
 interface ClusterUserGroup {
@@ -150,6 +151,7 @@ export function calculateClusterConsensus(
   clusterMetadata: ClusterMetadata,
   assignments: (ClusterAssignment | null)[],
   voterIds: string[],
+  currentUserId: string | null = null,
 ): ClusterConsensus {
   const userClusterMap = new Map<string, number>();
   voterIds.forEach((userId, idx) => {
@@ -200,9 +202,13 @@ export function calculateClusterConsensus(
     );
   }
 
+  const currentUserClusterId =
+    groups.find((g) => currentUserId !== null && g.users.includes(currentUserId))?.clusterId ?? null;
+
   return {
     totalClusters: clusterMetadata.totalClusters,
     clusters,
     statementBreakdowns,
+    currentUserClusterId,
   };
 }

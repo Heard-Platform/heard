@@ -15,6 +15,7 @@ interface ClusterConsensusBoxProps {
   totalParticipants: number;
   statements: StatementVotes[];
   showNumbers: boolean;
+  isCurrentUserCluster?: boolean;
 }
 
 export function ClusterConsensusBox({
@@ -24,6 +25,7 @@ export function ClusterConsensusBox({
   totalParticipants,
   statements,
   showNumbers,
+  isCurrentUserCluster = false,
 }: ClusterConsensusBoxProps) {
   const colors = getClusterColor(clusterIndex);
   const [expanded, setExpanded] = useState(false);
@@ -31,7 +33,9 @@ export function ClusterConsensusBox({
   const extraCount = Math.max(0, statements.length - VISIBLE_STATEMENTS);
 
   return (
-    <div className={`border ${colors.border} rounded-lg p-4 ${colors.bg}`}>
+    <div
+      className={`border ${colors.border} rounded-lg p-4 ${colors.bg} ${isCurrentUserCluster ? "ring-2 ring-offset-2 ring-purple-500" : ""}`}
+    >
       <div className="heard-between mb-1">
         <div className="flex items-center gap-2">
           <h3 className={`font-medium ${colors.text}`}>
@@ -40,6 +44,9 @@ export function ClusterConsensusBox({
           <Badge variant="outline" className={colors.badge}>
             {clusterSize} users
           </Badge>
+          {isCurrentUserCluster && (
+            <Badge className="bg-purple-600 text-white">Your cluster</Badge>
+          )}
         </div>
       </div>
       <p className="text-sm text-muted-foreground mb-3">
