@@ -1,6 +1,7 @@
 import { getRecentUserEvents, tagEventsWithSession } from "./model-utils.ts";
 import { getAllRealUsers, getDevUsers } from "./kv-utils.tsx";
 import { UserEvent } from "./types.tsx";
+import { toTimestamp } from "./time-utils.ts";
 
 export const SESSION_GAP_MS = 15 * 60 * 1000;
 const DEFAULT_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -29,12 +30,6 @@ export interface SessionComputation {
   sessions: SessionSummary[];
   newlyTagged: { eventIds: string[]; sessionId: string }[];
 }
-
-const toTimestamp = (val: number | string | undefined): number => {
-  if (!val) return 0;
-  const n = Number(val);
-  return isNaN(n) ? new Date(val).getTime() : n;
-};
 
 const summarizeSession = (
   sessionId: string,

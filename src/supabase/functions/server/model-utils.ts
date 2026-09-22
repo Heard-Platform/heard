@@ -166,7 +166,7 @@ export const getCertifyCardEvents = async () => {
   return selectAll<UserEvent>(
     "user_events",
     {},
-    (q: any) => q.like("type", "certify_card_%").select("type"),
+    (q: any) => q.like("type", "certify_card_%").select("type, createdAt"),
   );
 };
 

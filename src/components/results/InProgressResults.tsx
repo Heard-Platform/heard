@@ -1,11 +1,8 @@
 import { motion } from "motion/react";
 import { Card } from "../ui/card";
 import { VotesDrawer } from "./VotesDrawer";
-import { RenderedStatement } from "../RenderedStatement";
 import type { Statement, VoteType } from "../../types";
-import { isDefined } from "../../utils/array";
-import { getAllAgrees, getDecisiveVotes } from "../../utils/statement";
-import { getLiveHighlights } from "./utils";
+import { LiveHighlights, buildLiveHighlights } from "./LiveHighlights";
 
 interface InProgressResultsProps {
   statements: Statement[];
@@ -16,28 +13,6 @@ interface InProgressResultsProps {
     statementId: string,
     newVote: VoteType,
   ) => Promise<void>;
-}
-
-function TugBar({
-  side,
-  percentage,
-}: {
-  side: "agree" | "disagree";
-  percentage: number;
-}) {
-  const isAgree = side === "agree";
-  return (
-    <motion.div
-      className={
-        isAgree
-          ? "absolute left-0 top-0 h-full bg-gradient-to-r agree-gradient-from agree-gradient-to"
-          : "absolute right-0 top-0 h-full bg-gradient-to-l disagree-gradient-from disagree-gradient-to"
-      }
-      initial={{ width: 0 }}
-      animate={{ width: `${percentage}%` }}
-      transition={{ duration: 0.8, type: "spring", stiffness: 50 }}
-    />
-  );
 }
 
 export function InProgressResults({
@@ -52,17 +27,7 @@ export function InProgressResults({
     0,
   );
 
-  const { topAgreed, topDisagreed, mostSplit } = getLiveHighlights(statements);
-
-  const highlights = [
-    topAgreed && { statement: topAgreed, label: "Top Agreed", icon: "🏆" },
-    topDisagreed && {
-      statement: topDisagreed,
-      label: "Top Disagreed",
-      icon: "👎",
-    },
-    mostSplit && { statement: mostSplit, label: "Most Split", icon: "⚖️" },
-  ].filter(isDefined);
+  const highlights = buildLiveHighlights(statements);
 
   return (
     <motion.div
@@ -106,59 +71,8 @@ export function InProgressResults({
             />
           </motion.div>
 
-          {/* Live Highlights */}
-          <div className="space-y-3 md:space-y-4 mb-4">
-            {highlights.map(
-              ({ statement: s, label, icon }, index) => {
-                const agrees = getAllAgrees(s);
-                const disagrees = s.disagrees;
-                const decisive = getDecisiveVotes(s);
-                const agreePct = (agrees / decisive) * 100;
-                const disagreePct = 100 - agreePct;
-
-                return (
-                  <motion.div
-                    key={s.id}
-                    initial={{ x: -50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="space-y-1.5"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] sm:text-xs font-semibold text-orange-700">
-                        {icon} {label}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-[10px] sm:text-xs truncate min-w-0 flex-1">
-                        <RenderedStatement text={s.text} />
-                      </p>
-                      <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
-                        {decisive} vote{decisive === 1 ? "" : "s"}
-                      </span>
-                    </div>
-
-                    {/* Tug-of-war bar */}
-                    <div className="relative h-3 sm:h-4 bg-gray-200 rounded-full overflow-hidden">
-                      <TugBar side="agree" percentage={agreePct} />
-                      <TugBar side="disagree" percentage={disagreePct} />
-                      {/* Center reference line */}
-                      <div className="absolute left-1/2 top-0 h-full w-px bg-white/80 -translate-x-1/2 z-10" />
-                    </div>
-
-                    <div className="flex items-center justify-between text-[10px] sm:text-xs">
-                      <span className="text-emerald-700 font-medium">
-                        ✅ {agrees} agree{agrees === 1 ? "" : "s"}
-                      </span>
-                      <span className="text-rose-700 font-medium">
-                        {disagrees} disagree{disagrees === 1 ? "" : "s"} ❌
-                      </span>
-                    </div>
-                  </motion.div>
-                );
-              },
-            )}
+          <div className="mb-4">
+            <LiveHighlights highlights={highlights} />
 
             {highlights.length === 0 && (
               <p className="text-xs sm:text-sm text-center text-muted-foreground py-2">

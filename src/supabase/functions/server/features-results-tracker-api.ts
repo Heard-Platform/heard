@@ -2,6 +2,8 @@ import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers, getAllAskTheDataRecords } from "./kv-utils.tsx";
 import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, getEventsOfType, getCommunityTeaserEvents } from "./model-utils.ts";
 import { countRecords, selectAll } from "./db-utils.ts";
+import type { UserEvent } from "./types.tsx";
+import { toTimestamp } from "./time-utils.ts";
 import { getResponseVotesNotifStats } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
@@ -70,18 +72,24 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const roomFollows = await countRecords("room_follows");
 
     const certifyCardEvents = await getCertifyCardEvents();
-    const certifyCardCounts: Record<string, number> = {};
+    const countCertifyCardEvents = (events: UserEvent[]) => ({
+      shown: events.filter((row) => row.type === "certify_card_shown").length,
+      emailSubmitted: events.filter((row) => row.type === "certify_card_email_submitted").length,
+    });
+    const certifyCardShownSince = new Date("2026-09-22").getTime();
+
+    const certifyCardMonthlyBuckets: Record<string, UserEvent[]> = {};
     for (const row of certifyCardEvents) {
-      certifyCardCounts[row.type] = (certifyCardCounts[row.type] ?? 0) + 1;
+      const date = new Date(toTimestamp(row.createdAt));
+      const month = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+      (certifyCardMonthlyBuckets[month] ??= []).push(row);
     }
-    const certifyCardData = {
-      shown: certifyCardCounts["certify_card_shown"] ?? 0,
-      emailSubmitted: certifyCardCounts["certify_card_email_submitted"] ?? 0,
-      phoneSubmitted: certifyCardCounts["certify_card_phone_submitted"] ?? 0,
-      verified: certifyCardCounts["certify_card_verified"] ?? 0,
-      dismissed: certifyCardCounts["certify_card_dismissed"] ?? 0,
-    };
-    const certifyCardShownSince = new Date("2026-04-21").getTime();
+    const certifyCardMonthly = Object.keys(certifyCardMonthlyBuckets)
+      .sort()
+      .map((month) => ({
+        month,
+        ...countCertifyCardEvents(certifyCardMonthlyBuckets[month]),
+      }));
 
     const flyerResultsClicked = (await getUniqueUserIdsForEvent("flyer_results_get_results_clicked")).size;
     const flyerResultsClickedSince = new Date("2026-05-28").getTime();
@@ -293,9 +301,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       roomViewsSince,
       roomFollows,
       roomFollowsSince,
-      certifyCardShown: certifyCardData.shown,
+      certifyCardShown: certifyCardMonthly.reduce((sum, m) => sum + m.shown, 0),
       certifyCardShownSince,
-      certifyCardData,
+      certifyCardMonthly,
       flyerResultsClicked,
       flyerResultsClickedSince,
       oneBillionEvents,

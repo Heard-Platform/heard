@@ -4,9 +4,76 @@ import { SwipeableStatementStack } from "../components/room/SwipeableStatementSt
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Button } from "../components/ui/button";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
-import { mockRooms, mockStatements, mockUser } from "./mockData";
+import type { Statement, UserSession, VoteType } from "../types";
+import { mockRooms, mockUser } from "./mockData";
 
 type AuthPath = "signup" | "otp";
+
+const STORY_USER_ID = "story-user";
+
+const storyUser: UserSession = {
+  ...mockUser,
+  id: STORY_USER_ID,
+  isAnonymous: true,
+};
+
+const makeStatement = (
+  id: string,
+  roomId: string,
+  text: string,
+  othersAgree: number,
+  othersDisagree: number,
+  userVote: VoteType | null,
+): Statement => {
+  const voters: Statement["voters"] = {};
+  for (let i = 0; i < othersAgree; i++) voters[`${id}-agree-${i}`] = "agree";
+  for (let i = 0; i < othersDisagree; i++) voters[`${id}-disagree-${i}`] = "disagree";
+  if (userVote) voters[STORY_USER_ID] = userVote;
+
+  const userAgrees = userVote === "agree" || userVote === "super_agree";
+
+  return {
+    id,
+    text,
+    author: `${id}-agree-0`,
+    roomId,
+    timestamp: Date.now() - 4 * 60 * 1000,
+    agrees: othersAgree + (userVote === "agree" ? 1 : 0),
+    superAgrees: userVote === "super_agree" ? 1 : 0,
+    disagrees: othersDisagree + (userVote === "disagree" ? 1 : 0),
+    passes: userVote === "pass" ? 1 : 0,
+    voters,
+    round: 1,
+  };
+};
+
+const buildStoryStatements = (roomId: string): Statement[] => [
+  makeStatement("cs1", roomId, "Pineapple adds a sweet contrast to the savory flavors", 34, 6, "agree"),
+  makeStatement("cs2", roomId, "Pizza toppings should be a matter of personal freedom", 29, 8, "agree"),
+  makeStatement("cs3", roomId, "Putting fruit on pizza is a crime against Italy", 9, 31, "disagree"),
+  makeStatement("cs4", roomId, "Ranch belongs on pizza", 11, 27, "agree"),
+  makeStatement("cs5", roomId, "Deep dish is not really pizza", 22, 19, "disagree"),
+  makeStatement("cs6", roomId, "Thin crust is the only crust worth eating", 26, 12, "agree"),
+  makeStatement("cs7", roomId, "Cold pizza for breakfast is peak dining", 18, 20, "disagree"),
+  makeStatement("cs8", roomId, "Crust is the best part", 24, 15, null),
+  makeStatement("cs9", roomId, "Pizza is better than tacos", 17, 21, null),
+  makeStatement("cs10", roomId, "Everyone should learn to make dough from scratch", 20, 14, null),
+];
+
+const buildOverrides = (authPath: AuthPath) => ({
+  user: storyUser,
+  anonAddEmailAndLogin: async (email: string) => {
+    console.log("[Story] anonAddEmailAndLogin", { email, authPath });
+    if (authPath === "otp") {
+      return { success: true, data: { requiresOtp: true as const, email } };
+    }
+    return { success: true, data: { requiresOtp: false as const, user: mockUser } };
+  },
+  verifyMagicLink: async (code: string) => {
+    console.log("[Story] verifyMagicLink", { code });
+    return { success: true, data: { user: mockUser, sessionId: "story-session" } };
+  },
+});
 
 export function CertifyCardStory() {
   return (
@@ -44,20 +111,7 @@ function CertifyCardIsolated() {
   const [authPath, setAuthPath] = useState<AuthPath>("signup");
   const [succeeded, setSucceeded] = useState(false);
 
-  const overrides = {
-    user: { ...mockUser, isAnonymous: true },
-    anonAddEmailAndLogin: async (email: string) => {
-      console.log("[Story] anonAddEmailAndLogin", { email, authPath });
-      if (authPath === "otp") {
-        return { success: true, data: { requiresOtp: true as const, email } };
-      }
-      return { success: true, data: { requiresOtp: false as const, user: mockUser } };
-    },
-    verifyMagicLink: async (code: string) => {
-      console.log("[Story] verifyMagicLink", { code });
-      return { success: true, data: { user: mockUser, sessionId: "story-session" } };
-    },
-  };
+  const overrides = buildOverrides(authPath);
 
   return (
     <div className="space-y-4">
@@ -95,6 +149,7 @@ function CertifyCardIsolated() {
             <CertifyCard
               key={authPath}
               roomId="story"
+              statements={buildStoryStatements("story")}
               isActive={true}
               onSuccess={() => setSucceeded(true)}
             />
@@ -107,25 +162,27 @@ function CertifyCardIsolated() {
 
 function CertifyCardInStack() {
   return (
-    <SwipeableStatementStack
-      room={mockRooms[0]}
-      statements={mockStatements["debate-with-image"]}
-      currentUserId="demo-user"
-      allowAnonymous={true}
-      isAnonymous={true}
-      chanceCardSwiped={true}
-      cover={null}
-      coverCardSwiped={true}
-      demographicQuestions={[]}
-      answeredQuestionIds={new Set()}
-      isActive={true}
-      onVote={async () => {}}
-      onSubmitStatement={async () => {}}
-      onShowAccountSetupModal={() => {}}
-      onChanceCardSwiped={async () => {}}
-      onCoverCardSwiped={async () => {}}
-      onCertifyDone={async () => {}}
-      onDemographicsAnswered={() => {}}
-    />
+    <DebateSessionProvider showcaseOverrides={buildOverrides("signup")}>
+      <SwipeableStatementStack
+        room={mockRooms[0]}
+        statements={buildStoryStatements(mockRooms[0].id)}
+        currentUserId={STORY_USER_ID}
+        allowAnonymous={true}
+        isAnonymous={true}
+        chanceCardSwiped={true}
+        cover={null}
+        coverCardSwiped={true}
+        demographicQuestions={[]}
+        answeredQuestionIds={new Set()}
+        isActive={true}
+        onVote={async () => {}}
+        onSubmitStatement={async () => {}}
+        onShowAccountSetupModal={() => {}}
+        onChanceCardSwiped={async () => {}}
+        onCoverCardSwiped={async () => {}}
+        onCertifyDone={async () => {}}
+        onDemographicsAnswered={() => {}}
+      />
+    </DebateSessionProvider>
   );
 }

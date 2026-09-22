@@ -122,12 +122,6 @@ export function SwipeableStatementStack({
     demogEndIndex = insertAt + demoCards.length;
   }
 
-  if (isAnonymous && !certifyCardDismissed) {
-    const certifyCard: Card = { type: "certify" };
-    const insertIndex = Math.min(3, cards.length);
-    cards.splice(insertIndex, 0, certifyCard);
-  }
-
   if (!chanceCardSwiped) {
     const chanceCard: ChanceCard = { type: "chance" };
     const naturalIndex = Math.min(5, statements.length) - votedStatementIds.size;
@@ -141,6 +135,11 @@ export function SwipeableStatementStack({
       cover,
     };
     cards.unshift(coverCard);
+  }
+
+  if (isAnonymous && !certifyCardDismissed) {
+    const certifyCard: Card = { type: "certify" };
+    cards.push(certifyCard);
   }
 
   const hasMoreCards = cards.length > 0;
@@ -462,6 +461,7 @@ export function SwipeableStatementStack({
                 key={getCardKey()}
                 card={card}
                 room={room}
+                statements={statements}
                 index={index}
                 isTopCard={isTopCard}
                 onDragStart={() => setIsDragging(true)}

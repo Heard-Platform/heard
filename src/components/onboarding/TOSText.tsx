@@ -1,7 +1,11 @@
-export function TOSText() {
+interface TOSTextProps {
+  prefix?: string;
+}
+
+export function TOSText({ prefix }: TOSTextProps) {
   return (
     <p className="text-xs text-muted-foreground">
-      By using Heard, you agree to our{" "}
+      {prefix}By using Heard, you agree to our{" "}
       <a
         href="/terms"
         className="heard-link underline"

@@ -553,13 +553,7 @@ export interface FeatureResults {
   certifyCardShownSince: number;
   flyerResultsClicked: number;
   flyerResultsClickedSince: number;
-  certifyCardData: {
-    shown: number;
-    emailSubmitted: number;
-    phoneSubmitted: number;
-    verified: number;
-    dismissed: number;
-  };
+  certifyCardMonthly: { month: string; shown: number; emailSubmitted: number }[];
   oneBillionEvents: {
     pageLoad: number;
     clickProjects: number;

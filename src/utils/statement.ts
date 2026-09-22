@@ -44,3 +44,18 @@ export const calcSwingBeforeAndAfter = (
     afterAgreePercent: (afterAgrees / afterDecisive) * 100,
   };
 };
+
+export const countVotesAgreeingWithUser = (
+  statements: Statement[],
+  userId: string,
+): number =>
+  statements.reduce((sum, statement) => {
+    const userVote = statement.voters?.[userId];
+    if (userVote === "agree" || userVote === "super_agree") {
+      return sum + getAllAgrees(statement) - 1;
+    }
+    if (userVote === "disagree") {
+      return sum + statement.disagrees - 1;
+    }
+    return sum;
+  }, 0);
