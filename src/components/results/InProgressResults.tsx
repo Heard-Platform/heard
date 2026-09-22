@@ -103,7 +103,7 @@ export function InProgressResults({
                 }}
               />
               <motion.span
-                className="relative z-10 flex items-center justify-center gap-2"
+                className="relative z-10 flex flex-col items-center justify-center gap-0.5"
                 animate={{
                   scale: [1, 1.05, 1],
                 }}
@@ -112,37 +112,47 @@ export function InProgressResults({
                   repeat: Infinity,
                 }}
               >
-                Certify your vote
+                <span>Verify you're human</span>
+                <span className="text-xs font-normal opacity-80">
+                  and not a monkey 🙈
+                </span>
               </motion.span>
             </motion.button>
           )}
 
-          {/* Fun encouragement message */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mt-3 md:mt-4 text-center"
-          >
-            <motion.p
-              className="text-xs sm:text-sm text-orange-700 font-medium"
-              animate={{
-                scale: [1, 1.05, 1],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-              }}
+          {isAnonymous && onFollowDiscussion && (
+            <p className="text-xs text-center text-muted-foreground mt-1">
+              Takes 30 seconds and one SMS
+            </p>
+          )}
+
+          {!(isAnonymous && onFollowDiscussion) && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="mt-3 md:mt-4 text-center"
             >
-              {totalVotes === 0
-                ? "🎯 Waiting for votes to roll in..."
-                : totalVotes < 5
-                  ? "🔥 The race is heating up!"
-                  : totalVotes < 10
-                    ? "⚡ Votes are pouring in!"
-                    : "💥 EPIC vote-fest in progress!"}
-            </motion.p>
-          </motion.div>
+              <motion.p
+                className="text-xs sm:text-sm text-orange-700 font-medium"
+                animate={{
+                  scale: [1, 1.05, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                }}
+              >
+                {totalVotes === 0
+                  ? "🎯 Waiting for votes to roll in..."
+                  : totalVotes < 5
+                    ? "🔥 The race is heating up!"
+                    : totalVotes < 10
+                      ? "⚡ Votes are pouring in!"
+                      : "💥 EPIC vote-fest in progress!"}
+              </motion.p>
+            </motion.div>
+          )}
         </div>
       </Card>
     </motion.div>
