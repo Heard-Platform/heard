@@ -129,6 +129,7 @@ export function LobbyScreen({
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [showAccountSetupAnonModal, setShowAccountSetupAnonModal] = useState(false);
   const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
+  const [accountSetupIsSignIn, setAccountSetupIsSignIn] = useState(false);
   const [explorerOpen, setExplorerOpen] = useState(false);
   type Steps = "tutorial" | "explorer" | "complete";
 
@@ -312,8 +313,9 @@ export function LobbyScreen({
     return result;
   };
 
-  const handleShowAccountSetupModal = (featureText: string) => {
+  const handleShowAccountSetupModal = (featureText: string, isSignIn?: boolean) => {
     setAccountSetupFeatureText(featureText);
+    setAccountSetupIsSignIn(!!isSignIn);
     setShowAccountSetupAnonModal(true);
   };
 
@@ -518,6 +520,7 @@ export function LobbyScreen({
       {/* Account Setup Modal */}
       <AnonAccountSetupModal
         featureText={accountSetupFeatureText}
+        isSignIn={accountSetupIsSignIn}
         isOpen={showAccountSetupAnonModal}
         onClose={() => setShowAccountSetupAnonModal(false)}
       />
