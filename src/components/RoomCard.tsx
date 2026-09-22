@@ -390,6 +390,7 @@ export function RoomCard({
                   <InProgressResults
                     statements={statements}
                     debateTitle={room.topic}
+                    roomId={room.id}
                     isAnonymous={!!user?.isAnonymous}
                     onFollowDiscussion={() =>
                       onShowAccountSetupModal(
