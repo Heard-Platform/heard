@@ -4,7 +4,8 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useState } from "react";
-import { Sparkles, Users, Award, Mail, Phone } from "lucide-react";
+import { Users, Award, Mail, Phone } from "lucide-react";
+import monkeyImg from "/monkey.png";
 import { isValidEmail, isValidPhone, formatPhone } from "../utils/validation";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { PhoneCollectionStep } from "./onboarding/PhoneCollectionStep";
@@ -16,12 +17,14 @@ import { toast } from "sonner@2.0.3";
 
 interface AnonAccountSetupModalProps {
   featureText: string;
+  isSignIn?: boolean;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export function AnonAccountSetupModal({
   featureText,
+  isSignIn,
   isOpen,
   onClose,
 }: AnonAccountSetupModalProps) {
@@ -259,8 +262,8 @@ export function AnonAccountSetupModal({
                       }}
                       className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 rounded-full blur-lg opacity-50"
                     />
-                    <div className="relative w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
-                      <Sparkles className="w-10 h-10 text-white" />
+                    <div className="relative w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center overflow-hidden">
+                      <img src={monkeyImg} alt="Heard" className="w-14 h-14 rounded-full object-cover" />
                     </div>
                   </div>
                 </motion.div>
@@ -272,28 +275,11 @@ export function AnonAccountSetupModal({
                     transition={{ delay: 0.2 }}
                     className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
                   >
-                    Signup or Login ✨
+                    {`${isSignIn ? "Enter" : "Add"} your phone number`}
+                    <br />
+                    to {featureText}
                   </motion.h2>
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-muted-foreground"
-                  >
-                    Hey there, new friend! To {featureText}, just enter your {showEmailFlow ? "email" : "phone number"} below.
-                  </motion.p>
                 </div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="grid grid-cols-3 gap-4"
-                >
-                  <FeatureBadge icon={Sparkles} label="Start Discussions" />
-                  <FeatureBadge icon={Users} label="Explore Communities" />
-                  <FeatureBadge icon={Award} label="Get Recognized" />
-                </motion.div>
               </>
             )}
 
@@ -423,12 +409,13 @@ export function AnonAccountSetupModal({
                         className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600"
                       />
                     )}
-                    <p className="text-xs text-muted-foreground">
-                      {showEmailFlow
-                        ? "We'll send you a code to verify your email"
-                        : "We'll send you a code to verify your phone"}
-                    </p>
-                    <TOSText />
+                    <TOSText
+                      prefix={
+                        showEmailFlow
+                          ? "We'll send you a code to verify your email. "
+                          : "We'll send you a code to verify your phone. "
+                      }
+                    />
                     {showEmailFlow ? (
                       <button
                         type="button"
