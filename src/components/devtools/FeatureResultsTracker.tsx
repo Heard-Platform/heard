@@ -54,6 +54,7 @@ interface FeatureCardData {
   title: string;
   description: string;
   getValue: (stats: FeatureResults) => number;
+  valueSuffix?: string;
   getDate: (stats: FeatureResults) => number;
   renderExtra?: (stats: FeatureResults) => ReactNode;
 }
@@ -226,6 +227,19 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.certifyCardShown,
       getDate: (s) => s.certifyCardShownSince,
       renderExtra: (s) => <CertifyCardConversionChart monthly={s.certifyCardMonthly} />,
+    },
+    {
+      icon: Bot,
+      iconColor: "text-violet-600",
+      bgColor: "bg-violet-100",
+      title: "Verify Human Click Rate",
+      description: "% of anonymous users who saw the \"Verify you're human\" button (on in-progress results) who clicked it",
+      getValue: (s) =>
+        s.verifyHumanShown > 0
+          ? Math.round((s.verifyHumanClicked / s.verifyHumanShown) * 1000) / 10
+          : 0,
+      valueSuffix: "%",
+      getDate: (s) => s.verifyHumanShownSince,
     },
     {
       icon: Eye,
@@ -489,7 +503,10 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground mb-1">{card.title}</p>
-                  <p className="text-3xl font-bold">{stats ? card.getValue(stats) : 0}</p>
+                  <p className="text-3xl font-bold">
+                    {stats ? card.getValue(stats) : 0}
+                    {card.valueSuffix}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {card.description}
                   </p>

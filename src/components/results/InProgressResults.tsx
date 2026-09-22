@@ -1,12 +1,15 @@
+import { useEffect } from "react";
 import { motion } from "motion/react";
 import { Card } from "../ui/card";
 import { VotesDrawer } from "./VotesDrawer";
 import type { Statement, VoteType } from "../../types";
 import { LiveHighlights, buildLiveHighlights } from "./LiveHighlights";
+import { api } from "../../utils/api";
 
 interface InProgressResultsProps {
   statements: Statement[];
   debateTitle: string;
+  roomId?: string;
   isAnonymous?: boolean;
   onFollowDiscussion?: () => void;
   onChangeVote: (
@@ -18,10 +21,23 @@ interface InProgressResultsProps {
 export function InProgressResults({
   statements,
   debateTitle,
+  roomId,
   isAnonymous,
   onFollowDiscussion,
   onChangeVote,
 }: InProgressResultsProps) {
+  const showVerifyPrompt = isAnonymous && !!onFollowDiscussion;
+
+  useEffect(() => {
+    if (showVerifyPrompt) {
+      api.trackEvent("verify_human_shown", roomId);
+    }
+  }, [showVerifyPrompt, roomId]);
+
+  const handleVerifyClick = () => {
+    api.trackEvent("verify_human_clicked", roomId);
+    onFollowDiscussion?.();
+  };
   const totalVotes = statements.reduce(
     (sum, s) => sum + s.agrees + s.superAgrees + s.disagrees + s.passes,
     0,
@@ -81,7 +97,7 @@ export function InProgressResults({
             )}
           </div>
 
-          {isAnonymous && onFollowDiscussion && (
+          {showVerifyPrompt && (
             <motion.button
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -89,7 +105,7 @@ export function InProgressResults({
               className="w-full mt-4 py-3 px-6 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white rounded-xl font-bold text-lg shadow-lg relative overflow-hidden"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={onFollowDiscussion}
+              onClick={handleVerifyClick}
             >
               <motion.div
                 className="absolute inset-0 bg-white/30"
@@ -103,7 +119,7 @@ export function InProgressResults({
                 }}
               />
               <motion.span
-                className="relative z-10 flex items-center justify-center gap-2"
+                className="relative z-10 flex flex-col items-center justify-center gap-0.5"
                 animate={{
                   scale: [1, 1.05, 1],
                 }}
@@ -112,37 +128,47 @@ export function InProgressResults({
                   repeat: Infinity,
                 }}
               >
-                Certify your vote
+                <span>Verify you're human</span>
+                <span className="text-xs font-normal opacity-80">
+                  and not a monkey 🙈
+                </span>
               </motion.span>
             </motion.button>
           )}
 
-          {/* Fun encouragement message */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mt-3 md:mt-4 text-center"
-          >
-            <motion.p
-              className="text-xs sm:text-sm text-orange-700 font-medium"
-              animate={{
-                scale: [1, 1.05, 1],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-              }}
+          {showVerifyPrompt && (
+            <p className="text-xs text-center text-muted-foreground mt-1">
+              Takes 30 seconds and one SMS
+            </p>
+          )}
+
+          {!showVerifyPrompt && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="mt-3 md:mt-4 text-center"
             >
-              {totalVotes === 0
-                ? "🎯 Waiting for votes to roll in..."
-                : totalVotes < 5
-                  ? "🔥 The race is heating up!"
-                  : totalVotes < 10
-                    ? "⚡ Votes are pouring in!"
-                    : "💥 EPIC vote-fest in progress!"}
-            </motion.p>
-          </motion.div>
+              <motion.p
+                className="text-xs sm:text-sm text-orange-700 font-medium"
+                animate={{
+                  scale: [1, 1.05, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                }}
+              >
+                {totalVotes === 0
+                  ? "🎯 Waiting for votes to roll in..."
+                  : totalVotes < 5
+                    ? "🔥 The race is heating up!"
+                    : totalVotes < 10
+                      ? "⚡ Votes are pouring in!"
+                      : "💥 EPIC vote-fest in progress!"}
+              </motion.p>
+            </motion.div>
+          )}
         </div>
       </Card>
     </motion.div>

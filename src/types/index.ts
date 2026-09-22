@@ -638,6 +638,9 @@ export interface FeatureResults {
   ggwashSince: number;
   modInvitesAccepted: number;
   modInvitesAcceptedSince: number;
+  verifyHumanShown: number;
+  verifyHumanClicked: number;
+  verifyHumanShownSince: number;
   askTheDataQuestions: number;
   askTheDataQuestionsSince: number;
   communityTeaserEvents: number;

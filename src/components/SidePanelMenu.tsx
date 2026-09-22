@@ -84,7 +84,7 @@ interface SidePanelMenuProps {
   onOpenAdminPanel?: () => void;
   onJumpToFinalResults?: () => void;
   onCreateAnonDebate?: () => void;
-  onShowAccountSetupModal: (featureText: string) => void;
+  onShowAccountSetupModal: (featureText: string, isSignIn?: boolean) => void;
   onJumpToRoom: (roomId: string, subHeard?: string) => void;
 }
 
@@ -125,7 +125,7 @@ export function SidePanelMenu({
   if (user.isAnonymous) {
     return (
       <Button
-        onClick={() => onShowAccountSetupModal("save your progress")}
+        onClick={() => onShowAccountSetupModal("sign in or create an account", true)}
         variant="outline"
         className="controls-layer rounded-full bg-gradient-to-r from-orange-500 to-amber-500 backdrop-blur-sm shadow-lg h-[30px] px-4 gap-2 border border-orange-400 hover:from-orange-600 hover:to-amber-600 transition-all"
       >

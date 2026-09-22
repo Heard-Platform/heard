@@ -105,6 +105,20 @@ export const InProgressDebate = () => {
   );
 };
 
+export const InProgressUnverified = () => {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4">
+      <InProgressResults
+        statements={mockStatements}
+        debateTitle="Is social media good or bad for society?"
+        isAnonymous={true}
+        onFollowDiscussion={() => console.log("Certify your vote clicked")}
+        onChangeVote={async () => {}}
+      />
+    </div>
+  );
+};
+
 export const FewPlayers = () => {
   const fewStatements = mockStatements.slice(0, 2);
 
@@ -230,9 +244,10 @@ export function ResultsCardsStory() {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="concluded" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
             <TabsTrigger value="concluded">Concluded</TabsTrigger>
             <TabsTrigger value="in-progress">In Progress</TabsTrigger>
+            <TabsTrigger value="in-progress-unverified">Certify Prompt</TabsTrigger>
             <TabsTrigger value="few">Few Players</TabsTrigger>
             <TabsTrigger value="many">Many Players</TabsTrigger>
             <TabsTrigger value="tied">Tied Votes</TabsTrigger>
@@ -247,7 +262,11 @@ export function ResultsCardsStory() {
           <TabsContent value="in-progress">
             <InProgressDebate />
           </TabsContent>
-          
+
+          <TabsContent value="in-progress-unverified">
+            <InProgressUnverified />
+          </TabsContent>
+
           <TabsContent value="few">
             <FewPlayers />
           </TabsContent>
