@@ -5,7 +5,7 @@ import {
   useTransform,
   PanInfo,
 } from "motion/react";
-import type { Card, DebateRoom } from "../../types";
+import type { Card, DebateRoom, Statement } from "../../types";
 import { getPastelColor } from "../../utils/colors";
 import { ChanceCard } from "./ChanceCard";
 import { CoverCard } from "./CoverCard";
@@ -16,6 +16,7 @@ import { CertifyCard } from "./CertifyCard";
 interface SwipeableCardProps {
   card: Card;
   room: DebateRoom;
+  statements: Statement[];
   index: number;
   isTopCard: boolean;
   direction: "left" | "right" | "down" | "up" | null;
@@ -41,6 +42,7 @@ interface SwipeableCardProps {
 export function SwipeableCard({
   card,
   room,
+  statements,
   index,
   isTopCard,
   direction,
@@ -186,6 +188,7 @@ export function SwipeableCard({
         ) : card.type === "certify" ? (
           <CertifyCard
             roomId={room.id}
+            statements={statements}
             isActive={isTopCard}
             onSuccess={onCertifySuccess}
           />
