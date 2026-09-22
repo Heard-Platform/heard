@@ -38,7 +38,7 @@ import {
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
 import { AvatarAnimalChart } from "./feature-tracker/AvatarAnimalChart";
-import { CertifyCardResults } from "./feature-tracker/CertifyCardResults";
+import { CertifyCardConversionChart } from "./feature-tracker/CertifyCardConversionChart";
 import { OneBillionResults } from "./feature-tracker/OneBillionResults";
 import { FundingResults } from "./feature-tracker/FundingResults";
 import { OrganizersResults } from "./feature-tracker/OrganizersResults";
@@ -222,10 +222,10 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       iconColor: "text-emerald-600",
       bgColor: "bg-emerald-100",
       title: "Certify Card Shown",
-      description: "Anonymous users who have seen the phone verification card",
+      description: "Anonymous users who have seen the email verification card",
       getValue: (s) => s.certifyCardShown,
       getDate: (s) => s.certifyCardShownSince,
-      renderExtra: (s) => <CertifyCardResults {...s.certifyCardData} />,
+      renderExtra: (s) => <CertifyCardConversionChart monthly={s.certifyCardMonthly} />,
     },
     {
       icon: Eye,
