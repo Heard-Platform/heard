@@ -50,6 +50,7 @@ import { RoomCardStory } from "../stories/RoomCard.story";
 import { FundingPageStory } from "../stories/FundingPage.story";
 import { FundingTeaserStory } from "../stories/FundingTeaser.story";
 import { EmailMonitoringTabStory } from "../stories/EmailMonitoringTab.story";
+import { FlyerSensorsStory } from "../stories/FlyerSensors.story";
 import { DisplayModeScreenStory } from "../stories/DisplayModeScreen.story";
 import { RoomAnalyticsModalStory } from "../stories/RoomAnalyticsModal.story";
 import { StatementVoterAnimalsStory } from "../stories/StatementVoterAnimals.story";
@@ -159,6 +160,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="funding-page">Funding Page</TabsTrigger>
                 <TabsTrigger value="funding-teaser">Funding Teaser</TabsTrigger>
                 <TabsTrigger value="email-monitoring">Email Monitoring</TabsTrigger>
+                <TabsTrigger value="flyer-sensors">Flyer Sensors</TabsTrigger>
                 <TabsTrigger value="display-mode-screen">Display Mode Screen</TabsTrigger>
                 <TabsTrigger value="room-analytics">Room Analytics</TabsTrigger>
                 <TabsTrigger value="statement-voter-animals">Statement Voter Animals</TabsTrigger>
@@ -309,6 +311,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="email-monitoring">
                 <EmailMonitoringTabStory />
+              </TabsContent>
+              <TabsContent value="flyer-sensors">
+                <FlyerSensorsStory />
               </TabsContent>
               <TabsContent value="display-mode-screen">
                 <DisplayModeScreenStory />
