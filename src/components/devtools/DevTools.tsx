@@ -6,6 +6,7 @@ import { EmailMonitoringTabContainer } from "./email-monitor/EmailMonitoringTabC
 import { EnrichmentTab } from "./EnrichmentTab";
 import { PostsTab } from "./PostsTab";
 import { FlyersTab } from "./FlyersTab";
+import { FlyerSensorsTabContainer } from "./flyer-sensors/FlyerSensorsTabContainer";
 import { VoteMatrixTab } from "./VoteMatrixTab";
 import { VoteStatsTab } from "./VoteStatsTab";
 import { ReferralEventsTab } from "./ReferralEventsTab";
@@ -25,7 +26,7 @@ interface DevToolsProps {
   onExit?: () => void;
 }
 
-type TabType = "vote-matrix" | "clustering" | "email" | "email-monitoring" | "notification-system" | "enrichment" | "posts" | "flyers" | "vote-stats" | "referral-events" | "session" | "performance" | "testing";
+type TabType = "vote-matrix" | "clustering" | "email" | "email-monitoring" | "notification-system" | "enrichment" | "posts" | "flyers" | "flyer-sensors" | "vote-stats" | "referral-events" | "session" | "performance" | "testing";
 
 export function DevTools({ user, onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
@@ -102,6 +103,11 @@ export function DevTools({ user, onExit }: DevToolsProps) {
                 onClick={() => handleTabChange("flyers")}
               />
               <TabButton
+                active={activeTab === "flyer-sensors"}
+                label="Flyer Sensors"
+                onClick={() => handleTabChange("flyer-sensors")}
+              />
+              <TabButton
                 active={activeTab === "vote-stats"}
                 label="Vote Stats"
                 onClick={() => handleTabChange("vote-stats")}
@@ -149,6 +155,7 @@ export function DevTools({ user, onExit }: DevToolsProps) {
             {activeTab === "enrichment" && <EnrichmentTab />}
             {activeTab === "posts" && <PostsTab />}
             {activeTab === "flyers" && <FlyersTab />}
+            {activeTab === "flyer-sensors" && <FlyerSensorsTabContainer />}
             {activeTab === "vote-stats" && <VoteStatsTab />}
             {activeTab === "referral-events" && <ReferralEventsTab />}
             {activeTab === "session" && <SessionsTab />}
