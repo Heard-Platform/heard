@@ -14,6 +14,7 @@ import { InProgressResults } from "./results/InProgressResults";
 import { ConcludedResults } from "./results/ConcludedResults";
 import { VotesDrawer } from "./results/VotesDrawer";
 import { AddResponseModal } from "./room/AddResponseModal";
+import { AnonResponseTripwire } from "./AnonResponseTripwire";
 import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
 import { useState, useEffect, useRef } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
@@ -99,6 +100,7 @@ export function RoomCard({
   const [showDisplayMode, setShowDisplayMode] = useState(false);
   const [showVotesDrawer, setShowVotesDrawer] = useState(false);
   const [pendingVoteBump, setPendingVoteBump] = useState(0);
+  const [tripwireStatementText, setTripwireStatementText] = useState<string | null>(null);
   const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
 
   const isTrueHost = user.id === room.hostId;
@@ -248,6 +250,9 @@ export function RoomCard({
     
     try {
       await onSubmitStatement(room.id, text);
+      if (user.isAnonymous || !user.email) {
+        setTripwireStatementText(text);
+      }
       if (onRefreshStatements) {
         await onRefreshStatements();
         resetTutorialTimer();
@@ -569,6 +574,16 @@ export function RoomCard({
         onSubmitStatement={handleSubmitStatement}
         onShowAccountSetupModal={onShowAccountSetupModal}
       />
+
+      {tripwireStatementText !== null && (
+        <AnonResponseTripwire
+          roomId={room.id}
+          statementText={tripwireStatementText}
+          isOpen
+          onComplete={() => setTripwireStatementText(null)}
+          onDismiss={() => setTripwireStatementText(null)}
+        />
+      )}
 
     </FeedCardMotion>
   );
