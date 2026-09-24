@@ -117,7 +117,7 @@ export const RecordingTimelineChart = memo(function RecordingTimelineChart({
                 x={placement.cluster.startMs}
                 stroke={clusterColor(placement.cluster)}
                 strokeWidth={placement === selectedPlacement ? 2 : 1}
-                label={{ value: `#${placement.number}`, position: "top", fontSize: 11 }}
+                label={{ value: `#${placement.flyerGroup}`, position: "top", fontSize: 11 }}
               />
             ))}
             <Line dataKey="magnitude" stroke={LINE_COLOR} strokeWidth={1} dot={false} isAnimationActive={false} />

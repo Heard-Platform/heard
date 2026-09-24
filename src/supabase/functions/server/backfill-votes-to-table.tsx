@@ -39,6 +39,7 @@ app.post(
         voteType: vote.voteType,
         timestamp: Math.floor(vote.timestamp),
         flyerId: vote.flyerId ?? null,
+        flyerGroup: vote.flyerGroup ?? null,
         anonymousUserId: vote.anonymousUserId ?? null,
       }));
 

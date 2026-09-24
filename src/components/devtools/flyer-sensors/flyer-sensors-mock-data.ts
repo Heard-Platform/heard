@@ -1,4 +1,9 @@
-import type { FlyerVoteTally } from "./flyer-votes";
+import type {
+  FlyerStatementOption,
+  NewFlyerPlacementsRequest,
+  RoomFlyerPlacements,
+  SavedFlyerPlacement,
+} from "../../../utils/dev-api";
 import type { RoomOption } from "./RoomPicker";
 import type { AccelerometerSample, LocationFix } from "./sensor-types";
 
@@ -123,20 +128,109 @@ export const MOCK_ROOMS: RoomOption[] = [
   { id: "room-dc-housing", topic: "What should DC prioritize to make housing affordable?", createdAt: Date.UTC(2026, 7, 28) },
 ];
 
-const ROOM_WITHOUT_VOTES_ID = "room-dc-housing";
 const MAX_MOCK_VOTES_PER_FLYER = 30;
+const SIMULATED_LATENCY_MS = 500;
+
+interface MockSavedFlyerSeed {
+  statementId: string;
+  flyerGroup: number;
+  latitude: number;
+  longitude: number;
+  headingDeg: number | null;
+}
+
+interface MockRoomSeed {
+  statements: FlyerStatementOption[];
+  flyers: MockSavedFlyerSeed[];
+}
+
+const MOCK_ROOM_SEEDS: Record<string, MockRoomSeed> = {
+  "room-dupont-bike-lanes": {
+    statements: [
+      { id: "stmt-protected-lanes", text: "Connecticut Ave should get protected bike lanes even if it removes parking." },
+      { id: "stmt-bus-priority", text: "Buses should get their own lane on Connecticut Ave at rush hour." },
+    ],
+    flyers: [
+      { statementId: "stmt-protected-lanes", flyerGroup: 1, latitude: 38.91148, longitude: -77.03852, headingDeg: 90 },
+      { statementId: "stmt-protected-lanes", flyerGroup: 2, latitude: 38.91362, longitude: -77.03861, headingDeg: 270 },
+      { statementId: "stmt-protected-lanes", flyerGroup: 3, latitude: 38.90983, longitude: -77.03884, headingDeg: null },
+      { statementId: "stmt-protected-lanes", flyerGroup: 4, latitude: 38.90762, longitude: -77.03797, headingDeg: 180 },
+      { statementId: "stmt-bus-priority", flyerGroup: 1, latitude: 38.91091, longitude: -77.04112, headingDeg: 0 },
+    ],
+  },
+  "room-adams-morgan-noise": {
+    statements: [{ id: "stmt-quiet-hours", text: "Bars on 18th St should close their patios at midnight on weeknights." }],
+    flyers: [
+      { statementId: "stmt-quiet-hours", flyerGroup: 1, latitude: 38.91952, longitude: -77.04051, headingDeg: 45 },
+      { statementId: "stmt-quiet-hours", flyerGroup: 2, latitude: 38.92253, longitude: -77.04448, headingDeg: 225 },
+      { statementId: "stmt-quiet-hours", flyerGroup: 3, latitude: 38.91814, longitude: -77.04183, headingDeg: null },
+    ],
+  },
+  "room-dc-housing": {
+    statements: [{ id: "stmt-upzoning", text: "DC should allow apartment buildings near every Metro station." }],
+    flyers: [],
+  },
+};
 
 function hashString(value: string): number {
   return [...value].reduce((hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0, 7);
 }
 
-export function createMockFlyerVotes(roomId: string, tappedAtTimes: number[]): FlyerVoteTally[] {
-  if (roomId === ROOM_WITHOUT_VOTES_ID) return [];
+function seedSavedFlyers(roomId: string, seeds: MockSavedFlyerSeed[]): SavedFlyerPlacement[] {
   const random = createSeededRandom(hashString(roomId));
-  return tappedAtTimes.flatMap((tappedAtMs) => {
+  return seeds.map((seed) => {
     const total = Math.floor(random() * MAX_MOCK_VOTES_PER_FLYER);
-    if (total === 0) return [];
     const agrees = Math.round(total * random());
-    return [{ tappedAtMs, agrees, disagrees: total - agrees }];
+    return { ...seed, id: `${seed.statementId}-${seed.flyerGroup}`, agrees, disagrees: total - agrees };
   });
+}
+
+function simulateLatency(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, SIMULATED_LATENCY_MS));
+}
+
+export interface MockFlyerBackend {
+  loadRoomFlyers: (roomId: string) => Promise<RoomFlyerPlacements>;
+  saveFlyers: (request: NewFlyerPlacementsRequest) => Promise<void>;
+}
+
+export function createMockFlyerBackend(): MockFlyerBackend {
+  const roomsById = new Map<string, RoomFlyerPlacements>(
+    Object.entries(MOCK_ROOM_SEEDS).map(([roomId, seed]) => [
+      roomId,
+      { statements: seed.statements, flyers: seedSavedFlyers(roomId, seed.flyers) },
+    ]),
+  );
+
+  const loadRoomFlyers = async (roomId: string) => {
+    await simulateLatency();
+    const room = roomsById.get(roomId);
+    if (!room) throw new Error("Room not found");
+    return room;
+  };
+
+  const saveFlyers = async ({ roomId, statementId, flyers }: NewFlyerPlacementsRequest) => {
+    await simulateLatency();
+    const room = roomsById.get(roomId);
+    if (!room) throw new Error("Room not found");
+
+    const savedGroups = new Set(
+      room.flyers.filter((flyer) => flyer.statementId === statementId).map((flyer) => flyer.flyerGroup),
+    );
+    const conflicts = flyers.filter((flyer) => savedGroups.has(flyer.flyerGroup));
+    if (conflicts.length > 0) {
+      throw new Error(`Flyer groups are already saved for this statement: ${conflicts.map((flyer) => flyer.flyerGroup).join(", ")}`);
+    }
+
+    const newFlyers = flyers.map((flyer) => ({
+      ...flyer,
+      statementId,
+      id: `${statementId}-${flyer.flyerGroup}`,
+      agrees: 0,
+      disagrees: 0,
+    }));
+    roomsById.set(roomId, { ...room, flyers: [...room.flyers, ...newFlyers] });
+  };
+
+  return { loadRoomFlyers, saveFlyers };
 }

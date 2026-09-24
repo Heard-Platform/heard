@@ -1,5 +1,5 @@
 import { divIcon } from "leaflet";
-import { EMPTY_RING_THICKNESS_PX, voteShares, type FlyerVoteTally } from "./flyer-votes";
+import { EMPTY_RING_THICKNESS_PX, voteShares, type VoteCounts } from "./flyer-votes";
 
 const AGREE_COLOR = "#16a34a";
 const DISAGREE_COLOR = "#dc2626";
@@ -11,11 +11,11 @@ function arcCircle(radius: number, center: number, thickness: number, color: str
   return `<circle cx="${center}" cy="${center}" r="${radius}" fill="none" stroke="${color}" stroke-width="${thickness}" stroke-dasharray="${circumference * fraction} ${circumference}" stroke-dashoffset="${-circumference * offsetFraction}" transform="rotate(-90 ${center} ${center})" />`;
 }
 
-export function voteRingIcon(tally: FlyerVoteTally, pinRadiusPx: number, thicknessPx: number) {
+export function voteRingIcon(counts: VoteCounts, pinRadiusPx: number, thicknessPx: number) {
   const radius = pinRadiusPx + RING_GAP_PX + thicknessPx / 2;
   const size = Math.ceil(2 * (radius + thicknessPx / 2) + 2);
   const center = size / 2;
-  const { total, agreeFraction, disagreeFraction } = voteShares(tally);
+  const { total, agreeFraction, disagreeFraction } = voteShares(counts);
 
   const rings =
     total === 0

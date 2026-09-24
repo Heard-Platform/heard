@@ -40,6 +40,38 @@ interface SessionsResponse {
   fetchedAt: number;
 }
 
+export interface FlyerStatementOption {
+  id: string;
+  text: string;
+}
+
+export interface SavedFlyerPlacement {
+  id: string;
+  statementId: string;
+  flyerGroup: number;
+  latitude: number;
+  longitude: number;
+  headingDeg: number | null;
+  agrees: number;
+  disagrees: number;
+}
+
+export interface RoomFlyerPlacements {
+  statements: FlyerStatementOption[];
+  flyers: SavedFlyerPlacement[];
+}
+
+export interface NewFlyerPlacementsRequest {
+  roomId: string;
+  statementId: string;
+  flyers: {
+    flyerGroup: number;
+    latitude: number;
+    longitude: number;
+    headingDeg: number | null;
+  }[];
+}
+
 class DevApiClient extends BaseApiClient {
   async getFlyerStats() {
     return this.request<{ flyerRoomData: Record<string, FlyerRoomData> }>(
@@ -64,6 +96,19 @@ class DevApiClient extends BaseApiClient {
     const query = sinceTs ? `?since=${new Date(sinceTs).toISOString()}` : "";
     return this.request<SessionsResponse>(`/dev/sessions${query}`, {
       method: "GET",
+    });
+  }
+
+  async getFlyerPlacements(roomId: string) {
+    return this.request<RoomFlyerPlacements>(`/dev/flyer-placements/${roomId}`, {
+      method: "GET",
+    });
+  }
+
+  async saveFlyerPlacements(request: NewFlyerPlacementsRequest) {
+    return this.request<{}>("/dev/flyer-placements", {
+      method: "POST",
+      body: JSON.stringify(request),
     });
   }
 

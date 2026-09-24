@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
 import { api, safelyMakeApiCall } from "../../../utils/api";
+import type { ApiResponse } from "../../../utils/api-client";
+import { devApi, type NewFlyerPlacementsRequest, type RoomFlyerPlacements } from "../../../utils/dev-api";
 import { FlyerSensorsTab } from "./FlyerSensorsTab";
 import type { RoomOption } from "./RoomPicker";
-import type { FlyerPlacementsSavePayload } from "./save-payload";
-import type { FlyerVoteTally } from "./flyer-votes";
 
-async function saveFlyerPlacements(payload: FlyerPlacementsSavePayload): Promise<void> {
-  console.info("Flyer placements save payload", payload);
-  throw new Error("Saving isn't connected to the backend yet. The payload was logged to the console.");
+function unwrap<T>(response: ApiResponse<T>, fallbackError: string): T {
+  if (!response.success || response.data === undefined) throw new Error(response.error ?? fallbackError);
+  return response.data;
 }
 
-async function loadFlyerVotes(): Promise<FlyerVoteTally[]> {
-  throw new Error("flyer votes aren't connected to the backend yet");
+async function loadRoomFlyers(roomId: string): Promise<RoomFlyerPlacements> {
+  const { statements, flyers } = unwrap(await devApi.getFlyerPlacements(roomId), "Failed to load flyers");
+  return { statements, flyers };
+}
+
+async function saveFlyers(request: NewFlyerPlacementsRequest): Promise<void> {
+  unwrap(await devApi.saveFlyerPlacements(request), "Failed to save flyers");
 }
 
 export function FlyerSensorsTabContainer() {
@@ -37,8 +42,8 @@ export function FlyerSensorsTabContainer() {
     <FlyerSensorsTab
       rooms={rooms}
       roomsLoading={loading}
-      loadFlyerVotes={loadFlyerVotes}
-      onSave={saveFlyerPlacements}
+      loadRoomFlyers={loadRoomFlyers}
+      saveFlyers={saveFlyers}
     />
   );
 }

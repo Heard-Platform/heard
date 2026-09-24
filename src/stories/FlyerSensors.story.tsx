@@ -1,77 +1,43 @@
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { StoryContainer } from "./StoryContainer";
-import { FlyerSensorsView } from "../components/devtools/flyer-sensors/FlyerSensorsView";
 import { FlyerSensorsTab } from "../components/devtools/flyer-sensors/FlyerSensorsTab";
 import {
-  createMockFlyerVotes,
+  createMockFlyerBackend,
   createMockSensorRecording,
   MOCK_ROOMS,
 } from "../components/devtools/flyer-sensors/flyer-sensors-mock-data";
-import {
-  DEFAULT_TAP_DETECTION_PARAMS,
-  detectTapClusters,
-} from "../components/devtools/flyer-sensors/tap-detection";
-import type { FlyerVoteTally } from "../components/devtools/flyer-sensors/flyer-votes";
-import type { FlyerPlacementsSavePayload } from "../components/devtools/flyer-sensors/save-payload";
-
-const SIMULATED_LATENCY_MS = 600;
-
-function simulateLatency(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, SIMULATED_LATENCY_MS));
-}
-
-async function simulateSave(payload: FlyerPlacementsSavePayload): Promise<void> {
-  console.info("Flyer placements save payload", payload);
-  await simulateLatency();
-}
-
-async function loadNoFlyerVotes(): Promise<FlyerVoteTally[]> {
-  await simulateLatency();
-  return [];
-}
 
 export function FlyerSensorsStory() {
   const dcRecording = useMemo(() => createMockSensorRecording(), []);
-
-  const loadMockFlyerVotes = useCallback(
-    async (roomId: string) => {
-      const tappedAtTimes = detectTapClusters(dcRecording.accelerometerSamples, DEFAULT_TAP_DETECTION_PARAMS)
-        .filter((cluster) => cluster.isSignal)
-        .map((cluster) => cluster.startMs);
-      await simulateLatency();
-      return createMockFlyerVotes(roomId, tappedAtTimes);
-    },
-    [dcRecording],
-  );
+  const backend = useMemo(() => createMockFlyerBackend(), []);
 
   return (
     <StoryContainer
       title="Flyer Sensors"
-      description="Dev tools tab that finds triple-tap flyer markers in accelerometer data and maps them using GPS. Mock data is a walk around Dupont Circle, Adams Morgan and Logan Circle; stop 5 has four taps and should not be detected. Picking a room loads fake flyer votes; the housing room has none yet."
+      description="Dev tools tab for saved flyer placements and their scan votes, plus adding new flyers from phone sensor recordings. The fake backend has saved flyers for the bike lanes and Adams Morgan rooms and none for the housing room; saves are kept until the page reloads. The sample recording is a walk around Dupont Circle, Adams Morgan and Logan Circle; stop 5 has four taps and should not be detected."
       variants={[
         {
-          id: "dc-walk",
-          label: "DC walk (mock data)",
-          children: (
-            <FlyerSensorsView
-              accelerometerSamples={dcRecording.accelerometerSamples}
-              locationFixes={dcRecording.locationFixes}
-              rooms={MOCK_ROOMS}
-              roomsLoading={false}
-              loadFlyerVotes={loadMockFlyerVotes}
-              onSave={simulateSave}
-            />
-          ),
-        },
-        {
-          id: "upload",
-          label: "Upload (empty)",
+          id: "with-recording",
+          label: "Saved flyers + sample recording",
           children: (
             <FlyerSensorsTab
               rooms={MOCK_ROOMS}
               roomsLoading={false}
-              loadFlyerVotes={loadNoFlyerVotes}
-              onSave={simulateSave}
+              initialRecording={dcRecording}
+              loadRoomFlyers={backend.loadRoomFlyers}
+              saveFlyers={backend.saveFlyers}
+            />
+          ),
+        },
+        {
+          id: "saved-only",
+          label: "Saved flyers only",
+          children: (
+            <FlyerSensorsTab
+              rooms={MOCK_ROOMS}
+              roomsLoading={false}
+              loadRoomFlyers={backend.loadRoomFlyers}
+              saveFlyers={backend.saveFlyers}
             />
           ),
         },

@@ -18,38 +18,49 @@ import {
   type Marker as LeafletMarker,
 } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import type { SavedFlyerPlacement } from "../../../utils/dev-api";
 import { placementPosition } from "./flyer-location";
-import { maxVoteTotal, ringThicknessPx, type FlyerVotesByTapTime } from "./flyer-votes";
+import { describeVotes, maxVoteTotal, ringThicknessPx } from "./flyer-votes";
 import { bearingBetween, offsetByBearing } from "./heading";
 import { voteRingIcon } from "./vote-ring-icon";
 import type { FlyerPlacement, LatLng, LocationFix } from "./sensor-types";
 
 interface FlyerLocationsMapProps {
+  savedFlyers: SavedFlyerPlacement[];
   placements: FlyerPlacement[];
   track: LocationFix[];
   selectedNumber: number | null;
   hoverPosition: LatLng | null;
-  votes: FlyerVotesByTapTime | null;
   onSelect: (number: number) => void;
   onDeselect: () => void;
   onMove: (number: number, position: LatLng) => void;
   onHeadingChange: (number: number, headingDeg: number) => void;
 }
 
+interface PinIconOptions {
+  label: number;
+  color: string;
+  selected: boolean;
+  headingDeg: number | null;
+  draggable: boolean;
+}
+
 const MAP_HEIGHT_PX = 480;
 const MARKER_SIZE_PX = 26;
+const DC_CENTER: LatLngExpression = [38.9072, -77.0369];
 const ESTIMATED_COLOR = "#16a34a";
 const MOVED_COLOR = "#ea580c";
 const SELECTED_COLOR = "#2563eb";
+const SAVED_COLOR = "#334155";
+const HOVER_COLOR = "#9333ea";
 const HEADING_HANDLE_DISTANCE_PX = 56;
 const HEADING_HANDLE_SIZE_PX = 16;
-const HOVER_COLOR = "#9333ea";
 
 function toLatLng(point: LatLng): LatLngExpression {
   return [point.latitude, point.longitude];
 }
 
-function markerColor(placement: FlyerPlacement, selected: boolean): string {
+function newFlyerColor(placement: FlyerPlacement, selected: boolean): string {
   if (selected) return SELECTED_COLOR;
   return placement.manualPosition ? MOVED_COLOR : ESTIMATED_COLOR;
 }
@@ -62,15 +73,14 @@ function pinSizePx(selected: boolean): number {
   return selected ? MARKER_SIZE_PX + 6 : MARKER_SIZE_PX;
 }
 
-function flyerIcon(placement: FlyerPlacement, selected: boolean) {
+function pinIcon({ label, color, selected, headingDeg, draggable }: PinIconOptions) {
   const size = pinSizePx(selected);
-  const color = markerColor(placement, selected);
-  const arrow = placement.headingDeg === null ? "" : headingArrowHtml(placement.headingDeg, color);
+  const arrow = headingDeg === null ? "" : headingArrowHtml(headingDeg, color);
   return divIcon({
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
-    html: `<div style="position:relative;width:${size}px;height:${size}px;">${arrow}<div style="position:absolute;inset:0;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);color:#fff;font:600 12px/1 system-ui,sans-serif;display:flex;align-items:center;justify-content:center;cursor:grab;">${placement.number}</div></div>`,
+    html: `<div style="position:relative;width:${size}px;height:${size}px;">${arrow}<div style="position:absolute;inset:0;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);color:#fff;font:600 11px/1 system-ui,sans-serif;display:flex;align-items:center;justify-content:center;cursor:${draggable ? "grab" : "default"};">${label}</div></div>`,
   });
 }
 
@@ -83,11 +93,11 @@ function headingHandleIcon(hasHeading: boolean) {
   });
 }
 
-function FitToTrack({ track }: { track: LatLngExpression[] }) {
+function FitToPoints({ points }: { points: LatLngExpression[] }) {
   const map = useMap();
   useEffect(() => {
-    if (track.length > 0) map.fitBounds(latLngBounds(track), { padding: [24, 24] });
-  }, [map, track]);
+    if (points.length > 0) map.fitBounds(latLngBounds(points), { padding: [32, 32], maxZoom: 18 });
+  }, [map, points]);
   return null;
 }
 
@@ -133,43 +143,39 @@ function HeadingHandle({ placement, position, onHeadingChange }: HeadingHandlePr
   );
 }
 
-interface VoteRingsProps {
-  placements: FlyerPlacement[];
-  votes: FlyerVotesByTapTime;
-  selectedNumber: number | null;
-}
-
-function VoteRings({ placements, votes, selectedNumber }: VoteRingsProps) {
-  const maxTotal = maxVoteTotal(votes);
+function SavedFlyerPins({ savedFlyers }: { savedFlyers: SavedFlyerPlacement[] }) {
+  const maxTotal = maxVoteTotal(savedFlyers);
+  const pinRadius = pinSizePx(false) / 2;
   return (
     <>
-      {placements.map((placement) => {
-        const position = placementPosition(placement);
-        if (!position) return null;
-        const tally = votes[placement.cluster.startMs] ?? {
-          tappedAtMs: placement.cluster.startMs,
-          agrees: 0,
-          disagrees: 0,
-        };
-        const thickness = ringThicknessPx(tally.agrees + tally.disagrees, maxTotal);
-        return (
-          <Marker
-            key={placement.number}
-            position={toLatLng(position)}
-            icon={voteRingIcon(tally, pinSizePx(placement.number === selectedNumber) / 2, thickness)}
-            interactive={false}
-            zIndexOffset={-1000}
-          />
-        );
-      })}
+      {savedFlyers.map((flyer) => (
+        <Marker
+          key={`ring-${flyer.id}`}
+          position={toLatLng(flyer)}
+          icon={voteRingIcon(flyer, pinRadius, ringThicknessPx(flyer.agrees + flyer.disagrees, maxTotal))}
+          interactive={false}
+          zIndexOffset={-1000}
+        />
+      ))}
+      {savedFlyers.map((flyer) => (
+        <Marker
+          key={flyer.id}
+          position={toLatLng(flyer)}
+          icon={pinIcon({
+            label: flyer.flyerGroup,
+            color: SAVED_COLOR,
+            selected: false,
+            headingDeg: flyer.headingDeg,
+            draggable: false,
+          })}
+        >
+          <Tooltip direction="top" offset={[0, -18]}>
+            Flyer {flyer.flyerGroup}: {describeVotes(flyer)}
+          </Tooltip>
+        </Marker>
+      ))}
     </>
   );
-}
-
-function voteSummary(votes: FlyerVotesByTapTime, placement: FlyerPlacement): string {
-  const tally = votes[placement.cluster.startMs];
-  if (!tally) return "No votes yet";
-  return `${tally.agrees + tally.disagrees} votes · ${tally.agrees} agree / ${tally.disagrees} disagree`;
 }
 
 function EstimateOffset({ placement }: { placement: FlyerPlacement }) {
@@ -190,32 +196,37 @@ function EstimateOffset({ placement }: { placement: FlyerPlacement }) {
 }
 
 export default function FlyerLocationsMap({
+  savedFlyers,
   placements,
   track,
   selectedNumber,
   hoverPosition,
-  votes,
   onSelect,
   onDeselect,
   onMove,
   onHeadingChange,
 }: FlyerLocationsMapProps) {
   const trackPoints = useMemo(() => track.map(toLatLng), [track]);
+  const fitPoints = useMemo(
+    () => (trackPoints.length > 0 ? trackPoints : savedFlyers.map(toLatLng)),
+    [trackPoints, savedFlyers],
+  );
   const selected = placements.find((placement) => placement.number === selectedNumber);
   const selectedPosition = selected && placementPosition(selected);
 
   return (
     <div className="rounded-lg overflow-hidden border" style={{ height: MAP_HEIGHT_PX }}>
-      <MapContainer center={[38.9072, -77.0369]} zoom={14} style={{ height: "100%" }}>
+      <MapContainer center={DC_CENTER} zoom={14} style={{ height: "100%" }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           maxZoom={20}
           maxNativeZoom={19}
         />
-        <FitToTrack track={trackPoints} />
+        <FitToPoints points={fitPoints} />
         <DeselectOnMapClick onDeselect={onDeselect} />
         <Polyline positions={trackPoints} pathOptions={{ color: "#64748b", weight: 2, opacity: 0.6 }} />
+        <SavedFlyerPins savedFlyers={savedFlyers} />
         {selected?.location && (
           <Circle
             center={toLatLng(selected.location)}
@@ -226,15 +237,21 @@ export default function FlyerLocationsMap({
         {placements.map((placement) => (
           <EstimateOffset key={placement.number} placement={placement} />
         ))}
-        {votes && <VoteRings placements={placements} votes={votes} selectedNumber={selectedNumber} />}
         {placements.map((placement) => {
           const position = placementPosition(placement);
           if (!position) return null;
+          const isSelected = placement.number === selectedNumber;
           return (
             <Marker
               key={placement.number}
               position={toLatLng(position)}
-              icon={flyerIcon(placement, placement.number === selectedNumber)}
+              icon={pinIcon({
+                label: placement.flyerGroup,
+                color: newFlyerColor(placement, isSelected),
+                selected: isSelected,
+                headingDeg: placement.headingDeg,
+                draggable: true,
+              })}
               draggable
               eventHandlers={{
                 click: () => onSelect(placement.number),
@@ -243,13 +260,7 @@ export default function FlyerLocationsMap({
                   onMove(placement.number, { latitude: lat, longitude: lng });
                 },
               }}
-            >
-              {votes && (
-                <Tooltip direction="top" offset={[0, -18]}>
-                  #{placement.number}: {voteSummary(votes, placement)}
-                </Tooltip>
-              )}
-            </Marker>
+            />
           );
         })}
         {hoverPosition && (

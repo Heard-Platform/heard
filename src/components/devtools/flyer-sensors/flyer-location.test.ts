@@ -59,6 +59,7 @@ describe("buildFlyerPlacements", () => {
       fixes,
       15_000,
       {},
+      1,
     );
 
     expect(placements.map((placement) => [placement.number, placement.cluster.startMs])).toEqual([
@@ -67,13 +68,26 @@ describe("buildFlyerPlacements", () => {
     ]);
   });
 
+  it("assigns sequential flyer groups from the first group unless overridden", () => {
+    const fixes = [fix(0, 38.9, -77.0, 5)];
+    const placements = buildFlyerPlacements(
+      [cluster(1_000), cluster(5_000), cluster(9_000)],
+      fixes,
+      15_000,
+      { 5_000: { flyerGroup: 40 } },
+      12,
+    );
+
+    expect(placements.map((placement) => placement.flyerGroup)).toEqual([12, 40, 14]);
+  });
+
   it("attaches adjustments by cluster start time", () => {
     const fixes = [fix(0, 38.9, -77.0, 5)];
     const moved = { latitude: 38.95, longitude: -77.05 };
     const placements = buildFlyerPlacements([cluster(1_000), cluster(9_000)], fixes, 15_000, {
       1_000: { headingDeg: 90 },
       9_000: { position: moved },
-    });
+    }, 1);
 
     expect(placements.map((placement) => [placement.manualPosition, placement.headingDeg])).toEqual([
       [null, 90],
@@ -88,7 +102,7 @@ describe("placementPosition", () => {
     const moved = { latitude: 38.95, longitude: -77.05 };
     const [estimated, adjusted] = buildFlyerPlacements([cluster(1_000), cluster(9_000)], fixes, 15_000, {
       9_000: { position: moved },
-    });
+    }, 1);
 
     expect(placementPosition(estimated)).toMatchObject({ latitude: 38.9, longitude: -77.0 });
     expect(placementPosition(adjusted)).toBe(moved);

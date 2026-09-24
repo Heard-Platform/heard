@@ -60,11 +60,13 @@ export function buildFlyerPlacements(
   fixes: LocationFix[],
   standingWindowMs: number,
   adjustments: FlyerAdjustments,
+  firstFlyerGroup: number,
 ): FlyerPlacement[] {
   return clusters
     .filter((cluster) => cluster.isSignal)
     .map((cluster, index) => ({
       number: index + 1,
+      flyerGroup: adjustments[cluster.startMs]?.flyerGroup ?? firstFlyerGroup + index,
       cluster,
       location: estimateFlyerLocation(fixes, cluster, standingWindowMs),
       manualPosition: adjustments[cluster.startMs]?.position ?? null,
@@ -79,7 +81,7 @@ export function updateFlyerAdjustment(
 ): FlyerAdjustments {
   const next = { ...adjustments };
   const updated = update(adjustments[cluster.startMs] ?? {});
-  if (updated.position === undefined && updated.headingDeg === undefined) {
+  if (Object.values(updated).every((value) => value === undefined)) {
     delete next[cluster.startMs];
   } else {
     next[cluster.startMs] = updated;

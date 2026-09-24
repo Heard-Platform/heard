@@ -1,10 +1,7 @@
-export interface FlyerVoteTally {
-  tappedAtMs: number;
+export interface VoteCounts {
   agrees: number;
   disagrees: number;
 }
-
-export type FlyerVotesByTapTime = Record<number, FlyerVoteTally>;
 
 export interface VoteShares {
   total: number;
@@ -16,14 +13,10 @@ const MIN_RING_THICKNESS_PX = 3;
 const MAX_RING_THICKNESS_PX = 12;
 export const EMPTY_RING_THICKNESS_PX = 1.5;
 
-export function indexVotesByTapTime(tallies: FlyerVoteTally[]): FlyerVotesByTapTime {
-  return Object.fromEntries(tallies.map((tally) => [tally.tappedAtMs, tally]));
-}
-
-export function voteShares(tally: FlyerVoteTally): VoteShares {
-  const total = tally.agrees + tally.disagrees;
+export function voteShares(counts: VoteCounts): VoteShares {
+  const total = counts.agrees + counts.disagrees;
   if (total === 0) return { total, agreeFraction: 0, disagreeFraction: 0 };
-  return { total, agreeFraction: tally.agrees / total, disagreeFraction: tally.disagrees / total };
+  return { total, agreeFraction: counts.agrees / total, disagreeFraction: counts.disagrees / total };
 }
 
 export function ringThicknessPx(total: number, maxTotal: number): number {
@@ -32,6 +25,12 @@ export function ringThicknessPx(total: number, maxTotal: number): number {
   return MIN_RING_THICKNESS_PX + (MAX_RING_THICKNESS_PX - MIN_RING_THICKNESS_PX) * scale;
 }
 
-export function maxVoteTotal(votes: FlyerVotesByTapTime): number {
-  return Object.values(votes).reduce((max, tally) => Math.max(max, voteShares(tally).total), 0);
+export function maxVoteTotal(counts: VoteCounts[]): number {
+  return counts.reduce((max, count) => Math.max(max, voteShares(count).total), 0);
+}
+
+export function describeVotes(counts: VoteCounts): string {
+  const { total } = voteShares(counts);
+  if (total === 0) return "No flyer votes yet";
+  return `${total} flyer votes · ${counts.agrees} agree / ${counts.disagrees} disagree`;
 }

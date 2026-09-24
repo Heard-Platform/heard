@@ -37,6 +37,7 @@ export interface FlyerLocation extends LatLng {
 
 export interface FlyerPlacement {
   number: number;
+  flyerGroup: number;
   cluster: TapCluster;
   location: FlyerLocation | null;
   manualPosition: LatLng | null;
@@ -46,6 +47,12 @@ export interface FlyerPlacement {
 export interface FlyerAdjustment {
   position?: LatLng;
   headingDeg?: number;
+  flyerGroup?: number;
 }
 
 export type FlyerAdjustments = Record<number, FlyerAdjustment>;
+
+export interface SensorRecording {
+  accelerometerSamples: AccelerometerSample[];
+  locationFixes: LocationFix[];
+}

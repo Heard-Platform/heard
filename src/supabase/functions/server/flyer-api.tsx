@@ -64,7 +64,7 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
       statementId,
       userId,
       vote as VoteType,
-      flyerId,
+      { flyerId, flyerGroup },
       true,
     );
 

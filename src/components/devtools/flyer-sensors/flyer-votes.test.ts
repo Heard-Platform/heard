@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
+  describeVotes,
   EMPTY_RING_THICKNESS_PX,
-  indexVotesByTapTime,
   maxVoteTotal,
   ringThicknessPx,
   voteShares,
@@ -9,7 +9,7 @@ import {
 
 describe("voteShares", () => {
   it("splits the ring by agree and disagree share", () => {
-    expect(voteShares({ tappedAtMs: 1, agrees: 3, disagrees: 1 })).toEqual({
+    expect(voteShares({ agrees: 3, disagrees: 1 })).toEqual({
       total: 4,
       agreeFraction: 0.75,
       disagreeFraction: 0.25,
@@ -17,7 +17,7 @@ describe("voteShares", () => {
   });
 
   it("returns empty shares when there are no votes", () => {
-    expect(voteShares({ tappedAtMs: 1, agrees: 0, disagrees: 0 })).toEqual({
+    expect(voteShares({ agrees: 0, disagrees: 0 })).toEqual({
       total: 0,
       agreeFraction: 0,
       disagreeFraction: 0,
@@ -39,14 +39,16 @@ describe("ringThicknessPx", () => {
   });
 });
 
-describe("indexVotesByTapTime and maxVoteTotal", () => {
-  it("keys tallies by tap time and finds the busiest flyer", () => {
-    const votes = indexVotesByTapTime([
-      { tappedAtMs: 1_000, agrees: 4, disagrees: 1 },
-      { tappedAtMs: 9_000, agrees: 10, disagrees: 6 },
-    ]);
+describe("maxVoteTotal", () => {
+  it("finds the busiest flyer", () => {
+    expect(maxVoteTotal([{ agrees: 4, disagrees: 1 }, { agrees: 10, disagrees: 6 }])).toBe(16);
+    expect(maxVoteTotal([])).toBe(0);
+  });
+});
 
-    expect(votes[9_000].agrees).toBe(10);
-    expect(maxVoteTotal(votes)).toBe(16);
+describe("describeVotes", () => {
+  it("summarizes a flyer's votes", () => {
+    expect(describeVotes({ agrees: 10, disagrees: 4 })).toBe("14 flyer votes · 10 agree / 4 disagree");
+    expect(describeVotes({ agrees: 0, disagrees: 0 })).toBe("No flyer votes yet");
   });
 });

@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
+import type { NewFlyerPlacementsRequest, RoomFlyerPlacements } from "../../../utils/dev-api";
 import { FlyerSensorsView } from "./FlyerSensorsView";
-import type { RoomOption } from "./RoomPicker";
-import type { FlyerPlacementsSavePayload } from "./save-payload";
-import type { FlyerVoteTally } from "./flyer-votes";
+import { RoomPicker, type RoomOption } from "./RoomPicker";
+import { StatementPicker } from "./StatementPicker";
+import { useRoomFlyers, type RoomFlyersState } from "./use-room-flyers";
 import { parseAccelerometerCsv, parseLocationCsv } from "./parse-sensor-csv";
-import type { AccelerometerSample, LocationFix } from "./sensor-types";
+import type { AccelerometerSample, LocationFix, SensorRecording } from "./sensor-types";
 
 type LoadState<T> =
   | { status: "empty" }
@@ -23,6 +24,10 @@ interface CsvUploadFieldProps<T> {
   onFileSelected: (file: File) => void;
 }
 
+const INITIAL_RECORDING_FILE_NAME = "Sample recording";
+
+let nextLoadId = 1;
+
 function describeLoadState<T>(state: LoadState<T>, recordNoun: string): string {
   switch (state.status) {
     case "empty":
@@ -33,6 +38,22 @@ function describeLoadState<T>(state: LoadState<T>, recordNoun: string): string {
       return `${state.fileName}: ${state.records.length.toLocaleString()} ${recordNoun}`;
     case "error":
       return `${state.fileName}: ${state.message}`;
+  }
+}
+
+function describeRoomFlyers(state: RoomFlyersState): { text: string; isError: boolean } | null {
+  switch (state.status) {
+    case "idle":
+      return null;
+    case "loading":
+      return { text: "Loading saved flyers…", isError: false };
+    case "error":
+      return { text: `Couldn't load saved flyers: ${state.message}`, isError: true };
+    case "loaded": {
+      const { flyers } = state.roomFlyers;
+      const votes = flyers.reduce((sum, flyer) => sum + flyer.agrees + flyer.disagrees, 0);
+      return { text: `${flyers.length} saved flyers with ${votes} flyer votes in this room`, isError: false };
+    }
   }
 }
 
@@ -56,10 +77,13 @@ function CsvUploadField<T>({ id, label, state, recordNoun, onFileSelected }: Csv
   );
 }
 
-let nextLoadId = 1;
+function initialLoadState<T>(records: T[] | undefined): LoadState<T> {
+  if (!records) return { status: "empty" };
+  return { status: "loaded", fileName: INITIAL_RECORDING_FILE_NAME, records, loadId: nextLoadId++ };
+}
 
-function useCsvLoader<T>(parse: (file: File) => Promise<T[]>) {
-  const [state, setState] = useState<LoadState<T>>({ status: "empty" });
+function useCsvLoader<T>(parse: (file: File) => Promise<T[]>, initialRecords: T[] | undefined) {
+  const [state, setState] = useState<LoadState<T>>(() => initialLoadState(initialRecords));
 
   const load = async (file: File) => {
     setState({ status: "loading", fileName: file.name });
@@ -72,19 +96,58 @@ function useCsvLoader<T>(parse: (file: File) => Promise<T[]>) {
     }
   };
 
-  return [state, load] as const;
+  const clear = () => setState({ status: "empty" });
+
+  return { state, load, clear };
 }
 
 interface FlyerSensorsTabProps {
   rooms: RoomOption[];
   roomsLoading: boolean;
-  loadFlyerVotes: (roomId: string) => Promise<FlyerVoteTally[]>;
-  onSave: (payload: FlyerPlacementsSavePayload) => Promise<void>;
+  initialRecording?: SensorRecording;
+  loadRoomFlyers: (roomId: string) => Promise<RoomFlyerPlacements>;
+  saveFlyers: (request: NewFlyerPlacementsRequest) => Promise<void>;
 }
 
-export function FlyerSensorsTab({ rooms, roomsLoading, loadFlyerVotes, onSave }: FlyerSensorsTabProps) {
-  const [accelerometer, loadAccelerometer] = useCsvLoader<AccelerometerSample>(parseAccelerometerCsv);
-  const [location, loadLocation] = useCsvLoader<LocationFix>(parseLocationCsv);
+export function FlyerSensorsTab({
+  rooms,
+  roomsLoading,
+  initialRecording,
+  loadRoomFlyers,
+  saveFlyers,
+}: FlyerSensorsTabProps) {
+  const [roomId, setRoomId] = useState<string | null>(null);
+  const [statementId, setStatementId] = useState<string | null>(null);
+  const [uploadResetCount, setUploadResetCount] = useState(0);
+  const [savedCount, setSavedCount] = useState<number | null>(null);
+  const accelerometer = useCsvLoader<AccelerometerSample>(parseAccelerometerCsv, initialRecording?.accelerometerSamples);
+  const location = useCsvLoader<LocationFix>(parseLocationCsv, initialRecording?.locationFixes);
+  const roomFlyers = useRoomFlyers(roomId, loadRoomFlyers);
+
+  const loadedRoom = roomFlyers.state.status === "loaded" ? roomFlyers.state.roomFlyers : null;
+  const roomDescription = describeRoomFlyers(roomFlyers.state);
+  const loadedRecording =
+    accelerometer.state.status === "loaded" && location.state.status === "loaded"
+      ? {
+          key: `${accelerometer.state.loadId}-${location.state.loadId}`,
+          recording: { accelerometerSamples: accelerometer.state.records, locationFixes: location.state.records },
+        }
+      : null;
+
+  const handleRoomChange = (nextRoomId: string) => {
+    setRoomId(nextRoomId);
+    setStatementId(null);
+    setSavedCount(null);
+  };
+
+  const handleSave = async (request: NewFlyerPlacementsRequest) => {
+    await saveFlyers(request);
+    accelerometer.clear();
+    location.clear();
+    setUploadResetCount((count) => count + 1);
+    setSavedCount(request.flyers.length);
+    roomFlyers.reload();
+  };
 
   return (
     <div className="space-y-6">
@@ -92,36 +155,51 @@ export function FlyerSensorsTab({ rooms, roomsLoading, loadFlyerVotes, onSave }:
         <div>
           <h2 className="text-xl font-semibold">Flyer Sensors</h2>
           <p className="text-sm text-slate-600">
-            Upload Accelerometer.csv and Location.csv from the same phone recording. Each triple tap marks a flyer, which is placed at the GPS position where you were standing just before it. Files stay in the browser.
+            Pick a room to see its saved flyers and how many votes each one has brought in. To add flyers, upload Accelerometer.csv and Location.csv from the same phone recording: each triple tap marks a flyer, placed where you were standing just before it.
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
+          <RoomPicker rooms={rooms} loading={roomsLoading} selectedRoomId={roomId} onChange={handleRoomChange} />
+          {loadedRoom && (
+            <StatementPicker
+              statements={loadedRoom.statements}
+              selectedStatementId={statementId}
+              onChange={setStatementId}
+            />
+          )}
+        </div>
+        {roomDescription && (
+          <p className={`text-xs ${roomDescription.isError ? "text-red-600" : "text-slate-500"}`}>
+            {roomDescription.text}
+          </p>
+        )}
+        {savedCount !== null && <p className="text-sm text-green-700">Saved {savedCount} new flyers.</p>}
+        <div key={uploadResetCount} className="grid md:grid-cols-2 gap-4">
           <CsvUploadField
             id="flyer-sensors-accelerometer"
             label="Accelerometer CSV"
-            state={accelerometer}
+            state={accelerometer.state}
             recordNoun="samples"
-            onFileSelected={loadAccelerometer}
+            onFileSelected={accelerometer.load}
           />
           <CsvUploadField
             id="flyer-sensors-location"
             label="Location CSV"
-            state={location}
+            state={location.state}
             recordNoun="GPS fixes"
-            onFileSelected={loadLocation}
+            onFileSelected={location.load}
           />
         </div>
       </Card>
 
-      {accelerometer.status === "loaded" && location.status === "loaded" && (
+      {(loadedRoom || loadedRecording) && (
         <FlyerSensorsView
-          key={`${accelerometer.loadId}-${location.loadId}`}
-          accelerometerSamples={accelerometer.records}
-          locationFixes={location.records}
-          rooms={rooms}
-          roomsLoading={roomsLoading}
-          loadFlyerVotes={loadFlyerVotes}
-          onSave={onSave}
+          key={`${roomId ?? "no-room"}-${loadedRecording?.key ?? "no-recording"}`}
+          savedFlyers={loadedRoom?.flyers ?? []}
+          recording={loadedRecording?.recording ?? null}
+          roomId={roomId}
+          statementId={statementId}
+          onSave={handleSave}
         />
       )}
     </div>
