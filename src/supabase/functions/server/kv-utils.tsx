@@ -1,6 +1,7 @@
 // Utility functions for working with KV store data
 import { getAllRecords, getAllKvRecordsWithPrefix } from "./db-utils.ts";
 import * as kv from "./kv_store.tsx";
+import type { ClusterIdentityRecord } from "./cluster-identity.ts";
 import {
   type User,
   type Vote,
@@ -594,6 +595,14 @@ export const getClusterAssignment = async (
 
 export const getClusterMetadataRecord = async (roomId: string): Promise<any | null> => {
   return getParsedKvData<any>(`cluster:${roomId}:metadata`);
+};
+
+export const clusterIdentityKeyFn = (roomId: string) => `cluster:${roomId}:identity`;
+
+export const getClusterIdentityRecord = async (
+  roomId: string,
+): Promise<ClusterIdentityRecord | null> => {
+  return getParsedKvData<ClusterIdentityRecord>(clusterIdentityKeyFn(roomId));
 };
 
 export const getClusterAssignmentsBatch = async (

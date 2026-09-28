@@ -34,11 +34,13 @@ import {
   Flame,
   Sparkles,
   Mail,
+  Network,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
 import { AvatarAnimalChart } from "./feature-tracker/AvatarAnimalChart";
 import { CertifyCardConversionChart } from "./feature-tracker/CertifyCardConversionChart";
+import { ClusterRecomputesChart } from "./feature-tracker/ClusterRecomputesChart";
 import { OneBillionResults } from "./feature-tracker/OneBillionResults";
 import { FundingResults } from "./feature-tracker/FundingResults";
 import { OrganizersResults } from "./feature-tracker/OrganizersResults";
@@ -443,6 +445,26 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
             <p className="text-xs text-muted-foreground">Returned within a week</p>
             <p className="text-2xl font-bold text-fuchsia-600">{s.responseVotesNotifReturnedWithinWeek}</p>
           </div>
+        </div>
+      ),
+    },
+    {
+      icon: Network,
+      iconColor: "text-indigo-600",
+      bgColor: "bg-indigo-100",
+      title: "Cluster Recomputes (last 7 days)",
+      description: "How often opinion clusters are recalculated, and the % of clusters that kept their identity across a recompute",
+      getValue: (s) => s.clusterRecomputesLast7Days,
+      getDate: (s) => s.clusterRecomputesSince,
+      renderExtra: (s) => (
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs text-muted-foreground">Clusters that kept their identity</p>
+            <p className="text-2xl font-bold text-indigo-600">
+              {s.clusterIdentityKeptPercent === null ? "—" : `${s.clusterIdentityKeptPercent}%`}
+            </p>
+          </div>
+          <ClusterRecomputesChart weekly={s.clusterRecomputesWeekly} />
         </div>
       ),
     },

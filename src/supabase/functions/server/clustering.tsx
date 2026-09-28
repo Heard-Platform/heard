@@ -4,8 +4,14 @@
  */
 
 import { getStatementVoterIds } from "./analysis-utils.tsx";
-import { getStatementsForRoom, getDebate, saveClusterData, getClusterAssignment, getClusterMetadataRecord, getClusterAssignmentsBatch, getVotesForStatement } from "./kv-utils.tsx";
+import { getStatementsForRoom, getDebate, saveClusterData, getClusterAssignment, getClusterMetadataRecord, getClusterAssignmentsBatch, getVotesForStatement, getClusterIdentityRecord, clusterIdentityKeyFn } from "./kv-utils.tsx";
+import { insertAnalyticsEvent } from "./model-utils.ts";
+import { resolveClusterIdentities, ClusterIdentityResolution } from "./cluster-identity.ts";
 import type { Vote } from "./types.tsx";
+
+export const CLUSTER_RECOMPUTE_EVENT = "cluster_recompute";
+export const CLUSTER_IDENTITY_KEPT_EVENT = "cluster_identity_kept";
+export const CLUSTER_IDENTITY_NEW_EVENT = "cluster_identity_new";
 
 export type StatementWithVotes = {
   id: string;
@@ -375,6 +381,14 @@ export async function clusterUsersAndSave(
     statements,
   );
 
+  const previousIdentity = await getClusterIdentityRecord(roomId);
+  const identityResolution = resolveClusterIdentities(
+    previousIdentity,
+    clusterAssignments,
+    metadata.totalClusters,
+    metadata.timestamp,
+  );
+
   // Save to database
   // Store each user's cluster assignment
   const assignmentKeys = clusterAssignments.map(
@@ -392,10 +406,11 @@ export async function clusterUsersAndSave(
   const metadataKey = `cluster:${roomId}:metadata`;
   const metadataValue = JSON.stringify(metadata);
 
-  const allKeys = [...assignmentKeys, metadataKey];
-  const allValues = [...assignmentValues, metadataValue];
+  const allKeys = [...assignmentKeys, metadataKey, clusterIdentityKeyFn(roomId)];
+  const allValues = [...assignmentValues, metadataValue, JSON.stringify(identityResolution.record)];
 
   await saveClusterData(allKeys, allValues);
+  await recordRecomputeEvents(roomId, identityResolution);
 
   console.log(
     `[Clustering] Saved ${clusterAssignments.length} cluster assignments and metadata for room ${roomId}`,
@@ -406,6 +421,25 @@ export async function clusterUsersAndSave(
   );
 
   return metadata;
+}
+
+async function recordRecomputeEvents(
+  roomId: string,
+  resolution: ClusterIdentityResolution,
+): Promise<void> {
+  try {
+    await Promise.all([
+      insertAnalyticsEvent({ type: CLUSTER_RECOMPUTE_EVENT, userId: null, roomId }),
+      ...Array.from({ length: resolution.keptCount }, () =>
+        insertAnalyticsEvent({ type: CLUSTER_IDENTITY_KEPT_EVENT, userId: null, roomId }),
+      ),
+      ...Array.from({ length: resolution.newCount }, () =>
+        insertAnalyticsEvent({ type: CLUSTER_IDENTITY_NEW_EVENT, userId: null, roomId }),
+      ),
+    ]);
+  } catch (error) {
+    console.error(`[Clustering] Failed to record recompute events for room ${roomId}:`, error);
+  }
 }
 
 /**

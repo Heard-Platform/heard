@@ -6,7 +6,7 @@ import {
   recalculateClustersForRoom,
 } from "./clustering.tsx";
 import { calculateClusterConsensus } from "./cluster-analysis.tsx";
-import { getParsedKvData } from "./kv-utils.tsx";
+import { getClusterIdentityRecord, getParsedKvData } from "./kv-utils.tsx";
 import { calculateAnalysisMetrics, computeTopPosts, getStatementVoterIds } from "./analysis-utils.tsx";
 import { applyStatementMerges } from "./room-utils.ts";
 import { AnalysisData } from "./types.tsx";
@@ -47,6 +47,9 @@ app.get(
       const metadataKey = `cluster:${roomId}:metadata`;
       let clusterMetadata =
         await getParsedKvData<ClusterMetadata>(metadataKey);
+      let clusterIdentity = clusterMetadata
+        ? await getClusterIdentityRecord(roomId)
+        : null;
 
       if (
         !clusterMetadata &&
@@ -58,18 +61,21 @@ app.get(
         );
         clusterMetadata =
           await recalculateClustersForRoom(roomId);
+        clusterIdentity = await getClusterIdentityRecord(roomId);
       } else if (clusterMetadata) {
         const lastClusterVoteCount =
           clusterMetadata.totalVotes ?? null;
+        const isLegacy = lastClusterVoteCount === null || !clusterIdentity;
         if (
-          lastClusterVoteCount === null ||
+          isLegacy ||
           metrics.totalVotes > lastClusterVoteCount
         ) {
           console.log(
-            `[Analysis] ${lastClusterVoteCount === null ? "Legacy cluster data" : `New votes detected`} for room ${roomId} (${metrics.totalVotes} vs ${lastClusterVoteCount}), recalculating clusters...`,
+            `[Analysis] ${isLegacy ? "Legacy cluster data" : `New votes detected`} for room ${roomId} (${metrics.totalVotes} vs ${lastClusterVoteCount}), recalculating clusters...`,
           );
           clusterMetadata =
             await recalculateClustersForRoom(roomId);
+          clusterIdentity = await getClusterIdentityRecord(roomId);
         } else {
           console.log(
             `[Analysis] Using cached cluster data for room ${roomId} (${metrics.totalVotes} votes)`,
@@ -82,6 +88,7 @@ app.get(
       const voterIds = getStatementVoterIds(mergedStatements);
       if (
         clusterMetadata &&
+        clusterIdentity &&
         voterIds.length > 0
       ) {
         const assignments = await Promise.all(
@@ -95,6 +102,7 @@ app.get(
         clusterConsensus = calculateClusterConsensus(
           mergedStatements,
           clusterMetadata,
+          clusterIdentity.clusters,
           assignments,
           voterIds,
           c.get("userId") ?? null,

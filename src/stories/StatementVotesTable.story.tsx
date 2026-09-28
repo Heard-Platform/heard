@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StatementVotesTable } from "../components/analysis/StatementVotesTable";
-import { StatementVotes } from "../types";
+import { ClusterColumn, StatementVotes } from "../types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 
 type TagRef = { id: string; name: string };
@@ -8,7 +8,7 @@ type TagRef = { id: string; name: string };
 function StatefulStatementVotesTable(props: {
   statements: StatementVotes[];
   totalParticipants: number;
-  clusterSizes: number[];
+  clusterColumns: ClusterColumn[];
   seed?: boolean;
 }) {
   const [showNumbers, setShowNumbers] = useState(false);
@@ -69,7 +69,7 @@ function StatefulStatementVotesTable(props: {
       <StatementVotesTable
         statements={statements}
         totalParticipants={props.totalParticipants}
-        clusterSizes={props.clusterSizes}
+        clusterColumns={props.clusterColumns}
         showNumbers={showNumbers}
         onShowNumbersChange={setShowNumbers}
         isModerator={isModerator}
@@ -85,7 +85,7 @@ export default {
   title: "Analysis/StatementVotesTable",
 };
 
-const clusterSizes = [80, 60, 50, 35];
+const clusterColumns: ClusterColumn[] = [80, 60, 50, 35].map((size, slot) => ({ size, slot }));
 const totalParticipants = 225;
 
 const mockStatements: StatementVotes[] = [
@@ -101,10 +101,10 @@ const mockStatements: StatementVotes[] = [
     consensusScore: 65.1,
     mergedFrom: [],
     clusterVotes: [
-      { clusterId: 0, clusterSize: 80, agreeVotes: 72, superAgreeVotes: 15, disagreeVotes: 2, passVotes: 4 },
-      { clusterId: 1, clusterSize: 60, agreeVotes: 55, superAgreeVotes: 12, disagreeVotes: 2, passVotes: 3 },
-      { clusterId: 2, clusterSize: 50, agreeVotes: 37, superAgreeVotes: 8, disagreeVotes: 8, passVotes: 4 },
-      { clusterId: 3, clusterSize: 35, agreeVotes: 16, superAgreeVotes: 3, disagreeVotes: 11, passVotes: 4 },
+      { clusterId: 0, stableId: "cluster-0", slot: 0, clusterSize: 80, agreeVotes: 72, superAgreeVotes: 15, disagreeVotes: 2, passVotes: 4 },
+      { clusterId: 1, stableId: "cluster-1", slot: 1, clusterSize: 60, agreeVotes: 55, superAgreeVotes: 12, disagreeVotes: 2, passVotes: 3 },
+      { clusterId: 2, stableId: "cluster-2", slot: 2, clusterSize: 50, agreeVotes: 37, superAgreeVotes: 8, disagreeVotes: 8, passVotes: 4 },
+      { clusterId: 3, stableId: "cluster-3", slot: 3, clusterSize: 35, agreeVotes: 16, superAgreeVotes: 3, disagreeVotes: 11, passVotes: 4 },
     ],
   },
   {
@@ -122,10 +122,10 @@ const mockStatements: StatementVotes[] = [
       { id: "s-2m-2", text: "Light rail and subway expansion should be a budget priority." },
     ],
     clusterVotes: [
-      { clusterId: 0, clusterSize: 80, agreeVotes: 55, superAgreeVotes: 6, disagreeVotes: 10, passVotes: 8 },
-      { clusterId: 1, clusterSize: 60, agreeVotes: 35, superAgreeVotes: 4, disagreeVotes: 12, passVotes: 6 },
-      { clusterId: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 2, disagreeVotes: 18, passVotes: 5 },
-      { clusterId: 3, clusterSize: 35, agreeVotes: 5, superAgreeVotes: 0, disagreeVotes: 5, passVotes: 3 },
+      { clusterId: 0, stableId: "cluster-0", slot: 0, clusterSize: 80, agreeVotes: 55, superAgreeVotes: 6, disagreeVotes: 10, passVotes: 8 },
+      { clusterId: 1, stableId: "cluster-1", slot: 1, clusterSize: 60, agreeVotes: 35, superAgreeVotes: 4, disagreeVotes: 12, passVotes: 6 },
+      { clusterId: 2, stableId: "cluster-2", slot: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 2, disagreeVotes: 18, passVotes: 5 },
+      { clusterId: 3, stableId: "cluster-3", slot: 3, clusterSize: 35, agreeVotes: 5, superAgreeVotes: 0, disagreeVotes: 5, passVotes: 3 },
     ],
   },
   {
@@ -140,10 +140,10 @@ const mockStatements: StatementVotes[] = [
     consensusScore: 56.1,
     mergedFrom: [],
     clusterVotes: [
-      { clusterId: 0, clusterSize: 80, agreeVotes: 48, superAgreeVotes: 5, disagreeVotes: 10, passVotes: 10 },
-      { clusterId: 1, clusterSize: 60, agreeVotes: 30, superAgreeVotes: 3, disagreeVotes: 8, passVotes: 8 },
-      { clusterId: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 1, disagreeVotes: 8, passVotes: 6 },
-      { clusterId: 3, clusterSize: 35, agreeVotes: 3, superAgreeVotes: 0, disagreeVotes: 5, passVotes: 4 },
+      { clusterId: 0, stableId: "cluster-0", slot: 0, clusterSize: 80, agreeVotes: 48, superAgreeVotes: 5, disagreeVotes: 10, passVotes: 10 },
+      { clusterId: 1, stableId: "cluster-1", slot: 1, clusterSize: 60, agreeVotes: 30, superAgreeVotes: 3, disagreeVotes: 8, passVotes: 8 },
+      { clusterId: 2, stableId: "cluster-2", slot: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 1, disagreeVotes: 8, passVotes: 6 },
+      { clusterId: 3, stableId: "cluster-3", slot: 3, clusterSize: 35, agreeVotes: 3, superAgreeVotes: 0, disagreeVotes: 5, passVotes: 4 },
     ],
   },
   {
@@ -158,10 +158,10 @@ const mockStatements: StatementVotes[] = [
     consensusScore: 11.3,
     mergedFrom: [],
     clusterVotes: [
-      { clusterId: 0, clusterSize: 80, agreeVotes: 12, superAgreeVotes: 3, disagreeVotes: 50, passVotes: 10 },
-      { clusterId: 1, clusterSize: 60, agreeVotes: 8, superAgreeVotes: 2, disagreeVotes: 35, passVotes: 8 },
-      { clusterId: 2, clusterSize: 50, agreeVotes: 2, superAgreeVotes: 0, disagreeVotes: 20, passVotes: 5 },
-      { clusterId: 3, clusterSize: 35, agreeVotes: 1, superAgreeVotes: 0, disagreeVotes: 7, passVotes: 2 },
+      { clusterId: 0, stableId: "cluster-0", slot: 0, clusterSize: 80, agreeVotes: 12, superAgreeVotes: 3, disagreeVotes: 50, passVotes: 10 },
+      { clusterId: 1, stableId: "cluster-1", slot: 1, clusterSize: 60, agreeVotes: 8, superAgreeVotes: 2, disagreeVotes: 35, passVotes: 8 },
+      { clusterId: 2, stableId: "cluster-2", slot: 2, clusterSize: 50, agreeVotes: 2, superAgreeVotes: 0, disagreeVotes: 20, passVotes: 5 },
+      { clusterId: 3, stableId: "cluster-3", slot: 3, clusterSize: 35, agreeVotes: 1, superAgreeVotes: 0, disagreeVotes: 7, passVotes: 2 },
     ],
   },
   {
@@ -176,10 +176,10 @@ const mockStatements: StatementVotes[] = [
     consensusScore: 16.3,
     mergedFrom: [],
     clusterVotes: [
-      { clusterId: 0, clusterSize: 80, agreeVotes: 12, superAgreeVotes: 2, disagreeVotes: 42, passVotes: 5 },
-      { clusterId: 1, clusterSize: 60, agreeVotes: 8, superAgreeVotes: 1, disagreeVotes: 30, passVotes: 4 },
-      { clusterId: 2, clusterSize: 50, agreeVotes: 4, superAgreeVotes: 0, disagreeVotes: 18, passVotes: 3 },
-      { clusterId: 3, clusterSize: 35, agreeVotes: 1, superAgreeVotes: 0, disagreeVotes: 6, passVotes: 2 },
+      { clusterId: 0, stableId: "cluster-0", slot: 0, clusterSize: 80, agreeVotes: 12, superAgreeVotes: 2, disagreeVotes: 42, passVotes: 5 },
+      { clusterId: 1, stableId: "cluster-1", slot: 1, clusterSize: 60, agreeVotes: 8, superAgreeVotes: 1, disagreeVotes: 30, passVotes: 4 },
+      { clusterId: 2, stableId: "cluster-2", slot: 2, clusterSize: 50, agreeVotes: 4, superAgreeVotes: 0, disagreeVotes: 18, passVotes: 3 },
+      { clusterId: 3, stableId: "cluster-3", slot: 3, clusterSize: 35, agreeVotes: 1, superAgreeVotes: 0, disagreeVotes: 6, passVotes: 2 },
     ],
   },
   {
@@ -194,10 +194,10 @@ const mockStatements: StatementVotes[] = [
     consensusScore: 13.2,
     mergedFrom: [],
     clusterVotes: [
-      { clusterId: 0, clusterSize: 80, agreeVotes: 8, superAgreeVotes: 1, disagreeVotes: 35, passVotes: 8 },
-      { clusterId: 1, clusterSize: 60, agreeVotes: 5, superAgreeVotes: 1, disagreeVotes: 22, passVotes: 6 },
-      { clusterId: 2, clusterSize: 50, agreeVotes: 3, superAgreeVotes: 0, disagreeVotes: 15, passVotes: 3 },
-      { clusterId: 3, clusterSize: 35, agreeVotes: 1, superAgreeVotes: 0, disagreeVotes: 6, passVotes: 2 },
+      { clusterId: 0, stableId: "cluster-0", slot: 0, clusterSize: 80, agreeVotes: 8, superAgreeVotes: 1, disagreeVotes: 35, passVotes: 8 },
+      { clusterId: 1, stableId: "cluster-1", slot: 1, clusterSize: 60, agreeVotes: 5, superAgreeVotes: 1, disagreeVotes: 22, passVotes: 6 },
+      { clusterId: 2, stableId: "cluster-2", slot: 2, clusterSize: 50, agreeVotes: 3, superAgreeVotes: 0, disagreeVotes: 15, passVotes: 3 },
+      { clusterId: 3, stableId: "cluster-3", slot: 3, clusterSize: 35, agreeVotes: 1, superAgreeVotes: 0, disagreeVotes: 6, passVotes: 2 },
     ],
   },
   {
@@ -212,10 +212,10 @@ const mockStatements: StatementVotes[] = [
     consensusScore: 48.4,
     mergedFrom: [],
     clusterVotes: [
-      { clusterId: 0, clusterSize: 80, agreeVotes: 45, superAgreeVotes: 9, disagreeVotes: 12, passVotes: 7 },
-      { clusterId: 1, clusterSize: 60, agreeVotes: 30, superAgreeVotes: 6, disagreeVotes: 10, passVotes: 6 },
-      { clusterId: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 3, disagreeVotes: 12, passVotes: 4 },
-      { clusterId: 3, clusterSize: 35, agreeVotes: 2, superAgreeVotes: 0, disagreeVotes: 7, passVotes: 3 },
+      { clusterId: 0, stableId: "cluster-0", slot: 0, clusterSize: 80, agreeVotes: 45, superAgreeVotes: 9, disagreeVotes: 12, passVotes: 7 },
+      { clusterId: 1, stableId: "cluster-1", slot: 1, clusterSize: 60, agreeVotes: 30, superAgreeVotes: 6, disagreeVotes: 10, passVotes: 6 },
+      { clusterId: 2, stableId: "cluster-2", slot: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 3, disagreeVotes: 12, passVotes: 4 },
+      { clusterId: 3, stableId: "cluster-3", slot: 3, clusterSize: 35, agreeVotes: 2, superAgreeVotes: 0, disagreeVotes: 7, passVotes: 3 },
     ],
   },
   {
@@ -230,10 +230,10 @@ const mockStatements: StatementVotes[] = [
     consensusScore: 59.8,
     mergedFrom: [],
     clusterVotes: [
-      { clusterId: 0, clusterSize: 80, agreeVotes: 65, superAgreeVotes: 19, disagreeVotes: 4, passVotes: 3 },
-      { clusterId: 1, clusterSize: 60, agreeVotes: 48, superAgreeVotes: 14, disagreeVotes: 4, passVotes: 3 },
-      { clusterId: 2, clusterSize: 50, agreeVotes: 30, superAgreeVotes: 9, disagreeVotes: 5, passVotes: 3 },
-      { clusterId: 3, clusterSize: 35, agreeVotes: 11, superAgreeVotes: 2, disagreeVotes: 6, passVotes: 2 },
+      { clusterId: 0, stableId: "cluster-0", slot: 0, clusterSize: 80, agreeVotes: 65, superAgreeVotes: 19, disagreeVotes: 4, passVotes: 3 },
+      { clusterId: 1, stableId: "cluster-1", slot: 1, clusterSize: 60, agreeVotes: 48, superAgreeVotes: 14, disagreeVotes: 4, passVotes: 3 },
+      { clusterId: 2, stableId: "cluster-2", slot: 2, clusterSize: 50, agreeVotes: 30, superAgreeVotes: 9, disagreeVotes: 5, passVotes: 3 },
+      { clusterId: 3, stableId: "cluster-3", slot: 3, clusterSize: 35, agreeVotes: 11, superAgreeVotes: 2, disagreeVotes: 6, passVotes: 2 },
     ],
   },
 ];
@@ -243,7 +243,7 @@ export const Default = () => (
     <StatefulStatementVotesTable
       statements={mockStatements}
       totalParticipants={totalParticipants}
-      clusterSizes={clusterSizes}
+      clusterColumns={clusterColumns}
     />
   </div>
 );
@@ -258,7 +258,7 @@ export const WithoutClusters = () => (
         }),
       )}
       totalParticipants={totalParticipants}
-      clusterSizes={[]}
+      clusterColumns={[]}
     />
   </div>
 );
@@ -268,7 +268,7 @@ export const Empty = () => (
     <StatefulStatementVotesTable
       statements={[]}
       totalParticipants={0}
-      clusterSizes={[]}
+      clusterColumns={[]}
     />
   </div>
 );
@@ -287,7 +287,7 @@ export function StatementVotesTableStory() {
           <StatefulStatementVotesTable
             statements={mockStatements}
             totalParticipants={totalParticipants}
-            clusterSizes={clusterSizes}
+            clusterColumns={clusterColumns}
           />
         </CardContent>
       </Card>
@@ -304,7 +304,7 @@ export function StatementVotesTableStory() {
           <StatefulStatementVotesTable
             statements={mockStatements}
             totalParticipants={totalParticipants}
-            clusterSizes={clusterSizes}
+            clusterColumns={clusterColumns}
             seed={false}
           />
         </CardContent>

@@ -5,6 +5,8 @@ import type { StatementVotes, ClusterVoteBreakdown } from "../types";
 function makeCV(overrides: Partial<ClusterVoteBreakdown>): ClusterVoteBreakdown {
   return {
     clusterId: 0,
+    stableId: "cluster-0",
+    slot: 0,
     clusterSize: 10,
     agreeVotes: 0,
     superAgreeVotes: 0,
