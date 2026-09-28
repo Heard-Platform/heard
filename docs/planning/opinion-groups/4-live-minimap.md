@@ -39,7 +39,10 @@ With fewer than 2 clusters, show "Opinion groups forming…" instead of the map.
 ## Deploy
 
 - Frontend only (Phase 3 already ships the data), behind a feature flag.
-- Track a minimap-viewed event and any change in votes per session.
+
+## Tracking
+
+In the feature results tracker: a chart of flyer-user conversion rate (% who create an account) per week.
 
 ---
 
@@ -51,5 +54,4 @@ With fewer than 2 clusters, show "Opinion groups forming…" instead of the map.
 - The swipe stack already uses `motion`, so use it for the spring animation.
 - Real assignment for reconciliation: from the analysis endpoint, or a small new `GET /room/:roomId/my-cluster`.
 - Stories to cover: k = 2, k = 3, no clusters, mid-transition, longest names.
-- Event tracking: follow `docs/engineering-conventions.md`.
 - Feature flag: `src/utils/constants/feature-flags.ts`.

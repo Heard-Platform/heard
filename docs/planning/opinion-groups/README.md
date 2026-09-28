@@ -6,7 +6,7 @@ Help participants understand a post's opinion landscape at a glance, and see whe
 
 ## Phases
 
-Each phase ships and deploys on its own, in this order.
+Each phase ships and deploys on its own, in this order. Each one also adds a quick health check to the feature results tracker (see its Tracking section).
 
 | # | Phase | What users get | Deploy gate |
 |---|-------|----------------|-------------|

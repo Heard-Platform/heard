@@ -35,6 +35,10 @@ So "cluster 0" today and "cluster 0" after the next recompute can be different g
 - k drops from 3 to 2 → one identity is dropped.
 - Overlap below the threshold → a new identity.
 
+## Tracking
+
+In the feature results tracker: a chart of cluster recomputes per week, to confirm clustering isn't running too often. Plus a stat showing the % of clusters that kept their ID after a recompute.
+
 ---
 
 ## Footnotes: code pointers
@@ -45,3 +49,4 @@ So "cluster 0" today and "cluster 0" after the next recompute can be different g
 - Index-keyed UI to migrate: `src/components/analysis/ClusterConsensusBox.tsx`, `StatementVotesTable*.tsx`, `BridgeStatementsSection.tsx`, `src/utils/colors.ts`, `src/utils/bridging-utils.ts`.
 - Verification endpoint: `/room/:roomId/regenerate-clusters` in `analysis-api.tsx`.
 - Tests: extend `clustering.test.tsx`; add `cluster-identity.test.ts`.
+- Tracking: log a `cluster_recompute` event via `insertAnalyticsEvent` (`model-utils.ts`) in `clusterUsersAndSave`. Aggregate it in `/stats/features` (`features-results-tracker-api.ts`, read with `getEventsOfType`). Add an entry to `src/components/devtools/FeatureResultsTracker.tsx`, with a weekly chart in `devtools/feature-tracker/` (see `CertifyCardConversionChart` for the pattern).

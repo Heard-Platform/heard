@@ -64,7 +64,11 @@ The new ordering applies only to the swipe deck. The shared "get statements" pat
 ## Deploy
 
 - Behind a frontend feature flag.
-- Compare swipe completion rate and votes per session before and after.
+- Watch the votes-per-session chart (see Tracking) for the first couple of weeks.
+
+## Tracking
+
+In the feature results tracker: a chart of average votes per session per week.
 
 ---
 

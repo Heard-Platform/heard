@@ -64,6 +64,10 @@ Today's distinguishing-statement z-test only keeps the agree-more side. Add a tw
 
 - A moderator "regenerate names" action, which clears the name and re-flags `needsName`.
 
+## Tracking
+
+In the feature results tracker: a list of every room with named clusters, showing each cluster's name and size, for spot-checking name quality. Plus a count of clusters where naming failed.
+
 ---
 
 ## Footnotes: code pointers
@@ -79,3 +83,4 @@ Today's distinguishing-statement z-test only keeps the agree-more side. Add a tw
 - On/off switch: follow the `ENRICHMENT_ON` pattern in `internal-config-api.tsx` / `internal-utils.ts` (e.g. `CLUSTER_NAMING_ON`).
 - Moderation: reuse `moderation-utils.ts`.
 - Expose it as `clusterConsensus.clusters[].name` via `analysis-api.tsx`.
+- Tracking: read the identity records by KV prefix and keep only the `:identity` keys (the `cluster:` prefix also matches metadata). Log a `cluster_naming_run` event via `insertAnalyticsEvent`. Build the spot-check list as a new `devtools/feature-tracker/ClusterNamesList.tsx`, rendered via `renderExtra` on a `FeatureResultsTracker.tsx` entry.
