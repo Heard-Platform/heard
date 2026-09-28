@@ -448,6 +448,12 @@ export interface FunnelMetricsData {
   tookActionTenDays: number;
 }
 
+export interface CohortVoteBucket {
+  label: string;
+  count: number;
+  pct: number;
+}
+
 export interface CohortTopPost {
   id: string;
   topic: string;
@@ -461,6 +467,7 @@ export interface CohortFunnelEntry {
   totalUsers: number;
   multiPostViewCount: number;
   votedCount: number;
+  moreThanFiveVotesCount: number;
   respondedCount: number;
   createdRoomCount: number;
   nonAnonCount: number;
@@ -469,8 +476,10 @@ export interface CohortFunnelEntry {
   multiDayCount: number;
   multiWeekCount: number;
   activeThisWeekCount: number;
+  votesThisWeekCount: number;
   multiPostViewPct: number;
   votedPct: number;
+  moreThanFiveVotesPct: number;
   respondedPct: number;
   createdRoomPct: number;
   nonAnonPct: number;
@@ -479,6 +488,7 @@ export interface CohortFunnelEntry {
   multiDayPct: number;
   multiWeekPct: number;
   activeThisWeekPct: number;
+  voteBuckets: CohortVoteBucket[];
   topPosts: CohortTopPost[];
 }
 

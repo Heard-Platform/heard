@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   LineChart,
   Line,
@@ -10,7 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import type { CohortFunnelEntry } from "../types";
+import type { CohortFunnelEntry, CohortVoteBucket } from "../types";
 
 interface CohortFunnelChartProps {
   cohorts: CohortFunnelEntry[];
@@ -22,6 +22,7 @@ interface Stage {
     CohortFunnelEntry,
     | "multiPostViewPct"
     | "votedPct"
+    | "moreThanFiveVotesPct"
     | "respondedPct"
     | "createdRoomPct"
     | "nonAnonPct"
@@ -35,6 +36,7 @@ interface Stage {
     CohortFunnelEntry,
     | "multiPostViewCount"
     | "votedCount"
+    | "moreThanFiveVotesCount"
     | "respondedCount"
     | "createdRoomCount"
     | "nonAnonCount"
@@ -52,6 +54,7 @@ interface Stage {
 const FUNNEL_STAGES: Stage[] = [
   { key: "multiPostViewPct", countKey: "multiPostViewCount", label: "Viewed 2+ posts", color: "#e34948" },
   { key: "votedPct", countKey: "votedCount", label: "Voted", color: "#2a78d6" },
+  { key: "moreThanFiveVotesPct", countKey: "moreThanFiveVotesCount", label: "Cast 6+ votes", color: "#1e3a8a" },
   { key: "respondedPct", countKey: "respondedCount", label: "Responded", color: "#eb6834" },
   { key: "createdRoomPct", countKey: "createdRoomCount", label: "Created a post", color: "#8b5cf6" },
   { key: "nonAnonPct", countKey: "nonAnonCount", label: "Has email/phone", color: "#1baf7a" },
@@ -66,6 +69,9 @@ const RETENTION_STAGES: Stage[] = [
 ];
 
 const ALL_STAGES: Stage[] = [...FUNNEL_STAGES, ...RETENTION_STAGES];
+
+const VOTE_BUCKETS_LABEL = "Votes cast that week";
+const VOTE_BUCKET_COLORS = ["#c9e4e9", "#8fc7d1", "#4fa3b3", "#1b7a91", "#0b4a5e"];
 
 const TEXT_PRIMARY = "#0b0b0b";
 const TEXT_SECONDARY = "#52514e";
@@ -93,6 +99,46 @@ function LineSwatch({ color, dashed, width = 14 }: { color: string; dashed?: boo
   );
 }
 
+function voteBucketLabel(label: string): string {
+  return `${label} ${label === "1" ? "vote" : "votes"}`;
+}
+
+function TableHeader({ divided, children }: { divided?: boolean; children: ReactNode }) {
+  return (
+    <th
+      className="text-right py-2 pr-3"
+      style={{
+        color: TEXT_SECONDARY,
+        borderLeft: divided ? `1px dashed ${GRIDLINE}` : undefined,
+      }}
+    >
+      {children}
+    </th>
+  );
+}
+
+function TableCell({ pct, count, divided }: { pct: number; count: number; divided?: boolean }) {
+  return (
+    <td
+      className="py-2 pr-3 text-right"
+      style={{
+        color: TEXT_PRIMARY,
+        borderLeft: divided ? `1px dashed ${GRIDLINE}` : undefined,
+      }}
+    >
+      {pct}% ({count})
+    </td>
+  );
+}
+
+function BucketSwatch({ color, size = 10 }: { color: string; size?: number }) {
+  return (
+    <svg width={size} height={size} style={{ display: "block", flexShrink: 0 }}>
+      <rect x={0} y={0} width={size} height={size} rx={2} fill={color} />
+    </svg>
+  );
+}
+
 function StageRow({ stage, entry }: { stage: Stage; entry: CohortFunnelEntry }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
@@ -102,6 +148,20 @@ function StageRow({ stage, entry }: { stage: Stage; entry: CohortFunnelEntry }) 
       </span>
       <span style={{ color: TEXT_SECONDARY, fontSize: 12 }}>
         {stage.label} ({entry[stage.countKey]})
+      </span>
+    </div>
+  );
+}
+
+function BucketRow({ bucket, color }: { bucket: CohortVoteBucket; color: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+      <BucketSwatch color={color} />
+      <span style={{ color: TEXT_PRIMARY, fontSize: 13, fontWeight: 600 }}>
+        {bucket.pct}%
+      </span>
+      <span style={{ color: TEXT_SECONDARY, fontSize: 12 }}>
+        {voteBucketLabel(bucket.label)} ({bucket.count})
       </span>
     </div>
   );
@@ -143,6 +203,15 @@ function CustomTooltip({ active, payload, label, hiddenStages }: any) {
         </div>
       )}
 
+      <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${GRIDLINE}` }}>
+        <p style={{ color: TEXT_SECONDARY, fontSize: 11, marginBottom: 4 }}>
+          {VOTE_BUCKETS_LABEL} ({entry.votesThisWeekCount} total)
+        </p>
+        {entry.voteBuckets.map((bucket, i) => (
+          <BucketRow key={bucket.label} bucket={bucket} color={VOTE_BUCKET_COLORS[i]} />
+        ))}
+      </div>
+
       {entry.topPosts.length > 0 && (
         <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${GRIDLINE}` }}>
           <p style={{ color: TEXT_SECONDARY, fontSize: 11, marginBottom: 4 }}>
@@ -167,11 +236,15 @@ function CustomTooltip({ active, payload, label, hiddenStages }: any) {
 }
 
 function LegendItem({
-  stage,
+  label,
+  color,
+  dashed,
   isHidden,
   onToggle,
 }: {
-  stage: Stage;
+  label: string;
+  color: string;
+  dashed?: boolean;
   isHidden: boolean;
   onToggle: () => void;
 }) {
@@ -183,7 +256,7 @@ function LegendItem({
       className="flex items-center gap-1.5 bg-transparent border-0 p-0 cursor-pointer"
       style={{ opacity: isHidden ? 0.35 : 1 }}
     >
-      <LineSwatch color={stage.color} dashed={stage.dashed} />
+      <LineSwatch color={color} dashed={dashed} />
       <span
         style={{
           color: TEXT_SECONDARY,
@@ -191,7 +264,7 @@ function LegendItem({
           textDecoration: isHidden ? "line-through" : undefined,
         }}
       >
-        {stage.label}
+        {label}
       </span>
     </button>
   );
@@ -209,7 +282,9 @@ function Legend({
       {FUNNEL_STAGES.map((stage) => (
         <LegendItem
           key={stage.key}
-          stage={stage}
+          label={stage.label}
+          color={stage.color}
+          dashed={stage.dashed}
           isHidden={hiddenStages.has(stage.key)}
           onToggle={() => onToggleStage(stage.key)}
         />
@@ -222,7 +297,9 @@ function Legend({
       {RETENTION_STAGES.map((stage) => (
         <LegendItem
           key={stage.key}
-          stage={stage}
+          label={stage.label}
+          color={stage.color}
+          dashed={stage.dashed}
           isHidden={hiddenStages.has(stage.key)}
           onToggle={() => onToggleStage(stage.key)}
         />
@@ -262,7 +339,9 @@ export function CohortFunnelChart({ cohorts, cohortMode = "joined" }: CohortFunn
         different kind of measure &mdash; return behavior, not maturity &mdash; showing the % who
         came back and used the app on more than one distinct day or week, including the % who
         were active on more than one day within that same cohort week ("active users"). The
-        bars below show cohort size, so thin weeks can be read with appropriate skepticism.
+        stacked bars below split each cohort by how many votes each user cast during that
+        cohort week, with 0 and 1 kept as their own buckets. The last bars show cohort size, so
+        thin weeks can be read with appropriate skepticism.
       </p>
 
       <ResponsiveContainer width="100%" height={380}>
@@ -284,6 +363,7 @@ export function CohortFunnelChart({ cohorts, cohortMode = "joined" }: CohortFunn
           <Tooltip
             content={(props) => <CustomTooltip {...props} hiddenStages={hiddenStages} />}
             cursor={{ stroke: BASELINE, strokeWidth: 1 }}
+            wrapperStyle={{ zIndex: 10 }}
           />
           {ALL_STAGES.map((stage) => (
             <Line
@@ -300,6 +380,46 @@ export function CohortFunnelChart({ cohorts, cohortMode = "joined" }: CohortFunn
             />
           ))}
         </LineChart>
+      </ResponsiveContainer>
+
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <p style={{ color: TEXT_SECONDARY, fontSize: 11 }}>{VOTE_BUCKETS_LABEL}</p>
+        {cohorts[0].voteBuckets.map((bucket, i) => (
+          <span key={bucket.label} className="flex items-center gap-1">
+            <BucketSwatch color={VOTE_BUCKET_COLORS[i]} size={8} />
+            <span style={{ color: TEXT_SECONDARY, fontSize: 11 }}>{bucket.label}</span>
+          </span>
+        ))}
+      </div>
+
+      <ResponsiveContainer width="100%" height={110}>
+        <BarChart
+          data={cohorts}
+          syncId="cohort-funnel"
+          margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
+        >
+          <CartesianGrid vertical={false} stroke={GRIDLINE} />
+          <XAxis dataKey="cohortLabel" tick={false} axisLine={{ stroke: BASELINE }} tickLine={false} />
+          <YAxis
+            domain={[0, 100]}
+            ticks={[0, 50, 100]}
+            tick={{ fontSize: 10, fill: TEXT_MUTED }}
+            axisLine={{ stroke: BASELINE }}
+            tickLine={false}
+            width={44}
+            unit="%"
+          />
+          <Tooltip content={() => null} cursor={{ fill: GRIDLINE, opacity: 0.5 }} />
+          {cohorts[0].voteBuckets.map((bucket, i) => (
+            <Bar
+              key={bucket.label}
+              dataKey={(entry: CohortFunnelEntry) => entry.voteBuckets[i]?.pct ?? 0}
+              name={`${bucket.label} votes`}
+              stackId="vote-buckets"
+              fill={VOTE_BUCKET_COLORS[i]}
+            />
+          ))}
+        </BarChart>
       </ResponsiveContainer>
 
       <p style={{ color: TEXT_SECONDARY, fontSize: 11 }}>
@@ -354,25 +474,17 @@ export function CohortFunnelChart({ cohorts, cohortMode = "joined" }: CohortFunn
                   Users
                 </th>
                 {FUNNEL_STAGES.map((stage) => (
-                  <th
-                    key={stage.key}
-                    className="text-right py-2 pr-3"
-                    style={{ color: TEXT_SECONDARY }}
-                  >
-                    {stage.label}
-                  </th>
+                  <TableHeader key={stage.key}>{stage.label}</TableHeader>
                 ))}
                 {RETENTION_STAGES.map((stage, i) => (
-                  <th
-                    key={stage.key}
-                    className="text-right py-2 pr-3"
-                    style={{
-                      color: TEXT_SECONDARY,
-                      borderLeft: i === 0 ? `1px dashed ${GRIDLINE}` : undefined,
-                    }}
-                  >
+                  <TableHeader key={stage.key} divided={i === 0}>
                     {stage.label}
-                  </th>
+                  </TableHeader>
+                ))}
+                {cohorts[0].voteBuckets.map((bucket, i) => (
+                  <TableHeader key={bucket.label} divided={i === 0}>
+                    {voteBucketLabel(bucket.label)} that week
+                  </TableHeader>
                 ))}
               </tr>
             </thead>
@@ -386,25 +498,23 @@ export function CohortFunnelChart({ cohorts, cohortMode = "joined" }: CohortFunn
                     {entry.totalUsers}
                   </td>
                   {FUNNEL_STAGES.map((stage) => (
-                    <td
-                      key={stage.key}
-                      className="py-2 pr-3 text-right"
-                      style={{ color: TEXT_PRIMARY }}
-                    >
-                      {entry[stage.key]}% ({entry[stage.countKey]})
-                    </td>
+                    <TableCell key={stage.key} pct={entry[stage.key]} count={entry[stage.countKey]} />
                   ))}
                   {RETENTION_STAGES.map((stage, i) => (
-                    <td
+                    <TableCell
                       key={stage.key}
-                      className="py-2 pr-3 text-right"
-                      style={{
-                        color: TEXT_PRIMARY,
-                        borderLeft: i === 0 ? `1px dashed ${GRIDLINE}` : undefined,
-                      }}
-                    >
-                      {entry[stage.key]}% ({entry[stage.countKey]})
-                    </td>
+                      pct={entry[stage.key]}
+                      count={entry[stage.countKey]}
+                      divided={i === 0}
+                    />
+                  ))}
+                  {entry.voteBuckets.map((bucket, i) => (
+                    <TableCell
+                      key={bucket.label}
+                      pct={bucket.pct}
+                      count={bucket.count}
+                      divided={i === 0}
+                    />
                   ))}
                 </tr>
               ))}
