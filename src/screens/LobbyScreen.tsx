@@ -14,15 +14,16 @@ import {
   RoomScrollerRef,
 } from "../components/RoomScroller";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
-import { CreateEventSheet } from "../components/CreateEventSheet";
 import { SubHeardBrowser } from "../components/community/SubHeardBrowser";
 import { CommunityExplorerDialog } from "../components/community/CommunityExplorerDialog";
 import { IntroModal } from "../components/IntroModal";
 import { KeyboardDebugPanel } from "../components/KeyboardDebugPanel";
-import { NewItemButton } from "../components/NewItemButton";
 import { FundingTeaser } from "../components/FundingTeaser";
 import { SidePanelMenu } from "../components/SidePanelMenu";
 import { AnonAccountSetupModal } from "../components/AnonAccountSetupModal";
+import { BottomNav, type BottomNavTab } from "../components/BottomNav";
+import { FeedHeader, FEED_HEADER_HEIGHT_PX } from "../components/FeedHeader";
+import { useHideOnScroll } from "../hooks/useHideOnScroll";
 import { api, safelyMakeApiCall } from "../utils/api";
 import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
 import { RoomAlertsProvider } from "../contexts/RoomAlertsContext";
@@ -104,8 +105,6 @@ export function LobbyScreen({
   const [createRoomSheetOpen, setCreateRoomSheetOpen] =
     useState(false);
   const [startInRantMode, setStartInRantMode] = useState(false);
-  const [createEventSheetOpen, setCreateEventSheetOpen] =
-    useState(false);
 
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [discussTopic, setDiscussTopic] = useState<
@@ -131,6 +130,9 @@ export function LobbyScreen({
   const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
   const [accountSetupIsSignIn, setAccountSetupIsSignIn] = useState(false);
   const [explorerOpen, setExplorerOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const { hidden: headerHidden, handleScroll: handleFeedScroll } =
+    useHideOnScroll(FEED_HEADER_HEIGHT_PX);
   type Steps = "tutorial" | "explorer" | "complete";
 
   const filteredRooms = useMemo(() => {
@@ -278,10 +280,6 @@ export function LobbyScreen({
     openCreateSheet();
   }
 
-  const handleOpenCreateEventSheet = () => {
-    setCreateEventSheetOpen(true);
-  };
-
   const handleDiscussStatement = (
     statementText: string,
     subHeard?: string,
@@ -332,6 +330,35 @@ export function LobbyScreen({
     setExplorerOpen(false);
   };
 
+  const handleWordmarkClick = () => {
+    roomScrollerRef.current?.scrollToTop();
+    if (user.isDeveloper) {
+      setShowDebugPanel(!showDebugPanel);
+    }
+  };
+
+  const handleSelectBottomNavTab = (tab: BottomNavTab) => {
+    api.trackEvent(`bottom_nav_${tab}_tapped`);
+    switch (tab) {
+      case "home":
+        roomScrollerRef.current?.scrollToTop();
+        break;
+      case "explore":
+        setExplorerOpen(true);
+        break;
+      case "new":
+        handleOpenCreateSheetRanting();
+        break;
+      case "profile":
+        if (user.isAnonymous) {
+          handleShowAccountSetupModal("sign in or create an account", true);
+        } else {
+          setProfileMenuOpen(true);
+        }
+        break;
+    }
+  };
+
   return (
     <RoomAlertsProvider>
       <IntroModal
@@ -360,83 +387,45 @@ export function LobbyScreen({
       {!currentEvent && !eventLoading && (
         <div className="heard-feed-bg">
           <div className="relative w-full">
-            {/* Floating header with user info and menu */}
-            <div className="absolute top-0 left-0 right-0 controls-layer pt-[6px] px-2 flex justify-center items-center">
-              <div
-                className="flex items-center justify-between gap-2 w-full max-w-2xl"
-                style={{ marginTop: 8 }}
-              >
-                {onSubHeardChange && (
-                  <div className="flex-1 min-w-0 mr-3">
-                    <SubHeardBrowser
-                      currentSubHeard={currentSubHeard}
-                      user={user}
-                      onSubHeardChange={onSubHeardChange}
-                      onUpdateSubHeard={async (
-                        community: SubHeard,
-                      ) => {
-                        try {
-                          const response =
-                            await api.updateSubHeardSettings(
-                              community,
-                            );
-                          if (response.success) {
-                            return true;
-                          }
-                          console.error(
-                            "Failed to update sub-heard:",
-                            response.error,
-                          );
-                          return false;
-                        } catch (error) {
-                          console.error(
-                            "Error updating sub-heard:",
-                            error,
-                          );
-                          return false;
-                        }
-                      }}
-                      onShowAccountSetupModal={
-                        handleShowAccountSetupModal
+            <FeedHeader
+              hidden={headerHidden}
+              communityPicker={
+                <SubHeardBrowser
+                  currentSubHeard={currentSubHeard}
+                  user={user}
+                  onSubHeardChange={onSubHeardChange}
+                  onUpdateSubHeard={async (
+                    community: SubHeard,
+                  ) => {
+                    try {
+                      const response =
+                        await api.updateSubHeardSettings(
+                          community,
+                        );
+                      if (response.success) {
+                        return true;
                       }
-                      onOpenExplorer={() => setExplorerOpen(true)}
-                      onLogoClick={() => {
-                        roomScrollerRef.current?.scrollToTop();
-                        if (user.isDeveloper) {
-                          setShowDebugPanel(!showDebugPanel);
-                        }
-                      }}
-                    />
-                  </div>
-                )}
-
-                <NewItemButton
-                  onNewConversation={handleOpenCreateSheetRanting}
-                  onNewEvent={handleOpenCreateEventSheet}
-                />
-
-                {onLogout && (
-                  <SidePanelMenu
-                    user={user}
-                    onLogout={onLogout}
-                    onOpenHelp={() => setHelpModalOpen(true)}
-                    onOpenShowcase={onOpenShowcase}
-                    onOpenRetentionDashboard={onOpenRetentionDashboard}
-                    onOpenAdminDashboard={onOpenAdminDashboard}
-                    onOpenFeatureTracker={onOpenFeatureTracker}
-                    onOpenDevTools={onOpenDevTools}
-                    onOpenActivityFeed={onOpenActivityFeed}
-                    onOpenAdminPanel={onOpenAdminPanel}
-                    onJumpToFinalResults={onJumpToFinalResults}
-                    onCreateAnonDebate={handleCreateAnonDebate}
-                    onShowAccountSetupModal={
-                      handleShowAccountSetupModal
+                      console.error(
+                        "Failed to update sub-heard:",
+                        response.error,
+                      );
+                      return false;
+                    } catch (error) {
+                      console.error(
+                        "Error updating sub-heard:",
+                        error,
+                      );
+                      return false;
                     }
-                    onJumpToRoom={onJumpToRoom}
-                  />
-                )}
-              </div>
-            </div>
+                  }}
+                  onShowAccountSetupModal={
+                    handleShowAccountSetupModal
+                  }
+                  onOpenExplorer={() => setExplorerOpen(true)}
+                />
+              }
+              onWordmarkClick={handleWordmarkClick}
+            />
 
             <RoomScroller
               ref={roomScrollerRef}
@@ -459,12 +448,41 @@ export function LobbyScreen({
               onOpenExplorer={() => setExplorerOpen(true)}
               onOpenEvent={onOpenEvent}
               onSubHeardChange={onSubHeardChange}
+              onScrollTopChange={handleFeedScroll}
             />
           </div>
         </div>
       )}
 
       {!currentEvent && !eventLoading && <FundingTeaser />}
+
+      {!currentEvent && !eventLoading && !isKeyboardOpen && (
+        <BottomNav
+          user={user}
+          onSelectTab={handleSelectBottomNavTab}
+        />
+      )}
+
+      {onLogout && (
+        <SidePanelMenu
+          user={user}
+          open={profileMenuOpen}
+          onOpenChange={setProfileMenuOpen}
+          onLogout={onLogout}
+          onOpenHelp={() => setHelpModalOpen(true)}
+          onOpenShowcase={onOpenShowcase}
+          onOpenRetentionDashboard={onOpenRetentionDashboard}
+          onOpenAdminDashboard={onOpenAdminDashboard}
+          onOpenFeatureTracker={onOpenFeatureTracker}
+          onOpenDevTools={onOpenDevTools}
+          onOpenActivityFeed={onOpenActivityFeed}
+          onOpenAdminPanel={onOpenAdminPanel}
+          onJumpToFinalResults={onJumpToFinalResults}
+          onCreateAnonDebate={handleCreateAnonDebate}
+          onShowAccountSetupModal={handleShowAccountSetupModal}
+          onJumpToRoom={onJumpToRoom}
+        />
+      )}
 
       {/* Create room sheet */}
       <CreateRoomSheet
@@ -485,15 +503,6 @@ export function LobbyScreen({
         }}
         defaultSubHeard={discussSubHeard || currentSubHeard}
         defaultTopic={discussTopic}
-      />
-
-      {/* Create event sheet */}
-      <CreateEventSheet
-        open={createEventSheetOpen}
-        userId={user.id}
-        defaultSubHeard={currentSubHeard}
-        onOpenChange={setCreateEventSheetOpen}
-        onGoToEvent={() => setCreateEventSheetOpen(false)}
       />
 
       {/* Error notification */}

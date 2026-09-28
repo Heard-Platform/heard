@@ -6763,12 +6763,16 @@
   }
 
   .heard-page-bg {
-    background: var(--page-bg-gradient);
+    background: var(--app-bg);
     min-height: 100vh;
   }
 
   .heard-feed-bg {
-    background: linear-gradient(to bottom right, #f3e8ff, #fce7f3);
+    background: var(--app-bg);
+  }
+
+  .nav-clearance {
+    padding-bottom: calc(var(--nav-bottom-height) + env(safe-area-inset-bottom));
   }
 
   .heard-card-bg {
@@ -6858,6 +6862,8 @@
 }
 
 :root {
+  --app-bg: #f2eee3;
+  --nav-bottom-height: 56px;
   --room-card-max-width: 620px;
   --font-size: 16px;
   --background: #fff;
@@ -6897,7 +6903,6 @@
   --sidebar-accent-foreground: oklch(.205 0 0);
   --sidebar-border: oklch(.922 0 0);
   --sidebar-ring: oklch(.708 0 0);
-  --page-bg-gradient: linear-gradient(to bottom right, #faf5ff, #eff6ff);
 }
 
 .dark {
@@ -6935,7 +6940,6 @@
   --sidebar-accent-foreground: oklch(.985 0 0);
   --sidebar-border: oklch(.269 0 0);
   --sidebar-ring: oklch(.439 0 0);
-  --page-bg-gradient: linear-gradient(to bottom right, #1e1b2b, #181f2f);
 }
 
 html {

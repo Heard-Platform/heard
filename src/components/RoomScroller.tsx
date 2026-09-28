@@ -70,6 +70,7 @@ interface RoomScrollerProps {
   onShowAccountSetupModal: (featureText: string) => void;
   onOpenEvent: (eventId: string) => void;
   onSubHeardChange: (subHeard: string | null) => void;
+  onScrollTopChange?: (scrollTop: number) => void;
 }
 
 export interface RoomScrollerRef {
@@ -101,6 +102,7 @@ const RoomScrollerInner = forwardRef<
       onShowAccountSetupModal,
       onOpenEvent,
       onSubHeardChange,
+      onScrollTopChange,
     },
     ref,
   ) => {
@@ -246,6 +248,17 @@ const RoomScrollerInner = forwardRef<
       };
     }, [handleScroll, loading]);
 
+    useEffect(() => {
+      if (loading || !onScrollTopChange) return;
+
+      const container = scrollContainerRef.current;
+      if (!container) return;
+
+      const reportScrollTop = () => onScrollTopChange(container.scrollTop);
+      container.addEventListener("scroll", reportScrollTop, { passive: true });
+      return () => container.removeEventListener("scroll", reportScrollTop);
+    }, [loading, onScrollTopChange]);
+
     const scrollToIndex = (index: number) => {
       const container = scrollContainerRef.current;
       const card = cardRefs.current[index];
@@ -277,7 +290,7 @@ const RoomScrollerInner = forwardRef<
 
     if (loading) {
       return (
-        <div className="h-dvh w-full flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+        <div className="h-dvh w-full flex items-center justify-center">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{
@@ -295,7 +308,7 @@ const RoomScrollerInner = forwardRef<
       <div className="relative h-dvh w-full overflow-hidden">
         <div
           ref={scrollContainerRef}
-          className="h-full w-full overflow-y-scroll overflow-x-hidden relative"
+          className="nav-clearance h-full w-full overflow-y-scroll overflow-x-hidden relative"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
