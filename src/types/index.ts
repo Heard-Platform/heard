@@ -293,6 +293,8 @@ export interface Rant {
 
 export interface ClusterVoteBreakdown {
   clusterId: number;
+  stableId: string;
+  slot: number;
   clusterSize: number;
   agreeVotes: number;
   superAgreeVotes: number;
@@ -326,9 +328,13 @@ export interface ClusterStatement {
 
 export interface Cluster {
   id: number;
+  stableId: string;
+  slot: number;
   size: number;
   statements: ClusterStatement[];
 }
+
+export type ClusterColumn = Pick<Cluster, "size" | "slot">;
 
 export interface ClusterConsensus {
   totalClusters: number;
@@ -669,6 +675,10 @@ export interface FeatureResults {
   responseVotesNotifEmailsSentSince: number;
   responseVotesNotifButtonClicks: number;
   responseVotesNotifReturnedWithinWeek: number;
+  clusterRecomputesLast7Days: number;
+  clusterRecomputesSince: number;
+  clusterRecomputesWeekly: { weekStart: string; count: number }[];
+  clusterIdentityKeptPercent: number | null;
   sessionExpiredRecovered: number;
   sessionExpiredRecoveredSince: number;
   sessionExpiryBypassed: number;

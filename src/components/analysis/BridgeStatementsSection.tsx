@@ -1,6 +1,6 @@
 import { ArrowLeftRight } from "lucide-react";
 import { Badge } from "../ui/badge";
-import { StatementVotes } from "../../types";
+import { ClusterColumn, StatementVotes } from "../../types";
 import { getTopBridgingStatements } from "../../utils/bridging-utils";
 import { getClusterColor } from "../../utils/colors";
 import { StatementVotesTableHead, clusterLabel } from "./StatementVotesTableHead";
@@ -9,14 +9,14 @@ import { StatementVotesTableRow } from "./StatementVotesTableRow";
 interface BridgeStatementsSectionProps {
   statements: StatementVotes[];
   totalParticipants: number;
-  clusterSizes: number[];
+  clusterColumns: ClusterColumn[];
   showNumbers: boolean;
 }
 
 export function BridgeStatementsSection({
   statements,
   totalParticipants,
-  clusterSizes,
+  clusterColumns,
   showNumbers,
 }: BridgeStatementsSectionProps) {
   const bridges = getTopBridgingStatements(statements);
@@ -38,13 +38,15 @@ export function BridgeStatementsSection({
         <table className="w-full text-sm">
           <StatementVotesTableHead
             totalParticipants={totalParticipants}
-            clusterSizes={clusterSizes}
+            clusterColumns={clusterColumns}
             showNumbers={showNumbers}
           />
           <tbody>
             {bridges.map(({ statement, clusterAId, clusterBId }) => {
-              const colorsA = getClusterColor(clusterAId);
-              const colorsB = getClusterColor(clusterBId);
+              const slotA = statement.clusterVotes[clusterAId].slot;
+              const slotB = statement.clusterVotes[clusterBId].slot;
+              const colorsA = getClusterColor(slotA);
+              const colorsB = getClusterColor(slotB);
               return (
                 <StatementVotesTableRow
                   key={statement.id}
@@ -55,11 +57,11 @@ export function BridgeStatementsSection({
                   caption={
                     <div className="flex items-center gap-1.5 mb-1">
                       <Badge variant="outline" className={`${colorsA.badge} ${colorsA.text}`}>
-                        Cluster {clusterLabel(clusterAId)}
+                        Cluster {clusterLabel(slotA)}
                       </Badge>
                       <ArrowLeftRight className="w-3 h-3 text-muted-foreground" />
                       <Badge variant="outline" className={`${colorsB.badge} ${colorsB.text}`}>
-                        Cluster {clusterLabel(clusterBId)}
+                        Cluster {clusterLabel(slotB)}
                       </Badge>
                     </div>
                   }

@@ -63,7 +63,7 @@ export function DebateAnalysisReport({
   selectedTags,
   onSelectedTagsChange,
 }: DebateAnalysisReportProps) {
-  const clusterSizes = clusterConsensus?.clusters.map((c) => c.size) ?? [];
+  const clusterColumns = clusterConsensus?.clusters ?? [];
   const [showNumbers, setShowNumbers] = useState(false);
   const canEditTags = isModerator || !!isDeveloper;
 
@@ -181,10 +181,11 @@ export function DebateAnalysisReport({
                   .filter(s => s !== undefined);
                 return (
                   <ClusterConsensusBox
-                    key={cluster.id}
+                    key={cluster.stableId}
                     clusterIndex={index}
+                    clusterSlot={cluster.slot}
                     clusterSize={cluster.size}
-                    clusterSizes={clusterSizes}
+                    clusterColumns={clusterColumns}
                     totalParticipants={totalParticipants}
                     statements={clusterStatements}
                     showNumbers={showNumbers}
@@ -197,7 +198,7 @@ export function DebateAnalysisReport({
             <BridgeStatementsSection
               statements={filteredStatements}
               totalParticipants={totalParticipants}
-              clusterSizes={clusterSizes}
+              clusterColumns={clusterColumns}
               showNumbers={showNumbers}
             />
 
@@ -222,7 +223,7 @@ export function DebateAnalysisReport({
         <StatementVotesTable
           statements={filteredStatements}
           totalParticipants={totalParticipants}
-          clusterSizes={clusterSizes}
+          clusterColumns={clusterColumns}
           showNumbers={showNumbers}
           onShowNumbersChange={setShowNumbers}
           isModerator={canEditTags}

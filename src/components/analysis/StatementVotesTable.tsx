@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "../ui/card";
 import { List } from "lucide-react";
-import { StatementVotes } from "../../types";
+import { ClusterColumn, StatementVotes } from "../../types";
 import { StatementVotesTableHead, SortColumn, SortDir } from "./StatementVotesTableHead";
 import { StatementVotesTableRow } from "./StatementVotesTableRow";
 import { ShowNumbersToggle } from "./ShowNumbersToggle";
@@ -9,7 +9,7 @@ import { ShowNumbersToggle } from "./ShowNumbersToggle";
 interface StatementVotesTableProps {
   statements: StatementVotes[];
   totalParticipants: number;
-  clusterSizes: number[];
+  clusterColumns: ClusterColumn[];
   showNumbers: boolean;
   onShowNumbersChange: (show: boolean) => void;
   isModerator: boolean;
@@ -21,7 +21,7 @@ interface StatementVotesTableProps {
 export function StatementVotesTable({
   statements,
   totalParticipants,
-  clusterSizes,
+  clusterColumns,
   showNumbers,
   onShowNumbersChange,
   isModerator,
@@ -65,7 +65,7 @@ export function StatementVotesTable({
         <table className="w-full text-sm">
           <StatementVotesTableHead
             totalParticipants={totalParticipants}
-            clusterSizes={clusterSizes}
+            clusterColumns={clusterColumns}
             showNumbers={showNumbers}
             colorAllClusters
             sort={showNumbers ? { sortCol, sortDir, onSort: handleSort } : undefined}

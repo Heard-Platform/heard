@@ -7,6 +7,16 @@ import {
 } from "./cluster-analysis.tsx";
 import { Statement, VoteType } from "./types.tsx";
 import { ClusterAssignment } from "./clustering.tsx";
+import { ClusterIdentity } from "./cluster-identity.ts";
+
+function identitiesFor(totalClusters: number): ClusterIdentity[] {
+  return Array.from({ length: totalClusters }, (_, i) => ({
+    stableId: `stable-${i}`,
+    clusterIndex: i,
+    slot: i,
+    memberIds: [],
+  }));
+}
 
 function makeStatement(id: string, voters: Statement["voters"]): Statement {
   const counts = { agree: 0, super_agree: 0, disagree: 0, pass: 0 };
@@ -55,6 +65,7 @@ Deno.test("calculateClusterConsensus - picks distinguishing statements where one
   const result = calculateClusterConsensus(
     statements,
     { totalClusters: 2, clusterSizes: { 0: 40, 1: 40 } },
+    identitiesFor(2),
     assignments,
     [...clusterA, ...clusterB],
   );
@@ -81,6 +92,7 @@ Deno.test("calculateClusterConsensus - clusters get opposite-signed scores for t
   const result = calculateClusterConsensus(
     statements,
     { totalClusters: 2, clusterSizes: { 0: 40, 1: 40 } },
+    identitiesFor(2),
     assignments,
     [...clusterA, ...clusterB],
   );
@@ -97,6 +109,7 @@ Deno.test("calculateClusterConsensus - low-participation cluster yields no disti
   const result = calculateClusterConsensus(
     statements,
     { totalClusters: 1, clusterSizes: { 0: 2 } },
+    identitiesFor(1),
     [
       { userId: "user1", clusterId: 0, distance: 0.1 },
       { userId: "user2", clusterId: 0, distance: 0.2 },
@@ -123,6 +136,7 @@ Deno.test("calculateClusterConsensus - limits to top 6 distinguishing statements
   const result = calculateClusterConsensus(
     statements,
     { totalClusters: 2, clusterSizes: { 0: 40, 1: 40 } },
+    identitiesFor(2),
     assignments,
     [...clusterA, ...clusterB],
   );
@@ -148,6 +162,7 @@ Deno.test("calculateClusterConsensus - super_agree counts as agree in distinguis
   const result = calculateClusterConsensus(
     statements,
     { totalClusters: 2, clusterSizes: { 0: 30, 1: 30 } },
+    identitiesFor(2),
     assignments,
     [...clusterA, ...clusterB],
   );
@@ -178,6 +193,7 @@ Deno.test("calculateClusterConsensus - users with null cluster assignments are s
   const result = calculateClusterConsensus(
     statements,
     { totalClusters: 2, clusterSizes: { 0: 30, 1: 30 } },
+    identitiesFor(2),
     assignments,
     [...clusterA, ...clusterB, ...unassigned],
   );
@@ -192,6 +208,7 @@ Deno.test("calculateClusterConsensus - empty statements array", () => {
   const result = calculateClusterConsensus(
     [],
     { totalClusters: 2, clusterSizes: { 0: 2, 1: 2 } },
+    identitiesFor(2),
     [
       { userId: "user1", clusterId: 0, distance: 0.1 },
       { userId: "user2", clusterId: 0, distance: 0.2 },
@@ -222,6 +239,7 @@ Deno.test("calculateClusterConsensus - statementBreakdowns covers every statemen
   const result = calculateClusterConsensus(
     statements,
     { totalClusters: 2, clusterSizes: { 0: 3, 1: 2 } },
+    identitiesFor(2),
     [
       { userId: "userA1", clusterId: 0, distance: 0.1 },
       { userId: "userA2", clusterId: 0, distance: 0.1 },
@@ -274,6 +292,7 @@ Deno.test("calculateClusterConsensus - statementBreakdowns: cluster with no vote
   const result = calculateClusterConsensus(
     statements,
     { totalClusters: 2, clusterSizes: { 0: 3, 1: 2 } },
+    identitiesFor(2),
     [
       { userId: "userA1", clusterId: 0, distance: 0.1 },
       { userId: "userA2", clusterId: 0, distance: 0.1 },
@@ -308,12 +327,16 @@ Deno.test("calcStatementBreakdownForCluster - counts each vote type and double-c
 
   const result = calcStatementBreakdownForCluster(statement, {
     clusterId: 0,
+    stableId: "stable-0",
+    slot: 0,
     size: 5,
     users: ["u1", "u2", "u3", "u4", "u5"],
   });
 
   assertEquals(result, {
     clusterId: 0,
+    stableId: "stable-0",
+    slot: 0,
     clusterSize: 5,
     agreeVotes: 3,
     superAgreeVotes: 2,
@@ -332,6 +355,8 @@ Deno.test("calcStatementBreakdownForCluster - ignores votes from users outside t
 
   const result = calcStatementBreakdownForCluster(statement, {
     clusterId: 1,
+    stableId: "stable-1",
+    slot: 1,
     size: 2,
     users: ["insider1", "insider2"],
   });
@@ -349,6 +374,8 @@ Deno.test("calcStatementBreakdownForCluster - cluster members who didn't vote co
 
   const result = calcStatementBreakdownForCluster(statement, {
     clusterId: 2,
+    stableId: "stable-2",
+    slot: 2,
     size: 3,
     users: ["u1", "u2", "u3"],
   });
@@ -365,12 +392,16 @@ Deno.test("calcStatementBreakdownForCluster - empty cluster returns all zeros", 
 
   const result = calcStatementBreakdownForCluster(statement, {
     clusterId: 0,
+    stableId: "stable-0",
+    slot: 0,
     size: 0,
     users: [],
   });
 
   assertEquals(result, {
     clusterId: 0,
+    stableId: "stable-0",
+    slot: 0,
     clusterSize: 0,
     agreeVotes: 0,
     superAgreeVotes: 0,
@@ -379,15 +410,19 @@ Deno.test("calcStatementBreakdownForCluster - empty cluster returns all zeros", 
   });
 });
 
-Deno.test("calcStatementBreakdownForCluster - passes through clusterId and clusterSize from the group", () => {
+Deno.test("calcStatementBreakdownForCluster - passes through clusterId, stableId, slot and clusterSize from the group", () => {
   const statement = makeStatement("s", { u1: "agree" });
 
   const result = calcStatementBreakdownForCluster(statement, {
     clusterId: 7,
+    stableId: "stable-7",
+    slot: 7,
     size: 42,
     users: ["u1"],
   });
 
   assertEquals(result.clusterId, 7);
+  assertEquals(result.stableId, "stable-7");
+  assertEquals(result.slot, 7);
   assertEquals(result.clusterSize, 42);
 });

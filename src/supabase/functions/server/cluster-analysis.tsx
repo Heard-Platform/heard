@@ -1,5 +1,6 @@
 import { Statement, VoteType } from "./types.tsx";
 import { ClusterAssignment } from "./clustering.tsx";
+import { ClusterIdentity } from "./cluster-identity.ts";
 
 interface ClusterMetadata {
   totalClusters: number;
@@ -17,12 +18,16 @@ interface DistinguishingStatement {
 
 export interface Cluster {
   id: number;
+  stableId: string;
+  slot: number;
   size: number;
   statements: DistinguishingStatement[];
 }
 
 export interface ClusterVoteBreakdown {
   clusterId: number;
+  stableId: string;
+  slot: number;
   clusterSize: number;
   agreeVotes: number;
   superAgreeVotes: number;
@@ -39,6 +44,8 @@ export interface ClusterConsensus {
 
 interface ClusterUserGroup {
   clusterId: number;
+  stableId: string;
+  slot: number;
   size: number;
   users: string[];
 }
@@ -138,6 +145,8 @@ export function calcStatementBreakdownForCluster(
 
   return {
     clusterId: group.clusterId,
+    stableId: group.stableId,
+    slot: group.slot,
     clusterSize: group.size,
     agreeVotes: agreeCount,
     superAgreeVotes: superAgreeCount,
@@ -149,6 +158,7 @@ export function calcStatementBreakdownForCluster(
 export function calculateClusterConsensus(
   statements: Statement[],
   clusterMetadata: ClusterMetadata,
+  identities: ClusterIdentity[],
   assignments: (ClusterAssignment | null)[],
   voterIds: string[],
   currentUserId: string | null = null,
@@ -169,10 +179,18 @@ export function calculateClusterConsensus(
     usersByOriginalCluster[clusterId].push(userId);
   });
 
+  const identityByClusterIndex = new Map(identities.map((i) => [i.clusterIndex, i]));
+
   const groups: ClusterUserGroup[] = [];
   for (let cid = 0; cid < clusterMetadata.totalClusters; cid++) {
+    const identity = identityByClusterIndex.get(cid);
+    if (!identity) {
+      throw new Error(`Missing cluster identity for cluster index ${cid}`);
+    }
     groups.push({
       clusterId: cid,
+      stableId: identity.stableId,
+      slot: identity.slot,
       size: usersByOriginalCluster[cid].length,
       users: usersByOriginalCluster[cid],
     });
@@ -190,6 +208,8 @@ export function calculateClusterConsensus(
     }
     return {
       id: g.clusterId,
+      stableId: g.stableId,
+      slot: g.slot,
       size: g.size,
       statements: calcDistinguishingStatements(statements, g.users, otherUsers).slice(0, 6),
     };

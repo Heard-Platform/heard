@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "../ui/badge";
-import { StatementVotes } from "../../types";
+import { ClusterColumn, StatementVotes } from "../../types";
 import { StatementVotesTableHead, clusterLabel } from "./StatementVotesTableHead";
 import { StatementVotesTableRow } from "./StatementVotesTableRow";
 import { getClusterColor } from "../../utils/colors";
@@ -10,8 +10,9 @@ const VISIBLE_STATEMENTS = 3;
 
 interface ClusterConsensusBoxProps {
   clusterIndex: number;
+  clusterSlot: number;
   clusterSize: number;
-  clusterSizes: number[];
+  clusterColumns: ClusterColumn[];
   totalParticipants: number;
   statements: StatementVotes[];
   showNumbers: boolean;
@@ -20,14 +21,15 @@ interface ClusterConsensusBoxProps {
 
 export function ClusterConsensusBox({
   clusterIndex,
+  clusterSlot,
   clusterSize,
-  clusterSizes,
+  clusterColumns,
   totalParticipants,
   statements,
   showNumbers,
   isCurrentUserCluster = false,
 }: ClusterConsensusBoxProps) {
-  const colors = getClusterColor(clusterIndex);
+  const colors = getClusterColor(clusterSlot);
   const [expanded, setExpanded] = useState(false);
   const visibleStatements = expanded ? statements : statements.slice(0, VISIBLE_STATEMENTS);
   const extraCount = Math.max(0, statements.length - VISIBLE_STATEMENTS);
@@ -39,7 +41,7 @@ export function ClusterConsensusBox({
       <div className="heard-between mb-1">
         <div className="flex items-center gap-2">
           <h3 className={`font-medium ${colors.text}`}>
-            Cluster {clusterLabel(clusterIndex)}
+            Cluster {clusterLabel(clusterSlot)}
           </h3>
           <Badge variant="outline" className={colors.badge}>
             {clusterSize} users
@@ -58,7 +60,7 @@ export function ClusterConsensusBox({
           <table className="w-full text-sm">
             <StatementVotesTableHead
               totalParticipants={totalParticipants}
-              clusterSizes={clusterSizes}
+              clusterColumns={clusterColumns}
               showNumbers={showNumbers}
               highlightClusterIndex={clusterIndex}
             />
