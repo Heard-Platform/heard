@@ -12,18 +12,20 @@
 
 Used before a cluster is named, or when naming fails. They must not imply a stance.
 
-- **Recommended: colour teams** ("Team Violet", "Team Teal", "Team Amber"), assigned by map slot. They match the dot colours, and they stay consistent after the real name arrives.
+- **Colour teams** named after the existing cluster palette: "Team Blue", "Team Green", "Team Purple", "Team Orange", assigned by slot. They match the cluster colours, and they stay consistent after the real name arrives.
 - Rejected: animals (arbitrary) and Greek letters (imply a ranking).
 
-## When to generate
+## When to name
 
-Don't call the LLM on every recompute. A cluster needs a name only when:
-1. it's new (`needsName` from Phase 1), **or**
-2. its top 3 distinguishing statements have drifted: 2 of the 3 changed. That set is stored as the cluster's `nameInputSignature`.
+A new cluster (one without a name) gets named once it has **≥ 5 members and ≥ 1 statement that clears the z-test**. Until then it keeps its fallback.
 
-Small shifts don't trigger a rename, because a user's group suddenly getting a new name is jarring.
+## Avoiding rename churn
 
-**Minimum data:** ≥ 5 members and ≥ 1 statement that clears the z-test. Until then, the cluster keeps its fallback.
+Once a cluster has a name, it should only change when the group's *views* have changed, not because the LLM phrased the same idea differently. A user's group getting a new name for no visible reason is confusing. Guards, in order:
+
+1. **Named clusters are never re-sent for naming just because another cluster needs a name.** They go into the prompt as fixed, taken names (so the new name contrasts with them), not as something to rewrite.
+2. **Drift is measured on the group's stance, not on which statements rank highest.** When a cluster is named, store a snapshot of how it voted on its top statements (its agree rate on each). A cluster counts as drifted only when it no longer clearly holds that stance on at least half of them: its agree rate on a statement has moved more than ~25 points, or crossed 50%. A different, similar statement overtaking one of them doesn't count.
+3. **The LLM must justify a rename, and "keep" is the default.** On drift, the model sees the current name, the old stance snapshot and the new top statements. It answers either `keep`, or `rename` with a one-line reason naming what changed plus the new name. If the response is `keep`, ambiguous or fails validation, the current name stays.
 
 ## Prompt
 
@@ -31,9 +33,9 @@ Small shifts don't trigger a rename, because a user's group suddenly getting a n
 - For each cluster, the model sees:
   - its size
   - its top ~5 distinguishing statements in **both** directions ("agrees much more than others" and "disagrees much more than others")
-  - its current name, if any, with an instruction to keep it unless it no longer fits
 - Room context: the post title and 1–2 statements every cluster agrees on, as "not what separates them".
-- Output: JSON `{ names: [{ stableId, name }] }`.
+- Clusters that already have a name are listed separately as taken names, not open to change.
+- Output: JSON `{ names: [{ stableId, name }] }`. The drift check (guard 3) is its own small call, with output `{ decision: "keep" }` or `{ decision: "rename", reason, name }`.
 
 Today's distinguishing-statement z-test only keeps the agree-more side. Add a two-sided variant for naming and leave the existing one alone, because the report depends on it.
 
@@ -52,21 +54,37 @@ Today's distinguishing-statement z-test only keeps the agree-more side. Add a tw
 
 ## Where names appear
 
-- First on the analysis report, replacing the Group A/B/C letters. It's the cheapest place to judge real-world quality.
-- Then on the minimap (Phase 4).
+- The analysis report, replacing the Cluster A/B/C letters.
+- The new AI Review tab in dev tools (below), for reviewing names across all rooms.
+- Later, the minimap (Phase 4).
+
+## AI Review tab (dev tools)
+
+A new dev tools tab for reviewing anything AI-generated. For now its only section is cluster names.
+
+- **Auto-naming switch** at the top of the section: turns automatic naming after recomputes on or off.
+
+- **List:** every room, most recent first, loaded in pages ("Load more").
+- **Each row** shows:
+  - the room title
+  - each cluster as a colour chip, with its name (or fallback) and size
+  - for a renamed cluster, the previous name and the model's reason, so any renames that only reword the old name are easy to spot
+  - "No clusters yet" if the room has never been clustered
+- **"Re-run naming" button per row:**
+  - Generates fresh names for every cluster in that room. This deliberately skips the rename guards, because it's a manual review tool.
+  - Still respects the minimum-data rule; clusters that don't meet it keep their fallback.
+  - If the room has no clusters yet, it runs clustering first.
+  - The row updates in place with the new names.
+- This is also how existing rooms get their first names: click through the list rather than waiting for their next recompute.
 
 ## Deploy
 
-- Server behind an internal on/off switch. Turn it on for a few rooms, review the names, then leave it on.
+- Automatic naming after recomputes sits behind an internal on/off switch, toggled from the top of the AI Review tab. The per-room button works regardless, so names can be generated and reviewed manually before the switch is turned on.
 - The frontend shows the name if one exists and the fallback otherwise, so the two sides can deploy in either order.
-
-## Later
-
-- A moderator "regenerate names" action, which clears the name and re-flags `needsName`.
 
 ## Tracking
 
-In the feature results tracker: a list of every room with named clusters, showing each cluster's name and size, for spot-checking name quality. Plus a count of clusters where naming failed.
+In the feature results tracker: total tokens spent on cluster naming (initial names, drift checks and manual re-runs). Name quality is reviewed in the AI Review tab instead.
 
 ---
 
@@ -77,10 +95,16 @@ In the feature results tracker: a list of every room with named clusters, showin
 - New module `cluster-naming.ts` containing:
   - a pure prompt builder
   - a pure validator
-  - drift detection
+  - stance snapshot and drift detection (pure)
   - `nameClustersForRoom(roomId)`
 - Trigger it at the end of `clusterUsersAndSave` in `clustering.tsx`.
-- On/off switch: follow the `ENRICHMENT_ON` pattern in `internal-config-api.tsx` / `internal-utils.ts` (e.g. `CLUSTER_NAMING_ON`).
+- Identity record additions per cluster: `name`, `namedAt`, `stanceSnapshot` (`{ statementId, agreeRate }[]` for the top statements at naming time), `previousName` + `renameReason` (for the tracker list).
+- On/off switch: follow the `ENRICHMENT_ON` pattern end to end, i.e. the internal var and endpoints in `internal-config-api.tsx` / `internal-utils.ts` (e.g. `CLUSTER_NAMING_ON`), plus the `getEnrichmentConfig` / `setEnrichmentConfig` toggle in `src/components/devtools/EnrichmentTab.tsx`, placed in the AI Review tab.
 - Moderation: reuse `moderation-utils.ts`.
 - Expose it as `clusterConsensus.clusters[].name` via `analysis-api.tsx`.
-- Tracking: read the identity records by KV prefix and keep only the `:identity` keys (the `cluster:` prefix also matches metadata). Log a `cluster_naming_run` event via `insertAnalyticsEvent`. Build the spot-check list as a new `devtools/feature-tracker/ClusterNamesList.tsx`, rendered via `renderExtra` on a `FeatureResultsTracker.tsx` entry.
+- AI Review tab:
+  - Add an `"ai-review"` entry to `TabType` and a `TabButton` in `src/components/devtools/DevTools.tsx`.
+  - New `src/components/devtools/AiReviewTab.tsx`, with the cluster-names section as its own component (e.g. `ClusterNamesReview.tsx`) so later AI sections slot in beside it.
+  - Room listing: follow `/dev/posts` (`api.getAllPosts`, used by `PostsTab.tsx`).
+  - New endpoints: a paginated `GET` returning rooms (recent first) with their identity-record clusters, and `POST /dev/room/:roomId/cluster-names/regenerate` for the button.
+- Tokens: every naming call (including drift checks) uses `endpoint: "cluster-naming"`, so the tracker total is the sum of `totalTokens` in `llm_api_calls` for that endpoint. See `ai-usage-api.ts` for the query pattern; aggregate it in `/stats/features` (`features-results-tracker-api.ts`).
