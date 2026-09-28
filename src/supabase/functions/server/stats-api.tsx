@@ -226,7 +226,15 @@ app.get(
         }
       }
 
-      return buildCohortFunnelData(nonDevUsers, votes, statements, allRooms, views, mode);
+      return buildCohortFunnelData(
+        nonDevUsers,
+        votes,
+        statements,
+        allRooms,
+        views,
+        mode,
+        allStatements,
+      );
     },
     "Failed to calculate cohort funnel data",
   ),
