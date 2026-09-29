@@ -50,7 +50,7 @@ Room creators (and developers) can open **Room Analytics** from the room menu (�
 
 To print the insights report or save it as a PDF, tap the **Print** (🖨️) icon in the top right of the insights view. Ask the Data and other interactive controls are left out of the printout. For best results, use the icon rather than your browser's print shortcut.
 
-<img width="655" height="380" alt="print" src="https://github.com/user-attachments/assets/61d581dc-491d-4dac-83dc-a6b5268b5a5f" />
+<img width="948" height="638" alt="print gif" src="https://github.com/user-attachments/assets/8478466f-5ff1-448e-bd91-01f8705387dc" />
 
 ## Statement Deduplication
 
