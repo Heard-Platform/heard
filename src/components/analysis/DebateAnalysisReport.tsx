@@ -85,11 +85,13 @@ export function DebateAnalysisReport({
           <h1 className="text-3xl mt-1">{debateTopic}</h1>
         </div>
 
-        <TagFilterControl
-          availableTags={availableTagNames}
-          selectedTags={selectedTags}
-          onChange={onSelectedTagsChange}
-        />
+        <div className={selectedTags.length === 0 ? "print:hidden" : undefined}>
+          <TagFilterControl
+            availableTags={availableTagNames}
+            selectedTags={selectedTags}
+            onChange={onSelectedTagsChange}
+          />
+        </div>
 
         <div className="grid grid-cols-3 gap-2">
           <StatBox
@@ -119,7 +121,9 @@ export function DebateAnalysisReport({
           <DemographicsPieCharts demographics={demographics} />
         )}
 
-        <AskTheData debateId={debateId} />
+        <div className="print:hidden">
+          <AskTheData debateId={debateId} />
+        </div>
 
         <StatementSpectrumCard statements={filteredStatements} />
 
@@ -204,7 +208,7 @@ export function DebateAnalysisReport({
             />
 
             {isDeveloper && (
-              <div className="mt-6">
+              <div className="mt-6 print:hidden">
                 <Button
                   onClick={onRegenerateClusters}
                   disabled={regenerating}

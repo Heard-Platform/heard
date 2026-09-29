@@ -1,5 +1,5 @@
 import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Printer } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { DebateAnalysisReport } from "./DebateAnalysisReport";
 import { useState, useEffect, useCallback } from "react";
@@ -25,6 +25,7 @@ export function DebateAnalysisView({
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [regenerating, setRegenerating] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [preparingPrint, setPreparingPrint] = useState(false);
 
   const { getStatementTags, addStatementTag, removeStatementTag } =
     useDebateSession();
@@ -119,12 +120,33 @@ export function DebateAnalysisView({
     fetchAnalysis();
   }, [roomId, selectedTags]);
 
+  useEffect(() => {
+    if (!preparingPrint) return;
+    const reset = () => setPreparingPrint(false);
+    window.addEventListener("afterprint", reset, { once: true });
+    const timeout = setTimeout(() => window.print(), 300);
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener("afterprint", reset);
+    };
+  }, [preparingPrint]);
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="p-0 border-0 shadow-2xl max-w-screen-2xl h-[95dvh] overflow-hidden">
+      <DialogContent className={`analysis-print-root ${preparingPrint ? "analysis-print-sizing" : ""} p-0 border-0 shadow-2xl max-w-screen-2xl h-[95dvh] overflow-hidden`}>
         <DialogTitle className="sr-only">Conversation Analysis</DialogTitle>
 
-        <div className="h-full overflow-y-auto bg-white">
+        {analysisData && (
+          <button
+            onClick={() => setPreparingPrint(true)}
+            className="absolute top-4 right-11 z-10 rounded-xs opacity-70 transition-opacity hover:opacity-100"
+            aria-label="Print analysis"
+          >
+            <Printer className="size-4" />
+          </button>
+        )}
+
+        <div className="analysis-print-scroll h-full overflow-y-auto bg-white">
           {loading && (
             <div className="heard-page-bg p-4 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
