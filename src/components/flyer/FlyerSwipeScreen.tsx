@@ -38,7 +38,7 @@ interface FlyerSwipeScreenProps {
   tribeSummary: TribeSummary | null;
   onVote: (statementId: string, vote: SwipeVote) => void;
   onClose: () => void;
-  onSaveSpot: () => void;
+  onSendCode: (email: string) => void;
   onJustLooking: () => void;
 }
 
@@ -52,7 +52,7 @@ export function FlyerSwipeScreen({
   tribeSummary,
   onVote,
   onClose,
-  onSaveSpot,
+  onSendCode,
   onJustLooking,
 }: FlyerSwipeScreenProps) {
   const [votedCount, setVotedCount] = useState(0);
@@ -65,6 +65,7 @@ export function FlyerSwipeScreen({
     votedCount + STACK_POSES.length,
   );
   const showResults = votedCount >= total && tribeSummary !== null;
+  const minimapSeed = flyerStatement.roomId;
 
   const recordVote = (statementId: string, vote: SwipeVote) => {
     onVote(statementId, vote);
@@ -72,7 +73,7 @@ export function FlyerSwipeScreen({
   };
 
   return (
-    <div className="heard-feed-bg relative flex min-h-full flex-col px-5 pb-5 pt-4">
+    <div className="heard-feed-bg relative flex min-h-full flex-col overflow-clip px-5 pt-4">
       <FlyerHeader onClose={onClose} />
       <TopicPill topic={topic} />
 
@@ -81,21 +82,20 @@ export function FlyerSwipeScreen({
       </div>
 
       {showResults ? (
-        <>
+        <div key="results" className="mt-5">
           <RaindownConfetti />
-          <div className="mt-5">
-            <FlyerResults
-              clusters={clusters}
-              clusterProbabilities={clusterProbabilities}
-              summary={tribeSummary}
-              statements={deck}
-              onSaveSpot={onSaveSpot}
-              onJustLooking={onJustLooking}
-            />
-          </div>
-        </>
+          <FlyerResults
+            seed={minimapSeed}
+            clusters={clusters}
+            clusterProbabilities={clusterProbabilities}
+            summary={tribeSummary}
+            statements={deck}
+            onSendCode={onSendCode}
+            onJustLooking={onJustLooking}
+          />
+        </div>
       ) : (
-        <>
+        <div key="swipe" className="pb-5">
           <div
             className="relative mt-5 h-60"
             style={{ marginBottom: STACK_PEEK_PX }}
@@ -170,12 +170,13 @@ export function FlyerSwipeScreen({
               move as we find your tribe.
             </p>
             <ClusterMinimap
+              seed={minimapSeed}
               clusters={clusters}
               clusterProbabilities={clusterProbabilities}
               layoutId={FLYER_MINIMAP_LAYOUT_ID}
             />
           </div>
-        </>
+        </div>
       )}
     </div>
   );

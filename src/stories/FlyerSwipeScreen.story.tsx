@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Shuffle } from "lucide-react";
 import { FlyerSwipeScreen } from "../components/flyer/FlyerSwipeScreen";
 import type { SwipeVote } from "../components/flyer/FlyerSwipeCard";
 import type { FlyerVote } from "../components/flyer/FlyerVoteIntroCard";
@@ -102,6 +102,8 @@ export const ScannedDisagree = () => <FlyerSwipeScreenDemo flyerVote="disagree" 
 
 function FlyerSwipeScreenDemo({ flyerVote }: { flyerVote: FlyerVote }) {
   const [replayKey, setReplayKey] = useState(0);
+  const [roomId, setRoomId] = useState(randomRoomId);
+  const statements = STORY_STATEMENTS.map((statement) => ({ ...statement, roomId }));
   const [votes, setVotes] = useState<Record<string, SwipeVote>>({});
   const clusterProbabilities =
     Object.keys(votes).length > 0 ? estimateClusterProbabilities(DECK_ORDER, votes) : null;
@@ -115,29 +117,45 @@ function FlyerSwipeScreenDemo({ flyerVote }: { flyerVote: FlyerVote }) {
     setReplayKey((key) => key + 1);
   };
 
+  const handleNewRoom = () => {
+    setRoomId(randomRoomId());
+    handleReplay();
+  };
+
   return (
     <div className="space-y-4">
-      <Button variant="outline" size="sm" className="gap-2" onClick={handleReplay}>
-        <RotateCcw className="h-4 w-4" />
-        Replay
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" className="gap-2" onClick={handleReplay}>
+          <RotateCcw className="h-4 w-4" />
+          Replay
+        </Button>
+        <Button variant="outline" size="sm" className="gap-2" onClick={handleNewRoom}>
+          <Shuffle className="h-4 w-4" />
+          New room
+        </Button>
+        <span className="font-mono text-xs text-muted-foreground">{roomId}</span>
+      </div>
 
-      <div className="mx-auto h-195 w-97.5 max-w-full overflow-y-auto rounded-4xl border-8 border-slate-900 shadow-2xl">
+      <div className="mx-auto h-195 w-97.5 max-w-full overflow-y-auto rounded-4xl border-8 [scrollbar-width:none] border-slate-900 shadow-2xl">
         <FlyerSwipeScreen
           key={replayKey}
           topic={TOPIC}
-          flyerStatement={STORY_STATEMENTS[0]}
+          flyerStatement={statements[0]}
           flyerVote={flyerVote}
-          statements={STORY_STATEMENTS.slice(1)}
+          statements={statements.slice(1)}
           clusters={CLUSTERS}
           clusterProbabilities={clusterProbabilities}
           tribeSummary={tribeSummary}
           onVote={(statementId, vote) => setVotes((current) => ({ ...current, [statementId]: vote }))}
           onClose={() => console.log("[Story] close")}
-          onSaveSpot={() => console.log("[Story] save my spot")}
+          onSendCode={(email) => console.log("[Story] send code", email)}
           onJustLooking={() => console.log("[Story] just looking")}
         />
       </div>
     </div>
   );
+}
+
+function randomRoomId(): string {
+  return `room-${Math.random().toString(36).slice(2, 8)}`;
 }

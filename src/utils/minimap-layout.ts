@@ -6,13 +6,17 @@ export const MAX_MEMBER_DOTS = 8;
 export const MIN_MEMBER_DOTS = 3;
 export const GRAVITY_OFFSET_FRACTION = 0.5;
 export const FIRMLY_WITHIN_FRACTION = 0.5;
+export const EDGE_PADDING = 0.03;
+export const CLUSTER_GAP = 0.04;
+export const MAX_CLUSTER_GAP = 0.12;
+const LAYOUT_ATTEMPTS = 200;
 
 export interface Point {
   x: number;
   y: number;
 }
 
-const ANCHORS_BY_COUNT: Record<number, Point[]> = {
+const FALLBACK_ANCHORS_BY_COUNT: Record<number, Point[]> = {
   1: [{ x: 0.5, y: 0.45 }],
   2: [
     { x: 0.25, y: 0.45 },
@@ -25,10 +29,60 @@ const ANCHORS_BY_COUNT: Record<number, Point[]> = {
   ],
 };
 
-export function clusterAnchors(slots: number[]): Point[] {
-  const anchors = ANCHORS_BY_COUNT[slots.length] ?? ANCHORS_BY_COUNT[3];
+export function clusterAnchors(seed: string, slots: number[], radii: number[]): Point[] {
+  const random = seededRandom(seed);
   const slotOrder = _.sortBy(slots);
-  return slots.map((slot) => anchors[slotOrder.indexOf(slot)]);
+  const radiiInSlotOrder = slotOrder.map((slot) => radii[slots.indexOf(slot)]);
+
+  for (let attempt = 0; attempt < LAYOUT_ATTEMPTS; attempt++) {
+    const layout = compactLayout(random, radiiInSlotOrder);
+    if (layout) {
+      return slots.map((slot) => layout[slotOrder.indexOf(slot)]);
+    }
+  }
+
+  const fallback = FALLBACK_ANCHORS_BY_COUNT[slots.length] ?? FALLBACK_ANCHORS_BY_COUNT[3];
+  return slots.map((slot) => fallback[slotOrder.indexOf(slot)]);
+}
+
+function compactLayout(random: () => number, radii: number[]): Point[] | null {
+  const centers: Point[] = [{ x: 0, y: 0 }];
+  for (let i = 1; i < radii.length; i++) {
+    const neighbor = Math.floor(random() * i);
+    const angle = random() * Math.PI * 2;
+    const gap = CLUSTER_GAP + random() * (MAX_CLUSTER_GAP - CLUSTER_GAP);
+    const distance = radii[i] + radii[neighbor] + gap;
+    centers.push({
+      x: centers[neighbor].x + Math.cos(angle) * distance,
+      y: centers[neighbor].y + Math.sin(angle) * distance,
+    });
+  }
+  if (!gapsWithinRange(centers, radii)) return null;
+  return centeredInMap(centers, radii);
+}
+
+function gapsWithinRange(centers: Point[], radii: number[]): boolean {
+  for (let i = 0; i < centers.length; i++) {
+    for (let j = i + 1; j < centers.length; j++) {
+      const distance = Math.hypot(centers[i].x - centers[j].x, centers[i].y - centers[j].y);
+      const gap = distance - radii[i] - radii[j];
+      if (gap < CLUSTER_GAP || gap > MAX_CLUSTER_GAP) return false;
+    }
+  }
+  return true;
+}
+
+function centeredInMap(centers: Point[], radii: number[]): Point[] | null {
+  const left = _.min(centers.map((c, i) => c.x - radii[i]))!;
+  const right = _.max(centers.map((c, i) => c.x + radii[i]))!;
+  const top = _.min(centers.map((c, i) => c.y - radii[i]))!;
+  const bottom = _.max(centers.map((c, i) => c.y + radii[i]))!;
+  const available = 1 - 2 * EDGE_PADDING;
+  if (right - left > available || bottom - top > available) return null;
+
+  const shiftX = 0.5 - (left + right) / 2;
+  const shiftY = 0.5 - (top + bottom) / 2;
+  return centers.map((c) => ({ x: c.x + shiftX, y: c.y + shiftY }));
 }
 
 export function clusterRadius(size: number, largestSize: number): number {
