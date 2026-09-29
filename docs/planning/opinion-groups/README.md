@@ -19,7 +19,7 @@ Each phase ships and deploys on its own, in this order. Each one also adds a qui
 
 - **Stability comes first.** Cluster numbers currently change between recomputes. Names, colours and map positions all need an identity that persists.
 - **The LLM names clusters only when they meaningfully change,** in a single call so the names contrast with each other. It runs in the background, so no request waits on it.
-- **Fallback names are colour teams** ("Team Blue", "Team Green", "Team Purple"), matching the existing cluster colours. They don't imply a stance.
+- **Fallback names are plain "Group A/B/C"**, lettered by slot so they stay stable across recomputes.
 - **One client-side model drives both sorting and the minimap.** The server sends a small cluster snapshot: each cluster's agree/disagree/pass rates per statement, with no user data. The browser uses it to estimate the user's group instantly on every swipe.
 - **The minimap is schematic, not a true 2D projection.** It is clearer at small sizes and matches the mockup.
 

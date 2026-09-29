@@ -10,10 +10,7 @@
 
 ## Fallback names
 
-Used before a cluster is named, or when naming fails. They must not imply a stance.
-
-- **Colour teams** named after the existing cluster palette: "Team Blue", "Team Green", "Team Purple", "Team Orange", assigned by slot. They match the cluster colours, and they stay consistent after the real name arrives.
-- Rejected: animals (arbitrary) and Greek letters (imply a ranking).
+Used before a cluster is named, or when naming fails: plain "Group A", "Group B", "Group C", lettered by slot so they stay stable across recomputes. Fun alternatives (colour teams, animals, Greek letters) were considered, but they either imply something about the group or add confusion.
 
 ## When to name
 
