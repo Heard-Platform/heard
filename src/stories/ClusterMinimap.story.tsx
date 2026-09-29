@@ -58,6 +58,7 @@ function buildDeckOrder(clusters: MinimapCluster[]): DeckOrder {
   return {
     leadStatementIds: STATEMENTS.map((s) => s.id),
     consensusStatementId: null,
+    longStatementIds: [],
     clusters: clusters.map((cluster, clusterIndex) => ({
       stableId: cluster.stableId,
       size: cluster.size,
@@ -80,7 +81,7 @@ function SimulatedSwiping({ clusters }: { clusters: MinimapCluster[] }) {
 
   return (
     <div className="flex flex-col items-start gap-4 md:flex-row">
-      <ClusterMinimap clusters={clusters} clusterProbabilities={clusterProbabilities} />
+      <ClusterMinimap seed="story-room" clusters={clusters} clusterProbabilities={clusterProbabilities} />
 
       <div className="flex max-w-sm flex-col gap-3">
         <p className="text-sm text-muted-foreground">

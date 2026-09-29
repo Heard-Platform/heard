@@ -21,16 +21,29 @@ export interface MinimapCluster {
   size: number;
 }
 
+export type MinimapVariant = "mini" | "full";
+
 interface ClusterMinimapProps {
+  seed: string;
   clusters: MinimapCluster[];
   clusterProbabilities: number[] | null;
+  variant?: MinimapVariant;
+  layoutId?: string;
 }
 
-const MAP_SIZE = 112;
-const CARD_WIDTH = 148;
-const MEMBER_DOT_SIZE = 3.5;
-const USER_DOT_SIZE = 11;
+interface MinimapDimensions {
+  mapSize: number;
+  cardWidth: number;
+  memberDotSize: number;
+  userDotSize: number;
+}
+
+const DIMENSIONS: Record<MinimapVariant, MinimapDimensions> = {
+  mini: { mapSize: 112, cardWidth: 148, memberDotSize: 3.5, userDotSize: 11 },
+  full: { mapSize: 220, cardWidth: 290, memberDotSize: 6, userDotSize: 16 },
+};
 const SLOT_COLORS = ["#a78bfa", "#2dd4bf", "#fbbf24", "#f472b6"];
+const SLOT_TEXT_COLORS_ON_LIGHT = ["#6D4BD8", "#0F8A7E", "#B7791F", "#DB2777"];
 const USER_DOT_COLOR = "#f97316";
 const LEVEL_WORDS = {
   leaning: "Leaning",
@@ -39,19 +52,35 @@ const LEVEL_WORDS = {
 };
 const ENTER_GLOW_DELAY_S = 0.35;
 const ENTER_GLOW_DURATION_S = 1;
+const CLUSTER_LABEL_HEIGHT = 14;
 
-function slotColor(slot: number): string {
+export function slotColor(slot: number): string {
   return SLOT_COLORS[slot % SLOT_COLORS.length];
 }
 
+export function slotTextColorOnLight(slot: number): string {
+  return SLOT_TEXT_COLORS_ON_LIGHT[slot % SLOT_TEXT_COLORS_ON_LIGHT.length];
+}
+
 export function ClusterMinimap({
+  seed,
   clusters,
   clusterProbabilities,
+  variant = "mini",
+  layoutId,
 }: ClusterMinimapProps) {
-  const anchors = clusterAnchors(clusters.map((c) => c.slot));
+  const dimensions = DIMENSIONS[variant];
+  const { mapSize, cardWidth } = dimensions;
+  const isFull = variant === "full";
+
   const largestSize = Math.max(...clusters.map((c) => c.size));
   const radii = clusters.map((cluster) =>
     clusterRadius(cluster.size, largestSize),
+  );
+  const anchors = clusterAnchors(
+    seed,
+    clusters.map((c) => c.slot),
+    radii,
   );
   const gravity = gravityPoints(anchors, radii);
   const userDotFraction = clusterProbabilities
@@ -68,52 +97,69 @@ export function ClusterMinimap({
       ? null
       : clusters[status.clusterIndex].stableId;
   const enterGlow = useEnterGlow(leadingStableId);
-  const [memberDotSeed] = useState(() => Math.random().toString(36));
 
   return (
-    <div
+    <motion.div
+      layoutId={layoutId}
       className="relative overflow-hidden rounded-2xl"
       style={{
         backgroundColor: "#1c1a2b",
-        width: CARD_WIDTH,
-        height: MAP_SIZE,
+        width: cardWidth,
+        height: mapSize,
         boxShadow:
           "0 6px 18px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.2)",
       }}
+      transition={{ type: "spring", stiffness: 120, damping: 20 }}
     >
+      {isFull && <OpinionGroupsTitle />}
+
       <div
         className="absolute top-0"
         style={{
-          left: (CARD_WIDTH - MAP_SIZE) / 2,
-          width: MAP_SIZE,
-          height: MAP_SIZE,
+          left: (cardWidth - mapSize) / 2,
+          width: mapSize,
+          height: mapSize,
         }}
       >
         {clusters.map((cluster, i) => (
           <ClusterCircle
             key={cluster.stableId}
             center={anchors[i]}
-            radius={radii[i] * MAP_SIZE}
+            radius={radii[i] * mapSize}
             color={slotColor(cluster.slot)}
             isLeading={cluster.stableId === leadingStableId}
             glowKey={
               enterGlow?.stableId === cluster.stableId ? enterGlow.key : null
             }
             memberDotOffsets={memberDotOffsets(
-              `${memberDotSeed}-${cluster.stableId}`,
+              `${seed}-${cluster.stableId}`,
               memberDotCount(cluster.size, largestSize),
             )}
+            dimensions={dimensions}
           />
         ))}
+
+        {isFull &&
+          clusters.map((cluster, i) => (
+            <ClusterNameLabel
+              key={cluster.stableId}
+              cluster={cluster}
+              center={anchors[i]}
+              radius={radii[i] * mapSize}
+              mapSize={mapSize}
+            />
+          ))}
 
         <UserDot
           position={userDotFraction}
           clusterProbabilities={clusterProbabilities}
+          dimensions={dimensions}
+          showYouTag={isFull}
         />
       </div>
 
-      <MinimapLabel status={status} clusters={clusters} />
-    </div>
+      {!isFull && <MinimapLabel status={status} clusters={clusters} />}
+    </motion.div>
   );
 }
 
@@ -137,6 +183,14 @@ function useEnterGlow(leadingStableId: string | null) {
   return enterGlow;
 }
 
+function OpinionGroupsTitle() {
+  return (
+    <p className="absolute left-3 top-2.5 z-10 text-[11px] font-bold uppercase tracking-wider text-white/60">
+      Opinion groups
+    </p>
+  );
+}
+
 interface ClusterCircleProps {
   center: Point;
   radius: number;
@@ -144,6 +198,7 @@ interface ClusterCircleProps {
   isLeading: boolean;
   glowKey: number | null;
   memberDotOffsets: Point[];
+  dimensions: MinimapDimensions;
 }
 
 function ClusterCircle({
@@ -153,13 +208,14 @@ function ClusterCircle({
   isLeading,
   glowKey,
   memberDotOffsets,
+  dimensions,
 }: ClusterCircleProps) {
   return (
     <div
       className="absolute rounded-full transition-all duration-500"
       style={{
-        left: center.x * MAP_SIZE - radius,
-        top: center.y * MAP_SIZE - radius,
+        left: center.x * dimensions.mapSize - radius,
+        top: center.y * dimensions.mapSize - radius,
         width: radius * 2,
         height: radius * 2,
         border: `${isLeading ? 1.5 : 1}px solid ${color}${isLeading ? "" : "99"}`,
@@ -168,7 +224,13 @@ function ClusterCircle({
     >
       {glowKey !== null && <EnterGlow key={glowKey} color={color} />}
       {memberDotOffsets.map((offset, i) => (
-        <MemberDot key={i} offset={offset} radius={radius} color={color} />
+        <MemberDot
+          key={i}
+          offset={offset}
+          radius={radius}
+          color={color}
+          size={dimensions.memberDotSize}
+        />
       ))}
     </div>
   );
@@ -194,32 +256,60 @@ interface MemberDotProps {
   offset: Point;
   radius: number;
   color: string;
+  size: number;
 }
 
-function MemberDot({ offset, radius, color }: MemberDotProps) {
+function MemberDot({ offset, radius, color, size }: MemberDotProps) {
   return (
     <div
       className="absolute rounded-full"
       style={{
-        left: radius * (1 + offset.x) - MEMBER_DOT_SIZE / 2,
-        top: radius * (1 + offset.y) - MEMBER_DOT_SIZE / 2,
-        width: MEMBER_DOT_SIZE,
-        height: MEMBER_DOT_SIZE,
+        left: radius * (1 + offset.x) - size / 2,
+        top: radius * (1 + offset.y) - size / 2,
+        width: size,
+        height: size,
         backgroundColor: color,
       }}
     />
   );
 }
 
+interface ClusterNameLabelProps {
+  cluster: MinimapCluster;
+  center: Point;
+  radius: number;
+  mapSize: number;
+}
+
+function ClusterNameLabel({ cluster, center, radius, mapSize }: ClusterNameLabelProps) {
+  const top = Math.min(center.y * mapSize + radius + 2, mapSize - CLUSTER_LABEL_HEIGHT);
+  return (
+    <p
+      className="absolute z-10 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold"
+      style={{
+        left: center.x * mapSize,
+        top,
+        color: slotColor(cluster.slot),
+        textShadow: "0 1px 2px rgba(0, 0, 0, 0.7)",
+      }}
+    >
+      {getClusterDisplayName(cluster.slot, cluster.name)}
+    </p>
+  );
+}
+
 interface UserDotProps {
   position: Point;
   clusterProbabilities: number[] | null;
+  dimensions: MinimapDimensions;
+  showYouTag: boolean;
 }
 
-function UserDot({ position, clusterProbabilities }: UserDotProps) {
+function UserDot({ position, clusterProbabilities, dimensions, showYouTag }: UserDotProps) {
+  const { mapSize, userDotSize } = dimensions;
   const offset = {
-    x: position.x * MAP_SIZE - USER_DOT_SIZE / 2,
-    y: position.y * MAP_SIZE - USER_DOT_SIZE / 2,
+    x: position.x * mapSize - userDotSize / 2,
+    y: position.y * mapSize - userDotSize / 2,
   };
   const [scope, animate] = useAnimate();
   const hasMounted = useRef(false);
@@ -250,13 +340,26 @@ function UserDot({ position, clusterProbabilities }: UserDotProps) {
       className="absolute left-0 top-0 z-20 rounded-full"
       initial={{ x: offset.x, y: offset.y }}
       style={{
-        width: USER_DOT_SIZE,
-        height: USER_DOT_SIZE,
+        width: userDotSize,
+        height: userDotSize,
         backgroundColor: USER_DOT_COLOR,
         border: "2px solid white",
         boxShadow: `0 0 0 4px ${USER_DOT_COLOR}55`,
       }}
-    />
+    >
+      {showYouTag && <YouTag />}
+    </motion.div>
+  );
+}
+
+function YouTag() {
+  return (
+    <span
+      className="absolute bottom-full left-1/2 mb-1.5 -translate-x-1/2 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-white"
+      style={{ backgroundColor: USER_DOT_COLOR }}
+    >
+      You
+    </span>
   );
 }
 
