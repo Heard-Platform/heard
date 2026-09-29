@@ -54,7 +54,7 @@ export function ClusterConsensusBox({
         </div>
       </div>
       <p className="text-sm text-muted-foreground mb-3">
-        Distinguishing statements of this cluster
+        Distinguishing statements of this group of users
       </p>
 
       {statements.length > 0 ? (
@@ -100,7 +100,7 @@ export function ClusterConsensusBox({
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">
-          No consensus statements found for this cluster
+          No consensus statements found for this group of users
         </p>
       )}
     </div>

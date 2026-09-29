@@ -154,7 +154,7 @@ export function DebateAnalysisReport({
               <div>
                 <h2 className="text-xl text-yellow-900">No Cluster Data Available</h2>
                 <p className="text-sm text-yellow-700 mt-1">
-                  Cluster consensus analysis is not available for this conversation.
+                  Group consensus analysis is not available for this conversation.
                 </p>
               </div>
             </div>
@@ -166,9 +166,9 @@ export function DebateAnalysisReport({
                 <GitBranch className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <h2 className="text-xl">Cluster Consensus</h2>
+                <h2 className="text-xl">Group Consensus</h2>
                 <p className="text-sm text-muted-foreground">
-                  Top consensus statements by opinion cluster
+                  Top consensus statements by opinion group
                 </p>
               </div>
               <ShowNumbersToggle showNumbers={showNumbers} onShowNumbersChange={setShowNumbers} />
@@ -213,7 +213,7 @@ export function DebateAnalysisReport({
                   {regenerating ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
-                    "Regenerate Clusters"
+                    "Regenerate Groups"
                   )}
                 </Button>
               </div>

@@ -32,7 +32,7 @@ export function BridgeStatementsSection({
         Bridging Statements
       </h3>
       <p className="text-sm text-muted-foreground mb-3">
-        Statements where otherwise-opposed clusters of people find common ground
+        Statements where otherwise-opposed groups of people find common ground
       </p>
       <div className="bg-white rounded-lg border p-3">
         <table className="w-full text-sm">
