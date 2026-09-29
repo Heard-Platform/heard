@@ -1,7 +1,12 @@
 import { Context, Hono } from "npm:hono";
 import { API_URL_PREFIX } from "./constants.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
-import { getAllDebates, getClusterIdentityRecord, getDebate } from "./kv-utils.tsx";
+import {
+  getAllClusterIdentityRecords,
+  getAllDebates,
+  getClusterIdentityRecord,
+  getDebate,
+} from "./kv-utils.tsx";
 import { recalculateClustersForRoom } from "./clustering.tsx";
 import { nameClustersForRoom } from "./cluster-naming.ts";
 import { ClusterIdentityRecord } from "./cluster-identity.ts";
@@ -21,18 +26,43 @@ export interface ClusterNameReviewCluster {
   renameReason: string | null;
 }
 
+export interface ReviewRoomOption {
+  roomId: string;
+  topic: string;
+  voteCount: number;
+  createdAt: number;
+}
+
 export interface ClusterNameReviewRoom {
   roomId: string;
   topic: string;
-  createdAt: number;
+  voteCount: number;
   clusters: ClusterNameReviewCluster[] | null;
+  lastNamedAt: number | null;
+  createdAt: number;
+}
+
+function toRoomOption(room: DebateRoom): ReviewRoomOption {
+  return {
+    roomId: room.id,
+    topic: room.topic,
+    voteCount: room.totalVotes ?? 0,
+    createdAt: room.createdAt,
+  };
+}
+
+function lastNamedAt(identity: ClusterIdentityRecord | null): number | null {
+  const times = (identity?.clusters ?? [])
+    .map((c) => c.naming?.namedAt)
+    .filter((t): t is number => t !== undefined);
+  return times.length > 0 ? Math.max(...times) : null;
 }
 
 function toReviewRoom(room: DebateRoom, identity: ClusterIdentityRecord | null): ClusterNameReviewRoom {
   return {
     roomId: room.id,
     topic: room.topic,
-    createdAt: room.createdAt,
+    voteCount: room.totalVotes ?? 0,
     clusters: identity
       ? identity.clusters
         .map((c) => ({
@@ -45,6 +75,8 @@ function toReviewRoom(room: DebateRoom, identity: ClusterIdentityRecord | null):
         }))
         .sort((a, b) => b.size - a.size)
       : null,
+    lastNamedAt: lastNamedAt(identity),
+    createdAt: room.createdAt,
   };
 }
 
@@ -62,16 +94,32 @@ app.get(
       const offset = parsePageParam(c.req.query("offset"), 0, Number.MAX_SAFE_INTEGER);
       const limit = parsePageParam(c.req.query("limit"), DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
 
-      const rooms = (await getAllDebates()).sort((a, b) => b.createdAt - a.createdAt);
-      const page = rooms.slice(offset, offset + limit);
-      const identities = await Promise.all(page.map((room) => getClusterIdentityRecord(room.id)));
+      const [rooms, identities] = await Promise.all([getAllDebates(), getAllClusterIdentityRecords()]);
+      const named = rooms
+        .map((room) => toReviewRoom(room, identities.get(room.id) ?? null))
+        .filter((room) => room.lastNamedAt !== null)
+        .sort((a, b) => b.lastNamedAt! - a.lastNamedAt!);
 
       return {
-        rooms: page.map((room, i) => toReviewRoom(room, identities[i])),
-        hasMore: offset + limit < rooms.length,
+        rooms: named.slice(offset, offset + limit),
+        hasMore: offset + limit < named.length,
       };
     },
     "Failed to fetch cluster names for review",
+  ),
+);
+
+app.get(
+  `${API_URL_PREFIX}/dev/ai-review/rooms`,
+  defineRoute(
+    {},
+    async () => {
+      const rooms = (await getAllDebates())
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .map(toRoomOption);
+      return { rooms };
+    },
+    "Failed to fetch rooms",
   ),
 );
 
@@ -87,8 +135,7 @@ app.post(
         await recalculateClustersForRoom(roomId);
       }
 
-      const identity = await getClusterIdentityRecord(roomId);
-      if (identity) {
+      if (await getClusterIdentityRecord(roomId)) {
         await nameClustersForRoom(roomId, "force");
       }
 
@@ -98,4 +145,4 @@ app.post(
   ),
 );
 
-export { app as aiReviewApi };
+export { app as aiReviewClustersApi };

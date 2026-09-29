@@ -43,7 +43,7 @@ export function ClusterConsensusBox({
       <div className="heard-between mb-1">
         <div className="flex items-center gap-2">
           <h3 className={`font-medium ${colors.text}`}>
-            {getClusterDisplayName(clusterSlot, clusterName)}
+            {clusterName ? `Group: ${clusterName}` : getClusterDisplayName(clusterSlot, clusterName)}
           </h3>
           <Badge variant="outline" className={colors.badge}>
             {clusterSize} users

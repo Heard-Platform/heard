@@ -43,7 +43,7 @@ Today's distinguishing-statement z-test only keeps the agree-more side. Add a tw
   - Every cluster must be present.
   - Check word count and the 16-character cap.
   - Reject duplicates.
-- Retry once with the specific failure noted. If it fails again, keep the fallback, log it, and try again on the next recompute.
+- Retry up to twice, each time with the specific failure noted. If all three attempts fail, keep the fallback, log it, and try again on the next recompute.
 - Runs in the background (`EdgeRuntime.waitUntil`) after a recompute, so no request waits on the LLM.
 - Only writes back if the identity record's `version` hasn't changed since naming started.
 - Uses the existing LLM client, so usage logging comes for free. Haiku-class models are enough. Cost: about 1–2k input tokens per call, only when clusters change.
@@ -59,19 +59,17 @@ Today's distinguishing-statement z-test only keeps the agree-more side. Add a tw
 A new dev tools tab for reviewing anything AI-generated. For now its only section is cluster names.
 
 - **Auto-naming switch** at the top of the section: turns automatic naming after recomputes on or off.
-
-- **List:** every room, most recent first, loaded in pages ("Load more").
+- **Room picker:** a searchable dropdown of every room (fuzzy match on title), showing each room's vote count. Picking a room runs naming for it.
+- **List:** only rooms with at least one named cluster, most recently named first, loaded in pages ("Load more").
 - **Each row** shows:
-  - the room title
-  - each cluster as a colour chip, with its name (or fallback) and size
-  - for a renamed cluster, the previous name and the model's reason, so any renames that only reword the old name are easy to spot
-  - "No clusters yet" if the room has never been clustered
+  - the room title and its vote count
+  - each cluster as a colour chip, with its name (or "Group A/B/C") and size
+  - for a renamed cluster, the previous name and the model's reason
 - **"Re-run naming" button per row:**
-  - Generates fresh names for every cluster in that room. This deliberately skips the rename guards, because it's a manual review tool.
+  - Generates fresh names for every cluster in that room, deliberately skipping the rename guards.
   - Still respects the minimum-data rule; clusters that don't meet it keep their fallback.
   - If the room has no clusters yet, it runs clustering first.
-  - The row updates in place with the new names.
-- This is also how existing rooms get their first names: click through the list rather than waiting for their next recompute.
+  - The room moves to the top of the list, or drops out of it if none of its clusters had enough data to name.
 
 ## Deploy
 
@@ -83,6 +81,7 @@ A new dev tools tab for reviewing anything AI-generated. For now its only sectio
 **Small.** Almost all of the risk sits inside the new feature: naming could fail to run, show bad names on the analysis report, or rename clusters too readily.
 
 Areas impacted:
+- Core DB call for clusters - Small refactor
 - Functions for calcing cluster defining statements - This was refactored.
 - Cluster generation - Now has a call to do naming added midway.
 - API endpoint for room analysis report - Query could fail in rare race conditions if a recompute lands between naming's version check and its save.
@@ -110,5 +109,5 @@ In the feature results tracker: total tokens spent on cluster naming (initial na
   - Add an `"ai-review"` entry to `TabType` and a `TabButton` in `src/components/devtools/DevTools.tsx`.
   - New `src/components/devtools/AiReviewTab.tsx`, with the cluster-names section as its own component (e.g. `ClusterNamesReview.tsx`) so later AI sections slot in beside it.
   - Room listing: follow `/dev/posts` (`api.getAllPosts`, used by `PostsTab.tsx`).
-  - Endpoints in `ai-review-api.ts`: `GET /dev/ai-review/cluster-names?offset&limit` and `POST /dev/room/:roomId/cluster-names/regenerate`. The switch is `GET/POST /internal/config/cluster-naming`.
+  - Endpoints in `ai-review-clusters-api.ts`: `GET /dev/ai-review/cluster-names?offset&limit` (named rooms only, via one `cluster:%:identity` KV query), `GET /dev/ai-review/rooms` (picker options, vote count from `room.totalVotes`) and `POST /dev/room/:roomId/cluster-names/regenerate`. The switch is `GET/POST /internal/config/cluster-naming`.
 - Tokens: every naming call (including drift checks) uses `endpoint: "cluster-naming"`, so the tracker total is the sum of `totalTokens` in `llm_api_calls` for that endpoint. See `ai-usage-api.ts` for the query pattern; aggregate it in `/stats/features` (`features-results-tracker-api.ts`).

@@ -346,11 +346,20 @@ export interface ClusterNameReviewCluster {
   renameReason: string | null;
 }
 
+export interface ReviewRoomOption {
+  roomId: string;
+  topic: string;
+  voteCount: number;
+  createdAt: number;
+}
+
 export interface ClusterNameReviewRoom {
   roomId: string;
   topic: string;
-  createdAt: number;
+  voteCount: number;
   clusters: ClusterNameReviewCluster[] | null;
+  lastNamedAt: number | null;
+  createdAt: number;
 }
 
 export interface ClusterNamingConfig {

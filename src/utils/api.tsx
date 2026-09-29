@@ -24,6 +24,7 @@ import {
   EnrichmentConfig,
   ClusterNamingConfig,
   ClusterNameReviewRoom,
+  ReviewRoomOption,
   type Event,
   type NewEvent,
   EventSummary,
@@ -844,6 +845,10 @@ class ApiClient extends BaseApiClient {
     return this.request<{ rooms: ClusterNameReviewRoom[]; hasMore: boolean }>(
       `/dev/ai-review/cluster-names?offset=${offset}&limit=${limit}`,
     );
+  }
+
+  async getRoomsForReview() {
+    return this.request<{ rooms: ReviewRoomOption[] }>("/dev/ai-review/rooms");
   }
 
   async regenerateClusterNames(roomId: string) {

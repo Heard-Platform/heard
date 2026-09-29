@@ -240,17 +240,21 @@ export const getAllRecords = async <T>(
   return parseKvDataArray<T>(rows.map((row) => row.value));
 };
 
-export const getAllKvRecordsWithPrefix = async (
-  prefix: string,
+export const getAllKvRecordsMatching = async (
+  likePattern: string,
 ): Promise<Map<string, any>> => {
   const supabase = createClientFromEnv();
   const rows = await paginatedQueryRunner<{ key: string; value: any }>((offset, limit) =>
     supabase
       .from(TABLE_NAME)
       .select("key, value")
-      .like("key", `${prefix}%`)
+      .like("key", likePattern)
       .order("key")
       .range(offset, offset + limit - 1),
   );
   return new Map(rows.map((row) => [row.key, row.value]));
 };
+
+export const getAllKvRecordsWithPrefix = async (
+  prefix: string,
+): Promise<Map<string, any>> => getAllKvRecordsMatching(`${prefix}%`);

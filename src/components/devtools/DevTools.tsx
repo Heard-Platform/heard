@@ -31,7 +31,7 @@ type TabType = "vote-matrix" | "clustering" | "email" | "email-monitoring" | "no
 export function DevTools({ user, onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     const tabFromUrl = parseDevToolsTabFromUrl();
-    return tabFromUrl ? (tabFromUrl as TabType) : "vote-matrix";
+    return tabFromUrl ? (tabFromUrl as TabType) : "ai-review";
   });
 
   const handleTabChange = (tab: TabType) => {
@@ -62,6 +62,11 @@ export function DevTools({ user, onExit }: DevToolsProps) {
 
           <div className="border-b">
             <div className="flex gap-1 px-6">
+              <TabButton
+                active={activeTab === "ai-review"}
+                label="AI Review"
+                onClick={() => handleTabChange("ai-review")}
+              />
               <TabButton
                 active={activeTab === "vote-matrix"}
                 label="Vote Matrix"
@@ -126,11 +131,6 @@ export function DevTools({ user, onExit }: DevToolsProps) {
                 active={activeTab === "testing"}
                 label="Testing"
                 onClick={() => handleTabChange("testing")}
-              />
-              <TabButton
-                active={activeTab === "ai-review"}
-                label="AI Review"
-                onClick={() => handleTabChange("ai-review")}
               />
             </div>
           </div>

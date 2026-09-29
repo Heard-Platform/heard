@@ -15,7 +15,9 @@ export function ClusterNamesReviewRow({ room, regenerating, onRegenerate }: Clus
       <div className="min-w-0 flex-1 space-y-2">
         <div>
           <p className="font-medium truncate">{room.topic}</p>
-          <p className="text-xs text-slate-500">{new Date(room.createdAt).toLocaleString()}</p>
+          <p className="text-xs text-slate-500">
+            {room.voteCount.toLocaleString()} votes · {new Date(room.createdAt).toLocaleString()}
+          </p>
         </div>
 
         {room.clusters === null ? (

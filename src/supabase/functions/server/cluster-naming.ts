@@ -28,6 +28,7 @@ import {
 
 export const CLUSTER_NAMING_ENDPOINT = "cluster-naming";
 export const MANUAL_RERUN_REASON = "Manual re-run";
+export const MAX_NAMING_RETRIES = 2;
 
 export type ClusterNamingMode = "auto" | "force";
 
@@ -57,7 +58,7 @@ async function completeWithRetry<T>(
 ): Promise<T | null> {
   const client = createLlmClient();
   let currentPrompt = prompt;
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt <= MAX_NAMING_RETRIES; attempt++) {
     const raw = await client.completeJson(currentPrompt, { endpoint: CLUSTER_NAMING_ENDPOINT });
     const result = parse(raw);
     if (result.ok) return result.value;
@@ -156,7 +157,7 @@ async function planForcedNaming(
   const existing = new Map(identities.map((c) => [c.stableId, c.naming]));
   const eligible = inputs.filter(isEligibleForNaming);
   const named = await assignFreshNames(topic, eligible, [], commonGround, existing, MANUAL_RERUN_REASON, now);
-  if (!named) throw new Error("Cluster naming failed validation after a retry");
+  if (!named) throw new Error(`Cluster naming failed validation after ${MAX_NAMING_RETRIES} retries`);
 
   return new Map(inputs.map((input) => [input.stableId, named.get(input.stableId) ?? null]));
 }
