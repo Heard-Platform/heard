@@ -10,6 +10,7 @@ import {
   leaningStatus,
   memberDotCount,
   memberDotOffsets,
+  Point,
   userDotPosition,
 } from "../../utils/minimap-layout";
 
@@ -43,13 +44,6 @@ function slotColor(slot: number): string {
   return SLOT_COLORS[slot % SLOT_COLORS.length];
 }
 
-function toUserDotOffset(position: { x: number; y: number }) {
-  return {
-    x: position.x * MAP_SIZE - USER_DOT_SIZE / 2,
-    y: position.y * MAP_SIZE - USER_DOT_SIZE / 2,
-  };
-}
-
 export function ClusterMinimap({
   clusters,
   clusterProbabilities,
@@ -69,53 +63,12 @@ export function ClusterMinimap({
     gravity,
     radii,
   );
-  const leadingIndex =
+  const leadingStableId =
     status.kind === "unplaced" || status.kind === "between"
       ? null
-      : status.clusterIndex;
-  const leadingStableId =
-    leadingIndex === null ? null : clusters[leadingIndex].stableId;
-  const userDot = toUserDotOffset(userDotFraction);
+      : clusters[status.clusterIndex].stableId;
+  const enterGlow = useEnterGlow(leadingStableId);
   const [memberDotSeed] = useState(() => Math.random().toString(36));
-
-  const [userDotScope, animate] = useAnimate();
-  const hasMounted = useRef(false);
-
-  useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      return;
-    }
-    const pulseThenMove = async () => {
-      await animate(
-        userDotScope.current,
-        { scale: 1.6 },
-        { duration: 0.15, ease: "easeOut" },
-      );
-      await animate(
-        userDotScope.current,
-        { x: userDot.x, y: userDot.y, scale: 1 },
-        { type: "spring", stiffness: 170, damping: 18 },
-      );
-    };
-    pulseThenMove();
-  }, [clusterProbabilities]);
-
-  const [enterGlow, setEnterGlow] = useState<{
-    stableId: string;
-    key: number;
-  } | null>(null);
-  const previousLeadingStableId = useRef(leadingStableId);
-
-  useEffect(() => {
-    if (
-      leadingStableId &&
-      leadingStableId !== previousLeadingStableId.current
-    ) {
-      setEnterGlow({ stableId: leadingStableId, key: Date.now() });
-    }
-    previousLeadingStableId.current = leadingStableId;
-  }, [leadingStableId]);
 
   return (
     <div
@@ -136,70 +89,26 @@ export function ClusterMinimap({
           height: MAP_SIZE,
         }}
       >
-        {clusters.map((cluster, i) => {
-          const radius = radii[i] * MAP_SIZE;
-          const color = slotColor(cluster.slot);
-          const isLeading = cluster.stableId === leadingStableId;
-          return (
-            <div
-              key={cluster.stableId}
-              className="absolute rounded-full transition-all duration-500"
-              style={{
-                left: anchors[i].x * MAP_SIZE - radius,
-                top: anchors[i].y * MAP_SIZE - radius,
-                width: radius * 2,
-                height: radius * 2,
-                border: `${isLeading ? 1.5 : 1}px solid ${color}${isLeading ? "" : "99"}`,
-                backgroundColor: `${color}${isLeading ? "59" : "1f"}`,
-              }}
-            >
-              {enterGlow?.stableId === cluster.stableId && (
-                <motion.div
-                  key={enterGlow.key}
-                  className="pointer-events-none absolute inset-0 rounded-full"
-                  style={{ boxShadow: `0 0 12px 4px ${color}` }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0, 1, 0] }}
-                  transition={{
-                    duration: ENTER_GLOW_DURATION_S,
-                    delay: ENTER_GLOW_DELAY_S,
-                    times: [0, 0.3, 1],
-                  }}
-                />
-              )}
-              {memberDotOffsets(
-                `${memberDotSeed}-${cluster.stableId}`,
-                memberDotCount(cluster.size, largestSize),
-              ).map((offset, dotIndex) => (
-                <div
-                  key={dotIndex}
-                  className="absolute rounded-full"
-                  style={{
-                    left:
-                      radius * (1 + offset.x) - MEMBER_DOT_SIZE / 2,
-                    top:
-                      radius * (1 + offset.y) - MEMBER_DOT_SIZE / 2,
-                    width: MEMBER_DOT_SIZE,
-                    height: MEMBER_DOT_SIZE,
-                    backgroundColor: color,
-                  }}
-                />
-              ))}
-            </div>
-          );
-        })}
+        {clusters.map((cluster, i) => (
+          <ClusterCircle
+            key={cluster.stableId}
+            center={anchors[i]}
+            radius={radii[i] * MAP_SIZE}
+            color={slotColor(cluster.slot)}
+            isLeading={cluster.stableId === leadingStableId}
+            glowKey={
+              enterGlow?.stableId === cluster.stableId ? enterGlow.key : null
+            }
+            memberDotOffsets={memberDotOffsets(
+              `${memberDotSeed}-${cluster.stableId}`,
+              memberDotCount(cluster.size, largestSize),
+            )}
+          />
+        ))}
 
-        <motion.div
-          ref={userDotScope}
-          className="absolute left-0 top-0 z-20 rounded-full"
-          initial={{ x: userDot.x, y: userDot.y }}
-          style={{
-            width: USER_DOT_SIZE,
-            height: USER_DOT_SIZE,
-            backgroundColor: USER_DOT_COLOR,
-            border: "2px solid white",
-            boxShadow: `0 0 0 4px ${USER_DOT_COLOR}55`,
-          }}
+        <UserDot
+          position={userDotFraction}
+          clusterProbabilities={clusterProbabilities}
         />
       </div>
 
@@ -208,40 +117,173 @@ export function ClusterMinimap({
   );
 }
 
+function useEnterGlow(leadingStableId: string | null) {
+  const [enterGlow, setEnterGlow] = useState<{
+    stableId: string;
+    key: number;
+  } | null>(null);
+  const previousLeadingStableId = useRef(leadingStableId);
+
+  useEffect(() => {
+    if (
+      leadingStableId &&
+      leadingStableId !== previousLeadingStableId.current
+    ) {
+      setEnterGlow({ stableId: leadingStableId, key: Date.now() });
+    }
+    previousLeadingStableId.current = leadingStableId;
+  }, [leadingStableId]);
+
+  return enterGlow;
+}
+
+interface ClusterCircleProps {
+  center: Point;
+  radius: number;
+  color: string;
+  isLeading: boolean;
+  glowKey: number | null;
+  memberDotOffsets: Point[];
+}
+
+function ClusterCircle({
+  center,
+  radius,
+  color,
+  isLeading,
+  glowKey,
+  memberDotOffsets,
+}: ClusterCircleProps) {
+  return (
+    <div
+      className="absolute rounded-full transition-all duration-500"
+      style={{
+        left: center.x * MAP_SIZE - radius,
+        top: center.y * MAP_SIZE - radius,
+        width: radius * 2,
+        height: radius * 2,
+        border: `${isLeading ? 1.5 : 1}px solid ${color}${isLeading ? "" : "99"}`,
+        backgroundColor: `${color}${isLeading ? "59" : "1f"}`,
+      }}
+    >
+      {glowKey !== null && <EnterGlow key={glowKey} color={color} />}
+      {memberDotOffsets.map((offset, i) => (
+        <MemberDot key={i} offset={offset} radius={radius} color={color} />
+      ))}
+    </div>
+  );
+}
+
+function EnterGlow({ color }: { color: string }) {
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0 rounded-full"
+      style={{ boxShadow: `0 0 12px 4px ${color}` }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: [0, 1, 0] }}
+      transition={{
+        duration: ENTER_GLOW_DURATION_S,
+        delay: ENTER_GLOW_DELAY_S,
+        times: [0, 0.3, 1],
+      }}
+    />
+  );
+}
+
+interface MemberDotProps {
+  offset: Point;
+  radius: number;
+  color: string;
+}
+
+function MemberDot({ offset, radius, color }: MemberDotProps) {
+  return (
+    <div
+      className="absolute rounded-full"
+      style={{
+        left: radius * (1 + offset.x) - MEMBER_DOT_SIZE / 2,
+        top: radius * (1 + offset.y) - MEMBER_DOT_SIZE / 2,
+        width: MEMBER_DOT_SIZE,
+        height: MEMBER_DOT_SIZE,
+        backgroundColor: color,
+      }}
+    />
+  );
+}
+
+interface UserDotProps {
+  position: Point;
+  clusterProbabilities: number[] | null;
+}
+
+function UserDot({ position, clusterProbabilities }: UserDotProps) {
+  const offset = {
+    x: position.x * MAP_SIZE - USER_DOT_SIZE / 2,
+    y: position.y * MAP_SIZE - USER_DOT_SIZE / 2,
+  };
+  const [scope, animate] = useAnimate();
+  const hasMounted = useRef(false);
+
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+    const pulseThenMove = async () => {
+      await animate(
+        scope.current,
+        { scale: 1.6 },
+        { duration: 0.15, ease: "easeOut" },
+      );
+      await animate(
+        scope.current,
+        { x: offset.x, y: offset.y, scale: 1 },
+        { type: "spring", stiffness: 170, damping: 18 },
+      );
+    };
+    pulseThenMove();
+  }, [clusterProbabilities]);
+
+  return (
+    <motion.div
+      ref={scope}
+      className="absolute left-0 top-0 z-20 rounded-full"
+      initial={{ x: offset.x, y: offset.y }}
+      style={{
+        width: USER_DOT_SIZE,
+        height: USER_DOT_SIZE,
+        backgroundColor: USER_DOT_COLOR,
+        border: "2px solid white",
+        boxShadow: `0 0 0 4px ${USER_DOT_COLOR}55`,
+      }}
+    />
+  );
+}
+
 interface MinimapLabelProps {
   status: LeaningStatus;
   clusters: MinimapCluster[];
 }
 
-const LABEL_CLASS =
-  "absolute bottom-1.5 left-2.5 right-2.5 z-10 truncate text-[10px] leading-tight";
-const LABEL_STYLE = { textShadow: "0 1px 2px rgba(0, 0, 0, 0.7)" };
-
 function MinimapLabel({ status, clusters }: MinimapLabelProps) {
-  if (status.kind === "unplaced") {
-    return (
-      <p
-        className={`${LABEL_CLASS} text-white/70`}
-        style={LABEL_STYLE}
-      >
-        Where do you fit?
-      </p>
-    );
-  }
-  if (status.kind === "between") {
-    return (
-      <p
-        className={`${LABEL_CLASS} text-white/70`}
-        style={LABEL_STYLE}
-      >
-        Somewhere in between
-      </p>
-    );
-  }
+  const isPlaced = status.kind !== "unplaced" && status.kind !== "between";
+  return (
+    <p
+      className={`absolute bottom-1.5 left-2.5 right-2.5 z-10 truncate text-[10px] leading-tight ${isPlaced ? "text-white/90" : "text-white/70"}`}
+      style={{ textShadow: "0 1px 2px rgba(0, 0, 0, 0.7)" }}
+    >
+      <MinimapLabelText status={status} clusters={clusters} />
+    </p>
+  );
+}
+
+function MinimapLabelText({ status, clusters }: MinimapLabelProps) {
+  if (status.kind === "unplaced") return <>Where do you fit?</>;
+  if (status.kind === "between") return <>Somewhere in between</>;
 
   const cluster = clusters[status.clusterIndex];
   return (
-    <p className={`${LABEL_CLASS} text-white/90`} style={LABEL_STYLE}>
+    <>
       {LEVEL_WORDS[status.kind]}{" "}
       <span
         className="font-semibold"
@@ -249,6 +291,6 @@ function MinimapLabel({ status, clusters }: MinimapLabelProps) {
       >
         {getClusterDisplayName(cluster.slot, cluster.name)}
       </span>
-    </p>
+    </>
   );
 }
