@@ -137,6 +137,7 @@ const mockClusterConsensus: ClusterConsensus = {
       id: 0,
       stableId: "cluster-0",
       slot: 0,
+      name: "Full Speed Ahead",
       size: 92,
       statements: [
         {
@@ -169,6 +170,7 @@ const mockClusterConsensus: ClusterConsensus = {
       id: 1,
       stableId: "cluster-1",
       slot: 1,
+      name: "Hit the Brakes",
       size: 85,
       statements: [
         {
@@ -201,6 +203,7 @@ const mockClusterConsensus: ClusterConsensus = {
       id: 2,
       stableId: "cluster-2",
       slot: 2,
+      name: null,
       size: 70,
       statements: [
         {

@@ -1,5 +1,5 @@
 // Utility functions for working with KV store data
-import { getAllRecords, getAllKvRecordsWithPrefix } from "./db-utils.ts";
+import { getAllRecords, getAllKvRecordsMatching, getAllKvRecordsWithPrefix } from "./db-utils.ts";
 import * as kv from "./kv_store.tsx";
 import type { ClusterIdentityRecord } from "./cluster-identity.ts";
 import {
@@ -603,6 +603,24 @@ export const getClusterIdentityRecord = async (
   roomId: string,
 ): Promise<ClusterIdentityRecord | null> => {
   return getParsedKvData<ClusterIdentityRecord>(clusterIdentityKeyFn(roomId));
+};
+
+export const getAllClusterIdentityRecords = async (): Promise<Map<string, ClusterIdentityRecord>> => {
+  const rows = await getAllKvRecordsMatching(clusterIdentityKeyFn("%"));
+  const records = new Map<string, ClusterIdentityRecord>();
+  for (const [key, raw] of rows) {
+    const record = parseKvData<ClusterIdentityRecord>(raw);
+    const roomId = key.slice("cluster:".length, -":identity".length);
+    if (record) records.set(roomId, record);
+  }
+  return records;
+};
+
+export const saveClusterIdentityRecord = async (
+  roomId: string,
+  record: ClusterIdentityRecord,
+): Promise<void> => {
+  await kv.set(clusterIdentityKeyFn(roomId), JSON.stringify(record));
 };
 
 export const getClusterAssignmentsBatch = async (

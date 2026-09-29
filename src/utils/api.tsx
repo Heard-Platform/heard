@@ -22,6 +22,9 @@ import {
   type NewDebateRoom,
   type VoteType,
   EnrichmentConfig,
+  ClusterNamingConfig,
+  ClusterNameReviewRoom,
+  ReviewRoomOption,
   type Event,
   type NewEvent,
   EventSummary,
@@ -825,6 +828,34 @@ class ApiClient extends BaseApiClient {
       method: "POST",
       body: JSON.stringify(config),
     });
+  }
+
+  async getClusterNamingConfig() {
+    return this.request<ClusterNamingConfig>("/internal/config/cluster-naming");
+  }
+
+  async setClusterNamingConfig(config: ClusterNamingConfig) {
+    return this.request<ClusterNamingConfig>("/internal/config/cluster-naming", {
+      method: "POST",
+      body: JSON.stringify(config),
+    });
+  }
+
+  async getClusterNamesForReview(offset: number, limit: number) {
+    return this.request<{ rooms: ClusterNameReviewRoom[]; hasMore: boolean }>(
+      `/dev/ai-review/cluster-names?offset=${offset}&limit=${limit}`,
+    );
+  }
+
+  async getRoomsForReview() {
+    return this.request<{ rooms: ReviewRoomOption[] }>("/dev/ai-review/rooms");
+  }
+
+  async regenerateClusterNames(roomId: string) {
+    return this.request<{ room: ClusterNameReviewRoom }>(
+      `/dev/room/${roomId}/cluster-names/regenerate`,
+      { method: "POST" },
+    );
   }
 
   async runEnrichmentNow() {

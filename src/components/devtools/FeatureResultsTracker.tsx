@@ -469,6 +469,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       ),
     },
     {
+      icon: Tag,
+      iconColor: "text-indigo-600",
+      bgColor: "bg-indigo-100",
+      title: "Cluster Naming Tokens",
+      description: "Total LLM tokens spent generating cluster names, including drift checks and manual re-runs",
+      getValue: (s) => s.clusterNamingTokens,
+      getDate: (s) => s.clusterNamingTokensSince,
+    },
+    {
       icon: Mail,
       iconColor: "text-emerald-600",
       bgColor: "bg-emerald-100",

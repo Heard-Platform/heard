@@ -1,10 +1,24 @@
 export const MIN_IDENTITY_OVERLAP = 0.4;
 
+export interface StanceEntry {
+  statementId: string;
+  agreeRate: number;
+}
+
+export interface ClusterNaming {
+  name: string;
+  namedAt: number;
+  stanceSnapshot: StanceEntry[];
+  previousName: string | null;
+  renameReason: string | null;
+}
+
 export interface ClusterIdentity {
   stableId: string;
   clusterIndex: number;
   slot: number;
   memberIds: string[];
+  naming: ClusterNaming | null;
 }
 
 export interface ClusterIdentityRecord {
@@ -119,9 +133,21 @@ export function resolveClusterIdentities(
     const memberIds = [...group];
     if (prevIdx !== null) {
       const prev = previousClusters[prevIdx];
-      return { stableId: prev.stableId, clusterIndex, slot: prev.slot, memberIds };
+      return {
+        stableId: prev.stableId,
+        clusterIndex,
+        slot: prev.slot,
+        memberIds,
+        naming: prev.naming ?? null,
+      };
     }
-    return { stableId: generateId(), clusterIndex, slot: newSlots.get(clusterIndex)!, memberIds };
+    return {
+      stableId: generateId(),
+      clusterIndex,
+      slot: newSlots.get(clusterIndex)!,
+      memberIds,
+      naming: null,
+    };
   });
 
   const keptCount = matching.filter((m) => m !== null).length;

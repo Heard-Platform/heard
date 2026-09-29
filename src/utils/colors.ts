@@ -60,3 +60,7 @@ export const CLUSTER_COLORS: ClusterColor[] = [
 export function getClusterColor(clusterIndex: number): ClusterColor {
   return CLUSTER_COLORS[clusterIndex % CLUSTER_COLORS.length];
 }
+
+export function getClusterDisplayName(slot: number, name: string | null): string {
+  return name ?? `Group ${String.fromCharCode(65 + slot)}`;
+}

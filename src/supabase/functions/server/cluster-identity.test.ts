@@ -1,6 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   ClusterIdentityRecord,
+  ClusterNaming,
   jaccardOverlap,
   resolveClusterIdentities,
 } from "./cluster-identity.ts";
@@ -18,11 +19,13 @@ function users(prefix: string, count: number): string[] {
   return Array.from({ length: count }, (_, i) => `${prefix}${i}`);
 }
 
-function previousRecord(groups: { stableId: string; slot: number; memberIds: string[] }[]): ClusterIdentityRecord {
+function previousRecord(
+  groups: { stableId: string; slot: number; memberIds: string[]; naming?: ClusterNaming }[],
+): ClusterIdentityRecord {
   return {
     version: 3,
     timestamp: 0,
-    clusters: groups.map((g, clusterIndex) => ({ ...g, clusterIndex })),
+    clusters: groups.map((g, clusterIndex) => ({ naming: null, ...g, clusterIndex })),
   };
 }
 
@@ -202,4 +205,40 @@ Deno.test("resolveClusterIdentities - new clusters take the lowest slot not held
 
   assertEquals(result.record.clusters.map((c) => c.stableId), ["z", "new-0"]);
   assertEquals(result.record.clusters.map((c) => c.slot), [2, 0]);
+});
+
+Deno.test("resolveClusterIdentities - kept clusters carry their naming, new clusters start unnamed", () => {
+  const naming: ClusterNaming = {
+    name: "Hit the Brakes",
+    namedAt: 1,
+    stanceSnapshot: [{ statementId: "s1", agreeRate: 0.9 }],
+    previousName: null,
+    renameReason: null,
+  };
+  const previous = previousRecord([
+    { stableId: "x", slot: 0, memberIds: users("a", 5), naming },
+  ]);
+
+  const result = resolveClusterIdentities(
+    previous,
+    memberships([users("a", 5), users("n", 5)]),
+    2,
+    0,
+    sequentialIds(),
+  );
+
+  assertEquals(result.record.clusters[0].naming, naming);
+  assertEquals(result.record.clusters[1].naming, null);
+});
+
+Deno.test("resolveClusterIdentities - records written before naming existed are treated as unnamed", () => {
+  const legacy = {
+    version: 1,
+    timestamp: 0,
+    clusters: [{ stableId: "x", clusterIndex: 0, slot: 0, memberIds: users("a", 5) }],
+  } as unknown as ClusterIdentityRecord;
+
+  const result = resolveClusterIdentities(legacy, memberships([users("a", 5)]), 1, 0, sequentialIds());
+
+  assertEquals(result.record.clusters[0].naming, null);
 });

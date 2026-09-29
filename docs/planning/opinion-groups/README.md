@@ -11,7 +11,7 @@ Each phase ships and deploys on its own, in this order. Each one also adds a qui
 | # | Phase | What users get | Deploy gate |
 |---|-------|----------------|-------------|
 | 1 | [Cluster stabilization](1-cluster-stabilization.md) | Nothing visible. Clusters keep their identity across recomputes. | None |
-| 2 | [Cluster naming](2-cluster-naming.md) | Fun, 14–16 char group names on the analysis report | Server switch |
+| 2 | [Cluster naming](2-cluster-naming.md) | Fun, 14–16 char group names on the analysis report, plus a new AI Review tab in dev tools | Server switch |
 | 3 | [Cluster-aware sorting](3-cluster-aware-sorting.md) | First cards are the ones that best place you in a group | Feature flag |
 | 4 | [Live minimap](4-live-minimap.md) | Your dot moves between groups as you swipe | Feature flag |
 
@@ -19,14 +19,14 @@ Each phase ships and deploys on its own, in this order. Each one also adds a qui
 
 - **Stability comes first.** Cluster numbers currently change between recomputes. Names, colours and map positions all need an identity that persists.
 - **The LLM names clusters only when they meaningfully change,** in a single call so the names contrast with each other. It runs in the background, so no request waits on it.
-- **Fallback names are colour teams** ("Team Violet", "Team Teal", "Team Amber"). They match the map colours and don't imply a stance.
+- **Fallback names are plain "Group A/B/C"**, lettered by slot so they stay stable across recomputes.
 - **One client-side model drives both sorting and the minimap.** The server sends a small cluster snapshot: each cluster's agree/disagree/pass rates per statement, with no user data. The browser uses it to estimate the user's group instantly on every swipe.
 - **The minimap is schematic, not a true 2D projection.** It is clearer at small sizes and matches the mockup.
 
 ## Risks
 
 - **Opening with the most divisive statements** may feel combative. Mitigated by a consensus card in slot 3 of the opening cards. Watch completion rates.
-- **Renaming a group during a session** is jarring. Rename only when a cluster's top statements have mostly changed.
+- **Name churn:** the LLM could reword a name without the group changing. Rename only when the group's stance has actually drifted, and the model defaults to keeping the name and must say what changed.
 - **The client estimate can disagree with the server's official assignment.** Reconcile when the user finishes swiping.
 
 ## Open questions

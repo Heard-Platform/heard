@@ -330,11 +330,41 @@ export interface Cluster {
   id: number;
   stableId: string;
   slot: number;
+  name: string | null;
   size: number;
   statements: ClusterStatement[];
 }
 
-export type ClusterColumn = Pick<Cluster, "size" | "slot">;
+export type ClusterColumn = Pick<Cluster, "size" | "slot" | "name">;
+
+export interface ClusterNameReviewCluster {
+  stableId: string;
+  slot: number;
+  size: number;
+  name: string | null;
+  previousName: string | null;
+  renameReason: string | null;
+}
+
+export interface ReviewRoomOption {
+  roomId: string;
+  topic: string;
+  voteCount: number;
+  createdAt: number;
+}
+
+export interface ClusterNameReviewRoom {
+  roomId: string;
+  topic: string;
+  voteCount: number;
+  clusters: ClusterNameReviewCluster[] | null;
+  lastNamedAt: number | null;
+  createdAt: number;
+}
+
+export interface ClusterNamingConfig {
+  enabled: boolean;
+}
 
 export interface ClusterConsensus {
   totalClusters: number;
@@ -679,6 +709,8 @@ export interface FeatureResults {
   clusterRecomputesSince: number;
   clusterRecomputesWeekly: { weekStart: string; count: number }[];
   clusterIdentityKeptPercent: number | null;
+  clusterNamingTokens: number;
+  clusterNamingTokensSince: number;
   sessionExpiredRecovered: number;
   sessionExpiredRecoveredSince: number;
   sessionExpiryBypassed: number;

@@ -27,7 +27,11 @@ export default {
   title: "Analysis/BridgeStatementsSection",
 };
 
-const clusterColumns: ClusterColumn[] = [80, 60, 50, 35].map((size, slot) => ({ size, slot }));
+const clusterColumns: ClusterColumn[] = [80, 60, 50, 35].map((size, slot) => ({
+  size,
+  slot,
+  name: ["Full Speed Ahead", "Hit the Brakes", null, null][slot],
+}));
 const totalParticipants = 225;
 
 // A & C (indices 0 & 2) strongly agree with each other while B & D strongly

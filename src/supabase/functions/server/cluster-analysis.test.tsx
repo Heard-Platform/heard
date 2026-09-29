@@ -3,6 +3,7 @@ import { assertGreater } from "https://deno.land/std@0.224.0/assert/assert_great
 import { assertLess } from "https://deno.land/std@0.224.0/assert/assert_less.ts";
 import {
   calcStatementBreakdownForCluster,
+  calcAnyDistinguishingStatements,
   calculateClusterConsensus,
 } from "./cluster-analysis.tsx";
 import { Statement, VoteType } from "./types.tsx";
@@ -15,6 +16,7 @@ function identitiesFor(totalClusters: number): ClusterIdentity[] {
     clusterIndex: i,
     slot: i,
     memberIds: [],
+    naming: null,
   }));
 }
 
@@ -329,6 +331,7 @@ Deno.test("calcStatementBreakdownForCluster - counts each vote type and double-c
     clusterId: 0,
     stableId: "stable-0",
     slot: 0,
+    name: null,
     size: 5,
     users: ["u1", "u2", "u3", "u4", "u5"],
   });
@@ -357,6 +360,7 @@ Deno.test("calcStatementBreakdownForCluster - ignores votes from users outside t
     clusterId: 1,
     stableId: "stable-1",
     slot: 1,
+    name: null,
     size: 2,
     users: ["insider1", "insider2"],
   });
@@ -376,6 +380,7 @@ Deno.test("calcStatementBreakdownForCluster - cluster members who didn't vote co
     clusterId: 2,
     stableId: "stable-2",
     slot: 2,
+    name: null,
     size: 3,
     users: ["u1", "u2", "u3"],
   });
@@ -394,6 +399,7 @@ Deno.test("calcStatementBreakdownForCluster - empty cluster returns all zeros", 
     clusterId: 0,
     stableId: "stable-0",
     slot: 0,
+    name: null,
     size: 0,
     users: [],
   });
@@ -417,6 +423,7 @@ Deno.test("calcStatementBreakdownForCluster - passes through clusterId, stableId
     clusterId: 7,
     stableId: "stable-7",
     slot: 7,
+    name: null,
     size: 42,
     users: ["u1"],
   });
@@ -425,4 +432,46 @@ Deno.test("calcStatementBreakdownForCluster - passes through clusterId, stableId
   assertEquals(result.stableId, "stable-7");
   assertEquals(result.slot, 7);
   assertEquals(result.clusterSize, 42);
+});
+
+Deno.test("calcAnyDistinguishingStatements - keeps statements the cluster disagrees with more than others", () => {
+  const inCluster = Array.from({ length: 30 }, (_, i) => `in${i}`);
+  const outCluster = Array.from({ length: 30 }, (_, i) => `out${i}`);
+
+  const statements = [
+    makeStatement("agree-more", makeClusteredVoters(inCluster, outCluster, "agree", "disagree")),
+    makeStatement("disagree-more", makeClusteredVoters(inCluster, outCluster, "disagree", "agree")),
+    makeStatement("shared", makeClusteredVoters(inCluster, outCluster, "agree", "agree")),
+  ];
+
+  const result = calcAnyDistinguishingStatements(statements, inCluster, outCluster);
+
+  assertEquals(result.map((s) => s.id).sort(), ["agree-more", "disagree-more"]);
+  assertGreater(result.find((s) => s.id === "agree-more")!.distinguishingScore, 0);
+  assertLess(result.find((s) => s.id === "disagree-more")!.distinguishingScore, 0);
+});
+
+Deno.test("calculateClusterConsensus - exposes each cluster's name from its identity", () => {
+  const identities = identitiesFor(2);
+  identities[1].naming = {
+    name: "Hit the Brakes",
+    namedAt: 0,
+    stanceSnapshot: [],
+    previousName: null,
+    renameReason: null,
+  };
+
+  const result = calculateClusterConsensus(
+    [],
+    { totalClusters: 2, clusterSizes: { 0: 1, 1: 2 } },
+    identities,
+    [
+      { userId: "a", clusterId: 0, distance: 0 },
+      { userId: "b", clusterId: 1, distance: 0 },
+      { userId: "c", clusterId: 1, distance: 0 },
+    ],
+    ["a", "b", "c"],
+  );
+
+  assertEquals(result.clusters.map((c) => c.name), ["Hit the Brakes", null]);
 });

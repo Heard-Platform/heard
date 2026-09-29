@@ -85,7 +85,11 @@ export default {
   title: "Analysis/StatementVotesTable",
 };
 
-const clusterColumns: ClusterColumn[] = [80, 60, 50, 35].map((size, slot) => ({ size, slot }));
+const clusterColumns: ClusterColumn[] = [80, 60, 50, 35].map((size, slot) => ({
+  size,
+  slot,
+  name: ["Full Speed Ahead", "Hit the Brakes", null, null][slot],
+}));
 const totalParticipants = 225;
 
 const mockStatements: StatementVotes[] = [
