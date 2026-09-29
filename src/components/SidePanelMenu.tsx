@@ -32,6 +32,7 @@ import {
   TrendingUp,
   MessageCircle,
   Bell,
+  Activity,
 } from "lucide-react";
 import type { UserSession } from "../types";
 import { api } from "../utils/api";
@@ -75,6 +76,7 @@ interface SidePanelMenuProps {
   onLogout: () => void;
   onOpenHelp: () => void;
   onOpenShowcase?: () => void;
+  onOpenActivityDashboard: () => void;
   onOpenRetentionDashboard: () => void;
   onOpenAdminDashboard?: () => void;
   onOpenFeatureTracker: () => void;
@@ -94,6 +96,7 @@ export function SidePanelMenu({
   onLogout,
   onOpenHelp,
   onOpenShowcase,
+  onOpenActivityDashboard,
   onOpenRetentionDashboard,
   onOpenAdminDashboard,
   onOpenFeatureTracker,
@@ -330,6 +333,17 @@ export function SidePanelMenu({
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
+              </Button>
+            )}
+
+            {user.isDeveloper && (
+              <Button
+                onClick={() => closeMenuAndRun(onOpenActivityDashboard)}
+                variant="outline"
+                className="w-full bg-gradient-to-r from-blue-50 to-sky-50 border-blue-200"
+              >
+                <Activity className="w-4 h-4 mr-2 text-blue-600" />
+                Activity Dashboard
               </Button>
             )}
 

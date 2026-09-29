@@ -1,22 +1,22 @@
 import { ArrowLeftRight } from "lucide-react";
 import { Badge } from "../ui/badge";
-import { StatementVotes } from "../../types";
+import { ClusterColumn, StatementVotes } from "../../types";
 import { getTopBridgingStatements } from "../../utils/bridging-utils";
-import { getClusterColor } from "../../utils/colors";
-import { StatementVotesTableHead, clusterLabel } from "./StatementVotesTableHead";
+import { getClusterColor, getClusterDisplayName } from "../../utils/colors";
+import { StatementVotesTableHead } from "./StatementVotesTableHead";
 import { StatementVotesTableRow } from "./StatementVotesTableRow";
 
 interface BridgeStatementsSectionProps {
   statements: StatementVotes[];
   totalParticipants: number;
-  clusterSizes: number[];
+  clusterColumns: ClusterColumn[];
   showNumbers: boolean;
 }
 
 export function BridgeStatementsSection({
   statements,
   totalParticipants,
-  clusterSizes,
+  clusterColumns,
   showNumbers,
 }: BridgeStatementsSectionProps) {
   const bridges = getTopBridgingStatements(statements);
@@ -32,19 +32,21 @@ export function BridgeStatementsSection({
         Bridging Statements
       </h3>
       <p className="text-sm text-muted-foreground mb-3">
-        Statements where otherwise-opposed clusters of people find common ground
+        Statements where otherwise-opposed groups of people find common ground
       </p>
       <div className="bg-white rounded-lg border p-3">
         <table className="w-full text-sm">
           <StatementVotesTableHead
             totalParticipants={totalParticipants}
-            clusterSizes={clusterSizes}
+            clusterColumns={clusterColumns}
             showNumbers={showNumbers}
           />
           <tbody>
             {bridges.map(({ statement, clusterAId, clusterBId }) => {
-              const colorsA = getClusterColor(clusterAId);
-              const colorsB = getClusterColor(clusterBId);
+              const clusterA = clusterColumns[clusterAId];
+              const clusterB = clusterColumns[clusterBId];
+              const colorsA = getClusterColor(clusterA.slot);
+              const colorsB = getClusterColor(clusterB.slot);
               return (
                 <StatementVotesTableRow
                   key={statement.id}
@@ -55,11 +57,11 @@ export function BridgeStatementsSection({
                   caption={
                     <div className="flex items-center gap-1.5 mb-1">
                       <Badge variant="outline" className={`${colorsA.badge} ${colorsA.text}`}>
-                        Cluster {clusterLabel(clusterAId)}
+                        {getClusterDisplayName(clusterA.slot, clusterA.name)}
                       </Badge>
                       <ArrowLeftRight className="w-3 h-3 text-muted-foreground" />
                       <Badge variant="outline" className={`${colorsB.badge} ${colorsB.text}`}>
-                        Cluster {clusterLabel(clusterBId)}
+                        {getClusterDisplayName(clusterB.slot, clusterB.name)}
                       </Badge>
                     </div>
                   }

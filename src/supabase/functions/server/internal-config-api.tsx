@@ -3,6 +3,7 @@ import { InternalVarKey } from "./types.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 import { Hono } from "npm:hono";
 import { validateDeveloper } from "./internal-utils.ts";
+import { isClusterNamingEnabled, setClusterNamingEnabled } from "./cluster-naming.ts";
 
 const app = new Hono();
 
@@ -75,6 +76,34 @@ app.post(
       return config;
     },
     "Failed to set enrichment config"
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/internal/config/cluster-naming",
+  validateDeveloper,
+  defineRoute(
+    {},
+    async () => ({ enabled: await isClusterNamingEnabled() }),
+    "Failed to get cluster naming config"
+  ),
+);
+
+app.post(
+  "/make-server-f1a393b4/internal/config/cluster-naming",
+  validateDeveloper,
+  defineRoute(
+    {
+      enabled: {
+        type: 'boolean',
+        required: true,
+      },
+    },
+    async ({ enabled }: { enabled: boolean }) => {
+      await setClusterNamingEnabled(enabled);
+      return { enabled };
+    },
+    "Failed to set cluster naming config"
   ),
 );
 

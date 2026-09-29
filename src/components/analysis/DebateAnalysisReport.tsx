@@ -63,7 +63,7 @@ export function DebateAnalysisReport({
   selectedTags,
   onSelectedTagsChange,
 }: DebateAnalysisReportProps) {
-  const clusterSizes = clusterConsensus?.clusters.map((c) => c.size) ?? [];
+  const clusterColumns = clusterConsensus?.clusters ?? [];
   const [showNumbers, setShowNumbers] = useState(false);
   const canEditTags = isModerator || !!isDeveloper;
 
@@ -85,11 +85,13 @@ export function DebateAnalysisReport({
           <h1 className="text-3xl mt-1">{debateTopic}</h1>
         </div>
 
-        <TagFilterControl
-          availableTags={availableTagNames}
-          selectedTags={selectedTags}
-          onChange={onSelectedTagsChange}
-        />
+        <div className={selectedTags.length === 0 ? "print:hidden" : undefined}>
+          <TagFilterControl
+            availableTags={availableTagNames}
+            selectedTags={selectedTags}
+            onChange={onSelectedTagsChange}
+          />
+        </div>
 
         <div className="grid grid-cols-3 gap-2">
           <StatBox
@@ -119,7 +121,9 @@ export function DebateAnalysisReport({
           <DemographicsPieCharts demographics={demographics} />
         )}
 
-        <AskTheData debateId={debateId} />
+        <div className="print:hidden">
+          <AskTheData debateId={debateId} />
+        </div>
 
         <StatementSpectrumCard statements={filteredStatements} />
 
@@ -154,7 +158,7 @@ export function DebateAnalysisReport({
               <div>
                 <h2 className="text-xl text-yellow-900">No Cluster Data Available</h2>
                 <p className="text-sm text-yellow-700 mt-1">
-                  Cluster consensus analysis is not available for this conversation.
+                  Group consensus analysis is not available for this conversation.
                 </p>
               </div>
             </div>
@@ -166,9 +170,9 @@ export function DebateAnalysisReport({
                 <GitBranch className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <h2 className="text-xl">Cluster Consensus</h2>
+                <h2 className="text-xl">Group Consensus</h2>
                 <p className="text-sm text-muted-foreground">
-                  Top consensus statements by opinion cluster
+                  Top consensus statements by opinion group
                 </p>
               </div>
               <ShowNumbersToggle showNumbers={showNumbers} onShowNumbersChange={setShowNumbers} />
@@ -181,10 +185,12 @@ export function DebateAnalysisReport({
                   .filter(s => s !== undefined);
                 return (
                   <ClusterConsensusBox
-                    key={cluster.id}
+                    key={cluster.stableId}
                     clusterIndex={index}
+                    clusterSlot={cluster.slot}
+                    clusterName={cluster.name}
                     clusterSize={cluster.size}
-                    clusterSizes={clusterSizes}
+                    clusterColumns={clusterColumns}
                     totalParticipants={totalParticipants}
                     statements={clusterStatements}
                     showNumbers={showNumbers}
@@ -197,12 +203,12 @@ export function DebateAnalysisReport({
             <BridgeStatementsSection
               statements={filteredStatements}
               totalParticipants={totalParticipants}
-              clusterSizes={clusterSizes}
+              clusterColumns={clusterColumns}
               showNumbers={showNumbers}
             />
 
             {isDeveloper && (
-              <div className="mt-6">
+              <div className="mt-6 print:hidden">
                 <Button
                   onClick={onRegenerateClusters}
                   disabled={regenerating}
@@ -211,7 +217,7 @@ export function DebateAnalysisReport({
                   {regenerating ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
-                    "Regenerate Clusters"
+                    "Regenerate Groups"
                   )}
                 </Button>
               </div>
@@ -222,7 +228,7 @@ export function DebateAnalysisReport({
         <StatementVotesTable
           statements={filteredStatements}
           totalParticipants={totalParticipants}
-          clusterSizes={clusterSizes}
+          clusterColumns={clusterColumns}
           showNumbers={showNumbers}
           onShowNumbersChange={setShowNumbers}
           isModerator={canEditTags}

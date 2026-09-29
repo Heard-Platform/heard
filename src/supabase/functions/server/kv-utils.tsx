@@ -1,6 +1,8 @@
 // Utility functions for working with KV store data
-import { getAllRecords, getAllKvRecordsWithPrefix } from "./db-utils.ts";
+import { getAllRecords, getAllKvRecordsMatching, getAllKvRecordsWithPrefix } from "./db-utils.ts";
 import * as kv from "./kv_store.tsx";
+import type { ClusterIdentityRecord } from "./cluster-identity.ts";
+import type { ClusterRecomputeMarker } from "./cluster-freshness.ts";
 import {
   type User,
   type Vote,
@@ -594,6 +596,47 @@ export const getClusterAssignment = async (
 
 export const getClusterMetadataRecord = async (roomId: string): Promise<any | null> => {
   return getParsedKvData<any>(`cluster:${roomId}:metadata`);
+};
+
+export const clusterIdentityKeyFn = (roomId: string) => `cluster:${roomId}:identity`;
+
+export const getClusterIdentityRecord = async (
+  roomId: string,
+): Promise<ClusterIdentityRecord | null> => {
+  return getParsedKvData<ClusterIdentityRecord>(clusterIdentityKeyFn(roomId));
+};
+
+export const clusterRecomputeMarkerKeyFn = (roomId: string) => `cluster:${roomId}:recompute`;
+
+export const getClusterRecomputeMarker = async (
+  roomId: string,
+): Promise<ClusterRecomputeMarker | null> => {
+  return getParsedKvData<ClusterRecomputeMarker>(clusterRecomputeMarkerKeyFn(roomId));
+};
+
+export const saveClusterRecomputeMarker = async (
+  roomId: string,
+  marker: ClusterRecomputeMarker,
+): Promise<void> => {
+  await kv.set(clusterRecomputeMarkerKeyFn(roomId), JSON.stringify(marker));
+};
+
+export const getAllClusterIdentityRecords = async (): Promise<Map<string, ClusterIdentityRecord>> => {
+  const rows = await getAllKvRecordsMatching(clusterIdentityKeyFn("%"));
+  const records = new Map<string, ClusterIdentityRecord>();
+  for (const [key, raw] of rows) {
+    const record = parseKvData<ClusterIdentityRecord>(raw);
+    const roomId = key.slice("cluster:".length, -":identity".length);
+    if (record) records.set(roomId, record);
+  }
+  return records;
+};
+
+export const saveClusterIdentityRecord = async (
+  roomId: string,
+  record: ClusterIdentityRecord,
+): Promise<void> => {
+  await kv.set(clusterIdentityKeyFn(roomId), JSON.stringify(record));
 };
 
 export const getClusterAssignmentsBatch = async (

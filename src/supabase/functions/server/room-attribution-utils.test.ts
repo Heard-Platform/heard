@@ -478,6 +478,56 @@ describe("computeRoomTrafficSources", () => {
     assertEquals(result.participation, { participating: 0, lurking: 3 });
   });
 
+  it("defaults to no joins when no join times are passed", () => {
+    const result = computeRoomTrafficSources(
+      makeRoom(),
+      ["user-1"],
+      [],
+      makeUsers(["user-1"]),
+    );
+
+    assertEquals(result.joins, []);
+  });
+
+  it("lists each participant's join time and anonymity, sorted oldest first", () => {
+    const users = [
+      makeUser("user-1"),
+      makeUser("user-2", { isAnonymous: true }),
+    ];
+    const result = computeRoomTrafficSources(
+      makeRoom(),
+      ["user-1", "user-2"],
+      [],
+      users,
+      [],
+      new Map([
+        ["user-1", 3000],
+        ["user-2", 1000],
+      ]),
+    );
+
+    assertEquals(result.joins, [
+      { isAnonymous: true, joinedAt: 1000 },
+      { isAnonymous: false, joinedAt: 3000 },
+    ]);
+  });
+
+  it("excludes joins for users who aren't in the provided real users list", () => {
+    const result = computeRoomTrafficSources(
+      makeRoom(),
+      ["user-1", "bot-user"],
+      [],
+      makeUsers(["user-1"]),
+      [],
+      new Map([
+        ["user-1", 1000],
+        ["bot-user", 2000],
+      ]),
+    );
+
+    assertEquals(result.joins, [{ isAnonymous: false, joinedAt: 1000 }]);
+  });
+
   it("dedupes repeat events from the same user, keeping only the earliest", () => {
     const room = makeRoom();
     const events: UserEvent[] = [

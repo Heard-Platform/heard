@@ -385,3 +385,41 @@
 .results-max-h {
   max-height: calc(100dvh - 400px);
 }
+
+.analysis-print-sizing {
+  width: 7in !important;
+  max-width: 7in !important;
+}
+
+@media print {
+  html:has(.analysis-print-root),
+  html:has(.analysis-print-root) body {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  html:has(.analysis-print-root) body > :not(.analysis-print-root):not(:has(.analysis-print-root)),
+  .analysis-print-root > button {
+    display: none !important;
+  }
+
+  .analysis-print-root {
+    position: static !important;
+    transform: none !important;
+    translate: none !important;
+    animation: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .analysis-print-scroll {
+    height: auto !important;
+    overflow: visible !important;
+  }
+}

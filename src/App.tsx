@@ -15,6 +15,7 @@ import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { RetentionDashboard } from "./components/RetentionDashboard";
+import { ActivityDashboard } from "./components/ActivityDashboard";
 import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTracker";
 import { DevTools } from "./components/devtools/DevTools";
 import { AdminActivityFeed } from "./components/AdminActivityFeed";
@@ -106,6 +107,8 @@ function AppContent() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] =
     useState(safelyGetStorageItem<boolean>("showAdminDashboard", false));
+  const [showActivityDashboard, setShowActivityDashboard] =
+    useState(safelyGetStorageItem<boolean>("showActivityDashboard", false));
   const [showRetentionDashboard, setShowRetentionDashboard] =
     useState(safelyGetStorageItem<boolean>("showRetentionDashboard", false));
   const [showFeatureTracker, setShowFeatureTracker] = useState(false);
@@ -670,6 +673,18 @@ function AppContent() {
     window.history.pushState({}, "", "/");
   };
 
+  const handleOpenActivityDashboard = () => {
+    setShowActivityDashboard(true);
+    localStorage.setItem("showActivityDashboard", "true");
+    window.history.pushState({}, "", "/activity");
+  };
+
+  const handleExitActivityDashboard = () => {
+    setShowActivityDashboard(false);
+    localStorage.setItem("showActivityDashboard", "false");
+    window.history.pushState({}, "", "/");
+  };
+
   const handleOpenRetentionDashboard = () => {
     setShowRetentionDashboard(true);
     localStorage.setItem("showRetentionDashboard", "true");
@@ -737,6 +752,15 @@ function AppContent() {
           onExit={handleExitAdminDashboard}
           currentUserId={user.id}
         />
+        <Toaster />
+      </>
+    );
+  }
+
+  if (showActivityDashboard && user) {
+    return (
+      <>
+        <ActivityDashboard onExit={handleExitActivityDashboard} />
         <Toaster />
       </>
     );
@@ -864,6 +888,7 @@ function AppContent() {
         onVoteOnStatement={handleVoteOnStatement}
         onLogout={handleLogout}
         onOpenShowcase={handleOpenShowcase}
+        onOpenActivityDashboard={handleOpenActivityDashboard}
         onOpenRetentionDashboard={handleOpenRetentionDashboard}
         onOpenAdminPanel={handleOpenAdminPanel}
         onOpenAdminDashboard={handleOpenAdminDashboard}

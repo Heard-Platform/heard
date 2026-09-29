@@ -2,7 +2,7 @@ import { assertEquals } from "https://deno.land/std@0.224.0/assert/assert_equals
 import { assertGreater } from "https://deno.land/std@0.224.0/assert/assert_greater.ts";
 import { assertLess } from "https://deno.land/std@0.224.0/assert/assert_less.ts";
 import { describe, it } from "https://deno.land/std@0.224.0/testing/bdd.ts";
-import { calcDistinguishingScore, calcDistinguishingStatements } from "./cluster-analysis.tsx";
+import { calcDistinguishingScore, calcDistinguishingAgreedStatements } from "./cluster-analysis.tsx";
 import { Statement, VoteType } from "./types.tsx";
 
 function makeStatement(id: string, voters: Record<string, VoteType>): Statement {
@@ -84,7 +84,7 @@ describe("calcDistinguishingScore", () => {
   });
 });
 
-describe("calcDistinguishingStatements", () => {
+describe("calcDistinguishingAgreedStatements", () => {
   it("ranks distinguishing statements higher even with fewer votes", () => {
     const commonStatementScore = calcDistinguishingScore(
       { agrees: 90, disagrees: 10, passes: 0 },
@@ -109,7 +109,7 @@ describe("calcDistinguishingStatements", () => {
       y: "disagree",
       z: "disagree",
     });
-    const result = calcDistinguishingStatements([noisyStatement], inUsers, outUsers);
+    const result = calcDistinguishingAgreedStatements([noisyStatement], inUsers, outUsers);
     assertEquals(result.length, 0);
   });
 
@@ -120,7 +120,7 @@ describe("calcDistinguishingStatements", () => {
     for (const u of inUsers) voters[u] = "agree";
     for (const u of outUsers) voters[u] = "disagree";
     const statement = makeStatement("strong", voters);
-    const result = calcDistinguishingStatements([statement], inUsers, outUsers);
+    const result = calcDistinguishingAgreedStatements([statement], inUsers, outUsers);
     assertEquals(result.length, 1);
     assertEquals(result[0].id, "strong");
     assertGreater(result[0].distinguishingScore, 0);
@@ -138,7 +138,7 @@ describe("calcDistinguishingStatements", () => {
     for (const u of inUsers) inDisagreesStmt[u] = "disagree";
     for (const u of outUsers) inDisagreesStmt[u] = "agree";
 
-    const result = calcDistinguishingStatements(
+    const result = calcDistinguishingAgreedStatements(
       [makeStatement("agrees", inAgreesStmt), makeStatement("disagrees", inDisagreesStmt)],
       inUsers,
       outUsers,
@@ -155,7 +155,7 @@ describe("calcDistinguishingStatements", () => {
     const voters: Record<string, VoteType> = {};
     for (const u of inUsers) voters[u] = "super_agree";
     for (const u of outUsers) voters[u] = "disagree";
-    const result = calcDistinguishingStatements([makeStatement("s", voters)], inUsers, outUsers);
+    const result = calcDistinguishingAgreedStatements([makeStatement("s", voters)], inUsers, outUsers);
     assertEquals(result.length, 1);
     assertEquals(result[0].agreeVotes, 30);
     assertEquals(result[0].disagreeVotes, 0);
@@ -168,7 +168,7 @@ describe("calcDistinguishingStatements", () => {
     for (let i = 0; i < 30; i++) voters[`in${i}`] = "agree";
     for (let i = 30; i < 50; i++) voters[`in${i}`] = "pass";
     for (const u of outUsers) voters[u] = "disagree";
-    const result = calcDistinguishingStatements([makeStatement("s", voters)], inUsers, outUsers);
+    const result = calcDistinguishingAgreedStatements([makeStatement("s", voters)], inUsers, outUsers);
     assertEquals(result.length, 1);
     assertEquals(result[0].agreeVotes, 30);
     assertEquals(result[0].disagreeVotes, 0);
@@ -187,7 +187,7 @@ describe("calcDistinguishingStatements", () => {
     for (let i = 0; i < 60; i++) moreVotes[`in${i}`] = "agree";
     for (let i = 0; i < 60; i++) moreVotes[`out${i}`] = "disagree";
 
-    const result = calcDistinguishingStatements(
+    const result = calcDistinguishingAgreedStatements(
       [makeStatement("fewer", fewerVotes), makeStatement("more", moreVotes)],
       inUsers,
       outUsers,

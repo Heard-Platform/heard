@@ -13,6 +13,7 @@ import type { Session, UserEvent } from "./types.tsx";
 import { getEventsOfType, getFlyerEmails, getUserReports, getAllRoomViews } from "./model-utils.ts";
 import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
 import { buildCohortFunnelData } from "./cohort-utils.ts";
+import { buildWeeklySignups } from "./activity-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();
@@ -237,6 +238,19 @@ app.get(
       );
     },
     "Failed to calculate cohort funnel data",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/stats/weekly-signups",
+  defineRoute(
+    {},
+    async () => {
+      const users = await getAllRealUsers();
+      const nonDevUsers = users.filter((user) => !user.isDeveloper);
+      return { weeks: buildWeeklySignups(nonDevUsers, Date.now()) };
+    },
+    "Failed to calculate weekly signups",
   ),
 );
 
