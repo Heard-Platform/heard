@@ -12,6 +12,7 @@ Each phase ships and deploys on its own, in this order. Each one also adds a qui
 |---|-------|----------------|-------------|
 | 1 | [Cluster stabilization](1-cluster-stabilization.md) | Nothing visible. Clusters keep their identity across recomputes. | None |
 | 2 | [Cluster naming](2-cluster-naming.md) | Fun, 14–16 char group names on the analysis report, plus a new AI Review tab in dev tools | Server switch |
+| 2b | [Keep clusters fresh](2b-cluster-freshness.md) | Nothing visible. Clusters recompute as votes come in, not only when the analysis is opened. | None |
 | 3 | [Cluster-aware sorting](3-cluster-aware-sorting.md) | First cards are the ones that best place you in a group | Feature flag |
 | 4 | [Live minimap](4-live-minimap.md) | Your dot moves between groups as you swipe | Feature flag |
 

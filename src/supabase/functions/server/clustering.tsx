@@ -4,7 +4,7 @@
  */
 
 import { getStatementVoterIds } from "./analysis-utils.tsx";
-import { getStatementsForRoom, getDebate, saveClusterData, getClusterAssignment, getClusterMetadataRecord, getClusterAssignmentsBatch, getVotesForStatement, getClusterIdentityRecord, clusterIdentityKeyFn } from "./kv-utils.tsx";
+import { getStatementsForRoom, getDebate, saveClusterData, getClusterAssignment, getClusterMetadataRecord, getClusterAssignmentsBatch, getVotesForStatement, getClusterIdentityRecord, clusterIdentityKeyFn, saveClusterRecomputeMarker } from "./kv-utils.tsx";
 import { insertAnalyticsEvent } from "./model-utils.ts";
 import { resolveClusterIdentities, ClusterIdentityResolution } from "./cluster-identity.ts";
 import { isClusterNamingEnabled, nameClustersForRoom } from "./cluster-naming.ts";
@@ -555,6 +555,11 @@ export async function recalculateClustersForRoom(
       voterIds,
       statementsWithVotes,
     );
+    
+    await saveClusterRecomputeMarker(roomId, {
+      voteCount: room.totalVotes ?? 0,
+      startedAt: metadata.timestamp,
+    });
 
     console.log(
       `[Clustering] Successfully recalculated clusters for room ${roomId}`,

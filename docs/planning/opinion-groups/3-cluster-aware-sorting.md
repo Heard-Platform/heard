@@ -42,10 +42,7 @@ clusterSnapshot: {
 5. The rest of the deck keeps today's order.
 6. If the room has no clusters yet (or only 1), the whole deck uses today's order.
 
-**Freshness on deck load:**
-- Flyer rooms may never have had their analysis viewed, so they may have no clusters.
-- On deck load, recompute in the background if votes have grown ≥ 10% since the last recompute and it's been at least ~5 min.
-- Serve the previous snapshot meanwhile.
+Clusters are kept current by [Phase 2b](2b-cluster-freshness.md), so this phase assumes they exist and are reasonably fresh.
 
 The new ordering applies only to the swipe deck. The shared "get statements" path stays unchanged, because clustering, analysis and emails also use it.
 
@@ -65,6 +62,15 @@ The new ordering applies only to the swipe deck. The shared "get statements" pat
 
 - Behind a frontend feature flag.
 - Watch the votes-per-session chart (see Tracking) for the first couple of weeks.
+
+## Blast radius
+
+**Medium.** This is the widest-reaching phase, because it changes the order of the swipe deck, which is the core voting experience in every room.
+
+- **Engagement could drop across all rooms** if the new order is too divisive or repetitive.
+- **Decks could fail to load** if ordering throws instead of falling back to today's order.
+- **Room fetches get slightly heavier** from the snapshot, which grows with statements × clusters.
+- **Some authors' statements could get fewer votes** as divisive statements are shown first.
 
 ## Tracking
 

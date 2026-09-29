@@ -84,7 +84,7 @@ Areas impacted:
 - Core DB call for clusters - Small refactor
 - Functions for calcing cluster defining statements - This was refactored.
 - Cluster generation - Now has a call to do naming added midway.
-- API endpoint for room analysis report - Query could fail in rare race conditions if a recompute lands between naming's version check and its save.
+- API endpoint for room analysis report - Query could fail in rare race conditions if a recompute lands between naming's version check and its save (see [cluster-naming-race-plan.md](../cluster-naming-race-plan.md)).
 - AI token spend - This adds a new regular usage of AI.
 
 ## Tracking
