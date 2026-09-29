@@ -7,6 +7,7 @@ export const LEAD_DISTINGUISHING_COUNT = 6;
 export const CONSENSUS_LEAD_INDEX = 2;
 export const EXPLORATION_EVERY = 4;
 export const EXPLORATION_MAX_VOTES = 5;
+export const LONG_STATEMENT_CHARS = 90;
 
 export type VoteRates = [agree: number, disagree: number, pass: number];
 
@@ -19,7 +20,16 @@ export interface DeckOrderCluster {
 export interface DeckOrder {
   leadStatementIds: string[];
   consensusStatementId: string | null;
+  longStatementIds: string[];
   clusters: DeckOrderCluster[];
+}
+
+export function isLongStatement(statement: { text: string }): boolean {
+  return statement.text.length > LONG_STATEMENT_CHARS;
+}
+
+export function shortFirst<T extends { text: string }>(statements: T[]): T[] {
+  return _.sortBy(statements, isLongStatement);
 }
 
 export function interleaveDistinguishingStatements(
@@ -32,7 +42,8 @@ export function interleaveDistinguishingStatements(
     const others = identities
       .filter((c) => c.stableId !== cluster.stableId)
       .flatMap((c) => c.memberIds);
-    return calcAnyDistinguishingStatements(statements, cluster.memberIds, others).map((s) => s.id);
+    const ranked = calcAnyDistinguishingStatements(statements, cluster.memberIds, others);
+    return shortFirst(ranked).map((s) => s.id);
   });
 
   return interleaveUnique(rankedPerCluster, count);
@@ -73,9 +84,9 @@ export function rankExplorationStatements(
   excludeIds: string[],
 ): string[] {
   return _(statements)
-    .map((s) => ({ id: s.id, votes: Object.keys(s.voters).length }))
+    .map((s) => ({ id: s.id, votes: Object.keys(s.voters).length, isLong: isLongStatement(s) }))
     .filter((s) => !excludeIds.includes(s.id) && s.votes < EXPLORATION_MAX_VOTES)
-    .sortBy("votes")
+    .sortBy(["isLong", "votes"])
     .map("id")
     .value();
 }
@@ -111,7 +122,7 @@ export function buildDeckOrder(
   if (distinguishingIds.length === 0) return null;
 
   const consensusStatementId =
-    rankCommonGround(identities, statements).find((s) => !distinguishingIds.includes(s.id))?.id ?? null;
+    shortFirst(rankCommonGround(identities, statements)).find((s) => !distinguishingIds.includes(s.id))?.id ?? null;
 
   const excluded = _.compact([...distinguishingIds, consensusStatementId]);
   const explorationIds = rankExplorationStatements(statements, excluded);
@@ -119,6 +130,7 @@ export function buildDeckOrder(
   return {
     leadStatementIds: assembleCards(distinguishingIds, consensusStatementId, explorationIds),
     consensusStatementId,
+    longStatementIds: statements.filter(isLongStatement).map((s) => s.id),
     clusters: identities.map((cluster) => ({
       stableId: cluster.stableId,
       size: cluster.memberIds.length,

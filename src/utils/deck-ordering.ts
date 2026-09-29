@@ -7,6 +7,7 @@ import {
 } from "./cluster-estimation";
 
 export const FIXED_VISIBLE_CARDS = 3;
+export const OPENING_CARD_COUNT = 6;
 
 export interface DeckOrderState {
   statementIds: string[];
@@ -26,15 +27,33 @@ export function putFirst(firstIds: string[], ids: string[]): string[] {
   return [...first, ...rest];
 }
 
+export function keepLongOutOfOpening(
+  ids: string[],
+  longIds: string[],
+  openingSlots: number,
+): string[] {
+  const shortIds = ids.filter((id) => !longIds.includes(id));
+  const openingShort = shortIds.slice(0, openingSlots);
+  const openingLongFallback = ids
+    .filter((id) => longIds.includes(id))
+    .slice(0, Math.max(0, openingSlots - openingShort.length));
+  const opening = [...openingShort, ...openingLongFallback];
+  const rest = ids.filter((id) => !opening.includes(id));
+  return [...opening, ...rest];
+}
+
 export function pullForwardMostInformative(
   statementIds: string[],
   deckOrder: DeckOrder,
   clusterProbabilities: number[],
+  avoidLong: boolean,
 ): string[] {
   const fixed = _.take(statementIds, FIXED_VISIBLE_CARDS);
   const rest = _.drop(statementIds, FIXED_VISIBLE_CARDS);
-  const best = _(rest)
-    .reject((id) => id === deckOrder.consensusStatementId)
+  const candidates = rest.filter((id) => id !== deckOrder.consensusStatementId);
+  const shortCandidates = candidates.filter((id) => !deckOrder.longStatementIds.includes(id));
+  const pickFrom = avoidLong && shortCandidates.length > 0 ? shortCandidates : candidates;
+  const best = _(pickFrom)
     .map((id) => ({
       id,
       infoValue: calcVoteInfoValue(deckOrder, clusterProbabilities, id),
@@ -62,7 +81,12 @@ export function nextDeckOrder(
       lastAdaptedVoteCount: previous.lastAdaptedVoteCount,
     };
 
-  const base = putFirst(deckOrder.leadStatementIds, unvotedIds);
+  const votesCast = _.size(userVotes);
+  const base = keepLongOutOfOpening(
+    putFirst(deckOrder.leadStatementIds, unvotedIds),
+    deckOrder.longStatementIds,
+    OPENING_CARD_COUNT - votesCast,
+  );
   const carried =
     previous.deckOrder === deckOrder
       ? previous.statementIds
@@ -71,7 +95,6 @@ export function nextDeckOrder(
           .slice(0, FIXED_VISIBLE_CARDS);
   let statementIds = putFirst(carried, base);
 
-  const votesCast = _.size(userVotes);
   let lastAdaptedVoteCount = previous.lastAdaptedVoteCount;
   if (votesCast > lastAdaptedVoteCount) {
     const clusterProbabilities = estimateClusterProbabilities(
@@ -83,6 +106,7 @@ export function nextDeckOrder(
         statementIds,
         deckOrder,
         clusterProbabilities,
+        votesCast + FIXED_VISIBLE_CARDS < OPENING_CARD_COUNT,
       );
     lastAdaptedVoteCount = votesCast;
   }

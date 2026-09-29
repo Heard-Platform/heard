@@ -3,6 +3,7 @@ import _ from "lodash";
 import type { DeckOrder, VoteRates } from "../types";
 import {
   INITIAL_DECK_ORDER_STATE,
+  keepLongOutOfOpening,
   nextDeckOrder,
   pullForwardMostInformative,
   putFirst,
@@ -15,6 +16,7 @@ function makeDeckOrder(overrides: Partial<DeckOrder> = {}): DeckOrder {
   return {
     leadStatementIds: [],
     consensusStatementId: null,
+    longStatementIds: [],
     clusters: [
       { stableId: "A", size: 50, voteRates: { divisive: MOSTLY_AGREES, shared: MOSTLY_AGREES, other: MOSTLY_AGREES } },
       { stableId: "B", size: 50, voteRates: { divisive: MOSTLY_DISAGREES, shared: MOSTLY_AGREES, other: MOSTLY_DISAGREES } },
@@ -36,20 +38,48 @@ describe("putFirst", () => {
 describe("pullForwardMostInformative", () => {
   it("moves the most informative card to just after the visible cards", () => {
     expect(
-      pullForwardMostInformative(["v1", "v2", "v3", "shared", "divisive"], makeDeckOrder(), [0.5, 0.5]),
+      pullForwardMostInformative(["v1", "v2", "v3", "shared", "divisive"], makeDeckOrder(), [0.5, 0.5], false),
     ).toEqual(["v1", "v2", "v3", "divisive", "shared"]);
   });
 
   it("never moves the visible cards or displaces the consensus card", () => {
     const deckOrder = makeDeckOrder({ consensusStatementId: "shared" });
     expect(
-      pullForwardMostInformative(["divisive", "v2", "v3", "shared", "x", "other"], deckOrder, [0.5, 0.5]),
+      pullForwardMostInformative(["divisive", "v2", "v3", "shared", "x", "other"], deckOrder, [0.5, 0.5], false),
     ).toEqual(["divisive", "v2", "v3", "shared", "other", "x"]);
   });
 
   it("leaves the order alone when nothing is informative", () => {
     const statementIds = ["v1", "v2", "v3", "x", "y"];
-    expect(pullForwardMostInformative(statementIds, makeDeckOrder(), [0.5, 0.5])).toEqual(statementIds);
+    expect(pullForwardMostInformative(statementIds, makeDeckOrder(), [0.5, 0.5], false)).toEqual(statementIds);
+  });
+
+  it("skips long statements while avoiding them, if a short one is available", () => {
+    const deckOrder = makeDeckOrder({ longStatementIds: ["divisive"] });
+    const statementIds = ["v1", "v2", "v3", "shared", "divisive", "other"];
+    expect(pullForwardMostInformative(statementIds, deckOrder, [0.5, 0.5], true)[3]).toBe("other");
+    expect(pullForwardMostInformative(statementIds, deckOrder, [0.5, 0.5], false)[3]).toBe("divisive");
+  });
+
+  it("falls back to a long statement when there are no short ones left", () => {
+    const deckOrder = makeDeckOrder({ longStatementIds: ["x", "divisive"] });
+    expect(
+      pullForwardMostInformative(["v1", "v2", "v3", "x", "divisive"], deckOrder, [0.5, 0.5], true),
+    ).toEqual(["v1", "v2", "v3", "divisive", "x"]);
+  });
+});
+
+describe("keepLongOutOfOpening", () => {
+  it("fills the opening slots with short statements, keeping their order", () => {
+    expect(keepLongOutOfOpening(["s1", "long1", "s2", "s3"], ["long1"], 3)).toEqual(["s1", "s2", "s3", "long1"]);
+  });
+
+  it("falls back to long statements when there aren't enough short ones", () => {
+    expect(keepLongOutOfOpening(["long1", "s1", "long2"], ["long1", "long2"], 3)).toEqual(["s1", "long1", "long2"]);
+  });
+
+  it("leaves the order after the opening slots alone", () => {
+    expect(keepLongOutOfOpening(["s1", "s2", "long1", "s3"], ["long1"], 2)).toEqual(["s1", "s2", "long1", "s3"]);
   });
 });
 
@@ -79,6 +109,12 @@ describe("nextDeckOrder", () => {
     expect(polled.statementIds).toEqual(["s1", "s2", "s3", "s4"]);
   });
 
+  it("keeps long statements out of the first 6 cards on open", () => {
+    const deckOrder = makeDeckOrder({ leadStatementIds: ["long1", "s1", "s2", "s3", "s4", "s5", "s6"], longStatementIds: ["long1"] });
+    const state = nextDeckOrder(INITIAL_DECK_ORDER_STATE, ["long1", "s1", "s2", "s3", "s4", "s5", "s6"], deckOrder, {});
+    expect(state.statementIds).toEqual(["s1", "s2", "s3", "s4", "s5", "s6", "long1"]);
+  });
+
   it("does not adapt before the user has voted", () => {
     const deckOrder = makeDeckOrder({ leadStatementIds: ["v1", "v2", "v3", "shared", "other"] });
     const state = nextDeckOrder(INITIAL_DECK_ORDER_STATE, ["v1", "v2", "v3", "shared", "other"], deckOrder, {});
@@ -104,6 +140,7 @@ describe("nextDeckOrder walkthrough with three groups", () => {
   const deckOrder: DeckOrder = {
     leadStatementIds: ["c-disagrees", "v2", "v3", "x", "y", "c-disagrees-2", "b-disagrees"],
     consensusStatementId: null,
+    longStatementIds: [],
     clusters: [
       { stableId: "A", size: 30, voteRates: { "c-disagrees": MOSTLY_AGREES, "c-disagrees-2": MOSTLY_AGREES, "b-disagrees": MOSTLY_AGREES } },
       { stableId: "B", size: 30, voteRates: { "c-disagrees": MOSTLY_AGREES, "c-disagrees-2": MOSTLY_AGREES, "b-disagrees": MOSTLY_DISAGREES } },
