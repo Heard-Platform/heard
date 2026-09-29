@@ -1,30 +1,36 @@
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Star } from "lucide-react";
 import type { Statement } from "../../types";
 import { getClusterDisplayName } from "../../utils/colors";
 import type { TribeSummary } from "../../utils/tribe-summary";
 import { ClusterMinimap, slotTextColorOnLight, type MinimapCluster } from "../room/ClusterMinimap";
+import { SaveSpotDrawer } from "./SaveSpotDrawer";
 
 export const FLYER_MINIMAP_LAYOUT_ID = "flyer-minimap";
 const REVEAL_DELAY_S = 0.5;
+const PAGE_BG = "#F2EEE3";
 
 interface FlyerResultsProps {
+  seed: string;
   clusters: MinimapCluster[];
   clusterProbabilities: number[] | null;
   summary: TribeSummary;
   statements: Statement[];
-  onSaveSpot: () => void;
+  onSendCode: (email: string) => void;
   onJustLooking: () => void;
 }
 
 export function FlyerResults({
+  seed,
   clusters,
   clusterProbabilities,
   summary,
   statements,
-  onSaveSpot,
+  onSendCode,
   onJustLooking,
 }: FlyerResultsProps) {
+  const [isSaveSpotOpen, setIsSaveSpotOpen] = useState(false);
   const tribe = clusters[summary.clusterIndex];
   const crossoverStatement = summary.crossover
     ? statements.find((s) => s.id === summary.crossover!.statementId)
@@ -34,6 +40,7 @@ export function FlyerResults({
   return (
     <div className="flex flex-col items-center">
       <ClusterMinimap
+        seed={seed}
         clusters={clusters}
         clusterProbabilities={clusterProbabilities}
         variant="full"
@@ -68,18 +75,41 @@ export function FlyerResults({
           <CrossoverCard statement={crossoverStatement} cluster={crossoverCluster} />
         )}
 
-        <button
-          className="mt-1 w-full rounded-2xl px-4 py-3 text-center"
-          style={{ backgroundColor: "#1c1a2b" }}
-          onClick={onSaveSpot}
-        >
-          <span className="block text-lg font-extrabold text-white">Save my spot</span>
-          <span className="block text-xs text-white/70">Your dot keeps moving as more people weigh in</span>
-        </button>
-        <button className="text-sm font-semibold text-[#4A463F]" onClick={onJustLooking}>
-          Just looking around
-        </button>
+        <SaveSpotFooter onSaveSpot={() => setIsSaveSpotOpen(true)} onJustLooking={onJustLooking} />
       </motion.div>
+
+      <SaveSpotDrawer
+        isOpen={isSaveSpotOpen}
+        tribe={tribe}
+        onOpenChange={setIsSaveSpotOpen}
+        onSendCode={onSendCode}
+      />
+    </div>
+  );
+}
+
+interface SaveSpotFooterProps {
+  onSaveSpot: () => void;
+  onJustLooking: () => void;
+}
+
+function SaveSpotFooter({ onSaveSpot, onJustLooking }: SaveSpotFooterProps) {
+  return (
+    <div
+      className="sticky bottom-0 -mx-5 flex flex-col gap-3 px-5 pb-5 pt-8"
+      style={{ background: `linear-gradient(to bottom, ${PAGE_BG}00, ${PAGE_BG} 28px)` }}
+    >
+      <button
+        className="w-full rounded-2xl px-4 py-3 text-center"
+        style={{ backgroundColor: "#1c1a2b" }}
+        onClick={onSaveSpot}
+      >
+        <span className="block text-lg font-extrabold text-white">Save my spot</span>
+        <span className="block text-xs text-white/70">Your dot keeps moving as more people weigh in</span>
+      </button>
+      <button className="text-sm font-semibold text-[#4A463F]" onClick={onJustLooking}>
+        Just looking around
+      </button>
     </div>
   );
 }
