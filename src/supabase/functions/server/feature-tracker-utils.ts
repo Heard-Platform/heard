@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { getSentEmails } from "./kv-utils.tsx";
 import { getEventsOfType, getAllRoomViews } from "./model-utils.ts";
 import {
@@ -114,50 +115,43 @@ interface VoteTiming {
   timestamp: number;
 }
 
+interface VotingSession {
+  start: number;
+  votes: number;
+}
+
+function splitIntoSessions(timestamps: number[]): VotingSession[] {
+  const sorted = _.sortBy(timestamps);
+  const sessions: VotingSession[] = [];
+  sorted.forEach((timestamp, i) => {
+    const isNewSession = i === 0 || timestamp - sorted[i - 1] > SESSION_GAP_MS;
+    if (isNewSession) sessions.push({ start: timestamp, votes: 0 });
+    sessions[sessions.length - 1].votes++;
+  });
+  return sessions;
+}
+
 export function averageVotesPerSessionByWeek(
   votes: VoteTiming[],
   now: number,
 ): { weekStart: string; averageVotes: number; sessions: number }[] {
-  const timestampsByUser = new Map<string, number[]>();
-  for (const vote of votes) {
-    const timestamps = timestampsByUser.get(vote.userId) ?? [];
-    timestamps.push(vote.timestamp);
-    timestampsByUser.set(vote.userId, timestamps);
-  }
-
   const windowStart = startOfUtcWeek(now) - (VOTES_PER_SESSION_WEEKS - 1) * WEEK_MS;
-  const weeks = new Map<number, { votes: number; sessions: number }>();
-  const recordSession = (start: number, voteCount: number) => {
-    const week = startOfUtcWeek(start);
-    if (week < windowStart) return;
-    const bucket = weeks.get(week) ?? { votes: 0, sessions: 0 };
-    bucket.votes += voteCount;
-    bucket.sessions += 1;
-    weeks.set(week, bucket);
-  };
 
-  for (const timestamps of timestampsByUser.values()) {
-    timestamps.sort((a, b) => a - b);
-    let sessionStart = timestamps[0];
-    let sessionVotes = 1;
-    for (let i = 1; i < timestamps.length; i++) {
-      if (timestamps[i] - timestamps[i - 1] > SESSION_GAP_MS) {
-        recordSession(sessionStart, sessionVotes);
-        sessionStart = timestamps[i];
-        sessionVotes = 0;
-      }
-      sessionVotes++;
-    }
-    recordSession(sessionStart, sessionVotes);
-  }
+  const sessions = _(votes)
+    .groupBy("userId")
+    .flatMap((userVotes) => splitIntoSessions(_.map(userVotes, "timestamp")))
+    .filter((session) => startOfUtcWeek(session.start) >= windowStart)
+    .value();
 
-  return [...weeks.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([week, { votes, sessions }]) => ({
-      weekStart: new Date(week).toISOString().slice(0, 10),
-      averageVotes: Math.round((votes / sessions) * 10) / 10,
-      sessions,
-    }));
+  return _(sessions)
+    .groupBy((session) => startOfUtcWeek(session.start))
+    .map((weekSessions, week) => ({
+      weekStart: new Date(Number(week)).toISOString().slice(0, 10),
+      averageVotes: _.round(_.meanBy(weekSessions, "votes"), 1),
+      sessions: weekSessions.length,
+    }))
+    .sortBy("weekStart")
+    .value();
 }
 
 export const getVotesPerSessionWeekly = async (now: number = Date.now()) => {

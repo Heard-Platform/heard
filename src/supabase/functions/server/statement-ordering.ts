@@ -27,7 +27,7 @@ export function interleaveDistinguishingStatements(
   statements: VotedStatement[],
   count: number,
 ): string[] {
-  const bySize: ClusterIdentity[] = _.orderBy(identities, (c: ClusterIdentity) => c.memberIds.length, "desc");
+  const bySize = _.orderBy(identities, (c) => c.memberIds.length, "desc");
   const rankedPerCluster = bySize.map((cluster) => {
     const others = identities
       .filter((c) => c.stableId !== cluster.stableId)
@@ -73,8 +73,8 @@ export function rankExplorationStatements(
   excludeIds: string[],
 ): string[] {
   return _(statements)
-    .map((s: VotedStatement) => ({ id: s.id, votes: Object.keys(s.voters).length }))
-    .filter((s: { id: string; votes: number }) => !excludeIds.includes(s.id) && s.votes < EXPLORATION_MAX_VOTES)
+    .map((s) => ({ id: s.id, votes: Object.keys(s.voters).length }))
+    .filter((s) => !excludeIds.includes(s.id) && s.votes < EXPLORATION_MAX_VOTES)
     .sortBy("votes")
     .map("id")
     .value();
