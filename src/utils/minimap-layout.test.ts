@@ -3,6 +3,8 @@ import {
   clusterAnchors,
   centerOf,
   clusterRadius,
+  CLUSTER_GAP,
+  MAX_CLUSTER_GAP,
   gravityPoints,
   leaningStatus,
   MAX_MEMBER_DOTS,
@@ -15,25 +17,45 @@ import {
 } from "./minimap-layout";
 
 describe("clusterAnchors", () => {
-  it("places three clusters in a triangle and two side by side", () => {
-    expect(clusterAnchors([0, 1, 2])).toHaveLength(3);
-    expect(clusterAnchors([0, 1])[0].y).toBe(clusterAnchors([0, 1])[1].y);
+  const MIXED_RADII = [MAX_RADIUS, 0.18, MIN_RADIUS];
+  const LARGEST_RADII = [MAX_RADIUS, MAX_RADIUS, MAX_RADIUS];
+
+  it("places clusters the same way every time for the same room", () => {
+    expect(clusterAnchors("room-a", [0, 1, 2], MIXED_RADII)).toEqual(
+      clusterAnchors("room-a", [0, 1, 2], MIXED_RADII),
+    );
   });
 
-  it("leaves empty space between circles even when every cluster is the largest size", () => {
-    for (const anchors of [clusterAnchors([0, 1]), clusterAnchors([0, 1, 2])]) {
-      for (let i = 0; i < anchors.length; i++) {
-        for (let j = i + 1; j < anchors.length; j++) {
-          const gap = Math.hypot(anchors[i].x - anchors[j].x, anchors[i].y - anchors[j].y) - 2 * MAX_RADIUS;
-          expect(gap).toBeGreaterThanOrEqual(0.04);
+  it("places clusters differently for different rooms", () => {
+    expect(clusterAnchors("room-a", [0, 1, 2], MIXED_RADII)).not.toEqual(
+      clusterAnchors("room-b", [0, 1, 2], MIXED_RADII),
+    );
+  });
+
+  it("keeps every circle inside the map, close together but not touching", () => {
+    for (const seed of ["room-a", "room-b", "room-c", "room-d", "room-e"]) {
+      for (const radii of [MIXED_RADII, LARGEST_RADII, LARGEST_RADII.slice(0, 2)]) {
+        const slots = radii.map((_radius, i) => i);
+        const anchors = clusterAnchors(seed, slots, radii);
+        for (let i = 0; i < anchors.length; i++) {
+          expect(anchors[i].x - radii[i]).toBeGreaterThanOrEqual(0);
+          expect(anchors[i].x + radii[i]).toBeLessThanOrEqual(1);
+          expect(anchors[i].y - radii[i]).toBeGreaterThanOrEqual(0);
+          expect(anchors[i].y + radii[i]).toBeLessThanOrEqual(1);
+          for (let j = i + 1; j < anchors.length; j++) {
+            const distance = Math.hypot(anchors[i].x - anchors[j].x, anchors[i].y - anchors[j].y);
+            const gap = distance - radii[i] - radii[j];
+            expect(gap).toBeGreaterThanOrEqual(CLUSTER_GAP);
+            expect(gap).toBeLessThanOrEqual(MAX_CLUSTER_GAP);
+          }
         }
       }
     }
   });
 
   it("assigns positions by slot, so a cluster keeps its spot whatever order clusters arrive in", () => {
-    const inSlotOrder = clusterAnchors([0, 1, 2]);
-    const shuffled = clusterAnchors([2, 0, 1]);
+    const inSlotOrder = clusterAnchors("room-a", [0, 1, 2], MIXED_RADII);
+    const shuffled = clusterAnchors("room-a", [2, 0, 1], [MIXED_RADII[2], MIXED_RADII[0], MIXED_RADII[1]]);
     expect(shuffled).toEqual([inSlotOrder[2], inSlotOrder[0], inSlotOrder[1]]);
   });
 });

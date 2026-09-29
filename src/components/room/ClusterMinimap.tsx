@@ -24,6 +24,7 @@ export interface MinimapCluster {
 export type MinimapVariant = "mini" | "full";
 
 interface ClusterMinimapProps {
+  seed: string;
   clusters: MinimapCluster[];
   clusterProbabilities: number[] | null;
   variant?: MinimapVariant;
@@ -62,6 +63,7 @@ export function slotTextColorOnLight(slot: number): string {
 }
 
 export function ClusterMinimap({
+  seed,
   clusters,
   clusterProbabilities,
   variant = "mini",
@@ -71,10 +73,14 @@ export function ClusterMinimap({
   const { mapSize, cardWidth } = dimensions;
   const isFull = variant === "full";
 
-  const anchors = clusterAnchors(clusters.map((c) => c.slot));
   const largestSize = Math.max(...clusters.map((c) => c.size));
   const radii = clusters.map((cluster) =>
     clusterRadius(cluster.size, largestSize),
+  );
+  const anchors = clusterAnchors(
+    seed,
+    clusters.map((c) => c.slot),
+    radii,
   );
   const gravity = gravityPoints(anchors, radii);
   const userDotFraction = clusterProbabilities
@@ -91,7 +97,6 @@ export function ClusterMinimap({
       ? null
       : clusters[status.clusterIndex].stableId;
   const enterGlow = useEnterGlow(leadingStableId);
-  const [memberDotSeed] = useState(() => Math.random().toString(36));
 
   return (
     <motion.div
@@ -127,7 +132,7 @@ export function ClusterMinimap({
               enterGlow?.stableId === cluster.stableId ? enterGlow.key : null
             }
             memberDotOffsets={memberDotOffsets(
-              `${memberDotSeed}-${cluster.stableId}`,
+              `${seed}-${cluster.stableId}`,
               memberDotCount(cluster.size, largestSize),
             )}
             dimensions={dimensions}
