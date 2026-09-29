@@ -41,6 +41,7 @@ import type { FeatureResults } from "../../types";
 import { AvatarAnimalChart } from "./feature-tracker/AvatarAnimalChart";
 import { CertifyCardConversionChart } from "./feature-tracker/CertifyCardConversionChart";
 import { ClusterRecomputesChart } from "./feature-tracker/ClusterRecomputesChart";
+import { VotesPerSessionChart } from "./feature-tracker/VotesPerSessionChart";
 import { OneBillionResults } from "./feature-tracker/OneBillionResults";
 import { FundingResults } from "./feature-tracker/FundingResults";
 import { OrganizersResults } from "./feature-tracker/OrganizersResults";
@@ -476,6 +477,16 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       description: "Total LLM tokens spent generating cluster names, including drift checks and manual re-runs",
       getValue: (s) => s.clusterNamingTokens,
       getDate: (s) => s.clusterNamingTokensSince,
+    },
+    {
+      icon: Vote,
+      iconColor: "text-indigo-600",
+      bgColor: "bg-indigo-100",
+      title: "Votes per Session (latest week)",
+      description: "Average votes per voting session (a user's votes with no gap over 15 minutes), per week. Watches the effect of cluster-aware statement ordering",
+      getValue: (s) => s.votesPerSessionWeekly.at(-1)?.averageVotes ?? 0,
+      getDate: (s) => s.votesPerSessionSince,
+      renderExtra: (s) => <VotesPerSessionChart weekly={s.votesPerSessionWeekly} />,
     },
     {
       icon: Mail,

@@ -1,7 +1,8 @@
-import { AiPrompt, VoteType } from "./types.tsx";
+import { AiPrompt } from "./types.tsx";
 import { ClusterIdentity, StanceEntry } from "./cluster-identity.ts";
 import { calcAnyDistinguishingStatements } from "./cluster-analysis.tsx";
 import { stripMarkdownFences } from "./rant-prompt-utils.ts";
+import { calcAgreeRate, rankCommonGround, VotedStatement } from "./cluster-stance-utils.ts";
 
 export const MIN_NAMING_CLUSTER_SIZE = 5;
 export const NAMING_STATEMENT_COUNT = 5;
@@ -9,15 +10,7 @@ export const MAX_NAME_CHARS = 16;
 export const MIN_NAME_WORDS = 2;
 export const MAX_NAME_WORDS = 3;
 export const STANCE_DRIFT_THRESHOLD = 0.25;
-export const COMMON_GROUND_MIN_AGREE_RATE = 0.6;
-export const COMMON_GROUND_MIN_VOTES_PER_CLUSTER = 3;
 export const COMMON_GROUND_COUNT = 2;
-
-export interface NamingStatement {
-  id: string;
-  text: string;
-  voters: Record<string, VoteType>;
-}
 
 export type StanceDirection = "agrees" | "disagrees";
 
@@ -40,29 +33,9 @@ export type RenameDecision =
   | { decision: "keep" }
   | { decision: "rename"; name: string; reason: string };
 
-function isAgree(vote: VoteType): boolean {
-  return vote === "agree" || vote === "super_agree";
-}
-
-export function calcAgreeRate(
-  voters: Record<string, VoteType>,
-  memberIds: Set<string>,
-): { agreeRate: number; opinionatedVotes: number } | null {
-  let agrees = 0;
-  let disagrees = 0;
-  for (const [userId, vote] of Object.entries(voters)) {
-    if (!memberIds.has(userId)) continue;
-    if (isAgree(vote)) agrees++;
-    else if (vote === "disagree") disagrees++;
-  }
-  const opinionatedVotes = agrees + disagrees;
-  if (opinionatedVotes === 0) return null;
-  return { agreeRate: agrees / opinionatedVotes, opinionatedVotes };
-}
-
 export function buildNamingInputs(
   clusters: ClusterIdentity[],
-  statements: NamingStatement[],
+  statements: VotedStatement[],
 ): ClusterNamingInput[] {
   return clusters.map((cluster) => {
     const members = new Set(cluster.memberIds);
@@ -88,25 +61,9 @@ export function buildNamingInputs(
 
 export function findCommonGround(
   clusters: ClusterIdentity[],
-  statements: NamingStatement[],
+  statements: VotedStatement[],
 ): string[] {
-  if (clusters.length < 2) return [];
-  const memberSets = clusters.map((c) => new Set(c.memberIds));
-
-  return statements
-    .map((statement) => {
-      const rates = memberSets.map((members) => calcAgreeRate(statement.voters, members));
-      const qualifies = rates.every(
-        (r) =>
-          r !== null &&
-          r.opinionatedVotes >= COMMON_GROUND_MIN_VOTES_PER_CLUSTER &&
-          r.agreeRate >= COMMON_GROUND_MIN_AGREE_RATE,
-      );
-      const minRate = qualifies ? Math.min(...rates.map((r) => r!.agreeRate)) : -1;
-      return { text: statement.text, minRate };
-    })
-    .filter((s) => s.minRate >= 0)
-    .sort((a, b) => b.minRate - a.minRate)
+  return rankCommonGround(clusters, statements)
     .slice(0, COMMON_GROUND_COUNT)
     .map((s) => s.text);
 }
@@ -129,7 +86,7 @@ function entryHasDrifted(entry: StanceEntry, current: number | null): boolean {
 export function hasStanceDrifted(
   snapshot: StanceEntry[],
   memberIds: string[],
-  statements: NamingStatement[],
+  statements: VotedStatement[],
 ): boolean {
   if (snapshot.length === 0) return false;
   const members = new Set(memberIds);
@@ -261,7 +218,7 @@ export function makeClusterRenamePrompt(
   currentName: string,
   snapshot: StanceEntry[],
   cluster: ClusterNamingInput,
-  statements: NamingStatement[],
+  statements: VotedStatement[],
   takenNames: string[],
   commonGround: string[],
 ): AiPrompt {

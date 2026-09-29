@@ -362,6 +362,20 @@ export interface ClusterNameReviewRoom {
   createdAt: number;
 }
 
+export type VoteRates = [agree: number, disagree: number, pass: number];
+
+export interface DeckOrderCluster {
+  stableId: string;
+  size: number;
+  voteRates: Record<string, VoteRates>;
+}
+
+export interface DeckOrder {
+  leadStatementIds: string[];
+  consensusStatementId: string | null;
+  clusters: DeckOrderCluster[];
+}
+
 export interface ClusterNamingConfig {
   enabled: boolean;
 }
@@ -711,6 +725,8 @@ export interface FeatureResults {
   clusterIdentityKeptPercent: number | null;
   clusterNamingTokens: number;
   clusterNamingTokensSince: number;
+  votesPerSessionWeekly: { weekStart: string; averageVotes: number; sessions: number }[];
+  votesPerSessionSince: number;
   sessionExpiredRecovered: number;
   sessionExpiredRecoveredSince: number;
   sessionExpiryBypassed: number;

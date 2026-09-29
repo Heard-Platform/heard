@@ -12,6 +12,8 @@ import {
 import { toTimestamp } from "./time-utils.ts";
 import { selectAllWithoutLimit } from "./db-utils.ts";
 import { CLUSTER_NAMING_ENDPOINT } from "./cluster-naming.ts";
+import { SESSION_GAP_MS } from "./session-utils.ts";
+import { getAllVotes } from "./kv-utils.tsx";
 
 const RESPONSE_VOTES_NOTIF_RETURN_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -103,4 +105,65 @@ export const getClusterNamingTokens = async (): Promise<number> => {
     "createdAt",
   );
   return calls.reduce((sum, call) => sum + call.totalTokens, 0);
+};
+
+export const VOTES_PER_SESSION_WEEKS = 12;
+
+interface VoteTiming {
+  userId: string;
+  timestamp: number;
+}
+
+export function averageVotesPerSessionByWeek(
+  votes: VoteTiming[],
+  now: number,
+): { weekStart: string; averageVotes: number; sessions: number }[] {
+  const timestampsByUser = new Map<string, number[]>();
+  for (const vote of votes) {
+    const timestamps = timestampsByUser.get(vote.userId) ?? [];
+    timestamps.push(vote.timestamp);
+    timestampsByUser.set(vote.userId, timestamps);
+  }
+
+  const windowStart = startOfUtcWeek(now) - (VOTES_PER_SESSION_WEEKS - 1) * WEEK_MS;
+  const weeks = new Map<number, { votes: number; sessions: number }>();
+  const recordSession = (start: number, voteCount: number) => {
+    const week = startOfUtcWeek(start);
+    if (week < windowStart) return;
+    const bucket = weeks.get(week) ?? { votes: 0, sessions: 0 };
+    bucket.votes += voteCount;
+    bucket.sessions += 1;
+    weeks.set(week, bucket);
+  };
+
+  for (const timestamps of timestampsByUser.values()) {
+    timestamps.sort((a, b) => a - b);
+    let sessionStart = timestamps[0];
+    let sessionVotes = 1;
+    for (let i = 1; i < timestamps.length; i++) {
+      if (timestamps[i] - timestamps[i - 1] > SESSION_GAP_MS) {
+        recordSession(sessionStart, sessionVotes);
+        sessionStart = timestamps[i];
+        sessionVotes = 0;
+      }
+      sessionVotes++;
+    }
+    recordSession(sessionStart, sessionVotes);
+  }
+
+  return [...weeks.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([week, { votes, sessions }]) => ({
+      weekStart: new Date(week).toISOString().slice(0, 10),
+      averageVotes: Math.round((votes / sessions) * 10) / 10,
+      sessions,
+    }));
+}
+
+export const getVotesPerSessionWeekly = async (now: number = Date.now()) => {
+  const votes = await getAllVotes();
+  return averageVotesPerSessionByWeek(
+    votes.map((v) => ({ userId: v.userId, timestamp: toTimestamp(v.timestamp) })),
+    now,
+  );
 };

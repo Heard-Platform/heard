@@ -26,6 +26,7 @@ import {
   ClusterNamingConfig,
   ClusterNameReviewRoom,
   ReviewRoomOption,
+  DeckOrder,
   type Event,
   type NewEvent,
   EventSummary,
@@ -850,6 +851,10 @@ class ApiClient extends BaseApiClient {
     return this.request<{ rooms: ClusterNameReviewRoom[]; hasMore: boolean }>(
       `/dev/ai-review/cluster-names?offset=${offset}&limit=${limit}`,
     );
+  }
+
+  async getDeckOrder(roomId: string) {
+    return this.request<{ deckOrder: DeckOrder | null }>(`/room/${roomId}/deck-order`);
   }
 
   async getRoomsForReview() {

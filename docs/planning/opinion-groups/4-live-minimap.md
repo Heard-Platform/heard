@@ -19,7 +19,7 @@ The map is **schematic, not a 2D projection**:
 ## The user's dot
 
 1. On each swipe, compute the cluster estimate from the Phase 3 snapshot. It's instant, with no network call.
-2. The target position is `Σ posterior[c] · anchor[c]`.
+2. The target position is `Σ clusterProbabilities[c] · anchor[c]`.
    - A clear winner puts the dot inside that circle.
    - A near-tie puts it between circles ("on the fence").
 3. Spring-animate the dot there.
@@ -29,7 +29,7 @@ The map is **schematic, not a 2D projection**:
 ## Why "imperfect" is fine
 
 - The snapshot is slightly out of date during a session, but one user's votes barely move the clusters.
-- The naive Bayes estimate can occasionally disagree with the server's k-means assignment. When the user finishes swiping, fetch their real `stableId` and ease the dot there if it's different.
+- The client-side estimate can occasionally disagree with the server's k-means assignment. When the user finishes swiping, fetch their real `stableId` and ease the dot there if it's different.
 - If the snapshot `version` changed during the session, refetch it at the same moment, never mid-swipe.
 
 ## Empty state
@@ -40,6 +40,17 @@ With fewer than 2 clusters, show "Opinion groups forming…" instead of the map.
 
 - Frontend only (Phase 3 already ships the data), behind a feature flag.
 
+## Blast radius
+
+**Small, but on an important funnel.** The minimap only appears on the flyer swipe screen, behind a feature flag, and it's frontend-only. That screen is where flyer users decide whether to keep going and create an account, though.
+
+- **The flyer swipe screen could crash** if the minimap throws without an error boundary around it.
+- **Users could be shown in the wrong group** until the end-of-session correction.
+- **Swiping could feel janky on low-end phones** from recalculating and animating on every swipe.
+- **Slightly more server traffic** from one reconciliation request per session.
+
+Beyond that, it doesn't touch shared code paths.
+
 ## Tracking
 
 In the feature results tracker: a chart of flyer-user conversion rate (% who create an account) per week.
@@ -49,8 +60,8 @@ In the feature results tracker: a chart of flyer-user conversion rate (% who cre
 ## Footnotes: code pointers
 
 - Mount point: `src/components/flyer/FlyerSwipeScreen.tsx`. Story: `src/stories/FlyerSwipeScreen.story.tsx`.
-- New `ClusterMinimap` component, presentational. Props: snapshot and posterior, with callbacks last per repo convention.
-- New `useClusterPosition(snapshot, userVotes)` hook wrapping `estimateClusterPosterior` from `src/utils/cluster-estimation.ts`.
+- New `ClusterMinimap` component, presentational. Props: deck order and cluster probabilities, with callbacks last per repo convention.
+- New `useClusterPosition(snapshot, userVotes)` hook wrapping `estimateClusterProbabilities` from `src/utils/cluster-estimation.ts`.
 - The swipe stack already uses `motion`, so use it for the spring animation.
 - Real assignment for reconciliation: from the analysis endpoint, or a small new `GET /room/:roomId/my-cluster`.
 - Stories to cover: k = 2, k = 3, no clusters, mid-transition, longest names.

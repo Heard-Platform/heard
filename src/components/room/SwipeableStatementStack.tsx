@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PanInfo } from "motion/react";
 import { useSwipeTutorialContext } from "../../contexts/SwipeTutorialContext";
 import {
@@ -17,6 +17,8 @@ import { SwipeableCard } from "./SwipeableCard";
 import { SwipeInstructions } from "../SwipeInstructions";
 import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import { useDeckOrder } from "../../hooks/useDeckOrder";
+import { useOrderedStatements } from "../../hooks/useOrderedStatements";
 
 
 // @ts-ignore
@@ -75,9 +77,7 @@ export function SwipeableStatementStack({
   const { showTutorial, recordSwipe, resetTutorialTimer } = useSwipeTutorialContext();
   const [isDragging, setIsDragging] = useState(false);
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
-  const [votedStatementIds, setVotedStatementIds] = useState<
-    Set<string>
-  >(new Set());
+  const [sessionVotes, setSessionVotes] = useState<Record<string, VoteType>>({});
   const [isVoting, setIsVoting] = useState(false);
   const [swipedCardId, setSwipedCardId] = useState<
     string | null
@@ -89,12 +89,24 @@ export function SwipeableStatementStack({
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [statementToFlag, setStatementToFlag] = useState<Statement | null>(null);
 
-  const unvotedStatements = statements
-    .filter((statement) => {
-      const hasVotedBefore = currentUserId && statement.voters?.[currentUserId];
-      const justVoted = votedStatementIds.has(statement.id);
-      return !hasVotedBefore && !justVoted;
-    })
+  const deckOrder = useDeckOrder(room.id);
+
+  const userVotes = useMemo(() => {
+    const votes: Record<string, VoteType> = {};
+    for (const statement of statements) {
+      const vote = currentUserId ? statement.voters?.[currentUserId] : undefined;
+      if (vote) votes[statement.id] = vote;
+    }
+    return { ...votes, ...sessionVotes };
+  }, [statements, currentUserId, sessionVotes]);
+
+  const orderedUnvotedStatements = useOrderedStatements(
+    statements.filter((statement) => !userVotes[statement.id]),
+    deckOrder,
+    userVotes,
+  );
+
+  const unvotedStatements = [...orderedUnvotedStatements]
     .sort((a, b) =>
       targetStatementId
         ? a.id === targetStatementId ? -1 : b.id === targetStatementId ? 1 : 0
@@ -124,7 +136,7 @@ export function SwipeableStatementStack({
 
   if (!chanceCardSwiped) {
     const chanceCard: ChanceCard = { type: "chance" };
-    const naturalIndex = Math.min(5, statements.length) - votedStatementIds.size;
+    const naturalIndex = Math.min(5, statements.length) - Object.keys(sessionVotes).length;
     const chanceCardIndex = Math.max(naturalIndex, demogEndIndex);
     cards.splice(chanceCardIndex, 0, chanceCard);
   }
@@ -155,9 +167,7 @@ export function SwipeableStatementStack({
     setSwipedCardId(statementId);
     setSwipeDirection(direction);
 
-    setVotedStatementIds((prev) =>
-      new Set(prev).add(statementId),
-    );
+    setSessionVotes((prev) => ({ ...prev, [statementId]: voteType }));
 
     recordSwipe();
     resetTutorialTimer();
@@ -262,10 +272,9 @@ export function SwipeableStatementStack({
 
     if (statement) {
       onVote(statement, voteType).catch(() => {
-        setVotedStatementIds((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(statementId);
-          return newSet;
+        setSessionVotes((prev) => {
+          const { [statementId]: _removed, ...rest } = prev;
+          return rest;
         });
       });
     }
