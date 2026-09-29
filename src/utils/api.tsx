@@ -34,7 +34,7 @@ import {
   StatementTagLink,
 } from "../types";
 import { AskTheDataResponse, FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
-import type { AnonymityBreakdown, ParticipationBreakdown, ReferrerShareCount, TrafficSourceCount } from "../components/room/RoomAnalyticsModal";
+import type { AnonymityBreakdown, ParticipantJoin, ParticipationBreakdown, ReferrerShareCount, TrafficSourceCount } from "../components/room/RoomAnalyticsModal";
 import type { RoomDebugData } from "../components/room/RoomDebugDataPanel";
 import {
   BaseApiClient,
@@ -1047,6 +1047,7 @@ class ApiClient extends BaseApiClient {
       referrers: ReferrerShareCount[];
       anonymity: AnonymityBreakdown;
       participation: ParticipationBreakdown;
+      joins: ParticipantJoin[];
     }>(`/room/${roomId}/mod/traffic-sources`);
   }
 
