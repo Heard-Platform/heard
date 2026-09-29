@@ -13,7 +13,7 @@ Clusters used to be recomputed only when someone opened a room's analysis. Rooms
   - the room has at least 10% more votes than at the last recompute, **and**
   - the last recompute was at least 5 minutes ago.
 - A room that has never been clustered recomputes on its next vote.
-- Every recompute (vote-triggered, analysis page or dev tools) records a small marker with the vote count and time, so all triggers share the same limit.
+- Votes and the analysis page share one check, and each recompute it triggers records a small marker with the vote count and time. Rooms with no participants or no votes are skipped. Manual recomputes from dev tools don't record a marker.
 - The 10% rule means the number of recomputes grows with the log of the room's votes: going from 100 to 1,000 votes is about 24 recomputes.
 - The analysis page calls the same staleness check instead of recomputing on every new vote. Rooms never clustered, or clustered before this step, have no marker, so they recompute on first view.
 
@@ -41,6 +41,7 @@ Covered by Phase 1's chart of cluster recomputes per week and the % of clusters 
 
 ## Footnotes: code pointers
 
-- `cluster-freshness.ts`: `shouldRecomputeClusters` (pure) and `recomputeClustersIfStale(roomId, voteCount)`.
-- Marker at `cluster:${roomId}:recompute` (`{ voteCount, startedAt }`), read/written via `kv-utils.tsx`. `recomputeClustersIfStale` writes it before recomputing, to narrow the burst window. `recalculateClustersForRoom` in `clustering.tsx` writes it after every successful recompute, using `room.totalVotes`.
+- `cluster-freshness.ts`: `areClustersStale` (pure staleness rule), `shouldRecomputeClusters` (pure: participants and votes exist, and clusters are stale), and `recomputeClustersIfNeeded(room)`.
+- `recalculateClustersForRoom` in `clustering.tsx` only recalculates; its one guard is returning early when a room has no voters.
+- Marker at `cluster:${roomId}:recompute` (`{ voteCount, startedAt }`), read/written via `kv-utils.tsx`. `recomputeClustersIfNeeded` writes it before recomputing, using `room.totalVotes`, to narrow the burst window.
 - Triggered from `processVote` in `voting-utils.ts` via `runInBackground`, and awaited from `analysis-api.tsx`.

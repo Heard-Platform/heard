@@ -6,7 +6,7 @@ import {
   recalculateClustersForRoom,
 } from "./clustering.tsx";
 import { calculateClusterConsensus } from "./cluster-analysis.tsx";
-import { recomputeClustersIfStale } from "./cluster-freshness.ts";
+import { recomputeClustersIfNeeded } from "./cluster-freshness.ts";
 import { getClusterIdentityRecord, getParsedKvData } from "./kv-utils.tsx";
 import { calculateAnalysisMetrics, computeTopPosts, getStatementVoterIds } from "./analysis-utils.tsx";
 import { applyStatementMerges } from "./room-utils.ts";
@@ -45,7 +45,7 @@ app.get(
 
       const metrics = calculateAnalysisMetrics(mergedStatements, questions, answers);
 
-      await recomputeClustersIfStale(roomId, room.totalVotes ?? 0);
+      await recomputeClustersIfNeeded(room);
 
       const clusterMetadata = await getParsedKvData<ClusterMetadata>(`cluster:${roomId}:metadata`);
       const clusterIdentity = clusterMetadata ? await getClusterIdentityRecord(roomId) : null;

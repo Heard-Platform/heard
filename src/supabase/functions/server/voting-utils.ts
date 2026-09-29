@@ -6,7 +6,7 @@ import { generateId, getDebateRoom, getStatementById, saveDebateRoom } from "./d
 import { recordRoomEngagement } from "./model-utils.ts";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { maybeEmailResponseVotesNotif } from "./email-notifs-utils.ts";
-import { recomputeClustersIfStale } from "./cluster-freshness.ts";
+import { recomputeClustersIfNeeded } from "./cluster-freshness.ts";
 import { runInBackground } from "./background-utils.ts";
 
 export const countStatementVotes = (statement: Statement): number =>
@@ -240,7 +240,7 @@ export const processVote = async (
   await saveStatement(updatedStatement);
 
   runInBackground(
-    recomputeClustersIfStale(statement.roomId, room.totalVotes),
+    recomputeClustersIfNeeded(room),
     `cluster freshness check for room ${statement.roomId}`,
   );
 

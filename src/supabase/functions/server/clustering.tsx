@@ -4,7 +4,7 @@
  */
 
 import { getStatementVoterIds } from "./analysis-utils.tsx";
-import { getStatementsForRoom, getDebate, saveClusterData, getClusterAssignment, getClusterMetadataRecord, getClusterAssignmentsBatch, getVotesForStatement, getClusterIdentityRecord, clusterIdentityKeyFn, saveClusterRecomputeMarker } from "./kv-utils.tsx";
+import { getStatementsForRoom, saveClusterData, getClusterAssignment, getClusterMetadataRecord, getClusterAssignmentsBatch, getVotesForStatement, getClusterIdentityRecord, clusterIdentityKeyFn } from "./kv-utils.tsx";
 import { insertAnalyticsEvent } from "./model-utils.ts";
 import { resolveClusterIdentities, ClusterIdentityResolution } from "./cluster-identity.ts";
 import { isClusterNamingEnabled, nameClustersForRoom } from "./cluster-naming.ts";
@@ -504,7 +504,7 @@ async function safelyGetVotesForStatement(
 }
 
 /**
- * Recalculate clusters for a room (main entry point - call this on every vote)
+ * Recalculate clusters for a room
  * Fetches all necessary data and performs clustering
  */
 export async function recalculateClustersForRoom(
@@ -515,20 +515,12 @@ export async function recalculateClustersForRoom(
       `[Clustering] Starting recalculation for room ${roomId}`,
     );
 
-    // Get room data
-    const room = await getDebate(roomId);
-    if (!room || room.participants.length === 0) {
-      console.log(
-        `[Clustering] Room ${roomId} not found or has no participants`,
-      );
-      return null;
-    }
-
     const roomStatements = await getStatementsForRoom(roomId);
+    const voterIds = getStatementVoterIds(roomStatements);
 
-    if (roomStatements.length === 0) {
+    if (voterIds.length === 0) {
       console.log(
-        `[Clustering] No statements found for room ${roomId}`,
+        `[Clustering] No voters found for room ${roomId}, nothing to cluster`,
       );
       return null;
     }
@@ -540,26 +532,12 @@ export async function recalculateClustersForRoom(
       }),
     );
 
-    const voterIds = getStatementVoterIds(roomStatements);
-
-    if (voterIds.length === 0) {
-      console.log(
-        `[Clustering] No voting participants found for room ${roomId}`,
-      );
-      return null;
-    }
-
     // Run clustering
     const metadata = await clusterUsersAndSave(
       roomId,
       voterIds,
       statementsWithVotes,
     );
-    
-    await saveClusterRecomputeMarker(roomId, {
-      voteCount: room.totalVotes ?? 0,
-      startedAt: metadata.timestamp,
-    });
 
     console.log(
       `[Clustering] Successfully recalculated clusters for room ${roomId}`,
