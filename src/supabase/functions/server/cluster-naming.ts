@@ -17,7 +17,6 @@ import {
   isEligibleForNaming,
   makeClusterNamingPrompt,
   makeClusterRenamePrompt,
-  NamingStatement,
   parseClusterNamingResponse,
   parseClusterRenameResponse,
   ParseResult,
@@ -25,6 +24,7 @@ import {
   toStanceSnapshot,
   withRetryNote,
 } from "./cluster-naming-utils.ts";
+import { VotedStatement } from "./cluster-stance-utils.ts";
 
 export const CLUSTER_NAMING_ENDPOINT = "cluster-naming";
 export const MANUAL_RERUN_REASON = "Manual re-run";
@@ -40,7 +40,7 @@ export async function setClusterNamingEnabled(enabled: boolean): Promise<void> {
   await setInternalVar(InternalVarKey.CLUSTER_NAMING_ON, enabled);
 }
 
-async function loadStatementsWithVoters(roomId: string): Promise<NamingStatement[]> {
+async function loadStatementsWithVoters(roomId: string): Promise<VotedStatement[]> {
   const statements = await getStatementsForRoom(roomId);
   return Promise.all(
     statements.map(async (statement) => {
@@ -115,7 +115,7 @@ async function resolveDriftedName(
   identity: ClusterIdentity,
   naming: ClusterNaming,
   input: ClusterNamingInput,
-  statements: NamingStatement[],
+  statements: VotedStatement[],
   takenNames: string[],
   commonGround: string[],
   now: number,
@@ -166,7 +166,7 @@ async function planAutomaticNaming(
   topic: string,
   identities: ClusterIdentity[],
   inputs: ClusterNamingInput[],
-  statements: NamingStatement[],
+  statements: VotedStatement[],
   commonGround: string[],
   now: number,
 ): Promise<Map<string, ClusterNaming | null>> {

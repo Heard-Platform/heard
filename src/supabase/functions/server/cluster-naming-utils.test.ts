@@ -8,11 +8,11 @@ import {
   hasStanceDrifted,
   isEligibleForNaming,
   makeClusterNamingPrompt,
-  NamingStatement,
   parseClusterNamingResponse,
   parseClusterRenameResponse,
   validateName,
 } from "./cluster-naming-utils.ts";
+import { VotedStatement } from "./cluster-stance-utils.ts";
 
 function users(prefix: string, count: number): string[] {
   return Array.from({ length: count }, (_, i) => `${prefix}${i}`);
@@ -22,7 +22,7 @@ function cluster(stableId: string, memberIds: string[]): ClusterIdentity {
   return { stableId, clusterIndex: 0, slot: 0, memberIds, naming: null };
 }
 
-function statement(id: string, votesByGroup: [string[], VoteType][]): NamingStatement {
+function statement(id: string, votesByGroup: [string[], VoteType][]): VotedStatement {
   const voters: Record<string, VoteType> = {};
   for (const [ids, vote] of votesByGroup) {
     for (const id of ids) voters[id] = vote;

@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { getSentEmails } from "./kv-utils.tsx";
 import { getEventsOfType, getAllRoomViews } from "./model-utils.ts";
 import {
@@ -12,6 +13,8 @@ import {
 import { toTimestamp } from "./time-utils.ts";
 import { selectAllWithoutLimit } from "./db-utils.ts";
 import { CLUSTER_NAMING_ENDPOINT } from "./cluster-naming.ts";
+import { SESSION_GAP_MS } from "./session-utils.ts";
+import { getAllVotes } from "./kv-utils.tsx";
 
 const RESPONSE_VOTES_NOTIF_RETURN_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -103,4 +106,58 @@ export const getClusterNamingTokens = async (): Promise<number> => {
     "createdAt",
   );
   return calls.reduce((sum, call) => sum + call.totalTokens, 0);
+};
+
+export const VOTES_PER_SESSION_WEEKS = 12;
+
+interface VoteTiming {
+  userId: string;
+  timestamp: number;
+}
+
+interface VotingSession {
+  start: number;
+  votes: number;
+}
+
+function splitIntoSessions(timestamps: number[]): VotingSession[] {
+  const sorted = _.sortBy(timestamps);
+  const sessions: VotingSession[] = [];
+  sorted.forEach((timestamp, i) => {
+    const isNewSession = i === 0 || timestamp - sorted[i - 1] > SESSION_GAP_MS;
+    if (isNewSession) sessions.push({ start: timestamp, votes: 0 });
+    sessions[sessions.length - 1].votes++;
+  });
+  return sessions;
+}
+
+export function averageVotesPerSessionByWeek(
+  votes: VoteTiming[],
+  now: number,
+): { weekStart: string; averageVotes: number; sessions: number }[] {
+  const windowStart = startOfUtcWeek(now) - (VOTES_PER_SESSION_WEEKS - 1) * WEEK_MS;
+
+  const sessions = _(votes)
+    .groupBy("userId")
+    .flatMap((userVotes) => splitIntoSessions(_.map(userVotes, "timestamp")))
+    .filter((session) => startOfUtcWeek(session.start) >= windowStart)
+    .value();
+
+  return _(sessions)
+    .groupBy((session) => startOfUtcWeek(session.start))
+    .map((weekSessions, week) => ({
+      weekStart: new Date(Number(week)).toISOString().slice(0, 10),
+      averageVotes: _.round(_.meanBy(weekSessions, "votes"), 1),
+      sessions: weekSessions.length,
+    }))
+    .sortBy("weekStart")
+    .value();
+}
+
+export const getVotesPerSessionWeekly = async (now: number = Date.now()) => {
+  const votes = await getAllVotes();
+  return averageVotesPerSessionByWeek(
+    votes.map((v) => ({ userId: v.userId, timestamp: toTimestamp(v.timestamp) })),
+    now,
+  );
 };
