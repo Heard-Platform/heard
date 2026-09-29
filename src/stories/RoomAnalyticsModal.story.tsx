@@ -3,6 +3,7 @@ import { Button } from "../components/ui/button";
 import { RoomAnalyticsModal } from "../components/room/RoomAnalyticsModal";
 import type {
   AnonymityBreakdown,
+  ParticipantJoin,
   ParticipationBreakdown,
   ReferrerShareCount,
   TrafficSourceCount,
@@ -12,6 +13,7 @@ import {
   generateMockReferrers,
   generateMockAnonymity,
   generateMockParticipation,
+  generateMockJoins,
 } from "../components/room/analytics-mock";
 import { StoryContainer } from "./StoryContainer";
 
@@ -25,6 +27,7 @@ const mixedParticipation: ParticipationBreakdown = generateMockParticipation(
   "room-mixed-participation",
   360,
 );
+const mixedJoins: ParticipantJoin[] = generateMockJoins("room-mixed-joins", mixedAnonymity, 14);
 
 const newsletterDominant: TrafficSourceCount[] = [
   { key: "newsletter", count: 312 },
@@ -45,6 +48,7 @@ const newsletterParticipation: ParticipationBreakdown = generateMockParticipatio
   "newsletter-participation",
   620,
 );
+const newsletterJoins: ParticipantJoin[] = generateMockJoins("newsletter-joins", newsletterAnonymity, 1);
 
 const flyerCampaign: TrafficSourceCount[] = [
   { key: "flyer", count: 88 },
@@ -57,6 +61,7 @@ const flyerParticipation: ParticipationBreakdown = generateMockParticipation(
   "flyer-participation",
   210,
 );
+const flyerJoins: ParticipantJoin[] = generateMockJoins("flyer-joins", flyerAnonymity, 120);
 
 const emptyState: TrafficSourceCount[] = [];
 
@@ -67,6 +72,7 @@ function ModalTrigger({
   referrers,
   anonymity,
   participation,
+  joins,
 }: {
   label: string;
   roomTopic: string;
@@ -74,6 +80,7 @@ function ModalTrigger({
   referrers: ReferrerShareCount[];
   anonymity: AnonymityBreakdown;
   participation: ParticipationBreakdown;
+  joins: ParticipantJoin[];
 }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
@@ -86,6 +93,7 @@ function ModalTrigger({
           referrers={referrers}
           anonymity={anonymity}
           participation={participation}
+          joins={joins}
           onClose={() => setIsOpen(false)}
         />
       )}
@@ -110,6 +118,7 @@ export function RoomAnalyticsModalStory() {
               referrers={mixedReferrers}
               anonymity={mixedAnonymity}
               participation={mixedParticipation}
+              joins={mixedJoins}
             />
           ),
         },
@@ -124,6 +133,7 @@ export function RoomAnalyticsModalStory() {
               referrers={newsletterReferrers}
               anonymity={newsletterAnonymity}
               participation={newsletterParticipation}
+              joins={newsletterJoins}
             />
           ),
         },
@@ -138,6 +148,7 @@ export function RoomAnalyticsModalStory() {
               referrers={flyerReferrers}
               anonymity={flyerAnonymity}
               participation={flyerParticipation}
+              joins={flyerJoins}
             />
           ),
         },
@@ -152,6 +163,7 @@ export function RoomAnalyticsModalStory() {
               referrers={[]}
               anonymity={{ anonymous: 0, named: 0 }}
               participation={{ participating: 0, lurking: 0 }}
+              joins={[]}
             />
           ),
         },

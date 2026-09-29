@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { api, safelyMakeApiCall } from "../../utils/api";
 import { RoomAnalyticsModal } from "./RoomAnalyticsModal";
-import type { AnonymityBreakdown, ParticipationBreakdown, ReferrerShareCount, TrafficSourceCount } from "./RoomAnalyticsModal";
+import type { AnonymityBreakdown, ParticipantJoin, ParticipationBreakdown, ReferrerShareCount, TrafficSourceCount } from "./RoomAnalyticsModal";
 import type { RoomDebugData } from "./RoomDebugDataPanel";
 
 interface RoomAnalyticsModalContainerProps {
@@ -23,6 +23,7 @@ export function RoomAnalyticsModalContainer({
     referrers: ReferrerShareCount[];
     anonymity: AnonymityBreakdown;
     participation: ParticipationBreakdown;
+    joins: ParticipantJoin[];
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [debugData, setDebugData] = useState<RoomDebugData | null>(null);
@@ -73,6 +74,7 @@ export function RoomAnalyticsModalContainer({
       referrers={data.referrers}
       anonymity={data.anonymity}
       participation={data.participation}
+      joins={data.joins}
       isDeveloper={isDeveloper}
       debugData={debugData}
       debugLoading={debugLoading}
