@@ -18,6 +18,7 @@ import {
   UserHistoryData,
   UserPresence,
   UserSession,
+  WeeklySignupCount,
   type DebateRoom,
   type NewDebateRoom,
   type VoteType,
@@ -679,6 +680,10 @@ class ApiClient extends BaseApiClient {
     return this.request<CohortFunnelData>(`/stats/cohort-funnel?${params.toString()}`, {
       method: "GET",
     });
+  }
+
+  async getWeeklySignups() {
+    return this.request<{ weeks: WeeklySignupCount[] }>("/stats/weekly-signups");
   }
 
   async getActivityFeed() {

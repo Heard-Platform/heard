@@ -765,6 +765,12 @@ export interface UserTimelineEntry {
   isDeveloper?: boolean;
 }
 
+export interface WeeklySignupCount {
+  weekLabel: string;
+  signups: number;
+  weekStart: number;
+}
+
 export interface VoteStats {
   total: number;
   uniqueVoters: number;
