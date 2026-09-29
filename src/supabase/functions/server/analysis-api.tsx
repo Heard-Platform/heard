@@ -6,6 +6,7 @@ import {
   recalculateClustersForRoom,
 } from "./clustering.tsx";
 import { calculateClusterConsensus } from "./cluster-analysis.tsx";
+import { recomputeClustersIfNeeded } from "./cluster-freshness.ts";
 import { getClusterIdentityRecord, getParsedKvData } from "./kv-utils.tsx";
 import { calculateAnalysisMetrics, computeTopPosts, getStatementVoterIds } from "./analysis-utils.tsx";
 import { applyStatementMerges } from "./room-utils.ts";
@@ -44,44 +45,10 @@ app.get(
 
       const metrics = calculateAnalysisMetrics(mergedStatements, questions, answers);
 
-      const metadataKey = `cluster:${roomId}:metadata`;
-      let clusterMetadata =
-        await getParsedKvData<ClusterMetadata>(metadataKey);
-      let clusterIdentity = clusterMetadata
-        ? await getClusterIdentityRecord(roomId)
-        : null;
+      await recomputeClustersIfNeeded(room);
 
-      if (
-        !clusterMetadata &&
-        room.participants.length > 0 &&
-        statements.length > 0
-      ) {
-        console.log(
-          `[Analysis] No cluster data found for room ${roomId}, generating now...`,
-        );
-        clusterMetadata =
-          await recalculateClustersForRoom(roomId);
-        clusterIdentity = await getClusterIdentityRecord(roomId);
-      } else if (clusterMetadata) {
-        const lastClusterVoteCount =
-          clusterMetadata.totalVotes ?? null;
-        const isLegacy = lastClusterVoteCount === null || !clusterIdentity;
-        if (
-          isLegacy ||
-          metrics.totalVotes > lastClusterVoteCount
-        ) {
-          console.log(
-            `[Analysis] ${isLegacy ? "Legacy cluster data" : `New votes detected`} for room ${roomId} (${metrics.totalVotes} vs ${lastClusterVoteCount}), recalculating clusters...`,
-          );
-          clusterMetadata =
-            await recalculateClustersForRoom(roomId);
-          clusterIdentity = await getClusterIdentityRecord(roomId);
-        } else {
-          console.log(
-            `[Analysis] Using cached cluster data for room ${roomId} (${metrics.totalVotes} votes)`,
-          );
-        }
-      }
+      const clusterMetadata = await getParsedKvData<ClusterMetadata>(`cluster:${roomId}:metadata`);
+      const clusterIdentity = clusterMetadata ? await getClusterIdentityRecord(roomId) : null;
 
       let clusterConsensus = null;
 

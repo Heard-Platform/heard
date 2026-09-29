@@ -2,6 +2,7 @@
 import { getAllRecords, getAllKvRecordsMatching, getAllKvRecordsWithPrefix } from "./db-utils.ts";
 import * as kv from "./kv_store.tsx";
 import type { ClusterIdentityRecord } from "./cluster-identity.ts";
+import type { ClusterRecomputeMarker } from "./cluster-freshness.ts";
 import {
   type User,
   type Vote,
@@ -603,6 +604,21 @@ export const getClusterIdentityRecord = async (
   roomId: string,
 ): Promise<ClusterIdentityRecord | null> => {
   return getParsedKvData<ClusterIdentityRecord>(clusterIdentityKeyFn(roomId));
+};
+
+export const clusterRecomputeMarkerKeyFn = (roomId: string) => `cluster:${roomId}:recompute`;
+
+export const getClusterRecomputeMarker = async (
+  roomId: string,
+): Promise<ClusterRecomputeMarker | null> => {
+  return getParsedKvData<ClusterRecomputeMarker>(clusterRecomputeMarkerKeyFn(roomId));
+};
+
+export const saveClusterRecomputeMarker = async (
+  roomId: string,
+  marker: ClusterRecomputeMarker,
+): Promise<void> => {
+  await kv.set(clusterRecomputeMarkerKeyFn(roomId), JSON.stringify(marker));
 };
 
 export const getAllClusterIdentityRecords = async (): Promise<Map<string, ClusterIdentityRecord>> => {
