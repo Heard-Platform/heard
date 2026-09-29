@@ -373,6 +373,7 @@ export interface DeckOrderCluster {
 export interface DeckOrder {
   leadStatementIds: string[];
   consensusStatementId: string | null;
+  longStatementIds: string[];
   clusters: DeckOrderCluster[];
 }
 

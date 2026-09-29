@@ -13,6 +13,7 @@ function makeDeckOrder(overrides: Partial<DeckOrder> = {}): DeckOrder {
   return {
     leadStatementIds: [],
     consensusStatementId: null,
+    longStatementIds: [],
     clusters: [
       { stableId: "A", size: 50, voteRates: { divisive: MOSTLY_AGREES, shared: MOSTLY_AGREES, other: MOSTLY_AGREES } },
       { stableId: "B", size: 50, voteRates: { divisive: MOSTLY_DISAGREES, shared: MOSTLY_AGREES, other: MOSTLY_DISAGREES } },

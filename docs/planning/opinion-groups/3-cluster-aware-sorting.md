@@ -29,6 +29,8 @@ The deck order is `null` for rooms with fewer than 2 clusters or with nothing th
 
 Example with 3 clusters: A1, B1, consensus, exploration, C1, A2, B2, exploration, C2.
 
+**Short statements first.** Statements over 90 characters are kept out of the first 6 cards so new users start with easy ones. The server prefers short statements for every opening pick (distinguishing, consensus, exploration), the browser's adaptive picks skip long ones until card 7, and a final pass moves any long statement out of the first 6. Long statements are only used there when there aren't enough short ones. The server sends the long statement IDs in the deck order so the 90-character rule lives in one place.
+
 ## 3b: Adaptive order
 
 - **Estimate:** a probability for each cluster, starting from cluster sizes and adjusted by how closely each of the user's votes matches that cluster's voting rates. Each vote's influence is halved so a few votes can't produce certainty, and statements the user hasn't voted on don't count.

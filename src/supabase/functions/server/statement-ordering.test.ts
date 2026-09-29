@@ -8,7 +8,9 @@ import {
   calcVoteRates,
   interleaveDistinguishingStatements,
   interleaveUnique,
+  LONG_STATEMENT_CHARS,
   rankExplorationStatements,
+  shortFirst,
 } from "./statement-ordering.ts";
 
 function users(prefix: string, count: number): string[] {
@@ -118,4 +120,41 @@ Deno.test("buildDeckOrder - lead covers each cluster, adds consensus and per-clu
   assertEquals(deckOrder.leadStatementIds[3], "new");
   assertEquals(deckOrder.clusters.map((cl) => [cl.stableId, cl.size]), [["A", 30], ["B", 20]]);
   assertEquals(Object.keys(deckOrder.clusters[0].voteRates).length, 4);
+});
+
+const LONG_TEXT = "x".repeat(LONG_STATEMENT_CHARS + 1);
+
+function long(votedStatement: VotedStatement): VotedStatement {
+  return { ...votedStatement, text: LONG_TEXT };
+}
+
+Deno.test("shortFirst - keeps ranking order but moves long statements after short ones", () => {
+  const ranked = [long(statement("l1", [])), statement("s1", []), long(statement("l2", [])), statement("s2", [])];
+  assertEquals(shortFirst(ranked).map((s) => s.id), ["s1", "s2", "l1", "l2"]);
+});
+
+Deno.test("interleaveDistinguishingStatements - prefers a short statement over an equally distinguishing long one", () => {
+  const statements = [
+    long(statement("long", [[a, "agree"], [b, "disagree"]])),
+    statement("short", [[a, "agree"], [b, "disagree"]]),
+  ];
+  assertEquals(interleaveDistinguishingStatements([cluster("A", a), cluster("B", b)], statements, 1), ["short"]);
+});
+
+Deno.test("interleaveDistinguishingStatements - falls back to long statements when there are no short ones", () => {
+  const statements = [long(statement("long", [[a, "agree"], [b, "disagree"]]))];
+  assertEquals(interleaveDistinguishingStatements([cluster("A", a), cluster("B", b)], statements, 1), ["long"]);
+});
+
+Deno.test("rankExplorationStatements - short under-voted statements come before long ones", () => {
+  const statements = [long(statement("long-none", [])), statement("short-few", [[users("f", 3), "agree"]])];
+  assertEquals(rankExplorationStatements(statements, []), ["short-few", "long-none"]);
+});
+
+Deno.test("buildDeckOrder - lists the long statements", () => {
+  const statements = [
+    statement("a-only", [[a, "agree"], [b, "disagree"]]),
+    long(statement("wordy", [[a, "agree"], [b, "agree"]])),
+  ];
+  assertEquals(buildDeckOrder([cluster("A", a), cluster("B", b)], statements)!.longStatementIds, ["wordy"]);
 });
