@@ -184,6 +184,7 @@ export function DebateAnalysisReport({
                     key={cluster.stableId}
                     clusterIndex={index}
                     clusterSlot={cluster.slot}
+                    clusterName={cluster.name}
                     clusterSize={cluster.size}
                     clusterColumns={clusterColumns}
                     totalParticipants={totalParticipants}

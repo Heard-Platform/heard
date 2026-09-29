@@ -2,8 +2,8 @@ import { ArrowLeftRight } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { ClusterColumn, StatementVotes } from "../../types";
 import { getTopBridgingStatements } from "../../utils/bridging-utils";
-import { getClusterColor } from "../../utils/colors";
-import { StatementVotesTableHead, clusterLabel } from "./StatementVotesTableHead";
+import { getClusterColor, getClusterDisplayName } from "../../utils/colors";
+import { StatementVotesTableHead } from "./StatementVotesTableHead";
 import { StatementVotesTableRow } from "./StatementVotesTableRow";
 
 interface BridgeStatementsSectionProps {
@@ -43,10 +43,10 @@ export function BridgeStatementsSection({
           />
           <tbody>
             {bridges.map(({ statement, clusterAId, clusterBId }) => {
-              const slotA = statement.clusterVotes[clusterAId].slot;
-              const slotB = statement.clusterVotes[clusterBId].slot;
-              const colorsA = getClusterColor(slotA);
-              const colorsB = getClusterColor(slotB);
+              const clusterA = clusterColumns[clusterAId];
+              const clusterB = clusterColumns[clusterBId];
+              const colorsA = getClusterColor(clusterA.slot);
+              const colorsB = getClusterColor(clusterB.slot);
               return (
                 <StatementVotesTableRow
                   key={statement.id}
@@ -57,11 +57,11 @@ export function BridgeStatementsSection({
                   caption={
                     <div className="flex items-center gap-1.5 mb-1">
                       <Badge variant="outline" className={`${colorsA.badge} ${colorsA.text}`}>
-                        Cluster {clusterLabel(slotA)}
+                        {getClusterDisplayName(clusterA.slot, clusterA.name)}
                       </Badge>
                       <ArrowLeftRight className="w-3 h-3 text-muted-foreground" />
                       <Badge variant="outline" className={`${colorsB.badge} ${colorsB.text}`}>
-                        Cluster {clusterLabel(slotB)}
+                        {getClusterDisplayName(clusterB.slot, clusterB.name)}
                       </Badge>
                     </div>
                   }

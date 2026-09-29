@@ -1,4 +1,4 @@
-import { getClusterColor } from "../../utils/colors";
+import { getClusterColor, getClusterDisplayName } from "../../utils/colors";
 import { ClusterColumn } from "../../types";
 import { Badge } from "../ui/badge";
 import { ChevronUp, ChevronDown } from "lucide-react";
@@ -13,10 +13,6 @@ export const COLUMNS: { key: SortColumn; label: string; badgeClass: string }[] =
   { key: "passVotes", label: "Pass", badgeClass: "pass-bg pass-text pass-border" },
   { key: "totalVotes", label: "Total", badgeClass: "total-bg total-text total-border" },
 ];
-
-export function clusterLabel(slot: number): string {
-  return String.fromCharCode(65 + slot);
-}
 
 interface SortState {
   sortCol: SortColumn | null;
@@ -71,7 +67,7 @@ export function StatementVotesTableHead({
           <div className="text-xs">Overall</div>
           <div className="text-xs text-muted-foreground font-normal">{totalParticipants} users</div>
         </th>
-        {clusterColumns.map(({ size, slot }, idx) => {
+        {clusterColumns.map(({ size, slot, name }, idx) => {
           const colored =
             colorAllClusters || idx === highlightClusterIndex || highlightClusterIndices?.includes(idx);
           return (
@@ -79,7 +75,7 @@ export function StatementVotesTableHead({
               key={idx}
               className={`py-2 px-2 text-center whitespace-nowrap font-medium text-muted-foreground${colored ? ` ${getClusterColor(slot).bg}` : ""}`}
             >
-              <div className="text-xs">Cluster {clusterLabel(slot)}</div>
+              <div className="text-xs">{getClusterDisplayName(slot, name)}</div>
               <div className="text-xs text-muted-foreground font-normal">{size} users</div>
             </th>
           );

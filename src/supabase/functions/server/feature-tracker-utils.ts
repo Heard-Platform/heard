@@ -10,6 +10,8 @@ import {
   CLUSTER_IDENTITY_NEW_EVENT,
 } from "./clustering.tsx";
 import { toTimestamp } from "./time-utils.ts";
+import { selectAllWithoutLimit } from "./db-utils.ts";
+import { CLUSTER_NAMING_ENDPOINT } from "./cluster-naming.ts";
 
 const RESPONSE_VOTES_NOTIF_RETURN_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -92,4 +94,13 @@ export const getClusterStabilityStats = async (now: number = Date.now()): Promis
     identityKeptPercent:
       identityTotal > 0 ? Math.round((kept.length / identityTotal) * 1000) / 10 : null,
   };
+};
+
+export const getClusterNamingTokens = async (): Promise<number> => {
+  const calls = await selectAllWithoutLimit<{ totalTokens: number }>(
+    "llm_api_calls",
+    { endpoint: CLUSTER_NAMING_ENDPOINT },
+    "createdAt",
+  );
+  return calls.reduce((sum, call) => sum + call.totalTokens, 0);
 };

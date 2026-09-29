@@ -4,7 +4,7 @@ import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, ge
 import { countRecords, selectAll } from "./db-utils.ts";
 import type { UserEvent } from "./types.tsx";
 import { toTimestamp } from "./time-utils.ts";
-import { getClusterStabilityStats, getResponseVotesNotifStats } from "./feature-tracker-utils.ts";
+import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
 
@@ -256,6 +256,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const clusterStabilityStats = await getClusterStabilityStats();
     const clusterRecomputesSince = new Date("2026-09-28").getTime();
 
+    const clusterNamingTokens = await getClusterNamingTokens();
+    const clusterNamingTokensSince = new Date("2026-09-28").getTime();
+
     const anonResponseTripwireShown = (await getEventsOfType("anon_response_tripwire_shown")).length;
     const anonResponseTripwireEmailSubmitted = (await getEventsOfType("anon_response_tripwire_submitted")).length;
     const anonResponseTripwireSince = new Date("2026-09-21").getTime();
@@ -353,6 +356,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       clusterRecomputesSince,
       clusterRecomputesWeekly: clusterStabilityStats.recomputesWeekly,
       clusterIdentityKeptPercent: clusterStabilityStats.identityKeptPercent,
+      clusterNamingTokens,
+      clusterNamingTokensSince,
       sessionExpiredRecovered,
       sessionExpiredRecoveredSince,
       sessionExpiryBypassed,

@@ -46,7 +46,6 @@ Today's distinguishing-statement z-test only keeps the agree-more side. Add a tw
   - Every cluster must be present.
   - Check word count and the 16-character cap.
   - Reject duplicates.
-  - Run the names through moderation.
 - Retry once with the specific failure noted. If it fails again, keep the fallback, log it, and try again on the next recompute.
 - Runs in the background (`EdgeRuntime.waitUntil`) after a recompute, so no request waits on the LLM.
 - Only writes back if the identity record's `version` hasn't changed since naming started.
@@ -82,6 +81,16 @@ A new dev tools tab for reviewing anything AI-generated. For now its only sectio
 - Automatic naming after recomputes sits behind an internal on/off switch, toggled from the top of the AI Review tab. The per-room button works regardless, so names can be generated and reviewed manually before the switch is turned on.
 - The frontend shows the name if one exists and the fallback otherwise, so the two sides can deploy in either order.
 
+## Blast radius
+
+**Small.** Almost all of the risk sits inside the new feature: naming could fail to run, show bad names on the analysis report, or rename clusters too readily.
+
+Areas impacted:
+- Functions for calcing cluster defining statements - This was refactored.
+- Cluster generation - Now has a call to do naming added midway.
+- API endpoint for room analysis report - Query could fail in rare race conditions if a recompute lands between naming's version check and its save.
+- AI token spend - This adds a new regular usage of AI.
+
 ## Tracking
 
 In the feature results tracker: total tokens spent on cluster naming (initial names, drift checks and manual re-runs). Name quality is reviewed in the AI Review tab instead.
@@ -91,20 +100,18 @@ In the feature results tracker: total tokens spent on cluster naming (initial na
 ## Footnotes: code pointers
 
 - LLM: `createLlmClient().completeJson(prompt, { endpoint: "cluster-naming" })` in `src/supabase/functions/server/llm-provider.ts`.
-- `calcDistinguishingStatements` in `cluster-analysis.tsx` filters to z ≥ 1.96. Add a sibling that filters on `|z| ≥ 1.96` and keeps the sign.
-- New module `cluster-naming.ts` containing:
-  - a pure prompt builder
-  - a pure validator
-  - stance snapshot and drift detection (pure)
-  - `nameClustersForRoom(roomId)`
+- In `cluster-analysis.tsx`, `calcDistinguishingAgreedStatements` (z ≥ 1.96, used by the report) and `calcAnyDistinguishingStatements` (|z| ≥ 1.96, used for naming) share one ranking helper.
+- `cluster-naming-utils.ts` (pure): naming inputs, common ground, stance snapshot and drift detection, prompts, and response parsing and validation. The prompt labels groups A/B/C and maps them back to `stableId`.
+- `cluster-naming.ts`: `nameClustersForRoom(roomId, "auto" | "force")`, plus the on/off switch accessors. Force mode clears names on clusters that no longer meet the minimum-data rule.
+- `background-utils.ts`: `runInBackground`, a thin wrapper around `EdgeRuntime.waitUntil` that logs failures.
 - Trigger it at the end of `clusterUsersAndSave` in `clustering.tsx`.
-- Identity record additions per cluster: `name`, `namedAt`, `stanceSnapshot` (`{ statementId, agreeRate }[]` for the top statements at naming time), `previousName` + `renameReason` (for the tracker list).
+- Identity record addition per cluster: `naming: { name, namedAt, stanceSnapshot, previousName, renameReason } | null`. Kept clusters carry it across recomputes.
 - On/off switch: follow the `ENRICHMENT_ON` pattern end to end, i.e. the internal var and endpoints in `internal-config-api.tsx` / `internal-utils.ts` (e.g. `CLUSTER_NAMING_ON`), plus the `getEnrichmentConfig` / `setEnrichmentConfig` toggle in `src/components/devtools/EnrichmentTab.tsx`, placed in the AI Review tab.
-- Moderation: reuse `moderation-utils.ts`.
+- There is no text moderation in the codebase to reuse (`moderation-utils.ts` only hides statements), so names rely on the prompt's fairness rules plus format validation, and are reviewed in the AI Review tab.
 - Expose it as `clusterConsensus.clusters[].name` via `analysis-api.tsx`.
 - AI Review tab:
   - Add an `"ai-review"` entry to `TabType` and a `TabButton` in `src/components/devtools/DevTools.tsx`.
   - New `src/components/devtools/AiReviewTab.tsx`, with the cluster-names section as its own component (e.g. `ClusterNamesReview.tsx`) so later AI sections slot in beside it.
   - Room listing: follow `/dev/posts` (`api.getAllPosts`, used by `PostsTab.tsx`).
-  - New endpoints: a paginated `GET` returning rooms (recent first) with their identity-record clusters, and `POST /dev/room/:roomId/cluster-names/regenerate` for the button.
+  - Endpoints in `ai-review-api.ts`: `GET /dev/ai-review/cluster-names?offset&limit` and `POST /dev/room/:roomId/cluster-names/regenerate`. The switch is `GET/POST /internal/config/cluster-naming`.
 - Tokens: every naming call (including drift checks) uses `endpoint: "cluster-naming"`, so the tracker total is the sum of `totalTokens` in `llm_api_calls` for that endpoint. See `ai-usage-api.ts` for the query pattern; aggregate it in `/stats/features` (`features-results-tracker-api.ts`).

@@ -605,6 +605,13 @@ export const getClusterIdentityRecord = async (
   return getParsedKvData<ClusterIdentityRecord>(clusterIdentityKeyFn(roomId));
 };
 
+export const saveClusterIdentityRecord = async (
+  roomId: string,
+  record: ClusterIdentityRecord,
+): Promise<void> => {
+  await kv.set(clusterIdentityKeyFn(roomId), JSON.stringify(record));
+};
+
 export const getClusterAssignmentsBatch = async (
   roomId: string,
   userIds: string[],

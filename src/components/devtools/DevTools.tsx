@@ -13,6 +13,7 @@ import { SessionsTab } from "./SessionsTab";
 import { PerformanceTestTab } from "./PerformanceTestTab";
 import { TestingTab } from "./TestingTab";
 import { NotificationSystemTab } from "./NotificationSystemTab";
+import { AiReviewTab } from "./AiReviewTab";
 import { TabButton } from "./TabButton";
 import {
   parseDevToolsTabFromUrl,
@@ -25,7 +26,7 @@ interface DevToolsProps {
   onExit?: () => void;
 }
 
-type TabType = "vote-matrix" | "clustering" | "email" | "email-monitoring" | "notification-system" | "enrichment" | "posts" | "flyers" | "vote-stats" | "referral-events" | "session" | "performance" | "testing";
+type TabType = "vote-matrix" | "clustering" | "email" | "email-monitoring" | "notification-system" | "enrichment" | "posts" | "flyers" | "vote-stats" | "referral-events" | "session" | "performance" | "testing" | "ai-review";
 
 export function DevTools({ user, onExit }: DevToolsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
@@ -126,6 +127,11 @@ export function DevTools({ user, onExit }: DevToolsProps) {
                 label="Testing"
                 onClick={() => handleTabChange("testing")}
               />
+              <TabButton
+                active={activeTab === "ai-review"}
+                label="AI Review"
+                onClick={() => handleTabChange("ai-review")}
+              />
             </div>
           </div>
 
@@ -154,6 +160,7 @@ export function DevTools({ user, onExit }: DevToolsProps) {
             {activeTab === "session" && <SessionsTab />}
             {activeTab === "performance" && <PerformanceTestTab />}
             {activeTab === "testing" && <TestingTab />}
+            {activeTab === "ai-review" && <AiReviewTab />}
           </div>
         </div>
       </div>

@@ -44,6 +44,7 @@ export function getPastelColor(id: string): string {
 }
 
 export interface ClusterColor {
+  name: string;
   bg: string;
   border: string;
   text: string;
@@ -51,12 +52,16 @@ export interface ClusterColor {
 }
 
 export const CLUSTER_COLORS: ClusterColor[] = [
-  { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-600", badge: "bg-blue-100" },
-  { bg: "bg-green-50", border: "border-green-200", text: "text-green-600", badge: "bg-green-100" },
-  { bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-600", badge: "bg-purple-100" },
-  { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-600", badge: "bg-orange-100" },
+  { name: "Blue", bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-600", badge: "bg-blue-100" },
+  { name: "Green", bg: "bg-green-50", border: "border-green-200", text: "text-green-600", badge: "bg-green-100" },
+  { name: "Purple", bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-600", badge: "bg-purple-100" },
+  { name: "Orange", bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-600", badge: "bg-orange-100" },
 ];
 
 export function getClusterColor(clusterIndex: number): ClusterColor {
   return CLUSTER_COLORS[clusterIndex % CLUSTER_COLORS.length];
+}
+
+export function getClusterDisplayName(slot: number, name: string | null): string {
+  return name ?? `Team ${getClusterColor(slot).name}`;
 }

@@ -2,15 +2,16 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { ClusterColumn, StatementVotes } from "../../types";
-import { StatementVotesTableHead, clusterLabel } from "./StatementVotesTableHead";
+import { StatementVotesTableHead } from "./StatementVotesTableHead";
 import { StatementVotesTableRow } from "./StatementVotesTableRow";
-import { getClusterColor } from "../../utils/colors";
+import { getClusterColor, getClusterDisplayName } from "../../utils/colors";
 
 const VISIBLE_STATEMENTS = 3;
 
 interface ClusterConsensusBoxProps {
   clusterIndex: number;
   clusterSlot: number;
+  clusterName: string | null;
   clusterSize: number;
   clusterColumns: ClusterColumn[];
   totalParticipants: number;
@@ -22,6 +23,7 @@ interface ClusterConsensusBoxProps {
 export function ClusterConsensusBox({
   clusterIndex,
   clusterSlot,
+  clusterName,
   clusterSize,
   clusterColumns,
   totalParticipants,
@@ -41,7 +43,7 @@ export function ClusterConsensusBox({
       <div className="heard-between mb-1">
         <div className="flex items-center gap-2">
           <h3 className={`font-medium ${colors.text}`}>
-            Cluster {clusterLabel(clusterSlot)}
+            {getClusterDisplayName(clusterSlot, clusterName)}
           </h3>
           <Badge variant="outline" className={colors.badge}>
             {clusterSize} users

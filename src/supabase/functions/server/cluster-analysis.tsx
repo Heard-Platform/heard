@@ -20,6 +20,7 @@ export interface Cluster {
   id: number;
   stableId: string;
   slot: number;
+  name: string | null;
   size: number;
   statements: DistinguishingStatement[];
 }
@@ -46,6 +47,7 @@ interface ClusterUserGroup {
   clusterId: number;
   stableId: string;
   slot: number;
+  name: string | null;
   size: number;
   users: string[];
 }
@@ -85,38 +87,74 @@ function incrementTally(tally: VoteTally, voteType: VoteType): void {
   else if (voteType === "pass") tally.passes++;
 }
 
-export function calcDistinguishingStatements(
-  statements: Statement[],
+type ScorableStatement = Pick<Statement, "id" | "text" | "voters">;
+
+function scoreStatementsForCluster(
+  statements: ScorableStatement[],
   inClusterUsers: string[],
   outClusterUsers: string[],
 ): DistinguishingStatement[] {
   const inSet = new Set(inClusterUsers);
   const outSet = new Set(outClusterUsers);
 
-  return statements
-    .map((statement) => {
-      const inGroup: VoteTally = { agrees: 0, disagrees: 0, passes: 0 };
-      const outGroup: VoteTally = { agrees: 0, disagrees: 0, passes: 0 };
+  return statements.map((statement) => {
+    const inGroup: VoteTally = { agrees: 0, disagrees: 0, passes: 0 };
+    const outGroup: VoteTally = { agrees: 0, disagrees: 0, passes: 0 };
 
-      for (const [userId, voteType] of Object.entries(statement.voters ?? {})) {
-        if (inSet.has(userId)) incrementTally(inGroup, voteType);
-        else if (outSet.has(userId)) incrementTally(outGroup, voteType);
-      }
+    for (const [userId, voteType] of Object.entries(statement.voters ?? {})) {
+      if (inSet.has(userId)) incrementTally(inGroup, voteType);
+      else if (outSet.has(userId)) incrementTally(outGroup, voteType);
+    }
 
-      return {
-        id: statement.id,
-        text: statement.text,
-        agreeVotes: inGroup.agrees,
-        disagreeVotes: inGroup.disagrees,
-        totalVotes: inGroup.agrees + inGroup.disagrees + inGroup.passes,
-        distinguishingScore: calcDistinguishingScore(inGroup, outGroup),
-      };
-    })
-    .filter((s) => s.distinguishingScore >= DISTINGUISHING_Z_THRESHOLD)
+    return {
+      id: statement.id,
+      text: statement.text,
+      agreeVotes: inGroup.agrees,
+      disagreeVotes: inGroup.disagrees,
+      totalVotes: inGroup.agrees + inGroup.disagrees + inGroup.passes,
+      distinguishingScore: calcDistinguishingScore(inGroup, outGroup),
+    };
+  });
+}
+
+function rankDistinguishingStatements(
+  statements: ScorableStatement[],
+  inClusterUsers: string[],
+  outClusterUsers: string[],
+  rankingScore: (s: DistinguishingStatement) => number,
+): DistinguishingStatement[] {
+  return scoreStatementsForCluster(statements, inClusterUsers, outClusterUsers)
+    .filter((s) => rankingScore(s) >= DISTINGUISHING_Z_THRESHOLD)
     .sort((a, b) => {
-      const diff = b.distinguishingScore - a.distinguishingScore;
+      const diff = rankingScore(b) - rankingScore(a);
       return diff !== 0 ? diff : b.totalVotes - a.totalVotes;
     });
+}
+
+export function calcDistinguishingAgreedStatements(
+  statements: ScorableStatement[],
+  inClusterUsers: string[],
+  outClusterUsers: string[],
+): DistinguishingStatement[] {
+  return rankDistinguishingStatements(
+    statements,
+    inClusterUsers,
+    outClusterUsers,
+    (s) => s.distinguishingScore,
+  );
+}
+
+export function calcAnyDistinguishingStatements(
+  statements: ScorableStatement[],
+  inClusterUsers: string[],
+  outClusterUsers: string[],
+): DistinguishingStatement[] {
+  return rankDistinguishingStatements(
+    statements,
+    inClusterUsers,
+    outClusterUsers,
+    (s) => Math.abs(s.distinguishingScore),
+  );
 }
 
 export function calcStatementBreakdownForCluster(
@@ -191,6 +229,7 @@ export function calculateClusterConsensus(
       clusterId: cid,
       stableId: identity.stableId,
       slot: identity.slot,
+      name: identity.naming?.name ?? null,
       size: usersByOriginalCluster[cid].length,
       users: usersByOriginalCluster[cid],
     });
@@ -210,8 +249,9 @@ export function calculateClusterConsensus(
       id: g.clusterId,
       stableId: g.stableId,
       slot: g.slot,
+      name: g.name,
       size: g.size,
-      statements: calcDistinguishingStatements(statements, g.users, otherUsers).slice(0, 6),
+      statements: calcDistinguishingAgreedStatements(statements, g.users, otherUsers).slice(0, 6),
     };
   });
 

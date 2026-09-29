@@ -7,6 +7,8 @@ import { getStatementVoterIds } from "./analysis-utils.tsx";
 import { getStatementsForRoom, getDebate, saveClusterData, getClusterAssignment, getClusterMetadataRecord, getClusterAssignmentsBatch, getVotesForStatement, getClusterIdentityRecord, clusterIdentityKeyFn } from "./kv-utils.tsx";
 import { insertAnalyticsEvent } from "./model-utils.ts";
 import { resolveClusterIdentities, ClusterIdentityResolution } from "./cluster-identity.ts";
+import { isClusterNamingEnabled, nameClustersForRoom } from "./cluster-naming.ts";
+import { runInBackground } from "./background-utils.ts";
 import type { Vote } from "./types.tsx";
 
 export const CLUSTER_RECOMPUTE_EVENT = "cluster_recompute";
@@ -411,6 +413,10 @@ export async function clusterUsersAndSave(
 
   await saveClusterData(allKeys, allValues);
   await recordRecomputeEvents(roomId, identityResolution);
+
+  if (await isClusterNamingEnabled()) {
+    runInBackground(nameClustersForRoom(roomId, "auto"), `cluster naming for room ${roomId}`);
+  }
 
   console.log(
     `[Clustering] Saved ${clusterAssignments.length} cluster assignments and metadata for room ${roomId}`,
