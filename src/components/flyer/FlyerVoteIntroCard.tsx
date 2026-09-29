@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { motion, useMotionValue, type Transition } from "motion/react";
+import { motion, type Transition } from "motion/react";
 import { CheckCircle, XCircle } from "lucide-react";
-import type { DebateRoom, Statement } from "../../types";
-import { getPastelColor } from "../../utils/colors";
-import { StatementCard } from "../room/StatementCard";
+import type { Statement } from "../../types";
+import { FLYER_CARD_CLASS, FLYER_CARD_SHADOW, FlyerCardContent, STACK_POSES } from "./FlyerSwipeCard";
 
 export type FlyerVote = "agree" | "disagree";
 
@@ -42,21 +41,16 @@ const STAMP_STYLE = {
 
 interface FlyerVoteIntroCardProps {
   statement: Statement;
-  room: DebateRoom;
   vote: FlyerVote;
-  totalStatements: number;
   onDismissed: () => void;
 }
 
 export function FlyerVoteIntroCard({
   statement,
-  room,
   vote,
-  totalStatements,
   onDismissed,
 }: FlyerVoteIntroCardProps) {
   const [phase, setPhase] = useState<Phase>("stamp");
-  const hiddenOpacity = useMotionValue(0);
 
   useEffect(() => {
     const tiltTimeout = setTimeout(() => setPhase("tilt"), START_DELAY_MS + STAMP_HOLD_MS);
@@ -72,29 +66,14 @@ export function FlyerVoteIntroCard({
 
   return (
     <motion.div
-      className="relative w-full pointer-events-none"
+      className={`${FLYER_CARD_CLASS} pointer-events-none`}
+      style={{ boxShadow: FLYER_CARD_SHADOW, zIndex: STACK_POSES.length }}
       initial={CARD_POSE.stamp[vote]}
       animate={CARD_POSE[phase][vote]}
       transition={CARD_TRANSITION[phase]}
       onAnimationComplete={() => phase === "leave" && onDismissed()}
     >
-      <div className={`p-6 rounded-xl border-2 shadow-xl ${getPastelColor(statement.id)}`}>
-        <StatementCard
-          statement={statement}
-          room={room}
-          isTopCard={true}
-          currentIndex={1}
-          totalStatements={totalStatements}
-          getTypeIcon={() => null}
-          disagreeOpacity={hiddenOpacity}
-          agreeOpacity={hiddenOpacity}
-          superAgreeOpacity={hiddenOpacity}
-          passOpacity={hiddenOpacity}
-          onSuperAgree={() => {}}
-          onSkip={() => {}}
-          onFlag={() => {}}
-        />
-      </div>
+      <FlyerCardContent statement={statement} />
       <FlyerVoteStamp vote={vote} />
     </motion.div>
   );
@@ -111,8 +90,8 @@ function FlyerVoteStamp({ vote }: { vote: FlyerVote }) {
         animate={{ scale: 1, opacity: 1, rotate }}
         transition={{ delay: (START_DELAY_MS + STAMP_DROP_DELAY_MS) / 1000, type: "spring", stiffness: 300, damping: 18, mass: 1 }}
       >
-        <Icon className="h-10 w-10" strokeWidth={3} />
-        <span className="text-4xl font-black tracking-widest">{label}</span>
+        <Icon className="h-8 w-8" strokeWidth={3} />
+        <span className="text-3xl font-black tracking-widest">{label}</span>
       </motion.div>
     </div>
   );

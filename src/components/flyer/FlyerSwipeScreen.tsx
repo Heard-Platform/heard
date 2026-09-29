@@ -1,126 +1,226 @@
 import { useState } from "react";
-import type { DebateRoom, Statement, VoteType } from "../../types";
-import { FeedHeader, FEED_HEADER_HEIGHT_PX } from "../FeedHeader";
-import { SwipeableStatementStack } from "../room/SwipeableStatementStack";
-import { formatSubHeardDisplay } from "../../utils/subheard";
-import { FlyerVoteIntroCard, type FlyerVote } from "./FlyerVoteIntroCard";
-
-// @ts-ignore
-import { toast } from "sonner@2.0.3";
-
-const TOAST_TEXT_MAX_LENGTH = 50;
+import { AnimatePresence, motion } from "motion/react";
+import { MessageCircle, X } from "lucide-react";
+import type { Statement } from "../../types";
+import {
+  ClusterMinimap,
+  type MinimapCluster,
+} from "../room/ClusterMinimap";
+import { FlyerProgress } from "./FlyerProgress";
+import {
+  FLYER_CARD_CLASS,
+  FLYER_CARD_SHADOW,
+  FlyerStackedCard,
+  FlyerSwipeCard,
+  STACK_PEEK_PX,
+  STACK_POSES,
+  type SwipeVote,
+} from "./FlyerSwipeCard";
+import {
+  FlyerVoteIntroCard,
+  type FlyerVote,
+} from "./FlyerVoteIntroCard";
+import { OnTheBoardBanner } from "./OnTheBoardBanner";
+import type { TribeSummary } from "../../utils/tribe-summary";
+import { RaindownConfetti } from "../../RaindownConfetti";
+import {
+  FLYER_MINIMAP_LAYOUT_ID,
+  FlyerResults,
+} from "./FlyerResults";
 
 interface FlyerSwipeScreenProps {
-  room: DebateRoom;
-  statements: Statement[];
-  flyerStatementId: string;
+  topic: string;
+  flyerStatement: Statement;
   flyerVote: FlyerVote;
-  currentUserId: string;
-  isAnonymous: boolean;
-  onWordmarkClick: () => void;
-  onVote: (statement: Statement, voteType: VoteType) => Promise<void>;
-  onSubmitStatement: (text: string) => Promise<void>;
-  onShowAccountSetupModal: (featureText: string) => void;
+  statements: Statement[];
+  clusters: MinimapCluster[];
+  clusterProbabilities: number[] | null;
+  tribeSummary: TribeSummary | null;
+  onVote: (statementId: string, vote: SwipeVote) => void;
+  onClose: () => void;
+  onSaveSpot: () => void;
+  onJustLooking: () => void;
 }
 
 export function FlyerSwipeScreen({
-  room,
-  statements,
-  flyerStatementId,
+  topic,
+  flyerStatement,
   flyerVote,
-  currentUserId,
-  isAnonymous,
-  onWordmarkClick,
+  statements,
+  clusters,
+  clusterProbabilities,
+  tribeSummary,
   onVote,
-  onSubmitStatement,
-  onShowAccountSetupModal,
+  onClose,
+  onSaveSpot,
+  onJustLooking,
 }: FlyerSwipeScreenProps) {
-  const [isIntroVisible, setIsIntroVisible] = useState(true);
-  const [chanceCardSwiped, setChanceCardSwiped] = useState(false);
-  const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
+  const [votedCount, setVotedCount] = useState(0);
+  const [hasStartedDragging, setHasStartedDragging] = useState(false);
+  const deck = [flyerStatement, ...statements];
+  const total = deck.length;
+  const currentStatement = deck[votedCount];
+  const cardsBehind = deck.slice(
+    votedCount + 1,
+    votedCount + STACK_POSES.length,
+  );
+  const showResults = votedCount >= total && tribeSummary !== null;
 
-  const flyerStatement = statements.find((s) => s.id === flyerStatementId);
-  const remainingStatements = statements.filter((s) => s.id !== flyerStatementId);
-
-  const handleIntroDismissed = () => {
-    setIsIntroVisible(false);
-    if (flyerStatement) showFlyerVoteToast(flyerStatement, flyerVote);
-  };
-
-  const handleDemographicsAnswered = (questionId: string) => {
-    setAnsweredQuestionIds((prev) => new Set(prev).add(questionId));
+  const recordVote = (statementId: string, vote: SwipeVote) => {
+    onVote(statementId, vote);
+    setVotedCount((count) => count + 1);
   };
 
   return (
-    <div className="heard-feed-bg relative min-h-full">
-      <FeedHeader
-        hidden={false}
-        communityPicker={room.subHeard && <FlyerCommunityLabel subHeard={room.subHeard} />}
-        onWordmarkClick={onWordmarkClick}
-      />
+    <div className="heard-feed-bg relative flex min-h-full flex-col px-5 pb-5 pt-4">
+      <FlyerHeader onClose={onClose} />
+      <TopicPill topic={topic} />
 
-      <div className="mx-auto max-w-2xl px-4 pb-8" style={{ paddingTop: FEED_HEADER_HEIGHT_PX + 16 }}>
-        <h2 className="mb-4 text-xl font-bold leading-tight text-foreground">{room.topic}</h2>
+      <div className="mt-5">
+        <FlyerProgress votedCount={votedCount} total={total} />
+      </div>
 
-        <div className="relative w-full max-w-md mx-auto">
-          <SwipeableStatementStack
-            room={room}
-            statements={remainingStatements}
-            currentUserId={currentUserId}
-            allowAnonymous={!!room.allowAnonymous}
-            isAnonymous={isAnonymous}
-            chanceCardSwiped={chanceCardSwiped}
-            cover={null}
-            coverCardSwiped={true}
-            demographicQuestions={room.demographicQuestions}
-            answeredQuestionIds={answeredQuestionIds}
-            isActive={!isIntroVisible}
-            onVote={onVote}
-            onSubmitStatement={onSubmitStatement}
-            onShowAccountSetupModal={onShowAccountSetupModal}
-            onCertifyDone={() => {}}
-            onChanceCardSwiped={async () => setChanceCardSwiped(true)}
-            onCoverCardSwiped={async () => {}}
-            onDemographicsAnswered={handleDemographicsAnswered}
-          />
-
-          {isIntroVisible && flyerStatement && (
-            <div className="absolute top-0 left-0 z-30 w-full">
+      {showResults ? (
+        <>
+          <RaindownConfetti />
+          <div className="mt-5">
+            <FlyerResults
+              clusters={clusters}
+              clusterProbabilities={clusterProbabilities}
+              summary={tribeSummary}
+              statements={deck}
+              onSaveSpot={onSaveSpot}
+              onJustLooking={onJustLooking}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <div
+            className="relative mt-5 h-60"
+            style={{ marginBottom: STACK_PEEK_PX }}
+          >
+            {cardsBehind.map((statement, i) => (
+              <FlyerStackedCard
+                key={statement.id}
+                statement={statement}
+                depth={i + 1}
+              />
+            ))}
+            {votedCount === 0 ? (
               <FlyerVoteIntroCard
                 statement={flyerStatement}
-                room={room}
                 vote={flyerVote}
-                totalStatements={statements.length}
-                onDismissed={handleIntroDismissed}
+                onDismissed={() =>
+                  recordVote(flyerStatement.id, flyerVote)
+                }
               />
-            </div>
-          )}
-        </div>
-      </div>
+            ) : currentStatement ? (
+              <FlyerSwipeCard
+                key={currentStatement.id}
+                statement={currentStatement}
+                onDragStart={() => setHasStartedDragging(true)}
+                onSwiped={(vote) =>
+                  recordVote(currentStatement.id, vote)
+                }
+              />
+            ) : (
+              <AllVotedCard />
+            )}
+          </div>
+
+          <AnimatePresence>
+            {votedCount === 1 && (
+              <motion.div
+                className="-mx-2 overflow-hidden px-2"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{
+                  height: "auto",
+                  opacity: 1,
+                  transition: {
+                    height: { duration: 0.3, ease: "easeOut" },
+                    opacity: { duration: 0.25, delay: 0.2 },
+                  },
+                }}
+                exit={{
+                  height: 0,
+                  opacity: 0,
+                  transition: {
+                    opacity: { duration: 0.2 },
+                    height: {
+                      duration: 0.3,
+                      delay: 0.15,
+                      ease: "easeInOut",
+                    },
+                  },
+                }}
+              >
+                <div className="pb-3 pt-1">
+                  <OnTheBoardBanner
+                    remainingVotes={total - votedCount}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="flex items-start justify-between gap-4 pt-3">
+            <p className="max-w-40 text-sm leading-snug text-[#6B6760]">
+              Swipe right to agree, left to disagree. Your dot will
+              move as we find your tribe.
+            </p>
+            <ClusterMinimap
+              clusters={clusters}
+              clusterProbabilities={clusterProbabilities}
+              layoutId={FLYER_MINIMAP_LAYOUT_ID}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-function showFlyerVoteToast(statement: Statement, vote: FlyerVote) {
-  const truncatedText =
-    statement.text.length > TOAST_TEXT_MAX_LENGTH
-      ? `${statement.text.substring(0, TOAST_TEXT_MAX_LENGTH)}...`
-      : statement.text;
-  const options = { position: "bottom-center" as const, duration: 4000, richColors: true };
-
-  if (vote === "agree") {
-    toast.success(`You agreed with "${truncatedText}"`, options);
-  } else {
-    toast.error(`You disagreed with "${truncatedText}"`, options);
-  }
+function FlyerHeader({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-[28px] font-extrabold leading-none tracking-tight text-[#1C1B1F]">
+        heard
+      </span>
+      <button
+        className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8E3D6] text-[#1C1B1F]"
+        aria-label="Close"
+        onClick={onClose}
+      >
+        <X className="h-5 w-5" />
+      </button>
+    </div>
+  );
 }
 
-function FlyerCommunityLabel({ subHeard }: { subHeard: string }) {
+function TopicPill({ topic }: { topic: string }) {
   return (
-    <div className="flex h-9 max-w-full min-w-0 items-center rounded-full bg-[#E8E3D6] px-4">
-      <span className="truncate text-sm font-semibold text-[#1C1B1F]">
-        {formatSubHeardDisplay(subHeard)}
+    <div className="mt-3 flex items-center gap-2 rounded-xl bg-[#E8E3D6] px-3 py-2">
+      <MessageCircle className="h-4 w-4 shrink-0 text-[#1C1B1F]" />
+      <span className="text-sm font-semibold text-[#1C1B1F]">
+        {topic}
       </span>
+    </div>
+  );
+}
+
+function AllVotedCard() {
+  return (
+    <div
+      className={`${FLYER_CARD_CLASS} items-center justify-center text-center`}
+      style={{ boxShadow: FLYER_CARD_SHADOW }}
+    >
+      <p className="text-2xl font-extrabold tracking-tight text-[#1C1B1F]">
+        You found your tribe!
+      </p>
+      <p className="mt-2 text-sm text-[#6B6760]">
+        See where you landed on the map.
+      </p>
     </div>
   );
 }

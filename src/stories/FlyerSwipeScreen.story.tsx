@@ -1,106 +1,141 @@
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { FlyerSwipeScreen } from "../components/flyer/FlyerSwipeScreen";
+import type { SwipeVote } from "../components/flyer/FlyerSwipeCard";
 import type { FlyerVote } from "../components/flyer/FlyerVoteIntroCard";
+import type { MinimapCluster } from "../components/room/ClusterMinimap";
 import { Button } from "../components/ui/button";
-import { Toaster } from "../components/ui/sonner";
-import type { DebateRoom, Statement, VoteType } from "../types";
+import { estimateClusterProbabilities } from "../utils/cluster-estimation";
+import { summarizeTribe } from "../utils/tribe-summary";
+import type { DeckOrder, Statement, VoteRates } from "../types";
 import { StoryContainer } from "./StoryContainer";
 
-const FLYER_STATEMENT_ID = "flyer-stmt";
-
-const mockRoom: DebateRoom = {
-  id: "flyer-room",
-  topic: "Should we close Q Street to cars?",
-  description: "A conversation about the future of Q Street in Dupont Circle.",
-  phase: "lobby",
-  subPhase: "voting",
-  gameNumber: 1,
-  roundStartTime: Date.now(),
-  participants: [],
-  hostId: "story-host",
-  isActive: true,
-  createdAt: Date.now(),
-  mode: "realtime",
-  demographicQuestions: [],
-  subHeard: "dupont-circle-neighborhoods",
-  allowAnonymous: true,
+export default {
+  title: "Flyer/FlyerSwipeScreen",
 };
 
-const mockStatement = (
-  id: string,
-  text: string,
-  agrees: number,
-  disagrees: number,
-  hoursAgo: number,
-): Statement => ({
-  id,
-  text,
+const TOPIC = "Should DC let driverless cars on its streets?";
+
+const MOSTLY_AGREES: VoteRates = [0.85, 0.1, 0.05];
+const MOSTLY_DISAGREES: VoteRates = [0.1, 0.85, 0.05];
+const SPLIT: VoteRates = [0.45, 0.45, 0.1];
+
+const CLUSTERS: MinimapCluster[] = [
+  { stableId: "fast", slot: 0, name: "Full Speed Ahead", size: 42 },
+  { stableId: "brakes", slot: 1, name: "Hit the Brakes", size: 30 },
+  { stableId: "data", slot: 2, name: "Show Me the Data", size: 18 },
+];
+
+const STATEMENTS: { id: string; text: string; rates: VoteRates[] }[] = [
+  {
+    id: "safer-streets",
+    text: "Driverless cars will make streets safer for people walking and biking.",
+    rates: [MOSTLY_AGREES, MOSTLY_DISAGREES, SPLIT],
+  },
+  {
+    id: "pilot-first",
+    text: "DC should run a small pilot before allowing driverless cars citywide.",
+    rates: [MOSTLY_DISAGREES, SPLIT, MOSTLY_AGREES],
+  },
+  {
+    id: "jobs",
+    text: "Protecting rideshare and taxi jobs matters more than faster adoption.",
+    rates: [MOSTLY_DISAGREES, MOSTLY_AGREES, SPLIT],
+  },
+  {
+    id: "public-data",
+    text: "Companies should have to publish all their crash data before expanding.",
+    rates: [SPLIT, MOSTLY_AGREES, MOSTLY_AGREES],
+  },
+  {
+    id: "traffic",
+    text: "Driverless cars will make traffic worse, not better.",
+    rates: [MOSTLY_DISAGREES, MOSTLY_AGREES, SPLIT],
+  },
+  {
+    id: "night-service",
+    text: "Late-night driverless rides would make it easier to get home safely.",
+    rates: [MOSTLY_AGREES, SPLIT, SPLIT],
+  },
+];
+
+const DECK_ORDER: DeckOrder = {
+  leadStatementIds: STATEMENTS.map((s) => s.id),
+  consensusStatementId: null,
+  longStatementIds: [],
+  clusters: CLUSTERS.map((cluster, clusterIndex) => ({
+    stableId: cluster.stableId,
+    size: cluster.size,
+    voteRates: Object.fromEntries(STATEMENTS.map((s) => [s.id, s.rates[clusterIndex]])),
+  })),
+};
+
+const STORY_STATEMENTS: Statement[] = STATEMENTS.map((s) => ({
+  id: s.id,
+  text: s.text,
   author: "story-author",
-  roomId: mockRoom.id,
-  timestamp: Date.now() - hoursAgo * 60 * 60 * 1000,
-  agrees,
-  disagrees,
-  passes: 4,
+  roomId: "flyer-room",
+  timestamp: Date.now(),
+  agrees: 0,
+  disagrees: 0,
+  passes: 0,
   superAgrees: 0,
   voters: {},
   round: 1,
-});
-
-const mockStatements: Statement[] = [
-  mockStatement(FLYER_STATEMENT_ID, "Close Q Street to cars between Connecticut and 17th.", 62, 28, 30),
-  mockStatement("stmt-2", "The city should add protected bike lanes before closing any streets.", 48, 15, 20),
-  mockStatement("stmt-3", "Local businesses on Q Street would benefit from more foot traffic.", 41, 22, 12),
-  mockStatement("stmt-4", "Closing Q Street would push traffic onto already-busy side streets.", 37, 31, 8),
-  mockStatement("stmt-5", "We should try a weekend-only closure as a pilot first.", 55, 9, 3),
-  mockStatement("stmt-6", "Deliveries and accessibility vehicles must keep access no matter what.", 60, 5, 1),
-];
+}));
 
 export function FlyerSwipeScreenStory() {
   return (
     <StoryContainer
       title="Flyer Swipe Screen"
-      description="Replaces the QR scan result dialog. Drops the user straight into swiping the flyer's post, replaying their flyer vote as a pre-tilted card that swipes away after 750ms. No bottom nav, community locked to the flyer's."
+      description="Opens by replaying the flyer vote (vote 1 of 6), then you swipe the other 5. Drag right to agree, left to disagree, up to pass; the minimap moves using the real cluster estimate."
       variants={[
-        { id: "agree", label: "Scanned Agree", children: <FlyerSwipeScreenDemo vote="agree" /> },
-        { id: "disagree", label: "Scanned Disagree", children: <FlyerSwipeScreenDemo vote="disagree" /> },
+        { id: "agree", label: "Scanned Agree", children: <FlyerSwipeScreenDemo flyerVote="agree" /> },
+        { id: "disagree", label: "Scanned Disagree", children: <FlyerSwipeScreenDemo flyerVote="disagree" /> },
       ]}
     />
   );
 }
 
-function FlyerSwipeScreenDemo({ vote }: { vote: FlyerVote }) {
+export const ScannedAgree = () => <FlyerSwipeScreenDemo flyerVote="agree" />;
+export const ScannedDisagree = () => <FlyerSwipeScreenDemo flyerVote="disagree" />;
+
+function FlyerSwipeScreenDemo({ flyerVote }: { flyerVote: FlyerVote }) {
   const [replayKey, setReplayKey] = useState(0);
+  const [votes, setVotes] = useState<Record<string, SwipeVote>>({});
+  const clusterProbabilities =
+    Object.keys(votes).length > 0 ? estimateClusterProbabilities(DECK_ORDER, votes) : null;
+  const tribeSummary =
+    clusterProbabilities && Object.keys(votes).length === STATEMENTS.length
+      ? summarizeTribe(DECK_ORDER, votes, clusterProbabilities)
+      : null;
 
-  const handleVote = async (statement: Statement, voteType: VoteType) => {
-    console.log("[Story] vote", { statementId: statement.id, voteType });
-  };
-
-  const handleSubmitStatement = async (text: string) => {
-    console.log("[Story] submit statement", text);
+  const handleReplay = () => {
+    setVotes({});
+    setReplayKey((key) => key + 1);
   };
 
   return (
     <div className="space-y-4">
-      <Toaster />
-      <Button variant="outline" size="sm" className="gap-2" onClick={() => setReplayKey((k) => k + 1)}>
-        <RotateCcw className="w-4 h-4" />
+      <Button variant="outline" size="sm" className="gap-2" onClick={handleReplay}>
+        <RotateCcw className="h-4 w-4" />
         Replay
       </Button>
 
-      <div className="mx-auto h-[780px] w-[390px] max-w-full overflow-y-auto rounded-[32px] border-8 border-slate-900 shadow-2xl">
+      <div className="mx-auto h-195 w-97.5 max-w-full overflow-y-auto rounded-4xl border-8 border-slate-900 shadow-2xl">
         <FlyerSwipeScreen
           key={replayKey}
-          room={mockRoom}
-          statements={mockStatements}
-          flyerStatementId={FLYER_STATEMENT_ID}
-          flyerVote={vote}
-          currentUserId="story-user"
-          isAnonymous={true}
-          onWordmarkClick={() => console.log("[Story] wordmark clicked")}
-          onVote={handleVote}
-          onSubmitStatement={handleSubmitStatement}
-          onShowAccountSetupModal={(featureText) => console.log("[Story] account setup", featureText)}
+          topic={TOPIC}
+          flyerStatement={STORY_STATEMENTS[0]}
+          flyerVote={flyerVote}
+          statements={STORY_STATEMENTS.slice(1)}
+          clusters={CLUSTERS}
+          clusterProbabilities={clusterProbabilities}
+          tribeSummary={tribeSummary}
+          onVote={(statementId, vote) => setVotes((current) => ({ ...current, [statementId]: vote }))}
+          onClose={() => console.log("[Story] close")}
+          onSaveSpot={() => console.log("[Story] save my spot")}
+          onJustLooking={() => console.log("[Story] just looking")}
         />
       </div>
     </div>

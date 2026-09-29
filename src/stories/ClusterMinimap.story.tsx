@@ -58,6 +58,7 @@ function buildDeckOrder(clusters: MinimapCluster[]): DeckOrder {
   return {
     leadStatementIds: STATEMENTS.map((s) => s.id),
     consensusStatementId: null,
+    longStatementIds: [],
     clusters: clusters.map((cluster, clusterIndex) => ({
       stableId: cluster.stableId,
       size: cluster.size,
