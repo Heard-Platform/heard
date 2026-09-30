@@ -69,6 +69,11 @@ export function DevTools({ user, onExit }: DevToolsProps) {
                 onClick={() => handleTabChange("ai-review")}
               />
               <TabButton
+                active={activeTab === "flyer-sensors"}
+                label="Flyer Sensors"
+                onClick={() => handleTabChange("flyer-sensors")}
+              />
+              <TabButton
                 active={activeTab === "vote-matrix"}
                 label="Vote Matrix"
                 onClick={() => handleTabChange("vote-matrix")}
@@ -107,11 +112,6 @@ export function DevTools({ user, onExit }: DevToolsProps) {
                 active={activeTab === "flyers"}
                 label="Flyers"
                 onClick={() => handleTabChange("flyers")}
-              />
-              <TabButton
-                active={activeTab === "flyer-sensors"}
-                label="Flyer Sensors"
-                onClick={() => handleTabChange("flyer-sensors")}
               />
               <TabButton
                 active={activeTab === "vote-stats"}

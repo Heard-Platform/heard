@@ -4,7 +4,7 @@ import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import type { NewFlyerPlacementsRequest, RoomFlyerPlacements } from "../../../utils/dev-api";
 import { FlyerSensorsView } from "./FlyerSensorsView";
-import { RoomPicker, type RoomOption } from "./RoomPicker";
+import { RoomSearchPicker, type RoomSearchOption } from "../../RoomSearchPicker";
 import { StatementPicker } from "./StatementPicker";
 import { useRoomFlyers, type RoomFlyersState } from "./use-room-flyers";
 import { parseAccelerometerCsv, parseLocationCsv } from "./parse-sensor-csv";
@@ -102,7 +102,7 @@ function useCsvLoader<T>(parse: (file: File) => Promise<T[]>, initialRecords: T[
 }
 
 interface FlyerSensorsTabProps {
-  rooms: RoomOption[];
+  rooms: RoomSearchOption[];
   roomsLoading: boolean;
   initialRecording?: SensorRecording;
   loadRoomFlyers: (roomId: string) => Promise<RoomFlyerPlacements>;
@@ -159,7 +159,17 @@ export function FlyerSensorsTab({
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
-          <RoomPicker rooms={rooms} loading={roomsLoading} selectedRoomId={roomId} onChange={handleRoomChange} />
+          <div className="space-y-1">
+            <Label htmlFor="flyer-sensors-room">Room</Label>
+            <RoomSearchPicker
+              id="flyer-sensors-room"
+              rooms={rooms}
+              selectedRoomId={roomId}
+              placeholder="Select a room"
+              loading={roomsLoading}
+              onSelect={handleRoomChange}
+            />
+          </div>
           {loadedRoom && (
             <StatementPicker
               statements={loadedRoom.statements}

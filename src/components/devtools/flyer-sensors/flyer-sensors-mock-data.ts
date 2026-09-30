@@ -4,7 +4,7 @@ import type {
   RoomFlyerPlacements,
   SavedFlyerPlacement,
 } from "../../../utils/dev-api";
-import type { RoomOption } from "./RoomPicker";
+import type { RoomSearchOption } from "../../RoomSearchPicker";
 import type { AccelerometerSample, LocationFix } from "./sensor-types";
 
 interface FlyerStop {
@@ -122,10 +122,10 @@ export function createMockSensorRecording(seed = 20260922): MockSensorRecording 
   return { accelerometerSamples, locationFixes };
 }
 
-export const MOCK_ROOMS: RoomOption[] = [
-  { id: "room-dupont-bike-lanes", topic: "Should Connecticut Ave get protected bike lanes?", createdAt: Date.UTC(2026, 8, 20) },
-  { id: "room-adams-morgan-noise", topic: "How should Adams Morgan handle late-night noise?", createdAt: Date.UTC(2026, 8, 12) },
-  { id: "room-dc-housing", topic: "What should DC prioritize to make housing affordable?", createdAt: Date.UTC(2026, 7, 28) },
+export const MOCK_ROOMS: RoomSearchOption[] = [
+  { id: "room-dupont-bike-lanes", topic: "Should Connecticut Ave get protected bike lanes?", detail: "Sep 20, 2026" },
+  { id: "room-adams-morgan-noise", topic: "How should Adams Morgan handle late-night noise?", detail: "Sep 12, 2026" },
+  { id: "room-dc-housing", topic: "What should DC prioritize to make housing affordable?", detail: "Aug 28, 2026" },
 ];
 
 const MAX_MOCK_VOTES_PER_FLYER = 30;
