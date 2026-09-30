@@ -15,6 +15,7 @@ Each phase ships and deploys on its own, in this order. Each one also adds a qui
 | 2b | [Keep clusters fresh](2b-cluster-freshness.md) | Nothing visible. Clusters recompute as votes come in, not only when the analysis is opened. | None |
 | 3 | [Cluster-aware sorting](3-cluster-aware-sorting.md) | First cards are the ones that best place you in a group | Feature flag |
 | 4 | [Live minimap](4-live-minimap.md) | Your dot moves between groups as you swipe | Feature flag |
+| 5 | [Flyer integration](5-flyer-integration.md) | Flyer scans open the swipe screen in place of the results dialog, then drop into the feed on the flyer room | Feature flag |
 
 ## Key decisions
 
