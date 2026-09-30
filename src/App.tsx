@@ -832,7 +832,7 @@ function AppContent() {
     return <NewsletterViewer edition={newsletterEdition} />;
   }
 
-  if (!user || loading || isJoiningAnonymously) {
+  if (!user || loading || isJoiningAnonymously || !hasCheckedUrl) {
     return (
       <div className="heard-page-bg heard-center">
         <motion.div
