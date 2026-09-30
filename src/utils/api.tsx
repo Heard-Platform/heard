@@ -18,10 +18,15 @@ import {
   UserHistoryData,
   UserPresence,
   UserSession,
+  WeeklySignupCount,
   type DebateRoom,
   type NewDebateRoom,
   type VoteType,
   EnrichmentConfig,
+  ClusterNamingConfig,
+  ClusterNameReviewRoom,
+  ReviewRoomOption,
+  DeckOrder,
   type Event,
   type NewEvent,
   EventSummary,
@@ -30,7 +35,7 @@ import {
   StatementTagLink,
 } from "../types";
 import { AskTheDataResponse, FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
-import type { AnonymityBreakdown, ParticipationBreakdown, ReferrerShareCount, TrafficSourceCount } from "../components/room/RoomAnalyticsModal";
+import type { AnonymityBreakdown, ParticipantJoin, ParticipationBreakdown, ReferrerShareCount, TrafficSourceCount } from "../components/room/RoomAnalyticsModal";
 import type { RoomDebugData } from "../components/room/RoomDebugDataPanel";
 import {
   BaseApiClient,
@@ -678,6 +683,10 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async getWeeklySignups() {
+    return this.request<{ weeks: WeeklySignupCount[] }>("/stats/weekly-signups");
+  }
+
   async getActivityFeed() {
     return this.request<ActivityFeedData>("/stats/activity-feed");
   }
@@ -825,6 +834,38 @@ class ApiClient extends BaseApiClient {
       method: "POST",
       body: JSON.stringify(config),
     });
+  }
+
+  async getClusterNamingConfig() {
+    return this.request<ClusterNamingConfig>("/internal/config/cluster-naming");
+  }
+
+  async setClusterNamingConfig(config: ClusterNamingConfig) {
+    return this.request<ClusterNamingConfig>("/internal/config/cluster-naming", {
+      method: "POST",
+      body: JSON.stringify(config),
+    });
+  }
+
+  async getClusterNamesForReview(offset: number, limit: number) {
+    return this.request<{ rooms: ClusterNameReviewRoom[]; hasMore: boolean }>(
+      `/dev/ai-review/cluster-names?offset=${offset}&limit=${limit}`,
+    );
+  }
+
+  async getDeckOrder(roomId: string) {
+    return this.request<{ deckOrder: DeckOrder | null }>(`/room/${roomId}/deck-order`);
+  }
+
+  async getRoomsForReview() {
+    return this.request<{ rooms: ReviewRoomOption[] }>("/dev/ai-review/rooms");
+  }
+
+  async regenerateClusterNames(roomId: string) {
+    return this.request<{ room: ClusterNameReviewRoom }>(
+      `/dev/room/${roomId}/cluster-names/regenerate`,
+      { method: "POST" },
+    );
   }
 
   async runEnrichmentNow() {
@@ -1011,6 +1052,7 @@ class ApiClient extends BaseApiClient {
       referrers: ReferrerShareCount[];
       anonymity: AnonymityBreakdown;
       participation: ParticipationBreakdown;
+      joins: ParticipantJoin[];
     }>(`/room/${roomId}/mod/traffic-sources`);
   }
 

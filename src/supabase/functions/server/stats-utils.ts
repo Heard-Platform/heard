@@ -1,4 +1,6 @@
+import _ from "lodash";
 import { User } from "./types.tsx";
+import { SESSION_GAP_MS } from "./session-utils.ts";
 
 export function buildActiveDaysMap(
   votes: Array<{ userId: string; timestamp: number }>,
@@ -126,4 +128,76 @@ export function calculateRetention({
     retained,
     totalInCohort: cohortUsers.length,
   };
+}
+
+export const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MINUTE_MS = 60 * 1000;
+export const SESSION_WINDOW_WEEKS = 12;
+
+export function startOfUtcWeek(timestamp: number): number {
+  const date = new Date(timestamp);
+  const daysSinceMonday = (date.getUTCDay() + 6) % 7;
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) - daysSinceMonday * DAY_MS;
+}
+
+export interface VoteTiming {
+  userId: string;
+  timestamp: number;
+}
+
+export interface VotingSession {
+  start: number;
+  end: number;
+  votes: number;
+}
+
+function splitIntoSessions(timestamps: number[]): VotingSession[] {
+  const sorted = _.sortBy(timestamps);
+  const sessions: VotingSession[] = [];
+  sorted.forEach((timestamp, i) => {
+    const isNewSession = i === 0 || timestamp - sorted[i - 1] > SESSION_GAP_MS;
+    if (isNewSession) sessions.push({ start: timestamp, end: timestamp, votes: 0 });
+    const session = sessions[sessions.length - 1];
+    session.end = timestamp;
+    session.votes++;
+  });
+  return sessions;
+}
+
+export function groupRecentSessionsByWeek(votes: VoteTiming[], now: number): Record<string, VotingSession[]> {
+  const windowStart = startOfUtcWeek(now) - (SESSION_WINDOW_WEEKS - 1) * WEEK_MS;
+
+  return _(votes)
+    .groupBy("userId")
+    .flatMap((userVotes) => splitIntoSessions(_.map(userVotes, "timestamp")))
+    .filter((session) => startOfUtcWeek(session.start) >= windowStart)
+    .groupBy((session) => startOfUtcWeek(session.start))
+    .value();
+}
+
+function median(values: number[]): number {
+  const sorted = _.sortBy(values);
+  const middle = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 1) return sorted[middle];
+  return (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+export function medianSessionMinutesByWeek(
+  votes: VoteTiming[],
+  now: number,
+): { weekStart: string; medianMinutes: number; sessions: number }[] {
+  return _(groupRecentSessionsByWeek(votes, now))
+    .map((weekSessions, week) => ({
+      week,
+      multiVoteSessions: weekSessions.filter((session) => session.votes > 1),
+    }))
+    .filter(({ multiVoteSessions }) => multiVoteSessions.length > 0)
+    .map(({ week, multiVoteSessions }) => ({
+      weekStart: new Date(Number(week)).toISOString().slice(0, 10),
+      medianMinutes: _.round(median(multiVoteSessions.map((session) => (session.end - session.start) / MINUTE_MS)), 1),
+      sessions: multiVoteSessions.length,
+    }))
+    .sortBy("weekStart")
+    .value();
 }

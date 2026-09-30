@@ -46,6 +46,12 @@ Room creators (and developers) can open **Room Analytics** from the room menu (�
 
 <img width="265" height="211" alt="image" src="https://github.com/user-attachments/assets/aa49d7b4-3acd-41ad-baa7-3a2f809e4679" />
 
+## Printing Insights
+
+To print the insights report or save it as a PDF, tap the **Print** (🖨️) icon in the top right of the insights view. Ask the Data and other interactive controls are left out of the printout. For best results, use the icon rather than your browser's print shortcut.
+
+<img width="948" height="638" alt="print gif" src="https://github.com/user-attachments/assets/8478466f-5ff1-448e-bd91-01f8705387dc" />
+
 ## Statement Deduplication
 
 When participants submit statements, it's common for similar ideas to be expressed in different words. As the room creator, you can merge these duplicates together so that votes are consolidated under a single statement. This only affects the **insights view** — participants will still see and vote on statements as normal. Merges can be added or removed at any time.

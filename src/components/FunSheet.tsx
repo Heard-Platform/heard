@@ -168,7 +168,7 @@ export const FunSheet = forwardRef<FunSheetRef, FunSheetProps>(({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className={`h-[90vh] rounded-t-3xl bg-gradient-to-br ${theme.bgGradient} border-0 px-5 overflow-hidden flex flex-col`}
+        className={`h-[90dvh] rounded-t-3xl bg-gradient-to-br ${theme.bgGradient} border-0 px-5 overflow-hidden flex flex-col`}
       >
         <div ref={scrollRef} className="overflow-y-auto flex-1 scrollbar-hide">
           <SheetHeader className="space-y-2 pt-4">

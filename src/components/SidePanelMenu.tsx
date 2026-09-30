@@ -6,7 +6,6 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "./ui/sheet";
 import {
   LogOut,
@@ -23,7 +22,6 @@ import {
   Clock,
   Link2,
   AlertCircle,
-  User,
   Target,
   Info,
   Heart,
@@ -34,12 +32,12 @@ import {
   TrendingUp,
   MessageCircle,
   Bell,
+  Activity,
 } from "lucide-react";
 import type { UserSession } from "../types";
 import { api } from "../utils/api";
 import { sendTestPushNotification } from "../utils/pushNotifications";
 import { RoomAlertsList } from "./side-panel/RoomAlertsList";
-import { AvatarAlertDot } from "./side-panel/AvatarAlertDot";
 import { useRoomAlertsContext } from "../contexts/RoomAlertsContext";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { PhoneVerificationDialog } from "./onboarding/PhoneVerificationDialog";
@@ -73,9 +71,12 @@ const learnMoreLinks = [
 
 interface SidePanelMenuProps {
   user: UserSession;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onLogout: () => void;
   onOpenHelp: () => void;
   onOpenShowcase?: () => void;
+  onOpenActivityDashboard: () => void;
   onOpenRetentionDashboard: () => void;
   onOpenAdminDashboard?: () => void;
   onOpenFeatureTracker: () => void;
@@ -90,9 +91,12 @@ interface SidePanelMenuProps {
 
 export function SidePanelMenu({
   user,
+  open,
+  onOpenChange,
   onLogout,
   onOpenHelp,
   onOpenShowcase,
+  onOpenActivityDashboard,
   onOpenRetentionDashboard,
   onOpenAdminDashboard,
   onOpenFeatureTracker,
@@ -104,14 +108,13 @@ export function SidePanelMenu({
   onShowAccountSetupModal,
   onJumpToRoom,
 }: SidePanelMenuProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [phoneVerificationOpen, setPhoneVerificationOpen] = useState(false);
   const [feedbackSheetOpen, setFeedbackSheetOpen] = useState(false);
   const { refresh: refreshAlerts } = useRoomAlertsContext();
 
-  const handleSheetOpenChange = (open: boolean) => {
-    setMenuOpen(open);
-    if (open) refreshAlerts();
+  const handleSheetOpenChange = (nextOpen: boolean) => {
+    onOpenChange(nextOpen);
+    if (nextOpen) refreshAlerts();
   };
   const {
     createSeedData,
@@ -122,23 +125,10 @@ export function SidePanelMenu({
     subscribeToUpdates,
   } = useDebateSession();
 
-  if (user.isAnonymous) {
-    return (
-      <Button
-        onClick={() => onShowAccountSetupModal("sign in or create an account", true)}
-        variant="outline"
-        className="controls-layer rounded-full bg-gradient-to-r from-orange-500 to-amber-500 backdrop-blur-sm shadow-lg h-[30px] px-4 gap-2 border border-orange-400 hover:from-orange-600 hover:to-amber-600 transition-all"
-      >
-        <div className="flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-white" />
-          <span className="font-bold text-sm text-white">Sign In</span>
-        </div>
-      </Button>
-    );
-  }
+  if (user.isAnonymous) return null;
 
   const closeMenuAndRun = (action: () => void) => {
-    setMenuOpen(false);
+    onOpenChange(false);
     action();
   };
 
@@ -211,11 +201,6 @@ export function SidePanelMenu({
     }
   };
 
-  const formattedScore = new Intl.NumberFormat("en", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(user.score);
-
   return (
     <>
       <PhoneVerificationDialog
@@ -230,31 +215,7 @@ export function SidePanelMenu({
         onOpenChange={setFeedbackSheetOpen}
         userId={user.id}
       />
-      <Sheet open={menuOpen} onOpenChange={handleSheetOpenChange}>
-        <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            className="controls-layer rounded-full bg-white/90 backdrop-blur-sm shadow-lg px-3 h-[30px] gap-2 border border-gray-200"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-sm">{formattedScore}</span>
-              <div className="relative w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
-                <User className="w-4 h-4 text-white" />
-                {!user.phoneVerified && (
-                  <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center">
-                    <ShieldAlert className="w-2 h-2 text-white" />
-                  </div>
-                )}
-                {user.phoneVerified && (
-                  <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center">
-                    <ShieldCheck className="w-2 h-2 text-white" />
-                  </div>
-                )}
-                <AvatarAlertDot />
-              </div>
-            </div>
-          </Button>
-        </SheetTrigger>
+      <Sheet open={open} onOpenChange={handleSheetOpenChange}>
         <SheetContent side="right" className="flex flex-col">
           <SheetHeader>
             <SheetTitle>Menu</SheetTitle>
@@ -266,7 +227,7 @@ export function SidePanelMenu({
           <div className="space-y-4 overflow-y-auto flex-1 px-1">
             <RoomAlertsList
               onJumpToRoom={(roomId, subHeard) => {
-                setMenuOpen(false);
+                onOpenChange(false);
                 onJumpToRoom(roomId, subHeard);
               }}
             />
@@ -304,7 +265,7 @@ export function SidePanelMenu({
                 </div>
                 <Button
                   onClick={() => {
-                    setMenuOpen(false);
+                    onOpenChange(false);
                     onShowAccountSetupModal("save your progress");
                   }}
                   size="sm"
@@ -330,7 +291,7 @@ export function SidePanelMenu({
                 </div>
                 <Button
                   onClick={() => {
-                    setMenuOpen(false);
+                    onOpenChange(false);
                     setPhoneVerificationOpen(true);
                   }}
                   size="sm"
@@ -372,6 +333,17 @@ export function SidePanelMenu({
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
+              </Button>
+            )}
+
+            {user.isDeveloper && (
+              <Button
+                onClick={() => closeMenuAndRun(onOpenActivityDashboard)}
+                variant="outline"
+                className="w-full bg-gradient-to-r from-blue-50 to-sky-50 border-blue-200"
+              >
+                <Activity className="w-4 h-4 mr-2 text-blue-600" />
+                Activity Dashboard
               </Button>
             )}
 
@@ -426,7 +398,7 @@ export function SidePanelMenu({
               <div className="space-y-2">
                 <Button
                   onClick={() => {
-                    setMenuOpen(false);
+                    onOpenChange(false);
                     setFeedbackSheetOpen(true);
                   }}
                   variant="outline"

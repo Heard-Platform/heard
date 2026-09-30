@@ -6,7 +6,8 @@ import {
   recalculateClustersForRoom,
 } from "./clustering.tsx";
 import { calculateClusterConsensus } from "./cluster-analysis.tsx";
-import { getParsedKvData } from "./kv-utils.tsx";
+import { recomputeClustersIfNeeded } from "./cluster-freshness.ts";
+import { getClusterIdentityRecord, getParsedKvData } from "./kv-utils.tsx";
 import { calculateAnalysisMetrics, computeTopPosts, getStatementVoterIds } from "./analysis-utils.tsx";
 import { applyStatementMerges } from "./room-utils.ts";
 import { AnalysisData } from "./types.tsx";
@@ -44,44 +45,17 @@ app.get(
 
       const metrics = calculateAnalysisMetrics(mergedStatements, questions, answers);
 
-      const metadataKey = `cluster:${roomId}:metadata`;
-      let clusterMetadata =
-        await getParsedKvData<ClusterMetadata>(metadataKey);
+      await recomputeClustersIfNeeded(room);
 
-      if (
-        !clusterMetadata &&
-        room.participants.length > 0 &&
-        statements.length > 0
-      ) {
-        console.log(
-          `[Analysis] No cluster data found for room ${roomId}, generating now...`,
-        );
-        clusterMetadata =
-          await recalculateClustersForRoom(roomId);
-      } else if (clusterMetadata) {
-        const lastClusterVoteCount =
-          clusterMetadata.totalVotes ?? null;
-        if (
-          lastClusterVoteCount === null ||
-          metrics.totalVotes > lastClusterVoteCount
-        ) {
-          console.log(
-            `[Analysis] ${lastClusterVoteCount === null ? "Legacy cluster data" : `New votes detected`} for room ${roomId} (${metrics.totalVotes} vs ${lastClusterVoteCount}), recalculating clusters...`,
-          );
-          clusterMetadata =
-            await recalculateClustersForRoom(roomId);
-        } else {
-          console.log(
-            `[Analysis] Using cached cluster data for room ${roomId} (${metrics.totalVotes} votes)`,
-          );
-        }
-      }
+      const clusterMetadata = await getParsedKvData<ClusterMetadata>(`cluster:${roomId}:metadata`);
+      const clusterIdentity = clusterMetadata ? await getClusterIdentityRecord(roomId) : null;
 
       let clusterConsensus = null;
 
       const voterIds = getStatementVoterIds(mergedStatements);
       if (
         clusterMetadata &&
+        clusterIdentity &&
         voterIds.length > 0
       ) {
         const assignments = await Promise.all(
@@ -95,6 +69,7 @@ app.get(
         clusterConsensus = calculateClusterConsensus(
           mergedStatements,
           clusterMetadata,
+          clusterIdentity.clusters,
           assignments,
           voterIds,
           c.get("userId") ?? null,

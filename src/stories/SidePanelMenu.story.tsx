@@ -26,38 +26,43 @@ const unsubbedMockUser: UserSession = {
   isUnsubbedFromUpdates: true,
 };
 
+function SidePanelMenuDemo({ user }: { user: UserSession }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <RoomAlertsProvider>
+      <button
+        className="rounded-full border border-gray-200 bg-white px-4 py-2 shadow"
+        onClick={() => setOpen(true)}
+      >
+        Open menu
+      </button>
+      <SidePanelMenu
+        user={user}
+        open={open}
+        onOpenChange={setOpen}
+        onLogout={() => alert("Logout clicked")}
+        onOpenHelp={() => alert("Help clicked")}
+        onOpenRetentionDashboard={() => alert("Open Retention Dashboard clicked")}
+        onOpenFeatureTracker={() => alert("Open Feature Tracker clicked")}
+        onOpenActivityFeed={() => alert("Open Activity Feed clicked")}
+        onShowAccountSetupModal={(featureText) =>
+          alert(`Show account setup modal: ${featureText}`)
+        }
+        onJumpToRoom={(roomId) => alert(`Jump to room: ${roomId}`)}
+      />
+    </RoomAlertsProvider>
+  );
+}
+
 export default function SidePanelMenuStory() {
-  const handleLogout = () => {
-    console.log("Logout clicked");
-    alert("Logout clicked");
-  };
-
-  const handleOpenHelp = () => {
-    console.log("Help clicked");
-    alert("Help clicked");
-  };
-
-  const handleShowAccountSetupModal = (featureText: string) => {
-    console.log("Show account setup modal:", featureText);
-    alert(`Show account setup modal: ${featureText}`);
-  };
-
   const variants = [
     {
       id: "unverified",
       label: "Unverified User",
       children: (
         <div className="flex items-center justify-center p-12">
-          <RoomAlertsProvider>
-            <SidePanelMenu
-              user={mockUser}
-              onLogout={handleLogout}
-              onOpenHelp={handleOpenHelp}
-              onShowAccountSetupModal={handleShowAccountSetupModal}
-              onOpenFeatureTracker={() => alert("Open Feature Tracker clicked")}
-              onJumpToRoom={(roomId) => alert(`Jump to room: ${roomId}`)}
-            />
-          </RoomAlertsProvider>
+          <SidePanelMenuDemo user={mockUser} />
         </div>
       ),
     },
@@ -66,16 +71,7 @@ export default function SidePanelMenuStory() {
       label: "Unsubbed from Updates",
       children: (
         <div className="flex items-center justify-center p-12">
-          <RoomAlertsProvider>
-            <SidePanelMenu
-              user={unsubbedMockUser}
-              onLogout={handleLogout}
-              onOpenHelp={handleOpenHelp}
-              onShowAccountSetupModal={handleShowAccountSetupModal}
-              onOpenFeatureTracker={() => alert("Open Feature Tracker clicked")}
-              onJumpToRoom={(roomId) => alert(`Jump to room: ${roomId}`)}
-            />
-          </RoomAlertsProvider>
+          <SidePanelMenuDemo user={unsubbedMockUser} />
         </div>
       ),
     },

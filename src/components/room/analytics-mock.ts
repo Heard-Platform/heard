@@ -1,5 +1,6 @@
 import type {
   AnonymityBreakdown,
+  ParticipantJoin,
   ParticipationBreakdown,
   ReferrerShareCount,
   TrafficSourceCount,
@@ -70,4 +71,16 @@ export function generateMockParticipation(seed: string, viewerTotal: number): Pa
   const rng = makeSeededRng(seed);
   const participating = Math.round(viewerTotal * (0.2 + rng() * 0.4));
   return { participating, lurking: viewerTotal - participating };
+}
+
+export function generateMockJoins(seed: string, anonymity: AnonymityBreakdown, spanDays: number): ParticipantJoin[] {
+  const rng = makeSeededRng(seed);
+  const total = anonymity.anonymous + anonymity.named;
+  const spanMs = spanDays * 24 * 60 * 60 * 1000;
+  const startsAt = Date.now() - spanMs;
+  const anonymousFlags = Array.from({ length: total }, (_, i) => i < anonymity.anonymous)
+    .sort(() => rng() - 0.5);
+  return anonymousFlags
+    .map((isAnonymous) => ({ isAnonymous, joinedAt: startsAt + Math.round(rng() ** 2 * spanMs) }))
+    .sort((a, b) => a.joinedAt - b.joinedAt);
 }

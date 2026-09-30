@@ -6,6 +6,8 @@ import { generateId, getDebateRoom, getStatementById, saveDebateRoom } from "./d
 import { recordRoomEngagement } from "./model-utils.ts";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { maybeEmailResponseVotesNotif } from "./email-notifs-utils.ts";
+import { recomputeClustersIfNeeded } from "./cluster-freshness.ts";
+import { runInBackground } from "./background-utils.ts";
 
 export interface FlyerSource {
   flyerId: string;
@@ -249,6 +251,11 @@ export const processVote = async (
   };
 
   await saveStatement(updatedStatement);
+
+  runInBackground(
+    recomputeClustersIfNeeded(room),
+    `cluster freshness check for room ${statement.roomId}`,
+  );
 
   console.log(
     `Final vote count for statement ${statementId}: ${voteStats.agrees} agree, ${voteStats.disagrees} disagree, ${voteStats.passes} pass (${updatedVotes.length} total votes)`,

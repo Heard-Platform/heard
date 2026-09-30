@@ -15,6 +15,7 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { RoomDebugDataPanel } from "./RoomDebugDataPanel";
+import { RoomJoinTimeline } from "./RoomJoinTimeline";
 import type { RoomDebugData } from "./RoomDebugDataPanel";
 
 export type TrafficSourceKey =
@@ -43,6 +44,11 @@ export interface AnonymityBreakdown {
 export interface ParticipationBreakdown {
   participating: number;
   lurking: number;
+}
+
+export interface ParticipantJoin {
+  isAnonymous: boolean;
+  joinedAt: number;
 }
 
 const SOURCE_META: Record<
@@ -294,6 +300,7 @@ interface RoomAnalyticsModalProps {
   referrers: ReferrerShareCount[];
   anonymity: AnonymityBreakdown;
   participation: ParticipationBreakdown;
+  joins: ParticipantJoin[];
   isDeveloper?: boolean;
   debugData?: RoomDebugData | null;
   debugLoading?: boolean;
@@ -307,6 +314,7 @@ export function RoomAnalyticsModal({
   referrers,
   anonymity,
   participation,
+  joins,
   isDeveloper,
   debugData,
   debugLoading,
@@ -325,25 +333,29 @@ export function RoomAnalyticsModal({
         <DialogTitle className="line-clamp-1 pr-8">Room analytics</DialogTitle>
         <p className="text-xs text-muted-foreground line-clamp-1 -mt-2">{roomTopic}</p>
 
-        {isDeveloper ? (
-          <Tabs
-            defaultValue="analytics"
-            onValueChange={(value: string) => {
-              if (value === "debug") onDebugTabOpen?.();
-            }}
-          >
-            <TabsList>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="debug">Debug data</TabsTrigger>
-            </TabsList>
-            <TabsContent value="analytics">
-              <AnalyticsContent
-                trafficSources={trafficSources}
-                referrers={referrers}
-                anonymity={anonymity}
-                participation={participation}
-              />
-            </TabsContent>
+        <Tabs
+          defaultValue="analytics"
+          onValueChange={(value: string) => {
+            if (value === "debug") onDebugTabOpen?.();
+          }}
+        >
+          <TabsList>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            {isDeveloper && <TabsTrigger value="debug">Debug data</TabsTrigger>}
+          </TabsList>
+          <TabsContent value="analytics">
+            <AnalyticsContent
+              trafficSources={trafficSources}
+              referrers={referrers}
+              anonymity={anonymity}
+              participation={participation}
+            />
+          </TabsContent>
+          <TabsContent value="timeline">
+            <RoomJoinTimeline joins={joins} />
+          </TabsContent>
+          {isDeveloper && (
             <TabsContent value="debug">
               <div className="py-2">
                 {debugLoading && (
@@ -359,15 +371,8 @@ export function RoomAnalyticsModal({
                 )}
               </div>
             </TabsContent>
-          </Tabs>
-        ) : (
-          <AnalyticsContent
-            trafficSources={trafficSources}
-            referrers={referrers}
-            anonymity={anonymity}
-            participation={participation}
-          />
-        )}
+          )}
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

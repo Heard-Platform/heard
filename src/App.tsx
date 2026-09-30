@@ -15,6 +15,7 @@ import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { RetentionDashboard } from "./components/RetentionDashboard";
+import { ActivityDashboard } from "./components/ActivityDashboard";
 import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTracker";
 import { DevTools } from "./components/devtools/DevTools";
 import { AdminActivityFeed } from "./components/AdminActivityFeed";
@@ -45,6 +46,9 @@ import {
   parseReferrerIdFromUrl,
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
+import { FlyerSwipeContainer, type FlyerCompleteReason } from "./components/flyer/FlyerSwipeContainer";
+import type { FlyerVote } from "./components/flyer/FlyerVoteIntroCard";
+import { FeatureFlags, isFeatureEnabled } from "./utils/constants/feature-flags";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
 
 const LAST_VIEWED_SUBHEARD_KEY = "lastViewedSubHeard";
@@ -78,13 +82,6 @@ const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: str
 const IDEAS_ROOM_ID = "zmai0sb2fbemrxm4yc6";
 
 const WORLD_CUP_ROOM_ID = "31m0twqkoo6mrnu69l0";
-const WORLD_CUP_TEAM_STATEMENT_IDS: Record<string, string> = {
-  argentina: "m91010yjsycmrnu69mi",
-  spain: "71ov2zpokdkmrnu69mi",
-};
-const WORLD_CUP_DUAL_FLYER_REGEX = new RegExp(
-  `^/final-(${Object.keys(WORLD_CUP_TEAM_STATEMENT_IDS).join("|")})`,
-);
 
 function AppContent() {
   const [currentSubHeard, setCurrentSubHeard] = useState<
@@ -106,6 +103,8 @@ function AppContent() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] =
     useState(safelyGetStorageItem<boolean>("showAdminDashboard", false));
+  const [showActivityDashboard, setShowActivityDashboard] =
+    useState(safelyGetStorageItem<boolean>("showActivityDashboard", false));
   const [showRetentionDashboard, setShowRetentionDashboard] =
     useState(safelyGetStorageItem<boolean>("showRetentionDashboard", false));
   const [showFeatureTracker, setShowFeatureTracker] = useState(false);
@@ -122,6 +121,11 @@ function AppContent() {
   const [newsletterEdition, setNewsletterEdition] = useState<number | null>(null);
   const [qrScanResult, setQrScanResult] =
     useState<QRScanResult | null>(null);
+  const [flyerSwipe, setFlyerSwipe] = useState<{
+    room: DebateRoom;
+    flyerStatementId: string;
+    flyerVote: FlyerVote;
+  } | null>(null);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
@@ -145,7 +149,6 @@ function AppContent() {
     loadActiveRooms,
     logout,
     roomStatements,
-    getRoomStatements,
     acceptModInvite,
     acceptCohostInvite,
   } = useDebateSession();
@@ -189,35 +192,18 @@ function AppContent() {
       toast.error("Failed to process flyer vote");
     } else {
       startRoomJoin(response.room.id);
-      setQrScanResult({ ...response, mode: "single" });
-    }
-
-    setIsJoiningAnonymously(false);
-  };
-
-  const handleDualStatementFlyerJoin = async (teamSlug: string) => {
-    const statementId = WORLD_CUP_TEAM_STATEMENT_IDS[teamSlug];
-    const otherStatementId = Object.values(WORLD_CUP_TEAM_STATEMENT_IDS).find(
-      (id) => id !== statementId,
-    )!;
-
-    setIsJoiningAnonymously(true);
-
-    const response = await voteViaFlyer(WORLD_CUP_ROOM_ID, statementId, "agree");
-
-    if (!response || !response.user) {
-      toast.error("Failed to process flyer vote");
-    } else {
-      startRoomJoin(response.room.id);
-      const statements = await getRoomStatements(WORLD_CUP_ROOM_ID);
-
-      setQrScanResult({
-        mode: "dual",
-        room: response.room,
-        statements,
-        statementId,
-        otherStatementId,
-      });
+      const doSwipeFlow =
+        isFeatureEnabled(FeatureFlags.FLYER_SWIPE) &&
+        flyerData.vote !== "pass";
+      if (doSwipeFlow) {
+        setFlyerSwipe({
+          room: response.room,
+          flyerStatementId: flyerData.statementId,
+          flyerVote: flyerData.vote === "disagree" ? "disagree" : "agree",
+        });
+      } else {
+        setQrScanResult({ ...response, mode: "single" });
+      }
     }
 
     setIsJoiningAnonymously(false);
@@ -256,11 +242,12 @@ function AppContent() {
     loadActiveRooms(subHeard || undefined);
   };
 
-  const handleQrComplete = ({ reason }: { reason: "signup" | "otp-login" | "continue" }) => {
+  const handleFlyerComplete = (roomId: string, reason: FlyerCompleteReason) => {
     if (reason === "signup") toast.success("Welcome to Heard! 🎉");
     if (reason === "otp-login") toast.success("Welcome back! 🎉");
-    updateUrlForRoom(qrScanResult!.room.id);
+    updateUrlForRoom(roomId);
     setQrScanResult(null);
+    setFlyerSwipe(null);
   };
 
   const handleLogout = async () => {
@@ -381,7 +368,6 @@ function AppContent() {
         /^\/(shirt|sign|card)-(agree|disagree)/,
       );
       const clubFlyerMatch = pathname.match(/^\/club-(yes|no)/);
-      const worldCupDualFlyerMatch = pathname.match(WORLD_CUP_DUAL_FLYER_REGEX);
       const isClubRoute = /^\/club\/?$/.test(pathname);
       const isFinalRoute = /^\/final\/?$/.test(pathname);
 
@@ -497,9 +483,6 @@ function AppContent() {
           statementId: CLUB_STATEMENT_ID,
           vote: voteWord === "yes" ? "agree" : "disagree",
         });
-      } else if (worldCupDualFlyerMatch) {
-        const [, teamSlug] = worldCupDualFlyerMatch;
-        handleDualStatementFlyerJoin(teamSlug);
       } else if (isClubRoute) {
         startRoomJoin(CLUB_FLYER_ID);
       } else if (isFinalRoute) {
@@ -618,14 +601,16 @@ function AppContent() {
     setIsJoiningAnonymously(false);
   };
 
+  const isInFlyerSwipe = flyerSwipe !== null;
+
   useEffect(() => {
-    if (!user || !hasCheckedUrl) return;
+    if (!user || !hasCheckedUrl || isInFlyerSwipe) return;
     if (targetRoomId) {
       loadRoomsAndResolveTarget();
     } else {
       loadActiveRooms(currentSubHeard || undefined);
     }
-  }, [user?.id, hasCheckedUrl, targetRoomId]);
+  }, [user?.id, hasCheckedUrl, targetRoomId, isInFlyerSwipe]);
 
   useEffect(() => {
     if (user && hasCheckedUrl && pendingCommunities.length > 0) {
@@ -667,6 +652,18 @@ function AppContent() {
   const handleExitAdminDashboard = () => {
     setShowAdminDashboard(false);
     localStorage.setItem("showAdminDashboard", "false");
+    window.history.pushState({}, "", "/");
+  };
+
+  const handleOpenActivityDashboard = () => {
+    setShowActivityDashboard(true);
+    localStorage.setItem("showActivityDashboard", "true");
+    window.history.pushState({}, "", "/activity");
+  };
+
+  const handleExitActivityDashboard = () => {
+    setShowActivityDashboard(false);
+    localStorage.setItem("showActivityDashboard", "false");
     window.history.pushState({}, "", "/");
   };
 
@@ -737,6 +734,15 @@ function AppContent() {
           onExit={handleExitAdminDashboard}
           currentUserId={user.id}
         />
+        <Toaster />
+      </>
+    );
+  }
+
+  if (showActivityDashboard && user) {
+    return (
+      <>
+        <ActivityDashboard onExit={handleExitActivityDashboard} />
         <Toaster />
       </>
     );
@@ -826,7 +832,7 @@ function AppContent() {
     return <NewsletterViewer edition={newsletterEdition} />;
   }
 
-  if (!user || loading || isJoiningAnonymously) {
+  if (!user || loading || isJoiningAnonymously || !hasCheckedUrl) {
     return (
       <div className="heard-page-bg heard-center">
         <motion.div
@@ -842,6 +848,20 @@ function AppContent() {
     );
   }
 
+  if (flyerSwipe) {
+    return (
+      <>
+        <FlyerSwipeContainer
+          room={flyerSwipe.room}
+          flyerStatementId={flyerSwipe.flyerStatementId}
+          flyerVote={flyerSwipe.flyerVote}
+          onComplete={handleFlyerComplete}
+        />
+        <Toaster />
+      </>
+    );
+  }
+
   return (
     <>
       <LobbyScreen
@@ -854,7 +874,6 @@ function AppContent() {
         targetRoomId={targetRoomId || undefined}
         analysisRoomId={analysisRoomId || undefined}
         targetStatementId={targetStatementId || undefined}
-        hasQrScanResult={!!qrScanResult}
         eventLoading={eventLoading}
         currentEvent={currentEvent}
         onCreateRoom={handleCreateRoom}
@@ -864,6 +883,7 @@ function AppContent() {
         onVoteOnStatement={handleVoteOnStatement}
         onLogout={handleLogout}
         onOpenShowcase={handleOpenShowcase}
+        onOpenActivityDashboard={handleOpenActivityDashboard}
         onOpenRetentionDashboard={handleOpenRetentionDashboard}
         onOpenAdminPanel={handleOpenAdminPanel}
         onOpenAdminDashboard={handleOpenAdminDashboard}
@@ -880,8 +900,7 @@ function AppContent() {
         <QRScanResultDialog
           {...qrScanResult}
           isOpen={true}
-          onComplete={handleQrComplete}
-          onClose={() => handleQrComplete({ reason: "continue" })}
+          onComplete={handleFlyerComplete}
         />
       )}
       {voteSwing && (

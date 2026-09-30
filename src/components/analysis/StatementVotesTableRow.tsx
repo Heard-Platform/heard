@@ -111,7 +111,7 @@ export function StatementVotesTableRow({
         return (
           <td
             key={idx}
-            className={`py-3 px-2 align-middle${colored ? ` ${getClusterColor(idx).bg}` : ""}`}
+            className={`py-3 px-2 align-middle${colored ? ` ${getClusterColor(cv.slot).bg}` : ""}`}
           >
             <VoteBreakdownPie
               rawAgree={cvRawAgree}

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { BridgeStatementsSection } from "../components/analysis/BridgeStatementsSection";
-import { StatementVotes } from "../types";
+import { ClusterColumn, StatementVotes } from "../types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 
 function StatefulBridgeStatementsSection(props: {
   statements: StatementVotes[];
   totalParticipants: number;
-  clusterSizes: number[];
+  clusterColumns: ClusterColumn[];
 }) {
   const [showNumbers, setShowNumbers] = useState(false);
   return (
@@ -27,7 +27,11 @@ export default {
   title: "Analysis/BridgeStatementsSection",
 };
 
-const clusterSizes = [80, 60, 50, 35];
+const clusterColumns: ClusterColumn[] = [80, 60, 50, 35].map((size, slot) => ({
+  size,
+  slot,
+  name: ["Full Speed Ahead", "Hit the Brakes", null, null][slot],
+}));
 const totalParticipants = 225;
 
 // A & C (indices 0 & 2) strongly agree with each other while B & D strongly
@@ -44,10 +48,10 @@ const bridgeAC: StatementVotes = {
   consensusScore: 16.1,
   mergedFrom: [],
   clusterVotes: [
-    { clusterId: 0, clusterSize: 80, agreeVotes: 60, superAgreeVotes: 10, disagreeVotes: 5, passVotes: 5 },
-    { clusterId: 1, clusterSize: 60, agreeVotes: 5, superAgreeVotes: 1, disagreeVotes: 45, passVotes: 5 },
-    { clusterId: 2, clusterSize: 50, agreeVotes: 40, superAgreeVotes: 7, disagreeVotes: 3, passVotes: 2 },
-    { clusterId: 3, clusterSize: 35, agreeVotes: 3, superAgreeVotes: 0, disagreeVotes: 25, passVotes: 2 },
+    { clusterId: 0, stableId: "cluster-0", slot: 0, clusterSize: 80, agreeVotes: 60, superAgreeVotes: 10, disagreeVotes: 5, passVotes: 5 },
+    { clusterId: 1, stableId: "cluster-1", slot: 1, clusterSize: 60, agreeVotes: 5, superAgreeVotes: 1, disagreeVotes: 45, passVotes: 5 },
+    { clusterId: 2, stableId: "cluster-2", slot: 2, clusterSize: 50, agreeVotes: 40, superAgreeVotes: 7, disagreeVotes: 3, passVotes: 2 },
+    { clusterId: 3, stableId: "cluster-3", slot: 3, clusterSize: 35, agreeVotes: 3, superAgreeVotes: 0, disagreeVotes: 25, passVotes: 2 },
   ],
 };
 
@@ -65,10 +69,10 @@ const bridgeBD: StatementVotes = {
   consensusScore: 13.5,
   mergedFrom: [],
   clusterVotes: [
-    { clusterId: 0, clusterSize: 80, agreeVotes: 10, superAgreeVotes: 1, disagreeVotes: 45, passVotes: 5 },
-    { clusterId: 1, clusterSize: 60, agreeVotes: 50, superAgreeVotes: 12, disagreeVotes: 3, passVotes: 2 },
-    { clusterId: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 2, disagreeVotes: 30, passVotes: 3 },
-    { clusterId: 3, clusterSize: 35, agreeVotes: 30, superAgreeVotes: 5, disagreeVotes: 2, passVotes: 1 },
+    { clusterId: 0, stableId: "cluster-0", slot: 0, clusterSize: 80, agreeVotes: 10, superAgreeVotes: 1, disagreeVotes: 45, passVotes: 5 },
+    { clusterId: 1, stableId: "cluster-1", slot: 1, clusterSize: 60, agreeVotes: 50, superAgreeVotes: 12, disagreeVotes: 3, passVotes: 2 },
+    { clusterId: 2, stableId: "cluster-2", slot: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 2, disagreeVotes: 30, passVotes: 3 },
+    { clusterId: 3, stableId: "cluster-3", slot: 3, clusterSize: 35, agreeVotes: 30, superAgreeVotes: 5, disagreeVotes: 2, passVotes: 1 },
   ],
 };
 
@@ -86,10 +90,10 @@ const bridgeAD: StatementVotes = {
   consensusScore: 19.2,
   mergedFrom: [],
   clusterVotes: [
-    { clusterId: 0, clusterSize: 80, agreeVotes: 55, superAgreeVotes: 10, disagreeVotes: 8, passVotes: 2 },
-    { clusterId: 1, clusterSize: 60, agreeVotes: 20, superAgreeVotes: 3, disagreeVotes: 35, passVotes: 5 },
-    { clusterId: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 2, disagreeVotes: 30, passVotes: 3 },
-    { clusterId: 3, clusterSize: 35, agreeVotes: 25, superAgreeVotes: 5, disagreeVotes: 5, passVotes: 1 },
+    { clusterId: 0, stableId: "cluster-0", slot: 0, clusterSize: 80, agreeVotes: 55, superAgreeVotes: 10, disagreeVotes: 8, passVotes: 2 },
+    { clusterId: 1, stableId: "cluster-1", slot: 1, clusterSize: 60, agreeVotes: 20, superAgreeVotes: 3, disagreeVotes: 35, passVotes: 5 },
+    { clusterId: 2, stableId: "cluster-2", slot: 2, clusterSize: 50, agreeVotes: 15, superAgreeVotes: 2, disagreeVotes: 30, passVotes: 3 },
+    { clusterId: 3, stableId: "cluster-3", slot: 3, clusterSize: 35, agreeVotes: 25, superAgreeVotes: 5, disagreeVotes: 5, passVotes: 1 },
   ],
 };
 
@@ -107,10 +111,10 @@ const highConsensus: StatementVotes = {
   consensusScore: 84.6,
   mergedFrom: [],
   clusterVotes: [
-    { clusterId: 0, clusterSize: 80, agreeVotes: 70, superAgreeVotes: 15, disagreeVotes: 5, passVotes: 5 },
-    { clusterId: 1, clusterSize: 60, agreeVotes: 52, superAgreeVotes: 10, disagreeVotes: 4, passVotes: 4 },
-    { clusterId: 2, clusterSize: 50, agreeVotes: 42, superAgreeVotes: 8, disagreeVotes: 4, passVotes: 4 },
-    { clusterId: 3, clusterSize: 35, agreeVotes: 28, superAgreeVotes: 4, disagreeVotes: 3, passVotes: 4 },
+    { clusterId: 0, stableId: "cluster-0", slot: 0, clusterSize: 80, agreeVotes: 70, superAgreeVotes: 15, disagreeVotes: 5, passVotes: 5 },
+    { clusterId: 1, stableId: "cluster-1", slot: 1, clusterSize: 60, agreeVotes: 52, superAgreeVotes: 10, disagreeVotes: 4, passVotes: 4 },
+    { clusterId: 2, stableId: "cluster-2", slot: 2, clusterSize: 50, agreeVotes: 42, superAgreeVotes: 8, disagreeVotes: 4, passVotes: 4 },
+    { clusterId: 3, stableId: "cluster-3", slot: 3, clusterSize: 35, agreeVotes: 28, superAgreeVotes: 4, disagreeVotes: 3, passVotes: 4 },
   ],
 };
 
@@ -121,7 +125,7 @@ export const Default = () => (
     <StatefulBridgeStatementsSection
       statements={mockStatements}
       totalParticipants={totalParticipants}
-      clusterSizes={clusterSizes}
+      clusterColumns={clusterColumns}
     />
   </div>
 );
@@ -134,7 +138,7 @@ export const NoBridges = () => (
     <StatefulBridgeStatementsSection
       statements={[highConsensus]}
       totalParticipants={totalParticipants}
-      clusterSizes={clusterSizes}
+      clusterColumns={clusterColumns}
     />
   </div>
 );
@@ -153,7 +157,7 @@ export function BridgeStatementsSectionStory() {
         <StatefulBridgeStatementsSection
           statements={mockStatements}
           totalParticipants={totalParticipants}
-          clusterSizes={clusterSizes}
+          clusterColumns={clusterColumns}
         />
       </CardContent>
     </Card>

@@ -293,6 +293,8 @@ export interface Rant {
 
 export interface ClusterVoteBreakdown {
   clusterId: number;
+  stableId: string;
+  slot: number;
   clusterSize: number;
   agreeVotes: number;
   superAgreeVotes: number;
@@ -326,8 +328,58 @@ export interface ClusterStatement {
 
 export interface Cluster {
   id: number;
+  stableId: string;
+  slot: number;
+  name: string | null;
   size: number;
   statements: ClusterStatement[];
+}
+
+export type ClusterColumn = Pick<Cluster, "size" | "slot" | "name">;
+
+export interface ClusterNameReviewCluster {
+  stableId: string;
+  slot: number;
+  size: number;
+  name: string | null;
+  previousName: string | null;
+  renameReason: string | null;
+}
+
+export interface ReviewRoomOption {
+  roomId: string;
+  topic: string;
+  voteCount: number;
+  createdAt: number;
+}
+
+export interface ClusterNameReviewRoom {
+  roomId: string;
+  topic: string;
+  voteCount: number;
+  clusters: ClusterNameReviewCluster[] | null;
+  lastNamedAt: number | null;
+  createdAt: number;
+}
+
+export type VoteRates = [agree: number, disagree: number, pass: number];
+
+export interface DeckOrderCluster {
+  stableId: string;
+  slot: number;
+  name: string | null;
+  size: number;
+  voteRates: Record<string, VoteRates>;
+}
+
+export interface DeckOrder {
+  leadStatementIds: string[];
+  consensusStatementId: string | null;
+  clusters: DeckOrderCluster[];
+}
+
+export interface ClusterNamingConfig {
+  enabled: boolean;
 }
 
 export interface ClusterConsensus {
@@ -448,6 +500,12 @@ export interface FunnelMetricsData {
   tookActionTenDays: number;
 }
 
+export interface CohortVoteBucket {
+  label: string;
+  count: number;
+  pct: number;
+}
+
 export interface CohortTopPost {
   id: string;
   topic: string;
@@ -461,6 +519,7 @@ export interface CohortFunnelEntry {
   totalUsers: number;
   multiPostViewCount: number;
   votedCount: number;
+  moreThanFiveVotesCount: number;
   respondedCount: number;
   createdRoomCount: number;
   nonAnonCount: number;
@@ -469,8 +528,10 @@ export interface CohortFunnelEntry {
   multiDayCount: number;
   multiWeekCount: number;
   activeThisWeekCount: number;
+  votesThisWeekCount: number;
   multiPostViewPct: number;
   votedPct: number;
+  moreThanFiveVotesPct: number;
   respondedPct: number;
   createdRoomPct: number;
   nonAnonPct: number;
@@ -479,11 +540,19 @@ export interface CohortFunnelEntry {
   multiDayPct: number;
   multiWeekPct: number;
   activeThisWeekPct: number;
+  voteBuckets: CohortVoteBucket[];
   topPosts: CohortTopPost[];
+}
+
+export interface SessionMinutesWeek {
+  weekStart: string;
+  medianMinutes: number;
+  sessions: number;
 }
 
 export interface CohortFunnelData {
   cohorts: CohortFunnelEntry[];
+  sessionMinutesWeekly: SessionMinutesWeek[];
 }
 
 export type ActivityFeedEventType =
@@ -659,6 +728,14 @@ export interface FeatureResults {
   responseVotesNotifEmailsSentSince: number;
   responseVotesNotifButtonClicks: number;
   responseVotesNotifReturnedWithinWeek: number;
+  clusterRecomputesLast7Days: number;
+  clusterRecomputesSince: number;
+  clusterRecomputesWeekly: { weekStart: string; count: number }[];
+  clusterIdentityKeptPercent: number | null;
+  clusterNamingTokens: number;
+  clusterNamingTokensSince: number;
+  votesPerSessionWeekly: { weekStart: string; averageVotes: number; sessions: number }[];
+  votesPerSessionSince: number;
   sessionExpiredRecovered: number;
   sessionExpiredRecoveredSince: number;
   sessionExpiryBypassed: number;
@@ -711,6 +788,12 @@ export interface UserTimelineEntry {
   activeDays?: number[]; // UTC day-start timestamps for days with any action
   isTestUser?: boolean;
   isDeveloper?: boolean;
+}
+
+export interface WeeklySignupCount {
+  weekLabel: string;
+  signups: number;
+  weekStart: number;
 }
 
 export interface VoteStats {

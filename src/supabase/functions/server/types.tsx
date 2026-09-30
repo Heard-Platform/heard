@@ -332,6 +332,7 @@ export interface SentEmail {
 export enum InternalVarKey {
   ENRICHMENT_ON = "ENRICHMENT_ON",
   ENRICHMENT_AVG_INTERVAL_MINS = "ENRICHMENT_AVG_INTERVAL_MINS",
+  CLUSTER_NAMING_ON = "CLUSTER_NAMING_ON",
 }
 
 export interface InternalVar {

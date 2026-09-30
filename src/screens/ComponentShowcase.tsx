@@ -16,6 +16,8 @@ import { SwipeInstructionsStory } from "../stories/SwipeInstructions.story";
 import { MusicLeagueCardStackStory } from "../stories/YouTubeCardStack";
 import { TimeLeftBadgeStory } from "../stories/TimeLeftBadge.story";
 import { QRScanResultDialogStory } from "../stories/QRScanResultDialog.story";
+import { FlyerSwipeScreenStory } from "../stories/FlyerSwipeScreen.story";
+import { FlyerSignUpStory } from "../stories/FlyerSignUp.story";
 import { YouTubeCardStory } from "../stories/YouTubeCard.story";
 import { IntroModalStory } from "../stories/IntroModal.story";
 import { DemographicsCardStory } from "../stories/DemographicsCard.story";
@@ -56,6 +58,7 @@ import { RoomAnalyticsModalStory } from "../stories/RoomAnalyticsModal.story";
 import { StatementVoterAnimalsStory } from "../stories/StatementVoterAnimals.story";
 import { VoteSwingOverlayStory } from "../stories/VoteSwingOverlay.story";
 import { AnonResponseTripwireStory } from "../stories/AnonResponseTripwire.story";
+import { ClusterMinimapStory } from "../stories/ClusterMinimap.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -128,6 +131,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="time-left-badge">Time Left Badge</TabsTrigger>
                 <TabsTrigger value="qr-generator">QR Generator Page</TabsTrigger>
                 <TabsTrigger value="qr-scan-result-dialog">QR Scan Result Dialog</TabsTrigger>
+                <TabsTrigger value="flyer-swipe-screen">Flyer Swipe Screen</TabsTrigger>
+                <TabsTrigger value="flyer-sign-up">Flyer Sign-up</TabsTrigger>
                 <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
                 <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
                 <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
@@ -166,6 +171,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="statement-voter-animals">Statement Voter Animals</TabsTrigger>
                 <TabsTrigger value="vote-swing-overlay">Vote Swing Overlay</TabsTrigger>
                 <TabsTrigger value="anon-response-tripwire">Anon Response Tripwire</TabsTrigger>
+                <TabsTrigger value="cluster-minimap">Cluster Minimap</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -221,6 +227,12 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="qr-scan-result-dialog">
                 <QRScanResultDialogStory />
+              </TabsContent>
+              <TabsContent value="flyer-swipe-screen">
+                <FlyerSwipeScreenStory />
+              </TabsContent>
+              <TabsContent value="flyer-sign-up">
+                <FlyerSignUpStory />
               </TabsContent>
               <TabsContent value="youtube-card">
                 <YouTubeCardStory />
@@ -329,6 +341,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="anon-response-tripwire">
                 <AnonResponseTripwireStory />
+              </TabsContent>
+              <TabsContent value="cluster-minimap">
+                <ClusterMinimapStory />
               </TabsContent>
             </Tabs>
           </div>

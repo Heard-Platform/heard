@@ -9,6 +9,7 @@ import moment from "moment";
 import { api } from "../../utils/api";
 import { useEmailOtpFlow } from "../../hooks/useEmailOtpFlow";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import type { FlyerCompleteReason } from "../flyer/FlyerSwipeContainer";
 
 type TeaserStatement = { text: string; timestamp: number; voteCount: number };
 
@@ -33,12 +34,9 @@ export type QRScanResult =
       otherStatementId: string;
     };
 
-type CompleteReason = "signup" | "otp-login" | "continue";
-
 type QRScanResultDialogProps = QRScanResult & {
   isOpen: boolean;
-  onComplete: (result: { reason: CompleteReason }) => void;
-  onClose: () => void;
+  onComplete: (roomId: string, reason: FlyerCompleteReason) => void;
 };
 
 type Bar = {
@@ -55,7 +53,8 @@ const DUAL_BAR_STYLES = [
 ];
 
 export function QRScanResultDialog(props: QRScanResultDialogProps) {
-  const { mode, room, isOpen, onComplete, onClose } = props;
+  const { mode, room, isOpen, onComplete } = props;
+  const handleClose = () => onComplete(room.id, "continue");
 
   const { user } = useDebateSession();
   const isAlreadyLoggedIn = user && !user.isAnonymous;
@@ -67,7 +66,7 @@ export function QRScanResultDialog(props: QRScanResultDialogProps) {
   const emailFlow = useEmailOtpFlow({
     onComplete: ({ wasOtpLogin }) => {
       api.trackEvent("flyer_results_email_submitted", room.id);
-      onComplete({ reason: wasOtpLogin ? "otp-login" : "signup" });
+      onComplete(room.id, wasOtpLogin ? "otp-login" : "signup");
     },
   });
 
@@ -166,7 +165,7 @@ export function QRScanResultDialog(props: QRScanResultDialogProps) {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md p-0 bg-transparent border-0 shadow-none [&>button]:hidden">
         <DialogTitle className="sr-only">Vote Results</DialogTitle>
         <motion.div
@@ -177,7 +176,7 @@ export function QRScanResultDialog(props: QRScanResultDialogProps) {
         >
           <div className="bg-slate-900 rounded-3xl p-6 space-y-6">
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="absolute top-7 right-7 rounded-full opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-slate-900 p-1"
             >
               <X className="w-4 h-4 text-white" />
@@ -315,7 +314,7 @@ export function QRScanResultDialog(props: QRScanResultDialogProps) {
                   onClick={() => {
                     api.trackEvent("flyer_results_get_results_clicked", room.id);
                     if (isAlreadyLoggedIn) {
-                      onComplete({ reason: "continue" });
+                      onComplete(room.id, "continue");
                     } else {
                       setShowEmailCapture(true);
                     }

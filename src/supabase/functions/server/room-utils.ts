@@ -57,24 +57,37 @@ export function isRoomEnded(room: DebateRoom): boolean {
   return !!room.endTime && Date.now() >= room.endTime;
 }
 
-export async function getRoomParticipants(
+export async function getRoomParticipantFirstActivity(
   roomId: string,
-): Promise<string[]> {
+): Promise<Map<string, number>> {
   const statements = await getStatementsForRoomIncludingHidden(roomId);
   const votesByStatement = await Promise.all(
     statements.map((statement) => getVotesForStatement(statement.id)),
   );
 
-  const participantIds = new Set<string>();
+  const firstActivityByUserId = new Map<string, number>();
+  const recordActivity = (userId: string, timestamp: number) => {
+    const existing = firstActivityByUserId.get(userId);
+    if (existing === undefined || timestamp < existing) {
+      firstActivityByUserId.set(userId, timestamp);
+    }
+  };
+
   for (const statement of statements) {
-    participantIds.add(statement.author);
+    recordActivity(statement.author, statement.timestamp);
   }
   for (const votes of votesByStatement) {
     for (const vote of votes) {
-      participantIds.add(vote.userId);
+      recordActivity(vote.userId, vote.timestamp);
     }
   }
-  return Array.from(participantIds);
+  return firstActivityByUserId;
+}
+
+export async function getRoomParticipants(
+  roomId: string,
+): Promise<string[]> {
+  return Array.from((await getRoomParticipantFirstActivity(roomId)).keys());
 }
 
 export function applyStatementMerges(

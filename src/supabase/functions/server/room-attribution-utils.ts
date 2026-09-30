@@ -1,6 +1,6 @@
 import { selectAll } from "./db-utils.ts";
 import { getAllRealUsers, getAllUsers } from "./kv-utils.tsx";
-import { getRoomParticipants } from "./room-utils.ts";
+import { getRoomParticipantFirstActivity } from "./room-utils.ts";
 import { DebateRoom, RoomView, User, UserEvent } from "./types.tsx";
 import { obfuscateEmail } from "./utils.tsx";
 
@@ -32,11 +32,17 @@ export interface ParticipationBreakdown {
   lurking: number;
 }
 
+export interface ParticipantJoin {
+  isAnonymous: boolean;
+  joinedAt: number;
+}
+
 export interface RoomTrafficSources {
   trafficSources: TrafficSourceCount[];
   referrers: ReferrerShareCount[];
   anonymity: AnonymityBreakdown;
   participation: ParticipationBreakdown;
+  joins: ParticipantJoin[];
 }
 
 export const REFERRAL_EVENT_TYPES = [
@@ -82,6 +88,7 @@ export function computeRoomTrafficSources(
   events: UserEvent[],
   users: User[],
   viewerIds: string[] = [],
+  joinedAtByUserId: Map<string, number> = new Map(),
 ): RoomTrafficSources {
   const usersById = new Map(users.map((user) => [user.id, user]));
 
@@ -166,6 +173,14 @@ export function computeRoomTrafficSources(
     .sort((a, b) => b - a)
     .map((shares, i) => ({ id: `referrer-${i}`, shares }));
 
+  const joins: ParticipantJoin[] = roomParticipantIds
+    .filter((id) => joinedAtByUserId.has(id))
+    .map((id) => ({
+      isAnonymous: !!usersById.get(id)!.isAnonymous,
+      joinedAt: joinedAtByUserId.get(id)!,
+    }))
+    .sort((a, b) => a.joinedAt - b.joinedAt);
+
   return {
     trafficSources: [
       { key: "direct", count: counts.direct },
@@ -178,6 +193,7 @@ export function computeRoomTrafficSources(
     referrers,
     anonymity,
     participation,
+    joins,
   };
 }
 
@@ -261,7 +277,7 @@ export async function getReferralEventSummary(): Promise<ReferralEventSummary> {
 export async function getRoomTrafficSources(
   room: DebateRoom,
 ): Promise<RoomTrafficSources> {
-  const [referredByEvents, initialLoadEvents, users, participantIds, roomViews] =
+  const [referredByEvents, initialLoadEvents, users, firstActivityByUserId, roomViews] =
     await Promise.all([
       selectAll<UserEvent>(
         "user_events",
@@ -274,15 +290,16 @@ export async function getRoomTrafficSources(
         (q: any) => q.like("url", `%/room/${room.id}%`),
       ),
       getAllUsers(),
-      getRoomParticipants(room.id),
+      getRoomParticipantFirstActivity(room.id),
       selectAll<RoomView>("room_views", { roomId: room.id }),
     ]);
 
   return computeRoomTrafficSources(
     room,
-    participantIds,
+    Array.from(firstActivityByUserId.keys()),
     [...referredByEvents, ...initialLoadEvents],
     users,
     roomViews.map((view) => view.userId),
+    firstActivityByUserId,
   );
 }
