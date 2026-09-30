@@ -8,7 +8,6 @@ import {
   calcVoteRates,
   interleaveDistinguishingStatements,
   interleaveUnique,
-  rankExplorationStatements,
 } from "./statement-ordering.ts";
 
 function users(prefix: string, count: number): string[] {
@@ -74,26 +73,13 @@ Deno.test("calcVoteRates - statements with no member votes are uniform", () => {
   assertEquals(calcVoteRates(["m0"], [statement("s", [])]), { s: [0.333, 0.333, 0.333] });
 });
 
-Deno.test("rankExplorationStatements - under-voted statements, fewest votes first, excluding picked ones", () => {
-  const statements = [
-    statement("popular", [[users("p", 10), "agree"]]),
-    statement("few", [[users("f", 3), "agree"]]),
-    statement("none", []),
-    statement("picked", []),
-  ];
-  assertEquals(rankExplorationStatements(statements, ["picked"]), ["none", "few"]);
+Deno.test("assembleCards - consensus third", () => {
+  assertEquals(assembleCards(["A1", "B1", "C1", "A2"], "X"), ["A1", "B1", "X", "C1", "A2"]);
 });
 
-Deno.test("assembleCards - consensus third, exploration every fourth card", () => {
-  assertEquals(
-    assembleCards(["A1", "B1", "C1", "A2", "B2", "C2"], "X", ["E1", "E2", "E3"]),
-    ["A1", "B1", "X", "E1", "C1", "A2", "B2", "E2", "C2"],
-  );
-});
-
-Deno.test("assembleCards - works without consensus or exploration candidates", () => {
-  assertEquals(assembleCards(["A1", "B1"], null, []), ["A1", "B1"]);
-  assertEquals(assembleCards(["A1"], "X", []), ["A1", "X"]);
+Deno.test("assembleCards - works without consensus or with a short lead", () => {
+  assertEquals(assembleCards(["A1", "B1"], null), ["A1", "B1"]);
+  assertEquals(assembleCards(["A1"], "X"), ["A1", "X"]);
 });
 
 Deno.test("buildDeckOrder - null with fewer than two clusters or nothing distinguishing", () => {
@@ -110,12 +96,18 @@ Deno.test("buildDeckOrder - lead covers each cluster, adds consensus and per-clu
     statement("new", []),
   ];
 
-  const deckOrder = buildDeckOrder([cluster("A", a), cluster("B", b)], statements)!;
+  const named: ClusterIdentity = {
+    ...cluster("B", b),
+    slot: 1,
+    naming: { name: "Night Owls", namedAt: 0, stanceSnapshot: [], previousName: null, renameReason: null },
+  };
+  const deckOrder = buildDeckOrder([cluster("A", a), named], statements)!;
 
   assertEquals(deckOrder.consensusStatementId, "common");
   assertEquals(deckOrder.leadStatementIds.slice(0, 2).sort(), ["a-only", "b-only"]);
   assertEquals(deckOrder.leadStatementIds[2], "common");
-  assertEquals(deckOrder.leadStatementIds[3], "new");
+  assertEquals(deckOrder.leadStatementIds.length, 3);
   assertEquals(deckOrder.clusters.map((cl) => [cl.stableId, cl.size]), [["A", 30], ["B", 20]]);
+  assertEquals(deckOrder.clusters.map((cl) => [cl.slot, cl.name]), [[0, null], [1, "Night Owls"]]);
   assertEquals(Object.keys(deckOrder.clusters[0].voteRates).length, 4);
 });

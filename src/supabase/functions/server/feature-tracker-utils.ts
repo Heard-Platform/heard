@@ -13,7 +13,7 @@ import {
 import { toTimestamp } from "./time-utils.ts";
 import { selectAllWithoutLimit } from "./db-utils.ts";
 import { CLUSTER_NAMING_ENDPOINT } from "./cluster-naming.ts";
-import { SESSION_GAP_MS } from "./session-utils.ts";
+import { groupRecentSessionsByWeek, startOfUtcWeek, VoteTiming, WEEK_MS } from "./stats-utils.ts";
 import { getAllVotes } from "./kv-utils.tsx";
 
 const RESPONSE_VOTES_NOTIF_RETURN_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
@@ -48,15 +48,6 @@ export const getResponseVotesNotifStats = async (): Promise<{
 
   return { emailsSent: sentEmails.length, buttonClicks, returnedWithinWeek };
 };
-
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function startOfUtcWeek(timestamp: number): number {
-  const date = new Date(timestamp);
-  const daysSinceMonday = (date.getUTCDay() + 6) % 7;
-  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) - daysSinceMonday * DAY_MS;
-}
 
 export function countByWeek(timestamps: number[]): { weekStart: string; count: number }[] {
   if (timestamps.length === 0) return [];
@@ -108,43 +99,11 @@ export const getClusterNamingTokens = async (): Promise<number> => {
   return calls.reduce((sum, call) => sum + call.totalTokens, 0);
 };
 
-export const VOTES_PER_SESSION_WEEKS = 12;
-
-interface VoteTiming {
-  userId: string;
-  timestamp: number;
-}
-
-interface VotingSession {
-  start: number;
-  votes: number;
-}
-
-function splitIntoSessions(timestamps: number[]): VotingSession[] {
-  const sorted = _.sortBy(timestamps);
-  const sessions: VotingSession[] = [];
-  sorted.forEach((timestamp, i) => {
-    const isNewSession = i === 0 || timestamp - sorted[i - 1] > SESSION_GAP_MS;
-    if (isNewSession) sessions.push({ start: timestamp, votes: 0 });
-    sessions[sessions.length - 1].votes++;
-  });
-  return sessions;
-}
-
 export function averageVotesPerSessionByWeek(
   votes: VoteTiming[],
   now: number,
 ): { weekStart: string; averageVotes: number; sessions: number }[] {
-  const windowStart = startOfUtcWeek(now) - (VOTES_PER_SESSION_WEEKS - 1) * WEEK_MS;
-
-  const sessions = _(votes)
-    .groupBy("userId")
-    .flatMap((userVotes) => splitIntoSessions(_.map(userVotes, "timestamp")))
-    .filter((session) => startOfUtcWeek(session.start) >= windowStart)
-    .value();
-
-  return _(sessions)
-    .groupBy((session) => startOfUtcWeek(session.start))
+  return _(groupRecentSessionsByWeek(votes, now))
     .map((weekSessions, week) => ({
       weekStart: new Date(Number(week)).toISOString().slice(0, 10),
       averageVotes: _.round(_.meanBy(weekSessions, "votes"), 1),

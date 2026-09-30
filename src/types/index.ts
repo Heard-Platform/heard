@@ -366,6 +366,8 @@ export type VoteRates = [agree: number, disagree: number, pass: number];
 
 export interface DeckOrderCluster {
   stableId: string;
+  slot: number;
+  name: string | null;
   size: number;
   voteRates: Record<string, VoteRates>;
 }
@@ -542,8 +544,15 @@ export interface CohortFunnelEntry {
   topPosts: CohortTopPost[];
 }
 
+export interface SessionMinutesWeek {
+  weekStart: string;
+  medianMinutes: number;
+  sessions: number;
+}
+
 export interface CohortFunnelData {
   cohorts: CohortFunnelEntry[];
+  sessionMinutesWeekly: SessionMinutesWeek[];
 }
 
 export type ActivityFeedEventType =

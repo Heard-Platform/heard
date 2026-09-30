@@ -6,6 +6,10 @@ export function timeAgoShort(timestamp: number): string {
   return result.formatted;
 }
 
+export function formatWeekStart(weekStart: string): string {
+  return moment.utc(weekStart).format('MMM D');
+}
+
 export const ONE_WEEK_MIN = 7 * 24 * 60;
 export const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 

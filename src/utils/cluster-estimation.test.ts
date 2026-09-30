@@ -14,8 +14,8 @@ function makeDeckOrder(overrides: Partial<DeckOrder> = {}): DeckOrder {
     leadStatementIds: [],
     consensusStatementId: null,
     clusters: [
-      { stableId: "A", size: 50, voteRates: { divisive: MOSTLY_AGREES, shared: MOSTLY_AGREES, other: MOSTLY_AGREES } },
-      { stableId: "B", size: 50, voteRates: { divisive: MOSTLY_DISAGREES, shared: MOSTLY_AGREES, other: MOSTLY_DISAGREES } },
+      { stableId: "A", slot: 0, name: null, size: 50, voteRates: { divisive: MOSTLY_AGREES, shared: MOSTLY_AGREES, other: MOSTLY_AGREES } },
+      { stableId: "B", slot: 1, name: null, size: 50, voteRates: { divisive: MOSTLY_DISAGREES, shared: MOSTLY_AGREES, other: MOSTLY_DISAGREES } },
     ],
     ...overrides,
   };

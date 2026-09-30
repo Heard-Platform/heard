@@ -5,13 +5,13 @@ import { isAgreeVote, rankCommonGround, VotedStatement } from "./cluster-stance-
 
 export const LEAD_DISTINGUISHING_COUNT = 6;
 export const CONSENSUS_LEAD_INDEX = 2;
-export const EXPLORATION_EVERY = 4;
-export const EXPLORATION_MAX_VOTES = 5;
 
 export type VoteRates = [agree: number, disagree: number, pass: number];
 
 export interface DeckOrderCluster {
   stableId: string;
+  slot: number;
+  name: string | null;
   size: number;
   voteRates: Record<string, VoteRates>;
 }
@@ -68,31 +68,10 @@ export function calcVoteRates(
   return rates;
 }
 
-export function rankExplorationStatements(
-  statements: VotedStatement[],
-  excludeIds: string[],
-): string[] {
-  return _(statements)
-    .map((s) => ({ id: s.id, votes: Object.keys(s.voters).length }))
-    .filter((s) => !excludeIds.includes(s.id) && s.votes < EXPLORATION_MAX_VOTES)
-    .sortBy("votes")
-    .map("id")
-    .value();
-}
-
-export function assembleCards(
-  distinguishingIds: string[],
-  consensusId: string | null,
-  explorationIds: string[],
-): string[] {
+export function assembleCards(distinguishingIds: string[], consensusId: string | null): string[] {
   const lead = distinguishingIds.filter((id) => id !== consensusId);
   if (consensusId) {
     lead.splice(CONSENSUS_LEAD_INDEX, 0, consensusId);
-  }
-
-  const queue = explorationIds.filter((id) => !lead.includes(id));
-  for (let i = EXPLORATION_EVERY - 1; i <= lead.length && queue.length > 0; i += EXPLORATION_EVERY) {
-    lead.splice(i, 0, queue.shift()!);
   }
   return lead;
 }
@@ -113,14 +92,13 @@ export function buildDeckOrder(
   const consensusStatementId =
     rankCommonGround(identities, statements).find((s) => !distinguishingIds.includes(s.id))?.id ?? null;
 
-  const excluded = _.compact([...distinguishingIds, consensusStatementId]);
-  const explorationIds = rankExplorationStatements(statements, excluded);
-
   return {
-    leadStatementIds: assembleCards(distinguishingIds, consensusStatementId, explorationIds),
+    leadStatementIds: assembleCards(distinguishingIds, consensusStatementId),
     consensusStatementId,
     clusters: identities.map((cluster) => ({
       stableId: cluster.stableId,
+      slot: cluster.slot,
+      name: cluster.naming?.name ?? null,
       size: cluster.memberIds.length,
       voteRates: calcVoteRates(cluster.memberIds, statements),
     })),

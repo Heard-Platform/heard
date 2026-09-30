@@ -256,11 +256,10 @@ export function QRScanResultDialogStory() {
             statementId={dualScenario.statementId}
             otherStatementId={dualScenario.otherStatementId}
             isOpen={dialogOpen}
-            onComplete={(result) => {
-              console.log("Completed", result);
+            onComplete={(roomId, reason) => {
+              console.log("Completed", { roomId, reason });
               setDialogOpen(false);
             }}
-            onClose={() => setDialogOpen(false)}
           />
         ) : (
         <QRScanResultDialog
@@ -274,11 +273,10 @@ export function QRScanResultDialogStory() {
           statementText={currentScenario!.statementText}
           teaserStatement={currentScenario!.teaserStatement}
           isOpen={dialogOpen}
-          onComplete={(result) => {
-            console.log("Completed", result);
+          onComplete={(roomId, reason) => {
+            console.log("Completed", { roomId, reason });
             setDialogOpen(false);
           }}
-          onClose={() => setDialogOpen(false)}
         />
         )}
       </DebateSessionProvider>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { isValidEmail } from "../utils/validation";
 import { useDebateSession } from "./useDebateSession";
 
-type Step = "email" | "otp";
+export type EmailOtpStep = "email" | "otp";
 
 interface UseEmailOtpFlowOptions {
   onComplete: (result: { wasOtpLogin: boolean }) => void;
@@ -10,7 +10,7 @@ interface UseEmailOtpFlowOptions {
 
 export function useEmailOtpFlow({ onComplete }: UseEmailOtpFlowOptions) {
   const { user, anonAddEmailAndLogin, addEmailToAccount, verifyMagicLink } = useDebateSession();
-  const [step, setStep] = useState<Step>("email");
+  const [step, setStep] = useState<EmailOtpStep>("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -94,3 +94,5 @@ export function useEmailOtpFlow({ onComplete }: UseEmailOtpFlowOptions) {
     goBackToEmail,
   };
 }
+
+export type EmailOtpFlow = ReturnType<typeof useEmailOtpFlow>;

@@ -6,12 +6,14 @@ export enum FeatureFlags {
   ONLY_JOINED_COMMUNITIES = "ONLY_JOINED_COMMUNITIES",
   DEMOGRAPHICS = "DEMOGRAPHICS",
   EVENTS = "EVENTS",
+  FLYER_SWIPE = "FLYER_SWIPE",
 }
 
 export interface FeatureFlagsConfig {
   [FeatureFlags.ONLY_JOINED_COMMUNITIES]: boolean;
   [FeatureFlags.DEMOGRAPHICS]: boolean;
   [FeatureFlags.EVENTS]: boolean;
+  [FeatureFlags.FLYER_SWIPE]: boolean;
 }
 
 export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
@@ -19,11 +21,13 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     ONLY_JOINED_COMMUNITIES: true,
     DEMOGRAPHICS: true,
     EVENTS: false,
+    FLYER_SWIPE: true,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
     DEMOGRAPHICS: true,
     EVENTS: false,
+    FLYER_SWIPE: true,
   }
 }
 
