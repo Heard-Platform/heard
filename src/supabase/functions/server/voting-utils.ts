@@ -1,6 +1,5 @@
-import type { Vote, Statement, User, VoteType } from "./types.tsx";
+import type { Vote, Statement, User, VoteType, DebateRoom } from "./types.tsx";
 import { saveStatement, saveVote, getVotesForStatement, deleteVote, saveUser } from "./kv-utils.tsx";
-import { getByPrefixParsed } from "./kv-utils.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { generateId, getDebateRoom, getStatementById, saveDebateRoom } from "./debate-api.tsx";
 import { recordRoomEngagement } from "./model-utils.ts";
@@ -106,6 +105,28 @@ type ProcessVoteSuccess = {
 
 export type ProcessVoteResult = ProcessVoteFailure | ProcessVoteSuccess;
 
+const awardAuthorAndHostPoints = async (
+  statement: Statement,
+  room: DebateRoom,
+  voterId: string,
+) => {
+  if (statement.author !== voterId) {
+    const author = await getUserSession(statement.author);
+    if (author) {
+      author.score += 3;
+      await saveUser(author);
+    }
+  }
+
+  if (room.hostId && room.hostId !== voterId) {
+    const roomCreator = await getUserSession(room.hostId);
+    if (roomCreator) {
+      roomCreator.score += 1;
+      await saveUser(roomCreator);
+    }
+  }
+};
+
 export const processVote = async (
   statementId: string,
   userId: string,
@@ -119,13 +140,14 @@ export const processVote = async (
     return { success: false, error: "Invalid vote type" };
   }
 
-  const user = await getUserSession(userId);
+  const [user, statement] = await Promise.all([
+    getUserSession(userId),
+    getStatementById(statementId),
+  ]);
+
   if (!user) {
     return { success: false, error: "User session not found" };
   }
-
-  // Fetch statement using LIKE pattern (statement:%:statementId)
-  const statement = await getStatementById(statementId);
 
   if (!statement) {
     console.error(`Statement not found with ID: ${statementId}`);
@@ -139,8 +161,10 @@ export const processVote = async (
     `Voting on statement ${statementId} by user ${userId} with vote ${voteType}`,
   );
 
-  // Auto-join user to room if they're not already a participant
-  const room = await getDebateRoom(statement.roomId);
+  const [room, currentVotes] = await Promise.all([
+    getDebateRoom(statement.roomId),
+    getVotesForStatement(statementId),
+  ]);
 
   if (!room) {
     console.error(`Debate room not found with ID: ${statement.roomId}`);
@@ -157,14 +181,11 @@ export const processVote = async (
 
   if (!room.participants.includes(userId)) {
     room.participants.push(userId);
-    await saveDebateRoom(room);
     console.log(
       `Auto-added user ${userId} to room ${statement.roomId} via voting`,
     );
   }
 
-  // Get current vote if it exists
-  const currentVotes = await getVotesForStatement(statementId);
   const currentVote = currentVotes.find((v) => v.userId === userId);
   let pointsEarned = 0;
   let voteCountChange = 0;
@@ -212,33 +233,21 @@ export const processVote = async (
 
     pointsEarned = 10;
 
-    const allUsers = await getByPrefixParsed<User>("user:");
-    const statementAuthorUser = allUsers.find(
-      (u) => u.id === statement.author,
+    runInBackground(
+      awardAuthorAndHostPoints(statement, room, userId),
+      `author and host points for statement ${statementId}`,
     );
-
-    if (statementAuthorUser && statementAuthorUser.id !== userId) {
-      statementAuthorUser.score += 3;
-      await saveUser(statementAuthorUser);
-    }
-
-    if (room.hostId && room.hostId !== userId) {
-      const roomCreator = await getUserSession(room.hostId);
-      if (roomCreator) {
-        roomCreator.score += 1;
-        await saveUser(roomCreator);
-      }
-    }
   }
 
   const now = Date.now();
   room.lastActivityAt = now;
   room.totalVotes = (room.totalVotes || 0) + voteCountChange;
-  await saveDebateRoom(room);
-  await recordRoomEngagement(userId, statement.roomId, now);
 
-  // Get updated vote data to return
-  const updatedVotes = await getVotesForStatement(statementId);
+  const [updatedVotes] = await Promise.all([
+    getVotesForStatement(statementId),
+    saveDebateRoom(room),
+    recordRoomEngagement(userId, statement.roomId, now),
+  ]);
   const voteStats = calculateVoteStats(updatedVotes);
 
   const updatedStatement = {
@@ -250,30 +259,31 @@ export const processVote = async (
     voters: voteStats.voters,
   };
 
-  await saveStatement(updatedStatement);
+  if (pointsEarned > 0) {
+    user.score += pointsEarned;
+  }
+
+  await Promise.all([
+    saveStatement(updatedStatement),
+    pointsEarned > 0 ? saveUser(user) : Promise.resolve(),
+  ]);
 
   runInBackground(
     recomputeClustersIfNeeded(room),
     `cluster freshness check for room ${statement.roomId}`,
   );
 
+  runInBackground(
+    maybeEmailResponseVotesNotif(
+      updatedStatement,
+      statement.agrees + statement.disagrees,
+    ),
+    `response votes notif for statement ${statementId}`,
+  );
+
   console.log(
     `Final vote count for statement ${statementId}: ${voteStats.agrees} agree, ${voteStats.disagrees} disagree, ${voteStats.passes} pass (${updatedVotes.length} total votes)`,
   );
-
-  try {
-    await maybeEmailResponseVotesNotif(
-      updatedStatement,
-      statement.agrees + statement.disagrees,
-    );
-  } catch (error) {
-    console.error("[response-votes-notif] Failed to process notif:", error);
-  }
-
-  if (pointsEarned > 0) {
-    user.score += pointsEarned;
-    await saveUser(user);
-  }
 
   return {
     success: true,
