@@ -366,6 +366,8 @@ export type VoteRates = [agree: number, disagree: number, pass: number];
 
 export interface DeckOrderCluster {
   stableId: string;
+  slot: number;
+  name: string | null;
   size: number;
   voteRates: Record<string, VoteRates>;
 }

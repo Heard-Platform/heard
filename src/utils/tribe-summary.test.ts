@@ -9,11 +9,10 @@ const LEANS_AGREE: VoteRates = [0.6, 0.35, 0.05];
 const deckOrder: DeckOrder = {
   leadStatementIds: [],
   consensusStatementId: null,
-  longStatementIds: [],
   clusters: [
-    { stableId: "fast", size: 40, voteRates: { s1: MOSTLY_AGREES, s2: MOSTLY_AGREES, s3: MOSTLY_DISAGREES, s4: MOSTLY_AGREES } },
-    { stableId: "brakes", size: 30, voteRates: { s1: MOSTLY_DISAGREES, s2: MOSTLY_DISAGREES, s3: MOSTLY_AGREES, s4: MOSTLY_DISAGREES } },
-    { stableId: "data", size: 20, voteRates: { s1: MOSTLY_DISAGREES, s2: MOSTLY_AGREES, s3: LEANS_AGREE, s4: MOSTLY_AGREES } },
+    { stableId: "fast", slot: 0, name: null, size: 40, voteRates: { s1: MOSTLY_AGREES, s2: MOSTLY_AGREES, s3: MOSTLY_DISAGREES, s4: MOSTLY_AGREES } },
+    { stableId: "brakes", slot: 1, name: null, size: 30, voteRates: { s1: MOSTLY_DISAGREES, s2: MOSTLY_DISAGREES, s3: MOSTLY_AGREES, s4: MOSTLY_DISAGREES } },
+    { stableId: "data", slot: 2, name: null, size: 20, voteRates: { s1: MOSTLY_DISAGREES, s2: MOSTLY_AGREES, s3: LEANS_AGREE, s4: MOSTLY_AGREES } },
   ],
 };
 

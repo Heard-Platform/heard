@@ -1,11 +1,9 @@
-import { useState } from "react";
 import { motion } from "motion/react";
 import { Star } from "lucide-react";
 import type { Statement } from "../../types";
 import { getClusterDisplayName } from "../../utils/colors";
 import type { TribeSummary } from "../../utils/tribe-summary";
 import { ClusterMinimap, slotTextColorOnLight, type MinimapCluster } from "../room/ClusterMinimap";
-import { SaveSpotDrawer } from "./SaveSpotDrawer";
 
 export const FLYER_MINIMAP_LAYOUT_ID = "flyer-minimap";
 const REVEAL_DELAY_S = 0.5;
@@ -15,9 +13,9 @@ interface FlyerResultsProps {
   seed: string;
   clusters: MinimapCluster[];
   clusterProbabilities: number[] | null;
-  summary: TribeSummary;
-  statements: Statement[];
-  onSendCode: (email: string) => void;
+  summary: TribeSummary | null;
+  crossoverStatement: Statement | null;
+  onSaveSpot: () => void;
   onJustLooking: () => void;
 }
 
@@ -26,16 +24,10 @@ export function FlyerResults({
   clusters,
   clusterProbabilities,
   summary,
-  statements,
-  onSendCode,
+  crossoverStatement,
+  onSaveSpot,
   onJustLooking,
 }: FlyerResultsProps) {
-  const [isSaveSpotOpen, setIsSaveSpotOpen] = useState(false);
-  const tribe = clusters[summary.clusterIndex];
-  const crossoverStatement = summary.crossover
-    ? statements.find((s) => s.id === summary.crossover!.statementId)
-    : undefined;
-  const crossoverCluster = summary.crossover ? clusters[summary.crossover.clusterIndex] : undefined;
 
   return (
     <div className="flex flex-col items-center">
@@ -53,37 +45,62 @@ export function FlyerResults({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: REVEAL_DELAY_S, ease: "easeOut" }}
       >
-        <BadgeUnlocked />
-
-        <div>
-          <h2
-            className="text-4xl font-extrabold leading-tight tracking-tight"
-            style={{ color: slotTextColorOnLight(tribe.slot) }}
-          >
-            {getClusterDisplayName(tribe.slot, tribe.name)}
-          </h2>
-          <p className="mt-1 text-base text-[#4A463F]">
-            In this conversation you vibed with them on{" "}
-            <strong className="text-[#1C1B1F]">
-              {summary.sidedWithCount} of {summary.votedCount}
-            </strong>{" "}
-            statements.
-          </p>
-        </div>
-
-        {crossoverStatement && crossoverCluster && (
-          <CrossoverCard statement={crossoverStatement} cluster={crossoverCluster} />
+        {summary ? (
+          <TribeReveal clusters={clusters} summary={summary} crossoverStatement={crossoverStatement} />
+        ) : (
+          <GroupsForming />
         )}
 
-        <SaveSpotFooter onSaveSpot={() => setIsSaveSpotOpen(true)} onJustLooking={onJustLooking} />
+        <SaveSpotFooter onSaveSpot={onSaveSpot} onJustLooking={onJustLooking} />
       </motion.div>
+    </div>
+  );
+}
 
-      <SaveSpotDrawer
-        isOpen={isSaveSpotOpen}
-        tribe={tribe}
-        onOpenChange={setIsSaveSpotOpen}
-        onSendCode={onSendCode}
-      />
+interface TribeRevealProps {
+  clusters: MinimapCluster[];
+  summary: TribeSummary;
+  crossoverStatement: Statement | null;
+}
+
+function TribeReveal({ clusters, summary, crossoverStatement }: TribeRevealProps) {
+  const tribe = clusters[summary.clusterIndex];
+  const crossoverCluster = summary.crossover ? clusters[summary.crossover.clusterIndex] : undefined;
+
+  return (
+    <>
+      <BadgeUnlocked />
+
+      <div>
+        <h2
+          className="text-4xl font-extrabold leading-tight tracking-tight"
+          style={{ color: slotTextColorOnLight(tribe.slot) }}
+        >
+          {getClusterDisplayName(tribe.slot, tribe.name)}
+        </h2>
+        <p className="mt-1 text-base text-[#4A463F]">
+          In this conversation you vibed with them on{" "}
+          <strong className="text-[#1C1B1F]">
+            {summary.sidedWithCount} of {summary.votedCount}
+          </strong>{" "}
+          statements.
+        </p>
+      </div>
+
+      {crossoverStatement && crossoverCluster && (
+        <CrossoverCard statement={crossoverStatement} cluster={crossoverCluster} />
+      )}
+    </>
+  );
+}
+
+function GroupsForming() {
+  return (
+    <div>
+      <h2 className="text-4xl font-extrabold leading-tight tracking-tight text-[#1C1B1F]">You're on the board</h2>
+      <p className="mt-1 text-base text-[#4A463F]">
+        Opinion groups form as more people weigh in. Save your spot to find out where you land.
+      </p>
     </div>
   );
 }

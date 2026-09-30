@@ -53,6 +53,7 @@ const LEVEL_WORDS = {
 const ENTER_GLOW_DELAY_S = 0.35;
 const ENTER_GLOW_DURATION_S = 1;
 const CLUSTER_LABEL_HEIGHT = 14;
+export const MIN_CLUSTERS = 2;
 
 export function slotColor(slot: number): string {
   return SLOT_COLORS[slot % SLOT_COLORS.length];
@@ -62,7 +63,33 @@ export function slotTextColorOnLight(slot: number): string {
   return SLOT_TEXT_COLORS_ON_LIGHT[slot % SLOT_TEXT_COLORS_ON_LIGHT.length];
 }
 
-export function ClusterMinimap({
+export function ClusterMinimap(props: ClusterMinimapProps) {
+  if (props.clusters.length < MIN_CLUSTERS) {
+    return <FormingMinimap variant={props.variant} layoutId={props.layoutId} />;
+  }
+  return <ClusterMap {...props} />;
+}
+
+function FormingMinimap({ variant = "mini", layoutId }: { variant?: MinimapVariant; layoutId?: string }) {
+  const { mapSize, cardWidth } = DIMENSIONS[variant];
+  return (
+    <motion.div
+      layoutId={layoutId}
+      className="flex items-center justify-center rounded-2xl px-4 text-center"
+      style={{
+        backgroundColor: "#1c1a2b",
+        width: cardWidth,
+        height: mapSize,
+        boxShadow:
+          "0 6px 18px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.2)",
+      }}
+    >
+      <p className="text-xs font-semibold text-white/70">Opinion groups forming…</p>
+    </motion.div>
+  );
+}
+
+function ClusterMap({
   seed,
   clusters,
   clusterProbabilities,

@@ -39,7 +39,6 @@ interface LobbyScreenProps {
   targetRoomId?: string;
   analysisRoomId?: string;
   targetStatementId?: string;
-  hasQrScanResult?: boolean;
   eventLoading?: boolean;
   currentEvent?: Event | null;
   onCreateRoom: (
@@ -76,7 +75,6 @@ export function LobbyScreen({
   activeRooms,
   roomsLoading,
   error,
-  hasQrScanResult,
   currentSubHeard,
   eventLoading,
   currentEvent,

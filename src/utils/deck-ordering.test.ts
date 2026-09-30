@@ -4,6 +4,7 @@ import type { DeckOrder, VoteRates } from "../types";
 import {
   INITIAL_DECK_ORDER_STATE,
   nextDeckOrder,
+  placeConsensus,
   pullForwardMostInformative,
   putFirst,
 } from "./deck-ordering";
@@ -16,8 +17,8 @@ function makeDeckOrder(overrides: Partial<DeckOrder> = {}): DeckOrder {
     leadStatementIds: [],
     consensusStatementId: null,
     clusters: [
-      { stableId: "A", size: 50, voteRates: { divisive: MOSTLY_AGREES, shared: MOSTLY_AGREES, other: MOSTLY_AGREES } },
-      { stableId: "B", size: 50, voteRates: { divisive: MOSTLY_DISAGREES, shared: MOSTLY_AGREES, other: MOSTLY_DISAGREES } },
+      { stableId: "A", slot: 0, name: null, size: 50, voteRates: { divisive: MOSTLY_AGREES, shared: MOSTLY_AGREES, other: MOSTLY_AGREES } },
+      { stableId: "B", slot: 1, name: null, size: 50, voteRates: { divisive: MOSTLY_DISAGREES, shared: MOSTLY_AGREES, other: MOSTLY_DISAGREES } },
     ],
     ...overrides,
   };
@@ -34,22 +35,39 @@ describe("putFirst", () => {
 });
 
 describe("pullForwardMostInformative", () => {
-  it("moves the most informative card to just after the visible cards", () => {
+  it("moves the most informative card to just after the two readable cards", () => {
     expect(
       pullForwardMostInformative(["v1", "v2", "v3", "shared", "divisive"], makeDeckOrder(), [0.5, 0.5]),
-    ).toEqual(["v1", "v2", "v3", "divisive", "shared"]);
+    ).toEqual(["v1", "v2", "divisive", "v3", "shared"]);
   });
 
-  it("never moves the visible cards or displaces the consensus card", () => {
-    const deckOrder = makeDeckOrder({ consensusStatementId: "shared" });
+  it("never moves the readable cards and never picks the consensus card", () => {
+    const deckOrder = makeDeckOrder({ consensusStatementId: "divisive" });
     expect(
-      pullForwardMostInformative(["divisive", "v2", "v3", "shared", "x", "other"], deckOrder, [0.5, 0.5]),
-    ).toEqual(["divisive", "v2", "v3", "shared", "other", "x"]);
+      pullForwardMostInformative(["v1", "v2", "x", "divisive", "other"], deckOrder, [0.5, 0.5]),
+    ).toEqual(["v1", "v2", "other", "x", "divisive"]);
   });
 
   it("leaves the order alone when nothing is informative", () => {
     const statementIds = ["v1", "v2", "v3", "x", "y"];
     expect(pullForwardMostInformative(statementIds, makeDeckOrder(), [0.5, 0.5])).toEqual(statementIds);
+  });
+});
+
+describe("placeConsensus", () => {
+  it("puts the consensus card exactly at its slot, from behind or ahead", () => {
+    expect(placeConsensus(["a", "b", "c", "cons", "d"], "cons", 2)).toEqual(["a", "b", "cons", "c", "d"]);
+    expect(placeConsensus(["cons", "a", "b", "c"], "cons", 2)).toEqual(["a", "b", "cons", "c"]);
+  });
+
+  it("keeps the slot within the deck", () => {
+    expect(placeConsensus(["a", "cons"], "cons", 5)).toEqual(["a", "cons"]);
+    expect(placeConsensus(["a", "cons"], "cons", -1)).toEqual(["cons", "a"]);
+  });
+
+  it("does nothing without a consensus card, or once it's been voted", () => {
+    expect(placeConsensus(["a", "b", "c"], null, 0)).toEqual(["a", "b", "c"]);
+    expect(placeConsensus(["a", "b", "c"], "cons", 0)).toEqual(["a", "b", "c"]);
   });
 });
 
@@ -59,24 +77,17 @@ describe("nextDeckOrder", () => {
     expect(state.statementIds).toEqual(["s1", "s2"]);
   });
 
-  it("starts from the lead order when the deck order is available from the start", () => {
+  it("starts from the lead order", () => {
     const deckOrder = makeDeckOrder({ leadStatementIds: ["divisive", "other"] });
     const state = nextDeckOrder(INITIAL_DECK_ORDER_STATE, ["s1", "other", "divisive"], deckOrder, {});
     expect(state.statementIds.slice(0, 2)).toEqual(["divisive", "other"]);
   });
 
-  it("keeps already-visible cards when the deck order arrives after the first render", () => {
-    const deckOrder = makeDeckOrder({ leadStatementIds: ["divisive"] });
-    const before = nextDeckOrder(INITIAL_DECK_ORDER_STATE, ["s1", "s2", "s3", "s4", "divisive"], null, {});
-    const after = nextDeckOrder(before, ["s1", "s2", "s3", "s4", "divisive"], deckOrder, {});
-    expect(after.statementIds).toEqual(["s1", "s2", "s3", "divisive", "s4"]);
-  });
-
-  it("stays stable when the incoming order is reshuffled by a poll", () => {
+  it("keeps its order between renders", () => {
     const deckOrder = makeDeckOrder();
     const first = nextDeckOrder(INITIAL_DECK_ORDER_STATE, ["s1", "s2", "s3"], deckOrder, {});
-    const polled = nextDeckOrder(first, ["s3", "s2", "s1", "s4"], deckOrder, {});
-    expect(polled.statementIds).toEqual(["s1", "s2", "s3", "s4"]);
+    const again = nextDeckOrder(first, ["s3", "s2", "s1"], deckOrder, {});
+    expect(again.statementIds).toEqual(["s1", "s2", "s3"]);
   });
 
   it("does not adapt before the user has voted", () => {
@@ -90,12 +101,12 @@ describe("nextDeckOrder", () => {
     const deckOrder = makeDeckOrder();
     const unvoted = ["v1", "v2", "v3", "shared", "other"];
     const state = nextDeckOrder(
-      { statementIds: unvoted, deckOrder, lastAdaptedVoteCount: 0 },
+      { statementIds: unvoted, lastAdaptedVoteCount: 0, startVoteCount: 0 },
       unvoted,
       deckOrder,
       { divisive: "pass" },
     );
-    expect(state.statementIds).toEqual(["v1", "v2", "v3", "other", "shared"]);
+    expect(state.statementIds).toEqual(["v1", "v2", "other", "v3", "shared"]);
     expect(state.lastAdaptedVoteCount).toBe(1);
   });
 });
@@ -105,9 +116,9 @@ describe("nextDeckOrder walkthrough with three groups", () => {
     leadStatementIds: ["c-disagrees", "v2", "v3", "x", "y", "c-disagrees-2", "b-disagrees"],
     consensusStatementId: null,
     clusters: [
-      { stableId: "A", size: 30, voteRates: { "c-disagrees": MOSTLY_AGREES, "c-disagrees-2": MOSTLY_AGREES, "b-disagrees": MOSTLY_AGREES } },
-      { stableId: "B", size: 30, voteRates: { "c-disagrees": MOSTLY_AGREES, "c-disagrees-2": MOSTLY_AGREES, "b-disagrees": MOSTLY_DISAGREES } },
-      { stableId: "C", size: 30, voteRates: { "c-disagrees": MOSTLY_DISAGREES, "c-disagrees-2": MOSTLY_DISAGREES, "b-disagrees": MOSTLY_AGREES } },
+      { stableId: "A", slot: 0, name: null, size: 30, voteRates: { "c-disagrees": MOSTLY_AGREES, "c-disagrees-2": MOSTLY_AGREES, "b-disagrees": MOSTLY_AGREES } },
+      { stableId: "B", slot: 1, name: null, size: 30, voteRates: { "c-disagrees": MOSTLY_AGREES, "c-disagrees-2": MOSTLY_AGREES, "b-disagrees": MOSTLY_DISAGREES } },
+      { stableId: "C", slot: 2, name: null, size: 30, voteRates: { "c-disagrees": MOSTLY_DISAGREES, "c-disagrees-2": MOSTLY_DISAGREES, "b-disagrees": MOSTLY_AGREES } },
     ],
   };
   const allIds = ["c-disagrees", "v2", "v3", "x", "y", "c-disagrees-2", "b-disagrees"];
@@ -118,22 +129,37 @@ describe("nextDeckOrder walkthrough with three groups", () => {
     expect(opened.statementIds).toEqual(allIds);
 
     const afterVote = nextDeckOrder(opened, idsAfterFirstVote, deckOrder, { "c-disagrees": "agree" });
-    expect(afterVote.statementIds).toEqual(["v2", "v3", "x", "b-disagrees", "y", "c-disagrees-2"]);
+    expect(afterVote.statementIds).toEqual(["v2", "v3", "b-disagrees", "x", "y", "c-disagrees-2"]);
 
-    const reshuffledByPoll = _.shuffle(idsAfterFirstVote);
-    const afterPoll = nextDeckOrder(afterVote, reshuffledByPoll, deckOrder, { "c-disagrees": "agree" });
-    expect(afterPoll.statementIds).toEqual(afterVote.statementIds);
+    const rerendered = nextDeckOrder(afterVote, _.shuffle(idsAfterFirstVote), deckOrder, { "c-disagrees": "agree" });
+    expect(rerendered.statementIds).toEqual(afterVote.statementIds);
   });
 
   it("voting against a cluster pulls another cluster's card forward", () => {
     const opened = nextDeckOrder(INITIAL_DECK_ORDER_STATE, allIds, deckOrder, {});
     const afterAgree = nextDeckOrder(opened, idsAfterFirstVote, deckOrder, { "c-disagrees": "agree" });
-    expect(afterAgree.statementIds[3]).toBe("b-disagrees");
+    expect(afterAgree.statementIds[2]).toBe("b-disagrees");
   });
 
   it("voting with a cluster pulls another card of that cluster to confirm", () => {
     const opened = nextDeckOrder(INITIAL_DECK_ORDER_STATE, allIds, deckOrder, {});
     const afterDisagree = nextDeckOrder(opened, idsAfterFirstVote, deckOrder, { "c-disagrees": "disagree" });
-    expect(afterDisagree.statementIds[3]).toBe("c-disagrees-2");
+    expect(afterDisagree.statementIds[2]).toBe("c-disagrees-2");
+  });
+});
+
+describe("nextDeckOrder consensus placement", () => {
+  const deckOrder = makeDeckOrder({
+    leadStatementIds: ["v1", "v2", "shared", "x", "y"],
+    consensusStatementId: "shared",
+  });
+  const allIds = ["v1", "v2", "shared", "x", "y", "divisive", "other"];
+
+  it("locks the consensus card to its slot while cards are pulled forward around it", () => {
+    const opened = nextDeckOrder(INITIAL_DECK_ORDER_STATE, allIds, deckOrder, { flyer: "agree" });
+    expect(opened.statementIds.slice(0, 2)).toEqual(["v1", "shared"]);
+
+    const afterVote = nextDeckOrder(opened, _.without(allIds, "v1"), deckOrder, { flyer: "agree", v1: "agree" });
+    expect(afterVote.statementIds[0]).toBe("shared");
   });
 });

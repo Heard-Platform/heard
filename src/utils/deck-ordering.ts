@@ -6,18 +6,19 @@ import {
   isStillPlacing,
 } from "./cluster-estimation";
 
-export const FIXED_VISIBLE_CARDS = 3;
+export const READABLE_CARD_COUNT = 2;
+export const CONSENSUS_SLOT = 1;
 
 export interface DeckOrderState {
   statementIds: string[];
-  deckOrder: DeckOrder | null;
   lastAdaptedVoteCount: number;
+  startVoteCount: number | null;
 }
 
 export const INITIAL_DECK_ORDER_STATE: DeckOrderState = {
   statementIds: [],
-  deckOrder: null,
   lastAdaptedVoteCount: 0,
+  startVoteCount: null,
 };
 
 export function putFirst(firstIds: string[], ids: string[]): string[] {
@@ -31,8 +32,8 @@ export function pullForwardMostInformative(
   deckOrder: DeckOrder,
   clusterProbabilities: number[],
 ): string[] {
-  const fixed = _.take(statementIds, FIXED_VISIBLE_CARDS);
-  const rest = _.drop(statementIds, FIXED_VISIBLE_CARDS);
+  const fixed = _.take(statementIds, READABLE_CARD_COUNT);
+  const rest = _.drop(statementIds, READABLE_CARD_COUNT);
   const best = _(rest)
     .reject((id) => id === deckOrder.consensusStatementId)
     .map((id) => ({
@@ -42,11 +43,19 @@ export function pullForwardMostInformative(
     .maxBy("infoValue");
   if (!best || best.infoValue <= 0) return statementIds;
 
-  const remaining = _.without(rest, best.id);
-  const insertAt =
-    remaining[0] === deckOrder.consensusStatementId ? 1 : 0;
-  remaining.splice(insertAt, 0, best.id);
-  return [...fixed, ...remaining];
+  return [...fixed, best.id, ..._.without(rest, best.id)];
+}
+
+export function placeConsensus(
+  statementIds: string[],
+  consensusId: string | null,
+  targetIndex: number,
+): string[] {
+  if (!consensusId || !statementIds.includes(consensusId)) return statementIds;
+
+  const rest = _.without(statementIds, consensusId);
+  const slot = _.clamp(targetIndex, 0, rest.length);
+  return [..._.take(rest, slot), consensusId, ..._.drop(rest, slot)];
 }
 
 export function nextDeckOrder(
@@ -55,23 +64,12 @@ export function nextDeckOrder(
   deckOrder: DeckOrder | null,
   userVotes: Record<string, VoteType>,
 ): DeckOrderState {
-  if (!deckOrder)
-    return {
-      statementIds: unvotedIds,
-      deckOrder,
-      lastAdaptedVoteCount: previous.lastAdaptedVoteCount,
-    };
+  if (!deckOrder) return { ...previous, statementIds: unvotedIds };
 
-  const base = putFirst(deckOrder.leadStatementIds, unvotedIds);
-  const carried =
-    previous.deckOrder === deckOrder
-      ? previous.statementIds
-      : previous.statementIds
-          .filter((id) => unvotedIds.includes(id))
-          .slice(0, FIXED_VISIBLE_CARDS);
-  let statementIds = putFirst(carried, base);
+  let statementIds = putFirst(previous.statementIds, putFirst(deckOrder.leadStatementIds, unvotedIds));
 
   const votesCast = _.size(userVotes);
+  const startVoteCount = previous.startVoteCount ?? votesCast;
   let lastAdaptedVoteCount = previous.lastAdaptedVoteCount;
   if (votesCast > lastAdaptedVoteCount) {
     const clusterProbabilities = estimateClusterProbabilities(
@@ -87,5 +85,8 @@ export function nextDeckOrder(
     lastAdaptedVoteCount = votesCast;
   }
 
-  return { statementIds, deckOrder, lastAdaptedVoteCount };
+  const consensusTarget = CONSENSUS_SLOT - (votesCast - startVoteCount);
+  statementIds = placeConsensus(statementIds, deckOrder.consensusStatementId, consensusTarget);
+
+  return { statementIds, lastAdaptedVoteCount, startVoteCount };
 }

@@ -40,6 +40,9 @@ function FlyerSwipeScreenDemo({ flyerVote }: { flyerVote: FlyerVote }) {
     clusterProbabilities && Object.keys(votes).length === FLYER_STATEMENTS.length
       ? summarizeTribe(FLYER_DECK_ORDER, votes, clusterProbabilities)
       : null;
+  const upcoming = statements.slice(1).filter((statement) => !votes[statement.id]);
+  const crossoverId = tribeSummary?.crossover?.statementId;
+  const crossoverStatement = statements.find((statement) => statement.id === crossoverId) ?? null;
 
   const handleReplay = () => {
     setVotes({});
@@ -71,10 +74,12 @@ function FlyerSwipeScreenDemo({ flyerVote }: { flyerVote: FlyerVote }) {
           topic={FLYER_TOPIC}
           flyerStatement={statements[0]}
           flyerVote={flyerVote}
-          statements={statements.slice(1)}
+          upcoming={upcoming}
+          total={statements.length}
           clusters={FLYER_CLUSTERS}
           clusterProbabilities={clusterProbabilities}
           tribeSummary={tribeSummary}
+          crossoverStatement={crossoverStatement}
           onVote={(statementId, vote) => setVotes((current) => ({ ...current, [statementId]: vote }))}
           onClose={() => console.log("[Story] close")}
           onSaveSpot={() => console.log("[Story] save my spot")}

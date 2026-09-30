@@ -4,6 +4,7 @@ import { MessageCircle, X } from "lucide-react";
 import type { Statement } from "../../types";
 import {
   ClusterMinimap,
+  MIN_CLUSTERS,
   type MinimapCluster,
 } from "../room/ClusterMinimap";
 import { FlyerProgress } from "./FlyerProgress";
@@ -32,13 +33,15 @@ interface FlyerSwipeScreenProps {
   topic: string;
   flyerStatement: Statement;
   flyerVote: FlyerVote;
-  statements: Statement[];
+  upcoming: Statement[];
+  total: number;
   clusters: MinimapCluster[];
   clusterProbabilities: number[] | null;
   tribeSummary: TribeSummary | null;
+  crossoverStatement: Statement | null;
   onVote: (statementId: string, vote: SwipeVote) => void;
   onClose: () => void;
-  onSendCode: (email: string) => void;
+  onSaveSpot: () => void;
   onJustLooking: () => void;
 }
 
@@ -46,25 +49,25 @@ export function FlyerSwipeScreen({
   topic,
   flyerStatement,
   flyerVote,
-  statements,
+  upcoming,
+  total,
   clusters,
   clusterProbabilities,
   tribeSummary,
+  crossoverStatement,
   onVote,
   onClose,
-  onSendCode,
+  onSaveSpot,
   onJustLooking,
 }: FlyerSwipeScreenProps) {
   const [votedCount, setVotedCount] = useState(0);
   const [hasStartedDragging, setHasStartedDragging] = useState(false);
-  const deck = [flyerStatement, ...statements];
-  const total = deck.length;
-  const currentStatement = deck[votedCount];
-  const cardsBehind = deck.slice(
-    votedCount + 1,
-    votedCount + STACK_POSES.length,
-  );
-  const showResults = votedCount >= total && tribeSummary !== null;
+  const stack = votedCount === 0 ? [flyerStatement, ...upcoming] : upcoming;
+  const currentStatement = stack[0];
+  const cardsBehind = stack.slice(1, STACK_POSES.length);
+  const hasClusters = clusters.length >= MIN_CLUSTERS;
+  const showResults =
+    votedCount >= total && (tribeSummary !== null || !hasClusters);
   const minimapSeed = flyerStatement.roomId;
 
   const recordVote = (statementId: string, vote: SwipeVote) => {
@@ -89,8 +92,8 @@ export function FlyerSwipeScreen({
             clusters={clusters}
             clusterProbabilities={clusterProbabilities}
             summary={tribeSummary}
-            statements={deck}
-            onSendCode={onSendCode}
+            crossoverStatement={crossoverStatement}
+            onSaveSpot={onSaveSpot}
             onJustLooking={onJustLooking}
           />
         </div>

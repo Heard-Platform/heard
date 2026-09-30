@@ -106,6 +106,8 @@ function SignUpHarness({ hasClusters, onComplete }: SignUpHarnessProps) {
   const clusters = hasClusters ? FLYER_CLUSTERS : [];
   const clusterProbabilities = hasClusters ? estimateClusterProbabilities(FLYER_DECK_ORDER, VOTES) : null;
   const summary = clusterProbabilities ? summarizeTribe(FLYER_DECK_ORDER, VOTES, clusterProbabilities) : null;
+  const crossoverId = summary?.crossover?.statementId;
+  const crossoverStatement = FLYER_STATEMENTS.find((statement) => statement.id === crossoverId) ?? null;
 
   const handleSaveSpot = () => {
     if (user && !user.isAnonymous) {
@@ -122,7 +124,7 @@ function SignUpHarness({ hasClusters, onComplete }: SignUpHarnessProps) {
         clusters={clusters}
         clusterProbabilities={clusterProbabilities}
         summary={summary}
-        statements={FLYER_STATEMENTS}
+        crossoverStatement={crossoverStatement}
         onSaveSpot={handleSaveSpot}
         onJustLooking={() => onComplete("continue")}
       />
