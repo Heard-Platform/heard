@@ -159,6 +159,7 @@ export interface Vote {
   voteType: VoteType;
   timestamp: number;
   flyerId?: string;
+  flyerGroup?: number;
   anonymousUserId?: string;
 }
 
@@ -400,4 +401,18 @@ export interface ScrapedItem {
   publishedRoomId?: string;
   error?: string;
   decidedAt?: number;
+}
+export interface NewFlyerPlacement {
+  roomId: string;
+  statementId: string;
+  flyerGroup: number;
+  latitude: number;
+  longitude: number;
+  headingDeg: number | null;
+  createdBy: string;
+}
+
+export interface FlyerPlacement extends NewFlyerPlacement {
+  id: string;
+  createdAt: string;
 }

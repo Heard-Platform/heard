@@ -3,9 +3,11 @@ import {
   AvatarAnimal,
   DemographicAnswer,
   DemographicQuestion,
+  FlyerPlacement,
   InternalVar,
   InternalVarKey,
   NewDemographicAnswer,
+  NewFlyerPlacement,
   NewUserEvent,
   NewUserReport,
   RoomFollow,
@@ -103,6 +105,12 @@ export const insertFlyerScan = async (
     ...(userId ? { userId } : {}),
   });
 };
+
+export const getFlyerPlacementsForRoom = async (roomId: string) =>
+  selectAll<FlyerPlacement>("flyer_placements", { roomId }, (q: any) => q.order("flyerGroup"));
+
+export const insertFlyerPlacements = async (placements: NewFlyerPlacement[]) =>
+  insert("flyer_placements", placements);
 
 export const getFlyerEmails = async () => {
   return selectAll<{ email: string }>("flyer_emails");

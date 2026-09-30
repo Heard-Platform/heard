@@ -9,6 +9,19 @@ import { maybeEmailResponseVotesNotif } from "./email-notifs-utils.ts";
 import { recomputeClustersIfNeeded } from "./cluster-freshness.ts";
 import { runInBackground } from "./background-utils.ts";
 
+export interface FlyerSource {
+  flyerId: string;
+  flyerGroup?: number;
+}
+
+export const flyerAttribution = (
+  flyerSource?: FlyerSource,
+): Pick<Vote, "flyerId" | "flyerGroup"> => {
+  if (!flyerSource) return {};
+  const { flyerId, flyerGroup } = flyerSource;
+  return Number.isInteger(flyerGroup) ? { flyerId, flyerGroup } : { flyerId };
+};
+
 export const countStatementVotes = (statement: Statement): number =>
   statement.agrees + statement.disagrees + statement.passes + statement.superAgrees;
 
@@ -97,7 +110,7 @@ export const processVote = async (
   statementId: string,
   userId: string,
   voteType: VoteType,
-  flyerId?: string,
+  flyerSource?: FlyerSource,
   allowIdempotent = false,
 ): Promise<ProcessVoteResult> => {
   if (
@@ -156,11 +169,11 @@ export const processVote = async (
   let pointsEarned = 0;
   let voteCountChange = 0;
 
-  let voteData = {
+  const voteData = {
     voteType,
-    flyerId,
     timestamp: Date.now(),
-  }
+    ...flyerAttribution(flyerSource),
+  };
 
   if (currentVote?.voteType === voteType && !allowIdempotent) {
     // Same vote type - undo vote (delete the vote record)

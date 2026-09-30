@@ -1,6 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { describe, it } from "@std/testing/bdd";
-import { scoreStatements } from "./voting-utils.ts";
+import { flyerAttribution, scoreStatements } from "./voting-utils.ts";
 import { Statement } from "./types.tsx";
 
 const STATEMENT: Statement = {
@@ -80,5 +80,20 @@ describe("scoreStatements", () => {
 
     const result = scoreStatements([c, a, b]);
     assertEquals(result.map(({ statement }) => statement.id), ["c", "a", "b"]);
+  });
+});
+
+describe("flyerAttribution", () => {
+  it("adds nothing for votes that did not come from a flyer", () => {
+    assertEquals(flyerAttribution(undefined), {});
+  });
+
+  it("records the flyer and its group", () => {
+    assertEquals(flyerAttribution({ flyerId: "room", flyerGroup: 42 }), { flyerId: "room", flyerGroup: 42 });
+  });
+
+  it("drops a missing or malformed group but keeps the flyer", () => {
+    assertEquals(flyerAttribution({ flyerId: "room" }), { flyerId: "room" });
+    assertEquals(flyerAttribution({ flyerId: "room", flyerGroup: NaN }), { flyerId: "room" });
   });
 });

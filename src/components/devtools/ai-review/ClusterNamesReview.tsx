@@ -5,11 +5,15 @@ import { api, safelyMakeApiCall } from "../../../utils/api";
 import { ClusterNameReviewRoom, ReviewRoomOption } from "../../../types";
 import { ClusterNamingToggle } from "./ClusterNamingToggle";
 import { ClusterNamesReviewRow } from "./ClusterNamesReviewRow";
-import { RoomNamingPicker } from "./RoomNamingPicker";
+import { RoomSearchPicker, type RoomSearchOption } from "../../RoomSearchPicker";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
 const PAGE_SIZE = 25;
+
+function toRoomSearchOption(room: ReviewRoomOption): RoomSearchOption {
+  return { id: room.roomId, topic: room.topic, detail: `${room.voteCount.toLocaleString()} votes` };
+}
 
 function hasNamedCluster(room: ClusterNameReviewRoom): boolean {
   return (room.clusters ?? []).some((cluster) => cluster.name !== null);
@@ -19,7 +23,7 @@ export function ClusterNamesReview() {
   const [rooms, setRooms] = useState<ClusterNameReviewRoom[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [roomOptions, setRoomOptions] = useState<ReviewRoomOption[]>([]);
+  const [roomOptions, setRoomOptions] = useState<RoomSearchOption[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [regeneratingRoomId, setRegeneratingRoomId] = useState<string | null>(null);
 
@@ -39,7 +43,7 @@ export function ClusterNamesReview() {
   const loadRoomOptions = async () => {
     const response = await safelyMakeApiCall(() => api.getRoomsForReview());
     if (response?.success && response.data) {
-      setRoomOptions(response.data.rooms);
+      setRoomOptions(response.data.rooms.map(toRoomSearchOption));
     } else {
       toast.error("Failed to load rooms");
     }
@@ -80,10 +84,11 @@ export function ClusterNamesReview() {
 
       <ClusterNamingToggle />
 
-      <RoomNamingPicker
+      <RoomSearchPicker
         rooms={roomOptions}
+        placeholder="Choose a room to name its clusters…"
         loading={loadingOptions}
-        running={regeneratingRoomId !== null}
+        busyLabel={regeneratingRoomId !== null ? "Naming clusters…" : null}
         onSelect={handleRegenerate}
       />
 
