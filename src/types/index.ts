@@ -542,8 +542,15 @@ export interface CohortFunnelEntry {
   topPosts: CohortTopPost[];
 }
 
+export interface SessionMinutesWeek {
+  weekStart: string;
+  medianMinutes: number;
+  sessions: number;
+}
+
 export interface CohortFunnelData {
   cohorts: CohortFunnelEntry[];
+  sessionMinutesWeekly: SessionMinutesWeek[];
 }
 
 export type ActivityFeedEventType =

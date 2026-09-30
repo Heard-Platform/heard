@@ -4,8 +4,9 @@ import { Card } from "./ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { X, TrendingUp } from "lucide-react";
 import { api } from "../utils/api";
-import type { CohortFunnelEntry } from "../types";
+import type { CohortFunnelEntry, SessionMinutesWeek } from "../types";
 import { CohortFunnelChart } from "./CohortFunnelChart";
+import { SessionLengthCard } from "./retention/SessionLengthCard";
 
 type CohortMode = "joined" | "active";
 type TimeFrame = "1m" | "3m" | "6m" | "all";
@@ -31,6 +32,7 @@ interface RetentionDashboardProps {
 
 export function RetentionDashboard({ onExit }: RetentionDashboardProps) {
   const [cohorts, setCohorts] = useState<CohortFunnelEntry[]>([]);
+  const [sessionMinutesWeekly, setSessionMinutesWeekly] = useState<SessionMinutesWeek[]>([]);
   const [loading, setLoading] = useState(true);
   const [cohortMode, setCohortMode] = useState<CohortMode>("active");
   const [timeFrame, setTimeFrame] = useState<TimeFrame>("1m");
@@ -44,6 +46,7 @@ export function RetentionDashboard({ onExit }: RetentionDashboardProps) {
       const res = await api.getCohortFunnel(cohortMode, cutoff ?? undefined);
       if (!cancelled && res.success) {
         setCohorts(res.data?.cohorts ?? []);
+        setSessionMinutesWeekly(res.data?.sessionMinutesWeekly ?? []);
       }
       if (!cancelled) setLoading(false);
     };
@@ -133,6 +136,8 @@ export function RetentionDashboard({ onExit }: RetentionDashboardProps) {
             <CohortFunnelChart cohorts={cohorts} cohortMode={cohortMode} />
           )}
         </Card>
+
+        <SessionLengthCard weekly={sessionMinutesWeekly} loading={loading} />
       </div>
     </div>
   );

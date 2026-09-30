@@ -1,20 +1,14 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { formatWeekStart } from "../../../utils/time";
 
 interface ClusterRecomputesChartProps {
   weekly: { weekStart: string; count: number }[];
 }
 
-const formatWeek = (weekStart: string) =>
-  new Date(`${weekStart}T00:00:00Z`).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-
 export function ClusterRecomputesChart({ weekly }: ClusterRecomputesChartProps) {
   if (weekly.length === 0) return null;
 
-  const data = weekly.map((w) => ({ week: formatWeek(w.weekStart), count: w.count }));
+  const data = weekly.map((w) => ({ week: formatWeekStart(w.weekStart), count: w.count }));
 
   return (
     <ResponsiveContainer width={320} height={200}>

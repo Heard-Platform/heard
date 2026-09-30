@@ -1,20 +1,14 @@
 import { ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { formatWeekStart } from "../../../utils/time";
 
 interface VotesPerSessionChartProps {
   weekly: { weekStart: string; averageVotes: number; sessions: number }[];
 }
 
-const formatWeek = (weekStart: string) =>
-  new Date(`${weekStart}T00:00:00Z`).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-
 export function VotesPerSessionChart({ weekly }: VotesPerSessionChartProps) {
   if (weekly.length === 0) return null;
 
-  const data = weekly.map((w) => ({ week: formatWeek(w.weekStart), averageVotes: w.averageVotes, sessions: w.sessions }));
+  const data = weekly.map((w) => ({ week: formatWeekStart(w.weekStart), averageVotes: w.averageVotes, sessions: w.sessions }));
 
   return (
     <ResponsiveContainer width={320} height={200}>

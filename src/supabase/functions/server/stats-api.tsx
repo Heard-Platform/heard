@@ -11,10 +11,11 @@ import {
 import { getAllRecords, selectAll } from "./db-utils.ts";
 import type { Session, UserEvent } from "./types.tsx";
 import { getEventsOfType, getFlyerEmails, getUserReports, getAllRoomViews } from "./model-utils.ts";
-import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap } from "./stats-utils.ts";
+import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap, medianSessionMinutesByWeek } from "./stats-utils.ts";
 import { buildCohortFunnelData } from "./cohort-utils.ts";
 import { buildWeeklySignups } from "./activity-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
+import { toTimestamp } from "./time-utils.ts";
 
 const app = new Hono();
 
@@ -227,15 +228,23 @@ app.get(
         }
       }
 
-      return buildCohortFunnelData(
-        nonDevUsers,
-        votes,
-        statements,
-        allRooms,
-        views,
-        mode,
-        allStatements,
-      );
+      const realUserIds = new Set(allUsers.filter((user) => !user.isDeveloper).map((user) => user.id));
+      const realVoteTimings = allVotes
+        .filter((vote) => realUserIds.has(vote.userId))
+        .map((vote) => ({ userId: vote.userId, timestamp: toTimestamp(vote.timestamp) }));
+
+      return {
+        ...buildCohortFunnelData(
+          nonDevUsers,
+          votes,
+          statements,
+          allRooms,
+          views,
+          mode,
+          allStatements,
+        ),
+        sessionMinutesWeekly: medianSessionMinutesByWeek(realVoteTimings, Date.now()),
+      };
     },
     "Failed to calculate cohort funnel data",
   ),
