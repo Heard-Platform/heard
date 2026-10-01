@@ -18,6 +18,7 @@ import { TimeLeftBadgeStory } from "../stories/TimeLeftBadge.story";
 import { QRScanResultDialogStory } from "../stories/QRScanResultDialog.story";
 import { FlyerSwipeScreenStory } from "../stories/FlyerSwipeScreen.story";
 import { FlyerSignUpStory } from "../stories/FlyerSignUp.story";
+import { FlyerLandingStory } from "../stories/FlyerLanding.story";
 import { YouTubeCardStory } from "../stories/YouTubeCard.story";
 import { IntroModalStory } from "../stories/IntroModal.story";
 import { DemographicsCardStory } from "../stories/DemographicsCard.story";
@@ -133,6 +134,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="qr-scan-result-dialog">QR Scan Result Dialog</TabsTrigger>
                 <TabsTrigger value="flyer-swipe-screen">Flyer Swipe Screen</TabsTrigger>
                 <TabsTrigger value="flyer-sign-up">Flyer Sign-up</TabsTrigger>
+                <TabsTrigger value="flyer-landing">Flyer Landing</TabsTrigger>
                 <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
                 <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
                 <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
@@ -233,6 +235,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="flyer-sign-up">
                 <FlyerSignUpStory />
+              </TabsContent>
+              <TabsContent value="flyer-landing">
+                <FlyerLandingStory />
               </TabsContent>
               <TabsContent value="youtube-card">
                 <YouTubeCardStory />

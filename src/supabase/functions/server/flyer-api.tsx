@@ -1,5 +1,5 @@
 import { Context, Hono } from "npm:hono";
-import { getDebate } from "./kv-utils.tsx";
+import { getCommunity, getDebate } from "./kv-utils.tsx";
 import type { DebateRoom, User, VoteType } from "./types.tsx";
 import { processVote, countStatementVotes } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
@@ -17,6 +17,9 @@ type FlyerVoteResponse = {
   agreePercent: number;
   disagreePercent: number;
   passPercent: number;
+  agreeCount: number;
+  disagreeCount: number;
+  communityName: string | null;
   userVote: VoteType;
   statementText: string;
   teaserStatement?: {
@@ -91,6 +94,8 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         );
       }
 
+      const community = room.subHeard ? await getCommunity(room.subHeard) : null;
+
       const totalVotes =
         result.statement.agrees +
         result.statement.disagrees +
@@ -136,6 +141,9 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         agreePercent,
         disagreePercent,
         passPercent,
+        agreeCount: result.statement.agrees,
+        disagreeCount: result.statement.disagrees,
+        communityName: community ? community.displayName || community.name : null,
         userVote: result.userVote as VoteType,
         statementText: result.statement.text,
         teaserStatement: makeTeaserStatement(),

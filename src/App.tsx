@@ -47,6 +47,8 @@ import {
 } from "./utils/url";
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { FlyerSwipeContainer, type FlyerCompleteReason } from "./components/flyer/FlyerSwipeContainer";
+import { FlyerLandingContainer } from "./components/flyer/landing/FlyerLandingContainer";
+import type { FlyerVoteTally } from "./components/flyer/landing/FlyerLandingScreen";
 import type { FlyerVote } from "./components/flyer/FlyerVoteIntroCard";
 import { FeatureFlags, isFeatureEnabled } from "./utils/constants/feature-flags";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
@@ -126,6 +128,12 @@ function AppContent() {
     flyerStatementId: string;
     flyerVote: FlyerVote;
   } | null>(null);
+  const [flyerLanding, setFlyerLanding] = useState<{
+    room: DebateRoom;
+    community: string | null;
+    tally: FlyerVoteTally;
+    flyerVote: FlyerVote;
+  } | null>(null);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
@@ -192,14 +200,24 @@ function AppContent() {
       toast.error("Failed to process flyer vote");
     } else {
       startRoomJoin(response.room.id);
-      const doSwipeFlow =
-        isFeatureEnabled(FeatureFlags.FLYER_SWIPE) &&
-        flyerData.vote !== "pass";
-      if (doSwipeFlow) {
+      const isPass = flyerData.vote === "pass";
+      const flyerVote = flyerData.vote === "disagree" ? "disagree" : "agree";
+      if (isFeatureEnabled(FeatureFlags.CIVIC_FLYER_RESULTS) && !isPass) {
+        setFlyerLanding({
+          room: response.room,
+          community: response.communityName,
+          tally: {
+            statementText: response.statementText,
+            agreeCount: response.agreeCount,
+            disagreeCount: response.disagreeCount,
+          },
+          flyerVote,
+        });
+      } else if (isFeatureEnabled(FeatureFlags.FLYER_SWIPE) && !isPass) {
         setFlyerSwipe({
           room: response.room,
           flyerStatementId: flyerData.statementId,
-          flyerVote: flyerData.vote === "disagree" ? "disagree" : "agree",
+          flyerVote,
         });
       } else {
         setQrScanResult({ ...response, mode: "single" });
@@ -248,6 +266,7 @@ function AppContent() {
     updateUrlForRoom(roomId);
     setQrScanResult(null);
     setFlyerSwipe(null);
+    setFlyerLanding(null);
   };
 
   const handleLogout = async () => {
@@ -601,16 +620,16 @@ function AppContent() {
     setIsJoiningAnonymously(false);
   };
 
-  const isInFlyerSwipe = flyerSwipe !== null;
+  const isInFlyerFlow = flyerSwipe !== null || flyerLanding !== null;
 
   useEffect(() => {
-    if (!user || !hasCheckedUrl || isInFlyerSwipe) return;
+    if (!user || !hasCheckedUrl || isInFlyerFlow) return;
     if (targetRoomId) {
       loadRoomsAndResolveTarget();
     } else {
       loadActiveRooms(currentSubHeard || undefined);
     }
-  }, [user?.id, hasCheckedUrl, targetRoomId, isInFlyerSwipe]);
+  }, [user?.id, hasCheckedUrl, targetRoomId, isInFlyerFlow]);
 
   useEffect(() => {
     if (user && hasCheckedUrl && pendingCommunities.length > 0) {
@@ -845,6 +864,21 @@ function AppContent() {
           className="w-8 h-8 heard-spinner"
         />
       </div>
+    );
+  }
+
+  if (flyerLanding) {
+    return (
+      <>
+        <FlyerLandingContainer
+          room={flyerLanding.room}
+          community={flyerLanding.community}
+          tally={flyerLanding.tally}
+          vote={flyerLanding.flyerVote}
+          onComplete={handleFlyerComplete}
+        />
+        <Toaster />
+      </>
     );
   }
 

@@ -15,6 +15,9 @@ export type RoomStatusResponse = {
 export type FlyerVoteResponse = Omit<SingleQRScanResult, 'mode'> & {
   user: UserSession;
   sessionId: string;
+  agreeCount: number;
+  disagreeCount: number;
+  communityName: string | null;
 };
 
 export type AskTheDataResponse = {

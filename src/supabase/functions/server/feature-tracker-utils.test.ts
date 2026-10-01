@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { averageVotesPerSessionByWeek, buildFlyerSwipeFunnel, countByWeek } from "./feature-tracker-utils.ts";
+import { averageVotesPerSessionByWeek, buildFlyerLandingFunnel, buildFlyerSwipeFunnel, countByWeek } from "./feature-tracker-utils.ts";
 
 Deno.test("countByWeek - empty input returns no weeks", () => {
   assertEquals(countByWeek([]), []);
@@ -100,4 +100,34 @@ Deno.test("buildFlyerSwipeFunnel - counts a user who saved and then exited only 
   ];
 
   assertEquals(buildFlyerSwipeFunnel(events), { opened: 1, swipes: [], saved: 1, exited: 0 });
+});
+
+Deno.test("buildFlyerLandingFunnel - counts unique users at each step", () => {
+  const events = [
+    { type: "flyer_landing_opened", userId: "u1" },
+    { type: "flyer_landing_opened", userId: "u1" },
+    { type: "flyer_landing_email_submitted", userId: "u1" },
+    { type: "flyer_landing_looked_around", userId: "u1" },
+    { type: "flyer_landing_opened", userId: "u2" },
+    { type: "flyer_landing_email_submitted", userId: "u2" },
+    { type: "flyer_landing_opened", userId: "u3" },
+  ];
+
+  assertEquals(buildFlyerLandingFunnel(events), { opened: 3, submitted: 2, lookedAround: 1 });
+});
+
+Deno.test("buildFlyerLandingFunnel - counts users whose id changed after logging in with a code", () => {
+  const events = [
+    { type: "flyer_landing_opened", userId: "anon-1" },
+    { type: "flyer_landing_email_submitted", userId: "existing-account" },
+    { type: "flyer_landing_looked_around", userId: "existing-account" },
+  ];
+
+  assertEquals(buildFlyerLandingFunnel(events), { opened: 1, submitted: 1, lookedAround: 1 });
+});
+
+Deno.test("buildFlyerLandingFunnel - ignores events without a user", () => {
+  const events = [{ type: "flyer_landing_opened", userId: null }];
+
+  assertEquals(buildFlyerLandingFunnel(events), { opened: 0, submitted: 0, lookedAround: 0 });
 });
