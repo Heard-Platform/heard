@@ -7,7 +7,7 @@ export enum FeatureFlags {
   DEMOGRAPHICS = "DEMOGRAPHICS",
   EVENTS = "EVENTS",
   FLYER_SWIPE = "FLYER_SWIPE",
-  CIVIC_FLYER_RESULTS = "FLYER_RESULTS",
+  CIVIC_FLYER_RESULTS = "CIVIC_FLYER_RESULTS",
 }
 
 export interface FeatureFlagsConfig {
@@ -24,14 +24,14 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     DEMOGRAPHICS: true,
     EVENTS: false,
     FLYER_SWIPE: true,
-    FLYER_RESULTS: false,
+    CIVIC_FLYER_RESULTS: true,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
     DEMOGRAPHICS: true,
     EVENTS: false,
     FLYER_SWIPE: true,
-    FLYER_RESULTS: true,
+    CIVIC_FLYER_RESULTS: true,
   }
 }
 
