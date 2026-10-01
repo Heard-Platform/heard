@@ -24,6 +24,7 @@ import { adminDigestCronApi } from "./admin-digest-cron-api.tsx";
 import { unsubscribeApi } from "./unsubscribe.tsx";
 import { devApi } from "./dev-api.tsx";
 import { flyerApi } from "./flyer-api.tsx";
+import { dataDumpApi } from "./data-dump-api.tsx";
 import { flyerPlacementsApi } from "./flyer-placements-api.tsx";
 import { orgsApi } from "./orgs-api.tsx";
 import { validateSessionId } from "./auth-api.tsx";
@@ -98,6 +99,8 @@ app.use("*", async (c, next) => {
 
   await next();
 });
+
+app.route("/", dataDumpApi);
 
 app.use("*", async (c, next) => {
   const sessionId = c.req.header("X-Session-Id");

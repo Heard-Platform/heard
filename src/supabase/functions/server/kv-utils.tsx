@@ -673,3 +673,12 @@ export const getActiveRoomValues = async (): Promise<any[]> => {
 export const saveActiveRoomPointer = async (roomId: string, value: string): Promise<void> => {
   await kv.set(`active_room:${roomId}`, value);
 };
+const LAST_DATA_DUMP_AT_KEY = "last_data_dump_at";
+
+export const getLastDataDumpAt = async (): Promise<number | null> => {
+  return (await kv.get(LAST_DATA_DUMP_AT_KEY)) ?? null;
+};
+
+export const setLastDataDumpAt = async (dumpedAt: number) => {
+  await kv.set(LAST_DATA_DUMP_AT_KEY, dumpedAt);
+};

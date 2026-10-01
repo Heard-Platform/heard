@@ -88,6 +88,10 @@ export const getAnsweredDemographicQuestionIds = async (
   return answers.map((a) => a.questionId);
 };
 
+export const insertDataDump = async (kind: string, payload: Record<string, unknown>) => {
+  return insert<{ kind: string; payload: Record<string, unknown> }>("data_dumps", { kind, payload });
+};
+
 export const insertFlyerEmail = async (email: string) => {
   return insert<{ email: string }>("flyer_emails", { email });
 };
