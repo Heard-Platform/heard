@@ -746,6 +746,8 @@ export interface FeatureResults {
   anonResponseTripwireSince: number;
   flyerSwipeFunnel: { opened: number; swipes: number[]; saved: number; exited: number };
   flyerSwipeFunnelSince: number;
+  flyerLandingFunnel: { opened: number; submitted: number; lookedAround: number };
+  flyerLandingFunnelSince: number;
 }
 
 export interface GGWashImportResult {
