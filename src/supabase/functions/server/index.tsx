@@ -42,7 +42,7 @@ import { eventApi } from "./event-api.tsx";
 import { alertsApi } from "./alerts-api.tsx";
 import { modApi } from "./mod-api.tsx";
 import { validateAdmin, validateCronAuth, validateDeveloper } from "./internal-utils.ts";
-import { validateSession, validateHost } from "./auth-utils.ts";
+import { describeRequestForAuthLog, validateSession, validateHost } from "./auth-utils.ts";
 import { API_URL_PREFIX } from "./constants.tsx";
 import { performanceTestApi } from "./performance-test-api.tsx";
 import { ogApi } from "./og-api.tsx";
@@ -106,7 +106,10 @@ app.use("*", async (c, next) => {
     const validation = await validateSessionId(sessionId);
     
     if (!validation.valid) {
-      console.warn(`Unauthorized account access attempt with invalid session`);
+      console.error(
+        "Unauthorized account access attempt with invalid session",
+        JSON.stringify({ ...describeRequestForAuthLog(c), validationError: validation.error }),
+      );
       return c.json({ error: validation.error || "Invalid session" }, 401);
     }
     

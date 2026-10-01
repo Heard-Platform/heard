@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/react";
 import { getEnvironment } from "./constants/general";
 import { safelyDelStorageItem, safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
+import { getSessionDiagnostics, getSessionId } from "./session-store";
 import { projectId, publicAnonKey } from "./supabase/info";
 import type { UserSession } from "../types";
 
@@ -12,19 +13,8 @@ export interface ApiResponse<T = undefined> {
   error?: string;
 }
 
-const SESSION_ID_KEY = "heard_session_id";
 const CACHED_USER_KEY = "heard_cached_user";
-
-export const getSessionId = (): string | null =>
-  safelyGetStorageItem<string | null>(SESSION_ID_KEY, null);
-
-export const setSessionId = (id: string): void => {
-  safelySetStorageItem(SESSION_ID_KEY, id);
-};
-
-export const clearSessionId = (): void => {
-  safelyDelStorageItem(SESSION_ID_KEY);
-};
+const NO_SESSION_ERROR = "Unauthorized - No session";
 
 export const getCachedUser = (): UserSession | null =>
   safelyGetStorageItem<UserSession | null>(CACHED_USER_KEY, null);
@@ -53,6 +43,23 @@ const buildHeaders = (extraHeaders?: HeadersDict): HeadersDict => {
   }
   
   return headers;
+};
+
+const reportMissingSession = (method: string, endpoint: string) => {
+  const cachedUser = getCachedUser();
+  Sentry.captureMessage(`Request rejected with no session: ${method} ${endpoint}`, {
+    level: "error",
+    fingerprint: ["missing-session", method, endpoint],
+    tags: { endpoint, method },
+    extra: {
+      sessionDiagnostics: getSessionDiagnostics(),
+      cachedUserId: cachedUser?.id ?? null,
+      cachedUserIsAnonymous: cachedUser?.isAnonymous ?? null,
+      pathname: window.location.pathname,
+      userAgent: navigator.userAgent,
+      cookieEnabled: navigator.cookieEnabled,
+    },
+  });
 };
 
 export class BaseApiClient {
@@ -92,7 +99,11 @@ export class BaseApiClient {
 
       if (!response.ok) {
         console.error(`API Error (${response.status}):`, data);
-        
+
+        if (response.status === 401 && data.error === NO_SESSION_ERROR) {
+          reportMissingSession(options.method ?? "GET", endpoint);
+        }
+
         if (
           response.status === 401 &&
           (data.error === "Invalid session" ||

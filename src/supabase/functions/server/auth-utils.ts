@@ -29,11 +29,24 @@ async function validateHostImpl(c: any, next: any, trueHostOnly: boolean) {
 export const validateHost = (c: any, next: any) => validateHostImpl(c, next, false);
 export const validateTrueHost = (c: any, next: any) => validateHostImpl(c, next, true);
 
+export const describeRequestForAuthLog = (c: any) => ({
+  method: c.req.method,
+  path: c.req.path,
+  hasSessionHeader: !!c.req.header("X-Session-Id"),
+  userAgent: c.req.header("User-Agent") ?? null,
+  origin: c.req.header("Origin") ?? null,
+  referer: c.req.header("Referer") ?? null,
+  headerNames: Object.keys(c.req.header()),
+});
+
 export async function validateSession(c: any, next: any) {
   const userId = c.get("userId");
   
   if (!userId) {
-    console.warn("Unauthorized account access attempt with no session");
+    console.error(
+      "Unauthorized account access attempt with no session",
+      JSON.stringify(describeRequestForAuthLog(c)),
+    );
     return c.json({ error: "Unauthorized - No session" }, 401);
   }
 
