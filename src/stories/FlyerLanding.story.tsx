@@ -29,7 +29,7 @@ export function FlyerLandingStory() {
   return (
     <StoryContainer
       title="Flyer Landing"
-      description={`The flyer results path (FLYER_RESULTS flag): vote results right after the QR scan, then a thank-you once an email is added. Requests take ${REQUEST_DELAY_MS}ms. Type a bad email to see the error. On the code step, ${VALID_CODE} logs in.`}
+      description={`The flyer results path (CIVIC_FLYER_RESULTS flag): vote results right after the QR scan, then a thank-you once an email is added. Requests take ${REQUEST_DELAY_MS}ms. Type a bad email to see the error. On the code step, ${VALID_CODE} logs in.`}
       variants={[
         { id: "agreed", label: "Scanned Agree", children: <FlyerLandingDemo scenario="agreed" /> },
         { id: "disagreed", label: "Scanned Disagree", children: <FlyerLandingDemo scenario="disagreed" /> },
