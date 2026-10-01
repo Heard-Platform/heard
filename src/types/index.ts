@@ -744,6 +744,8 @@ export interface FeatureResults {
   anonResponseTripwireShown: number;
   anonResponseTripwireEmailSubmitted: number;
   anonResponseTripwireSince: number;
+  flyerSwipeFunnel: { opened: number; swipes: number[]; saved: number; exited: number };
+  flyerSwipeFunnelSince: number;
 }
 
 export interface GGWashImportResult {

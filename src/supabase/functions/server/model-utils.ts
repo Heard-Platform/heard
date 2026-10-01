@@ -202,6 +202,15 @@ export const getFundingEvents = async () => {
   );
 };
 
+export const getFlyerSwipeEvents = async () => {
+  return selectAll<UserEvent>(
+    "user_events",
+    {},
+    (q: any) =>
+      q.or("type.like.flyer_swipe_%,type.eq.flyer_results_get_results_clicked").select("type, userId"),
+  );
+};
+
 export const getOrganizersEvents = async () => {
   return selectAll<UserEvent>(
     "user_events",

@@ -42,6 +42,7 @@ import { AvatarAnimalChart } from "./feature-tracker/AvatarAnimalChart";
 import { CertifyCardConversionChart } from "./feature-tracker/CertifyCardConversionChart";
 import { ClusterRecomputesChart } from "./feature-tracker/ClusterRecomputesChart";
 import { VotesPerSessionChart } from "./feature-tracker/VotesPerSessionChart";
+import { FlyerSwipeFunnelChart } from "./feature-tracker/FlyerSwipeFunnelChart";
 import { OneBillionResults } from "./feature-tracker/OneBillionResults";
 import { FundingResults } from "./feature-tracker/FundingResults";
 import { OrganizersResults } from "./feature-tracker/OrganizersResults";
@@ -502,6 +503,16 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
           <p className="text-2xl font-bold text-emerald-600">{s.anonResponseTripwireEmailSubmitted}</p>
         </div>
       ),
+    },
+    {
+      icon: ScanLine,
+      iconColor: "text-yellow-600",
+      bgColor: "bg-yellow-100",
+      title: "Flyer Swipe Flow Funnel",
+      description: "Unique users who opened the flyer swipe flow, how many cards they swiped, and whether they tapped \"Save my spot\" or exited from the results",
+      getValue: (s) => s.flyerSwipeFunnel.opened,
+      getDate: (s) => s.flyerSwipeFunnelSince,
+      renderExtra: (s) => <FlyerSwipeFunnelChart {...s.flyerSwipeFunnel} />,
     },
   ]
 
