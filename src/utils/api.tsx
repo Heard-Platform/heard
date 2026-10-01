@@ -386,6 +386,13 @@ class ApiClient extends BaseApiClient {
     );
   }
 
+  async saveDataDump(kind: string, payload: Record<string, unknown>) {
+    return this.request<undefined>("/data-dump", {
+      method: "POST",
+      body: JSON.stringify({ kind, payload }),
+    });
+  }
+
   async markChanceCardSwiped(roomId: string) {
     return this.request("/chance-card/mark-swiped", {
       method: "POST",

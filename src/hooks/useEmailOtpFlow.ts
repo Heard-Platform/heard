@@ -1,8 +1,11 @@
 import { useState } from "react";
+import { api } from "../utils/api";
 import { isValidEmail } from "../utils/validation";
 import { useDebateSession } from "./useDebateSession";
 
 export type EmailOtpStep = "email" | "otp";
+
+const SAVED_EMAIL_ERROR = "Something went wrong, but we saved your email and will follow up.";
 
 interface UseEmailOtpFlowOptions {
   onComplete: (result: { wasOtpLogin: boolean }) => void;
@@ -43,7 +46,14 @@ export function useEmailOtpFlow({ onComplete }: UseEmailOtpFlowOptions) {
         onComplete({ wasOtpLogin: false });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      const failureReason = err instanceof Error ? err.message : "Something went wrong.";
+      const saveResponse = await api.saveDataDump("failed_email_capture", {
+        email: email.trim(),
+        failureReason,
+        userId: user?.id ?? null,
+        pageUrl: window.location.href,
+      });
+      setError(saveResponse.success ? SAVED_EMAIL_ERROR : failureReason);
     } finally {
       setSubmitting(false);
     }
