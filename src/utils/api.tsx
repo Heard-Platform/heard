@@ -41,6 +41,7 @@ import {
   BaseApiClient,
   ApiResponse,
 } from "./api-client";
+import { getSessionId } from "./session-store";
 import { FeatureFlags, isFeatureEnabled } from "./constants/feature-flags";
 import { getEnvironment } from "./constants/general";
 import { convertImageToJPEG, shouldConvertImage } from "./image-converter";
@@ -1090,6 +1091,8 @@ class ApiClient extends BaseApiClient {
     if (getEnvironment() !== "production")
       return;
     if (safelyGetStorageItem("showComponentShowcase", false))
+      return;
+    if (!getSessionId())
       return;
     const url = typeof window !== "undefined" ? window.location.href : undefined;
     this.post("/analytics/event", { type, roomId, url, referralUserId })

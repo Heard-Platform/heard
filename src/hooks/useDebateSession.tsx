@@ -24,13 +24,11 @@ import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { AskTheDataResponse, FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
 import {
   ApiResponse,
-  clearSessionId,
-  getSessionId,
-  setSessionId,
   getCachedUser,
   setCachedUser,
   clearCachedUser,
 } from "../utils/api-client";
+import { clearSessionId, getSessionId, setSessionId } from "../utils/session-store";
 import { AvatarAnimal } from "../utils/constants/avatars";
 
 interface DebateSessionContextType {
@@ -209,11 +207,11 @@ export function DebateSessionProvider(
     return user;
   }, [user]);
 
-  const setUserAndSession = useCallback((providedUser: UserSession, sessionId: string) => {
+  const setUserAndSession = useCallback((providedUser: UserSession, sessionId: string, source: string) => {
     try {
       setError(null);
       setUser(providedUser);
-      setSessionId(sessionId);
+      setSessionId(sessionId, source);
       api.trackActivity().catch((err) => {
         console.error("Failed to track activity:", err);
       });
@@ -251,7 +249,7 @@ export function DebateSessionProvider(
   const verifyMagicLink = useCallback(async (code: string) => {
     const response = await safelyMakeApiCall<UserSessionResponse>(() => api.verifyMagicLink(code));
     if (response && response.success && response.data) {
-      setUserAndSession(response.data.user, response.data.sessionId);
+      setUserAndSession(response.data.user, response.data.sessionId, "verify_magic_link");
     }
     return response;
   }, [safelyMakeApiCall, setUserAndSession]);
@@ -263,7 +261,7 @@ export function DebateSessionProvider(
   const verifySmsCode = useCallback(async (phone: string, code: string) => {
     const response = await safelyMakeApiCall<UserSessionResponse>(() => api.verifySmsCode(phone, code));
     if (response && response.success && response.data) {
-      setUserAndSession(response.data.user, response.data.sessionId);
+      setUserAndSession(response.data.user, response.data.sessionId, "verify_sms_code");
     }
     return response;
   }, [safelyMakeApiCall, setUserAndSession]);
@@ -299,7 +297,7 @@ export function DebateSessionProvider(
   const createAnonymousUser = useCallback(async () => {
     const response = await safelyMakeApiCall<UserSessionResponse>(() => api.createAnonymousUser());
     if (response && response.success && response.data) {
-      setUserAndSession(response.data.user, response.data.sessionId);
+      setUserAndSession(response.data.user, response.data.sessionId, "create_anonymous_user");
     }
     return response;
   }, [safelyMakeApiCall, setUserAndSession]);
@@ -484,6 +482,7 @@ export function DebateSessionProvider(
         setUserAndSession(
           response.data.user,
           response.data.sessionId,
+          "vote_via_flyer",
         );
       }
       return response?.data ? response.data : null;
@@ -957,7 +956,7 @@ export function DebateSessionProvider(
     setActiveRooms([]);
     setRoomStatements({});
     setError(null);
-    clearSessionId();
+    clearSessionId("reset_session");
   }, []);
 
   const logout = useCallback(async () => {
@@ -984,7 +983,7 @@ export function DebateSessionProvider(
       });
     } else if (response.error === "SESSION_EXPIRED") {
       console.warn("Session expired, creating a new anonymous session");
-      clearSessionId();
+      clearSessionId("session_expired");
       const result = await createAnonymousUser();
       if (result) {
         api.trackEvent("session_expired_recovered");
