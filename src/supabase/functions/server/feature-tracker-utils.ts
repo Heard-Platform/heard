@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { getSentEmails } from "./kv-utils.tsx";
-import { getEventsOfType, getAllRoomViews } from "./model-utils.ts";
+import { getEventsOfType, getAllRoomViews, getFlyerSwipeEvents } from "./model-utils.ts";
 import {
   RESPONSE_VOTES_NOTIF_EMAIL_TYPE,
   RESPONSE_VOTES_NOTIF_BUTTON_CLICKED_EVENT,
@@ -120,3 +120,40 @@ export const getVotesPerSessionWeekly = async (now: number = Date.now()) => {
     now,
   );
 };
+
+const FLYER_SWIPE_SAVED_EVENT = "flyer_results_get_results_clicked";
+const FLYER_SWIPE_EXITED_EVENTS = ["flyer_swipe_closed_results", "flyer_swipe_just_looking_clicked"];
+
+export function buildFlyerSwipeFunnel(
+  events: { type: string; userId: string | null }[],
+): { opened: number; swipes: number[]; saved: number; exited: number } {
+  const openedUserIds = new Set<string>();
+  for (const event of events) {
+    if (event.userId && event.type === "flyer_swipe_opened") openedUserIds.add(event.userId);
+  }
+
+  const swipeUserIds: Set<string>[] = [];
+  const savedUserIds = new Set<string>();
+  const exitedUserIds = new Set<string>();
+  for (const event of events) {
+    if (!event.userId || !openedUserIds.has(event.userId)) continue;
+    const cardMatch = event.type.match(/^flyer_swipe_card_(\d+)_/);
+    if (cardMatch) {
+      const index = Number(cardMatch[1]) - 1;
+      for (let i = swipeUserIds.length; i <= index; i++) swipeUserIds.push(new Set());
+      swipeUserIds[index].add(event.userId);
+    }
+    if (event.type === FLYER_SWIPE_SAVED_EVENT) savedUserIds.add(event.userId);
+    if (FLYER_SWIPE_EXITED_EVENTS.includes(event.type)) exitedUserIds.add(event.userId);
+  }
+  for (const userId of savedUserIds) exitedUserIds.delete(userId);
+
+  return {
+    opened: openedUserIds.size,
+    swipes: swipeUserIds.map((userIds) => userIds.size),
+    saved: savedUserIds.size,
+    exited: exitedUserIds.size,
+  };
+}
+
+export const getFlyerSwipeFunnel = async () => buildFlyerSwipeFunnel(await getFlyerSwipeEvents());

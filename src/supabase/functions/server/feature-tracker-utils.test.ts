@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { averageVotesPerSessionByWeek, countByWeek } from "./feature-tracker-utils.ts";
+import { averageVotesPerSessionByWeek, buildFlyerSwipeFunnel, countByWeek } from "./feature-tracker-utils.ts";
 
 Deno.test("countByWeek - empty input returns no weeks", () => {
   assertEquals(countByWeek([]), []);
@@ -61,4 +61,43 @@ Deno.test("averageVotesPerSessionByWeek - averages sessions across users per wee
 Deno.test("averageVotesPerSessionByWeek - ignores sessions older than the window", () => {
   const votes = [{ userId: "u1", timestamp: Date.UTC(2025, 0, 1) }];
   assertEquals(averageVotesPerSessionByWeek(votes, NEXT_MONDAY), []);
+});
+
+Deno.test("buildFlyerSwipeFunnel - counts unique users reaching each swipe, saving, and exiting", () => {
+  const events = [
+    { type: "flyer_swipe_opened", userId: "u1" },
+    { type: "flyer_swipe_card_1_agree", userId: "u1" },
+    { type: "flyer_swipe_card_2_pass", userId: "u1" },
+    { type: "flyer_results_get_results_clicked", userId: "u1" },
+    { type: "flyer_swipe_opened", userId: "u2" },
+    { type: "flyer_swipe_opened", userId: "u2" },
+    { type: "flyer_swipe_card_1_disagree", userId: "u2" },
+    { type: "flyer_swipe_card_1_agree", userId: "u2" },
+    { type: "flyer_swipe_closed_2", userId: "u2" },
+    { type: "flyer_swipe_opened", userId: "u3" },
+    { type: "flyer_swipe_card_1_agree", userId: "u3" },
+    { type: "flyer_swipe_card_2_agree", userId: "u3" },
+    { type: "flyer_swipe_just_looking_clicked", userId: "u3" },
+  ];
+
+  assertEquals(buildFlyerSwipeFunnel(events), { opened: 3, swipes: [3, 2], saved: 1, exited: 1 });
+});
+
+Deno.test("buildFlyerSwipeFunnel - ignores users who never opened the swipe flow", () => {
+  const events = [
+    { type: "flyer_results_get_results_clicked", userId: "legacy" },
+    { type: "flyer_swipe_card_1_agree", userId: null },
+  ];
+
+  assertEquals(buildFlyerSwipeFunnel(events), { opened: 0, swipes: [], saved: 0, exited: 0 });
+});
+
+Deno.test("buildFlyerSwipeFunnel - counts a user who saved and then exited only as saved", () => {
+  const events = [
+    { type: "flyer_swipe_opened", userId: "u1" },
+    { type: "flyer_results_get_results_clicked", userId: "u1" },
+    { type: "flyer_swipe_just_looking_clicked", userId: "u1" },
+  ];
+
+  assertEquals(buildFlyerSwipeFunnel(events), { opened: 1, swipes: [], saved: 1, exited: 0 });
 });
