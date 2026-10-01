@@ -25,6 +25,7 @@ export function TOSText({
       >
         Privacy Policy
       </a>
+      .
     </p>
   );
 }
