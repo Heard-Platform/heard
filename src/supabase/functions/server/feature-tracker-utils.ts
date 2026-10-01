@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { getSentEmails } from "./kv-utils.tsx";
-import { getEventsOfType, getAllRoomViews, getFlyerSwipeEvents } from "./model-utils.ts";
+import { getEventsOfType, getAllRoomViews, getFlyerSwipeEvents, getFlyerLandingEvents } from "./model-utils.ts";
 import {
   RESPONSE_VOTES_NOTIF_EMAIL_TYPE,
   RESPONSE_VOTES_NOTIF_BUTTON_CLICKED_EVENT,
@@ -157,3 +157,22 @@ export function buildFlyerSwipeFunnel(
 }
 
 export const getFlyerSwipeFunnel = async () => buildFlyerSwipeFunnel(await getFlyerSwipeEvents());
+
+export const FLYER_LANDING_OPENED_EVENT = "flyer_landing_opened";
+export const FLYER_LANDING_EMAIL_SUBMITTED_EVENT = "flyer_landing_email_submitted";
+export const FLYER_LANDING_LOOKED_AROUND_EVENT = "flyer_landing_looked_around";
+
+export function buildFlyerLandingFunnel(
+  events: { type: string; userId: string | null }[],
+): { opened: number; submitted: number; lookedAround: number } {
+  const countUsers = (type: string) =>
+    new Set(events.filter((event) => event.userId && event.type === type).map((event) => event.userId)).size;
+
+  return {
+    opened: countUsers(FLYER_LANDING_OPENED_EVENT),
+    submitted: countUsers(FLYER_LANDING_EMAIL_SUBMITTED_EVENT),
+    lookedAround: countUsers(FLYER_LANDING_LOOKED_AROUND_EVENT),
+  };
+}
+
+export const getFlyerLandingFunnel = async () => buildFlyerLandingFunnel(await getFlyerLandingEvents());

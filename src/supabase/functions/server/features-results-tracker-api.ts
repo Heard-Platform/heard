@@ -4,7 +4,7 @@ import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, ge
 import { countRecords, selectAll } from "./db-utils.ts";
 import type { UserEvent } from "./types.tsx";
 import { toTimestamp } from "./time-utils.ts";
-import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getVotesPerSessionWeekly, getFlyerSwipeFunnel } from "./feature-tracker-utils.ts";
+import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getVotesPerSessionWeekly, getFlyerSwipeFunnel, getFlyerLandingFunnel } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
 
@@ -269,6 +269,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const flyerSwipeFunnel = await getFlyerSwipeFunnel();
     const flyerSwipeFunnelSince = new Date("2026-09-30").getTime();
 
+    const flyerLandingFunnel = await getFlyerLandingFunnel();
+    const flyerLandingFunnelSince = new Date("2026-10-01").getTime();
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -376,6 +379,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       anonResponseTripwireSince,
       flyerSwipeFunnel,
       flyerSwipeFunnelSince,
+      flyerLandingFunnel,
+      flyerLandingFunnelSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);

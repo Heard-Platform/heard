@@ -43,6 +43,7 @@ import { CertifyCardConversionChart } from "./feature-tracker/CertifyCardConvers
 import { ClusterRecomputesChart } from "./feature-tracker/ClusterRecomputesChart";
 import { VotesPerSessionChart } from "./feature-tracker/VotesPerSessionChart";
 import { FlyerSwipeFunnelChart } from "./feature-tracker/FlyerSwipeFunnelChart";
+import { FlyerLandingFunnelChart } from "./feature-tracker/FlyerLandingFunnelChart";
 import { OneBillionResults } from "./feature-tracker/OneBillionResults";
 import { FundingResults } from "./feature-tracker/FundingResults";
 import { OrganizersResults } from "./feature-tracker/OrganizersResults";
@@ -513,6 +514,16 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.flyerSwipeFunnel.opened,
       getDate: (s) => s.flyerSwipeFunnelSince,
       renderExtra: (s) => <FlyerSwipeFunnelChart {...s.flyerSwipeFunnel} />,
+    },
+    {
+      icon: ScanLine,
+      iconColor: "text-green-600",
+      bgColor: "bg-green-100",
+      title: "Flyer Results Funnel",
+      description: "Unique users who saw the flyer results screen, submitted their email, and tapped \"Take a look around\"",
+      getValue: (s) => s.flyerLandingFunnel.opened,
+      getDate: (s) => s.flyerLandingFunnelSince,
+      renderExtra: (s) => <FlyerLandingFunnelChart {...s.flyerLandingFunnel} />,
     },
   ]
 
