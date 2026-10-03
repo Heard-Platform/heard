@@ -21,8 +21,7 @@ export interface FlyerWelcomeEmailData {
   statementText: string;
   vote: VoteType;
   areResultsTomorrow: boolean;
-  frontendUrl: string;
-  unsubscribeUrl: string;
+  userId: string;
 }
 
 const HEADER_STYLE = css({ textAlign: "center" });
@@ -44,7 +43,7 @@ export const generateFlyerWelcomeEmailHtml = (data: FlyerWelcomeEmailData): stri
   const resultsTime = data.areResultsTomorrow ? "tomorrow at 7pm" : "7pm tonight";
   const content = `
     <div style="${HEADER_STYLE}">
-      <div style="${MASCOT_WRAPPER_STYLE}">${renderMascot(data.frontendUrl, 120)}</div>
+      <div style="${MASCOT_WRAPPER_STYLE}">${renderMascot(120)}</div>
       <h1 style="${TITLE_STYLE}">You're in.</h1>
     </div>
 
@@ -58,13 +57,12 @@ export const generateFlyerWelcomeEmailHtml = (data: FlyerWelcomeEmailData): stri
       and we'll send them your way.
     </p>
   `;
-  return renderDocument(getFlyerWelcomeSubject(data.areResultsTomorrow), content, data.unsubscribeUrl);
+  return renderDocument(getFlyerWelcomeSubject(data.areResultsTomorrow), content, data.userId);
 };
 
-export const generateFakeFlyerWelcomeData = (frontendUrl: string): FlyerWelcomeEmailData => ({
+export const generateFakeFlyerWelcomeData = (): FlyerWelcomeEmailData => ({
   statementText: "DC should let driverless Waymo cars operate citywide.",
   vote: "agree",
   areResultsTomorrow: false,
-  frontendUrl,
-  unsubscribeUrl: `${frontendUrl}/unsubscribe?userId=preview-user`,
+  userId: "preview-user",
 });

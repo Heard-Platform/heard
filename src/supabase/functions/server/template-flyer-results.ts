@@ -1,4 +1,4 @@
-import { escapeHtml } from "./utils.tsx";
+import { escapeHtml, getFrontendUrl } from "./utils.tsx";
 import type { Statement, VoteType } from "./types.tsx";
 import {
   BODY_STYLE,
@@ -25,10 +25,7 @@ export interface FlyerResultsEmailData {
   flyerStatement: Statement;
   vote: VoteType;
   otherStatements: Statement[];
-  frontendUrl: string;
-  seeMoreUrl: string;
-  voteMoreUrl: string;
-  unsubscribeUrl: string;
+  userId: string;
 }
 
 const PERCENT_STYLE: Style = { fontSize: "14px", fontWeight: 700 };
@@ -102,12 +99,13 @@ const renderOtherStatements = (statements: Statement[], voteMoreUrl: string) => 
 
 export const generateFlyerResultsEmailHtml = (data: FlyerResultsEmailData): string => {
   const split = summarizeVoteSplit(data.flyerStatement);
+  const roomUrl = `${getFrontendUrl()}/room/${data.flyerStatement.roomId}`;
   const voteCountText = `${split.voteCount} ${split.voteCount === 1 ? "vote" : "votes"} so far.`;
 
   const content = `
     <table ${TABLE_ATTRS} style="${HEADER_STYLE}">
       <tr>
-        <td valign="middle" style="${MASCOT_CELL_STYLE}">${renderMascot(data.frontendUrl, 68)}</td>
+        <td valign="middle" style="${MASCOT_CELL_STYLE}">${renderMascot(68)}</td>
         <td valign="middle">
           <p style="${KICKER_STYLE}">Results are in</p>
           <h1 style="${TITLE_STYLE}">Here's how DC voted.</h1>
@@ -128,11 +126,11 @@ export const generateFlyerResultsEmailHtml = (data: FlyerResultsEmailData): stri
       <p style="${STANDING_STYLE}">${voteCountText} ${describeVoterStanding(data.vote, split)}</p>
     </div>
 
-    ${renderButton(data.seeMoreUrl, "See more statements", "solid")}
+    ${renderButton(roomUrl, "See more statements", "solid")}
 
-    ${renderOtherStatements(data.otherStatements, data.voteMoreUrl)}
+    ${renderOtherStatements(data.otherStatements, roomUrl)}
   `;
-  return renderDocument(FLYER_RESULTS_SUBJECT, content, data.unsubscribeUrl);
+  return renderDocument(FLYER_RESULTS_SUBJECT, content, data.userId);
 };
 
 const fakeStatement = (id: string, text: string, agrees: number, disagrees: number): Statement => ({
@@ -149,7 +147,7 @@ const fakeStatement = (id: string, text: string, agrees: number, disagrees: numb
   voters: {},
 });
 
-export const generateFakeFlyerResultsData = (frontendUrl: string): FlyerResultsEmailData => ({
+export const generateFakeFlyerResultsData = (): FlyerResultsEmailData => ({
   flyerStatement: fakeStatement("s1", "DC should let driverless Waymo cars operate citywide.", 144, 168),
   vote: "agree",
   otherStatements: [
@@ -157,8 +155,5 @@ export const generateFakeFlyerResultsData = (frontendUrl: string): FlyerResultsE
     fakeStatement("s3", "Driverless cars will make DC streets safer.", 51, 49),
     fakeStatement("s4", "Waymo will take work from DC drivers.", 68, 32),
   ],
-  frontendUrl,
-  seeMoreUrl: `${frontendUrl}/room/preview-room`,
-  voteMoreUrl: `${frontendUrl}/room/preview-room`,
-  unsubscribeUrl: `${frontendUrl}/unsubscribe?userId=preview-user`,
+  userId: "preview-user",
 });

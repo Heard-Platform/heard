@@ -1,4 +1,4 @@
-import { escapeHtml } from "./utils.tsx";
+import { escapeHtml, getFrontendUrl } from "./utils.tsx";
 import type { Statement, VoteType } from "./types.tsx";
 
 export const COLORS = {
@@ -56,10 +56,10 @@ export const voteColor = (vote: VoteType) => (vote === "disagree" ? COLORS.disag
 
 const MASCOT_ASPECT_RATIO = 704 / 960;
 
-export const renderMascot = (frontendUrl: string, height: number) => {
+export const renderMascot = (height: number) => {
   const width = Math.round(height * MASCOT_ASPECT_RATIO);
   const style = css({ display: "block", border: 0, width: `${width}px`, height: `${height}px` });
-  return `<img src="${frontendUrl}/toga-monkey.png" width="${width}" height="${height}" alt="" style="${style}">`;
+  return `<img src="${getFrontendUrl()}/toga-monkey.png" width="${width}" height="${height}" alt="" style="${style}">`;
 };
 
 const renderBarSegment = (percent: number, color: string, height: number) => {
@@ -106,10 +106,10 @@ const FOOTER_STYLE = css({ padding: "20px 24px 32px", textAlign: "center", fontS
 const FOOTER_PLACE_STYLE = css({ margin: "0 0 6px" });
 const FOOTER_LINK_STYLE = css({ color: COLORS.muted, textDecoration: "underline" });
 
-const renderFooter = (unsubscribeUrl: string) => `
+const renderFooter = (userId: string) => `
   <div style="${FOOTER_STYLE}">
     <p style="${FOOTER_PLACE_STYLE}">Heard · Washington, DC</p>
-    <a href="${unsubscribeUrl}" style="${FOOTER_LINK_STYLE}">Unsubscribe</a>
+    <a href="${getFrontendUrl()}/unsubscribe?userId=${userId}" style="${FOOTER_LINK_STYLE}">Unsubscribe</a>
   </div>
 `;
 
@@ -117,7 +117,7 @@ const PAGE_STYLE = css({ margin: 0, padding: 0, backgroundColor: COLORS.page, fo
 const COLUMN_STYLE = css({ maxWidth: "480px", margin: "0 auto", padding: "24px 16px 0" });
 const CARD_STYLE = css({ backgroundColor: COLORS.card, borderRadius: "16px", padding: "28px 24px" });
 
-export const renderDocument = (title: string, content: string, unsubscribeUrl: string) => `
+export const renderDocument = (title: string, content: string, userId: string) => `
   <!DOCTYPE html>
   <html lang="en">
   <head>
@@ -130,7 +130,7 @@ export const renderDocument = (title: string, content: string, unsubscribeUrl: s
       <div style="${CARD_STYLE}">
         ${content}
       </div>
-      ${renderFooter(unsubscribeUrl)}
+      ${renderFooter(userId)}
     </div>
   </body>
   </html>

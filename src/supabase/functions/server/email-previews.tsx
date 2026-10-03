@@ -99,7 +99,7 @@ app.get(
     }
 
     if (digestType === FLYER_WELCOME_EMAIL_TYPE) {
-      const data = generateFakeFlyerWelcomeData(getFrontendUrl());
+      const data = generateFakeFlyerWelcomeData();
       return c.json({
         subject: getFlyerWelcomeSubject(data.areResultsTomorrow),
         html: generateFlyerWelcomeEmailHtml(data),
@@ -109,7 +109,7 @@ app.get(
     if (digestType === FLYER_RESULTS_EMAIL_TYPE) {
       return c.json({
         subject: FLYER_RESULTS_SUBJECT,
-        html: generateFlyerResultsEmailHtml(generateFakeFlyerResultsData(getFrontendUrl())),
+        html: generateFlyerResultsEmailHtml(generateFakeFlyerResultsData()),
       });
     }
 
@@ -216,11 +216,11 @@ app.post(
         emailHtml = await generateCommunityPostInviteEmailHtml({ ...data, userId });
         subject = getCommunityPostInviteSubject(data.room.topic);
       } else if (digestType === FLYER_WELCOME_EMAIL_TYPE) {
-        const data = generateFakeFlyerWelcomeData(getFrontendUrl());
-        emailHtml = generateFlyerWelcomeEmailHtml(data);
+        const data = generateFakeFlyerWelcomeData();
+        emailHtml = generateFlyerWelcomeEmailHtml({ ...data, userId });
         subject = getFlyerWelcomeSubject(data.areResultsTomorrow);
       } else if (digestType === FLYER_RESULTS_EMAIL_TYPE) {
-        emailHtml = generateFlyerResultsEmailHtml(generateFakeFlyerResultsData(getFrontendUrl()));
+        emailHtml = generateFlyerResultsEmailHtml({ ...generateFakeFlyerResultsData(), userId });
         subject = FLYER_RESULTS_SUBJECT;
       } else if (digestType === RESPONSE_VOTES_NOTIF_EMAIL_TYPE) {
         console.log("[send-email] Generating response-votes-notif email for test email");
