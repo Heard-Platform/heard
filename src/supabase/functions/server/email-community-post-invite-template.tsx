@@ -1,5 +1,5 @@
 import type { DebateRoom, Statement } from "./types.tsx";
-import { escapeHtml } from "./utils.tsx";
+import { escapeHtml, getRoomUrl } from "./utils.tsx";
 import { getTotalVoteCount, rankStatements } from "./statement-utils.tsx";
 import { renderStatementText } from "./email-statement-text.tsx";
 
@@ -103,7 +103,7 @@ export const generateCommunityPostInviteEmailHtml = async (
           ${mostSplitHtml}
 
           <div style="text-align: center;">
-            <a href="${frontendUrl}/room/${room.id}" style="display: inline-block; ${PURPLE_GRADIENT} color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+            <a href="${getRoomUrl(room.id)}" style="display: inline-block; ${PURPLE_GRADIENT} color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
               Join ${participantCount} Other${participantCount === 1 ? "" : "s"} Already Voting 💬
             </a>
           </div>

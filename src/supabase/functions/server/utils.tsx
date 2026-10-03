@@ -11,6 +11,8 @@ export const getFrontendUrl = (): string => {
   );
 };
 
+export const getRoomUrl = (roomId: string): string => `${getFrontendUrl()}/room/${roomId}`;
+
 const EMAIL_MASK = "••••";
 
 export function obfuscateEmail(email: string): string {

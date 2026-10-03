@@ -10,7 +10,7 @@ import {
 } from "./kv-utils.tsx";
 import { selectAll } from "./db-utils.ts";
 import { User, UserEvent, Community } from "./types.tsx";
-import { getFrontendUrl, escapeHtml, truncate } from "./utils.tsx";
+import { getFrontendUrl, getRoomUrl, escapeHtml, truncate } from "./utils.tsx";
 
 export interface AdminDigestListItem {
   title: string;
@@ -174,7 +174,7 @@ async function getNewPostsSince(
           !SCRAPER_AUTHOR_IDS.has(room.hostId) &&
           !devUserIds.has(room.hostId)
       )
-      .map((room) => ({ title: room.topic, url: `${getFrontendUrl()}/room/${room.id}` }));
+      .map((room) => ({ title: room.topic, url: getRoomUrl(room.id) }));
   } catch (error) {
     console.error("Error listing new posts:", error);
     return [];
@@ -196,7 +196,7 @@ async function getNewStatementsSince(
       )
       .map((statement) => ({
         title: statement.text,
-        url: `${getFrontendUrl()}/room/${statement.roomId}?statement=${statement.id}`,
+        url: `${getRoomUrl(statement.roomId)}?statement=${statement.id}`,
       }));
   } catch (error) {
     console.error("Error listing new statements:", error);

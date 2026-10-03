@@ -1,4 +1,4 @@
-import { escapeHtml, getFrontendUrl } from "./utils.tsx";
+import { escapeHtml, getRoomUrl } from "./utils.tsx";
 import type { Statement, VoteType } from "./types.tsx";
 import {
   BODY_STYLE,
@@ -99,7 +99,7 @@ const renderOtherStatements = (statements: Statement[], voteMoreUrl: string) => 
 
 export const generateFlyerResultsEmailHtml = (data: FlyerResultsEmailData): string => {
   const split = summarizeVoteSplit(data.flyerStatement);
-  const roomUrl = `${getFrontendUrl()}/room/${data.flyerStatement.roomId}`;
+  const roomUrl = getRoomUrl(data.flyerStatement.roomId);
   const voteCountText = `${split.voteCount} ${split.voteCount === 1 ? "vote" : "votes"} so far.`;
 
   const content = `

@@ -26,7 +26,7 @@ import { getUserMemberships } from "./membership-utils.tsx";
 import {
   getUserSession, updateUserLastActive
 } from "./auth-api.tsx";
-import { generateId, getFrontendUrl } from "./utils.tsx";
+import { generateId, getRoomUrl } from "./utils.tsx";
 import {
   getDemographicQuestionsForRooms,
   getAnsweredDemographicQuestionIds,
@@ -354,7 +354,7 @@ const getPhaseChangeEmailHtml = (
     phaseDescription: string;
   },
 ) => {
-  const roomLink = `${getFrontendUrl()}/room/${room.id}`;
+  const roomLink = getRoomUrl(room.id);
 
   return `
     <!DOCTYPE html>
@@ -422,7 +422,7 @@ const getPhaseChangeEmailText = (
     phaseDescription: string;
   },
 ) => {
-  const roomLink = `${getFrontendUrl()}/room/${room.id}`;
+  const roomLink = getRoomUrl(room.id);
 
   return `
 HEARD - ${notification.title}

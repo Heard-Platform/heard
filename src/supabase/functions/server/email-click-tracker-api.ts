@@ -1,7 +1,7 @@
 import { Context, Hono } from "npm:hono@4";
 import { cors } from "npm:hono/cors";
 import { insertAnalyticsEvent } from "./model-utils.ts";
-import { getFrontendUrl } from "./utils.tsx";
+import { getFrontendUrl, getRoomUrl } from "./utils.tsx";
 
 const app = new Hono();
 
@@ -12,7 +12,7 @@ app.get("/make-server-f1a393b4/email/click", async (c: Context) => {
   const roomId = c.req.query("roomId");
   const eventType = c.req.query("eventType");
   const destination = roomId
-    ? `${getFrontendUrl()}/room/${roomId}`
+    ? getRoomUrl(roomId)
     : getFrontendUrl();
 
   if (userId && eventType) {

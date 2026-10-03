@@ -1,5 +1,5 @@
 import type { DebateRoom, Statement } from "./types.tsx";
-import { escapeHtml } from "./utils.tsx";
+import { escapeHtml, getRoomUrl } from "./utils.tsx";
 import { getTotalVoteCount, rankStatements } from "./statement-utils.tsx";
 import { renderStatementText } from "./email-statement-text.tsx";
 
@@ -68,8 +68,8 @@ const renderHighlightSection = async (
   </div>
 `;
 
-const renderOtherConvo = (c: OtherConvo, frontendUrl: string): string => `
-  <a href="${frontendUrl}/room/${c.id}" style="display: block; text-decoration: none; background-color: #fffbf0; border-left: 4px solid #fa709a; padding: 14px 16px; margin-bottom: 10px; border-radius: 8px;">
+const renderOtherConvo = (c: OtherConvo): string => `
+  <a href="${getRoomUrl(c.id)}" style="display: block; text-decoration: none; background-color: #fffbf0; border-left: 4px solid #fa709a; padding: 14px 16px; margin-bottom: 10px; border-radius: 8px;">
     <div style="color: #030213; font-weight: 600; font-size: 15px; margin-bottom: 4px;">${escapeHtml(c.topic)}</div>
     <div style="color: #4a5568; font-size: 13px;">👥 ${c.participantCount} ${c.participantCount === 1 ? "participant" : "participants"}</div>
   </a>
@@ -133,7 +133,7 @@ export const generateDebateEndedEmailHtml = async (
       <div style="margin-bottom: 32px;">
         <h2 style="color: #030213; font-size: 20px; margin: 0 0 4px 0;">More from ${escapeHtml(subHeardDisplay)}</h2>
         <p style="color: #4a5568; font-size: 14px; margin: 0 0 16px 0;">Jump into another conversation in your community.</p>
-        ${otherConvos.map((c) => renderOtherConvo(c, frontendUrl)).join("")}
+        ${otherConvos.map(renderOtherConvo).join("")}
       </div>
     `
     : "";
@@ -170,7 +170,7 @@ export const generateDebateEndedEmailHtml = async (
           </div>
 
           <div style="text-align: center; margin-bottom: 32px;">
-            <a href="${frontendUrl}/room/${room.id}" style="display: inline-block; ${PURPLE_GRADIENT} color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+            <a href="${getRoomUrl(room.id)}" style="display: inline-block; ${PURPLE_GRADIENT} color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
               See Full Results 📊
             </a>
           </div>
