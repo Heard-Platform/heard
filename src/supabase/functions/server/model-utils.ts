@@ -1,4 +1,4 @@
-import { createClientFromEnv, deleteRecord, insert, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
+import { countRecords, createClientFromEnv, deleteRecord, insert, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
 import {
   AvatarAnimal,
   DemographicAnswer,
@@ -115,6 +115,12 @@ export const getFlyerPlacementsForRoom = async (roomId: string) =>
 
 export const insertFlyerPlacements = async (placements: NewFlyerPlacement[]) =>
   insert("flyer_placements", placements);
+
+export const hasSentEmail = async (userId: string, emailType: string): Promise<boolean> =>
+  (await countRecords("sent_emails", { userId, emailType })) > 0;
+
+export const recordSentEmail = async (userId: string, emailType: string) =>
+  insert("sent_emails", { userId, emailType });
 
 export const getFlyerEmails = async () => {
   return selectAll<{ email: string }>("flyer_emails");

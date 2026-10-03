@@ -1,5 +1,6 @@
 import { getAllRealUsers, getSentEmails } from "./kv-utils.tsx";
 import { User } from "./types.tsx";
+import { hasSentEmail, recordSentEmail } from "./model-utils.ts";
 
 export const isEligibleEmailRecipient = (
   user: User | undefined,
@@ -70,6 +71,16 @@ export const sendEmailViaResend = async (
       error: error instanceof Error ? error.message : "Unknown error sending email",
     };
   }
+};
+
+export const sendMaxOnce = async (userId: string, emailType: string, email: SendEmailParams): Promise<boolean> => {
+  if (await hasSentEmail(userId, emailType)) return false;
+
+  const result = await sendEmailViaResend(email);
+  if (!result.success) throw new Error(result.error);
+
+  await recordSentEmail(userId, emailType);
+  return true;
 };
 
 export const getUsersToEmailDigest = async (emailType: string, cutoffDays: number, filterByNewUsers: boolean) => {
