@@ -26,9 +26,40 @@ import {
   generateFakeResponseVotesNotifData,
   getResponseVotesNotifSubject,
 } from "./email-response-votes-notif-template.ts";
+import {
+  FLYER_WELCOME_EMAIL_TYPE,
+  type FlyerWelcomeEmailData,
+  generateFakeFlyerWelcomeData,
+  generateFlyerWelcomeEmailHtml,
+  getFlyerWelcomeSubject,
+} from "./template-flyer-welcome.ts";
+import {
+  FLYER_RESULTS_EMAIL_TYPE,
+  FLYER_RESULTS_SUBJECT,
+  generateFakeFlyerResultsData,
+  generateFlyerResultsEmailHtml,
+} from "./template-flyer-results.ts";
 import { getFrontendUrl } from "./utils.tsx";
 
 const app = new Hono();
+
+type FlyerPreview = (userId?: string) => { subject: string; html: string };
+
+const previewFlyerWelcome = (overrides: Partial<FlyerWelcomeEmailData> = {}): FlyerPreview => (userId) => {
+  const data = { ...generateFakeFlyerWelcomeData(), ...overrides, ...(userId && { userId }) };
+  return { subject: getFlyerWelcomeSubject(data.areResultsTomorrow), html: generateFlyerWelcomeEmailHtml(data) };
+};
+
+const previewFlyerResults: FlyerPreview = (userId) => {
+  const data = { ...generateFakeFlyerResultsData(), ...(userId && { userId }) };
+  return { subject: FLYER_RESULTS_SUBJECT, html: generateFlyerResultsEmailHtml(data) };
+};
+
+const FLYER_PREVIEWS: Record<string, FlyerPreview> = {
+  [FLYER_WELCOME_EMAIL_TYPE]: previewFlyerWelcome(),
+  [`${FLYER_WELCOME_EMAIL_TYPE}_after_7pm`]: previewFlyerWelcome({ areResultsTomorrow: true }),
+  [FLYER_RESULTS_EMAIL_TYPE]: previewFlyerResults,
+};
 
 const getDigestTimestamp = (digestType: string) => {
   const now = Date.now();
@@ -84,6 +115,10 @@ app.get(
         subject: getCommunityPostInviteSubject(data.room.topic),
         html: await generateCommunityPostInviteEmailHtml(data),
       });
+    }
+
+    if (FLYER_PREVIEWS[digestType]) {
+      return c.json(FLYER_PREVIEWS[digestType]());
     }
 
     if (digestType === RESPONSE_VOTES_NOTIF_EMAIL_TYPE) {
@@ -188,6 +223,8 @@ app.post(
         const data = generateFakeCommunityPostInviteData(getFrontendUrl());
         emailHtml = await generateCommunityPostInviteEmailHtml({ ...data, userId });
         subject = getCommunityPostInviteSubject(data.room.topic);
+      } else if (FLYER_PREVIEWS[digestType]) {
+        ({ subject, html: emailHtml } = FLYER_PREVIEWS[digestType](userId));
       } else if (digestType === RESPONSE_VOTES_NOTIF_EMAIL_TYPE) {
         console.log("[send-email] Generating response-votes-notif email for test email");
         const data = generateFakeResponseVotesNotifData(getFrontendUrl());

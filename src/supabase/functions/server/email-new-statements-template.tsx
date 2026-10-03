@@ -1,5 +1,5 @@
 import type { DebateRoom, Statement } from "./types.tsx";
-import { escapeHtml } from "./utils.tsx";
+import { escapeHtml, getRoomUrl } from "./utils.tsx";
 import { rankStatements } from "./statement-utils.tsx";
 import { renderStatementText } from "./email-statement-text.tsx";
 
@@ -67,7 +67,7 @@ export const generateNewStatementsEmailHtml = async (
           ${previewHtml}
 
           <div style="text-align: center; margin-top: 24px;">
-            <a href="${frontendUrl}/room/${room.id}" style="display: inline-block; ${PURPLE_GRADIENT} color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+            <a href="${getRoomUrl(room.id)}" style="display: inline-block; ${PURPLE_GRADIENT} color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
               Vote Now 🗳️
             </a>
           </div>
