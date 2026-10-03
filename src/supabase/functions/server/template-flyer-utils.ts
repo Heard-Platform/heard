@@ -1,5 +1,6 @@
 import { escapeHtml, getFrontendUrl } from "./utils.tsx";
 import type { Statement, VoteType } from "./types.tsx";
+import { getOpinionatedVoteCount } from "./statement-utils.tsx";
 
 export const COLORS = {
   page: "#F2ECE0",
@@ -45,7 +46,7 @@ export interface VoteSplit {
 
 export const summarizeVoteSplit = (statement: Statement): VoteSplit => {
   const agrees = statement.agrees + statement.superAgrees;
-  const voteCount = agrees + statement.disagrees;
+  const voteCount = getOpinionatedVoteCount(statement);
   if (voteCount === 0) return { agreePercent: 0, disagreePercent: 0, voteCount };
   const agreePercent = Math.round((agrees / voteCount) * 100);
   return { agreePercent, disagreePercent: 100 - agreePercent, voteCount };

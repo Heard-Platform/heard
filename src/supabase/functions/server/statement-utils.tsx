@@ -1,13 +1,12 @@
 import type { StatementVotes } from "./analysis-utils.tsx";
 import type { Statement } from "./types.tsx";
 
+export function getOpinionatedVoteCount(statement: Statement): number {
+  return statement.agrees + statement.superAgrees + statement.disagrees;
+}
+
 export function getTotalVoteCount(statement: Statement): number {
-  return (
-    statement.agrees +
-    statement.superAgrees +
-    statement.disagrees +
-    statement.passes
-  );
+  return getOpinionatedVoteCount(statement) + statement.passes;
 }
 
 // Unsigned agreement strength in [0, 100]: 100 = unanimous (either way),
