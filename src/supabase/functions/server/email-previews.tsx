@@ -26,6 +26,18 @@ import {
   generateFakeResponseVotesNotifData,
   getResponseVotesNotifSubject,
 } from "./email-response-votes-notif-template.ts";
+import {
+  FLYER_WELCOME_EMAIL_TYPE,
+  generateFakeFlyerWelcomeData,
+  generateFlyerWelcomeEmailHtml,
+  getFlyerWelcomeSubject,
+} from "./template-flyer-welcome.ts";
+import {
+  FLYER_RESULTS_EMAIL_TYPE,
+  FLYER_RESULTS_SUBJECT,
+  generateFakeFlyerResultsData,
+  generateFlyerResultsEmailHtml,
+} from "./template-flyer-results.ts";
 import { getFrontendUrl } from "./utils.tsx";
 
 const app = new Hono();
@@ -83,6 +95,21 @@ app.get(
       return c.json({
         subject: getCommunityPostInviteSubject(data.room.topic),
         html: await generateCommunityPostInviteEmailHtml(data),
+      });
+    }
+
+    if (digestType === FLYER_WELCOME_EMAIL_TYPE) {
+      const data = generateFakeFlyerWelcomeData(getFrontendUrl());
+      return c.json({
+        subject: getFlyerWelcomeSubject(data.areResultsTomorrow),
+        html: generateFlyerWelcomeEmailHtml(data),
+      });
+    }
+
+    if (digestType === FLYER_RESULTS_EMAIL_TYPE) {
+      return c.json({
+        subject: FLYER_RESULTS_SUBJECT,
+        html: generateFlyerResultsEmailHtml(generateFakeFlyerResultsData(getFrontendUrl())),
       });
     }
 
@@ -188,6 +215,13 @@ app.post(
         const data = generateFakeCommunityPostInviteData(getFrontendUrl());
         emailHtml = await generateCommunityPostInviteEmailHtml({ ...data, userId });
         subject = getCommunityPostInviteSubject(data.room.topic);
+      } else if (digestType === FLYER_WELCOME_EMAIL_TYPE) {
+        const data = generateFakeFlyerWelcomeData(getFrontendUrl());
+        emailHtml = generateFlyerWelcomeEmailHtml(data);
+        subject = getFlyerWelcomeSubject(data.areResultsTomorrow);
+      } else if (digestType === FLYER_RESULTS_EMAIL_TYPE) {
+        emailHtml = generateFlyerResultsEmailHtml(generateFakeFlyerResultsData(getFrontendUrl()));
+        subject = FLYER_RESULTS_SUBJECT;
       } else if (digestType === RESPONSE_VOTES_NOTIF_EMAIL_TYPE) {
         console.log("[send-email] Generating response-votes-notif email for test email");
         const data = generateFakeResponseVotesNotifData(getFrontendUrl());

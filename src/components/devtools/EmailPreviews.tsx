@@ -157,7 +157,9 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
       digestType === "welcome" ||
       digestType === "debate_ended" ||
       digestType === "community_post_invite" ||
-      digestType === "response_votes_notif"
+      digestType === "response_votes_notif" ||
+      digestType === "flyer_welcome" ||
+      digestType === "flyer_results"
     ) {
       setCountData(null);
       setEligibleUsers([]);
@@ -200,7 +202,9 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
             digestType !== "welcome" &&
             digestType !== "debate_ended" &&
             digestType !== "community_post_invite" &&
-            digestType !== "response_votes_notif" && (
+            digestType !== "response_votes_notif" &&
+            digestType !== "flyer_welcome" &&
+            digestType !== "flyer_results" && (
             <div className="flex items-center gap-2">
               <label className="text-sm text-slate-600">
                 Mock Data
@@ -237,6 +241,8 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
               <option value="debate_ended">Debate Ended</option>
               <option value="community_post_invite">Community Post Invite</option>
               <option value="response_votes_notif">Response Votes Notification</option>
+              <option value="flyer_welcome">Flyer Welcome</option>
+              <option value="flyer_results">Flyer Results</option>
             </select>
           </div>
           <Button
