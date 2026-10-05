@@ -52,8 +52,18 @@ app.use("/make-server-f1a393b4/admin/*", verifyAdminKey);
 // Get all users
 app.get("/make-server-f1a393b4/admin/users", async (c) => {
   try {
-    const [rawUsers, allVotes, allStatements] = await Promise.all([
-      getAllRealUsers(),
+    const rawUsers = await getAllRealUsers();
+    const users = rawUsers.map(sanitizeUser).sort((a: any, b: any) => b.lastActive - a.lastActive);
+    return c.json({ users });
+  } catch (error) {
+    console.error("Error fetching all users for admin:", error);
+    return c.json({ error: "Failed to fetch users" }, 500);
+  }
+});
+
+app.get("/make-server-f1a393b4/admin/users/active-day-counts", async (c) => {
+  try {
+    const [allVotes, allStatements] = await Promise.all([
       getAllVotes(),
       getAllStatements(),
     ]);
@@ -62,11 +72,10 @@ app.get("/make-server-f1a393b4/admin/users", async (c) => {
     for (const [userId, days] of activeDaysMap) {
       activeDayCounts[userId] = days.size;
     }
-    const users = rawUsers.map(sanitizeUser).sort((a: any, b: any) => b.lastActive - a.lastActive);
-    return c.json({ users, activeDayCounts });
+    return c.json({ activeDayCounts });
   } catch (error) {
-    console.error("Error fetching all users for admin:", error);
-    return c.json({ error: "Failed to fetch users" }, 500);
+    console.error("Error fetching active day counts for admin:", error);
+    return c.json({ error: "Failed to fetch active day counts" }, 500);
   }
 });
 
