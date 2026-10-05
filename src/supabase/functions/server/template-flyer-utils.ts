@@ -52,6 +52,13 @@ export const summarizeVoteSplit = (statement: Statement): VoteSplit => {
   return { agreePercent, disagreePercent: 100 - agreePercent, voteCount };
 };
 
+export const addTokenToUrl = (url: string, loginToken: string, source: string): string => {
+  const tokenUrl = new URL(url);
+  tokenUrl.searchParams.set("src", source);
+  tokenUrl.searchParams.set("loginToken", loginToken);
+  return tokenUrl.toString();
+};
+
 export const voteLabel = (vote: VoteType) => (vote === "disagree" ? "You disagreed" : "You agreed");
 export const voteColor = (vote: VoteType) => (vote === "disagree" ? COLORS.disagree : COLORS.agree);
 

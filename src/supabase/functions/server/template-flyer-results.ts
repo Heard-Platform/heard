@@ -3,6 +3,7 @@ import type { Statement, VoteType } from "./types.tsx";
 import {
   BODY_STYLE,
   COLORS,
+  addTokenToUrl,
   css,
   EYEBROW_STYLE,
   HEADING_STYLE,
@@ -19,6 +20,7 @@ import {
 } from "./template-flyer-utils.ts";
 
 export const FLYER_RESULTS_EMAIL_TYPE = "flyer_results";
+export const FLYER_RESULTS_LINK_SOURCE = "flyer_results_email";
 export const FLYER_RESULTS_SUBJECT = "Results are in: driverless Waymo cars in DC";
 
 export interface FlyerResultsEmailData {
@@ -26,6 +28,7 @@ export interface FlyerResultsEmailData {
   vote: VoteType;
   otherStatements: Statement[];
   userId: string;
+  loginToken: string;
 }
 
 const PERCENT_STYLE: Style = { fontSize: "14px", fontWeight: 700 };
@@ -99,7 +102,7 @@ const renderOtherStatements = (statements: Statement[], voteMoreUrl: string) => 
 
 export const generateFlyerResultsEmailHtml = (data: FlyerResultsEmailData): string => {
   const split = summarizeVoteSplit(data.flyerStatement);
-  const roomUrl = getRoomUrl(data.flyerStatement.roomId);
+  const roomUrl = addTokenToUrl(getRoomUrl(data.flyerStatement.roomId), data.loginToken, FLYER_RESULTS_LINK_SOURCE);
   const voteCountText = `${split.voteCount} ${split.voteCount === 1 ? "vote" : "votes"} so far.`;
 
   const content = `
@@ -156,4 +159,5 @@ export const generateFakeFlyerResultsData = (): FlyerResultsEmailData => ({
     fakeStatement("s4", "Waymo will take work from DC drivers.", 68, 32),
   ],
   userId: "preview-user",
+  loginToken: "preview-token",
 });
