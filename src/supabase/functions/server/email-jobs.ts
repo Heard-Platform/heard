@@ -1,6 +1,7 @@
 import {
   type EmailableUser,
-  getFlyerResultsRecipients,
+  type RecipientStep,
+  getRecipientsAndSteps,
   sendFlyerResultsEmails,
   sendTestFlyerResultsEmail,
 } from "./service-flyer-results-email.ts";
@@ -13,12 +14,17 @@ export interface EmailJobRecipient {
   email: string;
 }
 
+export interface EmailJobDryRun {
+  recipients: EmailJobRecipient[];
+  steps: RecipientStep[];
+}
+
 /** An email that can be sent out by hand from the admin panel. */
 export interface EmailJob {
   label: string;
   /** Turns the job's scheduled runs on or off. Off until it's first turned on. */
   scheduleSwitch: InternalVarKey;
-  getRecipients: () => Promise<EmailJobRecipient[]>;
+  dryRun: () => Promise<EmailJobDryRun>;
   run: () => Promise<{ sent: number }>;
   runForUser: (user: EmailableUser) => Promise<void>;
 }
@@ -27,9 +33,9 @@ export const EMAIL_JOBS: Record<string, EmailJob> = {
   [FLYER_RESULTS_EMAIL_TYPE]: {
     label: "Waymo flyer results",
     scheduleSwitch: InternalVarKey.FLYER_RESULTS_MAILER_ON,
-    getRecipients: async () => {
-      const recipients = await getFlyerResultsRecipients(Date.now());
-      return recipients.map(({ user }) => ({ userId: user.id, email: user.email }));
+    dryRun: async () => {
+      const { recipients, steps } = await getRecipientsAndSteps(Date.now());
+      return { recipients: recipients.map(({ user }) => ({ userId: user.id, email: user.email })), steps };
     },
     run: () => sendFlyerResultsEmails(Date.now()),
     runForUser: sendTestFlyerResultsEmail,

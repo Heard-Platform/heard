@@ -5,7 +5,7 @@ import { Card } from "../ui/card";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Switch } from "../ui/switch";
-import { adminApi, type EmailJobSummary } from "../../utils/admin-api";
+import { adminApi, type EmailJobDryRun, type EmailJobSummary } from "../../utils/admin-api";
 
 interface EmailJobsProps {
   adminKey: string;
@@ -16,7 +16,7 @@ type Action = "schedule" | "dry-run" | "run-for-me" | "run";
 export function EmailJobs({ adminKey }: EmailJobsProps) {
   const [jobs, setJobs] = useState<EmailJobSummary[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  const [recipients, setRecipients] = useState<{ userId: string; email: string }[] | null>(null);
+  const [dryRunResult, setDryRunResult] = useState<EmailJobDryRun | null>(null);
   const [runningAction, setRunningAction] = useState<Action | null>(null);
 
   const selectedJob = jobs.find((job) => job.id === selectedJobId) ?? null;
@@ -36,7 +36,7 @@ export function EmailJobs({ adminKey }: EmailJobsProps) {
 
   const selectJob = (jobId: string) => {
     setSelectedJobId(jobId);
-    setRecipients(null);
+    setDryRunResult(null);
   };
 
   const withAction = async (action: Action, request: () => Promise<void>) => {
@@ -62,7 +62,7 @@ export function EmailJobs({ adminKey }: EmailJobsProps) {
     withAction("dry-run", async () => {
       const response = await adminApi.dryRunEmailJob(adminKey, selectedJob!.id);
       if (response.success && response.data) {
-        setRecipients(response.data.recipients);
+        setDryRunResult(response.data);
       } else {
         alert(`Dry run failed: ${response.error || "Unknown error"}`);
       }
@@ -79,7 +79,7 @@ export function EmailJobs({ adminKey }: EmailJobsProps) {
     });
 
   const runJob = () => {
-    const audience = recipients ? `${recipients.length} users` : "everyone currently eligible (run a dry run to see who)";
+    const audience = dryRunResult ? `${dryRunResult.recipients.length} users` : "everyone currently eligible (run a dry run to see who)";
     if (!confirm(`Run "${selectedJob!.label}" and email ${audience}?`)) return;
 
     withAction("run", async () => {
@@ -89,7 +89,7 @@ export function EmailJobs({ adminKey }: EmailJobsProps) {
           ? `Sent ${response.data.sent} emails.`
           : `Send failed: ${response.error || "Unknown error"}`,
       );
-      setRecipients(null);
+      setDryRunResult(null);
     });
   };
 
@@ -148,23 +148,42 @@ export function EmailJobs({ adminKey }: EmailJobsProps) {
               </Button>
             </div>
 
-            {recipients && (
-              <div className="rounded-lg border p-4">
-                <p className="font-medium mb-2">
-                  {recipients.length} {recipients.length === 1 ? "user" : "users"} would get this email
-                </p>
-                {recipients.length > 0 && (
-                  <ul className="max-h-64 overflow-y-auto text-sm text-muted-foreground space-y-1">
-                    {recipients.map((recipient) => (
-                      <li key={recipient.userId}>{recipient.email}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
+            {dryRunResult && <DryRunResult result={dryRunResult} />}
           </>
         )}
       </div>
     </Card>
+  );
+}
+
+function DryRunResult({ result }: { result: EmailJobDryRun }) {
+  const { recipients, steps } = result;
+
+  return (
+    <div className="rounded-lg border p-4 space-y-4">
+      <table className="text-sm">
+        <tbody>
+          {steps.map((step) => (
+            <tr key={step.label}>
+              <td className="pr-6 text-muted-foreground">{step.label}</td>
+              <td className="text-right font-medium tabular-nums">{step.count}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div>
+        <p className="font-medium mb-2">
+          {recipients.length} {recipients.length === 1 ? "user" : "users"} would get this email
+        </p>
+        {recipients.length > 0 && (
+          <ul className="max-h-64 overflow-y-auto text-sm text-muted-foreground space-y-1">
+            {recipients.map((recipient) => (
+              <li key={recipient.userId}>{recipient.email}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   );
 }

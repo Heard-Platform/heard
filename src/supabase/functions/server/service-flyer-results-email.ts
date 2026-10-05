@@ -67,22 +67,50 @@ export interface FlyerResultsRecipient {
   vote: Vote;
 }
 
-export const getFlyerResultsRecipients = async (now: number) => {
+export interface RecipientStep {
+  label: string;
+  count: number;
+}
+
+export interface RecipientsAndSteps {
+  recipients: FlyerResultsRecipient[];
+  steps: RecipientStep[];
+}
+
+export const getRecipientsAndSteps = async (now: number): Promise<RecipientsAndSteps> => {
   const resultsTime = getLatestResultsTime(now);
   const votes = await getVotesForStatement(WAYMO_FLYER_STATEMENT_ID);
-  const votesInWindow = votes.filter((vote) =>
-    vote.flyerId && vote.timestamp >= resultsTime - RESULTS_LOOKBACK_MS && vote.timestamp < resultsTime
+  const flyerVotes = votes.filter((vote) => vote.flyerId);
+  const votesInWindow = flyerVotes.filter((vote) =>
+    vote.timestamp >= resultsTime - RESULTS_LOOKBACK_MS && vote.timestamp < resultsTime
   );
 
+  let withEmailCount = 0;
+  let eligibleCount = 0;
   const recipients: FlyerResultsRecipient[] = [];
   for (const vote of votesInWindow) {
     const user = await getUser(vote.userId);
-    if (!user || !isEligibleEmailRecipient(user)) continue;
+    if (!user?.email) continue;
+    withEmailCount++;
+    if (!isEligibleEmailRecipient(user)) continue;
+    eligibleCount++;
     if (await hasSentEmail(user.id, FLYER_RESULTS_EMAIL_TYPE)) continue;
     recipients.push({ user, vote });
   }
-  return recipients;
+
+  const steps: RecipientStep[] = [
+    { label: "Votes on the Waymo statement", count: votes.length },
+    { label: "From a flyer", count: flyerVotes.length },
+    { label: "In the 3 days before the latest 7pm ET", count: votesInWindow.length },
+    { label: "Have an email address", count: withEmailCount },
+    { label: "Hasn't unsubscribed and not a test user", count: eligibleCount },
+    { label: "Not already sent results", count: recipients.length },
+  ];
+  return { recipients, steps };
 };
+
+export const getFlyerResultsRecipients = async (now: number): Promise<FlyerResultsRecipient[]> =>
+  (await getRecipientsAndSteps(now)).recipients;
 
 export const sendFlyerResultsEmails = async (now: number) => {
   const [recipients, results] = await Promise.all([getFlyerResultsRecipients(now), loadFlyerResults()]);

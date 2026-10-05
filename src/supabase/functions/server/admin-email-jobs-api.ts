@@ -42,7 +42,7 @@ app.post(
   `${API_URL_PREFIX}/admin/email-jobs/:jobId/dry-run`,
   defineRoute(
     { jobId: { type: "string", required: true } },
-    async ({ jobId }: { jobId: string }) => ({ recipients: await getJob(jobId).getRecipients() }),
+    async ({ jobId }: { jobId: string }) => getJob(jobId).dryRun(),
     "Failed to dry-run email job",
   ),
 );

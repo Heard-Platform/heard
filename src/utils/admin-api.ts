@@ -35,6 +35,11 @@ interface CopyVotesToTableResult {
   message: string;
 }
 
+export interface EmailJobDryRun {
+  recipients: { userId: string; email: string }[];
+  steps: { label: string; count: number }[];
+}
+
 export interface EmailJobSummary {
   id: string;
   label: string;
@@ -309,7 +314,7 @@ class AdminApiClient extends BaseApiClient {
   }
 
   async dryRunEmailJob(adminKey: string, jobId: string) {
-    return this.request<{ recipients: { userId: string; email: string }[] }>(`/admin/email-jobs/${jobId}/dry-run`, {
+    return this.request<EmailJobDryRun>(`/admin/email-jobs/${jobId}/dry-run`, {
       method: "POST",
       headers: { "X-Admin-Key": adminKey },
     });
