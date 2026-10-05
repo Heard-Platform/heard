@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
-import { FlyerScanScreen } from "../components/flyer/results-signup/FlyerScanScreen";
-import { FlyerResultsThanksScreen } from "../components/flyer/results-signup/FlyerResultsThanksScreen";
+import { FlyerScanScreen } from "../components/flyer/flyer-screen/FlyerScanScreen";
+import { FlyerResultsThanksScreen } from "../components/flyer/flyer-screen/FlyerResultsThanksScreen";
 import type { FlyerVote } from "../components/flyer/FlyerVoteIntroCard";
 import type { FlyerVoteTally } from "../components/flyer/landing/FlyerLandingScreen";
 import { Button } from "../components/ui/button";
