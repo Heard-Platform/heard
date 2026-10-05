@@ -64,7 +64,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     useState(safelyGetStorageItem<string>("devAdminKey", ""));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [users, setUsers] = useState<UserSession[]>([]);
-  const [activeDayCounts, setActiveDayCounts] = useState<Record<string, number>>({});
+  const [activeDayCounts, setActiveDayCounts] = useState<Record<string, number> | null>(null);
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
   const [debates, setDebates] = useState<DebateRoom[]>([]);
   const [loading, setLoading] = useState(false);
@@ -126,7 +126,6 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         debatesRes.success
       ) {
         setUsers(usersRes.data?.users || []);
-        setActiveDayCounts(usersRes.data?.activeDayCounts || {});
         setSubHeards(subHeardsRes.data?.subHeards || []);
         setDebates(debatesRes.data?.debates || []);
         setIsAuthenticated(true);
@@ -153,6 +152,13 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
       fetchAdminData();
     }
   }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated || activeTab !== "users" || activeDayCounts) return;
+    api.adminGetActiveDayCounts(adminKey).then((res) => {
+      if (res.success) setActiveDayCounts(res.data?.activeDayCounts || {});
+    });
+  }, [isAuthenticated, activeTab]);
 
   const handleAuthenticate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -826,7 +832,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         {activeTab === "users" && (
           <UsersTable
             users={users}
-            activeDayCounts={activeDayCounts}
+            activeDayCounts={activeDayCounts ?? {}}
             adminKey={adminKey}
             onUserUpdate={handleUpdateUser}
             onClearPhoneVerification={handleClearPhoneVerification}
