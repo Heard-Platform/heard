@@ -73,6 +73,11 @@ export type MagicLinkRecord = {
   expiresAt: number;
 };
 
+export type EmailLoginLinkRecord = {
+  userId: string;
+  expiresAt: number;
+};
+
 export type CohostInviteRecord = {
   roomId: string;
   createdBy: string;

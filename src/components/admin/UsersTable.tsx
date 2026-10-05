@@ -5,7 +5,12 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import type { UserSession } from "../../types";
 import { useState } from "react";
-import { Phone, ChevronDown, ChevronUp } from "lucide-react";
+import { Phone, ChevronDown, ChevronUp, Link } from "lucide-react";
+import { adminApi } from "../../utils/admin-api";
+import { createParamUrl } from "../../utils/url";
+
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
 
 type SortKey = "createdAt" | "activeDays";
 
@@ -32,6 +37,16 @@ export function UsersTable({
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortDesc, setSortDesc] = useState(true);
   const [expandedJson, setExpandedJson] = useState<Set<string>>(new Set());
+
+  const copyLoginLink = async (userId: string) => {
+    const response = await adminApi.createLoginToken(adminKey, userId);
+    if (!response.success || !response.data) {
+      toast.error(response.error || "Couldn't create a login link");
+      return;
+    }
+    await navigator.clipboard.writeText(createParamUrl("/", { emailLoginToken: response.data.token }));
+    toast.success("Login link copied. Open it in a private window to sign in as this user.");
+  };
 
   const handleSortClick = (key: SortKey) => {
     if (sortKey === key) {
@@ -117,6 +132,7 @@ export function UsersTable({
               <th className="text-center p-3 font-medium">Unsubbed from Updates</th>
               <th className="text-center p-3 font-medium">Developer</th>
               <th className="text-center p-3 font-medium">Clear Phone Verification</th>
+              <th className="text-center p-3 font-medium">Login Link</th>
               <th className="text-left p-3 font-medium">
                 <div className="flex items-center gap-2">
                   Raw JSON
@@ -196,6 +212,11 @@ export function UsersTable({
                       <span className="text-muted-foreground">-</span>
                     )}
                   </div>
+                </td>
+                <td className="p-3 text-center">
+                  <Button variant="ghost" size="sm" onClick={() => copyLoginLink(user.id)}>
+                    <Link className="w-4 h-4" />
+                  </Button>
                 </td>
                 <td className="p-3">
                   <Button

@@ -49,6 +49,38 @@ export const parseLinkSourceFromUrl = (): string | null => {
   return new URL(window.location.href).searchParams.get('src')
 }
 
+const QUERY_PARAMS = {
+  emailLoginToken: 'loginToken',
+} as const
+
+type QueryParamName = keyof typeof QUERY_PARAMS
+export type QueryParams = Partial<Record<QueryParamName, string>>
+
+export const parseQueryParams = (): QueryParams => {
+  if (typeof window === 'undefined') return {}
+  const searchParams = new URL(window.location.href).searchParams
+  const params: QueryParams = {}
+  for (const [name, key] of Object.entries(QUERY_PARAMS) as [QueryParamName, string][]) {
+    const value = searchParams.get(key)
+    if (value !== null) params[name] = value
+  }
+  return params
+}
+
+export const createParamUrl = (path: string, params: QueryParams): string => {
+  const url = new URL(path, window.location.origin)
+  for (const [name, value] of Object.entries(params) as [QueryParamName, string][]) {
+    url.searchParams.set(QUERY_PARAMS[name], value)
+  }
+  return url.toString()
+}
+
+export const removeQueryParams = (...names: QueryParamName[]) => {
+  const url = new URL(window.location.href)
+  names.forEach((name) => url.searchParams.delete(QUERY_PARAMS[name]))
+  window.history.replaceState({}, '', url.pathname + url.search)
+}
+
 export const parseReferrerIdFromUrl = (): string | null => {
   if (typeof window === 'undefined') return null
   return new URL(window.location.href).searchParams.get('ref')

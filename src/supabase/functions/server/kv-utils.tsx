@@ -13,6 +13,7 @@ import {
   type Rant,
   type YouTubeCardStatus,
   MagicLinkRecord,
+  EmailLoginLinkRecord,
   ModInviteRecord,
   CohostInviteRecord,
   Session,
@@ -21,6 +22,7 @@ import {
   UserActivityRecord,
   AskTheDataRecord,
 } from "./types.tsx";
+import { throwIfNotFound } from "./model-utils.ts";
 
 /**
  * Safely parses JSON data from KV store
@@ -129,6 +131,9 @@ export const getUser = async (userId: string) => {
   return getParsedKvData<User>(`user:${userId}`);
 };
 
+export const getUserOrThrow = async (userId: string): Promise<User> =>
+  throwIfNotFound(await getUser(userId), "User");
+
 export const getAllUsers = async (): Promise<User[]> => {
   return getAllRecords<User>("user:");
 };
@@ -207,6 +212,15 @@ export const deleteMagicLink = async (
 ) => {
   await kv.del(magicLinkKeyFn(token));
 };
+
+const emailLoginLinkKeyFn = (token: string) => `email_login_link:${token}`;
+
+export const saveEmailLoginLink = async (token: string, data: EmailLoginLinkRecord) => {
+  await kv.set(emailLoginLinkKeyFn(token), data);
+};
+
+export const getEmailLoginLink = async (token: string) =>
+  getParsedKvData<EmailLoginLinkRecord>(emailLoginLinkKeyFn(token));
 
 export const modInviteKeyFn = (token: string) =>
   `mod_invite:${token}`;

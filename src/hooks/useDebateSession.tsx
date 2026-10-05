@@ -40,6 +40,7 @@ interface DebateSessionContextType {
   safelyGetUser: () => UserSession;
   sendMagicLink: (email: string) => Promise<ApiResponse | null>;
   verifyMagicLink: (code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
+  loginViaEmailLink: (token: string) => Promise<ApiResponse<UserSessionResponse> | null>;
   sendSmsCode: (phone: string, requireExisting?: boolean) => Promise<ApiResponse | null>;
   verifySmsCode: (phone: string, code: string) => Promise<ApiResponse<UserSessionResponse> | null>;
   addPhoneToAccount: (phone: string, code: string) => Promise<ApiResponse<{ user: UserSession }> | null>;
@@ -250,6 +251,14 @@ export function DebateSessionProvider(
     const response = await safelyMakeApiCall<UserSessionResponse>(() => api.verifyMagicLink(code));
     if (response && response.success && response.data) {
       setUserAndSession(response.data.user, response.data.sessionId, "verify_magic_link");
+    }
+    return response;
+  }, [safelyMakeApiCall, setUserAndSession]);
+
+  const loginViaEmailLink = useCallback(async (token: string) => {
+    const response = await safelyMakeApiCall<UserSessionResponse>(() => api.loginViaEmailLink(token));
+    if (response && response.success && response.data) {
+      setUserAndSession(response.data.user, response.data.sessionId, "email_link_login");
     }
     return response;
   }, [safelyMakeApiCall, setUserAndSession]);
@@ -1020,6 +1029,7 @@ export function DebateSessionProvider(
     safelyGetUser,
     sendMagicLink,
     verifyMagicLink,
+    loginViaEmailLink,
     sendSmsCode,
     verifySmsCode,
     addPhoneToAccount,

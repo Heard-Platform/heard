@@ -18,6 +18,7 @@ import {
   UserEvent,
   UserPresence,
   UserReport
+  // @ts-ignore
 } from "./types.tsx";
 
 const PRESENCE_TTL = 10_000;
@@ -330,4 +331,9 @@ export const recordRoomEngagement = async (
     saveRoomFollow(userId, roomId),
     saveRoomView({ userId, roomId, lastSeenAt: now }),
   ]);
+};
+
+export const throwIfNotFound = <T,>(value: T | null | undefined, label: string): T => {
+  if (value === null || value === undefined) throw new Error(`${label} not found`);
+  return value;
 };

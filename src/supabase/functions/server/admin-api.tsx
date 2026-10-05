@@ -9,6 +9,7 @@ import {
   getByPrefixParsed,
   getDebate,
   getUser,
+  getUserOrThrow,
   saveDebate, deletePhone,
   getCommunity,
   saveCommunity,
@@ -28,6 +29,7 @@ import { performSubHeardRename } from "./subheard-rename-utils.tsx";
 // @ts-ignore
 import { Hono } from "npm:hono";
 import { defineRoute } from "./route-wrapper.tsx";
+import { createEmailLoginToken } from "./email-login-links.ts";
 
 const app = new Hono();
 
@@ -298,6 +300,18 @@ const ADMIN_EDITABLE_USER_FIELDS = [
 ] as const satisfies readonly (keyof User)[];
 
 type AdminEditableUserField = typeof ADMIN_EDITABLE_USER_FIELDS[number];
+
+app.post(
+  "/make-server-f1a393b4/admin/user/:userId/login-token",
+  defineRoute(
+    { userId: { type: "string", required: true } },
+    async ({ userId }: { userId: string }) => {
+      await getUserOrThrow(userId);
+      return { token: await createEmailLoginToken(userId) };
+    },
+    "Failed to create login token",
+  ),
+);
 
 app.patch(
   "/make-server-f1a393b4/admin/user/:userId",

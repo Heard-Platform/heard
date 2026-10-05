@@ -42,6 +42,8 @@ import {
   parseStatementIdFromUrl,
   parseModInviteTokenFromUrl,
   parseCohostInviteTokenFromUrl,
+  parseQueryParams,
+  removeQueryParams,
   parseLinkSourceFromUrl,
   parseReferrerIdFromUrl,
 } from "./utils/url";
@@ -149,6 +151,7 @@ function AppContent() {
     roomsLoading,
     error,
     verifyMagicLink,
+    loginViaEmailLink,
     createAnonymousUser,
     createRoom,
     submitStatement,
@@ -332,6 +335,16 @@ function AppContent() {
     }
   };
 
+  const loginViaEmailLinkInUrl = async (token: string) => {
+    removeQueryParams("emailLoginToken");
+    setIsJoiningAnonymously(true);
+    const response = await loginViaEmailLink(token);
+    setIsJoiningAnonymously(false);
+    if (!response?.success) {
+      toast("That sign-in link has expired, but you can keep voting.");
+    }
+  };
+
   const loginViaMagicTokenInUrl = async (magicToken: string) => {
     const response = await verifyMagicLink(magicToken);
     if (response && response.success) {
@@ -399,6 +412,12 @@ function AppContent() {
       const flyerDataFromUrl = parseFlyerDataFromUrl();
       const eventIdFromUrl = parseEventIdFromUrl();
       const statementIdFromUrl = parseStatementIdFromUrl();
+      
+      const queryParams = parseQueryParams();
+
+      if (queryParams.emailLoginToken) {
+        loginViaEmailLinkInUrl(queryParams.emailLoginToken);
+      }
 
       if (statementIdFromUrl) {
         setTargetStatementId(statementIdFromUrl);
