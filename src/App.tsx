@@ -207,7 +207,7 @@ function AppContent() {
       startRoomJoin(response.room.id);
       const isPass = flyerData.vote === "pass";
       const flyerVote = flyerData.vote === "disagree" ? "disagree" : "agree";
-      if (flyerData.flyerId === WAYMO_DC_ROOM_ID && !isPass) {
+      if (false && flyerData.flyerId === WAYMO_DC_ROOM_ID && !isPass) {
         setNewFlyerScan({
           roomId: response.room.id,
           tally: {
