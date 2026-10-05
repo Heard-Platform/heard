@@ -36,17 +36,17 @@ export function FlyerScanContainer({
 
   const emailFlow = useEmailOtpFlow({
     onComplete: () => {
-      track("flyer_results_signup_email_added");
+      track("flyer_screen_email_added");
       setIsEmailAdded(true);
     },
   });
 
   useEffect(() => {
-    track("flyer_results_signup_opened");
+    track("flyer_screen_opened");
   }, []);
 
   const handleLookAround = () => {
-    track("flyer_results_signup_looked_around");
+    track("flyer_screen_looked_around");
     onComplete(roomId, "continue");
   };
 

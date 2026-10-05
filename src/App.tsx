@@ -50,7 +50,7 @@ import {
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { FlyerSwipeContainer, type FlyerCompleteReason } from "./components/flyer/FlyerSwipeContainer";
 import { FlyerLandingContainer } from "./components/flyer/landing/FlyerLandingContainer";
-import { FlyerScanContainer, type FlyerScan } from "./components/flyer/results-signup/FlyerScanContainer";
+import { FlyerScanContainer, type FlyerScan } from "./components/flyer/flyer-screen/FlyerScanContainer";
 import type { FlyerVoteTally } from "./components/flyer/landing/FlyerLandingScreen";
 import type { FlyerVote } from "./components/flyer/FlyerVoteIntroCard";
 import { FeatureFlags, isFeatureEnabled } from "./utils/constants/feature-flags";
