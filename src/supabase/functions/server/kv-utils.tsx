@@ -22,7 +22,7 @@ import {
   UserActivityRecord,
   AskTheDataRecord,
 } from "./types.tsx";
-import { throwIfNotFound } from "./model-utils.js";
+import { throwIfNotFound } from "./model-utils.ts";
 
 /**
  * Safely parses JSON data from KV store
