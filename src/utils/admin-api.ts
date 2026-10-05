@@ -35,6 +35,12 @@ interface CopyVotesToTableResult {
   message: string;
 }
 
+export interface EmailJobSummary {
+  id: string;
+  label: string;
+  isScheduleOn: boolean;
+}
+
 class AdminApiClient extends BaseApiClient {
   async fixActiveRoomPointers(adminKey: string) {
     return this.request<FixActiveRoomPointersResult>(
@@ -285,6 +291,42 @@ class AdminApiClient extends BaseApiClient {
         body: JSON.stringify({ dryRun }),
       },
     );
+  }
+
+  async getEmailJobs(adminKey: string) {
+    return this.request<{ jobs: EmailJobSummary[] }>("/admin/email-jobs", {
+      method: "GET",
+      headers: { "X-Admin-Key": adminKey },
+    });
+  }
+
+  async setEmailJobSchedule(adminKey: string, jobId: string, isOn: boolean) {
+    return this.request<{ isScheduleOn: boolean }>(`/admin/email-jobs/${jobId}/schedule`, {
+      method: "POST",
+      headers: { "X-Admin-Key": adminKey },
+      body: JSON.stringify({ isOn }),
+    });
+  }
+
+  async dryRunEmailJob(adminKey: string, jobId: string) {
+    return this.request<{ recipients: { userId: string; email: string }[] }>(`/admin/email-jobs/${jobId}/dry-run`, {
+      method: "POST",
+      headers: { "X-Admin-Key": adminKey },
+    });
+  }
+
+  async runEmailJob(adminKey: string, jobId: string) {
+    return this.request<{ sent: number }>(`/admin/email-jobs/${jobId}/run`, {
+      method: "POST",
+      headers: { "X-Admin-Key": adminKey },
+    });
+  }
+
+  async runEmailJobForMe(adminKey: string, jobId: string) {
+    return this.request<{ email: string }>(`/admin/email-jobs/${jobId}/run-for-me`, {
+      method: "POST",
+      headers: { "X-Admin-Key": adminKey },
+    });
   }
 
   async createLoginToken(adminKey: string, userId: string) {
