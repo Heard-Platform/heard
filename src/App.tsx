@@ -210,9 +210,12 @@ function AppContent() {
       if (flyerData.flyerId === WAYMO_DC_ROOM_ID && !isPass) {
         setNewFlyerScan({
           roomId: response.room.id,
-          statementText: response.statementText,
-          voteCount: response.agreeCount + response.disagreeCount,
-          vote: flyerVote,  
+          tally: {
+            statementText: response.statementText,
+            agreeCount: response.agreeCount,
+            disagreeCount: response.disagreeCount,
+          },
+          vote: flyerVote,
         });
       } else if (isFeatureEnabled(FeatureFlags.CIVIC_FLYER_RESULTS) && !isPass) {
         setFlyerLanding({

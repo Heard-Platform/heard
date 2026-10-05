@@ -112,7 +112,7 @@ interface ResultsCardProps {
   isTriggered: boolean;
 }
 
-function ResultsCard({ tally, vote, isTriggered }: ResultsCardProps) {
+export function ResultsCard({ tally, vote, isTriggered }: ResultsCardProps) {
   const split = summarizeVoteSplit(tally);
 
   return (

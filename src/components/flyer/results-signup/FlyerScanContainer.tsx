@@ -5,6 +5,7 @@ import { useEmailOtpFlow } from "../../../hooks/useEmailOtpFlow";
 import { isAfterFlyerResultsTime } from "../../../utils/time";
 import type { FlyerCompleteReason } from "../FlyerSwipeContainer";
 import type { FlyerVote } from "../FlyerVoteIntroCard";
+import type { FlyerVoteTally } from "../landing/FlyerLandingScreen";
 import { FlyerScanScreen } from "./FlyerScanScreen";
 import { FlyerResultsThanksScreen } from "./FlyerResultsThanksScreen";
 
@@ -12,9 +13,8 @@ const TAGLINE = "DC's place for community conversations";
 
 export interface FlyerScan {
   roomId: string;
-  statementText: string;
+  tally: FlyerVoteTally;
   vote: FlyerVote;
-  voteCount: number;
 }
 
 interface FlyerScanContainerProps {
@@ -56,9 +56,8 @@ export function FlyerScanContainer({
         {!isEmailAdded ? (
           <FlyerScanScreen
             tagline={TAGLINE}
-            statementText={scan.statementText}
+            tally={scan.tally}
             vote={scan.vote}
-            voteCount={scan.voteCount}
             areResultsTomorrow={areResultsTomorrow}
             accountEmail={accountEmail}
             emailFlow={emailFlow}

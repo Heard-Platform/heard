@@ -1,24 +1,23 @@
-import type { FormEvent, ReactNode } from "react";
-import { Check, ChevronLeft } from "lucide-react";
+import type { FormEvent } from "react";
+import { ChevronLeft } from "lucide-react";
 import type { EmailOtpFlow } from "../../../hooks/useEmailOtpFlow";
 import { TOSText } from "../../onboarding/TOSText";
 import type { FlyerVote } from "../FlyerVoteIntroCard";
+import { ResultsCard, summarizeVoteSplit, type FlyerVoteTally } from "../landing/FlyerLandingScreen";
 import { TogaMonkey } from "../landing/TogaMonkey";
 import { EASING, transitionOf, useAnimationTrigger } from "../landing/landing-motion";
+import { getStandingHeadline } from "./flyer-scan-headline";
 import { FlyerResultsHeader } from "./FlyerResultsHeader";
 
 const TRIGGER_DELAY_MS = 150;
-const AGREE_COLOR = "#16A34A";
-const DISAGREE_COLOR = "#DC2626";
-const BUTTON_COLOR = "#B5401F";
+const BUTTON_COLOR = "#A34E36";
 const INPUT_CLASS =
-  "w-full rounded-xl border border-[#E3DDD1] bg-white px-4 py-3.5 text-base text-[#1C1B1F] outline-none placeholder:text-[#A8A298] focus:border-[#1C1B1F]";
+  "w-full rounded-2xl border-2 border-[#E3DDD1] bg-white px-4 py-3.5 text-base text-[#1C1B1F] outline-none placeholder:text-[#A8A298] focus:border-[#1C1B1F]";
 
 interface FlyerScanScreenProps {
   tagline: string;
-  statementText: string;
+  tally: FlyerVoteTally;
   vote: FlyerVote;
-  voteCount: number;
   areResultsTomorrow: boolean;
   /** Set when the viewer already has an account email, so we can skip asking for it. */
   accountEmail: string | null;
@@ -28,70 +27,75 @@ interface FlyerScanScreenProps {
 
 export function FlyerScanScreen({
   tagline,
-  statementText,
+  tally,
   vote,
-  voteCount,
   areResultsTomorrow,
   accountEmail,
   emailFlow,
   onLookAround,
 }: FlyerScanScreenProps) {
   const isTriggered = useAnimationTrigger(TRIGGER_DELAY_MS);
+  const { agreePercent } = summarizeVoteSplit(tally);
   const fadeIn = (delayMs: number) => ({
     opacity: isTriggered ? 1 : 0,
-    transform: isTriggered ? "translateY(0)" : "translateY(12px)",
-    transition: [
-      transitionOf("opacity", 400, EASING.ease, delayMs),
-      transitionOf("transform", 500, EASING.bounce, delayMs),
-    ].join(", "),
+    transition: transitionOf("opacity", 400, EASING.ease, delayMs),
   });
 
   return (
     <div className="heard-feed-bg flex min-h-full flex-col px-5 pb-6 pt-4">
       <FlyerResultsHeader tagline={tagline} />
 
-      <div className="mt-4 flex flex-col items-center text-center">
+      <div className="mt-4 flex items-center gap-3">
         <TogaMonkey
-          size={104}
+          size={112}
           style={{
             opacity: isTriggered ? 1 : 0,
             transform: isTriggered ? "scale(1) rotate(0deg)" : "scale(0.6) rotate(-8deg)",
             transformOrigin: "50% 90%",
             transition: [
-              transitionOf("opacity", 300, EASING.ease, 0),
-              transitionOf("transform", 700, EASING.pop, 0),
+              transitionOf("opacity", 300, EASING.ease, 120),
+              transitionOf("transform", 700, EASING.pop, 120),
             ].join(", "),
           }}
         />
-
-        <div style={fadeIn(100)}>
-          <p className="font-serif mt-3 text-xl font-bold leading-snug text-[#1C1B1F]">"{statementText}"</p>
-          <VoteCountedPill vote={vote} />
-        </div>
-
-        <div className="mt-5" style={fadeIn(250)}>
-          <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#6B6760]">
-            Voting is open · {voteCount} {voteCount === 1 ? "vote" : "votes"} in
-          </p>
-          <h1 className="font-serif mt-1 text-[32px] font-bold leading-tight text-[#1C1B1F]">
-            {areResultsTomorrow ? "Results drop tomorrow at 7pm" : "Results drop at 7pm"}
+        <div
+          style={{
+            opacity: isTriggered ? 1 : 0,
+            transform: isTriggered ? "translateY(0)" : "translateY(16px)",
+            transition: [
+              transitionOf("opacity", 450, EASING.ease, 0),
+              transitionOf("transform", 600, EASING.bounce, 0),
+            ].join(", "),
+          }}
+        >
+          <p className="text-xs font-extrabold uppercase tracking-wider text-[#6B6760]">Your vote is in</p>
+          <h1 className="mt-1 text-[26px] font-extrabold leading-tight tracking-tight text-[#1C1B1F]">
+            {getStandingHeadline({ vote, agreePercent, areResultsTomorrow })}
           </h1>
-          <p className="mt-1 text-sm text-[#4A463F]">Your neighbors are weighing in now.</p>
         </div>
       </div>
 
-      <div className="mt-6" style={fadeIn(400)}>
+      <div className="mt-5" style={fadeIn(300)}>
+        <ResultsCard tally={tally} vote={vote} isTriggered={isTriggered} />
+      </div>
+
+      <div className="mt-6" style={fadeIn(450)}>
         {!accountEmail ? (
           <>
-            {emailFlow.step === "email" ? <EmailForm emailFlow={emailFlow} /> : <CodeForm emailFlow={emailFlow} />}
+            {emailFlow.step === "email" ? (
+              <EmailForm emailFlow={emailFlow} areResultsTomorrow={areResultsTomorrow} />
+            ) : (
+              <CodeForm emailFlow={emailFlow} />
+            )}
             {emailFlow.error && <p className="mt-2 text-sm text-[#C2410C]">{emailFlow.error}</p>}
-            <p className="mt-3 text-center text-xs font-semibold text-[#1C1B1F]">
-              Just the results. No spam or selling your data.
-            </p>
-            <TOSText className="mt-2 text-center text-[11px] text-[#4A463F]" linkClassName="text-[#4A463F] underline" />
+            <TOSText
+              prefix="No spam or selling your data. "
+              className="mt-4 text-center text-sm text-[#4A463F]"
+              linkClassName="text-[#A34E36] underline"
+            />
           </>
         ) : (
-          <AccountEmailNote
+          <AlreadySignedInNote
             accountEmail={accountEmail}
             areResultsTomorrow={areResultsTomorrow}
             onLookAround={onLookAround}
@@ -102,25 +106,18 @@ export function FlyerScanScreen({
   );
 }
 
-function VoteCountedPill({ vote }: { vote: FlyerVote }) {
-  const isAgree = vote === "agree";
-
+function ResultsTime({ areResultsTomorrow }: { areResultsTomorrow: boolean }) {
   return (
-    <span
-      className="mt-3 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-bold text-white"
-      style={{ backgroundColor: isAgree ? AGREE_COLOR : DISAGREE_COLOR }}
-    >
-      <Check className="h-4 w-4" strokeWidth={3} />
-      {isAgree ? "You agreed." : "You disagreed."} Counted.
-    </span>
+    <strong className="text-[#1C1B1F]">{areResultsTomorrow ? "tomorrow at 7pm" : "tonight at 7pm"}</strong>
   );
 }
 
-function FormHeading({ children }: { children: ReactNode }) {
-  return <h2 className="text-base font-bold text-[#1C1B1F]">{children}</h2>;
+interface EmailFormProps {
+  emailFlow: EmailOtpFlow;
+  areResultsTomorrow: boolean;
 }
 
-function EmailForm({ emailFlow }: { emailFlow: EmailOtpFlow }) {
+function EmailForm({ emailFlow, areResultsTomorrow }: EmailFormProps) {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     emailFlow.submitEmail();
@@ -128,7 +125,9 @@ function EmailForm({ emailFlow }: { emailFlow: EmailOtpFlow }) {
 
   return (
     <form noValidate onSubmit={handleSubmit}>
-      <FormHeading>Can we send you the results?</FormHeading>
+      <p className="text-base text-[#4A463F]">
+        Results at <ResultsTime areResultsTomorrow={areResultsTomorrow} />.
+      </p>
       <input
         className={`${INPUT_CLASS} mt-3`}
         type="email"
@@ -150,7 +149,7 @@ function CodeForm({ emailFlow }: { emailFlow: EmailOtpFlow }) {
 
   return (
     <form noValidate onSubmit={handleSubmit}>
-      <FormHeading>Welcome back.</FormHeading>
+      <h2 className="text-base font-bold text-[#1C1B1F]">Welcome back.</h2>
       <p className="mt-1 text-sm text-[#4A463F]">
         That email already has an account. We sent a 6-character code to{" "}
         <strong className="text-[#1C1B1F]">{emailFlow.email}</strong>.
@@ -178,18 +177,18 @@ function CodeForm({ emailFlow }: { emailFlow: EmailOtpFlow }) {
   );
 }
 
-interface AccountEmailNoteProps {
+interface AlreadySignedInNoteProps {
   accountEmail: string;
   areResultsTomorrow: boolean;
   onLookAround: () => void;
 }
 
-function AccountEmailNote({ accountEmail, areResultsTomorrow, onLookAround }: AccountEmailNoteProps) {
+function AlreadySignedInNote({ accountEmail, areResultsTomorrow, onLookAround }: AlreadySignedInNoteProps) {
   return (
     <div className="text-center text-sm text-[#4A463F]">
       <p>
-        You're signed in, so we'll email the results to <strong className="text-[#1C1B1F]">{accountEmail}</strong>{" "}
-        {areResultsTomorrow ? "tomorrow at 7pm" : "at 7pm"}.
+        You're signed in, so we'll email the results to{" "}
+        <strong className="text-[#1C1B1F]">{accountEmail}</strong> <ResultsTime areResultsTomorrow={areResultsTomorrow} />.
       </p>
       <p className="mt-4">
         Got some more time? Feel free to{" "}
@@ -205,7 +204,7 @@ function AccountEmailNote({ accountEmail, areResultsTomorrow, onLookAround }: Ac
 function SubmitButton({ label, isSubmitting }: { label: string; isSubmitting: boolean }) {
   return (
     <button
-      className="mt-3 w-full rounded-xl py-3.5 text-base font-bold text-white disabled:opacity-60"
+      className="mt-3 w-full rounded-2xl py-4 text-lg font-bold text-white disabled:opacity-60"
       style={{ backgroundColor: BUTTON_COLOR }}
       type="submit"
       disabled={isSubmitting}

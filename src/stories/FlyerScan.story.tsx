@@ -3,6 +3,7 @@ import { RotateCcw } from "lucide-react";
 import { FlyerScanScreen } from "../components/flyer/results-signup/FlyerScanScreen";
 import { FlyerResultsThanksScreen } from "../components/flyer/results-signup/FlyerResultsThanksScreen";
 import type { FlyerVote } from "../components/flyer/FlyerVoteIntroCard";
+import type { FlyerVoteTally } from "../components/flyer/landing/FlyerLandingScreen";
 import { Button } from "../components/ui/button";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { useEmailOtpFlow } from "../hooks/useEmailOtpFlow";
@@ -10,31 +11,57 @@ import { mockUser } from "./mockData";
 import { StoryContainer } from "./StoryContainer";
 
 export default {
-  title: "Flyer/FlyerResultsSignup",
+  title: "Flyer/FlyerScan",
 };
 
-type Scenario = "agreed" | "disagreed" | "after-7pm" | "existing-email" | "logged-in" | "thanks";
-
 const TAGLINE = "DC's place for community conversations";
-const STATEMENT_TEXT = "DC should let driverless Waymo cars operate citywide.";
-const VOTE_COUNT = 312;
+const STATEMENT_TEXT = "I support Waymo in DC.";
 const VALID_CODE = "ABC123";
 const REQUEST_DELAY_MS = 800;
 const ACCOUNT_EMAIL = "neighbor@example.com";
 
+const tally = (agreeCount: number, disagreeCount: number): FlyerVoteTally => ({
+  statementText: STATEMENT_TEXT,
+  agreeCount,
+  disagreeCount,
+});
+
+const MAJORITY_TALLY = tally(197, 115);
+const MINORITY_TALLY = tally(109, 203);
+const TOO_CLOSE_TALLY = tally(159, 153);
+
+interface Scenario {
+  label: string;
+  vote: FlyerVote;
+  tally: FlyerVoteTally;
+  areResultsTomorrow?: boolean;
+  isExistingEmail?: boolean;
+  accountEmail?: string;
+  startOnThanks?: boolean;
+}
+
+const SCENARIOS: Record<string, Scenario> = {
+  majority: { label: "Majority", vote: "agree", tally: MAJORITY_TALLY },
+  minority: { label: "Minority", vote: "agree", tally: MINORITY_TALLY },
+  "too-close": { label: "Too close", vote: "agree", tally: TOO_CLOSE_TALLY },
+  "before-7pm": { label: "Before 7pm", vote: "agree", tally: TOO_CLOSE_TALLY },
+  "after-7pm": { label: "After 7pm", vote: "agree", tally: TOO_CLOSE_TALLY, areResultsTomorrow: true },
+  disagreed: { label: "Disagreed", vote: "disagree", tally: MINORITY_TALLY },
+  "existing-email": { label: "Existing email", vote: "agree", tally: MAJORITY_TALLY, isExistingEmail: true },
+  "logged-in": { label: "Already logged in", vote: "agree", tally: MAJORITY_TALLY, accountEmail: ACCOUNT_EMAIL },
+  thanks: { label: "Thanks screen", vote: "agree", tally: MAJORITY_TALLY, startOnThanks: true },
+};
+
 export function FlyerScanStory() {
   return (
     <StoryContainer
-      title="Flyer Results Signup"
-      description={`Waymo DC QR flyers: the vote is counted, results drop at 7pm ET, and we ask for an email to send them. Requests take ${REQUEST_DELAY_MS}ms. On the code step, ${VALID_CODE} logs in.`}
-      variants={[
-        { id: "agreed", label: "Scanned Agree", children: <FlyerScanDemo scenario="agreed" /> },
-        { id: "disagreed", label: "Scanned Disagree", children: <FlyerScanDemo scenario="disagreed" /> },
-        { id: "after-7pm", label: "Scanned after 7pm", children: <FlyerScanDemo scenario="after-7pm" /> },
-        { id: "existing-email", label: "Existing email", children: <FlyerScanDemo scenario="existing-email" /> },
-        { id: "logged-in", label: "Already logged in", children: <FlyerScanDemo scenario="logged-in" /> },
-        { id: "thanks", label: "Thanks screen", children: <FlyerScanDemo scenario="thanks" /> },
-      ]}
+      title="Flyer Scan Screen"
+      description={`Waymo DC QR flyers: the vote is counted, the headline reflects where DC stands, and we ask for an email to send the results at 7pm ET. Requests take ${REQUEST_DELAY_MS}ms. On the code step, ${VALID_CODE} logs in.`}
+      variants={Object.entries(SCENARIOS).map(([id, scenario]) => ({
+        id,
+        label: scenario.label,
+        children: <FlyerScanDemo scenario={scenario} />,
+      }))}
     />
   );
 }
@@ -51,40 +78,27 @@ function FlyerScanDemo({ scenario }: { scenario: Scenario }) {
 
       <div className="mx-auto h-195 w-97.5 max-w-full overflow-y-auto rounded-4xl border-8 [scrollbar-width:none] border-slate-900 shadow-2xl">
         <DebateSessionProvider showcaseOverrides={buildOverrides(scenario)}>
-          <SignupHarness
-            key={replayKey}
-            vote={scenario === "disagreed" ? "disagree" : "agree"}
-            areResultsTomorrow={scenario === "after-7pm"}
-            accountEmail={scenario === "logged-in" ? ACCOUNT_EMAIL : null}
-            startOnThanks={scenario === "thanks"}
-          />
+          <ScanHarness key={replayKey} scenario={scenario} />
         </DebateSessionProvider>
       </div>
     </div>
   );
 }
 
-interface SignupHarnessProps {
-  vote: FlyerVote;
-  areResultsTomorrow: boolean;
-  accountEmail: string | null;
-  startOnThanks: boolean;
-}
-
-function SignupHarness({ vote, areResultsTomorrow, accountEmail, startOnThanks }: SignupHarnessProps) {
-  const [isThanksShown, setIsThanksShown] = useState(startOnThanks);
+function ScanHarness({ scenario }: { scenario: Scenario }) {
+  const [isThanksShown, setIsThanksShown] = useState(scenario.startOnThanks ?? false);
   const emailFlow = useEmailOtpFlow({ onComplete: () => setIsThanksShown(true) });
+  const areResultsTomorrow = scenario.areResultsTomorrow ?? false;
   const handleLookAround = () => console.log("[Story] look around");
 
   if (!isThanksShown) {
     return (
       <FlyerScanScreen
         tagline={TAGLINE}
-        statementText={STATEMENT_TEXT}
-        vote={vote}
-        voteCount={VOTE_COUNT}
+        tally={scenario.tally}
+        vote={scenario.vote}
         areResultsTomorrow={areResultsTomorrow}
-        accountEmail={accountEmail}
+        accountEmail={scenario.accountEmail ?? null}
         emailFlow={emailFlow}
         onLookAround={handleLookAround}
       />
@@ -96,11 +110,11 @@ function SignupHarness({ vote, areResultsTomorrow, accountEmail, startOnThanks }
 
 function buildOverrides(scenario: Scenario) {
   return {
-    user: { ...mockUser, isAnonymous: scenario !== "logged-in" },
+    user: { ...mockUser, isAnonymous: !scenario.accountEmail },
     anonAddEmailAndLogin: async (email: string) => {
-      console.log("[Story] anonAddEmailAndLogin", { email, scenario });
+      console.log("[Story] anonAddEmailAndLogin", { email });
       await wait(REQUEST_DELAY_MS);
-      if (scenario === "existing-email") {
+      if (scenario.isExistingEmail) {
         return { success: true, data: { requiresOtp: true as const, email } };
       }
       return { success: true, data: { requiresOtp: false as const, user: mockUser } };

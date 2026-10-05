@@ -136,7 +136,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="flyer-swipe-screen">Flyer Swipe Screen</TabsTrigger>
                 <TabsTrigger value="flyer-sign-up">Flyer Sign-up</TabsTrigger>
                 <TabsTrigger value="flyer-landing">Flyer Landing</TabsTrigger>
-                <TabsTrigger value="flyer-results-signup">Flyer Results Signup</TabsTrigger>
+                <TabsTrigger value="flyer-scan-screen">Flyer Scan Screen</TabsTrigger>
                 <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
                 <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
                 <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
@@ -241,7 +241,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsContent value="flyer-landing">
                 <FlyerLandingStory />
               </TabsContent>
-              <TabsContent value="flyer-results-signup">
+              <TabsContent value="flyer-scan-screen">
                 <FlyerScanStory />
               </TabsContent>
               <TabsContent value="youtube-card">
