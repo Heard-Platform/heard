@@ -1,4 +1,4 @@
-import { countRecords, createClientFromEnv, deleteRecord, insert, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils";
+import { countRecords, createClientFromEnv, deleteRecord, insert, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
 import {
   AvatarAnimal,
   DemographicAnswer,
