@@ -1,6 +1,8 @@
 import _ from "lodash";
 import { getSentEmails } from "./kv-utils.tsx";
-import { getEventsOfType, getAllRoomViews, getFlyerSwipeEvents, getFlyerLandingEvents } from "./model-utils.ts";
+import { getEventsOfType, getAllRoomViews, getFlyerSwipeEvents, getFlyerLandingEvents, getFlyerScreenEvents, getAppLoadEvents } from "./model-utils.ts";
+import { FLYER_RESULTS_LINK_SOURCE } from "./template-flyer-results.ts";
+import { FLYER_WELCOME_LINK_SOURCE } from "./template-flyer-welcome.ts";
 import {
   RESPONSE_VOTES_NOTIF_EMAIL_TYPE,
   RESPONSE_VOTES_NOTIF_BUTTON_CLICKED_EVENT,
@@ -10,7 +12,7 @@ import {
   CLUSTER_IDENTITY_KEPT_EVENT,
   CLUSTER_IDENTITY_NEW_EVENT,
 } from "./clustering.tsx";
-import { toTimestamp } from "./time-utils.ts";
+import { getEasternDate, toTimestamp } from "./time-utils.ts";
 import { selectAllWithoutLimit } from "./db-utils.ts";
 import { CLUSTER_NAMING_ENDPOINT } from "./cluster-naming.ts";
 import { groupRecentSessionsByWeek, startOfUtcWeek, VoteTiming, WEEK_MS } from "./stats-utils.ts";
@@ -176,3 +178,59 @@ export function buildFlyerLandingFunnel(
 }
 
 export const getFlyerLandingFunnel = async () => buildFlyerLandingFunnel(await getFlyerLandingEvents());
+
+export const FLYER_SCREEN_OPENED_EVENT = "flyer_screen_opened";
+export const FLYER_SCREEN_EMAIL_ADDED_EVENT = "flyer_screen_email_added";
+export const FLYER_EMAIL_RETURNED_EVENTS = [
+  `referred_by_${FLYER_WELCOME_LINK_SOURCE}`,
+  `referred_by_${FLYER_RESULTS_LINK_SOURCE}`,
+];
+const isFlyerEmailReturn = (type: string) => FLYER_EMAIL_RETURNED_EVENTS.includes(type);
+
+type FunnelEvent = { type: string; userId: string | null; createdAt: number | string };
+
+export function buildFlyerScreenFunnel(
+  events: FunnelEvent[],
+  appLoads: { userId: string | null; createdAt: number | string }[],
+): { opened: number; emailAdded: number; returnedViaEmail: number; returnedOnMultipleDays: number } {
+  const usersWith = (isMatch: (type: string) => boolean) =>
+    new Set(_.compact(events.filter((event) => isMatch(event.type)).map((event) => event.userId)));
+  const openedUserIds = usersWith((type) => type === FLYER_SCREEN_OPENED_EVENT);
+
+  const emailAddedAt = new Map<string, number>();
+  for (const event of events) {
+    if (!event.userId || event.type !== FLYER_SCREEN_EMAIL_ADDED_EVENT) continue;
+    const at = toTimestamp(event.createdAt);
+    emailAddedAt.set(event.userId, Math.min(at, emailAddedAt.get(event.userId) ?? at));
+  }
+
+  const returnedViaEmailUserIds = [...usersWith(isFlyerEmailReturn)].filter((userId) => emailAddedAt.has(userId));
+
+  const loadDaysSinceEmailAdded = new Map<string, Set<string>>();
+  for (const load of appLoads) {
+    const addedAt = load.userId ? emailAddedAt.get(load.userId) : undefined;
+    const at = toTimestamp(load.createdAt);
+    if (addedAt === undefined || at <= addedAt) continue;
+    const days = loadDaysSinceEmailAdded.get(load.userId!) ?? new Set<string>();
+    days.add(getEasternDate(at));
+    loadDaysSinceEmailAdded.set(load.userId!, days);
+  }
+
+  return {
+    opened: openedUserIds.size,
+    emailAdded: emailAddedAt.size,
+    returnedViaEmail: returnedViaEmailUserIds.length,
+    returnedOnMultipleDays: [...loadDaysSinceEmailAdded.values()].filter((days) => days.size > 1).length,
+  };
+}
+
+export const getFlyerScreenFunnel = async () => {
+  const events = await getFlyerScreenEvents([
+    FLYER_SCREEN_OPENED_EVENT,
+    FLYER_SCREEN_EMAIL_ADDED_EVENT,
+    ...FLYER_EMAIL_RETURNED_EVENTS,
+  ]);
+  const emailAddedEvents = events.filter((e) => e.type === FLYER_SCREEN_EMAIL_ADDED_EVENT);
+  const emailAddedUserIds = _.uniq(_.compact(emailAddedEvents.map((e) => e.userId)));
+  return buildFlyerScreenFunnel(events, await getAppLoadEvents(emailAddedUserIds));
+};

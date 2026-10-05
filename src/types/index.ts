@@ -748,6 +748,11 @@ export interface FeatureResults {
   flyerSwipeFunnelSince: number;
   flyerLandingFunnel: { opened: number; submitted: number; lookedAround: number };
   flyerLandingFunnelSince: number;
+  flyerScreenFunnel: { opened: number; emailAdded: number; returnedViaEmail: number; returnedOnMultipleDays: number };
+  flyerScreenFunnelSince: number;
+  flyerWelcomeEmailsSent: number;
+  flyerResultsEmailsSent: number;
+  flyerEmailsSentSince: number;
 }
 
 export interface GGWashImportResult {
