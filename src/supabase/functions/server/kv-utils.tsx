@@ -13,6 +13,7 @@ import {
   type Rant,
   type YouTubeCardStatus,
   MagicLinkRecord,
+  EmailLoginLinkRecord,
   ModInviteRecord,
   CohostInviteRecord,
   Session,
@@ -207,6 +208,15 @@ export const deleteMagicLink = async (
 ) => {
   await kv.del(magicLinkKeyFn(token));
 };
+
+const emailLoginLinkKeyFn = (token: string) => `email_login_link:${token}`;
+
+export const saveEmailLoginLink = async (token: string, data: EmailLoginLinkRecord) => {
+  await kv.set(emailLoginLinkKeyFn(token), data);
+};
+
+export const getEmailLoginLink = async (token: string) =>
+  getParsedKvData<EmailLoginLinkRecord>(emailLoginLinkKeyFn(token));
 
 export const modInviteKeyFn = (token: string) =>
   `mod_invite:${token}`;

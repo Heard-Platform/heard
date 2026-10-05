@@ -84,6 +84,13 @@ class ApiClient extends BaseApiClient {
     });
   }
 
+  async loginViaEmailLink(token: string) {
+    return this.request<UserSessionResponse>("/auth/email-link-login", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  }
+
   async sendSmsCode(phone: string, requireExisting: boolean = false) {
     return this.request<undefined>("/auth/send-sms-code", {
       method: "POST",

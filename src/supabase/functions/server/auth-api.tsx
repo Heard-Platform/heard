@@ -1,4 +1,4 @@
-import { deleteMagicLink, getMagicLink, getParsedKvData, getSession, getUser, saveMagicLink, saveSession, saveUserWithEmailIndex, getUserIdByEmail } from "./kv-utils.tsx";
+import { deleteMagicLink, getEmailLoginLink, getMagicLink, getParsedKvData, getSession, getUser, saveMagicLink, saveSession, saveUserWithEmailIndex, getUserIdByEmail } from "./kv-utils.tsx";
 import type { Session, User } from "./types.tsx";
 import { Context, Hono } from "npm:hono";
 import { getMagicLinkEmail } from "./email-templates.tsx";
@@ -455,6 +455,29 @@ app.post(
       return c.json({ error: "Failed to verify magic link" }, 500);
     }
   },
+);
+
+app.post(
+  "/make-server-f1a393b4/auth/email-link-login",
+  defineRoute(
+    { token: { type: "string", required: true } },
+    async ({ token }: { token: string }, c: Context) => {
+      const userId = c.get("userId");
+      
+      const loginLink = await getEmailLoginLink(token);
+      if (!loginLink || Date.now() > loginLink.expiresAt) {
+        throw new Error("This sign-in link has expired");
+      }
+
+      const result = await loginUserWithMerge(loginLink.userId, userId);
+      if ("error" in result) {
+        throw new Error(result.error);
+      }
+
+      return result;
+    },
+    "Failed to sign in from email link",
+  ),
 );
 
 export const attachEmailToAccount = async (
