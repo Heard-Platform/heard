@@ -337,7 +337,9 @@ function AppContent() {
 
   const loginViaEmailLinkInUrl = async (token: string) => {
     removeQueryParams("emailLoginToken");
+    setIsJoiningAnonymously(true);
     const response = await loginViaEmailLink(token);
+    setIsJoiningAnonymously(false);
     if (!response?.success) {
       toast("That sign-in link has expired, but you can keep voting.");
     }
