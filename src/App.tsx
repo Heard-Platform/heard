@@ -54,6 +54,7 @@ import { FlyerScanContainer, type FlyerScan } from "./components/flyer/flyer-scr
 import type { FlyerVoteTally } from "./components/flyer/landing/FlyerLandingScreen";
 import type { FlyerVote } from "./components/flyer/FlyerVoteIntroCard";
 import { FeatureFlags, isFeatureEnabled } from "./utils/constants/feature-flags";
+import { WAYMO_DC_ROOM_ID, WAYMO_DC_STATEMENT_ID } from "./utils/constants/flyers";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
 
 const LAST_VIEWED_SUBHEARD_KEY = "lastViewedSubHeard";
@@ -69,8 +70,6 @@ const LA_COMMUNITIES = ["los-angeles"];
 const WAYMO_DUPONT_ROOM_ID = "jhxaoh1a3bmq2fflpx";
 const WAYMO_DUPONT_STATEMENT_ID = "0d3m3yflnlc8mq2fflre";
 
-const WAYMO_DC_ROOM_ID = "s6r23ralcomq8l9p6p";
-const WAYMO_DC_STATEMENT_ID = "ecgld4qfclqmq8l9p82";
 
 const I_LOVE_CIVTECH_FLYER_ID = "gv7kmooa0lmom3pn2m";
 const I_LOVE_CIVTECH_STATEMENT_ID = "jg46pxp4fsmom3pn3c";

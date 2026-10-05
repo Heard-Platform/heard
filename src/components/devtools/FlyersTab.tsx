@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card } from "../ui/card";
 import { devApi } from "../../utils/dev-api";
+import { WAYMO_DC_ROOM_ID, WAYMO_DC_STATEMENT_ID } from "../../utils/constants/flyers";
+
+const WAYMO_DC_AGREE_PATH = `/flyer/${WAYMO_DC_ROOM_ID}/${WAYMO_DC_STATEMENT_ID}/agree`;
 
 interface FlyerRoomData {
   topic: string;
@@ -65,6 +68,12 @@ export function FlyersTab() {
   return (
     <Card className="p-6">
       <h2 className="text-xl font-semibold mb-4">Flyer Statistics</h2>
+      <p className="mb-4 text-sm">
+        <a href={WAYMO_DC_AGREE_PATH} target="_blank" rel="noreferrer" className="text-blue-600 underline">
+          Test the Waymo DC flyer (agree)
+        </a>
+        <span className="text-gray-500"> · opens in a new tab and casts a real vote, so use a private window</span>
+      </p>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
