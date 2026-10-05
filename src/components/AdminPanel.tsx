@@ -50,6 +50,7 @@ import { UserHistory } from "./admin/UserHistory";
 import { UsersTable } from "./admin/UsersTable";
 import { DataFixes } from "./admin/DataFixes";
 import { Newsletter } from "./admin/Newsletter";
+import { EmailJobs } from "./admin/EmailJobs";
 import { Flyers } from "./admin/Flyers";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 import { PowerUsers } from "./admin/PowerUsers";
@@ -504,6 +505,13 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             Newsletter
           </Button>
           <Button
+            variant={activeTab === "emails" ? "default" : "ghost"}
+            onClick={() => handleTabChange("emails")}
+          >
+            <Mail className="w-4 h-4 mr-2" />
+            Emails
+          </Button>
+          <Button
             variant={activeTab === "tools" ? "default" : "ghost"}
             onClick={() => handleTabChange("tools")}
           >
@@ -844,6 +852,12 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
 
         {activeTab === "newsletter" && (
           <Newsletter
+            adminKey={adminKey}
+          />
+        )}
+
+        {activeTab === "emails" && (
+          <EmailJobs
             adminKey={adminKey}
           />
         )}

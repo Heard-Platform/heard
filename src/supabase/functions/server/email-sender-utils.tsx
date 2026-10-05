@@ -8,7 +8,6 @@ export const isEligibleEmailRecipient = (
   !!user &&
   !!user.email &&
   user.emailDigestsEnabled !== false &&
-  !user.isUnsubbedFromUpdates &&
   !user.isTestUser;
 
 export interface SendEmailParams {

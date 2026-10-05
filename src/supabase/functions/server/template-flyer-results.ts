@@ -21,7 +21,7 @@ import {
 
 export const FLYER_RESULTS_EMAIL_TYPE = "flyer_results";
 export const FLYER_RESULTS_LINK_SOURCE = "flyer_results_email";
-export const FLYER_RESULTS_SUBJECT = "Results are in: driverless Waymo cars in DC";
+export const FLYER_RESULTS_SUBJECT = "Latest results are in: driverless Waymo cars in DC";
 
 export interface FlyerResultsEmailData {
   flyerStatement: Statement;
@@ -110,7 +110,7 @@ export const generateFlyerResultsEmailHtml = (data: FlyerResultsEmailData): stri
       <tr>
         <td valign="middle" style="${MASCOT_CELL_STYLE}">${renderMascot(68)}</td>
         <td valign="middle">
-          <p style="${KICKER_STYLE}">Results are in</p>
+          <p style="${KICKER_STYLE}">Latest results are in</p>
           <h1 style="${TITLE_STYLE}">Here's how DC voted.</h1>
         </td>
       </tr>

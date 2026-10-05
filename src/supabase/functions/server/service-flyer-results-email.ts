@@ -8,13 +8,13 @@ import { ONE_DAY_MS } from "./time-utils.ts";
 import { createEmailLoginToken } from "./email-login-links.ts";
 import { FLYER_WELCOME_EMAIL_TYPE, generateFlyerWelcomeEmailHtml, getFlyerWelcomeSubject } from "./template-flyer-welcome.ts";
 import { FLYER_RESULTS_EMAIL_TYPE, FLYER_RESULTS_SUBJECT, generateFlyerResultsEmailHtml } from "./template-flyer-results.ts";
-import type { User, Vote } from "./types.tsx";
+import type { User, Vote, VoteType } from "./types.tsx";
 
 export const WAYMO_FLYER_STATEMENT_ID = "ecgld4qfclqmq8l9p82";
 const RESULTS_LOOKBACK_MS = 3 * ONE_DAY_MS;
 const MAX_OTHER_STATEMENTS = 3;
 
-type EmailableUser = User & { email: string };
+export type EmailableUser = User & { email: string };
 
 export const sendFlyerWelcomeEmail = async (user: EmailableUser, vote: Vote): Promise<void> => {
   const statement = await getStatement(WAYMO_FLYER_STATEMENT_ID);
@@ -48,45 +48,81 @@ const loadFlyerResults = async () => {
 
 const buildFlyerResultsEmail = async (
   user: EmailableUser,
-  vote: Vote,
+  voteType: VoteType,
   { statement, otherStatements }: Awaited<ReturnType<typeof loadFlyerResults>>,
 ): Promise<SendEmailParams> => ({
   to: user.email,
   subject: FLYER_RESULTS_SUBJECT,
   html: generateFlyerResultsEmailHtml({
     flyerStatement: statement,
-    vote: vote.voteType,
+    vote: voteType,
     otherStatements,
     userId: user.id,
     loginToken: await createEmailLoginToken(user.id),
   }),
 });
 
-/** Emails everyone whose flyer vote came in before the latest 7 PM and who hasn't gotten results yet. */
-export const sendFlyerResultsEmails = async (now = Date.now()) => {
+export interface FlyerResultsRecipient {
+  user: EmailableUser;
+  vote: Vote;
+}
+
+export interface RecipientStep {
+  label: string;
+  count: number;
+}
+
+export interface RecipientsAndSteps {
+  recipients: FlyerResultsRecipient[];
+  steps: RecipientStep[];
+}
+
+export const getRecipientsAndSteps = async (now: number): Promise<RecipientsAndSteps> => {
   const resultsTime = getLatestResultsTime(now);
-  const [votes, results] = await Promise.all([
-    getVotesForStatement(WAYMO_FLYER_STATEMENT_ID),
-    loadFlyerResults(),
-  ]);
-  const dueVotes = votes.filter((vote) =>
-    vote.flyerId &&
-    vote.timestamp < resultsTime &&
-    vote.timestamp >= resultsTime - RESULTS_LOOKBACK_MS
+  const votes = await getVotesForStatement(WAYMO_FLYER_STATEMENT_ID);
+  const flyerVotes = votes.filter((vote) => vote.flyerId);
+  const votesInWindow = flyerVotes.filter((vote) =>
+    vote.timestamp >= resultsTime - RESULTS_LOOKBACK_MS && vote.timestamp < resultsTime
   );
 
-  let sent = 0;
-  for (const vote of dueVotes) {
-    try {
-      const user = await getUser(vote.userId);
-      if (!user || !isEligibleEmailRecipient(user)) continue;
-      if (await hasSentEmail(user.id, FLYER_RESULTS_EMAIL_TYPE)) continue;
+  let withEmailCount = 0;
+  let eligibleCount = 0;
+  const recipients: FlyerResultsRecipient[] = [];
+  for (const vote of votesInWindow) {
+    const user = await getUser(vote.userId);
+    if (!user?.email) continue;
+    withEmailCount++;
+    if (!isEligibleEmailRecipient(user)) continue;
+    eligibleCount++;
+    if (await hasSentEmail(user.id, FLYER_RESULTS_EMAIL_TYPE)) continue;
+    recipients.push({ user, vote });
+  }
 
-      const email = await buildFlyerResultsEmail(user, vote, results);
+  const steps: RecipientStep[] = [
+    { label: "Votes on the Waymo statement", count: votes.length },
+    { label: "From a flyer", count: flyerVotes.length },
+    { label: "In the 3 days before the latest 7pm ET", count: votesInWindow.length },
+    { label: "Have an email address", count: withEmailCount },
+    { label: "Hasn't unsubscribed and not a test user", count: eligibleCount },
+    { label: "Not already sent results", count: recipients.length },
+  ];
+  return { recipients, steps };
+};
+
+export const getFlyerResultsRecipients = async (now: number): Promise<FlyerResultsRecipient[]> =>
+  (await getRecipientsAndSteps(now)).recipients;
+
+export const sendFlyerResultsEmails = async (now: number) => {
+  const [recipients, results] = await Promise.all([getFlyerResultsRecipients(now), loadFlyerResults()]);
+
+  let sent = 0;
+  for (const { user, vote } of recipients) {
+    try {
+      const email = await buildFlyerResultsEmail(user, vote.voteType, results);
       const wasSent = await sendMaxOnce(user.id, FLYER_RESULTS_EMAIL_TYPE, email);
       if (wasSent) sent++;
     } catch (error) {
-      console.error(`[flyer-results-email] Failed for user ${vote.userId}:`, error);
+      console.error(`[flyer-results-email] Failed for user ${user.id}:`, error);
     }
   }
   return { sent };
@@ -94,10 +130,8 @@ export const sendFlyerResultsEmails = async (now = Date.now()) => {
 
 export const sendTestFlyerResultsEmail = async (user: EmailableUser) => {
   const vote = await getVote(WAYMO_FLYER_STATEMENT_ID, user.id);
-  if (!vote) throw new Error(`User ${user.id} has no Waymo flyer vote`);
   const results = await loadFlyerResults();
-  const email = await buildFlyerResultsEmail(user, vote, results);
+  const email = await buildFlyerResultsEmail(user, vote?.voteType ?? "agree", results);
   const result = await sendEmailViaResend(email);
   if (!result.success) throw new Error(result.error);
-  return { emailId: result.emailId };
 };
