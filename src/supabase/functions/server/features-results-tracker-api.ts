@@ -4,7 +4,9 @@ import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, ge
 import { countRecords, selectAll } from "./db-utils.ts";
 import type { UserEvent } from "./types.tsx";
 import { toTimestamp } from "./time-utils.ts";
-import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getVotesPerSessionWeekly, getFlyerSwipeFunnel, getFlyerLandingFunnel } from "./feature-tracker-utils.ts";
+import { FLYER_WELCOME_EMAIL_TYPE } from "./template-flyer-welcome.ts";
+import { FLYER_RESULTS_EMAIL_TYPE } from "./template-flyer-results.ts";
+import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getVotesPerSessionWeekly, getFlyerSwipeFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
 
@@ -272,6 +274,13 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const flyerLandingFunnel = await getFlyerLandingFunnel();
     const flyerLandingFunnelSince = new Date("2026-10-01").getTime();
 
+    const flyerScreenFunnel = await getFlyerScreenFunnel();
+    const flyerScreenFunnelSince = new Date("2026-10-03").getTime();
+
+    const flyerWelcomeEmailsSent = await countRecords("sent_emails", { emailType: FLYER_WELCOME_EMAIL_TYPE });
+    const flyerResultsEmailsSent = await countRecords("sent_emails", { emailType: FLYER_RESULTS_EMAIL_TYPE });
+    const flyerEmailsSentSince = new Date("2026-10-03").getTime();
+
     const webDriverUsersSince = new Date("2026-03-03").getTime();
     const uniqueIpAddressesSince = new Date("2026-03-03").getTime();
     const uniqueFingerprintsSince = new Date("2026-03-03").getTime();
@@ -381,6 +390,11 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       flyerSwipeFunnelSince,
       flyerLandingFunnel,
       flyerLandingFunnelSince,
+      flyerScreenFunnel,
+      flyerScreenFunnelSince,
+      flyerWelcomeEmailsSent,
+      flyerResultsEmailsSent,
+      flyerEmailsSentSince,
     });
   } catch (error) {
     console.error("Error fetching feature stats:", error);

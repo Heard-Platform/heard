@@ -44,6 +44,7 @@ import { ClusterRecomputesChart } from "./feature-tracker/ClusterRecomputesChart
 import { VotesPerSessionChart } from "./feature-tracker/VotesPerSessionChart";
 import { FlyerSwipeFunnelChart } from "./feature-tracker/FlyerSwipeFunnelChart";
 import { FlyerLandingFunnelChart } from "./feature-tracker/FlyerLandingFunnelChart";
+import { FlyerScreenFunnelChart } from "./feature-tracker/FlyerScreenFunnelChart";
 import { OneBillionResults } from "./feature-tracker/OneBillionResults";
 import { FundingResults } from "./feature-tracker/FundingResults";
 import { OrganizersResults } from "./feature-tracker/OrganizersResults";
@@ -524,6 +525,34 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.flyerLandingFunnel.opened,
       getDate: (s) => s.flyerLandingFunnelSince,
       renderExtra: (s) => <FlyerLandingFunnelChart {...s.flyerLandingFunnel} />,
+    },
+    {
+      icon: Mail,
+      iconColor: "text-orange-600",
+      bgColor: "bg-orange-100",
+      title: "Flyer Screen Funnel",
+      description: "Unique users who saw the Waymo flyer screen, added their email, came back through a flyer email (welcome or 7pm results), and came back on 2+ days after adding their email by any route",
+      getValue: (s) => s.flyerScreenFunnel.opened,
+      getDate: (s) => s.flyerScreenFunnelSince,
+      renderExtra: (s) => <FlyerScreenFunnelChart {...s.flyerScreenFunnel} />,
+    },
+    {
+      icon: Mail,
+      iconColor: "text-orange-600",
+      bgColor: "bg-orange-100",
+      title: "Flyer Welcome Emails Sent",
+      description: "Welcome emails sent to Waymo flyer voters when they added their email",
+      getValue: (s) => s.flyerWelcomeEmailsSent,
+      getDate: (s) => s.flyerEmailsSentSince,
+    },
+    {
+      icon: Mail,
+      iconColor: "text-orange-600",
+      bgColor: "bg-orange-100",
+      title: "Flyer Results Emails Sent",
+      description: "7pm results emails sent to Waymo flyer voters",
+      getValue: (s) => s.flyerResultsEmailsSent,
+      getDate: (s) => s.flyerEmailsSentSince,
     },
   ]
 

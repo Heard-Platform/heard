@@ -230,6 +230,22 @@ export const getFlyerLandingEvents = async () => {
   );
 };
 
+export const getFlyerScreenEvents = async (types: string[]) =>
+  selectAll<UserEvent>(
+    "user_events",
+    {},
+    (q: any) => q.in("type", types).select("type, userId, createdAt"),
+  );
+
+export const getAppLoadEvents = async (userIds: string[]) =>
+  userIds.length === 0
+    ? []
+    : selectAll<UserEvent>(
+      "user_events",
+      { type: "initial_load" },
+      (q: any) => q.in("userId", userIds).select("userId, createdAt"),
+    );
+
 export const getOrganizersEvents = async () => {
   return selectAll<UserEvent>(
     "user_events",

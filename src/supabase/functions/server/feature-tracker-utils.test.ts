@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { averageVotesPerSessionByWeek, buildFlyerLandingFunnel, buildFlyerSwipeFunnel, countByWeek } from "./feature-tracker-utils.ts";
+import { averageVotesPerSessionByWeek, buildFlyerLandingFunnel, buildFlyerScreenFunnel, buildFlyerSwipeFunnel, countByWeek } from "./feature-tracker-utils.ts";
 
 Deno.test("countByWeek - empty input returns no weeks", () => {
   assertEquals(countByWeek([]), []);
@@ -130,4 +130,66 @@ Deno.test("buildFlyerLandingFunnel - ignores events without a user", () => {
   const events = [{ type: "flyer_landing_opened", userId: null }];
 
   assertEquals(buildFlyerLandingFunnel(events), { opened: 0, submitted: 0, lookedAround: 0 });
+});
+
+const OCT_3_NOON_ET = Date.parse("2026-10-03T16:00:00Z");
+const OCT_4_NOON_ET = Date.parse("2026-10-04T16:00:00Z");
+const OCT_4_LATE_ET = Date.parse("2026-10-05T02:00:00Z");
+const OCT_5_NOON_ET = Date.parse("2026-10-05T16:00:00Z");
+const OCT_6_NOON_ET = Date.parse("2026-10-06T16:00:00Z");
+
+Deno.test("buildFlyerScreenFunnel - counts unique users at each step", () => {
+  const events = [
+    { type: "flyer_screen_opened", userId: "u1", createdAt: 0 },
+    { type: "flyer_screen_opened", userId: "u2", createdAt: 0 },
+    { type: "flyer_screen_opened", userId: "u3", createdAt: 0 },
+    { type: "flyer_screen_email_added", userId: "u1", createdAt: 0 },
+    { type: "flyer_screen_email_added", userId: "u2", createdAt: 0 },
+    { type: "referred_by_flyer_welcome_email", userId: "u1", createdAt: OCT_4_NOON_ET },
+    { type: "referred_by_flyer_results_email", userId: "u1", createdAt: OCT_6_NOON_ET },
+    { type: "referred_by_flyer_results_email", userId: "u2", createdAt: OCT_6_NOON_ET },
+  ];
+
+  assertEquals(buildFlyerScreenFunnel(events, []), {
+    opened: 3,
+    emailAdded: 2,
+    returnedViaEmail: 2,
+    returnedOnMultipleDays: 0,
+  });
+});
+
+Deno.test("buildFlyerScreenFunnel - counts people who came back on 2+ Eastern days after adding their email, by any route", () => {
+  const events = [
+    { type: "flyer_screen_email_added", userId: "multi", createdAt: OCT_3_NOON_ET },
+    { type: "flyer_screen_email_added", userId: "same-day", createdAt: OCT_3_NOON_ET },
+    { type: "flyer_screen_email_added", userId: "before", createdAt: OCT_5_NOON_ET },
+  ];
+  const appLoads = [
+    { userId: "multi", createdAt: OCT_4_NOON_ET },
+    { userId: "multi", createdAt: OCT_6_NOON_ET },
+    // 10 PM Eastern is the next day in UTC, but the same day in DC.
+    { userId: "same-day", createdAt: OCT_4_NOON_ET },
+    { userId: "same-day", createdAt: OCT_4_LATE_ET },
+    // Loads before adding their email don't count.
+    { userId: "before", createdAt: OCT_4_NOON_ET },
+    { userId: "before", createdAt: OCT_6_NOON_ET },
+  ];
+
+  assertEquals(buildFlyerScreenFunnel(events, appLoads).returnedOnMultipleDays, 1);
+});
+
+Deno.test("buildFlyerScreenFunnel - ignores email returns from people who didn't add their email on the screen", () => {
+  const events = [
+    { type: "flyer_screen_email_added", userId: "screen-user", createdAt: 0 },
+    { type: "referred_by_flyer_results_email", userId: "screen-user", createdAt: OCT_4_NOON_ET },
+    { type: "referred_by_flyer_results_email", userId: "older-flyer-voter", createdAt: OCT_4_NOON_ET },
+  ];
+  const appLoads = [
+    { userId: "older-flyer-voter", createdAt: OCT_4_NOON_ET },
+    { userId: "older-flyer-voter", createdAt: OCT_6_NOON_ET },
+  ];
+
+  const funnel = buildFlyerScreenFunnel(events, appLoads);
+  assertEquals(funnel.returnedViaEmail, 1);
+  assertEquals(funnel.returnedOnMultipleDays, 0);
 });
