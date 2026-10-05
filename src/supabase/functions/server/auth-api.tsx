@@ -1,4 +1,4 @@
-import { deleteMagicLink, getEmailLoginLink, getMagicLink, getParsedKvData, getSession, getUser, saveMagicLink, saveSession, saveUserWithEmailIndex, getUserIdByEmail } from "./kv-utils.tsx";
+import { deleteMagicLink, getEmailLoginLink, getMagicLink, getParsedKvData, getSession, getUser, saveMagicLink, saveSession, saveUserWithEmailIndex, getUserIdByEmail, getVote } from "./kv-utils.tsx";
 import type { Session, User } from "./types.tsx";
 import { Context, Hono } from "npm:hono";
 import { getMagicLinkEmail } from "./email-templates.tsx";
@@ -7,6 +7,7 @@ import { sanitizeUser } from "./user-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { isValidEmail } from "./validation-utils.ts";
 import { insertAnalyticsEvent } from "./model-utils.ts";
+import { sendFlyerWelcomeEmail, WAYMO_FLYER_STATEMENT_ID } from "./service-flyer-results-email.ts";
 import {
   DUPLICATE_ACCOUNT_ERROR,
   notifyDevsOfDuplicateEmail,
@@ -509,7 +510,11 @@ export const attachEmailToAccount = async (
   user.emailDigestsEnabled = true;
   await saveUserAndEmail(user);
 
-  sendWelcomeEmail(normalizedEmail).catch((error) => {
+  const waymoFlyerVote = await getVote(WAYMO_FLYER_STATEMENT_ID, userId);
+  const welcomeEmail = waymoFlyerVote?.flyerId
+    ? sendFlyerWelcomeEmail({ ...user, email: normalizedEmail }, waymoFlyerVote)
+    : sendWelcomeEmail(normalizedEmail);
+  welcomeEmail.catch((error) => {
     console.error("Welcome email failed:", error);
   });
 
