@@ -1,4 +1,12 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
+
+const FLYER_RESULTS_TIME_ZONE = 'America/New_York';
+const FLYER_RESULTS_HOUR = 19;
+
+/** Flyer results go out at 7 PM Eastern; votes after that make the next day's email. */
+export function isAfterFlyerResultsTime(time: number = Date.now()): boolean {
+  return moment.tz(time, FLYER_RESULTS_TIME_ZONE).hour() >= FLYER_RESULTS_HOUR;
+}
 
 export function timeAgoShort(timestamp: number): string {
   const result = getTimeRemaining(Date.now(), timestamp);

@@ -14,7 +14,7 @@ const BUTTON_COLOR = "#B5401F";
 const INPUT_CLASS =
   "w-full rounded-xl border border-[#E3DDD1] bg-white px-4 py-3.5 text-base text-[#1C1B1F] outline-none placeholder:text-[#A8A298] focus:border-[#1C1B1F]";
 
-interface FlyerResultsSignupScreenProps {
+interface FlyerScanScreenProps {
   tagline: string;
   statementText: string;
   vote: FlyerVote;
@@ -23,12 +23,10 @@ interface FlyerResultsSignupScreenProps {
   /** Set when the viewer already has an account email, so we can skip asking for it. */
   accountEmail: string | null;
   emailFlow: EmailOtpFlow;
-  isSigningUp: boolean;
-  signupError: string | null;
-  onSignUpWithAccountEmail: () => void;
+  onLookAround: () => void;
 }
 
-export function FlyerResultsSignupScreen({
+export function FlyerScanScreen({
   tagline,
   statementText,
   vote,
@@ -36,10 +34,8 @@ export function FlyerResultsSignupScreen({
   areResultsTomorrow,
   accountEmail,
   emailFlow,
-  isSigningUp,
-  signupError,
-  onSignUpWithAccountEmail,
-}: FlyerResultsSignupScreenProps) {
+  onLookAround,
+}: FlyerScanScreenProps) {
   const isTriggered = useAnimationTrigger(TRIGGER_DELAY_MS);
   const fadeIn = (delayMs: number) => ({
     opacity: isTriggered ? 1 : 0,
@@ -85,22 +81,22 @@ export function FlyerResultsSignupScreen({
       </div>
 
       <div className="mt-6" style={fadeIn(400)}>
-        {accountEmail ? (
-          <AccountEmailForm
-            accountEmail={accountEmail}
-            isSubmitting={isSigningUp}
-            onSubmit={onSignUpWithAccountEmail}
-          />
-        ) : emailFlow.step === "otp" ? (
-          <CodeForm emailFlow={emailFlow} />
+        {!accountEmail ? (
+          <>
+            {emailFlow.step === "email" ? <EmailForm emailFlow={emailFlow} /> : <CodeForm emailFlow={emailFlow} />}
+            {emailFlow.error && <p className="mt-2 text-sm text-[#C2410C]">{emailFlow.error}</p>}
+            <p className="mt-3 text-center text-xs font-semibold text-[#1C1B1F]">
+              Just the results. No spam or selling your data.
+            </p>
+            <TOSText className="mt-2 text-center text-[11px] text-[#4A463F]" linkClassName="text-[#4A463F] underline" />
+          </>
         ) : (
-          <EmailForm emailFlow={emailFlow} isSubmitting={emailFlow.submitting || isSigningUp} />
+          <AccountEmailNote
+            accountEmail={accountEmail}
+            areResultsTomorrow={areResultsTomorrow}
+            onLookAround={onLookAround}
+          />
         )}
-        {(emailFlow.error || signupError) && (
-          <p className="mt-2 text-sm text-[#C2410C]">{emailFlow.error || signupError}</p>
-        )}
-        <p className="mt-3 text-center text-xs font-semibold text-[#1C1B1F]">Just the results. No spam or selling your data.</p>
-        <TOSText className="mt-2 text-center text-[11px] text-[#4A463F]" linkClassName="text-[#4A463F] underline" />
       </div>
     </div>
   );
@@ -124,7 +120,7 @@ function FormHeading({ children }: { children: ReactNode }) {
   return <h2 className="text-base font-bold text-[#1C1B1F]">{children}</h2>;
 }
 
-function EmailForm({ emailFlow, isSubmitting }: { emailFlow: EmailOtpFlow; isSubmitting: boolean }) {
+function EmailForm({ emailFlow }: { emailFlow: EmailOtpFlow }) {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     emailFlow.submitEmail();
@@ -141,30 +137,7 @@ function EmailForm({ emailFlow, isSubmitting }: { emailFlow: EmailOtpFlow; isSub
         value={emailFlow.email}
         onChange={(event) => emailFlow.setEmail(event.target.value)}
       />
-      <SubmitButton label="Send me the results" isSubmitting={isSubmitting} />
-    </form>
-  );
-}
-
-interface AccountEmailFormProps {
-  accountEmail: string;
-  isSubmitting: boolean;
-  onSubmit: () => void;
-}
-
-function AccountEmailForm({ accountEmail, isSubmitting, onSubmit }: AccountEmailFormProps) {
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault();
-    onSubmit();
-  };
-
-  return (
-    <form noValidate onSubmit={handleSubmit}>
-      <FormHeading>Can we send you the results?</FormHeading>
-      <p className="mt-1 text-sm text-[#4A463F]">
-        We'll send them to <strong className="text-[#1C1B1F]">{accountEmail}</strong>.
-      </p>
-      <SubmitButton label="Send me the results" isSubmitting={isSubmitting} />
+      <SubmitButton label="Send me the results" isSubmitting={emailFlow.submitting} />
     </form>
   );
 }
@@ -202,6 +175,30 @@ function CodeForm({ emailFlow }: { emailFlow: EmailOtpFlow }) {
         Use a different email
       </button>
     </form>
+  );
+}
+
+interface AccountEmailNoteProps {
+  accountEmail: string;
+  areResultsTomorrow: boolean;
+  onLookAround: () => void;
+}
+
+function AccountEmailNote({ accountEmail, areResultsTomorrow, onLookAround }: AccountEmailNoteProps) {
+  return (
+    <div className="text-center text-sm text-[#4A463F]">
+      <p>
+        You're signed in, so we'll email the results to <strong className="text-[#1C1B1F]">{accountEmail}</strong>{" "}
+        {areResultsTomorrow ? "tomorrow at 7pm" : "at 7pm"}.
+      </p>
+      <p className="mt-4">
+        Got some more time? Feel free to{" "}
+        <button className="underline underline-offset-2" onClick={onLookAround}>
+          look around
+        </button>
+        .
+      </p>
+    </div>
   );
 }
 

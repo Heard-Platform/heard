@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
-import { FlyerResultsSignupScreen } from "../components/flyer/results-signup/FlyerResultsSignupScreen";
+import { FlyerScanScreen } from "../components/flyer/results-signup/FlyerScanScreen";
 import { FlyerResultsThanksScreen } from "../components/flyer/results-signup/FlyerResultsThanksScreen";
 import type { FlyerVote } from "../components/flyer/FlyerVoteIntroCard";
 import { Button } from "../components/ui/button";
@@ -22,24 +22,24 @@ const VALID_CODE = "ABC123";
 const REQUEST_DELAY_MS = 800;
 const ACCOUNT_EMAIL = "neighbor@example.com";
 
-export function FlyerResultsSignupStory() {
+export function FlyerScanStory() {
   return (
     <StoryContainer
       title="Flyer Results Signup"
       description={`Waymo DC QR flyers: the vote is counted, results drop at 7pm ET, and we ask for an email to send them. Requests take ${REQUEST_DELAY_MS}ms. On the code step, ${VALID_CODE} logs in.`}
       variants={[
-        { id: "agreed", label: "Scanned Agree", children: <FlyerResultsSignupDemo scenario="agreed" /> },
-        { id: "disagreed", label: "Scanned Disagree", children: <FlyerResultsSignupDemo scenario="disagreed" /> },
-        { id: "after-7pm", label: "Scanned after 7pm", children: <FlyerResultsSignupDemo scenario="after-7pm" /> },
-        { id: "existing-email", label: "Existing email", children: <FlyerResultsSignupDemo scenario="existing-email" /> },
-        { id: "logged-in", label: "Already logged in", children: <FlyerResultsSignupDemo scenario="logged-in" /> },
-        { id: "thanks", label: "Thanks screen", children: <FlyerResultsSignupDemo scenario="thanks" /> },
+        { id: "agreed", label: "Scanned Agree", children: <FlyerScanDemo scenario="agreed" /> },
+        { id: "disagreed", label: "Scanned Disagree", children: <FlyerScanDemo scenario="disagreed" /> },
+        { id: "after-7pm", label: "Scanned after 7pm", children: <FlyerScanDemo scenario="after-7pm" /> },
+        { id: "existing-email", label: "Existing email", children: <FlyerScanDemo scenario="existing-email" /> },
+        { id: "logged-in", label: "Already logged in", children: <FlyerScanDemo scenario="logged-in" /> },
+        { id: "thanks", label: "Thanks screen", children: <FlyerScanDemo scenario="thanks" /> },
       ]}
     />
   );
 }
 
-function FlyerResultsSignupDemo({ scenario }: { scenario: Scenario }) {
+function FlyerScanDemo({ scenario }: { scenario: Scenario }) {
   const [replayKey, setReplayKey] = useState(0);
 
   return (
@@ -73,20 +73,12 @@ interface SignupHarnessProps {
 
 function SignupHarness({ vote, areResultsTomorrow, accountEmail, startOnThanks }: SignupHarnessProps) {
   const [isThanksShown, setIsThanksShown] = useState(startOnThanks);
-  const [isSigningUp, setIsSigningUp] = useState(false);
-
-  const signUp = async () => {
-    setIsSigningUp(true);
-    await wait(REQUEST_DELAY_MS);
-    setIsSigningUp(false);
-    setIsThanksShown(true);
-  };
-  const emailFlow = useEmailOtpFlow({ onComplete: signUp, sendWelcomeEmail: false });
+  const emailFlow = useEmailOtpFlow({ onComplete: () => setIsThanksShown(true) });
   const handleLookAround = () => console.log("[Story] look around");
 
   if (!isThanksShown) {
     return (
-      <FlyerResultsSignupScreen
+      <FlyerScanScreen
         tagline={TAGLINE}
         statementText={STATEMENT_TEXT}
         vote={vote}
@@ -94,9 +86,7 @@ function SignupHarness({ vote, areResultsTomorrow, accountEmail, startOnThanks }
         areResultsTomorrow={areResultsTomorrow}
         accountEmail={accountEmail}
         emailFlow={emailFlow}
-        isSigningUp={isSigningUp}
-        signupError={null}
-        onSignUpWithAccountEmail={signUp}
+        onLookAround={handleLookAround}
       />
     );
   }

@@ -50,6 +50,7 @@ import {
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { FlyerSwipeContainer, type FlyerCompleteReason } from "./components/flyer/FlyerSwipeContainer";
 import { FlyerLandingContainer } from "./components/flyer/landing/FlyerLandingContainer";
+import { FlyerScanContainer, type FlyerScan } from "./components/flyer/results-signup/FlyerScanContainer";
 import type { FlyerVoteTally } from "./components/flyer/landing/FlyerLandingScreen";
 import type { FlyerVote } from "./components/flyer/FlyerVoteIntroCard";
 import { FeatureFlags, isFeatureEnabled } from "./utils/constants/feature-flags";
@@ -136,6 +137,7 @@ function AppContent() {
     tally: FlyerVoteTally;
     flyerVote: FlyerVote;
   } | null>(null);
+  const [newFlyerScan, setNewFlyerScan] = useState<FlyerScan | null>(null);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
@@ -205,7 +207,14 @@ function AppContent() {
       startRoomJoin(response.room.id);
       const isPass = flyerData.vote === "pass";
       const flyerVote = flyerData.vote === "disagree" ? "disagree" : "agree";
-      if (isFeatureEnabled(FeatureFlags.CIVIC_FLYER_RESULTS) && !isPass) {
+      if (flyerData.flyerId === WAYMO_DC_ROOM_ID && !isPass) {
+        setNewFlyerScan({
+          roomId: response.room.id,
+          statementText: response.statementText,
+          voteCount: response.agreeCount + response.disagreeCount,
+          vote: flyerVote,  
+        });
+      } else if (isFeatureEnabled(FeatureFlags.CIVIC_FLYER_RESULTS) && !isPass) {
         setFlyerLanding({
           room: response.room,
           community: response.communityName,
@@ -270,6 +279,7 @@ function AppContent() {
     setQrScanResult(null);
     setFlyerSwipe(null);
     setFlyerLanding(null);
+    setNewFlyerScan(null);
   };
 
   const handleLogout = async () => {
@@ -639,7 +649,7 @@ function AppContent() {
     setIsJoiningAnonymously(false);
   };
 
-  const isInFlyerFlow = flyerSwipe !== null || flyerLanding !== null;
+  const isInFlyerFlow = flyerSwipe !== null || flyerLanding !== null || newFlyerScan !== null;
 
   useEffect(() => {
     if (!user || !hasCheckedUrl || isInFlyerFlow) return;
@@ -883,6 +893,18 @@ function AppContent() {
           className="w-8 h-8 heard-spinner"
         />
       </div>
+    );
+  }
+
+  if (newFlyerScan) {
+    return (
+      <>
+        <FlyerScanContainer
+          scan={newFlyerScan}
+          onComplete={handleFlyerComplete}
+        />
+        <Toaster />
+      </>
     );
   }
 

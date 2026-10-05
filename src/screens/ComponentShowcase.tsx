@@ -19,7 +19,7 @@ import { QRScanResultDialogStory } from "../stories/QRScanResultDialog.story";
 import { FlyerSwipeScreenStory } from "../stories/FlyerSwipeScreen.story";
 import { FlyerSignUpStory } from "../stories/FlyerSignUp.story";
 import { FlyerLandingStory } from "../stories/FlyerLanding.story";
-import { FlyerResultsSignupStory } from "../stories/FlyerResultsSignup.story";
+import { FlyerScanStory } from "../stories/FlyerScan.story";
 import { YouTubeCardStory } from "../stories/YouTubeCard.story";
 import { IntroModalStory } from "../stories/IntroModal.story";
 import { DemographicsCardStory } from "../stories/DemographicsCard.story";
@@ -242,7 +242,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <FlyerLandingStory />
               </TabsContent>
               <TabsContent value="flyer-results-signup">
-                <FlyerResultsSignupStory />
+                <FlyerScanStory />
               </TabsContent>
               <TabsContent value="youtube-card">
                 <YouTubeCardStory />
