@@ -67,6 +67,14 @@ export const parseQueryParams = (): QueryParams => {
   return params
 }
 
+export const createParamUrl = (path: string, params: QueryParams): string => {
+  const url = new URL(path, window.location.origin)
+  for (const [name, value] of Object.entries(params) as [QueryParamName, string][]) {
+    url.searchParams.set(QUERY_PARAMS[name], value)
+  }
+  return url.toString()
+}
+
 export const removeQueryParams = (...names: QueryParamName[]) => {
   const url = new URL(window.location.href)
   names.forEach((name) => url.searchParams.delete(QUERY_PARAMS[name]))

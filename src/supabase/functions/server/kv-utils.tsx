@@ -22,6 +22,7 @@ import {
   UserActivityRecord,
   AskTheDataRecord,
 } from "./types.tsx";
+import { throwIfNotFound } from "./model-utils.js";
 
 /**
  * Safely parses JSON data from KV store
@@ -129,6 +130,9 @@ export const userKeyFn = (user: User) =>
 export const getUser = async (userId: string) => {
   return getParsedKvData<User>(`user:${userId}`);
 };
+
+export const getUserOrThrow = async (userId: string): Promise<User> =>
+  throwIfNotFound(await getUser(userId), "User");
 
 export const getAllUsers = async (): Promise<User[]> => {
   return getAllRecords<User>("user:");

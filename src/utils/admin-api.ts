@@ -287,6 +287,13 @@ class AdminApiClient extends BaseApiClient {
     );
   }
 
+  async createLoginToken(adminKey: string, userId: string) {
+    return this.request<{ token: string }>(`/admin/user/${userId}/login-token`, {
+      method: "POST",
+      headers: { "X-Admin-Key": adminKey },
+    });
+  }
+
   async updateSubHeard(
     subHeardName: string,
     update: Partial<SubHeard>,
