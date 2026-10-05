@@ -18,7 +18,6 @@ const TAGLINE = "DC's place for community conversations";
 const STATEMENT_TEXT = "I support Waymo in DC.";
 const VALID_CODE = "ABC123";
 const REQUEST_DELAY_MS = 800;
-const ACCOUNT_EMAIL = "neighbor@example.com";
 
 const tally = (agreeCount: number, disagreeCount: number): FlyerVoteTally => ({
   statementText: STATEMENT_TEXT,
@@ -36,7 +35,7 @@ interface Scenario {
   tally: FlyerVoteTally;
   areResultsTomorrow?: boolean;
   isExistingEmail?: boolean;
-  accountEmail?: string;
+  isSignedIn?: boolean;
   startOnThanks?: boolean;
 }
 
@@ -48,7 +47,7 @@ const SCENARIOS: Record<string, Scenario> = {
   "after-7pm": { label: "After 7pm", vote: "agree", tally: TOO_CLOSE_TALLY, areResultsTomorrow: true },
   disagreed: { label: "Disagreed", vote: "disagree", tally: MINORITY_TALLY },
   "existing-email": { label: "Existing email", vote: "agree", tally: MAJORITY_TALLY, isExistingEmail: true },
-  "logged-in": { label: "Already logged in", vote: "agree", tally: MAJORITY_TALLY, accountEmail: ACCOUNT_EMAIL },
+  "logged-in": { label: "Already logged in", vote: "agree", tally: MAJORITY_TALLY, isSignedIn: true },
   thanks: { label: "Thanks screen", vote: "agree", tally: MAJORITY_TALLY, startOnThanks: true },
 };
 
@@ -98,7 +97,7 @@ function ScanHarness({ scenario }: { scenario: Scenario }) {
         tally={scenario.tally}
         vote={scenario.vote}
         areResultsTomorrow={areResultsTomorrow}
-        accountEmail={scenario.accountEmail ?? null}
+        isSignedIn={scenario.isSignedIn ?? false}
         emailFlow={emailFlow}
         onLookAround={handleLookAround}
       />
@@ -110,7 +109,7 @@ function ScanHarness({ scenario }: { scenario: Scenario }) {
 
 function buildOverrides(scenario: Scenario) {
   return {
-    user: { ...mockUser, isAnonymous: !scenario.accountEmail },
+    user: { ...mockUser, isAnonymous: !scenario.isSignedIn },
     anonAddEmailAndLogin: async (email: string) => {
       console.log("[Story] anonAddEmailAndLogin", { email });
       await wait(REQUEST_DELAY_MS);

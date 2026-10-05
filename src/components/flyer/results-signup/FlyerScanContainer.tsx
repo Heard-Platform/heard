@@ -30,7 +30,7 @@ export function FlyerScanContainer({
   const { user } = useDebateSession();
   const [areResultsTomorrow] = useState(isAfterFlyerResultsTime);
   // Read once on arrival so the screen doesn't switch to the note when a new email is added.
-  const [accountEmail] = useState(() => (user && !user.isAnonymous && user.email) || null);
+  const [isSignedIn] = useState(() => !!user?.email);
   const [isEmailAdded, setIsEmailAdded] = useState(false);
   const track = (type: string) => api.trackEvent(type, roomId);
 
@@ -59,7 +59,7 @@ export function FlyerScanContainer({
             tally={scan.tally}
             vote={scan.vote}
             areResultsTomorrow={areResultsTomorrow}
-            accountEmail={accountEmail}
+            isSignedIn={isSignedIn}
             emailFlow={emailFlow}
             onLookAround={handleLookAround}
           />

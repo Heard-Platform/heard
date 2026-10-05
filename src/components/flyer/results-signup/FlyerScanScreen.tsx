@@ -19,8 +19,8 @@ interface FlyerScanScreenProps {
   tally: FlyerVoteTally;
   vote: FlyerVote;
   areResultsTomorrow: boolean;
-  /** Set when the viewer already has an account email, so we can skip asking for it. */
-  accountEmail: string | null;
+  /** True when the viewer already has an account email, so we can skip asking for it. */
+  isSignedIn: boolean;
   emailFlow: EmailOtpFlow;
   onLookAround: () => void;
 }
@@ -30,7 +30,7 @@ export function FlyerScanScreen({
   tally,
   vote,
   areResultsTomorrow,
-  accountEmail,
+  isSignedIn,
   emailFlow,
   onLookAround,
 }: FlyerScanScreenProps) {
@@ -80,7 +80,7 @@ export function FlyerScanScreen({
       </div>
 
       <div className="mt-6" style={fadeIn(450)}>
-        {!accountEmail ? (
+        {!isSignedIn ? (
           <>
             {emailFlow.step === "email" ? (
               <EmailForm emailFlow={emailFlow} areResultsTomorrow={areResultsTomorrow} />
@@ -96,7 +96,6 @@ export function FlyerScanScreen({
           </>
         ) : (
           <AlreadySignedInNote
-            accountEmail={accountEmail}
             areResultsTomorrow={areResultsTomorrow}
             onLookAround={onLookAround}
           />
@@ -178,17 +177,15 @@ function CodeForm({ emailFlow }: { emailFlow: EmailOtpFlow }) {
 }
 
 interface AlreadySignedInNoteProps {
-  accountEmail: string;
   areResultsTomorrow: boolean;
   onLookAround: () => void;
 }
 
-function AlreadySignedInNote({ accountEmail, areResultsTomorrow, onLookAround }: AlreadySignedInNoteProps) {
+function AlreadySignedInNote({ areResultsTomorrow, onLookAround }: AlreadySignedInNoteProps) {
   return (
     <div className="text-center text-sm text-[#4A463F]">
       <p>
-        You're signed in, so we'll email the results to{" "}
-        <strong className="text-[#1C1B1F]">{accountEmail}</strong> <ResultsTime areResultsTomorrow={areResultsTomorrow} />.
+        You're signed in, so we'll email you the results <ResultsTime areResultsTomorrow={areResultsTomorrow} />.
       </p>
       <p className="mt-4">
         Got some more time? Feel free to{" "}
