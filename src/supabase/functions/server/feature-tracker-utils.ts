@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { getSentEmails } from "./kv-utils.tsx";
-import { getEventsOfType, getAllRoomViews, getFlyerSwipeEvents, getFlyerLandingEvents, getFlyerScreenEvents, getAppLoadEvents } from "./model-utils.ts";
+import { countEventsOfType, getEventsOfType, getAllRoomViews, getFlyerSwipeEvents, getFlyerLandingEvents, getFlyerScreenEvents, getAppLoadEvents } from "./model-utils.ts";
 import { FLYER_RESULTS_LINK_SOURCE } from "./template-flyer-results.ts";
 import { FLYER_WELCOME_LINK_SOURCE } from "./template-flyer-welcome.ts";
 import {
@@ -15,8 +15,7 @@ import {
 import { getEasternDate, toTimestamp } from "./time-utils.ts";
 import { selectAllWithoutLimit } from "./db-utils.ts";
 import { CLUSTER_NAMING_ENDPOINT } from "./cluster-naming.ts";
-import { groupRecentSessionsByWeek, startOfUtcWeek, VoteTiming, WEEK_MS } from "./stats-utils.ts";
-import { getAllVotes } from "./kv-utils.tsx";
+import { startOfUtcWeek, WEEK_MS } from "./stats-utils.ts";
 
 const RESPONSE_VOTES_NOTIF_RETURN_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -25,14 +24,14 @@ export const getResponseVotesNotifStats = async (): Promise<{
   buttonClicks: number;
   returnedWithinWeek: number;
 }> => {
-  const sentEmails = (await getSentEmails()).filter(
+  const [allSentEmails, buttonClicks, allRoomViews] = await Promise.all([
+    getSentEmails(),
+    countEventsOfType(RESPONSE_VOTES_NOTIF_BUTTON_CLICKED_EVENT),
+    getAllRoomViews(),
+  ]);
+  const sentEmails = allSentEmails.filter(
     (email) => email.emailType === RESPONSE_VOTES_NOTIF_EMAIL_TYPE,
   );
-  const buttonClicks = (
-    await getEventsOfType(RESPONSE_VOTES_NOTIF_BUTTON_CLICKED_EVENT)
-  ).length;
-
-  const allRoomViews = await getAllRoomViews();
   const lastSeenAtByUserRoom = new Map<string, number>();
   for (const view of allRoomViews) {
     lastSeenAtByUserRoom.set(`${view.userId}:${view.roomId}`, view.lastSeenAt);
@@ -78,17 +77,17 @@ export const getClusterStabilityStats = async (now: number = Date.now()): Promis
 }> => {
   const [recomputes, kept, created] = await Promise.all([
     getEventsOfType(CLUSTER_RECOMPUTE_EVENT),
-    getEventsOfType(CLUSTER_IDENTITY_KEPT_EVENT),
-    getEventsOfType(CLUSTER_IDENTITY_NEW_EVENT),
+    countEventsOfType(CLUSTER_IDENTITY_KEPT_EVENT),
+    countEventsOfType(CLUSTER_IDENTITY_NEW_EVENT),
   ]);
   const recomputeTimestamps = recomputes.map((e) => toTimestamp(e.createdAt));
-  const identityTotal = kept.length + created.length;
+  const identityTotal = kept + created;
 
   return {
     recomputesLast7Days: recomputeTimestamps.filter((ts) => ts >= now - WEEK_MS).length,
     recomputesWeekly: countByWeek(recomputeTimestamps),
     identityKeptPercent:
-      identityTotal > 0 ? Math.round((kept.length / identityTotal) * 1000) / 10 : null,
+      identityTotal > 0 ? Math.round((kept / identityTotal) * 1000) / 10 : null,
   };
 };
 
@@ -99,28 +98,6 @@ export const getClusterNamingTokens = async (): Promise<number> => {
     "createdAt",
   );
   return calls.reduce((sum, call) => sum + call.totalTokens, 0);
-};
-
-export function averageVotesPerSessionByWeek(
-  votes: VoteTiming[],
-  now: number,
-): { weekStart: string; averageVotes: number; sessions: number }[] {
-  return _(groupRecentSessionsByWeek(votes, now))
-    .map((weekSessions, week) => ({
-      weekStart: new Date(Number(week)).toISOString().slice(0, 10),
-      averageVotes: _.round(_.meanBy(weekSessions, "votes"), 1),
-      sessions: weekSessions.length,
-    }))
-    .sortBy("weekStart")
-    .value();
-}
-
-export const getVotesPerSessionWeekly = async (now: number = Date.now()) => {
-  const votes = await getAllVotes();
-  return averageVotesPerSessionByWeek(
-    votes.map((v) => ({ userId: v.userId, timestamp: toTimestamp(v.timestamp) })),
-    now,
-  );
 };
 
 const FLYER_SWIPE_SAVED_EVENT = "flyer_results_get_results_clicked";

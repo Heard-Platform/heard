@@ -267,6 +267,9 @@ export const getEventsOfType = async (type: string): Promise<UserEvent[]> => {
   return selectAll<UserEvent>("user_events", { type });
 };
 
+export const countEventsOfType = async (type: string): Promise<number> =>
+  countRecords("user_events", { type });
+
 export const getRecentUserEvents = async (sinceTs: number): Promise<UserEvent[]> =>
   selectAll<UserEvent>(
     "user_events",
