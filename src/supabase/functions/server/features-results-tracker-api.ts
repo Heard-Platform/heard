@@ -1,20 +1,104 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers, getAllAskTheDataRecords } from "./kv-utils.tsx";
-import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, getEventsOfType, getCommunityTeaserEvents } from "./model-utils.ts";
-import { countRecords, selectAll } from "./db-utils.ts";
+import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, countEventsOfType, getCommunityTeaserEvents } from "./model-utils.ts";
+import { countRecords } from "./db-utils.ts";
 import type { UserEvent } from "./types.tsx";
 import { toTimestamp } from "./time-utils.ts";
 import { FLYER_WELCOME_EMAIL_TYPE } from "./template-flyer-welcome.ts";
 import { FLYER_RESULTS_EMAIL_TYPE } from "./template-flyer-results.ts";
-import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getVotesPerSessionWeekly, getFlyerSwipeFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel } from "./feature-tracker-utils.ts";
+import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
 
 app.get("/make-server-f1a393b4/stats/features", async (c) => {
   try {
-    const users = await getAllRealUsers();
+    const [
+      users,
+      webDriverUserList,
+      flyerEmailList,
+      userReportList,
+      phoneSubmissions,
+      flyerScanList,
+      roomViews,
+      roomFollows,
+      certifyCardEvents,
+      flyerResultsClickedUserIds,
+      llmApiCalls,
+      ggwashPublished,
+      ggwashRejected,
+      ggwashPending,
+      modInvitesAccepted,
+      verifyHumanShown,
+      verifyHumanClicked,
+      roomAnalyticsOpened,
+      cohostInviteAccepted,
+      oneBillionEventRows,
+      fundingEventRows,
+      organizersEventRows,
+      askTheDataRecords,
+      communityTeaserEventRows,
+      subscribeUpdatesClicked,
+      voteSwingSeen,
+      voteSwingShareClicked,
+      newPostButtonTapped,
+      sessionExpiredRecovered,
+      sessionExpiryBypassed,
+      sessionExpiryBypassedUserIds,
+      responseVotesNotifStats,
+      clusterStabilityStats,
+      clusterNamingTokens,
+      anonResponseTripwireShown,
+      anonResponseTripwireEmailSubmitted,
+      flyerSwipeFunnel,
+      flyerLandingFunnel,
+      flyerScreenFunnel,
+      flyerWelcomeEmailsSent,
+      flyerResultsEmailsSent,
+    ] = await Promise.all([
+      getAllRealUsers(),
+      getWebDriverUsers(),
+      getFlyerEmails(),
+      getUserReports(),
+      countRecords("phone_submissions"),
+      getFlyerScans(),
+      countRecords("room_views"),
+      countRecords("room_follows"),
+      getCertifyCardEvents(),
+      getUniqueUserIdsForEvent("flyer_results_get_results_clicked"),
+      countRecords("llm_api_calls"),
+      countRecords("scraped_items", { source: "ggwash", status: "published" }),
+      countRecords("scraped_items", { source: "ggwash", status: "rejected" }),
+      countRecords("scraped_items", { source: "ggwash", status: "scraped" }),
+      countEventsOfType("mod_invite_accepted"),
+      countEventsOfType("verify_human_shown"),
+      countEventsOfType("verify_human_clicked"),
+      countEventsOfType("room_analytics_opened"),
+      countEventsOfType("cohost_invite_accepted"),
+      getOneBillionEvents(),
+      getFundingEvents(),
+      getOrganizersEvents(),
+      getAllAskTheDataRecords(),
+      getCommunityTeaserEvents(),
+      countEventsOfType("subscribe_updates_clicked"),
+      countEventsOfType("vote_swing_seen"),
+      countEventsOfType("vote_swing_share_clicked"),
+      countEventsOfType("new_post_button_tapped"),
+      countEventsOfType("session_expired_recovered"),
+      countEventsOfType("session_expiry_bypassed"),
+      getUniqueUserIdsForEvent("session_expiry_bypassed"),
+      getResponseVotesNotifStats(),
+      getClusterStabilityStats(),
+      getClusterNamingTokens(),
+      countEventsOfType("anon_response_tripwire_shown"),
+      countEventsOfType("anon_response_tripwire_submitted"),
+      getFlyerSwipeFunnel(),
+      getFlyerLandingFunnel(),
+      getFlyerScreenFunnel(),
+      countRecords("sent_emails", { emailType: FLYER_WELCOME_EMAIL_TYPE }),
+      countRecords("sent_emails", { emailType: FLYER_RESULTS_EMAIL_TYPE }),
+    ]);
 
-    const webDriverUsers = (await getWebDriverUsers()).length;
+    const webDriverUsers = webDriverUserList.length;
 
     const uniqueIpAddresses = new Set(
       users
@@ -42,9 +126,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       u => u.privacyPolicyAgreedToAt
     ).length;
     
-    const flyerEmails = (await getFlyerEmails()).length;
+    const flyerEmails = flyerEmailList.length;
     
-    const userReports = (await getUserReports()).length;
+    const userReports = userReportList.length;
     
     const phoneVerifiedUsers = users.filter(
       u => !u.isAnonymous && u.phoneVerified === true
@@ -68,12 +152,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
 
     const avatarAnimalData = { counts: avatarAnimalCounts };
 
-    const phoneSubmissions = await countRecords("phone_submissions");
-    const flyerScans = (await getFlyerScans()).length;
-    const roomViews = await countRecords("room_views");
-    const roomFollows = await countRecords("room_follows");
+    const flyerScans = flyerScanList.length;
 
-    const certifyCardEvents = await getCertifyCardEvents();
     const countCertifyCardEvents = (events: UserEvent[]) => ({
       shown: events.filter((row) => row.type === "certify_card_shown").length,
       emailSubmitted: events.filter((row) => row.type === "certify_card_email_submitted").length,
@@ -93,31 +173,21 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
         ...countCertifyCardEvents(certifyCardMonthlyBuckets[month]),
       }));
 
-    const flyerResultsClicked = (await getUniqueUserIdsForEvent("flyer_results_get_results_clicked")).size;
+    const flyerResultsClicked = flyerResultsClickedUserIds.size;
     const flyerResultsClickedSince = new Date("2026-05-28").getTime();
 
-    const llmApiCalls = await countRecords("llm_api_calls");
     const llmApiCallsSince = new Date("2026-06-04").getTime();
 
-    const ggwashPublished = await countRecords("scraped_items", { source: "ggwash", status: "published" });
-    const ggwashRejected = await countRecords("scraped_items", { source: "ggwash", status: "rejected" });
-    const ggwashPending = await countRecords("scraped_items", { source: "ggwash", status: "scraped" });
     const ggwashSince = new Date("2026-06-20").getTime();
 
-    const modInvitesAccepted = (await getEventsOfType("mod_invite_accepted")).length;
     const modInvitesAcceptedSince = new Date("2026-06-29").getTime();
 
-    const verifyHumanShown = (await getEventsOfType("verify_human_shown")).length;
-    const verifyHumanClicked = (await getEventsOfType("verify_human_clicked")).length;
     const verifyHumanShownSince = new Date("2026-09-22").getTime();
 
-    const roomAnalyticsOpened = (await getEventsOfType("room_analytics_opened")).length;
     const roomAnalyticsOpenedSince = new Date("2026-09-01").getTime();
 
-    const cohostInviteAccepted = (await selectAll("user_events", { type: "cohost_invite_accepted" })).length;
     const cohostInviteAcceptedSince = new Date("2026-06-29").getTime();
 
-    const oneBillionEventRows = await getOneBillionEvents();
     const realNonDevUserIds = new Set(
       users.filter((u) => !u.isDeveloper).map((u) => u.id),
     );
@@ -134,7 +204,6 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       clickCopy: oneBillionCounts["one_billion_click_copy"] ?? 0,
     };
 
-    const fundingEventRows = await getFundingEvents();
     const fundingCounts: Record<string, number> = {};
     const fundingUserSets: Record<string, Set<string>> = {};
     for (const row of fundingEventRows) {
@@ -185,7 +254,6 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     };
     const fundingEventsSince = new Date("2026-06-16").getTime();
 
-    const organizersEventRows = await getOrganizersEvents();
     const organizersCounts: Record<string, number> = {};
     const organizersUserSets: Record<string, Set<string>> = {};
     for (const row of organizersEventRows) {
@@ -225,60 +293,42 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     };
     const organizersEventsSince = new Date("2026-07-17").getTime();
 
-    const askTheDataQuestions = (await getAllAskTheDataRecords()).length;
+    const askTheDataQuestions = askTheDataRecords.length;
     const askTheDataQuestionsSince = new Date("2026-07-01").getTime();
 
-    const communityTeaserEvents = (await getCommunityTeaserEvents()).length;
+    const communityTeaserEvents = communityTeaserEventRows.length;
     const communityTeaserEventsSince = new Date("2026-08-19").getTime();
 
-    const subscribeUpdatesClicked = (await getEventsOfType("subscribe_updates_clicked")).length;
     const subscribeUpdatesClickedSince = new Date("2026-09-09").getTime();
 
-    const voteSwingSeen = (await getEventsOfType("vote_swing_seen")).length;
     const voteSwingSeenSince = new Date("2026-09-11").getTime();
-    const voteSwingShareClicked = (await getEventsOfType("vote_swing_share_clicked")).length;
     const voteSwingShareClickedSince = new Date("2026-09-11").getTime();
 
-    const newPostButtonTapped = (await getEventsOfType("new_post_button_tapped")).length;
     const newPostButtonTappedSince = new Date("2026-09-14").getTime();
 
-    const sessionExpiredRecovered = (await getEventsOfType("session_expired_recovered")).length;
     const sessionExpiredRecoveredSince = new Date("2026-09-17").getTime();
 
-    const sessionExpiryBypassed = (await getEventsOfType("session_expiry_bypassed")).length;
-    const sessionExpiryBypassedUsers = (await getUniqueUserIdsForEvent("session_expiry_bypassed")).size;
+    const sessionExpiryBypassedUsers = sessionExpiryBypassedUserIds.size;
     const sessionExpiryBypassedSince = new Date("2026-09-18").getTime();
 
-    const responseVotesNotifStats = await getResponseVotesNotifStats();
     const responseVotesNotifEmailsSent = responseVotesNotifStats.emailsSent;
     const responseVotesNotifEmailsSentSince = new Date("2026-09-16").getTime();
     const responseVotesNotifButtonClicks = responseVotesNotifStats.buttonClicks;
     const responseVotesNotifReturnedWithinWeek = responseVotesNotifStats.returnedWithinWeek;
 
-    const clusterStabilityStats = await getClusterStabilityStats();
     const clusterRecomputesSince = new Date("2026-09-28").getTime();
 
-    const clusterNamingTokens = await getClusterNamingTokens();
     const clusterNamingTokensSince = new Date("2026-09-28").getTime();
 
-    const votesPerSessionWeekly = await getVotesPerSessionWeekly();
-    const votesPerSessionSince = new Date("2026-09-29").getTime();
 
-    const anonResponseTripwireShown = (await getEventsOfType("anon_response_tripwire_shown")).length;
-    const anonResponseTripwireEmailSubmitted = (await getEventsOfType("anon_response_tripwire_submitted")).length;
     const anonResponseTripwireSince = new Date("2026-09-21").getTime();
 
-    const flyerSwipeFunnel = await getFlyerSwipeFunnel();
     const flyerSwipeFunnelSince = new Date("2026-09-30").getTime();
 
-    const flyerLandingFunnel = await getFlyerLandingFunnel();
     const flyerLandingFunnelSince = new Date("2026-10-01").getTime();
 
-    const flyerScreenFunnel = await getFlyerScreenFunnel();
     const flyerScreenFunnelSince = new Date("2026-10-03").getTime();
 
-    const flyerWelcomeEmailsSent = await countRecords("sent_emails", { emailType: FLYER_WELCOME_EMAIL_TYPE });
-    const flyerResultsEmailsSent = await countRecords("sent_emails", { emailType: FLYER_RESULTS_EMAIL_TYPE });
     const flyerEmailsSentSince = new Date("2026-10-03").getTime();
 
     const webDriverUsersSince = new Date("2026-03-03").getTime();
@@ -376,8 +426,6 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       clusterIdentityKeptPercent: clusterStabilityStats.identityKeptPercent,
       clusterNamingTokens,
       clusterNamingTokensSince,
-      votesPerSessionWeekly,
-      votesPerSessionSince,
       sessionExpiredRecovered,
       sessionExpiredRecoveredSince,
       sessionExpiryBypassed,

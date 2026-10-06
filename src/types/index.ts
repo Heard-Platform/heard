@@ -734,8 +734,6 @@ export interface FeatureResults {
   clusterIdentityKeptPercent: number | null;
   clusterNamingTokens: number;
   clusterNamingTokensSince: number;
-  votesPerSessionWeekly: { weekStart: string; averageVotes: number; sessions: number }[];
-  votesPerSessionSince: number;
   sessionExpiredRecovered: number;
   sessionExpiredRecoveredSince: number;
   sessionExpiryBypassed: number;
