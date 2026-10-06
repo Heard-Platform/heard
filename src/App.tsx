@@ -67,10 +67,6 @@ import { toast } from "sonner@2.0.3";
 const KALORAMA_COMMUNITIES = ["kalorama-park", "dupont-circle-neighborhoods", "washington-dc"];
 const LA_COMMUNITIES = ["los-angeles"];
 
-const WAYMO_DUPONT_ROOM_ID = "jhxaoh1a3bmq2fflpx";
-const WAYMO_DUPONT_STATEMENT_ID = "0d3m3yflnlc8mq2fflre";
-
-
 const I_LOVE_CIVTECH_FLYER_ID = "gv7kmooa0lmom3pn2m";
 const I_LOVE_CIVTECH_STATEMENT_ID = "jg46pxp4fsmom3pn3c";
 
@@ -487,7 +483,7 @@ function AppContent() {
                           : isDcRoute
                             ? "0tlal5afi6mlmpbckaso"
                             : isWaymoRoute
-                              ? WAYMO_DUPONT_ROOM_ID
+                              ? WAYMO_DC_ROOM_ID
                               : isWaymoDcRoute
                                 ? WAYMO_DC_ROOM_ID
                                 : isCongestionRoute
