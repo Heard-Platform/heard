@@ -1,6 +1,7 @@
 import { getAllRealUsers, getSentEmails } from "./kv-utils.tsx";
 import { User } from "./types.tsx";
 import { hasSentEmail, recordSentEmail } from "./model-utils.ts";
+import { API_URL_PREFIX } from "./constants.tsx";
 
 export const isEligibleEmailRecipient = (
   user: User | undefined,
@@ -14,6 +15,7 @@ export interface SendEmailParams {
   to: string;
   subject: string;
   html: string;
+  headers?: Record<string, string>;
 }
 
 export interface SendEmailResult {
@@ -21,6 +23,11 @@ export interface SendEmailResult {
   emailId?: string;
   error?: string;
 }
+
+export const getUnsubscribeHeaders = (userId: string): Record<string, string> => ({
+  "List-Unsubscribe": `<${Deno.env.get("SUPABASE_URL")}/functions/v1${API_URL_PREFIX}/unsubscribe?userId=${userId}>`,
+  "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+});
 
 export const sendEmailViaResend = async (
   params: SendEmailParams,
@@ -47,6 +54,7 @@ export const sendEmailViaResend = async (
           to: [params.to],
           subject: params.subject,
           html: params.html,
+          headers: params.headers,
         }),
       },
     );

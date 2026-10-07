@@ -1,7 +1,7 @@
 import { filterVisibleStatements, getStatement, getUser, getVote, getVotesForStatement } from "./kv-utils.tsx";
 import { getUsableStatementsForRoom } from "./room-utils.ts";
 import { getOpinionatedVoteCount } from "./statement-utils.tsx";
-import { isEligibleEmailRecipient, sendEmailViaResend, sendMaxOnce, type SendEmailParams } from "./email-sender-utils.tsx";
+import { getUnsubscribeHeaders, isEligibleEmailRecipient, sendEmailViaResend, sendMaxOnce, type SendEmailParams } from "./email-sender-utils.tsx";
 import { hasSentEmail } from "./model-utils.ts";
 import { getLatestResultsTime, isAfterRevealTime } from "./flyer-results-time.ts";
 import { ONE_DAY_MS } from "./time-utils.ts";
@@ -33,6 +33,7 @@ export const sendFlyerWelcomeEmail = async (user: EmailableUser, vote: Vote): Pr
       userId: user.id,
       loginToken,
     }),
+    headers: getUnsubscribeHeaders(user.id),
   });
 };
 
@@ -60,6 +61,7 @@ const buildFlyerResultsEmail = async (
     userId: user.id,
     loginToken: await createEmailLoginToken(user.id),
   }),
+  headers: getUnsubscribeHeaders(user.id),
 });
 
 export interface FlyerResultsRecipient {

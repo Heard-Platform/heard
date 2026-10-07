@@ -8,7 +8,9 @@ app.use("*", cors());
 
 app.post("/make-server-f1a393b4/unsubscribe", async (c) => {
   try {
-    const { userId } = await c.req.json();
+    const oneClickUnsubscribeUserId = c.req.query("userId");
+    const bodyUserId = oneClickUnsubscribeUserId ? undefined : (await c.req.json()).userId;
+    const userId = oneClickUnsubscribeUserId ?? bodyUserId;
 
     if (!userId) {
       return c.json({ error: "userId is required" }, 400);
