@@ -106,7 +106,7 @@ stripePublicApi.post(`${API_URL_PREFIX}/stripe-webhook`, async (c) => {
 
       if (!error) {
         await sendEmailToDevs({
-          from: "Heard Funding <alex@heard-now.com>",
+          from: "Heard Funding <alex@heard.vote>",
           subject: isLive
             ? `🎉 New donation: $${amountDollars}`
             : `🧪 [TEST] New donation: $${amountDollars}`,

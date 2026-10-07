@@ -133,7 +133,7 @@ async function sendReportEmail({
   const normalizedBody = content.body.replace(/\s+/g, " ").trim();
   const preview = normalizedBody.substring(0, 50);
   await sendEmailToDevs({
-    from: "Heard Reports <hello@heard-now.com>",
+    from: "Heard Reports <alex@heard.vote>",
     subject: `🚩 ${content.heading} reported: "${preview}${normalizedBody.length > 50 ? "..." : ""}"`,
     html: emailHtml,
   });
