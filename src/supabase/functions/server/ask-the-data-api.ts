@@ -42,7 +42,7 @@ async function sendRejectedQuestionEmail({
   const normalizedQuestion = question.replace(/\s+/g, " ").trim();
   const preview = normalizedQuestion.substring(0, 50);
   await sendEmailToDevs({
-    from: "Heard Reports <hello@heard-now.com>",
+    from: "Heard Reports <alex@heard.vote>",
     subject: `⚠️ Ask the Data question rejected: "${preview}${normalizedQuestion.length > 50 ? "..." : ""}"`,
     html: emailHtml,
   });

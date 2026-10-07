@@ -245,7 +245,7 @@ const sendEmail = async ({
           Authorization: `Bearer ${resendApiKey}`,
         },
         body: JSON.stringify({
-          from: "HEARD <hello@heard-now.com>",
+          from: "HEARD <alex@heard.vote>",
           to: [to],
           subject,
           html,
@@ -376,7 +376,7 @@ const sendMagicLinkToEmail = async (email: string): Promise<void> => {
       Authorization: `Bearer ${resendApiKey}`,
     },
     body: JSON.stringify({
-      from: "Heard <hello@heard-now.com>",
+      from: "Heard <alex@heard.vote>",
       to: [normalizedEmail],
       subject: `[${token}] Log in to Heard`,
       html,
