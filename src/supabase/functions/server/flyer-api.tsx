@@ -7,6 +7,7 @@ import { insertFlyerEmail, insertFlyerScan } from "./model-utils.ts";
 import { getUsableStatementsForRoom } from "./room-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { validateSession } from "./auth-utils.ts";
+import { sendFlyerResultsEmailIfFlyerVoter, WAYMO_FLYER_STATEMENT_ID } from "./service-flyer-results-email.ts";
 
 export const flyerApi = new Hono();
 
@@ -40,6 +41,7 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
     } = await c.req.json();
 
     let userId = c.get("userId");
+    const isExistingUser = !!userId;
 
     if (!flyerId || !statementId || !vote) {
       return c.json(
@@ -81,6 +83,12 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         400,
       );
     } else {
+      if (isExistingUser && statementId === WAYMO_FLYER_STATEMENT_ID) {
+        sendFlyerResultsEmailIfFlyerVoter(userId).catch((error) => {
+          console.error("Flyer results email after vote failed:", error);
+        });
+      }
+
       const [room, session, teaserCandidates] = await Promise.all([
         getDebate(result.statement.roomId),
         createSession(userId),
