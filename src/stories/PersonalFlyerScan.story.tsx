@@ -20,12 +20,17 @@ const REQUEST_DELAY_MS = 800;
 
 type Screen = "scan" | "whoDis" | "thanks";
 
+const STANDARD_PHONE_CLASS = "h-195 w-97.5";
+// iPhone SE viewport (375x667) plus the 8px frame border on each side.
+const SHORT_PHONE_CLASS = "h-[683px] w-[391px]";
+
 interface Scenario {
   label: string;
   vote: FlyerVote;
   startScreen: Screen;
   isExistingEmail?: boolean;
   isSignedIn?: boolean;
+  isShortPhone?: boolean;
 }
 
 const SCENARIOS: Record<string, Scenario> = {
@@ -35,6 +40,7 @@ const SCENARIOS: Record<string, Scenario> = {
   "logged-in": { label: "Already logged in", vote: "agree", startScreen: "scan", isSignedIn: true },
   "who-dis": { label: "Who dis", vote: "agree", startScreen: "whoDis" },
   thanks: { label: "Thanks screen", vote: "agree", startScreen: "thanks" },
+  "short-phone": { label: "Short phone (SE)", vote: "agree", startScreen: "scan", isShortPhone: true },
 };
 
 export function PersonalFlyerScanStory() {
@@ -61,7 +67,9 @@ function PersonalFlyerScanDemo({ scenario }: { scenario: Scenario }) {
         Replay
       </Button>
 
-      <div className="mx-auto h-195 w-97.5 max-w-full overflow-y-auto rounded-4xl border-8 [scrollbar-width:none] border-slate-900 shadow-2xl">
+      <div
+        className={`mx-auto ${scenario.isShortPhone ? SHORT_PHONE_CLASS : STANDARD_PHONE_CLASS} max-w-full overflow-y-auto rounded-4xl border-8 [scrollbar-width:none] border-slate-900 shadow-2xl`}
+      >
         <DebateSessionProvider showcaseOverrides={buildOverrides(scenario)}>
           <PersonalFlyerHarness key={replayKey} scenario={scenario} />
         </DebateSessionProvider>
