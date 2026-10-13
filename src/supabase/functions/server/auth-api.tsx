@@ -7,7 +7,7 @@ import { sanitizeUser } from "./user-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { isValidEmail } from "./validation-utils.ts";
 import { insertAnalyticsEvent } from "./model-utils.ts";
-import { sendFlyerWelcomeEmail, WAYMO_FLYER_STATEMENT_ID } from "./service-flyer-results-email.ts";
+import { sendFlyerResultsEmail, sendFlyerResultsEmailIfFlyerVoter, WAYMO_FLYER_STATEMENT_ID } from "./service-flyer-results-email.ts";
 import {
   DUPLICATE_ACCOUNT_ERROR,
   notifyDevsOfDuplicateEmail,
@@ -445,9 +445,17 @@ app.post(
         user = await createUserAccount({ email });
       }
 
+      const anonFlyerVote = currentUserId ? await getVote(WAYMO_FLYER_STATEMENT_ID, currentUserId) : null;
+
       const result = await loginUserWithMerge(user.id, currentUserId);
       if ("error" in result) {
         return c.json({ error: result.error }, result.status as any);
+      }
+
+      if (anonFlyerVote?.flyerId) {
+        sendFlyerResultsEmailIfFlyerVoter(user.id).catch((error) => {
+          console.error("Flyer results email after login failed:", error);
+        });
       }
 
       return c.json(result);
@@ -511,11 +519,11 @@ export const attachEmailToAccount = async (
   await saveUserAndEmail(user);
 
   const waymoFlyerVote = await getVote(WAYMO_FLYER_STATEMENT_ID, userId);
-  const welcomeEmail = waymoFlyerVote?.flyerId
-    ? sendFlyerWelcomeEmail({ ...user, email: normalizedEmail }, waymoFlyerVote)
+  const signupEmail = waymoFlyerVote?.flyerId
+    ? sendFlyerResultsEmail({ ...user, email: normalizedEmail }, waymoFlyerVote)
     : sendWelcomeEmail(normalizedEmail);
-  welcomeEmail.catch((error) => {
-    console.error("Welcome email failed:", error);
+  signupEmail.catch((error) => {
+    console.error("Signup email failed:", error);
   });
 
   return { user };

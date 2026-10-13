@@ -3,10 +3,9 @@ import { getUsableStatementsForRoom } from "./room-utils.ts";
 import { getOpinionatedVoteCount } from "./statement-utils.tsx";
 import { getUnsubscribeHeaders, isEligibleEmailRecipient, sendEmailViaResend, sendMaxOnce, type SendEmailParams } from "./email-sender-utils.tsx";
 import { hasSentEmail } from "./model-utils.ts";
-import { getLatestResultsTime, isAfterRevealTime } from "./flyer-results-time.ts";
+import { getLatestResultsTime } from "./flyer-results-time.ts";
 import { ONE_DAY_MS } from "./time-utils.ts";
 import { createEmailLoginToken } from "./email-login-links.ts";
-import { FLYER_WELCOME_EMAIL_TYPE, generateFlyerWelcomeEmailHtml, getFlyerWelcomeSubject } from "./template-flyer-welcome.ts";
 import { FLYER_RESULTS_EMAIL_TYPE, FLYER_RESULTS_SUBJECT, generateFlyerResultsEmailHtml } from "./template-flyer-results.ts";
 import type { User, Vote, VoteType } from "./types.tsx";
 
@@ -15,27 +14,6 @@ const RESULTS_LOOKBACK_MS = 3 * ONE_DAY_MS;
 const MAX_OTHER_STATEMENTS = 3;
 
 export type EmailableUser = User & { email: string };
-
-export const sendFlyerWelcomeEmail = async (user: EmailableUser, vote: Vote): Promise<void> => {
-  const statement = await getStatement(WAYMO_FLYER_STATEMENT_ID);
-  if (!statement) throw new Error(`Flyer statement ${WAYMO_FLYER_STATEMENT_ID} not found`);
-
-  const areResultsTomorrow = isAfterRevealTime(Date.now());
-  const loginToken = await createEmailLoginToken(user.id);
-  await sendMaxOnce(user.id, FLYER_WELCOME_EMAIL_TYPE, {
-    to: user.email,
-    subject: getFlyerWelcomeSubject(areResultsTomorrow),
-    html: generateFlyerWelcomeEmailHtml({
-      statementText: statement.text,
-      vote: vote.voteType,
-      areResultsTomorrow,
-      roomId: statement.roomId,
-      userId: user.id,
-      loginToken,
-    }),
-    headers: getUnsubscribeHeaders(user.id),
-  });
-};
 
 const loadFlyerResults = async () => {
   const statement = await getStatement(WAYMO_FLYER_STATEMENT_ID);
@@ -63,6 +41,17 @@ const buildFlyerResultsEmail = async (
   }),
   headers: getUnsubscribeHeaders(user.id),
 });
+
+export const sendFlyerResultsEmail = async (user: EmailableUser, vote: Vote): Promise<void> => {
+  const email = await buildFlyerResultsEmail(user, vote.voteType, await loadFlyerResults());
+  await sendMaxOnce(user.id, FLYER_RESULTS_EMAIL_TYPE, email);
+};
+
+export const sendFlyerResultsEmailIfFlyerVoter = async (userId: string): Promise<void> => {
+  const [user, vote] = await Promise.all([getUser(userId), getVote(WAYMO_FLYER_STATEMENT_ID, userId)]);
+  if (!user?.email || !vote?.flyerId) return;
+  await sendFlyerResultsEmail({ ...user, email: user.email }, vote);
+};
 
 export interface FlyerResultsRecipient {
   user: EmailableUser;

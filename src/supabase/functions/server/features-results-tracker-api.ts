@@ -6,7 +6,7 @@ import type { UserEvent } from "./types.tsx";
 import { toTimestamp } from "./time-utils.ts";
 import { FLYER_WELCOME_EMAIL_TYPE } from "./template-flyer-welcome.ts";
 import { FLYER_RESULTS_EMAIL_TYPE } from "./template-flyer-results.ts";
-import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel } from "./feature-tracker-utils.ts";
+import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel, FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
 
@@ -52,6 +52,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       flyerSwipeFunnel,
       flyerLandingFunnel,
       flyerScreenFunnel,
+      personalFlyerScreenFunnel,
       flyerWelcomeEmailsSent,
       flyerResultsEmailsSent,
     ] = await Promise.all([
@@ -93,7 +94,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       countEventsOfType("anon_response_tripwire_submitted"),
       getFlyerSwipeFunnel(),
       getFlyerLandingFunnel(),
-      getFlyerScreenFunnel(),
+      getFlyerScreenFunnel(FLYER_SCREEN_EVENTS),
+      getFlyerScreenFunnel(PERSONAL_FLYER_SCREEN_EVENTS),
       countRecords("sent_emails", { emailType: FLYER_WELCOME_EMAIL_TYPE }),
       countRecords("sent_emails", { emailType: FLYER_RESULTS_EMAIL_TYPE }),
     ]);
@@ -329,6 +331,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
 
     const flyerScreenFunnelSince = new Date("2026-10-03").getTime();
 
+    const personalFlyerScreenFunnelSince = new Date("2026-10-13").getTime();
+
     const flyerEmailsSentSince = new Date("2026-10-03").getTime();
 
     const webDriverUsersSince = new Date("2026-03-03").getTime();
@@ -440,6 +444,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       flyerLandingFunnelSince,
       flyerScreenFunnel,
       flyerScreenFunnelSince,
+      personalFlyerScreenFunnel,
+      personalFlyerScreenFunnelSince,
       flyerWelcomeEmailsSent,
       flyerResultsEmailsSent,
       flyerEmailsSentSince,
