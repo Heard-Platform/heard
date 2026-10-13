@@ -527,6 +527,16 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
     },
     {
       icon: Mail,
+      iconColor: "text-red-600",
+      bgColor: "bg-red-100",
+      title: "Personal Flyer Screen Funnel",
+      description: "Same funnel as the Flyer Screen Funnel, for the redesigned flyer screen written in Alex's voice that sends the results email right away. Compare email capture with the old screen.",
+      getValue: (s) => s.personalFlyerScreenFunnel.opened,
+      getDate: (s) => s.personalFlyerScreenFunnelSince,
+      renderExtra: (s) => <FlyerScreenFunnelChart {...s.personalFlyerScreenFunnel} />,
+    },
+    {
+      icon: Mail,
       iconColor: "text-orange-600",
       bgColor: "bg-orange-100",
       title: "Flyer Welcome Emails Sent",

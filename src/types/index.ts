@@ -748,6 +748,8 @@ export interface FeatureResults {
   flyerLandingFunnelSince: number;
   flyerScreenFunnel: { opened: number; emailAdded: number; returnedViaEmail: number; returnedOnMultipleDays: number };
   flyerScreenFunnelSince: number;
+  personalFlyerScreenFunnel: { opened: number; emailAdded: number; returnedViaEmail: number; returnedOnMultipleDays: number };
+  personalFlyerScreenFunnelSince: number;
   flyerWelcomeEmailsSent: number;
   flyerResultsEmailsSent: number;
   flyerEmailsSentSince: number;

@@ -1,5 +1,12 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { buildFlyerLandingFunnel, buildFlyerScreenFunnel, buildFlyerSwipeFunnel, countByWeek } from "./feature-tracker-utils.ts";
+import {
+  buildFlyerLandingFunnel,
+  buildFlyerScreenFunnel,
+  buildFlyerSwipeFunnel,
+  countByWeek,
+  FLYER_SCREEN_EVENTS,
+  PERSONAL_FLYER_SCREEN_EVENTS,
+} from "./feature-tracker-utils.ts";
 
 Deno.test("countByWeek - empty input returns no weeks", () => {
   assertEquals(countByWeek([]), []);
@@ -114,7 +121,7 @@ Deno.test("buildFlyerScreenFunnel - counts unique users at each step", () => {
     { type: "referred_by_flyer_results_email", userId: "u2", createdAt: OCT_6_NOON_ET },
   ];
 
-  assertEquals(buildFlyerScreenFunnel(events, []), {
+  assertEquals(buildFlyerScreenFunnel(events, [], FLYER_SCREEN_EVENTS), {
     opened: 3,
     emailAdded: 2,
     returnedViaEmail: 2,
@@ -139,7 +146,7 @@ Deno.test("buildFlyerScreenFunnel - counts people who came back on 2+ Eastern da
     { userId: "before", createdAt: OCT_6_NOON_ET },
   ];
 
-  assertEquals(buildFlyerScreenFunnel(events, appLoads).returnedOnMultipleDays, 1);
+  assertEquals(buildFlyerScreenFunnel(events, appLoads, FLYER_SCREEN_EVENTS).returnedOnMultipleDays, 1);
 });
 
 Deno.test("buildFlyerScreenFunnel - ignores email returns from people who didn't add their email on the screen", () => {
@@ -153,7 +160,21 @@ Deno.test("buildFlyerScreenFunnel - ignores email returns from people who didn't
     { userId: "older-flyer-voter", createdAt: OCT_6_NOON_ET },
   ];
 
-  const funnel = buildFlyerScreenFunnel(events, appLoads);
+  const funnel = buildFlyerScreenFunnel(events, appLoads, FLYER_SCREEN_EVENTS);
   assertEquals(funnel.returnedViaEmail, 1);
   assertEquals(funnel.returnedOnMultipleDays, 0);
+});
+
+Deno.test("buildFlyerScreenFunnel - counts only the given screen's events", () => {
+  const events = [
+    { type: "flyer_screen_opened", userId: "old-screen", createdAt: 0 },
+    { type: "flyer_screen_email_added", userId: "old-screen", createdAt: 0 },
+    { type: "personal_flyer_screen_opened", userId: "new-screen-1", createdAt: 0 },
+    { type: "personal_flyer_screen_opened", userId: "new-screen-2", createdAt: 0 },
+    { type: "personal_flyer_screen_email_added", userId: "new-screen-1", createdAt: 0 },
+  ];
+
+  const funnel = buildFlyerScreenFunnel(events, [], PERSONAL_FLYER_SCREEN_EVENTS);
+  assertEquals(funnel.opened, 2);
+  assertEquals(funnel.emailAdded, 1);
 });

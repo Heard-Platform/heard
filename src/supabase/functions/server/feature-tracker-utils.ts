@@ -156,8 +156,21 @@ export function buildFlyerLandingFunnel(
 
 export const getFlyerLandingFunnel = async () => buildFlyerLandingFunnel(await getFlyerLandingEvents());
 
-export const FLYER_SCREEN_OPENED_EVENT = "flyer_screen_opened";
-export const FLYER_SCREEN_EMAIL_ADDED_EVENT = "flyer_screen_email_added";
+export interface FlyerScreenEventTypes {
+  opened: string;
+  emailAdded: string;
+}
+
+export const FLYER_SCREEN_EVENTS: FlyerScreenEventTypes = {
+  opened: "flyer_screen_opened",
+  emailAdded: "flyer_screen_email_added",
+};
+
+export const PERSONAL_FLYER_SCREEN_EVENTS: FlyerScreenEventTypes = {
+  opened: "personal_flyer_screen_opened",
+  emailAdded: "personal_flyer_screen_email_added",
+};
+
 export const FLYER_EMAIL_RETURNED_EVENTS = [
   `referred_by_${FLYER_WELCOME_LINK_SOURCE}`,
   `referred_by_${FLYER_RESULTS_LINK_SOURCE}`,
@@ -169,14 +182,15 @@ type FunnelEvent = { type: string; userId: string | null; createdAt: number | st
 export function buildFlyerScreenFunnel(
   events: FunnelEvent[],
   appLoads: { userId: string | null; createdAt: number | string }[],
+  screenEvents: FlyerScreenEventTypes,
 ): { opened: number; emailAdded: number; returnedViaEmail: number; returnedOnMultipleDays: number } {
   const usersWith = (isMatch: (type: string) => boolean) =>
     new Set(_.compact(events.filter((event) => isMatch(event.type)).map((event) => event.userId)));
-  const openedUserIds = usersWith((type) => type === FLYER_SCREEN_OPENED_EVENT);
+  const openedUserIds = usersWith((type) => type === screenEvents.opened);
 
   const emailAddedAt = new Map<string, number>();
   for (const event of events) {
-    if (!event.userId || event.type !== FLYER_SCREEN_EMAIL_ADDED_EVENT) continue;
+    if (!event.userId || event.type !== screenEvents.emailAdded) continue;
     const at = toTimestamp(event.createdAt);
     emailAddedAt.set(event.userId, Math.min(at, emailAddedAt.get(event.userId) ?? at));
   }
@@ -201,13 +215,13 @@ export function buildFlyerScreenFunnel(
   };
 }
 
-export const getFlyerScreenFunnel = async () => {
+export const getFlyerScreenFunnel = async (screenEvents: FlyerScreenEventTypes) => {
   const events = await getFlyerScreenEvents([
-    FLYER_SCREEN_OPENED_EVENT,
-    FLYER_SCREEN_EMAIL_ADDED_EVENT,
+    screenEvents.opened,
+    screenEvents.emailAdded,
     ...FLYER_EMAIL_RETURNED_EVENTS,
   ]);
-  const emailAddedEvents = events.filter((e) => e.type === FLYER_SCREEN_EMAIL_ADDED_EVENT);
+  const emailAddedEvents = events.filter((e) => e.type === screenEvents.emailAdded);
   const emailAddedUserIds = _.uniq(_.compact(emailAddedEvents.map((e) => e.userId)));
-  return buildFlyerScreenFunnel(events, await getAppLoadEvents(emailAddedUserIds));
+  return buildFlyerScreenFunnel(events, await getAppLoadEvents(emailAddedUserIds), screenEvents);
 };

@@ -16,7 +16,7 @@ export function FlyerScreenFunnelChart({
   if (opened === 0) return null;
 
   const data = [
-    { label: "Loaded results page", users: opened },
+    { label: "Opened flyer screen", users: opened },
     { label: "Added email", users: emailAdded },
     { label: "Returned via email", users: returnedViaEmail },
     { label: "Returned 2+ days (any way)", users: returnedOnMultipleDays },
