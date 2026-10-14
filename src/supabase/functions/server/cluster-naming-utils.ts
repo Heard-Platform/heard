@@ -125,6 +125,7 @@ Name rules:
 - 2 to 3 words, at most ${MAX_NAME_CHARS} characters including spaces. Title Case.
 - Fun, punchy and clear, in the spirit of "Full Speed Ahead", "Hit the Brakes" or "Show Me the Data".
 - Describe what the group believes or wants, never who its members are.
+- Understand that the statements provided with each group are not necessarily ones the group agreed with. Each shows what share of the group agrees with it, from none to all. Take that into account. A group that has a low agreement percent with "Meetings are a waste of time" wouldn't be named "No More Meetings".
 - Fair: every group should be happy to be called its name. No mocking, insults or sarcasm.
 - No political party or partisan labels, no real people's names, no emojis.
 - Every name must be clearly different from the other groups' names.
@@ -137,7 +138,10 @@ function quote(text: string): string {
 
 function formatStances(statements: ClusterStatementStance[]): string {
   return statements
-    .map((s) => `  - ${s.direction} much more than others: ${quote(s.text)}`)
+    .map((s) => {
+      const relative = s.direction === "agrees" ? "agree" : "disagree";
+      return `  - ${Math.round(s.agreeRate * 100)}% of this group agree (they ${relative} much more than others): ${quote(s.text)}`;
+    })
     .join("\n");
 }
 

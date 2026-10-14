@@ -137,7 +137,7 @@ Deno.test("makeClusterNamingPrompt - lists groups by letter with taken names and
   const prompt = makeClusterNamingPrompt("Transit", [input], ["Hit the Brakes"], ["Safety matters"]);
 
   assertEquals(prompt.userPrompt.includes(`Group A (12 people):`), true);
-  assertEquals(prompt.userPrompt.includes(`agrees much more than others: "Build more bike lanes"`), true);
+  assertEquals(prompt.userPrompt.includes(`90% of this group agree (they agree much more than others): "Build more bike lanes"`), true);
   assertEquals(prompt.userPrompt.includes("- Hit the Brakes"), true);
   assertEquals(prompt.userPrompt.includes(`"Safety matters"`), true);
 });
