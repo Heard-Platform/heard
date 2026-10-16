@@ -102,6 +102,12 @@ export const getFlyerScans = async () => {
   return selectAll<{ flyer: string }>("flyer_scans");
 };
 
+export const getFlyerScansForFlyer = async (flyer: string) =>
+  selectAllWithoutLimit<{ flyer: string; userId: string | null; createdAt: string }>(
+    "flyer_scans",
+    { flyer },
+  );
+
 export const insertFlyerScan = async (
   flyer: string,
   userId?: string,
@@ -274,6 +280,9 @@ export const getUniqueUserIdsForEvent = async (type: string): Promise<Set<string
   const events = await selectAll<UserEvent>("user_events", { type });
   return new Set(events.map(e => e.userId).filter((id): id is string => id !== null));
 };
+
+export const getAllEventsOfType = async (type: string): Promise<UserEvent[]> =>
+  selectAllWithoutLimit<UserEvent>("user_events", { type }, "createdAt");
 
 export const getEventsOfType = async (type: string): Promise<UserEvent[]> => {
   return selectAll<UserEvent>("user_events", { type });

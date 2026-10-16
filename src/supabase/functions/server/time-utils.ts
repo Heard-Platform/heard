@@ -13,6 +13,12 @@ export const toTimestamp = (val: number | string | undefined): number => {
   return isNaN(n) ? new Date(val).getTime() : n;
 };
 
+export const parseTimestampParam = (value: string | undefined): number | null => {
+  if (!value) return null;
+  const timestamp = Number(value);
+  return Number.isFinite(timestamp) ? timestamp : null;
+};
+
 export const EASTERN_TIME_ZONE = "America/New_York";
 
 export const getEasternDate = (time: number): string =>

@@ -54,6 +54,7 @@ import { EmailJobs } from "./admin/EmailJobs";
 import { Flyers } from "./admin/Flyers";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 import { PowerUsers } from "./admin/PowerUsers";
+import { Campaigns } from "./admin/Campaigns";
 
 interface AdminPanelProps {
   onExit?: () => void;
@@ -548,6 +549,12 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
           >
             Power Users
           </Button>
+          <Button
+            variant={activeTab === "campaigns" ? "default" : "ghost"}
+            onClick={() => handleTabChange("campaigns")}
+          >
+            Campaigns
+          </Button>
         </div>
 
         {activeTab === "subheards" && (
@@ -880,6 +887,8 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
             onPowerUserClick={handlePowerUserClick}
           />
         )}
+
+        {activeTab === "campaigns" && <Campaigns adminKey={adminKey} />}
       </div>
 
       {/* Change Admin Dialog */}
