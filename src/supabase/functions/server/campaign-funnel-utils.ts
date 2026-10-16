@@ -1,13 +1,5 @@
-import _ from "lodash";
-import {
-  getDebate,
-  getStatementsCreatedSince,
-  getStatementsForRoomIncludingHidden,
-  getUsersByIds,
-  getUsersCreatedSince,
-  getVotesCreatedSince,
-} from "./kv-utils.tsx";
-import { getAllEventsOfType, getFlyerScansForFlyer, getRoomViewsSeenSince } from "./model-utils.ts";
+import { getAllStatements, getAllUsers, getAllVotes } from "./kv-utils.tsx";
+import { getAllEventsOfType, getAllRoomViews, getFlyerScansForFlyer } from "./model-utils.ts";
 import { FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS } from "./feature-tracker-utils.ts";
 import { toTimestamp } from "./time-utils.ts";
 import type { RoomView, Statement, User, Vote } from "./types.tsx";
@@ -52,8 +44,7 @@ export interface TimedUserAction {
 export interface CampaignFunnelInput {
   users: User[];
   votes: Vote[];
-  statements: Pick<Statement, "author" | "timestamp">[];
-  campaignRoomStatementIds: string[];
+  statements: Pick<Statement, "id" | "roomId" | "author" | "timestamp">[];
   roomViews: RoomView[];
   directUrlScans: TimedUserAction[];
   flyerScreenEmailEvents: TimedUserAction[];
@@ -142,7 +133,7 @@ export function buildCampaignFunnel(
 ): CampaignFunnel {
   const usersById = new Map(input.users.map((user) => [user.id, user]));
   const resolvePerson = createPersonResolver(usersById);
-  const campaignRoomStatementIds = new Set(input.campaignRoomStatementIds);
+  const roomIdByStatementId = new Map(input.statements.map((statement) => [statement.id, statement.roomId]));
   const visitors = groupArrivalsByPerson(collectArrivals(input, campaign), resolvePerson, usersById, range);
 
   const arrivedAt = (userId: string | null) => {
@@ -166,7 +157,10 @@ export function buildCampaignFunnel(
     return personIds;
   };
 
-  const isOtherPostVote = (vote: Vote) => !campaignRoomStatementIds.has(vote.statementId);
+  const isOtherPostVote = (vote: Vote) => {
+    const roomId = roomIdByStatementId.get(vote.statementId);
+    return !!roomId && roomId !== campaign.roomId;
+  };
 
   const voteCountsByPerson = new Map<string, number>();
   for (const vote of input.votes) {
@@ -279,57 +273,18 @@ const getEventsOfTypes = async (types: string[]): Promise<TimedUserAction[]> => 
   return events.map((event) => ({ userId: event.userId, createdAt: toTimestamp(event.createdAt) }));
 };
 
-// Visitors and their merged accounts can predate the campaign, so they are fetched by id.
-const addArrivalUsersAndMergeTargets = async (users: User[], arrivalUserIds: string[]): Promise<User[]> => {
-  const usersById = new Map(users.map((user) => [user.id, user]));
-  const findMissingIds = (candidateIds: (string | undefined)[]) =>
-    _.uniq(_.compact(candidateIds)).filter((id) => !usersById.has(id));
-
-  let missingIds = findMissingIds([...arrivalUserIds, ...users.map((user) => user.mergedIntoUserId)]);
-  for (let depth = 0; missingIds.length > 0 && depth < MAX_MERGE_DEPTH; depth++) {
-    const fetchedUsers = await getUsersByIds(missingIds);
-    for (const user of fetchedUsers) usersById.set(user.id, user);
-    missingIds = findMissingIds(fetchedUsers.map((user) => user.mergedIntoUserId));
-  }
-  return [...usersById.values()];
-};
-
-// Only actions after a visitor arrives are counted, and no one arrives before the campaign
-// room exists, so everything older than that (or the start of the range) can be skipped.
-const getEarliestRelevantTime = async (campaign: CampaignConfig, range: TimeRange): Promise<number> => {
-  const room = await getDebate(campaign.roomId);
-  if (!room) throw new Error(`Campaign room ${campaign.roomId} not found`);
-  return Math.max(range.from ?? 0, room.createdAt);
-};
-
 export const getCampaignFunnel = async (campaign: CampaignConfig, range: TimeRange): Promise<CampaignFunnel> => {
-  const sinceTs = await getEarliestRelevantTime(campaign, range);
-  const [recentUsers, votes, statements, campaignRoomStatements, roomViews, directUrlScans, flyerScreenEmailEvents] =
-    await Promise.all([
-      getUsersCreatedSince(sinceTs),
-      getVotesCreatedSince(sinceTs),
-      getStatementsCreatedSince(sinceTs),
-      getStatementsForRoomIncludingHidden(campaign.roomId),
-      getRoomViewsSeenSince(sinceTs),
-      getDirectUrlScans(campaign.directUrlFlyers),
-      getEventsOfTypes(campaign.flyerScreenEmailEventTypes),
-    ]);
-
-  const arrivalUserIds = [...flyerVoteArrivals(votes, campaign), ...directUrlArrivals(directUrlScans)].map(
-    (arrival) => arrival.userId,
-  );
-  const users = await addArrivalUsersAndMergeTargets(recentUsers, arrivalUserIds);
+  const [users, votes, statements, roomViews, directUrlScans, flyerScreenEmailEvents] = await Promise.all([
+    getAllUsers(),
+    getAllVotes(),
+    getAllStatements(),
+    getAllRoomViews(),
+    getDirectUrlScans(campaign.directUrlFlyers),
+    getEventsOfTypes(campaign.flyerScreenEmailEventTypes),
+  ]);
 
   return buildCampaignFunnel(
-    {
-      users,
-      votes,
-      statements,
-      campaignRoomStatementIds: campaignRoomStatements.map((statement) => statement.id),
-      roomViews,
-      directUrlScans,
-      flyerScreenEmailEvents,
-    },
+    { users, votes, statements, roomViews, directUrlScans, flyerScreenEmailEvents },
     campaign,
     range,
   );

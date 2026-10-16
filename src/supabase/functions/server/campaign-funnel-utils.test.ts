@@ -30,8 +30,11 @@ const flyerVote = (userId: string, timestamp: number, overrides: Partial<Vote> =
 const emptyInput = (): CampaignFunnelInput => ({
   users: [],
   votes: [],
-  statements: [],
-  campaignRoomStatementIds: ["waymo-statement", "waymo-statement-2"],
+  statements: [
+    { id: "waymo-statement", roomId: "waymo-room", author: "host", timestamp: 0 },
+    { id: "waymo-statement-2", roomId: "waymo-room", author: "host", timestamp: 0 },
+    { id: "other-statement", roomId: "other-room", author: "host", timestamp: 0 },
+  ],
   roomViews: [],
   directUrlScans: [],
   flyerScreenEmailEvents: [],
@@ -82,8 +85,8 @@ Deno.test("buildCampaignFunnel - counts votes, responses and other posts only af
     makeVote("regular", "other-statement", 50),
   ];
   input.statements.push(
-    { author: "engaged", timestamp: 300 },
-    { author: "regular", timestamp: 10 },
+    { id: "engaged-response", roomId: "waymo-room", author: "engaged", timestamp: 300 },
+    { id: "regular-old-response", roomId: "other-room", author: "regular", timestamp: 10 },
   );
   input.roomViews = [
     { userId: "engaged", roomId: "other-room", lastSeenAt: 200 },

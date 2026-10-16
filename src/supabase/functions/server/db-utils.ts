@@ -243,24 +243,6 @@ export const getAllRecords = async <T>(
   return parseKvDataArray<T>(rows.map((row) => row.value));
 };
 
-// created_at is set when a key is first written; later upserts leave it unchanged.
-export const getAllRecordsCreatedSince = async <T>(
-  prefix: string,
-  sinceTs: number,
-): Promise<T[]> => {
-  const supabase = createClientFromEnv();
-  const rows = await paginatedQueryRunner<{ value: any }>((offset, limit) =>
-    supabase
-      .from(TABLE_NAME)
-      .select("value")
-      .like("key", `${prefix}%`)
-      .gte("created_at", new Date(sinceTs).toISOString())
-      .order("key")
-      .range(offset, offset + limit - 1),
-  );
-  return parseKvDataArray<T>(rows.map((row) => row.value));
-};
-
 export const getAllKvRecordsMatching = async (
   likePattern: string,
 ): Promise<Map<string, any>> => {

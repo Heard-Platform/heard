@@ -343,9 +343,6 @@ export const getRoomViewsForUser = async (userId: string): Promise<RoomView[]> =
 export const getAllRoomViews = async (): Promise<RoomView[]> =>
   selectAllWithoutLimit<RoomView>("room_views");
 
-export const getRoomViewsSeenSince = async (sinceTs: number): Promise<RoomView[]> =>
-  selectAllWithoutLimit<RoomView>("room_views", {}, "lastSeenAt", (q: any) => q.gte("lastSeenAt", sinceTs));
-
 export const deleteRoomView = async (userId: string, roomId: string) =>
   deleteRecord("room_views", { userId, roomId });
 

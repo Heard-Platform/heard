@@ -1,6 +1,5 @@
 // Utility functions for working with KV store data
-import _ from "lodash";
-import { getAllRecords, getAllRecordsCreatedSince, getAllKvRecordsMatching, getAllKvRecordsWithPrefix } from "./db-utils.ts";
+import { getAllRecords, getAllKvRecordsMatching, getAllKvRecordsWithPrefix } from "./db-utils.ts";
 import * as kv from "./kv_store.tsx";
 import type { ClusterIdentityRecord } from "./cluster-identity.ts";
 import type { ClusterRecomputeMarker } from "./cluster-freshness.ts";
@@ -143,17 +142,6 @@ export const getAllRealUsers = async (): Promise<User[]> => {
   const allUsers = await getAllRecords<User>("user:");
   return allUsers.filter(user => !user.isTestUser && !user.webdriver);
 };
-
-const USER_ID_BATCH_SIZE = 100;
-
-export const getUsersByIds = async (userIds: string[]): Promise<User[]> => {
-  const batches = _.chunk(_.uniq(userIds), USER_ID_BATCH_SIZE);
-  const results = await Promise.all(batches.map((ids) => bulkGet<User>(ids.map((id) => `user:${id}`))));
-  return results.flat();
-};
-
-export const getUsersCreatedSince = async (sinceTs: number): Promise<User[]> =>
-  getAllRecordsCreatedSince<User>("user:", sinceTs);
 
 export const getDevUsers = async (): Promise<User[]> => {
   const allUsers = await getAllRecords<User>("user:");
@@ -368,9 +356,6 @@ export const getAllVotes = async (): Promise<Vote[]> => {
   return getAllRecords<Vote>("vote:");
 };
 
-export const getVotesCreatedSince = async (sinceTs: number): Promise<Vote[]> =>
-  getAllRecordsCreatedSince<Vote>("vote:", sinceTs);
-
 export const getVotesForUser = async (
   userId: string,
 ): Promise<Vote[]> => {
@@ -404,9 +389,6 @@ export const statementKeyFn = (statement: Statement) =>
 export const getAllStatements = async (): Promise<Statement[]> => {
   return getAllRecords<Statement>("statement:");
 };
-
-export const getStatementsCreatedSince = async (sinceTs: number): Promise<Statement[]> =>
-  getAllRecordsCreatedSince<Statement>("statement:", sinceTs);
 
 export const getStatement = async (statementId: string): Promise<Statement | null> => {
   const matches = await getByPrefixParsed<Statement>(`statement:%:${statementId}`);
