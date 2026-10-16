@@ -7,6 +7,7 @@ import { sanitizeUser } from "./user-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { isValidEmail } from "./validation-utils.ts";
 import { insertAnalyticsEvent } from "./model-utils.ts";
+import { sendMaxOnce } from "./email-sender-utils.tsx";
 import { sendFlyerResultsEmail, sendFlyerResultsEmailIfFlyerVoter, WAYMO_FLYER_STATEMENT_ID } from "./service-flyer-results-email.ts";
 import {
   DUPLICATE_ACCOUNT_ERROR,
@@ -215,63 +216,7 @@ export const createAnonymousUser = async (
   });
 };
 
-const sendEmail = async ({
-  to,
-  subject,
-  html,
-  text,
-}: {
-  to: string;
-  subject: string;
-  html: string;
-  text?: string;
-}): Promise<boolean> => {
-  try {
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-
-    if (!resendApiKey) {
-      console.error(
-        "RESEND_API_KEY environment variable not set",
-      );
-      return false;
-    }
-
-    const response = await fetch(
-      "https://api.resend.com/emails",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${resendApiKey}`,
-        },
-        body: JSON.stringify({
-          from: "HEARD <alex@heard.vote>",
-          to: [to],
-          subject,
-          html,
-          text: text || undefined,
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(
-        `Email API error (${response.status}):`,
-        errorText,
-      );
-      return false;
-    }
-
-    const result = await response.json();
-    console.log(`Email sent successfully to ${to}:`, result.id);
-    return true;
-  } catch (error) {
-    console.error("Error sending email:", error);
-    return false;
-  }
-};
-
+export const WELCOME_EMAIL_TYPE = "welcome";
 export const WELCOME_EMAIL_SUBJECT = "Welcome to HEARD! 🎯";
 
 export const getWelcomeEmailHtml = () => `
@@ -302,15 +247,12 @@ export const getWelcomeEmailHtml = () => `
     </div>
   `;
 
-export const sendWelcomeEmail = async (
-  email: string,
-) => {
-  return await sendEmail({
+export const sendWelcomeEmail = async (userId: string, email: string) =>
+  sendMaxOnce(userId, WELCOME_EMAIL_TYPE, {
     to: email,
     subject: WELCOME_EMAIL_SUBJECT,
     html: getWelcomeEmailHtml(),
   });
-};
 
 app.post(
   "/make-server-f1a393b4/user/anonymous",
@@ -521,7 +463,7 @@ export const attachEmailToAccount = async (
   const waymoFlyerVote = await getVote(WAYMO_FLYER_STATEMENT_ID, userId);
   const signupEmail = waymoFlyerVote?.flyerId
     ? sendFlyerResultsEmail({ ...user, email: normalizedEmail }, waymoFlyerVote)
-    : sendWelcomeEmail(normalizedEmail);
+    : sendWelcomeEmail(userId, normalizedEmail);
   signupEmail.catch((error) => {
     console.error("Signup email failed:", error);
   });
@@ -581,6 +523,7 @@ app.post(
       }
 
       result.user.isAnonymous = false;
+      result.user.upgradedFromAnonymousAt = Date.now();
       await saveUserAndEmail(result.user);
 
       return { requiresOtp: false as const, user: sanitizeUser(result.user) };

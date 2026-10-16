@@ -1,12 +1,10 @@
 import { sanitizeUser } from "./user-utils.ts";
 import { getActiveRooms } from "./debate-api.tsx";
 import {
-  getAllRealDebates,
   getAllRealUsers,
   getAllStatements,
   getAllVotes,
   getAllSubHeards,
-  getByPrefixParsed,
   getDebate,
   getUser,
   getUserOrThrow,
@@ -14,17 +12,16 @@ import {
   getCommunity,
   saveCommunity,
   getAllActivityRecords,
-  getVotesForUser,
-  getUserActivityRecords,
   saveUser,
   saveNewsletterSentUsers,
 } from "./kv-utils.tsx";
-import { DebateRoom, Rant, Statement, User } from "./types.tsx";
+import { User } from "./types.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 import { getNewsletterByEdition, getNewsletterRecipients } from "./newsletter-utils.ts";
 import { getFlyerEmails } from "./model-utils.ts";
 import { buildActiveDaysMap } from "./stats-utils.ts";
 import { performSubHeardRename } from "./subheard-rename-utils.tsx";
+import { getUserHistory } from "./user-history-utils.ts";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
@@ -393,50 +390,8 @@ app.get(
   "/make-server-f1a393b4/admin/user-history/:userId",
   async (c) => {
     try {
-      const userId = c.req.param("userId");
-
-      const rooms: DebateRoom[] = [];
-      const statements: Statement[] = [];
-      const rants: Rant[] = [];
-
-      const allRooms = await getAllRealDebates();
-      for (const room of allRooms) {
-        if (room.participants.includes(userId) || room.hostId === userId) {
-          rooms.push(room);
-        }
-
-        if (room.hostId === userId) {
-          const rants = await getByPrefixParsed<Rant>(`rant:${room.id}:`);
-          if (rants.length) {
-            rants.push(rants[0]);
-          }
-        }
-      }
-
-      const allStatements = await getAllStatements();
-      for (const statement of allStatements) {
-        if (statement.author === userId) {
-          statements.push(statement);
-        }
-      }
-
-      const votes = await getVotesForUser(userId);
-      const activities = await getUserActivityRecords(userId);
-
-      rooms.sort((a, b) => b.createdAt - a.createdAt);
-      statements.sort((a, b) => b.timestamp - a.timestamp);
-      votes.sort((a, b) => b.timestamp - a.timestamp);
-      rants.sort((a, b) => b.timestamp - a.timestamp);
-      activities.sort((a: any, b: any) => b.timestamp - a.timestamp);
-
-      return c.json({
-        userId,
-        rooms,
-        statements,
-        votes,
-        rants,
-        activities,
-      });
+      const history = await getUserHistory(c.req.param("userId"));
+      return c.json(history);
     } catch (error) {
       console.error("Error fetching user history:", error);
       return c.json({ error: "Failed to fetch user history" }, 500);

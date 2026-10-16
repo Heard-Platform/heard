@@ -218,6 +218,10 @@ export interface UserSession {
   avatarAnimal?: AvatarAnimal;
 }
 
+export interface UserHistorySession extends UserSession {
+  mergedIntoUserId?: string;
+}
+
 export type DebateMode = "realtime" | "host-controlled";
 
 export interface DebateRoom {
@@ -768,12 +772,52 @@ export interface GGWashImportResult {
   };
 }
 
+export type UserTimelineEventKind =
+  | "anon_session_started"
+  | "account_created"
+  | "first_seen"
+  | "room_created"
+  | "statement_posted"
+  | "vote_cast"
+  | "rant_submitted"
+  | "email_sent"
+  | "tracked_event";
+
+export interface UserTimelineEvent {
+  timestamp: number;
+  kind: UserTimelineEventKind;
+  label: string;
+  detail?: string;
+  roomId?: string;
+  roomTopic?: string;
+  wasAnonymous: boolean;
+}
+
+export interface UserHistoryVote {
+  id: string;
+  statementId: string;
+  voteType: VoteType;
+  timestamp: number;
+  anonymousUserId?: string;
+  statementText?: string;
+  roomId?: string;
+}
+
+export interface UserHistoryActivity {
+  date: string;
+  userId: string;
+  timestamp: number;
+}
+
 export interface UserHistoryData {
-  rooms: any[];
-  statements: any[];
-  votes: any[];
-  rants: any[];
-  activities: any[];
+  user: UserHistorySession;
+  anonymousUserIds: string[];
+  timeline: UserTimelineEvent[];
+  rooms: DebateRoom[];
+  statements: Statement[];
+  votes: UserHistoryVote[];
+  rants: Rant[];
+  activities: UserHistoryActivity[];
 }
 
 export interface DevAnonDebate extends DebateRoom {

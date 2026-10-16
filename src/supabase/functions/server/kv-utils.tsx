@@ -476,6 +476,9 @@ export const getAskTheDataRecord = async (id: string): Promise<AskTheDataRecord 
   return matches[0] ?? null;
 };
 
+export const getAllRants = async (): Promise<Rant[]> =>
+  getByPrefixParsed<Rant>("rant:");
+
 export const getRantsForRoom = async (roomId: string): Promise<Rant[]> => {
   return getByPrefixParsed<Rant>(`rant:${roomId}:`);
 };
