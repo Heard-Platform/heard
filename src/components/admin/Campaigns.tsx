@@ -11,6 +11,7 @@ const WAYMO_CAMPAIGN_KEY = "waymo";
 
 const FUNNEL_STEPS: { key: keyof CampaignFunnelSteps; label: string }[] = [
   { key: "arrived", label: "Arrived" },
+  { key: "didAnythingMore", label: "Did anything more" },
   { key: "addedEmailOnFlyerScreen", label: "Added email on flyer screen" },
   { key: "votedMoreThanOnce", label: "Voted more than once" },
   { key: "addedResponse", label: "Added a response" },

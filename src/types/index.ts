@@ -868,6 +868,7 @@ export interface SentEmail {
 }
 export interface CampaignFunnelSteps {
   arrived: number;
+  didAnythingMore: number;
   addedEmailOnFlyerScreen: number;
   votedMoreThanOnce: number;
   addedResponse: number;

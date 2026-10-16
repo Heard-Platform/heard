@@ -99,6 +99,20 @@ Deno.test("buildCampaignFunnel - counts votes, responses and other posts only af
   assertEquals(funnel.flyerScan.votedOnSecondPost, 1);
 });
 
+Deno.test("buildCampaignFunnel - counts people who did any later step once", () => {
+  const input = emptyInput();
+  input.users = [makeUser("voter"), makeUser("viewer"), makeUser("scan-only")];
+  input.votes = [
+    flyerVote("voter", 100),
+    makeVote("voter", "other-statement", 200),
+    flyerVote("viewer", 100),
+    flyerVote("scan-only", 100),
+  ];
+  input.roomViews = [{ userId: "viewer", roomId: "other-room", lastSeenAt: 200 }];
+
+  assertEquals(buildCampaignFunnel(input, CAMPAIGN, ALL_TIME).flyerScan.didAnythingMore, 2);
+});
+
 Deno.test("buildCampaignFunnel - follows anonymous users merged into an account", () => {
   const input = emptyInput();
   input.users = [

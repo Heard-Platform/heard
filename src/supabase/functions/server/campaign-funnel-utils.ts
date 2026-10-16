@@ -22,6 +22,7 @@ export interface CampaignConfig {
 
 export interface CampaignFunnelSteps {
   arrived: number;
+  didAnythingMore: number;
   addedEmailOnFlyerScreen: number;
   votedMoreThanOnce: number;
   addedResponse: number;
@@ -222,6 +223,15 @@ export function buildCampaignFunnel(
       .map(([personId]) => personId),
   );
 
+  const didAnythingMore = new Set([
+    ...addedEmailOnFlyerScreen,
+    ...votedMoreThanOnce,
+    ...addedResponse,
+    ...viewedSecondPost,
+    ...votedOnSecondPost,
+    ...addedEmailLater,
+  ]);
+
   const stepsForChannel = (channel: ArrivalChannel): CampaignFunnelSteps => {
     const channelPersonIds = [...visitors.entries()]
       .filter(([, visitor]) => visitor.firstArrival.channel === channel)
@@ -229,6 +239,7 @@ export function buildCampaignFunnel(
     const countIn = (personIds: Set<string>) => channelPersonIds.filter((personId) => personIds.has(personId)).length;
     return {
       arrived: channelPersonIds.length,
+      didAnythingMore: countIn(didAnythingMore),
       addedEmailOnFlyerScreen: countIn(addedEmailOnFlyerScreen),
       votedMoreThanOnce: countIn(votedMoreThanOnce),
       addedResponse: countIn(addedResponse),
