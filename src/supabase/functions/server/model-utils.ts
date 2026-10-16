@@ -12,6 +12,7 @@ import {
   NewUserReport,
   RoomFollow,
   RoomView,
+  SentEmail,
   StatementMerge,
   StatementTag,
   StatementTagLink,
@@ -122,6 +123,14 @@ export const hasSentEmail = async (userId: string, emailType: string): Promise<b
 
 export const recordSentEmail = async (userId: string, emailType: string) =>
   insert("sent_emails", { userId, emailType });
+
+export const getSentEmailsForUser = async (userId: string): Promise<SentEmail[]> => {
+  const rows = await selectAll<{ id: string; userId: string; emailType: string; sentAt: string }>(
+    "sent_emails",
+    { userId },
+  );
+  return rows.map((row) => ({ ...row, sentAt: new Date(row.sentAt).getTime() }));
+};
 
 export const getFlyerEmails = async () => {
   return selectAll<{ email: string }>("flyer_emails");
@@ -257,6 +266,9 @@ export const getOrganizersEvents = async () => {
 export const insertAnalyticsEvent = async (event: NewUserEvent) => {
   return insert<NewUserEvent>( "user_events", event );
 };
+
+export const getEventsForUser = async (userId: string): Promise<UserEvent[]> =>
+  selectAllWithoutLimit<UserEvent>("user_events", { userId }, "createdAt");
 
 export const getUniqueUserIdsForEvent = async (type: string): Promise<Set<string>> => {
   const events = await selectAll<UserEvent>("user_events", { type });

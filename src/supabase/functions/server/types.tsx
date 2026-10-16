@@ -49,6 +49,7 @@ export interface User {
   flyerId?: string;
   flyerGroup?: number;
   mergedIntoUserId?: string;
+  upgradedFromAnonymousAt?: number;
   createdInEnvironment?: string;
   tosAgreedToAt?: number;
   tosVersion?: string;

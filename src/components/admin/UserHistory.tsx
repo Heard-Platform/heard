@@ -1,30 +1,33 @@
 import { useState, useEffect } from "react";
 import { Card } from "../ui/card";
 import { Label } from "../ui/label";
-import { Loader2, User, MessageSquare, ThumbsUp, Flame, Activity } from "lucide-react";
+import { Badge } from "../ui/badge";
+import { Loader2, User, MessageSquare, ThumbsUp, Flame, Activity, History, ChevronDown, ChevronRight } from "lucide-react";
+import { UserTimelineChart } from "./UserTimelineChart";
 import { api } from "../../utils/api";
-import { UserHistoryData } from "../../types";
-
-interface UserOption {
-  id: string;
-  displayName: string;
-  email: string;
-  lastSeen: number;
-}
+import { UserHistorySession, UserHistoryData, UserTimelineEvent } from "../../types";
 
 interface UserHistoryProps {
   currentUserId: string;
   adminKey: string;
 }
 
+const formatDate = (timestamp: number) => new Date(timestamp).toLocaleString();
+
+const formatUserOption = (user: UserHistorySession) => {
+  const name = user.nickname || "(no nickname)";
+  const contact = user.isAnonymous ? "anonymous" : user.email || "no email";
+  return `${name} (${contact}) - Last active: ${formatDate(user.lastActive)}`;
+};
+
 export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
-  const [users, setUsers] = useState<UserOption[]>([]);
-  console.log(users, "users");
+  const [users, setUsers] = useState<UserHistorySession[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [historyData, setHistoryData] = useState<UserHistoryData | null>(null);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isEventListOpen, setIsEventListOpen] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -43,15 +46,8 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
     try {
       const response = await api.adminGetUsers(adminKey);
       if (response.success && response.data) {
-        const rawUsers = response.data.users || [];
-        const mappedUsers = rawUsers.map((user: any) => ({
-          id: user.userId,
-          displayName: user.name,
-          email: user.email,
-          lastSeen: user.lastSeen,
-        }));
-
-        setUsers(mappedUsers);
+        // Merged anonymous users show up inside their account's history instead
+        setUsers(response.data.users.filter((user) => !user.mergedIntoUserId));
       } else {
         setError("Failed to load users");
       }
@@ -84,13 +80,12 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
   };
 
   const handleUserSelect = (userId: string) => {
-    console.log("Selected user ID:", userId);
     setSelectedUserId(userId);
-    loadUserHistory(userId);
-  };
-
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString();
+    if (userId) {
+      loadUserHistory(userId);
+    } else {
+      setHistoryData(null);
+    }
   };
 
   return (
@@ -113,8 +108,7 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
                 <option value="">Select a user...</option>
                 {users.map((user) => (
                   <option key={user.id} value={user.id}>
-                    {user.displayName} ({user.email}) - Last seen:{" "}
-                    {formatDate(user.lastSeen)}
+                    {formatUserOption(user)}
                   </option>
                 ))}
               </select>
@@ -140,6 +134,47 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
 
       {historyData && !isLoadingHistory && (
         <div className="space-y-6">
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-1">
+              <History className="w-5 h-5 text-slate-600" />
+              <h3 className="text-lg">Timeline</h3>
+              <span className="text-sm text-slate-500">
+                ({historyData.timeline.length})
+              </span>
+            </div>
+            <p className="text-sm text-slate-500 mb-4">
+              {historyData.user.id}
+              {historyData.anonymousUserIds.length > 0 &&
+                ` · merged anonymous ids: ${historyData.anonymousUserIds.join(", ")}`}
+            </p>
+            {historyData.timeline.length === 0 ? (
+              <p className="text-slate-500 text-sm">No events recorded</p>
+            ) : (
+              <>
+                <UserTimelineChart timeline={historyData.timeline} />
+                <button
+                  type="button"
+                  onClick={() => setIsEventListOpen((isOpen) => !isOpen)}
+                  className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+                >
+                  {isEventListOpen ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
+                  {isEventListOpen ? "Hide" : "Show"} event list
+                </button>
+                {isEventListOpen && (
+                  <ol className="max-h-128 overflow-y-auto space-y-2 mt-3">
+                    {historyData.timeline.map((entry, index) => (
+                      <TimelineRow key={`${entry.kind}-${entry.timestamp}-${index}`} entry={entry} />
+                    ))}
+                  </ol>
+                )}
+              </>
+            )}
+          </Card>
+
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <User className="w-5 h-5 text-blue-600" />
@@ -194,14 +229,14 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
                   >
                     <div className="text-slate-900 mb-1">{statement.text}</div>
                     <div className="text-sm text-slate-500">
-                      Posted: {formatDate(statement.createdAt)}
+                      Posted: {formatDate(statement.timestamp)}
                     </div>
                     <div className="text-sm text-slate-500">
                       Room: {statement.roomId}
                     </div>
                     <div className="text-sm text-slate-500">
-                      Agrees: {statement.agreeVotes || 0} | Disagrees:{" "}
-                      {statement.disagreeVotes || 0}
+                      Agrees: {statement.agrees || 0} | Disagrees:{" "}
+                      {statement.disagrees || 0} | Passes: {statement.passes || 0}
                     </div>
                   </div>
                 ))}
@@ -221,21 +256,19 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
               <p className="text-slate-500 text-sm">No votes cast</p>
             ) : (
               <div className="space-y-3">
-                {historyData.votes.map((vote, index) => (
+                {historyData.votes.map((vote) => (
                   <div
-                    key={`${vote.statementId}-${index}`}
+                    key={vote.id ?? vote.statementId}
                     className="p-4 bg-slate-50 rounded-lg border border-slate-200"
                   >
                     <div className="text-slate-900 mb-1">
-                      {vote.voteType === "agree" ? "Agreed" : "Disagreed"} with
-                      statement
+                      Voted {vote.voteType}: {vote.statementText ?? vote.statementId}
                     </div>
-                    <div className="text-sm text-slate-500">
-                      Statement ID: {vote.statementId}
-                    </div>
-                    <div className="text-sm text-slate-500">
-                      Room: {vote.roomId}
-                    </div>
+                    {vote.roomId && (
+                      <div className="text-sm text-slate-500">
+                        Room: {vote.roomId}
+                      </div>
+                    )}
                     <div className="text-sm text-slate-500">
                       Voted: {formatDate(vote.timestamp)}
                     </div>
@@ -264,13 +297,10 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
                   >
                     <div className="text-slate-900 mb-1">{rant.text}</div>
                     <div className="text-sm text-slate-500">
-                      Submitted: {formatDate(rant.createdAt)}
+                      Submitted: {formatDate(rant.timestamp)}
                     </div>
                     <div className="text-sm text-slate-500">
                       Room: {rant.roomId}
-                    </div>
-                    <div className="text-sm text-slate-500">
-                      Status: {rant.processed ? "Processed" : "Pending"}
                     </div>
                   </div>
                 ))}
@@ -281,23 +311,23 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <Activity className="w-5 h-5 text-gray-600" />
-              <h3 className="text-lg">Activities</h3>
+              <h3 className="text-lg">Active Days</h3>
               <span className="text-sm text-slate-500">
                 ({historyData.activities.length})
               </span>
             </div>
             {historyData.activities.length === 0 ? (
-              <p className="text-slate-500 text-sm">No activities recorded</p>
+              <p className="text-slate-500 text-sm">No activity recorded</p>
             ) : (
               <div className="space-y-3">
                 {historyData.activities.map((activity) => (
                   <div
-                    key={activity.id}
+                    key={`${activity.date}-${activity.userId}`}
                     className="p-4 bg-slate-50 rounded-lg border border-slate-200"
                   >
-                    <div className="text-slate-900 mb-1">{activity.description}</div>
+                    <div className="text-slate-900 mb-1">{activity.date}</div>
                     <div className="text-sm text-slate-500">
-                      Timestamp: {formatDate(activity.timestamp)}
+                      Last seen: {formatDate(activity.timestamp)}
                     </div>
                   </div>
                 ))}
@@ -307,5 +337,27 @@ export function UserHistory({ currentUserId, adminKey }: UserHistoryProps) {
         </div>
       )}
     </div>
+  );
+}
+
+function TimelineRow({ entry }: { entry: UserTimelineEvent }) {
+  return (
+    <li className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs text-slate-500 tabular-nums">
+          {formatDate(entry.timestamp)}
+        </span>
+        <span className="text-slate-900">{entry.label}</span>
+        {entry.wasAnonymous && <Badge variant="secondary">anonymous</Badge>}
+      </div>
+      {entry.detail && (
+        <div className="text-sm text-slate-700 mt-1 wrap-break-word">{entry.detail}</div>
+      )}
+      {entry.roomId && (
+        <div className="text-xs text-slate-500 mt-1">
+          Room: {entry.roomTopic ?? entry.roomId}
+        </div>
+      )}
+    </li>
   );
 }
