@@ -116,16 +116,13 @@ export const selectAllWithoutLimit = async <T>(
   tableName: string,
   conditions?: Record<string, any>,
   orderColumn = "id",
-  modifier: (query: any) => any = (query) => query,
 ): Promise<T[]> => {
   const supabase = createClientFromEnv();
   return paginatedQueryRunner<T>((offset, limit) =>
-    modifier(
-      supabase
-        .from(tableName)
-        .select("*")
-        .match(conditions || {}),
-    )
+    supabase
+      .from(tableName)
+      .select("*")
+      .match(conditions || {})
       .order(orderColumn, { ascending: true })
       .range(offset, offset + limit - 1),
   );
