@@ -103,9 +103,11 @@ export const getFlyerScans = async () => {
 };
 
 export const getFlyerScansForFlyer = async (flyer: string) =>
-  selectAllWithoutLimit<{ flyer: string; userId: string | null; created_at: string }>(
+  selectAllWithoutLimit<{ flyer: string; userId: string | null; createdAt: string }>(
     "flyer_scans",
     { flyer },
+    "id",
+    (q: any) => q.select("flyer, userId, createdAt"),
   );
 
 export const insertFlyerScan = async (

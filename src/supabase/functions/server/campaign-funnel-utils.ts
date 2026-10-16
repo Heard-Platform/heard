@@ -260,7 +260,7 @@ export const CAMPAIGNS: Record<string, CampaignConfig> = {
 
 const getDirectUrlScans = async (flyers: string[]): Promise<TimedUserAction[]> => {
   const scans = (await Promise.all(flyers.map(getFlyerScansForFlyer))).flat();
-  return scans.map((scan) => ({ userId: scan.userId, createdAt: toTimestamp(scan.created_at) }));
+  return scans.map((scan) => ({ userId: scan.userId, createdAt: toTimestamp(scan.createdAt) }));
 };
 
 const getEventsOfTypes = async (types: string[]): Promise<TimedUserAction[]> => {
