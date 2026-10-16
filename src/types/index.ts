@@ -866,3 +866,20 @@ export interface SentEmail {
   previewSubject?: string;
   previewHtml?: string;
 }
+export interface CampaignFunnelSteps {
+  arrived: number;
+  addedEmailOnFlyerScreen: number;
+  votedMoreThanOnce: number;
+  addedResponse: number;
+  viewedSecondPost: number;
+  votedOnSecondPost: number;
+  addedEmailLater: number;
+}
+
+// Each person is attributed to the channel they first arrived through.
+export interface CampaignFunnel {
+  campaignName: string;
+  flyerScan: CampaignFunnelSteps;
+  directUrl: CampaignFunnelSteps;
+  arrivedViaBoth: number;
+}

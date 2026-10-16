@@ -1,79 +1,135 @@
-import { useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
+import { useEffect, useState } from "react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, LabelList } from "recharts";
 import { Card } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { Megaphone } from "lucide-react";
-import { getMockWaymoCampaignFunnel, type CampaignFunnel } from "./campaigns-mock-data";
+import { Loader2, Megaphone } from "lucide-react";
+import { adminApi } from "../../utils/admin-api";
+import type { CampaignFunnel, CampaignFunnelSteps } from "../../types";
 import { DateRangeFilter } from "./DateRangeFilter";
 import { DEFAULT_DATE_RANGE_SELECTION, resolveDateRange, type DateRangeSelection } from "./date-range-presets";
 
-const countArrivedUsers = (funnel: CampaignFunnel) =>
-  funnel.arrivedViaFlyerScan + funnel.arrivedViaDirectUrl - funnel.arrivedViaBoth;
+const WAYMO_CAMPAIGN_KEY = "waymo";
 
-export function Campaigns() {
+const FUNNEL_STEPS: { key: keyof CampaignFunnelSteps; label: string }[] = [
+  { key: "arrived", label: "Arrived" },
+  { key: "addedEmailOnFlyerScreen", label: "Added email on flyer screen" },
+  { key: "votedMoreThanOnce", label: "Voted more than once" },
+  { key: "addedResponse", label: "Added a response" },
+  { key: "viewedSecondPost", label: "Viewed a 2nd post" },
+  { key: "votedOnSecondPost", label: "Voted on a 2nd post" },
+  { key: "addedEmailLater", label: "Added email later" },
+];
+
+const CHANNELS = [
+  { key: "flyerScan", label: "Scanned flyer", color: "#9333EA" },
+  { key: "directUrl", label: "Direct URL", color: "#0D9488" },
+] as const;
+
+const formatShareOf = (total: number) => (value: number) =>
+  total > 0 ? `${value} (${Math.round((value / total) * 100)}%)` : `${value}`;
+
+interface CampaignsProps {
+  adminKey: string;
+}
+
+export function Campaigns({ adminKey }: CampaignsProps) {
   const [dateRangeSelection, setDateRangeSelection] = useState<DateRangeSelection>(DEFAULT_DATE_RANGE_SELECTION);
-  const waymoFunnel = getMockWaymoCampaignFunnel(resolveDateRange(dateRangeSelection, new Date()));
+  const [funnel, setFunnel] = useState<CampaignFunnel | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isCurrent = true;
+    const fetchFunnel = async () => {
+      setLoading(true);
+      setError(null);
+      const { from, to } = resolveDateRange(dateRangeSelection, new Date());
+      const response = await adminApi.getCampaignFunnel(adminKey, WAYMO_CAMPAIGN_KEY, {
+        from: from?.getTime() ?? null,
+        to: to.getTime(),
+      });
+      if (!isCurrent) return;
+      if (response.success && response.data) {
+        setFunnel(response.data.funnel);
+      } else {
+        setError(response.error ?? "Failed to load campaign funnel");
+      }
+      setLoading(false);
+    };
+
+    fetchFunnel();
+    return () => {
+      isCurrent = false;
+    };
+  }, [adminKey, dateRangeSelection]);
 
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
         <DateRangeFilter selection={dateRangeSelection} onChange={setDateRangeSelection} />
       </div>
-      <CampaignFunnelCard funnel={waymoFunnel} />
+      {loading ? (
+        <Card className="p-6">
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+          </div>
+        </Card>
+      ) : error || !funnel ? (
+        <Card className="p-6 text-center text-red-600">{error}</Card>
+      ) : (
+        <CampaignFunnelCard funnel={funnel} />
+      )}
     </div>
   );
 }
 
 function CampaignFunnelCard({ funnel }: { funnel: CampaignFunnel }) {
-  const arrived = countArrivedUsers(funnel);
+  const arrived = funnel.flyerScan.arrived + funnel.directUrl.arrived;
 
   return (
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-1">
         <Megaphone className="w-5 h-5 text-purple-600" />
         <h2 className="text-xl font-semibold">{funnel.campaignName}</h2>
-        <Badge variant="outline" className="ml-2">
-          Mock data
-        </Badge>
       </div>
       <p className="text-sm text-muted-foreground mb-4">
-        {arrived} users arrived: {funnel.arrivedViaFlyerScan} scanned a flyer,{" "}
-        {funnel.arrivedViaDirectUrl} browsed to the direct URL ({funnel.arrivedViaBoth} did both)
+        {arrived} users arrived: {funnel.flyerScan.arrived} first scanned a flyer,{" "}
+        {funnel.directUrl.arrived} first browsed to the direct URL ({funnel.arrivedViaBoth} did both).
+        Percentages are of each channel's arrivals.
       </p>
-      <CampaignFunnelChart funnel={funnel} arrived={arrived} />
+      {arrived === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">No users yet</div>
+      ) : (
+        <CampaignFunnelChart funnel={funnel} />
+      )}
     </Card>
   );
 }
 
-function CampaignFunnelChart({ funnel, arrived }: { funnel: CampaignFunnel; arrived: number }) {
-  if (arrived === 0) {
-    return <div className="text-center py-8 text-muted-foreground">No users yet</div>;
-  }
-
-  const data = [
-    { label: "Scanned flyer and/or visited URL", users: arrived },
-    { label: "Added email on flyer screen", users: funnel.addedEmailOnFlyerScreen },
-    { label: "Voted more than once", users: funnel.votedMoreThanOnce },
-    { label: "Added a response", users: funnel.addedResponse },
-    { label: "Viewed a 2nd post", users: funnel.viewedSecondPost },
-    { label: "Voted on a 2nd post", users: funnel.votedOnSecondPost },
-    { label: "Added email later", users: funnel.addedEmailLater },
-  ];
+function CampaignFunnelChart({ funnel }: { funnel: CampaignFunnel }) {
+  const data = FUNNEL_STEPS.map(({ key, label }) => ({
+    label,
+    flyerScan: funnel.flyerScan[key],
+    directUrl: funnel.directUrl[key],
+  }));
+  const maxArrived = Math.max(funnel.flyerScan.arrived, funnel.directUrl.arrived);
 
   return (
-    <ResponsiveContainer width="100%" height={data.length * 32 + 16}>
+    <ResponsiveContainer width="100%" height={data.length * 52 + 48}>
       <BarChart data={data} layout="vertical" margin={{ top: 8, right: 96, bottom: 8, left: 0 }}>
-        <XAxis type="number" hide domain={[0, arrived]} />
-        <YAxis type="category" dataKey="label" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} width={220} />
-        <Tooltip formatter={(value: number) => [value, "Users"]} />
-        <Bar dataKey="users" fill="#9333EA" radius={[0, 3, 3, 0]}>
-          <LabelList
-            dataKey="users"
-            position="right"
-            style={{ fontSize: 12 }}
-            formatter={(value: number) => `${value} (${Math.round((value / arrived) * 100)}%)`}
-          />
-        </Bar>
+        <XAxis type="number" hide domain={[0, maxArrived]} />
+        <YAxis type="category" dataKey="label" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} width={200} />
+        <Tooltip />
+        <Legend />
+        {CHANNELS.map((channel) => (
+          <Bar key={channel.key} dataKey={channel.key} name={channel.label} fill={channel.color} radius={[0, 3, 3, 0]}>
+            <LabelList
+              dataKey={channel.key}
+              position="right"
+              style={{ fontSize: 11 }}
+              formatter={formatShareOf(funnel[channel.key].arrived)}
+            />
+          </Bar>
+        ))}
       </BarChart>
     </ResponsiveContainer>
   );

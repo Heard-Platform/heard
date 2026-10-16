@@ -1,4 +1,4 @@
-import { SubHeard } from "../types";
+import { CampaignFunnel, SubHeard } from "../types";
 import { BaseApiClient } from "./api-client";
 
 interface MigrationStats {
@@ -412,6 +412,22 @@ class AdminApiClient extends BaseApiClient {
   async getPowerUsers(adminKey: string) {
     return this.request<{ powerUsers: Array<{ user: any; uniqueDays: number }> }>(
       "/admin/power-users",
+      {
+        method: "GET",
+        headers: { "X-Admin-Key": adminKey },
+      },
+    );
+  }
+
+  async getCampaignFunnel(
+    adminKey: string,
+    campaignKey: string,
+    range: { from: number | null; to: number },
+  ) {
+    const params = new URLSearchParams({ to: String(range.to) });
+    if (range.from !== null) params.set("from", String(range.from));
+    return this.request<{ funnel: CampaignFunnel }>(
+      `/admin/campaigns/${campaignKey}/funnel?${params}`,
       {
         method: "GET",
         headers: { "X-Admin-Key": adminKey },

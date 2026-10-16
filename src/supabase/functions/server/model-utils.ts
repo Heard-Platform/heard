@@ -102,6 +102,12 @@ export const getFlyerScans = async () => {
   return selectAll<{ flyer: string }>("flyer_scans");
 };
 
+export const getFlyerScansForFlyer = async (flyer: string) =>
+  selectAllWithoutLimit<{ flyer: string; userId: string | null; created_at: string }>(
+    "flyer_scans",
+    { flyer },
+  );
+
 export const insertFlyerScan = async (
   flyer: string,
   userId?: string,
@@ -275,6 +281,9 @@ export const getUniqueUserIdsForEvent = async (type: string): Promise<Set<string
   return new Set(events.map(e => e.userId).filter((id): id is string => id !== null));
 };
 
+export const getAllEventsOfType = async (type: string): Promise<UserEvent[]> =>
+  selectAllWithoutLimit<UserEvent>("user_events", { type }, "createdAt");
+
 export const getEventsOfType = async (type: string): Promise<UserEvent[]> => {
   return selectAll<UserEvent>("user_events", { type });
 };
@@ -331,6 +340,9 @@ export const getRoomViewsForUser = async (userId: string): Promise<RoomView[]> =
 
 export const getAllRoomViews = async (): Promise<RoomView[]> =>
   selectAllWithoutLimit<RoomView>("room_views");
+
+export const getRoomViewsSeenSince = async (sinceTs: number): Promise<RoomView[]> =>
+  selectAllWithoutLimit<RoomView>("room_views", {}, "lastSeenAt", (q: any) => q.gte("lastSeenAt", sinceTs));
 
 export const deleteRoomView = async (userId: string, roomId: string) =>
   deleteRecord("room_views", { userId, roomId });

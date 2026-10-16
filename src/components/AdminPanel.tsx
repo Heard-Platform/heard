@@ -888,7 +888,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
           />
         )}
 
-        {activeTab === "campaigns" && <Campaigns />}
+        {activeTab === "campaigns" && <Campaigns adminKey={adminKey} />}
       </div>
 
       {/* Change Admin Dialog */}

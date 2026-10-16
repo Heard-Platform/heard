@@ -22,6 +22,8 @@ import { getFlyerEmails } from "./model-utils.ts";
 import { buildActiveDaysMap } from "./stats-utils.ts";
 import { performSubHeardRename } from "./subheard-rename-utils.tsx";
 import { getUserHistory } from "./user-history-utils.ts";
+import { CAMPAIGNS, getCampaignFunnel } from "./campaign-funnel-utils.ts";
+import { parseTimestampParam } from "./time-utils.ts";
 
 // @ts-ignore
 import { Hono } from "npm:hono";
@@ -395,6 +397,27 @@ app.get(
     } catch (error) {
       console.error("Error fetching user history:", error);
       return c.json({ error: "Failed to fetch user history" }, 500);
+    }
+  },
+);
+
+app.get(
+  "/make-server-f1a393b4/admin/campaigns/:campaignKey/funnel",
+  async (c) => {
+    try {
+      const campaign = CAMPAIGNS[c.req.param("campaignKey")];
+      if (!campaign) {
+        return c.json({ error: "Campaign not found" }, 404);
+      }
+
+      const funnel = await getCampaignFunnel(campaign, {
+        from: parseTimestampParam(c.req.query("from")),
+        to: parseTimestampParam(c.req.query("to")) ?? Date.now(),
+      });
+      return c.json({ funnel });
+    } catch (error) {
+      console.error("Error fetching campaign funnel:", error);
+      return c.json({ error: "Failed to fetch campaign funnel" }, 500);
     }
   },
 );
