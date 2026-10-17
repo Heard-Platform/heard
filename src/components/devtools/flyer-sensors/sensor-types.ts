@@ -16,6 +16,7 @@ export interface LocationFix {
 export interface TapPeak {
   timeMs: number;
   magnitude: number;
+  jolt: number;
 }
 
 export interface TapCluster {

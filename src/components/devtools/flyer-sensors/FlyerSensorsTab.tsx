@@ -155,7 +155,7 @@ export function FlyerSensorsTab({
         <div>
           <h2 className="text-xl font-semibold">Flyer Sensors</h2>
           <p className="text-sm text-slate-600">
-            Pick a room to see its saved flyers and how many votes each one has brought in. To add flyers, upload Accelerometer.csv and Location.csv from the same phone recording: each triple tap marks a flyer, placed where you were standing just before it.
+            Pick a room to see its saved flyers and how many votes each one has brought in. To add flyers, upload Accelerometer.csv and Location.csv from the same phone recording: mark each flyer by standing still while you tape it up, then tapping the phone 3 times. Each flyer is placed where you were standing just before the taps.
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-4">

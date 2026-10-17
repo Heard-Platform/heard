@@ -64,4 +64,4 @@ build/
 env/
 
 .temp/
-*.csv
+*.csv!src/components/devtools/flyer-sensors/fixtures/*.csv

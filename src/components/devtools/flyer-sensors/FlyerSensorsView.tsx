@@ -1,5 +1,7 @@
 import { lazy, Suspense, useMemo, useState } from "react";
 import { Card } from "../../ui/card";
+import { Input } from "../../ui/input";
+import { Label } from "../../ui/label";
 import type { NewFlyerPlacementsRequest, SavedFlyerPlacement } from "../../../utils/dev-api";
 import { DetectionSettings, type DetectionSettingsValue } from "./DetectionSettings";
 import { FlyerPlacementsTable } from "./FlyerPlacementsTable";
@@ -47,10 +49,11 @@ export function FlyerSensorsView({ savedFlyers, recording, roomId, statementId, 
   const [zoomWindow, setZoomWindow] = useState<TimeWindow | null>(null);
   const [adjustments, setAdjustments] = useState<FlyerAdjustments>({});
   const [hoverTimeMs, setHoverTimeMs] = useState<number | null>(null);
+  const [chosenFirstFlyerGroup, setChosenFirstFlyerGroup] = useState<number | null>(null);
 
   const accelerometerSamples = recording?.accelerometerSamples ?? NO_SAMPLES;
   const locationFixes = recording?.locationFixes ?? NO_FIXES;
-  const firstFlyerGroup = nextFlyerGroup(savedFlyers, statementId);
+  const firstFlyerGroup = chosenFirstFlyerGroup ?? nextFlyerGroup(savedFlyers, statementId);
 
   const clusters = useMemo(
     () => detectTapClusters(accelerometerSamples, settings),
@@ -117,10 +120,24 @@ export function FlyerSensorsView({ savedFlyers, recording, roomId, statementId, 
         <Card className="p-4 space-y-3">
           <p className="text-sm text-slate-600">
             Detected <span className="font-semibold">{placements.length}</span> new flyers
-            {nearMissCount > 0 && ` (${nearMissCount} other spike clusters didn't match the tap count)`}
+            {nearMissCount > 0 && ` (${nearMissCount} near misses on the chart)`}
             {" "}from {accelerometerSamples.length.toLocaleString()} accelerometer samples and{" "}
             {locationFixes.length.toLocaleString()} GPS fixes.
           </p>
+          <div className="space-y-1 w-48">
+            <Label htmlFor="flyer-sensors-first-flyer-group">First flyer number</Label>
+            <Input
+              id="flyer-sensors-first-flyer-group"
+              type="number"
+              min={1}
+              step={1}
+              value={firstFlyerGroup}
+              onChange={(event) => {
+                const parsed = Number(event.target.value);
+                if (Number.isInteger(parsed) && parsed > 0) setChosenFirstFlyerGroup(parsed);
+              }}
+            />
+          </div>
           <DetectionSettings value={settings} onChange={handleSettingsChange} />
         </Card>
       )}
@@ -153,7 +170,6 @@ export function FlyerSensorsView({ savedFlyers, recording, roomId, statementId, 
               samples={accelerometerSamples}
               clusters={clusters}
               placements={placements}
-              threshold={settings.minPeakMagnitude}
               selectedPlacement={selectedPlacement}
               zoomWindow={zoomWindow}
               onZoomChange={setZoomWindow}

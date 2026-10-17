@@ -20,10 +20,11 @@ interface NumberFieldConfig {
 }
 
 const FIELDS: NumberFieldConfig[] = [
-  { key: "minPeakMagnitude", label: "Tap threshold (m/s²)", step: 1 },
+  { key: "minTapJolt", label: "Tap sharpness (m/s² change between samples)", step: 1 },
   { key: "tapsPerSignal", label: "Taps per flyer", step: 1 },
   { key: "maxTapGapMs", label: "Max gap between taps (ms)", step: 50 },
   { key: "minTapSpacingMs", label: "Min tap spacing (ms)", step: 10 },
+  { key: "maxStillMagnitude", label: "Max motion while taping, 15s before taps (m/s²)", step: 0.1 },
   { key: "standingWindowMs", label: "GPS averaging window (ms)", step: 1000 },
 ];
 
@@ -35,7 +36,7 @@ export function DetectionSettings({ value, onChange }: DetectionSettingsProps) {
         Detection settings
       </CollapsibleTrigger>
       <CollapsibleContent className="pt-3">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {FIELDS.map((field) => (
             <div key={field.key} className="space-y-1">
               <Label htmlFor={`flyer-sensors-${field.key}`} className="text-xs text-slate-600">
