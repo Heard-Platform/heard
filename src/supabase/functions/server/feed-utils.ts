@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { ONE_MIN_MS } from "./time-utils.ts";
+import { ONE_DAY_MS, ONE_MIN_MS } from "./time-utils.ts";
 import { Community, DebateRoom } from "./types.tsx";
 
 const ACTIVITY_HALF_LIFE_MIN = 60 * 12;
@@ -24,21 +24,28 @@ export const scoreRoom = (
 };
 
 const BRAND_NEW_WINDOW_MS = 5 * ONE_MIN_MS;
+const ALIVE_WINDOW_MS = 3 * ONE_DAY_MS;
+
+type FeedTier = "spotlight" | "alive" | "new" | "stale";
+
+const getFeedTier = (room: DebateRoom, now: number): FeedTier => {
+  if (now - room.createdAt < BRAND_NEW_WINDOW_MS) return "spotlight";
+  if (room.lastActivityAt != null) {
+    return now - room.lastActivityAt < ALIVE_WINDOW_MS ? "alive" : "stale";
+  }
+  return now - room.createdAt < ALIVE_WINDOW_MS ? "new" : "stale";
+};
 
 export const sortRoomsByActivity = (
   rooms: DebateRoom[],
   now: number = Date.now(),
 ): DebateRoom[] => {
-  const [brandNew, rest] = _.partition(
-    rooms,
-    (r: DebateRoom) => now - r.createdAt < BRAND_NEW_WINDOW_MS,
-  );
+  const tiers = _.groupBy(rooms, (room: DebateRoom) => getFeedTier(room, now));
   return [
-    ..._.orderBy(brandNew, "createdAt", "desc"),
-    ...rest
-      .map((room) => ({ room, score: scoreRoom(room, now) }))
-      .sort((a, b) => b.score - a.score)
-      .map(({ room }) => room),
+    ..._.orderBy(tiers.spotlight ?? [], "createdAt", "desc"),
+    ..._.orderBy(tiers.alive ?? [], (room: DebateRoom) => scoreRoom(room, now), "desc"),
+    ..._.orderBy(tiers.new ?? [], "createdAt", "desc"),
+    ..._.orderBy(tiers.stale ?? [], (room: DebateRoom) => room.totalVotes ?? 0, "desc"),
   ];
 };
 
