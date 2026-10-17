@@ -117,13 +117,13 @@ describe("sortRoomsByActivity", () => {
       assertEquals(result[1], newQuiet);
     });
 
-    it("does not fall back to createdAt for rooms that have never had activity", () => {
+    it("orders untouched rooms newest first", () => {
       const now = Date.now();
       const olderRoom = makeRoom(now - 2 * HOUR);
       const newerRoom = makeRoom(now - 1 * HOUR);
 
       const result = sortRoomsByActivity([olderRoom, newerRoom], now);
-      assertEquals(result, [olderRoom, newerRoom]);
+      assertEquals(result, [newerRoom, olderRoom]);
     });
 
     it("active old room outranks newer empty room", () => {
@@ -135,13 +135,13 @@ describe("sortRoomsByActivity", () => {
       assertEquals(result, [olderRoom, newerRoom]);
     });
 
-    it("a room with any activity, however old, outranks a room that has never been touched", () => {
+    it("a new untouched room outranks a room whose activity is long past", () => {
       const now = Date.now();
       const ancientlyActive = makeRoom(now - 30 * DAY, { lastActivityAt: now - 20 * DAY });
-      const staleEmpty = makeRoom(now - 10 * MIN);
+      const newEmpty = makeRoom(now - 10 * MIN);
 
-      const result = sortRoomsByActivity([staleEmpty, ancientlyActive], now);
-      assertEquals(result, [ancientlyActive, staleEmpty]);
+      const result = sortRoomsByActivity([ancientlyActive, newEmpty], now);
+      assertEquals(result, [newEmpty, ancientlyActive]);
     });
 
     it("a very new empty room does not outrank an old but active room", () => {
@@ -176,7 +176,7 @@ describe("sortRoomsByActivity", () => {
   });
 
   describe("Mixed scenarios", () => {
-    it("any real activity outranks a brand-new untouched room, no matter how stale", () => {
+    it("any activity within the alive window outranks an untouched room", () => {
       const now = Date.now();
       const rwsActive = makeRoom(now - 5 * HOUR, { lastActivityAt: now - 2 * MIN });
       const rwsBrandNew = makeRoom(now - 10 * MIN);
@@ -195,7 +195,45 @@ describe("sortRoomsByActivity", () => {
 
       const result = sortRoomsByActivity([rwsQuietNew, rwsQuietNewer, rwsRevived], now);
 
-      assertEquals(result, [rwsRevived, rwsQuietNew, rwsQuietNewer]);
+      assertEquals(result, [rwsRevived, rwsQuietNewer, rwsQuietNew]);
+    });
+  });
+
+  describe("Tiers", () => {
+    it("a room active just inside the 3-day window outranks a new untouched room", () => {
+      const now = Date.now();
+      const barelyAlive = makeRoom(now - 10 * DAY, { lastActivityAt: now - 3 * DAY + 1 * HOUR });
+      const newEmpty = makeRoom(now - 10 * MIN);
+
+      const result = sortRoomsByActivity([newEmpty, barelyAlive], now);
+      assertEquals(result, [barelyAlive, newEmpty]);
+    });
+
+    it("a new untouched room outranks a stale room with many votes", () => {
+      const now = Date.now();
+      const staleBig = makeRoom(now - 60 * DAY, { lastActivityAt: now - 3 * DAY - 1 * HOUR, totalVotes: 1000 });
+      const newEmpty = makeRoom(now - 2 * DAY);
+
+      const result = sortRoomsByActivity([staleBig, newEmpty], now);
+      assertEquals(result, [newEmpty, staleBig]);
+    });
+
+    it("an untouched room older than 3 days drops into the stale tier", () => {
+      const now = Date.now();
+      const abandoned = makeRoom(now - 3 * DAY - 1 * HOUR);
+      const staleWithVotes = makeRoom(now - 90 * DAY, { lastActivityAt: now - 80 * DAY, totalVotes: 5 });
+
+      const result = sortRoomsByActivity([abandoned, staleWithVotes], now);
+      assertEquals(result, [staleWithVotes, abandoned]);
+    });
+
+    it("orders stale rooms by total votes regardless of recency", () => {
+      const now = Date.now();
+      const recentlyStaleSmall = makeRoom(now - 10 * DAY, { lastActivityAt: now - 4 * DAY, totalVotes: 10 });
+      const longStaleBig = makeRoom(now - 90 * DAY, { lastActivityAt: now - 60 * DAY, totalVotes: 300 });
+
+      const result = sortRoomsByActivity([recentlyStaleSmall, longStaleBig], now);
+      assertEquals(result, [longStaleBig, recentlyStaleSmall]);
     });
   });
 
