@@ -4,13 +4,17 @@ import {
   detectTapClusters,
   findTapPeaks,
   groupPeaksIntoClusters,
+  wasStillBefore,
 } from "./tap-detection";
 import { createMockSensorRecording } from "./flyer-sensors-mock-data";
-import type { AccelerometerSample } from "./sensor-types";
+import type { AccelerometerSample, TapPeak } from "./sensor-types";
+import realFlyerClipCsv from "./fixtures/flyer-taps-clip.csv?raw";
 
-function samplesFromMagnitudes(magnitudes: number[], intervalMs = 10): AccelerometerSample[] {
+const INTERVAL_MS = 10;
+
+function samplesFromMagnitudes(magnitudes: number[], startMs = 0): AccelerometerSample[] {
   return magnitudes.map((magnitude, index) => ({
-    timeMs: index * intervalMs,
+    timeMs: startMs + index * INTERVAL_MS,
     x: 0,
     y: 0,
     z: magnitude,
@@ -18,64 +22,97 @@ function samplesFromMagnitudes(magnitudes: number[], intervalMs = 10): Accelerom
   }));
 }
 
-function quiet(count: number): number[] {
-  return Array.from({ length: count }, () => 0.5);
+function repeat(value: number, count: number): number[] {
+  return Array.from({ length: count }, () => value);
+}
+
+function peak(timeMs: number): TapPeak {
+  return { timeMs, magnitude: 15, jolt: 15 };
+}
+
+// 28 seconds of a real recording (Sensor Logger on an iPhone) around one flyer: standing still while taping,
+// a jostle just before the taps, three taps starting ~16.4s in, then walking away.
+function parseClip(csv: string): AccelerometerSample[] {
+  return csv
+    .trim()
+    .split("\n")
+    .slice(1)
+    .map((line) => {
+      const [timeMs, x, y, z] = line.split(",").map(Number);
+      return { timeMs, x, y, z, magnitude: Math.hypot(x, y, z) };
+    });
 }
 
 describe("findTapPeaks", () => {
-  it("ignores samples below the threshold", () => {
-    const samples = samplesFromMagnitudes([...quiet(5), 10, ...quiet(5)]);
-    expect(findTapPeaks(samples, 25, 100)).toEqual([]);
+  it("finds sudden spikes even when they're smaller than smooth swings", () => {
+    const smoothSwing = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 19, 17, 15, 13, 11, 9, 7, 5, 3, 1];
+    const samples = samplesFromMagnitudes([...repeat(0.3, 5), ...smoothSwing, ...repeat(0.3, 20), 12, ...repeat(0.3, 5)]);
+
+    expect(findTapPeaks(samples, 7, 100).map((tap) => tap.timeMs)).toEqual([460]);
   });
 
-  it("keeps only the strongest peak within the minimum spacing", () => {
-    const samples = samplesFromMagnitudes([...quiet(5), 30, 1, 1, 50, 1, ...quiet(5)]);
-    const peaks = findTapPeaks(samples, 25, 100);
-    expect(peaks).toEqual([{ timeMs: 80, magnitude: 50 }]);
-  });
+  it("keeps only the sharpest jolt within the minimum spacing", () => {
+    const samples = samplesFromMagnitudes([...repeat(0.3, 5), 10, 0.3, 0.3, 20, 0.3, ...repeat(0.3, 5)]);
+    const peaks = findTapPeaks(samples, 7, 100);
 
-  it("finds separate peaks that are further apart than the minimum spacing", () => {
-    const samples = samplesFromMagnitudes([...quiet(5), 40, ...quiet(20), 45, ...quiet(5)]);
-    expect(findTapPeaks(samples, 25, 100).map((peak) => peak.timeMs)).toEqual([50, 260]);
+    expect(peaks).toHaveLength(1);
+    expect(peaks[0].timeMs).toBe(80);
   });
 });
 
 describe("groupPeaksIntoClusters", () => {
-  const peak = (timeMs: number) => ({ timeMs, magnitude: 40 });
+  it("splits groups when the gap exceeds the max tap gap", () => {
+    const groups = groupPeaksIntoClusters([peak(0), peak(250), peak(500), peak(3000), peak(3250)], 500);
+    expect(groups.map((group) => group.length)).toEqual([3, 2]);
+  });
+});
 
-  it("marks a cluster with the expected tap count as a signal", () => {
-    const clusters = groupPeaksIntoClusters([peak(0), peak(200), peak(450)], 700, 3);
-    expect(clusters).toHaveLength(1);
-    expect(clusters[0]).toMatchObject({ startMs: 0, endMs: 450, isSignal: true });
+describe("wasStillBefore", () => {
+  const firstTapMs = 16_000;
+  const maxStillMagnitude = DEFAULT_TAP_DETECTION_PARAMS.maxStillMagnitude;
+
+  it("accepts taps after standing still", () => {
+    const samples = samplesFromMagnitudes(repeat(0.3, 1_700));
+    expect(wasStillBefore(samples, firstTapMs, maxStillMagnitude)).toBe(true);
   });
 
-  it("splits clusters when the gap exceeds the max tap gap", () => {
-    const clusters = groupPeaksIntoClusters(
-      [peak(0), peak(200), peak(400), peak(3000), peak(3200), peak(3400)],
-      700,
-      3,
-    );
-    expect(clusters.map((cluster) => cluster.startMs)).toEqual([0, 3000]);
-    expect(clusters.every((cluster) => cluster.isSignal)).toBe(true);
+  it("accepts a brief jostle just before the taps", () => {
+    const samples = samplesFromMagnitudes([...repeat(0.3, 1_300), ...repeat(6, 200), ...repeat(0.3, 200)]);
+    expect(wasStillBefore(samples, firstTapMs, maxStillMagnitude)).toBe(true);
   });
 
-  it("does not treat clusters with too many or too few taps as signals", () => {
-    const clusters = groupPeaksIntoClusters(
-      [peak(0), peak(200), peak(2000), peak(2200), peak(2400), peak(2600)],
-      700,
-      3,
-    );
-    expect(clusters.map((cluster) => cluster.peaks.length)).toEqual([2, 4]);
-    expect(clusters.some((cluster) => cluster.isSignal)).toBe(false);
+  it("rejects taps made while walking", () => {
+    const samples = samplesFromMagnitudes([...repeat(0.3, 300), ...repeat(6, 1_400)]);
+    expect(wasStillBefore(samples, firstTapMs, maxStillMagnitude)).toBe(false);
+  });
+
+  it("rejects spikes a few seconds after walking away from a stop", () => {
+    const samples = samplesFromMagnitudes([...repeat(0.3, 1_000), ...repeat(6, 700)]);
+    expect(wasStillBefore(samples, firstTapMs, maxStillMagnitude)).toBe(false);
+  });
+
+  it("rejects taps at the very start of a recording, with nothing to show stillness before", () => {
+    const samples = samplesFromMagnitudes(repeat(0.3, 300));
+    expect(wasStillBefore(samples, 100, maxStillMagnitude)).toBe(false);
   });
 });
 
 describe("detectTapClusters", () => {
-  it("finds every triple tap in the mock DC recording and rejects the four-tap stop", () => {
+  it("finds the flyer in a real recording and nothing in the walking around it", () => {
+    const samples = parseClip(realFlyerClipCsv);
+    const signals = detectTapClusters(samples, DEFAULT_TAP_DETECTION_PARAMS).filter((cluster) => cluster.isSignal);
+
+    expect(signals).toHaveLength(1);
+    expect(signals[0].peaks).toHaveLength(3);
+    expect(signals[0].startMs).toBeGreaterThan(16_000);
+    expect(signals[0].startMs).toBeLessThan(16_500);
+  });
+
+  it("finds every triple tap in the mock DC recording and flags the two-tap stop as a near miss", () => {
     const { accelerometerSamples } = createMockSensorRecording();
     const clusters = detectTapClusters(accelerometerSamples, DEFAULT_TAP_DETECTION_PARAMS);
 
     expect(clusters.filter((cluster) => cluster.isSignal)).toHaveLength(6);
-    expect(clusters.filter((cluster) => !cluster.isSignal).map((cluster) => cluster.peaks.length)).toEqual([4]);
+    expect(clusters.filter((cluster) => !cluster.isSignal).map((cluster) => cluster.peaks.length)).toEqual([2]);
   });
 });

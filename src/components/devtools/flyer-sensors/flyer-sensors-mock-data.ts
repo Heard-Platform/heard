@@ -32,7 +32,7 @@ const DC_FLYER_STOPS: FlyerStop[] = [
   { latitude: 38.91243, longitude: -77.04566, tapMagnitudes: [42, 45, 60] },
   { latitude: 38.91531, longitude: -77.04513, tapMagnitudes: [33, 51, 73] },
   { latitude: 38.92146, longitude: -77.04239, tapMagnitudes: [48, 30, 55] },
-  { latitude: 38.92265, longitude: -77.03598, tapMagnitudes: [66, 88, 58, 81] },
+  { latitude: 38.92265, longitude: -77.03598, tapMagnitudes: [66, 88] },
   { latitude: 38.91704, longitude: -77.03196, tapMagnitudes: [38, 48, 77] },
   { latitude: 38.90962, longitude: -77.02968, tapMagnitudes: [31, 41, 43] },
 ];

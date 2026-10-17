@@ -20,7 +20,6 @@ import {
   NEAR_MISS_COLOR,
   SELECTED_COLOR,
   SIGNAL_COLOR,
-  THRESHOLD_COLOR,
   TOOLTIP_PROPS,
 } from "./chart-theme";
 import { downsampleByPeakMagnitude, samplesInWindow } from "./downsample";
@@ -34,7 +33,6 @@ interface RecordingTimelineChartProps {
   samples: AccelerometerSample[];
   clusters: TapCluster[];
   placements: FlyerPlacement[];
-  threshold: number;
   selectedPlacement: FlyerPlacement | undefined;
   zoomWindow: TimeWindow | null;
   onZoomChange: (window: TimeWindow | null) => void;
@@ -47,7 +45,6 @@ export const RecordingTimelineChart = memo(function RecordingTimelineChart({
   samples,
   clusters,
   placements,
-  threshold,
   selectedPlacement,
   zoomWindow,
   onZoomChange,
@@ -105,7 +102,6 @@ export const RecordingTimelineChart = memo(function RecordingTimelineChart({
             />
             <YAxis tick={{ fontSize: 11 }} width={40} />
             <Tooltip {...TOOLTIP_PROPS} />
-            <ReferenceLine y={threshold} stroke={THRESHOLD_COLOR} strokeDasharray="4 4" />
             {clusters
               .filter((cluster) => !cluster.isSignal)
               .map((cluster) => (
@@ -141,7 +137,7 @@ export const RecordingTimelineChart = memo(function RecordingTimelineChart({
         </ResponsiveContainer>
       </div>
       <p className="text-xs text-slate-500 mt-1">
-        Drag across the chart to zoom in, or select a flyer to zoom to its taps. Green lines are detected flyers, grey dashed lines are spike clusters with the wrong tap count, and the red dashed line is the tap threshold.
+        Drag across the chart to zoom in, or select a flyer to zoom to its taps. Green lines are detected flyers. Grey dashed lines are near misses: taps without standing still before them, or standing still with the wrong number of taps.
       </p>
     </div>
   );
