@@ -25,7 +25,7 @@ export function nextFlyerGroup(savedFlyers: SavedFlyerPlacement[], statementId: 
 export function findSaveProblem({ roomId, statementId, placements, savedFlyers }: SaveContext): string | null {
   if (!roomId) return "Select a room to save";
   if (!statementId) return "Select the statement on these flyers to save";
-  if (placements.length === 0) return "Upload a recording with new flyers to save";
+  if (placements.length === 0) return "Upload a recording or add flyers on the map to save";
 
   const unplaced = placements.filter((placement) => !placementPosition(placement));
   if (unplaced.length > 0) {

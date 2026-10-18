@@ -56,15 +56,17 @@ describe("buildFlyerPlacements", () => {
     const fixes = [fix(0, 38.9, -77.0, 5)];
     const placements = buildFlyerPlacements(
       [cluster(1_000), cluster(5_000, false), cluster(9_000)],
+      new Set(),
+      [],
       fixes,
       15_000,
       {},
       1,
     );
 
-    expect(placements.map((placement) => [placement.number, placement.cluster.startMs])).toEqual([
-      [1, 1_000],
-      [2, 9_000],
+    expect(placements.map((placement) => [placement.id, placement.cluster?.startMs])).toEqual([
+      ["tap-1000", 1_000],
+      ["tap-9000", 9_000],
     ]);
   });
 
@@ -72,26 +74,73 @@ describe("buildFlyerPlacements", () => {
     const fixes = [fix(0, 38.9, -77.0, 5)];
     const placements = buildFlyerPlacements(
       [cluster(1_000), cluster(5_000), cluster(9_000)],
+      new Set(),
+      [],
       fixes,
       15_000,
-      { 5_000: { flyerGroup: 40 } },
+      { "tap-5000": { flyerGroup: 40 } },
       12,
     );
 
     expect(placements.map((placement) => placement.flyerGroup)).toEqual([12, 40, 14]);
   });
 
-  it("attaches adjustments by cluster start time", () => {
+  it("attaches adjustments by flyer id", () => {
     const fixes = [fix(0, 38.9, -77.0, 5)];
     const moved = { latitude: 38.95, longitude: -77.05 };
-    const placements = buildFlyerPlacements([cluster(1_000), cluster(9_000)], fixes, 15_000, {
-      1_000: { headingDeg: 90 },
-      9_000: { position: moved },
+    const placements = buildFlyerPlacements([cluster(1_000), cluster(9_000)], new Set(), [], fixes, 15_000, {
+      "tap-1000": { headingDeg: 90 },
+      "tap-9000": { position: moved },
     }, 1);
 
     expect(placements.map((placement) => [placement.manualPosition, placement.headingDeg])).toEqual([
       [null, 90],
       [moved, null],
+    ]);
+  });
+
+  it("leaves out detected flyers marked as wrong and numbers the rest without them", () => {
+    const fixes = [fix(0, 38.9, -77.0, 5)];
+    const placements = buildFlyerPlacements(
+      [cluster(1_000), cluster(5_000), cluster(9_000)],
+      new Set(["tap-5000"]),
+      [],
+      fixes,
+      15_000,
+      {},
+      1,
+    );
+
+    expect(placements.map((placement) => [placement.id, placement.flyerGroup])).toEqual([
+      ["tap-1000", 1],
+      ["tap-9000", 2],
+    ]);
+  });
+
+  it("appends manual flyers after detected ones, placed where they were dropped", () => {
+    const fixes = [fix(0, 38.9, -77.0, 5)];
+    const dropped = { latitude: 38.91, longitude: -77.01 };
+    const moved = { latitude: 38.95, longitude: -77.05 };
+    const placements = buildFlyerPlacements(
+      [cluster(1_000)],
+      new Set(),
+      [{ id: "manual-1", position: dropped }, { id: "manual-2", position: dropped }],
+      fixes,
+      15_000,
+      { "manual-2": { position: moved } },
+      5,
+    );
+
+    expect(placements.map(({ id, flyerGroup, cluster, location, manualPosition }) => [
+      id,
+      flyerGroup,
+      cluster === null,
+      location,
+      manualPosition,
+    ])).toEqual([
+      ["tap-1000", 5, false, expect.anything(), null],
+      ["manual-1", 6, true, null, dropped],
+      ["manual-2", 7, true, null, moved],
     ]);
   });
 });
@@ -100,8 +149,8 @@ describe("placementPosition", () => {
   it("prefers the manual position over the GPS estimate", () => {
     const fixes = [fix(0, 38.9, -77.0, 5)];
     const moved = { latitude: 38.95, longitude: -77.05 };
-    const [estimated, adjusted] = buildFlyerPlacements([cluster(1_000), cluster(9_000)], fixes, 15_000, {
-      9_000: { position: moved },
+    const [estimated, adjusted] = buildFlyerPlacements([cluster(1_000), cluster(9_000)], new Set(), [], fixes, 15_000, {
+      "tap-9000": { position: moved },
     }, 1);
 
     expect(placementPosition(estimated)).toMatchObject({ latitude: 38.9, longitude: -77.0 });
@@ -113,16 +162,16 @@ describe("updateFlyerAdjustment", () => {
   const position = { latitude: 38.95, longitude: -77.05 };
 
   it("adds to an existing adjustment without dropping other fields", () => {
-    const adjustments = updateFlyerAdjustment({ 1_000: { position } }, cluster(1_000), (current) => ({
+    const adjustments = updateFlyerAdjustment({ "tap-1000": { position } }, "tap-1000", (current) => ({
       ...current,
       headingDeg: 180,
     }));
 
-    expect(adjustments).toEqual({ 1_000: { position, headingDeg: 180 } });
+    expect(adjustments).toEqual({ "tap-1000": { position, headingDeg: 180 } });
   });
 
   it("removes the entry once nothing is adjusted", () => {
-    const adjustments = updateFlyerAdjustment({ 1_000: { headingDeg: 180 } }, cluster(1_000), () => ({}));
+    const adjustments = updateFlyerAdjustment({ "tap-1000": { headingDeg: 180 } }, "tap-1000", () => ({}));
 
     expect(adjustments).toEqual({});
   });

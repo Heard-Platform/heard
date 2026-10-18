@@ -15,6 +15,7 @@ import { Button } from "../../ui/button";
 import {
   CHART_HEIGHT_PX,
   CHART_MARGIN,
+  DISMISSED_COLOR,
   GRID_COLOR,
   LINE_COLOR,
   NEAR_MISS_COLOR,
@@ -32,6 +33,7 @@ import type { AccelerometerSample, FlyerPlacement, TapCluster } from "./sensor-t
 interface RecordingTimelineChartProps {
   samples: AccelerometerSample[];
   clusters: TapCluster[];
+  dismissedClusters: TapCluster[];
   placements: FlyerPlacement[];
   selectedPlacement: FlyerPlacement | undefined;
   zoomWindow: TimeWindow | null;
@@ -44,6 +46,7 @@ const MAX_POINTS = 1500;
 export const RecordingTimelineChart = memo(function RecordingTimelineChart({
   samples,
   clusters,
+  dismissedClusters,
   placements,
   selectedPlacement,
   zoomWindow,
@@ -71,6 +74,7 @@ export const RecordingTimelineChart = memo(function RecordingTimelineChart({
 
   const clusterColor = (cluster: TapCluster) => {
     if (cluster === selectedPlacement?.cluster) return SELECTED_COLOR;
+    if (dismissedClusters.includes(cluster)) return DISMISSED_COLOR;
     return cluster.isSignal ? SIGNAL_COLOR : NEAR_MISS_COLOR;
   };
 
@@ -107,15 +111,26 @@ export const RecordingTimelineChart = memo(function RecordingTimelineChart({
               .map((cluster) => (
                 <ReferenceLine key={cluster.startMs} x={cluster.startMs} stroke={NEAR_MISS_COLOR} strokeDasharray="2 2" />
               ))}
-            {placements.map((placement) => (
+            {dismissedClusters.map((cluster) => (
               <ReferenceLine
-                key={placement.number}
-                x={placement.cluster.startMs}
-                stroke={clusterColor(placement.cluster)}
-                strokeWidth={placement === selectedPlacement ? 2 : 1}
-                label={{ value: `#${placement.flyerGroup}`, position: "top", fontSize: 11 }}
+                key={cluster.startMs}
+                x={cluster.startMs}
+                stroke={DISMISSED_COLOR}
+                strokeDasharray="2 2"
+                label={{ value: "✕", position: "top", fontSize: 11, fill: DISMISSED_COLOR }}
               />
             ))}
+            {placements.map(({ id, cluster, flyerGroup }) =>
+              cluster ? (
+                <ReferenceLine
+                  key={id}
+                  x={cluster.startMs}
+                  stroke={clusterColor(cluster)}
+                  strokeWidth={cluster === selectedPlacement?.cluster ? 2 : 1}
+                  label={{ value: `#${flyerGroup}`, position: "top", fontSize: 11 }}
+                />
+              ) : null,
+            )}
             <Line dataKey="magnitude" stroke={LINE_COLOR} strokeWidth={1} dot={false} isAnimationActive={false} />
             {zoomWindow &&
               clusters.flatMap((cluster) =>
@@ -137,7 +152,7 @@ export const RecordingTimelineChart = memo(function RecordingTimelineChart({
         </ResponsiveContainer>
       </div>
       <p className="text-xs text-slate-500 mt-1">
-        Drag across the chart to zoom in, or select a flyer to zoom to its taps. Green lines are detected flyers. Grey dashed lines are near misses: taps without standing still before them, or standing still with the wrong number of taps.
+        Drag across the chart to zoom in, or select a flyer to zoom to its taps. Green lines are detected flyers. Grey dashed lines are near misses: bursts with more taps than a flyer signal. Red dashed lines are detected flyers you marked as not a flyer.
       </p>
     </div>
   );

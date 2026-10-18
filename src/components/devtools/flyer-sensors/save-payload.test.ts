@@ -7,7 +7,7 @@ const estimatedLocation = { latitude: 38.9, longitude: -77.0, horizontalAccuracy
 
 function placement(overrides: Partial<FlyerPlacement>): FlyerPlacement {
   return {
-    number: 1,
+    id: "tap-1000",
     flyerGroup: 1,
     cluster: { startMs: 1_000, endMs: 1_450, peaks: [], isSignal: true },
     location: estimatedLocation,
@@ -52,7 +52,7 @@ describe("findSaveProblem", () => {
   it("requires a room, statement and new flyers", () => {
     expect(findSaveProblem({ ...ready, roomId: null })).toBe("Select a room to save");
     expect(findSaveProblem({ ...ready, statementId: null })).toBe("Select the statement on these flyers to save");
-    expect(findSaveProblem({ ...ready, placements: [] })).toBe("Upload a recording with new flyers to save");
+    expect(findSaveProblem({ ...ready, placements: [] })).toBe("Upload a recording or add flyers on the map to save");
   });
 
   it("requires every flyer to have a position", () => {
@@ -63,7 +63,7 @@ describe("findSaveProblem", () => {
 
   it("rejects repeated or already saved flyer numbers", () => {
     expect(
-      findSaveProblem({ ...ready, placements: [placement({ flyerGroup: 2 }), placement({ number: 2, flyerGroup: 2 })] }),
+      findSaveProblem({ ...ready, placements: [placement({ flyerGroup: 2 }), placement({ id: "tap-2000", flyerGroup: 2 })] }),
     ).toBe("Flyer numbers used more than once: 2");
     expect(
       findSaveProblem({ ...ready, placements: [placement({ flyerGroup: 5 })], savedFlyers: [savedFlyer("s1", 5)] }),
@@ -79,7 +79,7 @@ describe("buildSavePayload", () => {
     const moved = { latitude: 38.91, longitude: -77.01 };
     const payload = buildSavePayload("room", "s1", [
       placement({ flyerGroup: 8 }),
-      placement({ number: 2, flyerGroup: 9, manualPosition: moved, headingDeg: 270 }),
+      placement({ id: "tap-2000", flyerGroup: 9, manualPosition: moved, headingDeg: 270 }),
     ]);
 
     expect(payload).toEqual({

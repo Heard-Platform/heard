@@ -7,6 +7,7 @@ export const GRID_COLOR = "#e2e8f0";
 export const SIGNAL_COLOR = "#16a34a";
 export const SELECTED_COLOR = "#2563eb";
 export const NEAR_MISS_COLOR = "#94a3b8";
+export const DISMISSED_COLOR = "#dc2626";
 
 export const TOOLTIP_PROPS = {
   labelFormatter: (timeMs: number) => formatClockTime(timeMs),

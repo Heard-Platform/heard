@@ -5,6 +5,7 @@ import type {
   FlyerPlacement,
   LatLng,
   LocationFix,
+  ManualFlyer,
   TapCluster,
 } from "./sensor-types";
 
@@ -55,36 +56,71 @@ export function estimateFlyerLocation(
   };
 }
 
+export function detectedFlyerId(cluster: TapCluster): string {
+  return `tap-${cluster.startMs}`;
+}
+
+interface PlacementSource {
+  id: string;
+  cluster: TapCluster | null;
+  location: FlyerLocation | null;
+  initialPosition: LatLng | null;
+}
+
+export function isDismissedSignal(cluster: TapCluster, dismissedIds: ReadonlySet<string>): boolean {
+  return cluster.isSignal && dismissedIds.has(detectedFlyerId(cluster));
+}
+
+// Detected flyers come first in recording order, then flyers added by hand in the order they were added.
+// Detected flyers marked as wrong are left out so they aren't saved or counted in the numbering.
 export function buildFlyerPlacements(
   clusters: TapCluster[],
+  dismissedIds: ReadonlySet<string>,
+  manualFlyers: ManualFlyer[],
   fixes: LocationFix[],
   standingWindowMs: number,
   adjustments: FlyerAdjustments,
   firstFlyerGroup: number,
 ): FlyerPlacement[] {
-  return clusters
-    .filter((cluster) => cluster.isSignal)
-    .map((cluster, index) => ({
-      number: index + 1,
-      flyerGroup: adjustments[cluster.startMs]?.flyerGroup ?? firstFlyerGroup + index,
+  const detected: PlacementSource[] = clusters
+    .filter((cluster) => cluster.isSignal && !isDismissedSignal(cluster, dismissedIds))
+    .map((cluster) => ({
+      id: detectedFlyerId(cluster),
       cluster,
       location: estimateFlyerLocation(fixes, cluster, standingWindowMs),
-      manualPosition: adjustments[cluster.startMs]?.position ?? null,
-      headingDeg: adjustments[cluster.startMs]?.headingDeg ?? null,
+      initialPosition: null,
     }));
+  const added: PlacementSource[] = manualFlyers.map((flyer) => ({
+    id: flyer.id,
+    cluster: null,
+    location: null,
+    initialPosition: flyer.position,
+  }));
+
+  return [...detected, ...added].map(({ id, cluster, location, initialPosition }, index) => {
+    const adjustment = adjustments[id];
+    return {
+      id,
+      flyerGroup: adjustment?.flyerGroup ?? firstFlyerGroup + index,
+      cluster,
+      location,
+      manualPosition: adjustment?.position ?? initialPosition,
+      headingDeg: adjustment?.headingDeg ?? null,
+    };
+  });
 }
 
 export function updateFlyerAdjustment(
   adjustments: FlyerAdjustments,
-  cluster: TapCluster,
+  id: string,
   update: (current: FlyerAdjustment) => FlyerAdjustment,
 ): FlyerAdjustments {
   const next = { ...adjustments };
-  const updated = update(adjustments[cluster.startMs] ?? {});
+  const updated = update(adjustments[id] ?? {});
   if (Object.values(updated).every((value) => value === undefined)) {
-    delete next[cluster.startMs];
+    delete next[id];
   } else {
-    next[cluster.startMs] = updated;
+    next[id] = updated;
   }
   return next;
 }
