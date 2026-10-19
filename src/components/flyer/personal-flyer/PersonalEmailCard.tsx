@@ -1,6 +1,7 @@
 import type { FormEvent, ReactNode } from "react";
 import { ChevronLeft } from "lucide-react";
 import type { EmailOtpFlow } from "../../../hooks/useEmailOtpFlow";
+import { CtaButton } from "../../widgets/CtaButton";
 import { TOSText } from "../../onboarding/TOSText";
 import { CARD_CLASS, COLORS } from "./personal-flyer-theme";
 
@@ -94,13 +95,8 @@ function CardTitle({ children }: { children: ReactNode }) {
 
 function SubmitButton({ label, isSubmitting }: { label: string; isSubmitting: boolean }) {
   return (
-    <button
-      className="mt-3 w-full rounded-2xl py-3.5 text-base font-bold text-white disabled:opacity-60"
-      style={{ backgroundColor: COLORS.button }}
-      type="submit"
-      disabled={isSubmitting}
-    >
+    <CtaButton className="mt-3" type="submit" disabled={isSubmitting}>
       {isSubmitting ? "Sending…" : label}
-    </button>
+    </CtaButton>
   );
 }

@@ -1,15 +1,14 @@
-import type { EmailOtpFlow } from "../../../hooks/useEmailOtpFlow";
+import { CtaButton } from "../../widgets/CtaButton";
 import { FounderAvatar } from "./FounderAvatar";
-import { PersonalEmailCard } from "./PersonalEmailCard";
+import { NappingCat } from "./NappingCat";
 import { PersonalFlyerHeader } from "./PersonalFlyerHeader";
 import { COLORS, FOUNDER_NAME, HEADLINE_CLASS } from "./personal-flyer-theme";
 
 interface PersonalWhoDisScreenProps {
-  emailFlow: EmailOtpFlow;
   onBack: () => void;
 }
 
-export function PersonalWhoDisScreen({ emailFlow, onBack }: PersonalWhoDisScreenProps) {
+export function PersonalWhoDisScreen({ onBack }: PersonalWhoDisScreenProps) {
   return (
     <div className="heard-feed-bg flex min-h-full flex-col px-7 pb-7 pt-8">
       <PersonalFlyerHeader onBack={onBack} />
@@ -26,12 +25,14 @@ export function PersonalWhoDisScreen({ emailFlow, onBack }: PersonalWhoDisScreen
           I'm a DC native, software engineer, and former firefighter. I'm building Heard because I think
           neighbors should have an easy, fun way to hear each other out.
         </p>
-        <p>So, thanks again for scanning my flyer and being part of this wild experiment.</p>
-        <p className="pt-2">Now give me your email. (Please.)</p>
+        <p>Oh, looks like my cat wants to say hi.</p>
       </div>
 
-      <div className="mt-auto pt-6">
-        <PersonalEmailCard emailFlow={emailFlow} />
+      <div className="mt-auto pt-16">
+        <div className="relative">
+          <NappingCat />
+          <CtaButton onClick={onBack}>Go back</CtaButton>
+        </div>
       </div>
     </div>
   );

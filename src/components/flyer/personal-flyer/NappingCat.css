@@ -1,0 +1,158 @@
+.napping-cat {
+  width: 66px;
+  height: 44px;
+}
+
+.napping-cat svg {
+  display: block;
+  width: 66px;
+  height: 44px;
+  overflow: visible;
+}
+
+.napping-cat svg * {
+  transform-box: fill-box;
+}
+
+.napping-cat .cat-fill {
+  fill: #141414;
+}
+
+.napping-cat .cat-leg {
+  transform-origin: 50% 0;
+  transition: transform 0.35s;
+}
+
+.napping-cat .cat-torso {
+  transform-origin: 50% 50%;
+}
+
+.napping-cat .cat-body {
+  transition: transform 0.35s;
+}
+
+.napping-cat .cat-head {
+  transform-origin: 20% 80%;
+  transition: transform 0.35s;
+}
+
+.napping-cat .cat-tail {
+  fill: none;
+  stroke: #141414;
+  stroke-width: 5;
+  stroke-linecap: round;
+  transform-origin: 100% 100%;
+  transition: transform 0.5s;
+}
+
+.napping-cat .cat-eyes-open ellipse {
+  fill: #c8e05a;
+}
+
+.napping-cat .cat-eyes-open,
+.napping-cat .cat-eyes-closed {
+  transition: opacity 0.3s;
+}
+
+.napping-cat .cat-eyes-closed {
+  opacity: 0;
+}
+
+.napping-cat .cat-eyes-closed path {
+  fill: none;
+  stroke: #888;
+  stroke-width: 1.3;
+}
+
+/* walk */
+.napping-cat.is-walking .cat-leg-a {
+  animation: napping-cat-leg 0.36s ease-in-out infinite alternate;
+}
+
+.napping-cat.is-walking .cat-leg-b {
+  animation: napping-cat-leg 0.36s ease-in-out infinite alternate-reverse;
+}
+
+.napping-cat.is-walking .cat-body {
+  animation: napping-cat-bob 0.18s ease-in-out infinite alternate;
+}
+
+@keyframes napping-cat-leg {
+  from {
+    transform: rotate(22deg);
+  }
+  to {
+    transform: rotate(-22deg);
+  }
+}
+
+@keyframes napping-cat-bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-1.5px);
+  }
+}
+
+/* sleep */
+.napping-cat.is-sleeping .cat-leg {
+  transform: scaleY(0.22);
+}
+
+.napping-cat.is-sleeping .cat-body {
+  transform: translateY(12px);
+}
+
+.napping-cat.is-sleeping .cat-head {
+  transform: rotate(18deg) translateY(4px);
+}
+
+.napping-cat.is-sleeping .cat-eyes-open {
+  opacity: 0;
+}
+
+.napping-cat.is-sleeping .cat-eyes-closed {
+  opacity: 1;
+}
+
+.napping-cat.is-sleeping .cat-tail {
+  transform: rotate(75deg);
+}
+
+.napping-cat.is-sleeping .cat-torso {
+  animation: napping-cat-breathe 1.6s ease-in-out infinite;
+}
+
+@keyframes napping-cat-breathe {
+  50% {
+    transform: scaleY(1.08);
+  }
+}
+
+.napping-cat .cat-z {
+  position: absolute;
+  bottom: 28px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5f6278;
+  opacity: 0;
+}
+
+.napping-cat.is-sleeping .cat-z {
+  animation: napping-cat-z 2s ease-out infinite;
+}
+
+@keyframes napping-cat-z {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.7);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(10px, -24px) scale(1.2);
+  }
+}

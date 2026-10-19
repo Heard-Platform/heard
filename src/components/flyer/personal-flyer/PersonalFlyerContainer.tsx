@@ -65,7 +65,7 @@ export function PersonalFlyerContainer({ scan, onComplete }: PersonalFlyerContai
             onKeepVoting={handleKeepVoting}
           />
         )}
-        {screen === "whoDis" && <PersonalWhoDisScreen emailFlow={emailFlow} onBack={() => setScreen("scan")} />}
+        {screen === "whoDis" && <PersonalWhoDisScreen onBack={() => setScreen("scan")} />}
         {screen === "thanks" && <PersonalThanksScreen onKeepVoting={handleKeepVoting} />}
       </div>
     </div>

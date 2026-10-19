@@ -1,3 +1,4 @@
+import { CtaButton } from "../../widgets/CtaButton";
 import { CARD_CLASS, COLORS } from "./personal-flyer-theme";
 
 interface KeepVotingCardProps {
@@ -11,13 +12,9 @@ export function KeepVotingCard({ title, onKeepVoting }: KeepVotingCardProps) {
       <h2 className="text-lg font-bold leading-snug tracking-tight" style={{ color: COLORS.ink }}>
         {title}
       </h2>
-      <button
-        className="mt-4 w-full rounded-2xl py-3.5 text-base font-bold text-white"
-        style={{ backgroundColor: COLORS.button }}
-        onClick={onKeepVoting}
-      >
+      <CtaButton className="mt-4" onClick={onKeepVoting}>
         Keep voting
-      </button>
+      </CtaButton>
       <p className="mt-3 text-center text-sm" style={{ color: COLORS.muted }}>
         Or close this. You're all set.
       </p>

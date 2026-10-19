@@ -2,7 +2,6 @@ export const COLORS = {
   ink: "#1E2340",
   body: "#3D4160",
   muted: "#5F6278",
-  button: "#B22B35",
   inputBorder: "#D5D7E0",
   inputFill: "#F7F8FA",
   chipFill: "#E3EEDF",
