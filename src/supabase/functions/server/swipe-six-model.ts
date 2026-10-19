@@ -43,30 +43,31 @@ export const getAllSwipeSixCompletions = () =>
 // Today's six for a user: 2 DC, 1 fun, 2 DC, 1 fun, from recent posts,
 // skipping statements they've already voted on.
 export const buildSwipeSixForUser = async (userId: string): Promise<SwipeSixItem[]> => {
-  const allRooms = await getAllDebates();
-  const votes = await getVotesForUser(userId);
+  const [allRooms, votes] = await Promise.all([getAllDebates(), getVotesForUser(userId)]);
   const votedIds = new Set(votes.map((v) => v.statementId));
   const liveRooms = allRooms.filter((room) => !room.isTestRoom && !isRoomEnded(room));
   const now = Date.now();
 
-  // Recent rooms whose unvoted statements are enough for the swipe six.
+  // Recent rooms whose unvoted statements are enough for the swipe six, fetched in parallel.
   const getEligiblePosts = async (rooms: DebateRoom[], stmtMinCount: number): Promise<SwipeSixPost[]> => {
-    const eligiblePosts: SwipeSixPost[] = [];
-    for (const room of pickRecentRooms(rooms, now)) {
-      const statements = await getStatementsForRoom(room.id);
-      const unvotedStatements = statements.filter((s) => !votedIds.has(s.id));
-      if (unvotedStatements.length >= stmtMinCount) {
-        eligiblePosts.push({ room, unvotedStatements });
-      }
-    }
-    return eligiblePosts;
+    const posts = await Promise.all(
+      pickRecentRooms(rooms, now).map(async (room) => {
+        const statements = await getStatementsForRoom(room.id);
+        return { room, unvotedStatements: statements.filter((s) => !votedIds.has(s.id)) };
+      }),
+    );
+    return posts.filter((post) => post.unvotedStatements.length >= stmtMinCount);
   };
 
   const dcRooms = liveRooms.filter((r) => r.subHeard === DC_SUBHEARD);
-  const dcPosts = pickTwoPosts(await getEligiblePosts(dcRooms, 2));
-
   const funRooms = liveRooms.filter((r) => FUN_SUBHEARDS.includes(r.subHeard ?? ""));
-  const funPosts = pickTwoPosts(await getEligiblePosts(funRooms, 1));
+  const [eligibleDcPosts, eligibleFunPosts] = await Promise.all([
+    getEligiblePosts(dcRooms, 2),
+    getEligiblePosts(funRooms, 1),
+  ]);
+
+  const dcPosts = pickTwoPosts(eligibleDcPosts);
+  const funPosts = pickTwoPosts(eligibleFunPosts);
 
   return buildSwipeSix(dcPosts, funPosts);
 };
