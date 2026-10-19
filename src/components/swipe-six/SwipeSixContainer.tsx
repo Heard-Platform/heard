@@ -15,7 +15,7 @@ interface SwipeSixContainerProps {
 
 export function SwipeSixContainer(props: SwipeSixContainerProps) {
   return (
-    <div className="heard-feed-bg fixed inset-0 z-50 h-dvh overflow-y-auto">
+    <div className="heard-feed-bg modal-layer fixed inset-0 h-dvh overflow-y-auto">
       <div className="mx-auto flex min-h-full max-w-md flex-col">
         <Sentry.ErrorBoundary fallback={<LeaveOnError onLeave={props.onExit} />}>
           <SwipeSixFlow {...props} />
