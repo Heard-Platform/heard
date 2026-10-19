@@ -20,6 +20,7 @@ import {
   UserPresence,
   UserSession,
   WeeklySignupCount,
+  UserEvent,
   type DebateRoom,
   type NewDebateRoom,
   type VoteType,
@@ -713,6 +714,10 @@ class ApiClient extends BaseApiClient {
 
   async getWeeklySignups() {
     return this.request<{ weeks: WeeklySignupCount[] }>("/stats/weekly-signups");
+  }
+
+  async getRecentEvents() {
+    return this.request<{ events: UserEvent[] }>("/stats/recent-events");
   }
 
   async getActivityFeed() {

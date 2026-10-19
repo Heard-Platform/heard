@@ -24,7 +24,9 @@ export function formatWeekStart(weekStart: string): string {
 }
 
 export const ONE_WEEK_MIN = 7 * 24 * 60;
-export const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+export const ONE_HOUR_MS = 60 * 60 * 1000;
+export const ONE_DAY_MS = 24 * ONE_HOUR_MS;
+export const ONE_WEEK_MS = 7 * ONE_DAY_MS;
 
 export type TimeUrgency = 'low' | 'medium' | 'high' | 'critical';
 

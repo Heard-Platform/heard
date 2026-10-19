@@ -1,7 +1,6 @@
 import type { User } from "./types.tsx";
 import { formatCohortLabel, getWeekStart } from "./cohort-utils.ts";
-
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+import { ONE_WEEK_MS } from "./time-utils.ts";
 
 export interface WeeklySignupCount {
   weekLabel: string;
@@ -22,7 +21,7 @@ export function buildWeeklySignups(users: User[], now: number): WeeklySignupCoun
   const firstWeek = Math.min(...signupsByWeek.keys());
   const currentWeek = getWeekStart(now);
   const weeks: WeeklySignupCount[] = [];
-  for (let week = firstWeek; week <= currentWeek; week += WEEK_MS) {
+  for (let week = firstWeek; week <= currentWeek; week += ONE_WEEK_MS) {
     weeks.push({
       weekLabel: formatCohortLabel(week),
       signups: signupsByWeek.get(week) ?? 0,

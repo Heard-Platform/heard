@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { EventTimelineTabContainer } from "./activity/event-timeline/EventTimelineTabContainer";
 import { X, Activity, UserPlus } from "lucide-react";
 import { api } from "../utils/api";
 import type { WeeklySignupCount } from "../types";
@@ -107,24 +109,35 @@ export function ActivityDashboard({ onExit }: ActivityDashboardProps) {
           )}
         </div>
 
-        <Card className="p-6">
-          <div className="mb-4">
-            <h2 className="text-xl flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-blue-600" />
-              Signups by Week
-            </h2>
-            <p className="text-xs mt-1" style={{ color: TEXT_MUTED }}>
-              Non-anonymous, non-developer users, bucketed by the week their user record was
-              created (UTC, weeks start Monday).
-              {!loading && ` ${totalSignups} total.`}
-            </p>
-          </div>
-          {loading ? (
-            <p className="text-center text-muted-foreground py-8">Loading signups...</p>
-          ) : (
-            <WeeklySignupsChart weeks={weeks} />
-          )}
-        </Card>
+        <Tabs defaultValue="signups">
+          <TabsList>
+            <TabsTrigger value="signups">Signups</TabsTrigger>
+            <TabsTrigger value="event-timeline">Event Timeline</TabsTrigger>
+          </TabsList>
+          <TabsContent value="signups">
+            <Card className="p-6">
+              <div className="mb-4">
+                <h2 className="text-xl flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-blue-600" />
+                  Signups by Week
+                </h2>
+                <p className="text-xs mt-1" style={{ color: TEXT_MUTED }}>
+                  Non-anonymous, non-developer users, bucketed by the week their user record was
+                  created (UTC, weeks start Monday).
+                  {!loading && ` ${totalSignups} total.`}
+                </p>
+              </div>
+              {loading ? (
+                <p className="text-center text-muted-foreground py-8">Loading signups...</p>
+              ) : (
+                <WeeklySignupsChart weeks={weeks} />
+              )}
+            </Card>
+          </TabsContent>
+          <TabsContent value="event-timeline">
+            <EventTimelineTabContainer />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

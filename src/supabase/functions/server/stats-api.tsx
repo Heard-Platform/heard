@@ -10,12 +10,12 @@ import {
 } from "./kv-utils.tsx";
 import { getAllRecords, selectAll } from "./db-utils.ts";
 import type { Session, UserEvent } from "./types.tsx";
-import { getEventsOfType, getFlyerEmails, getUserReports, getAllRoomViews } from "./model-utils.ts";
+import { getEventsOfType, getFlyerEmails, getUserReports, getAllRoomViews, getAllUserEventsSince } from "./model-utils.ts";
 import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap, medianSessionMinutesByWeek } from "./stats-utils.ts";
 import { buildCohortFunnelData } from "./cohort-utils.ts";
 import { buildWeeklySignups } from "./activity-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
-import { toTimestamp } from "./time-utils.ts";
+import { ONE_WEEK_MS, toTimestamp } from "./time-utils.ts";
 
 const app = new Hono();
 
@@ -260,6 +260,22 @@ app.get(
       return { weeks: buildWeeklySignups(nonDevUsers, Date.now()) };
     },
     "Failed to calculate weekly signups",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/stats/recent-events",
+  defineRoute(
+    {},
+    async () => {
+      const [users, events] = await Promise.all([
+        getAllRealUsers(),
+        getAllUserEventsSince(Date.now() - ONE_WEEK_MS),
+      ]);
+      const realUserIds = new Set(users.filter((user) => !user.isDeveloper).map((user) => user.id));
+      return { events: events.filter((event) => event.userId && realUserIds.has(event.userId)) };
+    },
+    "Failed to load recent events",
   ),
 );
 

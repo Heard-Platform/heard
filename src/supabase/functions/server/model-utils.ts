@@ -1,4 +1,5 @@
 import { countRecords, createClientFromEnv, deleteRecord, insert, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
+import { toTimestamp } from "./time-utils.ts";
 import {
   AvatarAnimal,
   DemographicAnswer,
@@ -305,6 +306,16 @@ export const getRecentUserEvents = async (sinceTs: number): Promise<UserEvent[]>
     {},
     (q: any) => q.gte("createdAt", new Date(sinceTs).toISOString()),
   );
+
+export const getAllUserEventsSince = async (sinceTs: number): Promise<UserEvent[]> => {
+  const events = await selectAllWithoutLimit<UserEvent>(
+    "user_events",
+    {},
+    "createdAt",
+    (q: any) => q.gte("createdAt", new Date(sinceTs).toISOString()),
+  );
+  return events.map((event) => ({ ...event, createdAt: toTimestamp(event.createdAt) }));
+};
 
 export const tagEventsWithSession = async (eventIds: string[], sessionId: string) =>
   updateMany("user_events", eventIds, { sessionId });

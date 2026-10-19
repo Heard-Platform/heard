@@ -857,6 +857,18 @@ export interface WeeklySignupCount {
   weekStart: number;
 }
 
+// Mirrors UserEvent on backend
+export interface UserEvent {
+  id?: string;
+  type: string;
+  userId: string | null;
+  roomId?: string;
+  url?: string;
+  referralUserId?: string;
+  createdAt: number;
+  sessionId?: string | null;
+}
+
 export interface VoteStats {
   total: number;
   uniqueVoters: number;
