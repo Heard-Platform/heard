@@ -42,6 +42,7 @@ import { AvatarAnimalChart } from "./feature-tracker/AvatarAnimalChart";
 import { CertifyCardConversionChart } from "./feature-tracker/CertifyCardConversionChart";
 import { ClusterRecomputesChart } from "./feature-tracker/ClusterRecomputesChart";
 import { FlyerSwipeFunnelChart } from "./feature-tracker/FlyerSwipeFunnelChart";
+import { SwipeSixFunnelChart } from "./feature-tracker/SwipeSixFunnelChart";
 import { FlyerLandingFunnelChart } from "./feature-tracker/FlyerLandingFunnelChart";
 import { FlyerScreenFunnelChart } from "./feature-tracker/FlyerScreenFunnelChart";
 import { OneBillionResults } from "./feature-tracker/OneBillionResults";
@@ -504,6 +505,16 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.flyerSwipeFunnel.opened,
       getDate: (s) => s.flyerSwipeFunnelSince,
       renderExtra: (s) => <FlyerSwipeFunnelChart {...s.flyerSwipeFunnel} />,
+    },
+    {
+      icon: Flame,
+      iconColor: "text-orange-600",
+      bgColor: "bg-orange-100",
+      title: "Swipe Six Funnel",
+      description: "Unique users who saw the Swipe Six banner, started, reached each swipe, finished all six, and tapped \"All done for now\", plus completions per day for the last 14 days (developer-only for now)",
+      getValue: (s) => s.swipeSixFunnel.completed,
+      getDate: (s) => s.swipeSixFunnelSince,
+      renderExtra: (s) => <SwipeSixFunnelChart funnel={s.swipeSixFunnel} daily={s.swipeSixDailyCompletions} />,
     },
     {
       icon: ScanLine,

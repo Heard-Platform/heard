@@ -14,6 +14,11 @@ export function timeAgoShort(timestamp: number): string {
   return result.formatted;
 }
 
+/** The viewer's own calendar date, YYYY-MM-DD, so "today" flips at their midnight. */
+export function localDateString(time: number = Date.now()): string {
+  return moment(time).format('YYYY-MM-DD');
+}
+
 export function formatWeekStart(weekStart: string): string {
   return moment.utc(weekStart).format('MMM D');
 }

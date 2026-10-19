@@ -182,6 +182,7 @@ function FlyerSwipeFlow({ room, flyerStatementId, flyerVote, onComplete }: Flyer
     <>
       <FlyerSwipeScreen
         topic={room.topic}
+        hostId={room.hostId}
         flyerStatement={deck.flyerStatement}
         flyerVote={flyerVote}
         upcoming={upcoming}

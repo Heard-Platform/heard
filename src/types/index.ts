@@ -224,6 +224,11 @@ export interface UserHistorySession extends UserSession {
 
 export type DebateMode = "realtime" | "host-controlled";
 
+export interface SwipeSixItem {
+  statement: Statement;
+  room: DebateRoom;
+}
+
 export interface DebateRoom {
   id: string;
   topic: string;
@@ -748,6 +753,9 @@ export interface FeatureResults {
   anonResponseTripwireSince: number;
   flyerSwipeFunnel: { opened: number; swipes: number[]; saved: number; exited: number };
   flyerSwipeFunnelSince: number;
+  swipeSixFunnel: { bannerShown: number; started: number; swipes: number[]; completed: number; allDoneClicked: number };
+  swipeSixDailyCompletions: { date: string; count: number }[];
+  swipeSixFunnelSince: number;
   flyerLandingFunnel: { opened: number; submitted: number; lookedAround: number };
   flyerLandingFunnelSince: number;
   flyerScreenFunnel: { opened: number; emailAdded: number; returnedViaEmail: number; returnedOnMultipleDays: number };

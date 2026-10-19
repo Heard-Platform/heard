@@ -33,11 +33,19 @@ export function FlyerProgress({ votedCount, total }: FlyerProgressProps) {
           {votedCount} of {total}
         </span>
       </div>
-      <div className="mt-2 flex gap-1.5">
-        {_.times(total, (i) => (
-          <ProgressSegment key={i} isDone={i < votedCount} isLatest={i === votedCount - 1} />
-        ))}
+      <div className="mt-2">
+        <FlyerProgressSegments votedCount={votedCount} total={total} />
       </div>
+    </div>
+  );
+}
+
+export function FlyerProgressSegments({ votedCount, total }: FlyerProgressProps) {
+  return (
+    <div className="flex flex-1 gap-1.5">
+      {_.times(total, (i) => (
+        <ProgressSegment key={i} isDone={i < votedCount} isLatest={i === votedCount - 1} />
+      ))}
     </div>
   );
 }

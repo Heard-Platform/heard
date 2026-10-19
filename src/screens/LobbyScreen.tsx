@@ -27,6 +27,8 @@ import { useHideOnScroll } from "../hooks/useHideOnScroll";
 import { api, safelyMakeApiCall } from "../utils/api";
 import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
 import { RoomAlertsProvider } from "../contexts/RoomAlertsContext";
+import { SwipeSixContainer } from "../components/swipe-six/SwipeSixContainer";
+import { localDateString } from "../utils/time";
 
 
 interface LobbyScreenProps {
@@ -126,6 +128,9 @@ export function LobbyScreen({
     [],
   );
   const [events, setEvents] = useState<EventSummary[]>([]);
+  const [swipeSixDoneToday, setSwipeSixDoneToday] = useState<boolean | null>(null);
+  const [isSwipeSixOpen, setIsSwipeSixOpen] = useState(false);
+  const showSwipeSixBanner = !!user.isDeveloper && swipeSixDoneToday === false;
   const [showAccountSetupAnonModal, setShowAccountSetupAnonModal] = useState(false);
   const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
   const [accountSetupIsSignIn, setAccountSetupIsSignIn] = useState(false);
@@ -359,6 +364,16 @@ export function LobbyScreen({
     }
   };
 
+  useEffect(() => {
+    safelyMakeApiCall(() => api.getSwipeSixStatus(localDateString())).then((response) => {
+      if (response?.data) setSwipeSixDoneToday(response.data.completedToday);
+    });
+  }, [user.id]);
+
+  useEffect(() => {
+    if (showSwipeSixBanner) api.trackEvent("swipe_six_banner_shown");
+  }, [showSwipeSixBanner]);
+
   return (
     <RoomAlertsProvider>
       <IntroModal
@@ -449,12 +464,21 @@ export function LobbyScreen({
               onOpenEvent={onOpenEvent}
               onSubHeardChange={onSubHeardChange}
               onScrollTopChange={handleFeedScroll}
+              showSwipeSix={showSwipeSixBanner}
+              onStartSwipeSix={() => setIsSwipeSixOpen(true)}
             />
           </div>
         </div>
       )}
 
       {!currentEvent && !eventLoading && <FundingTeaser />}
+
+      {isSwipeSixOpen && (
+        <SwipeSixContainer
+          onCompleted={() => setSwipeSixDoneToday(true)}
+          onExit={() => setIsSwipeSixOpen(false)}
+        />
+      )}
 
       {!currentEvent && !eventLoading && !isKeyboardOpen && (
         <BottomNav

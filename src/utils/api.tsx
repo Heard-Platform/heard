@@ -28,6 +28,7 @@ import {
   ClusterNameReviewRoom,
   ReviewRoomOption,
   DeckOrder,
+  SwipeSixItem,
   type Event,
   type NewEvent,
   EventSummary,
@@ -878,6 +879,21 @@ class ApiClient extends BaseApiClient {
     return this.request<{ rooms: ClusterNameReviewRoom[]; hasMore: boolean }>(
       `/dev/ai-review/cluster-names?offset=${offset}&limit=${limit}`,
     );
+  }
+
+  async getSwipeSix() {
+    return this.request<{ items: SwipeSixItem[] }>("/swipe-six");
+  }
+
+  async getSwipeSixStatus(localDate: string) {
+    return this.request<{ completedToday: boolean }>(`/swipe-six/status/${localDate}`);
+  }
+
+  async completeSwipeSix(localDate: string) {
+    return this.request<{}>("/swipe-six/complete", {
+      method: "POST",
+      body: JSON.stringify({ localDate }),
+    });
   }
 
   async getDeckOrder(roomId: string) {

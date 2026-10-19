@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { getSentEmails } from "./kv-utils.tsx";
-import { countEventsOfType, getEventsOfType, getAllRoomViews, getFlyerSwipeEvents, getFlyerLandingEvents, getFlyerScreenEvents, getAppLoadEvents } from "./model-utils.ts";
+import { countEventsOfType, getEventsOfType, getAllRoomViews, getFlyerSwipeEvents, getSwipeSixEvents, getFlyerLandingEvents, getFlyerScreenEvents, getAppLoadEvents } from "./model-utils.ts";
 import { FLYER_RESULTS_LINK_SOURCE } from "./template-flyer-results.ts";
 import { FLYER_WELCOME_LINK_SOURCE } from "./template-flyer-welcome.ts";
 import {
@@ -12,10 +12,11 @@ import {
   CLUSTER_IDENTITY_KEPT_EVENT,
   CLUSTER_IDENTITY_NEW_EVENT,
 } from "./clustering.tsx";
-import { getEasternDate, toTimestamp } from "./time-utils.ts";
+import { getEasternDate, getEasternDatesEndingAt, toTimestamp } from "./time-utils.ts";
 import { selectAllWithoutLimit } from "./db-utils.ts";
 import { CLUSTER_NAMING_ENDPOINT } from "./cluster-naming.ts";
 import { startOfUtcWeek, WEEK_MS } from "./stats-utils.ts";
+import { getAllSwipeSixCompletions } from "./swipe-six-model.ts";
 
 const RESPONSE_VOTES_NOTIF_RETURN_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -136,6 +137,50 @@ export function buildFlyerSwipeFunnel(
 }
 
 export const getFlyerSwipeFunnel = async () => buildFlyerSwipeFunnel(await getFlyerSwipeEvents());
+
+export const SWIPE_SIX_CARD_COUNT = 6;
+export const SWIPE_SIX_DAILY_WINDOW_DAYS = 14;
+
+export function buildSwipeSixFunnel(
+  events: { type: string; userId: string | null }[],
+): { bannerShown: number; started: number; swipes: number[]; completed: number; allDoneClicked: number } {
+  const countUsers = (matches: (type: string) => boolean) =>
+    _(events)
+      .filter((event) => !!event.userId && matches(event.type))
+      .map("userId")
+      .uniq()
+      .size();
+
+  return {
+    bannerShown: countUsers((type) => type === "swipe_six_banner_shown"),
+    started: countUsers((type) => type === "swipe_six_started"),
+    swipes: _.times(SWIPE_SIX_CARD_COUNT, (i: number) =>
+      countUsers((type) => type.startsWith(`swipe_six_card_${i + 1}_`)),
+    ),
+    completed: countUsers((type) => type === "swipe_six_completed"),
+    allDoneClicked: countUsers((type) => type === "swipe_six_all_done_clicked"),
+  };
+}
+
+// Completions per local date for the last few Eastern days ending at now, oldest first.
+export function buildSwipeSixDailyCompletions(
+  localDates: string[],
+  now: number,
+  days = SWIPE_SIX_DAILY_WINDOW_DAYS,
+): { date: string; count: number }[] {
+  const counts = _.countBy(localDates);
+  return getEasternDatesEndingAt(now, days).map((date) => ({ date, count: counts[date] ?? 0 }));
+}
+
+export const getSwipeSixFunnel = async () => buildSwipeSixFunnel(await getSwipeSixEvents());
+
+export const getSwipeSixDailyCompletions = async () => {
+  const completions = await getAllSwipeSixCompletions();
+  return buildSwipeSixDailyCompletions(
+    completions.map((completion) => completion.localDate),
+    Date.now(),
+  );
+};
 
 export const FLYER_LANDING_OPENED_EVENT = "flyer_landing_opened";
 export const FLYER_LANDING_EMAIL_SUBMITTED_EVENT = "flyer_landing_email_submitted";

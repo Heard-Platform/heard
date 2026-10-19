@@ -3,6 +3,8 @@ import {
   buildFlyerLandingFunnel,
   buildFlyerScreenFunnel,
   buildFlyerSwipeFunnel,
+  buildSwipeSixDailyCompletions,
+  buildSwipeSixFunnel,
   countByWeek,
   FLYER_SCREEN_EVENTS,
   PERSONAL_FLYER_SCREEN_EVENTS,
@@ -177,4 +179,37 @@ Deno.test("buildFlyerScreenFunnel - counts only the given screen's events", () =
   const funnel = buildFlyerScreenFunnel(events, [], PERSONAL_FLYER_SCREEN_EVENTS);
   assertEquals(funnel.opened, 2);
   assertEquals(funnel.emailAdded, 1);
+});
+
+Deno.test("buildSwipeSixFunnel - counts unique users at each step", () => {
+  const events = [
+    { type: "swipe_six_banner_shown", userId: "u1" },
+    { type: "swipe_six_banner_shown", userId: "u1" },
+    { type: "swipe_six_banner_shown", userId: "u2" },
+    { type: "swipe_six_started", userId: "u1" },
+    { type: "swipe_six_card_1_agree", userId: "u1" },
+    { type: "swipe_six_card_1_disagree", userId: "u1" },
+    { type: "swipe_six_card_2_pass", userId: "u1" },
+    { type: "swipe_six_completed", userId: "u1" },
+    { type: "swipe_six_all_done_clicked", userId: "u1" },
+    { type: "swipe_six_started", userId: null },
+  ];
+
+  assertEquals(buildSwipeSixFunnel(events), {
+    bannerShown: 2,
+    started: 1,
+    swipes: [1, 1, 0, 0, 0, 0],
+    completed: 1,
+    allDoneClicked: 1,
+  });
+});
+
+Deno.test("buildSwipeSixDailyCompletions - fills each day in the window, oldest first", () => {
+  const dates = ["2026-10-17", "2026-10-19", "2026-10-19", "2026-10-01"];
+  const noonEasternOct19 = Date.parse("2026-10-19T16:00:00Z");
+  assertEquals(buildSwipeSixDailyCompletions(dates, noonEasternOct19, 3), [
+    { date: "2026-10-17", count: 1 },
+    { date: "2026-10-18", count: 0 },
+    { date: "2026-10-19", count: 2 },
+  ]);
 });

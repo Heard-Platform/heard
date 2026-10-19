@@ -55,10 +55,12 @@ export const FLYER_DECK_ORDER: DeckOrder = {
   })),
 };
 
-export const FLYER_STATEMENTS: Statement[] = STATEMENTS.map((s) => ({
+export const FLYER_HOST_ID = "story-host";
+
+export const FLYER_STATEMENTS: Statement[] = STATEMENTS.map((s, i) => ({
   id: s.id,
   text: s.text,
-  author: "story-author",
+  author: i % 2 === 0 ? FLYER_HOST_ID : "story-participant",
   roomId: "flyer-room",
   timestamp: Date.now(),
   agrees: 0,

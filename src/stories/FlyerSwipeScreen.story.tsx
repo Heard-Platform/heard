@@ -6,7 +6,7 @@ import type { FlyerVote } from "../components/flyer/FlyerVoteIntroCard";
 import { Button } from "../components/ui/button";
 import { estimateClusterProbabilities } from "../utils/cluster-estimation";
 import { summarizeTribe } from "../utils/tribe-summary";
-import { FLYER_CLUSTERS, FLYER_DECK_ORDER, FLYER_STATEMENTS, FLYER_TOPIC } from "./flyer-fixtures";
+import { FLYER_CLUSTERS, FLYER_DECK_ORDER, FLYER_HOST_ID, FLYER_STATEMENTS, FLYER_TOPIC } from "./flyer-fixtures";
 import { StoryContainer } from "./StoryContainer";
 
 export default {
@@ -72,6 +72,7 @@ function FlyerSwipeScreenDemo({ flyerVote }: { flyerVote: FlyerVote }) {
         <FlyerSwipeScreen
           key={replayKey}
           topic={FLYER_TOPIC}
+          hostId={FLYER_HOST_ID}
           flyerStatement={statements[0]}
           flyerVote={flyerVote}
           upcoming={upcoming}
