@@ -1,5 +1,5 @@
 import { BaseApiClient } from "./api-client";
-import type { DebateRoom, Statement, VoteStats } from "../types";
+import type { SwipeSixItem, VoteStats } from "../types";
 
 interface FlyerRoomData {
   topic: string;
@@ -70,11 +70,6 @@ export interface NewFlyerPlacementsRequest {
     longitude: number;
     headingDeg: number | null;
   }[];
-}
-
-export interface SwipeSixItem {
-  statement: Statement;
-  room: DebateRoom;
 }
 
 export interface SwipeSixResponse {

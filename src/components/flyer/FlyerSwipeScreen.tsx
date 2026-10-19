@@ -185,7 +185,7 @@ export function FlyerSwipeScreen({
   );
 }
 
-function FlyerHeader({ onClose }: { onClose: () => void }) {
+export function FlyerHeader({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-[28px] font-extrabold leading-none tracking-tight text-[#1C1B1F]">

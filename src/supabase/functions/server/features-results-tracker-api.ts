@@ -6,7 +6,7 @@ import type { UserEvent } from "./types.tsx";
 import { toTimestamp } from "./time-utils.ts";
 import { FLYER_WELCOME_EMAIL_TYPE } from "./template-flyer-welcome.ts";
 import { FLYER_RESULTS_EMAIL_TYPE } from "./template-flyer-results.ts";
-import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel, FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS } from "./feature-tracker-utils.ts";
+import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getSwipeSixFunnel, getSwipeSixDailyCompletions, getFlyerLandingFunnel, getFlyerScreenFunnel, FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
 
@@ -50,6 +50,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       anonResponseTripwireShown,
       anonResponseTripwireEmailSubmitted,
       flyerSwipeFunnel,
+      swipeSixFunnel,
+      swipeSixDailyCompletions,
       flyerLandingFunnel,
       flyerScreenFunnel,
       personalFlyerScreenFunnel,
@@ -93,6 +95,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       countEventsOfType("anon_response_tripwire_shown"),
       countEventsOfType("anon_response_tripwire_submitted"),
       getFlyerSwipeFunnel(),
+      getSwipeSixFunnel(),
+      getSwipeSixDailyCompletions(),
       getFlyerLandingFunnel(),
       getFlyerScreenFunnel(FLYER_SCREEN_EVENTS),
       getFlyerScreenFunnel(PERSONAL_FLYER_SCREEN_EVENTS),
@@ -327,6 +331,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
 
     const flyerSwipeFunnelSince = new Date("2026-09-30").getTime();
 
+    const swipeSixFunnelSince = new Date("2026-10-19").getTime();
+
     const flyerLandingFunnelSince = new Date("2026-10-01").getTime();
 
     const flyerScreenFunnelSince = new Date("2026-10-03").getTime();
@@ -440,6 +446,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       anonResponseTripwireSince,
       flyerSwipeFunnel,
       flyerSwipeFunnelSince,
+      swipeSixFunnel,
+      swipeSixDailyCompletions,
+      swipeSixFunnelSince,
       flyerLandingFunnel,
       flyerLandingFunnelSince,
       flyerScreenFunnel,

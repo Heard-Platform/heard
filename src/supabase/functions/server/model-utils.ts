@@ -237,6 +237,14 @@ export const getFlyerSwipeEvents = async () => {
   );
 };
 
+export const getSwipeSixEvents = async () => {
+  return selectAll<UserEvent>(
+    "user_events",
+    {},
+    (q: any) => q.like("type", "swipe_six_%").select("type, userId"),
+  );
+};
+
 export const getFlyerLandingEvents = async () => {
   return selectAll<UserEvent>(
     "user_events",

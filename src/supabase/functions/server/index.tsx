@@ -24,6 +24,7 @@ import { adminDigestCronApi } from "./admin-digest-cron-api.tsx";
 import { unsubscribeApi } from "./unsubscribe.tsx";
 import { devApi } from "./dev-api.tsx";
 import { devTestingApi } from "./dev-testing-api.tsx";
+import { swipeSixApi } from "./swipe-six-api.tsx";
 import { flyerApi } from "./flyer-api.tsx";
 import { dataDumpApi } from "./data-dump-api.tsx";
 import { flyerPlacementsApi } from "./flyer-placements-api.tsx";
@@ -137,7 +138,7 @@ protect(dontValidate, ["orgs/*", "user/*",]);
 protect(validateSession, [
   "account/*", "activity/*", "alerts/*", "analytics/*", "chance-card/*", "cover-card/*", "event/*", "events",
   "feedback/*", "import-polis", "public-stats", "rant/*", "room/*", "rooms/*",
-  "statement/*", "subheard/*", "subheards", "subheards/*",
+  "statement/*", "subheard/*", "subheards", "subheards/*", "swipe-six", "swipe-six/*",
   "upload-debate-image", "user-rank", "vine/*", "youtube-card/*",
 ]);
 
@@ -190,6 +191,7 @@ app.route("/", adminDigestCronApi);
 app.route("/", unsubscribeApi);
 app.route("/", devApi);
 app.route("/", devTestingApi);
+app.route("/", swipeSixApi);
 app.route("/", flyerApi);
 app.route("/", flyerPlacementsApi);
 app.route("/", flyerResultsEmailApi);

@@ -23,3 +23,9 @@ export const EASTERN_TIME_ZONE = "America/New_York";
 
 export const getEasternDate = (time: number): string =>
   moment.tz(time, EASTERN_TIME_ZONE).format("YYYY-MM-DD");
+
+// The Eastern calendar dates (YYYY-MM-DD) for the `days` days ending on the day of `time`, oldest first.
+export const getEasternDatesEndingAt = (time: number, days: number): string[] =>
+  Array.from({ length: days }, (_, i) =>
+    moment.tz(time, EASTERN_TIME_ZONE).subtract(days - 1 - i, "days").format("YYYY-MM-DD"),
+  );
