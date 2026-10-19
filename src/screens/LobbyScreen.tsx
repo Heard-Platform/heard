@@ -6,6 +6,7 @@ import type {
   UserPresence, SubHeard,
   EventSummary,
   Event,
+  SwipeSixItem,
 } from "../types";
 import { EventView } from "../components/events/EventView";
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -129,8 +130,11 @@ export function LobbyScreen({
   );
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [swipeSixDoneToday, setSwipeSixDoneToday] = useState<boolean | null>(null);
+  const [swipeSixItems, setSwipeSixItems] = useState<SwipeSixItem[] | null>(null);
   const [isSwipeSixOpen, setIsSwipeSixOpen] = useState(false);
-  const showSwipeSixBanner = !!user.isDeveloper && swipeSixDoneToday === false;
+  const isSwipeSixEligible = !!user.isDeveloper && swipeSixDoneToday === false;
+  const swipeSixBannerItems = isSwipeSixEligible && swipeSixItems?.length ? swipeSixItems : undefined;
+  const showSwipeSixBanner = !!swipeSixBannerItems;
   const [showAccountSetupAnonModal, setShowAccountSetupAnonModal] = useState(false);
   const [accountSetupFeatureText, setAccountSetupFeatureText] = useState("");
   const [accountSetupIsSignIn, setAccountSetupIsSignIn] = useState(false);
@@ -370,9 +374,23 @@ export function LobbyScreen({
     });
   }, [user.id]);
 
+  const reloadSwipeSixItems = async () => {
+    const response = await safelyMakeApiCall(() => api.getSwipeSix());
+    setSwipeSixItems(response?.data?.items ?? []);
+  };
+
+  useEffect(() => {
+    if (isSwipeSixEligible) reloadSwipeSixItems();
+  }, [isSwipeSixEligible]);
+
   useEffect(() => {
     if (showSwipeSixBanner) api.trackEvent("swipe_six_banner_shown");
   }, [showSwipeSixBanner]);
+
+  const handleExitSwipeSix = () => {
+    setIsSwipeSixOpen(false);
+    if (isSwipeSixEligible) reloadSwipeSixItems();
+  };
 
   return (
     <RoomAlertsProvider>
@@ -464,7 +482,7 @@ export function LobbyScreen({
               onOpenEvent={onOpenEvent}
               onSubHeardChange={onSubHeardChange}
               onScrollTopChange={handleFeedScroll}
-              showSwipeSix={showSwipeSixBanner}
+              swipeSixItems={swipeSixBannerItems}
               onStartSwipeSix={() => setIsSwipeSixOpen(true)}
             />
           </div>
@@ -473,10 +491,11 @@ export function LobbyScreen({
 
       {!currentEvent && !eventLoading && <FundingTeaser />}
 
-      {isSwipeSixOpen && (
+      {isSwipeSixOpen && swipeSixItems && (
         <SwipeSixContainer
+          items={swipeSixItems}
           onCompleted={() => setSwipeSixDoneToday(true)}
-          onExit={() => setIsSwipeSixOpen(false)}
+          onExit={handleExitSwipeSix}
         />
       )}
 

@@ -4,11 +4,11 @@ import type { SwipeSixItem } from "../../types";
 import { api, safelyMakeApiCall } from "../../utils/api";
 import { localDateString } from "../../utils/time";
 import { useDebateSession } from "../../hooks/useDebateSession";
-import { Loader } from "../widgets/Loader";
 import type { SwipeVote } from "../flyer/FlyerSwipeCard";
 import { SwipeSixScreen, type SwipeSixPhase } from "./SwipeSixScreen";
 
 interface SwipeSixContainerProps {
+  items: SwipeSixItem[];
   onCompleted: () => void;
   onExit: () => void;
 }
@@ -32,33 +32,21 @@ function LeaveOnError({ onLeave }: { onLeave: () => void }) {
   return null;
 }
 
-function SwipeSixFlow({ onCompleted, onExit }: SwipeSixContainerProps) {
+function SwipeSixFlow({ items, onCompleted, onExit }: SwipeSixContainerProps) {
   const { voteOnStatement } = useDebateSession();
-  const [items, setItems] = useState<SwipeSixItem[] | null>(null);
   const [votedCount, setVotedCount] = useState(0);
   const [phase, setPhase] = useState<SwipeSixPhase>("swiping");
 
   useEffect(() => {
     api.trackEvent("swipe_six_started");
-    loadItems();
   }, []);
-
-  const loadItems = async () => {
-    const response = await safelyMakeApiCall(() => api.getSwipeSix());
-    const loaded = response?.data?.items ?? [];
-    if (loaded.length === 0) {
-      onExit();
-      return;
-    }
-    setItems(loaded);
-  };
 
   const handleVote = (item: SwipeSixItem, vote: SwipeVote) => {
     const cardNumber = votedCount + 1;
     api.trackEvent(`swipe_six_card_${cardNumber}_${vote}`, item.room.id);
     voteOnStatement(item.statement.id, vote).catch((error) => console.error("Swipe six vote failed:", error));
     setVotedCount(cardNumber);
-    if (items && cardNumber >= items.length) handleFinished();
+    if (cardNumber >= items.length) handleFinished();
   };
 
   const handleFinished = () => {
@@ -83,8 +71,6 @@ function SwipeSixFlow({ onCompleted, onExit }: SwipeSixContainerProps) {
     onExit();
   };
 
-  if (!items) return <SwipeSixLoading />;
-
   return (
     <SwipeSixScreen
       items={items}
@@ -95,13 +81,5 @@ function SwipeSixFlow({ onCompleted, onExit }: SwipeSixContainerProps) {
       onAllDone={handleAllDone}
       onBackToFeed={handleBackToFeed}
     />
-  );
-}
-
-function SwipeSixLoading() {
-  return (
-    <div className="heard-center h-dvh">
-      <Loader />
-    </div>
   );
 }
