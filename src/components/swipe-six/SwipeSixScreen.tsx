@@ -1,6 +1,6 @@
-import { forwardRef, useRef, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { Check, X } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import type { SwipeSixItem } from "../../types";
 import { RaindownConfetti } from "../../RaindownConfetti";
 import { Button } from "../ui/button";
@@ -14,6 +14,7 @@ import {
   STACK_POSES,
   type SwipeVote,
 } from "../flyer/FlyerSwipeCard";
+import { TopicPill, topicPillColor } from "./TopicPill";
 
 export type SwipeSixPhase = "swiping" | "celebrating" | "done";
 
@@ -137,9 +138,6 @@ function VoteButton({ label, vote, icon, onClick }: VoteButtonProps) {
   );
 }
 
-// Pastel pill backgrounds, cycled per topic so back-to-back topics never share a color.
-const TOPIC_PILL_COLORS = ["bg-amber-100", "bg-sky-100", "bg-rose-100", "bg-emerald-100", "bg-violet-100"];
-
 // Which topic (0, 1, 2...) the card at this position belongs to, counting each change of post.
 function topicIndexAt(items: SwipeSixItem[], position: number): number {
   return items.slice(1, position + 1).filter((item, i) => item.room.id !== items[i].room.id).length;
@@ -150,42 +148,21 @@ function topicIndexAt(items: SwipeSixItem[], position: number): number {
 function TopicSlider({ item, topicIndex }: { item: SwipeSixItem; topicIndex: number }) {
   return (
     <>
-      <p className="mt-3 text-xs font-semibold uppercase tracking-wide secondary-text">Topic</p>
+      <p className="mt-3 text-xs font-semibold uppercase tracking-wide secondary-text">
+        Topic
+      </p>
       <div className="-mx-5 mt-1 overflow-hidden px-5">
         <AnimatePresence mode="popLayout" initial>
           <TopicPill
             key={item.room.id}
-            item={item}
-            colorClass={TOPIC_PILL_COLORS[topicIndex % TOPIC_PILL_COLORS.length]}
+            room={item.room}
+            colorClass={topicPillColor(topicIndex)}
           />
         </AnimatePresence>
       </div>
     </>
   );
 }
-
-const TopicPill = forwardRef<HTMLDivElement, { item: SwipeSixItem; colorClass: string }>(function TopicPill(
-  { item, colorClass },
-  ref,
-) {
-  const { emoji, topic, subHeard } = item.room;
-  return (
-    <motion.div
-      ref={ref}
-      className={`rounded-xl px-3 py-2 ${colorClass}`}
-      initial={{ x: "110%" }}
-      animate={{ x: 0 }}
-      exit={{ x: "-110%" }}
-      transition={{ type: "spring", stiffness: 260, damping: 30 }}
-    >
-      <p className="text-sm font-semibold leading-snug text-foreground">
-        {emoji && <span className="mr-1">{emoji}</span>}
-        {topic}
-        {subHeard && <span className="font-medium secondary-text"> · {subHeard}</span>}
-      </p>
-    </motion.div>
-  );
-});
 
 interface SwipeSixCelebrationProps {
   total: number;

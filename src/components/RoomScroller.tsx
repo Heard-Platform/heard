@@ -14,6 +14,7 @@ import type {
   VoteType,
   UserSession,
   EventSummary,
+  SwipeSixItem,
 } from "../types";
 import { RoomCard } from "./RoomCard";
 import { CommunityTeaser } from "./room/CommunityTeaser";
@@ -32,7 +33,7 @@ type EventCard = EventSummary & { cardType: "event" };
 type CreateCard = { id: string; cardType: "create" };
 type RoomCard = DebateRoom & { cardType: "room" };
 type CommunityTeaser = { id: string; cardType: "community_teaser" };
-type SwipeSixCard = { id: string; cardType: "swipe_six" };
+type SwipeSixCard = { id: string; cardType: "swipe_six"; items: SwipeSixItem[] };
 type Card = SwipeSixCard | EventCard | RoomCard | CreateCard | CommunityTeaser;
 
 const isEventCard = (card: Card): card is EventCard => card.cardType === "event";
@@ -53,7 +54,7 @@ interface RoomScrollerProps {
   analysisRoomId?: string;
   targetStatementId?: string;
   presences: UserPresence[];
-  showSwipeSix?: boolean;
+  swipeSixItems?: SwipeSixItem[];
   onCreateRoom: () => void;
   onOpenExplorer: () => void;
   onSubmitStatement: (
@@ -104,7 +105,7 @@ const RoomScrollerInner = forwardRef<
       targetStatementId,
       presences,
       onUpdatePresence,
-      showSwipeSix,
+      swipeSixItems,
       onShowAccountSetupModal,
       onOpenEvent,
       onSubHeardChange,
@@ -129,7 +130,7 @@ const RoomScrollerInner = forwardRef<
     const { resetTutorialTimer } = useSwipeTutorialContext();
 
     // Combine the swipe six banner and events (at top), rooms, and a "create new" card at the end
-    const leadingCards: Card[] = showSwipeSix ? [{ id: "swipe-six", cardType: "swipe_six" }] : [];
+    const leadingCards: Card[] = swipeSixItems ? [{ id: "swipe-six", cardType: "swipe_six", items: swipeSixItems }] : [];
     const allCards: Card[] = [
       ...leadingCards,
       ...events.map((e) => ({ ...e, cardType: "event" as const })),
@@ -340,7 +341,7 @@ const RoomScrollerInner = forwardRef<
                 className={`w-full flex justify-center px-2 py-3 ${index === 0 ? "pt-14" : ""}`}
               >
                 {isSwipeSixCard(card) ? (
-                  <SwipeSixBanner onStart={() => onStartSwipeSix()} />
+                  <SwipeSixBanner items={card.items} onStart={() => onStartSwipeSix()} />
                 ) : isCreateCard(card) ? (
                   <CreateRoomCard
                     isActive={index === currentIndex}

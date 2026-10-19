@@ -56,7 +56,7 @@ export function SwipeSixStory() {
   return (
     <StoryContainer
       title="Swipe Six"
-      description="Dev-only daily six. The banner sits at the top of the feed until today's six is done. Swiping walks through all six, then the celebration, then the done screen. The pill glows gold when the topic changes. Long statements shows text shrinking to fit at 60 to 1000 characters."
+      description="Dev-only daily six. The banner sits at the top of the feed until today's six is done, previewing a new topic every 5 seconds. Swiping walks through all six, then the celebration, then the done screen. The pill glows gold when the topic changes. Long statements shows text shrinking to fit at 60 to 1000 characters."
       variants={[
         { id: "flow", label: "Full flow", children: <SwipeSixFlowDemo initialPhase="swiping" /> },
         {
@@ -118,7 +118,7 @@ function SwipeSixFlowDemo({ initialPhase, items = SWIPE_SIX_ITEMS }: SwipeSixFlo
 function BannerDemo() {
   return (
     <div className="heard-feed-bg mx-auto flex w-97.5 max-w-full justify-center rounded-2xl px-2 py-6">
-      <SwipeSixBanner onStart={() => console.log("[Story] start swipe six")} />
+      <SwipeSixBanner items={SWIPE_SIX_ITEMS} onStart={() => console.log("[Story] start swipe six")} />
     </div>
   );
 }
