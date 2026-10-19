@@ -227,3 +227,5 @@ export const updateUrlForActivityFeed = (active: boolean) => {
   if (typeof window === 'undefined') return
   window.history.pushState(null, '', active ? '/activity-feed' : '/')
 }
+export const getAdminUserHistoryPath = (userId: string): string =>
+  `/admin?tab=history&userId=${encodeURIComponent(userId)}`
