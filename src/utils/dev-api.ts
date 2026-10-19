@@ -1,5 +1,5 @@
 import { BaseApiClient } from "./api-client";
-import type { VoteStats } from "../types";
+import type { DebateRoom, Statement, VoteStats } from "../types";
 
 interface FlyerRoomData {
   topic: string;
@@ -72,6 +72,15 @@ export interface NewFlyerPlacementsRequest {
   }[];
 }
 
+export interface SwipeSixItem {
+  statement: Statement;
+  room: DebateRoom;
+}
+
+export interface SwipeSixResponse {
+  items: SwipeSixItem[];
+}
+
 class DevApiClient extends BaseApiClient {
   async getFlyerStats() {
     return this.request<{ flyerRoomData: Record<string, FlyerRoomData> }>(
@@ -80,6 +89,10 @@ class DevApiClient extends BaseApiClient {
         method: "GET",
       },
     );
+  }
+
+  async getSwipeSix() {
+    return this.request<SwipeSixResponse>("/dev/swipe-six", { method: "GET" });
   }
 
   async getReferralEvents() {
