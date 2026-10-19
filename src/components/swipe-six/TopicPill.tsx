@@ -7,12 +7,9 @@ const TOPIC_PILL_COLORS = ["bg-amber-100", "bg-sky-100", "bg-rose-100", "bg-emer
 
 export const topicPillColor = (topicIndex: number) => TOPIC_PILL_COLORS[topicIndex % TOPIC_PILL_COLORS.length];
 
-// Slides in from the right and flies off to the left. Render inside AnimatePresence,
-// keyed by room, to get a simulated horizontal scroller.
 interface TopicPillProps {
   room: DebateRoom;
   colorClass: string;
-  // Caps the topic at two lines so the pill keeps a steady height.
   clamped?: boolean;
 }
 
