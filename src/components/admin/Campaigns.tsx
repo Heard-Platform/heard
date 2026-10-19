@@ -95,7 +95,7 @@ function CampaignFunnelCard({ funnel }: { funnel: CampaignFunnel }) {
       <p className="text-sm text-muted-foreground mb-4">
         {arrived} users arrived: {funnel.flyerScan.arrived} first scanned a flyer,{" "}
         {funnel.directUrl.arrived} first browsed to the direct URL ({funnel.arrivedViaBoth} did both).
-        Percentages are of each channel's arrivals.
+        Bar labels are a share of all arrivals; hover for each channel's share of its own arrivals.
       </p>
       {arrived === 0 ? (
         <div className="text-center py-8 text-muted-foreground">No users yet</div>
@@ -111,24 +111,34 @@ function CampaignFunnelChart({ funnel }: { funnel: CampaignFunnel }) {
     label,
     flyerScan: funnel.flyerScan[key],
     directUrl: funnel.directUrl[key],
+    total: funnel.flyerScan[key] + funnel.directUrl[key],
   }));
-  const maxArrived = Math.max(funnel.flyerScan.arrived, funnel.directUrl.arrived);
+  const arrived = funnel.flyerScan.arrived + funnel.directUrl.arrived;
+  const lastChannel = CHANNELS[CHANNELS.length - 1];
 
   return (
-    <ResponsiveContainer width="100%" height={data.length * 52 + 48}>
+    <ResponsiveContainer width="100%" height={data.length * 40 + 48}>
       <BarChart data={data} layout="vertical" margin={{ top: 8, right: 96, bottom: 8, left: 0 }}>
-        <XAxis type="number" hide domain={[0, maxArrived]} />
+        <XAxis type="number" hide domain={[0, arrived]} />
         <YAxis type="category" dataKey="label" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} width={200} />
-        <Tooltip />
+        <Tooltip
+          formatter={(value: number, _name, item) =>
+            formatShareOf(funnel[item.dataKey as (typeof CHANNELS)[number]["key"]].arrived)(value)
+          }
+        />
         <Legend />
         {CHANNELS.map((channel) => (
-          <Bar key={channel.key} dataKey={channel.key} name={channel.label} fill={channel.color} radius={[0, 3, 3, 0]}>
-            <LabelList
-              dataKey={channel.key}
-              position="right"
-              style={{ fontSize: 11 }}
-              formatter={formatShareOf(funnel[channel.key].arrived)}
-            />
+          <Bar
+            key={channel.key}
+            dataKey={channel.key}
+            name={channel.label}
+            stackId="channel"
+            fill={channel.color}
+            radius={channel.key === lastChannel.key ? [0, 3, 3, 0] : 0}
+          >
+            {channel.key === lastChannel.key && (
+              <LabelList dataKey="total" position="right" style={{ fontSize: 11 }} formatter={formatShareOf(arrived)} />
+            )}
           </Bar>
         ))}
       </BarChart>
