@@ -1,9 +1,10 @@
-import { useRef, type ReactNode } from "react";
+import { forwardRef, useRef, type ReactNode } from "react";
 import { Check, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import type { SwipeSixItem } from "../../types";
 import { RaindownConfetti } from "../../RaindownConfetti";
 import { Button } from "../ui/button";
-import { FlyerProgress } from "../flyer/FlyerProgress";
+import { FlyerProgressSegments } from "../flyer/FlyerProgress";
 import { FlyerHeader } from "../flyer/FlyerSwipeScreen";
 import {
   FlyerStackedCard,
@@ -16,7 +17,6 @@ import {
 
 export type SwipeSixPhase = "swiping" | "celebrating" | "done";
 
-export const SWIPE_SIX_TITLE = "Today's Swipe Six";
 
 const isAddedByHost = ({ statement, room }: SwipeSixItem) =>
   statement.author === room.hostId;
@@ -68,10 +68,10 @@ function SwipeSixSwiping({ items, votedCount, onVote }: SwipeSixSwipingProps) {
 
   return (
     <>
-      {current && <PostPill item={current} />}
+      {current && <TopicSlider item={current} topicIndex={topicIndexAt(items, votedCount)} />}
 
       <div className="mt-5">
-        <FlyerProgress votedCount={votedCount} total={items.length} title={SWIPE_SIX_TITLE} />
+        <SwipeSixProgress votedCount={votedCount} total={items.length} />
       </div>
 
       <div className="relative mt-5 h-60" style={{ marginBottom: STACK_PEEK_PX }}>
@@ -107,6 +107,17 @@ function SwipeSixSwiping({ items, votedCount, onVote }: SwipeSixSwipingProps) {
   );
 }
 
+function SwipeSixProgress({ votedCount, total }: { votedCount: number; total: number }) {
+  return (
+    <div className="flex items-center gap-3">
+      <FlyerProgressSegments votedCount={votedCount} total={total} />
+      <span className="shrink-0 text-sm font-semibold secondary-text">
+        {votedCount} of {total}
+      </span>
+    </div>
+  );
+}
+
 interface VoteButtonProps {
   label: string;
   vote: SwipeVote;
@@ -126,18 +137,55 @@ function VoteButton({ label, vote, icon, onClick }: VoteButtonProps) {
   );
 }
 
-function PostPill({ item }: { item: SwipeSixItem }) {
+// Pastel pill backgrounds, cycled per topic so back-to-back topics never share a color.
+const TOPIC_PILL_COLORS = ["bg-amber-100", "bg-sky-100", "bg-rose-100", "bg-emerald-100", "bg-violet-100"];
+
+// Which topic (0, 1, 2...) the card at this position belongs to, counting each change of post.
+function topicIndexAt(items: SwipeSixItem[], position: number): number {
+  return items.slice(1, position + 1).filter((item, i) => item.room.id !== items[i].room.id).length;
+}
+
+// A simulated horizontal scroller: when the topic changes, the old pill flies off left
+// and the new one slides in from the right. The first topic slides in on open.
+function TopicSlider({ item, topicIndex }: { item: SwipeSixItem; topicIndex: number }) {
+  return (
+    <>
+      <p className="mt-3 text-xs font-semibold uppercase tracking-wide secondary-text">Topic</p>
+      <div className="-mx-5 mt-1 overflow-hidden px-5">
+        <AnimatePresence mode="popLayout" initial>
+          <TopicPill
+            key={item.room.id}
+            item={item}
+            colorClass={TOPIC_PILL_COLORS[topicIndex % TOPIC_PILL_COLORS.length]}
+          />
+        </AnimatePresence>
+      </div>
+    </>
+  );
+}
+
+const TopicPill = forwardRef<HTMLDivElement, { item: SwipeSixItem; colorClass: string }>(function TopicPill(
+  { item, colorClass },
+  ref,
+) {
   const { emoji, topic, subHeard } = item.room;
   return (
-    <div className="mt-3 rounded-xl bg-muted px-3 py-2">
+    <motion.div
+      ref={ref}
+      className={`rounded-xl px-3 py-2 ${colorClass}`}
+      initial={{ x: "110%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "-110%" }}
+      transition={{ type: "spring", stiffness: 260, damping: 30 }}
+    >
       <p className="text-sm font-semibold leading-snug text-foreground">
         {emoji && <span className="mr-1">{emoji}</span>}
         {topic}
         {subHeard && <span className="font-medium secondary-text"> · {subHeard}</span>}
       </p>
-    </div>
+    </motion.div>
   );
-}
+});
 
 interface SwipeSixCelebrationProps {
   total: number;
@@ -150,7 +198,7 @@ function SwipeSixCelebration({ total, onAllDone, onBackToFeed }: SwipeSixCelebra
     <div className="flex flex-1 flex-col">
       <RaindownConfetti />
       <div className="mt-5">
-        <FlyerProgress votedCount={total} total={total} title={SWIPE_SIX_TITLE} />
+        <SwipeSixProgress votedCount={total} total={total} />
       </div>
 
       <div className="mt-10 text-center">

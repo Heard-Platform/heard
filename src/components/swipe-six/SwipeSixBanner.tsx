@@ -2,7 +2,8 @@ import { motion } from "motion/react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { FEED_CARD_WIDTH } from "../../utils/constants/general";
-import { SWIPE_SIX_TITLE } from "./SwipeSixScreen";
+
+const SWIPE_SIX_TITLE = "Today's Swipe Six";
 
 export function SwipeSixBanner({ onStart }: { onStart: () => void }) {
   return (

@@ -2,6 +2,7 @@ import { forwardRef, useImperativeHandle, useRef } from "react";
 import { motion, useAnimate, useMotionValue, useTransform, type MotionValue, type PanInfo } from "motion/react";
 import { User } from "lucide-react";
 import type { Statement } from "../../types";
+import { useFitText } from "../../hooks/useFitText";
 
 export type SwipeVote = "agree" | "disagree" | "pass";
 
@@ -63,6 +64,8 @@ export const STACK_POSES = [
   { scale: 0.9, y: 28 },
 ];
 export const STACK_PEEK_PX = STACK_POSES[STACK_POSES.length - 1].y;
+const STATEMENT_MAX_FONT_PX = 24;
+const STATEMENT_MIN_FONT_PX = 12;
 
 interface FlyerCardContentProps {
   statement: Statement;
@@ -70,13 +73,24 @@ interface FlyerCardContentProps {
 }
 
 export function FlyerCardContent({ statement, addedByHost = false }: FlyerCardContentProps) {
+  // Long statements shrink to fit the card rather than growing it.
+  const { ref, fontSize } = useFitText<HTMLParagraphElement>(
+    statement.text,
+    STATEMENT_MAX_FONT_PX,
+    STATEMENT_MIN_FONT_PX,
+  );
+
   return (
     <>
-      <p className="text-[24px] font-extrabold leading-[1.15] tracking-tight text-[#1C1B1F]">
+      <p
+        ref={ref}
+        className="min-h-0 flex-1 overflow-hidden font-extrabold leading-[1.15] tracking-tight text-[#1C1B1F]"
+        style={{ fontSize }}
+      >
         {statement.text}
       </p>
 
-      <div className="mt-auto flex items-center gap-2">
+      <div className="mt-3 flex shrink-0 items-center gap-2">
         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EDE8DE]">
           <User className="h-4 w-4 text-[#6B6760]" />
         </div>

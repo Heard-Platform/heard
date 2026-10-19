@@ -33,6 +33,19 @@ const SWIPE_SIX_ITEMS: SwipeSixItem[] = [
   { room: MUSIC, statement: statement("s6", MUSIC.id, "Nothing since has topped the 90s for albums start to finish.") },
 ];
 
+// Repeats a realistic sentence and cuts it at a word boundary near the target length.
+const LONG_SOURCE =
+  "Bus lanes would speed up commutes for thousands of riders, but the city needs to talk to the small businesses along the corridor first, because losing parking and loading zones could hurt the shops that make the neighborhood worth visiting. ";
+const textOfLength = (length: number) => {
+  const repeated = LONG_SOURCE.repeat(Math.ceil(length / LONG_SOURCE.length) + 1);
+  return `${repeated.slice(0, repeated.lastIndexOf(" ", length)).trim()}.`;
+};
+
+const LONG_STATEMENT_ITEMS: SwipeSixItem[] = [60, 120, 200, 300, 500, 1000].map((length, i) => {
+  const postRoom = [DC_BUSES, COOKING, DC_METRO, MUSIC][i % 4];
+  return { room: postRoom, statement: statement(`long-${length}`, postRoom.id, textOfLength(length)) };
+});
+
 const FUNNEL = { bannerShown: 1, started: 1, swipes: [1, 1, 1, 1, 1, 1], completed: 1, allDoneClicked: 1 };
 const DAILY = Array.from({ length: 14 }, (_, i) => ({
   date: new Date(Date.UTC(2026, 9, 6 + i)).toISOString().slice(0, 10),
@@ -43,9 +56,14 @@ export function SwipeSixStory() {
   return (
     <StoryContainer
       title="Swipe Six"
-      description="Dev-only daily six. The banner sits at the top of the feed until today's six is done. Swiping walks through all six, then the celebration, then the done screen."
+      description="Dev-only daily six. The banner sits at the top of the feed until today's six is done. Swiping walks through all six, then the celebration, then the done screen. The pill glows gold when the topic changes. Long statements shows text shrinking to fit at 60 to 1000 characters."
       variants={[
         { id: "flow", label: "Full flow", children: <SwipeSixFlowDemo initialPhase="swiping" /> },
+        {
+          id: "long",
+          label: "Long statements",
+          children: <SwipeSixFlowDemo initialPhase="swiping" items={LONG_STATEMENT_ITEMS} />,
+        },
         { id: "celebrating", label: "Celebration", children: <SwipeSixFlowDemo initialPhase="celebrating" /> },
         { id: "done", label: "Done", children: <SwipeSixFlowDemo initialPhase="done" /> },
         { id: "banner", label: "Feed banner", children: <BannerDemo /> },
@@ -55,8 +73,13 @@ export function SwipeSixStory() {
   );
 }
 
-function SwipeSixFlowDemo({ initialPhase }: { initialPhase: SwipeSixPhase }) {
-  const [votedCount, setVotedCount] = useState(initialPhase === "swiping" ? 0 : SWIPE_SIX_ITEMS.length);
+interface SwipeSixFlowDemoProps {
+  initialPhase: SwipeSixPhase;
+  items?: SwipeSixItem[];
+}
+
+function SwipeSixFlowDemo({ initialPhase, items = SWIPE_SIX_ITEMS }: SwipeSixFlowDemoProps) {
+  const [votedCount, setVotedCount] = useState(initialPhase === "swiping" ? 0 : items.length);
   const [phase, setPhase] = useState<SwipeSixPhase>(initialPhase);
 
   const handleReplay = () => {
@@ -67,7 +90,7 @@ function SwipeSixFlowDemo({ initialPhase }: { initialPhase: SwipeSixPhase }) {
   const handleVote = () => {
     const next = votedCount + 1;
     setVotedCount(next);
-    if (next >= SWIPE_SIX_ITEMS.length) setPhase("celebrating");
+    if (next >= items.length) setPhase("celebrating");
   };
 
   return (
@@ -79,7 +102,7 @@ function SwipeSixFlowDemo({ initialPhase }: { initialPhase: SwipeSixPhase }) {
 
       <div className="mx-auto flex h-195 w-97.5 max-w-full flex-col overflow-y-auto rounded-4xl border-8 [scrollbar-width:none] border-slate-900 shadow-2xl">
         <SwipeSixScreen
-          items={SWIPE_SIX_ITEMS}
+          items={items}
           votedCount={votedCount}
           phase={phase}
           onVote={handleVote}

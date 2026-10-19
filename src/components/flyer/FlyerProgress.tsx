@@ -3,7 +3,6 @@ import _ from "lodash";
 interface FlyerProgressProps {
   votedCount: number;
   total: number;
-  title?: string;
 }
 
 const DONE_COLOR = "#E4603C";
@@ -23,22 +22,30 @@ function stepTitle(votedCount: number, total: number): string {
   return STEP_TITLES[Math.min(votedCount, STEP_TITLES.length - 1)];
 }
 
-export function FlyerProgress({ votedCount, total, title }: FlyerProgressProps) {
+export function FlyerProgress({ votedCount, total }: FlyerProgressProps) {
   return (
     <div>
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="truncate text-xl font-extrabold tracking-tight text-[#1C1B1F]">
-          {title ?? stepTitle(votedCount, total)}
+          {stepTitle(votedCount, total)}
         </h2>
         <span className="shrink-0 text-sm font-semibold text-[#6B6760]">
           {votedCount} of {total}
         </span>
       </div>
-      <div className="mt-2 flex gap-1.5">
-        {_.times(total, (i) => (
-          <ProgressSegment key={i} isDone={i < votedCount} isLatest={i === votedCount - 1} />
-        ))}
+      <div className="mt-2">
+        <FlyerProgressSegments votedCount={votedCount} total={total} />
       </div>
+    </div>
+  );
+}
+
+export function FlyerProgressSegments({ votedCount, total }: FlyerProgressProps) {
+  return (
+    <div className="flex flex-1 gap-1.5">
+      {_.times(total, (i) => (
+        <ProgressSegment key={i} isDone={i < votedCount} isLatest={i === votedCount - 1} />
+      ))}
     </div>
   );
 }
