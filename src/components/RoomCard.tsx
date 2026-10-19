@@ -37,6 +37,7 @@ import { getRoomVoteCount } from "../utils/votes";
 import { pluralizePerson } from "../utils/text";
 import { FeedCardMotion } from "./FeedCardMotion";
 import { RollingNumber } from "./widgets/RollingNumber";
+import { RoomProgressBar } from "./room/RoomProgressBar";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -363,6 +364,13 @@ export function RoomCard({
               </div>
             </div>
           </motion.div>
+
+          {!isCompleted && statements.length > 0 && (
+            <RoomProgressBar
+              total={statements.length}
+              completed={statements.filter((s) => s.voters?.[user.id]).length}
+            />
+          )}
 
           {room.imageUrl && showFullscreenImage && (
             <div
