@@ -1,4 +1,3 @@
-import { samplesInWindow } from "./downsample";
 import type { AccelerometerSample, TapCluster, TapPeak } from "./sensor-types";
 
 export interface TapDetectionParams {
@@ -6,7 +5,6 @@ export interface TapDetectionParams {
   minTapSpacingMs: number;
   maxTapGapMs: number;
   tapsPerSignal: number;
-  maxStillMagnitude: number;
 }
 
 export const DEFAULT_TAP_DETECTION_PARAMS: TapDetectionParams = {
@@ -14,16 +12,10 @@ export const DEFAULT_TAP_DETECTION_PARAMS: TapDetectionParams = {
   minTapSpacingMs: 100,
   maxTapGapMs: 500,
   tapsPerSignal: 3,
-  maxStillMagnitude: 1,
 };
 
 // A firm tap can ring and register as two spikes, so a signal may have one more tap than asked for.
 const EXTRA_TAPS_ALLOWED = 1;
-
-// Taping a flyer up means standing still for a while before the taps. Requiring stillness for most of the
-// window (not just half) rejects spikes a few seconds after a real stop, once walking has started again.
-const STILL_WINDOW = { startOffsetMs: -15_000, endOffsetMs: -1_000 };
-const STILL_FRACTION = 0.75;
 
 // A tap is a near-instant spike, while walking steps build up over ~100ms, so taps stand out by how much
 // the acceleration changes from one sample to the next rather than by how big it gets.
@@ -69,42 +61,26 @@ export function groupPeaksIntoClusters(peaks: TapPeak[], maxTapGapMs: number): T
   return groups;
 }
 
-function magnitudePercentile(samples: AccelerometerSample[], fraction: number): number {
-  if (samples.length === 0) return Infinity;
-  const sorted = samples.map((sample) => sample.magnitude).sort((a, b) => a - b);
-  return sorted[Math.floor((sorted.length - 1) * fraction)];
-}
-
-export function wasStillBefore(samples: AccelerometerSample[], firstTapMs: number, maxStillMagnitude: number): boolean {
-  const window = samplesInWindow(
-    samples,
-    firstTapMs + STILL_WINDOW.startOffsetMs,
-    firstTapMs + STILL_WINDOW.endOffsetMs,
-  );
-  return magnitudePercentile(window, STILL_FRACTION) <= maxStillMagnitude;
-}
-
 function hasSignalTapCount(peaks: TapPeak[], tapsPerSignal: number): boolean {
   return peaks.length >= tapsPerSignal && peaks.length <= tapsPerSignal + EXTRA_TAPS_ALLOWED;
 }
 
-// Returns flyer signals plus near misses: clusters that have the right tap count or the stillness before
-// them, but not both. Other spike clusters are just walking and are left out.
+// Returns flyer signals plus near misses: clusters with more taps than a signal allows. Walking often
+// lands two steps within the tap gap, so groups of fewer taps than a signal are left out as noise.
+// Standing still isn't required: sometimes the taps come right after walking up, before taping the flyer.
 export function detectTapClusters(
   samples: AccelerometerSample[],
   params: TapDetectionParams,
 ): TapCluster[] {
   const peaks = findTapPeaks(samples, params.minTapJolt, params.minTapSpacingMs);
   return groupPeaksIntoClusters(peaks, params.maxTapGapMs).flatMap((group) => {
-    const tapCountMatches = hasSignalTapCount(group, params.tapsPerSignal);
-    const isStill = wasStillBefore(samples, group[0].timeMs, params.maxStillMagnitude);
-    if (!tapCountMatches && !isStill) return [];
+    if (group.length < params.tapsPerSignal) return [];
     return [
       {
         startMs: group[0].timeMs,
         endMs: group[group.length - 1].timeMs,
         peaks: group,
-        isSignal: tapCountMatches && isStill,
+        isSignal: hasSignalTapCount(group, params.tapsPerSignal),
       },
     ];
   });

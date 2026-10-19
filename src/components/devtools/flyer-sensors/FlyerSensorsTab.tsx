@@ -118,7 +118,7 @@ export function FlyerSensorsTab({
 }: FlyerSensorsTabProps) {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [statementId, setStatementId] = useState<string | null>(null);
-  const [uploadResetCount, setUploadResetCount] = useState(0);
+  const [saveCount, setSaveCount] = useState(0);
   const [savedCount, setSavedCount] = useState<number | null>(null);
   const accelerometer = useCsvLoader<AccelerometerSample>(parseAccelerometerCsv, initialRecording?.accelerometerSamples);
   const location = useCsvLoader<LocationFix>(parseLocationCsv, initialRecording?.locationFixes);
@@ -144,7 +144,7 @@ export function FlyerSensorsTab({
     await saveFlyers(request);
     accelerometer.clear();
     location.clear();
-    setUploadResetCount((count) => count + 1);
+    setSaveCount((count) => count + 1);
     setSavedCount(request.flyers.length);
     roomFlyers.reload();
   };
@@ -155,7 +155,7 @@ export function FlyerSensorsTab({
         <div>
           <h2 className="text-xl font-semibold">Flyer Sensors</h2>
           <p className="text-sm text-slate-600">
-            Pick a room to see its saved flyers and how many votes each one has brought in. To add flyers, upload Accelerometer.csv and Location.csv from the same phone recording: mark each flyer by standing still while you tape it up, then tapping the phone 3 times. Each flyer is placed where you were standing just before the taps.
+            Pick a room to see its saved flyers and how many votes each one has brought in. To add flyers, upload Accelerometer.csv and Location.csv from the same phone recording: mark each flyer by standing still while you tape it up, then tapping the phone 3 times. Each flyer is placed where you were standing just before the taps. You can also add flyers by hand with "Add flyers" above the map.
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
@@ -184,7 +184,7 @@ export function FlyerSensorsTab({
           </p>
         )}
         {savedCount !== null && <p className="text-sm text-green-700">Saved {savedCount} new flyers.</p>}
-        <div key={uploadResetCount} className="grid md:grid-cols-2 gap-4">
+        <div key={saveCount} className="grid md:grid-cols-2 gap-4">
           <CsvUploadField
             id="flyer-sensors-accelerometer"
             label="Accelerometer CSV"
@@ -204,7 +204,7 @@ export function FlyerSensorsTab({
 
       {(loadedRoom || loadedRecording) && (
         <FlyerSensorsView
-          key={`${roomId ?? "no-room"}-${loadedRecording?.key ?? "no-recording"}`}
+          key={`${roomId ?? "no-room"}-${loadedRecording?.key ?? "no-recording"}-${saveCount}`}
           savedFlyers={loadedRoom?.flyers ?? []}
           recording={loadedRecording?.recording ?? null}
           roomId={roomId}

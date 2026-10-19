@@ -29,12 +29,14 @@ interface FlyerLocationsMapProps {
   savedFlyers: SavedFlyerPlacement[];
   placements: FlyerPlacement[];
   track: LocationFix[];
-  selectedNumber: number | null;
+  selectedId: string | null;
   hoverPosition: LatLng | null;
-  onSelect: (number: number) => void;
+  addingFlyers: boolean;
+  onSelect: (id: string) => void;
   onDeselect: () => void;
-  onMove: (number: number, position: LatLng) => void;
-  onHeadingChange: (number: number, headingDeg: number) => void;
+  onAdd: (position: LatLng) => void;
+  onMove: (id: string, position: LatLng) => void;
+  onHeadingChange: (id: string, headingDeg: number) => void;
 }
 
 interface PinIconOptions {
@@ -101,15 +103,31 @@ function FitToPoints({ points }: { points: LatLngExpression[] }) {
   return null;
 }
 
-function DeselectOnMapClick({ onDeselect }: { onDeselect: () => void }) {
-  useMapEvents({ click: onDeselect });
+interface MapClickHandlerProps {
+  addingFlyers: boolean;
+  onAdd: (position: LatLng) => void;
+  onDeselect: () => void;
+}
+
+function MapClickHandler({ addingFlyers, onAdd, onDeselect }: MapClickHandlerProps) {
+  const map = useMapEvents({
+    click: (event) => {
+      if (addingFlyers) onAdd({ latitude: event.latlng.lat, longitude: event.latlng.lng });
+      else onDeselect();
+    },
+  });
+
+  useEffect(() => {
+    map.getContainer().style.cursor = addingFlyers ? "crosshair" : "";
+  }, [map, addingFlyers]);
+
   return null;
 }
 
 interface HeadingHandleProps {
   placement: FlyerPlacement;
   position: LatLng;
-  onHeadingChange: (number: number, headingDeg: number) => void;
+  onHeadingChange: (id: string, headingDeg: number) => void;
 }
 
 function HeadingHandle({ placement, position, onHeadingChange }: HeadingHandleProps) {
@@ -135,7 +153,7 @@ function HeadingHandle({ placement, position, onHeadingChange }: HeadingHandlePr
           dragend: (event) => {
             const dropped = map.latLngToLayerPoint((event.target as LeafletMarker).getLatLng());
             const currentCenter = map.latLngToLayerPoint(toLatLng(position));
-            onHeadingChange(placement.number, bearingBetween(currentCenter, dropped));
+            onHeadingChange(placement.id, bearingBetween(currentCenter, dropped));
           },
         }}
       />
@@ -199,10 +217,12 @@ export default function FlyerLocationsMap({
   savedFlyers,
   placements,
   track,
-  selectedNumber,
+  selectedId,
   hoverPosition,
+  addingFlyers,
   onSelect,
   onDeselect,
+  onAdd,
   onMove,
   onHeadingChange,
 }: FlyerLocationsMapProps) {
@@ -211,7 +231,7 @@ export default function FlyerLocationsMap({
     () => (trackPoints.length > 0 ? trackPoints : savedFlyers.map(toLatLng)),
     [trackPoints, savedFlyers],
   );
-  const selected = placements.find((placement) => placement.number === selectedNumber);
+  const selected = placements.find((placement) => placement.id === selectedId);
   const selectedPosition = selected && placementPosition(selected);
 
   return (
@@ -224,7 +244,7 @@ export default function FlyerLocationsMap({
           maxNativeZoom={19}
         />
         <FitToPoints points={fitPoints} />
-        <DeselectOnMapClick onDeselect={onDeselect} />
+        <MapClickHandler addingFlyers={addingFlyers} onAdd={onAdd} onDeselect={onDeselect} />
         <Polyline positions={trackPoints} pathOptions={{ color: "#64748b", weight: 2, opacity: 0.6 }} />
         <SavedFlyerPins savedFlyers={savedFlyers} />
         {selected?.location && (
@@ -235,15 +255,15 @@ export default function FlyerLocationsMap({
           />
         )}
         {placements.map((placement) => (
-          <EstimateOffset key={placement.number} placement={placement} />
+          <EstimateOffset key={placement.id} placement={placement} />
         ))}
         {placements.map((placement) => {
           const position = placementPosition(placement);
           if (!position) return null;
-          const isSelected = placement.number === selectedNumber;
+          const isSelected = placement.id === selectedId;
           return (
             <Marker
-              key={placement.number}
+              key={placement.id}
               position={toLatLng(position)}
               icon={pinIcon({
                 label: placement.flyerGroup,
@@ -254,10 +274,10 @@ export default function FlyerLocationsMap({
               })}
               draggable
               eventHandlers={{
-                click: () => onSelect(placement.number),
+                click: () => onSelect(placement.id),
                 dragend: (event) => {
                   const { lat, lng } = (event.target as LeafletMarker).getLatLng();
-                  onMove(placement.number, { latitude: lat, longitude: lng });
+                  onMove(placement.id, { latitude: lat, longitude: lng });
                 },
               }}
             />
@@ -273,7 +293,7 @@ export default function FlyerLocationsMap({
         )}
         {selected && selectedPosition && (
           <HeadingHandle
-            key={`${selected.number}-${selected.headingDeg}`}
+            key={`${selected.id}-${selected.headingDeg}`}
             placement={selected}
             position={selectedPosition}
             onHeadingChange={onHeadingChange}

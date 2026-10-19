@@ -24,7 +24,6 @@ const FIELDS: NumberFieldConfig[] = [
   { key: "tapsPerSignal", label: "Taps per flyer", step: 1 },
   { key: "maxTapGapMs", label: "Max gap between taps (ms)", step: 50 },
   { key: "minTapSpacingMs", label: "Min tap spacing (ms)", step: 10 },
-  { key: "maxStillMagnitude", label: "Max motion while taping, 15s before taps (m/s²)", step: 0.1 },
   { key: "standingWindowMs", label: "GPS averaging window (ms)", step: 1000 },
 ];
 
