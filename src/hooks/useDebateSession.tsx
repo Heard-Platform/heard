@@ -422,6 +422,8 @@ export function DebateSessionProvider(
         const updatedStatement = response.data.statement;
         setRoomStatements((prev) => {
           const roomId = updatedStatement.roomId;
+          // Votes can come from outside the feed (Swipe Six) for rooms we haven't loaded.
+          if (!prev[roomId]) return prev;
           return {
             ...prev,
             [roomId]: prev[roomId].map((stmt) =>
