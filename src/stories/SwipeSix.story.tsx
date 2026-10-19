@@ -11,11 +11,13 @@ export default {
   title: "SwipeSix/SwipeSix",
 };
 
-const room = (id: string, topic: string, subHeard: string, emoji: string) =>
-  ({ id, topic, subHeard, emoji, createdAt: Date.now() }) as DebateRoom;
+const HOST_ID = "host";
 
-const statement = (id: string, roomId: string, text: string) =>
-  ({ id, roomId, text, author: "someone", agrees: 0, disagrees: 0, passes: 0, superAgrees: 0, timestamp: 0, round: 1, voters: {} }) as Statement;
+const room = (id: string, topic: string, subHeard: string, emoji: string) =>
+  ({ id, topic, subHeard, emoji, hostId: HOST_ID, createdAt: Date.now() }) as DebateRoom;
+
+const statement = (id: string, roomId: string, text: string, author = HOST_ID) =>
+  ({ id, roomId, text, author, agrees: 0, disagrees: 0, passes: 0, superAgrees: 0, timestamp: 0, round: 1, voters: {} }) as Statement;
 
 const DC_BUSES = room("dc-buses", "Should DC add dedicated bus lanes on 16th Street, even if it means losing street parking and a lane for cars?", "washington-dc", "🚌");
 const DC_METRO = room("dc-metro", "How should Metro close its budget gap?", "washington-dc", "🚇");
@@ -24,10 +26,10 @@ const MUSIC = room("music", "The best decade for music was the 90s", "music", "�
 
 const SWIPE_SIX_ITEMS: SwipeSixItem[] = [
   { room: DC_BUSES, statement: statement("s1", DC_BUSES.id, "Bus lanes on 16th St would get me to work faster.") },
-  { room: DC_BUSES, statement: statement("s2", DC_BUSES.id, "Losing parking on 16th St hurts local businesses.") },
+  { room: DC_BUSES, statement: statement("s2", DC_BUSES.id, "Losing parking on 16th St hurts local businesses.", "participant") },
   { room: COOKING, statement: statement("s3", COOKING.id, "Sweet and savory together is the whole point.") },
   { room: DC_METRO, statement: statement("s4", DC_METRO.id, "Maryland and Virginia should pay a bigger share.") },
-  { room: DC_METRO, statement: statement("s5", DC_METRO.id, "Fare hikes are fine if service gets more frequent.") },
+  { room: DC_METRO, statement: statement("s5", DC_METRO.id, "Fare hikes are fine if service gets more frequent.", "participant") },
   { room: MUSIC, statement: statement("s6", MUSIC.id, "Nothing since has topped the 90s for albums start to finish.") },
 ];
 

@@ -7,6 +7,7 @@ export type SwipeVote = "agree" | "disagree" | "pass";
 
 interface FlyerSwipeCardProps {
   statement: Statement;
+  addedByHost: boolean;
   onDragStart: () => void;
   onSwiped: (vote: SwipeVote) => void;
 }
@@ -63,7 +64,12 @@ export const STACK_POSES = [
 ];
 export const STACK_PEEK_PX = STACK_POSES[STACK_POSES.length - 1].y;
 
-export function FlyerCardContent({ statement }: { statement: Statement }) {
+interface FlyerCardContentProps {
+  statement: Statement;
+  addedByHost: boolean;
+}
+
+export function FlyerCardContent({ statement, addedByHost = false }: FlyerCardContentProps) {
   return (
     <>
       <p className="text-[24px] font-extrabold leading-[1.15] tracking-tight text-[#1C1B1F]">
@@ -74,13 +80,21 @@ export function FlyerCardContent({ statement }: { statement: Statement }) {
         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EDE8DE]">
           <User className="h-4 w-4 text-[#6B6760]" />
         </div>
-        <span className="text-sm font-medium text-[#6B6760]">Added by a participant</span>
+        <span className="text-sm font-medium text-[#6B6760]">
+          {addedByHost ? "Added by host" : "Added by a participant"}
+        </span>
       </div>
     </>
   );
 }
 
-export function FlyerStackedCard({ statement, depth }: { statement: Statement; depth: number }) {
+interface FlyerStackedCardProps {
+  statement: Statement;
+  depth: number;
+  addedByHost: boolean;
+}
+
+export function FlyerStackedCard({ statement, depth, addedByHost }: FlyerStackedCardProps) {
   return (
     <motion.div
       className={`${FLYER_CARD_CLASS} pointer-events-none`}
@@ -89,7 +103,7 @@ export function FlyerStackedCard({ statement, depth }: { statement: Statement; d
       animate={STACK_POSES[depth]}
       transition={{ duration: 0.25, ease: "easeOut" }}
     >
-      <FlyerCardContent statement={statement} />
+      <FlyerCardContent statement={statement} addedByHost={addedByHost} />
     </motion.div>
   );
 }
@@ -97,7 +111,7 @@ export function FlyerStackedCard({ statement, depth }: { statement: Statement; d
 export const FlyerSwipeCard = forwardRef<
   FlyerSwipeCardHandle,
   FlyerSwipeCardProps
->(function FlyerSwipeCard({ statement, onDragStart, onSwiped }, ref) {
+>(function FlyerSwipeCard({ statement, onDragStart, onSwiped, addedByHost }, ref) {
   const [scope, animate] = useAnimate();
   const isFlyingOff = useRef(false);
   const x = useMotionValue(0);
@@ -155,7 +169,7 @@ export const FlyerSwipeCard = forwardRef<
       onDragStart={onDragStart}
       onDragEnd={handleDragEnd}
     >
-      <FlyerCardContent statement={statement} />
+      <FlyerCardContent statement={statement} addedByHost={addedByHost} />
 
       <SwipeLabel
         text="AGREE"

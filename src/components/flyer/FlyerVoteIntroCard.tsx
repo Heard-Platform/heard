@@ -42,12 +42,14 @@ const STAMP_STYLE = {
 interface FlyerVoteIntroCardProps {
   statement: Statement;
   vote: FlyerVote;
+  addedByHost: boolean;
   onDismissed: () => void;
 }
 
 export function FlyerVoteIntroCard({
   statement,
   vote,
+  addedByHost,
   onDismissed,
 }: FlyerVoteIntroCardProps) {
   const [phase, setPhase] = useState<Phase>("stamp");
@@ -73,7 +75,7 @@ export function FlyerVoteIntroCard({
       transition={CARD_TRANSITION[phase]}
       onAnimationComplete={() => phase === "leave" && onDismissed()}
     >
-      <FlyerCardContent statement={statement} />
+      <FlyerCardContent statement={statement} addedByHost={addedByHost} />
       <FlyerVoteStamp vote={vote} />
     </motion.div>
   );

@@ -31,6 +31,7 @@ import {
 
 interface FlyerSwipeScreenProps {
   topic: string;
+  hostId: string;
   flyerStatement: Statement;
   flyerVote: FlyerVote;
   upcoming: Statement[];
@@ -47,6 +48,7 @@ interface FlyerSwipeScreenProps {
 
 export function FlyerSwipeScreen({
   topic,
+  hostId,
   flyerStatement,
   flyerVote,
   upcoming,
@@ -69,6 +71,7 @@ export function FlyerSwipeScreen({
   const showResults =
     votedCount >= total && (tribeSummary !== null || !hasClusters);
   const minimapSeed = flyerStatement.roomId;
+  const isAddedByHost = (statement: Statement) => statement.author === hostId;
 
   const recordVote = (statementId: string, vote: SwipeVote) => {
     onVote(statementId, vote);
@@ -108,12 +111,14 @@ export function FlyerSwipeScreen({
                 key={statement.id}
                 statement={statement}
                 depth={i + 1}
+                addedByHost={isAddedByHost(statement)}
               />
             ))}
             {votedCount === 0 ? (
               <FlyerVoteIntroCard
                 statement={flyerStatement}
                 vote={flyerVote}
+                addedByHost={isAddedByHost(flyerStatement)}
                 onDismissed={() =>
                   recordVote(flyerStatement.id, flyerVote)
                 }
@@ -122,6 +127,7 @@ export function FlyerSwipeScreen({
               <FlyerSwipeCard
                 key={currentStatement.id}
                 statement={currentStatement}
+                addedByHost={isAddedByHost(currentStatement)}
                 onDragStart={() => setHasStartedDragging(true)}
                 onSwiped={(vote) =>
                   recordVote(currentStatement.id, vote)

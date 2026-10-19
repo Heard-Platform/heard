@@ -18,6 +18,9 @@ export type SwipeSixPhase = "swiping" | "celebrating" | "done";
 
 export const SWIPE_SIX_TITLE = "Today's Swipe Six";
 
+const isAddedByHost = ({ statement, room }: SwipeSixItem) =>
+  statement.author === room.hostId;
+
 interface SwipeSixScreenProps {
   items: SwipeSixItem[];
   votedCount: number;
@@ -73,7 +76,12 @@ function SwipeSixSwiping({ items, votedCount, onVote }: SwipeSixSwipingProps) {
 
       <div className="relative mt-5 h-60" style={{ marginBottom: STACK_PEEK_PX }}>
         {cardsBehind.map((item, i) => (
-          <FlyerStackedCard key={item.statement.id} statement={item.statement} depth={i + 1} />
+          <FlyerStackedCard
+            key={item.statement.id}
+            statement={item.statement}
+            depth={i + 1}
+            addedByHost={isAddedByHost(item)}
+          />
         ))}
         {current && (
           <FlyerSwipeCard
@@ -83,6 +91,7 @@ function SwipeSixSwiping({ items, votedCount, onVote }: SwipeSixSwipingProps) {
             }}
             key={current.statement.id}
             statement={current.statement}
+            addedByHost={isAddedByHost(current)}
             onDragStart={() => {}}
             onSwiped={(vote) => onVote(current, vote)}
           />
