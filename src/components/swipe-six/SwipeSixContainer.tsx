@@ -5,11 +5,12 @@ import { api, safelyMakeApiCall } from "../../utils/api";
 import { localDateString } from "../../utils/time";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import type { SwipeVote } from "../flyer/FlyerSwipeCard";
-import { SwipeSixScreen, type SwipeSixPhase } from "./SwipeSixScreen";
+import { SwipeSixScreen, type SwipeSixPhase, type SwipeSixSource } from "./SwipeSixScreen";
 
 interface SwipeSixContainerProps {
+  source: SwipeSixSource;
   items: SwipeSixItem[];
-  onCompleted: () => void;
+  onCompleted?: () => void;
   onExit: () => void;
 }
 
@@ -32,7 +33,7 @@ function LeaveOnError({ onLeave }: { onLeave: () => void }) {
   return null;
 }
 
-function SwipeSixFlow({ items, onCompleted, onExit }: SwipeSixContainerProps) {
+function SwipeSixFlow({ source, items, onCompleted, onExit }: SwipeSixContainerProps) {
   const { voteOnStatement } = useDebateSession();
   const [votedCount, setVotedCount] = useState(0);
   const [phase, setPhase] = useState<SwipeSixPhase>("swiping");
@@ -53,7 +54,7 @@ function SwipeSixFlow({ items, onCompleted, onExit }: SwipeSixContainerProps) {
     api.trackEvent("swipe_six_completed");
     setPhase("celebrating");
     safelyMakeApiCall(() => api.completeSwipeSix(localDateString()));
-    onCompleted();
+    onCompleted?.();
   };
 
   const handleClose = () => {
@@ -73,6 +74,7 @@ function SwipeSixFlow({ items, onCompleted, onExit }: SwipeSixContainerProps) {
 
   return (
     <SwipeSixScreen
+      source={source}
       items={items}
       votedCount={votedCount}
       phase={phase}

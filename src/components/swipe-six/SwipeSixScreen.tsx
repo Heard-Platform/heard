@@ -17,12 +17,35 @@ import {
 import { TopicPill, topicPillColor } from "./TopicPill";
 
 export type SwipeSixPhase = "swiping" | "celebrating" | "done";
+export type SwipeSixSource = "lobby" | "flyer";
 
+interface SwipeSixEndCopy {
+  celebrationBody: string;
+  doneTitle: string;
+  doneBody: string;
+  exitLabel: string;
+}
+
+const END_COPY: Record<SwipeSixSource, SwipeSixEndCopy> = {
+  lobby: {
+    celebrationBody: "Six swipes a day is all it takes to make your world a little brighter ☀️ See ya soon.",
+    doneTitle: "You're done for today",
+    doneBody: "That's all it takes. Go enjoy your day.",
+    exitLabel: "Back to feed",
+  },
+  flyer: {
+    celebrationBody: "That's how Heard works: a few swipes and your neighbors hear you.",
+    doneTitle: "You're all set",
+    doneBody: "Thanks for weighing in. Go enjoy your day.",
+    exitLabel: "See the flyer results",
+  },
+};
 
 const isAddedByHost = ({ statement, room }: SwipeSixItem) =>
   statement.author === room.hostId;
 
 interface SwipeSixScreenProps {
+  source: SwipeSixSource;
   items: SwipeSixItem[];
   votedCount: number;
   phase: SwipeSixPhase;
@@ -33,6 +56,7 @@ interface SwipeSixScreenProps {
 }
 
 export function SwipeSixScreen({
+  source,
   items,
   votedCount,
   phase,
@@ -41,14 +65,16 @@ export function SwipeSixScreen({
   onAllDone,
   onBackToFeed,
 }: SwipeSixScreenProps) {
+  const copy = END_COPY[source];
+
   return (
     <div className="heard-feed-bg relative flex min-h-full flex-1 flex-col overflow-clip px-5 pt-4 pb-5">
       <FlyerHeader onClose={onClose} />
       {phase === "swiping" && <SwipeSixSwiping items={items} votedCount={votedCount} onVote={onVote} />}
       {phase === "celebrating" && (
-        <SwipeSixCelebration total={items.length} onAllDone={onAllDone} onBackToFeed={onBackToFeed} />
+        <SwipeSixCelebration copy={copy} total={items.length} onAllDone={onAllDone} onBackToFeed={onBackToFeed} />
       )}
-      {phase === "done" && <SwipeSixDone onBackToFeed={onBackToFeed} />}
+      {phase === "done" && <SwipeSixDone copy={copy} onBackToFeed={onBackToFeed} />}
     </div>
   );
 }
@@ -103,6 +129,11 @@ function SwipeSixSwiping({ items, votedCount, onVote }: SwipeSixSwipingProps) {
         <VoteButton label="Disagree" vote="disagree" icon={<X />} onClick={() => swipe("disagree")} />
         <VoteButton label="Pass" vote="pass" onClick={() => swipe("pass")} />
         <VoteButton label="Agree" vote="agree" icon={<Check />} onClick={() => swipe("agree")} />
+      </div>
+      <div className="grid grid-cols-3 gap-3 pt-2 text-center text-xs secondary-text">
+        <span>← Swipe left</span>
+        <span>↑ Swipe up</span>
+        <span>Swipe right →</span>
       </div>
     </>
   );
@@ -165,12 +196,13 @@ function TopicSlider({ item, topicIndex }: { item: SwipeSixItem; topicIndex: num
 }
 
 interface SwipeSixCelebrationProps {
+  copy: SwipeSixEndCopy;
   total: number;
   onAllDone: () => void;
   onBackToFeed: () => void;
 }
 
-function SwipeSixCelebration({ total, onAllDone, onBackToFeed }: SwipeSixCelebrationProps) {
+function SwipeSixCelebration({ copy, total, onAllDone, onBackToFeed }: SwipeSixCelebrationProps) {
   return (
     <div className="flex flex-1 flex-col">
       <RaindownConfetti />
@@ -181,7 +213,7 @@ function SwipeSixCelebration({ total, onAllDone, onBackToFeed }: SwipeSixCelebra
       <div className="mt-10 text-center">
         <p className="text-3xl font-extrabold tracking-tight text-foreground">You did it!</p>
         <p className="mx-auto mt-3 max-w-72 text-base leading-snug secondary-text">
-          Six swipes a day is all it takes to make your world a little brighter ☀️ See ya soon.
+          {copy.celebrationBody}
         </p>
       </div>
 
@@ -190,22 +222,22 @@ function SwipeSixCelebration({ total, onAllDone, onBackToFeed }: SwipeSixCelebra
           All done for now
         </Button>
         <Button variant="outline" size="lg" onClick={onBackToFeed}>
-          Back to feed
+          {copy.exitLabel}
         </Button>
       </div>
     </div>
   );
 }
 
-function SwipeSixDone({ onBackToFeed }: { onBackToFeed: () => void }) {
+function SwipeSixDone({ copy, onBackToFeed }: { copy: SwipeSixEndCopy; onBackToFeed: () => void }) {
   return (
     <div className="flex flex-1 flex-col">
       <div className="my-auto text-center">
-        <p className="text-3xl font-extrabold tracking-tight text-foreground">You're done for today</p>
-        <p className="mt-3 text-base secondary-text">That's all it takes. Go enjoy your day.</p>
+        <p className="text-3xl font-extrabold tracking-tight text-foreground">{copy.doneTitle}</p>
+        <p className="mt-3 text-base secondary-text">{copy.doneBody}</p>
       </div>
       <Button variant="link" size="sm" className="mx-auto secondary-text" onClick={onBackToFeed}>
-        Back to feed
+        {copy.exitLabel}
       </Button>
     </div>
   );

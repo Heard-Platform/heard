@@ -2,7 +2,7 @@ import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 import type { DebateRoom, Statement, SwipeSixItem } from "../types";
 import { SwipeSixBanner } from "../components/swipe-six/SwipeSixBanner";
-import { SwipeSixScreen, type SwipeSixPhase } from "../components/swipe-six/SwipeSixScreen";
+import { SwipeSixScreen, type SwipeSixPhase, type SwipeSixSource } from "../components/swipe-six/SwipeSixScreen";
 import { SwipeSixFunnelChart } from "../components/devtools/feature-tracker/SwipeSixFunnelChart";
 import { Button } from "../components/ui/button";
 import { StoryContainer } from "./StoryContainer";
@@ -56,7 +56,7 @@ export function SwipeSixStory() {
   return (
     <StoryContainer
       title="Swipe Six"
-      description="Dev-only daily six. The banner sits at the top of the feed until today's six is done, previewing a new topic every 5 seconds. Swiping walks through all six, then the celebration, then the done screen. The pill glows gold when the topic changes. Long statements shows text shrinking to fit at 60 to 1000 characters."
+      description="Dev-only daily six. The banner sits at the top of the feed until today's six is done, previewing a new topic every 5 seconds. Swiping walks through all six, then the celebration, then the done screen. The pill glows gold when the topic changes. Long statements shows text shrinking to fit at 60 to 1000 characters. The flyer variants show the end copy flyer scanners see after tapping Keep voting."
       variants={[
         { id: "flow", label: "Full flow", children: <SwipeSixFlowDemo initialPhase="swiping" /> },
         {
@@ -66,6 +66,12 @@ export function SwipeSixStory() {
         },
         { id: "celebrating", label: "Celebration", children: <SwipeSixFlowDemo initialPhase="celebrating" /> },
         { id: "done", label: "Done", children: <SwipeSixFlowDemo initialPhase="done" /> },
+        {
+          id: "flyer-celebrating",
+          label: "Flyer celebration",
+          children: <SwipeSixFlowDemo initialPhase="celebrating" source="flyer" />,
+        },
+        { id: "flyer-done", label: "Flyer done", children: <SwipeSixFlowDemo initialPhase="done" source="flyer" /> },
         { id: "banner", label: "Feed banner", children: <BannerDemo /> },
         { id: "funnel", label: "Tracker funnel", children: <SwipeSixFunnelChart funnel={FUNNEL} daily={DAILY} /> },
       ]}
@@ -76,9 +82,10 @@ export function SwipeSixStory() {
 interface SwipeSixFlowDemoProps {
   initialPhase: SwipeSixPhase;
   items?: SwipeSixItem[];
+  source?: SwipeSixSource;
 }
 
-function SwipeSixFlowDemo({ initialPhase, items = SWIPE_SIX_ITEMS }: SwipeSixFlowDemoProps) {
+function SwipeSixFlowDemo({ initialPhase, items = SWIPE_SIX_ITEMS, source = "lobby" }: SwipeSixFlowDemoProps) {
   const [votedCount, setVotedCount] = useState(initialPhase === "swiping" ? 0 : items.length);
   const [phase, setPhase] = useState<SwipeSixPhase>(initialPhase);
 
@@ -102,6 +109,7 @@ function SwipeSixFlowDemo({ initialPhase, items = SWIPE_SIX_ITEMS }: SwipeSixFlo
 
       <div className="mx-auto flex h-195 w-97.5 max-w-full flex-col overflow-y-auto rounded-4xl border-8 [scrollbar-width:none] border-slate-900 shadow-2xl">
         <SwipeSixScreen
+          source={source}
           items={items}
           votedCount={votedCount}
           phase={phase}

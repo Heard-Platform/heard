@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { api } from "../../../utils/api";
+import type { SwipeSixItem } from "../../../types";
+import { api, safelyMakeApiCall } from "../../../utils/api";
 import { useDebateSession } from "../../../hooks/useDebateSession";
 import { useEmailOtpFlow } from "../../../hooks/useEmailOtpFlow";
 import type { FlyerCompleteReason } from "../FlyerSwipeContainer";
 import type { FlyerScan } from "../flyer-screen/FlyerScanContainer";
+import { SwipeSixContainer } from "../../swipe-six/SwipeSixContainer";
 import { PersonalScanScreen } from "./PersonalScanScreen";
 import { PersonalThanksScreen } from "./PersonalThanksScreen";
 import { PersonalWhoDisScreen } from "./PersonalWhoDisScreen";
@@ -28,6 +30,8 @@ export function PersonalFlyerContainer({ scan, onComplete }: PersonalFlyerContai
   // Read once on arrival so the screen doesn't switch to the signed-in card when a new email is added.
   const [isSignedIn] = useState(() => !!user?.email);
   const [screen, setScreen] = useState<Screen>("scan");
+  const [swipeSixItems, setSwipeSixItems] = useState<SwipeSixItem[] | null>(null);
+  const [isSwipeSixOpen, setIsSwipeSixOpen] = useState(false);
   const track = (type: string) => api.trackEvent(type, roomId);
   const neighborCount = Math.max(0, tally.agreeCount + tally.disagreeCount - 1);
 
@@ -40,6 +44,9 @@ export function PersonalFlyerContainer({ scan, onComplete }: PersonalFlyerContai
 
   useEffect(() => {
     track(PERSONAL_FLYER_EVENTS.opened);
+    safelyMakeApiCall(() => api.getSwipeSix()).then((response) => {
+      if (response?.data) setSwipeSixItems(response.data.items);
+    });
   }, []);
 
   const handleWhoDis = () => {
@@ -49,8 +56,10 @@ export function PersonalFlyerContainer({ scan, onComplete }: PersonalFlyerContai
 
   const handleKeepVoting = () => {
     track(PERSONAL_FLYER_EVENTS.keptVoting);
-    onComplete(roomId, "continue");
+    setIsSwipeSixOpen(true);
   };
+
+  const handleExitSwipeSix = () => onComplete(roomId, "continue");
 
   return (
     <div className="heard-feed-bg h-dvh overflow-y-auto">
@@ -67,6 +76,9 @@ export function PersonalFlyerContainer({ scan, onComplete }: PersonalFlyerContai
         )}
         {screen === "whoDis" && <PersonalWhoDisScreen onBack={() => setScreen("scan")} />}
         {screen === "thanks" && <PersonalThanksScreen onKeepVoting={handleKeepVoting} />}
+        {isSwipeSixOpen && swipeSixItems && (
+          <SwipeSixContainer source="flyer" items={swipeSixItems} onExit={handleExitSwipeSix} />
+        )}
       </div>
     </div>
   );
