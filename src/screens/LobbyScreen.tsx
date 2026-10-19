@@ -493,6 +493,7 @@ export function LobbyScreen({
 
       {isSwipeSixOpen && swipeSixItems && (
         <SwipeSixContainer
+          source="lobby"
           items={swipeSixItems}
           onCompleted={() => setSwipeSixDoneToday(true)}
           onExit={handleExitSwipeSix}

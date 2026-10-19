@@ -5,11 +5,12 @@ import { api, safelyMakeApiCall } from "../../utils/api";
 import { localDateString } from "../../utils/time";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import type { SwipeVote } from "../flyer/FlyerSwipeCard";
-import { SwipeSixScreen, type SwipeSixPhase } from "./SwipeSixScreen";
+import { SwipeSixScreen, type SwipeSixPhase, type SwipeSixSource } from "./SwipeSixScreen";
 
 interface SwipeSixContainerProps {
+  source: SwipeSixSource;
   items: SwipeSixItem[];
-  onCompleted: () => void;
+  onCompleted?: () => void;
   onExit: () => void;
 }
 
@@ -32,47 +33,51 @@ function LeaveOnError({ onLeave }: { onLeave: () => void }) {
   return null;
 }
 
-function SwipeSixFlow({ items, onCompleted, onExit }: SwipeSixContainerProps) {
+const EVENT_PREFIX: Record<SwipeSixSource, string> = { lobby: "", flyer: "flyer_" };
+
+function SwipeSixFlow({ source, items, onCompleted, onExit }: SwipeSixContainerProps) {
   const { voteOnStatement } = useDebateSession();
   const [votedCount, setVotedCount] = useState(0);
   const [phase, setPhase] = useState<SwipeSixPhase>("swiping");
+  const track = (type: string, roomId?: string) => api.trackEvent(`${EVENT_PREFIX[source]}${type}`, roomId);
 
   useEffect(() => {
-    api.trackEvent("swipe_six_started");
+    track("swipe_six_started");
   }, []);
 
   const handleVote = (item: SwipeSixItem, vote: SwipeVote) => {
     const cardNumber = votedCount + 1;
-    api.trackEvent(`swipe_six_card_${cardNumber}_${vote}`, item.room.id);
+    track(`swipe_six_card_${cardNumber}_${vote}`, item.room.id);
     voteOnStatement(item.statement.id, vote).catch((error) => console.error("Swipe six vote failed:", error));
     setVotedCount(cardNumber);
     if (cardNumber >= items.length) handleFinished();
   };
 
   const handleFinished = () => {
-    api.trackEvent("swipe_six_completed");
+    track("swipe_six_completed");
     setPhase("celebrating");
     safelyMakeApiCall(() => api.completeSwipeSix(localDateString()));
-    onCompleted();
+    onCompleted?.();
   };
 
   const handleClose = () => {
-    api.trackEvent(phase === "swiping" ? `swipe_six_closed_${votedCount + 1}` : `swipe_six_closed_${phase}`);
+    track(phase === "swiping" ? `swipe_six_closed_${votedCount + 1}` : `swipe_six_closed_${phase}`);
     onExit();
   };
 
   const handleAllDone = () => {
-    api.trackEvent("swipe_six_all_done_clicked");
+    track("swipe_six_all_done_clicked");
     setPhase("done");
   };
 
   const handleBackToFeed = () => {
-    api.trackEvent(`swipe_six_back_to_feed_clicked_${phase}`);
+    track(`swipe_six_back_to_feed_clicked_${phase}`);
     onExit();
   };
 
   return (
     <SwipeSixScreen
+      source={source}
       items={items}
       votedCount={votedCount}
       phase={phase}
