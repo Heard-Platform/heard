@@ -14,6 +14,7 @@ import {
   CommandList,
 } from "../ui/command";
 import { cn } from "../ui/utils";
+import { SwipeSixTest } from "./testing/SwipeSixTest";
 
 const substringFilter = (value: string, search: string) =>
   value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
@@ -54,6 +55,8 @@ export function TestingTab() {
 
   return (
     <div className="space-y-6">
+      <SwipeSixTest />
+
       <div>
         <h2 className="text-xl font-medium mb-1">Link Preview Testing</h2>
         <p className="text-slate-500 text-sm mb-4">
