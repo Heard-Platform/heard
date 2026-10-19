@@ -3,11 +3,11 @@ import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Loader2, TrendingUp } from "lucide-react";
 import { adminApi } from "../../utils/admin-api";
+import { timeAgoShort } from "../../utils/time";
 import type { UserSession } from "../../types";
 
 interface PowerUsersProps {
   adminKey: string;
-  onPowerUserClick: (userId: string) => void;
 }
 
 interface PowerUser {
@@ -15,7 +15,14 @@ interface PowerUser {
   uniqueDays: number;
 }
 
-export function PowerUsers({ adminKey, onPowerUserClick }: PowerUsersProps) {
+function getUserHistoryUrl(userId: string) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("tab", "history");
+  url.searchParams.set("userId", userId);
+  return url.toString();
+}
+
+export function PowerUsers({ adminKey }: PowerUsersProps) {
   const [powerUsers, setPowerUsers] = useState<PowerUser[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -61,10 +68,11 @@ export function PowerUsers({ adminKey, onPowerUserClick }: PowerUsersProps) {
       </p>
 
       <div className="space-y-2">
-        <div className="grid grid-cols-[60px_1fr_auto_auto] gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+        <div className="grid grid-cols-[60px_1fr_auto_auto_auto] gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
           <div>Rank</div>
           <div>User</div>
           <div>Active Days</div>
+          <div>Last Active</div>
           <div>Type</div>
         </div>
 
@@ -74,10 +82,12 @@ export function PowerUsers({ adminKey, onPowerUserClick }: PowerUsersProps) {
           </div>
         ) : (
           powerUsers.map((powerUser, index) => (
-            <div
+            <a
               key={powerUser.user.id}
-              className="grid grid-cols-[60px_1fr_auto_auto] gap-4 items-center border-b py-3 hover:bg-muted/50 transition-colors cursor-pointer"
-              onClick={() => onPowerUserClick(powerUser.user.id)}
+              href={getUserHistoryUrl(powerUser.user.id)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="grid grid-cols-[60px_1fr_auto_auto_auto] gap-4 items-center border-b py-3 hover:bg-muted/50 transition-colors cursor-pointer"
             >
               <div className="font-bold text-lg">
                 {index === 0 && "🥇"}
@@ -98,6 +108,12 @@ export function PowerUsers({ adminKey, onPowerUserClick }: PowerUsersProps) {
                   {powerUser.uniqueDays} {powerUser.uniqueDays === 1 ? "day" : "days"}
                 </Badge>
               </div>
+              <div
+                className="text-right text-sm text-muted-foreground"
+                title={powerUser.user.lastActive ? new Date(powerUser.user.lastActive).toLocaleString() : undefined}
+              >
+                {powerUser.user.lastActive ? timeAgoShort(powerUser.user.lastActive) : "—"}
+              </div>
               <div className="text-right">
                 {powerUser.user.isDeveloper && (
                   <Badge variant="outline" className="text-xs">
@@ -115,7 +131,7 @@ export function PowerUsers({ adminKey, onPowerUserClick }: PowerUsersProps) {
                   </Badge>
                 )}
               </div>
-            </div>
+            </a>
           ))
         )}
       </div>

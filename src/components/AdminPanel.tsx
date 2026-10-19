@@ -92,21 +92,20 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
     const tab = url.searchParams.get("tab");
     return tab || "users";
   });
-  const [selectedHistoryUserId, setSelectedHistoryUserId] = useState<string>("");
+  const [selectedHistoryUserId, setSelectedHistoryUserId] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    return new URL(window.location.href).searchParams.get("userId") || "";
+  });
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     const url = new URL(window.location.href);
     url.searchParams.set("tab", tab);
+    url.searchParams.delete("userId");
     window.history.pushState({}, "", url.toString());
     if (tab !== "history") {
       setSelectedHistoryUserId("");
     }
-  };
-
-  const handlePowerUserClick = (userId: string) => {
-    setSelectedHistoryUserId(userId);
-    handleTabChange("history");
   };
 
   const fetchAdminData = async () => {
@@ -882,10 +881,7 @@ export function AdminPanel({ onExit }: AdminPanelProps) {
         )}
 
         {activeTab === "powerusers" && (
-          <PowerUsers
-            adminKey={adminKey}
-            onPowerUserClick={handlePowerUserClick}
-          />
+          <PowerUsers adminKey={adminKey} />
         )}
 
         {activeTab === "campaigns" && <Campaigns adminKey={adminKey} />}
