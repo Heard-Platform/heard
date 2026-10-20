@@ -4,6 +4,7 @@ import { HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { DemographicQuestion, DemographicQuestionType } from "../../types";
 import { DataPrivacyModal } from "./my-data/DataPrivacyModal";
+import { useScrollOverflow } from "../../hooks/useScrollOverflow";
 
 const standardQuestionsByType: Record<
   Exclude<DemographicQuestionType, "custom">,
@@ -46,6 +47,8 @@ export function DemographicsCard({
 }: DemographicsCardProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const { ref: scrollRef, hasContentBelow } =
+    useScrollOverflow<HTMLDivElement>();
 
   const handleSelect = (option: string) => {
     setSelectedAnswer(option);
@@ -91,32 +94,38 @@ export function DemographicsCard({
           </h3>
 
           <div className="relative h-[150px]">
-            <div className="h-full overflow-y-auto scrollbar-hide space-y-2 pb-6">
-              {options.map((option, index) => (
-                <motion.div
-                  key={option}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <Button
-                    onClick={() => handleSelect(option)}
-                    variant="outline"
-                    className={`w-full h-auto py-2.5 px-4 text-left justify-start transition-all text-sm ${
-                      selectedAnswer === option
-                        ? "bg-purple-600 text-white border-purple-600 hover:bg-purple-700"
-                        : "bg-white hover:bg-purple-50 border-purple-200"
-                    }`}
+            <div
+              ref={scrollRef}
+              className="h-full overflow-y-auto scrollbar-desktop-only pr-1"
+            >
+              <div className="flex flex-wrap gap-2">
+                {options.map((option, index) => (
+                  <motion.div
+                    key={option}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="max-w-full"
                   >
-                    <span className="font-medium">{option}</span>
-                  </Button>
-                </motion.div>
-              ))}
+                    <Button
+                      onClick={() => handleSelect(option)}
+                      variant="outline"
+                      className={`max-w-full h-auto py-2.5 px-4 text-left whitespace-normal transition-all text-sm ${
+                        selectedAnswer === option
+                          ? "bg-purple-600 text-white border-purple-600 hover:bg-purple-700"
+                          : "bg-white hover:bg-purple-50 border-purple-200"
+                      }`}
+                    >
+                      <span className="font-medium">{option}</span>
+                    </Button>
+                  </motion.div>
+                ))}
+              </div>
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: options.length * 0.05 }}
-                className="text-center py-1"
+                className="text-center py-1 mt-2"
               >
                 <button
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors underline decoration-dotted underline-offset-2"
@@ -126,7 +135,11 @@ export function DemographicsCard({
                 </button>
               </motion.div>
             </div>
-            <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white via-white/60 to-transparent pointer-events-none" />
+            <div
+              className={`absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white via-white/60 to-transparent pointer-events-none transition-opacity duration-200 ${
+                hasContentBelow ? "opacity-100" : "opacity-0"
+              }`}
+            />
           </div>
 
           <div className="mt-2">
