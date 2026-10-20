@@ -3,9 +3,8 @@ import { ChevronLeft } from "lucide-react";
 import type { EmailOtpFlow } from "../../../hooks/useEmailOtpFlow";
 import { CtaButton } from "../../widgets/CtaButton";
 import { TOSText } from "../../onboarding/TOSText";
+import { RoundedInput } from "../../widgets/RoundedInput";
 import { CARD_CLASS, COLORS } from "./personal-flyer-theme";
-
-const INPUT_CLASS = "w-full rounded-2xl border-2 px-4 py-3 text-base outline-none placeholder:text-[#8A8DA0]";
 
 interface PersonalEmailCardProps {
   emailFlow: EmailOtpFlow;
@@ -33,9 +32,8 @@ function EmailForm({ emailFlow }: { emailFlow: EmailOtpFlow }) {
   return (
     <form noValidate onSubmit={handleSubmit}>
       <CardTitle>Can I send you a super cool email with the voting results?</CardTitle>
-      <input
-        className={`${INPUT_CLASS} mt-4`}
-        style={{ borderColor: COLORS.inputBorder, backgroundColor: COLORS.inputFill, color: COLORS.ink }}
+      <RoundedInput
+        className="mt-4"
         type="email"
         autoComplete="email"
         placeholder="you@email.com"
@@ -60,9 +58,8 @@ function CodeForm({ emailFlow }: { emailFlow: EmailOtpFlow }) {
         That email already has an account. I sent a 6-character code to{" "}
         <strong style={{ color: COLORS.ink }}>{emailFlow.email}</strong>.
       </p>
-      <input
-        className={`${INPUT_CLASS} mt-4 font-mono uppercase tracking-widest`}
-        style={{ borderColor: COLORS.inputBorder, backgroundColor: COLORS.inputFill, color: COLORS.ink }}
+      <RoundedInput
+        className="mt-4 font-mono uppercase tracking-widest"
         type="text"
         autoComplete="one-time-code"
         placeholder="ABC123"
