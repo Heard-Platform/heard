@@ -6746,6 +6746,40 @@
     display: none;
   }
 
+  @media (pointer: fine) {
+    .scrollbar-desktop-only::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .scrollbar-desktop-only::-webkit-scrollbar-track {
+      background: rgb(243 232 255);
+      border-radius: 9999px;
+    }
+
+    .scrollbar-desktop-only::-webkit-scrollbar-thumb {
+      background: rgb(216 180 254);
+      border-radius: 9999px;
+    }
+
+    @supports (-moz-appearance: none) {
+      .scrollbar-desktop-only {
+        scrollbar-width: thin;
+        scrollbar-color: rgb(216 180 254) rgb(243 232 255);
+      }
+    }
+  }
+
+  @media not (pointer: fine) {
+    .scrollbar-desktop-only {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .scrollbar-desktop-only::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
   .min-h-190px {
     min-height: 190px;
   }
