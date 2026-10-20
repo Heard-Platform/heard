@@ -890,6 +890,10 @@ class ApiClient extends BaseApiClient {
     return this.request<{ items: SwipeSixItem[] }>("/swipe-six");
   }
 
+  async getRoomSwipeSix(roomId: string) {
+    return this.request<{ items: SwipeSixItem[] }>(`/swipe-six/room/${roomId}`);
+  }
+
   async getSwipeSixStatus(localDate: string) {
     return this.request<{ completedToday: boolean }>(`/swipe-six/status/${localDate}`);
   }

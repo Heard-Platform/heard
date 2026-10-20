@@ -2,6 +2,7 @@ import { Hono } from "npm:hono";
 import { API_URL_PREFIX } from "./constants.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 import {
+  buildRoomSwipeSixForUser,
   buildSwipeSixForUser,
   getSwipeSixCompletion,
   saveSwipeSixCompletion,
@@ -26,6 +27,18 @@ app.get(
       return { items: await buildSwipeSixForUser(userId) };
     },
     "Failed to build swipe six",
+  ),
+);
+
+app.get(
+  `${API_URL_PREFIX}/swipe-six/room/:roomId`,
+  defineRoute(
+    { roomId: { type: "string", required: true } },
+    async ({ roomId }: { roomId: string }, c) => {
+      const userId = c.get("userId");
+      return { items: await buildRoomSwipeSixForUser(userId, roomId) };
+    },
+    "Failed to build room swipe six",
   ),
 );
 

@@ -1,6 +1,8 @@
+import _ from "lodash";
 import * as kv from "./kv_store.tsx";
 import {
   getAllDebates,
+  getDebate,
   getByPrefixParsed,
   getParsedKvData,
   getStatementsForRoom,
@@ -8,6 +10,7 @@ import {
 } from "./kv-utils.tsx";
 import { isRoomEnded } from "./room-utils.ts";
 import {
+  buildRoomSwipeSix,
   buildSwipeSix,
   DC_SUBHEARD,
   FUN_SUBHEARDS,
@@ -40,8 +43,6 @@ export const saveSwipeSixCompletion = async (completion: SwipeSixCompletion) => 
 export const getAllSwipeSixCompletions = () =>
   getByPrefixParsed<SwipeSixCompletion>("swipe_six_done:");
 
-// Today's six for a user: 2 DC, 1 fun, 2 DC, 1 fun, from recent posts,
-// skipping statements they've already voted on.
 export const buildSwipeSixForUser = async (userId: string): Promise<SwipeSixItem[]> => {
   const [allRooms, votes] = await Promise.all([getAllDebates(), getVotesForUser(userId)]);
   const votedIds = new Set(votes.map((v) => v.statementId));
@@ -67,7 +68,18 @@ export const buildSwipeSixForUser = async (userId: string): Promise<SwipeSixItem
   ]);
 
   const dcPosts = pickTwoPosts(eligibleDcPosts);
-  const funPosts = pickTwoPosts(eligibleFunPosts);
+  const funPost = _.sample(eligibleFunPosts);
 
-  return buildSwipeSix(dcPosts, funPosts);
+  return buildSwipeSix(dcPosts, funPost);
+};
+
+export const buildRoomSwipeSixForUser = async (userId: string, roomId: string): Promise<SwipeSixItem[]> => {
+  const [room, statements, votes] = await Promise.all([
+    getDebate(roomId),
+    getStatementsForRoom(roomId),
+    getVotesForUser(userId),
+  ]);
+  if (!room) return [];
+  const votedIds = new Set(votes.map((v) => v.statementId));
+  return buildRoomSwipeSix({ room, unvotedStatements: statements.filter((s) => !votedIds.has(s.id)) });
 };

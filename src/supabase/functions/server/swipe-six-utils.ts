@@ -34,29 +34,26 @@ export const pickRecentRooms = (rooms: DebateRoom[], now: number): DebateRoom[] 
 };
 
 export const pickTwoPosts = (posts: SwipeSixPost[]): SwipeSixPost[] =>
-  _.sampleSize(posts, 2);
+  _.orderBy(_.sampleSize(posts, 2), (post: SwipeSixPost) => post.unvotedStatements.length, "desc");
+
+const pickRandomStmts = (post: SwipeSixPost | undefined, count: number): SwipeSixItem[] =>
+  post
+    ? _.sampleSize(post.unvotedStatements, count).map(
+        (statement: Statement) => ({ statement, room: post.room }),
+      )
+    : [];
 
 export const buildSwipeSix = (
   dcPosts: SwipeSixPost[],
-  funPosts: SwipeSixPost[],
+  funPost: SwipeSixPost | undefined,
 ): SwipeSixItem[] => {
   const [dcPost1, dcPost2] = dcPosts;
-  const [funPost1, funPost2] = funPosts;
-
-  const pickRandomStmts = (
-    post: SwipeSixPost | undefined,
-    count: number,
-  ): SwipeSixItem[] =>
-    post
-      ? _.sampleSize(post.unvotedStatements, count).map(
-          (statement: Statement) => ({ statement, room: post.room }),
-        )
-      : [];
-
   return [
-    ...pickRandomStmts(dcPost1, 2),
-    ...pickRandomStmts(funPost1, 1),
+    ...pickRandomStmts(dcPost1, 3),
     ...pickRandomStmts(dcPost2, 2),
-    ...pickRandomStmts(funPost2, 1),
+    ...pickRandomStmts(funPost, 1),
   ];
 };
+
+export const buildRoomSwipeSix = (post: SwipeSixPost): SwipeSixItem[] =>
+  pickRandomStmts(post, 6);
