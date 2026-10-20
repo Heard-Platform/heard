@@ -101,7 +101,7 @@ export function RoomCard({
   const [showDisplayMode, setShowDisplayMode] = useState(false);
   const [showVotesDrawer, setShowVotesDrawer] = useState(false);
   const [pendingVoteBump, setPendingVoteBump] = useState(0);
-  const [tripwireStatementText, setTripwireStatementText] = useState<string | null>(null);
+  const [isTripwireOpen, setIsTripwireOpen] = useState(false);
   const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
 
   const isTrueHost = user.id === room.hostId;
@@ -252,7 +252,7 @@ export function RoomCard({
     try {
       await onSubmitStatement(room.id, text);
       if (user.isAnonymous || !user.email) {
-        setTripwireStatementText(text);
+        setIsTripwireOpen(true);
       }
       if (onRefreshStatements) {
         await onRefreshStatements();
@@ -583,13 +583,12 @@ export function RoomCard({
         onShowAccountSetupModal={onShowAccountSetupModal}
       />
 
-      {tripwireStatementText !== null && (
+      {isTripwireOpen && (
         <AnonResponseTripwire
           roomId={room.id}
-          statementText={tripwireStatementText}
           isOpen
-          onComplete={() => setTripwireStatementText(null)}
-          onDismiss={() => setTripwireStatementText(null)}
+          onComplete={() => setIsTripwireOpen(false)}
+          onDismiss={() => setIsTripwireOpen(false)}
         />
       )}
 

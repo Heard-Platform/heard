@@ -2,8 +2,6 @@ export const COLORS = {
   ink: "#1E2340",
   body: "#3D4160",
   muted: "#5F6278",
-  inputBorder: "#D5D7E0",
-  inputFill: "#F7F8FA",
   chipFill: "#E3EEDF",
   chipText: "#2F5B34",
 };

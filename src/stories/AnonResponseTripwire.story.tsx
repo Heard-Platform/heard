@@ -9,9 +9,6 @@ export default {
   title: "Onboarding/AnonResponseTripwire",
 };
 
-const STATEMENT_TEXT =
-  "Pineapple belongs on pizza and makes it sweet and savory perfection!";
-
 type Scenario = "signup" | "otp" | "error" | "no-email-account" | "duplicate-account";
 
 const SCENARIOS: { id: Scenario; label: string }[] = [
@@ -95,7 +92,6 @@ export function AnonResponseTripwireStory() {
           <DebateSessionProvider key={scenario} showcaseOverrides={buildOverrides(scenario)}>
             <AnonResponseTripwire
               roomId="story-room"
-              statementText={STATEMENT_TEXT}
               isOpen
               onComplete={() => {
                 setCompleted(true);
