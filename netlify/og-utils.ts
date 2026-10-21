@@ -68,3 +68,30 @@ export function createStaticOgHandler(meta: StaticOgMeta) {
     }
   };
 }
+
+export function buildRedirectOgPage(meta: StaticOgMeta, destination: string): string {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    ${buildStaticOgHead(meta)}
+  </head>
+  <body>
+    <a href="${destination}">${meta.title}</a>
+  </body>
+</html>`;
+}
+
+export function createRedirectOgHandler(meta: StaticOgMeta, destination: string) {
+  const ogPage = buildRedirectOgPage(meta, destination);
+
+  return function handler(request: Request): Response {
+    const userAgent = request.headers.get("user-agent") ?? "";
+    if (!isCrawler(userAgent)) return Response.redirect(destination, 302);
+
+    return new Response(ogPage, {
+      status: 200,
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+  };
+}
