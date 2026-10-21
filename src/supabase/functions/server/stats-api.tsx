@@ -6,16 +6,22 @@ import {
   getAllStatements,
   getAllVotes,
   getAllAskTheDataRecords,
+  getFeedbackList,
   SCRAPER_AUTHOR_IDS,
 } from "./kv-utils.tsx";
 import { getAllRecords, selectAll } from "./db-utils.ts";
 import type { Session, UserEvent } from "./types.tsx";
-import { getEventsOfType, getFlyerEmails, getUserReports, getAllRoomViews, getAllUserEventsSince } from "./model-utils.ts";
+import { getEventsOfType, getFlyerEmails, getUserReports, getAllRoomViews, getAllUserEventsSince, getAllAppFeedbackVotes, getUniqueUserIdsForEvent } from "./model-utils.ts";
 import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap, medianSessionMinutesByWeek } from "./stats-utils.ts";
 import { buildCohortFunnelData } from "./cohort-utils.ts";
 import { buildWeeklySignups } from "./activity-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { ONE_WEEK_MS, toTimestamp } from "./time-utils.ts";
+import {
+  buildAppFeedbackResults,
+  FEEDBACK_CARD_SHOWN_EVENT,
+  isFeedbackCardNote,
+} from "./feedback-results-utils.ts";
 
 const app = new Hono();
 
@@ -556,5 +562,41 @@ app.get("/make-server-f1a393b4/stats/user-timeline", async (c) => {
     return c.json({ error: "Failed to fetch user timeline" }, 500);
   }
 });
+
+app.get(
+  "/make-server-f1a393b4/stats/feedback-cards",
+  defineRoute(
+    {},
+    async () => {
+      const [votes, feedbackRecords, shownUserIds, users] = await Promise.all([
+        getAllAppFeedbackVotes(),
+        getFeedbackList(),
+        getUniqueUserIdsForEvent(FEEDBACK_CARD_SHOWN_EVENT),
+        getAllRealUsers(),
+      ]);
+      return buildAppFeedbackResults({
+        votes,
+        notes: feedbackRecords.filter(isFeedbackCardNote),
+        emailsByUserId: new Map(users.map((user) => [user.id, user.email || null])),
+        shownUserIds,
+        developerIds: new Set(users.filter((user) => user.isDeveloper).map((user) => user.id)),
+      });
+    },
+    "Failed to fetch feedback card results",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/stats/feedback/list",
+  defineRoute(
+    {},
+    async () => {
+      const feedbackList = await getFeedbackList();
+      feedbackList.sort((a, b) => b.timestamp - a.timestamp);
+      return { feedback: feedbackList };
+    },
+    "Failed to fetch feedback",
+  ),
+);
 
 export { app as statsApi };

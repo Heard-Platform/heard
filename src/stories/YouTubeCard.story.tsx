@@ -81,6 +81,9 @@ export function YouTubeCardStory() {
           onCoverCardSwiped={async () => { setCoverCardSwiped(true); }}
           onCertifyDone={async () => {}}
           onDemographicsAnswered={() => {}}
+          feedbackStatement={null}
+          onFeedbackVoted={() => {}}
+          onFeedbackTellMore={() => {}}
         />
       </div>
     </div>

@@ -90,6 +90,9 @@ export function MusicLeagueCardStackStory() {
           onCoverCardSwiped={async () => {}}
           onCertifyDone={() => {}}
           onDemographicsAnswered={() => {}}
+          feedbackStatement={null}
+          onFeedbackVoted={() => {}}
+          onFeedbackTellMore={() => {}}
         />
       </div>
       {log.length > 0 && (

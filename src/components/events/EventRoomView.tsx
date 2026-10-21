@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { RoomCard } from "../RoomCard";
 import { SwipeTutorialProvider } from "../../contexts/SwipeTutorialContext";
+import { FeedbackCardsProvider } from "../../contexts/FeedbackCardsContext";
 import { DebateRoom, Statement, UserSession, VoteType } from "../../types";
 
 export interface EventRoomViewProps {
@@ -35,21 +36,23 @@ export function EventRoomView({
       className="w-full max-w-sm mx-auto pt-2"
     >
       <SwipeTutorialProvider>
-        <RoomCard
-          room={room}
-          statements={statements}
-          loadingStatements={false}
-          isDeveloper={user.isDeveloper || false}
-          isActive={true}
-          user={user}
-          currentSubHeard={currentSubHeard}
-          onSubmitStatement={onSubmitStatement}
-          onVoteOnStatement={onVoteOnStatement}
-          onRefreshStatements={onRefreshStatements}
-          onDiscussStatement={() => {}}
-          onShowAccountSetupModal={onShowAccountSetupModal}
-          onSubHeardChange={onSubHeardChange}
-        />
+        <FeedbackCardsProvider>
+          <RoomCard
+            room={room}
+            statements={statements}
+            loadingStatements={false}
+            isDeveloper={user.isDeveloper || false}
+            isActive={true}
+            user={user}
+            currentSubHeard={currentSubHeard}
+            onSubmitStatement={onSubmitStatement}
+            onVoteOnStatement={onVoteOnStatement}
+            onRefreshStatements={onRefreshStatements}
+            onDiscussStatement={() => {}}
+            onShowAccountSetupModal={onShowAccountSetupModal}
+            onSubHeardChange={onSubHeardChange}
+          />
+        </FeedbackCardsProvider>
       </SwipeTutorialProvider>
     </motion.div>
   );

@@ -285,6 +285,14 @@ export interface RoomView {
   lastSeenAt: number;
 }
 
+export interface AppFeedbackVote {
+  userId: string;
+  statementKey: string;
+  vote: VoteType;
+  roomId: string;
+  votedAt: number;
+}
+
 export interface RoomFollow {
   userId: string;
   roomId: string;
@@ -299,7 +307,9 @@ export type AnonCreatableRecords =
   | "cardSwipes"
   | "chanceCardStatuses"
   | "youtubeCardStatuses"
-  | "roomViews";
+  | "roomViews"
+  | "appFeedbackVotes"
+  | "feedbackNotes";
 
 export interface Rant {
   id: string;

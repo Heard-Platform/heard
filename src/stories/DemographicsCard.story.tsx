@@ -116,6 +116,9 @@ function DemographicsSwipeableStack() {
         onChanceCardSwiped={async () => { } }
         onCoverCardSwiped={async () => { } }
         onDemographicsAnswered={handleAnswer}
+        feedbackStatement={null}
+        onFeedbackVoted={() => {}}
+        onFeedbackTellMore={() => {}}
       />
     </div>
   );

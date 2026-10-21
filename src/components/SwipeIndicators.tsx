@@ -84,3 +84,25 @@ export function SwipeIndicator({
 export function SwipeIndicatorCompact(props: Omit<SwipeIndicatorProps, "variant">) {
   return <SwipeIndicator {...props} variant="compact" />;
 }
+interface SwipeIndicatorSetProps {
+  disagreeOpacity: MotionValue<number>;
+  agreeOpacity: MotionValue<number>;
+  superAgreeOpacity: MotionValue<number>;
+  passOpacity: MotionValue<number>;
+}
+
+export function SwipeIndicatorSet({
+  disagreeOpacity,
+  agreeOpacity,
+  superAgreeOpacity,
+  passOpacity,
+}: SwipeIndicatorSetProps) {
+  return (
+    <>
+      <SwipeIndicator direction="disagree" opacity={disagreeOpacity} />
+      <SwipeIndicator direction="agree" opacity={agreeOpacity} />
+      <SwipeIndicator direction="superAgree" opacity={superAgreeOpacity} />
+      <SwipeIndicator direction="pass" opacity={passOpacity} />
+    </>
+  );
+}

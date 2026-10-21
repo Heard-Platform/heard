@@ -67,6 +67,7 @@ export const countRecords = async (
   return count ?? 0;
 };
 
+/** @deprecated Do not use. A single query is silently capped at 1,000 rows by Supabase. Use selectAllWithoutLimit. */
 export const selectAll = async <T>(
   tableName: string,
   conditions?: Record<string, any>,

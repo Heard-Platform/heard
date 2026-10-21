@@ -336,6 +336,9 @@ function DemoSection() {
               onCoverCardSwiped={async () => {}}
               onCertifyDone={async () => {}}
               onDemographicsAnswered={async () => {}}
+              feedbackStatement={null}
+              onFeedbackVoted={() => {}}
+              onFeedbackTellMore={() => {}}
             />
           )}
         </div>
