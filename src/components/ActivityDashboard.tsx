@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { EventTimelineTabContainer } from "./activity/event-timeline/EventTimelineTabContainer";
+import { FeedbackCardsTabContainer } from "./activity/feedback-cards/FeedbackCardsTabContainer";
 import { X, Activity, UserPlus } from "lucide-react";
 import { api } from "../utils/api";
 import type { WeeklySignupCount } from "../types";
@@ -113,6 +114,7 @@ export function ActivityDashboard({ onExit }: ActivityDashboardProps) {
           <TabsList>
             <TabsTrigger value="signups">Signups</TabsTrigger>
             <TabsTrigger value="event-timeline">Event Timeline</TabsTrigger>
+            <TabsTrigger value="feedback-cards">App Feedback</TabsTrigger>
           </TabsList>
           <TabsContent value="signups">
             <Card className="p-6">
@@ -136,6 +138,9 @@ export function ActivityDashboard({ onExit }: ActivityDashboardProps) {
           </TabsContent>
           <TabsContent value="event-timeline">
             <EventTimelineTabContainer />
+          </TabsContent>
+          <TabsContent value="feedback-cards">
+            <FeedbackCardsTabContainer />
           </TabsContent>
         </Tabs>
       </div>

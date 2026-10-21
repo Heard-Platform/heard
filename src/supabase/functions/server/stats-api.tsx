@@ -6,6 +6,7 @@ import {
   getAllStatements,
   getAllVotes,
   getAllAskTheDataRecords,
+  getFeedbackList,
   SCRAPER_AUTHOR_IDS,
 } from "./kv-utils.tsx";
 import { getAllRecords, selectAll } from "./db-utils.ts";
@@ -16,6 +17,7 @@ import { buildCohortFunnelData } from "./cohort-utils.ts";
 import { buildWeeklySignups } from "./activity-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { ONE_WEEK_MS, toTimestamp } from "./time-utils.ts";
+import { getAppFeedbackResults } from "./service-app-feedback.ts";
 
 const app = new Hono();
 
@@ -556,5 +558,27 @@ app.get("/make-server-f1a393b4/stats/user-timeline", async (c) => {
     return c.json({ error: "Failed to fetch user timeline" }, 500);
   }
 });
+
+app.get(
+  "/make-server-f1a393b4/stats/feedback-cards",
+  defineRoute(
+    {},
+    async () => getAppFeedbackResults(),
+    "Failed to fetch feedback card results",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/stats/feedback/list",
+  defineRoute(
+    {},
+    async () => {
+      const feedbackList = await getFeedbackList();
+      feedbackList.sort((a, b) => b.timestamp - a.timestamp);
+      return { feedback: feedbackList };
+    },
+    "Failed to fetch feedback",
+  ),
+);
 
 export { app as statsApi };

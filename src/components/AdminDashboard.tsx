@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { X, User, BarChart3, MessageSquare, TrendingUp } from "lucide-react";
 import { api } from "../utils/api";
+import { getFeedbackStatement } from "../utils/constants/feedback-statements";
 import type {
   DebateRoom,
   Feedback,
@@ -289,6 +290,11 @@ export function AdminDashboard({ currentUserId, onExit }: AdminDashboardProps) {
                       <span>{new Date(item.createdAt).toLocaleString()}</span>
                     </div>
                   </div>
+                  {item.statementKey && (
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Feedback card: "{getFeedbackStatement(item.statementKey).text}"
+                    </p>
+                  )}
                   <p className="text-sm whitespace-pre-wrap bg-white p-3 rounded border border-purple-100">
                     {item.text}
                   </p>

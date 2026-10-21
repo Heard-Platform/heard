@@ -6,6 +6,7 @@ import type { UserEvent } from "./types.tsx";
 import { toTimestamp } from "./time-utils.ts";
 import { FLYER_WELCOME_EMAIL_TYPE } from "./template-flyer-welcome.ts";
 import { FLYER_RESULTS_EMAIL_TYPE } from "./template-flyer-results.ts";
+import { getAppFeedbackResults } from "./service-app-feedback.ts";
 import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getSwipeSixFunnel, getSwipeSixDailyCompletions, buildCreateRoomFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel, FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
@@ -58,6 +59,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       personalFlyerScreenFunnel,
       flyerWelcomeEmailsSent,
       flyerResultsEmailsSent,
+      feedbackCardResults,
+      feedbackFounderSignups,
+      feedbackNoteSignups,
     ] = await Promise.all([
       getAllRealUsers(),
       getWebDriverUsers(),
@@ -104,6 +108,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       getFlyerScreenFunnel(PERSONAL_FLYER_SCREEN_EVENTS),
       countRecords("sent_emails", { emailType: FLYER_WELCOME_EMAIL_TYPE }),
       countRecords("sent_emails", { emailType: FLYER_RESULTS_EMAIL_TYPE }),
+      getAppFeedbackResults(),
+      countEventsOfType("feedback_founder_signup"),
+      countEventsOfType("feedback_note_signup"),
     ]);
 
     const webDriverUsers = webDriverUserList.length;
@@ -339,6 +346,15 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
 
     const createRoomFunnelSince = new Date("2026-10-21").getTime();
 
+    const feedbackCards = {
+      shown: feedbackCardResults.usersShown,
+      answered: feedbackCardResults.usersAnswered,
+      wroteNote: feedbackCardResults.usersWithNote,
+      founderOptIns: feedbackCardResults.founderOptIns.length,
+      emailSignups: feedbackFounderSignups + feedbackNoteSignups,
+    };
+    const feedbackCardsSince = new Date("2026-10-21").getTime();
+
     const flyerLandingFunnelSince = new Date("2026-10-01").getTime();
 
     const flyerScreenFunnelSince = new Date("2026-10-03").getTime();
@@ -457,6 +473,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       swipeSixFunnelSince,
       createRoomFunnel,
       createRoomFunnelSince,
+      feedbackCards,
+      feedbackCardsSince,
       flyerLandingFunnel,
       flyerLandingFunnelSince,
       flyerScreenFunnel,

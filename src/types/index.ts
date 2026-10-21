@@ -757,6 +757,14 @@ export interface FeatureResults {
   anonResponseTripwireShown: number;
   anonResponseTripwireEmailSubmitted: number;
   anonResponseTripwireSince: number;
+  feedbackCards: {
+    shown: number;
+    answered: number;
+    wroteNote: number;
+    founderOptIns: number;
+    emailSignups: number;
+  };
+  feedbackCardsSince: number;
   flyerSwipeFunnel: { opened: number; swipes: number[]; saved: number; exited: number };
   flyerSwipeFunnelSince: number;
   swipeSixFunnel: { bannerShown: number; started: number; swipes: number[]; completed: number; allDoneClicked: number };
