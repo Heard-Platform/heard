@@ -8,6 +8,7 @@ import { CreatePostShell } from "../components/create-room/CreatePostShell";
 import { RantStep } from "../components/create-room/RantStep";
 import { ReviewStep } from "../components/create-room/ReviewStep";
 import { CreationSuccessStep } from "../components/create-room/CreationSuccessStep";
+import { CreateRoomFunnelChart } from "../components/devtools/feature-tracker/CreateRoomFunnelChart";
 import type { CreationSetting } from "../components/create-room/CreationSettingsPanel";
 import type { Cover, NewDemographicQuestion } from "../types";
 import { ONE_WEEK_MIN } from "../utils/time";
@@ -40,6 +41,7 @@ const DEMOGRAPHICS: NewDemographicQuestion[] = [
 const HALF_DONE_QUESTION: NewDemographicQuestion[] = [
   { draftId: "c1", type: "custom", text: "Which ward do you live in?", options: ["Ward 1"] },
 ];
+const MOCK_FUNNEL = { opened: 18, reviewed: 9, created: 2, shared: 1 };
 const MOCK_COVER: Cover = { type: "image", url: "https://picsum.photos/seed/heard-shoes/600/400" };
 
 function PhoneFrame({ children }: { children: ReactNode }) {
@@ -281,6 +283,7 @@ export function CreatePostFlowStory() {
           { id: "review-community", label: "Community open", children: <ReviewDemo subHeard="" initialOpenSetting="community" /> },
           { id: "success", label: "Success", children: <CreationSuccessDemo /> },
           { id: "sheet", label: "Real sheet", children: <SheetDemo /> },
+          { id: "funnel", label: "Tracker funnel", children: <CreateRoomFunnelChart {...MOCK_FUNNEL} /> },
         ]}
       />
     </>

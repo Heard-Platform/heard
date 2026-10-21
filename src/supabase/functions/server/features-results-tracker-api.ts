@@ -1,12 +1,12 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers, getAllAskTheDataRecords } from "./kv-utils.tsx";
-import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, countEventsOfType, getCommunityTeaserEvents } from "./model-utils.ts";
+import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, countEventsOfType, getCommunityTeaserEvents, getCreateRoomEvents } from "./model-utils.ts";
 import { countRecords } from "./db-utils.ts";
 import type { UserEvent } from "./types.tsx";
 import { toTimestamp } from "./time-utils.ts";
 import { FLYER_WELCOME_EMAIL_TYPE } from "./template-flyer-welcome.ts";
 import { FLYER_RESULTS_EMAIL_TYPE } from "./template-flyer-results.ts";
-import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getSwipeSixFunnel, getSwipeSixDailyCompletions, getFlyerLandingFunnel, getFlyerScreenFunnel, FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS } from "./feature-tracker-utils.ts";
+import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getSwipeSixFunnel, getSwipeSixDailyCompletions, buildCreateRoomFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel, FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
 
@@ -52,6 +52,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       flyerSwipeFunnel,
       swipeSixFunnel,
       swipeSixDailyCompletions,
+      createRoomEventRows,
       flyerLandingFunnel,
       flyerScreenFunnel,
       personalFlyerScreenFunnel,
@@ -97,6 +98,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       getFlyerSwipeFunnel(),
       getSwipeSixFunnel(),
       getSwipeSixDailyCompletions(),
+      getCreateRoomEvents(),
       getFlyerLandingFunnel(),
       getFlyerScreenFunnel(FLYER_SCREEN_EVENTS),
       getFlyerScreenFunnel(PERSONAL_FLYER_SCREEN_EVENTS),
@@ -197,6 +199,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const realNonDevUserIds = new Set(
       users.filter((u) => !u.isDeveloper).map((u) => u.id),
     );
+    const createRoomFunnel = buildCreateRoomFunnel(createRoomEventRows, realNonDevUserIds);
+
     const oneBillionCounts: Record<string, number> = {};
     for (const row of oneBillionEventRows) {
       if (!row.userId || !realNonDevUserIds.has(row.userId)) continue;
@@ -333,6 +337,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
 
     const swipeSixFunnelSince = new Date("2026-10-19").getTime();
 
+    const createRoomFunnelSince = new Date("2026-10-21").getTime();
+
     const flyerLandingFunnelSince = new Date("2026-10-01").getTime();
 
     const flyerScreenFunnelSince = new Date("2026-10-03").getTime();
@@ -449,6 +455,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       swipeSixFunnel,
       swipeSixDailyCompletions,
       swipeSixFunnelSince,
+      createRoomFunnel,
+      createRoomFunnelSince,
       flyerLandingFunnel,
       flyerLandingFunnelSince,
       flyerScreenFunnel,

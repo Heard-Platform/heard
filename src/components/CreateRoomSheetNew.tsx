@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-// @ts-ignore
-import { toast } from "sonner@2.0.3";
 import type { Cover, DebateRoom, NewDebateRoom, NewDemographicQuestion } from "../types";
 import { api } from "../utils/api";
 import { ONE_WEEK_MIN } from "../utils/time";
@@ -13,6 +11,9 @@ import {
   extractTopicAndStatements,
   type ExtractedTopicAndStatements,
 } from "./create-room/extract-topic-and-statements";
+
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
 
 type Step = "rant" | "review" | "success";
 
@@ -71,7 +72,9 @@ export function CreateRoomSheetNew({
 
   useEffect(() => {
     if (!open) return;
-    setStep(startInRantMode ? "rant" : "review");
+    api.trackEvent("create_room_sheet_opened");
+    if (startInRantMode) setStep("rant");
+    else goToReview();
     setRant("");
     setTopic(defaultTopic ?? "");
     setDescription("");
@@ -84,13 +87,18 @@ export function CreateRoomSheetNew({
     setCreatedRoom(null);
   }, [open]);
 
+  const goToReview = () => {
+    api.trackEvent("create_room_review_shown");
+    setStep("review");
+  };
+
   const handleContinue = async () => {
     setIsExtracting(true);
     try {
       const extracted = await onExtractTopicAndStatements(rant);
       setTopic(extracted.topic);
       setHotTakes(extracted.statements);
-      setStep("review");
+      goToReview();
     } catch (error) {
       console.error("Failed to extract:", error);
       toast.error("Couldn't draft your post. Please try again.");
@@ -102,7 +110,7 @@ export function CreateRoomSheetNew({
   const handleCreateManually = () => {
     setTopic(defaultTopic ?? "");
     setHotTakes([]);
-    setStep("review");
+    goToReview();
   };
 
   const handleImageUpload = async (file: File) => {
@@ -136,6 +144,7 @@ export function CreateRoomSheetNew({
         demographicQuestions,
         eventId,
       });
+      api.trackEvent("create_room_created", room.id);
       setCreatedRoom(room);
       setStep("success");
     } catch (error) {

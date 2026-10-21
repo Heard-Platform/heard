@@ -246,6 +246,11 @@ export const getSwipeSixEvents = async () => {
   );
 };
 
+export const getEventsWithTypePrefix = async (prefix: string, columns = "type, userId") =>
+  selectAll<UserEvent>("user_events", {}, (q: any) => q.like("type", `${prefix}%`).select(columns));
+
+export const getCreateRoomEvents = () => getEventsWithTypePrefix("create_room_");
+
 export const getFlyerLandingEvents = async () => {
   return selectAll<UserEvent>(
     "user_events",

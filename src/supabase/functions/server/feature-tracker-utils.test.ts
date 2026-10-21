@@ -1,5 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
+  buildCreateRoomFunnel,
   buildFlyerLandingFunnel,
   buildFlyerScreenFunnel,
   buildFlyerSwipeFunnel,
@@ -201,6 +202,30 @@ Deno.test("buildSwipeSixFunnel - counts unique users at each step", () => {
     swipes: [1, 1, 0, 0, 0, 0],
     completed: 1,
     allDoneClicked: 1,
+  });
+});
+
+Deno.test("buildCreateRoomFunnel - counts unique users at each step", () => {
+  const events = [
+    { type: "create_room_sheet_opened", userId: "u1" },
+    { type: "create_room_sheet_opened", userId: "u1" },
+    { type: "create_room_sheet_opened", userId: "u2" },
+    { type: "create_room_sheet_opened", userId: "u3" },
+    { type: "create_room_review_shown", userId: "u1" },
+    { type: "create_room_review_shown", userId: "u2" },
+    { type: "create_room_created", userId: "u1" },
+    { type: "create_room_link_copied", userId: "u1" },
+    { type: "create_room_link_shared", userId: "u1" },
+    { type: "create_room_created", userId: null },
+    { type: "create_room_sheet_opened", userId: "dev" },
+    { type: "create_room_created", userId: "dev" },
+  ];
+
+  assertEquals(buildCreateRoomFunnel(events, new Set(["u1", "u2", "u3"])), {
+    opened: 3,
+    reviewed: 2,
+    created: 1,
+    shared: 1,
   });
 });
 

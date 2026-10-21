@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner@2.0.3";
 import { Check, Copy, Share } from "lucide-react";
 import { Button } from "../ui/button";
+import { api } from "../../utils/api";
 import { createShareableLink } from "../../utils/url";
 import { share } from "../../utils/share";
 
@@ -21,6 +22,7 @@ export function CreationSuccessStep({ debateId, topic, onViewPost }: CreationSuc
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(shareLink);
+      api.trackEvent("create_room_link_copied", debateId);
       setCopied(true);
       setTimeout(() => setCopied(false), COPIED_RESET_MS);
     } catch (error) {
@@ -34,7 +36,10 @@ export function CreationSuccessStep({ debateId, topic, onViewPost }: CreationSuc
       url: shareLink,
       title: "Join this conversation on Heard",
       text: `Check out this conversation: "${topic}"`,
-      onSuccess: () => toast.success("Link shared!"),
+      onSuccess: () => {
+        api.trackEvent("create_room_link_shared", debateId);
+        toast.success("Link shared!");
+      },
       onError: (error) => {
         toast.error("Failed to share link");
         console.error("Share error:", error);

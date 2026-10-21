@@ -182,6 +182,25 @@ export const getSwipeSixDailyCompletions = async () => {
   );
 };
 
+export function buildCreateRoomFunnel(
+  events: { type: string; userId: string | null }[],
+  includedUserIds: Set<string>,
+): { opened: number; reviewed: number; created: number; shared: number } {
+  const countUsers = (types: string[]) =>
+    _(events)
+      .filter((event) => !!event.userId && includedUserIds.has(event.userId) && types.includes(event.type))
+      .map("userId")
+      .uniq()
+      .size();
+
+  return {
+    opened: countUsers(["create_room_sheet_opened"]),
+    reviewed: countUsers(["create_room_review_shown"]),
+    created: countUsers(["create_room_created"]),
+    shared: countUsers(["create_room_link_copied", "create_room_link_shared"]),
+  };
+}
+
 export const FLYER_LANDING_OPENED_EVENT = "flyer_landing_opened";
 export const FLYER_LANDING_EMAIL_SUBMITTED_EVENT = "flyer_landing_email_submitted";
 export const FLYER_LANDING_LOOKED_AROUND_EVENT = "flyer_landing_looked_around";
