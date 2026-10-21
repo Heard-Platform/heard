@@ -359,7 +359,7 @@ export const getAllVotes = async (): Promise<Vote[]> => {
 export const getVotesForUser = async (
   userId: string,
 ): Promise<Vote[]> => {
-  return getByPrefixParsed<Vote>(`vote:%:${userId}`);
+  return getAllRecords<Vote>(`vote:%:${userId}`);
 };
 
 export const getVotesForStatement = async (
