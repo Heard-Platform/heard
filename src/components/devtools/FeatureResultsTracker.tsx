@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import {
   X,
+  SquarePen,
   TrendingUp,
   Smartphone,
   Bell,
@@ -44,6 +45,7 @@ import { ClusterRecomputesChart } from "./feature-tracker/ClusterRecomputesChart
 import { FlyerSwipeFunnelChart } from "./feature-tracker/FlyerSwipeFunnelChart";
 import { SwipeSixFunnelChart } from "./feature-tracker/SwipeSixFunnelChart";
 import { FlyerLandingFunnelChart } from "./feature-tracker/FlyerLandingFunnelChart";
+import { CreateRoomFunnelChart } from "./feature-tracker/CreateRoomFunnelChart";
 import { FlyerScreenFunnelChart } from "./feature-tracker/FlyerScreenFunnelChart";
 import { OneBillionResults } from "./feature-tracker/OneBillionResults";
 import { FundingResults } from "./feature-tracker/FundingResults";
@@ -515,6 +517,16 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.swipeSixFunnel.completed,
       getDate: (s) => s.swipeSixFunnelSince,
       renderExtra: (s) => <SwipeSixFunnelChart funnel={s.swipeSixFunnel} daily={s.swipeSixDailyCompletions} />,
+    },
+    {
+      icon: SquarePen,
+      iconColor: "text-emerald-700",
+      bgColor: "bg-emerald-100",
+      title: "Streamlined Creation Funnel",
+      description: "Unique users who opened the new create flow, reached the Review step, created a post, and copied or shared its link (behind the STREAMLINED_CREATION flag)",
+      getValue: (s) => s.createRoomFunnel.created,
+      getDate: (s) => s.createRoomFunnelSince,
+      renderExtra: (s) => <CreateRoomFunnelChart {...s.createRoomFunnel} />,
     },
     {
       icon: ScanLine,

@@ -5,6 +5,8 @@ import { Event, DebateRoom, NewDebateRoom, Statement, UserSession, VoteType } fr
 import { EventPage } from "./EventPage";
 import { EventRoomView } from "./EventRoomView";
 import { CreateRoomSheet } from "../CreateRoomSheet";
+import { CreateRoomSheetNew } from "../CreateRoomSheetNew";
+import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 import { api } from "../../utils/api";
 import { formatSubHeardDisplay } from "../../utils/subheard";
 
@@ -101,6 +103,15 @@ export function EventView({
     return result;
   };
 
+  const createSheetProps = event && {
+    open: createRoomOpen,
+    userId: user.id,
+    eventId: Number(event.id),
+    defaultSubHeard: event.communityName,
+    onOpenChange: handleCreateRoomSheetChange,
+    onCreateRoom: handleCreateRoom,
+  };
+
   const showingRoom = selectedRoom !== null || roomLoading;
 
   return (
@@ -178,23 +189,12 @@ export function EventView({
       )}
 
       {/* Create room sheet — scoped to this event */}
-      {event && (
-        <CreateRoomSheet
-          open={createRoomOpen}
-          userId={user.id}
-          eventId={event.id}
-          defaultSubHeard={event.communityName}
-          onOpenChange={handleCreateRoomSheetChange}
-          onCreateRoom={handleCreateRoom}
-          onExtractTopicAndStatements={async (rant) => {
-            const response = await api.extractTopicAndStatements(rant);
-            if (!response.success || !response.data) {
-              throw new Error(response.error || "Failed to extract topic and statements");
-            }
-            return response.data;
-          }}
-        />
-      )}
+      {createSheetProps &&
+        (isFeatureEnabled(FeatureFlags.STREAMLINED_CREATION) ? (
+          <CreateRoomSheetNew {...createSheetProps} />
+        ) : (
+          <CreateRoomSheet {...createSheetProps} />
+        ))}
     </div>
   );
 }

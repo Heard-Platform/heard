@@ -23,6 +23,10 @@ import {
   ComposePostStep,
 } from "./create-room";
 import { api } from "../utils/api";
+import {
+  extractTopicAndStatements,
+  type ExtractedTopicAndStatements,
+} from "./create-room/extract-topic-and-statements";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -39,10 +43,7 @@ interface CreateRoomSheetProps {
   onCreateRoom: (
     newDebate: NewDebateRoom,
   ) => Promise<DebateRoom>;
-  onExtractTopicAndStatements: (rant: string) => Promise<{
-    topic: string;
-    statements: string[];
-  }>;
+  onExtractTopicAndStatements?: (rant: string) => Promise<ExtractedTopicAndStatements>;
 }
 
 type Step =
@@ -83,7 +84,7 @@ export function CreateRoomSheet({
   eventId,
   onOpenChange,
   onCreateRoom,
-  onExtractTopicAndStatements,
+  onExtractTopicAndStatements = extractTopicAndStatements,
 }: CreateRoomSheetProps) {
   const [currentStep, setCurrentStep] = useState(INITIAL_FORM.currentStep);
   const [rant, setRant] = useState(INITIAL_FORM.rant);

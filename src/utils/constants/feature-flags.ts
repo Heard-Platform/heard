@@ -8,6 +8,7 @@ export enum FeatureFlags {
   EVENTS = "EVENTS",
   FLYER_SWIPE = "FLYER_SWIPE",
   CIVIC_FLYER_RESULTS = "CIVIC_FLYER_RESULTS",
+  STREAMLINED_CREATION = "STREAMLINED_CREATION",
 }
 
 export interface FeatureFlagsConfig {
@@ -16,6 +17,7 @@ export interface FeatureFlagsConfig {
   [FeatureFlags.EVENTS]: boolean;
   [FeatureFlags.FLYER_SWIPE]: boolean;
   [FeatureFlags.CIVIC_FLYER_RESULTS]: boolean;
+  [FeatureFlags.STREAMLINED_CREATION]: boolean;
 }
 
 export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
@@ -25,6 +27,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     EVENTS: false,
     FLYER_SWIPE: true,
     CIVIC_FLYER_RESULTS: true,
+    STREAMLINED_CREATION: true,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
@@ -32,6 +35,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     EVENTS: false,
     FLYER_SWIPE: true,
     CIVIC_FLYER_RESULTS: true,
+    STREAMLINED_CREATION: true,
   }
 }
 

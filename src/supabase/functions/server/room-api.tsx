@@ -45,9 +45,9 @@ app.post(
       const imageUrl = cover?.type === "image" ? cover.url : undefined;
       const youtubeUrl = cover?.type === "youtube" ? cover.url : undefined;
 
-      if (!topic || topic.length < 10) {
+      if (!topic || topic.trim().length < 5) {
         return c.json(
-          { error: "Topic must be at least 10 characters" },
+          { error: "Topic must be at least 5 characters" },
           400,
         );
       }

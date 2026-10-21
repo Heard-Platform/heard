@@ -1,3 +1,10 @@
+:root {
+  --creation-color: var(--color-emerald-700);
+  --creation-color-strong: var(--color-emerald-800);
+  --attention-color: var(--color-orange-700);
+  --attention-color-light: var(--color-orange-400);
+}
+
 .normal-text {
   color: white;
 }
@@ -71,17 +78,22 @@
 }
 
 .attention-gradient {
-  --tw-gradient-from: var(--color-orange-400);
+  --tw-gradient-from: var(--attention-color-light);
   --tw-gradient-to: var(--color-red-400);
   --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
 }
 
 .attention-border {
-  border-color: var(--color-orange-400);
+  border-color: var(--attention-color-light);
 }
 
 .attention-text {
-  color: var(--color-orange-700);
+  color: var(--attention-color);
+}
+
+.attention-solid-bg {
+  background-color: var(--attention-color);
+  color: var(--color-white);
 }
 
 .resolved-bg {
@@ -161,11 +173,36 @@
 }
 
 .creation-bg-strong-hover {
-  background-color: var(--color-emerald-700);
+  background-color: var(--creation-color);
+}
+
+.creation-solid-bg {
+  background-color: var(--creation-color);
+  color: var(--color-white);
+}
+
+.creation-solid-bg:hover {
+  background-color: var(--creation-color-strong);
+}
+
+.creation-soft-bg {
+  background-color: var(--color-emerald-50);
+}
+
+.creation-tint-bg {
+  background-color: var(--color-emerald-100);
+}
+
+.creation-list-bg {
+  background-color: var(--color-slate-50);
 }
 
 .creation-gradient {
   background: linear-gradient(to bottom right, var(--color-green-100), var(--color-emerald-100), var(--color-teal-200));
+}
+
+.creation-list-fade {
+  background: linear-gradient(to bottom, transparent, var(--color-slate-50) 85%);
 }
 
 .creation-border {
@@ -173,7 +210,23 @@
 }
 
 .creation-border-strong {
-  border-color: var(--color-emerald-700);
+  border-color: var(--creation-color);
+}
+
+.creation-accent-border {
+  border-color: var(--creation-color);
+}
+
+.creation-soft-border {
+  border-color: var(--color-emerald-300);
+}
+
+.creation-input:focus-visible {
+  border-color: var(--creation-color);
+}
+
+.creation-focus-within:focus-within {
+  box-shadow: inset 0 0 0 2px var(--creation-color);
 }
 
 .creation-icon-bg {
@@ -182,6 +235,14 @@
 
 .creation-text {
   color: var(--color-emerald-500);
+}
+
+.creation-heading-text {
+  color: var(--color-emerald-900);
+}
+
+.creation-strong-text {
+  color: var(--creation-color-strong);
 }
 
 .high-priority-bg {
@@ -348,6 +409,14 @@
 
 .error-text {
   color: var(--color-red-500);
+}
+
+.recording-border {
+  border-color: var(--color-red-400);
+}
+
+.recording-text {
+  color: var(--color-red-700);
 }
 
 .report-text {

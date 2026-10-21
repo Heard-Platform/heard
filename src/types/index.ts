@@ -756,6 +756,8 @@ export interface FeatureResults {
   swipeSixFunnel: { bannerShown: number; started: number; swipes: number[]; completed: number; allDoneClicked: number };
   swipeSixDailyCompletions: { date: string; count: number }[];
   swipeSixFunnelSince: number;
+  createRoomFunnel: { opened: number; reviewed: number; created: number; shared: number };
+  createRoomFunnelSince: number;
   flyerLandingFunnel: { opened: number; submitted: number; lookedAround: number };
   flyerLandingFunnelSince: number;
   flyerScreenFunnel: { opened: number; emailAdded: number; returnedViaEmail: number; returnedOnMultipleDays: number };

@@ -15,6 +15,7 @@ import {
   RoomScrollerRef,
 } from "../components/RoomScroller";
 import { CreateRoomSheet } from "../components/CreateRoomSheet";
+import { CreateRoomSheetNew } from "../components/CreateRoomSheetNew";
 import { SubHeardBrowser } from "../components/community/SubHeardBrowser";
 import { CommunityExplorerDialog } from "../components/community/CommunityExplorerDialog";
 import { IntroModal } from "../components/IntroModal";
@@ -392,6 +393,16 @@ export function LobbyScreen({
     if (isSwipeSixEligible) reloadSwipeSixItems();
   };
 
+  const createSheetProps = {
+    open: createRoomSheetOpen,
+    startInRantMode,
+    userId: user.id,
+    onOpenChange: handleCreateRoomSheetChange,
+    onCreateRoom: handleCreateRoom,
+    defaultSubHeard: discussSubHeard || currentSubHeard,
+    defaultTopic: discussTopic,
+  };
+
   return (
     <RoomAlertsProvider>
       <IntroModal
@@ -530,25 +541,14 @@ export function LobbyScreen({
       )}
 
       {/* Create room sheet */}
-      <CreateRoomSheet
-        open={createRoomSheetOpen}
-        startInRantMode={startInRantMode}
-        userId={user.id}
-        onOpenChange={handleCreateRoomSheetChange}
-        onCreateRoom={handleCreateRoom}
-        onExtractTopicAndStatements={async (rant) => {
-          const response = await api.extractTopicAndStatements(rant);
-          if (!response.success || !response.data) {
-            throw new Error(
-              response.error ||
-                "Failed to extract topic and statements",
-            );
-          }
-          return response.data;
-        }}
-        defaultSubHeard={discussSubHeard || currentSubHeard}
-        defaultTopic={discussTopic}
-      />
+      {isFeatureEnabled(FeatureFlags.STREAMLINED_CREATION) ? (
+        <CreateRoomSheetNew
+          {...createSheetProps}
+          onViewPost={(room) => onJumpToRoom(room.id, room.subHeard)}
+        />
+      ) : (
+        <CreateRoomSheet {...createSheetProps} />
+      )}
 
       {/* Error notification */}
       {error && (
