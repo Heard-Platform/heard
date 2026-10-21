@@ -182,6 +182,9 @@ function CertifyCardInStack() {
         onCoverCardSwiped={async () => {}}
         onCertifyDone={async () => {}}
         onDemographicsAnswered={() => {}}
+        feedbackStatement={null}
+        onFeedbackAnswered={() => {}}
+        onFeedbackTellMore={() => {}}
       />
     </DebateSessionProvider>
   );
