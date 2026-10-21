@@ -9,6 +9,7 @@ import { hasDuplicates } from "../../utils/validation";
 
 interface AdvancedFeaturesProps {
   demographicQuestions: NewDemographicQuestion[];
+  collapsible?: boolean;
   onDemographicQuestionsChange: (questions: NewDemographicQuestion[]) => void;
 }
 
@@ -23,9 +24,10 @@ const STANDARD_QUESTIONS: Array<{
 
 export function AdvancedFeatures({
   demographicQuestions,
+  collapsible = true,
   onDemographicQuestionsChange,
 }: AdvancedFeaturesProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(!collapsible);
 
   const isStandardQuestionSelected = (
     type: StandardDemographicQuestionType,
@@ -79,25 +81,27 @@ export function AdvancedFeatures({
   const customQuestions = demographicQuestions.filter(isCustomDemographicQuestion);
 
   return (
-    <div className="border border-slate-200 rounded-lg bg-slate-50/50">
-      <button
-        type="button"
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 heard-between hover:bg-slate-100/50 transition-colors rounded-lg"
-      >
-        <span className="text-sm text-slate-500 font-medium">
-          Advanced Features
-        </span>
-        {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-slate-500" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-slate-500" />
-        )}
-      </button>
+    <div className={collapsible ? "border border-slate-200 rounded-lg bg-slate-50/50" : ""}>
+      {collapsible && (
+        <button
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full px-4 py-3 heard-between hover:bg-slate-100/50 transition-colors rounded-lg"
+        >
+          <span className="text-sm text-slate-500 font-medium">
+            Advanced Features
+          </span>
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4 text-slate-500" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-slate-500" />
+          )}
+        </button>
+      )}
 
       {isExpanded && (
-        <div className="px-4 pb-4 space-y-4 border-t border-slate-200">
-          <div className="pt-4 space-y-3">
+        <div className={collapsible ? "px-4 pb-4 space-y-4 border-t border-slate-200" : "space-y-4"}>
+          <div className={collapsible ? "pt-4 space-y-3" : "space-y-3"}>
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-purple-600" />
               <Label className="text-sm font-medium text-slate-700">

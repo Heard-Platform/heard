@@ -43,6 +43,8 @@ import { SwipeTutorialProvider } from "../contexts/SwipeTutorialContext";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 import { Story as QRGeneratorPageStory } from "../stories/QRGenerationPage.story";
 import { WriteRantStepStory } from "../stories/WriteRantStep.story";
+import { CreatePostFlowStory } from "../stories/CreatePostFlow.story";
+import { HotTakesListStory } from "../stories/HotTakesList.story";
 import { Story } from "../stories/EventPage.story";
 import { CreateEventSheetStory } from "../stories/CreateEventSheet.story";
 import { EventCardStory } from "../stories/EventCard.story";
@@ -160,6 +162,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="community-explorer-dialog">Community Explorer Dialog</TabsTrigger>
                 <TabsTrigger value="orgs-landing">Orgs Landing</TabsTrigger>
                 <TabsTrigger value="write-rant-step">Write Rant Step</TabsTrigger>
+                <TabsTrigger value="create-post-flow">Create Post Flow (new)</TabsTrigger>
+                <TabsTrigger value="hot-takes-list">Hot Takes List</TabsTrigger>
                 <TabsTrigger value="create-event-sheet">Create Event Sheet</TabsTrigger>
                 <TabsTrigger value="event-room-listing">Event Room Listing</TabsTrigger>
                 <TabsTrigger value="event-card">Event Card</TabsTrigger>
@@ -306,6 +310,12 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="write-rant-step">
                 <WriteRantStepStory />
+              </TabsContent>
+              <TabsContent value="create-post-flow">
+                <CreatePostFlowStory />
+              </TabsContent>
+              <TabsContent value="hot-takes-list">
+                <HotTakesListStory />
               </TabsContent>
               <TabsContent value="create-event-sheet">
                 <CreateEventSheetStory />
