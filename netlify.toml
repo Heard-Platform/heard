@@ -16,5 +16,9 @@
   function = "organizers-og"
 
 [[edge_functions]]
+  path = "/live"
+  function = "live-og"
+
+[[edge_functions]]
   path = "/email/click"
   function = "email-click"
