@@ -25,6 +25,7 @@ function CardShell({ statementKey, agreeOpacity = 0 }: { statementKey: FeedbackS
     <div className="max-w-sm">
       <div className={`relative p-6 rounded-xl border-2 shadow-xl ${FEEDBACK_CARD_SHELL_CLASS}`}>
         <FeedbackCard
+          roomId="story-room"
           statement={getFeedbackStatement(statementKey)}
           isTopCard={true}
           disagreeOpacity={disagree}
@@ -112,10 +113,15 @@ function StackWithFeedback({
   onLog,
 }: StackDemoProps & { onLog: (entry: string) => void }) {
   const [chanceSwiped, setChanceSwiped] = useState(false);
+  const [feedbackVoted, setFeedbackVoted] = useState(false);
   const room = mockRooms[0];
 
   const { handleAnswered, handleTellMore, sheets } = useFeedbackCardFlow({
-    onVote: (statement, vote) => onLog(`${statement.key} ${vote}`),
+    roomId: room.id,
+    onVote: (statement, vote) => {
+      setFeedbackVoted(true);
+      onLog(`${statement.key} ${vote}`);
+    },
     onSendNote: async (statement, text) => {
       console.log("[Story] note", { key: statement.key, text });
       await new Promise((resolve) => setTimeout(resolve, 600));
@@ -145,7 +151,7 @@ function StackWithFeedback({
         onCoverCardSwiped={async () => {}}
         onCertifyDone={() => {}}
         onDemographicsAnswered={() => {}}
-        feedbackStatement={getFeedbackStatement(statementKey)}
+        feedbackStatement={feedbackVoted ? null : getFeedbackStatement(statementKey)}
         onFeedbackAnswered={handleAnswered}
         onFeedbackTellMore={handleTellMore}
       />

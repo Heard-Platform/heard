@@ -5,6 +5,7 @@ import { mockRooms, mockStatements } from "./mockData";
 import { RoomAlertsProvider } from "../contexts/RoomAlertsContext";
 import { Toaster } from "../components/ui/sonner";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
+import { FeedbackCardsProvider } from "../contexts/FeedbackCardsContext";
 import type { Statement, VoteType, UserSession } from "../types";
 
 const mockUser: UserSession = {
@@ -120,33 +121,35 @@ function RoomCardWrapper({
 
   return (
     <DebateSessionProvider showcaseOverrides={{ safelyGetUser: () => mockUser }}>
-      <div className="bg-slate-100 rounded-lg p-6 flex justify-center">
-        <div className="w-full max-w-md">
-          <RoomCard
-            room={room}
-            statements={localStatements}
-            loadingStatements={loadingStatements}
-            isDeveloper={true}
-            isActive={true}
-            user={mockUser}
-            currentSubHeard={undefined}
-            onSubmitStatement={async (roomId, text) => {
-              console.log("Submit:", { roomId, text });
-            }}
-            onVoteOnStatement={handleVote}
-            onRefreshStatements={async () => {
-              console.log("Refresh statements");
-            }}
-            onDiscussStatement={(text) => console.log("Discuss:", text)}
-            onShowAccountSetupModal={(feature) =>
-              console.log("Account setup:", feature)
-            }
-            onSubHeardChange={(subHeard) =>
-              console.log("Subheard change:", subHeard)
-            }
-          />
+      <FeedbackCardsProvider>
+        <div className="bg-slate-100 rounded-lg p-6 flex justify-center">
+          <div className="w-full max-w-md">
+            <RoomCard
+              room={room}
+              statements={localStatements}
+              loadingStatements={loadingStatements}
+              isDeveloper={true}
+              isActive={true}
+              user={mockUser}
+              currentSubHeard={undefined}
+              onSubmitStatement={async (roomId, text) => {
+                console.log("Submit:", { roomId, text });
+              }}
+              onVoteOnStatement={handleVote}
+              onRefreshStatements={async () => {
+                console.log("Refresh statements");
+              }}
+              onDiscussStatement={(text) => console.log("Discuss:", text)}
+              onShowAccountSetupModal={(feature) =>
+                console.log("Account setup:", feature)
+              }
+              onSubHeardChange={(subHeard) =>
+                console.log("Subheard change:", subHeard)
+              }
+            />
+          </div>
         </div>
-      </div>
+      </FeedbackCardsProvider>
     </DebateSessionProvider>
   );
 }

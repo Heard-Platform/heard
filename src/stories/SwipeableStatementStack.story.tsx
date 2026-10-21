@@ -238,6 +238,9 @@ export function SwipeableStatementStackStory() {
                 onCoverCardSwiped={handleCoverCardSwiped}
                 onCertifyDone={async () => {}}
                 onDemographicsAnswered={async () => {}}
+                feedbackStatement={null}
+                onFeedbackAnswered={() => {}}
+                onFeedbackTellMore={() => {}}
               />
             </div>
           </div>
