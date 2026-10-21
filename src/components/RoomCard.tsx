@@ -388,7 +388,7 @@ export function RoomCard({
           {!isCompleted && statements.length > 0 && (
             <RoomProgressBar
               total={statements.length}
-              completed={statements.filter((s) => s.voters?.[user.id]).length}
+              completed={statements.filter((s) => s.voters?.[user.id]).length + pendingVoteBump}
             />
           )}
 
