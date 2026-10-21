@@ -1,5 +1,5 @@
 import type { DebateRoom, Statement } from "../../types";
-import { SwipeIndicator } from "../SwipeIndicators";
+import { SwipeIndicatorSet } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
 import { Star, Flag, MoreVertical, EyeOff, Share, SkipForward } from "lucide-react";
 import {
@@ -181,24 +181,12 @@ export function StatementCard({
       />
 
       {isTopCard && (
-        <>
-          <SwipeIndicator
-            direction="disagree"
-            opacity={disagreeOpacity}
-          />
-          <SwipeIndicator
-            direction="agree"
-            opacity={agreeOpacity}
-          />
-          <SwipeIndicator
-            direction="superAgree"
-            opacity={superAgreeOpacity}
-          />
-          <SwipeIndicator
-            direction="pass"
-            opacity={passOpacity}
-          />
-        </>
+        <SwipeIndicatorSet
+          disagreeOpacity={disagreeOpacity}
+          agreeOpacity={agreeOpacity}
+          superAgreeOpacity={superAgreeOpacity}
+          passOpacity={passOpacity}
+        />
       )}
     </>
   );

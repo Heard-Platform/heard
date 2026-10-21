@@ -26,6 +26,9 @@ import { YouTubeCardStory } from "../stories/YouTubeCard.story";
 import { IntroModalStory } from "../stories/IntroModal.story";
 import { DemographicsCardStory } from "../stories/DemographicsCard.story";
 import { CertifyCardStory } from "../stories/CertifyCard.story";
+import { FeedbackCardStory } from "../stories/FeedbackCard.story";
+import { FeedbackNoteSheetStory } from "../stories/FeedbackNoteSheet.story";
+import { EmailAskSheetStory } from "../stories/EmailAskSheet.story";
 import { AnonAccountSetupModalStory } from "../stories/AnonAccountSetupModal.story";
 import { CommentingModalStory } from "../stories/CommentingModal.story";
 import { EditAnswersModalStory } from "../stories/EditAnswersModal.story";
@@ -148,6 +151,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
                 <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
                 <TabsTrigger value="certify-card">Certify Card</TabsTrigger>
+                <TabsTrigger value="feedback-card">Feedback Card</TabsTrigger>
+                <TabsTrigger value="feedback-note-sheet">Feedback Note Sheet</TabsTrigger>
+                <TabsTrigger value="email-ask-sheet">Email Ask Sheet</TabsTrigger>
                 <TabsTrigger value="anon-account-setup-modal">Anon Account Setup Modal</TabsTrigger>
                 <TabsTrigger value="comment-modal">Comment Modal</TabsTrigger>
                 <TabsTrigger value="edit-answers-modal">Edit Answers Modal</TabsTrigger>
@@ -271,6 +277,15 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="certify-card">
                 <CertifyCardStory />
+              </TabsContent>
+              <TabsContent value="feedback-card">
+                <FeedbackCardStory />
+              </TabsContent>
+              <TabsContent value="feedback-note-sheet">
+                <FeedbackNoteSheetStory />
+              </TabsContent>
+              <TabsContent value="email-ask-sheet">
+                <EmailAskSheetStory />
               </TabsContent>
               <TabsContent value="anon-account-setup-modal">
                 <AnonAccountSetupModalStory />

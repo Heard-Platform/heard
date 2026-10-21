@@ -1,4 +1,5 @@
 import { AvatarAnimal } from "../utils/constants/avatars";
+import type { FeedbackStatement } from "../utils/constants/feedback-statements";
 
 export type Phase =
   | "lobby"
@@ -97,7 +98,12 @@ export type DemographicsCard = {
   question: DemographicQuestion;
 }
 
-export type Card = StatementCard | CertifyCard | ChanceCard | CoverCard | DemographicsCard;
+export type FeedbackCard = {
+  type: "feedback";
+  statement: FeedbackStatement;
+}
+
+export type Card = StatementCard | CertifyCard | ChanceCard | CoverCard | DemographicsCard | FeedbackCard;
 
 export const isStatementCard = (card: Card): card is StatementCard => {
   return card.type === "statement";

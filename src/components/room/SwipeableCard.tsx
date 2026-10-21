@@ -12,6 +12,7 @@ import { CoverCard } from "./CoverCard";
 import { DemographicsCard } from "./DemographicsCard";
 import { StatementCard } from "./StatementCard";
 import { CertifyCard } from "./CertifyCard";
+import { FeedbackCard, FEEDBACK_CARD_SHELL_CLASS } from "./FeedbackCard";
 
 interface SwipeableCardProps {
   card: Card;
@@ -34,6 +35,7 @@ interface SwipeableCardProps {
   onShowAccountSetupModal: (featureText: string) => void;
   onDemographicsAnswer?: (id: string, answer: string | null) => void;
   onCertifySuccess: () => void;
+  onFeedbackTellMore: () => void;
   onSuperAgree: () => void;
   onSkip: () => void;
   onFlag: () => void;
@@ -57,6 +59,7 @@ export function SwipeableCard({
   onShowAccountSetupModal,
   onDemographicsAnswer,
   onCertifySuccess,
+  onFeedbackTellMore,
   onSuperAgree,
   onSkip,
   onFlag,
@@ -150,6 +153,8 @@ export function SwipeableCard({
             ? "bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-300"
             : card.type === "demographics"
             ? "border-transparent p-0"
+            : card.type === "feedback"
+            ? FEEDBACK_CARD_SHELL_CLASS
             : card.type === "statement"
             ? getPastelColor(card.statement.id)
             : ""
@@ -191,6 +196,16 @@ export function SwipeableCard({
             statements={statements}
             isActive={isTopCard}
             onSuccess={onCertifySuccess}
+          />
+        ) : card.type === "feedback" ? (
+          <FeedbackCard
+            statement={card.statement}
+            isTopCard={isTopCard}
+            disagreeOpacity={disagreeOpacity}
+            agreeOpacity={agreeOpacity}
+            superAgreeOpacity={superAgreeOpacity}
+            passOpacity={passOpacity}
+            onTellMore={onFeedbackTellMore}
           />
         ) : card.type === "statement" ? (
           <StatementCard
