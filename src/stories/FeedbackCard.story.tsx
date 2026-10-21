@@ -74,7 +74,7 @@ interface StackDemoProps {
 
 function StackDemo({ isAnonymous, statementKey }: StackDemoProps) {
   const [run, setRun] = useState(0);
-  const [answers, setAnswers] = useState<string[]>([]);
+  const [log, setLog] = useState<string[]>([]);
 
   const overrides = {
     user: isAnonymous ? anonUser : signedInUser,
@@ -88,11 +88,11 @@ function StackDemo({ isAnonymous, statementKey }: StackDemoProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Button size="sm" variant="outline" onClick={() => { setRun((r) => r + 1); setAnswers([]); }}>
+        <Button size="sm" variant="outline" onClick={() => { setRun((r) => r + 1); setLog([]); }}>
           Reset deck
         </Button>
         <span className="text-sm text-muted-foreground">
-          {answers.length ? `Feedback: ${answers.join(", ")}` : "Swipe through to reach the feedback card."}
+          {log.length ? `Feedback: ${log.join(", ")}` : "Swipe through to reach the feedback card."}
         </span>
       </div>
       <DebateSessionProvider showcaseOverrides={overrides}>
@@ -100,7 +100,7 @@ function StackDemo({ isAnonymous, statementKey }: StackDemoProps) {
           key={run}
           isAnonymous={isAnonymous}
           statementKey={statementKey}
-          onLog={(entry) => setAnswers((prev) => [...prev, entry])}
+          onLog={(entry) => setLog((prev) => [...prev, entry])}
         />
       </DebateSessionProvider>
     </div>
@@ -116,7 +116,7 @@ function StackWithFeedback({
   const [feedbackVoted, setFeedbackVoted] = useState(false);
   const room = mockRooms[0];
 
-  const { handleAnswered, handleTellMore, sheets } = useFeedbackCardFlow({
+  const { handleVoted, handleTellMore, sheets } = useFeedbackCardFlow({
     roomId: room.id,
     onVote: (statement, vote) => {
       setFeedbackVoted(true);
@@ -152,7 +152,7 @@ function StackWithFeedback({
         onCertifyDone={() => {}}
         onDemographicsAnswered={() => {}}
         feedbackStatement={feedbackVoted ? null : getFeedbackStatement(statementKey)}
-        onFeedbackAnswered={handleAnswered}
+        onFeedbackVoted={handleVoted}
         onFeedbackTellMore={handleTellMore}
       />
       {sheets}

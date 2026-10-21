@@ -1,13 +1,15 @@
-import type { CSSProperties } from "react";
+import { useEffect, type CSSProperties } from "react";
 import type { MotionValue } from "motion/react";
 import { MessageSquare, Pencil } from "lucide-react";
 import type { FeedbackStatement } from "../../utils/constants/feedback-statements";
 import { SwipeIndicatorSet } from "../SwipeIndicators";
+import { api } from "../../utils/api";
 
 export const FEEDBACK_CARD_SHELL_CLASS = "bg-[#3b2a20] border-[#3b2a20] text-stone-50";
 export const FEEDBACK_FONT_STYLE: CSSProperties = { fontFamily: "'Inter', system-ui, sans-serif" };
 
 interface FeedbackCardProps {
+  roomId: string;
   statement: FeedbackStatement;
   isTopCard: boolean;
   disagreeOpacity: MotionValue<number>;
@@ -40,6 +42,7 @@ export function FeedbackPill({
 }
 
 export function FeedbackCard({
+  roomId,
   statement,
   isTopCard,
   disagreeOpacity,
@@ -48,6 +51,12 @@ export function FeedbackCard({
   passOpacity,
   onTellMore,
 }: FeedbackCardProps) {
+  useEffect(() => {
+    if (isTopCard) {
+      api.trackEvent("feedback_card_shown", roomId);
+    }
+  }, [isTopCard, roomId]);
+
   return (
     <div className="flex flex-col gap-3" style={FEEDBACK_FONT_STYLE}>
       <div className="flex min-h-190px flex-col items-center justify-center gap-3">

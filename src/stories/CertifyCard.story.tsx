@@ -183,7 +183,7 @@ function CertifyCardInStack() {
         onCertifyDone={async () => {}}
         onDemographicsAnswered={() => {}}
         feedbackStatement={null}
-        onFeedbackAnswered={() => {}}
+        onFeedbackVoted={() => {}}
         onFeedbackTellMore={() => {}}
       />
     </DebateSessionProvider>

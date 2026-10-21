@@ -337,7 +337,7 @@ function DemoSection() {
               onCertifyDone={async () => {}}
               onDemographicsAnswered={async () => {}}
               feedbackStatement={null}
-              onFeedbackAnswered={() => {}}
+              onFeedbackVoted={() => {}}
               onFeedbackTellMore={() => {}}
             />
           )}

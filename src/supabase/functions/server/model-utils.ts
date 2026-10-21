@@ -1,6 +1,7 @@
 import { countRecords, createClientFromEnv, deleteRecord, insert, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
 import { toTimestamp } from "./time-utils.ts";
 import {
+  AppFeedbackVote,
   AvatarAnimal,
   DemographicAnswer,
   DemographicQuestion,
@@ -370,6 +371,18 @@ export const deleteRoomView = async (userId: string, roomId: string) =>
 
 export const bulkUpsertRoomViews = async (views: RoomView[]) =>
   upsert("room_views", views as any, "userId,roomId");
+
+export const saveAppFeedbackVote = async (vote: AppFeedbackVote) =>
+  upsert("app_feedback_votes", vote, "userId,statementKey");
+
+export const getAppFeedbackVotesForUser = async (userId: string): Promise<AppFeedbackVote[]> =>
+  selectAllWithoutLimit<AppFeedbackVote>("app_feedback_votes", { userId });
+
+export const getAllAppFeedbackVotes = async (): Promise<AppFeedbackVote[]> =>
+  selectAllWithoutLimit<AppFeedbackVote>("app_feedback_votes");
+
+export const deleteAppFeedbackVotesForUser = async (userId: string) =>
+  deleteRecord("app_feedback_votes", { userId });
 
 export const saveRoomFollow = async (userId: string, roomId: string) =>
   upsert(

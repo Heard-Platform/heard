@@ -29,6 +29,10 @@ import { VoteMatrixModal } from "./room/VoteMatrixModal";
 import { DisplayModeScreen } from "./DisplayModeScreen";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
+import { useFeedbackCardsContext } from "../contexts/FeedbackCardsContext";
+import { useFeedbackCardFlow } from "../hooks/useFeedbackCardFlow";
+import { api } from "../utils/api";
+import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
 import { LinkedText } from "./widgets/LinkedText";
 import { formatSubHeardDisplay } from "../utils/subheard";
 import { useTranslation, Trans } from "react-i18next";
@@ -102,7 +106,21 @@ export function RoomCard({
   const [showVotesDrawer, setShowVotesDrawer] = useState(false);
   const [pendingVoteBump, setPendingVoteBump] = useState(0);
   const [isTripwireOpen, setIsTripwireOpen] = useState(false);
+  const [votedThisVisit, setVotedThisVisit] = useState(false);
   const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
+  const { pickFeedbackForRoom, recordVote } = useFeedbackCardsContext();
+
+  const feedbackStatement =
+    isFeatureEnabled(FeatureFlags.FEEDBACK_CARDS) && votedThisVisit ? pickFeedbackForRoom(room.id) : null;
+
+  const { handleVoted, handleTellMore, sheets: feedbackSheets } = useFeedbackCardFlow({
+    roomId: room.id,
+    onVote: (statement, vote) => recordVote(statement, vote, room.id),
+    onSendNote: async (statement, text) => {
+      const response = await api.submitFeedback(text, { statementKey: statement.key, roomId: room.id });
+      return response.success;
+    },
+  });
 
   const isTrueHost = user.id === room.hostId;
   const isHost = isTrueHost || !!room.cohostIds?.includes(user.id);
@@ -162,6 +180,7 @@ export function RoomCard({
     ) &&
     (!user.isAnonymous || certifyCardDismissed) &&
     effectiveChanceCardSwiped &&
+    !feedbackStatement &&
     (coverCardSwiped || !(room.imageUrl || room.youtubeUrl)) &&
     (!room.demographicQuestions.length ||
       room.demographicQuestions.every((q) =>
@@ -206,6 +225,7 @@ export function RoomCard({
     voteType: VoteType,
   ) => {
     setPendingVoteBump((n) => n + 1);
+    setVotedThisVisit(true);
     try {
       await handleVote(statement, voteType);
     } finally {
@@ -436,6 +456,9 @@ export function RoomCard({
                     onChanceCardSwiped={handleSwipeChanceCard}
                     onCoverCardSwiped={handleSwipeCoverCard}
                     onDemographicsAnswered={handleDemographicsAnswered}
+                    feedbackStatement={feedbackStatement}
+                    onFeedbackVoted={handleVoted}
+                    onFeedbackTellMore={handleTellMore}
                   />
                 );
               }
@@ -591,6 +614,8 @@ export function RoomCard({
           onDismiss={() => setIsTripwireOpen(false)}
         />
       )}
+
+      {feedbackSheets}
 
     </FeedCardMotion>
   );

@@ -239,7 +239,7 @@ export function SwipeableStatementStackStory() {
                 onCertifyDone={async () => {}}
                 onDemographicsAnswered={async () => {}}
                 feedbackStatement={null}
-                onFeedbackAnswered={() => {}}
+                onFeedbackVoted={() => {}}
                 onFeedbackTellMore={() => {}}
               />
             </div>

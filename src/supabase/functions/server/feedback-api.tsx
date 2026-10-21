@@ -1,7 +1,16 @@
 // @ts-ignore
 import { Context, Hono } from "npm:hono";
-import { saveFeedback, getFeedbackList } from "./kv-utils.tsx";
+import { saveFeedback } from "./kv-utils.tsx";
 import { sendEmailToDevs } from "./dev-utils.tsx";
+import { getAppFeedbackVotesForUser, saveAppFeedbackVote } from "./model-utils.ts";
+import {
+  type AppFeedbackStatementKey,
+  FEEDBACK_CARD_NOTE_SOURCE,
+  isAppFeedbackStatementKey,
+  isVoteType,
+} from "./feedback-utils.ts";
+import { defineRoute } from "./route-wrapper.tsx";
+import type { VoteType } from "./types.tsx";
 
 const app = new Hono();
 
@@ -9,7 +18,7 @@ const app = new Hono();
 app.post("/make-server-f1a393b4/feedback/submit", async (c: Context) => {
   try {
     const userId = c.get("userId");
-    const { feedbackText } = await c.req.json();
+    const { feedbackText, statementKey, roomId } = await c.req.json();
 
     if (!feedbackText || !feedbackText.trim()) {
       return c.json({ error: "Feedback text is required" }, 400);
@@ -24,6 +33,11 @@ app.post("/make-server-f1a393b4/feedback/submit", async (c: Context) => {
       text: feedbackText.trim(),
       timestamp,
       createdAt: new Date(timestamp).toISOString(),
+      ...(isAppFeedbackStatementKey(statementKey) && {
+        source: FEEDBACK_CARD_NOTE_SOURCE,
+        statementKey,
+        roomId: typeof roomId === "string" ? roomId : null,
+      }),
     };
 
     // Store in KV store
@@ -49,19 +63,53 @@ app.post("/make-server-f1a393b4/feedback/submit", async (c: Context) => {
   }
 });
 
-app.get("/make-server-f1a393b4/feedback/list", async (c: Context) => {
-  try {
-    const feedbackList = await getFeedbackList();
+app.get(
+  "/make-server-f1a393b4/feedback/cards/voted",
+  defineRoute(
+    {},
+    async (_params, c) => {
+      const votes = await getAppFeedbackVotesForUser(c.get("userId"));
+      return { votedFeedback: votes.map(({ statementKey, votedAt }) => ({ statementKey, votedAt })) };
+    },
+    "Failed to fetch voted feedback",
+  ),
+);
 
-    // Sort by most recent
-    feedbackList.sort((a, b) => b.timestamp - a.timestamp);
-
-    return c.json({ feedback: feedbackList });
-  } catch (error) {
-    console.error("Error fetching feedback:", error);
-    return c.json({ error: "Failed to fetch feedback" }, 500);
-  }
-});
+app.post(
+  "/make-server-f1a393b4/feedback/cards/vote",
+  defineRoute<{ statementKey: AppFeedbackStatementKey; vote: VoteType; roomId: string }, void>(
+    {
+      statementKey: {
+        type: "string",
+        required: true,
+        validate: isAppFeedbackStatementKey,
+        errorMessage: "statementKey must be a known feedback statement",
+      },
+      vote: {
+        type: "string",
+        required: true,
+        validate: isVoteType,
+        errorMessage: "vote must be agree, disagree, pass or super_agree",
+      },
+      roomId: {
+        type: "string",
+        required: true,
+        validate: (roomId: string) => roomId.length > 0,
+      },
+    },
+    async ({ statementKey, vote, roomId }, c) => {
+      const result = await saveAppFeedbackVote({
+        userId: c.get("userId"),
+        statementKey,
+        vote,
+        roomId,
+        votedAt: Date.now(),
+      });
+      if (!result.success) throw new Error(result.error);
+    },
+    "Failed to save feedback card vote",
+  ),
+);
 
 async function sendFeedbackEmail(feedback: any) {
   const emailHtml = `
@@ -87,7 +135,10 @@ async function sendFeedbackEmail(feedback: any) {
             </p>
             <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
               <strong>Feedback ID:</strong> ${feedback.id}
-            </p>
+            </p>${feedback.statementKey ? `
+            <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
+              <strong>Feedback card:</strong> ${feedback.statementKey}
+            </p>` : ""}
           </div>
           
           <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">

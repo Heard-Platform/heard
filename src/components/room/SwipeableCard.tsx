@@ -199,6 +199,7 @@ export function SwipeableCard({
           />
         ) : card.type === "feedback" ? (
           <FeedbackCard
+            roomId={room.id}
             statement={card.statement}
             isTopCard={isTopCard}
             disagreeOpacity={disagreeOpacity}

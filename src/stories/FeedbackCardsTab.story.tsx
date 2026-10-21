@@ -18,7 +18,7 @@ const emptyResults: FeedbackCardResults = {
   founderOptIns: [],
   notes: [],
   usersShown: 0,
-  usersAnswered: 0,
+  usersVoted: 0,
   usersWithNote: 0,
 };
 
@@ -52,7 +52,7 @@ const typicalResults: FeedbackCardResults = {
     },
   ],
   usersShown: 42,
-  usersAnswered: 31,
+  usersVoted: 31,
   usersWithNote: 3,
 };
 
@@ -60,7 +60,7 @@ export function FeedbackCardsTabStory() {
   return (
     <StoryContainer
       title="Feedback Cards Tab"
-      description="Activity dashboard tab: answers per feedback statement, founder chat opt-ins with emails, and notes from Tell us more"
+      description="Activity dashboard tab: votes per feedback statement, founder chat opt-ins with emails, and notes from Tell us more"
       variants={[
         { id: "typical", label: "Typical", children: <FeedbackCardsTab results={typicalResults} /> },
         { id: "empty", label: "No data", children: <FeedbackCardsTab results={emptyResults} /> },

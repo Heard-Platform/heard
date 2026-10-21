@@ -1,7 +1,7 @@
 import { FEEDBACK_STATEMENTS, type FeedbackStatement } from "./constants/feedback-statements";
 import { hashString } from "./hash";
 
-export interface FeedbackAnswer {
+export interface VotedFeedback {
   statementKey: string;
   votedAt: number;
 }
@@ -11,22 +11,22 @@ const isSameLocalDay = (a: Date, b: Date) =>
   && a.getMonth() === b.getMonth()
   && a.getDate() === b.getDate();
 
-export const hasAnsweredToday = (answers: FeedbackAnswer[], now: Date) =>
-  answers.some((answer) => isSameLocalDay(new Date(answer.votedAt), now));
+export const hasVotedToday = (votedFeedback: VotedFeedback[], now: Date) =>
+  votedFeedback.some((voted) => isSameLocalDay(new Date(voted.votedAt), now));
 
 export const pickFeedbackStatement = (
-  answers: FeedbackAnswer[],
+  votedFeedback: VotedFeedback[],
   userId: string,
   roomId: string,
   now: Date,
 ): FeedbackStatement | null => {
-  if (hasAnsweredToday(answers, now)) return null;
+  if (hasVotedToday(votedFeedback, now)) return null;
 
-  const answeredKeys = new Set(answers.map((answer) => answer.statementKey));
-  const unanswered = FEEDBACK_STATEMENTS.filter((statement) => !answeredKeys.has(statement.key));
-  if (unanswered.length === 0) return null;
+  const votedKeys = new Set(votedFeedback.map((voted) => voted.statementKey));
+  const unvoted = FEEDBACK_STATEMENTS.filter((statement) => !votedKeys.has(statement.key));
+  if (unvoted.length === 0) return null;
 
-  const currentSet = Math.min(...unanswered.map((statement) => statement.set));
-  const candidates = unanswered.filter((statement) => statement.set === currentSet);
+  const currentSet = Math.min(...unvoted.map((statement) => statement.set));
+  const candidates = unvoted.filter((statement) => statement.set === currentSet);
   return candidates[Math.abs(hashString(`${userId}:${roomId}`)) % candidates.length];
 };

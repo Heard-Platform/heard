@@ -17,6 +17,7 @@ import { SwipeableCard } from "./SwipeableCard";
 import { SwipeInstructions } from "../SwipeInstructions";
 import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import type { FeedbackStatement } from "../../utils/constants/feedback-statements";
 
 
 // @ts-ignore
@@ -35,6 +36,7 @@ interface SwipeableStatementStackProps {
   answeredQuestionIds: Set<string>;
   targetStatementId?: string;
   isActive: boolean;
+  feedbackStatement: FeedbackStatement | null;
   onVote: (
     statement: Statement,
     voteType: VoteType,
@@ -45,6 +47,8 @@ interface SwipeableStatementStackProps {
   onChanceCardSwiped: () => Promise<void>;
   onCoverCardSwiped: () => Promise<void>;
   onDemographicsAnswered: (questionId: string) => void;
+  onFeedbackVoted: (statement: FeedbackStatement, vote: VoteType) => void;
+  onFeedbackTellMore: (statement: FeedbackStatement) => void;
 }
 
 const SWIPE_THRESHOLD = 100;
@@ -62,6 +66,7 @@ export function SwipeableStatementStack({
   answeredQuestionIds,
   targetStatementId,
   isActive,
+  feedbackStatement,
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
@@ -69,6 +74,8 @@ export function SwipeableStatementStack({
   onChanceCardSwiped,
   onCoverCardSwiped,
   onDemographicsAnswered,
+  onFeedbackVoted,
+  onFeedbackTellMore,
 }: SwipeableStatementStackProps) {
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
 
@@ -82,7 +89,7 @@ export function SwipeableStatementStack({
   const [swipedCardId, setSwipedCardId] = useState<
     string | null
   >(null);
-  const [swipedNoopCard, setSwipedNoopCard] = useState<"certify" | "chance" | "cover" | null>(null);
+  const [swipedNoopCard, setSwipedNoopCard] = useState<"certify" | "chance" | "cover" | "feedback" | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
@@ -135,6 +142,10 @@ export function SwipeableStatementStack({
       cover,
     };
     cards.unshift(coverCard);
+  }
+
+  if (feedbackStatement) {
+    cards.push({ type: "feedback", statement: feedbackStatement });
   }
 
   if (isAnonymous && !certifyCardDismissed) {
@@ -319,6 +330,19 @@ export function SwipeableStatementStack({
         setIsVoting(false);
       }, 300);
       return;
+    } else if (card.type === "feedback") {
+      setIsVoting(true);
+      setSwipedNoopCard("feedback");
+      setSwipeDirection(swipeDirection);
+      const vote: VoteType = swipeDirection === "right" ? "agree" : "disagree";
+
+      setTimeout(() => {
+        onFeedbackVoted(card.statement, vote);
+        setSwipedNoopCard(null);
+        setSwipeDirection(null);
+        setIsVoting(false);
+      }, 300);
+      return;
     } else if (card.type === "statement") {
       const statementId = card.statement.id;
       if (swipeDirection === "right") {
@@ -453,6 +477,7 @@ export function SwipeableStatementStack({
               if (card.type === "chance") return "chance";
               if (card.type === "cover") return "cover";
               if (card.type === "demographics") return `demographics-${card.question.id}`;
+              if (card.type === "feedback") return "feedback";
               return "unknown";
             };
 
@@ -485,6 +510,11 @@ export function SwipeableStatementStack({
                 onShowAccountSetupModal={onShowAccountSetupModal}
                 onDemographicsAnswer={handleDemographicsAnswer}
                 onCertifySuccess={handleSuccessCertifyCard}
+                onFeedbackTellMore={() => {
+                  if (card.type === "feedback") {
+                    onFeedbackTellMore(card.statement);
+                  }
+                }}
                 onSkip={() => {
                   if (card.type === "statement") {
                     handleVote(card.statement.id, "pass", "down");

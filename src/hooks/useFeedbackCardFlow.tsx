@@ -5,6 +5,7 @@ import { FeedbackNoteSheet } from "../components/room/FeedbackNoteSheet";
 import { EmailAskSheet, type EmailAskReason } from "../components/room/EmailAskSheet";
 import { useDebateSession } from "./useDebateSession";
 import { useEmailOtpFlow } from "./useEmailOtpFlow";
+import { api } from "../utils/api";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -12,11 +13,12 @@ import { toast } from "sonner@2.0.3";
 const SHEET_HANDOFF_MS = 350;
 
 interface UseFeedbackCardFlowOptions {
+  roomId: string;
   onVote: (statement: FeedbackStatement, vote: VoteType) => void;
   onSendNote: (statement: FeedbackStatement, text: string) => Promise<boolean>;
 }
 
-export function useFeedbackCardFlow({ onVote, onSendNote }: UseFeedbackCardFlowOptions) {
+export function useFeedbackCardFlow({ roomId, onVote, onSendNote }: UseFeedbackCardFlowOptions) {
   const { user } = useDebateSession();
   const isAnonymous = !user || !!user.isAnonymous;
   const [noteFor, setNoteFor] = useState<FeedbackStatement | null>(null);
@@ -24,6 +26,7 @@ export function useFeedbackCardFlow({ onVote, onSendNote }: UseFeedbackCardFlowO
 
   const emailFlow = useEmailOtpFlow({
     onComplete: () => {
+      api.trackEvent(emailReason === "note" ? "feedback_note_signup" : "feedback_founder_signup", roomId);
       setEmailReason(null);
       toast.success("You're all set. Alex will be in touch.");
     },
@@ -34,7 +37,7 @@ export function useFeedbackCardFlow({ onVote, onSendNote }: UseFeedbackCardFlowO
     setEmailReason(reason);
   };
 
-  const handleAnswered = (statement: FeedbackStatement, vote: VoteType) => {
+  const handleVoted = (statement: FeedbackStatement, vote: VoteType) => {
     onVote(statement, vote);
     const agreed = vote === "agree" || vote === "super_agree";
     if (statement.key !== "founder_chat" || !agreed) return;
@@ -49,6 +52,7 @@ export function useFeedbackCardFlow({ onVote, onSendNote }: UseFeedbackCardFlowO
     if (!noteFor) return false;
     const saved = await onSendNote(noteFor, text);
     if (!saved) return false;
+    api.trackEvent("feedback_note_sent", roomId);
     setNoteFor(null);
     if (isAnonymous) {
       setTimeout(() => openEmailAsk("note"), SHEET_HANDOFF_MS);
@@ -78,5 +82,5 @@ export function useFeedbackCardFlow({ onVote, onSendNote }: UseFeedbackCardFlowO
     </>
   );
 
-  return { handleAnswered, handleTellMore: setNoteFor, sheets };
+  return { handleVoted, handleTellMore: setNoteFor, sheets };
 }

@@ -1,12 +1,12 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers, getAllAskTheDataRecords } from "./kv-utils.tsx";
-import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, countEventsOfType, getCommunityTeaserEvents, getCreateRoomEvents } from "./model-utils.ts";
+import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, countEventsOfType, getCommunityTeaserEvents, getCreateRoomEvents, getAllAppFeedbackVotes } from "./model-utils.ts";
 import { countRecords } from "./db-utils.ts";
 import type { UserEvent } from "./types.tsx";
 import { toTimestamp } from "./time-utils.ts";
 import { FLYER_WELCOME_EMAIL_TYPE } from "./template-flyer-welcome.ts";
 import { FLYER_RESULTS_EMAIL_TYPE } from "./template-flyer-results.ts";
-import { getAppFeedbackResults } from "./service-app-feedback.ts";
+import { FEEDBACK_CARD_SHOWN_EVENT, isFounderChatOptIn } from "./feedback-results-utils.ts";
 import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getSwipeSixFunnel, getSwipeSixDailyCompletions, buildCreateRoomFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel, FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
@@ -59,7 +59,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       personalFlyerScreenFunnel,
       flyerWelcomeEmailsSent,
       flyerResultsEmailsSent,
-      feedbackCardResults,
+      feedbackCardVotes,
+      feedbackCardShownUserIds,
+      feedbackNoteSentUserIds,
       feedbackFounderSignups,
       feedbackNoteSignups,
     ] = await Promise.all([
@@ -108,7 +110,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       getFlyerScreenFunnel(PERSONAL_FLYER_SCREEN_EVENTS),
       countRecords("sent_emails", { emailType: FLYER_WELCOME_EMAIL_TYPE }),
       countRecords("sent_emails", { emailType: FLYER_RESULTS_EMAIL_TYPE }),
-      getAppFeedbackResults(),
+      getAllAppFeedbackVotes(),
+      getUniqueUserIdsForEvent(FEEDBACK_CARD_SHOWN_EVENT),
+      getUniqueUserIdsForEvent("feedback_note_sent"),
       countEventsOfType("feedback_founder_signup"),
       countEventsOfType("feedback_note_signup"),
     ]);
@@ -346,11 +350,14 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
 
     const createRoomFunnelSince = new Date("2026-10-21").getTime();
 
+    const realFeedbackCardVotes = feedbackCardVotes.filter((vote) => realNonDevUserIds.has(vote.userId));
+    const countRealUsers = (userIds: Iterable<string>) =>
+      [...userIds].filter((userId) => realNonDevUserIds.has(userId)).length;
     const feedbackCards = {
-      shown: feedbackCardResults.usersShown,
-      answered: feedbackCardResults.usersAnswered,
-      wroteNote: feedbackCardResults.usersWithNote,
-      founderOptIns: feedbackCardResults.founderOptIns.length,
+      shown: countRealUsers(feedbackCardShownUserIds),
+      voted: countRealUsers(new Set(realFeedbackCardVotes.map((vote) => vote.userId))),
+      wroteNote: countRealUsers(feedbackNoteSentUserIds),
+      founderOptIns: realFeedbackCardVotes.filter(isFounderChatOptIn).length,
       emailSignups: feedbackFounderSignups + feedbackNoteSignups,
     };
     const feedbackCardsSince = new Date("2026-10-21").getTime();

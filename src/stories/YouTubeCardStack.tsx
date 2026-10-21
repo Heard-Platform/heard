@@ -91,7 +91,7 @@ export function MusicLeagueCardStackStory() {
           onCertifyDone={() => {}}
           onDemographicsAnswered={() => {}}
           feedbackStatement={null}
-          onFeedbackAnswered={() => {}}
+          onFeedbackVoted={() => {}}
           onFeedbackTellMore={() => {}}
         />
       </div>

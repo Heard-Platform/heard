@@ -12,6 +12,8 @@ import {
   getUsersYouTubeCardStatuses,
   saveYouTubeCardStatus,
   deleteYouTubeCardStatus,
+  getFeedbackList,
+  saveFeedback,
 } from "./kv-utils.tsx";
 import { getAllStatements } from "./kv-utils.tsx";
 import {
@@ -24,8 +26,12 @@ import {
   getRoomViewsForUser,
   saveRoomView,
   deleteRoomView,
+  getAppFeedbackVotesForUser,
+  saveAppFeedbackVote,
+  deleteAppFeedbackVotesForUser,
 } from "./model-utils.ts";
 import type { Vote, Statement, AnonCreatableRecords } from "./types.tsx";
+import { reassignAnonymousVotes } from "./feedback-utils.ts";
 
 type MergeHandlers = {
   [key in AnonCreatableRecords]: (
@@ -134,6 +140,24 @@ const mergeYoutubeCardStatuses = async (anonymousUserId: string, targetUserId: s
   }
 }
 
+const mergeAppFeedbackVotes = async (anonymousUserId: string, targetUserId: string) => {
+  const [anonymousVotes, targetVotes] = await Promise.all([
+    getAppFeedbackVotesForUser(anonymousUserId),
+    getAppFeedbackVotesForUser(targetUserId),
+  ]);
+  for (const vote of reassignAnonymousVotes(anonymousVotes, targetVotes, targetUserId)) {
+    await saveAppFeedbackVote(vote);
+  }
+  await deleteAppFeedbackVotesForUser(anonymousUserId);
+}
+
+const mergeFeedbackNotes = async (anonymousUserId: string, targetUserId: string) => {
+  const notes = await getFeedbackList();
+  for (const note of notes.filter((n) => n.userId === anonymousUserId)) {
+    await saveFeedback({ ...note, userId: targetUserId });
+  }
+}
+
 const mergeHandlers: MergeHandlers = {
   votes: mergeVotes,
   statements: mergeStatements,
@@ -143,6 +167,8 @@ const mergeHandlers: MergeHandlers = {
   chanceCardStatuses: mergeChanceCardStatuses,
   youtubeCardStatuses: mergeYoutubeCardStatuses,
   roomViews: mergeRoomViews,
+  appFeedbackVotes: mergeAppFeedbackVotes,
+  feedbackNotes: mergeFeedbackNotes,
 };
 
 export const mergeAnonymousUserActivity = async (

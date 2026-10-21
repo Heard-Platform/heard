@@ -1,5 +1,5 @@
 import { AvatarAnimal } from "../utils/constants/avatars";
-import type { FeedbackStatement } from "../utils/constants/feedback-statements";
+import type { FeedbackStatement, FeedbackStatementKey } from "../utils/constants/feedback-statements";
 
 export type Phase =
   | "lobby"
@@ -479,6 +479,42 @@ export interface Feedback {
   text: string;
   timestamp: number;
   createdAt: string;
+  source?: "feedback_card";
+  statementKey?: FeedbackStatementKey;
+  roomId?: string | null;
+}
+
+export interface FeedbackCardStatementResult {
+  statementKey: FeedbackStatementKey;
+  agree: number;
+  superAgree: number;
+  disagree: number;
+  pass: number;
+  total: number;
+}
+
+export interface FounderChatOptIn {
+  userId: string;
+  email: string | null;
+  votedAt: number;
+}
+
+export interface FeedbackCardNote {
+  id: string;
+  userId: string;
+  statementKey: FeedbackStatementKey;
+  roomId: string | null;
+  text: string;
+  createdAt: string;
+}
+
+export interface FeedbackCardResults {
+  statements: FeedbackCardStatementResult[];
+  founderOptIns: FounderChatOptIn[];
+  notes: FeedbackCardNote[];
+  usersShown: number;
+  usersVoted: number;
+  usersWithNote: number;
 }
 
 export interface ActivityMetricsData {
@@ -759,7 +795,7 @@ export interface FeatureResults {
   anonResponseTripwireSince: number;
   feedbackCards: {
     shown: number;
-    answered: number;
+    voted: number;
     wroteNote: number;
     founderOptIns: number;
     emailSignups: number;

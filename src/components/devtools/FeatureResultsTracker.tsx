@@ -534,14 +534,14 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       iconColor: "text-amber-700",
       bgColor: "bg-amber-100",
       title: "Feedback Cards",
-      description: "Unique users shown a feedback card at the end of a deck, how many answered, wrote a Tell us more note, opted into a founder chat, and signed up from the email ask (behind the FEEDBACK_CARDS flag)",
+      description: "Unique users shown a feedback card at the end of a deck, how many voted, wrote a Tell us more note, opted into a founder chat, and signed up from the email ask (behind the FEEDBACK_CARDS flag)",
       getValue: (s) => s.feedbackCards.shown,
       getDate: (s) => s.feedbackCardsSince,
       renderExtra: (s) => (
         <div className="flex flex-wrap gap-4">
           <div>
-            <p className="text-xs text-muted-foreground">Answered</p>
-            <p className="text-2xl font-bold text-amber-700">{s.feedbackCards.answered}</p>
+            <p className="text-xs text-muted-foreground">Voted</p>
+            <p className="text-2xl font-bold text-amber-700">{s.feedbackCards.voted}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Wrote a note</p>

@@ -82,7 +82,7 @@ export function YouTubeCardStory() {
           onCertifyDone={async () => {}}
           onDemographicsAnswered={() => {}}
           feedbackStatement={null}
-          onFeedbackAnswered={() => {}}
+          onFeedbackVoted={() => {}}
           onFeedbackTellMore={() => {}}
         />
       </div>

@@ -19,13 +19,13 @@ export function FeedbackCardsTab({ results }: FeedbackCardsTabProps) {
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <SummaryStat label="Users shown a card" value={results.usersShown} />
-        <SummaryStat label="Users who answered" value={results.usersAnswered} />
+        <SummaryStat label="Users who voted" value={results.usersVoted} />
         <SummaryStat label="Users who wrote a note" value={results.usersWithNote} />
         <SummaryStat label="Note rate" value={`${noteRate}%`} />
       </div>
 
       <Card className="p-6">
-        <h2 className="text-xl mb-1">Answers by statement</h2>
+        <h2 className="text-xl mb-1">Votes by statement</h2>
         <p className="text-xs text-muted-foreground mb-4">
           Real, non-developer users. Agree includes super agree.
         </p>
@@ -97,7 +97,7 @@ function StatementSplit({ result }: { result: FeedbackCardStatementResult }) {
     <div>
       <div className="flex items-baseline justify-between gap-4 mb-1">
         <p className="text-sm font-medium">{getFeedbackStatement(result.statementKey).text}</p>
-        <p className="text-xs text-muted-foreground shrink-0">{result.total} answers</p>
+        <p className="text-xs text-muted-foreground shrink-0">{result.total} votes</p>
       </div>
       <div className="flex h-3 rounded-full overflow-hidden bg-gray-100">
         {segments.map((segment) => (

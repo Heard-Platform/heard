@@ -835,7 +835,12 @@ function AppContent() {
   }
 
   if (showComponentShowcase) {
-    return <ComponentShowcase onExit={handleExitShowcase} />;
+    return (
+      <>
+        <ComponentShowcase onExit={handleExitShowcase} />
+        <Toaster />
+      </>
+    );
   }
 
   if (showUnsubscribe) {

@@ -6,6 +6,7 @@ import {
   DevAnonDebate,
   DryRunResult,
   Feedback,
+  FeedbackCardResults,
   GGWashImportResult,
   FeatureResults,
   FunnelMetricsData,
@@ -46,6 +47,8 @@ import {
 } from "./api-client";
 import { getSessionId } from "./session-store";
 import { FeatureFlags, isFeatureEnabled } from "./constants/feature-flags";
+import type { FeedbackStatementKey } from "./constants/feedback-statements";
+import type { VotedFeedback } from "./feedback-cards";
 import { getEnvironment } from "./constants/general";
 import { convertImageToJPEG, shouldConvertImage } from "./image-converter";
 import { safelyGetStorageItem, safelySetStorageItem } from "./localStorage";
@@ -664,15 +667,30 @@ class ApiClient extends BaseApiClient {
   }
 
   // Feedback
-  async submitFeedback(feedbackText: string) {
+  async submitFeedback(feedbackText: string, card?: { statementKey: FeedbackStatementKey; roomId: string }) {
     return this.request("/feedback/submit", {
       method: "POST",
-      body: JSON.stringify({ feedbackText }),
+      body: JSON.stringify({ feedbackText, ...card }),
     });
   }
 
+  async getVotedFeedback() {
+    return this.request<{ votedFeedback: VotedFeedback[] }>("/feedback/cards/voted");
+  }
+
+  async voteOnFeedbackCard(statementKey: FeedbackStatementKey, vote: VoteType, roomId: string) {
+    return this.request("/feedback/cards/vote", {
+      method: "POST",
+      body: JSON.stringify({ statementKey, vote, roomId }),
+    });
+  }
+
+  async getFeedbackCardResults() {
+    return this.request<FeedbackCardResults>("/stats/feedback-cards");
+  }
+
   async getFeedbackList() {
-    return this.request<{ feedback: Feedback[] }>("/feedback/list");
+    return this.request<{ feedback: Feedback[] }>("/stats/feedback/list");
   }
 
   // Activity tracking
