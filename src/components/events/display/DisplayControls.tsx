@@ -4,8 +4,6 @@ import { Button } from "../../ui/button";
 import type { ModeratorAction } from "../../../types";
 import type { DisplayView } from "../../../utils/event-display";
 
-export type DisplayAction = Exclude<ModeratorAction, "end">;
-
 const VIEW_OPTIONS: { view: DisplayView; label: string }[] = [
   { view: "agree-only", label: "Agree only" },
   { view: "agree-vs-disagree", label: "Agree vs disagree" },
@@ -27,14 +25,16 @@ function ControlsPanel({ isHidden, children }: { isHidden: boolean; children: Re
 }
 
 interface JoinControlsProps {
+  peopleHere: number;
   isHidden: boolean;
   isBusy: boolean;
-  onAction: (action: DisplayAction) => void;
+  onAction: (action: ModeratorAction) => void;
 }
 
-export function JoinControls({ isHidden, isBusy, onAction }: JoinControlsProps) {
+export function JoinControls({ peopleHere, isHidden, isBusy, onAction }: JoinControlsProps) {
   return (
     <ControlsPanel isHidden={isHidden}>
+      <HeadcountLabel text={`${peopleHere} here`} />
       <Button className="font-semibold" disabled={isBusy} onClick={() => onAction("start")}>
         Start with the first post <ChevronRight />
       </Button>
@@ -45,26 +45,33 @@ export function JoinControls({ isHidden, isBusy, onAction }: JoinControlsProps) 
 interface BoardControlsProps {
   view: DisplayView;
   votingPaused: boolean;
+  peopleHere: number;
+  finishedCurrentPost: number;
   canGoBack: boolean;
-  canGoForward: boolean;
+  isLastPost: boolean;
   isHidden: boolean;
   isBusy: boolean;
   onViewChange: (view: DisplayView) => void;
-  onAction: (action: DisplayAction) => void;
+  onAction: (action: ModeratorAction) => void;
+  onEndRequest: () => void;
 }
 
 export function BoardControls({
   view,
   votingPaused,
+  peopleHere,
+  finishedCurrentPost,
   canGoBack,
-  canGoForward,
+  isLastPost,
   isHidden,
   isBusy,
   onViewChange,
   onAction,
+  onEndRequest,
 }: BoardControlsProps) {
   return (
     <ControlsPanel isHidden={isHidden}>
+      <HeadcountLabel text={`${peopleHere} here · ${finishedCurrentPost} finished this one`} />
       <div role="group" aria-label="Display view" className="flex gap-1">
         {VIEW_OPTIONS.map((option) => (
           <Button
@@ -91,10 +98,20 @@ export function BoardControls({
           {votingPaused ? <Play /> : <Pause />}
           {votingPaused ? "Resume voting" : "Pause voting"}
         </Button>
-        <Button variant="outline" className="font-semibold" disabled={isBusy || !canGoForward} onClick={() => onAction("next")}>
-          Next <ChevronRight />
-        </Button>
+        {isLastPost ? (
+          <Button variant="destructive" className="font-semibold" disabled={isBusy} onClick={onEndRequest}>
+            End session
+          </Button>
+        ) : (
+          <Button variant="outline" className="font-semibold" disabled={isBusy} onClick={() => onAction("next")}>
+            Next <ChevronRight />
+          </Button>
+        )}
       </div>
     </ControlsPanel>
   );
+}
+
+function HeadcountLabel({ text }: { text: string }) {
+  return <span className="px-2 text-sm font-semibold tabular-nums text-muted-foreground">{text}</span>;
 }

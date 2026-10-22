@@ -14,6 +14,7 @@ const BASE_EVENT: EventPageProps["event"] = {
   communityName: "adams-morgan",
   rooms: [],
   canModerate: false,
+  displayKey: null,
   creatorId: "1",
   createdAt: now - 30 * 24 * 60 * 60 * 1000,
 };

@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { RotateCcw } from "lucide-react";
-import type { DebateRoom, LiveEventView, Statement } from "../types";
+import type { DebateRoom, LiveEventView, ModeratorAction, Statement } from "../types";
 import type { EventPost } from "../hooks/useEventPost";
 import { EventDisplay } from "../components/events/display/EventDisplay";
 import { DisplayBoard } from "../components/events/display/DisplayBoard";
 import { DisplaySpotlight } from "../components/events/display/DisplaySpotlight";
-import type { DisplayAction } from "../components/events/display/DisplayControls";
 import type { DisplayView } from "../utils/event-display";
 import { Button } from "../components/ui/button";
 import { StoryContainer } from "./StoryContainer";
@@ -154,7 +153,7 @@ const castVotes = (statements: Statement[]): Statement[] =>
     return statementsSoFar.map((statement, statementIndex) => (statementIndex === votedIndex ? castVote(statement) : statement));
   }, statements);
 
-const applyAction = (state: LiveEventView, action: DisplayAction): LiveEventView => {
+const applyAction = (state: LiveEventView, action: ModeratorAction): LiveEventView => {
   const index = state.currentIndex ?? 0;
   switch (action) {
     case "start":
@@ -167,10 +166,15 @@ const applyAction = (state: LiveEventView, action: DisplayAction): LiveEventView
       return { ...state, votingPaused: true };
     case "resume":
       return { ...state, votingPaused: false };
+    case "end":
+      return { ...state, status: "ended", totals: { people: 61, votes: 1204, statementsFromRoom: 7, stayedToEndPercent: 58 } };
   }
 };
 
-function LiveDemo() {
+const NOT_STARTED_STATE = eventState({ status: "setup", currentIndex: null, startedAt: null, roomOrder: [], peopleHere: 23 });
+const LAST_POST_STATE = eventState({ currentIndex: POST_COUNT - 1, startedAt: Date.now(), peopleHere: 61, finishedCurrentPost: 49 });
+
+function LiveDemo({ initialState }: { initialState: LiveEventView }) {
   const [runKey, setRunKey] = useState(0);
   return (
     <div className="space-y-4">
@@ -178,15 +182,13 @@ function LiveDemo() {
         <RotateCcw className="h-4 w-4" />
         Replay
       </Button>
-      <LiveDemoRun key={runKey} />
+      <LiveDemoRun key={runKey} initialState={initialState} />
     </div>
   );
 }
 
-function LiveDemoRun() {
-  const [state, setState] = useState(() =>
-    eventState({ status: "setup", currentIndex: null, startedAt: null, roomOrder: [], peopleHere: 23 }),
-  );
+function LiveDemoRun({ initialState }: { initialState: LiveEventView }) {
+  const [state, setState] = useState(initialState);
   const [statementsByPost, setStatementsByPost] = useState(() =>
     DEMO_POSTS.map((post) => seedStatements(post, 0.3)),
   );
@@ -213,7 +215,7 @@ function LiveDemoRun() {
     );
   }, [voteTick]);
 
-  const handleAction = (action: DisplayAction) => {
+  const handleAction = (action: ModeratorAction) => {
     console.log("[Story] display action", action);
     setIsBusy(true);
     setTimeout(() => {
@@ -314,14 +316,15 @@ export function EventDisplayStory() {
   return (
     <StoryContainer
       title="Event Display"
-      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after half a second. Live starts on the join screen: press Start, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Back, Next and Pause work. The view only changes when the moderator picks one. Tap a row to spotlight it."
+      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after half a second. Live starts on the join screen: press Start, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Back, Next and Pause work; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it."
       variants={[
         {
           id: "join",
           label: "Join screen",
           children: <StaticDisplay state={eventState({ status: "setup", currentIndex: null, startedAt: null, peopleHere: 23 })} post={null} />,
         },
-        { id: "live", label: "Live (Start, votes moving)", children: <LiveDemo /> },
+        { id: "live", label: "Live (Start, votes moving)", children: <LiveDemo initialState={NOT_STARTED_STATE} /> },
+        { id: "last-post", label: "Last post (End session)", children: <LiveDemo initialState={LAST_POST_STATE} /> },
         { id: "agree-only", label: "Agree only", children: <BoardStory view="agree-only" attendeeStatements={withProcurementStatementOnBoard} /> },
         {
           id: "agree-vs-disagree",

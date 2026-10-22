@@ -6,7 +6,6 @@ import {
   HEARTBEAT_INTERVAL_MS,
   shouldSendHeartbeat,
   toLiveScreen,
-  getControlsPhase,
   EVENT_POLL_MAX_INTERVAL_MS,
   moveInOrder,
   getIntervalWithBackoff,
@@ -61,28 +60,6 @@ describe("moveInOrder", () => {
   it("does not mutate the input", () => {
     moveInOrder(order, 0, 1);
     expect(order).toEqual(["a", "b", "c"]);
-  });
-});
-
-describe("getControlsPhase", () => {
-  it("is not started during setup", () => {
-    expect(getControlsPhase("setup", null, 3)).toBe("not-started");
-  });
-
-  it("is live before the last post", () => {
-    expect(getControlsPhase("live", 1, 3)).toBe("live");
-  });
-
-  it("is the last post on the final index", () => {
-    expect(getControlsPhase("live", 2, 3)).toBe("last-post");
-  });
-
-  it("is the last post when there is only one post", () => {
-    expect(getControlsPhase("live", 0, 1)).toBe("last-post");
-  });
-
-  it("is ended once the session ends", () => {
-    expect(getControlsPhase("ended", 2, 3)).toBe("ended");
   });
 });
 

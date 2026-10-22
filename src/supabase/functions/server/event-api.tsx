@@ -7,11 +7,18 @@ import { getAllRecords, selectAll, selectAllWithoutLimit } from "./db-utils.ts";
 import { filterFeedEvents } from "./feed-utils.ts";
 import { getUserMemberships } from "./membership-utils.tsx";
 import { insertEvent } from "./model-utils.ts";
-import { applyEventAction, getEventOrThrow, loadEventView, parseEventId } from "./event-utils.ts";
+import {
+  applyEventAction,
+  getEventOrThrow,
+  getOrCreateEventDisplayKey,
+  loadEventView,
+  parseEventId,
+} from "./event-utils.ts";
 import {
   getAllDebates,
   getCommunities,
   getCommunity,
+  getEventDisplayKey,
   getLiveEventState,
   getStatementsForRoom,
   getUser,
@@ -21,6 +28,7 @@ import {
 } from "./kv-utils.tsx";
 import { RouteError } from "./route-error.ts";
 import {
+  canDriveEvent,
   canModerateEvent,
   isCommunityModerator,
   EVENT_ACTIONS,
@@ -133,11 +141,13 @@ app.get(
         getCommunity(eventRows.communityName),
       ]);
 
+      const canModerate = canModerateEvent(userId, eventRows, community);
       const votedStatementIds = new Set(userVotes.map((v) => v.statementId));
       const totalMembers = allMemberships.filter(
         (m) => m.subHeard === eventRows.communityName,
       ).length;
 
+      const displayKey = canModerate ? await getOrCreateEventDisplayKey(eventId) : null;
       const now = Date.now();
       const eventRooms = allRooms.filter((r) => r.eventId === eventId);
 
@@ -188,7 +198,8 @@ app.get(
           communityName: eventRows.communityName,
           totalMembers,
           rooms: enrichedRooms,
-          canModerate: canModerateEvent(userId, eventRows, community),
+          canModerate,
+          displayKey,
         },
       };
     },
@@ -252,9 +263,18 @@ app.post(
         validate: (val: number) => Number.isInteger(val) && val >= 0,
         errorMessage: "fromIndex must be a post position",
       },
+      displayKey: {
+        type: "string",
+        required: false,
+      },
     },
     async (
-      { action, roomOrder, fromIndex }: { action: EventActionName; roomOrder?: string[]; fromIndex?: number },
+      {
+        action,
+        roomOrder,
+        fromIndex,
+        displayKey,
+      }: { action: EventActionName; roomOrder?: string[]; fromIndex?: number; displayKey?: string },
       c: Context,
     ) => {
       const eventId = parseEventId(c.req.param("eventId"));
@@ -262,8 +282,12 @@ app.post(
 
       const event = await getEventOrThrow(eventId);
       const community = await getCommunity(event.communityName);
-      if (!canModerateEvent(userId, event, community)) {
-        throw new RouteError(`Only moderators of ${event.communityName} can run this event`, 403);
+      const isModerator = canModerateEvent(userId, event, community);
+      if (action === "reorder" && !isModerator) {
+        throw new RouteError(`Only moderators of ${event.communityName} can reorder this event`, 403);
+      }
+      if (action !== "reorder" && !canDriveEvent(isModerator, displayKey, await getEventDisplayKey(eventId))) {
+        throw new RouteError("This link can't run the event. Open the display link from the event page.", 403);
       }
 
       const now = Date.now();

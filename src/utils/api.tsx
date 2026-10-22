@@ -221,10 +221,11 @@ class ApiClient extends BaseApiClient {
   async updateLiveEvent(
     eventId: string,
     action: LiveEventAction,
+    displayKey?: string,
   ): Promise<ApiResponse<{ live: LiveEventView }>> {
     return this.request<{ live: LiveEventView }>(`/event/${eventId}/live`, {
       method: "POST",
-      body: JSON.stringify(action),
+      body: JSON.stringify({ ...action, displayKey }),
     });
   }
 

@@ -7,6 +7,7 @@ import { api } from "../../../utils/api";
 import { useDebateSession } from "../../../hooks/useDebateSession";
 import { EVENT_POLL_MS, useEventPolling } from "../../../hooks/useEventPolling";
 import { useEventPost } from "../../../hooks/useEventPost";
+import { useReloadOnNonceChange } from "../../../hooks/useReloadOnNonceChange";
 import { buildPostDeck, getAttendeeScreen, toLiveScreen } from "../../../utils/live-event";
 import type { SwipeVote } from "../../flyer/FlyerSwipeCard";
 import { Loader } from "../../widgets/Loader";
@@ -114,16 +115,6 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
     case "end":
       return <EventLobby moment="ended" />;
   }
-}
-
-function useReloadOnNonceChange(reloadNonce: number | undefined) {
-  const firstNonceRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (reloadNonce === undefined) return;
-    if (firstNonceRef.current === null) firstNonceRef.current = reloadNonce;
-    else if (reloadNonce !== firstNonceRef.current) window.location.reload();
-  }, [reloadNonce]);
 }
 
 function AttendeeNotice({ title, body }: { title: string; body: string }) {
