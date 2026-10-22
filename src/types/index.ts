@@ -204,6 +204,15 @@ export interface LiveEventView extends LiveEventState {
   finishedCurrentPost: number;
 }
 
+export interface LiveSessionSummary {
+  people: number;
+  votes: number;
+  statementsFromRoom: number;
+  stayedToEndPercent: number;
+}
+
+export type ModeratorAction = "start" | "next" | "back" | "pause" | "resume" | "end";
+
 export type LiveScreen = "lobby" | "swiping" | "waiting" | "end";
 
 export interface LiveHeartbeat {

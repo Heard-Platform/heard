@@ -1,10 +1,10 @@
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 import { useState } from "react";
-import { Check, ChevronDown, ChevronUp, Copy, MessageSquare, Radio } from "lucide-react";
+import { Check, Copy, Radio } from "lucide-react";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
-import { moveInOrder } from "../../utils/live-event";
+import { EventPostList } from "./EventPostList";
 import type { LiveEventStatus, EventSetupRoom } from "../../types";
 
 const COPIED_RESET_MS = 2000;
@@ -22,7 +22,7 @@ export interface EventSetupPanelProps {
   joinUrl: string;
   displayUrl: string;
   onReorder: (roomOrder: string[]) => void;
-  onOpenConsole: () => void;
+  onOpenControls: () => void;
 }
 
 export function EventSetupPanel({
@@ -32,14 +32,9 @@ export function EventSetupPanel({
   joinUrl,
   displayUrl,
   onReorder,
-  onOpenConsole,
+  onOpenControls,
 }: EventSetupPanelProps) {
-  const canReorder = status === "setup";
   const hasRooms = rooms.length > 0;
-
-  const handleMove = (index: number, offset: -1 | 1) => {
-    onReorder(moveInOrder(rooms.map((room) => room.id), index, offset));
-  };
 
   return (
     <Card className="heard-card-bg overflow-hidden">
@@ -54,22 +49,12 @@ export function EventSetupPanel({
         </div>
 
         {hasRooms && (
-          <ol className="space-y-1.5">
-            {rooms.map((room, index) => (
-              <EventSetupRow
-                key={room.id}
-                room={room}
-                position={index + 1}
-                isCurrent={status === "live" && index === currentIndex}
-                isDone={status === "live" && currentIndex !== null && index < currentIndex}
-                canMoveUp={canReorder && index > 0}
-                canMoveDown={canReorder && index < rooms.length - 1}
-                showControls={canReorder}
-                onMoveUp={() => handleMove(index, -1)}
-                onMoveDown={() => handleMove(index, 1)}
-              />
-            ))}
-          </ol>
+          <EventPostList
+            rooms={rooms}
+            currentIndex={status === "live" ? currentIndex : null}
+            currentBadge="Live"
+            onReorder={status === "setup" ? onReorder : undefined}
+          />
         )}
 
         <div className="space-y-1.5">
@@ -80,86 +65,12 @@ export function EventSetupPanel({
         <Button
           className="w-full"
           disabled={!hasRooms}
-          onClick={onOpenConsole}
+          onClick={onOpenControls}
         >
-          Open console
+          Open moderator controls
         </Button>
       </div>
     </Card>
-  );
-}
-
-interface EventSetupRowProps {
-  room: EventSetupRoom;
-  position: number;
-  isCurrent: boolean;
-  isDone: boolean;
-  canMoveUp: boolean;
-  canMoveDown: boolean;
-  showControls: boolean;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-}
-
-function EventSetupRow({
-  room,
-  position,
-  isCurrent,
-  isDone,
-  canMoveUp,
-  canMoveDown,
-  showControls,
-  onMoveUp,
-  onMoveDown,
-}: EventSetupRowProps) {
-  const rowTone = isCurrent
-    ? "bg-primary/10 ring-1 ring-primary/40"
-    : "bg-background/70";
-
-  return (
-    <li
-      className={`flex items-center gap-2 rounded-xl px-2.5 py-2 ${rowTone} ${isDone ? "opacity-50" : ""}`}
-      aria-current={isCurrent ? "step" : undefined}
-    >
-      <span className="w-5 shrink-0 text-center text-xs font-bold text-muted-foreground tabular-nums">
-        {position}
-      </span>
-      <span className="shrink-0 w-6 text-center text-base leading-none">
-        {room.emoji ?? <MessageSquare className="w-4 h-4 mx-auto text-muted-foreground" />}
-      </span>
-      <span className="flex-1 min-w-0 text-sm font-semibold text-foreground truncate">
-        {room.topic}
-      </span>
-      {isCurrent && (
-        <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-white heard-primary-gradient rounded-full px-2 py-0.5">
-          Live
-        </span>
-      )}
-      {showControls && (
-        <span className="shrink-0 flex">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            aria-label={`Move ${room.topic} up`}
-            disabled={!canMoveUp}
-            onClick={onMoveUp}
-          >
-            <ChevronUp />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            aria-label={`Move ${room.topic} down`}
-            disabled={!canMoveDown}
-            onClick={onMoveDown}
-          >
-            <ChevronDown />
-          </Button>
-        </span>
-      )}
-    </li>
   );
 }
 

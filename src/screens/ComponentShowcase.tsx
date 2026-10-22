@@ -71,6 +71,7 @@ import { VoteSwingOverlayStory } from "../stories/VoteSwingOverlay.story";
 import { AnonResponseTripwireStory } from "../stories/AnonResponseTripwire.story";
 import { ClusterMinimapStory } from "../stories/ClusterMinimap.story";
 import { EventSetupPanelStory } from "../stories/EventSetupPanel.story";
+import { ModeratorControlsStory } from "../stories/ModeratorControls.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -196,6 +197,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="anon-response-tripwire">Anon Response Tripwire</TabsTrigger>
                 <TabsTrigger value="cluster-minimap">Cluster Minimap</TabsTrigger>
                 <TabsTrigger value="event-setup-panel">Event Setup Panel</TabsTrigger>
+                <TabsTrigger value="moderator-controls">Moderator Controls</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -404,6 +406,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="event-setup-panel">
                 <EventSetupPanelStory />
+              </TabsContent>
+              <TabsContent value="moderator-controls">
+                <ModeratorControlsStory />
               </TabsContent>
             </Tabs>
           </div>

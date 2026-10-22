@@ -38,7 +38,7 @@ function EventSetupDemo({ rooms, status, currentIndex }: EventSetupDemoProps) {
         joinUrl={JOIN_URL}
         displayUrl={DISPLAY_URL}
         onReorder={handleReorder}
-        onOpenConsole={() => console.log("[Story] open console")}
+        onOpenControls={() => console.log("[Story] open moderator controls")}
       />
     </div>
   );
@@ -48,7 +48,7 @@ export function EventSetupPanelStory() {
   return (
     <StoryContainer
       title="Event Setup Panel"
-      description="Moderator-only panel on the event page. Order the posts with the arrows, copy the join and display links, open the console. Ordering locks once the session starts."
+      description="Moderator-only panel on the event page. Order the posts with the arrows, copy the join and display links, open the moderator controls. Ordering locks once the session starts."
       variants={[
         {
           id: "ordered",
