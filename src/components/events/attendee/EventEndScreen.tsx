@@ -10,19 +10,19 @@ const INPUT_CLASS = "heard-card-bg h-12 rounded-xl text-base md:text-base";
 
 interface EventEndScreenProps {
   emailFlow: EmailOtpFlow;
-  isSent: boolean;
+  sentTo: string | null;
 }
 
-export function EventEndScreen({ emailFlow, isSent }: EventEndScreenProps) {
+export function EventEndScreen({ emailFlow, sentTo }: EventEndScreenProps) {
   return (
     <AttendeeFrame>
-      {isSent && (
+      {sentTo && (
         <div className="my-auto">
-          <AttendeeMessage title="Check your inbox" body={`The results are on their way to ${emailFlow.email}.`} />
+          <AttendeeMessage title="Check your inbox" body={`The results are on their way to ${sentTo}.`} />
         </div>
       )}
-      {!isSent && emailFlow.step === "email" && <EmailStep emailFlow={emailFlow} />}
-      {!isSent && emailFlow.step === "otp" && <CodeStep emailFlow={emailFlow} />}
+      {!sentTo && emailFlow.step === "email" && <EmailStep emailFlow={emailFlow} />}
+      {!sentTo && emailFlow.step === "otp" && <CodeStep emailFlow={emailFlow} />}
     </AttendeeFrame>
   );
 }

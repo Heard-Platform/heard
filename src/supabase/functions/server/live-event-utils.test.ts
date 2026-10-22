@@ -13,16 +13,29 @@ import {
   setVotingPaused,
   startEvent,
   countEventTotals,
+  countEventHeadcount,
+  isLiveScreen,
+  PRESENCE_WINDOW_MS,
   toLiveEventView,
 } from "./live-event-utils.ts";
 import { RouteError } from "./route-error.ts";
-import type { LiveEventState } from "./types.tsx";
+import type { EventPresence, LiveEventState } from "./types.tsx";
 
 const NOW = 1_761_000_000_000;
 const LATER = NOW + 5_000;
 
 const state = (overrides: Partial<LiveEventState> = {}): LiveEventState => ({
   ...defaultLiveEventState(NOW),
+  ...overrides,
+});
+
+const NO_ONE = { peopleHere: 0, finishedCurrentPost: 0 };
+
+const presence = (overrides: Partial<EventPresence>): EventPresence => ({
+  userId: "u1",
+  shownRoomId: "a",
+  screen: "swiping",
+  updatedAt: NOW,
   ...overrides,
 });
 
@@ -45,11 +58,11 @@ Deno.test("defaultLiveEventState - setup with no order and nothing live", () => 
 });
 
 Deno.test("toLiveEventView - no current post before the session starts", () => {
-  assertEquals(toLiveEventView(state({ roomOrder: ["a", "b"] })).currentRoomId, null);
+  assertEquals(toLiveEventView(state({ roomOrder: ["a", "b"] }), NO_ONE).currentRoomId, null);
 });
 
 Deno.test("toLiveEventView - current post follows the current index", () => {
-  const view = toLiveEventView(state({ roomOrder: ["a", "b"], currentIndex: 1, status: "live" }));
+  const view = toLiveEventView(state({ roomOrder: ["a", "b"], currentIndex: 1, status: "live" }), NO_ONE);
   assertEquals(view.currentRoomId, "b");
 });
 
@@ -217,4 +230,40 @@ Deno.test("countEventTotals - counts only what happened after Start", () => {
 
 Deno.test("countEventTotals - zero people means zero stayed", () => {
   assertEquals(countEventTotals(["a"], [], [], NOW).stayedToEndPercent, 0);
+});
+
+Deno.test("toLiveEventView - carries the headcount", () => {
+  const view = toLiveEventView(state(), { peopleHere: 12, finishedCurrentPost: 5 });
+  assertEquals([view.peopleHere, view.finishedCurrentPost], [12, 5]);
+});
+
+Deno.test("countEventHeadcount - counts phones heard from in the last 5 minutes", () => {
+  const live = state({ roomOrder: ["a", "b"], currentIndex: 0, status: "live" });
+  const presences = [
+    presence({ userId: "fresh" }),
+    presence({ userId: "edge", updatedAt: NOW - PRESENCE_WINDOW_MS }),
+    presence({ userId: "gone", updatedAt: NOW - PRESENCE_WINDOW_MS - 1 }),
+  ];
+  assertEquals(countEventHeadcount(presences, live, NOW).peopleHere, 2);
+});
+
+Deno.test("countEventHeadcount - finished means waiting on the current post", () => {
+  const live = state({ roomOrder: ["a", "b"], currentIndex: 1, status: "live" });
+  const presences = [
+    presence({ userId: "done", screen: "waiting", shownRoomId: "b" }),
+    presence({ userId: "stale-post", screen: "waiting", shownRoomId: "a" }),
+    presence({ userId: "swiping", screen: "swiping", shownRoomId: "b" }),
+    presence({ userId: "gone", screen: "waiting", shownRoomId: "b", updatedAt: NOW - PRESENCE_WINDOW_MS - 1 }),
+  ];
+  assertEquals(countEventHeadcount(presences, live, NOW), { peopleHere: 3, finishedCurrentPost: 1 });
+});
+
+Deno.test("countEventHeadcount - nobody has finished before the session starts", () => {
+  const presences = [presence({ screen: "waiting", shownRoomId: null })];
+  assertEquals(countEventHeadcount(presences, state(), NOW), { peopleHere: 1, finishedCurrentPost: 0 });
+});
+
+Deno.test("isLiveScreen - only the four phone screens", () => {
+  assertEquals(["lobby", "swiping", "waiting", "end"].every(isLiveScreen), true);
+  assertEquals(isLiveScreen("dancing"), false);
 });

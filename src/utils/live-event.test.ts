@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
+import type { Statement } from "../types";
 import {
+  buildPostDeck,
+  getAttendeeScreen,
+  HEARTBEAT_INTERVAL_MS,
+  shouldSendHeartbeat,
+  toLiveScreen,
   getControlsPhase,
   EVENT_POLL_MAX_INTERVAL_MS,
   moveInOrder,
@@ -110,5 +116,84 @@ describe("pickNewestState", () => {
   it("ignores a stale poll that lands after a newer action result", () => {
     const current = at(9);
     expect(pickNewestState(current, at(5))).toBe(current);
+  });
+});
+
+describe("getAttendeeScreen", () => {
+  const live = { status: "live" as const, votingPaused: false };
+
+  it("waits in the lobby before the event starts", () => {
+    expect(getAttendeeScreen({ status: "setup", votingPaused: false }, true)).toBe("starting");
+  });
+
+  it("shows the end screen once the event ends", () => {
+    expect(getAttendeeScreen({ status: "ended", votingPaused: false }, true)).toBe("end");
+  });
+
+  it("pauses even with cards left", () => {
+    expect(getAttendeeScreen({ ...live, votingPaused: true }, true)).toBe("paused");
+  });
+
+  it("swipes while cards are left, then waits for the others", () => {
+    expect(getAttendeeScreen(live, true)).toBe("swiping");
+    expect(getAttendeeScreen(live, false)).toBe("waiting");
+  });
+
+  it("reports both lobby wordings as the lobby screen", () => {
+    expect(toLiveScreen("starting")).toBe("lobby");
+    expect(toLiveScreen("paused")).toBe("lobby");
+    expect(toLiveScreen("waiting")).toBe("waiting");
+  });
+});
+
+describe("shouldSendHeartbeat", () => {
+  const heartbeat = { shownRoomId: "a", screen: "swiping" as const };
+
+  it("sends the first heartbeat", () => {
+    expect(shouldSendHeartbeat(null, heartbeat, 0)).toBe(true);
+  });
+
+  it("holds an unchanged heartbeat until the interval passes", () => {
+    const last = { heartbeat, sentAt: 1_000 };
+    expect(shouldSendHeartbeat(last, heartbeat, 1_000 + HEARTBEAT_INTERVAL_MS - 1)).toBe(false);
+    expect(shouldSendHeartbeat(last, heartbeat, 1_000 + HEARTBEAT_INTERVAL_MS)).toBe(true);
+  });
+
+  it("sends at once when the screen or post changes", () => {
+    const last = { heartbeat, sentAt: 1_000 };
+    expect(shouldSendHeartbeat(last, { ...heartbeat, screen: "waiting" }, 1_001)).toBe(true);
+    expect(shouldSendHeartbeat(last, { ...heartbeat, shownRoomId: "b" }, 1_001)).toBe(true);
+  });
+});
+
+describe("buildPostDeck", () => {
+  const statement = (id: string, overrides: Partial<Statement> = {}) =>
+    ({ id, author: "host", voters: {}, ...overrides }) as Statement;
+  const deckIds = (statements: Statement[]) => statements.map((s) => s.id);
+
+  it("puts statements already voted on first and counts them", () => {
+    const deck = buildPostDeck(
+      [statement("a"), statement("b", { voters: { me: "agree" } }), statement("c")],
+      "me",
+      {},
+    );
+    expect(deckIds(deck.statements)).toEqual(["b", "a", "c"]);
+    expect(deck.votedCount).toBe(1);
+  });
+
+  it("counts votes made on this phone before the server knows", () => {
+    const deck = buildPostDeck([statement("a"), statement("b")], "me", { a: "pass" });
+    expect(deck.votedCount).toBe(1);
+    expect(deckIds(deck.statements)).toEqual(["a", "b"]);
+  });
+
+  it("deals your own statements like any other", () => {
+    const deck = buildPostDeck([statement("a"), statement("mine", { author: "me" })], "me", {});
+    expect(deckIds(deck.statements)).toEqual(["a", "mine"]);
+    expect(deck.votedCount).toBe(0);
+  });
+
+  it("is empty for a post with no statements", () => {
+    expect(buildPostDeck([], "me", {})).toEqual({ statements: [], votedCount: 0 });
   });
 });

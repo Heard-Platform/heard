@@ -4,7 +4,7 @@ To log any client-side event (button taps, views, etc.), call `api.trackEvent`.
 
 ## Server file naming
 
-Services are named with a `service-` prefix, e.g. `service-flyer-results-email.ts`. Routes stay in `*-api.ts` files and call into the service.
+A service is only something that performs a recurring, independent task on its own schedule, such as a cron job or a scheduled email send (the standard definition of a service). Services are named with a `service-` prefix, e.g. `service-flyer-results-email.ts`. Code that a route calls to do its work is not a service, even when it sends an email. Routes stay in `*-api.ts` files.
 
 ## Code comments
 

@@ -7,7 +7,7 @@ import { getAllRecords, selectAll, selectAllWithoutLimit } from "./db-utils.ts";
 import { filterFeedEvents } from "./feed-utils.ts";
 import { getUserMemberships } from "./membership-utils.tsx";
 import { insertEvent } from "./model-utils.ts";
-import { applyEventAction, getEventOrThrow, parseEventId } from "./event-utils.ts";
+import { applyEventAction, getEventOrThrow, loadEventView, parseEventId } from "./event-utils.ts";
 import {
   getAllDebates,
   getCommunities,
@@ -16,6 +16,7 @@ import {
   getStatementsForRoom,
   getUser,
   getVotesForUser,
+  saveEventPresence,
   saveLiveEventState,
 } from "./kv-utils.tsx";
 import { RouteError } from "./route-error.ts";
@@ -25,9 +26,9 @@ import {
   EVENT_ACTIONS,
   type EventActionName,
   eventStateOrDefault,
-  toLiveEventView,
+  isLiveScreen,
 } from "./live-event-utils.ts";
-import type { Event, CommunityMembership } from "./types.tsx";
+import type { Event, CommunityMembership, LiveScreen } from "./types.tsx";
 
 const app = new Hono();
 
@@ -198,11 +199,32 @@ app.get(
 app.get(
   "/make-server-f1a393b4/event/:eventId/live",
   defineRoute(
-    {},
-    async (_params, c: Context) => {
+    {
+      screen: {
+        type: "string",
+        required: false,
+        validate: isLiveScreen,
+        errorMessage: "Unknown screen",
+      },
+      shownRoomId: {
+        type: "string",
+        required: false,
+      },
+    },
+    async ({ screen, shownRoomId }: { screen?: LiveScreen; shownRoomId?: string }, c: Context) => {
       const eventId = parseEventId(c.req.param("eventId"));
-      const state = eventStateOrDefault(await getLiveEventState(eventId), Date.now());
-      return { live: toLiveEventView(state) };
+      const userId = c.get("userId");
+      const now = Date.now();
+      const presence = screen && userId
+        ? { userId, shownRoomId: shownRoomId || null, screen, updatedAt: now }
+        : null;
+
+      const [stored] = await Promise.all([
+        getLiveEventState(eventId),
+        presence && saveEventPresence(eventId, presence),
+      ]);
+      const state = eventStateOrDefault(stored, now);
+      return { live: await loadEventView(eventId, state, now) };
     },
     "Failed to fetch live event",
   ),
@@ -249,7 +271,7 @@ app.post(
       const next = await applyEventAction(eventId, state, action, { roomOrder, fromIndex }, now);
 
       await saveLiveEventState(eventId, next);
-      return { live: toLiveEventView(next) };
+      return { live: await loadEventView(eventId, next, now) };
     },
     "Failed to update live event",
   ),

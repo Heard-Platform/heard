@@ -67,12 +67,16 @@ function SwipeDemo({ initialVotedCount }: { initialVotedCount: number }) {
 }
 
 const addStatementInStory = (text: string) =>
-  new Promise<void>((resolve) => {
+  new Promise<boolean>((resolve) => {
     console.log("[Story] add statement", text);
-    setTimeout(resolve, STORY_DELAY_MS);
+    setTimeout(() => resolve(true), STORY_DELAY_MS);
   });
 
-function useStoryEmailFlow(initialStep: EmailOtpStep, initialEmail: string, onComplete: () => void): EmailOtpFlow {
+function useStoryEmailFlow(
+  initialStep: EmailOtpStep,
+  initialEmail: string,
+  onComplete: (email: string) => void,
+): EmailOtpFlow {
   const [step, setStep] = useState<EmailOtpStep>(initialStep);
   const [email, setEmail] = useState(initialEmail);
   const [otp, setOtp] = useState("");
@@ -106,14 +110,14 @@ function useStoryEmailFlow(initialStep: EmailOtpStep, initialEmail: string, onCo
         setError("Please enter a valid email address.");
         return;
       }
-      afterDelay(() => (email.startsWith("taken") ? setStep("otp") : onComplete()));
+      afterDelay(() => (email.startsWith("taken") ? setStep("otp") : onComplete(email)));
     },
     submitOtp: async () => {
       if (otp.length !== 6) {
         setError("Enter the 6-character code from your email.");
         return;
       }
-      afterDelay(onComplete);
+      afterDelay(() => onComplete(email));
     },
     goBackToEmail: () => {
       setStep("email");
@@ -123,13 +127,19 @@ function useStoryEmailFlow(initialStep: EmailOtpStep, initialEmail: string, onCo
   };
 }
 
-function EndDemo({ initialStep, initialEmail, initialSent }: { initialStep: EmailOtpStep; initialEmail: string; initialSent: boolean }) {
-  const [isSent, setIsSent] = useState(initialSent);
-  const emailFlow = useStoryEmailFlow(initialStep, initialEmail, () => setIsSent(true));
+interface EndDemoProps {
+  initialStep: EmailOtpStep;
+  initialEmail: string;
+  initialSentTo: string | null;
+}
+
+function EndDemo({ initialStep, initialEmail, initialSentTo }: EndDemoProps) {
+  const [sentTo, setSentTo] = useState(initialSentTo);
+  const emailFlow = useStoryEmailFlow(initialStep, initialEmail, setSentTo);
 
   return (
     <PhoneFrame>
-      <EventEndScreen emailFlow={emailFlow} isSent={isSent} />
+      <EventEndScreen emailFlow={emailFlow} sentTo={sentTo} />
     </PhoneFrame>
   );
 }
@@ -173,17 +183,17 @@ export function EventAttendeeStory() {
         {
           id: "end-email",
           label: "End, email",
-          children: <EndDemo key="end-email" initialStep="email" initialEmail="" initialSent={false} />,
+          children: <EndDemo key="end-email" initialStep="email" initialEmail="" initialSentTo={null} />,
         },
         {
           id: "end-code",
           label: "End, code",
-          children: <EndDemo key="end-code" initialStep="otp" initialEmail="taken@agency.com" initialSent={false} />,
+          children: <EndDemo key="end-code" initialStep="otp" initialEmail="taken@agency.com" initialSentTo={null} />,
         },
         {
           id: "end-sent",
           label: "End, sent",
-          children: <EndDemo key="end-sent" initialStep="email" initialEmail="gabor@agency.com" initialSent />,
+          children: <EndDemo key="end-sent" initialStep="email" initialEmail="" initialSentTo="gabor@agency.com" />,
         },
       ]}
     />

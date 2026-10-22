@@ -4,12 +4,23 @@ import type {
   Community,
   DebateRoom,
   Event,
+  EventPresence,
   LiveEventState,
+  LiveScreen,
   LiveEventView,
   EventTotals,
   Statement,
   Vote,
 } from "./types.tsx";
+
+export const LIVE_SCREENS: readonly LiveScreen[] = ["lobby", "swiping", "waiting", "end"];
+
+export const PRESENCE_WINDOW_MS = 5 * 60_000;
+
+export interface EventHeadcount {
+  peopleHere: number;
+  finishedCurrentPost: number;
+}
 
 export const EVENT_ACTIONS = ["start", "next", "back", "pause", "resume", "end", "reorder", "reload"] as const;
 
@@ -37,12 +48,29 @@ export const defaultLiveEventState = (now: number): LiveEventState => ({
 export const eventStateOrDefault = (stored: LiveEventState | null, now: number): LiveEventState =>
   stored ? { ...defaultLiveEventState(stored.updatedAt), ...stored } : defaultLiveEventState(now);
 
-export const toLiveEventView = (state: LiveEventState): LiveEventView => ({
+export const toLiveEventView = (state: LiveEventState, headcount: EventHeadcount): LiveEventView => ({
   ...state,
   currentRoomId: currentRoomId(state),
-  peopleHere: 0,
-  finishedCurrentPost: 0,
+  ...headcount,
 });
+
+export const countEventHeadcount = (
+  presences: EventPresence[],
+  state: LiveEventState,
+  now: number,
+): EventHeadcount => {
+  const roomId = currentRoomId(state);
+  const here = presences.filter((presence) => now - presence.updatedAt <= PRESENCE_WINDOW_MS);
+  return {
+    peopleHere: here.length,
+    finishedCurrentPost: here.filter(
+      (presence) => roomId !== null && presence.screen === "waiting" && presence.shownRoomId === roomId,
+    ).length,
+  };
+};
+
+export const isLiveScreen = (value: string): value is LiveScreen =>
+  (LIVE_SCREENS as readonly string[]).includes(value);
 
 const currentRoomId = (state: LiveEventState): string | null =>
   state.currentIndex === null ? null : state.roomOrder[state.currentIndex] ?? null;

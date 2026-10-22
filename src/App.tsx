@@ -13,6 +13,7 @@ import { AiUsagePage } from "./screens/AiUsagePage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { ModeratorControlsContainer } from "./components/events/moderator-controls/ModeratorControlsContainer";
+import { EventAttendeeContainer } from "./components/events/attendee/EventAttendeeContainer";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { RetentionDashboard } from "./components/RetentionDashboard";
@@ -40,6 +41,7 @@ import {
   updateUrlForRoom,
   parseEventIdFromUrl,
   parseModeratedEventIdFromUrl,
+  parseAttendedEventIdFromUrl,
   updateUrlForEvent,
   parseStatementIdFromUrl,
   parseModInviteTokenFromUrl,
@@ -58,6 +60,7 @@ import type { FlyerVoteTally } from "./components/flyer/landing/FlyerLandingScre
 import type { FlyerVote } from "./components/flyer/FlyerVoteIntroCard";
 import { FeatureFlags, isFeatureEnabled } from "./utils/constants/feature-flags";
 import { WAYMO_DC_ROOM_ID, WAYMO_DC_STATEMENT_ID } from "./utils/constants/flyers";
+import { EVENT_SHORT_ROUTES } from "./utils/constants/events";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
 
 const LAST_VIEWED_SUBHEARD_KEY = "lastViewedSubHeard";
@@ -138,6 +141,7 @@ function AppContent() {
   const [newFlyerScan, setNewFlyerScan] = useState<FlyerScan | null>(null);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
   const [moderatedEventId, setModeratedEventId] = useState<string | null>(null);
+  const [attendedEventId, setAttendedEventId] = useState<string | null>(null);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
   const [voteSwing, setVoteSwing] = useState<{
@@ -424,6 +428,10 @@ function AppContent() {
       const flyerDataFromUrl = parseFlyerDataFromUrl();
       const eventIdFromUrl = parseEventIdFromUrl();
       const moderatedEventIdFromUrl = parseModeratedEventIdFromUrl();
+      const attendedEventIdFromUrl =
+        parseAttendedEventIdFromUrl() ??
+        EVENT_SHORT_ROUTES.get(route) ??
+        null;
       const statementIdFromUrl = parseStatementIdFromUrl();
       
       const queryParams = parseQueryParams();
@@ -544,6 +552,8 @@ function AppContent() {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (moderatedEventIdFromUrl) {
         setModeratedEventId(moderatedEventIdFromUrl);
+      } else if (attendedEventIdFromUrl) {
+        setAttendedEventId(attendedEventIdFromUrl);
       } else if (eventIdFromUrl) {
         setCurrentEventId(eventIdFromUrl);
       } else if (roomIdFromUrl) {
@@ -912,6 +922,15 @@ function AppContent() {
         <div className="h-dvh heard-feed-bg">
           <ModeratorControlsContainer eventId={moderatedEventId} />
         </div>
+        <Toaster />
+      </>
+    );
+  }
+
+  if (attendedEventId) {
+    return (
+      <>
+        <EventAttendeeContainer eventId={attendedEventId} />
         <Toaster />
       </>
     );

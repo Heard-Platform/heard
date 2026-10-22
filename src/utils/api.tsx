@@ -35,6 +35,7 @@ import {
   type NewEvent,
   type LiveEventAction,
   type LiveEventView,
+  type LiveHeartbeat,
   EventSummary,
   StatementMerge,
   StatementTag,
@@ -209,8 +210,12 @@ class ApiClient extends BaseApiClient {
 
   async getLiveEvent(
     eventId: string,
+    heartbeat?: LiveHeartbeat,
   ): Promise<ApiResponse<{ live: LiveEventView }>> {
-    return this.request<{ live: LiveEventView }>(`/event/${eventId}/live`);
+    const query = heartbeat
+      ? `?${new URLSearchParams({ screen: heartbeat.screen, shownRoomId: heartbeat.shownRoomId ?? "" })}`
+      : "";
+    return this.request<{ live: LiveEventView }>(`/event/${eventId}/live${query}`);
   }
 
   async updateLiveEvent(

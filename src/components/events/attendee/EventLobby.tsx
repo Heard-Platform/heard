@@ -13,7 +13,7 @@ type EventLobbyProps =
       moment: "waiting";
       peopleHere: number;
       finishedCurrentPost: number;
-      onAddStatement: (text: string) => Promise<void>;
+      onAddStatement: (text: string) => Promise<boolean>;
     };
 
 export function EventLobby(props: EventLobbyProps) {
@@ -47,7 +47,7 @@ export function EventLobby(props: EventLobbyProps) {
 interface WaitingForOthersProps {
   peopleHere: number;
   finishedCurrentPost: number;
-  onAddStatement: (text: string) => Promise<void>;
+  onAddStatement: (text: string) => Promise<boolean>;
 }
 
 function WaitingForOthers({ peopleHere, finishedCurrentPost, onAddStatement }: WaitingForOthersProps) {
@@ -60,13 +60,11 @@ function WaitingForOthers({ peopleHere, finishedCurrentPost, onAddStatement }: W
     event.preventDefault();
     if (!trimmed) return;
     setIsSubmitting(true);
-    try {
-      await onAddStatement(trimmed);
-      setText("");
-      setAddedCount((count) => count + 1);
-    } finally {
-      setIsSubmitting(false);
-    }
+    const isAdded = await onAddStatement(trimmed);
+    setIsSubmitting(false);
+    if (!isAdded) return;
+    setText("");
+    setAddedCount((count) => count + 1);
   };
 
   return (
