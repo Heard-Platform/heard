@@ -73,6 +73,7 @@ import { ClusterMinimapStory } from "../stories/ClusterMinimap.story";
 import { EventSetupPanelStory } from "../stories/EventSetupPanel.story";
 import { ModeratorControlsStory } from "../stories/ModeratorControls.story";
 import { EventAttendeeStory } from "../stories/EventAttendee.story";
+import { EventDisplayStory } from "../stories/EventDisplay.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -200,6 +201,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="event-setup-panel">Event Setup Panel</TabsTrigger>
                 <TabsTrigger value="moderator-controls">Moderator Controls</TabsTrigger>
                 <TabsTrigger value="event-attendee">Event Attendee</TabsTrigger>
+                <TabsTrigger value="event-display">Event Display</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -414,6 +416,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="event-attendee">
                 <EventAttendeeStory />
+              </TabsContent>
+              <TabsContent value="event-display">
+                <EventDisplayStory />
               </TabsContent>
             </Tabs>
           </div>
