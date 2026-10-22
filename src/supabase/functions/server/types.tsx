@@ -260,6 +260,18 @@ export type LiveEventView = LiveEventState & {
   finishedCurrentPost: number;
 };
 
+export type LiveScreen = "lobby" | "swiping" | "waiting" | "end";
+
+export type LiveHeartbeat = {
+  shownRoomId: string | null;
+  screen: LiveScreen;
+};
+
+export type EventPresence = LiveHeartbeat & {
+  userId: string;
+  updatedAt: number;
+};
+
 export type Phase =
   | "lobby"
   | "round1"

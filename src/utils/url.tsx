@@ -114,6 +114,12 @@ export const parseModeratedEventIdFromUrl = (): string | null => {
   return match ? match[1] : null
 }
 
+export const parseAttendedEventIdFromUrl = (): string | null => {
+  if (typeof window === 'undefined') return null
+  const match = window.location.pathname.match(/^\/event\/([^/]+)\/live\/?$/)
+  return match ? match[1] : null
+}
+
 export const parseEventIdFromUrl = (): string | null => {
   return parseFromUrl('event')
 }

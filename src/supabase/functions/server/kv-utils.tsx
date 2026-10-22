@@ -22,6 +22,7 @@ import {
   UserActivityRecord,
   AskTheDataRecord,
   LiveEventState,
+  EventPresence,
 } from "./types.tsx";
 import { throwIfNotFound } from "./model-utils.ts";
 
@@ -466,6 +467,15 @@ export const getLiveEventState = async (eventId: number) =>
 
 export const saveLiveEventState = async (eventId: number, state: LiveEventState) => {
   await kv.set(liveEventKeyFn(eventId), JSON.stringify(state));
+};
+
+const eventPresencePrefix = (eventId: number) => `event_live_presence:${eventId}:`;
+
+export const getEventPresences = async (eventId: number) =>
+  getByPrefixParsed<EventPresence>(eventPresencePrefix(eventId));
+
+export const saveEventPresence = async (eventId: number, presence: EventPresence) => {
+  await kv.set(`${eventPresencePrefix(eventId)}${presence.userId}`, JSON.stringify(presence));
 };
 
 export const rantKeyFn = (rant: Rant) =>

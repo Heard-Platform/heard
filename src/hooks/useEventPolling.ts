@@ -1,21 +1,41 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../utils/api";
-import { getIntervalWithBackoff as getIntervalWithBackoff, pickNewestState } from "../utils/live-event";
-import type { LiveEventView } from "../types";
+import {
+  getIntervalWithBackoff as getIntervalWithBackoff,
+  pickNewestState,
+  type SentHeartbeat,
+  shouldSendHeartbeat,
+} from "../utils/live-event";
+import type { LiveEventView, LiveHeartbeat } from "../types";
 
 export const EVENT_POLL_MS = 3000;
 
-export function useEventPolling(eventId: string, intervalMs: number = EVENT_POLL_MS) {
+export function useEventPolling(
+  eventId: string,
+  intervalMs: number = EVENT_POLL_MS,
+  getHeartbeat?: () => LiveHeartbeat | null,
+) {
   const [eventState, setEventState] = useState<LiveEventView | null>(null);
   const [error, setError] = useState<string | null>(null);
   const failuresRef = useRef(0);
+  const getHeartbeatRef = useRef(getHeartbeat);
+  const lastHeartbeatRef = useRef<SentHeartbeat | null>(null);
+  getHeartbeatRef.current = getHeartbeat;
+
+  const nextHeartbeat = (): LiveHeartbeat | undefined => {
+    const heartbeat = getHeartbeatRef.current?.();
+    const now = Date.now();
+    if (!heartbeat || !shouldSendHeartbeat(lastHeartbeatRef.current, heartbeat, now)) return undefined;
+    lastHeartbeatRef.current = { heartbeat, sentAt: now };
+    return heartbeat;
+  };
 
   const applyEventState = useCallback((incoming: LiveEventView) => {
     setEventState((current) => pickNewestState(current, incoming));
   }, []);
 
   const refresh = useCallback(async () => {
-    const response = await api.getLiveEvent(eventId);
+    const response = await api.getLiveEvent(eventId, nextHeartbeat());
     if (response.success && response.data) {
       failuresRef.current = 0;
       setError(null);

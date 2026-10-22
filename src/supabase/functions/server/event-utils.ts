@@ -1,5 +1,12 @@
 import { getEventById } from "./model-utils.ts";
-import { getAllDebates, getCommunity, getLiveEventState, getStatementsForRoom, getVotesForStatement } from "./kv-utils.tsx";
+import {
+  getAllDebates,
+  getCommunity,
+  getEventPresences,
+  getLiveEventState,
+  getStatementsForRoom,
+  getVotesForStatement,
+} from "./kv-utils.tsx";
 import { RouteError } from "./route-error.ts";
 import {
   canModerateEvent,
@@ -15,8 +22,10 @@ import {
   setVotingPaused,
   startEvent,
   countEventTotals,
+  countEventHeadcount,
+  toLiveEventView,
 } from "./live-event-utils.ts";
-import type { DebateRoom, Event, LiveEventState as EventState, EventTotals, User } from "./types.tsx";
+import type { DebateRoom, Event, LiveEventState as EventState, LiveEventView, EventTotals, User } from "./types.tsx";
 
 export const parseEventId = (eventIdStr: string | undefined): number => {
   const eventId = Number(eventIdStr);
@@ -32,6 +41,9 @@ export const getEventOrThrow = async (eventId: number): Promise<Event> => {
 
 export const getEventRooms = async (eventId: number): Promise<DebateRoom[]> =>
   (await getAllDebates()).filter((room) => room.eventId === eventId);
+
+export const loadEventView = async (eventId: number, state: EventState, now: number): Promise<LiveEventView> =>
+  toLiveEventView(state, countEventHeadcount(await getEventPresences(eventId), state, now));
 
 export type EventPostCheck = { allowed: true } | { allowed: false; error: string };
 

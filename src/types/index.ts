@@ -218,7 +218,6 @@ export type ModeratorAction = "start" | "next" | "back" | "pause" | "resume" | "
 export type LiveScreen = "lobby" | "swiping" | "waiting" | "end";
 
 export interface LiveHeartbeat {
-  clientId: string;
   shownRoomId: string | null;
   screen: LiveScreen;
 }
