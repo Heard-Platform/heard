@@ -11,10 +11,11 @@ interface TopicPillProps {
   room: DebateRoom;
   colorClass: string;
   clamped?: boolean;
+  hideCommunity?: boolean;
 }
 
 export const TopicPill = forwardRef<HTMLDivElement, TopicPillProps>(function TopicPill(
-  { room, colorClass, clamped = false },
+  { room, colorClass, clamped = false, hideCommunity = false },
   ref,
 ) {
   const { emoji, topic, subHeard } = room;
@@ -30,7 +31,7 @@ export const TopicPill = forwardRef<HTMLDivElement, TopicPillProps>(function Top
       <p className={`text-sm font-semibold leading-snug text-foreground ${clamped ? "line-clamp-2" : ""}`}>
         {emoji && <span className="mr-1">{emoji}</span>}
         {topic}
-        {subHeard && <span className="font-medium secondary-text"> · {subHeard}</span>}
+        {subHeard && !hideCommunity && <span className="font-medium secondary-text"> · {subHeard}</span>}
       </p>
     </motion.div>
   );

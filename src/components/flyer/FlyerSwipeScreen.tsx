@@ -8,6 +8,7 @@ import {
   type MinimapCluster,
 } from "../room/ClusterMinimap";
 import { FlyerProgress } from "./FlyerProgress";
+import { HeardWordmark } from "../HeardWordmark";
 import {
   FLYER_CARD_CLASS,
   FLYER_CARD_SHADOW,
@@ -194,9 +195,7 @@ export function FlyerSwipeScreen({
 export function FlyerHeader({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-[28px] font-extrabold leading-none tracking-tight text-[#1C1B1F]">
-        heard
-      </span>
+      <HeardWordmark />
       <button
         className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8E3D6] text-[#1C1B1F]"
         aria-label="Close"
