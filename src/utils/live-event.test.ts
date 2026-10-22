@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { getControlsPhase, moveInOrder, orderByRoomOrder } from "./live-event";
+import {
+  getControlsPhase,
+  EVENT_POLL_MAX_INTERVAL_MS,
+  moveInOrder,
+  getIntervalWithBackoff,
+  orderByRoomOrder,
+  pickNewestState,
+} from "./live-event";
 
 const room = (id: string) => ({ id });
 const ids = (rooms: { id: string }[]) => rooms.map((r) => r.id);
@@ -70,5 +77,38 @@ describe("getControlsPhase", () => {
 
   it("is ended once the session ends", () => {
     expect(getControlsPhase("ended", 2, 3)).toBe("ended");
+  });
+});
+
+describe("getIntervalWithBackoff", () => {
+  it("polls at the base rate while requests succeed", () => {
+    expect(getIntervalWithBackoff(3000, 0)).toBe(3000);
+  });
+
+  it("doubles the wait after each failure in a row", () => {
+    expect(getIntervalWithBackoff(3000, 1)).toBe(6000);
+    expect(getIntervalWithBackoff(3000, 2)).toBe(12000);
+  });
+
+  it("caps the wait", () => {
+    expect(getIntervalWithBackoff(3000, 10)).toBe(EVENT_POLL_MAX_INTERVAL_MS);
+  });
+});
+
+describe("pickNewestState", () => {
+  const at = (updatedAt: number) => ({ updatedAt });
+
+  it("takes the incoming state when there is none yet", () => {
+    expect(pickNewestState(null, at(5))).toEqual(at(5));
+  });
+
+  it("takes a newer or equal incoming state", () => {
+    expect(pickNewestState(at(5), at(6))).toEqual(at(6));
+    expect(pickNewestState(at(5), at(5))).toEqual(at(5));
+  });
+
+  it("ignores a stale poll that lands after a newer action result", () => {
+    const current = at(9);
+    expect(pickNewestState(current, at(5))).toBe(current);
   });
 });

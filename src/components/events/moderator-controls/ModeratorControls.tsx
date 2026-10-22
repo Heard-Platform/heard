@@ -10,16 +10,16 @@ import type { ModeratorAction, EventSetupRoom, LiveEventView } from "../../../ty
 export interface ModeratorControlsProps {
   eventName: string;
   rooms: EventSetupRoom[];
-  live: LiveEventView;
+  eventState: LiveEventView;
   isBusy: boolean;
   onAction: (action: ModeratorAction) => void;
 }
 
-export function ModeratorControls({ eventName, rooms, live, isBusy, onAction }: ModeratorControlsProps) {
+export function ModeratorControls({ eventName, rooms, eventState, isBusy, onAction }: ModeratorControlsProps) {
   const [confirmingEnd, setConfirmingEnd] = useState(false);
-  const phase = getControlsPhase(live.status, live.currentIndex, rooms.length);
+  const phase = getControlsPhase(eventState.status, eventState.currentIndex, rooms.length);
 
-  if (phase === "not-started" || live.currentIndex === null) {
+  if (phase === "not-started" || eventState.currentIndex === null) {
     return (
       <ControlsFrame
         badge="Not started"
@@ -33,7 +33,7 @@ export function ModeratorControls({ eventName, rooms, live, isBusy, onAction }: 
       >
         <ControlsStats
           stats={[
-            { value: String(live.peopleHere), label: "people here" },
+            { value: String(eventState.peopleHere), label: "people here" },
             { value: String(rooms.length), label: rooms.length === 1 ? "question" : "questions" },
           ]}
         />
@@ -42,9 +42,9 @@ export function ModeratorControls({ eventName, rooms, live, isBusy, onAction }: 
     );
   }
 
-  const currentRoom = rooms[live.currentIndex];
+  const currentRoom = rooms[eventState.currentIndex];
   const isLastPost = phase === "last-post";
-  const canGoBack = live.currentIndex > 0;
+  const canGoBack = eventState.currentIndex > 0;
 
   const handleConfirmEnd = () => {
     setConfirmingEnd(false);
@@ -57,7 +57,7 @@ export function ModeratorControls({ eventName, rooms, live, isBusy, onAction }: 
     </Button>
   ) : (
     <Button
-      variant={live.votingPaused ? "outline" : "default"}
+      variant={eventState.votingPaused ? "outline" : "default"}
       className="h-12 flex-1"
       disabled={isBusy}
       onClick={() => onAction("next")}
@@ -69,13 +69,13 @@ export function ModeratorControls({ eventName, rooms, live, isBusy, onAction }: 
   return (
     <div className="relative h-full">
       <ControlsFrame
-        badge={live.votingPaused ? "Paused" : "Live"}
-        badgeTone={live.votingPaused ? "paused" : "live"}
-        position={`${live.currentIndex + 1} of ${rooms.length}`}
+        badge={eventState.votingPaused ? "Paused" : "Live"}
+        badgeTone={eventState.votingPaused ? "paused" : "live"}
+        position={`${eventState.currentIndex + 1} of ${rooms.length}`}
         title={currentRoom?.topic ?? eventName}
         controls={
           <div className="space-y-2">
-            {live.votingPaused && (
+            {eventState.votingPaused && (
               <Button className="w-full h-12 text-base" disabled={isBusy} onClick={() => onAction("resume")}>
                 Resume voting
               </Button>
@@ -89,7 +89,7 @@ export function ModeratorControls({ eventName, rooms, live, isBusy, onAction }: 
               >
                 <ChevronLeft /> Back
               </Button>
-              {!live.votingPaused && (
+              {!eventState.votingPaused && (
                 <Button variant="outline" className="h-12 flex-1" disabled={isBusy} onClick={() => onAction("pause")}>
                   Pause
                 </Button>
@@ -101,14 +101,14 @@ export function ModeratorControls({ eventName, rooms, live, isBusy, onAction }: 
       >
         <ControlsStats
           stats={[
-            { value: String(live.peopleHere), label: "people here" },
-            { value: String(live.finishedCurrentPost), label: "finished this one" },
+            { value: String(eventState.peopleHere), label: "people here" },
+            { value: String(eventState.finishedCurrentPost), label: "finished this one" },
           ]}
         />
         <EventPostList
           rooms={rooms}
-          currentIndex={live.currentIndex}
-          currentBadge={live.votingPaused ? "Paused" : "Live"}
+          currentIndex={eventState.currentIndex}
+          currentBadge={eventState.votingPaused ? "Paused" : "Live"}
         />
       </ControlsFrame>
       {confirmingEnd && (

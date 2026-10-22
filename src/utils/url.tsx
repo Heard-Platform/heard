@@ -108,6 +108,12 @@ export const parseFlyerDataFromUrl = (): { flyerId: string; statementId: string;
   return null
 };
 
+export const parseModeratedEventIdFromUrl = (): string | null => {
+  if (typeof window === 'undefined') return null
+  const match = window.location.pathname.match(/^\/event\/([^/]+)\/moderate\/?$/)
+  return match ? match[1] : null
+}
+
 export const parseEventIdFromUrl = (): string | null => {
   return parseFromUrl('event')
 }

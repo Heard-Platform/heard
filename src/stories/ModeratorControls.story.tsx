@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { ModeratorControls } from "../components/events/moderator-controls/ModeratorControls";
 import { ModeratorControlsEnded } from "../components/events/moderator-controls/ModeratorControlsEnded";
 import { ModeratorControlsRefusal } from "../components/events/moderator-controls/ModeratorControlsRefusal";
-import type { ModeratorAction, EventSetupRoom, LiveEventView, LiveSessionSummary } from "../types";
+import type { ModeratorAction, EventSetupRoom, LiveEventView, EventTotals } from "../types";
 import { StoryContainer } from "./StoryContainer";
 
 const EVENT_NAME = "PRGN Session 1";
@@ -16,19 +16,21 @@ const ROOMS: EventSetupRoom[] = [
   { id: "retainer", topic: "Monthly retainer minimum?", emoji: "📅" },
 ];
 
-const SUMMARY: LiveSessionSummary = {
+const TOTALS: EventTotals = {
   people: 61,
   votes: 1204,
   statementsFromRoom: 7,
   stayedToEndPercent: 58,
 };
 
-const live = (overrides: Partial<LiveEventView>): LiveEventView => ({
+const eventState = (overrides: Partial<LiveEventView>): LiveEventView => ({
   roomOrder: ROOMS.map((room) => room.id),
   currentIndex: null,
   status: "setup",
   votingPaused: false,
   reloadNonce: 0,
+  totals: null,
+  startedAt: null,
   currentRoomId: null,
   peopleHere: 23,
   finishedCurrentPost: 0,
@@ -88,9 +90,9 @@ function ModeratorControlsDemo({ initial }: { initial: LiveEventView }) {
 
   const content =
     state.status === "ended" ? (
-      <ModeratorControlsEnded eventName={EVENT_NAME} postCount={ROOMS.length} summary={SUMMARY} />
+      <ModeratorControlsEnded eventName={EVENT_NAME} postCount={ROOMS.length} totals={TOTALS} />
     ) : (
-      <ModeratorControls eventName={EVENT_NAME} rooms={ROOMS} live={state} isBusy={isBusy} onAction={handleAction} />
+      <ModeratorControls eventName={EVENT_NAME} rooms={ROOMS} eventState={state} isBusy={isBusy} onAction={handleAction} />
     );
 
   return <Frames>{content}</Frames>;
@@ -100,34 +102,34 @@ export function ModeratorControlsStory() {
   return (
     <StoryContainer
       title="Moderator Controls"
-      description="Runs a live session. Buttons work in the story (with a short busy state) so you can click from Start to End. On the last post, End session opens the in-page confirm."
+      description="Runs an event as it happens. Buttons work in the story (with a short busy state) so you can click from Start to End. On the last post, End session opens the in-page confirm."
       variants={[
         {
           id: "not-started",
           label: "Not started",
-          children: <ModeratorControlsDemo initial={live({})} />,
+          children: <ModeratorControlsDemo initial={eventState({})} />,
         },
         {
           id: "live-first",
           label: "Live, first post",
-          children: <ModeratorControlsDemo initial={live({ status: "live", currentIndex: 0, peopleHere: 52, finishedCurrentPost: 12 })} />,
+          children: <ModeratorControlsDemo initial={eventState({ status: "live", currentIndex: 0, peopleHere: 52, finishedCurrentPost: 12 })} />,
         },
         {
           id: "live-middle",
           label: "Live, middle",
-          children: <ModeratorControlsDemo initial={live({ status: "live", currentIndex: 1, peopleHere: 52, finishedCurrentPost: 31 })} />,
+          children: <ModeratorControlsDemo initial={eventState({ status: "live", currentIndex: 1, peopleHere: 52, finishedCurrentPost: 31 })} />,
         },
         {
           id: "last-post",
           label: "Last post (tap End)",
-          children: <ModeratorControlsDemo initial={live({ status: "live", currentIndex: 4, peopleHere: 61, finishedCurrentPost: 49 })} />,
+          children: <ModeratorControlsDemo initial={eventState({ status: "live", currentIndex: 4, peopleHere: 61, finishedCurrentPost: 49 })} />,
         },
         {
           id: "paused",
           label: "Paused",
           children: (
             <ModeratorControlsDemo
-              initial={live({ status: "live", currentIndex: 1, votingPaused: true, peopleHere: 52, finishedCurrentPost: 47 })}
+              initial={eventState({ status: "live", currentIndex: 1, votingPaused: true, peopleHere: 52, finishedCurrentPost: 47 })}
             />
           ),
         },
@@ -136,7 +138,7 @@ export function ModeratorControlsStory() {
           label: "Ended",
           children: (
             <Frames>
-              <ModeratorControlsEnded eventName={EVENT_NAME} postCount={ROOMS.length} summary={SUMMARY} />
+              <ModeratorControlsEnded eventName={EVENT_NAME} postCount={ROOMS.length} totals={TOTALS} />
             </Frames>
           ),
         },

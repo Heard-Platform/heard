@@ -12,6 +12,7 @@ import { FundingPage } from "./screens/funding/FundingPage";
 import { AiUsagePage } from "./screens/AiUsagePage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
+import { ModeratorControlsContainer } from "./components/events/moderator-controls/ModeratorControlsContainer";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { RetentionDashboard } from "./components/RetentionDashboard";
@@ -38,6 +39,7 @@ import {
   parseFlyerDataFromUrl,
   updateUrlForRoom,
   parseEventIdFromUrl,
+  parseModeratedEventIdFromUrl,
   updateUrlForEvent,
   parseStatementIdFromUrl,
   parseModInviteTokenFromUrl,
@@ -135,6 +137,7 @@ function AppContent() {
   } | null>(null);
   const [newFlyerScan, setNewFlyerScan] = useState<FlyerScan | null>(null);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
+  const [moderatedEventId, setModeratedEventId] = useState<string | null>(null);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
   const [voteSwing, setVoteSwing] = useState<{
@@ -420,6 +423,7 @@ function AppContent() {
       const analysisRoomIdFromUrl = parseAnalysisRoomIdFromUrl();
       const flyerDataFromUrl = parseFlyerDataFromUrl();
       const eventIdFromUrl = parseEventIdFromUrl();
+      const moderatedEventIdFromUrl = parseModeratedEventIdFromUrl();
       const statementIdFromUrl = parseStatementIdFromUrl();
       
       const queryParams = parseQueryParams();
@@ -538,6 +542,8 @@ function AppContent() {
         startRoomJoin(IDEAS_ROOM_ID);
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
+      } else if (moderatedEventIdFromUrl) {
+        setModeratedEventId(moderatedEventIdFromUrl);
       } else if (eventIdFromUrl) {
         setCurrentEventId(eventIdFromUrl);
       } else if (roomIdFromUrl) {
@@ -897,6 +903,17 @@ function AppContent() {
           className="w-8 h-8 heard-spinner"
         />
       </div>
+    );
+  }
+
+  if (moderatedEventId) {
+    return (
+      <>
+        <div className="h-dvh heard-feed-bg">
+          <ModeratorControlsContainer eventId={moderatedEventId} />
+        </div>
+        <Toaster />
+      </>
     );
   }
 
