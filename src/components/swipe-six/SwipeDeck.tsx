@@ -28,7 +28,6 @@ export function SwipeDeck({ items, votedCount, hideCommunity = false, onVote }: 
   const stack = items.slice(votedCount);
   const current = stack[0];
   const cardsBehind = stack.slice(1, STACK_POSES.length);
-  // Handles keyed by statement so a tap always reaches the card on top, never one that just flew off.
   const cardHandles = useRef(new Map<string, FlyerSwipeCardHandle>());
   const swipe = (vote: SwipeVote) => current && cardHandles.current.get(current.statement.id)?.swipe(vote);
 
@@ -99,7 +98,6 @@ interface VoteButtonProps {
 }
 
 function VoteButton({ label, vote, icon, onClick }: VoteButtonProps) {
-  // The label carries the vote color so the outline variant's hover text color can't override it.
   return (
     <Button variant="outline" size="lg" className={`border-2 ${vote}-border`} onClick={onClick}>
       <span className={`flex items-center gap-1.5 font-bold ${vote}-text`}>
@@ -110,13 +108,10 @@ function VoteButton({ label, vote, icon, onClick }: VoteButtonProps) {
   );
 }
 
-// Which topic (0, 1, 2...) the card at this position belongs to, counting each change of post.
 function topicIndexAt(items: SwipeSixItem[], position: number): number {
   return items.slice(1, position + 1).filter((item, i) => item.room.id !== items[i].room.id).length;
 }
 
-// A simulated horizontal scroller: when the topic changes, the old pill flies off left
-// and the new one slides in from the right. The first topic slides in on open.
 interface TopicSliderProps {
   item: SwipeSixItem;
   topicIndex: number;
