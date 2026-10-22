@@ -7,6 +7,7 @@ import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { maybeEmailResponseVotesNotif } from "./email-notifs-utils.ts";
 import { recomputeClustersIfNeeded } from "./cluster-freshness.ts";
 import { runInBackground } from "./background-utils.ts";
+import { checkEventVoting } from "./event-utils.ts";
 
 export interface FlyerSource {
   flyerId: string;
@@ -93,6 +94,7 @@ type ProcessVoteFailure = {
   success: false;
   error: string;
   message?: string;
+  status?: 423;
 };
 
 type ProcessVoteSuccess = {
@@ -169,6 +171,11 @@ export const processVote = async (
   if (!room) {
     console.error(`Debate room not found with ID: ${statement.roomId}`);
     return { success: false, error: "Debate room not found" };
+  }
+
+  const canVote = await checkEventVoting(room);
+  if (!canVote.allowed) {
+    return { success: false, error: canVote.error, status: 423 };
   }
 
   if (user.isAnonymous && !room.allowAnonymous) {

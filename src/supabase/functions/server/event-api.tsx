@@ -7,7 +7,7 @@ import { getAllRecords, selectAll, selectAllWithoutLimit } from "./db-utils.ts";
 import { filterFeedEvents } from "./feed-utils.ts";
 import { getUserMemberships } from "./membership-utils.tsx";
 import { insertEvent } from "./model-utils.ts";
-import { getEventOrThrow, parseEventId } from "./event-utils.ts";
+import { applyEventAction, getEventOrThrow, parseEventId } from "./event-utils.ts";
 import {
   getAllDebates,
   getCommunities,
@@ -21,9 +21,10 @@ import {
 import { RouteError } from "./route-error.ts";
 import {
   canModerateEvent,
-  defaultLiveEventState,
   isCommunityModerator,
-  reorderLiveEvent,
+  EVENT_ACTIONS,
+  type EventActionName,
+  eventStateOrDefault,
   toLiveEventView,
 } from "./live-event-utils.ts";
 import type { Event, CommunityMembership } from "./types.tsx";
@@ -200,7 +201,7 @@ app.get(
     {},
     async (_params, c: Context) => {
       const eventId = parseEventId(c.req.param("eventId"));
-      const state = (await getLiveEventState(eventId)) ?? defaultLiveEventState(Date.now());
+      const state = eventStateOrDefault(await getLiveEventState(eventId), Date.now());
       return { live: toLiveEventView(state) };
     },
     "Failed to fetch live event",
@@ -214,17 +215,26 @@ app.post(
       action: {
         type: "string",
         required: true,
-        validate: (val) => val === "reorder",
+        validate: (val) => (EVENT_ACTIONS as readonly string[]).includes(val),
         errorMessage: "Unknown live event action",
       },
       roomOrder: {
         type: "array",
-        required: true,
+        required: false,
         validate: (val: unknown[]) => val.every((id) => typeof id === "string"),
         errorMessage: "roomOrder must be a list of post IDs",
       },
+      fromIndex: {
+        type: "number",
+        required: false,
+        validate: (val: number) => Number.isInteger(val) && val >= 0,
+        errorMessage: "fromIndex must be a post position",
+      },
     },
-    async ({ roomOrder }: { action: "reorder"; roomOrder: string[] }, c: Context) => {
+    async (
+      { action, roomOrder, fromIndex }: { action: EventActionName; roomOrder?: string[]; fromIndex?: number },
+      c: Context,
+    ) => {
       const eventId = parseEventId(c.req.param("eventId"));
       const userId = c.get("userId");
 
@@ -234,10 +244,9 @@ app.post(
         throw new RouteError(`Only moderators of ${event.communityName} can run this event`, 403);
       }
 
-      const [stored, allRooms] = await Promise.all([getLiveEventState(eventId), getAllDebates()]);
       const now = Date.now();
-      const eventRoomIds = allRooms.filter((room) => room.eventId === eventId).map((room) => room.id);
-      const next = reorderLiveEvent(stored ?? defaultLiveEventState(now), roomOrder, eventRoomIds, now);
+      const state = eventStateOrDefault(await getLiveEventState(eventId), now);
+      const next = await applyEventAction(eventId, state, action, { roomOrder, fromIndex }, now);
 
       await saveLiveEventState(eventId, next);
       return { live: toLiveEventView(next) };

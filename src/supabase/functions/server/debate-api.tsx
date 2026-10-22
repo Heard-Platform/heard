@@ -47,6 +47,7 @@ import type {
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { calculateVoteStats, orderStatements, processVote } from "./voting-utils.ts";
 import { filterFeedRooms, sortRoomsForFeed } from "./feed-utils.ts";
+import { checkEventPosting } from "./event-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
 import { validateDeveloper } from "./internal-utils.ts";
@@ -646,6 +647,11 @@ app.post(
         return c.json({ error: "User session not found" }, 404);
       }
 
+      const canPost = await checkEventPosting(room, user);
+      if (!canPost.allowed) {
+        return c.json({ error: canPost.error }, 423);
+      }
+
       if (user.isAnonymous && !room.allowAnonymous) {
         return c.json(
           { 
@@ -848,7 +854,7 @@ app.post(
       } else {
         return c.json(
           { error: result.error, message: result.message },
-          400,
+          result.status ?? 400,
         );
       }
     } catch (error) {

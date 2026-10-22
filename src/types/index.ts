@@ -189,12 +189,21 @@ export type RoomStatus = "needs_input" | "caught_up" | "completed";
 
 export type LiveEventStatus = "setup" | "live" | "ended";
 
+export interface EventTotals {
+  people: number;
+  votes: number;
+  statementsFromRoom: number;
+  stayedToEndPercent: number;
+}
+
 export interface LiveEventState {
   roomOrder: string[];
   currentIndex: number | null;
   status: LiveEventStatus;
   votingPaused: boolean;
   reloadNonce: number;
+  totals: EventTotals | null;
+  startedAt: number | null;
   updatedAt: number;
 }
 
@@ -203,6 +212,8 @@ export interface LiveEventView extends LiveEventState {
   peopleHere: number;
   finishedCurrentPost: number;
 }
+
+export type ModeratorAction = "start" | "next" | "back" | "pause" | "resume" | "end";
 
 export type LiveScreen = "lobby" | "swiping" | "waiting" | "end";
 

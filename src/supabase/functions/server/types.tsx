@@ -236,12 +236,21 @@ export type NewEvent = Pick<
 
 export type LiveEventStatus = "setup" | "live" | "ended";
 
+export type EventTotals = {
+  people: number;
+  votes: number;
+  statementsFromRoom: number;
+  stayedToEndPercent: number;
+};
+
 export type LiveEventState = {
   roomOrder: string[];
   currentIndex: number | null;
   status: LiveEventStatus;
   votingPaused: boolean;
   reloadNonce: number;
+  totals: EventTotals | null;
+  startedAt: number | null;
   updatedAt: number;
 };
 

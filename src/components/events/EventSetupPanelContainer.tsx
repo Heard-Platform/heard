@@ -45,7 +45,7 @@ export function EventSetupPanelContainer({ event }: { event: Event }) {
     }
   };
 
-  const handleOpenConsole = () => {
+  const handleOpenControls = () => {
     window.location.assign(createLiveEventLink(event.id, "moderate"));
   };
 
@@ -57,7 +57,7 @@ export function EventSetupPanelContainer({ event }: { event: Event }) {
       joinUrl={createLiveEventLink(event.id, "live")}
       displayUrl={createLiveEventLink(event.id, "display")}
       onReorder={handleReorder}
-      onOpenConsole={handleOpenConsole}
+      onOpenControls={handleOpenControls}
     />
   );
 }
