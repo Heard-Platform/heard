@@ -39,7 +39,7 @@ export function ControlsFrame({
         )}
       </div>
       <h2 className="text-2xl font-bold text-foreground leading-tight">{title}</h2>
-      <div className="flex flex-col gap-4 min-h-0 flex-1 overflow-y-auto">{children}</div>
+      <div className="flex flex-col gap-4 min-h-0 flex-1 overflow-y-auto -mx-1 px-1 -my-1 py-1">{children}</div>
       {controls && <div className="shrink-0">{controls}</div>}
     </div>
   );
