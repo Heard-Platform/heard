@@ -5,7 +5,7 @@ import type { LiveEventStatus, EventSetupRoom } from "../types";
 import { StoryContainer } from "./StoryContainer";
 
 const JOIN_URL = "https://heard.vote/prgn";
-const DISPLAY_URL = "https://heard.vote/event/prgn-fall-meetup/display";
+const DISPLAY_URL = "https://heard.vote/event/4/display?key=3f9c2a7be1d84f06a5c0e29d7b41c8aa";
 
 const PRGN_ROOMS: EventSetupRoom[] = [
   { id: "housing", topic: "Housing near transit", emoji: "🏘️" },
@@ -38,7 +38,7 @@ function EventSetupDemo({ rooms, status, currentIndex }: EventSetupDemoProps) {
         joinUrl={JOIN_URL}
         displayUrl={DISPLAY_URL}
         onReorder={handleReorder}
-        onOpenControls={() => console.log("[Story] open moderator controls")}
+        onOpenDisplay={() => console.log("[Story] open display")}
       />
     </div>
   );
@@ -48,7 +48,7 @@ export function EventSetupPanelStory() {
   return (
     <StoryContainer
       title="Event Setup Panel"
-      description="Moderator-only panel on the event page. Order the posts with the arrows, copy the join and display links, open the moderator controls. Ordering locks once the session starts."
+      description="Moderator-only panel on the event page. Order the posts with the arrows, copy the join and display links, open the display (which runs the session). Ordering locks once the session starts."
       variants={[
         {
           id: "ordered",

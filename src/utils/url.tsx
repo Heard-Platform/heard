@@ -1,5 +1,6 @@
 // URL parsing utilities for shareable post links and sub-heards
 import type { SubHeard, VoteType } from '../types';
+import { EVENT_SHORT_ROUTES } from './constants/events';
 
 /**
  * Generic URL path parser utility
@@ -51,6 +52,7 @@ export const parseLinkSourceFromUrl = (): string | null => {
 
 const QUERY_PARAMS = {
   emailLoginToken: 'loginToken',
+  displayKey: 'key',
 } as const
 
 type QueryParamName = keyof typeof QUERY_PARAMS
@@ -108,9 +110,9 @@ export const parseFlyerDataFromUrl = (): { flyerId: string; statementId: string;
   return null
 };
 
-export const parseModeratedEventIdFromUrl = (): string | null => {
+export const parseDisplayedEventIdFromUrl = (): string | null => {
   if (typeof window === 'undefined') return null
-  const match = window.location.pathname.match(/^\/event\/([^/]+)\/moderate\/?$/)
+  const match = window.location.pathname.match(/^\/event\/([^/]+)\/display\/?$/)
   return match ? match[1] : null
 }
 
@@ -134,11 +136,26 @@ export const updateUrlForEvent = (eventId: string | null) => {
   window.history.pushState(null, '', newPath)
 }
 
-export type LiveEventPage = "live" | "display" | "moderate";
+export type LiveEventPage = "live";
 
 export const createLiveEventLink = (eventId: string, page: LiveEventPage): string => {
   if (typeof window === 'undefined') return ''
   return `${window.location.origin}/event/${eventId}/${page}`
+}
+
+export const createEventDisplayLink = (eventId: string, displayKey: string): string =>
+  createParamUrl(`/event/${eventId}/display`, { displayKey })
+
+export interface EventJoinLink {
+  url: string;
+  label: string;
+}
+
+export const createEventJoinLink = (eventId: string): EventJoinLink => {
+  if (typeof window === 'undefined') return { url: '', label: '' }
+  const shortRoute = [...EVENT_SHORT_ROUTES].find(([, shortRouteEventId]) => shortRouteEventId === eventId)?.[0]
+  const url = shortRoute ? `${window.location.origin}/${shortRoute}` : createLiveEventLink(eventId, 'live')
+  return { url, label: url.replace(/^https?:\/\//, '') }
 }
 
 export const createShareableLink = (roomId: string): string => {

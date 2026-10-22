@@ -86,6 +86,14 @@ export const canModerateEvent = (
   community: Pick<Community, "adminId" | "modIds"> | null,
 ): boolean => event.creatorId === userId || isCommunityModerator(userId, community);
 
+export const createDisplayKey = (): string => crypto.randomUUID().replaceAll("-", "");
+
+export const canDriveEvent = (
+  isModerator: boolean,
+  providedDisplayKey: string | undefined,
+  storedDisplayKey: string | null,
+): boolean => isModerator || (!!providedDisplayKey && providedDisplayKey === storedDisplayKey);
+
 export const eventPostClosedReason = (state: LiveEventState, roomId: string): EventPostClosedReason | null => {
   if (state.status === "ended") return null;
   if (state.status === "setup") return "not-started";

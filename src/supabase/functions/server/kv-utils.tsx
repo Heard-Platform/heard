@@ -469,6 +469,15 @@ export const saveLiveEventState = async (eventId: number, state: LiveEventState)
   await kv.set(liveEventKeyFn(eventId), JSON.stringify(state));
 };
 
+const eventDisplayKeyKeyFn = (eventId: number) => `event_display_key:${eventId}`;
+
+export const getEventDisplayKey = async (eventId: number) =>
+  getParsedKvData<string>(eventDisplayKeyKeyFn(eventId));
+
+export const saveEventDisplayKey = async (eventId: number, displayKey: string) => {
+  await kv.set(eventDisplayKeyKeyFn(eventId), JSON.stringify(displayKey));
+};
+
 const eventPresencePrefix = (eventId: number) => `event_live_presence:${eventId}:`;
 
 export const getEventPresences = async (eventId: number) =>

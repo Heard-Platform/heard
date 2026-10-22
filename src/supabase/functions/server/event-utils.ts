@@ -2,14 +2,17 @@ import { getEventById } from "./model-utils.ts";
 import {
   getAllDebates,
   getCommunity,
+  getEventDisplayKey,
   getEventPresences,
   getLiveEventState,
   getStatementsForRoom,
   getVotesForStatement,
+  saveEventDisplayKey,
 } from "./kv-utils.tsx";
 import { RouteError } from "./route-error.ts";
 import {
   canModerateEvent,
+  createDisplayKey,
   endEvent,
   EVENT_POST_CLOSED_ERRORS,
   eventPostClosedReason,
@@ -37,6 +40,14 @@ export const getEventOrThrow = async (eventId: number): Promise<Event> => {
   const event = await getEventById(eventId);
   if (!event) throw new RouteError("Event not found", 404);
   return event;
+};
+
+export const getOrCreateEventDisplayKey = async (eventId: number): Promise<string> => {
+  const storedDisplayKey = await getEventDisplayKey(eventId);
+  if (storedDisplayKey) return storedDisplayKey;
+  const displayKey = createDisplayKey();
+  await saveEventDisplayKey(eventId, displayKey);
+  return displayKey;
 };
 
 export const getEventRooms = async (eventId: number): Promise<DebateRoom[]> =>

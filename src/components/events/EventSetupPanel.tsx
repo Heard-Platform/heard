@@ -22,7 +22,7 @@ export interface EventSetupPanelProps {
   joinUrl: string;
   displayUrl: string;
   onReorder: (roomOrder: string[]) => void;
-  onOpenControls: () => void;
+  onOpenDisplay: () => void;
 }
 
 export function EventSetupPanel({
@@ -32,7 +32,7 @@ export function EventSetupPanel({
   joinUrl,
   displayUrl,
   onReorder,
-  onOpenControls,
+  onOpenDisplay,
 }: EventSetupPanelProps) {
   const hasRooms = rooms.length > 0;
 
@@ -65,9 +65,9 @@ export function EventSetupPanel({
         <Button
           className="w-full"
           disabled={!hasRooms}
-          onClick={onOpenControls}
+          onClick={onOpenDisplay}
         >
-          Open moderator controls
+          Open display
         </Button>
       </div>
     </Card>

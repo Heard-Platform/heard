@@ -12,8 +12,8 @@ import { FundingPage } from "./screens/funding/FundingPage";
 import { AiUsagePage } from "./screens/AiUsagePage";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
-import { ModeratorControlsContainer } from "./components/events/moderator-controls/ModeratorControlsContainer";
 import { EventAttendeeContainer } from "./components/events/attendee/EventAttendeeContainer";
+import { EventDisplayContainer } from "./components/events/display/EventDisplayContainer";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { RetentionDashboard } from "./components/RetentionDashboard";
@@ -40,7 +40,7 @@ import {
   parseFlyerDataFromUrl,
   updateUrlForRoom,
   parseEventIdFromUrl,
-  parseModeratedEventIdFromUrl,
+  parseDisplayedEventIdFromUrl,
   parseAttendedEventIdFromUrl,
   updateUrlForEvent,
   parseStatementIdFromUrl,
@@ -61,6 +61,7 @@ import type { FlyerVote } from "./components/flyer/FlyerVoteIntroCard";
 import { FeatureFlags, isFeatureEnabled } from "./utils/constants/feature-flags";
 import { WAYMO_DC_ROOM_ID, WAYMO_DC_STATEMENT_ID } from "./utils/constants/flyers";
 import { EVENT_SHORT_ROUTES } from "./utils/constants/events";
+import { takeDisplayKeyFromUrl } from "./utils/display-key";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
 
 const LAST_VIEWED_SUBHEARD_KEY = "lastViewedSubHeard";
@@ -140,8 +141,11 @@ function AppContent() {
   } | null>(null);
   const [newFlyerScan, setNewFlyerScan] = useState<FlyerScan | null>(null);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
-  const [moderatedEventId, setModeratedEventId] = useState<string | null>(null);
   const [attendedEventId, setAttendedEventId] = useState<string | null>(null);
+  const [displayedEvent, setDisplayedEvent] = useState<{
+    eventId: string;
+    displayKey: string | null;
+  } | null>(null);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
   const [voteSwing, setVoteSwing] = useState<{
@@ -427,7 +431,7 @@ function AppContent() {
       const analysisRoomIdFromUrl = parseAnalysisRoomIdFromUrl();
       const flyerDataFromUrl = parseFlyerDataFromUrl();
       const eventIdFromUrl = parseEventIdFromUrl();
-      const moderatedEventIdFromUrl = parseModeratedEventIdFromUrl();
+      const displayedEventIdFromUrl = parseDisplayedEventIdFromUrl();
       const attendedEventIdFromUrl =
         parseAttendedEventIdFromUrl() ??
         EVENT_SHORT_ROUTES.get(route) ??
@@ -550,8 +554,8 @@ function AppContent() {
         startRoomJoin(IDEAS_ROOM_ID);
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
-      } else if (moderatedEventIdFromUrl) {
-        setModeratedEventId(moderatedEventIdFromUrl);
+      } else if (displayedEventIdFromUrl) {
+        setDisplayedEvent({ eventId: displayedEventIdFromUrl, displayKey: takeDisplayKeyFromUrl(displayedEventIdFromUrl) });
       } else if (attendedEventIdFromUrl) {
         setAttendedEventId(attendedEventIdFromUrl);
       } else if (eventIdFromUrl) {
@@ -916,11 +920,11 @@ function AppContent() {
     );
   }
 
-  if (moderatedEventId) {
+  if (displayedEvent) {
     return (
       <>
-        <div className="h-dvh heard-feed-bg">
-          <ModeratorControlsContainer eventId={moderatedEventId} />
+        <div className="h-dvh">
+          <EventDisplayContainer eventId={displayedEvent.eventId} displayKey={displayedEvent.displayKey} />
         </div>
         <Toaster />
       </>

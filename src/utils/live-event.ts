@@ -1,5 +1,5 @@
 import _ from "lodash";
-import type { LiveEventStatus, LiveEventView, LiveHeartbeat, LiveScreen, Statement } from "../types";
+import type { LiveEventView, LiveHeartbeat, LiveScreen, Statement } from "../types";
 
 export function orderByRoomOrder<T extends { id: string }>(
   rooms: T[],
@@ -22,18 +22,6 @@ export function moveInOrder(
   const next = [...order];
   [next[index], next[target]] = [next[target], next[index]];
   return next;
-}
-
-export type ControlsPhase = "not-started" | "live" | "last-post" | "ended";
-
-export function getControlsPhase(
-  status: LiveEventStatus,
-  currentIndex: number | null,
-  postCount: number,
-): ControlsPhase {
-  if (status === "setup" || currentIndex === null) return "not-started";
-  if (status === "ended") return "ended";
-  return currentIndex >= postCount - 1 ? "last-post" : "live";
 }
 
 export const EVENT_POLL_MAX_INTERVAL_MS = 30_000;

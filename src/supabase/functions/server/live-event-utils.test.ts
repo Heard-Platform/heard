@@ -1,6 +1,8 @@
 import { assertEquals, assertThrows } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
+  canDriveEvent,
   canModerateEvent,
+  createDisplayKey,
   defaultLiveEventState,
   endEvent,
   isCommunityModerator,
@@ -266,4 +268,28 @@ Deno.test("countEventHeadcount - nobody has finished before the session starts",
 Deno.test("isLiveScreen - only the four phone screens", () => {
   assertEquals(["lobby", "swiping", "waiting", "end"].every(isLiveScreen), true);
   assertEquals(isLiveScreen("dancing"), false);
+});
+
+Deno.test("canDriveEvent lets moderators drive without a display key", () => {
+  assertEquals(canDriveEvent(true, undefined, null), true);
+});
+
+Deno.test("canDriveEvent lets anyone with the matching display key drive", () => {
+  assertEquals(canDriveEvent(false, "secret", "secret"), true);
+});
+
+Deno.test("canDriveEvent refuses a wrong or missing display key", () => {
+  assertEquals(canDriveEvent(false, "guess", "secret"), false);
+  assertEquals(canDriveEvent(false, undefined, "secret"), false);
+});
+
+Deno.test("canDriveEvent refuses everyone but moderators before a display key exists", () => {
+  assertEquals(canDriveEvent(false, "", null), false);
+  assertEquals(canDriveEvent(false, undefined, null), false);
+});
+
+Deno.test("createDisplayKey makes a 32-character key that differs each time", () => {
+  const firstDisplayKey = createDisplayKey();
+  assertEquals(firstDisplayKey.length, 32);
+  assertEquals(firstDisplayKey === createDisplayKey(), false);
 });

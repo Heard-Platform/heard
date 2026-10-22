@@ -154,6 +154,7 @@ export interface Event {
   totalMembers: number;
   rooms: EventRoomStatus[];
   canModerate: boolean;
+  displayKey: string | null;
   creatorId: string;
   createdAt: number;
 }
