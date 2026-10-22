@@ -9,6 +9,7 @@ const STATEMENT_MAX_LENGTH = 500;
 type EventLobbyProps =
   | { moment: "starting"; peopleHere: number }
   | { moment: "paused" }
+  | { moment: "ended" }
   | {
       moment: "waiting";
       peopleHere: number;
@@ -33,6 +34,11 @@ export function EventLobby(props: EventLobbyProps) {
           <AttendeeMessage title="Voting paused" body="Waiting on the moderator." />
         </div>
       )}
+      {props.moment === "ended" && (
+        <div className="my-auto">
+          <AttendeeMessage title="Thanks for weighing in." body="That's the end of the event." />
+        </div>
+      )}
       {props.moment === "waiting" && (
         <WaitingForOthers
           peopleHere={props.peopleHere}
@@ -53,7 +59,6 @@ interface WaitingForOthersProps {
 function WaitingForOthers({ peopleHere, finishedCurrentPost, onAddStatement }: WaitingForOthersProps) {
   const [text, setText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [addedCount, setAddedCount] = useState(0);
   const trimmed = text.trim();
 
   const handleSubmit = async (event: FormEvent) => {
@@ -62,9 +67,7 @@ function WaitingForOthers({ peopleHere, finishedCurrentPost, onAddStatement }: W
     setIsSubmitting(true);
     const isAdded = await onAddStatement(trimmed);
     setIsSubmitting(false);
-    if (!isAdded) return;
-    setText("");
-    setAddedCount((count) => count + 1);
+    if (isAdded) setText("");
   };
 
   return (
@@ -73,11 +76,7 @@ function WaitingForOthers({ peopleHere, finishedCurrentPost, onAddStatement }: W
         <AttendeeMessage
           title="Waiting for the others"
           chip={`${finishedCurrentPost} of ${peopleHere} done`}
-          body={
-            addedCount > 0
-              ? "Added. The room votes on it. Got another?"
-              : "While you wait: what did we miss? The room votes on it."
-          }
+          body="While you wait: what did we miss? The room votes on it."
         />
       </div>
 

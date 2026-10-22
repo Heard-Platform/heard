@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 import type { DebateRoom, Statement } from "../types";
-import type { EmailOtpFlow, EmailOtpStep } from "../hooks/useEmailOtpFlow";
 import { EventLobby } from "../components/events/attendee/EventLobby";
 import { EventSwipeScreen } from "../components/events/attendee/EventSwipeScreen";
-import { EventEndScreen } from "../components/events/attendee/EventEndScreen";
 import { Button } from "../components/ui/button";
 import { StoryContainer } from "./StoryContainer";
 import { PhoneFrame } from "./PhoneFrame";
@@ -72,83 +70,11 @@ const addStatementInStory = (text: string) =>
     setTimeout(() => resolve(true), STORY_DELAY_MS);
   });
 
-function useStoryEmailFlow(
-  initialStep: EmailOtpStep,
-  initialEmail: string,
-  onComplete: (email: string) => void,
-): EmailOtpFlow {
-  const [step, setStep] = useState<EmailOtpStep>(initialStep);
-  const [email, setEmail] = useState(initialEmail);
-  const [otp, setOtp] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const afterDelay = (then: () => void) => {
-    setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      then();
-    }, STORY_DELAY_MS);
-  };
-
-  return {
-    step,
-    email,
-    otp,
-    error,
-    submitting,
-    setEmail: (value: string) => {
-      setEmail(value);
-      setError(null);
-    },
-    setOtp: (value: string) => {
-      setOtp(value.toUpperCase());
-      setError(null);
-    },
-    submitEmail: async () => {
-      if (!email.includes("@")) {
-        setError("Please enter a valid email address.");
-        return;
-      }
-      afterDelay(() => (email.startsWith("taken") ? setStep("otp") : onComplete(email)));
-    },
-    submitOtp: async () => {
-      if (otp.length !== 6) {
-        setError("Enter the 6-character code from your email.");
-        return;
-      }
-      afterDelay(() => onComplete(email));
-    },
-    goBackToEmail: () => {
-      setStep("email");
-      setOtp("");
-      setError(null);
-    },
-  };
-}
-
-interface EndDemoProps {
-  initialStep: EmailOtpStep;
-  initialEmail: string;
-  initialSentTo: string | null;
-}
-
-function EndDemo({ initialStep, initialEmail, initialSentTo }: EndDemoProps) {
-  const [sentTo, setSentTo] = useState(initialSentTo);
-  const emailFlow = useStoryEmailFlow(initialStep, initialEmail, setSentTo);
-
-  return (
-    <PhoneFrame>
-      <EventEndScreen emailFlow={emailFlow} sentTo={sentTo} />
-    </PhoneFrame>
-  );
-}
-
 export function EventAttendeeStory() {
   return (
     <StoryContainer
       title="Event Attendee"
-      description="What a phone shows during an event, in the Swipe Six layout. The pill shows the post's question without its community. The lobby has three wordings (starting soon, paused, waiting for the others). Swiping counts this post's statements only; finishing them lands on waiting for the others, where you can add a statement. On the end screen, an email starting with 'taken' goes to the code step; any 6 characters log in."
+      description="What a phone shows during an event, in the Swipe Six layout. The pill shows the post's question without its community. The lobby has four wordings (starting soon, paused, waiting for the others, ended). Swiping counts this post's statements only; finishing them lands on waiting for the others, where you can add a statement."
       variants={[
         {
           id: "starting",
@@ -181,19 +107,13 @@ export function EventAttendeeStory() {
           ),
         },
         {
-          id: "end-email",
-          label: "End, email",
-          children: <EndDemo key="end-email" initialStep="email" initialEmail="" initialSentTo={null} />,
-        },
-        {
-          id: "end-code",
-          label: "End, code",
-          children: <EndDemo key="end-code" initialStep="otp" initialEmail="taken@agency.com" initialSentTo={null} />,
-        },
-        {
-          id: "end-sent",
-          label: "End, sent",
-          children: <EndDemo key="end-sent" initialStep="email" initialEmail="" initialSentTo="gabor@agency.com" />,
+          id: "ended",
+          label: "Ended",
+          children: (
+            <PhoneFrame>
+              <EventLobby moment="ended" />
+            </PhoneFrame>
+          ),
         },
       ]}
     />

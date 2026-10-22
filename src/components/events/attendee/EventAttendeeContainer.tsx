@@ -112,7 +112,7 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
         />
       );
     case "end":
-      return <AttendeeNotice title="Thanks for weighing in." body="That's the end of the event." />;
+      return <EventLobby moment="ended" />;
   }
 }
 
