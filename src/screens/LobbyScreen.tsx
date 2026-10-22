@@ -217,7 +217,11 @@ export function LobbyScreen({
 
   // Fetch events for the current community (feature-flagged)
   useEffect(() => {
-    if (!isFeatureEnabled(FeatureFlags.EVENTS)) return;
+    if (
+      !isFeatureEnabled(FeatureFlags.EVENTS) &&
+      !isFeatureEnabled(FeatureFlags.LIVE_EVENTS)
+    )
+      return;
     const fetchEvents = async () => {
       const response = await safelyMakeApiCall(() =>
         api.getEvents(currentSubHeard),
@@ -466,6 +470,7 @@ export function LobbyScreen({
                     handleShowAccountSetupModal
                   }
                   onOpenExplorer={() => setExplorerOpen(true)}
+                  onOpenEvent={onOpenEvent}
                 />
               }
               onWordmarkClick={handleWordmarkClick}

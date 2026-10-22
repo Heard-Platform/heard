@@ -153,6 +153,7 @@ export interface Event {
   communityName: string;
   totalMembers: number;
   rooms: EventRoomStatus[];
+  canModerate: boolean;
   creatorId: string;
   createdAt: number;
 }

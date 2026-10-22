@@ -1,14 +1,16 @@
-import { countRecords, createClientFromEnv, deleteRecord, insert, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
+import { countRecords, createClientFromEnv, deleteRecord, insert, insertAndReturn, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
 import { toTimestamp } from "./time-utils.ts";
 import {
   AppFeedbackVote,
   AvatarAnimal,
   DemographicAnswer,
   DemographicQuestion,
+  Event,
   FlyerPlacement,
   InternalVar,
   InternalVarKey,
   NewDemographicAnswer,
+  NewEvent,
   NewFlyerPlacement,
   NewUserEvent,
   NewUserReport,
@@ -50,6 +52,14 @@ export const insertUserReport = async (report: NewUserReport) => {
 
 export const getUserReports = async () => {
   return selectAll<UserReport>("user_reports");
+};
+
+export const insertEvent = async (event: NewEvent): Promise<Event> =>
+  insertAndReturn<Event>("events", event);
+
+export const getEventById = async (eventId: number): Promise<Event | null> => {
+  const [event] = await selectAllWithoutLimit<Event>("events", { id: eventId });
+  return event ?? null;
 };
 
 export const insertDemographicQuestion = async (question: DemographicQuestion) => {
@@ -179,13 +189,7 @@ export const getOrCreateStatementTag = async (
     .maybeSingle();
   if (existing) return existing as StatementTag;
 
-  const { data: created, error } = await supabase
-    .from("statement_tags")
-    .insert({ roomId, name, createdBy: userId })
-    .select("*")
-    .single();
-  if (error) throw new Error(error.message);
-  return created as StatementTag;
+  return insertAndReturn<StatementTag>("statement_tags", { roomId, name, createdBy: userId });
 };
 
 export const addStatementTagLink = async (

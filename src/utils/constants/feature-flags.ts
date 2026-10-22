@@ -10,6 +10,7 @@ export enum FeatureFlags {
   CIVIC_FLYER_RESULTS = "CIVIC_FLYER_RESULTS",
   STREAMLINED_CREATION = "STREAMLINED_CREATION",
   FEEDBACK_CARDS = "FEEDBACK_CARDS",
+  LIVE_EVENTS = "LIVE_EVENTS",
 }
 
 export interface FeatureFlagsConfig {
@@ -20,6 +21,7 @@ export interface FeatureFlagsConfig {
   [FeatureFlags.CIVIC_FLYER_RESULTS]: boolean;
   [FeatureFlags.STREAMLINED_CREATION]: boolean;
   [FeatureFlags.FEEDBACK_CARDS]: boolean;
+  [FeatureFlags.LIVE_EVENTS]: boolean;
 }
 
 export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
@@ -31,6 +33,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     CIVIC_FLYER_RESULTS: true,
     STREAMLINED_CREATION: true,
     FEEDBACK_CARDS: true,
+    LIVE_EVENTS: false,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
@@ -40,6 +43,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     CIVIC_FLYER_RESULTS: true,
     STREAMLINED_CREATION: true,
     FEEDBACK_CARDS: true,
+    LIVE_EVENTS: true,
   }
 }
 

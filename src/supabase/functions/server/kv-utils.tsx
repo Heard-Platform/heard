@@ -21,6 +21,7 @@ import {
   CommunityMembership,
   UserActivityRecord,
   AskTheDataRecord,
+  LiveEventState,
 } from "./types.tsx";
 import { throwIfNotFound } from "./model-utils.ts";
 
@@ -457,6 +458,15 @@ export const getDebate = async (debateId: string) => {
 export const saveDebate = async (debate: DebateRoom) => {
   await kv.set(debateKeyFn(debate.id), JSON.stringify(debate));
 }
+
+export const liveEventKeyFn = (eventId: number) => `event_live:${eventId}`;
+
+export const getLiveEventState = async (eventId: number) =>
+  getParsedKvData<LiveEventState>(liveEventKeyFn(eventId));
+
+export const saveLiveEventState = async (eventId: number, state: LiveEventState) => {
+  await kv.set(liveEventKeyFn(eventId), JSON.stringify(state));
+};
 
 export const rantKeyFn = (rant: Rant) =>
   `rant:${rant.roomId}:${rant.id}`;

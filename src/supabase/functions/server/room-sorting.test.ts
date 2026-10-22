@@ -5,9 +5,10 @@ import {
   sortRoomsByActivity,
   sortRoomsForFeed,
   filterFeedRooms,
+  filterFeedEvents,
   scoreRoom,
 } from "./feed-utils.ts";
-import { Community, DebateRoom } from "./types.tsx";
+import type { Community, DebateRoom, Event } from "./types.tsx";
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -472,5 +473,47 @@ describe("filterFeedRooms", () => {
     );
 
     assertEquals(result, [rooms[0]]);
+  });
+});
+
+const makeEvent = (communityName: string): Event => ({
+  id: 1,
+  name: "Town hall",
+  subtitle: "",
+  communityName,
+  creatorId: "creator-1",
+  createdAt: Date.now(),
+});
+
+describe("filterFeedEvents", () => {
+  const communities = [
+    makeCommunity("politics"),
+    makeCommunity("private-club", { isPrivate: true, adminId: "admin-1" }),
+  ];
+  const publicEvent = makeEvent("politics");
+  const privateEvent = makeEvent("private-club");
+  const orphanEvent = makeEvent("deleted-community");
+  const events = [publicEvent, privateEvent, orphanEvent];
+
+  it("shows public community events and hides unlisted ones from non-members", () => {
+    assertEquals(filterFeedEvents(events, communities, new Set(), "user-1"), [publicEvent]);
+  });
+
+  it("shows unlisted community events to members", () => {
+    assertEquals(
+      filterFeedEvents(events, communities, new Set(["private-club"]), "user-1"),
+      [publicEvent, privateEvent],
+    );
+  });
+
+  it("shows unlisted community events to the admin", () => {
+    assertEquals(filterFeedEvents(events, communities, new Set(), "admin-1"), [publicEvent, privateEvent]);
+  });
+
+  it("shows only the selected community's events when one is selected", () => {
+    assertEquals(
+      filterFeedEvents(events, communities, new Set(), "user-1", "private-club"),
+      [privateEvent],
+    );
   });
 });

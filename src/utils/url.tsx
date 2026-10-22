@@ -122,6 +122,13 @@ export const updateUrlForEvent = (eventId: string | null) => {
   window.history.pushState(null, '', newPath)
 }
 
+export type LiveEventPage = "live" | "display" | "moderate";
+
+export const createLiveEventLink = (eventId: string, page: LiveEventPage): string => {
+  if (typeof window === 'undefined') return ''
+  return `${window.location.origin}/event/${eventId}/${page}`
+}
+
 export const createShareableLink = (roomId: string): string => {
   if (typeof window === 'undefined') return ''
 

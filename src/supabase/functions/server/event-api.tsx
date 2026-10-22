@@ -3,9 +3,30 @@ import { Context, Hono } from "npm:hono";
 import { defineRoute } from "./route-wrapper.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { normalizeCommunityName } from "./utils.tsx";
-import { getAllRecords, insert, selectAll } from "./db-utils.ts";
-import { getAllDebates, getCommunity, getStatementsForRoom, getUser, getVotesForUser } from "./kv-utils.tsx";
-import type { NewEvent, Event, CommunityMembership } from "./types.tsx";
+import { getAllRecords, selectAll, selectAllWithoutLimit } from "./db-utils.ts";
+import { filterFeedEvents } from "./feed-utils.ts";
+import { getUserMemberships } from "./membership-utils.tsx";
+import { insertEvent } from "./model-utils.ts";
+import { getEventOrThrow, parseEventId } from "./event-utils.ts";
+import {
+  getAllDebates,
+  getCommunities,
+  getCommunity,
+  getLiveEventState,
+  getStatementsForRoom,
+  getUser,
+  getVotesForUser,
+  saveLiveEventState,
+} from "./kv-utils.tsx";
+import { RouteError } from "./route-error.ts";
+import {
+  canModerateEvent,
+  defaultLiveEventState,
+  isCommunityModerator,
+  reorderLiveEvent,
+  toLiveEventView,
+} from "./live-event-utils.ts";
+import type { Event, CommunityMembership } from "./types.tsx";
 
 const app = new Hono();
 
@@ -37,27 +58,23 @@ app.post(
       const userId = c.get("userId");
 
       const user = await getUserSession(userId);
-      if (!user) throw new Error("User session not found");
-      if (user.isAnonymous) throw new Error("Anonymous users cannot create events");
+      if (!user) throw new RouteError("User session not found", 404);
+      if (user.isAnonymous) throw new RouteError("Anonymous users cannot create events", 403);
 
       const normalizedCommunityName = normalizeCommunityName(communityName);
 
       const community = await getCommunity(normalizedCommunityName);
-      if (!community) throw new Error("Community not found");
-      const isModerator = community.adminId === userId || !!community.modIds?.includes(userId);
-      if (community.hostOnlyPosting && !isModerator) {
-        throw new Error("Only moderators can create events in this community");
+      if (!community) throw new RouteError("Community not found", 404);
+      if (!isCommunityModerator(userId, community)) {
+        throw new RouteError("Only moderators can create events in this community", 403);
       }
 
-      const event: NewEvent = {
+      const event = await insertEvent({
         name: name.trim(),
         subtitle: subtitle?.trim() ?? "",
         communityName: normalizedCommunityName,
         creatorId: userId,
-      };
-
-      const result = await insert("events", event);
-      if (!result.success) throw new Error(result.error || "Failed to insert event");
+      });
 
       return { event };
     },
@@ -70,14 +87,18 @@ app.get(
   defineRoute(
     {},
     async (_params, c: Context) => {
+      const userId = c.get("userId");
       const community = c.req.query("community");
 
-      const events = await selectAll<Event>(
-        "events",
-        community ? { communityName: community } : undefined,
-      );
+      const [events, communities, memberships] = await Promise.all([
+        selectAllWithoutLimit<Event>("events", community ? { communityName: community } : undefined),
+        getCommunities(),
+        getUserMemberships(userId),
+      ]);
 
-      const summaries = events.map((event) => ({
+      const visibleEvents = filterFeedEvents(events, communities, memberships, userId, community);
+
+      const summaries = visibleEvents.map((event) => ({
         id: event.id,
         name: event.name,
         subtitle: event.subtitle,
@@ -103,10 +124,11 @@ app.get(
       const [eventRows] = await selectAll<Event>("events", { id: eventId });
       if (!eventRows) throw new Error("Event not found");
 
-      const [allRooms, userVotes, allMemberships] = await Promise.all([
+      const [allRooms, userVotes, allMemberships, community] = await Promise.all([
         getAllDebates(),
         getVotesForUser(userId),
         getAllRecords<CommunityMembership>("subheard_member:"),
+        getCommunity(eventRows.communityName),
       ]);
 
       const votedStatementIds = new Set(userVotes.map((v) => v.statementId));
@@ -164,10 +186,63 @@ app.get(
           communityName: eventRows.communityName,
           totalMembers,
           rooms: enrichedRooms,
+          canModerate: canModerateEvent(userId, eventRows, community),
         },
       };
     },
     "Failed to fetch event",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/event/:eventId/live",
+  defineRoute(
+    {},
+    async (_params, c: Context) => {
+      const eventId = parseEventId(c.req.param("eventId"));
+      const state = (await getLiveEventState(eventId)) ?? defaultLiveEventState(Date.now());
+      return { live: toLiveEventView(state) };
+    },
+    "Failed to fetch live event",
+  ),
+);
+
+app.post(
+  "/make-server-f1a393b4/event/:eventId/live",
+  defineRoute(
+    {
+      action: {
+        type: "string",
+        required: true,
+        validate: (val) => val === "reorder",
+        errorMessage: "Unknown live event action",
+      },
+      roomOrder: {
+        type: "array",
+        required: true,
+        validate: (val: unknown[]) => val.every((id) => typeof id === "string"),
+        errorMessage: "roomOrder must be a list of post IDs",
+      },
+    },
+    async ({ roomOrder }: { action: "reorder"; roomOrder: string[] }, c: Context) => {
+      const eventId = parseEventId(c.req.param("eventId"));
+      const userId = c.get("userId");
+
+      const event = await getEventOrThrow(eventId);
+      const community = await getCommunity(event.communityName);
+      if (!canModerateEvent(userId, event, community)) {
+        throw new RouteError(`Only moderators of ${event.communityName} can run this event`, 403);
+      }
+
+      const [stored, allRooms] = await Promise.all([getLiveEventState(eventId), getAllDebates()]);
+      const now = Date.now();
+      const eventRoomIds = allRooms.filter((room) => room.eventId === eventId).map((room) => room.id);
+      const next = reorderLiveEvent(stored ?? defaultLiveEventState(now), roomOrder, eventRoomIds, now);
+
+      await saveLiveEventState(eventId, next);
+      return { live: toLiveEventView(next) };
+    },
+    "Failed to update live event",
   ),
 );
 

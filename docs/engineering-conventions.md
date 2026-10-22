@@ -9,3 +9,7 @@ Services are named with a `service-` prefix, e.g. `service-flyer-results-email.t
 ## Code comments
 
 Do not comment code unless it is highly technical or mathematical.
+
+## Property order
+
+In type and interface definitions, order properties logically, by how prominently they are used. Timestamps such as `createdAt` and `updatedAt` always go last. When adding a field to an existing type, put it in its logical spot rather than appending it.

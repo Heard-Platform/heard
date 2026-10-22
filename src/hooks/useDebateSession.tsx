@@ -16,7 +16,7 @@ import type {
   AnalysisData,
   SubHeard,
   EnrichmentConfig,
-  Event,
+  EventSummary,
   NewEvent,
   GGWashImportResult,
 } from "../types";
@@ -55,7 +55,7 @@ interface DebateSessionContextType {
   updateAvatar: (avatarAnimal: AvatarAnimal) => Promise<void>;
   subscribeToUpdates: () => Promise<void>;
   createRoom: (newDebate: NewDebateRoom) => Promise<DebateRoom>;
-  createEvent: (newEvent: NewEvent) => Promise<Event>;
+  createEvent: (newEvent: NewEvent) => Promise<EventSummary>;
   submitStatement: (roomId: string, text: string) => Promise<any>;
   voteOnStatement: (
     statementId: string,
@@ -355,7 +355,7 @@ export function DebateSessionProvider(
 
   // Create event
   const createEvent = useCallback(
-    async (newEvent: NewEvent): Promise<Event> => {
+    async (newEvent: NewEvent): Promise<EventSummary> => {
       setError(null);
       const response = await safelyMakeApiCall(() =>
         api.createEvent(newEvent),
@@ -1276,17 +1276,13 @@ export function DebateSessionProvider(
         console.log("[Showcase] renameSubHeard called", subHeardName, newName);
         return { success: true, data: { newName } };
       },
-      createEvent: async (newEvent: NewEvent): Promise<Event> => {
+      createEvent: async (newEvent: NewEvent): Promise<EventSummary> => {
         console.log("[Showcase] createEvent called", newEvent);
         return {
           id: "showcase-event-123",
           name: newEvent.name,
           subtitle: newEvent.subtitle,
           communityName: newEvent.communityName,
-          totalMembers: 0,
-          rooms: [],
-          creatorId: "showcase-user",
-          createdAt: Date.now(),
         };
       },
       getEnrichmentConfig: async () => {

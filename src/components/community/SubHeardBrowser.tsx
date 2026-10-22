@@ -26,6 +26,7 @@ import { MessageSquare } from "lucide-react";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { CommunityAdminDialog } from "./CommunityAdminDialog";
 import { CreateCommunityDialog } from "./CreateCommunityDialog";
+import { CreateEventSheet } from "../CreateEventSheet";
 import { formatSubHeardDisplay } from "../../utils/subheard";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 
@@ -39,6 +40,7 @@ interface SubHeardBrowserProps {
   ) => Promise<boolean>;
   onShowAccountSetupModal: (featureText: string) => void;
   onOpenExplorer: () => void;
+  onOpenEvent: (eventId: string) => void;
 }
 
 export function SubHeardBrowser({
@@ -48,6 +50,7 @@ export function SubHeardBrowser({
   onUpdateSubHeard,
   onShowAccountSetupModal,
   onOpenExplorer,
+  onOpenEvent,
 }: SubHeardBrowserProps) {
   const { getSubHeards, leaveSubHeard, renameSubHeard } = useDebateSession();
   const [subHeards, setSubHeards] = useState<SubHeard[]>([]);
@@ -55,6 +58,7 @@ export function SubHeardBrowser({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [managingSubHeard, setManagingSubHeard] = useState<SubHeard | null>(null);
+  const [eventCommunity, setEventCommunity] = useState<string | null>(null);
 
   useEffect(() => {
     loadSubHeards();
@@ -87,6 +91,17 @@ export function SubHeardBrowser({
 
   const handleSheetOpenChange = (isOpen: boolean) => {
     setSheetOpen(isOpen);
+  };
+
+  const handleStartEvent = (communityName: string) => {
+    setManagingSubHeard(null);
+    setSheetOpen(false);
+    setEventCommunity(communityName);
+  };
+
+  const handleGoToEvent = (eventId: string) => {
+    setEventCommunity(null);
+    onOpenEvent(eventId);
   };
 
   const handleCommunityCreated = async (communityName: string) => {
@@ -309,7 +324,17 @@ export function SubHeardBrowser({
           onUpdateSubHeard={handleCommunityUpdate}
           onRenameSubHeard={handleRenameSubHeard}
           onRefresh={handleRefreshManagingSubHeard}
+          onStartEvent={() => handleStartEvent(managingSubHeard.name)}
           userId={user.id}
+        />
+      )}
+
+      {eventCommunity && (
+        <CreateEventSheet
+          open={true}
+          communityName={eventCommunity}
+          onOpenChange={(open) => !open && setEventCommunity(null)}
+          onGoToEvent={handleGoToEvent}
         />
       )}
     </>

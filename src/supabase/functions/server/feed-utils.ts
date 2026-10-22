@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { ONE_DAY_MS, ONE_MIN_MS } from "./time-utils.ts";
-import { Community, DebateRoom } from "./types.tsx";
+import type { Community, DebateRoom, Event } from "./types.tsx";
 
 const ACTIVITY_HALF_LIFE_MIN = 60 * 12;
 
@@ -49,29 +49,49 @@ export const sortRoomsByActivity = (
   ];
 };
 
+const filterByCommunityVisibility = <T>(
+  items: T[],
+  communityOf: (item: T) => string | undefined,
+  communities: Community[],
+  memberships: Set<string>,
+  userId: string,
+  selectedSubheard?: string,
+): T[] => {
+  const communityMap = new Map(communities.map((c) => [c.name, c]));
+  return items.filter((item) => {
+    const communityName = communityOf(item);
+    if (selectedSubheard) return communityName === selectedSubheard;
+    if (!communityName) return false;
+
+    const community = communityMap.get(communityName);
+    if (!community) return false;
+
+    const isAdmin = community.adminId === userId;
+    return (
+      !community.isPrivate ||
+      memberships.has(communityName) ||
+      isAdmin
+    );
+  });
+};
+
 export const filterFeedRooms = (
   rooms: DebateRoom[],
   communities: Community[],
   memberships: Set<string>,
   userId: string,
   selectedSubheard?: string,
-): DebateRoom[] => {
-  const communityMap = new Map(communities.map((c) => [c.name, c]));
-  return rooms.filter((room) => {
-    if (selectedSubheard) return room.subHeard === selectedSubheard;
-    if (!room.subHeard) return false;
+): DebateRoom[] =>
+  filterByCommunityVisibility(rooms, (room) => room.subHeard, communities, memberships, userId, selectedSubheard);
 
-    const community = communityMap.get(room.subHeard);
-    if (!community) return false;
-
-    const isAdmin = community.adminId === userId;
-    return (
-      !community.isPrivate ||
-      memberships.has(room.subHeard) ||
-      isAdmin
-    );
-  });
-};
+export const filterFeedEvents = (
+  events: Event[],
+  communities: Community[],
+  memberships: Set<string>,
+  userId: string,
+  selectedSubheard?: string,
+): Event[] =>
+  filterByCommunityVisibility(events, (event) => event.communityName, communities, memberships, userId, selectedSubheard);
 
 export const sortRoomsForFeed = (
   rooms: DebateRoom[],
