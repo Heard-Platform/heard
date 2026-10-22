@@ -15,7 +15,7 @@ export function EventCreatedStep({ eventName }: EventCreatedStepProps) {
           {eventName}
         </h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Your event is live. Now add your first conversation to get things started.
+          Add your first post on the event page to get things started.
         </p>
       </div>
     </div>

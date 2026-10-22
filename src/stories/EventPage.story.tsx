@@ -13,6 +13,7 @@ const BASE_EVENT: EventPageProps["event"] = {
   totalMembers: 12,
   communityName: "adams-morgan",
   rooms: [],
+  canModerate: false,
   creatorId: "1",
   createdAt: now - 30 * 24 * 60 * 60 * 1000,
 };

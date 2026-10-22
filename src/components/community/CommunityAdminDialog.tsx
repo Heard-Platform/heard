@@ -9,12 +9,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Share2, Check, Crown, UserPlus, Trash2, Pencil } from "lucide-react";
+import { Share2, Check, Crown, UserPlus, Trash2, Pencil, CalendarPlus } from "lucide-react";
 import type { SubHeard } from "../../types";
 import { createSubHeardLink, createModInviteLink } from "../../utils/url";
 import { share } from "../../utils/share";
 import { CommunitySettingsPanel } from "./CommunitySettingsPanel";
 import { useDebateSession } from "../../hooks/useDebateSession";
+import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -33,6 +34,7 @@ interface CommunityAdminDialogProps {
     newName: string,
   ) => Promise<boolean>;
   onRefresh: () => Promise<void>;
+  onStartEvent: () => void;
   onClose: () => void;
 }
 
@@ -43,6 +45,7 @@ export function CommunityAdminDialog({
   onUpdateSubHeard,
   onRenameSubHeard,
   onRefresh,
+  onStartEvent,
   onClose,
 }: CommunityAdminDialogProps) {
   const { createModInvite, clearSubHeardMods } = useDebateSession();
@@ -187,6 +190,20 @@ export function CommunityAdminDialog({
               </div>
             </div>
           </div>
+
+          {isFeatureEnabled(FeatureFlags.LIVE_EVENTS) && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Events</Label>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={onStartEvent}
+              >
+                <CalendarPlus className="w-4 h-4 mr-2" />
+                Start an Event
+              </Button>
+            </div>
+          )}
 
           <CommunitySettingsPanel
             community={community}

@@ -5,7 +5,6 @@ import { Toaster } from "../components/ui/sonner";
 import { CreateEventSheet } from "../components/CreateEventSheet";
 import { EventDetailsStep } from "../components/create-event/EventDetailsStep";
 import { EventCreatedStep } from "../components/create-event/EventCreatedStep";
-import { SelectCommunityStep } from "../components/create-room";
 import { StoryContainer } from "./StoryContainer";
 
 export function CreateEventSheetStory() {
@@ -13,8 +12,6 @@ export function CreateEventSheetStory() {
 
   const [detailsName, setDetailsName] = useState("Adams Morgan Book Club");
   const [detailsSubtitle, setDetailsSubtitle] = useState("April meetup");
-
-  const [communityValue, setCommunityValue] = useState("general");
 
   return (
     <>
@@ -35,8 +32,7 @@ export function CreateEventSheetStory() {
                 </Button>
                 <CreateEventSheet
                   open={isOpen}
-                  userId="story-user-123"
-                  defaultSubHeard="general"
+                  communityName="adams-morgan"
                   onOpenChange={setIsOpen}
                   onGoToEvent={(id) => console.log("go to event", id)}
                 />
@@ -80,24 +76,8 @@ export function CreateEventSheetStory() {
             ),
           },
           {
-            id: "select-community",
-            label: "Step 2 — Community",
-            children: (
-              <Card className="p-6 bg-white max-w-md">
-                <p className="text-sm text-slate-500 mb-4">
-                  Community picker shared with the conversation creation flow.
-                </p>
-                <SelectCommunityStep
-                  subHeard={communityValue}
-                  userId="story-user-123"
-                  onSubHeardChange={setCommunityValue}
-                />
-              </Card>
-            ),
-          },
-          {
             id: "done",
-            label: "Step 3 — Done",
+            label: "Step 2 — Done",
             children: (
               <Card className="p-6 bg-white max-w-md">
                 <p className="text-sm text-slate-500 mb-4">

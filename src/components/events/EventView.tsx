@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { ChevronLeft } from "lucide-react";
 import { Event, DebateRoom, NewDebateRoom, Statement, UserSession, VoteType } from "../../types";
 import { EventPage } from "./EventPage";
+import { EventSetupPanelContainer } from "./EventSetupPanelContainer";
 import { EventRoomView } from "./EventRoomView";
 import { CreateRoomSheet } from "../CreateRoomSheet";
 import { CreateRoomSheetNew } from "../CreateRoomSheetNew";
@@ -170,7 +171,12 @@ export function EventView({
       {/* Event listing view */}
       {!showingRoom && (
         event ? (
-          <div className="flex-1 overflow-y-auto px-4 pb-8">
+          <div className="flex-1 overflow-y-auto px-4 pb-8 space-y-4">
+            {isFeatureEnabled(FeatureFlags.LIVE_EVENTS) && event.canModerate && (
+              <div className="w-full max-w-sm mx-auto">
+                <EventSetupPanelContainer event={event} />
+              </div>
+            )}
             <EventPage
               event={event}
               onAddRoom={() => setCreateRoomOpen(true)}

@@ -33,6 +33,8 @@ import {
   SwipeSixItem,
   type Event,
   type NewEvent,
+  type LiveEventAction,
+  type LiveEventView,
   EventSummary,
   StatementMerge,
   StatementTag,
@@ -181,8 +183,8 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async createEvent(newEvent: NewEvent): Promise<ApiResponse<{ event: Event }>> {
-    return this.request<{ event: Event }>("/event/create", {
+  async createEvent(newEvent: NewEvent): Promise<ApiResponse<{ event: EventSummary }>> {
+    return this.request<{ event: EventSummary }>("/event/create", {
       method: "POST",
       body: JSON.stringify(newEvent),
     });
@@ -203,6 +205,22 @@ class ApiClient extends BaseApiClient {
     eventId: string,
   ): Promise<ApiResponse<{ event: Event }>> {
     return this.request<{ event: Event }>(`/event/${eventId}`);
+  }
+
+  async getLiveEvent(
+    eventId: string,
+  ): Promise<ApiResponse<{ live: LiveEventView }>> {
+    return this.request<{ live: LiveEventView }>(`/event/${eventId}/live`);
+  }
+
+  async updateLiveEvent(
+    eventId: string,
+    action: LiveEventAction,
+  ): Promise<ApiResponse<{ live: LiveEventView }>> {
+    return this.request<{ live: LiveEventView }>(`/event/${eventId}/live`, {
+      method: "POST",
+      body: JSON.stringify(action),
+    });
   }
 
   async setRoomInactive(roomId: string) {

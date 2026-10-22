@@ -234,6 +234,23 @@ export type NewEvent = Pick<
   "name" | "subtitle" | "communityName" | "creatorId"
 >;
 
+export type LiveEventStatus = "setup" | "live" | "ended";
+
+export type LiveEventState = {
+  roomOrder: string[];
+  currentIndex: number | null;
+  status: LiveEventStatus;
+  votingPaused: boolean;
+  reloadNonce: number;
+  updatedAt: number;
+};
+
+export type LiveEventView = LiveEventState & {
+  currentRoomId: string | null;
+  peopleHere: number;
+  finishedCurrentPost: number;
+};
+
 export type Phase =
   | "lobby"
   | "round1"

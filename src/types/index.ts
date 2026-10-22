@@ -153,6 +153,7 @@ export interface Event {
   communityName: string;
   totalMembers: number;
   rooms: EventRoomStatus[];
+  canModerate: boolean;
   creatorId: string;
   createdAt: number;
 }
@@ -185,6 +186,38 @@ export interface EventRoomStatus extends Pick<
 }
 
 export type RoomStatus = "needs_input" | "caught_up" | "completed";
+
+export type LiveEventStatus = "setup" | "live" | "ended";
+
+export interface LiveEventState {
+  roomOrder: string[];
+  currentIndex: number | null;
+  status: LiveEventStatus;
+  votingPaused: boolean;
+  reloadNonce: number;
+  updatedAt: number;
+}
+
+export interface LiveEventView extends LiveEventState {
+  currentRoomId: string | null;
+  peopleHere: number;
+  finishedCurrentPost: number;
+}
+
+export type LiveScreen = "lobby" | "swiping" | "waiting" | "end";
+
+export interface LiveHeartbeat {
+  clientId: string;
+  shownRoomId: string | null;
+  screen: LiveScreen;
+}
+
+export type LiveEventAction =
+  | { action: "start" | "pause" | "resume" | "end" | "reload" }
+  | { action: "next" | "back"; fromIndex: number }
+  | { action: "reorder"; roomOrder: string[] };
+
+export type EventSetupRoom = Pick<EventRoomStatus, "id" | "topic" | "emoji">;
 
 export type RoomAlertReason = "new-activity" | "ended";
 

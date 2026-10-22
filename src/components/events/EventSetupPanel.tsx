@@ -1,0 +1,193 @@
+// @ts-ignore
+import { toast } from "sonner@2.0.3";
+import { useState } from "react";
+import { Check, ChevronDown, ChevronUp, Copy, MessageSquare, Radio } from "lucide-react";
+import { Card } from "../ui/card";
+import { Button } from "../ui/button";
+import { moveInOrder } from "../../utils/live-event";
+import type { LiveEventStatus, EventSetupRoom } from "../../types";
+
+const COPIED_RESET_MS = 2000;
+
+const STATUS_COPY: Record<LiveEventStatus, string> = {
+  setup: "Put the posts in the order you'll run them.",
+  live: "Live now. The order is locked until the session ends.",
+  ended: "This session has ended.",
+};
+
+export interface EventSetupPanelProps {
+  rooms: EventSetupRoom[];
+  status: LiveEventStatus;
+  currentIndex: number | null;
+  joinUrl: string;
+  displayUrl: string;
+  onReorder: (roomOrder: string[]) => void;
+  onOpenConsole: () => void;
+}
+
+export function EventSetupPanel({
+  rooms,
+  status,
+  currentIndex,
+  joinUrl,
+  displayUrl,
+  onReorder,
+  onOpenConsole,
+}: EventSetupPanelProps) {
+  const canReorder = status === "setup";
+  const hasRooms = rooms.length > 0;
+
+  const handleMove = (index: number, offset: -1 | 1) => {
+    onReorder(moveInOrder(rooms.map((room) => room.id), index, offset));
+  };
+
+  return (
+    <Card className="heard-card-bg overflow-hidden">
+      <div className="p-5 space-y-4">
+        <div className="space-y-0.5">
+          <h3 className="font-bold text-foreground flex items-center gap-1.5">
+            <Radio className="w-4 h-4" /> Live session
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {hasRooms ? STATUS_COPY[status] : "Add posts to this event to run it live."}
+          </p>
+        </div>
+
+        {hasRooms && (
+          <ol className="space-y-1.5">
+            {rooms.map((room, index) => (
+              <EventSetupRow
+                key={room.id}
+                room={room}
+                position={index + 1}
+                isCurrent={status === "live" && index === currentIndex}
+                isDone={status === "live" && currentIndex !== null && index < currentIndex}
+                canMoveUp={canReorder && index > 0}
+                canMoveDown={canReorder && index < rooms.length - 1}
+                showControls={canReorder}
+                onMoveUp={() => handleMove(index, -1)}
+                onMoveDown={() => handleMove(index, 1)}
+              />
+            ))}
+          </ol>
+        )}
+
+        <div className="space-y-1.5">
+          <CopyLinkRow label="Join link" url={joinUrl} />
+          <CopyLinkRow label="Display link" url={displayUrl} />
+        </div>
+
+        <Button
+          className="w-full"
+          disabled={!hasRooms}
+          onClick={onOpenConsole}
+        >
+          Open console
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+interface EventSetupRowProps {
+  room: EventSetupRoom;
+  position: number;
+  isCurrent: boolean;
+  isDone: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  showControls: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+}
+
+function EventSetupRow({
+  room,
+  position,
+  isCurrent,
+  isDone,
+  canMoveUp,
+  canMoveDown,
+  showControls,
+  onMoveUp,
+  onMoveDown,
+}: EventSetupRowProps) {
+  const rowTone = isCurrent
+    ? "bg-primary/10 ring-1 ring-primary/40"
+    : "bg-background/70";
+
+  return (
+    <li
+      className={`flex items-center gap-2 rounded-xl px-2.5 py-2 ${rowTone} ${isDone ? "opacity-50" : ""}`}
+      aria-current={isCurrent ? "step" : undefined}
+    >
+      <span className="w-5 shrink-0 text-center text-xs font-bold text-muted-foreground tabular-nums">
+        {position}
+      </span>
+      <span className="shrink-0 w-6 text-center text-base leading-none">
+        {room.emoji ?? <MessageSquare className="w-4 h-4 mx-auto text-muted-foreground" />}
+      </span>
+      <span className="flex-1 min-w-0 text-sm font-semibold text-foreground truncate">
+        {room.topic}
+      </span>
+      {isCurrent && (
+        <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-white heard-primary-gradient rounded-full px-2 py-0.5">
+          Live
+        </span>
+      )}
+      {showControls && (
+        <span className="shrink-0 flex">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            aria-label={`Move ${room.topic} up`}
+            disabled={!canMoveUp}
+            onClick={onMoveUp}
+          >
+            <ChevronUp />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            aria-label={`Move ${room.topic} down`}
+            disabled={!canMoveDown}
+            onClick={onMoveDown}
+          >
+            <ChevronDown />
+          </Button>
+        </span>
+      )}
+    </li>
+  );
+}
+
+function CopyLinkRow({ label, url }: { label: string; url: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success(`${label} copied`);
+      setTimeout(() => setCopied(false), COPIED_RESET_MS);
+    } catch (error) {
+      toast.error(`Couldn't copy the ${label.toLowerCase()}`);
+      console.error("Copy error:", error);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 rounded-xl bg-background/70 px-3 py-2">
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+        <p className="text-sm text-foreground truncate">{url}</p>
+      </div>
+      <Button variant="outline" size="sm" onClick={handleCopy} aria-label={`Copy ${label.toLowerCase()}`}>
+        {copied ? <Check /> : <Copy />}
+        {copied ? "Copied" : "Copy"}
+      </Button>
+    </div>
+  );
+}

@@ -29,6 +29,24 @@ export const insert = async <T extends Record<string, any>>(
   return { success: true };
 };
 
+export const insertAndReturn = async <T>(
+  tableName: string,
+  data: Record<string, any>,
+): Promise<T> => {
+  const { data: inserted, error } = await createClientFromEnv()
+    .from(tableName)
+    .insert(data)
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error(`Error inserting into ${tableName} table:`, error);
+    throw new Error(error.message);
+  }
+
+  return inserted as T;
+};
+
 export const upsert = async (
   tableName: string,
   data: Record<string, any>,

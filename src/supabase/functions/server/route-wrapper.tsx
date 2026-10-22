@@ -1,4 +1,5 @@
-import { Context } from "npm:hono";
+import type { Context } from "npm:hono";
+import { RouteError } from "./route-error.ts";
 
 interface ParamConfig {
   type: 'string' | 'number' | 'boolean' | 'object' | 'array';
@@ -28,7 +29,8 @@ export function defineRoute<TInput extends Record<string, any>, TOutput>(
         }
         
         if (value !== undefined) {
-          if (typeof value !== config.type) {
+          const valueType = Array.isArray(value) ? "array" : typeof value;
+          if (valueType !== config.type) {
             return c.json({ 
               error: config.errorMessage || `${key} must be a ${config.type}` 
             }, 400);
@@ -54,7 +56,7 @@ export function defineRoute<TInput extends Record<string, any>, TOutput>(
           error:
             error instanceof Error ? error.message : errorMessage,
         },
-        500,
+        error instanceof RouteError ? error.status : 500,
       );
     }
   };
