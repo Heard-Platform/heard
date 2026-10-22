@@ -316,7 +316,7 @@ export function EventDisplayStory() {
   return (
     <StoryContainer
       title="Event Display"
-      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after half a second. Live starts on the join screen: press Start, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Back, Next and Pause work; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it."
+      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after a second. Live starts on the join screen: press Start, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Back, Next and Pause work; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it."
       variants={[
         {
           id: "join",

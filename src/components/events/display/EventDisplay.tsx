@@ -12,7 +12,7 @@ import { DisplaySpotlight } from "./DisplaySpotlight";
 import { Loader } from "../../widgets/Loader";
 import { EndSessionConfirm } from "./EndSessionConfirm";
 
-const CONTROLS_HIDE_AFTER_IDLE_MS = 500;
+const CONTROLS_HIDE_AFTER_IDLE_MS = 1000;
 const SCREEN_FADE_SECONDS = 0.25;
 
 export interface EventDisplayProps {
