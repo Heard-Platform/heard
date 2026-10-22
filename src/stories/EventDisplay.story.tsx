@@ -229,7 +229,7 @@ function LiveDemoRun({ initialState }: { initialState: LiveEventView }) {
   return (
     <ProjectorFrame>
       <EventDisplay
-        eventState={state}
+        eventState={{ ...state, currentRoomId: DEMO_POSTS[postIndex].room.id }}
         post={{ room: DEMO_POSTS[postIndex].room, statements: statementsByPost[postIndex] }}
         joinUrl={JOIN_URL}
         joinLabel={JOIN_LABEL}
@@ -322,6 +322,11 @@ export function EventDisplayStory() {
           id: "join",
           label: "Join screen",
           children: <StaticDisplay state={eventState({ status: "setup", currentIndex: null, startedAt: null, peopleHere: 23 })} post={null} />,
+        },
+        {
+          id: "loading-post",
+          label: "Loading the next post",
+          children: <StaticDisplay state={eventState({})} post={null} />,
         },
         { id: "live", label: "Live (Start, votes moving)", children: <LiveDemo initialState={NOT_STARTED_STATE} /> },
         { id: "last-post", label: "Last post (End session)", children: <LiveDemo initialState={LAST_POST_STATE} /> },

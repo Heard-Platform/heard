@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { EventDisplay } from "./EventDisplay";
 import { Loader } from "../../widgets/Loader";
 import { useEventAction } from "../../../hooks/useEventAction";
@@ -17,7 +17,7 @@ interface EventDisplayContainerProps {
 export function EventDisplayContainer({ eventId, displayKey }: EventDisplayContainerProps) {
   const { eventState, error, refresh, applyEventState } = useEventPolling(eventId, DISPLAY_POLL_MS);
   const { isBusy, runAction } = useEventAction({ eventId, displayKey, eventState, applyEventState, refresh });
-  const shownPost = usePostKeptUntilNextLoads(eventState?.currentRoomId ?? null);
+  const post = useEventPostRefreshedEvery(eventState?.currentRoomId ?? null, DISPLAY_POLL_MS);
   useReloadOnNonceChange(eventState?.reloadNonce);
 
   if (!eventState) {
@@ -35,7 +35,7 @@ export function EventDisplayContainer({ eventId, displayKey }: EventDisplayConta
   return (
     <EventDisplay
       eventState={eventState}
-      post={shownPost}
+      post={post}
       joinUrl={joinLink.url}
       joinLabel={joinLink.label}
       isBusy={isBusy}
@@ -44,21 +44,16 @@ export function EventDisplayContainer({ eventId, displayKey }: EventDisplayConta
   );
 }
 
-function usePostKeptUntilNextLoads(currentRoomId: string | null): EventPost | null {
+function useEventPostRefreshedEvery(currentRoomId: string | null, refreshIntervalMs: number): EventPost | null {
   const { post, refresh } = useEventPost(currentRoomId);
-  const [shownPost, setShownPost] = useState<EventPost | null>(null);
-
-  useEffect(() => {
-    if (post) setShownPost(post);
-  }, [post]);
 
   useEffect(() => {
     if (!currentRoomId) return;
     const timer = setInterval(() => {
       if (!document.hidden) refresh();
-    }, DISPLAY_POLL_MS);
+    }, refreshIntervalMs);
     return () => clearInterval(timer);
-  }, [currentRoomId, refresh]);
+  }, [currentRoomId, refresh, refreshIntervalMs]);
 
-  return shownPost;
+  return post;
 }

@@ -1,17 +1,19 @@
 import { useEffect, useId, useState } from "react";
-import { LayoutGroup, MotionConfig } from "motion/react";
+import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "motion/react";
 import type { LiveEventView, ModeratorAction } from "../../../types";
 import type { EventPost } from "../../../hooks/useEventPost";
 import { useIdle } from "../../../hooks/useIdle";
-import { isAttendeeStatement, type DisplayView } from "../../../utils/event-display";
+import { getDisplayScreen, isAttendeeStatement, type DisplayView } from "../../../utils/event-display";
 import { DisplayBoard } from "./DisplayBoard";
 import { BoardControls, JoinControls } from "./DisplayControls";
 import { DisplayEndCard } from "./DisplayEndCard";
 import { DisplayJoinScreen } from "./DisplayJoinScreen";
 import { DisplaySpotlight } from "./DisplaySpotlight";
+import { Loader } from "../../widgets/Loader";
 import { EndSessionConfirm } from "./EndSessionConfirm";
 
 const CONTROLS_HIDE_AFTER_IDLE_MS = 500;
+const SCREEN_FADE_SECONDS = 0.25;
 
 export interface EventDisplayProps {
   eventState: LiveEventView;
@@ -39,6 +41,8 @@ export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onA
 
   const spotlightStatement = post?.statements.find((statement) => statement.id === spotlightStatementId) ?? null;
   const questionLabel = `Question ${(eventState.currentIndex ?? 0) + 1}`;
+  const screen = getDisplayScreen(eventState, post?.room.id ?? null);
+  const screenKey = screen === "board" ? `board:${eventState.currentRoomId}` : screen;
 
   const handleConfirmEnd = () => {
     setIsConfirmingEnd(false);
@@ -46,15 +50,22 @@ export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onA
   };
 
   const renderScreen = () => {
-    if (eventState.status === "ended") {
+    if (screen === "end") {
       return <DisplayEndCard totals={eventState.totals} />;
     }
-    if (eventState.status !== "live" || !post || eventState.currentIndex === null) {
+    if (screen === "join" || eventState.currentIndex === null) {
       return (
         <>
           <DisplayJoinScreen peopleHere={eventState.peopleHere} joinUrl={joinUrl} joinLabel={joinLabel} />
-          {eventState.status === "setup" && <JoinControls peopleHere={eventState.peopleHere} isHidden={isIdle} isBusy={isBusy} onAction={onAction} />}
+          <JoinControls peopleHere={eventState.peopleHere} isHidden={isIdle} isBusy={isBusy} onAction={onAction} />
         </>
+      );
+    }
+    if (screen === "loading" || !post) {
+      return (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Loader />
+        </div>
       );
     }
     const postCount = eventState.roomOrder.length;
@@ -108,7 +119,18 @@ export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onA
           onKeyDown={resetIdleTimer}
           className={`display-screen-bg @container relative h-full w-full overflow-hidden ${isIdle ? "cursor-none" : ""}`}
         >
-          {renderScreen()}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={screenKey}
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: SCREEN_FADE_SECONDS, ease: "easeInOut" }}
+            >
+              {renderScreen()}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </LayoutGroup>
     </MotionConfig>

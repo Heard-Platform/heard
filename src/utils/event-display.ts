@@ -1,5 +1,5 @@
 import _ from "lodash";
-import type { Statement } from "../types";
+import type { LiveEventView, Statement } from "../types";
 import { getAllAgrees } from "./statement";
 
 export type DisplayView = "agree-only" | "agree-vs-disagree" | "agree-split";
@@ -102,4 +102,15 @@ export function getNewStatementStripMode(
   if (msSinceWritten < NEW_STATEMENT_CELEBRATE_MS) return "celebrating";
   if (isLatestOnBoard && msSinceWritten >= NEW_STATEMENT_INVITE_AFTER_MS) return "invite";
   return "collecting-votes";
+}
+
+export type DisplayScreen = "join" | "loading" | "board" | "end";
+
+export function getDisplayScreen(
+  eventState: Pick<LiveEventView, "status" | "currentIndex" | "currentRoomId">,
+  loadedPostRoomId: string | null,
+): DisplayScreen {
+  if (eventState.status === "ended") return "end";
+  if (eventState.status === "setup" || eventState.currentIndex === null) return "join";
+  return loadedPostRoomId === eventState.currentRoomId ? "board" : "loading";
 }

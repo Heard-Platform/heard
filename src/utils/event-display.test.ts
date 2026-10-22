@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Statement } from "../types";
 import {
   findMostSplitStatementId,
+  getDisplayScreen,
   getLatestAttendeeStatement,
   getNewStatementStripMode,
   getVoteShares,
@@ -195,5 +196,26 @@ describe("getNewStatementStripMode", () => {
 
   it("keeps showing a statement that hasn't reached the board", () => {
     expect(getNewStatementStripMode(latestAttendeeStatement, false, 100_000 + NEW_STATEMENT_INVITE_AFTER_MS * 10)).toBe("collecting-votes");
+  });
+});
+
+describe("getDisplayScreen", () => {
+  const liveOnPost = { status: "live" as const, currentIndex: 2, currentRoomId: "post-3" };
+
+  it("shows the join screen before Start", () => {
+    expect(getDisplayScreen({ status: "setup", currentIndex: null, currentRoomId: null }, null)).toBe("join");
+  });
+
+  it("shows the board once the current post has loaded", () => {
+    expect(getDisplayScreen(liveOnPost, "post-3")).toBe("board");
+  });
+
+  it("shows the loader while no post or the previous post is loaded", () => {
+    expect(getDisplayScreen(liveOnPost, null)).toBe("loading");
+    expect(getDisplayScreen(liveOnPost, "post-2")).toBe("loading");
+  });
+
+  it("shows the end card after End", () => {
+    expect(getDisplayScreen({ status: "ended", currentIndex: 9, currentRoomId: "post-10" }, "post-10")).toBe("end");
   });
 });
