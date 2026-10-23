@@ -15,8 +15,6 @@ import { AttendeeFrame, AttendeeMessage } from "./AttendeeFrame";
 import { EventLobby } from "./EventLobby";
 import { EventSwipeScreen } from "./EventSwipeScreen";
 
-const WAITING_REFRESH_MS = 15_000;
-
 export function EventAttendeeContainer({ eventId }: { eventId: string }) {
   return (
     <div className="heard-feed-bg h-dvh overflow-y-auto">
@@ -67,7 +65,8 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
 
   useEffect(() => {
     if (screen !== "waiting") return;
-    const timer = setInterval(refreshPost, WAITING_REFRESH_MS);
+    refreshPost();
+    const timer = setInterval(refreshPost, EVENT_POLL_MS);
     return () => clearInterval(timer);
   }, [screen, refreshPost]);
 
