@@ -100,20 +100,28 @@ describe("getAttendeeScreen", () => {
   const live = { status: "live" as const, votingPaused: false };
 
   it("waits in the lobby before the event starts", () => {
-    expect(getAttendeeScreen({ status: "setup", votingPaused: false }, true)).toBe("starting");
+    expect(getAttendeeScreen({ status: "setup", votingPaused: false }, true, false)).toBe("starting");
   });
 
   it("shows the end screen once the event ends", () => {
-    expect(getAttendeeScreen({ status: "ended", votingPaused: false }, true)).toBe("end");
+    expect(getAttendeeScreen({ status: "ended", votingPaused: false }, true, false)).toBe("end");
   });
 
   it("pauses even with cards left", () => {
-    expect(getAttendeeScreen({ ...live, votingPaused: true }, true)).toBe("paused");
+    expect(getAttendeeScreen({ ...live, votingPaused: true }, true, false)).toBe("paused");
+  });
+
+  it("pauses even while writing a statement", () => {
+    expect(getAttendeeScreen({ ...live, votingPaused: true }, true, true)).toBe("paused");
   });
 
   it("swipes while cards are left, then waits for the others", () => {
-    expect(getAttendeeScreen(live, true)).toBe("swiping");
-    expect(getAttendeeScreen(live, false)).toBe("waiting");
+    expect(getAttendeeScreen(live, true, false)).toBe("swiping");
+    expect(getAttendeeScreen(live, false, false)).toBe("waiting");
+  });
+
+  it("keeps waiting while a statement is being written, even when new cards arrive", () => {
+    expect(getAttendeeScreen(live, true, true)).toBe("waiting");
   });
 
   it("reports both lobby wordings as the lobby screen", () => {
