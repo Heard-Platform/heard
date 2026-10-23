@@ -95,6 +95,8 @@
         "storybook": "storybook dev -p 6006",
         "test": "vitest run",
         "test:watch": "vitest",
-        "test:server": "deno test --no-check --allow-read --allow-env --allow-net src/supabase/"
+        "test:server": "deno test --no-check --allow-read --allow-env --allow-net src/supabase/",
+        "test:scripts": "deno test --no-check --config scripts/deno.json --allow-read scripts/",
+        "simulate-event": "deno run --config scripts/deno.json --allow-net --allow-read --allow-env scripts/event-simulation/run-event-simulation.ts"
     }
 }

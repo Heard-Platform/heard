@@ -24,6 +24,7 @@ export function moveInOrder(
   return next;
 }
 
+export const EVENT_POLL_MS = 3000;
 export const EVENT_POLL_MAX_INTERVAL_MS = 30_000;
 
 export function getIntervalWithBackoff(baseMs: number, consecutiveFailures: number): number {

@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../utils/api";
 import {
+  EVENT_POLL_MS,
   getIntervalWithBackoff as getIntervalWithBackoff,
   pickNewestState,
   type SentHeartbeat,
   shouldSendHeartbeat,
 } from "../utils/live-event";
 import type { LiveEventView, LiveHeartbeat } from "../types";
-
-export const EVENT_POLL_MS = 3000;
 
 export function useEventPolling(
   eventId: string,
