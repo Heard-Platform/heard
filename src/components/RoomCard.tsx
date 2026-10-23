@@ -18,6 +18,8 @@ import { AnonResponseTripwire } from "./AnonResponseTripwire";
 import { DebateAnalysisView } from "./analysis/DebateAnalysisView";
 import { useState, useEffect, useRef } from "react";
 import { updateUrlForAnalysis } from "../utils/url";
+import { useAddResponseNudge } from "../hooks/useAddResponseNudge";
+import { hasUserAuthoredStatement } from "../utils/add-response-nudge";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
 import { DebateRoom, Statement, VoteType, UserSession, FullCoverData } from "../types";
 import { RoomCardMenu } from "./room/RoomCardMenu";
@@ -170,7 +172,8 @@ export function RoomCard({
     return engaged.size;
   })();
   
-  const effectiveChanceCardSwiped = chanceCardSwiped || !!room.responsesPaused;
+  const effectiveChanceCardSwiped =
+    !isFeatureEnabled(FeatureFlags.CHANCE_CARD) || chanceCardSwiped || !!room.responsesPaused;
 
   const hasSwipedAll =
     statements.length > 0 &&
@@ -194,6 +197,18 @@ export function RoomCard({
 
   const isCompleted =
     room.phase === "results" || hasRealtimeEnded;
+
+  const isAddResponseNudgeEligible =
+    isActive &&
+    hasSwipedAll &&
+    !isCompleted &&
+    !room.responsesPaused &&
+    !hasUserAuthoredStatement(statements, user.id);
+
+  const {
+    hasShimmerToShow: hasAddResponseShimmerToShow,
+    shimmersShownCount: addResponseShimmersShownCount,
+  } = useAddResponseNudge(isAddResponseNudgeEligible);
 
   // Handle voting
   const handleVote = async (
@@ -488,12 +503,19 @@ export function RoomCard({
             {!isCompleted ? (
               <Button
                 variant="secondary"
-                className="heard-pill"
+                className="heard-pill add-response-shimmer-host"
                 disabled={!!room.responsesPaused}
                 onClick={() => setShowAddResponseModal(true)}
               >
                 <MessageCirclePlus className="w-4 h-4" />
                 {t("respond")}
+                {hasAddResponseShimmerToShow && (
+                  <span
+                    key={addResponseShimmersShownCount}
+                    className="add-response-shimmer"
+                    aria-hidden
+                  />
+                )}
               </Button>
             ) : <Badge className="heard-pill bg-gray-600 text-white">{t("completed")}</Badge>}
             <Button

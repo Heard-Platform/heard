@@ -96,6 +96,36 @@ const noCoverStatements: Statement[] = [
   },
 ];
 
+const markVotedByStoryUser = (statement: Statement): Statement => ({
+  ...statement,
+  voters: { ...statement.voters, [mockUser.id]: "agree" },
+});
+
+const oneSwipeLeftStatements: Statement[] = noCoverStatements.map(
+  (statement, statementIndex) =>
+    statementIndex === noCoverStatements.length - 1
+      ? statement
+      : markVotedByStoryUser(statement),
+);
+
+const allSwipedStatements: Statement[] = noCoverStatements.map(
+  markVotedByStoryUser,
+);
+
+const buildStoryUserStatement = (roomId: string, text: string): Statement => ({
+  id: `story-user-statement-${Date.now()}`,
+  text,
+  author: mockUser.id,
+  roomId,
+  timestamp: Date.now(),
+  agrees: 0,
+  disagrees: 0,
+  passes: 0,
+  superAgrees: 0,
+  voters: { [mockUser.id]: "agree" },
+  round: 1,
+});
+
 function RoomCardWrapper({
   room,
   statements,
@@ -134,6 +164,10 @@ function RoomCardWrapper({
               currentSubHeard={undefined}
               onSubmitStatement={async (roomId, text) => {
                 console.log("Submit:", { roomId, text });
+                setLocalStatements((previousStatements) => [
+                  ...previousStatements,
+                  buildStoryUserStatement(roomId, text),
+                ]);
               }}
               onVoteOnStatement={handleVote}
               onRefreshStatements={async () => {
@@ -204,6 +238,26 @@ export function RoomCardStory() {
               <RoomCardWrapper
                 room={noCoverRoom}
                 statements={noCoverStatements}
+              />
+            ),
+          },
+          {
+            id: "add-response-nudge-last-swipe",
+            label: "Add response nudge: one swipe left",
+            children: (
+              <RoomCardWrapper
+                room={noCoverRoom}
+                statements={oneSwipeLeftStatements}
+              />
+            ),
+          },
+          {
+            id: "add-response-nudge-returning",
+            label: "Add response nudge: returning, all swiped",
+            children: (
+              <RoomCardWrapper
+                room={noCoverRoom}
+                statements={allSwipedStatements}
               />
             ),
           },
