@@ -103,7 +103,7 @@ function ConsensusColumns({ statements, renderStatementRow }: ConsensusColumnsPr
   const { agreeStatements, splitStatements } = splitIntoConsensusColumns(statements);
   return (
     <div className="grid grid-cols-2 content-start gap-[2.4cqw]">
-      <ConsensusColumn heading="Where the room agrees" note="either way" statementRows={agreeStatements.map(renderStatementRow)} />
+      <ConsensusColumn heading="Most consensus" note="either way" statementRows={agreeStatements.map(renderStatementRow)} />
       <ConsensusColumn heading="Where the room splits" note="let's talk" statementRows={splitStatements.map(renderStatementRow)} />
     </div>
   );
