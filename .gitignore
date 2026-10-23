@@ -65,3 +65,5 @@ env/
 
 .temp/
 *.csv!src/components/devtools/flyer-sensors/fixtures/*.csv
+
+scripts/event-posts/value-based-pricing.json
