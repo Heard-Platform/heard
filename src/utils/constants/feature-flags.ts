@@ -11,6 +11,7 @@ export enum FeatureFlags {
   STREAMLINED_CREATION = "STREAMLINED_CREATION",
   FEEDBACK_CARDS = "FEEDBACK_CARDS",
   LIVE_EVENTS = "LIVE_EVENTS",
+  CHANCE_CARD = "CHANCE_CARD",
 }
 
 export interface FeatureFlagsConfig {
@@ -22,6 +23,7 @@ export interface FeatureFlagsConfig {
   [FeatureFlags.STREAMLINED_CREATION]: boolean;
   [FeatureFlags.FEEDBACK_CARDS]: boolean;
   [FeatureFlags.LIVE_EVENTS]: boolean;
+  [FeatureFlags.CHANCE_CARD]: boolean;
 }
 
 export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
@@ -34,6 +36,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     STREAMLINED_CREATION: true,
     FEEDBACK_CARDS: true,
     LIVE_EVENTS: false,
+    CHANCE_CARD: false,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
@@ -44,6 +47,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     STREAMLINED_CREATION: true,
     FEEDBACK_CARDS: true,
     LIVE_EVENTS: true,
+    CHANCE_CARD: false,
   }
 }
 

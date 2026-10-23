@@ -18,6 +18,7 @@ import { SwipeInstructions } from "../SwipeInstructions";
 import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import type { FeedbackStatement } from "../../utils/constants/feedback-statements";
+import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 
 
 // @ts-ignore
@@ -129,7 +130,7 @@ export function SwipeableStatementStack({
     demogEndIndex = insertAt + demoCards.length;
   }
 
-  if (!chanceCardSwiped) {
+  if (isFeatureEnabled(FeatureFlags.CHANCE_CARD) && !chanceCardSwiped) {
     const chanceCard: ChanceCard = { type: "chance" };
     const naturalIndex = Math.min(5, statements.length) - votedStatementIds.size;
     const chanceCardIndex = Math.max(naturalIndex, demogEndIndex);

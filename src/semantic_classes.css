@@ -99,7 +99,58 @@
   }
 }
 
+@property --add-response-shimmer-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.add-response-shimmer-host {
+  position: relative;
+}
+
+.add-response-shimmer {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  opacity: 0;
+  background: conic-gradient(
+    from var(--add-response-shimmer-angle),
+    transparent 0deg 270deg,
+    var(--color-purple-400) 330deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  animation: add-response-shimmer-trace 1.6s ease-in-out forwards;
+}
+
+@keyframes add-response-shimmer-trace {
+  0% {
+    --add-response-shimmer-angle: 0deg;
+    opacity: 0;
+  }
+  15%, 85% {
+    opacity: 1;
+  }
+  100% {
+    --add-response-shimmer-angle: 360deg;
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .add-response-shimmer {
+    animation: none;
+  }
+
   .celebrate-strip-bg {
     animation: none;
     box-shadow: 0 0 0 0.3cqw var(--color-amber-500);
