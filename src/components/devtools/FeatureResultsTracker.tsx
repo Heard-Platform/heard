@@ -37,6 +37,7 @@ import {
   Mail,
   Network,
   MessageSquare,
+  MessageCirclePlus,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -67,6 +68,9 @@ interface FeatureCardData {
   getDate: (stats: FeatureResults) => number;
   renderExtra?: (stats: FeatureResults) => ReactNode;
 }
+
+const formatSubmitRatePercent = (submittedCount: number, shownCount: number): string =>
+  shownCount > 0 ? `${Math.round((submittedCount / shownCount) * 1000) / 10}%` : "0%";
 
 export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
   const [stats, setStats] = useState<FeatureResults | null>(null);
@@ -554,6 +558,33 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
           <div>
             <p className="text-xs text-muted-foreground">Email signups</p>
             <p className="text-2xl font-bold text-amber-700">{s.feedbackCards.emailSignups}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      icon: MessageCirclePlus,
+      iconColor: "text-purple-600",
+      bgColor: "bg-purple-100",
+      title: "Add Response Nudge",
+      description: "Unique users who reached results without having posted and saw the Respond button shimmer, tapped Respond after it, and submitted a response from that tap. Success is 5 to 10% of shown users submitting",
+      getValue: (s) => s.addResponseNudge.shown,
+      getDate: (s) => s.addResponseNudgeSince,
+      renderExtra: (s) => (
+        <div className="flex flex-wrap gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Tapped Respond</p>
+            <p className="text-2xl font-bold text-purple-600">{s.addResponseNudge.tapped}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Submitted</p>
+            <p className="text-2xl font-bold text-purple-600">{s.addResponseNudge.submitted}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Submit rate</p>
+            <p className="text-2xl font-bold text-purple-600">
+              {formatSubmitRatePercent(s.addResponseNudge.submitted, s.addResponseNudge.shown)}
+            </p>
           </div>
         </div>
       ),

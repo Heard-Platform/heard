@@ -910,6 +910,12 @@ export interface FeatureResults {
     emailSignups: number;
   };
   feedbackCardsSince: number;
+  addResponseNudge: {
+    shown: number;
+    tapped: number;
+    submitted: number;
+  };
+  addResponseNudgeSince: number;
   flyerSwipeFunnel: { opened: number; swipes: number[]; saved: number; exited: number };
   flyerSwipeFunnelSince: number;
   swipeSixFunnel: { bannerShown: number; started: number; swipes: number[]; completed: number; allDoneClicked: number };

@@ -100,6 +100,7 @@ export function RoomCard({
   const descriptionRef = useRef<HTMLSpanElement>(null);
   const [showFullscreenImage, setShowFullscreenImage] = useState(false);
   const [showAddResponseModal, setShowAddResponseModal] = useState(false);
+  const [wasAddResponseOpenedAfterNudge, setWasAddResponseOpenedAfterNudge] = useState(false);
   const [showDeduplication, setShowDeduplication] = useState(false);
   const [showVoteMatrix, setShowVoteMatrix] = useState(false);
   const [showEditRoom, setShowEditRoom] = useState(false);
@@ -210,6 +211,12 @@ export function RoomCard({
     shimmersShownCount: addResponseShimmersShownCount,
   } = useAddResponseNudge(isAddResponseNudgeEligible);
 
+  useEffect(() => {
+    if (addResponseShimmersShownCount === 1) {
+      api.trackEvent("add_response_nudge_shown", room.id);
+    }
+  }, [addResponseShimmersShownCount, room.id]);
+
   // Handle voting
   const handleVote = async (
     statement: Statement,
@@ -296,6 +303,21 @@ export function RoomCard({
     } catch (error) {
       console.error("Error submitting statement:", error);
       throw error;
+    }
+  };
+
+  const handleOpenAddResponseModal = () => {
+    if (hasAddResponseShimmerToShow) {
+      api.trackEvent("add_response_nudge_tapped", room.id);
+    }
+    setWasAddResponseOpenedAfterNudge(hasAddResponseShimmerToShow);
+    setShowAddResponseModal(true);
+  };
+
+  const handleSubmitStatementFromAddResponseModal = async (text: string) => {
+    await handleSubmitStatement(text);
+    if (wasAddResponseOpenedAfterNudge) {
+      api.trackEvent("add_response_nudge_submitted", room.id);
     }
   };
 
@@ -505,7 +527,7 @@ export function RoomCard({
                 variant="secondary"
                 className="heard-pill add-response-shimmer-host"
                 disabled={!!room.responsesPaused}
-                onClick={() => setShowAddResponseModal(true)}
+                onClick={handleOpenAddResponseModal}
               >
                 <MessageCirclePlus className="w-4 h-4" />
                 {t("respond")}
@@ -624,7 +646,7 @@ export function RoomCard({
         allowAnonymous={!!room.allowAnonymous}
         isAnonymous={!!user?.isAnonymous}
         onOpenChange={setShowAddResponseModal}
-        onSubmitStatement={handleSubmitStatement}
+        onSubmitStatement={handleSubmitStatementFromAddResponseModal}
         onShowAccountSetupModal={onShowAccountSetupModal}
       />
 

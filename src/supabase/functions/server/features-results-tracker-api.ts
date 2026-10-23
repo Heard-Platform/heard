@@ -64,6 +64,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       feedbackNoteSentUserIds,
       feedbackFounderSignups,
       feedbackNoteSignups,
+      addResponseNudgeShownUserIds,
+      addResponseNudgeTappedUserIds,
+      addResponseNudgeSubmittedUserIds,
     ] = await Promise.all([
       getAllRealUsers(),
       getWebDriverUsers(),
@@ -115,6 +118,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       getUniqueUserIdsForEvent("feedback_note_sent"),
       countEventsOfType("feedback_founder_signup"),
       countEventsOfType("feedback_note_signup"),
+      getUniqueUserIdsForEvent("add_response_nudge_shown"),
+      getUniqueUserIdsForEvent("add_response_nudge_tapped"),
+      getUniqueUserIdsForEvent("add_response_nudge_submitted"),
     ]);
 
     const webDriverUsers = webDriverUserList.length;
@@ -362,6 +368,13 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     };
     const feedbackCardsSince = new Date("2026-10-21").getTime();
 
+    const addResponseNudge = {
+      shown: countRealUsers(addResponseNudgeShownUserIds),
+      tapped: countRealUsers(addResponseNudgeTappedUserIds),
+      submitted: countRealUsers(addResponseNudgeSubmittedUserIds),
+    };
+    const addResponseNudgeSince = new Date("2026-10-23").getTime();
+
     const flyerLandingFunnelSince = new Date("2026-10-01").getTime();
 
     const flyerScreenFunnelSince = new Date("2026-10-03").getTime();
@@ -482,6 +495,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       createRoomFunnelSince,
       feedbackCards,
       feedbackCardsSince,
+      addResponseNudge,
+      addResponseNudgeSince,
       flyerLandingFunnel,
       flyerLandingFunnelSince,
       flyerScreenFunnel,
