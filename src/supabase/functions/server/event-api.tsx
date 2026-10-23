@@ -12,7 +12,10 @@ import {
   getEventOrThrow,
   getOrCreateEventDisplayKey,
   loadEventView,
+  loadSupportViewStats,
   parseEventId,
+  requireCanDriveEvent,
+  setEventStatementHidden,
 } from "./event-utils.ts";
 import {
   getAllDebates,
@@ -298,6 +301,55 @@ app.post(
       return { live: await loadEventView(eventId, next, now) };
     },
     "Failed to update live event",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/event/:eventId/support",
+  defineRoute(
+    {
+      displayKey: {
+        type: "string",
+        required: false,
+      },
+    },
+    async ({ displayKey }: { displayKey?: string }, c: Context) => {
+      const eventId = parseEventId(c.req.param("eventId"));
+      const event = await getEventOrThrow(eventId);
+      await requireCanDriveEvent(event, c.get("userId"), displayKey);
+
+      const now = Date.now();
+      const state = eventStateOrDefault(await getLiveEventState(eventId), now);
+      return { stats: await loadSupportViewStats(event, state, now) };
+    },
+    "Failed to load the support view",
+  ),
+);
+
+app.post(
+  "/make-server-f1a393b4/event/:eventId/support/statement/:statementId/hidden",
+  defineRoute(
+    {
+      statementId: { type: "string", required: true },
+      isHidden: { type: "boolean", required: true },
+      displayKey: {
+        type: "string",
+        required: false,
+      },
+    },
+    async (
+      { statementId, isHidden, displayKey }: { statementId: string; isHidden: boolean; displayKey?: string },
+      c: Context,
+    ) => {
+      const eventId = parseEventId(c.req.param("eventId"));
+      const userId = c.get("userId");
+      const event = await getEventOrThrow(eventId);
+      await requireCanDriveEvent(event, userId, displayKey);
+
+      const state = eventStateOrDefault(await getLiveEventState(eventId), Date.now());
+      return { statement: await setEventStatementHidden(state, statementId, isHidden, userId) };
+    },
+    "Failed to update statement visibility",
   ),
 );
 

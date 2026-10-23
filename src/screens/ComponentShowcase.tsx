@@ -73,6 +73,7 @@ import { ClusterMinimapStory } from "../stories/ClusterMinimap.story";
 import { EventSetupPanelStory } from "../stories/EventSetupPanel.story";
 import { EventAttendeeStory } from "../stories/EventAttendee.story";
 import { EventDisplayStory } from "../stories/EventDisplay.story";
+import { EventSupportViewStory } from "../stories/EventSupportView.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -200,6 +201,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="event-setup-panel">Event Setup Panel</TabsTrigger>
                 <TabsTrigger value="event-attendee">Event Attendee</TabsTrigger>
                 <TabsTrigger value="event-display">Event Display</TabsTrigger>
+                <TabsTrigger value="event-support-view">Event Support View</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -414,6 +416,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="event-display">
                 <EventDisplayStory />
+              </TabsContent>
+              <TabsContent value="event-support-view">
+                <EventSupportViewStory />
               </TabsContent>
             </Tabs>
           </div>

@@ -243,6 +243,11 @@ export type EventTotals = {
   stayedToEndPercent: number;
 };
 
+export type PostChange = {
+  roomId: string;
+  changedAt: number;
+};
+
 export type LiveEventState = {
   roomOrder: string[];
   currentIndex: number | null;
@@ -250,7 +255,9 @@ export type LiveEventState = {
   votingPaused: boolean;
   reloadNonce: number;
   totals: EventTotals | null;
+  postChanges: PostChange[];
   startedAt: number | null;
+  endedAt: number | null;
   updatedAt: number;
 };
 
@@ -261,6 +268,64 @@ export type LiveEventView = LiveEventState & {
 };
 
 export type LiveScreen = "lobby" | "swiping" | "waiting" | "end";
+
+export type AttendeePhoneState = "swiping" | "waiting" | "lobby" | "end" | "idle";
+
+export type SupportViewCurrentPost = {
+  postNumber: number;
+  topic: string;
+  finishedCount: number;
+  swipingCount: number;
+  agreeVotes: number;
+  disagreeVotes: number;
+  passVotes: number;
+  medianSecondsToFinish: number | null;
+  startedAt: number;
+};
+
+export type SupportViewPost = {
+  roomId: string;
+  postNumber: number;
+  voterCount: number;
+  secondsOnPost: number;
+};
+
+export type SupportViewAttendeeStatement = {
+  id: string;
+  roomId: string;
+  postNumber: number;
+  text: string;
+  agreeVotes: number;
+  disagreeVotes: number;
+  passVotes: number;
+  isHidden: boolean;
+  createdAt: number;
+};
+
+export type SupportViewMinute = {
+  minuteSinceStart: number;
+  votes: number;
+  peopleJoined: number;
+};
+
+export type SupportViewStats = {
+  eventName: string;
+  status: LiveEventStatus;
+  votingPaused: boolean;
+  postCount: number;
+  peopleHere: number;
+  activeNow: number;
+  votes: number;
+  statementsFromRoom: number;
+  phoneCountsByState: Record<AttendeePhoneState, number>;
+  currentPost: SupportViewCurrentPost | null;
+  postsSoFar: SupportViewPost[];
+  attendeeStatements: SupportViewAttendeeStatement[];
+  minutes: SupportViewMinute[];
+  nextPressedAtMinutes: number[];
+  startedAt: number | null;
+  endedAt: number | null;
+};
 
 export type LiveHeartbeat = {
   shownRoomId: string | null;

@@ -14,6 +14,7 @@ import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { EventAttendeeContainer } from "./components/events/attendee/EventAttendeeContainer";
 import { EventDisplayContainer } from "./components/events/display/EventDisplayContainer";
+import { EventSupportViewContainer } from "./components/events/support/EventSupportViewContainer";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { RetentionDashboard } from "./components/RetentionDashboard";
@@ -41,6 +42,7 @@ import {
   updateUrlForRoom,
   parseEventIdFromUrl,
   parseDisplayedEventIdFromUrl,
+  parseSupportViewEventIdFromUrl,
   parseAttendedEventIdFromUrl,
   updateUrlForEvent,
   parseStatementIdFromUrl,
@@ -143,6 +145,10 @@ function AppContent() {
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
   const [attendedEventId, setAttendedEventId] = useState<string | null>(null);
   const [displayedEvent, setDisplayedEvent] = useState<{
+    eventId: string;
+    displayKey: string | null;
+  } | null>(null);
+  const [supportViewEvent, setSupportViewEvent] = useState<{
     eventId: string;
     displayKey: string | null;
   } | null>(null);
@@ -432,6 +438,7 @@ function AppContent() {
       const flyerDataFromUrl = parseFlyerDataFromUrl();
       const eventIdFromUrl = parseEventIdFromUrl();
       const displayedEventIdFromUrl = parseDisplayedEventIdFromUrl();
+      const supportViewEventIdFromUrl = parseSupportViewEventIdFromUrl();
       const attendedEventIdFromUrl =
         parseAttendedEventIdFromUrl() ??
         EVENT_SHORT_ROUTES.get(route) ??
@@ -556,6 +563,11 @@ function AppContent() {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (displayedEventIdFromUrl) {
         setDisplayedEvent({ eventId: displayedEventIdFromUrl, displayKey: takeDisplayKeyFromUrl(displayedEventIdFromUrl) });
+      } else if (supportViewEventIdFromUrl) {
+        setSupportViewEvent({
+          eventId: supportViewEventIdFromUrl,
+          displayKey: takeDisplayKeyFromUrl(supportViewEventIdFromUrl),
+        });
       } else if (attendedEventIdFromUrl) {
         setAttendedEventId(attendedEventIdFromUrl);
       } else if (eventIdFromUrl) {
@@ -926,6 +938,18 @@ function AppContent() {
         <div className="h-dvh">
           <EventDisplayContainer eventId={displayedEvent.eventId} displayKey={displayedEvent.displayKey} />
         </div>
+        <Toaster />
+      </>
+    );
+  }
+
+  if (supportViewEvent) {
+    return (
+      <>
+        <EventSupportViewContainer
+          eventId={supportViewEvent.eventId}
+          displayKey={supportViewEvent.displayKey}
+        />
         <Toaster />
       </>
     );

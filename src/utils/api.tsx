@@ -35,6 +35,7 @@ import {
   type NewEvent,
   type LiveEventAction,
   type LiveEventView,
+  type SupportViewStats,
   type LiveHeartbeat,
   EventSummary,
   StatementMerge,
@@ -226,6 +227,26 @@ class ApiClient extends BaseApiClient {
     return this.request<{ live: LiveEventView }>(`/event/${eventId}/live`, {
       method: "POST",
       body: JSON.stringify({ ...action, displayKey }),
+    });
+  }
+
+  async getSupportView(
+    eventId: string,
+    displayKey: string | null,
+  ): Promise<ApiResponse<{ stats: SupportViewStats }>> {
+    const query = displayKey ? `?${new URLSearchParams({ displayKey })}` : "";
+    return this.request<{ stats: SupportViewStats }>(`/event/${eventId}/support${query}`);
+  }
+
+  async setEventStatementHidden(
+    eventId: string,
+    statementId: string,
+    isHidden: boolean,
+    displayKey: string | null,
+  ): Promise<ApiResponse<{ statement: Statement }>> {
+    return this.request<{ statement: Statement }>(`/event/${eventId}/support/statement/${statementId}/hidden`, {
+      method: "POST",
+      body: JSON.stringify({ isHidden, displayKey: displayKey ?? undefined }),
     });
   }
 

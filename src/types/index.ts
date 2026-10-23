@@ -197,6 +197,11 @@ export interface EventTotals {
   stayedToEndPercent: number;
 }
 
+export interface PostChange {
+  roomId: string;
+  changedAt: number;
+}
+
 export interface LiveEventState {
   roomOrder: string[];
   currentIndex: number | null;
@@ -204,7 +209,9 @@ export interface LiveEventState {
   votingPaused: boolean;
   reloadNonce: number;
   totals: EventTotals | null;
+  postChanges: PostChange[];
   startedAt: number | null;
+  endedAt: number | null;
   updatedAt: number;
 }
 
@@ -221,6 +228,64 @@ export type LiveScreen = "lobby" | "swiping" | "waiting" | "end";
 export interface LiveHeartbeat {
   shownRoomId: string | null;
   screen: LiveScreen;
+}
+
+export type AttendeePhoneState = "swiping" | "waiting" | "lobby" | "end" | "idle";
+
+export interface SupportViewCurrentPost {
+  postNumber: number;
+  topic: string;
+  finishedCount: number;
+  swipingCount: number;
+  agreeVotes: number;
+  disagreeVotes: number;
+  passVotes: number;
+  medianSecondsToFinish: number | null;
+  startedAt: number;
+}
+
+export interface SupportViewPost {
+  roomId: string;
+  postNumber: number;
+  voterCount: number;
+  secondsOnPost: number;
+}
+
+export interface SupportViewAttendeeStatement {
+  id: string;
+  roomId: string;
+  postNumber: number;
+  text: string;
+  agreeVotes: number;
+  disagreeVotes: number;
+  passVotes: number;
+  isHidden: boolean;
+  createdAt: number;
+}
+
+export interface SupportViewMinute {
+  minuteSinceStart: number;
+  votes: number;
+  peopleJoined: number;
+}
+
+export interface SupportViewStats {
+  eventName: string;
+  status: LiveEventStatus;
+  votingPaused: boolean;
+  postCount: number;
+  peopleHere: number;
+  activeNow: number;
+  votes: number;
+  statementsFromRoom: number;
+  phoneCountsByState: Record<AttendeePhoneState, number>;
+  currentPost: SupportViewCurrentPost | null;
+  postsSoFar: SupportViewPost[];
+  attendeeStatements: SupportViewAttendeeStatement[];
+  minutes: SupportViewMinute[];
+  nextPressedAtMinutes: number[];
+  startedAt: number | null;
+  endedAt: number | null;
 }
 
 export type LiveEventAction =

@@ -21,8 +21,10 @@ export interface EventSetupPanelProps {
   currentIndex: number | null;
   joinUrl: string;
   displayUrl: string;
+  supportViewUrl: string;
   onReorder: (roomOrder: string[]) => void;
   onOpenDisplay: () => void;
+  onOpenSupportView: () => void;
 }
 
 export function EventSetupPanel({
@@ -31,8 +33,10 @@ export function EventSetupPanel({
   currentIndex,
   joinUrl,
   displayUrl,
+  supportViewUrl,
   onReorder,
   onOpenDisplay,
+  onOpenSupportView,
 }: EventSetupPanelProps) {
   const hasRooms = rooms.length > 0;
 
@@ -60,6 +64,7 @@ export function EventSetupPanel({
         <div className="space-y-1.5">
           <CopyLinkRow label="Join link" url={joinUrl} />
           <CopyLinkRow label="Display link" url={displayUrl} />
+          <CopyLinkRow label="Support view link" url={supportViewUrl} />
         </div>
 
         <Button
@@ -68,6 +73,14 @@ export function EventSetupPanel({
           onClick={onOpenDisplay}
         >
           Open display
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full"
+          disabled={!hasRooms}
+          onClick={onOpenSupportView}
+        >
+          Open support view
         </Button>
       </div>
     </Card>
