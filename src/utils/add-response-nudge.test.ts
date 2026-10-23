@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { Statement } from "../types";
 import {
-  ADD_RESPONSE_NUDGE_FIRST_SHIMMER_DELAY_MS,
-  ADD_RESPONSE_NUDGE_MAX_SHIMMERS_PER_VISIT,
-  ADD_RESPONSE_NUDGE_SHIMMER_INTERVAL_MS,
-  getDelayUntilNextAddResponseShimmerMs,
+  DELAY_MS,
+  MAX_PER_VISIT,
+  INTERVAL_MS,
+  getDelayUntilNextShimmerMs,
   hasUserAuthoredStatement,
 } from "./add-response-nudge";
 
@@ -44,26 +44,26 @@ describe("hasUserAuthoredStatement", () => {
 
 describe("getDelayUntilNextAddResponseShimmerMs", () => {
   it("waits the short first delay before the first shimmer", () => {
-    expect(getDelayUntilNextAddResponseShimmerMs(0)).toBe(
-      ADD_RESPONSE_NUDGE_FIRST_SHIMMER_DELAY_MS,
+    expect(getDelayUntilNextShimmerMs(0)).toBe(
+      DELAY_MS,
     );
   });
 
   it("waits the repeat interval between later shimmers", () => {
-    expect(getDelayUntilNextAddResponseShimmerMs(1)).toBe(
-      ADD_RESPONSE_NUDGE_SHIMMER_INTERVAL_MS,
+    expect(getDelayUntilNextShimmerMs(1)).toBe(
+      INTERVAL_MS,
     );
     expect(
-      getDelayUntilNextAddResponseShimmerMs(
-        ADD_RESPONSE_NUDGE_MAX_SHIMMERS_PER_VISIT - 1,
+      getDelayUntilNextShimmerMs(
+        MAX_PER_VISIT - 1,
       ),
-    ).toBe(ADD_RESPONSE_NUDGE_SHIMMER_INTERVAL_MS);
+    ).toBe(INTERVAL_MS);
   });
 
   it("stops once the per-visit maximum has been shown", () => {
     expect(
-      getDelayUntilNextAddResponseShimmerMs(
-        ADD_RESPONSE_NUDGE_MAX_SHIMMERS_PER_VISIT,
+      getDelayUntilNextShimmerMs(
+        MAX_PER_VISIT,
       ),
     ).toBeNull();
   });
