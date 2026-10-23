@@ -87,7 +87,7 @@ export function EventSupportView({
             </SupportPanel>
             <SupportPanel title="Joined over time">
               <JoinedOverTimeChart minutes={stats.minutes} />
-              <SupportNote>People here, by minute</SupportNote>
+              <SupportNote>People who have voted, by minute</SupportNote>
             </SupportPanel>
           </div>
 

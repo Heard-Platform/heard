@@ -2,15 +2,23 @@ import { getEventById } from "./model-utils.ts";
 import {
   getAllDebates,
   getCommunity,
+  getDebate,
   getEventDisplayKey,
   getEventPresences,
   getLiveEventState,
+  getStatement,
   getStatementsForRoom,
+  getStatementsForRoomIncludingHidden,
+  getUser,
   getVotesForStatement,
   saveEventDisplayKey,
+  saveStatement,
 } from "./kv-utils.tsx";
+import { markStatementHidden, markStatementVisible } from "./moderation-utils.ts";
+import { buildSupportViewStats, type EventVote } from "./support-view-utils.ts";
 import { RouteError } from "./route-error.ts";
 import {
+  canDriveEvent,
   canModerateEvent,
   createDisplayKey,
   endEvent,
@@ -28,7 +36,16 @@ import {
   countEventHeadcount,
   toLiveEventView,
 } from "./live-event-utils.ts";
-import type { DebateRoom, Event, LiveEventState as EventState, LiveEventView, EventTotals, User } from "./types.tsx";
+import type {
+  DebateRoom,
+  Event,
+  LiveEventState as EventState,
+  LiveEventView,
+  EventTotals,
+  Statement,
+  SupportViewStats,
+  User,
+} from "./types.tsx";
 
 export const parseEventId = (eventIdStr: string | undefined): number => {
   const eventId = Number(eventIdStr);
@@ -85,14 +102,84 @@ export const checkEventPosting = async (
   return check;
 };
 
-const loadEventTotals = async (state: EventState): Promise<EventTotals> => {
-  const statements = (await Promise.all(state.roomOrder.map(getStatementsForRoom))).flat();
-  const votes = await Promise.all(
+const loadVotesForStatements = async (statements: Statement[]): Promise<EventVote[]> =>
+  (await Promise.all(
     statements.map(async (statement) =>
       (await getVotesForStatement(statement.id)).map((vote) => ({ ...vote, roomId: statement.roomId })),
     ),
-  );
-  return countEventTotals(state.roomOrder, statements, votes.flat(), state.startedAt ?? 0);
+  )).flat();
+
+const loadEventTotals = async (state: EventState): Promise<EventTotals> => {
+  const statements = (await Promise.all(state.roomOrder.map(getStatementsForRoom))).flat();
+  return countEventTotals(state.roomOrder, statements, await loadVotesForStatements(statements), state.startedAt ?? 0);
+};
+
+export const requireCanDriveEvent = async (
+  event: Event,
+  userId: string | undefined,
+  providedDisplayKey: string | undefined,
+): Promise<void> => {
+  const [community, user, storedDisplayKey] = await Promise.all([
+    getCommunity(event.communityName),
+    userId ? getUser(userId) : null,
+    getEventDisplayKey(event.id),
+  ]);
+  const isModeratorOrDeveloper =
+    !!userId &&
+    (canModerateEvent(userId, event, community) ||
+      !!user?.isDeveloper);
+  if (
+    !canDriveEvent(
+      isModeratorOrDeveloper,
+      providedDisplayKey,
+      storedDisplayKey,
+    )
+  ) {
+    throw new RouteError(
+      "This link can't open the support view. Open it from the event page.",
+      403,
+    );
+  }
+};
+
+export const loadSupportViewStats = async (
+  event: Event,
+  state: EventState,
+  now: number,
+): Promise<SupportViewStats> => {
+  const [rooms, presences, statements] = await Promise.all([
+    Promise.all(state.roomOrder.map(getDebate)),
+    getEventPresences(event.id),
+    Promise.all(
+      state.roomOrder.map(getStatementsForRoomIncludingHidden),
+    ).then((roomStatements) => roomStatements.flat()),
+  ]);
+  return buildSupportViewStats({
+    eventName: event.name,
+    state,
+    rooms: rooms.filter((room): room is DebateRoom => room !== null),
+    presences,
+    statements,
+    votes: await loadVotesForStatements(statements),
+    now,
+  });
+};
+
+export const setEventStatementHidden = async (
+  state: EventState,
+  statementId: string,
+  isHidden: boolean,
+  userId: string | undefined,
+): Promise<Statement> => {
+  const statement = await getStatement(statementId);
+  if (!statement || !state.roomOrder.includes(statement.roomId)) {
+    throw new RouteError("That statement isn't part of this event", 404);
+  }
+  const updated = isHidden
+    ? markStatementHidden(statement, userId ?? "display-link")
+    : markStatementVisible(statement);
+  await saveStatement(updated);
+  return updated;
 };
 
 export interface EventActionParams {

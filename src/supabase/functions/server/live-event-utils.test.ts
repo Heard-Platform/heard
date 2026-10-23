@@ -54,7 +54,9 @@ Deno.test("defaultLiveEventState - setup with no order and nothing live", () => 
     votingPaused: false,
     reloadNonce: 0,
     totals: null,
+    postChanges: [],
     startedAt: null,
+    endedAt: null,
     updatedAt: NOW,
   });
 });
@@ -118,7 +120,7 @@ const live = (overrides: Partial<LiveEventState> = {}) =>
 const TOTALS = { people: 2, votes: 5, statementsFromRoom: 1, stayedToEndPercent: 50 };
 
 Deno.test("eventStateOrDefault - fills fields missing from an older record", () => {
-  const { totals: _totals, startedAt: _startedAt, ...older } = state({ roomOrder: ["a"] });
+  const { totals: _totals, postChanges: _postChanges, startedAt: _startedAt, endedAt: _endedAt, ...older } = state({ roomOrder: ["a"] });
   assertEquals(eventStateOrDefault(older as LiveEventState, LATER), state({ roomOrder: ["a"] }));
 });
 
@@ -146,6 +148,7 @@ Deno.test("startEvent - goes live on the first post", () => {
     roomOrder: ["a", "b"],
     currentIndex: 0,
     status: "live",
+    postChanges: [{ roomId: "a", changedAt: LATER }],
     startedAt: LATER,
     updatedAt: LATER,
   }));
@@ -157,8 +160,22 @@ Deno.test("startEvent - refused with no posts or once started", () => {
 });
 
 Deno.test("changeActivePost - next and back move one post and resume voting", () => {
-  assertEquals(changeActivePost(live({ votingPaused: true }), 1, 0, LATER), live({ currentIndex: 1, updatedAt: LATER }));
-  assertEquals(changeActivePost(live({ currentIndex: 2, votingPaused: true }), -1, 2, LATER), live({ currentIndex: 1, updatedAt: LATER }));
+  assertEquals(
+    changeActivePost(live({ votingPaused: true }), 1, 0, LATER),
+    live({ currentIndex: 1, postChanges: [{ roomId: "b", changedAt: LATER }], updatedAt: LATER }),
+  );
+  assertEquals(
+    changeActivePost(live({ currentIndex: 2, votingPaused: true }), -1, 2, LATER),
+    live({ currentIndex: 1, postChanges: [{ roomId: "b", changedAt: LATER }], updatedAt: LATER }),
+  );
+});
+
+Deno.test("changeActivePost - records each post change after the earlier ones", () => {
+  const started = live({ postChanges: [{ roomId: "a", changedAt: NOW }] });
+  assertEquals(changeActivePost(started, 1, 0, LATER).postChanges, [
+    { roomId: "a", changedAt: NOW },
+    { roomId: "b", changedAt: LATER },
+  ]);
 });
 
 Deno.test("changeActivePost - a double-tapped Next moves only once", () => {
@@ -182,7 +199,7 @@ Deno.test("setVotingPaused - pauses and resumes only while live", () => {
 Deno.test("endEvent - ends with the totals and clears the pause", () => {
   assertEquals(
     endEvent(live({ votingPaused: true }), TOTALS, LATER),
-    live({ status: "ended", totals: TOTALS, updatedAt: LATER }),
+    live({ status: "ended", totals: TOTALS, endedAt: LATER, updatedAt: LATER }),
   );
   assertRouteError(() => endEvent(state(), TOTALS, LATER), 409);
 });

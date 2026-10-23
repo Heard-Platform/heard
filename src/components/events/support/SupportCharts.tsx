@@ -117,12 +117,12 @@ export function JoinedOverTimeChart({ minutes }: { minutes: SupportViewMinute[] 
           <XAxis {...MINUTE_X_AXIS_PROPS} />
           <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} width={32} />
           <Tooltip
-            content={<MinuteTooltip describeMinute={(minute) => `${minute.peopleHere} people here`} />}
+            content={<MinuteTooltip describeMinute={(minute) => `${minute.peopleJoined} joined`} />}
             cursor={{ stroke: "currentColor", strokeOpacity: 0.2 }}
           />
           <Line
             type="stepAfter"
-            dataKey="peopleHere"
+            dataKey="peopleJoined"
             stroke={AGREE_COLOR}
             strokeWidth={2}
             dot={false}

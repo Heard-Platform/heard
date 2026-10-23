@@ -6,6 +6,7 @@ import { StoryContainer } from "./StoryContainer";
 
 const JOIN_URL = "https://heard.vote/prgn";
 const DISPLAY_URL = "https://heard.vote/event/4/display?key=3f9c2a7be1d84f06a5c0e29d7b41c8aa";
+const SUPPORT_VIEW_URL = "https://heard.vote/event/4/support?key=3f9c2a7be1d84f06a5c0e29d7b41c8aa";
 
 const PRGN_ROOMS: EventSetupRoom[] = [
   { id: "housing", topic: "Housing near transit", emoji: "🏘️" },
@@ -37,8 +38,10 @@ function EventSetupDemo({ rooms, status, currentIndex }: EventSetupDemoProps) {
         currentIndex={currentIndex}
         joinUrl={JOIN_URL}
         displayUrl={DISPLAY_URL}
+        supportViewUrl={SUPPORT_VIEW_URL}
         onReorder={handleReorder}
         onOpenDisplay={() => console.log("[Story] open display")}
+        onOpenSupportView={() => console.log("[Story] open support view")}
       />
     </div>
   );

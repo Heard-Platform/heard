@@ -197,6 +197,11 @@ export interface EventTotals {
   stayedToEndPercent: number;
 }
 
+export interface PostChange {
+  roomId: string;
+  changedAt: number;
+}
+
 export interface LiveEventState {
   roomOrder: string[];
   currentIndex: number | null;
@@ -204,7 +209,9 @@ export interface LiveEventState {
   votingPaused: boolean;
   reloadNonce: number;
   totals: EventTotals | null;
+  postChanges: PostChange[];
   startedAt: number | null;
+  endedAt: number | null;
   updatedAt: number;
 }
 
@@ -259,7 +266,7 @@ export interface SupportViewAttendeeStatement {
 export interface SupportViewMinute {
   minuteSinceStart: number;
   votes: number;
-  peopleHere: number;
+  peopleJoined: number;
 }
 
 export interface SupportViewStats {

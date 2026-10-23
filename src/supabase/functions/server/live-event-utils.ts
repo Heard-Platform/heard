@@ -41,7 +41,9 @@ export const defaultLiveEventState = (now: number): LiveEventState => ({
   votingPaused: false,
   reloadNonce: 0,
   totals: null,
+  postChanges: [],
   startedAt: null,
+  endedAt: null,
   updatedAt: now,
 });
 
@@ -72,7 +74,7 @@ export const countEventHeadcount = (
 export const isLiveScreen = (value: string): value is LiveScreen =>
   (LIVE_SCREENS as readonly string[]).includes(value);
 
-const currentRoomId = (state: LiveEventState): string | null =>
+export const currentRoomId = (state: LiveEventState): string | null =>
   state.currentIndex === null ? null : state.roomOrder[state.currentIndex] ?? null;
 
 export const isCommunityModerator = (
@@ -157,6 +159,7 @@ export const startEvent = (
     currentIndex: 0,
     status: "live",
     votingPaused: false,
+    postChanges: [{ roomId: roomOrder[0], changedAt: now }],
     startedAt: now,
     updatedAt: now,
   };
@@ -173,7 +176,16 @@ export const changeActivePost = (
   const target = currentIndex + offset;
   if (target < 0) throw new RouteError("This is the first post", 409);
   if (target >= state.roomOrder.length) throw new RouteError("This is the last post", 409);
-  return { ...state, currentIndex: target, votingPaused: false, updatedAt: now };
+  return {
+    ...state,
+    currentIndex: target,
+    votingPaused: false,
+    postChanges: [
+      ...state.postChanges,
+      { roomId: state.roomOrder[target], changedAt: now },
+    ],
+    updatedAt: now,
+  };
 };
 
 export const setVotingPaused = (state: LiveEventState, votingPaused: boolean, now: number): LiveEventState => {
@@ -183,7 +195,7 @@ export const setVotingPaused = (state: LiveEventState, votingPaused: boolean, no
 
 export const endEvent = (state: LiveEventState, totals: EventTotals, now: number): LiveEventState => {
   requireEventIsLive(state);
-  return { ...state, status: "ended", votingPaused: false, totals, updatedAt: now };
+  return { ...state, status: "ended", votingPaused: false, totals, endedAt: now, updatedAt: now };
 };
 
 export const reloadEvent = (state: LiveEventState, now: number): LiveEventState => ({

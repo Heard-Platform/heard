@@ -19,8 +19,8 @@ const buildSessionMinutes = (sessionMinutes: number, nextPressedAtMinutes: numbe
   Array.from({ length: sessionMinutes }, (_, minuteSinceStart) => {
     const minutesSinceLastNext = minuteSinceStart - Math.max(0, ...nextPressedAtMinutes.filter((next) => next <= minuteSinceStart));
     const votes = Math.max(4, 48 - minutesSinceLastNext * 9 + (minuteSinceStart % 3) * 4);
-    const peopleHere = Math.min(PEOPLE_HERE, 14 + minuteSinceStart * 11);
-    return { minuteSinceStart, votes, peopleHere };
+    const peopleJoined = Math.min(PEOPLE_HERE, 14 + minuteSinceStart * 11);
+    return { minuteSinceStart, votes, peopleJoined };
   });
 
 const POSTS_BEFORE_CURRENT: SupportViewPost[] = [

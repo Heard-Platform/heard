@@ -5,7 +5,7 @@ import _ from "lodash";
 import { EventSetupPanel } from "./EventSetupPanel";
 import { api } from "../../utils/api";
 import { orderByRoomOrder } from "../../utils/live-event";
-import { createEventDisplayLink, createEventJoinLink } from "../../utils/url";
+import { createEventDisplayLink, createEventJoinLink, createEventSupportViewLink } from "../../utils/url";
 import type { Event, LiveEventView } from "../../types";
 
 export function EventSetupPanelContainer({ event }: { event: Event }) {
@@ -34,6 +34,7 @@ export function EventSetupPanelContainer({ event }: { event: Event }) {
   if (!live || !event.displayKey) return null;
 
   const displayUrl = createEventDisplayLink(event.id, event.displayKey);
+  const supportViewUrl = createEventSupportViewLink(event.id, event.displayKey);
 
   const handleReorder = async (roomOrder: string[]) => {
     const previous = live;
@@ -51,6 +52,10 @@ export function EventSetupPanelContainer({ event }: { event: Event }) {
     window.open(displayUrl, "_blank", "noopener");
   };
 
+  const handleOpenSupportView = () => {
+    window.open(supportViewUrl, "_blank", "noopener");
+  };
+
   return (
     <EventSetupPanel
       rooms={rooms}
@@ -58,8 +63,10 @@ export function EventSetupPanelContainer({ event }: { event: Event }) {
       currentIndex={live.currentIndex}
       joinUrl={createEventJoinLink(event.id).url}
       displayUrl={displayUrl}
+      supportViewUrl={supportViewUrl}
       onReorder={handleReorder}
       onOpenDisplay={handleOpenDisplay}
+      onOpenSupportView={handleOpenSupportView}
     />
   );
 }
