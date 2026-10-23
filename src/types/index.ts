@@ -223,6 +223,64 @@ export interface LiveHeartbeat {
   screen: LiveScreen;
 }
 
+export type AttendeePhoneState = "swiping" | "waiting" | "lobby" | "end" | "idle";
+
+export interface SupportViewCurrentPost {
+  postNumber: number;
+  topic: string;
+  finishedCount: number;
+  swipingCount: number;
+  agreeVotes: number;
+  disagreeVotes: number;
+  passVotes: number;
+  medianSecondsToFinish: number | null;
+  startedAt: number;
+}
+
+export interface SupportViewPost {
+  roomId: string;
+  postNumber: number;
+  voterCount: number;
+  secondsOnPost: number;
+}
+
+export interface SupportViewAttendeeStatement {
+  id: string;
+  roomId: string;
+  postNumber: number;
+  text: string;
+  agreeVotes: number;
+  disagreeVotes: number;
+  passVotes: number;
+  isHidden: boolean;
+  createdAt: number;
+}
+
+export interface SupportViewMinute {
+  minuteSinceStart: number;
+  votes: number;
+  peopleHere: number;
+}
+
+export interface SupportViewStats {
+  eventName: string;
+  status: LiveEventStatus;
+  votingPaused: boolean;
+  postCount: number;
+  peopleHere: number;
+  activeNow: number;
+  votes: number;
+  statementsFromRoom: number;
+  phoneCountsByState: Record<AttendeePhoneState, number>;
+  currentPost: SupportViewCurrentPost | null;
+  postsSoFar: SupportViewPost[];
+  attendeeStatements: SupportViewAttendeeStatement[];
+  minutes: SupportViewMinute[];
+  nextPressedAtMinutes: number[];
+  startedAt: number | null;
+  endedAt: number | null;
+}
+
 export type LiveEventAction =
   | { action: "start" | "pause" | "resume" | "end" | "reload" }
   | { action: "next" | "back"; fromIndex: number }
