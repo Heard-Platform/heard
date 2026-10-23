@@ -32,6 +32,7 @@ export function EventAttendeeContainer({ eventId }: { eventId: string }) {
 function EventAttendeeFlow({ eventId }: { eventId: string }) {
   const { user, voteOnStatement, submitStatement } = useDebateSession();
   const [localVotes, setLocalVotes] = useState<Record<string, SwipeVote>>({});
+  const [statementText, setStatementText] = useState("");
   const heartbeatRef = useRef<LiveHeartbeat | null>(null);
   const { eventState, error } = useEventPolling(eventId, EVENT_POLL_MS, () => heartbeatRef.current);
   const currentRoomId = eventState?.status === "live" ? eventState.currentRoomId : null;
@@ -43,8 +44,9 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
     () => (shownPost ? buildPostDeck(shownPost.statements, userId, localVotes) : null),
     [shownPost, userId, localVotes],
   );
-  const hasCardsLeft = !!deck && deck.votedCount < deck.statements.length;
-  const screen = eventState ? getAttendeeScreen(eventState, hasCardsLeft) : null;
+  const cardsLeftCount = deck ? deck.statements.length - deck.votedCount : 0;
+  const isWritingStatement = statementText.trim().length > 0;
+  const screen = eventState ? getAttendeeScreen(eventState, cardsLeftCount > 0, isWritingStatement) : null;
   const isLoadingPost = (screen === "swiping" || screen === "waiting") && !shownPost;
 
   heartbeatRef.current = screen && !isLoadingPost ? { screen: toLiveScreen(screen), shownRoomId: currentRoomId } : null;
@@ -58,6 +60,10 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
   useEffect(() => {
     if (shownPost) api.trackEvent("live_post_shown", shownPost.room.id);
   }, [shownPost?.room.id]);
+
+  useEffect(() => {
+    setStatementText("");
+  }, [currentRoomId]);
 
   useEffect(() => {
     if (screen !== "waiting") return;
@@ -77,6 +83,7 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
     try {
       const { statement } = await submitStatement(currentRoomId, text);
       api.trackEvent("live_statement_added", currentRoomId);
+      setStatementText("");
       addStatement(statement);
       refreshPost();
       return true;
@@ -84,6 +91,11 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
       toast.error(submitError instanceof Error ? submitError.message : "Couldn't add that. Try again.");
       return false;
     }
+  };
+
+  const handleVoteOnNewStatements = () => {
+    api.trackEvent("live_new_statements_tapped", currentRoomId ?? undefined);
+    setStatementText("");
   };
 
   if (!eventState && error) return <AttendeeNotice title="Can't find this event" body="Check the link and try again." />;
@@ -100,7 +112,11 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
           moment="waiting"
           peopleHere={eventState.peopleHere}
           finishedCurrentPost={eventState.finishedCurrentPost}
+          statementText={statementText}
+          newStatementCount={cardsLeftCount}
+          onStatementTextChange={setStatementText}
           onAddStatement={handleAddStatement}
+          onVoteOnNewStatements={handleVoteOnNewStatements}
         />
       );
     case "swiping":

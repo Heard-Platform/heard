@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import type { DebateRoom, Statement } from "../types";
 import { EventLobby } from "../components/events/attendee/EventLobby";
@@ -9,6 +9,7 @@ import { PhoneFrame } from "./PhoneFrame";
 
 const HOST_ID = "host";
 const STORY_DELAY_MS = 800;
+const NEW_STATEMENTS_ARRIVE_MS = 3000;
 
 const ROOM = {
   id: "hourly",
@@ -42,12 +43,7 @@ function SwipeDemo({ initialVotedCount }: { initialVotedCount: number }) {
       </Button>
       <PhoneFrame>
         {isFinished ? (
-          <EventLobby
-            moment="waiting"
-            peopleHere={52}
-            finishedCurrentPost={44}
-            onAddStatement={addStatementInStory}
-          />
+          <WaitingDemo initialStatementText="" arrivingStatementCount={0} />
         ) : (
           <EventSwipeScreen
             room={ROOM}
@@ -64,17 +60,56 @@ function SwipeDemo({ initialVotedCount }: { initialVotedCount: number }) {
   );
 }
 
-const addStatementInStory = (text: string) =>
-  new Promise<boolean>((resolve) => {
-    console.log("[Story] add statement", text);
-    setTimeout(() => resolve(true), STORY_DELAY_MS);
-  });
+function WaitingDemo({
+  initialStatementText,
+  arrivingStatementCount,
+}: {
+  initialStatementText: string;
+  arrivingStatementCount: number;
+}) {
+  const [statementText, setStatementText] = useState(initialStatementText);
+  const [newStatementCount, setNewStatementCount] = useState(0);
+
+  useEffect(() => {
+    if (arrivingStatementCount === 0) return;
+    const timer = setTimeout(() => setNewStatementCount(arrivingStatementCount), NEW_STATEMENTS_ARRIVE_MS);
+    return () => clearTimeout(timer);
+  }, [arrivingStatementCount]);
+
+  const addStatementInStory = (text: string) =>
+    new Promise<boolean>((resolve) => {
+      console.log("[Story] add statement", text);
+      setTimeout(() => {
+        setStatementText("");
+        resolve(true);
+      }, STORY_DELAY_MS);
+    });
+
+  const voteOnNewStatementsInStory = () => {
+    console.log("[Story] vote on new statements, typed text cleared");
+    setStatementText("");
+    setNewStatementCount(0);
+  };
+
+  return (
+    <EventLobby
+      moment="waiting"
+      peopleHere={52}
+      finishedCurrentPost={44}
+      statementText={statementText}
+      newStatementCount={newStatementCount}
+      onStatementTextChange={setStatementText}
+      onAddStatement={addStatementInStory}
+      onVoteOnNewStatements={voteOnNewStatementsInStory}
+    />
+  );
+}
 
 export function EventAttendeeStory() {
   return (
     <StoryContainer
       title="Event Attendee"
-      description="What a phone shows during an event, in the Swipe Six layout. The pill shows the post's question without its community. The lobby has four wordings (starting soon, paused, waiting for the others, ended). Swiping counts this post's statements only; finishing them lands on waiting for the others, where you can add a statement."
+      description="What a phone shows during an event, in the Swipe Six layout. The pill shows the post's question without its community. The lobby has four wordings (starting soon, paused, waiting for the others, ended). Swiping counts this post's statements only; finishing them lands on waiting for the others, where you can add a statement. New statements never interrupt someone writing: the phone stays on the text box and offers to vote on them, which clears what was typed. Submitting goes back to voting."
       variants={[
         {
           id: "starting",
@@ -93,7 +128,16 @@ export function EventAttendeeStory() {
           label: "Waiting for the others",
           children: (
             <PhoneFrame>
-              <EventLobby moment="waiting" peopleHere={52} finishedCurrentPost={44} onAddStatement={addStatementInStory} />
+              <WaitingDemo initialStatementText="" arrivingStatementCount={0} />
+            </PhoneFrame>
+          ),
+        },
+        {
+          id: "new-statements-while-writing",
+          label: "New statements while writing",
+          children: (
+            <PhoneFrame>
+              <WaitingDemo initialStatementText="Clients want flat fees but still ask" arrivingStatementCount={3} />
             </PhoneFrame>
           ),
         },

@@ -40,11 +40,12 @@ export type AttendeeScreen = "starting" | "paused" | "swiping" | "waiting" | "en
 export function getAttendeeScreen(
   eventState: Pick<LiveEventView, "status" | "votingPaused">,
   hasCardsLeft: boolean,
+  isWritingStatement: boolean,
 ): AttendeeScreen {
   if (eventState.status === "setup") return "starting";
   if (eventState.status === "ended") return "end";
   if (eventState.votingPaused) return "paused";
-  return hasCardsLeft ? "swiping" : "waiting";
+  return hasCardsLeft && !isWritingStatement ? "swiping" : "waiting";
 }
 
 const HEARTBEAT_SCREENS: Record<AttendeeScreen, LiveScreen> = {
