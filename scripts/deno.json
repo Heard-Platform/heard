@@ -1,5 +1,6 @@
 {
   "imports": {
+    "lodash": "npm:lodash@^4.17.21",
     "@std/dotenv": "jsr:@std/dotenv@^0.225.5",
     "@std/cli/parse-args": "jsr:@std/cli@^1.0.6/parse-args"
   },
