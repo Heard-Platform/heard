@@ -86,6 +86,7 @@ const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: str
   shirt: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
   sign: { flyerId: WAYMO_DC_ROOM_ID, statementId: WAYMO_DC_STATEMENT_ID },
   card: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
+  banner: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
 };
 
 const IDEAS_ROOM_ID = "zmai0sb2fbemrxm4yc6";
@@ -423,7 +424,7 @@ function AppContent() {
       const isTopangaRoute = route === "topanga";
       const isAiRoute = route === "ai";
       const hardcodedFlyerMatch = pathname.match(
-        /^\/(shirt|sign|card)-(agree|disagree)/,
+        /^\/(shirt|sign|card|banner)-(agree|disagree)/,
       );
       const clubFlyerMatch = pathname.match(/^\/club-(yes|no)/);
       const isClubRoute = /^\/club\/?$/.test(pathname);
