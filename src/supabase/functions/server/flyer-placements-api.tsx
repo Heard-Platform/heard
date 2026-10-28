@@ -43,7 +43,7 @@ flyerPlacementsApi.post(
     {
       roomId: { type: "string", required: true },
       statementId: { type: "string", required: true },
-      flyers: { type: "object", required: true, validate: Array.isArray, errorMessage: "flyers must be an array" },
+      flyers: { type: "array", required: true, errorMessage: "flyers must be an array" },
     },
     async (
       { roomId, statementId, flyers }: { roomId: string; statementId: string; flyers: unknown[] },
