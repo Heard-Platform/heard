@@ -138,7 +138,7 @@ export function VoteResultSnackbar({ latestVote, onDismiss }: VoteResultSnackbar
           key="vote-result-snackbar"
           role="status"
           aria-live="polite"
-          className="fixed inset-x-3 top-2.5 z-50 mx-auto max-w-[var(--room-card-max-width)]"
+          className="fixed inset-x-3 top-2.5 alert-layer mx-auto max-w-[var(--room-card-max-width)]"
           initial={{ y: "-160%", opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: "-160%", opacity: 0 }}
