@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { RoomCard } from "../RoomCard";
 import { SwipeTutorialProvider } from "../../contexts/SwipeTutorialContext";
 import { FeedbackCardsProvider } from "../../contexts/FeedbackCardsContext";
+import { VoteResultSnackbarProvider } from "../../contexts/VoteResultSnackbarContext";
 import { DebateRoom, Statement, UserSession, VoteType } from "../../types";
 
 export interface EventRoomViewProps {
@@ -37,21 +38,23 @@ export function EventRoomView({
     >
       <SwipeTutorialProvider>
         <FeedbackCardsProvider>
-          <RoomCard
-            room={room}
-            statements={statements}
-            loadingStatements={false}
-            isDeveloper={user.isDeveloper || false}
-            isActive={true}
-            user={user}
-            currentSubHeard={currentSubHeard}
-            onSubmitStatement={onSubmitStatement}
-            onVoteOnStatement={onVoteOnStatement}
-            onRefreshStatements={onRefreshStatements}
-            onDiscussStatement={() => {}}
-            onShowAccountSetupModal={onShowAccountSetupModal}
-            onSubHeardChange={onSubHeardChange}
-          />
+          <VoteResultSnackbarProvider>
+            <RoomCard
+              room={room}
+              statements={statements}
+              loadingStatements={false}
+              isDeveloper={user.isDeveloper || false}
+              isActive={true}
+              user={user}
+              currentSubHeard={currentSubHeard}
+              onSubmitStatement={onSubmitStatement}
+              onVoteOnStatement={onVoteOnStatement}
+              onRefreshStatements={onRefreshStatements}
+              onDiscussStatement={() => {}}
+              onShowAccountSetupModal={onShowAccountSetupModal}
+              onSubHeardChange={onSubHeardChange}
+            />
+          </VoteResultSnackbarProvider>
         </FeedbackCardsProvider>
       </SwipeTutorialProvider>
     </motion.div>

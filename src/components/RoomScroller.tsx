@@ -22,6 +22,7 @@ import { FeedCardMotion } from "./FeedCardMotion";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { SwipeTutorialProvider, useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { FeedbackCardsProvider } from "../contexts/FeedbackCardsContext";
+import { VoteResultSnackbarProvider } from "../contexts/VoteResultSnackbarContext";
 import { CreateRoomCard } from "./CreateRoomCard";
 import { EventCard } from "./events/EventCard";
 import { SwipeSixBanner } from "./swipe-six/SwipeSixBanner";
@@ -397,7 +398,9 @@ export const RoomScroller = forwardRef<RoomScrollerRef, RoomScrollerProps>(
   (props, ref) => (
     <SwipeTutorialProvider>
       <FeedbackCardsProvider>
-        <RoomScrollerInner {...props} ref={ref} />
+        <VoteResultSnackbarProvider>
+          <RoomScrollerInner {...props} ref={ref} />
+        </VoteResultSnackbarProvider>
       </FeedbackCardsProvider>
     </SwipeTutorialProvider>
   ),

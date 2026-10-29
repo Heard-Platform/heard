@@ -43,6 +43,7 @@ import { CommunityExplorerDialogStory } from "../stories/CommunityExplorerDialog
 import { OrgsLandingStory } from "../stories/OrgsLanding.story";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { SwipeTutorialProvider } from "../contexts/SwipeTutorialContext";
+import { VoteResultSnackbarProvider } from "../contexts/VoteResultSnackbarContext";
 import { safelyGetStorageItem, safelySetStorageItem } from "../utils/localStorage";
 import { Story as QRGeneratorPageStory } from "../stories/QRGenerationPage.story";
 import { WriteRantStepStory } from "../stories/WriteRantStep.story";
@@ -67,7 +68,7 @@ import { FlyerSensorsStory } from "../stories/FlyerSensors.story";
 import { DisplayModeScreenStory } from "../stories/DisplayModeScreen.story";
 import { RoomAnalyticsModalStory } from "../stories/RoomAnalyticsModal.story";
 import { StatementVoterAnimalsStory } from "../stories/StatementVoterAnimals.story";
-import { VoteSwingOverlayStory } from "../stories/VoteSwingOverlay.story";
+import { VoteResultSnackbarStory } from "../stories/VoteResultSnackbar.story";
 import { AnonResponseTripwireStory } from "../stories/AnonResponseTripwire.story";
 import { ClusterMinimapStory } from "../stories/ClusterMinimap.story";
 import { EventSetupPanelStory } from "../stories/EventSetupPanel.story";
@@ -94,336 +95,338 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
 
   return (
     <SwipeTutorialProvider>
-      <DebateSessionProvider showcase={true}>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
-          <div className="max-w-6xl mx-auto">
-            {/* Header */}
-            <div className="heard-between mb-8">
-              <div className="flex items-center gap-3">
-                <Button
-                  onClick={onExit}
-                  variant="ghost"
-                  size="sm"
-                  className="gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Exit Showcase
-                </Button>
-                <div>
-                  <h1 className="text-slate-900 flex items-center gap-2">
-                    <Code2 className="w-6 h-6" />
-                    Component Showcase
-                  </h1>
-                  <p className="text-sm text-slate-600">
-                    Interactive component testing with mock data
-                  </p>
+      <VoteResultSnackbarProvider>
+        <DebateSessionProvider showcase={true}>
+          <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+            <div className="max-w-6xl mx-auto">
+              {/* Header */}
+              <div className="heard-between mb-8">
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={onExit}
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Exit Showcase
+                  </Button>
+                  <div>
+                    <h1 className="text-slate-900 flex items-center gap-2">
+                      <Code2 className="w-6 h-6" />
+                      Component Showcase
+                    </h1>
+                    <p className="text-sm text-slate-600">
+                      Interactive component testing with mock data
+                    </p>
+                  </div>
                 </div>
+                <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
+                  Development Mode
+                </Badge>
               </div>
-              <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
-                Development Mode
-              </Badge>
+  
+              {/* Component Tabs */}
+              <Tabs 
+                defaultValue={getInitialTab()} 
+                className="w-full"
+                onValueChange={handleTabChange}
+              >
+                <TabsList className="mb-6">
+                  <TabsTrigger value="results">Results</TabsTrigger>
+                  <TabsTrigger value="results-cards">Results Cards</TabsTrigger>
+                  <TabsTrigger value="create-room">Create Room</TabsTrigger>
+                  <TabsTrigger value="votes-drawer">Votes Drawer</TabsTrigger>
+                  <TabsTrigger value="debate-scroller">Debate Scroller</TabsTrigger>
+                  <TabsTrigger value="debate-analysis-report">Debate Analysis Report</TabsTrigger>
+                  <TabsTrigger value="debate-analysis-report-demo">Debate Analysis Report (Demo)</TabsTrigger>
+                  <TabsTrigger value="ask-the-data">Ask the Data</TabsTrigger>
+                  <TabsTrigger value="unsubscribe-page">Unsubscribe Page</TabsTrigger>
+                  <TabsTrigger value="swipeable-statement-stack">Swipeable Statement Stack</TabsTrigger>
+                  <TabsTrigger value="swipe-instructions">Swipe Instructions</TabsTrigger>
+                  <TabsTrigger value="music-league-card-stack">YouTube Card Stack</TabsTrigger>
+                  <TabsTrigger value="time-left-badge">Time Left Badge</TabsTrigger>
+                  <TabsTrigger value="qr-generator">QR Generator Page</TabsTrigger>
+                  <TabsTrigger value="qr-scan-result-dialog">QR Scan Result Dialog</TabsTrigger>
+                  <TabsTrigger value="flyer-swipe-screen">Flyer Swipe Screen</TabsTrigger>
+                  <TabsTrigger value="swipe-six">Swipe Six</TabsTrigger>
+                  <TabsTrigger value="flyer-sign-up">Flyer Sign-up</TabsTrigger>
+                  <TabsTrigger value="flyer-landing">Flyer Landing</TabsTrigger>
+                  <TabsTrigger value="flyer-scan-screen">Flyer Scan Screen</TabsTrigger>
+                  <TabsTrigger value="personal-flyer-scan">Personal Flyer Scan</TabsTrigger>
+                  <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
+                  <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
+                  <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
+                  <TabsTrigger value="certify-card">Certify Card</TabsTrigger>
+                  <TabsTrigger value="feedback-card">Feedback Card</TabsTrigger>
+                  <TabsTrigger value="feedback-note-sheet">Feedback Note Sheet</TabsTrigger>
+                  <TabsTrigger value="email-ask-sheet">Email Ask Sheet</TabsTrigger>
+                  <TabsTrigger value="anon-account-setup-modal">Anon Account Setup Modal</TabsTrigger>
+                  <TabsTrigger value="comment-modal">Comment Modal</TabsTrigger>
+                  <TabsTrigger value="edit-answers-modal">Edit Answers Modal</TabsTrigger>
+                  <TabsTrigger value="data-privacy-modal">Data Privacy Modal</TabsTrigger>
+                  <TabsTrigger value="custom-demographic-question">Custom Demographic Question</TabsTrigger>
+                  <TabsTrigger value="advanced-features">Advanced Features</TabsTrigger>
+                  <TabsTrigger value="side-panel-menu">Side Panel Menu</TabsTrigger>
+                  <TabsTrigger value="room-alerts-list">Room Alerts List</TabsTrigger>
+                  <TabsTrigger value="community-admin-dialog">Community Admin Dialog</TabsTrigger>
+                  <TabsTrigger value="feed-customization-modal">Feed Customization Modal</TabsTrigger>
+                  <TabsTrigger value="feedback-sheet">Feedback Sheet</TabsTrigger>
+                  <TabsTrigger value="community-explorer-dialog">Community Explorer Dialog</TabsTrigger>
+                  <TabsTrigger value="orgs-landing">Orgs Landing</TabsTrigger>
+                  <TabsTrigger value="write-rant-step">Write Rant Step</TabsTrigger>
+                  <TabsTrigger value="create-post-flow">Create Post Flow (new)</TabsTrigger>
+                  <TabsTrigger value="hot-takes-list">Hot Takes List</TabsTrigger>
+                  <TabsTrigger value="create-event-sheet">Create Event Sheet</TabsTrigger>
+                  <TabsTrigger value="event-room-listing">Event Room Listing</TabsTrigger>
+                  <TabsTrigger value="event-card">Event Card</TabsTrigger>
+                  <TabsTrigger value="hide-and-merge-modal">Hide & Merge Modal</TabsTrigger>
+                  <TabsTrigger value="vote-matrix">Vote Matrix</TabsTrigger>
+                  <TabsTrigger value="statement-votes-table">Statement Votes Table</TabsTrigger>
+                  <TabsTrigger value="bridge-statements-section">Bridge Statements Section</TabsTrigger>
+                  <TabsTrigger value="statement-spectrum">Statement Spectrum</TabsTrigger>
+                  <TabsTrigger value="user-timeline">User Timeline</TabsTrigger>
+                  <TabsTrigger value="room-card">Room Card</TabsTrigger>
+                  <TabsTrigger value="single-post-view">Single Post View</TabsTrigger>
+                  <TabsTrigger value="funding-page">Funding Page</TabsTrigger>
+                  <TabsTrigger value="funding-teaser">Funding Teaser</TabsTrigger>
+                  <TabsTrigger value="email-monitoring">Email Monitoring</TabsTrigger>
+                  <TabsTrigger value="event-timeline">Event Timeline</TabsTrigger>
+                  <TabsTrigger value="feedback-cards-tab">Feedback Cards Tab</TabsTrigger>
+                  <TabsTrigger value="flyer-sensors">Flyer Sensors</TabsTrigger>
+                  <TabsTrigger value="display-mode-screen">Display Mode Screen</TabsTrigger>
+                  <TabsTrigger value="room-analytics">Room Analytics</TabsTrigger>
+                  <TabsTrigger value="statement-voter-animals">Statement Voter Animals</TabsTrigger>
+                  <TabsTrigger value="vote-result-snackbar">Vote Result Snackbar</TabsTrigger>
+                  <TabsTrigger value="anon-response-tripwire">Anon Response Tripwire</TabsTrigger>
+                  <TabsTrigger value="cluster-minimap">Cluster Minimap</TabsTrigger>
+                  <TabsTrigger value="event-setup-panel">Event Setup Panel</TabsTrigger>
+                  <TabsTrigger value="event-attendee">Event Attendee</TabsTrigger>
+                  <TabsTrigger value="event-display">Event Display</TabsTrigger>
+                  <TabsTrigger value="event-support-view">Event Support View</TabsTrigger>
+                </TabsList>
+  
+                <TabsContent value="results-cards">
+                  <ResultsCardsStory />
+                </TabsContent>
+  
+                <TabsContent value="create-room">
+                  <CreateRoomSheetStory />
+                  <CreateRoomCardStory />
+                </TabsContent>
+  
+                <TabsContent value="votes-drawer">
+                  <VotesDrawerStory />
+                </TabsContent>
+  
+                <TabsContent value="debate-scroller">
+                  <DebateScrollerStory />
+                </TabsContent>
+  
+                <TabsContent value="debate-analysis-report">
+                  <DebateAnalysisReportStory />
+                </TabsContent>
+  
+                <TabsContent value="debate-analysis-report-demo">
+                  <DebateAnalysisReportDemoStory />
+                </TabsContent>
+  
+                <TabsContent value="ask-the-data">
+                  <AskTheDataStory />
+                </TabsContent>
+  
+                <TabsContent value="unsubscribe-page">
+                  <UnsubscribePageStory />
+                </TabsContent>
+  
+                <TabsContent value="swipeable-statement-stack">
+                  <SwipeableStatementStackStory />
+                </TabsContent>
+  
+                <TabsContent value="swipe-instructions">
+                  <SwipeInstructionsStory />
+                </TabsContent>
+  
+                <TabsContent value="music-league-card-stack">
+                  <MusicLeagueCardStackStory />
+                </TabsContent>
+  
+                <TabsContent value="time-left-badge">
+                  <TimeLeftBadgeStory />
+                </TabsContent>
+                <TabsContent value="qr-generator">
+                  <QRGeneratorPageStory />
+                </TabsContent>
+                <TabsContent value="qr-scan-result-dialog">
+                  <QRScanResultDialogStory />
+                </TabsContent>
+                <TabsContent value="flyer-swipe-screen">
+                  <FlyerSwipeScreenStory />
+                </TabsContent>
+                <TabsContent value="swipe-six">
+                  <SwipeSixStory />
+                </TabsContent>
+                <TabsContent value="flyer-sign-up">
+                  <FlyerSignUpStory />
+                </TabsContent>
+                <TabsContent value="flyer-landing">
+                  <FlyerLandingStory />
+                </TabsContent>
+                <TabsContent value="flyer-scan-screen">
+                  <FlyerScanStory />
+                </TabsContent>
+                <TabsContent value="personal-flyer-scan">
+                  <PersonalFlyerScanStory />
+                </TabsContent>
+                <TabsContent value="youtube-card">
+                  <YouTubeCardStory />
+                </TabsContent>
+                <TabsContent value="intro-modal">
+                  <IntroModalStory />
+                </TabsContent>
+                <TabsContent value="demographics-card">
+                  <DemographicsCardStory />
+                </TabsContent>
+                <TabsContent value="certify-card">
+                  <CertifyCardStory />
+                </TabsContent>
+                <TabsContent value="feedback-card">
+                  <FeedbackCardStory />
+                </TabsContent>
+                <TabsContent value="feedback-note-sheet">
+                  <FeedbackNoteSheetStory />
+                </TabsContent>
+                <TabsContent value="email-ask-sheet">
+                  <EmailAskSheetStory />
+                </TabsContent>
+                <TabsContent value="anon-account-setup-modal">
+                  <AnonAccountSetupModalStory />
+                </TabsContent>
+                <TabsContent value="comment-modal">
+                  <CommentingModalStory />
+                </TabsContent>
+                <TabsContent value="edit-answers-modal">
+                  <EditAnswersModalStory />
+                </TabsContent>
+                <TabsContent value="data-privacy-modal">
+                  <DataPrivacyModalStory />
+                </TabsContent>
+                <TabsContent value="custom-demographic-question">
+                  <CustomDemographicQuestionStory />
+                </TabsContent>
+                <TabsContent value="advanced-features">
+                  <AdvancedFeaturesStory />
+                </TabsContent>
+                <TabsContent value="side-panel-menu">
+                  <SidePanelMenuStory />
+                </TabsContent>
+                <TabsContent value="room-alerts-list">
+                  <RoomAlertsListStory />
+                </TabsContent>
+                <TabsContent value="community-admin-dialog">
+                  <CommunityAdminDialogStory />
+                </TabsContent>
+                <TabsContent value="feedback-sheet">
+                  <FeedbackSheetStory />
+                </TabsContent>
+                <TabsContent value="community-explorer-dialog">
+                  <CommunityExplorerDialogStory />
+                </TabsContent>
+                <TabsContent value="orgs-landing">
+                  <OrgsLandingStory />
+                </TabsContent>
+                <TabsContent value="write-rant-step">
+                  <WriteRantStepStory />
+                </TabsContent>
+                <TabsContent value="create-post-flow">
+                  <CreatePostFlowStory />
+                </TabsContent>
+                <TabsContent value="hot-takes-list">
+                  <HotTakesListStory />
+                </TabsContent>
+                <TabsContent value="create-event-sheet">
+                  <CreateEventSheetStory />
+                </TabsContent>
+                <TabsContent value="event-room-listing">
+                  <Story />
+                </TabsContent>
+                <TabsContent value="event-card">
+                  <EventCardStory />
+                </TabsContent>
+                <TabsContent value="hide-and-merge-modal">
+                  <HideAndMergeModalStory />
+                </TabsContent>
+                <TabsContent value="vote-matrix">
+                  <VoteMatrixStory />
+                </TabsContent>
+                <TabsContent value="statement-votes-table">
+                  <StatementVotesTableStory />
+                </TabsContent>
+                <TabsContent value="bridge-statements-section">
+                  <BridgeStatementsSectionStory />
+                </TabsContent>
+                <TabsContent value="statement-spectrum">
+                  <StatementSpectrumStory />
+                </TabsContent>
+                <TabsContent value="user-timeline">
+                  <UserTimelineChartStory />
+                </TabsContent>
+                <TabsContent value="room-card">
+                  <RoomCardStory />
+                </TabsContent>
+                <TabsContent value="funding-page">
+                  <FundingPageStory />
+                </TabsContent>
+                <TabsContent value="funding-teaser">
+                  <FundingTeaserStory />
+                </TabsContent>
+                <TabsContent value="email-monitoring">
+                  <EmailMonitoringTabStory />
+                </TabsContent>
+                <TabsContent value="event-timeline">
+                  <EventTimelineTabStory />
+                </TabsContent>
+                <TabsContent value="feedback-cards-tab">
+                  <FeedbackCardsTabStory />
+                </TabsContent>
+                <TabsContent value="flyer-sensors">
+                  <FlyerSensorsStory />
+                </TabsContent>
+                <TabsContent value="display-mode-screen">
+                  <DisplayModeScreenStory />
+                </TabsContent>
+                <TabsContent value="room-analytics">
+                  <RoomAnalyticsModalStory />
+                </TabsContent>
+                <TabsContent value="statement-voter-animals">
+                  <StatementVoterAnimalsStory />
+                </TabsContent>
+                <TabsContent value="vote-result-snackbar">
+                  <VoteResultSnackbarStory />
+                </TabsContent>
+                <TabsContent value="anon-response-tripwire">
+                  <AnonResponseTripwireStory />
+                </TabsContent>
+                <TabsContent value="cluster-minimap">
+                  <ClusterMinimapStory />
+                </TabsContent>
+                <TabsContent value="event-setup-panel">
+                  <EventSetupPanelStory />
+                </TabsContent>
+                <TabsContent value="event-attendee">
+                  <EventAttendeeStory />
+                </TabsContent>
+                <TabsContent value="event-display">
+                  <EventDisplayStory />
+                </TabsContent>
+                <TabsContent value="event-support-view">
+                  <EventSupportViewStory />
+                </TabsContent>
+              </Tabs>
             </div>
-
-            {/* Component Tabs */}
-            <Tabs 
-              defaultValue={getInitialTab()} 
-              className="w-full"
-              onValueChange={handleTabChange}
-            >
-              <TabsList className="mb-6">
-                <TabsTrigger value="results">Results</TabsTrigger>
-                <TabsTrigger value="results-cards">Results Cards</TabsTrigger>
-                <TabsTrigger value="create-room">Create Room</TabsTrigger>
-                <TabsTrigger value="votes-drawer">Votes Drawer</TabsTrigger>
-                <TabsTrigger value="debate-scroller">Debate Scroller</TabsTrigger>
-                <TabsTrigger value="debate-analysis-report">Debate Analysis Report</TabsTrigger>
-                <TabsTrigger value="debate-analysis-report-demo">Debate Analysis Report (Demo)</TabsTrigger>
-                <TabsTrigger value="ask-the-data">Ask the Data</TabsTrigger>
-                <TabsTrigger value="unsubscribe-page">Unsubscribe Page</TabsTrigger>
-                <TabsTrigger value="swipeable-statement-stack">Swipeable Statement Stack</TabsTrigger>
-                <TabsTrigger value="swipe-instructions">Swipe Instructions</TabsTrigger>
-                <TabsTrigger value="music-league-card-stack">YouTube Card Stack</TabsTrigger>
-                <TabsTrigger value="time-left-badge">Time Left Badge</TabsTrigger>
-                <TabsTrigger value="qr-generator">QR Generator Page</TabsTrigger>
-                <TabsTrigger value="qr-scan-result-dialog">QR Scan Result Dialog</TabsTrigger>
-                <TabsTrigger value="flyer-swipe-screen">Flyer Swipe Screen</TabsTrigger>
-                <TabsTrigger value="swipe-six">Swipe Six</TabsTrigger>
-                <TabsTrigger value="flyer-sign-up">Flyer Sign-up</TabsTrigger>
-                <TabsTrigger value="flyer-landing">Flyer Landing</TabsTrigger>
-                <TabsTrigger value="flyer-scan-screen">Flyer Scan Screen</TabsTrigger>
-                <TabsTrigger value="personal-flyer-scan">Personal Flyer Scan</TabsTrigger>
-                <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
-                <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
-                <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
-                <TabsTrigger value="certify-card">Certify Card</TabsTrigger>
-                <TabsTrigger value="feedback-card">Feedback Card</TabsTrigger>
-                <TabsTrigger value="feedback-note-sheet">Feedback Note Sheet</TabsTrigger>
-                <TabsTrigger value="email-ask-sheet">Email Ask Sheet</TabsTrigger>
-                <TabsTrigger value="anon-account-setup-modal">Anon Account Setup Modal</TabsTrigger>
-                <TabsTrigger value="comment-modal">Comment Modal</TabsTrigger>
-                <TabsTrigger value="edit-answers-modal">Edit Answers Modal</TabsTrigger>
-                <TabsTrigger value="data-privacy-modal">Data Privacy Modal</TabsTrigger>
-                <TabsTrigger value="custom-demographic-question">Custom Demographic Question</TabsTrigger>
-                <TabsTrigger value="advanced-features">Advanced Features</TabsTrigger>
-                <TabsTrigger value="side-panel-menu">Side Panel Menu</TabsTrigger>
-                <TabsTrigger value="room-alerts-list">Room Alerts List</TabsTrigger>
-                <TabsTrigger value="community-admin-dialog">Community Admin Dialog</TabsTrigger>
-                <TabsTrigger value="feed-customization-modal">Feed Customization Modal</TabsTrigger>
-                <TabsTrigger value="feedback-sheet">Feedback Sheet</TabsTrigger>
-                <TabsTrigger value="community-explorer-dialog">Community Explorer Dialog</TabsTrigger>
-                <TabsTrigger value="orgs-landing">Orgs Landing</TabsTrigger>
-                <TabsTrigger value="write-rant-step">Write Rant Step</TabsTrigger>
-                <TabsTrigger value="create-post-flow">Create Post Flow (new)</TabsTrigger>
-                <TabsTrigger value="hot-takes-list">Hot Takes List</TabsTrigger>
-                <TabsTrigger value="create-event-sheet">Create Event Sheet</TabsTrigger>
-                <TabsTrigger value="event-room-listing">Event Room Listing</TabsTrigger>
-                <TabsTrigger value="event-card">Event Card</TabsTrigger>
-                <TabsTrigger value="hide-and-merge-modal">Hide & Merge Modal</TabsTrigger>
-                <TabsTrigger value="vote-matrix">Vote Matrix</TabsTrigger>
-                <TabsTrigger value="statement-votes-table">Statement Votes Table</TabsTrigger>
-                <TabsTrigger value="bridge-statements-section">Bridge Statements Section</TabsTrigger>
-                <TabsTrigger value="statement-spectrum">Statement Spectrum</TabsTrigger>
-                <TabsTrigger value="user-timeline">User Timeline</TabsTrigger>
-                <TabsTrigger value="room-card">Room Card</TabsTrigger>
-                <TabsTrigger value="single-post-view">Single Post View</TabsTrigger>
-                <TabsTrigger value="funding-page">Funding Page</TabsTrigger>
-                <TabsTrigger value="funding-teaser">Funding Teaser</TabsTrigger>
-                <TabsTrigger value="email-monitoring">Email Monitoring</TabsTrigger>
-                <TabsTrigger value="event-timeline">Event Timeline</TabsTrigger>
-                <TabsTrigger value="feedback-cards-tab">Feedback Cards Tab</TabsTrigger>
-                <TabsTrigger value="flyer-sensors">Flyer Sensors</TabsTrigger>
-                <TabsTrigger value="display-mode-screen">Display Mode Screen</TabsTrigger>
-                <TabsTrigger value="room-analytics">Room Analytics</TabsTrigger>
-                <TabsTrigger value="statement-voter-animals">Statement Voter Animals</TabsTrigger>
-                <TabsTrigger value="vote-swing-overlay">Vote Swing Overlay</TabsTrigger>
-                <TabsTrigger value="anon-response-tripwire">Anon Response Tripwire</TabsTrigger>
-                <TabsTrigger value="cluster-minimap">Cluster Minimap</TabsTrigger>
-                <TabsTrigger value="event-setup-panel">Event Setup Panel</TabsTrigger>
-                <TabsTrigger value="event-attendee">Event Attendee</TabsTrigger>
-                <TabsTrigger value="event-display">Event Display</TabsTrigger>
-                <TabsTrigger value="event-support-view">Event Support View</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="results-cards">
-                <ResultsCardsStory />
-              </TabsContent>
-
-              <TabsContent value="create-room">
-                <CreateRoomSheetStory />
-                <CreateRoomCardStory />
-              </TabsContent>
-
-              <TabsContent value="votes-drawer">
-                <VotesDrawerStory />
-              </TabsContent>
-
-              <TabsContent value="debate-scroller">
-                <DebateScrollerStory />
-              </TabsContent>
-
-              <TabsContent value="debate-analysis-report">
-                <DebateAnalysisReportStory />
-              </TabsContent>
-
-              <TabsContent value="debate-analysis-report-demo">
-                <DebateAnalysisReportDemoStory />
-              </TabsContent>
-
-              <TabsContent value="ask-the-data">
-                <AskTheDataStory />
-              </TabsContent>
-
-              <TabsContent value="unsubscribe-page">
-                <UnsubscribePageStory />
-              </TabsContent>
-
-              <TabsContent value="swipeable-statement-stack">
-                <SwipeableStatementStackStory />
-              </TabsContent>
-
-              <TabsContent value="swipe-instructions">
-                <SwipeInstructionsStory />
-              </TabsContent>
-
-              <TabsContent value="music-league-card-stack">
-                <MusicLeagueCardStackStory />
-              </TabsContent>
-
-              <TabsContent value="time-left-badge">
-                <TimeLeftBadgeStory />
-              </TabsContent>
-              <TabsContent value="qr-generator">
-                <QRGeneratorPageStory />
-              </TabsContent>
-              <TabsContent value="qr-scan-result-dialog">
-                <QRScanResultDialogStory />
-              </TabsContent>
-              <TabsContent value="flyer-swipe-screen">
-                <FlyerSwipeScreenStory />
-              </TabsContent>
-              <TabsContent value="swipe-six">
-                <SwipeSixStory />
-              </TabsContent>
-              <TabsContent value="flyer-sign-up">
-                <FlyerSignUpStory />
-              </TabsContent>
-              <TabsContent value="flyer-landing">
-                <FlyerLandingStory />
-              </TabsContent>
-              <TabsContent value="flyer-scan-screen">
-                <FlyerScanStory />
-              </TabsContent>
-              <TabsContent value="personal-flyer-scan">
-                <PersonalFlyerScanStory />
-              </TabsContent>
-              <TabsContent value="youtube-card">
-                <YouTubeCardStory />
-              </TabsContent>
-              <TabsContent value="intro-modal">
-                <IntroModalStory />
-              </TabsContent>
-              <TabsContent value="demographics-card">
-                <DemographicsCardStory />
-              </TabsContent>
-              <TabsContent value="certify-card">
-                <CertifyCardStory />
-              </TabsContent>
-              <TabsContent value="feedback-card">
-                <FeedbackCardStory />
-              </TabsContent>
-              <TabsContent value="feedback-note-sheet">
-                <FeedbackNoteSheetStory />
-              </TabsContent>
-              <TabsContent value="email-ask-sheet">
-                <EmailAskSheetStory />
-              </TabsContent>
-              <TabsContent value="anon-account-setup-modal">
-                <AnonAccountSetupModalStory />
-              </TabsContent>
-              <TabsContent value="comment-modal">
-                <CommentingModalStory />
-              </TabsContent>
-              <TabsContent value="edit-answers-modal">
-                <EditAnswersModalStory />
-              </TabsContent>
-              <TabsContent value="data-privacy-modal">
-                <DataPrivacyModalStory />
-              </TabsContent>
-              <TabsContent value="custom-demographic-question">
-                <CustomDemographicQuestionStory />
-              </TabsContent>
-              <TabsContent value="advanced-features">
-                <AdvancedFeaturesStory />
-              </TabsContent>
-              <TabsContent value="side-panel-menu">
-                <SidePanelMenuStory />
-              </TabsContent>
-              <TabsContent value="room-alerts-list">
-                <RoomAlertsListStory />
-              </TabsContent>
-              <TabsContent value="community-admin-dialog">
-                <CommunityAdminDialogStory />
-              </TabsContent>
-              <TabsContent value="feedback-sheet">
-                <FeedbackSheetStory />
-              </TabsContent>
-              <TabsContent value="community-explorer-dialog">
-                <CommunityExplorerDialogStory />
-              </TabsContent>
-              <TabsContent value="orgs-landing">
-                <OrgsLandingStory />
-              </TabsContent>
-              <TabsContent value="write-rant-step">
-                <WriteRantStepStory />
-              </TabsContent>
-              <TabsContent value="create-post-flow">
-                <CreatePostFlowStory />
-              </TabsContent>
-              <TabsContent value="hot-takes-list">
-                <HotTakesListStory />
-              </TabsContent>
-              <TabsContent value="create-event-sheet">
-                <CreateEventSheetStory />
-              </TabsContent>
-              <TabsContent value="event-room-listing">
-                <Story />
-              </TabsContent>
-              <TabsContent value="event-card">
-                <EventCardStory />
-              </TabsContent>
-              <TabsContent value="hide-and-merge-modal">
-                <HideAndMergeModalStory />
-              </TabsContent>
-              <TabsContent value="vote-matrix">
-                <VoteMatrixStory />
-              </TabsContent>
-              <TabsContent value="statement-votes-table">
-                <StatementVotesTableStory />
-              </TabsContent>
-              <TabsContent value="bridge-statements-section">
-                <BridgeStatementsSectionStory />
-              </TabsContent>
-              <TabsContent value="statement-spectrum">
-                <StatementSpectrumStory />
-              </TabsContent>
-              <TabsContent value="user-timeline">
-                <UserTimelineChartStory />
-              </TabsContent>
-              <TabsContent value="room-card">
-                <RoomCardStory />
-              </TabsContent>
-              <TabsContent value="funding-page">
-                <FundingPageStory />
-              </TabsContent>
-              <TabsContent value="funding-teaser">
-                <FundingTeaserStory />
-              </TabsContent>
-              <TabsContent value="email-monitoring">
-                <EmailMonitoringTabStory />
-              </TabsContent>
-              <TabsContent value="event-timeline">
-                <EventTimelineTabStory />
-              </TabsContent>
-              <TabsContent value="feedback-cards-tab">
-                <FeedbackCardsTabStory />
-              </TabsContent>
-              <TabsContent value="flyer-sensors">
-                <FlyerSensorsStory />
-              </TabsContent>
-              <TabsContent value="display-mode-screen">
-                <DisplayModeScreenStory />
-              </TabsContent>
-              <TabsContent value="room-analytics">
-                <RoomAnalyticsModalStory />
-              </TabsContent>
-              <TabsContent value="statement-voter-animals">
-                <StatementVoterAnimalsStory />
-              </TabsContent>
-              <TabsContent value="vote-swing-overlay">
-                <VoteSwingOverlayStory />
-              </TabsContent>
-              <TabsContent value="anon-response-tripwire">
-                <AnonResponseTripwireStory />
-              </TabsContent>
-              <TabsContent value="cluster-minimap">
-                <ClusterMinimapStory />
-              </TabsContent>
-              <TabsContent value="event-setup-panel">
-                <EventSetupPanelStory />
-              </TabsContent>
-              <TabsContent value="event-attendee">
-                <EventAttendeeStory />
-              </TabsContent>
-              <TabsContent value="event-display">
-                <EventDisplayStory />
-              </TabsContent>
-              <TabsContent value="event-support-view">
-                <EventSupportViewStory />
-              </TabsContent>
-            </Tabs>
           </div>
-        </div>
-      </DebateSessionProvider>
+        </DebateSessionProvider>
+      </VoteResultSnackbarProvider>
     </SwipeTutorialProvider>
   );
 }

@@ -394,8 +394,8 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       icon: RefreshCw,
       iconColor: "text-teal-600",
       bgColor: "bg-teal-100",
-      title: "Vote Swing Overlay",
-      description: "Shown when a user's own vote breaks a tie and decides a statement's majority",
+      title: "Vote Swing",
+      description: "Shown when a user's own vote breaks a tie and decides a statement's majority (full-screen overlay until 10/29, gold snackbar after)",
       getValue: (s) => s.voteSwingSeen,
       getDate: (s) => s.voteSwingSeenSince,
       renderExtra: (s) => (

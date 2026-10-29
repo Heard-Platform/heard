@@ -433,6 +433,62 @@
   background: linear-gradient(to bottom right, var(--color-slate-700), var(--color-slate-800), var(--color-slate-900));
 }
 
+.strong-agree-bg {
+  background-color: var(--color-emerald-700);
+}
+
+.strong-agree-text {
+  color: var(--color-emerald-700);
+}
+
+.strong-disagree-bg {
+  background-color: var(--color-rose-700);
+}
+
+.strong-disagree-text {
+  color: var(--color-rose-700);
+}
+
+.strong-split-bg {
+  background-color: var(--color-stone-700);
+}
+
+.strong-split-text {
+  color: var(--color-stone-700);
+}
+
+.translucent-light-bg {
+  background-color: color-mix(in oklab, var(--color-white) 22%, transparent);
+}
+
+.translucent-light-text {
+  color: color-mix(in oklab, var(--color-white) 88%, transparent);
+}
+
+.celebrate-bg {
+  background-color: var(--color-amber-300);
+}
+
+.celebrate-text {
+  color: var(--color-amber-300);
+}
+
+.celebrate-outline {
+  outline: 3px solid var(--color-amber-300);
+}
+
+.dark-bg {
+  background-color: var(--color-stone-900);
+}
+
+.dark-text {
+  color: var(--color-stone-900);
+}
+
+.dark-text-soft {
+  color: var(--color-stone-700);
+}
+
 .super-agree-bg {
   background-color: var(--color-purple-500);
 }

@@ -19,6 +19,7 @@ import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import type { FeedbackStatement } from "../../utils/constants/feedback-statements";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
+import { useVoteResultSnackbar } from "../../contexts/VoteResultSnackbarContext";
 
 
 // @ts-ignore
@@ -96,6 +97,7 @@ export function SwipeableStatementStack({
   >(null);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [statementToFlag, setStatementToFlag] = useState<Statement | null>(null);
+  const { showVoteResult } = useVoteResultSnackbar();
 
   const unvotedStatements = statements
     .filter((statement) => {
@@ -179,100 +181,7 @@ export function SwipeableStatementStack({
     );
 
     if (statement) {
-      const { agrees, disagrees, superAgrees, passes, text } =
-        statement;
-
-      const truncatedText =
-        text.length > 50 ? `${text.substring(0, 50)}...` : text;
-
-      let newAgrees = agrees;
-      let newDisagrees = disagrees;
-      let newSuperAgrees = superAgrees;
-      let newPasses = passes;
-
-      if (voteType === "super_agree") {
-        newSuperAgrees += 1;
-      } else if (voteType === "agree") {
-        newAgrees += 1;
-      } else if (voteType === "disagree") {
-        newDisagrees += 1;
-      } else if (voteType === "pass") {
-        newPasses += 1;
-      }
-
-      const totalVotes =
-        newSuperAgrees + newAgrees + newDisagrees + newPasses;
-
-      if (voteType === "super_agree") {
-        const percentage =
-          totalVotes > 0
-            ? Math.round((newSuperAgrees / totalVotes) * 100)
-            : 0;
-        toast.success(
-          <div className="flex flex-col gap-1">
-            <div>
-              🌟 You super agreed with "{truncatedText}"
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {percentage}% super agree
-            </div>
-          </div>,
-          {
-            duration: 5000,
-          },
-        );
-      } else if (voteType === "agree") {
-        const percentage =
-          totalVotes > 0
-            ? Math.round((newAgrees / totalVotes) * 100)
-            : 0;
-        toast.success(
-          <div className="flex flex-col gap-1">
-            <div>✅ You agreed with "{truncatedText}"</div>
-            <div className="text-xs text-muted-foreground">
-              {percentage}% agree
-            </div>
-          </div>,
-          {
-            duration: 5000,
-          },
-        );
-      } else if (voteType === "disagree") {
-        const percentage =
-          totalVotes > 0
-            ? Math.round((newDisagrees / totalVotes) * 100)
-            : 0;
-        toast.error(
-          <div className="flex flex-col gap-1">
-            <div>❌ You disagreed with "{truncatedText}"</div>
-            <div className="text-xs text-muted-foreground">
-              {percentage}% disagree
-            </div>
-          </div>,
-          {
-            duration: 5000,
-          },
-        );
-      } else if (voteType === "pass") {
-        const percentage =
-          totalVotes > 0
-            ? Math.round((newPasses / totalVotes) * 100)
-            : 0;
-        toast(
-          <div className="flex flex-col gap-1">
-            <div>⏭️ You passed on "{truncatedText}"</div>
-            <div className="text-xs text-muted-foreground">
-              {percentage}% passed
-            </div>
-          </div>,
-          {
-            duration: 5000,
-          },
-        );
-      }
-    }
-
-    if (statement) {
+      showVoteResult(statement, voteType);
       onVote(statement, voteType).catch(() => {
         setVotedStatementIds((prev) => {
           const newSet = new Set(prev);
