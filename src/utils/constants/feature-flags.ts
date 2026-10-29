@@ -37,7 +37,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     CIVIC_FLYER_RESULTS: true,
     STREAMLINED_CREATION: true,
     FEEDBACK_CARDS: true,
-    LIVE_EVENTS: false,
+    LIVE_EVENTS: true,
     CHANCE_CARD: false,
     VOTE_RESULT_SNACKBAR: true,
   },
