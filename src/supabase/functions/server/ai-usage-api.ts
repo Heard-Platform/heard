@@ -1,5 +1,5 @@
 import { Hono } from "npm:hono";
-import { createClientFromEnv } from "./db-utils.ts";
+import { selectAllWithoutLimit } from "./db-utils.ts";
 
 interface LlmApiCallRow {
   createdAt: string;
@@ -13,14 +13,7 @@ const app = new Hono();
 
 app.get("/make-server-f1a393b4/public-ai-usage", async (c) => {
   try {
-    const supabase = createClientFromEnv();
-    const { data, error } = await supabase
-      .from("llm_api_calls")
-      .select('"createdAt", endpoint, "totalTokens", "inputTokens", "outputTokens"');
-
-    if (error) throw new Error(error.message);
-
-    const rows = (data ?? []) as LlmApiCallRow[];
+    const rows = await selectAllWithoutLimit<LlmApiCallRow>("llm_api_calls", {}, "createdAt");
 
     const tokensByDateAndEndpoint = new Map<string, Map<string, number>>();
     for (const row of rows) {
