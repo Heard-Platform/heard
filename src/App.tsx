@@ -23,13 +23,11 @@ import { FeatureResultsTracker } from "./components/devtools/FeatureResultsTrack
 import { DevTools } from "./components/devtools/DevTools";
 import { AdminActivityFeed } from "./components/AdminActivityFeed";
 import { NewsletterViewer } from "./components/NewsletterViewer";
-import { VoteSwingOverlay } from "./components/VoteSwingOverlay";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { Toaster } from "./components/ui/sonner";
 import { api } from "./utils/api";
 import type { NewDebateRoom, DebateRoom, Statement, VoteType, Event } from "./types";
-import { isSwingVote } from "./utils/statement";
 import {
   parseRoomIdFromUrl,
   parseSubHeardFromUrl,
@@ -67,8 +65,6 @@ import { takeDisplayKeyFromUrl } from "./utils/display-key";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
 
 const LAST_VIEWED_SUBHEARD_KEY = "lastViewedSubHeard";
-const VOTE_SWING_LAST_SHOWN_KEY = "voteSwingLastShownAt";
-const VOTE_SWING_THROTTLE_MS = 60_000;
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -155,10 +151,6 @@ function AppContent() {
   } | null>(null);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
-  const [voteSwing, setVoteSwing] = useState<{
-    statement: Statement;
-    voteType: VoteType;
-  } | null>(null);
 
   const {
     user,
@@ -265,16 +257,8 @@ function AppContent() {
     return roomData;
   };
 
-  const handleVoteOnStatement = (statement: Statement, voteType: VoteType) => {
-    const isFirstVote = !user || !statement.voters[user.id];
-    const lastShownAt = safelyGetStorageItem(VOTE_SWING_LAST_SHOWN_KEY, 0);
-    const isThrottled = Date.now() - lastShownAt < VOTE_SWING_THROTTLE_MS;
-    if (isFirstVote && !isThrottled && isSwingVote(statement, voteType)) {
-      setVoteSwing({ statement, voteType });
-      safelySetStorageItem(VOTE_SWING_LAST_SHOWN_KEY, Date.now());
-    }
-    return voteOnStatement(statement.id, voteType);
-  };
+  const handleVoteOnStatement = (statement: Statement, voteType: VoteType) =>
+    voteOnStatement(statement.id, voteType);
 
   const handleJumpToRoom = (roomId: string, subHeard?: string) => {
     setCurrentSubHeard(subHeard ?? null);
@@ -1045,13 +1029,6 @@ function AppContent() {
           {...qrScanResult}
           isOpen={true}
           onComplete={handleFlyerComplete}
-        />
-      )}
-      {voteSwing && (
-        <VoteSwingOverlay
-          statement={voteSwing.statement}
-          voteType={voteSwing.voteType}
-          onClose={() => setVoteSwing(null)}
         />
       )}
     </>
