@@ -15,6 +15,10 @@
     z-index: 600;
   }
 
+  .alert-layer {
+    z-index: 700;
+  }
+
   .display-layer {
     z-index: 9999;
   }
