@@ -8,7 +8,7 @@ export const FUN_SUBHEARDS = [
   "advice",
   "music",
   "cooking",
-  "spicy-opinions",
+  "hot-takes",
   "learning",
   "hygiene",
 ];
