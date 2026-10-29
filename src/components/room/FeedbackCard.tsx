@@ -60,7 +60,7 @@ export function FeedbackCard({
   return (
     <div className="flex flex-col gap-3" style={FEEDBACK_FONT_STYLE}>
       <div className="flex min-h-190px flex-col items-center justify-center gap-3">
-        <FeedbackPill label="Feedback question" showIcon={false} className="self-center" />
+        <FeedbackPill label="Feedback card" showIcon={false} className="self-center" />
         <p className="text-[22px] font-semibold leading-snug text-center text-stone-50">
           {statement.text}
         </p>
@@ -68,7 +68,7 @@ export function FeedbackCard({
 
       <div className="flex flex-col gap-2">
         <p className="text-sm text-center text-stone-300">
-          Help improve Heard with some feedback
+          This feedback helps us improve Heard
         </p>
 
         <div className="flex items-center justify-between border-t border-[#5c4536] pt-1.5">
@@ -81,7 +81,7 @@ export function FeedbackCard({
             Tell us more
           </button>
           {isTopCard && (
-            <span className="text-[13px] text-stone-300">Swipe to answer</span>
+            <span className="text-[13px] text-stone-300">Swipe right to agree, left to disagree</span>
           )}
         </div>
       </div>
