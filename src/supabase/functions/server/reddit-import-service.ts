@@ -8,7 +8,7 @@ const REDDIT_IMPORT_ENDPOINT = "reddit-import";
 
 export const subredditsToHerds: { [key: string]: string } = {
   "ChangeMyView": "change-my-mind",
-  "UnpopularOpinion": "spicy-opinions",
+  "UnpopularOpinion": "hot-takes",
   "bayarea": "bay-area",
   "moviereviews": "movie-reviews",
   "technology": "technology",
