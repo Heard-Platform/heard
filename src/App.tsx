@@ -78,11 +78,14 @@ const I_LOVE_CIVTECH_STATEMENT_ID = "jg46pxp4fsmom3pn3c";
 const CLUB_FLYER_ID = "i2yo40k84womp72i2qi";
 const CLUB_STATEMENT_ID = "qkjea7qnj3mp72i2r3";
 
+const BANNER_FLYER_ID = "pc68ekr1lbhmv8oli7q";
+const BANNER_STATEMENT_ID = "94o1ixgrhvomvvt972r";
+
 const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: string }> = {
   shirt: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
   sign: { flyerId: WAYMO_DC_ROOM_ID, statementId: WAYMO_DC_STATEMENT_ID },
   card: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
-  banner: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
+  banner: { flyerId: BANNER_FLYER_ID, statementId: BANNER_STATEMENT_ID },
 };
 
 const IDEAS_ROOM_ID = "zmai0sb2fbemrxm4yc6";
