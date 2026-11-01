@@ -417,6 +417,13 @@ export const getStatementsForRoom = async (
   );
 };
 
+export const getStatementInRoom = async (
+  roomId: string,
+  statementId: string,
+): Promise<Statement | null> => {
+  return getParsedKvData<Statement>(`statement:${roomId}:${statementId}`);
+};
+
 export const getStatementsForRoomIncludingHidden = async (
   roomId: string,
 ): Promise<Statement[]> => {

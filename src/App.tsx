@@ -90,6 +90,21 @@ const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: str
 
 const IDEAS_ROOM_ID = "zmai0sb2fbemrxm4yc6";
 
+const FLYER_VOTE_FAILED_MESSAGE = "Failed to process flyer vote";
+
+interface FlyerScanData {
+  flyerId: string;
+  statementId: string;
+  vote: VoteType;
+  flyerGroup?: number;
+}
+
+const isPersonalFlyerScan = (flyerData: FlyerScanData): boolean =>
+  flyerData.flyerId === WAYMO_DC_ROOM_ID && flyerData.vote !== "pass";
+
+const toFlyerScreenVote = (vote: VoteType): FlyerVote =>
+  vote === "disagree" ? "disagree" : "agree";
+
 const WORLD_CUP_ROOM_ID = "31m0twqkoo6mrnu69l0";
 
 function AppContent() {
@@ -168,6 +183,7 @@ function AppContent() {
     submitStatement,
     voteOnStatement,
     voteViaFlyer,
+    voteViaQuickFlyer,
     loadActiveRooms,
     logout,
     roomStatements,
@@ -195,14 +211,7 @@ function AppContent() {
     window.history.replaceState({}, "", url.pathname + url.search);
   };
 
-  const handleFlyerJoin = async (flyerData: {
-    flyerId: string;
-    statementId: string;
-    vote: VoteType;
-    flyerGroup?: number;
-  }) => {
-    setIsJoiningAnonymously(true);
-
+  const handleStandardFlyerJoin = async (flyerData: FlyerScanData) => {
     const response = await voteViaFlyer(
       flyerData.flyerId,
       flyerData.statementId,
@@ -211,12 +220,12 @@ function AppContent() {
     );
 
     if (!response || !response.user) {
-      toast.error("Failed to process flyer vote");
+      toast.error(FLYER_VOTE_FAILED_MESSAGE);
     } else {
       startRoomJoin(response.room.id);
       const isPass = flyerData.vote === "pass";
-      const flyerVote = flyerData.vote === "disagree" ? "disagree" : "agree";
-      if (flyerData.flyerId === WAYMO_DC_ROOM_ID && !isPass) {
+      const flyerVote = toFlyerScreenVote(flyerData.vote);
+      if (isPersonalFlyerScan(flyerData)) {
         setNewFlyerScan({
           roomId: response.room.id,
           tally: {
@@ -246,6 +255,41 @@ function AppContent() {
       } else {
         setQrScanResult({ ...response, mode: "single" });
       }
+    }
+  };
+
+  const handlePersonalFlyerJoin = async (flyerData: FlyerScanData) => {
+    const response = await voteViaQuickFlyer(
+      flyerData.flyerId,
+      flyerData.statementId,
+      flyerData.vote,
+      flyerData.flyerGroup,
+    );
+
+    if (!response) {
+      toast.error(FLYER_VOTE_FAILED_MESSAGE);
+      return;
+    }
+
+    startRoomJoin(response.roomId);
+    setNewFlyerScan({
+      roomId: response.roomId,
+      tally: {
+        statementText: response.statementText,
+        agreeCount: response.agreeCount,
+        disagreeCount: response.disagreeCount,
+      },
+      vote: toFlyerScreenVote(flyerData.vote),
+    });
+  };
+
+  const handleFlyerJoin = async (flyerData: FlyerScanData) => {
+    setIsJoiningAnonymously(true);
+
+    if (isFeatureEnabled(FeatureFlags.QUICK_FLYER_VOTE) && isPersonalFlyerScan(flyerData)) {
+      await handlePersonalFlyerJoin(flyerData);
+    } else {
+      await handleStandardFlyerJoin(flyerData);
     }
 
     setIsJoiningAnonymously(false);

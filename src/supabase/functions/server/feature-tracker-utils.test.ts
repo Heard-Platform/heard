@@ -9,6 +9,7 @@ import {
   countByWeek,
   FLYER_SCREEN_EVENTS,
   PERSONAL_FLYER_SCREEN_EVENTS,
+  summarizeLoadTimes,
 } from "./feature-tracker-utils.ts";
 
 Deno.test("countByWeek - empty input returns no weeks", () => {
@@ -237,4 +238,25 @@ Deno.test("buildSwipeSixDailyCompletions - fills each day in the window, oldest 
     { date: "2026-10-18", count: 0 },
     { date: "2026-10-19", count: 2 },
   ]);
+});
+
+Deno.test("summarizeLoadTimes - no loads gives zeros", () => {
+  assertEquals(summarizeLoadTimes([]), { loadCount: 0, medianMs: 0, slowestTenthStartsAtMs: 0 });
+});
+
+Deno.test("summarizeLoadTimes - odd count takes the middle load", () => {
+  assertEquals(summarizeLoadTimes([3000, 1000, 2000]), {
+    loadCount: 3,
+    medianMs: 2000,
+    slowestTenthStartsAtMs: 3000,
+  });
+});
+
+Deno.test("summarizeLoadTimes - even count averages the two middle loads", () => {
+  assertEquals(summarizeLoadTimes([1000, 4000, 2000, 3000]).medianMs, 2500);
+});
+
+Deno.test("summarizeLoadTimes - slowest tenth starts at the 90th percentile load", () => {
+  const durationsMs = Array.from({ length: 20 }, (_, index) => (index + 1) * 100);
+  assertEquals(summarizeLoadTimes(durationsMs).slowestTenthStartsAtMs, 1800);
 });

@@ -929,6 +929,8 @@ export interface FeatureResults {
   flyerScreenFunnelSince: number;
   personalFlyerScreenFunnel: { opened: number; emailAdded: number; returnedViaEmail: number; returnedOnMultipleDays: number };
   personalFlyerScreenFunnelSince: number;
+  personalFlyerScreenLoadTimes: { loadCount: number; medianMs: number; slowestTenthStartsAtMs: number };
+  personalFlyerScreenLoadTimesSince: number;
   flyerWelcomeEmailsSent: number;
   flyerResultsEmailsSent: number;
   flyerEmailsSentSince: number;

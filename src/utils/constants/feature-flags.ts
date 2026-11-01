@@ -13,6 +13,7 @@ export enum FeatureFlags {
   LIVE_EVENTS = "LIVE_EVENTS",
   CHANCE_CARD = "CHANCE_CARD",
   VOTE_RESULT_SNACKBAR = "VOTE_RESULT_SNACKBAR",
+  QUICK_FLYER_VOTE = "QUICK_FLYER_VOTE",
 }
 
 export interface FeatureFlagsConfig {
@@ -26,6 +27,7 @@ export interface FeatureFlagsConfig {
   [FeatureFlags.LIVE_EVENTS]: boolean;
   [FeatureFlags.CHANCE_CARD]: boolean;
   [FeatureFlags.VOTE_RESULT_SNACKBAR]: boolean;
+  [FeatureFlags.QUICK_FLYER_VOTE]: boolean;
 }
 
 export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
@@ -40,6 +42,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     LIVE_EVENTS: true,
     CHANCE_CARD: false,
     VOTE_RESULT_SNACKBAR: true,
+    QUICK_FLYER_VOTE: true,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
@@ -52,6 +55,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     LIVE_EVENTS: true,
     CHANCE_CARD: false,
     VOTE_RESULT_SNACKBAR: true,
+    QUICK_FLYER_VOTE: true,
   }
 }
 

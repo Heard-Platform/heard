@@ -38,6 +38,7 @@ import {
   Network,
   MessageSquare,
   MessageCirclePlus,
+  Timer,
 } from "lucide-react";
 import { api } from "../../utils/api";
 import type { FeatureResults } from "../../types";
@@ -618,6 +619,28 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.personalFlyerScreenFunnel.opened,
       getDate: (s) => s.personalFlyerScreenFunnelSince,
       renderExtra: (s) => <FlyerScreenFunnelChart {...s.personalFlyerScreenFunnel} />,
+    },
+    {
+      icon: Timer,
+      iconColor: "text-red-600",
+      bgColor: "bg-red-100",
+      title: "Personal Flyer Screen Load Time",
+      description: "Median time from opening the flyer link to the personal flyer screen showing. Tracks the quick flyer vote route.",
+      getValue: (s) => s.personalFlyerScreenLoadTimes.medianMs,
+      valueSuffix: " ms",
+      getDate: (s) => s.personalFlyerScreenLoadTimesSince,
+      renderExtra: (s) => (
+        <div className="flex gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Slowest 10% from</p>
+            <p className="text-2xl font-bold text-red-500">{s.personalFlyerScreenLoadTimes.slowestTenthStartsAtMs} ms</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Loads</p>
+            <p className="text-2xl font-bold text-slate-500">{s.personalFlyerScreenLoadTimes.loadCount}</p>
+          </div>
+        </div>
+      ),
     },
     {
       icon: Mail,

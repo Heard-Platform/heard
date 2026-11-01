@@ -42,7 +42,7 @@ import {
   StatementTag,
   StatementTagLink,
 } from "../types";
-import { AskTheDataResponse, FlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
+import { AskTheDataResponse, FlyerVoteResponse, QuickFlyerVoteResponse, RoomStatusResponse, UserSessionResponse } from "../types/api-responses";
 import type { AnonymityBreakdown, ParticipantJoin, ParticipationBreakdown, ReferrerShareCount, TrafficSourceCount } from "../components/room/RoomAnalyticsModal";
 import type { RoomDebugData } from "../components/room/RoomDebugDataPanel";
 import {
@@ -421,8 +421,27 @@ class ApiClient extends BaseApiClient {
     vote: VoteType,
     flyerGroup?: number,
   ) {
+    return this.postFlyerVote<FlyerVoteResponse>("/flyer/vote", flyerId, statementId, vote, flyerGroup);
+  }
+
+  async voteViaQuickFlyer(
+    flyerId: string,
+    statementId: string,
+    vote: VoteType,
+    flyerGroup?: number,
+  ) {
+    return this.postFlyerVote<QuickFlyerVoteResponse>("/flyer/quick-vote", flyerId, statementId, vote, flyerGroup);
+  }
+
+  private async postFlyerVote<FlyerVoteResult>(
+    endpoint: string,
+    flyerId: string,
+    statementId: string,
+    vote: VoteType,
+    flyerGroup?: number,
+  ) {
     const environment = getEnvironment();
-    return this.request<FlyerVoteResponse>("/flyer/vote", {
+    return this.request<FlyerVoteResult>(endpoint, {
       method: "POST",
       body: JSON.stringify({
         flyerId,
@@ -1202,6 +1221,14 @@ class ApiClient extends BaseApiClient {
   }
 
   trackEvent(type: string, roomId?: string, referralUserId?: string): void {
+    this.sendAnalyticsEvent({ type, roomId, referralUserId });
+  }
+
+  trackTimedEvent(type: string, durationMs: number, roomId?: string): void {
+    this.sendAnalyticsEvent({ type, roomId, durationMs });
+  }
+
+  private sendAnalyticsEvent(event: { type: string; roomId?: string; referralUserId?: string; durationMs?: number }): void {
     if (getEnvironment() !== "production")
       return;
     if (safelyGetStorageItem("showComponentShowcase", false))
@@ -1209,7 +1236,7 @@ class ApiClient extends BaseApiClient {
     if (!getSessionId())
       return;
     const url = typeof window !== "undefined" ? window.location.href : undefined;
-    this.post("/analytics/event", { type, roomId, url, referralUserId })
+    this.post("/analytics/event", { ...event, url })
       .catch(() => {});
   }
 

@@ -20,6 +20,15 @@ export type FlyerVoteResponse = Omit<SingleQRScanResult, 'mode'> & {
   communityName: string | null;
 };
 
+export type QuickFlyerVoteResponse = {
+  user: UserSession;
+  sessionId: string;
+  roomId: string;
+  statementText: string;
+  agreeCount: number;
+  disagreeCount: number;
+};
+
 export type AskTheDataResponse = {
   id: string;
   status: "answered" | "rejected";

@@ -1,12 +1,16 @@
 import { Context, Hono } from "npm:hono";
-import { getCommunity, getDebate } from "./kv-utils.tsx";
-import type { DebateRoom, User, VoteType } from "./types.tsx";
-import { processVote, countStatementVotes } from "./voting-utils.ts";
-import { createAnonymousUser, createSession } from "./auth-api.tsx";
+import { getCommunity, getDebate, getStatementInRoom, getVote } from "./kv-utils.tsx";
+import type { DebateRoom, Statement, User, VoteType } from "./types.tsx";
+import { processVote, countStatementVotes, type FlyerSource } from "./voting-utils.ts";
+import { createAnonymousUser, createSession, getUserSession } from "./auth-api.tsx";
+import { getStatementById } from "./debate-api.tsx";
 import { insertFlyerEmail, insertFlyerScan } from "./model-utils.ts";
 import { getUsableStatementsForRoom } from "./room-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
+import { RouteError } from "./route-error.ts";
 import { validateSession } from "./auth-utils.ts";
+import { runInBackground } from "./background-utils.ts";
+import { countAgreesAndDisagreesWithNewVote } from "./flyer-quick-vote-utils.ts";
 import { sendFlyerResultsEmailIfFlyerVoter, WAYMO_FLYER_STATEMENT_ID } from "./service-flyer-results-email.ts";
 
 export const flyerApi = new Hono();
@@ -171,6 +175,159 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
     );
   }
 });
+
+const VALID_VOTE_TYPES: VoteType[] = ["agree", "disagree", "pass", "super_agree"];
+const DROPPED_FLYER_VOTE_LOG_TAG = "[FLYER VOTE DROPPED]";
+
+type QuickFlyerVoteRequest = {
+  flyerId: string;
+  statementId: string;
+  vote: VoteType;
+  environment?: string;
+  flyerGroup?: number;
+};
+
+type QuickFlyerVoteResponse = {
+  user: User;
+  sessionId: string;
+  roomId: string;
+  statementText: string;
+  agreeCount: number;
+  disagreeCount: number;
+};
+
+interface FlyerVoter {
+  user: User;
+  sessionId: string;
+  previousVoteType: VoteType | null;
+}
+
+interface PendingFlyerVote {
+  statementId: string;
+  userId: string;
+  vote: VoteType;
+  flyerSource: FlyerSource;
+  isExistingUser: boolean;
+}
+
+const getFlyerStatement = async (
+  flyerId: string,
+  statementId: string,
+): Promise<Statement | null> =>
+  (await getStatementInRoom(flyerId, statementId)) ?? getStatementById(statementId);
+
+const createAnonymousFlyerVoter = async (
+  environment: string | undefined,
+  flyerSource: FlyerSource,
+): Promise<FlyerVoter> => {
+  const user = await createAnonymousUser({
+    createdInEnvironment: environment || "unknown",
+    isTestUser: environment !== "production",
+    flyerId: flyerSource.flyerId,
+    flyerGroup: flyerSource.flyerGroup,
+  });
+  const session = await createSession(user.id);
+  return { user, sessionId: session.id, previousVoteType: null };
+};
+
+const loadExistingFlyerVoter = async (
+  userId: string,
+  statementId: string,
+): Promise<FlyerVoter> => {
+  const [user, previousVote, session] = await Promise.all([
+    getUserSession(userId),
+    getVote(statementId, userId),
+    createSession(userId),
+  ]);
+  if (!user) throw new RouteError("User not found", 404);
+  return { user, sessionId: session.id, previousVoteType: previousVote?.voteType ?? null };
+};
+
+const logDroppedFlyerVote = (pendingVote: PendingFlyerVote, reason: unknown) => {
+  console.error(
+    DROPPED_FLYER_VOTE_LOG_TAG,
+    JSON.stringify({
+      flyerId: pendingVote.flyerSource.flyerId,
+      flyerGroup: pendingVote.flyerSource.flyerGroup,
+      statementId: pendingVote.statementId,
+      userId: pendingVote.userId,
+      vote: pendingVote.vote,
+      reason: reason instanceof Error ? reason.message : reason,
+    }),
+  );
+};
+
+const saveFlyerVote = async (pendingVote: PendingFlyerVote) => {
+  try {
+    const result = await processVote(
+      pendingVote.statementId,
+      pendingVote.userId,
+      pendingVote.vote,
+      pendingVote.flyerSource,
+      true,
+    );
+    if (!result.success) {
+      logDroppedFlyerVote(pendingVote, result.error);
+      return;
+    }
+  } catch (error) {
+    logDroppedFlyerVote(pendingVote, error);
+    return;
+  }
+
+  if (pendingVote.isExistingUser && pendingVote.statementId === WAYMO_FLYER_STATEMENT_ID) {
+    await sendFlyerResultsEmailIfFlyerVoter(pendingVote.userId);
+  }
+};
+
+flyerApi.post(
+  "/make-server-f1a393b4/flyer/quick-vote",
+  defineRoute<QuickFlyerVoteRequest, QuickFlyerVoteResponse>(
+    {
+      flyerId: { type: "string", required: true },
+      statementId: { type: "string", required: true },
+      vote: {
+        type: "string",
+        required: true,
+        validate: (vote) => VALID_VOTE_TYPES.includes(vote),
+      },
+      environment: { type: "string", required: false },
+      flyerGroup: { type: "number", required: false },
+    },
+    async ({ flyerId, statementId, vote, environment, flyerGroup }, c: Context) => {
+      const existingUserId: string | undefined = c.get("userId");
+      const flyerSource: FlyerSource = { flyerId, flyerGroup };
+
+      const [voter, statement] = await Promise.all([
+        existingUserId
+          ? loadExistingFlyerVoter(existingUserId, statementId)
+          : createAnonymousFlyerVoter(environment, flyerSource),
+        getFlyerStatement(flyerId, statementId),
+      ]);
+      if (!statement) throw new RouteError("Statement not found", 404);
+
+      runInBackground(
+        saveFlyerVote({
+          statementId,
+          userId: voter.user.id,
+          vote,
+          flyerSource,
+          isExistingUser: !!existingUserId,
+        }),
+        `flyer vote for statement ${statementId}`,
+      );
+
+      return {
+        user: voter.user,
+        sessionId: voter.sessionId,
+        roomId: statement.roomId,
+        statementText: statement.text,
+        ...countAgreesAndDisagreesWithNewVote(statement, voter.previousVoteType, vote),
+      };
+    },
+    "Error processing quick flyer vote",
+  ),
+);
 
 flyerApi.post(
   "/make-server-f1a393b4/flyer/scan",
