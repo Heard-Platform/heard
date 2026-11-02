@@ -7,6 +7,12 @@ import { insertFlyerEmail, insertFlyerScan } from "./model-utils.ts";
 import { getUsableStatementsForRoom } from "./room-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { validateSession } from "./auth-utils.ts";
+import {
+  castFlyerVoteQuickly,
+  VALID_VOTE_TYPES,
+  type QuickFlyerVoteRequest,
+  type QuickFlyerVoteResponse,
+} from "./flyer-utils.ts";
 import { sendFlyerResultsEmailIfFlyerVoter, WAYMO_FLYER_STATEMENT_ID } from "./service-flyer-results-email.ts";
 
 export const flyerApi = new Hono();
@@ -171,6 +177,25 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
     );
   }
 });
+
+flyerApi.post(
+  "/make-server-f1a393b4/flyer/quick-vote",
+  defineRoute<QuickFlyerVoteRequest, QuickFlyerVoteResponse>(
+    {
+      flyerId: { type: "string", required: true },
+      statementId: { type: "string", required: true },
+      vote: {
+        type: "string",
+        required: true,
+        validate: (vote) => VALID_VOTE_TYPES.includes(vote),
+      },
+      environment: { type: "string", required: false },
+      flyerGroup: { type: "number", required: false },
+    },
+    (request, c: Context) => castFlyerVoteQuickly(request, c.get("userId")),
+    "Error processing quick flyer vote",
+  ),
+);
 
 flyerApi.post(
   "/make-server-f1a393b4/flyer/scan",

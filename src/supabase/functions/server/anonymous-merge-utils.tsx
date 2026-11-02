@@ -2,7 +2,7 @@ import {
   getVotesForUser,
   saveVote,
   deleteVote,
-  getStatement,
+  findStatementInAnyRoom,
   saveStatement,
   getUser,
   saveUser,
@@ -51,7 +51,7 @@ const mergeVotes = async (anonymousUserId: string, targetUserId: string) => {
     await saveVote(updatedAnonVote);
     await deleteVote(anonVote.statementId, anonymousUserId);
 
-    const statement = await getStatement(anonVote.statementId);
+    const statement = await findStatementInAnyRoom(anonVote.statementId);
     if (!statement) {
       continue;
     }

@@ -1,7 +1,7 @@
 import type { Vote, Statement, User, VoteType, DebateRoom } from "./types.tsx";
-import { saveStatement, saveVote, getVotesForStatement, deleteVote, saveUser } from "./kv-utils.tsx";
+import { findStatementInAnyRoom, saveStatement, saveVote, getVotesForStatement, deleteVote, saveUser } from "./kv-utils.tsx";
 import { getUserSession } from "./auth-api.tsx";
-import { generateId, getDebateRoom, getStatementById, saveDebateRoom } from "./debate-api.tsx";
+import { generateId, getDebateRoom, saveDebateRoom } from "./debate-api.tsx";
 import { recordRoomEngagement } from "./model-utils.ts";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { maybeEmailResponseVotesNotif } from "./email-notifs-utils.ts";
@@ -144,7 +144,7 @@ export const processVote = async (
 
   const [user, statement] = await Promise.all([
     getUserSession(userId),
-    getStatementById(statementId),
+    findStatementInAnyRoom(statementId),
   ]);
 
   if (!user) {

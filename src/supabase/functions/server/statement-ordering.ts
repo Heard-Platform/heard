@@ -1,7 +1,8 @@
 import _ from "lodash";
 import { ClusterIdentity } from "./cluster-identity.ts";
 import { calcAnyDistinguishingStatements } from "./cluster-analysis.tsx";
-import { isAgreeVote, rankCommonGround, VotedStatement } from "./cluster-stance-utils.ts";
+import { rankCommonGround, VotedStatement } from "./cluster-stance-utils.ts";
+import { isAgreeVote } from "./vote-type-utils.ts";
 
 export const LEAD_DISTINGUISHING_COUNT = 6;
 export const CONSENSUS_LEAD_INDEX = 2;
