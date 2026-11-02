@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Statement, VoteType } from "../types";
+import type { Statement } from "../types";
 import {
   calcVoteResult,
   getDecisiveVoteSide,
@@ -24,10 +24,8 @@ const buildStatement = (overrides: Partial<Statement>): Statement => ({
   ...overrides,
 });
 
-const VOTER_ID = "voter-2";
-
-const calcRequiredVoteResult = (statementBeforeVote: Statement, voteType: VoteType): VoteResult => {
-  const result = calcVoteResult(statementBeforeVote, voteType, VOTER_ID);
+const calcRequiredVoteResult = (...args: Parameters<typeof calcVoteResult>): VoteResult => {
+  const result = calcVoteResult(...args);
   if (!result) throw new Error("Expected a vote result");
   return result;
 };
@@ -44,11 +42,7 @@ describe("getDecisiveVoteSide", () => {
 
 describe("calcVoteResult", () => {
   it("returns no result for a pass", () => {
-    expect(calcVoteResult(buildStatement({ agrees: 10 }), "pass", VOTER_ID)).toBeNull();
-  });
-
-  it("returns no result when the author votes on their own statement", () => {
-    expect(calcVoteResult(buildStatement({ agrees: 10 }), "agree", "other-user")).toBeNull();
+    expect(calcVoteResult(buildStatement({ agrees: 10 }), "pass")).toBeNull();
   });
 
   it("is a first vote when nobody has agreed or disagreed yet", () => {
@@ -123,31 +117,6 @@ describe("calcVoteResult", () => {
     );
     expect(result.agreePercentBeforeVote).toBe(25);
     expect(result.agreePercent).toBe(40);
-  });
-
-  it("is a first vote when only the author has agreed", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 1, voters: { "other-user": "agree" } }),
-      "disagree",
-    );
-    expect(result.kind).toBe("first_vote");
-    expect(result.decisiveVoteCount).toBe(2);
-  });
-
-  it("is a first vote when other voters have only passed", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ passes: 1, voters: { "voter-1": "pass" } }),
-      "agree",
-    );
-    expect(result.kind).toBe("first_vote");
-  });
-
-  it("is not a first vote once someone other than the author has agreed or disagreed", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 1, voters: { "voter-1": "agree" } }),
-      "agree",
-    );
-    expect(result.kind).not.toBe("first_vote");
   });
 });
 
