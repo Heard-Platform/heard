@@ -181,7 +181,7 @@ export function SwipeableStatementStack({
     );
 
     if (statement) {
-      showVoteResult(statement, voteType, currentUserId);
+      showVoteResult(statement, voteType);
       onVote(statement, voteType).catch(() => {
         setVotedStatementIds((prev) => {
           const newSet = new Set(prev);

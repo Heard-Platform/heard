@@ -32,10 +32,6 @@ export const getDecisiveVoteSide = (
   return null;
 };
 
-export const isDecisiveVote = (
-  voteType: VoteType,
-): boolean => getDecisiveVoteSide(voteType) !== null;
-
 const calcAgreePercent = (agreeCount: number, decisiveVoteCount: number) =>
   Math.round((agreeCount / decisiveVoteCount) * 100);
 
@@ -50,18 +46,6 @@ interface VoteToClassify {
 const isNearlySplit = (agreePercent: number) =>
   Math.abs(agreePercent - (100 - agreePercent)) <= NEARLY_SPLIT_MAX_PERCENT_GAP;
 
-const authorHasVotedDecisively = (statement: Statement): boolean => {
-  const authorVoteType = statement.voters?.[statement.author];
-  return !!authorVoteType && isDecisiveVote(authorVoteType);
-};
-
-const isFirstNonAuthorVote = (statement: Statement): boolean => {
-  const count = getDecisiveVotes(statement);
-  if (count === 0) return true;
-  if (count === 1 && authorHasVotedDecisively(statement)) return true;
-  return false;
-};
-
 const classifyVoteResult = ({
   statementBeforeVote,
   voteType,
@@ -69,7 +53,7 @@ const classifyVoteResult = ({
   majoritySide,
   agreePercent,
 }: VoteToClassify): VoteResultKind => {
-  if (isFirstNonAuthorVote(statementBeforeVote)) return "first_vote";
+  if (getDecisiveVotes(statementBeforeVote) === 0) return "first_vote";
   if (isSwingVote(statementBeforeVote, voteType)) return "swung_vote";
   if (isNearlySplit(agreePercent)) return "nearly_split";
   return voterSide === majoritySide ? "with_majority" : "in_minority";
@@ -78,10 +62,7 @@ const classifyVoteResult = ({
 export const calcVoteResult = (
   statementBeforeVote: Statement,
   voteType: VoteType,
-  voterId: string | undefined,
 ): VoteResult | null => {
-  if (voterId === statementBeforeVote.author) return null;
-
   const voterSide = getDecisiveVoteSide(voteType);
   if (!voterSide) return null;
 

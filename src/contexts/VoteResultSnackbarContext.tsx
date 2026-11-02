@@ -5,11 +5,7 @@ import { calcVoteResult } from "../utils/vote-result";
 import type { Statement, VoteType } from "../types";
 
 interface VoteResultSnackbarContextValue {
-  showVoteResult: (
-    statementBeforeVote: Statement,
-    voteType: VoteType,
-    voterId: string | undefined,
-  ) => void;
+  showVoteResult: (statementBeforeVote: Statement, voteType: VoteType) => void;
 }
 
 const VoteResultSnackbarContext = createContext<VoteResultSnackbarContextValue | null>(null);
@@ -17,14 +13,11 @@ const VoteResultSnackbarContext = createContext<VoteResultSnackbarContextValue |
 export function VoteResultSnackbarProvider({ children }: { children: ReactNode }) {
   const [latestVote, setLatestVote] = useState<LatestVote | null>(null);
 
-  const showVoteResult = useCallback(
-    (statementBeforeVote: Statement, voteType: VoteType, voterId: string | undefined) => {
-      if (!isFeatureEnabled(FeatureFlags.VOTE_RESULT_SNACKBAR)) return;
-      const result = calcVoteResult(statementBeforeVote, voteType, voterId);
-      if (result) setLatestVote({ statement: statementBeforeVote, result });
-    },
-    [],
-  );
+  const showVoteResult = useCallback((statementBeforeVote: Statement, voteType: VoteType) => {
+    if (!isFeatureEnabled(FeatureFlags.VOTE_RESULT_SNACKBAR)) return;
+    const result = calcVoteResult(statementBeforeVote, voteType);
+    if (result) setLatestVote({ statement: statementBeforeVote, result });
+  }, []);
 
   const dismissVoteResult = useCallback(() => setLatestVote(null), []);
 

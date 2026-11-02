@@ -29,8 +29,6 @@ const buildStatement = (
   ...counts,
 });
 
-const STORY_VOTER_ID = "story-voter";
-
 const VOTE_SCENARIOS: VoteScenario[] = [
   {
     label: "With the majority",
@@ -89,7 +87,7 @@ const VOTE_SCENARIOS: VoteScenario[] = [
 ];
 
 const toLatestVote = ({ statementBeforeVote, voteType }: VoteScenario): LatestVote | null => {
-  const result = calcVoteResult(statementBeforeVote, voteType, STORY_VOTER_ID);
+  const result = calcVoteResult(statementBeforeVote, voteType);
   return result ? { statement: statementBeforeVote, result } : null;
 };
 
