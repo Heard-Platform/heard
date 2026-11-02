@@ -1079,3 +1079,16 @@ export interface CampaignFunnel {
   directUrl: CampaignFunnelSteps;
   arrivedViaBoth: number;
 }
+
+export interface NewsletterSectionContent {
+  title: string;
+  text: string;
+  imageUrl: string;
+  imageLink: string;
+}
+
+export interface NewsletterContent {
+  editionNumber: number;
+  subject: string;
+  sections: [NewsletterSectionContent, NewsletterSectionContent, NewsletterSectionContent];
+}
