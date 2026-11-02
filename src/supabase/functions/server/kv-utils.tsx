@@ -3,6 +3,7 @@ import { getAllRecords, getAllKvRecordsMatching, getAllKvRecordsWithPrefix } fro
 import * as kv from "./kv_store.tsx";
 import type { ClusterIdentityRecord } from "./cluster-identity.ts";
 import type { ClusterRecomputeMarker } from "./cluster-freshness.ts";
+import type { Newsletter } from "./newsletter-builder-utils.ts";
 import {
   type User,
   type Vote,
@@ -634,6 +635,21 @@ export const getNewsletterSentUsers = async (edition: number): Promise<string[]>
 
 export const saveNewsletterSentUsers = async (edition: number, users: string[]): Promise<void> => {
   await kv.set(newsletterSentKeyFn(edition), users);
+};
+
+const NEWSLETTER_KEY_PREFIX = "newsletter-content:";
+
+export const newsletterKeyFn = (editionNumber: number) =>
+  `${NEWSLETTER_KEY_PREFIX}${editionNumber}`;
+
+export const getNewsletter = async (editionNumber: number) =>
+  getParsedKvData<Newsletter>(newsletterKeyFn(editionNumber));
+
+export const getAllNewsletters = async () =>
+  getByPrefixParsed<Newsletter>(NEWSLETTER_KEY_PREFIX);
+
+export const saveNewsletterRecord = async (newsletter: Newsletter): Promise<void> => {
+  await kv.set(newsletterKeyFn(newsletter.editionNumber), newsletter);
 };
 
 // Cluster data helpers

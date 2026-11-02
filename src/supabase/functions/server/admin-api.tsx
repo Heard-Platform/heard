@@ -18,6 +18,13 @@ import {
 import { User } from "./types.tsx";
 import { migrateAllUsersToSupabase } from "./migrate-users-to-supabase.tsx";
 import { getNewsletterByEdition, getNewsletterRecipients } from "./newsletter-utils.ts";
+import {
+  listNewsletters,
+  markNewsletterSent,
+  saveNewsletter,
+  uploadNewsletterImage,
+} from "./newsletter-builder-utils.ts";
+import { RouteError } from "./route-error.ts";
 import { getFlyerEmails } from "./model-utils.ts";
 import { buildActiveDaysMap } from "./stats-utils.ts";
 import { performSubHeardRename } from "./subheard-rename-utils.tsx";
@@ -91,6 +98,37 @@ app.get("/make-server-f1a393b4/admin/newsletter-eligible-count", async (c) => {
   } catch (error) {
     console.error("Error fetching newsletter eligible count:", error);
     return c.json({ error: "Failed to fetch count" }, 500);
+  }
+});
+
+app.get(
+  "/make-server-f1a393b4/admin/newsletters",
+  defineRoute({}, () => listNewsletters(), "Failed to fetch newsletters"),
+);
+
+app.put(
+  "/make-server-f1a393b4/admin/newsletters/:edition",
+  defineRoute(
+    {
+      edition: { required: true, type: "string", validate: (edition) => !isNaN(parseInt(edition)) },
+      subject: { required: true, type: "string" },
+      sections: { required: true, type: "array" },
+    },
+    async ({ edition, subject, sections }: { edition: string; subject: string; sections: unknown[] }) =>
+      saveNewsletter({ editionNumber: parseInt(edition), subject, sections }),
+    "Failed to save newsletter",
+  ),
+);
+
+app.post("/make-server-f1a393b4/admin/newsletter-image", async (c) => {
+  try {
+    return c.json({ success: true, ...(await uploadNewsletterImage(await c.req.formData())) });
+  } catch (error) {
+    console.error("Error uploading newsletter image:", error);
+    return c.json(
+      { success: false, error: error instanceof Error ? error.message : "Failed to upload image" },
+      error instanceof RouteError ? error.status : 500,
+    );
   }
 });
 
@@ -552,6 +590,10 @@ app.post(
       }
 
       console.log(`Newsletter batch complete: ${sent} sent, ${failed} failed`);
+
+      if (!testMode && sent > 0) {
+        await markNewsletterSent(newsletterEdition);
+      }
 
       return c.json({
         success: true,

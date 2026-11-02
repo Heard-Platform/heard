@@ -7,11 +7,15 @@ import { getNewsletter2Email, getNewsletterEmail } from "./email-templates.tsx";
 import { getNewsletter3Email } from "./email-newsletter-3.ts";
 import { getNewsletter7Email } from "./email-newsletter-7.ts";
 import { getNewsletter4Email } from "./email-newsletter-4.ts";
+import { getNewsletterBuilderEmail } from "./newsletter-builder-utils.ts";
 
 
 export const getNewsletterByEdition = async (
   edition: number,
 ) => {
+  const newsletterBuilderEmail = await getNewsletterBuilderEmail(edition);
+  if (newsletterBuilderEmail) return newsletterBuilderEmail;
+
   let subject: string;
   let getNewsletterHtml: () => string;
 
