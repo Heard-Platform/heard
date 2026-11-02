@@ -392,7 +392,7 @@ export const getAllStatements = async (): Promise<Statement[]> => {
   return getAllRecords<Statement>("statement:");
 };
 
-export const getStatement = async (statementId: string): Promise<Statement | null> => {
+export const findStatementInAnyRoom = async (statementId: string): Promise<Statement | null> => {
   const matches = await getByPrefixParsed<Statement>(`statement:%:${statementId}`);
   return matches[0] ?? null;
 };
@@ -406,6 +406,13 @@ const hashId = (id: string): number => {
     hash = (hash * 33) ^ id.charCodeAt(i);
   }
   return hash >>> 0;
+};
+
+export const getStatement = async (
+  roomId: string,
+  statementId: string,
+): Promise<Statement | null> => {
+  return getParsedKvData<Statement>(`statement:${roomId}:${statementId}`);
 };
 
 export const getStatementsForRoom = async (

@@ -1,4 +1,4 @@
-import { filterVisibleStatements, getStatement, getUser, getVote, getVotesForStatement } from "./kv-utils.tsx";
+import { filterVisibleStatements, findStatementInAnyRoom, getUser, getVote, getVotesForStatement } from "./kv-utils.tsx";
 import { getUsableStatementsForRoom } from "./room-utils.ts";
 import { getOpinionatedVoteCount } from "./statement-utils.tsx";
 import { getUnsubscribeHeaders, isEligibleEmailRecipient, sendEmailViaResend, sendMaxOnce, type SendEmailParams } from "./email-sender-utils.tsx";
@@ -16,7 +16,7 @@ const MAX_OTHER_STATEMENTS = 3;
 export type EmailableUser = User & { email: string };
 
 const loadFlyerResults = async () => {
-  const statement = await getStatement(WAYMO_FLYER_STATEMENT_ID);
+  const statement = await findStatementInAnyRoom(WAYMO_FLYER_STATEMENT_ID);
   if (!statement) throw new Error(`Flyer statement ${WAYMO_FLYER_STATEMENT_ID} not found`);
   const otherStatements = filterVisibleStatements(await getUsableStatementsForRoom(statement.roomId))
     .filter((s) => s.id !== statement.id && getOpinionatedVoteCount(s) > 0)

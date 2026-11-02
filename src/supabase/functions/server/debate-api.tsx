@@ -19,7 +19,6 @@ import {
   getMembership,
   saveMembership,
 } from "./kv-utils.tsx";
-import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { subheardApi } from "./subheard-api.tsx";
 import { roomApi } from "./room-api.tsx";
 import { getUserMemberships } from "./membership-utils.tsx";
@@ -55,39 +54,6 @@ import { defineRoute } from "./route-wrapper.tsx";
 import { validateSession } from "./auth-utils.ts";
 
 const app = new Hono();
-
-// Helper to get statement by ID using LIKE pattern (statement:%:statementId)
-export const getStatementById = async (
-  statementId: string,
-): Promise<Statement | null> => {
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
-
-  const { data, error } = await supabase
-    .from("kv_store_f1a393b4")
-    .select("value")
-    .like("key", `statement:%:${statementId}`)
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.error("Error fetching statement by ID:", error);
-    return null;
-  }
-
-  if (!data?.value) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(data.value);
-  } catch (e) {
-    console.error("Error parsing statement:", e);
-    return null;
-  }
-};
 
 // Reusable email sending function
 const sendEmail = async (params: {

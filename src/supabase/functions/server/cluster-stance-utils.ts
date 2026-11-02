@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { VoteType } from "./types.tsx";
 import { ClusterIdentity } from "./cluster-identity.ts";
+import { isAgreeVote } from "./vote-type-utils.ts";
 
 export const COMMON_GROUND_MIN_AGREE_RATE = 0.6;
 export const COMMON_GROUND_MIN_VOTES_PER_CLUSTER = 3;
@@ -9,10 +10,6 @@ export interface VotedStatement {
   id: string;
   text: string;
   voters: Record<string, VoteType>;
-}
-
-export function isAgreeVote(vote: VoteType): boolean {
-  return vote === "agree" || vote === "super_agree";
 }
 
 export function calcAgreeRate(

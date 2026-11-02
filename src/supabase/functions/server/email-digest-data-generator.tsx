@@ -1,6 +1,6 @@
 import { getStatementsForUser } from "./db-utils.ts";
 import { EmailData, SubHeardMembership } from "./email-types.ts";
-import { getAllDebates, getByPrefixParsed, getStatement, getStatementsForRoom, getVotesForUser } from "./kv-utils.tsx";
+import { getAllDebates, getByPrefixParsed, findStatementInAnyRoom, getStatementsForRoom, getVotesForUser } from "./kv-utils.tsx";
 import type { Statement, DebateRoom } from "./types.tsx";
 
 async function getConversationsStarted(
@@ -115,7 +115,7 @@ async function getConversationsParticipated(
   const votedStatementIds = new Set(userVotes.map((v) => v.statementId));
 
   for await (const statementId of votedStatementIds) {
-    const statement = await getStatement(statementId);
+    const statement = await findStatementInAnyRoom(statementId);
     if (statement) {
       recentConvoIds.add(statement.roomId);
     }
