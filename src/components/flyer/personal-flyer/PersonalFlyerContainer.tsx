@@ -12,6 +12,7 @@ import { PersonalWhoDisScreen } from "./PersonalWhoDisScreen";
 
 export const PERSONAL_FLYER_EVENTS = {
   opened: "personal_flyer_screen_opened",
+  ready: "personal_flyer_screen_ready",
   whoDisOpened: "personal_flyer_screen_who_dis_opened",
   emailAdded: "personal_flyer_screen_email_added",
   keptVoting: "personal_flyer_screen_kept_voting",
@@ -44,6 +45,11 @@ export function PersonalFlyerContainer({ scan, onComplete }: PersonalFlyerContai
 
   useEffect(() => {
     track(PERSONAL_FLYER_EVENTS.opened);
+    api.trackTimedEvent(
+      PERSONAL_FLYER_EVENTS.ready,
+      Math.round(performance.now()),
+      roomId,
+    );
     safelyMakeApiCall(() => api.getRoomSwipeSix(roomId)).then((response) => {
       if (response?.data) setSwipeSixItems(response.data.items);
     });

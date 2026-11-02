@@ -7,7 +7,7 @@ import { toTimestamp } from "./time-utils.ts";
 import { FLYER_WELCOME_EMAIL_TYPE } from "./template-flyer-welcome.ts";
 import { FLYER_RESULTS_EMAIL_TYPE } from "./template-flyer-results.ts";
 import { FEEDBACK_CARD_SHOWN_EVENT, isFounderChatOptIn } from "./feedback-results-utils.ts";
-import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getSwipeSixFunnel, getSwipeSixDailyCompletions, buildCreateRoomFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel, FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS } from "./feature-tracker-utils.ts";
+import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getSwipeSixFunnel, getSwipeSixDailyCompletions, buildCreateRoomFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel, getPersonalFlyerScreenLoadTimes, FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
 
@@ -57,6 +57,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       flyerLandingFunnel,
       flyerScreenFunnel,
       personalFlyerScreenFunnel,
+      personalFlyerScreenLoadTimes,
       flyerWelcomeEmailsSent,
       flyerResultsEmailsSent,
       feedbackCardVotes,
@@ -111,6 +112,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       getFlyerLandingFunnel(),
       getFlyerScreenFunnel(FLYER_SCREEN_EVENTS),
       getFlyerScreenFunnel(PERSONAL_FLYER_SCREEN_EVENTS),
+      getPersonalFlyerScreenLoadTimes(),
       countRecords("sent_emails", { emailType: FLYER_WELCOME_EMAIL_TYPE }),
       countRecords("sent_emails", { emailType: FLYER_RESULTS_EMAIL_TYPE }),
       getAllAppFeedbackVotes(),
@@ -381,6 +383,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
 
     const personalFlyerScreenFunnelSince = new Date("2026-10-13").getTime();
 
+    const personalFlyerScreenLoadTimesSince = new Date("2026-11-01").getTime();
+
     const flyerEmailsSentSince = new Date("2026-10-03").getTime();
 
     const webDriverUsersSince = new Date("2026-03-03").getTime();
@@ -503,6 +507,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       flyerScreenFunnelSince,
       personalFlyerScreenFunnel,
       personalFlyerScreenFunnelSince,
+      personalFlyerScreenLoadTimes,
+      personalFlyerScreenLoadTimesSince,
       flyerWelcomeEmailsSent,
       flyerResultsEmailsSent,
       flyerEmailsSentSince,

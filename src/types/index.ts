@@ -929,6 +929,8 @@ export interface FeatureResults {
   flyerScreenFunnelSince: number;
   personalFlyerScreenFunnel: { opened: number; emailAdded: number; returnedViaEmail: number; returnedOnMultipleDays: number };
   personalFlyerScreenFunnelSince: number;
+  personalFlyerScreenLoadTimes: { loadCount: number; medianMs: number; slowestTenthStartsAtMs: number };
+  personalFlyerScreenLoadTimesSince: number;
   flyerWelcomeEmailsSent: number;
   flyerResultsEmailsSent: number;
   flyerEmailsSentSince: number;
@@ -1032,9 +1034,15 @@ export interface UserEvent {
   roomId?: string;
   url?: string;
   referralUserId?: string;
+  durationMs?: number;
   createdAt: number;
   sessionId?: string | null;
 }
+
+export type NewAnalyticsEvent = Pick<
+  UserEvent,
+  "type" | "roomId" | "referralUserId" | "durationMs"
+>;
 
 export interface VoteStats {
   total: number;

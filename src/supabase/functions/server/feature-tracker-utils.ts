@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { getSentEmails } from "./kv-utils.tsx";
-import { countEventsOfType, getEventsOfType, getAllRoomViews, getFlyerSwipeEvents, getSwipeSixEvents, getFlyerLandingEvents, getFlyerScreenEvents, getAppLoadEvents } from "./model-utils.ts";
+import { countEventsOfType, getEventsOfType, getAllRoomViews, getFlyerSwipeEvents, getSwipeSixEvents, getFlyerLandingEvents, getFlyerScreenEvents, getAppLoadEvents, getEventDurations } from "./model-utils.ts";
 import { FLYER_RESULTS_LINK_SOURCE } from "./template-flyer-results.ts";
 import { FLYER_WELCOME_LINK_SOURCE } from "./template-flyer-welcome.ts";
 import {
@@ -278,6 +278,42 @@ export function buildFlyerScreenFunnel(
     returnedOnMultipleDays: [...loadDaysSinceEmailAdded.values()].filter((days) => days.size > 1).length,
   };
 }
+
+export const PERSONAL_FLYER_SCREEN_READY_EVENT = "personal_flyer_screen_ready";
+
+export interface LoadTimeSummary {
+  loadCount: number;
+  medianMs: number;
+  slowestTenthStartsAtMs: number;
+}
+
+const valueAtFraction = (sortedValues: number[], fraction: number): number =>
+  sortedValues[Math.max(0, Math.ceil(fraction * sortedValues.length) - 1)];
+
+const medianOfSorted = (sortedValues: number[]): number => {
+  const middleIndex = Math.floor(sortedValues.length / 2);
+  return sortedValues.length % 2 === 1
+    ? sortedValues[middleIndex]
+    : Math.round((sortedValues[middleIndex - 1] + sortedValues[middleIndex]) / 2);
+};
+
+export function summarizeLoadTimes(durationsMs: number[]): LoadTimeSummary {
+  if (durationsMs.length === 0) return { loadCount: 0, medianMs: 0, slowestTenthStartsAtMs: 0 };
+  const sortedDurationsMs = [...durationsMs].sort((a, b) => a - b);
+  return {
+    loadCount: sortedDurationsMs.length,
+    medianMs: medianOfSorted(sortedDurationsMs),
+    slowestTenthStartsAtMs: valueAtFraction(sortedDurationsMs, 0.9),
+  };
+}
+
+export const getPersonalFlyerScreenLoadTimes = async (): Promise<LoadTimeSummary> => {
+  const events = await getEventDurations(PERSONAL_FLYER_SCREEN_READY_EVENT);
+  const durationsMs = events
+    .map((event) => event.durationMs)
+    .filter((durationMs): durationMs is number => typeof durationMs === "number");
+  return summarizeLoadTimes(durationsMs);
+};
 
 export const getFlyerScreenFunnel = async (screenEvents: FlyerScreenEventTypes) => {
   const events = await getFlyerScreenEvents([

@@ -22,6 +22,7 @@ import {
   UserSession,
   WeeklySignupCount,
   UserEvent,
+  NewAnalyticsEvent,
   type DebateRoom,
   type NewDebateRoom,
   type VoteType,
@@ -1202,6 +1203,14 @@ class ApiClient extends BaseApiClient {
   }
 
   trackEvent(type: string, roomId?: string, referralUserId?: string): void {
+    this.sendAnalyticsEvent({ type, roomId, referralUserId });
+  }
+
+  trackTimedEvent(type: string, durationMs: number, roomId?: string): void {
+    this.sendAnalyticsEvent({ type, roomId, durationMs });
+  }
+
+  private sendAnalyticsEvent(event: NewAnalyticsEvent): void {
     if (getEnvironment() !== "production")
       return;
     if (safelyGetStorageItem("showComponentShowcase", false))
@@ -1209,7 +1218,7 @@ class ApiClient extends BaseApiClient {
     if (!getSessionId())
       return;
     const url = typeof window !== "undefined" ? window.location.href : undefined;
-    this.post("/analytics/event", { type, roomId, url, referralUserId })
+    this.post("/analytics/event", { ...event, url })
       .catch(() => {});
   }
 

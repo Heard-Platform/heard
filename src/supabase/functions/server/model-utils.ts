@@ -271,6 +271,14 @@ export const getFlyerScreenEvents = async (types: string[]) =>
     (q: any) => q.in("type", types).select("type, userId, createdAt"),
   );
 
+export const getEventDurations = async (type: string) =>
+  selectAllWithoutLimit<Pick<UserEvent, "durationMs">>(
+    "user_events",
+    { type },
+    "createdAt",
+    (q: any) => q.select("durationMs"),
+  );
+
 export const getAppLoadEvents = async (userIds: string[]) =>
   userIds.length === 0
     ? []
