@@ -181,7 +181,8 @@ export function SwipeableStatementStack({
     );
 
     if (statement) {
-      showVoteResult(statement, voteType);
+      const isAuthoredByMe = statement.author === currentUserId;
+      if (!isAuthoredByMe) showVoteResult(statement, voteType);
       onVote(statement, voteType).catch(() => {
         setVotedStatementIds((prev) => {
           const newSet = new Set(prev);
