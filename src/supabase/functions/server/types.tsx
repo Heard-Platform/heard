@@ -9,6 +9,7 @@ export interface UserEvent {
   roomId?: string;
   url?: string;
   referralUserId?: string;
+  durationMs?: number;
   createdAt: number;
   sessionId?: string | null;
 }
