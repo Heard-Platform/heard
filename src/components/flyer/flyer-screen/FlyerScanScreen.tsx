@@ -89,7 +89,6 @@ export function FlyerScanScreen({
             )}
             {emailFlow.error && <p className="mt-2 text-sm text-[#C2410C]">{emailFlow.error}</p>}
             <TOSText
-              prefix="No spam or selling your data. "
               className="mt-4 text-center text-sm text-[#4A463F]"
               linkClassName="text-[#A34E36] underline"
             />

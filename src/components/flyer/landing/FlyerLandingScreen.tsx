@@ -193,7 +193,6 @@ function EmailForm({ emailFlow }: { emailFlow: EmailOtpFlow }) {
         <SubmitButton label="Send me the results" isSubmitting={emailFlow.submitting} />
       </form>
       <TOSText
-        prefix="No spam, no selling your data. "
         className="mt-3 text-xs text-[#4A463F]"
         linkClassName="text-[#4A463F] underline"
       />
