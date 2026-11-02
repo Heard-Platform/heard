@@ -6,7 +6,7 @@ import {
   getEventDisplayKey,
   getEventPresences,
   getLiveEventState,
-  getStatement,
+  findStatementInAnyRoom,
   getStatementsForRoom,
   getStatementsForRoomIncludingHidden,
   getUser,
@@ -171,7 +171,7 @@ export const setEventStatementHidden = async (
   isHidden: boolean,
   userId: string | undefined,
 ): Promise<Statement> => {
-  const statement = await getStatement(statementId);
+  const statement = await findStatementInAnyRoom(statementId);
   if (!statement || !state.roomOrder.includes(statement.roomId)) {
     throw new RouteError("That statement isn't part of this event", 404);
   }

@@ -13,12 +13,12 @@ import { getRoomDebugData } from "./room-debug-utils.ts";
 import {
   generateId,
   getDebateRoom,
-  getStatementById,
   getStatements,
   saveDebateRoom,
 } from "./debate-api.tsx";
 import {
   clearDebateEndedEmailSent,
+  findStatementInAnyRoom,
   getClusterAssignmentsBatch,
   getStatementsForRoomIncludingHidden,
   getUser,
@@ -183,7 +183,7 @@ app.post(
     ) => {
       const userId = c.get("userId");
 
-      const statement = await getStatementById(statementId);
+      const statement = await findStatementInAnyRoom(statementId);
       if (!statement || statement.roomId !== roomId) {
         throw new Error("Statement not found");
       }
@@ -214,7 +214,7 @@ app.post(
       const trimmed = name.trim();
       if (!trimmed) throw new Error("Tag name is required");
 
-      const statement = await getStatementById(statementId);
+      const statement = await findStatementInAnyRoom(statementId);
       if (!statement || statement.roomId !== roomId) {
         throw new Error("Statement not found");
       }

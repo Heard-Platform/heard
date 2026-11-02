@@ -1,7 +1,7 @@
 import { Context, Hono } from "npm:hono";
 import { insertUserReport } from "./model-utils.ts";
 import { NewUserReport, User } from "./types.tsx";
-import { getAskTheDataRecord, getStatement, getUser } from "./kv-utils.tsx";
+import { getAskTheDataRecord, findStatementInAnyRoom, getUser } from "./kv-utils.tsx";
 import { buildDevAlertEmailHtml, sendEmailToDevs } from "./dev-utils.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
 
@@ -75,7 +75,7 @@ async function getReportedContent(
   targetId: string,
 ): Promise<{ heading: string; body: string }> {
   if (type === "statement") {
-    const statement = await getStatement(targetId);
+    const statement = await findStatementInAnyRoom(targetId);
     return {
       heading: "Reported statement",
       body: statement?.text ?? "(statement not found)",
