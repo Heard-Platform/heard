@@ -64,6 +64,8 @@ import { FundingTeaserStory } from "../stories/FundingTeaser.story";
 import { EmailMonitoringTabStory } from "../stories/EmailMonitoringTab.story";
 import { EventTimelineTabStory } from "../stories/EventTimelineTab.story";
 import { FeedbackCardsTabStory } from "../stories/FeedbackCardsTab.story";
+import { NewsletterBuilderStory } from "../stories/NewsletterBuilder.story";
+import { NewsletterSectionEditorStory } from "../stories/NewsletterSectionEditor.story";
 import { FlyerSensorsStory } from "../stories/FlyerSensors.story";
 import { DisplayModeScreenStory } from "../stories/DisplayModeScreen.story";
 import { RoomAnalyticsModalStory } from "../stories/RoomAnalyticsModal.story";
@@ -193,6 +195,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                   <TabsTrigger value="email-monitoring">Email Monitoring</TabsTrigger>
                   <TabsTrigger value="event-timeline">Event Timeline</TabsTrigger>
                   <TabsTrigger value="feedback-cards-tab">Feedback Cards Tab</TabsTrigger>
+                  <TabsTrigger value="newsletter-builder">Newsletter Builder</TabsTrigger>
+                  <TabsTrigger value="newsletter-section-editor">Newsletter Section Editor</TabsTrigger>
                   <TabsTrigger value="flyer-sensors">Flyer Sensors</TabsTrigger>
                   <TabsTrigger value="display-mode-screen">Display Mode Screen</TabsTrigger>
                   <TabsTrigger value="room-analytics">Room Analytics</TabsTrigger>
@@ -388,6 +392,12 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 </TabsContent>
                 <TabsContent value="feedback-cards-tab">
                   <FeedbackCardsTabStory />
+                </TabsContent>
+                <TabsContent value="newsletter-builder">
+                  <NewsletterBuilderStory />
+                </TabsContent>
+                <TabsContent value="newsletter-section-editor">
+                  <NewsletterSectionEditorStory />
                 </TabsContent>
                 <TabsContent value="flyer-sensors">
                   <FlyerSensorsStory />
