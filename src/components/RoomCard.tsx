@@ -30,7 +30,6 @@ import { RestartRoomModal } from "./room/mod/RestartRoomModal";
 import { VoteMatrixModal } from "./room/VoteMatrixModal";
 import { DisplayModeScreen } from "./DisplayModeScreen";
 import { useDebateSession } from "../hooks/useDebateSession";
-import { useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { useFeedbackCardsContext } from "../contexts/FeedbackCardsContext";
 import { useFeedbackCardFlow } from "../hooks/useFeedbackCardFlow";
 import { api } from "../utils/api";
@@ -86,7 +85,6 @@ export function RoomCard({
   onShowAccountSetupModal,
   onSubHeardChange,
 }: RoomCardProps) {
-  const { resetTutorialTimer } = useSwipeTutorialContext();
   const { t } = useTranslation(["postControls"]);
 
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
@@ -289,8 +287,6 @@ export function RoomCard({
 
   // Handle statement submission
   const handleSubmitStatement = async (text: string) => {
-    resetTutorialTimer();
-    
     try {
       await onSubmitStatement(room.id, text);
       if (user.isAnonymous || !user.email) {
@@ -298,7 +294,6 @@ export function RoomCard({
       }
       if (onRefreshStatements) {
         await onRefreshStatements();
-        resetTutorialTimer();
       }
     } catch (error) {
       console.error("Error submitting statement:", error);

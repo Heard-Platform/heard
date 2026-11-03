@@ -1,4 +1,3 @@
-import { useSwipeTutorial } from "../hooks/useSwipeTutorial";
 
 interface KeyboardDebugPanelProps {
   show: boolean;
@@ -20,7 +19,6 @@ export function KeyboardDebugPanel({
   initialWindowHeight,
 }: KeyboardDebugPanelProps) {
   if (!show) return null;
-  const { resetSwipeTutorial } = useSwipeTutorial();
 
   return (
     <div className="fixed top-20 right-4 z-50 bg-black/90 text-white p-3 rounded-lg text-xs font-mono shadow-lg border border-green-500">
@@ -60,16 +58,6 @@ export function KeyboardDebugPanel({
             <span className="text-yellow-300">{initialWindowHeight.toFixed(0)}</span>
           </div>
         )}
-      </div>
-      <div className="pt-1 border-t border-gray-700 mt-1">
-        <div className="font-bold text-green-400 mb-2">Local Storage</div>
-
-        <button
-          className="w-full text-left text-orange-400 hover:text-orange-300 active:text-orange-200"
-          onClick={resetSwipeTutorial}
-        >
-          ↺ reset swipe tutorial
-        </button>
       </div>
     </div>
   );

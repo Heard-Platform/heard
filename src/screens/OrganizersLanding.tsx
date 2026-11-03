@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { Linkedin, Instagram, Youtube, type LucideIcon } from "lucide-react";
 import { SwipeableStatementStack } from "../components/room/SwipeableStatementStack";
 import { RoomAnalysisEmbed } from "../components/analysis/RoomAnalysisEmbed";
-import { SwipeTutorialProvider } from "../contexts/SwipeTutorialContext";
 import { VoteResultSnackbarProvider } from "../contexts/VoteResultSnackbarContext";
 import { Toaster } from "../components/ui/sonner";
 import { api } from "../utils/api";
@@ -295,56 +294,54 @@ function DemoSection() {
       >
         Try it yourself
       </h2>
-      <SwipeTutorialProvider>
-        <VoteResultSnackbarProvider>
-          <div style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
-            {showCompletion ? (
-              <div
-                style={{
-                  maxWidth: "384px",
-                  textAlign: "center",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "8px",
-                  padding: "48px 0",
-                }}
-              >
-                <p style={{ fontSize: "1.875rem" }}>🎉</p>
-                <p style={{ fontSize: "1.125rem", fontWeight: 600, color: COLORS.gray900 }}>
-                  That's it. That's the whole interface.
-                </p>
-                <p style={{ color: COLORS.gray600 }}>
-                  Real conversations work exactly the same way, just with your
-                  members' own statements.
-                </p>
-              </div>
-            ) : (
-              <SwipeableStatementStack
-                room={DEMO_ROOM}
-                statements={DEMO_STATEMENTS}
-                currentUserId="organizers-demo-user"
-                allowAnonymous={true}
-                isAnonymous={false}
-                chanceCardSwiped={true}
-                cover={null}
-                coverCardSwiped={true}
-                demographicQuestions={[]}
-                answeredQuestionIds={new Set()}
-                onVote={handleVote}
-                onSubmitStatement={async () => {}}
-                onShowAccountSetupModal={() => {}}
-                onChanceCardSwiped={async () => {}}
-                onCoverCardSwiped={async () => {}}
-                onCertifyDone={async () => {}}
-                onDemographicsAnswered={async () => {}}
-                feedbackStatement={null}
-                onFeedbackVoted={() => {}}
-                onFeedbackTellMore={() => {}}
-              />
-            )}
-          </div>
-        </VoteResultSnackbarProvider>
-      </SwipeTutorialProvider>
+      <VoteResultSnackbarProvider>
+        <div style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
+          {showCompletion ? (
+            <div
+              style={{
+                maxWidth: "384px",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+                padding: "48px 0",
+              }}
+            >
+              <p style={{ fontSize: "1.875rem" }}>🎉</p>
+              <p style={{ fontSize: "1.125rem", fontWeight: 600, color: COLORS.gray900 }}>
+                That's it. That's the whole interface.
+              </p>
+              <p style={{ color: COLORS.gray600 }}>
+                Real conversations work exactly the same way, just with your
+                members' own statements.
+              </p>
+            </div>
+          ) : (
+            <SwipeableStatementStack
+              room={DEMO_ROOM}
+              statements={DEMO_STATEMENTS}
+              currentUserId="organizers-demo-user"
+              allowAnonymous={true}
+              isAnonymous={false}
+              chanceCardSwiped={true}
+              cover={null}
+              coverCardSwiped={true}
+              demographicQuestions={[]}
+              answeredQuestionIds={new Set()}
+              onVote={handleVote}
+              onSubmitStatement={async () => {}}
+              onShowAccountSetupModal={() => {}}
+              onChanceCardSwiped={async () => {}}
+              onCoverCardSwiped={async () => {}}
+              onCertifyDone={async () => {}}
+              onDemographicsAnswered={async () => {}}
+              feedbackStatement={null}
+              onFeedbackVoted={() => {}}
+              onFeedbackTellMore={() => {}}
+            />
+          )}
+        </div>
+      </VoteResultSnackbarProvider>
       <p
         style={{
           textAlign: "center",

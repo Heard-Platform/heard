@@ -20,7 +20,6 @@ import { RoomCard } from "./RoomCard";
 import { CommunityTeaser } from "./room/CommunityTeaser";
 import { FeedCardMotion } from "./FeedCardMotion";
 import { useDebateSession } from "../hooks/useDebateSession";
-import { SwipeTutorialProvider, useSwipeTutorialContext } from "../contexts/SwipeTutorialContext";
 import { FeedbackCardsProvider } from "../contexts/FeedbackCardsContext";
 import { VoteResultSnackbarProvider } from "../contexts/VoteResultSnackbarContext";
 import { CreateRoomCard } from "./CreateRoomCard";
@@ -129,7 +128,6 @@ const RoomScrollerInner = forwardRef<
       Record<string, boolean>
     >({});
     const { getRoomStatements } = useDebateSession();
-    const { resetTutorialTimer } = useSwipeTutorialContext();
 
     // Combine the swipe six banner and events (at top), rooms, and a "create new" card at the end
     const leadingCards: Card[] = swipeSixItems ? [{ id: "swipe-six", cardType: "swipe_six", items: swipeSixItems }] : [];
@@ -217,7 +215,6 @@ const RoomScrollerInner = forwardRef<
 
     const handleScroll = useCallback(() => {
       if (isScrolling.current) return;
-      resetTutorialTimer();
 
       if (scrollRafRef.current !== undefined) return;
       scrollRafRef.current = requestAnimationFrame(() => {
@@ -396,12 +393,10 @@ const RoomScrollerInner = forwardRef<
 
 export const RoomScroller = forwardRef<RoomScrollerRef, RoomScrollerProps>(
   (props, ref) => (
-    <SwipeTutorialProvider>
-      <FeedbackCardsProvider>
-        <VoteResultSnackbarProvider>
-          <RoomScrollerInner {...props} ref={ref} />
-        </VoteResultSnackbarProvider>
-      </FeedbackCardsProvider>
-    </SwipeTutorialProvider>
+    <FeedbackCardsProvider>
+      <VoteResultSnackbarProvider>
+        <RoomScrollerInner {...props} ref={ref} />
+      </VoteResultSnackbarProvider>
+    </FeedbackCardsProvider>
   ),
 );

@@ -1,6 +1,5 @@
 import { motion } from "motion/react";
 import { RoomCard } from "../RoomCard";
-import { SwipeTutorialProvider } from "../../contexts/SwipeTutorialContext";
 import { FeedbackCardsProvider } from "../../contexts/FeedbackCardsContext";
 import { VoteResultSnackbarProvider } from "../../contexts/VoteResultSnackbarContext";
 import { DebateRoom, Statement, UserSession, VoteType } from "../../types";
@@ -36,27 +35,25 @@ export function EventRoomView({
       transition={{ duration: 0.25, ease: "easeOut" }}
       className="w-full max-w-sm mx-auto pt-2"
     >
-      <SwipeTutorialProvider>
-        <FeedbackCardsProvider>
-          <VoteResultSnackbarProvider>
-            <RoomCard
-              room={room}
-              statements={statements}
-              loadingStatements={false}
-              isDeveloper={user.isDeveloper || false}
-              isActive={true}
-              user={user}
-              currentSubHeard={currentSubHeard}
-              onSubmitStatement={onSubmitStatement}
-              onVoteOnStatement={onVoteOnStatement}
-              onRefreshStatements={onRefreshStatements}
-              onDiscussStatement={() => {}}
-              onShowAccountSetupModal={onShowAccountSetupModal}
-              onSubHeardChange={onSubHeardChange}
-            />
-          </VoteResultSnackbarProvider>
-        </FeedbackCardsProvider>
-      </SwipeTutorialProvider>
+      <FeedbackCardsProvider>
+        <VoteResultSnackbarProvider>
+          <RoomCard
+            room={room}
+            statements={statements}
+            loadingStatements={false}
+            isDeveloper={user.isDeveloper || false}
+            isActive={true}
+            user={user}
+            currentSubHeard={currentSubHeard}
+            onSubmitStatement={onSubmitStatement}
+            onVoteOnStatement={onVoteOnStatement}
+            onRefreshStatements={onRefreshStatements}
+            onDiscussStatement={() => {}}
+            onShowAccountSetupModal={onShowAccountSetupModal}
+            onSubHeardChange={onSubHeardChange}
+          />
+        </VoteResultSnackbarProvider>
+      </FeedbackCardsProvider>
     </motion.div>
   );
 }

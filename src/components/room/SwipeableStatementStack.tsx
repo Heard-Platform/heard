@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { PanInfo } from "motion/react";
-import { useSwipeTutorialContext } from "../../contexts/SwipeTutorialContext";
 import {
   type Statement,
   type VoteType,
@@ -90,7 +89,6 @@ export function SwipeableStatementStack({
 }: SwipeableStatementStackProps) {
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
 
-  const { recordSwipe, resetTutorialTimer } = useSwipeTutorialContext();
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
@@ -172,9 +170,6 @@ export function SwipeableStatementStack({
     setVotedStatementIds((prev) =>
       new Set(prev).add(statement.id),
     );
-
-    recordSwipe();
-    resetTutorialTimer();
 
     onVote(statement, voteType).catch(() => {
       setVotedStatementIds((prev) => {
@@ -283,22 +278,11 @@ export function SwipeableStatementStack({
     } else if (card.type === "certify") {
       swipeCertifyCard(swipeDirection);
       return;
-    } else if (card.type === "chance" || card.type === "cover") {
-      setIsVoting(true);
-      setSwipedNoopCard(card.type);
-      setSwipeDirection(swipeDirection);
-
-      if (card.type === "chance") {
-        onChanceCardSwiped();
-      } else if (card.type === "cover") {
-        onCoverCardSwiped();
-      }
-
-      setTimeout(() => {
-        setSwipedNoopCard(null);
-        setSwipeDirection(null);
-        setIsVoting(false);
-      }, 300);
+    } else if (card.type === "chance") {
+      sendNoopCardOff("chance", swipeDirection, onChanceCardSwiped);
+      return;
+    } else if (card.type === "cover") {
+      sendCoverCardOff(swipeDirection);
       return;
     } else if (card.type === "feedback") {
       sendFeedbackCardOff(card.statement, swipeDirection, "swipe");
@@ -311,6 +295,31 @@ export function SwipeableStatementStack({
       }
     }
   };
+
+  const sendNoopCardOff = (
+    noopCard: "chance" | "cover",
+    direction: "left" | "right",
+    onCardSwiped: () => void,
+  ) => {
+    setIsVoting(true);
+    setSwipedNoopCard(noopCard);
+    setSwipeDirection(direction);
+    onCardSwiped();
+
+    setTimeout(() => {
+      setSwipedNoopCard(null);
+      setSwipeDirection(null);
+      setIsVoting(false);
+    }, CARD_EXIT_MS);
+  };
+
+  const sendCoverCardOff = (direction: "left" | "right") => {
+    if (isVoting) return;
+
+    sendNoopCardOff("cover", direction, onCoverCardSwiped);
+  };
+
+  const handleStartVotingTapped = () => sendCoverCardOff("right");
 
   const sendFeedbackCardOff = (
     statement: FeedbackStatement,
@@ -491,6 +500,7 @@ export function SwipeableStatementStack({
                 onAgree={handleAgreeTapped}
                 onDisagree={handleDisagreeTapped}
                 onPass={handlePassTapped}
+                onStartVoting={handleStartVotingTapped}
                 onSuperAgree={() => {
                   if (card.type === "statement") {
                     handleTapVote(

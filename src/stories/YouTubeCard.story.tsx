@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SwipeableStatementStack } from "../components/room/SwipeableStatementStack";
-import { Statement, VoteType } from "../types";
+import { FullCoverData, Statement, VoteType } from "../types";
+import { Button } from "../components/ui/button";
 import { mockRooms } from "./mockData";
 
 const mockStatements: Statement[] = [
@@ -47,45 +48,62 @@ const mockStatements: Statement[] = [
   },
 ];
 
+const YOUTUBE_COVER: FullCoverData = { type: "youtube", url: "https://www.youtube.com/shorts/Ukwy8FqNGZc" };
+const IMAGE_COVER: FullCoverData = { type: "image", url: "/live-preview.png" };
+
+const handleVote = async (statement: Statement, voteType: VoteType) => {
+  console.log("Vote:", { statementId: statement.id, voteType });
+};
+
+const handleSubmitStatement = async (text: string) => {
+  console.log("Submit statement:", text);
+  await new Promise((resolve) => setTimeout(resolve, 500));
+};
+
 export function YouTubeCardStory() {
-  const [coverCardSwiped, setCoverCardSwiped] = useState(false);
-
-  const handleVote = async (statement: Statement, voteType: VoteType) => {
-    console.log("Vote:", { statementId: statement.id, voteType });
-  };
-
-  const handleSubmitStatement = async (text: string) => {
-    console.log("Submit statement:", text);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  };
-
   return (
     <div className="space-y-6">
-      <div className="bg-slate-100 rounded-lg p-8 flex items-center justify-center">
-        <SwipeableStatementStack
-          room={mockRooms[0]}
-          statements={mockStatements}
-          currentUserId="story-user"
-          allowAnonymous={true}
-          isAnonymous={false}
-          chanceCardSwiped={true}
-          coverCardUrl="https://www.youtube.com/shorts/Ukwy8FqNGZc"
-          coverCardType="youtube"
-          coverCardSwiped={coverCardSwiped}
-          demographicQuestions={[]}
-          answeredQuestionIds={new Set()}
-          onVote={handleVote}
-          onSubmitStatement={handleSubmitStatement}
-          onShowAccountSetupModal={() => {}}
-          onChanceCardSwiped={async () => {}}
-          onCoverCardSwiped={async () => { setCoverCardSwiped(true); }}
-          onCertifyDone={async () => {}}
-          onDemographicsAnswered={() => {}}
-          feedbackStatement={null}
-          onFeedbackVoted={() => {}}
-          onFeedbackTellMore={() => {}}
-        />
+      <CoverCardStack label="YouTube cover" cover={YOUTUBE_COVER} />
+      <CoverCardStack label="Image cover" cover={IMAGE_COVER} />
+    </div>
+  );
+}
+
+function CoverCardStack({ label, cover }: { label: string; cover: FullCoverData }) {
+  const [coverCardSwiped, setCoverCardSwiped] = useState(false);
+  const markCoverCardSwiped = async () => setCoverCardSwiped(true);
+  const showCoverCardAgain = () => setCoverCardSwiped(false);
+
+  return (
+    <div className="bg-slate-100 rounded-lg p-8 flex flex-col items-center gap-3">
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-semibold text-slate-600">{label}</span>
+        <Button size="sm" variant="outline" onClick={showCoverCardAgain}>
+          Show cover again
+        </Button>
       </div>
+      <SwipeableStatementStack
+        room={mockRooms[0]}
+        statements={mockStatements}
+        currentUserId="story-user"
+        allowAnonymous={true}
+        isAnonymous={false}
+        chanceCardSwiped={true}
+        cover={cover}
+        coverCardSwiped={coverCardSwiped}
+        demographicQuestions={[]}
+        answeredQuestionIds={new Set()}
+        onVote={handleVote}
+        onSubmitStatement={handleSubmitStatement}
+        onShowAccountSetupModal={() => {}}
+        onChanceCardSwiped={async () => {}}
+        onCoverCardSwiped={markCoverCardSwiped}
+        onCertifyDone={async () => {}}
+        onDemographicsAnswered={() => {}}
+        feedbackStatement={null}
+        onFeedbackVoted={() => {}}
+        onFeedbackTellMore={() => {}}
+      />
     </div>
   );
 }
