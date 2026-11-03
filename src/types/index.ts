@@ -16,7 +16,7 @@ export type VoteType =
   | "pass"
   | "super_agree";
 
-export type VoteTypeNew = Exclude<VoteType, "super_agree">;
+export type SimpleVoteType = Exclude<VoteType, "super_agree">;
 
 export type SortBy = VoteType | "none";
 

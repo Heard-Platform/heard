@@ -1,7 +1,7 @@
 import type { DebateRoom, Statement } from "../../types";
 import { SwipeIndicatorSet } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
-import { Star, Flag, MoreVertical, EyeOff, Share, SkipForward } from "lucide-react";
+import { Star, Flag, MoreVertical, EyeOff, Share } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,10 @@ import { share } from "../../utils/share";
 import { createShareableLink } from "../../utils/url";
 import { YouTubeAudioEmbed } from "./YouTubeAudioEmbed";
 import { extractYouTubeVideoId } from "../../utils/youtube-utils";
-import { StatementVoterAnimals } from "./StatementVoterAnimals";
+import { VoteButtonRow } from "../VoteButton";
+import { VoteRevealCrowd } from "./VoteRevealCrowd";
+import { VoteRevealHeadline } from "./VoteRevealHeadline";
+import type { VoteReveal } from "../../utils/vote-reveal";
 import moment from "moment";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -25,13 +28,16 @@ interface StatementCardProps {
   isTopCard: boolean;
   currentIndex: number;
   totalStatements: number;
+  voteReveal: VoteReveal | null;
   disagreeOpacity: MotionValue<number>;
   agreeOpacity: MotionValue<number>;
   superAgreeOpacity: MotionValue<number>;
   passOpacity: MotionValue<number>;
   getTypeIcon: (type?: string) => string | null;
+  onAgree: () => void;
+  onDisagree: () => void;
+  onPass: () => void;
   onSuperAgree: () => void;
-  onSkip: () => void;
   onFlag: () => void;
 }
 
@@ -41,13 +47,16 @@ export function StatementCard({
   isTopCard,
   currentIndex,
   totalStatements,
+  voteReveal,
   disagreeOpacity,
   agreeOpacity,
   superAgreeOpacity,
   passOpacity,
   getTypeIcon,
+  onAgree,
+  onDisagree,
+  onPass,
   onSuperAgree,
-  onSkip,
   onFlag,
 }: StatementCardProps) {
   const { user, setStatementHidden } = useDebateSession();
@@ -73,9 +82,12 @@ export function StatementCard({
     <>
       <div className="heard-between">
         <div className="flex items-center gap-2">
-          {statement.isSpicy && (
-            <span className="text-lg">🌶️</span>
-          )}
+          <span className="text-xs text-muted-foreground">
+            {isTopCard
+              ? `${timeAgo} · ${getTotalVotes(statement).toLocaleString()} votes`
+              : timeAgo}
+          </span>
+          {statement.isSpicy && <span className="text-lg">🌶️</span>}
           {getTypeIcon(statement.type) && (
             <span className="text-lg">
               {getTypeIcon(statement.type)}
@@ -101,16 +113,6 @@ export function StatementCard({
               </button>
             )}
             <button
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                onSkip();
-              }}
-              className={`${actionButtonBase} hover:bg-gray-100`}
-              title="Skip"
-            >
-              <SkipForward className="w-4 h-4 text-gray-700" />
-            </button>
-            <button
               onClick={(e) => {
                 e.stopPropagation();
                 const link = `${createShareableLink(statement.roomId)}?statement=${statement.id}`;
@@ -118,7 +120,8 @@ export function StatementCard({
                   url: link,
                   title: "Come vote on this",
                   text: `Come vote on "${statement.text}"! ${link}`,
-                  onSuccess: () => toast.success("Link copied to clipboard!"),
+                  onSuccess: () =>
+                    toast.success("Link copied to clipboard!"),
                   onError: (e) => toast.error("Failed to share link"),
                 });
               }}
@@ -155,7 +158,10 @@ export function StatementCard({
 
       <div className="flex min-h-190px items-center justify-center">
         {youtubeVideoId ? (
-          <YouTubeAudioEmbed url={statement.text} isPlaying={isTopCard} />
+          <YouTubeAudioEmbed
+            url={statement.text}
+            isPlaying={isTopCard}
+          />
         ) : (
           <p className="text-lg leading-relaxed text-center">
             {statement.text}
@@ -163,22 +169,31 @@ export function StatementCard({
         )}
       </div>
 
-      <div className="flex items-end justify-between">
-        <span className="text-xs text-muted-foreground">{timeAgo}</span>
-        {isTopCard && (() => {
-          const totalVotes = getTotalVotes(statement);
-          return (
-            <span className="text-xs text-muted-foreground">
-              {totalVotes.toLocaleString()} votes
-            </span>
-          );
-        })()}
-      </div>
+      {isTopCard &&
+        (voteReveal ? (
+          <div className="flex h-10 items-center">
+            <VoteRevealHeadline
+              voterVotes={voteReveal.voterVotes}
+              voteEvent={voteReveal.voteEvent}
+            />
+          </div>
+        ) : (
+          <VoteButtonRow
+            onAgree={onAgree}
+            onDisagree={onDisagree}
+            onPass={onPass}
+          />
+        ))}
 
-      <StatementVoterAnimals
-        statementId={statement.id}
-        voterIds={Object.keys(statement.voters)}
-      />
+      {voteReveal && (
+        <div className="absolute left-0 right-0 bottom-0">
+          <VoteRevealCrowd
+            statementId={statement.id}
+            voterVotes={voteReveal.voterVotes}
+            currentVoterId={voteReveal.currentVoterId}
+          />
+        </div>
+      )}
 
       {isTopCard && (
         <SwipeIndicatorSet

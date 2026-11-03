@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { VoteResultSnackbar, type LatestVote } from "../components/room/VoteResultSnackbar";
+import { VoteResultSnackbar } from "../components/room/VoteResultSnackbar";
 import { FeatureFlags, isFeatureEnabled } from "../utils/constants/feature-flags";
-import { calcVoteResult } from "../utils/vote-result";
+import { buildVoteReveal, type VoteReveal } from "../utils/vote-reveal";
 import type { Statement, VoteType } from "../types";
 
 interface VoteResultSnackbarContextValue {
@@ -15,25 +15,24 @@ interface VoteResultSnackbarContextValue {
 const VoteResultSnackbarContext = createContext<VoteResultSnackbarContextValue | null>(null);
 
 export function VoteResultSnackbarProvider({ children }: { children: ReactNode }) {
-  const [latestVote, setLatestVote] = useState<LatestVote | null>(null);
+  const [voteReveal, setVoteReveal] = useState<VoteReveal | null>(null);
 
   const showVoteResult = useCallback(
     (statementBeforeVote: Statement, voteType: VoteType, voterId: string | undefined) => {
       if (!isFeatureEnabled(FeatureFlags.VOTE_RESULT_SNACKBAR)) return;
-      const result = calcVoteResult(statementBeforeVote, voteType, voterId);
-      if (result) setLatestVote({ statement: statementBeforeVote, result });
+      setVoteReveal(buildVoteReveal(statementBeforeVote, voteType, voterId));
     },
     [],
   );
 
-  const dismissVoteResult = useCallback(() => setLatestVote(null), []);
+  const dismissVoteResult = useCallback(() => setVoteReveal(null), []);
 
   const value = useMemo(() => ({ showVoteResult }), [showVoteResult]);
 
   return (
     <VoteResultSnackbarContext.Provider value={value}>
       {children}
-      <VoteResultSnackbar latestVote={latestVote} onDismiss={dismissVoteResult} />
+      <VoteResultSnackbar voteReveal={voteReveal} onDismiss={dismissVoteResult} />
     </VoteResultSnackbarContext.Provider>
   );
 }

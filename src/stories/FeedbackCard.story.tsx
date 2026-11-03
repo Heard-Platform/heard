@@ -20,6 +20,8 @@ function CardShell({ statementKey, agreeOpacity = 0 }: { statementKey: FeedbackS
   const agree = useMotionValue(agreeOpacity);
   const superAgree = useMotionValue(0);
   const pass = useMotionValue(0);
+  const logAgree = () => console.log("[Story] agree", statementKey);
+  const logDisagree = () => console.log("[Story] disagree", statementKey);
 
   return (
     <div className="max-w-sm">
@@ -32,6 +34,8 @@ function CardShell({ statementKey, agreeOpacity = 0 }: { statementKey: FeedbackS
           agreeOpacity={agree}
           superAgreeOpacity={superAgree}
           passOpacity={pass}
+          onAgree={logAgree}
+          onDisagree={logDisagree}
           onTellMore={() => console.log("[Story] tell more", statementKey)}
         />
       </div>

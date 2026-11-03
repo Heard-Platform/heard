@@ -69,8 +69,8 @@ import { NewsletterSectionEditorStory } from "../stories/NewsletterSectionEditor
 import { FlyerSensorsStory } from "../stories/FlyerSensors.story";
 import { DisplayModeScreenStory } from "../stories/DisplayModeScreen.story";
 import { RoomAnalyticsModalStory } from "../stories/RoomAnalyticsModal.story";
-import { StatementVoterAnimalsStory } from "../stories/StatementVoterAnimals.story";
 import { VoteResultSnackbarStory } from "../stories/VoteResultSnackbar.story";
+import { VoteRevealCrowdStory } from "../stories/VoteRevealCrowd.story";
 import { AnonResponseTripwireStory } from "../stories/AnonResponseTripwire.story";
 import { ClusterMinimapStory } from "../stories/ClusterMinimap.story";
 import { EventSetupPanelStory } from "../stories/EventSetupPanel.story";
@@ -200,8 +200,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                   <TabsTrigger value="flyer-sensors">Flyer Sensors</TabsTrigger>
                   <TabsTrigger value="display-mode-screen">Display Mode Screen</TabsTrigger>
                   <TabsTrigger value="room-analytics">Room Analytics</TabsTrigger>
-                  <TabsTrigger value="statement-voter-animals">Statement Voter Animals</TabsTrigger>
                   <TabsTrigger value="vote-result-snackbar">Vote Result Snackbar</TabsTrigger>
+                  <TabsTrigger value="vote-reveal-crowd">Vote Reveal Crowd</TabsTrigger>
                   <TabsTrigger value="anon-response-tripwire">Anon Response Tripwire</TabsTrigger>
                   <TabsTrigger value="cluster-minimap">Cluster Minimap</TabsTrigger>
                   <TabsTrigger value="event-setup-panel">Event Setup Panel</TabsTrigger>
@@ -408,11 +408,11 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsContent value="room-analytics">
                   <RoomAnalyticsModalStory />
                 </TabsContent>
-                <TabsContent value="statement-voter-animals">
-                  <StatementVoterAnimalsStory />
-                </TabsContent>
                 <TabsContent value="vote-result-snackbar">
                   <VoteResultSnackbarStory />
+                </TabsContent>
+                <TabsContent value="vote-reveal-crowd">
+                  <VoteRevealCrowdStory />
                 </TabsContent>
                 <TabsContent value="anon-response-tripwire">
                   <AnonResponseTripwireStory />

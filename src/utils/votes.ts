@@ -1,4 +1,4 @@
-import type { Statement } from "../types";
+import type { Statement, VoteType, SimpleVoteType } from "../types";
 
 export const getTotalVotes = (statement: Statement): number =>
   (statement.agrees ?? 0) +
@@ -8,3 +8,6 @@ export const getTotalVotes = (statement: Statement): number =>
 
 export const getRoomVoteCount = (statements: Statement[]): number =>
   statements.reduce((total, s) => total + getTotalVotes(s), 0);
+
+export const toSimpleVote = (voteType: VoteType): SimpleVoteType =>
+  voteType === "super_agree" ? "agree" : voteType;

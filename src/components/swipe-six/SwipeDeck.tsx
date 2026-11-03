@@ -1,8 +1,7 @@
-import { useRef, type ReactNode } from "react";
-import { Check, X } from "lucide-react";
+import { useRef } from "react";
 import { AnimatePresence } from "motion/react";
 import type { SwipeSixItem } from "../../types";
-import { Button } from "../ui/button";
+import { VoteButtonRow } from "../VoteButton";
 import { FlyerProgressSegments } from "../flyer/FlyerProgress";
 import {
   FlyerStackedCard,
@@ -66,10 +65,12 @@ export function SwipeDeck({ items, votedCount, hideCommunity = false, onVote }: 
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-3 pt-4">
-        <VoteButton label="Disagree" vote="disagree" icon={<X />} onClick={() => swipe("disagree")} />
-        <VoteButton label="Pass" vote="pass" onClick={() => swipe("pass")} />
-        <VoteButton label="Agree" vote="agree" icon={<Check />} onClick={() => swipe("agree")} />
+      <div className="pt-4">
+        <VoteButtonRow
+          onAgree={() => swipe("agree")}
+          onDisagree={() => swipe("disagree")}
+          onPass={() => swipe("pass")}
+        />
       </div>
       <div className="grid grid-cols-3 gap-3 pt-2 text-center text-xs secondary-text">
         <span>← Swipe left</span>
@@ -88,25 +89,6 @@ export function SwipeProgress({ votedCount, total }: { votedCount: number; total
         {votedCount} of {total}
       </span>
     </div>
-  );
-}
-
-interface VoteButtonProps {
-  label: string;
-  vote: SwipeVote;
-  icon?: ReactNode;
-  onClick: () => void;
-}
-
-function VoteButton({ label, vote, icon, onClick }: VoteButtonProps) {
-  // The label carries the vote color so the outline variant's hover text color can't override it.
-  return (
-    <Button variant="outline" size="lg" className={`border-2 ${vote}-border`} onClick={onClick}>
-      <span className={`flex items-center gap-1.5 font-bold ${vote}-text`}>
-        {icon}
-        {label}
-      </span>
-    </Button>
   );
 }
 

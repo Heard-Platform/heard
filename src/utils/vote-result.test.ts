@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Statement, VoteType } from "../types";
-import {
-  calcVoteResult,
-  getDecisiveVoteSide,
-  getEmphasizedSide,
-  getVoteResultDetail,
-  getVoteResultHeadline,
-  type VoteResult,
-} from "./vote-result";
+import type { Statement } from "../types";
+import { getCrowdVerdict, getVoteEvent } from "./vote-result";
 
 const buildStatement = (overrides: Partial<Statement>): Statement => ({
   id: "statement-1",
@@ -25,179 +18,74 @@ const buildStatement = (overrides: Partial<Statement>): Statement => ({
 });
 
 const VOTER_ID = "voter-2";
+const FIRST_VOTE = { type: "first_vote", headline: "First vote!" };
+const SWUNG_VOTE = { type: "swung_vote", headline: "You swung the vote!" };
 
-const calcRequiredVoteResult = (statementBeforeVote: Statement, voteType: VoteType): VoteResult => {
-  const result = calcVoteResult(statementBeforeVote, voteType, VOTER_ID);
-  if (!result) throw new Error("Expected a vote result");
-  return result;
-};
-
-describe("getDecisiveVoteSide", () => {
-  it("counts super agree as agree", () => {
-    expect(getDecisiveVoteSide("super_agree")).toBe("agree");
+describe("getVoteEvent", () => {
+  it("has no vote event for a pass", () => {
+    expect(getVoteEvent(buildStatement({}), "pass", VOTER_ID)).toBeNull();
   });
 
-  it("has no side for a pass", () => {
-    expect(getDecisiveVoteSide("pass")).toBeNull();
-  });
-});
-
-describe("calcVoteResult", () => {
-  it("returns no result for a pass", () => {
-    expect(calcVoteResult(buildStatement({ agrees: 10 }), "pass", VOTER_ID)).toBeNull();
-  });
-
-  it("returns no result when the author votes on their own statement", () => {
-    expect(calcVoteResult(buildStatement({ agrees: 10 }), "agree", "other-user")).toBeNull();
+  it("has no vote event when the author votes on their own statement", () => {
+    expect(getVoteEvent(buildStatement({}), "agree", "other-user")).toBeNull();
   });
 
   it("is a first vote when nobody has agreed or disagreed yet", () => {
-    const result = calcRequiredVoteResult(buildStatement({ passes: 3 }), "agree");
-    expect(result.kind).toBe("first_vote");
-    expect(result.agreePercent).toBe(100);
-    expect(result.decisiveVoteCount).toBe(1);
-  });
-
-  it("is with the majority when the voter joins the larger side", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 27, disagrees: 11 }),
-      "agree",
-    );
-    expect(result.kind).toBe("with_majority");
-    expect(result.agreePercent).toBe(72);
-    expect(result.disagreePercent).toBe(28);
-    expect(result.decisiveVoteCount).toBe(39);
-  });
-
-  it("is in the minority when the voter joins the smaller side", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 9, disagrees: 30 }),
-      "agree",
-    );
-    expect(result.kind).toBe("in_minority");
-    expect(result.majoritySide).toBe("disagree");
-    expect(result.agreePercent).toBe(25);
-  });
-
-  it("is nearly split when the sides are within ten points", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 20, disagrees: 19 }),
-      "agree",
-    );
-    expect(result.kind).toBe("nearly_split");
-    expect(result.agreePercent).toBe(53);
-  });
-
-  it("is a swung vote when the vote breaks an exact tie", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 3, disagrees: 3 }),
-      "disagree",
-    );
-    expect(result.kind).toBe("swung_vote");
-    expect(result.majoritySide).toBe("disagree");
-    expect(result.agreePercentBeforeVote).toBe(50);
-  });
-
-  it("counts super agrees toward the agree side", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 2, superAgrees: 1, disagrees: 3 }),
-      "super_agree",
-    );
-    expect(result.kind).toBe("swung_vote");
-    expect(result.agreeCount).toBe(4);
-  });
-
-  it("leaves passes out of the percentages", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 3, disagrees: 1, passes: 20 }),
-      "agree",
-    );
-    expect(result.agreePercent).toBe(80);
-    expect(result.decisiveVoteCount).toBe(5);
-  });
-
-  it("starts the bar from the split before the vote", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 1, disagrees: 3 }),
-      "agree",
-    );
-    expect(result.agreePercentBeforeVote).toBe(25);
-    expect(result.agreePercent).toBe(40);
+    expect(getVoteEvent(buildStatement({ passes: 3 }), "agree", VOTER_ID)).toEqual(FIRST_VOTE);
   });
 
   it("is a first vote when only the author has agreed", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 1, voters: { "other-user": "agree" } }),
-      "disagree",
-    );
-    expect(result.kind).toBe("first_vote");
-    expect(result.decisiveVoteCount).toBe(2);
-  });
-
-  it("is a first vote when other voters have only passed", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ passes: 1, voters: { "voter-1": "pass" } }),
-      "agree",
-    );
-    expect(result.kind).toBe("first_vote");
+    const statement = buildStatement({ agrees: 1, voters: { "other-user": "agree" } });
+    expect(getVoteEvent(statement, "disagree", VOTER_ID)).toEqual(FIRST_VOTE);
   });
 
   it("is not a first vote once someone other than the author has agreed or disagreed", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 1, voters: { "voter-1": "agree" } }),
-      "agree",
-    );
-    expect(result.kind).not.toBe("first_vote");
+    const statement = buildStatement({ agrees: 1, voters: { "voter-1": "agree" } });
+    expect(getVoteEvent(statement, "agree", VOTER_ID)).toBeNull();
+  });
+
+  it("is a swung vote when the vote breaks an exact tie", () => {
+    expect(getVoteEvent(buildStatement({ agrees: 3, disagrees: 3 }), "disagree", VOTER_ID)).toEqual(SWUNG_VOTE);
+  });
+
+  it("counts super agrees toward the agree side", () => {
+    const statement = buildStatement({ agrees: 2, superAgrees: 1, disagrees: 3 });
+    expect(getVoteEvent(statement, "super_agree", VOTER_ID)).toEqual(SWUNG_VOTE);
+  });
+
+  it("has no vote event for an ordinary vote", () => {
+    expect(getVoteEvent(buildStatement({ agrees: 27, disagrees: 11 }), "agree", VOTER_ID)).toBeNull();
   });
 });
 
-describe("getEmphasizedSide", () => {
-  it("emphasizes the voter's side when nearly split", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 20, disagrees: 19 }),
-      "disagree",
-    );
-    expect(result.kind).toBe("nearly_split");
-    expect(getEmphasizedSide(result)).toBe("disagree");
+describe("getCrowdVerdict", () => {
+  it("says most passed when passes are over half the votes", () => {
+    expect(getCrowdVerdict({ agree: 2, disagree: 2, pass: 15 })).toEqual({ headline: "Most passed", leadingSide: "pass" });
   });
 
-  it("emphasizes the majority otherwise", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 9, disagrees: 30 }),
-      "agree",
-    );
-    expect(getEmphasizedSide(result)).toBe("disagree");
-  });
-});
-
-describe("getVoteResultHeadline", () => {
-  it.each([
-    [{ agrees: 0, disagrees: 0 }, "agree", "First vote!"],
-    [{ agrees: 3, disagrees: 3 }, "agree", "You swung the vote!"],
-    [{ agrees: 20, disagrees: 19 }, "agree", "Nearly split, 53 to 47"],
-    [{ agrees: 27, disagrees: 11 }, "agree", "72% agree with you"],
-    [{ agrees: 9, disagrees: 30 }, "agree", "You're in the 25% who agree"],
-    [{ agrees: 30, disagrees: 9 }, "disagree", "You're in the 25% who disagree"],
-  ] as const)("for %o voting %s says %s", (counts, voteType, headline) => {
-    const result = calcRequiredVoteResult(buildStatement(counts), voteType);
-    expect(getVoteResultHeadline(result)).toBe(headline);
-  });
-});
-
-describe("getVoteResultDetail", () => {
-  it("shows the new count after a swing", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 3, disagrees: 3 }),
-      "agree",
-    );
-    expect(getVoteResultDetail(result)).toBe("now agree 4 to 3");
+  it("says most passed when nobody took a side", () => {
+    expect(getCrowdVerdict({ agree: 0, disagree: 0, pass: 1 })).toEqual({ headline: "Most passed", leadingSide: "pass" });
   });
 
-  it("shows the vote count otherwise", () => {
-    const result = calcRequiredVoteResult(
-      buildStatement({ agrees: 27, disagrees: 11 }),
-      "agree",
-    );
-    expect(getVoteResultDetail(result)).toBe("39 votes");
+  it("says everyone agrees when every vote is agree", () => {
+    expect(getCrowdVerdict({ agree: 12, disagree: 0, pass: 0 })).toEqual({ headline: "Everyone agrees", leadingSide: "agree" });
+  });
+
+  it("says everyone disagrees when every vote is disagree", () => {
+    expect(getCrowdVerdict({ agree: 0, disagree: 3, pass: 0 })).toEqual({ headline: "Everyone disagrees", leadingSide: "disagree" });
+  });
+
+  it("says most agree rather than everyone when some passed", () => {
+    expect(getCrowdVerdict({ agree: 15, disagree: 0, pass: 2 })).toEqual({ headline: "Most agree", leadingSide: "agree" });
+  });
+
+  it("says split when the sides are within the nearly split gap", () => {
+    expect(getCrowdVerdict({ agree: 10, disagree: 10, pass: 0 })).toEqual({ headline: "Split down the middle", leadingSide: null });
+    expect(getCrowdVerdict({ agree: 1, disagree: 1, pass: 0 })).toEqual({ headline: "Split down the middle", leadingSide: null });
+  });
+
+  it("says most agree or most disagree for a clear majority", () => {
+    expect(getCrowdVerdict({ agree: 16, disagree: 4, pass: 0 })).toEqual({ headline: "Most agree", leadingSide: "agree" });
+    expect(getCrowdVerdict({ agree: 3, disagree: 16, pass: 1 })).toEqual({ headline: "Most disagree", leadingSide: "disagree" });
   });
 });
