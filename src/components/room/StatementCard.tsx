@@ -17,6 +17,7 @@ import { extractYouTubeVideoId } from "../../utils/youtube-utils";
 import { VoteButtonRow } from "../VoteButton";
 import { VoteRevealCrowd } from "./VoteRevealCrowd";
 import { VoteRevealHeadline } from "./VoteRevealHeadline";
+import { IdleAnimalPeek } from "./IdleAnimalPeek";
 import type { VoteReveal } from "../../utils/vote-reveal";
 import moment from "moment";
 // @ts-ignore
@@ -178,11 +179,13 @@ export function StatementCard({
             />
           </div>
         ) : (
-          <VoteButtonRow
-            onAgree={onAgree}
-            onDisagree={onDisagree}
-            onPass={onPass}
-          />
+          <IdleAnimalPeek>
+            <VoteButtonRow
+              onAgree={onAgree}
+              onDisagree={onDisagree}
+              onPass={onPass}
+            />
+          </IdleAnimalPeek>
         ))}
 
       {voteReveal && (
