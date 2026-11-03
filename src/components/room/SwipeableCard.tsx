@@ -40,6 +40,7 @@ interface SwipeableCardProps {
   onAgree: (card: Card) => void;
   onDisagree: (card: Card) => void;
   onPass: (card: Card) => void;
+  onStartVoting: () => void;
   onSuperAgree: () => void;
   onFlag: () => void;
 }
@@ -66,6 +67,7 @@ export function SwipeableCard({
   onAgree,
   onDisagree,
   onPass,
+  onStartVoting,
   onSuperAgree,
   onFlag,
 }: SwipeableCardProps) {
@@ -186,6 +188,7 @@ export function SwipeableCard({
           <CoverCard
             cover={card.cover}
             isTopCard={isTopCard}
+            onStartVoting={onStartVoting}
           />
         ) : card.type === "demographics" ? (
           <DemographicsCard

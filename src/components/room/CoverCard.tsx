@@ -1,26 +1,17 @@
 import { motion } from "motion/react";
+import { ArrowRight } from "lucide-react";
 import { FullCoverData } from "../../types";
 import { openImageOverlay } from "../../utils/image-overlay";
 import { extractYouTubeVideoId } from "../../utils/youtube-utils";
-import { useSwipeTutorialContext } from "../../contexts/SwipeTutorialContext";
-import { SwipeHint } from "../SwipeHint";
-
-const startVotingSides = [
-  {
-    side: "right" as const,
-    color: "bg-pink-100 text-gray-800",
-    label: "Swipe right",
-    sublabel: "to start voting",
-  },
-];
+import { Button } from "../ui/button";
 
 interface CoverCardProps {
   cover: FullCoverData;
   isTopCard: boolean;
+  onStartVoting: () => void;
 }
 
-export function CoverCard({ cover, isTopCard }: CoverCardProps) {
-  const { showTutorial } = useSwipeTutorialContext();
+export function CoverCard({ cover, isTopCard, onStartVoting }: CoverCardProps) {
   const { type, url, description } = cover;
   const isYouTube = type === "youtube";
 
@@ -77,14 +68,16 @@ export function CoverCard({ cover, isTopCard }: CoverCardProps) {
         </div>
       )}
 
-      <div className="mb-4 relative">
+      <div className="mb-4">
         {renderMedia()}
-        {isTopCard && showTutorial && (
-          <div className="absolute inset-0 pointer-events-none">
-            <SwipeHint sides={startVotingSides} />
-          </div>
-        )}
       </div>
+
+      {isTopCard && (
+        <Button size="lg" className="w-full font-bold" onClick={onStartVoting}>
+          Start voting
+          <ArrowRight />
+        </Button>
+      )}
     </>
   );
 }
