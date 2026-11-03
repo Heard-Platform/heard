@@ -8,5 +8,5 @@ export default createRedirectOgHandler(
     url: "https://heard.vote/live",
     image: "https://heard.vote/live-preview.png",
   },
-  "https://luma.com/8oq6ealq",
+  "https://luma.com/567poe53",
 );
