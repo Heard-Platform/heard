@@ -14,12 +14,14 @@ import {
   FullCoverData,
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
-import { SwipeInstructions } from "../SwipeInstructions";
 import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import type { FeedbackStatement } from "../../utils/constants/feedback-statements";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 import { useVoteResultSnackbar } from "../../contexts/VoteResultSnackbarContext";
+import { buildVoteReveal, type VoteReveal } from "../../utils/vote-reveal";
+import { VOTE_REVEAL_CROWD_DURATION_MS } from "./VoteRevealCrowd";
+import { api } from "../../utils/api";
 
 
 // @ts-ignore
@@ -37,7 +39,6 @@ interface SwipeableStatementStackProps {
   demographicQuestions: DemographicQuestion[];
   answeredQuestionIds: Set<string>;
   targetStatementId?: string;
-  isActive: boolean;
   feedbackStatement: FeedbackStatement | null;
   onVote: (
     statement: Statement,
@@ -54,6 +55,15 @@ interface SwipeableStatementStackProps {
 }
 
 const SWIPE_THRESHOLD = 100;
+const CARD_EXIT_MS = 300;
+
+type CardExitDirection = "left" | "right" | "down" | "up";
+type VoteMethod = "tap" | "swipe";
+
+const VOTE_METHOD_EVENT_NAMES: Record<VoteMethod, string> = {
+  tap: "vote_tapped",
+  swipe: "vote_swiped",
+};
 
 export function SwipeableStatementStack({
   room,
@@ -67,7 +77,6 @@ export function SwipeableStatementStack({
   demographicQuestions,
   answeredQuestionIds,
   targetStatementId,
-  isActive,
   feedbackStatement,
   onVote,
   onSubmitStatement,
@@ -81,8 +90,7 @@ export function SwipeableStatementStack({
 }: SwipeableStatementStackProps) {
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
 
-  const { showTutorial, recordSwipe, resetTutorialTimer } = useSwipeTutorialContext();
-  const [isDragging, setIsDragging] = useState(false);
+  const { recordSwipe, resetTutorialTimer } = useSwipeTutorialContext();
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
@@ -95,6 +103,7 @@ export function SwipeableStatementStack({
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
+  const [voteReveal, setVoteReveal] = useState<VoteReveal | null>(null);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [statementToFlag, setStatementToFlag] = useState<Statement | null>(null);
   const { showVoteResult } = useVoteResultSnackbar();
@@ -103,7 +112,8 @@ export function SwipeableStatementStack({
     .filter((statement) => {
       const hasVotedBefore = currentUserId && statement.voters?.[currentUserId];
       const justVoted = votedStatementIds.has(statement.id);
-      return !hasVotedBefore && !justVoted;
+      const isRevealingVote = statement.id === voteReveal?.statement.id;
+      return (!hasVotedBefore && !justVoted) || isRevealingVote;
     })
     .sort((a, b) =>
       targetStatementId
@@ -158,44 +168,94 @@ export function SwipeableStatementStack({
 
   const hasMoreCards = cards.length > 0;
 
-  const handleVote = async (
-    statementId: string,
-    voteType: VoteType,
-    direction: "left" | "right" | "down" | "up",
-  ) => {
-    if (isVoting) return;
-
-    setIsVoting(true);
-    setSwipedCardId(statementId);
-    setSwipeDirection(direction);
-
+  const recordVote = (statement: Statement, voteType: VoteType) => {
     setVotedStatementIds((prev) =>
-      new Set(prev).add(statementId),
+      new Set(prev).add(statement.id),
     );
 
     recordSwipe();
     resetTutorialTimer();
 
-    const statement = statements.find(
-      (s) => s.id === statementId,
-    );
-
-    if (statement) {
-      showVoteResult(statement, voteType, currentUserId);
-      onVote(statement, voteType).catch(() => {
-        setVotedStatementIds((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(statementId);
-          return newSet;
-        });
+    onVote(statement, voteType).catch(() => {
+      setVotedStatementIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(statement.id);
+        return newSet;
       });
-    }
+    });
+  };
+
+  const sendCardOff = (
+    statementId: string,
+    direction: CardExitDirection,
+    onCardGone: () => void = () => {},
+  ) => {
+    setSwipedCardId(statementId);
+    setSwipeDirection(direction);
 
     setTimeout(() => {
       setSwipedCardId(null);
       setSwipeDirection(null);
       setIsVoting(false);
-    }, 300);
+      onCardGone();
+    }, CARD_EXIT_MS);
+  };
+
+  const startStatementVote = (statement: Statement, voteMethod: VoteMethod): boolean => {
+    if (isVoting) return false;
+
+    setIsVoting(true);
+    api.trackEvent(VOTE_METHOD_EVENT_NAMES[voteMethod], statement.roomId);
+    return true;
+  };
+
+  const handleSwipeVote = (statement: Statement, voteType: VoteType, direction: CardExitDirection) => {
+    if (!startStatementVote(statement, "swipe")) return;
+
+    showVoteResult(statement, voteType, currentUserId);
+    recordVote(statement, voteType);
+    sendCardOff(statement.id, direction);
+  };
+
+  const handleTapVote = (statement: Statement, voteType: VoteType, direction: CardExitDirection) => {
+    if (!startStatementVote(statement, "tap")) return;
+
+    setVoteReveal(buildVoteReveal(statement, voteType, currentUserId));
+    recordVote(statement, voteType);
+    setTimeout(
+      () => sendCardOff(statement.id, direction, () => setVoteReveal(null)),
+      VOTE_REVEAL_CROWD_DURATION_MS,
+    );
+  };
+
+  const handleAgreeTapped = (card: Card) => {
+    if (card.type === "statement") {
+      handleTapVote(card.statement, "agree", "right");
+    } else if (card.type === "feedback") {
+      sendFeedbackCardOff(card.statement, "right", "tap");
+    }
+  };
+
+  const handleDisagreeTapped = (card: Card) => {
+    if (card.type === "statement") {
+      handleTapVote(card.statement, "disagree", "left");
+    } else if (card.type === "feedback") {
+      sendFeedbackCardOff(card.statement, "left", "tap");
+    }
+  };
+
+  const handlePassTapped = (card: Card) => {
+    if (card.type === "statement") {
+      handleTapVote(card.statement, "pass", "up");
+    }
+  };
+
+  const passWithoutReveal = (statement: Statement) => {
+    if (isVoting) return;
+
+    setIsVoting(true);
+    sendCardOff(statement.id, "down");
+    recordVote(statement, "pass");
   };
 
   const handleDragEnd = (
@@ -241,26 +301,36 @@ export function SwipeableStatementStack({
       }, 300);
       return;
     } else if (card.type === "feedback") {
-      setIsVoting(true);
-      setSwipedNoopCard("feedback");
-      setSwipeDirection(swipeDirection);
-      const vote: VoteType = swipeDirection === "right" ? "agree" : "disagree";
-
-      setTimeout(() => {
-        onFeedbackVoted(card.statement, vote);
-        setSwipedNoopCard(null);
-        setSwipeDirection(null);
-        setIsVoting(false);
-      }, 300);
+      sendFeedbackCardOff(card.statement, swipeDirection, "swipe");
       return;
     } else if (card.type === "statement") {
-      const statementId = card.statement.id;
       if (swipeDirection === "right") {
-        handleVote(statementId, "agree", "right");
+        handleSwipeVote(card.statement, "agree", "right");
       } else if (swipeDirection === "left") {
-        handleVote(statementId, "disagree", "left");
+        handleSwipeVote(card.statement, "disagree", "left");
       }
     }
+  };
+
+  const sendFeedbackCardOff = (
+    statement: FeedbackStatement,
+    direction: "left" | "right",
+    voteMethod: VoteMethod,
+  ) => {
+    if (isVoting) return;
+
+    setIsVoting(true);
+    api.trackEvent(VOTE_METHOD_EVENT_NAMES[voteMethod], room.id);
+    setSwipedNoopCard("feedback");
+    setSwipeDirection(direction);
+    const vote: VoteType = direction === "right" ? "agree" : "disagree";
+
+    setTimeout(() => {
+      onFeedbackVoted(statement, vote);
+      setSwipedNoopCard(null);
+      setSwipeDirection(null);
+      setIsVoting(false);
+    }, CARD_EXIT_MS);
   };
 
   const swipeCertifyCard = (direction: "left" | "right") => {
@@ -310,7 +380,7 @@ export function SwipeableStatementStack({
     if (!statementToFlag) return;
 
     setShowFlagDialog(false);
-    handleVote(statementToFlag.id, "pass", "down");
+    passWithoutReveal(statementToFlag);
 
     await flagStatement(statementToFlag.id, statementToFlag.roomId, reason);
     toast.success("🙏 Thank you for reporting. Our team will review this shortly.");
@@ -363,11 +433,6 @@ export function SwipeableStatementStack({
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
       <div className="relative">
-        {showTutorial && !isDragging && isActive && cards[0]?.type === "statement" && (
-          <div className="absolute inset-0 z-20 pointer-events-none">
-            <SwipeInstructions />
-          </div>
-        )}
         {cards
           .slice(0, 3)
           .map((card, index) => {
@@ -399,21 +464,19 @@ export function SwipeableStatementStack({
                 statements={statements}
                 index={index}
                 isTopCard={isTopCard}
-                onDragStart={() => setIsDragging(true)}
-                onDragEnd={(event, info) => {
-                  setIsDragging(false);
-                  handleDragEnd(card, event, info);
-                }}
+                onDragEnd={(event, info) => handleDragEnd(card, event, info)}
                 getTypeIcon={getTypeIcon}
-                direction={
-                  isBeingSwiped ? swipeDirection : null
-                }
+                direction={isBeingSwiped ? swipeDirection : null}
                 currentIndex={
-                  statements.length -
-                  unvotedStatements.length +
-                  1
+                  statements.length - unvotedStatements.length + 1
                 }
                 totalStatements={statements.length}
+                voteReveal={
+                  card.type === "statement" &&
+                  voteReveal?.statement.id === card.statement.id
+                    ? voteReveal
+                    : null
+                }
                 allowAnonymous={allowAnonymous}
                 isAnonymous={isAnonymous}
                 onSubmitStatement={handleSubmitFromChanceCard}
@@ -425,14 +488,16 @@ export function SwipeableStatementStack({
                     onFeedbackTellMore(card.statement);
                   }
                 }}
-                onSkip={() => {
-                  if (card.type === "statement") {
-                    handleVote(card.statement.id, "pass", "down");
-                  }
-                }}
+                onAgree={handleAgreeTapped}
+                onDisagree={handleDisagreeTapped}
+                onPass={handlePassTapped}
                 onSuperAgree={() => {
                   if (card.type === "statement") {
-                    handleVote(card.statement.id, "super_agree", "up");
+                    handleTapVote(
+                      card.statement,
+                      "super_agree",
+                      "up",
+                    );
                   }
                 }}
                 onFlag={() => {

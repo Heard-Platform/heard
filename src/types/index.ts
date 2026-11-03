@@ -16,7 +16,7 @@ export type VoteType =
   | "pass"
   | "super_agree";
 
-export type VoteTypeNew = Exclude<VoteType, "super_agree">;
+export type SimpleVoteType = Exclude<VoteType, "super_agree">;
 
 export type SortBy = VoteType | "none";
 
@@ -916,6 +916,11 @@ export interface FeatureResults {
     submitted: number;
   };
   addResponseNudgeSince: number;
+  voteMethods: {
+    taps: number;
+    swipes: number;
+  };
+  voteMethodsSince: number;
   flyerSwipeFunnel: { opened: number; swipes: number[]; saved: number; exited: number };
   flyerSwipeFunnelSince: number;
   swipeSixFunnel: { bannerShown: number; started: number; swipes: number[]; completed: number; allDoneClicked: number };

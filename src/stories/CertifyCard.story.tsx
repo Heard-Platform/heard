@@ -174,7 +174,6 @@ function CertifyCardInStack() {
         coverCardSwiped={true}
         demographicQuestions={[]}
         answeredQuestionIds={new Set()}
-        isActive={true}
         onVote={async () => {}}
         onSubmitStatement={async () => {}}
         onShowAccountSetupModal={() => {}}

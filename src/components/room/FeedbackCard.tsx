@@ -1,9 +1,11 @@
 import { useEffect, type CSSProperties } from "react";
 import type { MotionValue } from "motion/react";
-import { MessageSquare, Pencil } from "lucide-react";
+import { Check, MessageSquare, Pencil, X } from "lucide-react";
 import type { FeedbackStatement } from "../../utils/constants/feedback-statements";
 import { SwipeIndicatorSet } from "../SwipeIndicators";
 import { api } from "../../utils/api";
+import { VoteButton } from "../VoteButton";
+import { Button } from "../ui/button";
 
 export const FEEDBACK_CARD_SHELL_CLASS = "bg-[#3b2a20] border-[#3b2a20] text-stone-50";
 export const FEEDBACK_FONT_STYLE: CSSProperties = { fontFamily: "'Inter', system-ui, sans-serif" };
@@ -16,6 +18,8 @@ interface FeedbackCardProps {
   agreeOpacity: MotionValue<number>;
   superAgreeOpacity: MotionValue<number>;
   passOpacity: MotionValue<number>;
+  onAgree: () => void;
+  onDisagree: () => void;
   onTellMore: () => void;
 }
 
@@ -49,6 +53,8 @@ export function FeedbackCard({
   agreeOpacity,
   superAgreeOpacity,
   passOpacity,
+  onAgree,
+  onDisagree,
   onTellMore,
 }: FeedbackCardProps) {
   useEffect(() => {
@@ -71,19 +77,18 @@ export function FeedbackCard({
           This feedback helps us improve Heard
         </p>
 
-        <div className="flex items-center justify-between border-t border-[#5c4536] pt-1.5">
-          <button
-            type="button"
-            onClick={onTellMore}
-            className="flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-amber-200 hover:text-amber-100"
-          >
-            <Pencil className="w-4 h-4" />
-            Tell us more
-          </button>
-          {isTopCard && (
-            <span className="text-[13px] text-stone-300">Swipe right to agree, left to disagree</span>
-          )}
-        </div>
+        {isTopCard && (
+          <div className="grid grid-cols-3 gap-2">
+            <VoteButton label="Disagree" vote="disagree" icon={<X />} onClick={onDisagree} />
+            <Button variant="outline" size="lg" className="border-2 border-amber-300 px-1" onClick={onTellMore}>
+              <span className="flex items-center gap-1 font-bold text-amber-700">
+                <Pencil />
+                Add note
+              </span>
+            </Button>
+            <VoteButton label="Agree" vote="agree" icon={<Check />} onClick={onAgree} />
+          </div>
+        )}
       </div>
 
       {isTopCard && (

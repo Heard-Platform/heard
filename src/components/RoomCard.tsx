@@ -485,7 +485,6 @@ export function RoomCard({
                     demographicQuestions={room.demographicQuestions}
                     answeredQuestionIds={answeredQuestionIds}
                     targetStatementId={targetStatementId}
-                    isActive={isActive}
                     onVote={handleSwipeVote}
                     onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}

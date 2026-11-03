@@ -82,7 +82,6 @@ export function MusicLeagueCardStackStory() {
           coverCardSwiped={true}
           demographicQuestions={[]}
           answeredQuestionIds={new Set()}
-          isActive={true}
           onVote={handleVote}
           onSubmitStatement={handleSubmitStatement}
           onShowAccountSetupModal={() => {}}

@@ -108,7 +108,6 @@ function DemographicsSwipeableStack() {
         coverCardSwiped={true}
         demographicQuestions={questions}
         answeredQuestionIds={questionIds}
-        isActive={true}
         onVote={async () => { } }
         onSubmitStatement={async () => { } }
         onShowAccountSetupModal={() => { } }

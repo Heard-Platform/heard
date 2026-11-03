@@ -70,6 +70,9 @@ interface FeatureCardData {
   renderExtra?: (stats: FeatureResults) => ReactNode;
 }
 
+const tapSharePercent = ({ taps, swipes }: FeatureResults["voteMethods"]): number =>
+  taps + swipes > 0 ? Math.round((taps / (taps + swipes)) * 1000) / 10 : 0;
+
 const formatSubmitRatePercent = (submittedCount: number, shownCount: number): string =>
   shownCount > 0 ? `${Math.round((submittedCount / shownCount) * 1000) / 10}%` : "0%";
 
@@ -586,6 +589,28 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
             <p className="text-2xl font-bold text-purple-600">
               {formatSubmitRatePercent(s.addResponseNudge.submitted, s.addResponseNudge.shown)}
             </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      icon: Vote,
+      iconColor: "text-sky-600",
+      bgColor: "bg-sky-100",
+      title: "Vote Buttons: Tap vs Swipe",
+      description: "Share of statement and feedback card votes made by tapping a vote button instead of swiping. Success is 30%+ of votes tapped",
+      getValue: (s) => tapSharePercent(s.voteMethods),
+      valueSuffix: "%",
+      getDate: (s) => s.voteMethodsSince,
+      renderExtra: (s) => (
+        <div className="flex gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Taps</p>
+            <p className="text-2xl font-bold text-sky-600">{s.voteMethods.taps}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Swipes</p>
+            <p className="text-2xl font-bold text-sky-600">{s.voteMethods.swipes}</p>
           </div>
         </div>
       ),

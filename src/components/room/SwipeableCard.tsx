@@ -6,6 +6,7 @@ import {
   PanInfo,
 } from "motion/react";
 import type { Card, DebateRoom, Statement } from "../../types";
+import type { VoteReveal } from "../../utils/vote-reveal";
 import { getPastelColor } from "../../utils/colors";
 import { ChanceCard } from "./ChanceCard";
 import { CoverCard } from "./CoverCard";
@@ -23,10 +24,10 @@ interface SwipeableCardProps {
   direction: "left" | "right" | "down" | "up" | null;
   currentIndex: number;
   totalStatements: number;
+  voteReveal: VoteReveal | null;
   allowAnonymous: boolean;
   isAnonymous: boolean;
   getTypeIcon: (type?: string) => string | null;
-  onDragStart: () => void;
   onDragEnd: (
     event: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo,
@@ -36,8 +37,10 @@ interface SwipeableCardProps {
   onDemographicsAnswer?: (id: string, answer: string | null) => void;
   onCertifySuccess: () => void;
   onFeedbackTellMore: () => void;
+  onAgree: (card: Card) => void;
+  onDisagree: (card: Card) => void;
+  onPass: (card: Card) => void;
   onSuperAgree: () => void;
-  onSkip: () => void;
   onFlag: () => void;
 }
 
@@ -50,18 +53,20 @@ export function SwipeableCard({
   direction,
   currentIndex,
   totalStatements,
+  voteReveal,
   allowAnonymous,
   isAnonymous,
   getTypeIcon,
-  onDragStart,
   onDragEnd,
   onSubmitStatement,
   onShowAccountSetupModal,
   onDemographicsAnswer,
   onCertifySuccess,
   onFeedbackTellMore,
+  onAgree,
+  onDisagree,
+  onPass,
   onSuperAgree,
-  onSkip,
   onFlag,
 }: SwipeableCardProps) {
   const x = useMotionValue(0);
@@ -119,7 +124,6 @@ export function SwipeableCard({
       drag={isTopCard ? "x" : false}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={1}
-      onDragStart={isTopCard ? onDragStart : undefined}
       onDragEnd={isTopCard ? onDragEnd : undefined}
       animate={
         isTopCard && direction
@@ -206,6 +210,8 @@ export function SwipeableCard({
             agreeOpacity={agreeOpacity}
             superAgreeOpacity={superAgreeOpacity}
             passOpacity={passOpacity}
+            onAgree={() => onAgree(card)}
+            onDisagree={() => onDisagree(card)}
             onTellMore={onFeedbackTellMore}
           />
         ) : card.type === "statement" ? (
@@ -215,13 +221,16 @@ export function SwipeableCard({
             isTopCard={isTopCard}
             currentIndex={currentIndex}
             totalStatements={totalStatements}
+            voteReveal={voteReveal}
             getTypeIcon={getTypeIcon}
             disagreeOpacity={disagreeOpacity}
             agreeOpacity={agreeOpacity}
             superAgreeOpacity={superAgreeOpacity}
             passOpacity={passOpacity}
+            onAgree={() => onAgree(card)}
+            onDisagree={() => onDisagree(card)}
+            onPass={() => onPass(card)}
             onSuperAgree={onSuperAgree}
-            onSkip={onSkip}
             onFlag={onFlag}
           />
         ) : null}

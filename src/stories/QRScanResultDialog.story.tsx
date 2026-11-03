@@ -2,7 +2,7 @@ import { useState } from "react";
 import { QRScanResultDialog } from "../components/room/QRScanResultDialog";
 import { Button } from "../components/ui/button";
 import { QrCode } from "lucide-react";
-import { DebateRoom, Statement, VoteTypeNew, VoteType } from "../types";
+import { DebateRoom, Statement, SimpleVoteType, VoteType } from "../types";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { mockUser } from "./mockData";
 
@@ -45,7 +45,7 @@ export function QRScanResultDialogStory() {
     demographicQuestions: [],
   };
 
-  const scenarios: Record<VoteTypeNew, { topic: string; statementText: string; teaserStatement: { text: string; timestamp: number; voteCount: number }; agreePercent: number; disagreePercent: number; passPercent: number; userVote: VoteTypeNew }> = {
+  const scenarios: Record<SimpleVoteType, { topic: string; statementText: string; teaserStatement: { text: string; timestamp: number; voteCount: number }; agreePercent: number; disagreePercent: number; passPercent: number; userVote: SimpleVoteType }> = {
     agree: {
       topic: "Should we close Q Street to cars?",
       statementText: "Close Q Street to cars",

@@ -13,7 +13,21 @@ import {
 } from "../components/ui/tabs";
 import { mockRooms } from "./mockData";
 
-const mockStatements: Statement[] = [
+const withVotersFromCounts = (statement: Statement): Statement => {
+  const voters: Statement["voters"] = {};
+  const voteCounts: Record<VoteType, number> = {
+    agree: statement.agrees,
+    super_agree: statement.superAgrees,
+    disagree: statement.disagrees,
+    pass: statement.passes,
+  };
+  for (const vote of Object.keys(voteCounts) as VoteType[]) {
+    for (let i = 0; i < voteCounts[vote]; i++) voters[`${statement.id}-${vote}-${i}`] = vote;
+  }
+  return { ...statement, voters };
+};
+
+const statementsWithoutVoters: Statement[] = [
   {
     id: "stmt-1",
     text: "Climate change is the most pressing issue of our generation and requires immediate global action.",
@@ -112,6 +126,8 @@ const mockStatements: Statement[] = [
     voters: {},
   },
 ];
+
+const mockStatements = statementsWithoutVoters.map(withVotersFromCounts);
 
 export function SwipeableStatementStackStory() {
   const [chanceCardSwiped, setChanceCardSwiped] = useState(false);
@@ -230,7 +246,6 @@ export function SwipeableStatementStackStory() {
                 coverCardSwiped={coverCardSwiped}
                 demographicQuestions={[]}
                 answeredQuestionIds={new Set()}
-                isActive={true}
                 onVote={handleVote}
                 onSubmitStatement={handleSubmitStatement}
                 onShowAccountSetupModal={() => {}}
