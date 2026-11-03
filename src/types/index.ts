@@ -916,6 +916,11 @@ export interface FeatureResults {
     submitted: number;
   };
   addResponseNudgeSince: number;
+  voteMethods: {
+    taps: number;
+    swipes: number;
+  };
+  voteMethodsSince: number;
   flyerSwipeFunnel: { opened: number; swipes: number[]; saved: number; exited: number };
   flyerSwipeFunnelSince: number;
   swipeSixFunnel: { bannerShown: number; started: number; swipes: number[]; completed: number; allDoneClicked: number };

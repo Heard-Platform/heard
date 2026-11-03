@@ -68,6 +68,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       addResponseNudgeShownUserIds,
       addResponseNudgeTappedUserIds,
       addResponseNudgeSubmittedUserIds,
+      voteTaps,
+      voteSwipes,
     ] = await Promise.all([
       getAllRealUsers(),
       getWebDriverUsers(),
@@ -123,6 +125,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       getUniqueUserIdsForEvent("add_response_nudge_shown"),
       getUniqueUserIdsForEvent("add_response_nudge_tapped"),
       getUniqueUserIdsForEvent("add_response_nudge_submitted"),
+      countEventsOfType("vote_tapped"),
+      countEventsOfType("vote_swiped"),
     ]);
 
     const webDriverUsers = webDriverUserList.length;
@@ -377,6 +381,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     };
     const addResponseNudgeSince = new Date("2026-10-23").getTime();
 
+    const voteMethods = { taps: voteTaps, swipes: voteSwipes };
+    const voteMethodsSince = new Date("2026-11-03").getTime();
+
     const flyerLandingFunnelSince = new Date("2026-10-01").getTime();
 
     const flyerScreenFunnelSince = new Date("2026-10-03").getTime();
@@ -501,6 +508,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       feedbackCardsSince,
       addResponseNudge,
       addResponseNudgeSince,
+      voteMethods,
+      voteMethodsSince,
       flyerLandingFunnel,
       flyerLandingFunnelSince,
       flyerScreenFunnel,
