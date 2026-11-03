@@ -14,7 +14,6 @@ import {
   FullCoverData,
 } from "../../types";
 import { SwipeableCard } from "./SwipeableCard";
-import { SwipeInstructions } from "../SwipeInstructions";
 import { FlagResponseDialog } from "./FlagResponseDialog";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import type { FeedbackStatement } from "../../utils/constants/feedback-statements";
@@ -40,7 +39,6 @@ interface SwipeableStatementStackProps {
   demographicQuestions: DemographicQuestion[];
   answeredQuestionIds: Set<string>;
   targetStatementId?: string;
-  isActive: boolean;
   feedbackStatement: FeedbackStatement | null;
   onVote: (
     statement: Statement,
@@ -79,7 +77,6 @@ export function SwipeableStatementStack({
   demographicQuestions,
   answeredQuestionIds,
   targetStatementId,
-  isActive,
   feedbackStatement,
   onVote,
   onSubmitStatement,
@@ -93,8 +90,7 @@ export function SwipeableStatementStack({
 }: SwipeableStatementStackProps) {
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
 
-  const { showTutorial, recordSwipe, resetTutorialTimer } = useSwipeTutorialContext();
-  const [isDragging, setIsDragging] = useState(false);
+  const { recordSwipe, resetTutorialTimer } = useSwipeTutorialContext();
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
@@ -437,11 +433,6 @@ export function SwipeableStatementStack({
   return (
     <div className="relative w-full max-w-md mx-auto space-y-4">
       <div className="relative">
-        {showTutorial && !isDragging && isActive && cards[0]?.type === "statement" && (
-          <div className="absolute inset-0 z-20 pointer-events-none">
-            <SwipeInstructions />
-          </div>
-        )}
         {cards
           .slice(0, 3)
           .map((card, index) => {
@@ -473,11 +464,7 @@ export function SwipeableStatementStack({
                 statements={statements}
                 index={index}
                 isTopCard={isTopCard}
-                onDragStart={() => setIsDragging(true)}
-                onDragEnd={(event, info) => {
-                  setIsDragging(false);
-                  handleDragEnd(card, event, info);
-                }}
+                onDragEnd={(event, info) => handleDragEnd(card, event, info)}
                 getTypeIcon={getTypeIcon}
                 direction={isBeingSwiped ? swipeDirection : null}
                 currentIndex={

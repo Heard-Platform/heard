@@ -330,7 +330,6 @@ function DemoSection() {
                 coverCardSwiped={true}
                 demographicQuestions={[]}
                 answeredQuestionIds={new Set()}
-                isActive={true}
                 onVote={handleVote}
                 onSubmitStatement={async () => {}}
                 onShowAccountSetupModal={() => {}}

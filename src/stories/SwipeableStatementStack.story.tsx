@@ -246,7 +246,6 @@ export function SwipeableStatementStackStory() {
                 coverCardSwiped={coverCardSwiped}
                 demographicQuestions={[]}
                 answeredQuestionIds={new Set()}
-                isActive={true}
                 onVote={handleVote}
                 onSubmitStatement={handleSubmitStatement}
                 onShowAccountSetupModal={() => {}}
