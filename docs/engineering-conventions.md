@@ -19,6 +19,10 @@ Since code has no comments, names have to carry the meaning. Name every variable
 
 Write the clear, complete version the first time, not the quick one: clear names, small functions that each do one thing, shared logic pulled out instead of copied, real types instead of casts. A shortcut that saves a minute now costs every future reader.
 
+## Readable over clever
+
+Favor the version a reader understands at a glance over a compact trick. If one expression does two jobs (a filter that drops two different things at once, a ternary that both picks and builds), split it into named steps. Example: in a multi-select toggle, first drop the opt-out answer, then add or remove the tapped option, rather than doing both in one filter.
+
 ## Code comments
 
 Do not comment code unless it is highly technical or mathematical.

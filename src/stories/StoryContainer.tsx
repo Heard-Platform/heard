@@ -6,6 +6,7 @@ import { Badge } from "../components/ui/badge";
 interface Variant {
   id: string;
   label: string;
+  description?: string;
   children?: ReactNode;
 }
 
@@ -53,15 +54,24 @@ export function StoryContainer({
           
           {variants.map((variant) => (
             <TabsContent key={variant.id} value={variant.id}>
+              <VariantDescription description={variant.description} />
               {variant.children}
             </TabsContent>
           ))}
         </Tabs>
         ) : (
-          variants[0].children
+          <>
+            <VariantDescription description={variants[0].description} />
+            {variants[0].children}
+          </>
         )}
         {children}
       </CardContent>
     </Card>
   );
+}
+
+function VariantDescription({ description }: { description?: string }) {
+  if (!description) return null;
+  return <p className="mb-4 max-w-xl text-sm text-muted-foreground">{description}</p>;
 }

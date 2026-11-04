@@ -81,10 +81,11 @@ export interface DemographicQuestion {
   type: DemographicQuestionType;
   text?: string;
   options?: string[];
+  multiSelect: boolean;
 };
 
 export type NewDemographicQuestion =
-  Omit<DemographicQuestion, "id" | "roomId"> & { draftId: string }
+  Omit<DemographicQuestion, "id" | "roomId" | "multiSelect"> & { draftId: string }
 
 export type NewCustomDemographicQuestion = NewDemographicQuestion &
   Required<Pick<DemographicQuestion, "text" | "options">>;
