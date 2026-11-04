@@ -7,6 +7,7 @@ import { hasDuplicates } from "../../utils/validation";
 interface CustomDemographicQuestionProps {
   questionText: string;
   options: string[];
+  minimumOptionCount: number;
   isDuplicate: boolean;
   onQuestionTextChange: (text: string) => void;
   onOptionsChange: (options: string[]) => void;
@@ -16,6 +17,7 @@ interface CustomDemographicQuestionProps {
 export function CustomDemographicQuestion({
   questionText,
   options,
+  minimumOptionCount,
   isDuplicate,
   onQuestionTextChange,
   onOptionsChange,
@@ -125,9 +127,9 @@ export function CustomDemographicQuestion({
           <Plus className="w-3.5 h-3.5 mr-1" />
           Add option
         </Button>
-        {nonBlankCount < 2 && (
+        {nonBlankCount < minimumOptionCount && (
           <p className="text-xs text-purple-600 italic">
-            Add at least 2 answer options
+            Add at least {minimumOptionCount} answer {minimumOptionCount === 1 ? "option" : "options"}
           </p>
         )}
       </div>

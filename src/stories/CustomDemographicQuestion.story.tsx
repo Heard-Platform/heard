@@ -20,6 +20,8 @@ export function CustomDemographicQuestionStory() {
           <CustomDemographicQuestion
             questionText={questionText}
             options={options}
+            minimumOptionCount={2}
+            isDuplicate={false}
             onQuestionTextChange={setQuestionText}
             onOptionsChange={setOptions}
             onRemove={() => console.log("Remove clicked")}
@@ -31,6 +33,8 @@ export function CustomDemographicQuestionStory() {
           <CustomDemographicQuestion
             questionText=""
             options={[]}
+            minimumOptionCount={2}
+            isDuplicate={false}
             onQuestionTextChange={() => {}}
             onOptionsChange={() => {}}
             onRemove={() => console.log("Remove clicked")}

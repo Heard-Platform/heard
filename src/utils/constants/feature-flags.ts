@@ -13,6 +13,7 @@ export enum FeatureFlags {
   LIVE_EVENTS = "LIVE_EVENTS",
   CHANCE_CARD = "CHANCE_CARD",
   VOTE_RESULT_SNACKBAR = "VOTE_RESULT_SNACKBAR",
+  EVENT_ONBOARDING_QUESTIONS = "EVENT_ONBOARDING_QUESTIONS",
 }
 
 export interface FeatureFlagsConfig {
@@ -26,6 +27,7 @@ export interface FeatureFlagsConfig {
   [FeatureFlags.LIVE_EVENTS]: boolean;
   [FeatureFlags.CHANCE_CARD]: boolean;
   [FeatureFlags.VOTE_RESULT_SNACKBAR]: boolean;
+  [FeatureFlags.EVENT_ONBOARDING_QUESTIONS]: boolean;
 }
 
 export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
@@ -40,6 +42,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     LIVE_EVENTS: true,
     CHANCE_CARD: false,
     VOTE_RESULT_SNACKBAR: true,
+    EVENT_ONBOARDING_QUESTIONS: false,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
@@ -52,6 +55,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     LIVE_EVENTS: true,
     CHANCE_CARD: false,
     VOTE_RESULT_SNACKBAR: true,
+    EVENT_ONBOARDING_QUESTIONS: true,
   }
 }
 
