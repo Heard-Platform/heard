@@ -3,6 +3,8 @@ import { toast } from "sonner@2.0.3";
 import { useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { EventSetupPanel } from "./EventSetupPanel";
+import { OnboardingQuestionsPanelContainer } from "./OnboardingQuestionsPanelContainer";
+import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 import { api } from "../../utils/api";
 import { orderByRoomOrder } from "../../utils/live-event";
 import { createEventDisplayLink, createEventJoinLink, createEventSupportViewLink } from "../../utils/url";
@@ -57,16 +59,21 @@ export function EventSetupPanelContainer({ event }: { event: Event }) {
   };
 
   return (
-    <EventSetupPanel
-      rooms={rooms}
-      status={live.status}
-      currentIndex={live.currentIndex}
-      joinUrl={createEventJoinLink(event.id).url}
-      displayUrl={displayUrl}
-      supportViewUrl={supportViewUrl}
-      onReorder={handleReorder}
-      onOpenDisplay={handleOpenDisplay}
-      onOpenSupportView={handleOpenSupportView}
-    />
+    <div className="space-y-4">
+      <EventSetupPanel
+        rooms={rooms}
+        status={live.status}
+        currentIndex={live.currentIndex}
+        joinUrl={createEventJoinLink(event.id).url}
+        displayUrl={displayUrl}
+        supportViewUrl={supportViewUrl}
+        onReorder={handleReorder}
+        onOpenDisplay={handleOpenDisplay}
+        onOpenSupportView={handleOpenSupportView}
+      />
+      {isFeatureEnabled(FeatureFlags.EVENT_ONBOARDING_QUESTIONS) && (
+        <OnboardingQuestionsPanelContainer eventId={event.id} status={live.status} />
+      )}
+    </div>
   );
 }

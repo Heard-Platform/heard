@@ -9,11 +9,13 @@ import {
 
 const customQuestion = (id: string, options: string[]): DemographicQuestion => ({
   id,
-  roomId: "room",
+  roomId: null,
+  eventId: 1,
   type: "custom",
   text: `Question ${id}`,
   options,
   multiSelect: false,
+  position: null,
 });
 
 describe("getOptionsPlusOptOut", () => {
@@ -27,7 +29,7 @@ describe("getOptionsPlusOptOut", () => {
 
   it("returns only Prefer not to say when the question has no options", () => {
     expect(
-      getOptionsPlusOptOut({ id: "c", roomId: "room", type: "custom", text: "Ward?", multiSelect: false }),
+      getOptionsPlusOptOut({ id: "c", roomId: null, eventId: 1, type: "custom", text: "Ward?", multiSelect: false, position: null }),
     ).toEqual([OPT_OUT_ANSWER]);
   });
 

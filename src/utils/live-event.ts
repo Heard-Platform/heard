@@ -12,15 +12,15 @@ export function orderByRoomOrder<T extends { id: string }>(
 
 export function moveInOrder(
   order: string[],
-  index: number,
+  currentIndex: number,
   offset: -1 | 1,
 ): string[] {
-  const target = index + offset;
-  if (!_.inRange(index, order.length) || !_.inRange(target, order.length)) {
+  const target = currentIndex + offset;
+  if (!_.inRange(currentIndex, order.length) || !_.inRange(target, order.length)) {
     return order;
   }
   const next = [...order];
-  [next[index], next[target]] = [next[target], next[index]];
+  [next[currentIndex], next[target]] = [next[target], next[currentIndex]];
   return next;
 }
 

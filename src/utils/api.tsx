@@ -36,6 +36,8 @@ import {
   type NewEvent,
   type LiveEventAction,
   type LiveEventView,
+  type DemographicQuestion,
+  type EventOnboardingQuestionInput,
   type SupportViewStats,
   type LiveHeartbeat,
   EventSummary,
@@ -228,6 +230,22 @@ class ApiClient extends BaseApiClient {
     return this.request<{ live: LiveEventView }>(`/event/${eventId}/live`, {
       method: "POST",
       body: JSON.stringify({ ...action, displayKey }),
+    });
+  }
+
+  async getEventOnboardingQuestions(
+    eventId: string,
+  ): Promise<ApiResponse<{ questions: DemographicQuestion[] }>> {
+    return this.request<{ questions: DemographicQuestion[] }>(`/event/${eventId}/onboarding/questions`);
+  }
+
+  async updateEventOnboardingQuestions(
+    eventId: string,
+    questions: EventOnboardingQuestionInput[],
+  ): Promise<ApiResponse<{ questions: DemographicQuestion[] }>> {
+    return this.request<{ questions: DemographicQuestion[] }>(`/event/${eventId}/onboarding/questions`, {
+      method: "PUT",
+      body: JSON.stringify({ questions }),
     });
   }
 

@@ -178,11 +178,34 @@ export type DemographicQuestionType =
 
 export interface DemographicQuestion {
   id: number;
-  roomId: string;
+  roomId: string | null;
+  eventId: number | null;
   type: DemographicQuestionType;
   text?: string;
   options?: string[];
+  multiSelect: boolean;
+  position: number | null;
 };
+
+export type RoomDemographicQuestion = DemographicQuestion & {
+  roomId: string;
+};
+
+export type NewRoomDemographicQuestion = Omit<
+  DemographicQuestion,
+  "eventId" | "multiSelect" | "position"
+>;
+
+export type NewEventDemographicQuestion = Omit<
+  DemographicQuestion,
+  "id"
+>;
+
+export interface EventOnboardingQuestionInput {
+  text: string;
+  options: string[];
+  multiSelect: boolean;
+}
 
 export interface DemographicAnswer {
   id: number;

@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, Plus, Users } from "lucide-react";
 import { CustomDemographicQuestion } from "./CustomDemographicQuestion";
 import { isCustomDemographicQuestion, type NewDemographicQuestion, type StandardDemographicQuestionType } from "../../types";
 import { hasDuplicates } from "../../utils/validation";
+import { MIN_CUSTOM_QUESTION_OPTIONS } from "./create-post-utils";
 
 interface AdvancedFeaturesProps {
   demographicQuestions: NewDemographicQuestion[];
@@ -160,6 +161,7 @@ export function AdvancedFeatures({
                     key={draftId}
                     questionText={text}
                     options={options}
+                    minimumOptionCount={MIN_CUSTOM_QUESTION_OPTIONS}
                     onQuestionTextChange={(text) =>
                       handleUpdateCustomQuestion(draftId, text, options)
                     }

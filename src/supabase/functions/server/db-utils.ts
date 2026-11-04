@@ -29,6 +29,18 @@ export const insert = async <T extends Record<string, any>>(
   return { success: true };
 };
 
+export const insertMany = async (
+  tableName: string,
+  rows: Record<string, any>[],
+): Promise<void> => {
+  if (rows.length === 0) return;
+  const { error } = await createClientFromEnv().from(tableName).insert(rows);
+  if (error) {
+    console.error(`Error inserting into ${tableName} table:`, error);
+    throw new Error(error.message);
+  }
+};
+
 export const insertAndReturn = async <T>(
   tableName: string,
   data: Record<string, any>,
