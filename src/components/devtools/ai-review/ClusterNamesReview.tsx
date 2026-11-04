@@ -5,8 +5,8 @@ import { api, safelyMakeApiCall } from "../../../utils/api";
 import { ClusterNameReviewRoom } from "../../../types";
 import { ClusterNamingToggle } from "./ClusterNamingToggle";
 import { ClusterNamesReviewRow } from "./ClusterNamesReviewRow";
-import { RoomSearchPicker, type RoomSearchOption } from "../../RoomSearchPicker";
-import { toRoomSearchOption } from "../../../utils/room-search";
+import { RoomSearchPicker } from "../../RoomSearchPicker";
+import { useRoomSearchOptions } from "../../../hooks/useRoomSearchOptions";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
@@ -20,8 +20,7 @@ export function ClusterNamesReview() {
   const [rooms, setRooms] = useState<ClusterNameReviewRoom[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [roomOptions, setRoomOptions] = useState<RoomSearchOption[]>([]);
-  const [loadingOptions, setLoadingOptions] = useState(true);
+  const { roomOptions, isLoadingRoomOptions } = useRoomSearchOptions();
   const [regeneratingRoomId, setRegeneratingRoomId] = useState<string | null>(null);
 
   const loadPage = async (offset: number) => {
@@ -37,19 +36,8 @@ export function ClusterNamesReview() {
     setLoading(false);
   };
 
-  const loadRoomOptions = async () => {
-    const response = await safelyMakeApiCall(() => api.getRoomsForReview());
-    if (response?.success && response.data) {
-      setRoomOptions(response.data.rooms.map(toRoomSearchOption));
-    } else {
-      toast.error("Failed to load rooms");
-    }
-    setLoadingOptions(false);
-  };
-
   useEffect(() => {
     loadPage(0);
-    loadRoomOptions();
   }, []);
 
   const handleRegenerate = async (roomId: string) => {
@@ -84,7 +72,7 @@ export function ClusterNamesReview() {
       <RoomSearchPicker
         rooms={roomOptions}
         placeholder="Choose a room to name its clusters…"
-        loading={loadingOptions}
+        loading={isLoadingRoomOptions}
         busyLabel={regeneratingRoomId !== null ? "Naming clusters…" : null}
         onSelect={handleRegenerate}
       />

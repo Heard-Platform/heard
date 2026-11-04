@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { buildRoomVoteDepth, countStatementsVotedOnPerVoter } from "./room-vote-depth-utils.ts";
+import { buildRoomVoteDepth, countStatementsVotedOnPerVoter } from "./room-activity-utils.ts";
 
 const vote = (userId: string, statementId: string) => ({ userId, statementId });
 
@@ -15,7 +15,6 @@ Deno.test("countStatementsVotedOnPerVoter - leaves out excluded voters", () => {
 
 Deno.test("buildRoomVoteDepth - has a bucket for every statement, including empty ones", () => {
   const result = buildRoomVoteDepth({
-    roomId: "room",
     statementCount: 4,
     votes: [vote("ana", "s1"), vote("ben", "s1"), vote("ben", "s2"), vote("ben", "s3")],
     excludedUserIds: new Set(),
@@ -25,7 +24,6 @@ Deno.test("buildRoomVoteDepth - has a bucket for every statement, including empt
 
 Deno.test("buildRoomVoteDepth - reached percent counts voters who got at least that far", () => {
   const result = buildRoomVoteDepth({
-    roomId: "room",
     statementCount: 3,
     votes: [
       vote("ana", "s1"),
@@ -45,7 +43,7 @@ Deno.test("buildRoomVoteDepth - reached percent counts voters who got at least t
 });
 
 Deno.test("buildRoomVoteDepth - a room with no voters has empty buckets and a zero median", () => {
-  const result = buildRoomVoteDepth({ roomId: "room", statementCount: 2, votes: [], excludedUserIds: new Set() });
+  const result = buildRoomVoteDepth({ statementCount: 2, votes: [], excludedUserIds: new Set() });
   assertEquals(result.voterCount, 0);
   assertEquals(result.medianStatementsVotedOn, 0);
   assertEquals(result.buckets, [

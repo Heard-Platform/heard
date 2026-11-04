@@ -1,7 +1,7 @@
 import type { FeedbackCardResults, FeedbackCardStatementResult } from "../../../types";
 import { getFeedbackStatement } from "../../../utils/constants/feedback-statements";
 import { Card } from "../../ui/card";
-import { SummaryStat } from "../SummaryStat";
+import { SummaryStat } from "../../SummaryStat";
 
 interface FeedbackCardsTabProps {
   results: FeedbackCardResults;

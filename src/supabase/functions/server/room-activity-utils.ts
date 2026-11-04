@@ -9,15 +9,18 @@ export interface RoomVoteDepthBucket {
 }
 
 export interface RoomVoteDepth {
-  roomId: string;
   statementCount: number;
   voterCount: number;
   medianStatementsVotedOn: number;
   buckets: RoomVoteDepthBucket[];
 }
 
-interface BuildRoomVoteDepthInput {
+export interface RoomActivity {
   roomId: string;
+  voteDepth: RoomVoteDepth;
+}
+
+interface BuildRoomVoteDepthInput {
   statementCount: number;
   votes: Pick<Vote, "statementId" | "userId">[];
   excludedUserIds: Set<string>;
@@ -52,7 +55,6 @@ function buildBuckets(statementsVotedOnPerVoter: number[], bucketCount: number):
 }
 
 export function buildRoomVoteDepth({
-  roomId,
   statementCount,
   votes,
   excludedUserIds,
@@ -61,7 +63,6 @@ export function buildRoomVoteDepth({
   const deepestVoter = Math.max(0, ...statementsVotedOnPerVoter);
   const bucketCount = Math.max(statementCount, deepestVoter);
   return {
-    roomId,
     statementCount,
     voterCount: statementsVotedOnPerVoter.length,
     medianStatementsVotedOn: statementsVotedOnPerVoter.length === 0 ? 0 : median(statementsVotedOnPerVoter),
@@ -69,7 +70,7 @@ export function buildRoomVoteDepth({
   };
 }
 
-export async function loadRoomVoteDepth(roomId: string): Promise<RoomVoteDepth> {
+async function loadRoomVoteDepth(roomId: string): Promise<RoomVoteDepth> {
   const [statements, developers] = await Promise.all([
     getStatementsForRoomIncludingHidden(roomId),
     getDevUsers(),
@@ -78,9 +79,12 @@ export async function loadRoomVoteDepth(roomId: string): Promise<RoomVoteDepth> 
     statements.map((statement) => getVotesForStatement(statement.id)),
   );
   return buildRoomVoteDepth({
-    roomId,
     statementCount: statements.length,
     votes: votesPerStatement.flat(),
     excludedUserIds: new Set(developers.map((developer) => developer.id)),
   });
+}
+
+export async function loadRoomActivity(roomId: string): Promise<RoomActivity> {
+  return { roomId, voteDepth: await loadRoomVoteDepth(roomId) };
 }

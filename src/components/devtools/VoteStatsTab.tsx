@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
+import { SummaryStat } from "../SummaryStat";
 import { RefreshCw } from "lucide-react";
 import { devApi } from "../../utils/dev-api";
 import { VoteStats } from "../../types";
@@ -88,18 +89,9 @@ export function VoteStatsTab() {
       </p>
 
       <div className="grid grid-cols-3 gap-4">
-        <Card className="p-4 space-y-1">
-          <p className="text-xs secondary-text uppercase tracking-wider">Total Votes</p>
-          <p className="text-3xl font-bold">{stats.total.toLocaleString()}</p>
-        </Card>
-        <Card className="p-4 space-y-1">
-          <p className="text-xs secondary-text uppercase tracking-wider">Unique Voters</p>
-          <p className="text-3xl font-bold">{stats.uniqueVoters.toLocaleString()}</p>
-        </Card>
-        <Card className="p-4 space-y-1">
-          <p className="text-xs secondary-text uppercase tracking-wider">Avg Votes / User</p>
-          <p className="text-3xl font-bold">{stats.avgVotesPerUser}</p>
-        </Card>
+        <SummaryStat label="Total Votes" value={stats.total.toLocaleString()} />
+        <SummaryStat label="Unique Voters" value={stats.uniqueVoters.toLocaleString()} />
+        <SummaryStat label="Avg Votes / User" value={stats.avgVotesPerUser} />
       </div>
 
       <div className="grid grid-cols-2 gap-6">

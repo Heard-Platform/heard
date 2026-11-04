@@ -7,7 +7,7 @@ import {
   DryRunResult,
   Feedback,
   FeedbackCardResults,
-  RoomVoteDepth,
+  RoomActivity,
   GGWashImportResult,
   FeatureResults,
   FunnelMetricsData,
@@ -30,7 +30,7 @@ import {
   EnrichmentConfig,
   ClusterNamingConfig,
   ClusterNameReviewRoom,
-  ReviewRoomOption,
+  RoomSummary,
   DeckOrder,
   SwipeSixItem,
   type Event,
@@ -736,8 +736,8 @@ class ApiClient extends BaseApiClient {
     return this.request<FeedbackCardResults>("/stats/feedback-cards");
   }
 
-  async getRoomVoteDepth(roomId: string) {
-    return this.request<RoomVoteDepth>(`/stats/room-vote-depth?roomId=${encodeURIComponent(roomId)}`);
+  async getRoomActivity(roomId: string) {
+    return this.request<RoomActivity>(`/stats/room-activity?roomId=${encodeURIComponent(roomId)}`);
   }
 
   async getFeedbackList() {
@@ -978,8 +978,8 @@ class ApiClient extends BaseApiClient {
     return this.request<{ deckOrder: DeckOrder | null }>(`/room/${roomId}/deck-order`);
   }
 
-  async getRoomsForReview() {
-    return this.request<{ rooms: ReviewRoomOption[] }>("/dev/ai-review/rooms");
+  async getRoomSummaries() {
+    return this.request<{ rooms: RoomSummary[] }>("/dev/rooms");
   }
 
   async regenerateClusterNames(roomId: string) {

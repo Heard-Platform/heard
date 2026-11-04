@@ -28,6 +28,7 @@ import {
 import { defineRoute } from "./route-wrapper.tsx";
 import { getReferralEventSummary } from "./room-attribution-utils.ts";
 import { computeAndGetSessions } from "./session-utils.ts";
+import { loadRoomSummaries } from "./room-utils.ts";
 
 const app = new Hono();
 
@@ -184,6 +185,15 @@ app.get(
     },
     "Failed to fetch posts"
   )
+);
+
+app.get(
+  `${API_URL_PREFIX}/dev/rooms`,
+  defineRoute(
+    {},
+    async () => ({ rooms: await loadRoomSummaries() }),
+    "Failed to fetch rooms",
+  ),
 );
 
 app.get(

@@ -1,8 +1,8 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import type { RoomVoteDepth, RoomVoteDepthBucket } from "../../../types";
+import type { RoomActivity, RoomVoteDepthBucket } from "../../../types";
 import { Card } from "../../ui/card";
 import { RoomSearchPicker, type RoomSearchOption } from "../../RoomSearchPicker";
-import { SummaryStat } from "../SummaryStat";
+import { SummaryStat } from "../../SummaryStat";
 import {
   BAR_COLOR,
   BASELINE,
@@ -14,8 +14,8 @@ import {
 } from "../chart-style";
 
 interface RoomActivityTabProps {
-  roomVoteDepth: RoomVoteDepth | null;
-  roomVoteDepthError: string | null;
+  roomActivity: RoomActivity | null;
+  roomActivityError: string | null;
   selectedRoomId: string;
   roomOptions: RoomSearchOption[];
   isLoadingRoomOptions: boolean;
@@ -25,8 +25,8 @@ interface RoomActivityTabProps {
 const formatPercent = (percent: number) => `${Math.round(percent)}%`;
 
 export function RoomActivityTab({
-  roomVoteDepth,
-  roomVoteDepthError,
+  roomActivity,
+  roomActivityError,
   selectedRoomId,
   roomOptions,
   isLoadingRoomOptions,
@@ -41,35 +41,37 @@ export function RoomActivityTab({
         loading={isLoadingRoomOptions}
         onSelect={onSelectRoom}
       />
-      <RoomVoteDepthSection roomVoteDepth={roomVoteDepth} roomVoteDepthError={roomVoteDepthError} />
+      <RoomVoteDepthSection roomActivity={roomActivity} roomActivityError={roomActivityError} />
     </div>
   );
 }
 
 interface RoomVoteDepthSectionProps {
-  roomVoteDepth: RoomVoteDepth | null;
-  roomVoteDepthError: string | null;
+  roomActivity: RoomActivity | null;
+  roomActivityError: string | null;
 }
 
-function RoomVoteDepthSection({ roomVoteDepth, roomVoteDepthError }: RoomVoteDepthSectionProps) {
-  if (roomVoteDepthError) {
+function RoomVoteDepthSection({ roomActivity, roomActivityError }: RoomVoteDepthSectionProps) {
+  if (roomActivityError) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Error: {roomVoteDepthError}</p>
+        <p className="text-red-800">Error: {roomActivityError}</p>
       </div>
     );
   }
 
-  if (!roomVoteDepth) {
+  if (!roomActivity) {
     return <p className="text-center text-muted-foreground py-8">Loading room activity...</p>;
   }
+
+  const { voteDepth } = roomActivity;
 
   return (
     <>
       <div className="grid grid-cols-3 gap-4">
-        <SummaryStat label="Voters" value={roomVoteDepth.voterCount} />
-        <SummaryStat label="Statements in room" value={roomVoteDepth.statementCount} />
-        <SummaryStat label="Median statements voted on" value={roomVoteDepth.medianStatementsVotedOn} />
+        <SummaryStat label="Voters" value={voteDepth.voterCount} />
+        <SummaryStat label="Statements in room" value={voteDepth.statementCount} />
+        <SummaryStat label="Median statements voted on" value={voteDepth.medianStatementsVotedOn} />
       </div>
       <Card className="p-6">
         <h2 className="text-xl mb-1">Statements voted on per voter</h2>
@@ -77,7 +79,7 @@ function RoomVoteDepthSection({ roomVoteDepth, roomVoteDepthError }: RoomVoteDep
           Each bar is how many voters stopped after voting on that many different statements. Passes count.
           Developers are left out. Hover for the share who got at least that far.
         </p>
-        <RoomVoteDepthChart buckets={roomVoteDepth.buckets} hasVoters={roomVoteDepth.voterCount > 0} />
+        <RoomVoteDepthChart buckets={voteDepth.buckets} hasVoters={voteDepth.voterCount > 0} />
       </Card>
     </>
   );

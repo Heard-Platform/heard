@@ -471,7 +471,7 @@ export interface ClusterNameReviewCluster {
   renameReason: string | null;
 }
 
-export interface ReviewRoomOption {
+export interface RoomSummary {
   roomId: string;
   topic: string;
   voteCount: number;
@@ -1033,11 +1033,15 @@ export interface RoomVoteDepthBucket {
 }
 
 export interface RoomVoteDepth {
-  roomId: string;
   statementCount: number;
   voterCount: number;
   medianStatementsVotedOn: number;
   buckets: RoomVoteDepthBucket[];
+}
+
+export interface RoomActivity {
+  roomId: string;
+  voteDepth: RoomVoteDepth;
 }
 
 export interface WeeklySignupCount {

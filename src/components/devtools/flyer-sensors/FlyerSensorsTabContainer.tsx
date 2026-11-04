@@ -1,13 +1,7 @@
-import { useEffect, useState } from "react";
-import { api, safelyMakeApiCall } from "../../../utils/api";
+import { useRoomSearchOptions } from "../../../hooks/useRoomSearchOptions";
 import type { ApiResponse } from "../../../utils/api-client";
 import { devApi, type NewFlyerPlacementsRequest, type RoomFlyerPlacements } from "../../../utils/dev-api";
 import { FlyerSensorsTab } from "./FlyerSensorsTab";
-import type { RoomSearchOption } from "../../RoomSearchPicker";
-
-function formatRoomDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
-}
 
 function unwrap<T>(response: ApiResponse<T>, fallbackError: string): T {
   if (!response.success || response.data === undefined) throw new Error(response.error ?? fallbackError);
@@ -24,28 +18,12 @@ async function saveFlyers(request: NewFlyerPlacementsRequest): Promise<void> {
 }
 
 export function FlyerSensorsTabContainer() {
-  const [rooms, setRooms] = useState<RoomSearchOption[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    safelyMakeApiCall(() => api.getAllPosts()).then((response) => {
-      if (cancelled) return;
-      const posts = response?.success ? response.data?.posts ?? [] : [];
-      setRooms(posts.map(({ id, topic, createdAt }) => ({ id, topic, detail: formatRoomDate(createdAt) })));
-      setLoading(false);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { roomOptions, isLoadingRoomOptions } = useRoomSearchOptions();
 
   return (
     <FlyerSensorsTab
-      rooms={rooms}
-      roomsLoading={loading}
+      rooms={roomOptions}
+      roomsLoading={isLoadingRoomOptions}
       loadRoomFlyers={loadRoomFlyers}
       saveFlyers={saveFlyers}
     />

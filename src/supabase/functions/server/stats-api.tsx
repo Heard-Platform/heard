@@ -22,7 +22,7 @@ import {
   FEEDBACK_CARD_SHOWN_EVENT,
   isFeedbackCardNote,
 } from "./feedback-results-utils.ts";
-import { loadRoomVoteDepth } from "./room-vote-depth-utils.ts";
+import { loadRoomActivity } from "./room-activity-utils.ts";
 
 const app = new Hono();
 
@@ -588,11 +588,11 @@ app.get(
 );
 
 app.get(
-  "/make-server-f1a393b4/stats/room-vote-depth",
+  "/make-server-f1a393b4/stats/room-activity",
   defineRoute(
     { roomId: { type: "string", required: true } },
-    async ({ roomId }: { roomId: string }) => loadRoomVoteDepth(roomId),
-    "Failed to load room vote depth",
+    async ({ roomId }: { roomId: string }) => loadRoomActivity(roomId),
+    "Failed to load room activity",
   ),
 );
 
