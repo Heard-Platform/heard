@@ -40,7 +40,17 @@ export function voterAnimalSeed(statementId: string, voterId: string): number {
 
 export function voterAvatarImage(seed: number): string {
   const avatarIndex = Math.floor(seededRandom(seed) * AVATAR_OPTIONS.length);
-  return AVATAR_OPTIONS[avatarIndex].img;
+  return AVATAR_OPTIONS[avatarIndex].thumbnailImg;
+}
+
+let hasPreloadedVoterAnimalImages = false;
+
+export function preloadVoterAnimalImages() {
+  if (hasPreloadedVoterAnimalImages) return;
+  hasPreloadedVoterAnimalImages = true;
+  for (const { thumbnailImg } of AVATAR_OPTIONS) {
+    new Image().src = thumbnailImg;
+  }
 }
 
 interface VoterAnimalHeadProps {

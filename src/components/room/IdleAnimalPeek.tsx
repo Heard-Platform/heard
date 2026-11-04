@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
-import { VoterAnimalHead, voterAvatarImage } from "./VoterAnimalHead";
+import { VoterAnimalHead, preloadVoterAnimalImages, voterAvatarImage } from "./VoterAnimalHead";
 
 const IDLE_BEFORE_FIRST_PEEK_MS = 6000;
 const IDLE_BETWEEN_PEEKS_MS = 10000;
@@ -117,6 +117,7 @@ function useIdlePeek(canPeek: boolean): Peek | null {
 
 export function IdleAnimalPeek({ children }: { children: ReactNode }) {
   const buttonRowRef = useRef<HTMLDivElement>(null);
+  useEffect(preloadVoterAnimalImages, []);
   const isFullyInView = useInView(buttonRowRef, { amount: "all" });
   const prefersReducedMotion = useReducedMotion();
   const peek = useIdlePeek(isFullyInView && !prefersReducedMotion);
