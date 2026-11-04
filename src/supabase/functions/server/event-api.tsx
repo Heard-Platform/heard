@@ -31,6 +31,12 @@ import {
 } from "./kv-utils.tsx";
 import { RouteError } from "./route-error.ts";
 import {
+  isValidOnboardingQuestionList,
+  loadEventOnboardingQuestions,
+  ONBOARDING_QUESTIONS_ERROR_MESSAGE,
+  replaceEventOnboardingQuestions,
+} from "./event-onboarding-utils.ts";
+import {
   canDriveEvent,
   canModerateEvent,
   isCommunityModerator,
@@ -39,9 +45,18 @@ import {
   eventStateOrDefault,
   isLiveScreen,
 } from "./live-event-utils.ts";
-import type { Event, CommunityMembership, LiveScreen } from "./types.tsx";
+import type { Event, CommunityMembership, EventOnboardingQuestionInput, LiveScreen } from "./types.tsx";
 
 const app = new Hono();
+
+const EVENT_ID_PATTERN = /^\d+$/;
+
+const EVENT_ID_PARAM_SCHEMA = {
+  type: "string",
+  required: true,
+  validate: (eventId: string) => EVENT_ID_PATTERN.test(eventId),
+  errorMessage: "A valid event ID is required",
+} as const;
 
 app.post(
   "/make-server-f1a393b4/event/create",
@@ -350,6 +365,49 @@ app.post(
       return { statement: await setEventStatementHidden(state, statementId, isHidden, userId) };
     },
     "Failed to update statement visibility",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/event/:eventId/onboarding/questions",
+  defineRoute(
+    { eventId: EVENT_ID_PARAM_SCHEMA },
+    async ({ eventId }: { eventId: string }) => ({
+      questions: await loadEventOnboardingQuestions(Number(eventId)),
+    }),
+    "Failed to load onboarding questions",
+  ),
+);
+
+app.put(
+  "/make-server-f1a393b4/event/:eventId/onboarding/questions",
+  defineRoute(
+    {
+      eventId: EVENT_ID_PARAM_SCHEMA,
+      questions: {
+        type: "array",
+        required: true,
+        validate: isValidOnboardingQuestionList,
+        errorMessage: ONBOARDING_QUESTIONS_ERROR_MESSAGE,
+      },
+    },
+    async (
+      {
+        eventId,
+        questions,
+      }: {
+        eventId: string;
+        questions: EventOnboardingQuestionInput[];
+      },
+      c: Context,
+    ) => ({
+      questions: await replaceEventOnboardingQuestions(
+        Number(eventId),
+        c.get("userId"),
+        questions,
+      ),
+    }),
+    "Failed to save onboarding questions",
   ),
 );
 

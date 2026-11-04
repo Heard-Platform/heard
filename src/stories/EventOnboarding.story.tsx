@@ -9,13 +9,17 @@ import { OPT_OUT_ANSWER, toggleMultiSelectAnswer } from "../utils/demographic-qu
 import { StoryContainer } from "./StoryContainer";
 import { PhoneFrame } from "./PhoneFrame";
 
+const STORY_EVENT_ID = 1;
+
 const customQuestion = (id: string, text: string, options: string[], multiSelect = false): DemographicQuestion => ({
   id,
-  roomId: "story-room",
+  roomId: null,
+  eventId: STORY_EVENT_ID,
   type: "custom",
   text,
   options,
   multiSelect,
+  position: null,
 });
 
 const ROLE_QUESTION = customQuestion("role", "Are you a...", [

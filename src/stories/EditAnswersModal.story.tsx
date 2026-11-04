@@ -14,18 +14,24 @@ const mockQuestions: DemographicQuestion[] = [
     type: "gender",
     roomId: "room1",
     multiSelect: false,
+    eventId: null,
+    position: null,
   },
   {
     id: "2",
     type: "age_range",
     roomId: "room1",
     multiSelect: false,
+    eventId: null,
+    position: null,
   },
   {
     id: "3",
     type: "occupation",
     roomId: "room1",
     multiSelect: false,
+    eventId: null,
+    position: null,
   },
 ];
 

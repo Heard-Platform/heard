@@ -1,4 +1,4 @@
-import { countRecords, createClientFromEnv, deleteRecord, insert, insertAndReturn, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
+import { countRecords, createClientFromEnv, deleteRecord, insert, insertAndReturn, insertMany, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
 import { toTimestamp } from "./time-utils.ts";
 import {
   AppFeedbackVote,
@@ -11,7 +11,10 @@ import {
   InternalVarKey,
   NewDemographicAnswer,
   NewEvent,
+  NewEventDemographicQuestion,
   NewFlyerPlacement,
+  NewRoomDemographicQuestion,
+  RoomDemographicQuestion,
   NewUserEvent,
   NewUserReport,
   RoomFollow,
@@ -62,16 +65,27 @@ export const getEventById = async (eventId: number): Promise<Event | null> => {
   return event ?? null;
 };
 
-export const insertDemographicQuestion = async (question: DemographicQuestion) => {
-  return insert<DemographicQuestion>("demographic_questions", question);
+export const insertDemographicQuestion = async (question: NewRoomDemographicQuestion) => {
+  return insert<NewRoomDemographicQuestion>("demographic_questions", question);
 };
 
+export const getDemographicQuestionsForEvent = async (eventId: number): Promise<DemographicQuestion[]> =>
+  selectAllWithoutLimit<DemographicQuestion>("demographic_questions", { eventId }, "position");
+
+export const deleteDemographicQuestionsForEvent = async (eventId: number): Promise<void> => {
+  const { success, error } = await deleteRecord("demographic_questions", { eventId });
+  if (!success) throw new Error(error);
+};
+
+export const insertEventDemographicQuestions = async (questions: NewEventDemographicQuestion[]): Promise<void> =>
+  insertMany("demographic_questions", questions);
+
 export const getDemographicQuestionsForRoom = async (roomId: string) => {
-  return selectAll<DemographicQuestion>("demographic_questions", { roomId });
+  return selectAll<RoomDemographicQuestion>("demographic_questions", { roomId });
 };
 
 export const getDemographicQuestionsForRooms = async (roomIds: string[]) => {
-  return selectAll<DemographicQuestion>(
+  return selectAll<RoomDemographicQuestion>(
     "demographic_questions",
     {},
     (q: any) => q.in("roomId", roomIds),
