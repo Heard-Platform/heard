@@ -58,7 +58,11 @@ export function EventSetupPanel({
             rooms={rooms}
             currentIndex={status === "live" ? currentIndex : null}
             currentBadge="Live"
-            onReorder={status === "setup" ? onReorder : undefined}
+            onReorder={
+              status === "setup" || status === "open"
+                ? onReorder
+                : undefined
+            }
           />
         )}
 

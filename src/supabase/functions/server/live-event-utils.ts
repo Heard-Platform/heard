@@ -6,6 +6,7 @@ import type {
   Event,
   EventPresence,
   LiveEventState,
+  LiveEventStatus,
   LiveScreen,
   LiveEventView,
   EventTotals,
@@ -96,9 +97,12 @@ export const canDriveEvent = (
   storedDisplayKey: string | null,
 ): boolean => isModerator || (!!providedDisplayKey && providedDisplayKey === storedDisplayKey);
 
+export const isBeforeStart = (status: LiveEventStatus): boolean =>
+  status === "setup" || status === "open";
+
 export const eventPostClosedReason = (state: LiveEventState, roomId: string): EventPostClosedReason | null => {
   if (state.status === "ended") return null;
-  if (state.status === "setup") return "not-started";
+  if (isBeforeStart(state.status)) return "not-started";
   if (currentRoomId(state) !== roomId) return "not-current";
   return state.votingPaused ? "paused" : null;
 };
@@ -121,7 +125,7 @@ export const reorderLiveEvent = (
   eventRoomIds: string[],
   now: number,
 ): LiveEventState => {
-  if (state.status !== "setup") {
+  if (!isBeforeStart(state.status)) {
     throw new RouteError("Posts can only be reordered before the session starts", 409);
   }
   if (_.uniq(roomOrder).length !== roomOrder.length) {
