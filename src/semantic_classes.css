@@ -189,6 +189,21 @@
   color: var(--color-purple-600);
 }
 
+.selected-option,
+.selected-option:hover {
+  background-color: var(--color-stone-900);
+  border-color: var(--color-stone-900);
+  color: var(--color-white);
+}
+
+.feed-bottom-fade {
+  background: linear-gradient(to top, var(--app-bg), transparent);
+}
+
+.progress-track-bg {
+  background-color: var(--color-stone-300);
+}
+
 .attention-bg {
   background-color: var(--color-orange-50);
 }

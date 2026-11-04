@@ -75,6 +75,7 @@ import { AnonResponseTripwireStory } from "../stories/AnonResponseTripwire.story
 import { ClusterMinimapStory } from "../stories/ClusterMinimap.story";
 import { EventSetupPanelStory } from "../stories/EventSetupPanel.story";
 import { EventAttendeeStory } from "../stories/EventAttendee.story";
+import { EventOnboardingStory } from "../stories/EventOnboarding.story";
 import { EventDisplayStory } from "../stories/EventDisplay.story";
 import { EventSupportViewStory } from "../stories/EventSupportView.story";
 
@@ -206,6 +207,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="cluster-minimap">Cluster Minimap</TabsTrigger>
                 <TabsTrigger value="event-setup-panel">Event Setup Panel</TabsTrigger>
                 <TabsTrigger value="event-attendee">Event Attendee</TabsTrigger>
+                <TabsTrigger value="event-onboarding">Event Onboarding</TabsTrigger>
                 <TabsTrigger value="event-display">Event Display</TabsTrigger>
                 <TabsTrigger value="event-support-view">Event Support View</TabsTrigger>
               </TabsList>
@@ -428,6 +430,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="event-attendee">
                 <EventAttendeeStory />
+              </TabsContent>
+              <TabsContent value="event-onboarding">
+                <EventOnboardingStory />
               </TabsContent>
               <TabsContent value="event-display">
                 <EventDisplayStory />

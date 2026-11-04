@@ -2,11 +2,16 @@ import type { ReactNode } from "react";
 import { HeardWordmark } from "../../HeardWordmark";
 import { MonkeyAvatar } from "../../MonkeyAvatar";
 
-export function AttendeeFrame({ children }: { children: ReactNode }) {
+interface AttendeeFrameProps {
+  header?: ReactNode;
+  children: ReactNode;
+}
+
+export function AttendeeFrame({ header = <HeardWordmark />, children }: AttendeeFrameProps) {
   return (
     <div className="heard-feed-bg relative flex min-h-full flex-1 flex-col overflow-clip px-5 pt-4 pb-5">
       <div className="flex h-10 items-center">
-        <HeardWordmark />
+        {header}
       </div>
       {children}
     </div>
