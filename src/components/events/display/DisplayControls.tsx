@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, DoorOpen, Pause, Play } from "lucide-react";
 import { Button } from "../../ui/button";
 import type { ModeratorAction } from "../../../types";
 import type { DisplayView } from "../../../utils/event-display";
@@ -25,13 +25,25 @@ function ControlsPanel({ isHidden, children }: { isHidden: boolean; children: Re
 }
 
 interface JoinControlsProps {
+  areDoorsOpen: boolean;
   peopleHere: number;
   isHidden: boolean;
   isBusy: boolean;
   onAction: (action: ModeratorAction) => void;
 }
 
-export function JoinControls({ peopleHere, isHidden, isBusy, onAction }: JoinControlsProps) {
+export function JoinControls({ areDoorsOpen, peopleHere, isHidden, isBusy, onAction }: JoinControlsProps) {
+  if (!areDoorsOpen) {
+    return (
+      <ControlsPanel isHidden={isHidden}>
+        <HeadcountLabel text="Doors closed" />
+        <Button className="font-semibold" disabled={isBusy} onClick={() => onAction("open")}>
+          Open doors <DoorOpen />
+        </Button>
+      </ControlsPanel>
+    );
+  }
+
   return (
     <ControlsPanel isHidden={isHidden}>
       <HeadcountLabel text={`${peopleHere} here`} />

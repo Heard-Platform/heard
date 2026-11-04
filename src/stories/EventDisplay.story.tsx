@@ -158,6 +158,8 @@ const castVotes = (statements: Statement[]): Statement[] =>
 const applyAction = (state: LiveEventView, action: ModeratorAction): LiveEventView => {
   const index = state.currentIndex ?? 0;
   switch (action) {
+    case "open":
+      return { ...state, status: "open" };
     case "start":
       return { ...state, status: "live", currentIndex: 0, startedAt: Date.now(), peopleHere: 52 };
     case "next":
@@ -318,19 +320,24 @@ export function EventDisplayStory() {
   return (
     <StoryContainer
       title="Event Display"
-      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after a second. Live starts on the join screen: press Start, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Back, Next and Pause work; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it."
+      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after a second. Live starts on the join screen with the doors closed: press Open doors to let people in, then Start, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Back, Next and Pause work; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it."
       variants={[
         {
           id: "join",
-          label: "Join screen",
-          children: <StaticDisplay state={eventState({ status: "setup", currentIndex: null, startedAt: null, peopleHere: 23 })} post={null} />,
+          label: "Join screen, doors closed",
+          children: <StaticDisplay state={eventState({ status: "setup", currentIndex: null, startedAt: null, peopleHere: 0 })} post={null} />,
+        },
+        {
+          id: "join-doors-open",
+          label: "Join screen, doors open",
+          children: <StaticDisplay state={eventState({ status: "open", currentIndex: null, startedAt: null, peopleHere: 23 })} post={null} />,
         },
         {
           id: "loading-post",
           label: "Loading the next post",
           children: <StaticDisplay state={eventState({})} post={null} />,
         },
-        { id: "live", label: "Live (Start, votes moving)", children: <LiveDemo initialState={NOT_STARTED_STATE} /> },
+        { id: "live", label: "Live (Open doors, Start, votes moving)", children: <LiveDemo initialState={NOT_STARTED_STATE} /> },
         { id: "last-post", label: "Last post (End session)", children: <LiveDemo initialState={LAST_POST_STATE} /> },
         { id: "agree-only", label: "Agree only", children: <BoardStory view="agree-only" attendeeStatements={withProcurementStatementOnBoard} /> },
         {

@@ -31,6 +31,7 @@ import {
   reorderLiveEvent,
   requireEventIsLive,
   setVotingPaused,
+  openEvent,
   startEvent,
   countEventTotals,
   countEventHeadcount,
@@ -200,6 +201,8 @@ export const applyEventAction = async (
       const rooms = await getEventRooms(eventId);
       return reorderLiveEvent(state, roomOrder, rooms.map((room) => room.id), now);
     }
+    case "open":
+      return openEvent(state, now);
     case "start":
       return startEvent(state, await getEventRooms(eventId), now);
     case "next":
