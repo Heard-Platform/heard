@@ -3,7 +3,7 @@ import { toast } from "sonner@2.0.3";
 import { useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { EventSetupPanel } from "./EventSetupPanel";
-import { EventOnboardingQuestionsPanelContainer } from "./EventOnboardingQuestionsPanelContainer";
+import { OnboardingQuestionsPanelContainer } from "./OnboardingQuestionsPanelContainer";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 import { api } from "../../utils/api";
 import { orderByRoomOrder } from "../../utils/live-event";
@@ -72,7 +72,7 @@ export function EventSetupPanelContainer({ event }: { event: Event }) {
         onOpenSupportView={handleOpenSupportView}
       />
       {isFeatureEnabled(FeatureFlags.EVENT_ONBOARDING_QUESTIONS) && (
-        <EventOnboardingQuestionsPanelContainer eventId={event.id} status={live.status} />
+        <OnboardingQuestionsPanelContainer eventId={event.id} status={live.status} />
       )}
     </div>
   );

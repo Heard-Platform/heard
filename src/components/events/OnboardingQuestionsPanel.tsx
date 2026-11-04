@@ -13,7 +13,7 @@ import { Card } from "../ui/card";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
 
-interface EventOnboardingQuestionsPanelProps {
+interface OnboardingQuestionsPanelProps {
   questionDrafts: EventOnboardingQuestionDraft[];
   isLocked: boolean;
   isSaving: boolean;
@@ -23,7 +23,7 @@ interface EventOnboardingQuestionsPanelProps {
   onSave: () => void;
 }
 
-export function EventOnboardingQuestionsPanel({
+export function OnboardingQuestionsPanel({
   questionDrafts,
   isLocked,
   isSaving,
@@ -31,7 +31,7 @@ export function EventOnboardingQuestionsPanel({
   canSave,
   onQuestionDraftsChange,
   onSave,
-}: EventOnboardingQuestionsPanelProps) {
+}: OnboardingQuestionsPanelProps) {
   return (
     <Card className="heard-card-bg overflow-hidden">
       <div className="p-5 space-y-4">
@@ -63,7 +63,7 @@ export function EventOnboardingQuestionsPanel({
   );
 }
 
-type QuestionDraftEditorProps = Omit<EventOnboardingQuestionsPanelProps, "isLocked">;
+type QuestionDraftEditorProps = Omit<OnboardingQuestionsPanelProps, "isLocked">;
 
 function QuestionDraftEditor({
   questionDrafts,

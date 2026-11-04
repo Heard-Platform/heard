@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { EventOnboardingQuestionsPanel } from "../components/events/EventOnboardingQuestionsPanel";
+import { OnboardingQuestionsPanel } from "../components/events/OnboardingQuestionsPanel";
 import {
   canSaveEventOnboardingQuestions,
   haveEventOnboardingQuestionsChanged,
@@ -54,7 +54,7 @@ function QuestionsPanelDemo({ initialSavedDrafts, initialDrafts, isLocked }: Que
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      <EventOnboardingQuestionsPanel
+      <OnboardingQuestionsPanel
         questionDrafts={questionDrafts}
         isLocked={isLocked}
         isSaving={isSaving}
@@ -67,10 +67,10 @@ function QuestionsPanelDemo({ initialSavedDrafts, initialDrafts, isLocked }: Que
   );
 }
 
-export function EventOnboardingQuestionsPanelStory() {
+export function OnboardingQuestionsPanelStory() {
   return (
     <StoryContainer
-      title="Event Onboarding Questions Panel"
+      title="Onboarding Questions Panel"
       description="Moderator-only panel under the live session panel on the event page. Moderators add the demographic questions attendees answer when they join. Questions are custom only, each with a Pick any switch and up/down order. Prefer not to say is added to every question automatically, so one real option is enough. Saving replaces the event's whole list. Editing locks once the session starts."
       variants={[
         {

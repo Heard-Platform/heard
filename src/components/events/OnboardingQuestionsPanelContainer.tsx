@@ -1,7 +1,7 @@
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 import { useEffect, useState } from "react";
-import { EventOnboardingQuestionsPanel } from "./EventOnboardingQuestionsPanel";
+import { OnboardingQuestionsPanel } from "./OnboardingQuestionsPanel";
 import { api } from "../../utils/api";
 import {
   canSaveEventOnboardingQuestions,
@@ -11,12 +11,12 @@ import {
 } from "../../utils/event-onboarding-questions";
 import type { DemographicQuestion, EventOnboardingQuestionDraft, LiveEventStatus } from "../../types";
 
-interface EventOnboardingQuestionsPanelContainerProps {
+interface OnboardingQuestionsPanelContainerProps {
   eventId: string;
   status: LiveEventStatus;
 }
 
-export function EventOnboardingQuestionsPanelContainer({ eventId, status }: EventOnboardingQuestionsPanelContainerProps) {
+export function OnboardingQuestionsPanelContainer({ eventId, status }: OnboardingQuestionsPanelContainerProps) {
   const [savedQuestionDrafts, setSavedQuestionDrafts] = useState<EventOnboardingQuestionDraft[] | null>(null);
   const [questionDrafts, setQuestionDrafts] = useState<EventOnboardingQuestionDraft[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -57,7 +57,7 @@ export function EventOnboardingQuestionsPanelContainer({ eventId, status }: Even
   };
 
   return (
-    <EventOnboardingQuestionsPanel
+    <OnboardingQuestionsPanel
       questionDrafts={questionDrafts}
       isLocked={status !== "setup"}
       isSaving={isSaving}
