@@ -50,6 +50,12 @@
   color: #1c1b1f;
 }
 
+.fullscreen-subheader-text {
+  font-size: 1.8cqw;
+  font-weight: 600;
+  color: var(--color-slate-500);
+}
+
 .split-chip {
   background-color: var(--color-amber-100);
   color: var(--color-amber-700);

@@ -7,6 +7,7 @@ import { getDisplayScreen, isAttendeeStatement, type DisplayView } from "../../.
 import { DisplayBoard } from "./DisplayBoard";
 import { BoardControls, JoinControls } from "./DisplayControls";
 import { DisplayEndCard } from "./DisplayEndCard";
+import { DisplayDoorsClosedScreen } from "./DisplayDoorsClosedScreen";
 import { DisplayJoinScreen } from "./DisplayJoinScreen";
 import { DisplaySpotlight } from "./DisplaySpotlight";
 import { Loader } from "../../widgets/Loader";
@@ -43,6 +44,7 @@ export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onA
   const questionLabel = `Question ${(eventState.currentIndex ?? 0) + 1}`;
   const screen = getDisplayScreen(eventState, post?.room.id ?? null);
   const screenKey = screen === "board" ? `board:${eventState.currentRoomId}` : screen;
+  const areDoorsOpen = eventState.status !== "setup";
 
   const handleConfirmEnd = () => {
     setIsConfirmingEnd(false);
@@ -56,9 +58,13 @@ export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onA
     if (screen === "join" || eventState.currentIndex === null) {
       return (
         <>
-          <DisplayJoinScreen peopleHere={eventState.peopleHere} joinUrl={joinUrl} joinLabel={joinLabel} />
+          {areDoorsOpen ? (
+            <DisplayJoinScreen peopleHere={eventState.peopleHere} joinUrl={joinUrl} joinLabel={joinLabel} />
+          ) : (
+            <DisplayDoorsClosedScreen />
+          )}
           <JoinControls
-            areDoorsOpen={eventState.status === "open"}
+            areDoorsOpen={areDoorsOpen}
             peopleHere={eventState.peopleHere}
             isHidden={isIdle}
             isBusy={isBusy}
