@@ -26,13 +26,6 @@ export interface ClusterNameReviewCluster {
   renameReason: string | null;
 }
 
-export interface ReviewRoomOption {
-  roomId: string;
-  topic: string;
-  voteCount: number;
-  createdAt: number;
-}
-
 export interface ClusterNameReviewRoom {
   roomId: string;
   topic: string;
@@ -40,15 +33,6 @@ export interface ClusterNameReviewRoom {
   clusters: ClusterNameReviewCluster[] | null;
   lastNamedAt: number | null;
   createdAt: number;
-}
-
-function toRoomOption(room: DebateRoom): ReviewRoomOption {
-  return {
-    roomId: room.id,
-    topic: room.topic,
-    voteCount: room.totalVotes ?? 0,
-    createdAt: room.createdAt,
-  };
 }
 
 function lastNamedAt(identity: ClusterIdentityRecord | null): number | null {
@@ -106,20 +90,6 @@ app.get(
       };
     },
     "Failed to fetch cluster names for review",
-  ),
-);
-
-app.get(
-  `${API_URL_PREFIX}/dev/ai-review/rooms`,
-  defineRoute(
-    {},
-    async () => {
-      const rooms = (await getAllDebates())
-        .sort((a, b) => b.createdAt - a.createdAt)
-        .map(toRoomOption);
-      return { rooms };
-    },
-    "Failed to fetch rooms",
   ),
 );
 

@@ -1,4 +1,5 @@
 import {
+  getAllDebates,
   getStatementsForRoom,
   getStatementsForRoomIncludingHidden,
   getVotesForStatement,
@@ -10,6 +11,27 @@ import {
   StatementMerge,
   VoteType,
 } from "./types.tsx";
+
+export interface RoomSummary {
+  roomId: string;
+  topic: string;
+  voteCount: number;
+  createdAt: number;
+}
+
+export function toRoomSummary(room: DebateRoom): RoomSummary {
+  return {
+    roomId: room.id,
+    topic: room.topic,
+    voteCount: room.totalVotes ?? 0,
+    createdAt: room.createdAt,
+  };
+}
+
+export async function loadRoomSummaries(): Promise<RoomSummary[]> {
+  const rooms = await getAllDebates();
+  return rooms.sort((a, b) => b.createdAt - a.createdAt).map(toRoomSummary);
+}
 
 type RoomPartial = Pick<
   DebateRoom,

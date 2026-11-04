@@ -481,7 +481,7 @@ export interface ClusterNameReviewCluster {
   renameReason: string | null;
 }
 
-export interface ReviewRoomOption {
+export interface RoomSummary {
   roomId: string;
   topic: string;
   voteCount: number;
@@ -1034,6 +1034,25 @@ export interface UserTimelineEntry {
   activeDays?: number[]; // UTC day-start timestamps for days with any action
   isTestUser?: boolean;
   isDeveloper?: boolean;
+}
+
+export interface RoomVoteDepthBucket {
+  statementsVotedOn: number;
+  reachedVoterCount: number;
+  reachedPercent: number;
+  stoppedVoterCount: number;
+}
+
+export interface RoomVoteDepth {
+  statementCount: number;
+  voterCount: number;
+  medianStatementsVotedOn: number;
+  buckets: RoomVoteDepthBucket[];
+}
+
+export interface RoomActivity {
+  roomId: string;
+  voteDepth: RoomVoteDepth;
 }
 
 export interface WeeklySignupCount {
