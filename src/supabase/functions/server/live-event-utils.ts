@@ -6,6 +6,7 @@ import type {
   Event,
   EventPresence,
   LiveEventState,
+  LiveEventStatus,
   LiveScreen,
   LiveEventView,
   EventTotals,
@@ -22,7 +23,7 @@ export interface EventHeadcount {
   finishedCurrentPost: number;
 }
 
-export const EVENT_ACTIONS = ["start", "next", "back", "pause", "resume", "end", "reorder", "reload"] as const;
+export const EVENT_ACTIONS = ["open", "start", "next", "back", "pause", "resume", "end", "reorder", "reload"] as const;
 
 export type EventActionName = typeof EVENT_ACTIONS[number];
 
@@ -96,9 +97,12 @@ export const canDriveEvent = (
   storedDisplayKey: string | null,
 ): boolean => isModerator || (!!providedDisplayKey && providedDisplayKey === storedDisplayKey);
 
+export const isBeforeStart = (status: LiveEventStatus): boolean =>
+  status === "setup" || status === "open";
+
 export const eventPostClosedReason = (state: LiveEventState, roomId: string): EventPostClosedReason | null => {
   if (state.status === "ended") return null;
-  if (state.status === "setup") return "not-started";
+  if (isBeforeStart(state.status)) return "not-started";
   if (currentRoomId(state) !== roomId) return "not-current";
   return state.votingPaused ? "paused" : null;
 };
@@ -121,7 +125,7 @@ export const reorderLiveEvent = (
   eventRoomIds: string[],
   now: number,
 ): LiveEventState => {
-  if (state.status !== "setup") {
+  if (!isBeforeStart(state.status)) {
     throw new RouteError("Posts can only be reordered before the session starts", 409);
   }
   if (_.uniq(roomOrder).length !== roomOrder.length) {
@@ -145,12 +149,22 @@ const requireFromIndex = (currentIndex: number, fromIndex: number | undefined) =
   if (fromIndex !== currentIndex) throw new RouteError("The session already moved on", 409);
 };
 
+export const openEvent = (
+  state: LiveEventState,
+  now: number,
+): LiveEventState => {
+  if (state.status !== "setup")
+    throw new RouteError("The doors are already open", 409);
+  return { ...state, status: "open", updatedAt: now };
+};
+
 export const startEvent = (
   state: LiveEventState,
   eventRooms: Pick<DebateRoom, "id" | "createdAt">[],
   now: number,
 ): LiveEventState => {
-  if (state.status !== "setup") throw new RouteError("The session has already started", 409);
+  if (state.status === "setup") throw new RouteError("Open the doors before starting", 409);
+  if (state.status !== "open") throw new RouteError("The session has already started", 409);
   const roomOrder = sessionRoomOrder(state.roomOrder, eventRooms);
   if (roomOrder.length === 0) throw new RouteError("Add a post to the event before starting", 409);
   return {

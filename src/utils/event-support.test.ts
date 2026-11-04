@@ -107,7 +107,10 @@ describe("describeSessionStatus", () => {
 
   it("covers before Start and after End", () => {
     expect(describeSessionStatus({ status: "setup", votingPaused: false, postCount: 10, currentPost: null })).toBe(
-      "Not started",
+      "Doors closed",
+    );
+    expect(describeSessionStatus({ status: "open", votingPaused: false, postCount: 10, currentPost: null })).toBe(
+      "Doors open",
     );
     expect(describeSessionStatus({ status: "ended", votingPaused: false, postCount: 10, currentPost: null })).toBe(
       "Ended",

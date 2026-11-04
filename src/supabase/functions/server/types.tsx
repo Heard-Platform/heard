@@ -258,7 +258,7 @@ export type NewEvent = Pick<
   "name" | "subtitle" | "communityName" | "creatorId"
 >;
 
-export type LiveEventStatus = "setup" | "live" | "ended";
+export type LiveEventStatus = "setup" | "open" | "live" | "ended";
 
 export type EventTotals = {
   people: number;

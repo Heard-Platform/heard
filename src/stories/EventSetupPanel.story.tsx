@@ -51,12 +51,17 @@ export function EventSetupPanelStory() {
   return (
     <StoryContainer
       title="Event Setup Panel"
-      description="Moderator-only panel on the event page. Order the posts with the arrows, copy the join and display links, open the display (which runs the session). Ordering locks once the session starts."
+      description="Moderator-only panel on the event page. Order the posts with the arrows, copy the join and display links, open the display (which runs the session). Ordering stays open while the doors are open and locks once the session starts."
       variants={[
         {
           id: "ordered",
           label: "Ordered",
           children: <EventSetupDemo rooms={PRGN_ROOMS} status="setup" currentIndex={null} />,
+        },
+        {
+          id: "doors-open",
+          label: "Doors open",
+          children: <EventSetupDemo rooms={PRGN_ROOMS} status="open" currentIndex={null} />,
         },
         {
           id: "live",

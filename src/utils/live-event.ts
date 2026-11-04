@@ -36,20 +36,21 @@ export function pickNewestState<T extends { updatedAt: number }>(current: T | nu
   return current && current.updatedAt > incoming.updatedAt ? current : incoming;
 }
 
-export type AttendeeScreen = "starting" | "paused" | "swiping" | "waiting" | "end";
+export type AttendeeScreen = "closed" | "starting" | "paused" | "swiping" | "waiting" | "end";
 
 export function getAttendeeScreen(
   eventState: Pick<LiveEventView, "status" | "votingPaused">,
   hasCardsLeft: boolean,
   isWritingStatement: boolean,
 ): AttendeeScreen {
-  if (eventState.status === "setup") return "starting";
+  if (eventState.status === "setup") return "closed";
+  if (eventState.status === "open") return "starting";
   if (eventState.status === "ended") return "end";
   if (eventState.votingPaused) return "paused";
   return hasCardsLeft && !isWritingStatement ? "swiping" : "waiting";
 }
 
-const HEARTBEAT_SCREENS: Record<AttendeeScreen, LiveScreen> = {
+const HEARTBEAT_SCREENS: Record<Exclude<AttendeeScreen, "closed">, LiveScreen> = {
   starting: "lobby",
   paused: "lobby",
   swiping: "swiping",
@@ -57,7 +58,8 @@ const HEARTBEAT_SCREENS: Record<AttendeeScreen, LiveScreen> = {
   end: "end",
 };
 
-export const toLiveScreen = (screen: AttendeeScreen): LiveScreen => HEARTBEAT_SCREENS[screen];
+export const toLiveScreen = (screen: AttendeeScreen): LiveScreen | null =>
+  screen === "closed" ? null : HEARTBEAT_SCREENS[screen];
 
 export const HEARTBEAT_INTERVAL_MS = 10_000;
 

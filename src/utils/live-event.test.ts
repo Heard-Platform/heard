@@ -99,8 +99,12 @@ describe("pickNewestState", () => {
 describe("getAttendeeScreen", () => {
   const live = { status: "live" as const, votingPaused: false };
 
-  it("waits in the lobby before the event starts", () => {
-    expect(getAttendeeScreen({ status: "setup", votingPaused: false }, true, false)).toBe("starting");
+  it("shows the closed screen before the doors open", () => {
+    expect(getAttendeeScreen({ status: "setup", votingPaused: false }, true, false)).toBe("closed");
+  });
+
+  it("waits in the lobby once the doors are open", () => {
+    expect(getAttendeeScreen({ status: "open", votingPaused: false }, true, false)).toBe("starting");
   });
 
   it("shows the end screen once the event ends", () => {
@@ -125,6 +129,7 @@ describe("getAttendeeScreen", () => {
   });
 
   it("reports both lobby wordings as the lobby screen", () => {
+    expect(toLiveScreen("closed")).toBeNull();
     expect(toLiveScreen("starting")).toBe("lobby");
     expect(toLiveScreen("paused")).toBe("lobby");
     expect(toLiveScreen("waiting")).toBe("waiting");

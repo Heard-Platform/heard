@@ -5,6 +5,7 @@ import { api } from "../utils/api";
 import type { LiveEventAction, LiveEventView, ModeratorAction } from "../types";
 
 const TRACKED_EVENT_NAME_BY_ACTION: Record<ModeratorAction, string> = {
+  open: "live_doors_opened",
   start: "live_started",
   next: "live_next",
   back: "live_back",

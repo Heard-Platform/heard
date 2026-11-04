@@ -199,7 +199,7 @@ export interface EventRoomStatus extends Pick<
 
 export type RoomStatus = "needs_input" | "caught_up" | "completed";
 
-export type LiveEventStatus = "setup" | "live" | "ended";
+export type LiveEventStatus = "setup" | "open" | "live" | "ended";
 
 export interface EventTotals {
   people: number;
@@ -232,7 +232,7 @@ export interface LiveEventView extends LiveEventState {
   finishedCurrentPost: number;
 }
 
-export type ModeratorAction = "start" | "next" | "back" | "pause" | "resume" | "end";
+export type ModeratorAction = "open" | "start" | "next" | "back" | "pause" | "resume" | "end";
 
 export type LiveScreen = "lobby" | "swiping" | "waiting" | "end";
 
@@ -300,7 +300,7 @@ export interface SupportViewStats {
 }
 
 export type LiveEventAction =
-  | { action: "start" | "pause" | "resume" | "end" | "reload" }
+  | { action: "open" | "start" | "pause" | "resume" | "end" | "reload" }
   | { action: "next" | "back"; fromIndex: number }
   | { action: "reorder"; roomOrder: string[] };
 

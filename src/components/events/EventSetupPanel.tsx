@@ -10,7 +10,8 @@ import type { LiveEventStatus, EventSetupRoom } from "../../types";
 const COPIED_RESET_MS = 2000;
 
 const STATUS_COPY: Record<LiveEventStatus, string> = {
-  setup: "Put the posts in the order you'll run them.",
+  setup: "Put the posts in the order you'll run them. Open the doors from the display when you're ready to let people in.",
+  open: "Doors are open and people are joining. You can still change the order until you start.",
   live: "Live now. The order is locked until the session ends.",
   ended: "This session has ended.",
 };
@@ -57,7 +58,11 @@ export function EventSetupPanel({
             rooms={rooms}
             currentIndex={status === "live" ? currentIndex : null}
             currentBadge="Live"
-            onReorder={status === "setup" ? onReorder : undefined}
+            onReorder={
+              status === "setup" || status === "open"
+                ? onReorder
+                : undefined
+            }
           />
         )}
 

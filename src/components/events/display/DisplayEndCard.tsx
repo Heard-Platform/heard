@@ -16,7 +16,7 @@ export function DisplayEndCard({ totals }: DisplayEndCardProps) {
           <EndStat value={totals.statementsFromRoom} label="statements from the room" />
         </div>
       )}
-      <p className="text-[1.8cqw] font-semibold secondary-text">Run Heard at your next event · heard.vote</p>
+      <p className="fullscreen-subheader-text">Run Heard at your next event · heard.vote</p>
     </DisplayCenteredScreen>
   );
 }

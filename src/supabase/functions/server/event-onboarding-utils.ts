@@ -55,7 +55,7 @@ export const toEventDemographicQuestionRows = (
 
 export const requireEventInSetup = (state: LiveEventState): void => {
   if (state.status !== "setup") {
-    throw new RouteError("Onboarding questions can't change once the event has started", 409);
+    throw new RouteError("Onboarding questions can't change once the doors are open", 409);
   }
 };
 

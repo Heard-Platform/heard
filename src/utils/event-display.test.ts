@@ -204,6 +204,7 @@ describe("getDisplayScreen", () => {
 
   it("shows the join screen before Start", () => {
     expect(getDisplayScreen({ status: "setup", currentIndex: null, currentRoomId: null }, null)).toBe("join");
+    expect(getDisplayScreen({ status: "open", currentIndex: null, currentRoomId: null }, null)).toBe("join");
   });
 
   it("shows the board once the current post has loaded", () => {

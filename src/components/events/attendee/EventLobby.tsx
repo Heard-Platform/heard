@@ -7,6 +7,7 @@ import { AttendeeFrame, AttendeeMessage } from "./AttendeeFrame";
 const STATEMENT_MAX_LENGTH = 500;
 
 type EventLobbyProps =
+  | { moment: "closed" }
   | { moment: "starting"; peopleHere: number }
   | { moment: "paused" }
   | { moment: "ended" }
@@ -24,6 +25,14 @@ type EventLobbyProps =
 export function EventLobby(props: EventLobbyProps) {
   return (
     <AttendeeFrame>
+      {props.moment === "closed" && (
+        <div className="my-auto">
+          <AttendeeMessage
+            title="This event hasn't started yet."
+            body="Keep this page open. You'll get in as soon as the doors open."
+          />
+        </div>
+      )}
       {props.moment === "starting" && (
         <div className="my-auto">
           <AttendeeMessage

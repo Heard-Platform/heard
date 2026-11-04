@@ -41,7 +41,7 @@ export function OnboardingQuestionsPanel({
           </h3>
           <p className="text-sm text-muted-foreground">
             {isLocked
-              ? "Locked once the session starts."
+              ? "Locked once the doors open."
               : `Attendees answer these when they join, before voting. "${OPT_OUT_ANSWER}" is added to every question.`}
           </p>
         </div>

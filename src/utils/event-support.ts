@@ -66,7 +66,8 @@ export function getFinishedPercent(currentPost: Pick<SupportViewCurrentPost, "fi
 export function describeSessionStatus(
   stats: Pick<SupportViewStats, "status" | "votingPaused" | "postCount" | "currentPost">,
 ): string {
-  if (stats.status === "setup") return "Not started";
+  if (stats.status === "setup") return "Doors closed";
+  if (stats.status === "open") return "Doors open";
   if (stats.status === "ended") return "Ended";
   const postPosition = stats.currentPost ? ` · Post ${stats.currentPost.postNumber} of ${stats.postCount}` : "";
   return `${stats.votingPaused ? "Paused" : "Live"}${postPosition}`;
