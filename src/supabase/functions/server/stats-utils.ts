@@ -176,7 +176,7 @@ export function groupRecentSessionsByWeek(votes: VoteTiming[], now: number): Rec
     .value();
 }
 
-function median(values: number[]): number {
+export function median(values: number[]): number {
   const sorted = _.sortBy(values);
   const middle = Math.floor(sorted.length / 2);
   if (sorted.length % 2 === 1) return sorted[middle];

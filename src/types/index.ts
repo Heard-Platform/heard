@@ -1026,6 +1026,20 @@ export interface UserTimelineEntry {
   isDeveloper?: boolean;
 }
 
+export interface RoomVoteDepthBucket {
+  statementsVotedOn: number;
+  voterCount: number;
+  reachedPercent: number;
+}
+
+export interface RoomVoteDepth {
+  roomId: string;
+  statementCount: number;
+  voterCount: number;
+  medianStatementsVotedOn: number;
+  buckets: RoomVoteDepthBucket[];
+}
+
 export interface WeeklySignupCount {
   weekLabel: string;
   signups: number;

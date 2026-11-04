@@ -2,18 +2,15 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "../../ui/button";
 import { api, safelyMakeApiCall } from "../../../utils/api";
-import { ClusterNameReviewRoom, ReviewRoomOption } from "../../../types";
+import { ClusterNameReviewRoom } from "../../../types";
 import { ClusterNamingToggle } from "./ClusterNamingToggle";
 import { ClusterNamesReviewRow } from "./ClusterNamesReviewRow";
 import { RoomSearchPicker, type RoomSearchOption } from "../../RoomSearchPicker";
+import { toRoomSearchOption } from "../../../utils/room-search";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
 const PAGE_SIZE = 25;
-
-function toRoomSearchOption(room: ReviewRoomOption): RoomSearchOption {
-  return { id: room.roomId, topic: room.topic, detail: `${room.voteCount.toLocaleString()} votes` };
-}
 
 function hasNamedCluster(room: ClusterNameReviewRoom): boolean {
   return (room.clusters ?? []).some((cluster) => cluster.name !== null);

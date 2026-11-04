@@ -22,6 +22,7 @@ import {
   FEEDBACK_CARD_SHOWN_EVENT,
   isFeedbackCardNote,
 } from "./feedback-results-utils.ts";
+import { loadRoomVoteDepth } from "./room-vote-depth-utils.ts";
 
 const app = new Hono();
 
@@ -583,6 +584,15 @@ app.get(
       });
     },
     "Failed to fetch feedback card results",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/stats/room-vote-depth",
+  defineRoute(
+    { roomId: { type: "string", required: true } },
+    async ({ roomId }: { roomId: string }) => loadRoomVoteDepth(roomId),
+    "Failed to load room vote depth",
   ),
 );
 

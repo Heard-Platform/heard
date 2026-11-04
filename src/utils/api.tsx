@@ -7,6 +7,7 @@ import {
   DryRunResult,
   Feedback,
   FeedbackCardResults,
+  RoomVoteDepth,
   GGWashImportResult,
   FeatureResults,
   FunnelMetricsData,
@@ -733,6 +734,10 @@ class ApiClient extends BaseApiClient {
 
   async getFeedbackCardResults() {
     return this.request<FeedbackCardResults>("/stats/feedback-cards");
+  }
+
+  async getRoomVoteDepth(roomId: string) {
+    return this.request<RoomVoteDepth>(`/stats/room-vote-depth?roomId=${encodeURIComponent(roomId)}`);
   }
 
   async getFeedbackList() {

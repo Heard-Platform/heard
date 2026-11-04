@@ -1,6 +1,7 @@
 import type { FeedbackCardResults, FeedbackCardStatementResult } from "../../../types";
 import { getFeedbackStatement } from "../../../utils/constants/feedback-statements";
 import { Card } from "../../ui/card";
+import { SummaryStat } from "../SummaryStat";
 
 interface FeedbackCardsTabProps {
   results: FeedbackCardResults;
@@ -73,15 +74,6 @@ export function FeedbackCardsTab({ results }: FeedbackCardsTabProps) {
         )}
       </Card>
     </div>
-  );
-}
-
-function SummaryStat({ label, value }: { label: string; value: number | string }) {
-  return (
-    <Card className="p-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-2xl font-bold">{value}</p>
-    </Card>
   );
 }
 
