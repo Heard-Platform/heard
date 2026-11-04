@@ -70,7 +70,7 @@ function IdlePeekCard() {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-xs text-slate-500">
-        Real timer: leave the page alone for 6 seconds. Repeats every 10 seconds while idle, at most 3 times.
+        Real timer: leave the page alone for 6 seconds. Repeats every 10 seconds while idle.
         Any tap, key, scroll or wheel restarts the wait. Hidden with reduced motion or when the buttons
         aren't fully on screen.
       </p>

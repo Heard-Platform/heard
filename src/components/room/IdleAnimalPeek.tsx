@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
-import { VoterAnimalHead, voterAvatarImage } from "./VoterAnimalHead";
+import { VoterAnimalHead, preloadVoterAnimalImages, voterAvatarImage } from "./VoterAnimalHead";
 
 const IDLE_BEFORE_FIRST_PEEK_MS = 6000;
 const IDLE_BETWEEN_PEEKS_MS = 10000;
 export const PEEK_VISIBLE_MS = 2200;
-const MAX_PEEKS_PER_CARD = 3;
 const BUTTON_COUNT = 3;
 const PEEK_RISE_PX = 20;
 const ANIMAL_HALF_WIDTH_PX = 20;
@@ -86,7 +85,6 @@ function useIdlePeek(canPeek: boolean): Peek | null {
 
     const scheduleNextPeek = (delayMs: number) => {
       clearTimeout(idleTimeout);
-      if (peekCountRef.current >= MAX_PEEKS_PER_CARD) return;
       idleTimeout = setTimeout(showPeek, delayMs);
     };
 
@@ -117,6 +115,7 @@ function useIdlePeek(canPeek: boolean): Peek | null {
 
 export function IdleAnimalPeek({ children }: { children: ReactNode }) {
   const buttonRowRef = useRef<HTMLDivElement>(null);
+  useEffect(preloadVoterAnimalImages, []);
   const isFullyInView = useInView(buttonRowRef, { amount: "all" });
   const prefersReducedMotion = useReducedMotion();
   const peek = useIdlePeek(isFullyInView && !prefersReducedMotion);
