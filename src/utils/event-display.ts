@@ -111,6 +111,11 @@ export function getDisplayScreen(
   loadedPostRoomId: string | null,
 ): DisplayScreen {
   if (eventState.status === "ended") return "end";
-  if (eventState.status === "setup" || eventState.currentIndex === null) return "join";
+  if (
+    eventState.status === "setup" ||
+    eventState.status === "open" ||
+    eventState.currentIndex === null
+  )
+    return "join";
   return loadedPostRoomId === eventState.currentRoomId ? "board" : "loading";
 }

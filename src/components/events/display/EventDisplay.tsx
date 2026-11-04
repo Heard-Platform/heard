@@ -57,7 +57,13 @@ export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onA
       return (
         <>
           <DisplayJoinScreen peopleHere={eventState.peopleHere} joinUrl={joinUrl} joinLabel={joinLabel} />
-          <JoinControls peopleHere={eventState.peopleHere} isHidden={isIdle} isBusy={isBusy} onAction={onAction} />
+          <JoinControls
+            areDoorsOpen={eventState.status === "open"}
+            peopleHere={eventState.peopleHere}
+            isHidden={isIdle}
+            isBusy={isBusy}
+            onAction={onAction}
+          />
         </>
       );
     }
