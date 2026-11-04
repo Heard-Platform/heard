@@ -47,7 +47,12 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
   const screen = eventState ? getAttendeeScreen(eventState, cardsLeftCount > 0, isWritingStatement) : null;
   const isLoadingPost = (screen === "swiping" || screen === "waiting") && !shownPost;
 
-  heartbeatRef.current = screen && !isLoadingPost ? { screen: toLiveScreen(screen), shownRoomId: currentRoomId } : null;
+  const heartbeatScreen =
+    screen && !isLoadingPost ? toLiveScreen(screen) : null;
+
+   heartbeatRef.current = heartbeatScreen
+    ? { screen: heartbeatScreen, shownRoomId: currentRoomId }
+    : null;
 
   useReloadOnNonceChange(eventState?.reloadNonce);
 
@@ -101,6 +106,8 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
   if (!eventState || !screen || isLoadingPost) return <AttendeeLoading />;
 
   switch (screen) {
+    case "closed":
+      return <EventLobby moment="closed" />;
     case "starting":
       return <EventLobby moment="starting" peopleHere={eventState.peopleHere} />;
     case "paused":

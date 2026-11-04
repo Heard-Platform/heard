@@ -109,8 +109,17 @@ export function EventAttendeeStory() {
   return (
     <StoryContainer
       title="Event Attendee"
-      description="What a phone shows during an event, in the Swipe Six layout. The pill shows the post's question without its community. The lobby has four wordings (starting soon, paused, waiting for the others, ended). Swiping counts this post's statements only; finishing them lands on waiting for the others, where you can add a statement. New statements never interrupt someone writing: the phone stays on the text box and offers to vote on them, which clears what was typed. Submitting goes back to voting."
+      description="What a phone shows during an event, in the Swipe Six layout. The pill shows the post's question without its community. Before the doors open, the link says the event hasn't started yet. The lobby has four wordings (starting soon, paused, waiting for the others, ended). Swiping counts this post's statements only; finishing them lands on waiting for the others, where you can add a statement. New statements never interrupt someone writing: the phone stays on the text box and offers to vote on them, which clears what was typed. Submitting goes back to voting."
       variants={[
+        {
+          id: "closed",
+          label: "Doors closed",
+          children: (
+            <PhoneFrame>
+              <EventLobby moment="closed" />
+            </PhoneFrame>
+          ),
+        },
         {
           id: "starting",
           label: "Starting soon",
