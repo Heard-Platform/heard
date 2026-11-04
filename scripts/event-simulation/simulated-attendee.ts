@@ -122,7 +122,10 @@ export class SimulatedAttendee {
     const screen = this.currentScreen();
     const isLoadingPost = (screen === "swiping" || screen === "waiting") && !this.currentPost();
     if (!screen || isLoadingPost) return null;
-    return { screen: toLiveScreen(screen), shownRoomId: this.currentRoomId() };
+    const heartbeatScreen = toLiveScreen(screen);
+    return heartbeatScreen
+      ? { screen: heartbeatScreen, shownRoomId: this.currentRoomId() }
+      : null;
   }
 
   private heartbeatToSend(): LiveHeartbeat | undefined {
