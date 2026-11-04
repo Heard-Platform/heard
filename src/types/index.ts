@@ -1028,8 +1028,9 @@ export interface UserTimelineEntry {
 
 export interface RoomVoteDepthBucket {
   statementsVotedOn: number;
-  voterCount: number;
+  reachedVoterCount: number;
   reachedPercent: number;
+  stoppedVoterCount: number;
 }
 
 export interface RoomVoteDepth {

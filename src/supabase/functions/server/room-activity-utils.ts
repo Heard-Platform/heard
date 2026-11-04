@@ -4,8 +4,9 @@ import { median } from "./stats-utils.ts";
 
 export interface RoomVoteDepthBucket {
   statementsVotedOn: number;
-  voterCount: number;
+  reachedVoterCount: number;
   reachedPercent: number;
+  stoppedVoterCount: number;
 }
 
 export interface RoomVoteDepth {
@@ -44,12 +45,13 @@ function buildBuckets(statementsVotedOnPerVoter: number[], bucketCount: number):
   const voterCount = statementsVotedOnPerVoter.length;
   return Array.from({ length: bucketCount }, (_, index) => {
     const statementsVotedOn = index + 1;
-    const votersAtThisDepth = statementsVotedOnPerVoter.filter((count) => count === statementsVotedOn).length;
-    const votersReachingThisDepth = statementsVotedOnPerVoter.filter((count) => count >= statementsVotedOn).length;
+    const reachedVoterCount = statementsVotedOnPerVoter.filter((count) => count >= statementsVotedOn).length;
+    const stoppedVoterCount = statementsVotedOnPerVoter.filter((count) => count === statementsVotedOn).length;
     return {
       statementsVotedOn,
-      voterCount: votersAtThisDepth,
-      reachedPercent: voterCount === 0 ? 0 : (votersReachingThisDepth / voterCount) * 100,
+      reachedVoterCount,
+      reachedPercent: voterCount === 0 ? 0 : (reachedVoterCount / voterCount) * 100,
+      stoppedVoterCount,
     };
   });
 }

@@ -74,10 +74,10 @@ function RoomVoteDepthSection({ roomActivity, roomActivityError }: RoomVoteDepth
         <SummaryStat label="Median statements voted on" value={voteDepth.medianStatementsVotedOn} />
       </div>
       <Card className="p-6">
-        <h2 className="text-xl mb-1">Statements voted on per voter</h2>
+        <h2 className="text-xl mb-1">Voters who got at least this far</h2>
         <p className="text-xs mb-4" style={{ color: TEXT_MUTED }}>
-          Each bar is how many voters stopped after voting on that many different statements. Passes count.
-          Developers are left out. Hover for the share who got at least that far.
+          Each bar is how many voters voted on at least that many different statements, so the drop between bars is
+          where people left. Passes count. Developers are left out.
         </p>
         <RoomVoteDepthChart buckets={voteDepth.buckets} hasVoters={voteDepth.voterCount > 0} />
       </Card>
@@ -91,12 +91,13 @@ function RoomVoteDepthTooltip({ active, payload }: any) {
   return (
     <div style={CHART_TOOLTIP_STYLE}>
       <p style={{ color: TEXT_SECONDARY, fontSize: 12, marginBottom: 2 }}>
-        {bucket.statementsVotedOn} {bucket.statementsVotedOn === 1 ? "statement" : "statements"}
+        {bucket.statementsVotedOn}+ {bucket.statementsVotedOn === 1 ? "statement" : "statements"}
       </p>
       <p style={{ color: TEXT_PRIMARY, fontSize: 13, fontWeight: 600 }}>
-        {bucket.voterCount} {bucket.voterCount === 1 ? "voter" : "voters"} stopped here
+        {bucket.reachedVoterCount} {bucket.reachedVoterCount === 1 ? "voter" : "voters"} (
+        {formatPercent(bucket.reachedPercent)}) got at least this far
       </p>
-      <p style={{ color: TEXT_SECONDARY, fontSize: 12 }}>{formatPercent(bucket.reachedPercent)} got at least this far</p>
+      <p style={{ color: TEXT_SECONDARY, fontSize: 12 }}>{bucket.stoppedVoterCount} stopped here</p>
     </div>
   );
 }
@@ -130,7 +131,7 @@ function RoomVoteDepthChart({ buckets, hasVoters }: RoomVoteDepthChartProps) {
           width={44}
         />
         <Tooltip content={<RoomVoteDepthTooltip />} cursor={{ fill: GRIDLINE, opacity: 0.5 }} />
-        <Bar dataKey="voterCount" name="Voters" fill={BAR_COLOR} radius={[4, 4, 0, 0]} />
+        <Bar dataKey="reachedVoterCount" name="Voters who got this far" fill={BAR_COLOR} radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
