@@ -88,6 +88,11 @@ Deno.test("requireEventInSetup - allows changes before Start", () => {
   requireEventInSetup(defaultLiveEventState(NOW));
 });
 
+Deno.test("requireEventInSetup - blocks changes once the doors are open", () => {
+  const openState = { ...defaultLiveEventState(NOW), status: "open" as const };
+  assertThrows(() => requireEventInSetup(openState), RouteError);
+});
+
 Deno.test("requireEventInSetup - blocks changes once the event is live", () => {
   const liveState = { ...defaultLiveEventState(NOW), status: "live" as const };
   const error = assertThrows(() => requireEventInSetup(liveState), RouteError);

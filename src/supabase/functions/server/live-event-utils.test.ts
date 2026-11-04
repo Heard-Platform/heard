@@ -13,6 +13,7 @@ import {
   reorderLiveEvent,
   sessionRoomOrder,
   setVotingPaused,
+  openEvent,
   startEvent,
   countEventTotals,
   countEventHeadcount,
@@ -100,6 +101,13 @@ Deno.test("reorderLiveEvent - saves the new order and time", () => {
   );
 });
 
+Deno.test("reorderLiveEvent - allowed while the doors are open", () => {
+  assertEquals(
+    reorderLiveEvent(state({ status: "open" }), ["b", "a"], ["a", "b"], LATER),
+    state({ status: "open", roomOrder: ["b", "a"], updatedAt: LATER }),
+  );
+});
+
 Deno.test("reorderLiveEvent - refused once live or ended", () => {
   assertRouteError(() => reorderLiveEvent(state({ status: "live", currentIndex: 0 }), ["a"], ["a"], LATER), 409);
   assertRouteError(() => reorderLiveEvent(state({ status: "ended" }), ["a"], ["a"], LATER), 409);
@@ -143,7 +151,7 @@ Deno.test("sessionRoomOrder - oldest first when nothing was reordered", () => {
 });
 
 Deno.test("startEvent - goes live on the first post", () => {
-  const started = startEvent(state({ votingPaused: true }), [{ id: "a", createdAt: 1 }, { id: "b", createdAt: 2 }], LATER);
+  const started = startEvent(state({ status: "open", votingPaused: true }), [{ id: "a", createdAt: 1 }, { id: "b", createdAt: 2 }], LATER);
   assertEquals(started, state({
     roomOrder: ["a", "b"],
     currentIndex: 0,
@@ -155,8 +163,22 @@ Deno.test("startEvent - goes live on the first post", () => {
 });
 
 Deno.test("startEvent - refused with no posts or once started", () => {
-  assertRouteError(() => startEvent(state(), [], LATER), 409);
+  assertRouteError(() => startEvent(state({ status: "open" }), [], LATER), 409);
   assertRouteError(() => startEvent(live(), [{ id: "a", createdAt: 1 }], LATER), 409);
+});
+
+Deno.test("startEvent - refused before the doors open", () => {
+  assertRouteError(() => startEvent(state(), [{ id: "a", createdAt: 1 }], LATER), 409);
+});
+
+Deno.test("openEvent - opens the doors from setup", () => {
+  assertEquals(openEvent(state(), LATER), state({ status: "open", updatedAt: LATER }));
+});
+
+Deno.test("openEvent - refused once open, live or ended", () => {
+  assertRouteError(() => openEvent(state({ status: "open" }), LATER), 409);
+  assertRouteError(() => openEvent(live(), LATER), 409);
+  assertRouteError(() => openEvent(state({ status: "ended" }), LATER), 409);
 });
 
 Deno.test("changeActivePost - next and back move one post and resume voting", () => {
@@ -210,6 +232,7 @@ Deno.test("reloadEvent - bumps the reload nonce in any state", () => {
 
 Deno.test("eventPostClosedReason - closed before Start", () => {
   assertEquals(eventPostClosedReason(state({ roomOrder: ["a", "b"] }), "a"), "not-started");
+  assertEquals(eventPostClosedReason(state({ status: "open", roomOrder: ["a", "b"] }), "a"), "not-started");
 });
 
 Deno.test("eventPostClosedReason - only the current post is open while live", () => {
