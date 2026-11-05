@@ -9,7 +9,14 @@ const SECOND_MS = 1000;
 const MINUTE_SECONDS = 60;
 const HOUR_SECONDS = 60 * MINUTE_SECONDS;
 
-export const ATTENDEE_PHONE_STATES: readonly AttendeePhoneState[] = ["swiping", "waiting", "lobby", "end", "idle"];
+export const ATTENDEE_PHONE_STATES: readonly AttendeePhoneState[] = [
+  "swiping",
+  "waiting",
+  "onboarding",
+  "lobby",
+  "end",
+  "idle",
+];
 
 export function formatElapsed(elapsedMs: number): string {
   const totalSeconds = Math.max(0, Math.floor(elapsedMs / SECOND_MS));

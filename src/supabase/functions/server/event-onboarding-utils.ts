@@ -2,12 +2,16 @@ import { getCommunity, getLiveEventState } from "./kv-utils.tsx";
 import { canModerateEvent, eventStateOrDefault } from "./live-event-utils.ts";
 import {
   deleteDemographicQuestionsForEvent,
+  getAttendeeAnswers,
   getDemographicQuestionsForEvent,
   insertEventDemographicQuestions,
+  replaceDemographicAnswers,
 } from "./model-utils.ts";
 import { getEventOrThrow } from "./event-utils.ts";
 import { RouteError } from "./route-error.ts";
 import type {
+  AttendeeOnboarding,
+  DemographicAnswer,
   DemographicQuestion,
   Event,
   EventOnboardingQuestionInput,
@@ -16,6 +20,11 @@ import type {
 } from "./types.tsx";
 
 export const MINIMUM_OPTIONS_PER_ONBOARDING_QUESTION = 1;
+
+export const OPT_OUT_ANSWER = "Prefer not to say";
+
+const ANSWERS_ERROR_MESSAGE =
+  "Pick one of the question's options, or Prefer not to say on its own";
 
 export const ONBOARDING_QUESTIONS_ERROR_MESSAGE =
   "Each question needs text, at least one option besides Prefer not to say, and a pick-any setting";
@@ -83,4 +92,112 @@ export const replaceEventOnboardingQuestions = async (
   await deleteDemographicQuestionsForEvent(eventId);
   await insertEventDemographicQuestions(toEventDemographicQuestionRows(eventId, questions));
   return getDemographicQuestionsForEvent(eventId);
+};
+
+export const requireEventDoorsOpen = (
+  state: LiveEventState,
+): void => {
+  if (state.status === "setup") {
+    throw new RouteError("The doors aren't open yet", 409);
+  }
+};
+
+export const findEventQuestionOrThrow = (
+  questions: DemographicQuestion[],
+  questionId: number,
+): DemographicQuestion => {
+  const question = questions.find(
+    (eventQuestion) => eventQuestion.id === questionId,
+  );
+  if (!question) {
+    throw new RouteError(
+      "That question isn't part of this event",
+      404,
+    );
+  }
+  return question;
+};
+
+const hasDuplicates = (answers: string[]): boolean =>
+  new Set(answers).size !== answers.length;
+
+const isAllowedAnswer = (
+  question: DemographicQuestion,
+  answer: string,
+): boolean =>
+  answer === OPT_OUT_ANSWER ||
+  (question.options ?? []).includes(answer);
+
+const isOptOutMixedWithOptions = (answers: string[]): boolean =>
+  answers.includes(OPT_OUT_ANSWER) && answers.length > 1;
+
+export const isValidAnswerList = (
+  question: DemographicQuestion,
+  answers: string[],
+): boolean => {
+  if (!question.multiSelect && answers.length !== 1) return false;
+  if (hasDuplicates(answers)) return false;
+  if (isOptOutMixedWithOptions(answers)) return false;
+  return answers.every((answer) => isAllowedAnswer(question, answer));
+};
+
+export const toStoredAnswers = (
+  answers: string[],
+): (string | null)[] => {
+  const isSkipped = answers.length === 0;
+  return isSkipped ? [null] : answers;
+};
+
+export const collectAnsweredQuestionIds = (
+  answers: DemographicAnswer[],
+): number[] => [
+  ...new Set(answers.map((answer) => answer.questionId)),
+];
+
+const loadAnsweredQuestionIds = async (
+  userId: string,
+  questions: DemographicQuestion[],
+): Promise<number[]> => {
+  if (questions.length === 0) return [];
+  const answers = await getAttendeeAnswers(
+    userId,
+    questions.map((question) => question.id),
+  );
+  return collectAnsweredQuestionIds(answers);
+};
+
+export const loadAttendeeOnboarding = async (
+  eventId: number,
+  userId: string,
+): Promise<AttendeeOnboarding> => {
+  const questions = await loadEventOnboardingQuestions(eventId);
+  return {
+    questions,
+    answeredQuestionIds: await loadAnsweredQuestionIds(
+      userId,
+      questions,
+    ),
+  };
+};
+
+export const saveEventDemographicAnswer = async (
+  eventId: number,
+  userId: string,
+  questionId: number,
+  answers: string[],
+): Promise<void> => {
+  const [questions, storedState] = await Promise.all([
+    getDemographicQuestionsForEvent(eventId),
+    getLiveEventState(eventId),
+  ]);
+  const question = findEventQuestionOrThrow(questions, questionId);
+  requireEventDoorsOpen(eventStateOrDefault(storedState, Date.now()));
+  if (!isValidAnswerList(question, answers)) {
+    throw new RouteError(ANSWERS_ERROR_MESSAGE, 400);
+  }
+  await replaceDemographicAnswers(
+    userId,
+    questionId,
+    toStoredAnswers(answers),
+  );
 };

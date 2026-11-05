@@ -14,7 +14,13 @@ import type {
   Vote,
 } from "./types.tsx";
 
-export const LIVE_SCREENS: readonly LiveScreen[] = ["lobby", "swiping", "waiting", "end"];
+export const LIVE_SCREENS: readonly LiveScreen[] = [
+  "onboarding",
+  "lobby",
+  "swiping",
+  "waiting",
+  "end",
+];
 
 export const PRESENCE_WINDOW_MS = 5 * 60_000;
 

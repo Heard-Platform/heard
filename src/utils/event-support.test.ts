@@ -43,10 +43,19 @@ describe("getVotesPerPerson", () => {
 
 describe("listPhoneStates", () => {
   it("lists one entry per phone, grouped in a fixed order", () => {
-    expect(listPhoneStates({ idle: 1, waiting: 2, swiping: 1, lobby: 0, end: 0 })).toEqual([
+    const phoneCountsByState = {
+      idle: 1,
+      waiting: 2,
+      onboarding: 1,
+      swiping: 1,
+      lobby: 0,
+      end: 0,
+    };
+    expect(listPhoneStates(phoneCountsByState)).toEqual([
       "swiping",
       "waiting",
       "waiting",
+      "onboarding",
       "idle",
     ]);
   });

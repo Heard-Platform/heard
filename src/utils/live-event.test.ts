@@ -98,34 +98,92 @@ describe("pickNewestState", () => {
 
 describe("getAttendeeScreen", () => {
   const live = { status: "live" as const, votingPaused: false };
+  const answering = {
+    isAnsweringQuestions: true,
+    hasCardsLeft: true,
+    isWritingStatement: false,
+  };
+  const withCards = {
+    isAnsweringQuestions: false,
+    hasCardsLeft: true,
+    isWritingStatement: false,
+  };
+  const noCardsLeft = { ...withCards, hasCardsLeft: false };
+  const writing = { ...withCards, isWritingStatement: true };
 
   it("shows the closed screen before the doors open", () => {
-    expect(getAttendeeScreen({ status: "setup", votingPaused: false }, true, false)).toBe("closed");
+    expect(
+      getAttendeeScreen(
+        { status: "setup", votingPaused: false },
+        withCards,
+      ),
+    ).toBe("closed");
   });
 
   it("waits in the lobby once the doors are open", () => {
-    expect(getAttendeeScreen({ status: "open", votingPaused: false }, true, false)).toBe("starting");
+    expect(
+      getAttendeeScreen(
+        { status: "open", votingPaused: false },
+        withCards,
+      ),
+    ).toBe("starting");
   });
 
   it("shows the end screen once the event ends", () => {
-    expect(getAttendeeScreen({ status: "ended", votingPaused: false }, true, false)).toBe("end");
+    expect(
+      getAttendeeScreen(
+        { status: "ended", votingPaused: false },
+        withCards,
+      ),
+    ).toBe("end");
   });
 
   it("pauses even with cards left", () => {
-    expect(getAttendeeScreen({ ...live, votingPaused: true }, true, false)).toBe("paused");
+    expect(
+      getAttendeeScreen({ ...live, votingPaused: true }, withCards),
+    ).toBe("paused");
   });
 
   it("pauses even while writing a statement", () => {
-    expect(getAttendeeScreen({ ...live, votingPaused: true }, true, true)).toBe("paused");
+    expect(
+      getAttendeeScreen({ ...live, votingPaused: true }, writing),
+    ).toBe("paused");
   });
 
   it("swipes while cards are left, then waits for the others", () => {
-    expect(getAttendeeScreen(live, true, false)).toBe("swiping");
-    expect(getAttendeeScreen(live, false, false)).toBe("waiting");
+    expect(getAttendeeScreen(live, withCards)).toBe("swiping");
+    expect(getAttendeeScreen(live, noCardsLeft)).toBe("waiting");
   });
 
   it("keeps waiting while a statement is being written, even when new cards arrive", () => {
-    expect(getAttendeeScreen(live, true, true)).toBe("waiting");
+    expect(getAttendeeScreen(live, writing)).toBe("waiting");
+  });
+
+  it("asks the questions before the lobby once the doors are open", () => {
+    const open = { status: "open" as const, votingPaused: false };
+    expect(getAttendeeScreen(open, answering)).toBe("onboarding");
+  });
+
+  it("asks late joiners the questions before they swipe, even while paused", () => {
+    expect(getAttendeeScreen(live, answering)).toBe("onboarding");
+    expect(
+      getAttendeeScreen({ ...live, votingPaused: true }, answering),
+    ).toBe("onboarding");
+  });
+
+  it("never asks the questions before the doors open or after the end", () => {
+    expect(
+      getAttendeeScreen(
+        { status: "setup", votingPaused: false },
+        answering,
+      ),
+    ).toBe("closed");
+    expect(
+      getAttendeeScreen(
+        { status: "ended", votingPaused: false },
+        answering,
+      ),
+    ).toBe("end");
   });
 
   it("reports both lobby wordings as the lobby screen", () => {
@@ -133,6 +191,10 @@ describe("getAttendeeScreen", () => {
     expect(toLiveScreen("starting")).toBe("lobby");
     expect(toLiveScreen("paused")).toBe("lobby");
     expect(toLiveScreen("waiting")).toBe("waiting");
+  });
+
+  it("reports answering questions as its own screen", () => {
+    expect(toLiveScreen("onboarding")).toBe("onboarding");
   });
 });
 

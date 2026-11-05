@@ -44,7 +44,14 @@ const isActive = (presence: EventPresence, now: number): boolean => now - presen
 
 export const countPhones = (presences: EventPresence[], now: number): PhoneCounts => {
   const here = presencesHere(presences, now);
-  const phoneCountsByState: Record<AttendeePhoneState, number> = { swiping: 0, waiting: 0, lobby: 0, end: 0, idle: 0 };
+  const phoneCountsByState: Record<AttendeePhoneState, number> = {
+    swiping: 0,
+    waiting: 0,
+    onboarding: 0,
+    lobby: 0,
+    end: 0,
+    idle: 0,
+  };
   for (const presence of here) {
     phoneCountsByState[isActive(presence, now) ? presence.screen : "idle"] += 1;
   }

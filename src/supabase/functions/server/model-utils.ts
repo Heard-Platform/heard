@@ -102,9 +102,41 @@ export const getDemographicAnswersForQuestionIds = async (
   );
 };
 
-export const saveDemographicAnswer = async (answer: NewDemographicAnswer) => {
-  return upsert("demographic_answers", answer, "userId,questionId");
+export const getAttendeeAnswers = async (
+  userId: string,
+  questionIds: number[],
+): Promise<DemographicAnswer[]> =>
+  selectAllWithoutLimit<DemographicAnswer>(
+    "demographic_answers",
+    { userId },
+    "id",
+    (q: any) => q.in("questionId", questionIds),
+  );
+
+export const replaceDemographicAnswers = async (
+  userId: string,
+  questionId: number,
+  answers: (string | null)[],
+): Promise<void> => {
+  const { success, error } = await deleteRecord(
+    "demographic_answers",
+    { userId, questionId },
+  );
+  if (!success) throw new Error(error);
+  const rows: NewDemographicAnswer[] = answers.map((answer) => ({
+    userId,
+    questionId,
+    answer,
+  }));
+  await insertMany("demographic_answers", rows);
 };
+
+export const saveDemographicAnswer = async (
+  answer: NewDemographicAnswer,
+) =>
+  replaceDemographicAnswers(answer.userId, answer.questionId, [
+    answer.answer,
+  ]);
 
 export const getAnsweredDemographicQuestionIds = async (
   userId: string,

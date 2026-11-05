@@ -32,9 +32,11 @@ import {
 import { RouteError } from "./route-error.ts";
 import {
   isValidOnboardingQuestionList,
+  loadAttendeeOnboarding,
   loadEventOnboardingQuestions,
   ONBOARDING_QUESTIONS_ERROR_MESSAGE,
   replaceEventOnboardingQuestions,
+  saveEventDemographicAnswer,
 } from "./event-onboarding-utils.ts";
 import {
   canDriveEvent,
@@ -408,6 +410,48 @@ app.put(
       ),
     }),
     "Failed to save onboarding questions",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/event/:eventId/onboarding",
+  defineRoute(
+    { eventId: EVENT_ID_PARAM_SCHEMA },
+    async ({ eventId }: { eventId: string }, c: Context) =>
+      loadAttendeeOnboarding(Number(eventId), c.get("userId")),
+    "Failed to load onboarding",
+  ),
+);
+
+app.post(
+  "/make-server-f1a393b4/event/:eventId/demographic-answers",
+  defineRoute(
+    {
+      eventId: EVENT_ID_PARAM_SCHEMA,
+      questionId: { type: "number", required: true },
+      answers: {
+        type: "array",
+        required: true,
+        validate: (answers: unknown[]) =>
+          answers.every((answer) => typeof answer === "string"),
+        errorMessage: "answers must be a list of options",
+      },
+    },
+    async (
+      {
+        eventId,
+        questionId,
+        answers,
+      }: { eventId: string; questionId: number; answers: string[] },
+      c: Context,
+    ) =>
+      saveEventDemographicAnswer(
+        Number(eventId),
+        c.get("userId"),
+        questionId,
+        answers,
+      ),
+    "Failed to save the answer",
   ),
 );
 

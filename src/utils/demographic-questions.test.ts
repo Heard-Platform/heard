@@ -3,6 +3,7 @@ import type { DemographicQuestion } from "../types";
 import {
   findFirstUnansweredQuestionIndex,
   getOptionsPlusOptOut,
+  hasUnansweredQuestions,
   OPT_OUT_ANSWER,
   toggleMultiSelectAnswer,
 } from "./demographic-questions";
@@ -81,5 +82,27 @@ describe("findFirstUnansweredQuestionIndex", () => {
 
   it("returns the question count when everything is answered", () => {
     expect(findFirstUnansweredQuestionIndex(questions, ["1", "2", "3"])).toBe(3);
+  });
+});
+
+describe("hasUnansweredQuestions", () => {
+  const questions = [
+    customQuestion("1", ["Student"]),
+    customQuestion("2", ["Faculty"]),
+  ];
+
+  it("is true while any question is unanswered", () => {
+    const onboarding = { questions, answeredQuestionIds: ["1"] };
+    expect(hasUnansweredQuestions(onboarding)).toBe(true);
+  });
+
+  it("is false once every question is answered", () => {
+    const onboarding = { questions, answeredQuestionIds: ["2", "1"] };
+    expect(hasUnansweredQuestions(onboarding)).toBe(false);
+  });
+
+  it("is false for an event with no questions", () => {
+    const onboarding = { questions: [], answeredQuestionIds: [] };
+    expect(hasUnansweredQuestions(onboarding)).toBe(false);
   });
 });
