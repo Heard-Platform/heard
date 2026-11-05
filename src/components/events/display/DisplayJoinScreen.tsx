@@ -22,9 +22,10 @@ export function DisplayJoinScreen({
     <DisplayCenteredScreen>
       <h1 className="text-[5cqw] font-extrabold leading-[1.05] tracking-tight">Scan to join</h1>
       <DisplayQr joinUrl={joinUrl} className="w-[15cqw]" />
-      <p className="fullscreen-subheader-text tabular-nums">
-        {joinLabel} · {headcountText}
-      </p>
+      <div className="fullscreen-subheader-text">
+        <p>{joinLabel}</p>
+        <p className="tabular-nums">{headcountText}</p>
+      </div>
     </DisplayCenteredScreen>
   );
 }
