@@ -13,7 +13,6 @@ import type {
   UserPresence,
   VoteType,
   UserSession,
-  EventSummary,
   SwipeSixItem,
 } from "../types";
 import { RoomCard } from "./RoomCard";
@@ -23,21 +22,18 @@ import { useDebateSession } from "../hooks/useDebateSession";
 import { FeedbackCardsProvider } from "../contexts/FeedbackCardsContext";
 import { VoteResultSnackbarProvider } from "../contexts/VoteResultSnackbarContext";
 import { CreateRoomCard } from "./CreateRoomCard";
-import { EventCard } from "./events/EventCard";
 import { SwipeSixBanner } from "./swipe-six/SwipeSixBanner";
 import { api, safelyMakeApiCall } from "../utils/api";
 import { useRoomAlertsContext } from "../contexts/RoomAlertsContext";
 
 const COMMUNITY_TEASER_AFTER_ROOM_COUNT = 2;
 
-type EventCard = EventSummary & { cardType: "event" };
 type CreateCard = { id: string; cardType: "create" };
 type RoomCard = DebateRoom & { cardType: "room" };
 type CommunityTeaser = { id: string; cardType: "community_teaser" };
 type SwipeSixCard = { id: string; cardType: "swipe_six"; items: SwipeSixItem[] };
-type Card = SwipeSixCard | EventCard | RoomCard | CreateCard | CommunityTeaser;
+type Card = SwipeSixCard | RoomCard | CreateCard | CommunityTeaser;
 
-const isEventCard = (card: Card): card is EventCard => card.cardType === "event";
 const isCreateCard = (card: Card): card is CreateCard => card.cardType === "create";
 const isRoomCard = (card: Card): card is RoomCard => card.cardType === "room";
 const isCommunityTeaser = (card: Card): card is CommunityTeaser =>
@@ -46,7 +42,6 @@ const isSwipeSixCard = (card: Card): card is SwipeSixCard => card.cardType === "
 
 interface RoomScrollerProps {
   rooms: DebateRoom[];
-  events: EventSummary[];
   isDeveloper: boolean;
   loading: boolean;
   user: UserSession;
@@ -74,7 +69,6 @@ interface RoomScrollerProps {
     currentRoomIndex: number,
   ) => void;
   onShowAccountSetupModal: (featureText: string) => void;
-  onOpenEvent: (eventId: string) => void;
   onSubHeardChange: (subHeard: string | null) => void;
   onScrollTopChange?: (scrollTop: number) => void;
   onStartSwipeSix: () => void;
@@ -91,7 +85,6 @@ const RoomScrollerInner = forwardRef<
   (
     {
       rooms,
-      events,
       onCreateRoom,
       onOpenExplorer,
       onSubmitStatement,
@@ -108,7 +101,6 @@ const RoomScrollerInner = forwardRef<
       onUpdatePresence,
       swipeSixItems,
       onShowAccountSetupModal,
-      onOpenEvent,
       onSubHeardChange,
       onScrollTopChange,
       onStartSwipeSix,
@@ -129,16 +121,15 @@ const RoomScrollerInner = forwardRef<
     >({});
     const { getRoomStatements } = useDebateSession();
 
-    // Combine the swipe six banner and events (at top), rooms, and a "create new" card at the end
+    // Combine the swipe six banner (at top), rooms, and a "create new" card at the end
     const leadingCards: Card[] = swipeSixItems ? [{ id: "swipe-six", cardType: "swipe_six", items: swipeSixItems }] : [];
     const allCards: Card[] = [
       ...leadingCards,
-      ...events.map((e) => ({ ...e, cardType: "event" as const })),
       ...rooms.map((r) => ({ ...r, cardType: "room" as const })),
       { id: "create-new", cardType: "create" as const },
     ];
 
-    const communityTeaserInsertIndex = leadingCards.length + events.length + COMMUNITY_TEASER_AFTER_ROOM_COUNT;
+    const communityTeaserInsertIndex = leadingCards.length + COMMUNITY_TEASER_AFTER_ROOM_COUNT;
     allCards.splice(communityTeaserInsertIndex, 0, {
       id: "community-teaser",
       cardType: "community_teaser" as const,
@@ -184,7 +175,7 @@ const RoomScrollerInner = forwardRef<
         safelyMakeApiCall(() => api.markRoomSeen(card.id));
         api.trackEvent("post_viewed", card.id);
       }
-    }, [currentIndex, rooms, events]);
+    }, [currentIndex, rooms]);
 
     // Poll for updates on the currently visible room
     useEffect(() => {
@@ -331,7 +322,6 @@ const RoomScrollerInner = forwardRef<
 
           {allCards.map((card, index) => {
             const room = isRoomCard(card) ? card : null;
-            const event = isEventCard(card) ? card : null;
 
             return (
               <div
@@ -355,8 +345,6 @@ const RoomScrollerInner = forwardRef<
                       onSelectCommunity={onSubHeardChange}
                     />
                   </FeedCardMotion>
-                ) : event ? (
-                  <EventCard event={event} onOpen={onOpenEvent} />
                 ) : room ? (
                   <RoomCard
                     room={room}

@@ -14,6 +14,7 @@ import type { SubHeard } from "../../types";
 import { createSubHeardLink, createModInviteLink } from "../../utils/url";
 import { share } from "../../utils/share";
 import { CommunitySettingsPanel } from "./CommunitySettingsPanel";
+import { EventListContainer } from "./EventListContainer";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 
@@ -35,6 +36,7 @@ interface CommunityAdminDialogProps {
   ) => Promise<boolean>;
   onRefresh: () => Promise<void>;
   onStartEvent: () => void;
+  onOpenEvent: (eventId: string) => void;
   onClose: () => void;
 }
 
@@ -46,6 +48,7 @@ export function CommunityAdminDialog({
   onRenameSubHeard,
   onRefresh,
   onStartEvent,
+  onOpenEvent,
   onClose,
 }: CommunityAdminDialogProps) {
   const { createModInvite, clearSubHeardMods } = useDebateSession();
@@ -202,6 +205,10 @@ export function CommunityAdminDialog({
                 <CalendarPlus className="w-4 h-4 mr-2" />
                 Start an Event
               </Button>
+              <EventListContainer
+                communityName={community.name}
+                onOpenEvent={onOpenEvent}
+              />
             </div>
           )}
 
