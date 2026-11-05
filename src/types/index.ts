@@ -1144,3 +1144,13 @@ export interface NewsletterContent {
   subject: string;
   sections: [NewsletterSectionContent, NewsletterSectionContent, NewsletterSectionContent];
 }
+
+export interface SavedNewsletter extends NewsletterContent {
+  sentAt?: number;
+  updatedAt: number;
+}
+
+export interface SavedNewsletterList {
+  newsletters: SavedNewsletter[];
+  nextEditionNumber: number;
+}
