@@ -1,4 +1,10 @@
-import { CampaignFunnel, SubHeard } from "../types";
+import {
+  CampaignFunnel,
+  NewsletterContent,
+  SavedNewsletter,
+  SavedNewsletterList,
+  SubHeard,
+} from "../types";
 import { BaseApiClient } from "./api-client";
 
 interface MigrationStats {
@@ -373,6 +379,48 @@ class AdminApiClient extends BaseApiClient {
         method: "POST",
         headers: { "X-Admin-Key": adminKey },
         body: JSON.stringify({ testMode, testEmail, newsletterEdition }),
+      },
+    );
+  }
+
+  async listNewsletters(adminKey: string) {
+    return this.request<SavedNewsletterList>("/admin/newsletters", {
+      method: "GET",
+      headers: { "X-Admin-Key": adminKey },
+    });
+  }
+
+  async saveNewsletter(
+    adminKey: string,
+    newsletter: NewsletterContent,
+  ) {
+    return this.request<{ newsletter: SavedNewsletter }>(
+      `/admin/newsletters/${newsletter.editionNumber}`,
+      {
+        method: "PUT",
+        headers: { "X-Admin-Key": adminKey },
+        body: JSON.stringify({
+          subject: newsletter.subject,
+          sections: newsletter.sections,
+        }),
+      },
+    );
+  }
+
+  async uploadNewsletterImage(
+    adminKey: string,
+    editionNumber: number,
+    imageFile: File,
+  ) {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    formData.append("editionNumber", String(editionNumber));
+    return this.request<{ imageUrl: string }>(
+      "/admin/newsletter-image",
+      {
+        method: "POST",
+        headers: { "X-Admin-Key": adminKey },
+        body: formData,
       },
     );
   }
