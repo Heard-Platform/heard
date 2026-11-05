@@ -1,4 +1,10 @@
-import type { LiveEventView, LiveHeartbeat, Statement } from "../../src/types/index.ts";
+import type {
+  AttendeeOnboarding,
+  DemographicQuestion,
+  LiveEventView,
+  LiveHeartbeat,
+  Statement,
+} from "../../src/types/index.ts";
 import {
   type AttendeeScreen,
   EVENT_POLL_MS,
@@ -16,6 +22,8 @@ import {
   findCardsLeftToVote,
   pickCardThinkingMs,
   pickFromList,
+  pickOnboardingAnswers,
+  pickQuestionAnsweringMs,
   pickStatementWritingMs,
   pickVote,
   planAttendeePost,
@@ -29,6 +37,11 @@ export const SIMULATED_ENVIRONMENT_NAME = "event-simulation";
 const POST_LOAD_RETRY_MS = 3000;
 const JOIN_ATTEMPT_LIMIT = 5;
 const IDLE_CHECK_MS = 500;
+
+const NO_ONBOARDING: AttendeeOnboarding = {
+  questions: [],
+  answeredQuestionIds: [],
+};
 
 export interface SimulatedAttendeeDependencies {
   api: HeardApiClient;
@@ -51,6 +64,9 @@ export class SimulatedAttendee {
   private eventState: LiveEventView | null = null;
   private shownPost: ShownPost | null = null;
   private loadingRoomId: string | null = null;
+  private onboarding: AttendeeOnboarding | null = null;
+  private isLoadingOnboarding = false;
+  private readonly answeredQuestionIds = new Set<string>();
   private readonly votedStatementIds = new Set<string>();
   private readonly postPlansByRoomId = new Map<string, AttendeePostPlan>();
   private readonly roomIdsWithStatementWritten = new Set<string>();
@@ -100,6 +116,19 @@ export class SimulatedAttendee {
     return Date.now() < this.phoneLockedUntil;
   }
 
+  private canAnswerQuestions(): boolean {
+    const status = this.eventState?.status;
+    return status === "open" || status === "live";
+  }
+
+  private nextUnansweredQuestion(): DemographicQuestion | null {
+    const questions = this.onboarding?.questions ?? [];
+    const unansweredQuestion = questions.find(
+      (question) => !this.answeredQuestionIds.has(question.id),
+    );
+    return unansweredQuestion ?? null;
+  }
+
   private currentRoomId(): string | null {
     return this.eventState?.status === "live" ? this.eventState.currentRoomId : null;
   }
@@ -116,7 +145,7 @@ export class SimulatedAttendee {
   private currentScreen(): AttendeeScreen | null {
     if (!this.eventState) return null;
     return getAttendeeScreen(this.eventState, {
-      isAnsweringQuestions: false,
+      isAnsweringQuestions: this.nextUnansweredQuestion() !== null,
       hasCardsLeft: this.cardsLeftToVote().length > 0,
       isWritingStatement: this.isWritingStatement,
     });
@@ -167,6 +196,7 @@ export class SimulatedAttendee {
     this.dependencies.onEventStateSeen(next);
 
     const isReload = previous !== null && previous.reloadNonce !== next.reloadNonce;
+    if (this.canAnswerQuestions()) this.loadOnboarding();
     if (isReload) this.reloadPage(stopSignal);
     else if (next.status === "live" && next.currentRoomId && next.currentRoomId !== this.shownPost?.roomId) {
       this.loadPost(next.currentRoomId, stopSignal);
@@ -178,8 +208,22 @@ export class SimulatedAttendee {
     this.lastSentHeartbeat = null;
     this.api.getUser().catch(() => {});
     this.api.loadFeed().catch(() => {});
+    this.onboarding = null;
+    if (this.canAnswerQuestions()) this.loadOnboarding();
     const roomId = this.currentRoomId();
     if (roomId) this.loadPost(roomId, stopSignal);
+  }
+
+  private async loadOnboarding() {
+    if (this.onboarding || this.isLoadingOnboarding) return;
+    this.isLoadingOnboarding = true;
+    this.onboarding = await this.api
+      .getAttendeeOnboarding(this.dependencies.eventId)
+      .catch(() => NO_ONBOARDING);
+    this.onboarding.answeredQuestionIds.forEach((questionId) =>
+      this.answeredQuestionIds.add(questionId)
+    );
+    this.isLoadingOnboarding = false;
   }
 
   private async loadPost(roomId: string, stopSignal: AbortSignal) {
@@ -211,10 +255,33 @@ export class SimulatedAttendee {
     while (!stopSignal.aborted && !this.hasEventEnded()) {
       const post = this.currentPost();
       if (this.isPhoneLocked()) await sleep(IDLE_CHECK_MS, stopSignal);
+      else if (this.currentScreen() === "onboarding") {
+        await this.answerNextQuestion(stopSignal);
+      }
       else if (post && this.isTimeToLockPhone(post)) this.lockPhone(post);
       else if (post && this.currentScreen() === "swiping") await this.voteOnNextCard(post, stopSignal);
       else if (post && this.currentScreen() === "waiting") await this.waitForMoreCards(post, stopSignal);
       else await sleep(IDLE_CHECK_MS, stopSignal);
+    }
+  }
+
+  private async answerNextQuestion(stopSignal: AbortSignal) {
+    const question = this.nextUnansweredQuestion();
+    if (!question) return;
+    const { random, eventId } = this.dependencies;
+    await sleep(pickQuestionAnsweringMs(random), stopSignal);
+    if (stopSignal.aborted) return;
+
+    const answers = pickOnboardingAnswers(random, question);
+    this.answeredQuestionIds.add(question.id);
+    try {
+      await this.api.saveEventDemographicAnswer(
+        eventId,
+        question.id,
+        answers,
+      );
+    } catch (error) {
+      if (!(error instanceof HeardApiError)) throw error;
     }
   }
 

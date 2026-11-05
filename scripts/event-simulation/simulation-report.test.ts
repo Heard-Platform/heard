@@ -26,12 +26,13 @@ Deno.test("formatProgressLine shows the last window's load", () => {
       joinedCount: 60,
       attendeeCount: 70,
       peopleHere: 58,
+      answeringQuestions: 12,
       recentRecords: [
         { routeName: "GET /event/:id/live", status: 200, durationMs: 100, finishedAt: 0 },
         { routeName: "GET /event/:id/live", status: 500, durationMs: 300, finishedAt: 0 },
       ],
     }),
-    "1:15  |  joined 60/70  |  here 58  |  0.2 req/s  |  p95 300ms  |  errors 1",
+    "1:15  |  joined 60/70  |  here 58  |  answering 12  |  0.2 req/s  |  p95 300ms  |  errors 1",
   );
 });
 

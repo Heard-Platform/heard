@@ -1,6 +1,9 @@
 import type { HeardApiClient } from "../shared/heard-api-client.ts";
 import { addPostsToEvent } from "../shared/event-post-creation.ts";
-import { SIMULATION_POSTS } from "./simulation-content.ts";
+import {
+  SIMULATION_ONBOARDING_QUESTIONS,
+  SIMULATION_POSTS,
+} from "./simulation-content.ts";
 
 export const APP_URL = "https://heard.vote";
 export const SIMULATION_COMMUNITY_NAME = "test";
@@ -31,5 +34,9 @@ export async function createSimulationEvent(moderatorApi: HeardApiClient, now: D
   });
   const eventId = String(event.id);
   await addPostsToEvent(moderatorApi, { eventId, communityName: SIMULATION_COMMUNITY_NAME }, SIMULATION_POSTS);
+  await moderatorApi.updateEventOnboardingQuestions(
+    eventId,
+    SIMULATION_ONBOARDING_QUESTIONS,
+  );
   return eventId;
 }

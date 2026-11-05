@@ -1,14 +1,22 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import type { Statement } from "../../src/types/index.ts";
+import type {
+  DemographicQuestion,
+  Statement,
+} from "../../src/types/index.ts";
+import { OPT_OUT_ANSWER } from "../../src/utils/demographic-questions.ts";
 import {
   AGREE_SHARE,
   DISAGREE_SHARE,
   findCardsLeftToVote,
+  OPT_OUT_SHARE,
   pickCardThinkingMs,
   pickFromList,
   pickJoinDelayMs,
+  pickOnboardingAnswers,
+  pickQuestionAnsweringMs,
   pickVote,
   planAttendeePost,
+  SKIP_SHARE,
 } from "./attendee-behavior.ts";
 
 const alwaysReturn = (value: number) => () => value;
@@ -76,4 +84,66 @@ Deno.test("findCardsLeftToVote skips voted, own and hidden statements", () => {
     findCardsLeftToVote(statements, "me", new Set(["voted-here"])).map((card) => card.id),
     ["open"],
   );
+});
+
+const onboardingQuestion = (
+  overrides: Partial<DemographicQuestion>,
+): DemographicQuestion => ({
+  id: "question",
+  roomId: null,
+  eventId: 1,
+  type: "custom",
+  text: "Are you a...",
+  options: ["Student", "Faculty", "Staff"],
+  multiSelect: false,
+  position: 0,
+  ...overrides,
+});
+
+const singleChoiceQuestion = onboardingQuestion({});
+const pickAnyQuestion = onboardingQuestion({ multiSelect: true });
+
+Deno.test("pickOnboardingAnswers - single choice picks one option", () => {
+  const answers = pickOnboardingAnswers(
+    returnInOrder([OPT_OUT_SHARE, 0.5]),
+    singleChoiceQuestion,
+  );
+  assertEquals(answers, ["Faculty"]);
+});
+
+Deno.test("pickOnboardingAnswers - some people prefer not to say", () => {
+  const answers = pickOnboardingAnswers(
+    alwaysReturn(0),
+    singleChoiceQuestion,
+  );
+  assertEquals(answers, [OPT_OUT_ANSWER]);
+});
+
+Deno.test("pickOnboardingAnswers - some people skip a pick-any question", () => {
+  const answers = pickOnboardingAnswers(
+    alwaysReturn(0),
+    pickAnyQuestion,
+  );
+  assertEquals(answers, []);
+});
+
+Deno.test("pickOnboardingAnswers - pick any can opt out on its own", () => {
+  const answers = pickOnboardingAnswers(
+    alwaysReturn(SKIP_SHARE),
+    pickAnyQuestion,
+  );
+  assertEquals(answers, [OPT_OUT_ANSWER]);
+});
+
+Deno.test("pickOnboardingAnswers - pick any picks up to two different options", () => {
+  const answers = pickOnboardingAnswers(
+    returnInOrder([0.9, 0.9, 0, 0]),
+    pickAnyQuestion,
+  );
+  assertEquals(answers, ["Student", "Faculty"]);
+});
+
+Deno.test("pickQuestionAnsweringMs - takes two to eight seconds", () => {
+  assertEquals(pickQuestionAnsweringMs(alwaysReturn(0)), 2000);
+  assertEquals(pickQuestionAnsweringMs(alwaysReturn(1)), 8000);
 });
