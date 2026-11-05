@@ -238,6 +238,22 @@ export interface LiveEventView extends LiveEventState {
   finishedCurrentPost: number;
 }
 
+export interface EventReportOpening {
+  eventName: string;
+  eventSubtitle: string | null;
+  peopleCount: number;
+  voteCount: number;
+  postCount: number;
+  attendeeStatementCount: number;
+  averagePostParticipationPercent: number;
+  sessionStartedAt: number;
+  sessionEndedAt: number;
+}
+
+export interface EventReport {
+  opening: EventReportOpening;
+}
+
 export type ModeratorAction = "open" | "start" | "next" | "back" | "pause" | "resume" | "end";
 
 export type LiveScreen =

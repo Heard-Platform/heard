@@ -80,6 +80,7 @@ import { EventOnboardingStory } from "../stories/EventOnboarding.story";
 import { OnboardingQuestionsPanelStory } from "../stories/OnboardingQuestionsPanel.story";
 import { EventDisplayStory } from "../stories/EventDisplay.story";
 import { EventSupportViewStory } from "../stories/EventSupportView.story";
+import { EventReportStory } from "../stories/EventReport.story";
 
 interface ComponentShowcaseProps {
   onExit: () => void;
@@ -214,6 +215,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="event-onboarding">Event Onboarding</TabsTrigger>
                 <TabsTrigger value="event-display">Event Display</TabsTrigger>
                 <TabsTrigger value="event-support-view">Event Support View</TabsTrigger>
+                <TabsTrigger value="event-report">Event Report</TabsTrigger>
               </TabsList>
 
               <TabsContent value="results-cards">
@@ -449,6 +451,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="event-support-view">
                 <EventSupportViewStory />
+              </TabsContent>
+              <TabsContent value="event-report">
+                <EventReportStory />
               </TabsContent>
             </Tabs>
           </div>

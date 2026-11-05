@@ -1,0 +1,15 @@
+.report-subtext {
+  color: var(--color-stone-300);
+}
+
+.report-stat-border {
+  border-color: var(--color-stone-700);
+}
+
+.report-highlight-text {
+  color: var(--color-amber-300);
+}
+
+.report-response-text {
+  color: var(--color-purple-300);
+}
