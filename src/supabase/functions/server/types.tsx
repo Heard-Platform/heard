@@ -293,6 +293,7 @@ export type LiveEventState = {
 export type LiveEventView = LiveEventState & {
   currentRoomId: string | null;
   peopleHere: number;
+  answeringQuestions: number;
   finishedCurrentPost: number;
 };
 

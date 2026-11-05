@@ -1,6 +1,7 @@
 import _ from "lodash";
 import type { LiveEventView, Statement } from "../types";
 import { getAllAgrees } from "./statement";
+import { pluralizePerson } from "./text";
 
 export type DisplayView = "agree-only" | "agree-vs-disagree" | "agree-split";
 
@@ -118,4 +119,15 @@ export function getDisplayScreen(
   )
     return "join";
   return loadedPostRoomId === eventState.currentRoomId ? "board" : "loading";
+}
+
+export function formatJoinHeadcount(
+  peopleHere: number,
+  answeringQuestions: number,
+): string {
+  const readyCount = peopleHere - answeringQuestions;
+  const personWord = pluralizePerson(readyCount);
+  const readyText = `${readyCount} ${personWord} ready`;
+  if (answeringQuestions === 0) return readyText;
+  return `${readyText} · ${answeringQuestions} answering questions`;
 }

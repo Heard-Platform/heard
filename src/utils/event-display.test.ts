@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Statement } from "../types";
 import {
   findMostSplitStatementId,
+  formatJoinHeadcount,
   getDisplayScreen,
   getLatestAttendeeStatement,
   getNewStatementStripMode,
@@ -218,5 +219,24 @@ describe("getDisplayScreen", () => {
 
   it("shows the end card after End", () => {
     expect(getDisplayScreen({ status: "ended", currentIndex: 9, currentRoomId: "post-10" }, "post-10")).toBe("end");
+  });
+});
+
+describe("formatJoinHeadcount", () => {
+  it("shows only people ready once nobody is answering questions", () => {
+    expect(formatJoinHeadcount(23, 0)).toBe("23 people ready");
+    expect(formatJoinHeadcount(1, 0)).toBe("1 person ready");
+  });
+
+  it("adds who's answering while anyone is answering", () => {
+    expect(formatJoinHeadcount(23, 9)).toBe(
+      "14 people ready · 9 answering questions",
+    );
+  });
+
+  it("shows nobody ready while everyone is answering", () => {
+    expect(formatJoinHeadcount(4, 4)).toBe(
+      "0 people ready · 4 answering questions",
+    );
   });
 });

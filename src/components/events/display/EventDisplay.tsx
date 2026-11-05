@@ -59,7 +59,12 @@ export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onA
       return (
         <>
           {areDoorsOpen ? (
-            <DisplayJoinScreen peopleHere={eventState.peopleHere} joinUrl={joinUrl} joinLabel={joinLabel} />
+            <DisplayJoinScreen
+              peopleHere={eventState.peopleHere}
+              answeringQuestions={eventState.answeringQuestions}
+              joinUrl={joinUrl}
+              joinLabel={joinLabel}
+            />
           ) : (
             <DisplayDoorsClosedScreen />
           )}
