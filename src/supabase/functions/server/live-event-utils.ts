@@ -26,6 +26,7 @@ export const PRESENCE_WINDOW_MS = 5 * 60_000;
 
 export interface EventHeadcount {
   peopleHere: number;
+  answeringQuestions: number;
   finishedCurrentPost: number;
 }
 
@@ -72,6 +73,9 @@ export const countEventHeadcount = (
   const here = presences.filter((presence) => now - presence.updatedAt <= PRESENCE_WINDOW_MS);
   return {
     peopleHere: here.length,
+    answeringQuestions: here.filter(
+      (presence) => presence.screen === "onboarding",
+    ).length,
     finishedCurrentPost: here.filter(
       (presence) => roomId !== null && presence.screen === "waiting" && presence.shownRoomId === roomId,
     ).length,

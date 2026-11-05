@@ -234,6 +234,7 @@ export interface LiveEventState {
 export interface LiveEventView extends LiveEventState {
   currentRoomId: string | null;
   peopleHere: number;
+  answeringQuestions: number;
   finishedCurrentPost: number;
 }
 

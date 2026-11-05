@@ -32,7 +32,11 @@ const state = (overrides: Partial<LiveEventState> = {}): LiveEventState => ({
   ...overrides,
 });
 
-const NO_ONE = { peopleHere: 0, finishedCurrentPost: 0 };
+const NO_ONE = {
+  peopleHere: 0,
+  answeringQuestions: 0,
+  finishedCurrentPost: 0,
+};
 
 const presence = (overrides: Partial<EventPresence>): EventPresence => ({
   userId: "u1",
@@ -275,8 +279,19 @@ Deno.test("countEventTotals - zero people means zero stayed", () => {
 });
 
 Deno.test("toLiveEventView - carries the headcount", () => {
-  const view = toLiveEventView(state(), { peopleHere: 12, finishedCurrentPost: 5 });
-  assertEquals([view.peopleHere, view.finishedCurrentPost], [12, 5]);
+  const view = toLiveEventView(state(), {
+    peopleHere: 12,
+    answeringQuestions: 3,
+    finishedCurrentPost: 5,
+  });
+  assertEquals(
+    [
+      view.peopleHere,
+      view.answeringQuestions,
+      view.finishedCurrentPost,
+    ],
+    [12, 3, 5],
+  );
 });
 
 Deno.test("countEventHeadcount - counts phones heard from in the last 5 minutes", () => {
@@ -297,12 +312,36 @@ Deno.test("countEventHeadcount - finished means waiting on the current post", ()
     presence({ userId: "swiping", screen: "swiping", shownRoomId: "b" }),
     presence({ userId: "gone", screen: "waiting", shownRoomId: "b", updatedAt: NOW - PRESENCE_WINDOW_MS - 1 }),
   ];
-  assertEquals(countEventHeadcount(presences, live, NOW), { peopleHere: 3, finishedCurrentPost: 1 });
+  assertEquals(countEventHeadcount(presences, live, NOW), {
+    peopleHere: 3,
+    answeringQuestions: 0,
+    finishedCurrentPost: 1,
+  });
 });
 
 Deno.test("countEventHeadcount - nobody has finished before the session starts", () => {
   const presences = [presence({ screen: "waiting", shownRoomId: null })];
-  assertEquals(countEventHeadcount(presences, state(), NOW), { peopleHere: 1, finishedCurrentPost: 0 });
+  assertEquals(countEventHeadcount(presences, state(), NOW), {
+    peopleHere: 1,
+    answeringQuestions: 0,
+    finishedCurrentPost: 0,
+  });
+});
+
+Deno.test("countEventHeadcount - counts phones still answering the questions", () => {
+  const open = state({ roomOrder: ["a"], status: "open" });
+  const presences = [
+    presence({ userId: "answering", screen: "onboarding" }),
+    presence({ userId: "ready", screen: "lobby" }),
+    presence({
+      userId: "gone",
+      screen: "onboarding",
+      updatedAt: NOW - PRESENCE_WINDOW_MS - 1,
+    }),
+  ];
+  const headcount = countEventHeadcount(presences, open, NOW);
+  assertEquals(headcount.peopleHere, 2);
+  assertEquals(headcount.answeringQuestions, 1);
 });
 
 Deno.test("isLiveScreen - only the five phone screens", () => {
