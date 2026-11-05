@@ -4,7 +4,6 @@ import type {
   Statement,
   VoteType,
   UserPresence, SubHeard,
-  EventSummary,
   Event,
   SwipeSixItem,
 } from "../types";
@@ -129,7 +128,6 @@ export function LobbyScreen({
   const [presences, setPresences] = useState<UserPresence[]>(
     [],
   );
-  const [events, setEvents] = useState<EventSummary[]>([]);
   const [swipeSixDoneToday, setSwipeSixDoneToday] = useState<boolean | null>(null);
   const [swipeSixItems, setSwipeSixItems] = useState<SwipeSixItem[] | null>(null);
   const [isSwipeSixOpen, setIsSwipeSixOpen] = useState(false);
@@ -214,24 +212,6 @@ export function LobbyScreen({
       );
     };
   }, []);
-
-  // Fetch events for the current community (feature-flagged)
-  useEffect(() => {
-    if (
-      !isFeatureEnabled(FeatureFlags.EVENTS) &&
-      !isFeatureEnabled(FeatureFlags.LIVE_EVENTS)
-    )
-      return;
-    const fetchEvents = async () => {
-      const response = await safelyMakeApiCall(() =>
-        api.getEvents(currentSubHeard),
-      );
-      if (response?.data) {
-        setEvents(response.data.events);
-      }
-    };
-    fetchEvents();
-  }, [currentSubHeard]);
 
   // Poll for user presences
   useEffect(() => {
@@ -479,7 +459,6 @@ export function LobbyScreen({
             <RoomScroller
               ref={roomScrollerRef}
               rooms={filteredRooms}
-              events={events}
               isDeveloper={user.isDeveloper || false}
               loading={roomsLoading}
               user={user}
@@ -495,7 +474,6 @@ export function LobbyScreen({
               onUpdatePresence={handleUpdatePresence}
               onShowAccountSetupModal={handleShowAccountSetupModal}
               onOpenExplorer={() => setExplorerOpen(true)}
-              onOpenEvent={onOpenEvent}
               onSubHeardChange={onSubHeardChange}
               onScrollTopChange={handleFeedScroll}
               swipeSixItems={swipeSixBannerItems}

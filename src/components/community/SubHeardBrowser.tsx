@@ -99,6 +99,12 @@ export function SubHeardBrowser({
     setEventCommunity(communityName);
   };
 
+  const handleOpenCommunityEvent = (eventId: string) => {
+    setManagingSubHeard(null);
+    setSheetOpen(false);
+    onOpenEvent(eventId);
+  };
+
   const handleGoToEvent = (eventId: string) => {
     setEventCommunity(null);
     onOpenEvent(eventId);
@@ -325,6 +331,7 @@ export function SubHeardBrowser({
           onRenameSubHeard={handleRenameSubHeard}
           onRefresh={handleRefreshManagingSubHeard}
           onStartEvent={() => handleStartEvent(managingSubHeard.name)}
+          onOpenEvent={handleOpenCommunityEvent}
           userId={user.id}
         />
       )}

@@ -49,6 +49,9 @@ export function CommunityAdminDialogStory() {
             onRenameSubHeard={handleRenameSubHeard}
             onRefresh={async () => {}}
             onStartEvent={() => console.log("[Story] start event")}
+            onOpenEvent={(eventId) =>
+              console.log("[Story] open event", eventId)
+            }
             onClose={() => setIsOpen(false)}
           />
         </>

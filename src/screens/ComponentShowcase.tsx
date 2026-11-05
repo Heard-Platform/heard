@@ -39,6 +39,7 @@ import { AdvancedFeaturesStory } from "../stories/AdvancedFeatures.story";
 import SidePanelMenuStory from "../stories/SidePanelMenu.story";
 import RoomAlertsListStory from "../stories/RoomAlertsList.story";
 import { CommunityAdminDialogStory } from "../stories/CommunityAdminDialog.story";
+import { EventListStory } from "../stories/EventList.story";
 import { FeedbackSheetStory } from "../stories/FeedbackSheet.story";
 import { CommunityExplorerDialogStory } from "../stories/CommunityExplorerDialog.story";
 import { OrgsLandingStory } from "../stories/OrgsLanding.story";
@@ -51,7 +52,6 @@ import { CreatePostFlowStory } from "../stories/CreatePostFlow.story";
 import { HotTakesListStory } from "../stories/HotTakesList.story";
 import { Story } from "../stories/EventPage.story";
 import { CreateEventSheetStory } from "../stories/CreateEventSheet.story";
-import { EventCardStory } from "../stories/EventCard.story";
 import { HideAndMergeModalStory } from "../stories/HideAndMergeModal.story";
 import { VoteMatrixStory } from "../stories/VoteMatrix.story";
 import { StatementVotesTableStory } from "../stories/StatementVotesTable.story";
@@ -175,6 +175,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="side-panel-menu">Side Panel Menu</TabsTrigger>
                 <TabsTrigger value="room-alerts-list">Room Alerts List</TabsTrigger>
                 <TabsTrigger value="community-admin-dialog">Community Admin Dialog</TabsTrigger>
+                <TabsTrigger value="event-list">Event List</TabsTrigger>
                 <TabsTrigger value="feed-customization-modal">Feed Customization Modal</TabsTrigger>
                 <TabsTrigger value="feedback-sheet">Feedback Sheet</TabsTrigger>
                 <TabsTrigger value="community-explorer-dialog">Community Explorer Dialog</TabsTrigger>
@@ -184,7 +185,6 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="hot-takes-list">Hot Takes List</TabsTrigger>
                 <TabsTrigger value="create-event-sheet">Create Event Sheet</TabsTrigger>
                 <TabsTrigger value="event-room-listing">Event Room Listing</TabsTrigger>
-                <TabsTrigger value="event-card">Event Card</TabsTrigger>
                 <TabsTrigger value="hide-and-merge-modal">Hide & Merge Modal</TabsTrigger>
                 <TabsTrigger value="vote-matrix">Vote Matrix</TabsTrigger>
                 <TabsTrigger value="statement-votes-table">Statement Votes Table</TabsTrigger>
@@ -339,6 +339,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsContent value="community-admin-dialog">
                 <CommunityAdminDialogStory />
               </TabsContent>
+              <TabsContent value="event-list">
+                <EventListStory />
+              </TabsContent>
               <TabsContent value="feedback-sheet">
                 <FeedbackSheetStory />
               </TabsContent>
@@ -362,9 +365,6 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="event-room-listing">
                 <Story />
-              </TabsContent>
-              <TabsContent value="event-card">
-                <EventCardStory />
               </TabsContent>
               <TabsContent value="hide-and-merge-modal">
                 <HideAndMergeModalStory />
