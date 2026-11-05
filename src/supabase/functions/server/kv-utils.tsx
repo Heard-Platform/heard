@@ -648,7 +648,9 @@ export const getNewsletter = async (editionNumber: number) =>
 export const getAllNewsletters = async () =>
   getByPrefixParsed<Newsletter>(NEWSLETTER_KEY_PREFIX);
 
-export const saveNewsletterRecord = async (newsletter: Newsletter): Promise<void> => {
+export const saveNewsletterRecord = async (
+  newsletter: Newsletter,
+): Promise<void> => {
   await kv.set(newsletterKeyFn(newsletter.editionNumber), newsletter);
 };
 

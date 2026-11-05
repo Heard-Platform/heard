@@ -13,7 +13,8 @@ import { getNewsletterBuilderEmail } from "./newsletter-builder-utils.ts";
 export const getNewsletterByEdition = async (
   edition: number,
 ) => {
-  const newsletterBuilderEmail = await getNewsletterBuilderEmail(edition);
+  const newsletterBuilderEmail =
+    await getNewsletterBuilderEmail(edition);
   if (newsletterBuilderEmail) return newsletterBuilderEmail;
 
   let subject: string;
