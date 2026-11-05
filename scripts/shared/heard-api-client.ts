@@ -1,6 +1,9 @@
 import type {
+  AttendeeOnboarding,
   DebateRoom,
+  DemographicQuestion,
   Event,
+  EventOnboardingQuestionInput,
   EventSummary,
   LiveEventView,
   LiveHeartbeat,
@@ -37,7 +40,7 @@ export class HeardApiError extends Error {
   }
 }
 
-type HttpMethod = "GET" | "POST";
+type HttpMethod = "GET" | "POST" | "PUT";
 
 export class HeardApiClient {
   constructor(
@@ -78,6 +81,39 @@ export class HeardApiClient {
       ? `?${new URLSearchParams({ screen: heartbeat.screen, shownRoomId: heartbeat.shownRoomId ?? "" })}`
       : "";
     return this.send<{ live: LiveEventView }>("GET", "GET /event/:id/live", `/event/${eventId}/live${query}`);
+  }
+
+  getAttendeeOnboarding(eventId: string) {
+    return this.send<AttendeeOnboarding>(
+      "GET",
+      "GET /event/:id/onboarding",
+      `/event/${eventId}/onboarding`,
+    );
+  }
+
+  saveEventDemographicAnswer(
+    eventId: string,
+    questionId: string,
+    answers: string[],
+  ) {
+    return this.send<undefined>(
+      "POST",
+      "POST /event/:id/demographic-answers",
+      `/event/${eventId}/demographic-answers`,
+      { questionId, answers },
+    );
+  }
+
+  updateEventOnboardingQuestions(
+    eventId: string,
+    questions: EventOnboardingQuestionInput[],
+  ) {
+    return this.send<{ questions: DemographicQuestion[] }>(
+      "PUT",
+      "PUT /event/:id/onboarding/questions",
+      `/event/${eventId}/onboarding/questions`,
+      { questions },
+    );
   }
 
   getPost(roomId: string) {

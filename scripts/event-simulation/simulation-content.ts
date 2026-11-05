@@ -1,3 +1,4 @@
+import type { EventOnboardingQuestionInput } from "../../src/types/index.ts";
 import type { EventPostDraft } from "../shared/event-post-creation.ts";
 
 export const SIMULATION_POSTS: EventPostDraft[] = [
@@ -53,3 +54,53 @@ export const SIMULATED_ATTENDEE_STATEMENTS = [
   "I changed my mind on this in the last year.",
   "The loudest voices aren't the majority here.",
 ];
+
+export const SIMULATION_ONBOARDING_QUESTIONS = [
+  {
+    text: "Are you a...",
+    options: [
+      "Student",
+      "Faculty",
+      "Staff",
+      "Community member",
+      "Other",
+    ],
+    multiSelect: false,
+  },
+  {
+    text: "How old are you?",
+    options: ["Under 25", "25 to 39", "40 to 59", "60 or older"],
+    multiSelect: false,
+  },
+  {
+    text: "How long have you lived in the area?",
+    options: ["Under a year", "1 to 5 years", "More than 5 years"],
+    multiSelect: false,
+  },
+  {
+    text: "Political orientation",
+    options: [
+      "Conservative",
+      "Moderate",
+      "Liberal",
+      "Progressive",
+      "Independent",
+      "Other",
+    ],
+    multiSelect: false,
+  },
+  {
+    text: "How do you identify? Check all that apply.",
+    options: [
+      "Black",
+      "White",
+      "Latino",
+      "Asian",
+      "Middle Eastern",
+      "Indigenous",
+      "Immigrant",
+      "Other",
+    ],
+    multiSelect: true,
+  },
+] satisfies EventOnboardingQuestionInput[];
