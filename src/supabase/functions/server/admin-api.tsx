@@ -103,34 +103,71 @@ app.get("/make-server-f1a393b4/admin/newsletter-eligible-count", async (c) => {
 
 app.get(
   "/make-server-f1a393b4/admin/newsletters",
-  defineRoute({}, () => listNewsletters(), "Failed to fetch newsletters"),
+  defineRoute(
+    {},
+    () => listNewsletters(),
+    "Failed to fetch newsletters",
+  ),
 );
 
 app.put(
   "/make-server-f1a393b4/admin/newsletters/:edition",
   defineRoute(
     {
-      edition: { required: true, type: "string", validate: (edition) => !isNaN(parseInt(edition)) },
-      subject: { required: true, type: "string" },
+      edition: {
+        required: true,
+        type: "string",
+        validate: (edition) => !isNaN(parseInt(edition)),
+      },
+      subject: {
+        required: true,
+        type: "string",
+        validate: (subject) => subject.trim() !== "",
+        errorMessage: "A newsletter needs a subject",
+      },
       sections: { required: true, type: "array" },
     },
-    async ({ edition, subject, sections }: { edition: string; subject: string; sections: unknown[] }) =>
-      saveNewsletter({ editionNumber: parseInt(edition), subject, sections }),
+    async ({
+      edition,
+      subject,
+      sections,
+    }: {
+      edition: string;
+      subject: string;
+      sections: unknown[];
+    }) =>
+      saveNewsletter({
+        editionNumber: parseInt(edition),
+        subject,
+        sections,
+      }),
     "Failed to save newsletter",
   ),
 );
 
-app.post("/make-server-f1a393b4/admin/newsletter-image", async (c) => {
-  try {
-    return c.json({ success: true, ...(await uploadNewsletterImage(await c.req.formData())) });
-  } catch (error) {
-    console.error("Error uploading newsletter image:", error);
-    return c.json(
-      { success: false, error: error instanceof Error ? error.message : "Failed to upload image" },
-      error instanceof RouteError ? error.status : 500,
-    );
-  }
-});
+app.post(
+  "/make-server-f1a393b4/admin/newsletter-image",
+  async (c) => {
+    try {
+      return c.json({
+        success: true,
+        ...(await uploadNewsletterImage(await c.req.formData())),
+      });
+    } catch (error) {
+      console.error("Error uploading newsletter image:", error);
+      return c.json(
+        {
+          success: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to upload image",
+        },
+        error instanceof RouteError ? error.status : 500,
+      );
+    }
+  },
+);
 
 // Get all subheards (including private ones)
 app.get("/make-server-f1a393b4/admin/subheards", async (c) => {

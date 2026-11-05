@@ -1,7 +1,15 @@
 import { createClientFromEnv } from "./db-utils.ts";
-import { NewsletterParams, getParameterizedNewsletter } from "./email-newsletter-4.ts";
-import { getAllNewsletters, getNewsletter, saveNewsletterRecord } from "./kv-utils.tsx";
-import { convertNewsletterMarkdownToHtml, escapeHtml } from "./newsletter-markdown-utils.ts";
+import {
+  NewsletterParams,
+  getParameterizedNewsletter,
+} from "./email-newsletter-4.ts";
+import {
+  getAllNewsletters,
+  getNewsletter,
+  saveNewsletterRecord,
+} from "./kv-utils.tsx";
+import { convertNewsletterMarkdownToHtml } from "./newsletter-markdown-utils.ts";
+import { escapeHtml } from "./utils.tsx";
 import { RouteError } from "./route-error.ts";
 
 export const FIRST_NEWSLETTER_BUILDER_EDITION = 25;
@@ -15,7 +23,11 @@ export interface NewsletterSection {
   imageLink: string;
 }
 
-export type NewsletterSections = [NewsletterSection, NewsletterSection, NewsletterSection];
+export type NewsletterSections = [
+  NewsletterSection,
+  NewsletterSection,
+  NewsletterSection,
+];
 
 export interface Newsletter {
   editionNumber: number;
@@ -33,13 +45,22 @@ export interface SaveNewsletterRequest {
 
 type RenderedNewsletterSection = NewsletterParams["section1"];
 
-const isNewsletterSection = (section: unknown): section is NewsletterSection => {
+const isNewsletterSection = (
+  section: unknown,
+): section is NewsletterSection => {
   if (typeof section !== "object" || section === null) return false;
-  const { title, text, imageUrl, imageLink } = section as Record<string, unknown>;
-  return [title, text, imageUrl, imageLink].every((field) => typeof field === "string");
+  const { title, text, imageUrl, imageLink } = section as Record<
+    string,
+    unknown
+  >;
+  return [title, text, imageUrl, imageLink].every(
+    (field) => typeof field === "string",
+  );
 };
 
-const toNewsletterSections = (sections: unknown[]): NewsletterSections => {
+const toNewsletterSections = (
+  sections: unknown[],
+): NewsletterSections => {
   const [firstSection, secondSection, thirdSection] = sections;
   if (
     sections.length !== NEWSLETTER_SECTION_COUNT ||
@@ -56,34 +77,47 @@ const toNewsletterSections = (sections: unknown[]): NewsletterSections => {
 };
 
 export const isNewsletterBuilderEdition = (editionNumber: number) =>
-  Number.isInteger(editionNumber) && editionNumber >= FIRST_NEWSLETTER_BUILDER_EDITION;
+  Number.isInteger(editionNumber) &&
+  editionNumber >= FIRST_NEWSLETTER_BUILDER_EDITION;
 
-export const getNextNewsletterEditionNumber = (newsletters: Newsletter[]) =>
+export const getNextNewsletterEditionNumber = (
+  newsletters: Newsletter[],
+) =>
   newsletters.reduce(
-    (highestEditionNumber, newsletter) => Math.max(highestEditionNumber, newsletter.editionNumber + 1),
+    (highestEditionNumber, newsletter) =>
+      Math.max(highestEditionNumber, newsletter.editionNumber + 1),
     FIRST_NEWSLETTER_BUILDER_EDITION,
   );
 
 export const listNewsletters = async () => {
   const newsletters = await getAllNewsletters();
   return {
-    newsletters: newsletters.sort((first, second) => second.editionNumber - first.editionNumber),
+    newsletters: newsletters.sort(
+      (first, second) => second.editionNumber - first.editionNumber,
+    ),
     nextEditionNumber: getNextNewsletterEditionNumber(newsletters),
   };
 };
 
-export const saveNewsletter = async ({ editionNumber, subject, sections }: SaveNewsletterRequest) => {
+export const saveNewsletter = async ({
+  editionNumber,
+  subject,
+  sections,
+}: SaveNewsletterRequest) => {
   if (!isNewsletterBuilderEdition(editionNumber)) {
-    throw new RouteError(`Newsletter builder editions start at ${FIRST_NEWSLETTER_BUILDER_EDITION}`, 400);
-  }
-  if (!subject.trim()) {
-    throw new RouteError("A newsletter needs a subject", 400);
+    throw new RouteError(
+      `Newsletter builder editions start at ${FIRST_NEWSLETTER_BUILDER_EDITION}`,
+      400,
+    );
   }
   const newsletterSections = toNewsletterSections(sections);
 
   const existingNewsletter = await getNewsletter(editionNumber);
   if (existingNewsletter?.sentAt) {
-    throw new RouteError(`Newsletter #${editionNumber} was already sent and can't be edited`, 409);
+    throw new RouteError(
+      `Newsletter #${editionNumber} was already sent and can't be edited`,
+      409,
+    );
   }
 
   const newsletter: Newsletter = {
@@ -104,9 +138,16 @@ export const markNewsletterSent = async (editionNumber: number) => {
 };
 
 const isBlankSection = (section: NewsletterSection) =>
-  [section.title, section.text, section.imageUrl, section.imageLink].every((field) => !field.trim());
+  [
+    section.title,
+    section.text,
+    section.imageUrl,
+    section.imageLink,
+  ].every((field) => !field.trim());
 
-const toRenderedNewsletterSection = (section: NewsletterSection): RenderedNewsletterSection => ({
+const toRenderedNewsletterSection = (
+  section: NewsletterSection,
+): RenderedNewsletterSection => ({
   title: escapeHtml(section.title.trim()),
   text: convertNewsletterMarkdownToHtml(section.text),
   imageUrl: escapeHtml(section.imageUrl.trim()),
@@ -114,26 +155,38 @@ const toRenderedNewsletterSection = (section: NewsletterSection): RenderedNewsle
   imageLink: escapeHtml(section.imageLink.trim()),
 });
 
-export const toNewsletterParams = (newsletter: Newsletter): NewsletterParams => {
-  const [firstSection, secondSection, thirdSection] = newsletter.sections;
+export const toNewsletterParams = (
+  newsletter: Newsletter,
+): NewsletterParams => {
+  const [firstSection, secondSection, thirdSection] =
+    newsletter.sections;
   return {
     subject: newsletter.subject,
     editionNumber: newsletter.editionNumber,
     section1: toRenderedNewsletterSection(firstSection),
     section2: toRenderedNewsletterSection(secondSection),
-    section3: isBlankSection(thirdSection) ? undefined : toRenderedNewsletterSection(thirdSection),
+    section3: isBlankSection(thirdSection)
+      ? undefined
+      : toRenderedNewsletterSection(thirdSection),
   };
 };
 
-export const getNewsletterBuilderEmail = async (editionNumber: number) => {
+export const getNewsletterBuilderEmail = async (
+  editionNumber: number,
+) => {
   if (!isNewsletterBuilderEdition(editionNumber)) return null;
   const newsletter = await getNewsletter(editionNumber);
-  return newsletter ? getParameterizedNewsletter(toNewsletterParams(newsletter)) : null;
+  return newsletter
+    ? getParameterizedNewsletter(toNewsletterParams(newsletter))
+    : null;
 };
 
-const makeNewsletterImageFilename = (imageFile: File) => {
+const makeNewsletterImageFilename = (
+  imageFile: File,
+  editionNumber: number,
+) => {
   const extension = imageFile.name.split(".").pop() || "jpg";
-  return `newsletter-${Date.now()}-${crypto.randomUUID()}.${extension}`;
+  return `newsletter-${editionNumber}-${crypto.randomUUID()}.${extension}`;
 };
 
 export const uploadNewsletterImage = async (formData: FormData) => {
@@ -144,15 +197,33 @@ export const uploadNewsletterImage = async (formData: FormData) => {
   if (!imageFile.type.startsWith("image/")) {
     throw new RouteError("File must be an image", 400);
   }
+  const editionNumber = Number(formData.get("editionNumber"));
+  if (!isNewsletterBuilderEdition(editionNumber)) {
+    throw new RouteError(
+      `Newsletter builder editions start at ${FIRST_NEWSLETTER_BUILDER_EDITION}`,
+      400,
+    );
+  }
 
-  const storage = createClientFromEnv().storage.from(NEWSLETTER_IMAGE_BUCKET);
-  const filename = makeNewsletterImageFilename(imageFile);
-  const { error } = await storage.upload(filename, new Uint8Array(await imageFile.arrayBuffer()), {
-    contentType: imageFile.type,
-    upsert: false,
-  });
+  const storage = createClientFromEnv().storage.from(
+    NEWSLETTER_IMAGE_BUCKET,
+  );
+  const filename = makeNewsletterImageFilename(
+    imageFile,
+    editionNumber,
+  );
+  const { error } = await storage.upload(
+    filename,
+    new Uint8Array(await imageFile.arrayBuffer()),
+    {
+      contentType: imageFile.type,
+      upsert: false,
+    },
+  );
   if (error) {
-    throw new Error(`Failed to upload newsletter image: ${error.message}`);
+    throw new Error(
+      `Failed to upload newsletter image: ${error.message}`,
+    );
   }
 
   return { imageUrl: storage.getPublicUrl(filename).data.publicUrl };
