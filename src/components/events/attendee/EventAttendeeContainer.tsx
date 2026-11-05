@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as Sentry from "@sentry/react";
 import type { LiveHeartbeat, Statement } from "../../../types";
 import { api } from "../../../utils/api";
+import { useAttendeeOnboarding } from "../../../hooks/useAttendeeOnboarding";
 import { useDebateSession } from "../../../hooks/useDebateSession";
 import { useEventPolling } from "../../../hooks/useEventPolling";
 import { useEventPost } from "../../../hooks/useEventPost";
@@ -13,6 +14,7 @@ import type { SwipeVote } from "../../flyer/FlyerSwipeCard";
 import { Loader } from "../../widgets/Loader";
 import { AttendeeFrame, AttendeeMessage } from "./AttendeeFrame";
 import { EventLobby } from "./EventLobby";
+import { EventOnboarding } from "./EventOnboarding";
 import { EventSwipeScreen } from "./EventSwipeScreen";
 
 export function EventAttendeeContainer({ eventId }: { eventId: string }) {
@@ -35,6 +37,18 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
   const { eventState, error } = useEventPolling(eventId, EVENT_POLL_MS, () => heartbeatRef.current);
   const currentRoomId = eventState?.status === "live" ? eventState.currentRoomId : null;
   const { post, refresh: refreshPost, addStatement } = useEventPost(currentRoomId);
+  const canAnswerQuestions =
+    eventState?.status === "open" || eventState?.status === "live";
+
+  const {
+    questions,
+    answeredQuestionIds,
+    isLoadingOnboarding,
+    isAnsweringQuestions,
+    saveAnswer,
+    finishOnboarding,
+  } = useAttendeeOnboarding(eventId, canAnswerQuestions);
+
   const shownPost = post && post.room.id === currentRoomId ? post : null;
   const userId = user?.id ?? "";
 
@@ -44,7 +58,13 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
   );
   const cardsLeftCount = deck ? deck.statements.length - deck.votedCount : 0;
   const isWritingStatement = statementText.trim().length > 0;
-  const screen = eventState ? getAttendeeScreen(eventState, cardsLeftCount > 0, isWritingStatement) : null;
+  const screen = eventState
+    ? getAttendeeScreen(eventState, {
+        isAnsweringQuestions,
+        hasCardsLeft: cardsLeftCount > 0,
+        isWritingStatement,
+      })
+    : null;
   const isLoadingPost = (screen === "swiping" || screen === "waiting") && !shownPost;
 
   const heartbeatScreen =
@@ -103,11 +123,27 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
   };
 
   if (!eventState && error) return <AttendeeNotice title="Can't find this event" body="Check the link and try again." />;
-  if (!eventState || !screen || isLoadingPost) return <AttendeeLoading />;
+  if (
+    !eventState ||
+    !screen ||
+    isLoadingPost ||
+    isLoadingOnboarding
+  ) {
+    return <AttendeeLoading />;
+  }
 
   switch (screen) {
     case "closed":
       return <EventLobby moment="closed" />;
+    case "onboarding":
+      return (
+        <EventOnboarding
+          questions={questions}
+          answeredQuestionIds={answeredQuestionIds}
+          onAnswer={saveAnswer}
+          onFinish={finishOnboarding}
+        />
+      );
     case "starting":
       return <EventLobby moment="starting" peopleHere={eventState.peopleHere} />;
     case "paused":

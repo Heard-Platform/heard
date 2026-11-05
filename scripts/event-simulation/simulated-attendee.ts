@@ -115,7 +115,11 @@ export class SimulatedAttendee {
 
   private currentScreen(): AttendeeScreen | null {
     if (!this.eventState) return null;
-    return getAttendeeScreen(this.eventState, this.cardsLeftToVote().length > 0, this.isWritingStatement);
+    return getAttendeeScreen(this.eventState, {
+      isAnsweringQuestions: false,
+      hasCardsLeft: this.cardsLeftToVote().length > 0,
+      isWritingStatement: this.isWritingStatement,
+    });
   }
 
   private currentHeartbeat(): LiveHeartbeat | null {

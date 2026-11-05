@@ -1,12 +1,22 @@
 import { assertEquals, assertThrows } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
+  collectAnsweredQuestionIds,
+  findEventQuestionOrThrow,
+  isValidAnswerList,
   isValidOnboardingQuestion,
   isValidOnboardingQuestionList,
+  OPT_OUT_ANSWER,
+  requireEventDoorsOpen,
   requireEventInSetup,
   toEventDemographicQuestionRows,
+  toStoredAnswers,
 } from "./event-onboarding-utils.ts";
 import { defaultLiveEventState } from "./live-event-utils.ts";
 import { RouteError } from "./route-error.ts";
+import type {
+  DemographicAnswer,
+  DemographicQuestion,
+} from "./types.tsx";
 
 const NOW = 1_762_000_000_000;
 
@@ -103,3 +113,188 @@ Deno.test("requireEventInSetup - blocks changes after the event ends", () => {
   const endedState = { ...defaultLiveEventState(NOW), status: "ended" as const };
   assertThrows(() => requireEventInSetup(endedState), RouteError);
 });
+
+const singleChoiceQuestion: DemographicQuestion = {
+  id: 11,
+  roomId: null,
+  eventId: 7,
+  type: "custom",
+  text: "Are you a...",
+  options: ["Student", "Faculty"],
+  multiSelect: false,
+  position: 0,
+};
+
+const pickAnyQuestion: DemographicQuestion = {
+  ...singleChoiceQuestion,
+  id: 12,
+  text: "How do you identify?",
+  options: ["Black", "White", "Jewish"],
+  multiSelect: true,
+  position: 1,
+};
+
+const answerRow = (
+  questionId: number,
+  answer: string | null,
+): DemographicAnswer => ({
+  id: 1,
+  userId: "user-1",
+  questionId,
+  answer,
+  createdAt: NOW,
+});
+
+Deno.test(
+  "requireEventDoorsOpen - blocks answers while the doors are closed",
+  () => {
+    const error = assertThrows(
+      () => requireEventDoorsOpen(defaultLiveEventState(NOW)),
+      RouteError,
+    );
+    assertEquals(error.status, 409);
+  },
+);
+
+Deno.test(
+  "requireEventDoorsOpen - allows answers once the doors are open and after Start",
+  () => {
+    requireEventDoorsOpen({
+      ...defaultLiveEventState(NOW),
+      status: "open",
+    });
+    requireEventDoorsOpen({
+      ...defaultLiveEventState(NOW),
+      status: "live",
+    });
+  },
+);
+
+Deno.test(
+  "findEventQuestionOrThrow - finds the event's question by id",
+  () => {
+    const questions = [singleChoiceQuestion, pickAnyQuestion];
+    assertEquals(
+      findEventQuestionOrThrow(questions, 12),
+      pickAnyQuestion,
+    );
+  },
+);
+
+Deno.test(
+  "findEventQuestionOrThrow - rejects a question from somewhere else",
+  () => {
+    const error = assertThrows(
+      () => findEventQuestionOrThrow([singleChoiceQuestion], 99),
+      RouteError,
+    );
+    assertEquals(error.status, 404);
+  },
+);
+
+Deno.test(
+  "isValidAnswerList - single choice takes exactly one option",
+  () => {
+    assertEquals(
+      isValidAnswerList(singleChoiceQuestion, ["Student"]),
+      true,
+    );
+    assertEquals(isValidAnswerList(singleChoiceQuestion, []), false);
+    assertEquals(
+      isValidAnswerList(singleChoiceQuestion, ["Student", "Faculty"]),
+      false,
+    );
+  },
+);
+
+Deno.test(
+  "isValidAnswerList - Prefer not to say counts as an option on any question",
+  () => {
+    assertEquals(
+      isValidAnswerList(singleChoiceQuestion, [OPT_OUT_ANSWER]),
+      true,
+    );
+    assertEquals(
+      isValidAnswerList(pickAnyQuestion, [OPT_OUT_ANSWER]),
+      true,
+    );
+  },
+);
+
+Deno.test(
+  "isValidAnswerList - pick any takes several options, or none for Skip",
+  () => {
+    assertEquals(
+      isValidAnswerList(pickAnyQuestion, ["Black", "Jewish"]),
+      true,
+    );
+    assertEquals(isValidAnswerList(pickAnyQuestion, []), true);
+  },
+);
+
+Deno.test(
+  "isValidAnswerList - rejects an option the question doesn't have",
+  () => {
+    assertEquals(
+      isValidAnswerList(singleChoiceQuestion, ["Alumni"]),
+      false,
+    );
+    assertEquals(
+      isValidAnswerList(pickAnyQuestion, ["Black", "Alumni"]),
+      false,
+    );
+  },
+);
+
+Deno.test("isValidAnswerList - rejects the same option twice", () => {
+  assertEquals(
+    isValidAnswerList(pickAnyQuestion, ["Black", "Black"]),
+    false,
+  );
+});
+
+Deno.test(
+  "isValidAnswerList - rejects Prefer not to say alongside other options",
+  () => {
+    assertEquals(
+      isValidAnswerList(pickAnyQuestion, ["Black", OPT_OUT_ANSWER]),
+      false,
+    );
+  },
+);
+
+Deno.test("toStoredAnswers - keeps the picked options", () => {
+  assertEquals(toStoredAnswers(["Black", "Jewish"]), [
+    "Black",
+    "Jewish",
+  ]);
+});
+
+Deno.test(
+  "toStoredAnswers - stores a Skip as one empty answer, so the question counts as answered",
+  () => {
+    assertEquals(toStoredAnswers([]), [null]);
+  },
+);
+
+Deno.test(
+  "collectAnsweredQuestionIds - lists each question once, even with several picks",
+  () => {
+    const answers = [
+      answerRow(12, "Black"),
+      answerRow(12, "Jewish"),
+      answerRow(11, "Student"),
+    ];
+    assertEquals(collectAnsweredQuestionIds(answers), [12, 11]);
+  },
+);
+
+Deno.test(
+  "collectAnsweredQuestionIds - counts a Skip as answered",
+  () => {
+    assertEquals(
+      collectAnsweredQuestionIds([answerRow(12, null)]),
+      [12],
+    );
+  },
+);

@@ -92,6 +92,11 @@ export interface EventOnboardingQuestionInput {
   multiSelect: boolean;
 }
 
+export interface AttendeeOnboarding {
+  questions: DemographicQuestion[];
+  answeredQuestionIds: string[];
+}
+
 export type EventOnboardingQuestionDraft = EventOnboardingQuestionInput & { draftId: string };
 
 export type NewDemographicQuestion =
@@ -234,14 +239,25 @@ export interface LiveEventView extends LiveEventState {
 
 export type ModeratorAction = "open" | "start" | "next" | "back" | "pause" | "resume" | "end";
 
-export type LiveScreen = "lobby" | "swiping" | "waiting" | "end";
+export type LiveScreen =
+  | "onboarding"
+  | "lobby"
+  | "swiping"
+  | "waiting"
+  | "end";
 
 export interface LiveHeartbeat {
   shownRoomId: string | null;
   screen: LiveScreen;
 }
 
-export type AttendeePhoneState = "swiping" | "waiting" | "lobby" | "end" | "idle";
+export type AttendeePhoneState =
+  | "swiping"
+  | "waiting"
+  | "onboarding"
+  | "lobby"
+  | "end"
+  | "idle";
 
 export interface SupportViewCurrentPost {
   postNumber: number;

@@ -1,4 +1,7 @@
-import type { DemographicQuestion } from "../types";
+import type {
+  AttendeeOnboarding,
+  DemographicQuestion,
+} from "../types";
 
 export const OPT_OUT_ANSWER = "Prefer not to say";
 
@@ -34,4 +37,14 @@ export function findFirstUnansweredQuestionIndex(
     (question) => !answeredQuestionIds.includes(question.id),
   );
   return firstUnansweredIndex === -1 ? questions.length : firstUnansweredIndex;
+}
+
+export function hasUnansweredQuestions(
+  onboarding: AttendeeOnboarding,
+): boolean {
+  const firstUnansweredIndex = findFirstUnansweredQuestionIndex(
+    onboarding.questions,
+    onboarding.answeredQuestionIds,
+  );
+  return firstUnansweredIndex < onboarding.questions.length;
 }

@@ -207,6 +207,11 @@ export interface EventOnboardingQuestionInput {
   multiSelect: boolean;
 }
 
+export interface AttendeeOnboarding {
+  questions: DemographicQuestion[];
+  answeredQuestionIds: number[];
+}
+
 export interface DemographicAnswer {
   id: number;
   userId: string;
@@ -291,9 +296,20 @@ export type LiveEventView = LiveEventState & {
   finishedCurrentPost: number;
 };
 
-export type LiveScreen = "lobby" | "swiping" | "waiting" | "end";
+export type LiveScreen =
+  | "onboarding"
+  | "lobby"
+  | "swiping"
+  | "waiting"
+  | "end";
 
-export type AttendeePhoneState = "swiping" | "waiting" | "lobby" | "end" | "idle";
+export type AttendeePhoneState =
+  | "swiping"
+  | "waiting"
+  | "onboarding"
+  | "lobby"
+  | "end"
+  | "idle";
 
 export type SupportViewCurrentPost = {
   postNumber: number;

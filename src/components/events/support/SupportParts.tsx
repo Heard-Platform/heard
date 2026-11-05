@@ -10,6 +10,7 @@ export const MUTED_BAR_COLOR = "#d8b4fe";
 export const PHONE_STATE_COLORS: Record<AttendeePhoneState, string> = {
   swiping: ACCENT_COLOR,
   waiting: AGREE_COLOR,
+  onboarding: "#0ea5e9",
   lobby: "#f59e0b",
   end: "#334155",
   idle: PASS_COLOR,
@@ -18,6 +19,7 @@ export const PHONE_STATE_COLORS: Record<AttendeePhoneState, string> = {
 export const PHONE_STATE_LABELS: Record<AttendeePhoneState, string> = {
   swiping: "Swiping",
   waiting: "Waiting for the others",
+  onboarding: "Answering questions",
   lobby: "Lobby",
   end: "End screen",
   idle: "Idle 30s+",

@@ -70,7 +70,14 @@ Deno.test("countPhones - idle after 30s without a heartbeat, gone after the pres
   assertEquals(counts, {
     peopleHere: 3,
     activeNow: 2,
-    phoneCountsByState: { swiping: 1, waiting: 1, lobby: 0, end: 0, idle: 1 },
+    phoneCountsByState: {
+      swiping: 1,
+      waiting: 1,
+      onboarding: 0,
+      lobby: 0,
+      end: 0,
+      idle: 1,
+    },
   });
 });
 

@@ -36,21 +36,37 @@ export function pickNewestState<T extends { updatedAt: number }>(current: T | nu
   return current && current.updatedAt > incoming.updatedAt ? current : incoming;
 }
 
-export type AttendeeScreen = "closed" | "starting" | "paused" | "swiping" | "waiting" | "end";
+export type AttendeeScreen =
+  | "closed"
+  | "onboarding"
+  | "starting"
+  | "paused"
+  | "swiping"
+  | "waiting"
+  | "end";
+
+export interface AttendeeProgress {
+  isAnsweringQuestions: boolean;
+  hasCardsLeft: boolean;
+  isWritingStatement: boolean;
+}
 
 export function getAttendeeScreen(
   eventState: Pick<LiveEventView, "status" | "votingPaused">,
-  hasCardsLeft: boolean,
-  isWritingStatement: boolean,
+  progress: AttendeeProgress,
 ): AttendeeScreen {
   if (eventState.status === "setup") return "closed";
-  if (eventState.status === "open") return "starting";
   if (eventState.status === "ended") return "end";
+  if (progress.isAnsweringQuestions) return "onboarding";
+  if (eventState.status === "open") return "starting";
   if (eventState.votingPaused) return "paused";
-  return hasCardsLeft && !isWritingStatement ? "swiping" : "waiting";
+  const isReadyToSwipe =
+    progress.hasCardsLeft && !progress.isWritingStatement;
+  return isReadyToSwipe ? "swiping" : "waiting";
 }
 
 const HEARTBEAT_SCREENS: Record<Exclude<AttendeeScreen, "closed">, LiveScreen> = {
+  onboarding: "onboarding",
   starting: "lobby",
   paused: "lobby",
   swiping: "swiping",

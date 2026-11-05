@@ -305,8 +305,9 @@ Deno.test("countEventHeadcount - nobody has finished before the session starts",
   assertEquals(countEventHeadcount(presences, state(), NOW), { peopleHere: 1, finishedCurrentPost: 0 });
 });
 
-Deno.test("isLiveScreen - only the four phone screens", () => {
-  assertEquals(["lobby", "swiping", "waiting", "end"].every(isLiveScreen), true);
+Deno.test("isLiveScreen - only the five phone screens", () => {
+  const phoneScreens = ["onboarding", "lobby", "swiping", "waiting", "end"];
+  assertEquals(phoneScreens.every(isLiveScreen), true);
   assertEquals(isLiveScreen("dancing"), false);
 });
 
