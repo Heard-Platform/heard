@@ -22,6 +22,7 @@ import { FlyerSignUpStory } from "../stories/FlyerSignUp.story";
 import { FlyerLandingStory } from "../stories/FlyerLanding.story";
 import { FlyerScanStory } from "../stories/FlyerScan.story";
 import { PersonalFlyerScanStory } from "../stories/PersonalFlyerScan.story";
+import { SignUpCardStory } from "../stories/SignUpCard.story";
 import { YouTubeCardStory } from "../stories/YouTubeCard.story";
 import { IntroModalStory } from "../stories/IntroModal.story";
 import { DemographicsCardStory } from "../stories/DemographicsCard.story";
@@ -157,6 +158,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="flyer-landing">Flyer Landing</TabsTrigger>
                 <TabsTrigger value="flyer-scan-screen">Flyer Scan Screen</TabsTrigger>
                 <TabsTrigger value="personal-flyer-scan">Personal Flyer Scan</TabsTrigger>
+                <TabsTrigger value="sign-up-card">Sign Up Card</TabsTrigger>
                 <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
                 <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
                 <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
@@ -285,6 +287,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="personal-flyer-scan">
                 <PersonalFlyerScanStory />
+              </TabsContent>
+              <TabsContent value="sign-up-card">
+                <SignUpCardStory />
               </TabsContent>
               <TabsContent value="youtube-card">
                 <YouTubeCardStory />

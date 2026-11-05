@@ -62,3 +62,7 @@ export function getTimeRemaining(endTime: number, currentTime: number): TimeRema
 
   return { formatted: `${seconds}s`, urgency: 'critical' };
 }
+
+export function wait(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
