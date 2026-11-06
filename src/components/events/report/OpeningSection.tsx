@@ -13,6 +13,7 @@ import {
   pluralizeVote,
 } from "../../../utils/text";
 import { ResponseMark } from "./ResponseMark";
+import { REPORT_SECTION_IDS } from "./report-sections";
 import "./report.css";
 
 interface OpeningSectionProps {
@@ -27,7 +28,10 @@ export function OpeningSection({ opening }: OpeningSectionProps) {
   ].join(" ");
 
   return (
-    <section className="dark-bg normal-text">
+    <section
+      id={REPORT_SECTION_IDS.opening}
+      className="dark-bg normal-text scroll-mt-16"
+    >
       <div className="report-section-content pb-16 pt-20">
         <p className="report-label text-sm report-subtext">
           {formatSessionStart(opening.sessionStartedAt)}

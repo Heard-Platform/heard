@@ -1,9 +1,17 @@
 import type {
   EventReport,
+  EventReportAttendeeStatement,
+  EventReportFloor,
   EventReportPost,
   EventReportStatement,
 } from "../types";
 import { ONE_MINUTE_MS } from "../utils/time";
+import {
+  NO_ATTENDEE_STATEMENTS_TIMELINE,
+  NO_CAMPS_ANALYSIS,
+  PRICING_SESSION_CAMP_ANALYSIS,
+  PRICING_SESSION_TIMELINE,
+} from "./event-report-analysis-fixtures";
 
 const PRICING_SESSION_STARTED_AT = Date.UTC(2026, 9, 23, 13, 10);
 
@@ -259,6 +267,108 @@ const PRICING_SESSION_POSTS: EventReportPost[] = [
   }),
 ];
 
+const attendeeStatement = (
+  statement: EventReportStatement,
+  postNumber: number,
+  voteCount: number,
+): EventReportAttendeeStatement => ({
+  ...statement,
+  postNumber,
+  voteCount,
+});
+
+const PRICING_SESSION_FLOOR: EventReportFloor = {
+  attendeeCount: 14,
+  attendeeStatementVoteCount: 412,
+  attendeeStatementsInTopTenCount: 3,
+  averageAttendeeAgreePercent: 74,
+  averagePreparedAgreePercent: 61,
+  topAttendeeStatements: [
+    attendeeStatement(
+      reportStatement(
+        "s10c",
+        "We should compare notes on pricing at our next member meeting.",
+        84,
+        9,
+      ),
+      10,
+      44,
+    ),
+    attendeeStatement(
+      reportStatement(
+        "s2c",
+        "Timesheets are the most hated hour of our week.",
+        81,
+        12,
+      ),
+      2,
+      52,
+    ),
+    attendeeStatement(
+      reportStatement(
+        "s4c",
+        "Clients should pay for the result, not for the tool we used to get it.",
+        77,
+        15,
+      ),
+      4,
+      50,
+    ),
+    attendeeStatement(
+      reportStatement(
+        "s3c",
+        "Relationships are our product, not a free extra.",
+        76,
+        18,
+      ),
+      3,
+      55,
+    ),
+    attendeeStatement(
+      reportStatement(
+        "s8c",
+        "Budget is the first question, not the last.",
+        73,
+        21,
+      ),
+      8,
+      47,
+    ),
+  ],
+  lowVoteAttendeeStatements: [
+    attendeeStatement(
+      reportStatement(
+        "s8d",
+        "Procurement should be in the pricing conversation from day one.",
+        75,
+        25,
+      ),
+      8,
+      4,
+    ),
+    attendeeStatement(
+      reportStatement(
+        "s7d",
+        "Member agencies should share anonymized rate cards with each other.",
+        67,
+        33,
+      ),
+      7,
+      3,
+    ),
+    attendeeStatement(
+      reportStatement(
+        "s10d",
+        "Junior staff should never see the client's fee.",
+        50,
+        50,
+      ),
+      10,
+      2,
+    ),
+  ],
+};
+
 export const PRICING_SESSION_REPORT: EventReport = {
   opening: {
     eventName: "Should agencies leave the billable hour behind?",
@@ -272,6 +382,9 @@ export const PRICING_SESSION_REPORT: EventReport = {
     sessionEndedAt: PRICING_SESSION_STARTED_AT + 34 * ONE_MINUTE_MS,
   },
   posts: PRICING_SESSION_POSTS,
+  floor: PRICING_SESSION_FLOOR,
+  campAnalysis: PRICING_SESSION_CAMP_ANALYSIS,
+  timeline: PRICING_SESSION_TIMELINE,
 };
 
 export const NO_SUBTITLE_REPORT: EventReport = {
@@ -280,4 +393,31 @@ export const NO_SUBTITLE_REPORT: EventReport = {
     ...PRICING_SESSION_REPORT.opening,
     eventSubtitle: null,
   },
+};
+
+export const NO_ATTENDEE_STATEMENTS_REPORT: EventReport = {
+  ...PRICING_SESSION_REPORT,
+  opening: {
+    ...PRICING_SESSION_REPORT.opening,
+    attendeeStatementCount: 0,
+  },
+  posts: PRICING_SESSION_POSTS.map((post) => ({
+    ...post,
+    topAttendeeStatement: null,
+  })),
+  floor: {
+    attendeeCount: 0,
+    attendeeStatementVoteCount: 0,
+    attendeeStatementsInTopTenCount: 0,
+    averageAttendeeAgreePercent: 0,
+    averagePreparedAgreePercent: 61,
+    topAttendeeStatements: [],
+    lowVoteAttendeeStatements: [],
+  },
+  timeline: NO_ATTENDEE_STATEMENTS_TIMELINE,
+};
+
+export const NO_CAMPS_REPORT: EventReport = {
+  ...PRICING_SESSION_REPORT,
+  campAnalysis: NO_CAMPS_ANALYSIS,
 };

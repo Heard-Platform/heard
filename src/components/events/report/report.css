@@ -40,7 +40,7 @@
   color: var(--color-purple-300);
 }
 
-.report-chapter-bg {
+.report-section-bg {
   background-color: var(--app-bg);
 }
 
@@ -62,4 +62,143 @@
 
 .report-response-strong-text {
   color: var(--color-purple-700);
+}
+
+.report-floor-bg {
+  background-color: var(--color-purple-700);
+}
+
+.report-floor-card-bg {
+  background-color: var(--color-purple-800);
+}
+
+.report-floor-subtext {
+  color: var(--color-purple-100);
+}
+
+.report-floor-border {
+  border-color: var(--color-purple-400);
+}
+
+.report-floor-track {
+  background-color: var(--color-purple-500);
+}
+
+.report-floor-fill {
+  background-color: var(--color-white);
+}
+
+.report-prepared-fill {
+  background-color: var(--color-purple-200);
+}
+
+.report-floor-quote {
+  @apply text-2xl font-bold leading-tight md:text-4xl;
+}
+
+.report-camps-card-border {
+  border-color: var(--color-stone-700);
+}
+
+.report-camps-statement-bg {
+  background-color: var(--color-stone-800);
+}
+
+.report-common-ground-bg {
+  background-color: var(--color-teal-50);
+}
+
+.report-common-ground-quote {
+  @apply text-3xl font-extrabold leading-tight md:text-5xl;
+}
+
+.report-timeline-prompt-start {
+  border-left-color: var(--color-stone-900);
+}
+
+.report-timeline-bar {
+  background-color: var(--color-teal-600);
+}
+
+.report-timeline-alternate-bar {
+  background-color: var(--color-teal-400);
+}
+
+.report-call-to-action-button {
+  background-color: var(--color-amber-300);
+  color: var(--color-stone-900);
+}
+
+.report-first-camp-accent-text {
+  color: var(--color-purple-300);
+}
+
+.report-first-camp-strong-text {
+  color: var(--color-purple-700);
+}
+
+.report-first-camp-tint-bg {
+  background-color: var(--color-purple-100);
+}
+
+.report-first-camp-solid-bg {
+  background-color: var(--color-purple-500);
+}
+
+.report-first-camp-circle {
+  background-color: color-mix(in oklab, var(--color-purple-500) 12%, transparent);
+  border-color: var(--color-purple-600);
+}
+
+.report-second-camp-accent-text {
+  color: var(--color-teal-300);
+}
+
+.report-second-camp-strong-text {
+  color: var(--color-teal-700);
+}
+
+.report-second-camp-tint-bg {
+  background-color: var(--color-teal-100);
+}
+
+.report-second-camp-solid-bg {
+  background-color: var(--color-teal-500);
+}
+
+.report-second-camp-circle {
+  background-color: color-mix(in oklab, var(--color-teal-500) 12%, transparent);
+  border-color: var(--color-teal-600);
+}
+
+.report-third-camp-accent-text {
+  color: var(--color-amber-300);
+}
+
+.report-third-camp-strong-text {
+  color: var(--color-amber-700);
+}
+
+.report-third-camp-tint-bg {
+  background-color: var(--color-amber-100);
+}
+
+.report-third-camp-solid-bg {
+  background-color: var(--color-amber-500);
+}
+
+.report-third-camp-circle {
+  background-color: color-mix(in oklab, var(--color-amber-500) 12%, transparent);
+  border-color: var(--color-amber-600);
+}
+
+.report-venn-dot {
+  background-color: var(--color-stone-900);
+  box-shadow: 0 0 0 2px var(--color-white);
+}
+
+.report-venn-selected-dot {
+  box-shadow:
+    0 0 0 3px var(--color-white),
+    0 0 0 6px var(--color-amber-400);
 }

@@ -7,3 +7,6 @@ export const SOCIAL_LINKS = {
 } as const;
 
 export const CALENDLY_PILOT_URL = "https://calendly.com/alexmasonlong/15-minute";
+
+export const CALENDLY_INTRO_CALL_URL =
+  "https://calendly.com/alexmasonlong/30-minute";

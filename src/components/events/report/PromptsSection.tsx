@@ -8,9 +8,11 @@ import { formatElapsed } from "../../../utils/event-support";
 import { pluralizePrompt } from "../../../utils/text";
 import { ONE_SECOND_MS } from "../../../utils/time";
 import { createShareableLink } from "../../../utils/url";
-import { ChapterHeading } from "./ChapterHeading";
+import { Button } from "../../ui/button";
+import { SectionHeading } from "./SectionHeading";
 import { ResponseMark } from "./ResponseMark";
 import { VoteBar } from "./VoteBar";
+import { REPORT_SECTION_IDS } from "./report-sections";
 import "./report.css";
 
 interface PromptsSectionProps {
@@ -32,11 +34,14 @@ export function PromptsSection({ posts }: PromptsSectionProps) {
   ].join(" ");
 
   return (
-    <section className="normal-bg">
+    <section
+      id={REPORT_SECTION_IDS.prompts}
+      className="normal-bg scroll-mt-16"
+    >
       <div className="report-section-content py-16">
-        <ChapterHeading
-          chapterNumber={2}
-          chapterName="Prompt by prompt"
+        <SectionHeading
+          sectionNumber={2}
+          sectionName="Prompt by prompt"
           headline={headline}
           description="Pick one to see where the room agreed, where it split, and its best idea from the floor."
         />
@@ -63,23 +68,20 @@ interface PromptPillProps {
 }
 
 function PromptPill({ post, isSelected, onSelect }: PromptPillProps) {
-  const selectionClassName = isSelected
-    ? "dark-bg normal-text border-transparent"
-    : "normal-bg";
-
   return (
-    <button
+    <Button
       type="button"
+      variant={isSelected ? "default" : "outline"}
       aria-pressed={isSelected}
       title={post.topic}
       onClick={onSelect}
-      className={`${selectionClassName} flex h-10 max-w-xs items-center gap-1.5 rounded-full border px-4 text-sm`}
+      className="h-10 max-w-xs justify-start gap-1.5 rounded-full px-4 font-normal"
     >
       <span className="shrink-0 font-semibold">
         P{post.postNumber}
       </span>
       <span className="truncate">{post.topic}</span>
-    </button>
+    </Button>
   );
 }
 

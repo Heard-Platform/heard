@@ -11,7 +11,8 @@ import {
   TimePerPostChart,
   VotedOnEachPostChart,
 } from "../support/SupportCharts";
-import { ChapterHeading } from "./ChapterHeading";
+import { SectionHeading } from "./SectionHeading";
+import { REPORT_SECTION_IDS } from "./report-sections";
 import "./report.css";
 
 interface TimeSectionProps {
@@ -35,11 +36,14 @@ export function TimeSection({
   ].join(" ");
 
   return (
-    <section className="report-chapter-bg">
+    <section
+      id={REPORT_SECTION_IDS.time}
+      className="report-section-bg scroll-mt-16"
+    >
       <div className="report-section-content py-16">
-        <ChapterHeading
-          chapterNumber={1}
-          chapterName="How the time went"
+        <SectionHeading
+          sectionNumber={1}
+          sectionName="How the time went"
           headline={`You talked longest about "${longestPost.topic}"`}
           description={`${longestPostTime} on prompt ${longestPost.postNumber}, more than any other prompt.`}
         />
