@@ -25,6 +25,7 @@ import { DevTools } from "./components/devtools/DevTools";
 import { AdminActivityFeed } from "./components/AdminActivityFeed";
 import { NewsletterViewer } from "./components/NewsletterViewer";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
+import { useQuickVoteViaFlyer } from "./hooks/useQuickVoteViaFlyer";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { Toaster } from "./components/ui/sonner";
 import { api } from "./utils/api";
@@ -184,6 +185,9 @@ function AppContent() {
     setTargetRoomId(roomId);
   }
 
+  const { shouldQuickVoteViaFlyer, quickJoinViaFlyer } =
+    useQuickVoteViaFlyer({ startRoomJoin, setNewFlyerScan });
+
   const handleMagicLinkSuccess = async () => {
     toast.success("Signed in successfully!");
   };
@@ -207,6 +211,12 @@ function AppContent() {
     flyerGroup?: number;
   }) => {
     setIsJoiningAnonymously(true);
+
+    if (shouldQuickVoteViaFlyer(flyerData)) {
+      await quickJoinViaFlyer(flyerData);
+      setIsJoiningAnonymously(false);
+      return;
+    }
 
     const response = await voteViaFlyer(
       flyerData.flyerId,

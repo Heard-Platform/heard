@@ -1,4 +1,5 @@
 import type { Statement, VoteType, SimpleVoteType } from "../types";
+import type { FlyerVote } from "../components/flyer/FlyerVoteIntroCard";
 
 export const getTotalVotes = (statement: Statement): number =>
   (statement.agrees ?? 0) +
@@ -11,3 +12,8 @@ export const getRoomVoteCount = (statements: Statement[]): number =>
 
 export const toSimpleVote = (voteType: VoteType): SimpleVoteType =>
   voteType === "super_agree" ? "agree" : voteType;
+
+export const isFlyerVote = (
+  voteType: VoteType,
+): voteType is FlyerVote =>
+  voteType === "agree" || voteType === "disagree";
