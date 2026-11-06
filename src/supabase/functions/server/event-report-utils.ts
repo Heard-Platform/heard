@@ -53,7 +53,7 @@ export type EventReportState = Pick<
   "roomOrder" | "postChanges" | "startedAt" | "endedAt"
 >;
 
-export interface EventReportSources {
+export interface EventReportInputs {
   event: Pick<Event, "name" | "subtitle" | "creatorId">;
   community: Pick<Community, "adminId" | "modIds"> | null;
   state: EventReportState;
@@ -136,7 +136,7 @@ export const percentOf = (part: number, whole: number): number =>
 const tallyStatement = (
   statement: Statement,
   statementVotes: EventReportVote[],
-  sources: EventReportSources,
+  inputs: EventReportInputs,
 ): StatementTally => {
   const simpleVoteCounts = _.countBy(
     statementVotes,
@@ -144,8 +144,8 @@ const tallyStatement = (
   );
   return {
     statement,
-    postNumber: sources.state.roomOrder.indexOf(statement.roomId) + 1,
-    isAttendeeStatement: isAttendeeStatement(statement, sources),
+    postNumber: inputs.state.roomOrder.indexOf(statement.roomId) + 1,
+    isAttendeeStatement: isAttendeeStatement(statement, inputs),
     agreeCount: simpleVoteCounts.agree ?? 0,
     disagreeCount: simpleVoteCounts.disagree ?? 0,
     voteCount: statementVotes.length,
@@ -154,29 +154,29 @@ const tallyStatement = (
 
 export const isAttendeeStatement = (
   statement: Pick<Statement, "author" | "timestamp">,
-  sources: Pick<EventReportSources, "event" | "community" | "state">,
+  inputs: Pick<EventReportInputs, "event" | "community" | "state">,
 ): boolean => {
-  const { startedAt } = sources.state;
+  const { startedAt } = inputs.state;
   if (startedAt === null || statement.timestamp < startedAt) {
     return false;
   }
   return !canModerateEvent(
     statement.author,
-    sources.event,
-    sources.community,
+    inputs.event,
+    inputs.community,
   );
 };
 
 const tallyStatements = (
-  sources: EventReportSources,
+  inputs: EventReportInputs,
   sessionVotes: EventReportVote[],
 ): StatementTally[] => {
   const votesByStatementId = _.groupBy(sessionVotes, "statementId");
-  return sources.statements.map((statement) =>
+  return inputs.statements.map((statement) =>
     tallyStatement(
       statement,
       votesByStatementId[statement.id] ?? [],
-      sources,
+      inputs,
     ),
   );
 };
@@ -249,20 +249,20 @@ const findTopAttendeeTally = (
   )[0];
 
 const listReportPosts = (
-  sources: EventReportSources,
+  inputs: EventReportInputs,
   sessionVotes: EventReportVote[],
   tallies: StatementTally[],
   sessionEndedAt: number,
 ): EventReportPost[] => {
   const stateEndingAtSessionEnd = {
-    ...sources.state,
+    ...inputs.state,
     endedAt: sessionEndedAt,
   };
   const postsShown = listPostsSoFar(
     stateEndingAtSessionEnd,
-    sources.rooms,
+    inputs.rooms,
     sessionVotes,
-    sources.now,
+    inputs.now,
   );
   const talliesByRoomId = _.groupBy(
     tallies,
@@ -352,7 +352,7 @@ const averagePostParticipationPercent = (
     );
 
 const buildOpening = (
-  event: EventReportSources["event"],
+  event: EventReportInputs["event"],
   sessionVotes: EventReportVote[],
   posts: EventReportPost[],
   tallies: StatementTally[],
@@ -450,29 +450,29 @@ const buildTimeline = (
 };
 
 export const buildEventReport = (
-  sources: EventReportSources,
+  inputs: EventReportInputs,
 ): EventReport => {
-  const sessionStartedAt = requireSessionStarted(sources.state);
+  const sessionStartedAt = requireSessionStarted(inputs.state);
   const sessionVotes = filterSessionVotes(
-    sources.votes,
+    inputs.votes,
     sessionStartedAt,
   );
   const sessionEndedAt = findSessionEnd(
-    sources.state,
+    inputs.state,
     sessionVotes,
-    sources.now,
+    inputs.now,
   );
   const sessionTimes = { sessionStartedAt, sessionEndedAt };
-  const tallies = tallyStatements(sources, sessionVotes);
+  const tallies = tallyStatements(inputs, sessionVotes);
   const posts = listReportPosts(
-    sources,
+    inputs,
     sessionVotes,
     tallies,
     sessionEndedAt,
   );
   return {
     opening: buildOpening(
-      sources.event,
+      inputs.event,
       sessionVotes,
       posts,
       tallies,
@@ -482,7 +482,7 @@ export const buildEventReport = (
     floor: buildFloor(tallies),
     campAnalysis: EMPTY_CAMP_ANALYSIS,
     timeline: buildTimeline(
-      sources.state,
+      inputs.state,
       sessionVotes,
       tallies,
       sessionTimes,

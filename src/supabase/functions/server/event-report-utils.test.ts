@@ -5,7 +5,7 @@ import {
 import {
   buildEventReport,
   EMPTY_CAMP_ANALYSIS,
-  type EventReportSources,
+  type EventReportInputs,
   type EventReportVote,
   findSessionEnd,
   isAttendeeStatement,
@@ -141,9 +141,9 @@ const VOTES: EventReportVote[] = [
   vote("a3", "a", "u7", "agree", at(60)),
 ];
 
-const sources = (
-  overrides: Partial<EventReportSources> = {},
-): EventReportSources => ({
+const inputs = (
+  overrides: Partial<EventReportInputs> = {},
+): EventReportInputs => ({
   event: {
     name: "How has AI changed your pricing?",
     subtitle: "",
@@ -171,7 +171,7 @@ const sources = (
   ...overrides,
 });
 
-const NEVER_ENDED_STATE = { ...sources().state, endedAt: null };
+const NEVER_ENDED_STATE = { ...inputs().state, endedAt: null };
 
 Deno.test("percentOf rounds and treats no votes as zero", () => {
   assertEquals(percentOf(5, 6), 83);
@@ -181,9 +181,9 @@ Deno.test("percentOf rounds and treats no votes as zero", () => {
 Deno.test(
   "isAttendeeStatement counts only non-moderators during the session",
   () => {
-    const reportSources = sources();
+    const reportInputs = inputs();
     const isFromTheFloor = (author: string, timestamp: number) =>
-      isAttendeeStatement({ author, timestamp }, reportSources);
+      isAttendeeStatement({ author, timestamp }, reportInputs);
 
     assertEquals(isFromTheFloor("u1", at(1)), true);
     assertEquals(isFromTheFloor("u1", BEFORE_SESSION), false);
@@ -194,7 +194,7 @@ Deno.test(
 
 Deno.test("findSessionEnd uses endedAt when End was pressed", () => {
   assertEquals(
-    findSessionEnd(sources().state, VOTES, at(90)),
+    findSessionEnd(inputs().state, VOTES, at(90)),
     at(15),
   );
 });
@@ -243,14 +243,14 @@ Deno.test("findSessionEnd never ends a session in the future", () => {
 });
 
 Deno.test("buildEventReport rejects an event not yet started", () => {
-  const notStarted = sources({
+  const notStarted = inputs({
     state: { ...NEVER_ENDED_STATE, startedAt: null, postChanges: [] },
   });
   assertThrows(() => buildEventReport(notStarted), RouteError);
 });
 
 Deno.test("buildEventReport counts every vote in the opening", () => {
-  assertEquals(buildEventReport(sources()).opening, {
+  assertEquals(buildEventReport(inputs()).opening, {
     eventName: "How has AI changed your pricing?",
     eventSubtitle: null,
     peopleCount: 7,
@@ -264,7 +264,7 @@ Deno.test("buildEventReport counts every vote in the opening", () => {
 });
 
 Deno.test("buildEventReport picks each post's statements", () => {
-  const [postA, postB, postC] = buildEventReport(sources()).posts;
+  const [postA, postB, postC] = buildEventReport(inputs()).posts;
 
   assertEquals(postA, {
     roomId: "a",
@@ -302,7 +302,7 @@ Deno.test("buildEventReport picks each post's statements", () => {
 Deno.test(
   "buildEventReport leaves a post with no floor ideas empty",
   () => {
-    const withoutFloorIdeaOnB = sources({
+    const withoutFloorIdeaOnB = inputs({
       statements: STATEMENTS.filter(({ id }) => id !== "b2"),
     });
     const postB = buildEventReport(withoutFloorIdeaOnB).posts[1];
@@ -311,7 +311,7 @@ Deno.test(
 );
 
 Deno.test("buildEventReport ranks the floor", () => {
-  assertEquals(buildEventReport(sources()).floor, {
+  assertEquals(buildEventReport(inputs()).floor, {
     attendeeCount: 3,
     attendeeStatementVoteCount: 10,
     attendeeStatementsInTopTenCount: 1,
@@ -364,7 +364,7 @@ Deno.test(
       vote("c4", "c", "u1", "agree", at(13)),
     ];
     const report = buildEventReport(
-      sources({
+      inputs({
         statements: [...STATEMENTS, ...extraFloorIdeas],
         votes: [...VOTES, ...extraVotes],
       }),
@@ -379,13 +379,13 @@ Deno.test(
 
 Deno.test("buildEventReport returns no camps yet", () => {
   assertEquals(
-    buildEventReport(sources()).campAnalysis,
+    buildEventReport(inputs()).campAnalysis,
     EMPTY_CAMP_ANALYSIS,
   );
 });
 
 Deno.test("buildEventReport bins the timeline by 20 seconds", () => {
-  const { timeline } = buildEventReport(sources());
+  const { timeline } = buildEventReport(inputs());
 
   assertEquals(timeline.binSeconds, 20);
   assertEquals(timeline.bins.length, 45);
@@ -423,7 +423,7 @@ Deno.test(
   "buildEventReport ends a session with no End at the quiet gap",
   () => {
     const report = buildEventReport(
-      sources({ state: NEVER_ENDED_STATE }),
+      inputs({ state: NEVER_ENDED_STATE }),
     );
 
     assertEquals(report.opening.sessionEndedAt, at(11, 40));
