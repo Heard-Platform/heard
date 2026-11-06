@@ -67,6 +67,9 @@ const reportPost = (
   topic: `Prompt ${postNumber}`,
   voterCount,
   secondsOnPost,
+  mostAgreedStatement: null,
+  mostSplitStatement: null,
+  topAttendeeStatement: null,
 });
 
 describe("findLongestPost", () => {

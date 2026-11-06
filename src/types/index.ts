@@ -250,12 +250,22 @@ export interface EventReportOpening {
   sessionEndedAt: number;
 }
 
+export interface EventReportStatement {
+  statementId: string;
+  text: string;
+  agreePercent: number;
+  disagreePercent: number;
+}
+
 export interface EventReportPost {
   roomId: string;
   postNumber: number;
   topic: string;
   voterCount: number;
   secondsOnPost: number;
+  mostAgreedStatement: EventReportStatement | null;
+  mostSplitStatement: EventReportStatement | null;
+  topAttendeeStatement: EventReportStatement | null;
 }
 
 export interface EventReport {

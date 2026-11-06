@@ -43,3 +43,23 @@
 .report-chapter-bg {
   background-color: var(--app-bg);
 }
+
+.report-panel-bg {
+  background-color: var(--app-bg);
+}
+
+.report-bar-track {
+  background-color: var(--color-stone-200);
+}
+
+.report-split-text {
+  color: var(--color-amber-700);
+}
+
+.report-response-bg {
+  background-color: var(--color-purple-50);
+}
+
+.report-response-strong-text {
+  color: var(--color-purple-700);
+}
