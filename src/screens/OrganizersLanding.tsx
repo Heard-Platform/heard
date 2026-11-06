@@ -3,7 +3,6 @@ import { Linkedin, Instagram, Youtube, type LucideIcon } from "lucide-react";
 import { SwipeableStatementStack } from "../components/room/SwipeableStatementStack";
 import { RoomAnalysisEmbed } from "../components/analysis/RoomAnalysisEmbed";
 import { VoteResultSnackbarProvider } from "../contexts/VoteResultSnackbarContext";
-import { Toaster } from "../components/ui/sonner";
 import { api } from "../utils/api";
 import { SOCIAL_LINKS, CALENDLY_PILOT_URL } from "../utils/constants/links";
 import type { DebateRoom, Statement, VoteType } from "../types";
@@ -217,8 +216,6 @@ export function OrganizersLanding({ onExit }: OrganizersLandingProps) {
         <InspiredBySection />
         <ClosingCtaSection />
       </main>
-
-      <Toaster />
     </div>
   );
 }

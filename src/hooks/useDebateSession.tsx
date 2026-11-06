@@ -81,13 +81,13 @@ interface DebateSessionContextType {
     statementId: string,
     vote: VoteType,
     flyerGroup?: number,
-  ) => Promise<FlyerVoteResponse | null>;
+  ) => Promise<ApiResponse<FlyerVoteResponse>>;
   quickVoteViaFlyer: (
     flyerId: string,
     statementId: string,
     vote: VoteType,
     flyerGroup?: number,
-  ) => Promise<QuickFlyerVoteResponse | null>;
+  ) => Promise<ApiResponse<QuickFlyerVoteResponse>>;
   submitFlyerEmail: (email: string) => Promise<ApiResponse | null>;
   markChanceCardSwiped: (roomId: string) => Promise<void>;
   markCoverCardSwiped: (roomId: string) => Promise<void>;
@@ -495,18 +495,17 @@ export function DebateSessionProvider(
       callFlyerVoteApi: () => Promise<ApiResponse<FlyerVoteResult>>,
       sessionSource: string,
     ) => {
-      const response =
-        await safelyMakeApiCall<FlyerVoteResult>(callFlyerVoteApi);
-      if (response && response.success && response.data) {
+      const response = await callFlyerVoteApi();
+      if (response.success && response.data) {
         setUserAndSession(
           response.data.user,
           response.data.sessionId,
           sessionSource,
         );
       }
-      return response?.data ? response.data : null;
+      return response;
     },
-    [safelyMakeApiCall, setUserAndSession],
+    [setUserAndSession],
   );
 
   const voteViaFlyer = useCallback(

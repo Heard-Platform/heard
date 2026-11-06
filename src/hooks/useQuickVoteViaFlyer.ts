@@ -7,6 +7,10 @@ import {
 } from "../utils/constants/feature-flags";
 import { WAYMO_DC_ROOM_ID } from "../utils/constants/flyers";
 import { isFlyerVote } from "../utils/votes";
+import {
+  GENERIC_FLYER_VOTE_FAILURE_MESSAGE,
+  flyerVoteFailureMessage,
+} from "../utils/flyer-vote-errors";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -37,19 +41,21 @@ export function useQuickVoteViaFlyer({
   const quickJoinViaFlyer = async (flyerData: FlyerScanData) => {
     const { vote } = flyerData;
     if (!isFlyerVote(vote)) {
-      toast.error("Failed to process flyer vote");
+      toast.error(GENERIC_FLYER_VOTE_FAILURE_MESSAGE);
       return;
     }
 
-    const response = await quickVoteViaFlyer(
+    const quickVoteResponse = await quickVoteViaFlyer(
       flyerData.flyerId,
       flyerData.statementId,
       flyerData.vote,
       flyerData.flyerGroup,
     );
 
+    const response = quickVoteResponse.data;
+
     if (!response) {
-      toast.error("Failed to process flyer vote");
+      toast.error(flyerVoteFailureMessage(quickVoteResponse.error));
       return;
     }
 
