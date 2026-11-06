@@ -238,6 +238,124 @@ export interface LiveEventView extends LiveEventState {
   finishedCurrentPost: number;
 }
 
+export interface EventReportOpening {
+  eventName: string;
+  eventSubtitle: string | null;
+  peopleCount: number;
+  voteCount: number;
+  postCount: number;
+  attendeeStatementCount: number;
+  averagePostParticipationPercent: number;
+  sessionStartedAt: number;
+  sessionEndedAt: number;
+}
+
+export interface EventReportStatement {
+  statementId: string;
+  text: string;
+  agreePercent: number;
+  disagreePercent: number;
+}
+
+export interface EventReportPost {
+  roomId: string;
+  postNumber: number;
+  topic: string;
+  voterCount: number;
+  secondsOnPost: number;
+  mostAgreedStatement: EventReportStatement | null;
+  mostSplitStatement: EventReportStatement | null;
+  topAttendeeStatement: EventReportStatement | null;
+}
+
+export interface EventReportAttendeeStatement
+  extends EventReportStatement {
+  postNumber: number;
+  voteCount: number;
+}
+
+export interface EventReportFloor {
+  attendeeCount: number;
+  attendeeStatementVoteCount: number;
+  attendeeStatementsInTopTenCount: number;
+  averageAttendeeAgreePercent: number;
+  averagePreparedAgreePercent: number;
+  topAttendeeStatements: EventReportAttendeeStatement[];
+  lowVoteAttendeeStatements: EventReportAttendeeStatement[];
+}
+
+export interface EventReportCampStatement {
+  statementId: string;
+  text: string;
+  isAttendeeStatement: boolean;
+  campAgreePercent: number;
+  otherCampsAgreePercent: number;
+}
+
+export interface EventReportCamp {
+  campId: string;
+  name: string;
+  description: string;
+  sizePercent: number;
+  representativeStatements: EventReportCampStatement[];
+}
+
+export interface EventReportCampAgreement {
+  campId: string;
+  agreePercent: number;
+}
+
+export interface EventReportStatementByCamp {
+  statementId: string;
+  text: string;
+  isAttendeeStatement: boolean;
+  overallAgreePercent: number;
+  campAgreements: EventReportCampAgreement[];
+}
+
+export interface EventReportBridge {
+  campIds: [string, string];
+  statement: EventReportStatementByCamp;
+}
+
+export interface EventReportCampAnalysis {
+  camps: EventReportCamp[];
+  statementsByCamp: EventReportStatementByCamp[];
+  bridges: EventReportBridge[];
+  commonGroundStatement: EventReportStatementByCamp | null;
+}
+
+export interface EventReportTimelineBin {
+  secondsSinceStart: number;
+  activeVoterCount: number;
+}
+
+export interface EventReportPromptStart {
+  postNumber: number;
+  secondsSinceStart: number;
+}
+
+export interface EventReportAttendeeStatementAdded {
+  statementId: string;
+  text: string;
+  secondsSinceStart: number;
+}
+
+export interface EventReportTimeline {
+  binSeconds: number;
+  bins: EventReportTimelineBin[];
+  promptStarts: EventReportPromptStart[];
+  attendeeStatementsAdded: EventReportAttendeeStatementAdded[];
+}
+
+export interface EventReport {
+  opening: EventReportOpening;
+  posts: EventReportPost[];
+  floor: EventReportFloor;
+  campAnalysis: EventReportCampAnalysis;
+  timeline: EventReportTimeline;
+}
+
 export type ModeratorAction = "open" | "start" | "next" | "back" | "pause" | "resume" | "end";
 
 export type LiveScreen =
@@ -275,6 +393,7 @@ export interface SupportViewCurrentPost {
 export interface SupportViewPost {
   roomId: string;
   postNumber: number;
+  topic: string;
   voterCount: number;
   secondsOnPost: number;
 }

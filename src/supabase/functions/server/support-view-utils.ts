@@ -80,8 +80,12 @@ export const sumSecondsOnEachPost = (
   return secondsByRoomId;
 };
 
+const findRoomTopic = (rooms: SupportViewSources["rooms"], roomId: string): string =>
+  rooms.find((room) => room.id === roomId)?.topic ?? "";
+
 export const listPostsSoFar = (
   state: Pick<LiveEventState, "roomOrder" | "postChanges" | "endedAt">,
+  rooms: SupportViewSources["rooms"],
   sessionVotes: EventVote[],
   now: number,
 ): SupportViewPost[] => {
@@ -94,6 +98,7 @@ export const listPostsSoFar = (
       ? [{
         roomId,
         postNumber: index + 1,
+        topic: findRoomTopic(rooms, roomId),
         voterCount: voterIdsByRoomId[roomId]?.size ?? 0,
         secondsOnPost: secondsByRoomId[roomId],
       }]
@@ -153,7 +158,7 @@ export const describeCurrentPost = (
 
   return {
     postNumber: state.currentIndex + 1,
-    topic: rooms.find((room) => room.id === roomId)?.topic ?? "",
+    topic: findRoomTopic(rooms, roomId),
     finishedCount: finishedUserIds.length,
     swipingCount: onThisPost.filter((presence) => presence.screen === "swiping").length,
     agreeVotes: postVotes.filter(isAgree).length,
@@ -186,7 +191,7 @@ export const listAttendeeStatements = (
 };
 
 export const buildSupportViewStats = (sources: SupportViewSources): SupportViewStats => {
-  const { eventName, state, presences, statements, votes, now } = sources;
+  const { eventName, state, rooms, presences, statements, votes, now } = sources;
   const sessionVotes = filterSessionVotes(votes, state.startedAt);
   const attendeeStatements = listAttendeeStatements(state, statements);
 
@@ -199,7 +204,7 @@ export const buildSupportViewStats = (sources: SupportViewSources): SupportViewS
     votes: sessionVotes.length,
     statementsFromRoom: attendeeStatements.filter((statement) => !statement.isHidden).length,
     currentPost: describeCurrentPost(sources, sessionVotes),
-    postsSoFar: listPostsSoFar(state, sessionVotes, now),
+    postsSoFar: listPostsSoFar(state, rooms, sessionVotes, now),
     attendeeStatements,
     minutes: listMinutes(sessionVotes, state.startedAt, sessionEndTime(state, now)),
     nextPressedAtMinutes: listNextPressedAtMinutes(state),

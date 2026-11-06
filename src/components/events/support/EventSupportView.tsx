@@ -93,11 +93,17 @@ export function EventSupportView({
 
           <div className="space-y-4">
             <SupportPanel title="Voted on each post">
-              <VotedOnEachPostChart postsSoFar={stats.postsSoFar} currentPostNumber={currentPostNumber} />
+              <VotedOnEachPostChart
+                postsSoFar={stats.postsSoFar}
+                highlightedPostNumber={currentPostNumber}
+              />
               <SupportNote>People who voted on each post</SupportNote>
             </SupportPanel>
             <SupportPanel title="Time per post">
-              <TimePerPostChart postsSoFar={stats.postsSoFar} currentPostNumber={currentPostNumber} />
+              <TimePerPostChart
+                postsSoFar={stats.postsSoFar}
+                highlightedPostNumber={currentPostNumber}
+              />
             </SupportPanel>
             <ReloadAllPhonesButton isReloadingPhones={isReloadingPhones} onReloadAllPhones={onReloadAllPhones} />
           </div>
