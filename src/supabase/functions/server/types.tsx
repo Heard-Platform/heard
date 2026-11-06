@@ -138,6 +138,8 @@ export type VoteType =
   | "pass"
   | "super_agree";
 
+export type SimpleVoteType = Exclude<VoteType, "super_agree">;
+
 export interface Statement {
   id: string;
   text: string;
@@ -367,6 +369,123 @@ export type SupportViewStats = {
   nextPressedAtMinutes: number[];
   startedAt: number | null;
   endedAt: number | null;
+};
+
+export type EventReportOpening = {
+  eventName: string;
+  eventSubtitle: string | null;
+  peopleCount: number;
+  voteCount: number;
+  postCount: number;
+  attendeeStatementCount: number;
+  averagePostParticipationPercent: number;
+  sessionStartedAt: number;
+  sessionEndedAt: number;
+};
+
+export type EventReportStatement = {
+  statementId: string;
+  text: string;
+  agreePercent: number;
+  disagreePercent: number;
+};
+
+export type EventReportPost = {
+  roomId: string;
+  postNumber: number;
+  topic: string;
+  voterCount: number;
+  secondsOnPost: number;
+  mostAgreedStatement: EventReportStatement | null;
+  mostSplitStatement: EventReportStatement | null;
+  topAttendeeStatement: EventReportStatement | null;
+};
+
+export type EventReportAttendeeStatement = EventReportStatement & {
+  postNumber: number;
+  voteCount: number;
+};
+
+export type EventReportFloor = {
+  attendeeCount: number;
+  attendeeStatementVoteCount: number;
+  attendeeStatementsInTopTenCount: number;
+  averageAttendeeAgreePercent: number;
+  averagePreparedAgreePercent: number;
+  topAttendeeStatements: EventReportAttendeeStatement[];
+  lowVoteAttendeeStatements: EventReportAttendeeStatement[];
+};
+
+export type EventReportCampStatement = {
+  statementId: string;
+  text: string;
+  isAttendeeStatement: boolean;
+  campAgreePercent: number;
+  otherCampsAgreePercent: number;
+};
+
+export type EventReportCamp = {
+  campId: string;
+  name: string;
+  description: string;
+  sizePercent: number;
+  representativeStatements: EventReportCampStatement[];
+};
+
+export type EventReportCampAgreement = {
+  campId: string;
+  agreePercent: number;
+};
+
+export type EventReportStatementByCamp = {
+  statementId: string;
+  text: string;
+  isAttendeeStatement: boolean;
+  overallAgreePercent: number;
+  campAgreements: EventReportCampAgreement[];
+};
+
+export type EventReportBridge = {
+  campIds: [string, string];
+  statement: EventReportStatementByCamp;
+};
+
+export type EventReportCampAnalysis = {
+  camps: EventReportCamp[];
+  statementsByCamp: EventReportStatementByCamp[];
+  bridges: EventReportBridge[];
+  commonGroundStatement: EventReportStatementByCamp | null;
+};
+
+export type EventReportTimelineBin = {
+  secondsSinceStart: number;
+  activeVoterCount: number;
+};
+
+export type EventReportPromptStart = {
+  postNumber: number;
+  secondsSinceStart: number;
+};
+
+export type EventReportAttendeeStatementAdded = {
+  statementId: string;
+  text: string;
+  secondsSinceStart: number;
+};
+
+export type EventReportTimeline = {
+  binSeconds: number;
+  bins: EventReportTimelineBin[];
+  promptStarts: EventReportPromptStart[];
+  attendeeStatementsAdded: EventReportAttendeeStatementAdded[];
+};
+
+export type EventReport = {
+  opening: EventReportOpening;
+  posts: EventReportPost[];
+  floor: EventReportFloor;
+  campAnalysis: EventReportCampAnalysis;
+  timeline: EventReportTimeline;
 };
 
 export type LiveHeartbeat = {
