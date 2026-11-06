@@ -41,6 +41,7 @@ import {
   type EventOnboardingQuestionInput,
   type AttendeeOnboarding,
   type SupportViewStats,
+  type EventReport,
   type LiveHeartbeat,
   EventSummary,
   StatementMerge,
@@ -279,6 +280,14 @@ class ApiClient extends BaseApiClient {
   ): Promise<ApiResponse<{ stats: SupportViewStats }>> {
     const query = displayKey ? `?${new URLSearchParams({ displayKey })}` : "";
     return this.request<{ stats: SupportViewStats }>(`/event/${eventId}/support${query}`);
+  }
+
+  async getEventReport(
+    eventId: string,
+  ): Promise<ApiResponse<{ report: EventReport }>> {
+    return this.request<{ report: EventReport }>(
+      `/event/${eventId}/report`,
+    );
   }
 
   async setEventStatementHidden(

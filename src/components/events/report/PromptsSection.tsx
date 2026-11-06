@@ -7,7 +7,7 @@ import { findLongestPost } from "../../../utils/event-report";
 import { formatElapsed } from "../../../utils/event-support";
 import { pluralizePrompt } from "../../../utils/text";
 import { ONE_SECOND_MS } from "../../../utils/time";
-import { createShareableLink } from "../../../utils/url";
+import { createAnalysisLink } from "../../../utils/url";
 import { Button } from "../../ui/button";
 import { SectionHeading } from "./SectionHeading";
 import { ResponseMark } from "./ResponseMark";
@@ -137,10 +137,10 @@ function SelectedPromptPanel({ post }: SelectedPromptPanelProps) {
         />
       </div>
       <a
-        href={createShareableLink(post.roomId)}
+        href={createAnalysisLink(post.roomId)}
         className="self-start text-sm font-semibold underline underline-offset-4"
       >
-        See all statements for this prompt
+        See the full analysis for this prompt
       </a>
     </div>
   );

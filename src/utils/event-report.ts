@@ -46,6 +46,16 @@ export function findLongestPost(
   return _.maxBy(posts, "secondsOnPost");
 }
 
+export function findPostTopic(
+  posts: EventReportPost[],
+  postNumber: number,
+): string {
+  const post = posts.find(
+    (eventPost) => eventPost.postNumber === postNumber,
+  );
+  return post?.topic ?? "";
+}
+
 export function getAverageVoterCount(
   posts: EventReportPost[],
 ): number {
@@ -124,10 +134,44 @@ export function findBusiestBin(
   return _.maxBy(bins, "activeVoterCount");
 }
 
-export function findQuietestBin(
+export interface QuietestStretch {
+  secondsSinceStart: number;
+  seconds: number;
+  activeVoterCount: number;
+}
+
+function listRunsAtVoterCount(
   bins: EventReportTimelineBin[],
-): EventReportTimelineBin | undefined {
-  return _.minBy(bins, "activeVoterCount");
+  activeVoterCount: number,
+): EventReportTimelineBin[][] {
+  const runs: EventReportTimelineBin[][] = [];
+  let currentRun: EventReportTimelineBin[] = [];
+  for (const bin of bins) {
+    if (bin.activeVoterCount === activeVoterCount) {
+      currentRun.push(bin);
+      continue;
+    }
+    if (currentRun.length > 0) runs.push(currentRun);
+    currentRun = [];
+  }
+  if (currentRun.length > 0) runs.push(currentRun);
+  return runs;
+}
+
+export function findQuietestStretch(
+  timeline: Pick<EventReportTimeline, "bins" | "binSeconds">,
+): QuietestStretch | undefined {
+  const quietestBin = _.minBy(timeline.bins, "activeVoterCount");
+  if (!quietestBin) return undefined;
+  const fewestVoters = quietestBin.activeVoterCount;
+  const quietRuns = listRunsAtVoterCount(timeline.bins, fewestVoters);
+  const longestQuietRun =
+    _.maxBy(quietRuns, "length") ?? [quietestBin];
+  return {
+    secondsSinceStart: longestQuietRun[0].secondsSinceStart,
+    seconds: longestQuietRun.length * timeline.binSeconds,
+    activeVoterCount: fewestVoters,
+  };
 }
 
 export function findPostNumberAtSecond(

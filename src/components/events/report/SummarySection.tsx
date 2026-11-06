@@ -197,7 +197,10 @@ function CallToAction() {
         >
           Talk to us
         </a>
-        <ShareButton className="report-stat-border h-12 border" />
+        <ShareButton
+          variant="ghost"
+          className="report-stat-border h-12 border"
+        />
       </div>
     </div>
   );

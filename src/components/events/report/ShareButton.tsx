@@ -1,22 +1,28 @@
 import { toast } from "sonner";
+import { Button } from "../../ui/button";
 
 interface ShareButtonProps {
+  variant: "default" | "ghost";
   className: string;
 }
 
-export function ShareButton({ className }: ShareButtonProps) {
+export function ShareButton({
+  variant,
+  className,
+}: ShareButtonProps) {
   const copyReportLink = async () => {
     await navigator.clipboard.writeText(window.location.href);
     toast.success("Report link copied");
   };
 
   return (
-    <button
+    <Button
       type="button"
+      variant={variant}
       onClick={copyReportLink}
-      className={`${className} rounded-full px-5 text-sm font-semibold`}
+      className={`${className} rounded-full px-5 font-semibold`}
     >
       Share report
-    </button>
+    </Button>
   );
 }

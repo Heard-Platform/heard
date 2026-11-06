@@ -128,6 +128,14 @@ export const parseAttendedEventIdFromUrl = (): string | null => {
   return match ? match[1] : null
 }
 
+export const parseReportEventIdFromUrl = (): string | null => {
+  if (typeof window === "undefined") return null;
+  const match = window.location.pathname.match(
+    /^\/event\/([^/]+)\/report\/?$/,
+  );
+  return match ? match[1] : null;
+};
+
 export const parseEventIdFromUrl = (): string | null => {
   return parseFromUrl('event')
 }
@@ -142,7 +150,7 @@ export const updateUrlForEvent = (eventId: string | null) => {
   window.history.pushState(null, '', newPath)
 }
 
-export type LiveEventPage = "live";
+export type LiveEventPage = "live" | "report";
 
 export const createLiveEventLink = (eventId: string, page: LiveEventPage): string => {
   if (typeof window === 'undefined') return ''
@@ -173,6 +181,11 @@ export const createShareableLink = (roomId: string): string => {
   const baseUrl = window.location.origin
   return `${baseUrl}/room/${roomId}`
 }
+
+export const createAnalysisLink = (roomId: string): string => {
+  if (typeof window === "undefined") return "";
+  return `${createShareableLink(roomId)}?analysis=${roomId}`;
+};
 
 export const createCohostInviteLink = (roomId: string, token: string): string => {
   if (typeof window === 'undefined') return ''

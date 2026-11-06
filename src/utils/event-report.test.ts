@@ -12,7 +12,8 @@ import {
   findMostAgreedStatement,
   findMostSplitStatement,
   findPostNumberAtSecond,
-  findQuietestBin,
+  findPostTopic,
+  findQuietestStretch,
   formatCount,
   formatSessionClock,
   formatSessionStart,
@@ -97,6 +98,18 @@ describe("findLongestPost", () => {
 
   it("finds nothing when there are no posts", () => {
     expect(findLongestPost([])).toBeUndefined();
+  });
+});
+
+describe("findPostTopic", () => {
+  const posts = [reportPost(1, 130), reportPost(2, 320)];
+
+  it("finds the topic of the post with that number", () => {
+    expect(findPostTopic(posts, 2)).toBe("Prompt 2");
+  });
+
+  it("is empty when no post has that number", () => {
+    expect(findPostTopic(posts, 3)).toBe("");
   });
 });
 
@@ -198,11 +211,38 @@ const TIMELINE: EventReportTimeline = {
   ],
 };
 
-describe("findBusiestBin and findQuietestBin", () => {
-  it("finds the most and least active stretches", () => {
+describe("findBusiestBin", () => {
+  it("finds the most active stretch", () => {
     expect(findBusiestBin(TIMELINE.bins)?.secondsSinceStart).toBe(0);
-    expect(findQuietestBin(TIMELINE.bins)?.secondsSinceStart).toBe(
-      60,
+  });
+});
+
+describe("findQuietestStretch", () => {
+  const timelineWithVoterCounts = (activeVoterCounts: number[]) => ({
+    binSeconds: 20,
+    bins: activeVoterCounts.map((activeVoterCount, binIndex) => ({
+      secondsSinceStart: binIndex * 20,
+      activeVoterCount,
+    })),
+  });
+
+  it("finds the longest run of the quietest bins", () => {
+    const timeline = timelineWithVoterCounts([0, 8, 0, 0, 0, 5, 0]);
+    expect(findQuietestStretch(timeline)).toEqual({
+      secondsSinceStart: 40,
+      seconds: 60,
+      activeVoterCount: 0,
+    });
+  });
+
+  it("picks the earliest of equally long runs", () => {
+    const timeline = timelineWithVoterCounts([9, 3, 3, 7, 3, 3]);
+    expect(findQuietestStretch(timeline)?.secondsSinceStart).toBe(20);
+  });
+
+  it("finds nothing when there are no bins", () => {
+    expect(findQuietestStretch(timelineWithVoterCounts([]))).toBe(
+      undefined,
     );
   });
 });

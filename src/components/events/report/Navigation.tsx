@@ -27,7 +27,7 @@ export function Navigation({ eventName }: NavigationProps) {
             </a>
           ))}
         </div>
-        <ShareButton className="dark-bg normal-text h-10" />
+        <ShareButton variant="default" className="h-10" />
       </div>
     </nav>
   );

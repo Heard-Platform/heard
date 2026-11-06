@@ -8,10 +8,14 @@ import {
   findBiggestAttendeeStatementBump,
   findBusiestBin,
   findPostNumberAtSecond,
-  findQuietestBin,
+  findPostTopic,
+  findQuietestStretch,
   formatSessionClock,
+  type QuietestStretch,
   type TimelineColumn,
 } from "../../../utils/event-report";
+import { formatElapsed } from "../../../utils/event-support";
+import { ONE_SECOND_MS } from "../../../utils/time";
 import { pluralizePerson } from "../../../utils/text";
 import {
   Tooltip,
@@ -112,8 +116,6 @@ function TimelineChart({
   const sessionSeconds =
     lastColumn.secondsSinceStart + timeline.binSeconds;
   const clockTickSeconds = listClockTickSeconds(sessionSeconds);
-  const findTopic = (postNumber: number) =>
-    posts.find((post) => post.postNumber === postNumber)?.topic ?? "";
 
   return (
     <div className="overflow-x-auto overflow-y-hidden">
@@ -123,11 +125,11 @@ function TimelineChart({
             <TimelineColumnBar
               key={column.secondsSinceStart}
               column={column}
+              posts={posts}
               clockTime={formatSessionClock(
                 sessionStartedAt,
                 column.secondsSinceStart,
               )}
-              findTopic={findTopic}
             />
           ))}
         </div>
@@ -160,14 +162,14 @@ function listClockTickSeconds(sessionSeconds: number): number[] {
 
 interface TimelineColumnBarProps {
   column: TimelineColumn;
+  posts: EventReportPost[];
   clockTime: string;
-  findTopic: (postNumber: number) => string;
 }
 
 function TimelineColumnBar({
   column,
+  posts,
   clockTime,
-  findTopic,
 }: TimelineColumnBarProps) {
   const barClassName =
     (column.postNumber ?? 0) % 2 === 0
@@ -184,7 +186,7 @@ function TimelineColumnBar({
       {column.startingPostNumber !== undefined && (
         <PromptStartLine
           postNumber={column.startingPostNumber}
-          topic={findTopic(column.startingPostNumber)}
+          topic={findPostTopic(posts, column.startingPostNumber)}
         />
       )}
       <div className="flex h-5 items-end justify-center">
@@ -272,7 +274,7 @@ function TimelineCallouts({
   sessionStartedAt,
 }: TimelineCalloutsProps) {
   const busiestBin = findBusiestBin(timeline.bins);
-  const quietestBin = findQuietestBin(timeline.bins);
+  const quietestStretch = findQuietestStretch(timeline);
   const biggestBump = findBiggestAttendeeStatementBump(timeline);
   const findPostNumber = (secondsSinceStart: number) =>
     findPostNumberAtSecond(timeline.promptStarts, secondsSinceStart);
@@ -303,17 +305,43 @@ function TimelineCallouts({
           ].join(" ")}
         </TimelineCallout>
       )}
-      {quietestBin && (
+      {quietestStretch && (
         <TimelineCallout label="Quietest stretch">
-          {[
-            `${formatSessionClock(sessionStartedAt, quietestBin.secondsSinceStart)},`,
-            `during prompt`,
-            `${findPostNumber(quietestBin.secondsSinceStart)}.`,
-          ].join(" ")}
+          {describeQuietestStretch(
+            quietestStretch,
+            formatSessionClock(
+              sessionStartedAt,
+              quietestStretch.secondsSinceStart,
+            ),
+            findPostNumber(quietestStretch.secondsSinceStart),
+          )}
         </TimelineCallout>
       )}
     </div>
   );
+}
+
+function describeQuietestStretch(
+  quietestStretch: QuietestStretch,
+  clockTime: string,
+  postNumber: number | undefined,
+): string {
+  const stretchLength = formatElapsed(
+    quietestStretch.seconds * ONE_SECOND_MS,
+  );
+  const whoWasVoting = describeWhoWasVoting(
+    quietestStretch.activeVoterCount,
+  );
+  return [
+    `${stretchLength} with ${whoWasVoting},`,
+    `from ${clockTime} during prompt ${postNumber}.`,
+  ].join(" ");
+}
+
+function describeWhoWasVoting(activeVoterCount: number): string {
+  if (activeVoterCount === 0) return "nobody voting";
+  const person = pluralizePerson(activeVoterCount);
+  return `only ${activeVoterCount} ${person} voting`;
 }
 
 interface TimelineCalloutProps {

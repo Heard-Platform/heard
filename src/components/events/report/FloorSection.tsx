@@ -2,8 +2,12 @@ import type { ReactNode } from "react";
 import type {
   EventReportAttendeeStatement,
   EventReportFloor,
+  EventReportPost,
 } from "../../../types";
-import { getOneInHowMany } from "../../../utils/event-report";
+import {
+  findPostTopic,
+  getOneInHowMany,
+} from "../../../utils/event-report";
 import {
   pluralizeIdea,
   pluralizePerson,
@@ -20,12 +24,14 @@ const FLOOR_HEADLINE =
 
 interface FloorSectionProps {
   floor: EventReportFloor;
+  posts: EventReportPost[];
   attendeeStatementCount: number;
   peopleCount: number;
 }
 
 export function FloorSection({
   floor,
+  posts,
   attendeeStatementCount,
   peopleCount,
 }: FloorSectionProps) {
@@ -47,12 +53,19 @@ export function FloorSection({
         {favoriteStatement && (
           <>
             <FloorStats floor={floor} peopleCount={peopleCount} />
-            <FavoriteStatementCard statement={favoriteStatement} />
-            <RunnerUpStatements statements={runnerUpStatements} />
+            <FavoriteStatementCard
+              statement={favoriteStatement}
+              posts={posts}
+            />
+            <RunnerUpStatements
+              statements={runnerUpStatements}
+              posts={posts}
+            />
           </>
         )}
         <LowVoteStatements
           statements={floor.lowVoteAttendeeStatements}
+          posts={posts}
         />
       </div>
     </section>
@@ -162,10 +175,12 @@ function AgreementComparisonRow({
 
 interface FavoriteStatementCardProps {
   statement: EventReportAttendeeStatement;
+  posts: EventReportPost[];
 }
 
 function FavoriteStatementCard({
   statement,
+  posts,
 }: FavoriteStatementCardProps) {
   return (
     <div className="normal-bg dark-text flex flex-col gap-5 rounded-3xl p-7 md:p-9">
@@ -185,7 +200,7 @@ function FavoriteStatementCard({
           {statement.agreePercent}% agree
         </span>
         <span className="text-sm secondary-text-strong">
-          Added during prompt {statement.postNumber} ·{" "}
+          {findPostTopic(posts, statement.postNumber)} ·{" "}
           {statement.voteCount} {pluralizeVote(statement.voteCount)}
         </span>
       </div>
@@ -195,10 +210,12 @@ function FavoriteStatementCard({
 
 interface AttendeeStatementListProps {
   statements: EventReportAttendeeStatement[];
+  posts: EventReportPost[];
 }
 
 function RunnerUpStatements({
   statements,
+  posts,
 }: AttendeeStatementListProps) {
   if (statements.length === 0) return null;
 
@@ -222,8 +239,8 @@ function RunnerUpStatements({
               disagreePercent={statement.disagreePercent}
             />
             <span className="text-sm secondary-text-strong">
-              {statement.agreePercent}% agree · prompt{" "}
-              {statement.postNumber}
+              {statement.agreePercent}% agree ·{" "}
+              {findPostTopic(posts, statement.postNumber)}
             </span>
           </li>
         ))}
@@ -234,6 +251,7 @@ function RunnerUpStatements({
 
 function LowVoteStatements({
   statements,
+  posts,
 }: AttendeeStatementListProps) {
   if (statements.length === 0) return null;
 
@@ -253,7 +271,8 @@ function LowVoteStatements({
           >
             <span className="leading-snug">{statement.text}</span>
             <span className="text-sm report-floor-subtext">
-              Prompt {statement.postNumber} · {statement.voteCount}{" "}
+              {findPostTopic(posts, statement.postNumber)} ·{" "}
+              {statement.voteCount}{" "}
               {pluralizeVote(statement.voteCount)}
             </span>
           </li>

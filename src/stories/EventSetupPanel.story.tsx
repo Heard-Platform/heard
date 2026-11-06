@@ -30,18 +30,20 @@ function EventSetupDemo({ rooms, status, currentIndex }: EventSetupDemoProps) {
     setRoomOrder(nextOrder);
   };
 
+  const handleOpenReport = () => console.log("[Story] open report");
+
   return (
     <div className="w-full max-w-sm mx-auto">
       <EventSetupPanel
         rooms={orderByRoomOrder(rooms, roomOrder)}
-        status={status}
-        currentIndex={currentIndex}
+        live={{ status, currentIndex }}
         joinUrl={JOIN_URL}
         displayUrl={DISPLAY_URL}
         supportViewUrl={SUPPORT_VIEW_URL}
         onReorder={handleReorder}
         onOpenDisplay={() => console.log("[Story] open display")}
         onOpenSupportView={() => console.log("[Story] open support view")}
+        onOpenReport={handleOpenReport}
       />
     </div>
   );
@@ -51,7 +53,7 @@ export function EventSetupPanelStory() {
   return (
     <StoryContainer
       title="Event Setup Panel"
-      description="Moderator-only panel on the event page. Order the posts with the arrows, copy the join and display links, open the display (which runs the session). Ordering stays open while the doors are open and locks once the session starts."
+      description="Moderator-only panel on the event page. Order the posts with the arrows, copy the join and display links, open the display (which runs the session). Ordering stays open while the doors are open and locks once the session starts. Once the session starts, View report opens the event report."
       variants={[
         {
           id: "ordered",

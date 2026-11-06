@@ -9,6 +9,7 @@ import {
   EVENT_POLL_MAX_INTERVAL_MS,
   moveInOrder,
   getIntervalWithBackoff,
+  isBeforeSessionStart,
   orderByRoomOrder,
   pickNewestState,
 } from "./live-event";
@@ -60,6 +61,18 @@ describe("moveInOrder", () => {
   it("does not mutate the input", () => {
     moveInOrder(order, 0, 1);
     expect(order).toEqual(["a", "b", "c"]);
+  });
+});
+
+describe("isBeforeSessionStart", () => {
+  it("is true while setting up or with the doors open", () => {
+    expect(isBeforeSessionStart("setup")).toBe(true);
+    expect(isBeforeSessionStart("open")).toBe(true);
+  });
+
+  it("is false once the session is live or ended", () => {
+    expect(isBeforeSessionStart("live")).toBe(false);
+    expect(isBeforeSessionStart("ended")).toBe(false);
   });
 });
 
