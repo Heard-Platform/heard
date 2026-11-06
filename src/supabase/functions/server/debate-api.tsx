@@ -43,7 +43,10 @@ import type {
   DebateRoom,
   CommunityMembership,
 } from "./types.tsx";
-import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
+import {
+  ANONYMOUS_ACTION_NOT_ALLOWED_ERROR,
+  RATE_LIMITED_ERROR,
+} from "./constants.tsx";
 import { calculateVoteStats, orderStatements, processVote } from "./voting-utils.ts";
 import { filterFeedRooms, sortRoomsForFeed } from "./feed-utils.ts";
 import { checkEventPosting } from "./event-utils.ts";
@@ -52,6 +55,7 @@ import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-uti
 import { validateDeveloper } from "./internal-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { validateSession } from "./auth-utils.ts";
+import { logActionUnlessRateLimited } from "./rate-limit-utils.ts";
 
 const app = new Hono();
 
@@ -591,6 +595,14 @@ app.post(
           { error: "Statement must be 1-500 characters" },
           400,
         );
+      }
+
+      const isRateLimited = await logActionUnlessRateLimited(
+        userId,
+        "statement",
+      );
+      if (isRateLimited) {
+        return c.json({ error: RATE_LIMITED_ERROR }, 429);
       }
 
       const room = await getDebateRoom(roomId);

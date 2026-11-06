@@ -445,6 +445,15 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       ),
     },
     {
+      icon: Shield,
+      iconColor: "text-amber-600",
+      bgColor: "bg-amber-100",
+      title: "Statement Rate Limit Hits",
+      description: "Statements refused for coming under 5 seconds after the user's last statement",
+      getValue: (s) => s.rateLimitedStatements,
+      getDate: (s) => s.rateLimitHitsSince,
+    },
+    {
       icon: Sparkles,
       iconColor: "text-fuchsia-600",
       bgColor: "bg-fuchsia-100",

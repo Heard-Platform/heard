@@ -629,6 +629,14 @@ export interface InternalVar {
   value: string;
 }
 
+export type RateLimitedActionType = "statement";
+
+export interface RateLimitedAction {
+  userId: string;
+  type: RateLimitedActionType;
+  lastActionAt: number;
+}
+
 export interface EnrichmentConfig {
   enabled: boolean;
   averageIntervalMins: number;

@@ -7,6 +7,7 @@ import { toTimestamp } from "./time-utils.ts";
 import { FLYER_WELCOME_EMAIL_TYPE } from "./template-flyer-welcome.ts";
 import { FLYER_RESULTS_EMAIL_TYPE } from "./template-flyer-results.ts";
 import { FEEDBACK_CARD_SHOWN_EVENT, isFounderChatOptIn } from "./feedback-results-utils.ts";
+import { RATE_LIMIT_HIT_EVENTS } from "./rate-limit-utils.ts";
 import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getSwipeSixFunnel, getSwipeSixDailyCompletions, buildCreateRoomFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel, getPersonalFlyerScreenLoadTimes, FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS, buildEventReportOpens, REPORT_OPENED_EVENT } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
@@ -71,6 +72,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       voteTaps,
       voteSwipes,
       reportOpenedEvents,
+      rateLimitedStatements,
       events,
     ] = await Promise.all([
       getAllRealUsers(),
@@ -130,6 +132,7 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       countEventsOfType("vote_tapped"),
       countEventsOfType("vote_swiped"),
       getAllEventsOfType(REPORT_OPENED_EVENT),
+      countEventsOfType(RATE_LIMIT_HIT_EVENTS.statement),
       selectAllWithoutLimit<Event>("events"),
     ]);
 
@@ -348,6 +351,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     const sessionExpiryBypassedUsers = sessionExpiryBypassedUserIds.size;
     const sessionExpiryBypassedSince = new Date("2026-09-18").getTime();
 
+    const rateLimitHitsSince = new Date("2026-11-06").getTime();
+
     const responseVotesNotifEmailsSent = responseVotesNotifStats.emailsSent;
     const responseVotesNotifEmailsSentSince = new Date("2026-09-16").getTime();
     const responseVotesNotifButtonClicks = responseVotesNotifStats.buttonClicks;
@@ -505,6 +510,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       sessionExpiryBypassed,
       sessionExpiryBypassedUsers,
       sessionExpiryBypassedSince,
+      rateLimitedStatements,
+      rateLimitHitsSince,
       anonResponseTripwireShown,
       anonResponseTripwireEmailSubmitted,
       anonResponseTripwireSince,

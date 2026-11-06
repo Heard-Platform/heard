@@ -17,6 +17,8 @@ import {
   RoomDemographicQuestion,
   NewUserEvent,
   NewUserReport,
+  RateLimitedAction,
+  RateLimitedActionType,
   RoomFollow,
   RoomView,
   SentEmail,
@@ -394,6 +396,24 @@ export const setInternalVar = async (key: InternalVarKey, value: any) =>
 export const getInternalVar = async <T>(key: InternalVarKey): Promise<T | null> =>
   selectAll<InternalVar>("internal_vars", { key })
     .then((vars) => (vars[0] ? JSON.parse(vars[0].value) : null));
+
+export const getLastRateLimitedActionAt = async (
+  userId: string,
+  type: RateLimitedActionType,
+): Promise<number | null> => {
+  const rateLimitedActions =
+    await selectAllWithoutLimit<RateLimitedAction>(
+      "rate_limited_actions",
+      { userId, type },
+      "lastActionAt",
+    );
+  return rateLimitedActions[0]?.lastActionAt ?? null;
+};
+
+export const saveRateLimitedAction = async (
+  rateLimitedAction: RateLimitedAction,
+) =>
+  upsert("rate_limited_actions", rateLimitedAction, "userId,type");
 
 export const saveCoverCardSwipe = async (userId: string, roomId: string) =>
   upsert("cover_card_swipes", { userId, roomId, swipedAt: Date.now() }, "userId,roomId");

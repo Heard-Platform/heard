@@ -1048,6 +1048,8 @@ export interface FeatureResults {
   sessionExpiryBypassed: number;
   sessionExpiryBypassedUsers: number;
   sessionExpiryBypassedSince: number;
+  rateLimitedStatements: number;
+  rateLimitHitsSince: number;
   anonResponseTripwireShown: number;
   anonResponseTripwireEmailSubmitted: number;
   anonResponseTripwireSince: number;
