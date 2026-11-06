@@ -9,7 +9,8 @@ import {
 import { sleep } from "../shared/sleep.ts";
 import { pickJoinDelayMs } from "./attendee-behavior.ts";
 import { SimulatedAttendee } from "./simulated-attendee.ts";
-import { buildSimulationEventLinks, createSimulationEvent } from "./simulation-event-setup.ts";
+import { createSimulationEvent } from "./simulation-event-setup.ts";
+import { buildEventLinks } from "../shared/event-links.ts";
 import { StateChangeTracker, VoteLedger } from "./simulation-measurements.ts";
 import { parseSimulationOptions, type SimulationOptions } from "./simulation-options.ts";
 import { formatProgressLine, formatSimulationReport, PROGRESS_WINDOW_MS } from "./simulation-report.ts";
@@ -58,7 +59,7 @@ async function runEventSimulation() {
 }
 
 function printLinks(eventId: string, displayKey: string | null, options: SimulationOptions) {
-  const links = buildSimulationEventLinks(eventId, displayKey);
+  const links = buildEventLinks(eventId, displayKey);
   console.log(`Event ${eventId}`);
   console.log(`  Moderator controls: ${links.moderatorControls}`);
   console.log(`  Display:            ${links.display ?? "(set HEARD_MODERATOR_SESSION_ID to get the display link)"}`);
