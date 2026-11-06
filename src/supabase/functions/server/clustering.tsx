@@ -3,6 +3,7 @@
  * Uses k-means clustering on user-statement voting matrix
  */
 
+import _ from "lodash";
 import { getStatementVoterIds } from "./analysis-utils.tsx";
 import { getStatementsForRoom, saveClusterData, getClusterAssignment, getClusterMetadataRecord, getClusterAssignmentsBatch, getVotesForStatement, getClusterIdentityRecord, clusterIdentityKeyFn } from "./kv-utils.tsx";
 import { insertAnalyticsEvent } from "./model-utils.ts";
@@ -12,6 +13,8 @@ import { runInBackground } from "./background-utils.ts";
 import type { Vote } from "./types.tsx";
 
 export const CLUSTER_RECOMPUTE_EVENT = "cluster_recompute";
+export const MIN_CLUSTER_COUNT = 2;
+export const MAX_CLUSTER_COUNT = 3;
 export const CLUSTER_IDENTITY_KEPT_EVENT = "cluster_identity_kept";
 export const CLUSTER_IDENTITY_NEW_EVENT = "cluster_identity_new";
 
@@ -303,7 +306,10 @@ export function kMeansClusteringMultiRun(
 }
 
 export function chooseClusterCount(userCount: number): number {
-  return Math.min(Math.max(2, Math.floor(Math.sqrt(userCount))), 3);
+  return _(userCount)
+    .thru(Math.sqrt)
+    .thru(Math.floor)
+    .clamp(MIN_CLUSTER_COUNT, MAX_CLUSTER_COUNT);
 }
 
 /**
