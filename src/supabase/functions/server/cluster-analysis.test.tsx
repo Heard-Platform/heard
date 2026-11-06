@@ -50,7 +50,7 @@ function makeClusteredVoters(
   return voters;
 }
 
-Deno.test("calculateClusterConsensus - picks distinguishing statements where one cluster diverges", () => {
+Deno.test("calculateClusterConsensus - only the cluster that agrees gets a divisive statement", () => {
   const clusterA = Array.from({ length: 40 }, (_, i) => `a${i}`);
   const clusterB = Array.from({ length: 40 }, (_, i) => `b${i}`);
 
@@ -74,11 +74,10 @@ Deno.test("calculateClusterConsensus - picks distinguishing statements where one
 
   assertEquals(result.clusters[0].statements.length, 1);
   assertEquals(result.clusters[0].statements[0].id, "divisive");
-  assertEquals(result.clusters[1].statements.length, 1);
-  assertEquals(result.clusters[1].statements[0].id, "divisive");
+  assertEquals(result.clusters[1].statements.length, 0);
 });
 
-Deno.test("calculateClusterConsensus - clusters get opposite-signed scores for the same divisive statement", () => {
+Deno.test("calcAnyDistinguishingStatements - clusters get opposite-signed scores for the same divisive statement", () => {
   const clusterA = Array.from({ length: 40 }, (_, i) => `a${i}`);
   const clusterB = Array.from({ length: 40 }, (_, i) => `b${i}`);
 
@@ -86,21 +85,11 @@ Deno.test("calculateClusterConsensus - clusters get opposite-signed scores for t
     makeStatement("divisive", makeClusteredVoters(clusterA, clusterB, "agree", "disagree")),
   ];
 
-  const assignments: (ClusterAssignment | null)[] = [
-    ...clusterA.map((u) => ({ userId: u, clusterId: 0, distance: 0.1 })),
-    ...clusterB.map((u) => ({ userId: u, clusterId: 1, distance: 0.1 })),
-  ];
+  const [clusterAStatement] = calcAnyDistinguishingStatements(statements, clusterA, clusterB);
+  const [clusterBStatement] = calcAnyDistinguishingStatements(statements, clusterB, clusterA);
 
-  const result = calculateClusterConsensus(
-    statements,
-    { totalClusters: 2, clusterSizes: { 0: 40, 1: 40 } },
-    identitiesFor(2),
-    assignments,
-    [...clusterA, ...clusterB],
-  );
-
-  assertGreater(result.clusters[0].statements[0].distinguishingScore, 0);
-  assertLess(result.clusters[1].statements[0].distinguishingScore, 0);
+  assertGreater(clusterAStatement.distinguishingScore, 0);
+  assertLess(clusterBStatement.distinguishingScore, 0);
 });
 
 Deno.test("calculateClusterConsensus - low-participation cluster yields no distinguishing statements", () => {

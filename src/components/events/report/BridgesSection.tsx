@@ -3,8 +3,10 @@ import type {
   EventReportBridge,
   EventReportCamp,
   EventReportCampAnalysis,
+  EventReportPost,
   EventReportStatementByCamp,
 } from "../../../types";
+import { findPostTopic } from "../../../utils/event-report";
 import {
   describeVennRegion,
   getVennRegionKey,
@@ -22,10 +24,12 @@ const BRIDGES_DESCRIPTION =
 
 interface BridgesSectionProps {
   campAnalysis: EventReportCampAnalysis;
+  posts: EventReportPost[];
 }
 
 export function BridgesSection({
   campAnalysis,
+  posts,
 }: BridgesSectionProps) {
   const { camps, statementsByCamp, bridges } = campAnalysis;
   const [selectedStatementId, setSelectedStatementId] = useState(
@@ -62,6 +66,7 @@ export function BridgesSection({
           <SelectedStatementPanel
             camps={camps}
             statement={selectedStatement}
+            posts={posts}
             bridges={bridges}
             onSelectStatement={setSelectedStatementId}
           />
@@ -88,6 +93,7 @@ function describeBridges(
 interface SelectedStatementPanelProps {
   camps: EventReportCamp[];
   statement: EventReportStatementByCamp;
+  posts: EventReportPost[];
   bridges: EventReportBridge[];
   onSelectStatement: (statementId: string) => void;
 }
@@ -95,6 +101,7 @@ interface SelectedStatementPanelProps {
 function SelectedStatementPanel({
   camps,
   statement,
+  posts,
   bridges,
   onSelectStatement,
 }: SelectedStatementPanelProps) {
@@ -112,6 +119,9 @@ function SelectedStatementPanel({
           Idea from the floor
         </span>
       )}
+      <p className="text-sm secondary-text-strong">
+        {findPostTopic(posts, statement.postNumber)}
+      </p>
       <p className="text-2xl font-bold leading-snug">
         {statement.text}
       </p>

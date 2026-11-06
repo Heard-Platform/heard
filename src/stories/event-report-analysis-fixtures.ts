@@ -39,6 +39,7 @@ const PRICING_SESSION_CAMPS: EventReportCamp[] = [
     name: "The Value Converts",
     description:
       "Already moving off hourly and looking for the playbook.",
+    memberCount: 26,
     sizePercent: 41,
     representativeStatements: [
       campStatement(
@@ -61,6 +62,7 @@ const PRICING_SESSION_CAMPS: EventReportCamp[] = [
     name: "The Pragmatic Hourlies",
     description:
       "See the flaws in hourly, but their clients and teams run on it.",
+    memberCount: 22,
     sizePercent: 34,
     representativeStatements: [
       campStatement(
@@ -82,6 +84,7 @@ const PRICING_SESSION_CAMPS: EventReportCamp[] = [
     name: "The AI Squeezed",
     description:
       "Feeling clients push AI savings back onto the price.",
+    memberCount: 16,
     sizePercent: 25,
     representativeStatements: [
       campStatement(
@@ -100,6 +103,9 @@ const PRICING_SESSION_CAMPS: EventReportCamp[] = [
   },
 ];
 
+const findFixturePostNumber = (statementId: string): number =>
+  Number(statementId.match(/\d+/)?.[0] ?? 1);
+
 const statementByCamp = (
   statementId: string,
   text: string,
@@ -112,6 +118,7 @@ const statementByCamp = (
 ): EventReportStatementByCamp => ({
   statementId,
   text,
+  postNumber: findFixturePostNumber(statementId),
   isAttendeeStatement,
   overallAgreePercent: Math.round(
     CAMP_SIZE_SHARES.converts * convertsPercent +

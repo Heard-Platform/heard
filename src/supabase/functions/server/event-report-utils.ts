@@ -1,6 +1,8 @@
 import _ from "lodash";
 import { canModerateEvent } from "./live-event-utils.ts";
+import { buildCampAnalysis } from "./event-report-camp-utils.ts";
 import { RouteError } from "./route-error.ts";
+import { percentOf } from "./utils.tsx";
 import {
   filterSessionVotes,
   listPostsSoFar,
@@ -12,7 +14,6 @@ import type {
   Event,
   EventReport,
   EventReportAttendeeStatement,
-  EventReportCampAnalysis,
   EventReportFloor,
   EventReportOpening,
   EventReportPost,
@@ -36,13 +37,6 @@ const TOP_ATTENDEE_STATEMENT_COUNT = 5;
 const LOW_VOTE_ATTENDEE_STATEMENT_COUNT = 3;
 const TOP_STATEMENT_COUNT = 10;
 
-export const EMPTY_CAMP_ANALYSIS: EventReportCampAnalysis = {
-  camps: [],
-  statementsByCamp: [],
-  bridges: [],
-  commonGroundStatement: null,
-};
-
 export type EventReportVote = Pick<
   Vote,
   "statementId" | "userId" | "voteType" | "timestamp"
@@ -63,7 +57,7 @@ export interface EventReportInputs {
   now: number;
 }
 
-interface StatementTally {
+export interface StatementTally {
   statement: Statement;
   postNumber: number;
   isAttendeeStatement: boolean;
@@ -129,9 +123,6 @@ export const findSessionEnd = (
   if (!finalPostChange) return now;
   return Math.min(now, inferSessionEnd(finalPostChange, votes));
 };
-
-export const percentOf = (part: number, whole: number): number =>
-  whole === 0 ? 0 : Math.round((part / whole) * 100);
 
 const tallyStatement = (
   statement: Statement,
@@ -480,7 +471,11 @@ export const buildEventReport = (
     ),
     posts,
     floor: buildFloor(tallies),
-    campAnalysis: EMPTY_CAMP_ANALYSIS,
+    campAnalysis: buildCampAnalysis({
+      tallies,
+      rankableTallies: tallies.filter(hasEnoughVotesToRank),
+      sessionVotes,
+    }),
     timeline: buildTimeline(
       inputs.state,
       sessionVotes,

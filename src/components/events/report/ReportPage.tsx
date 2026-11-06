@@ -34,7 +34,7 @@ export function ReportPage({ report }: ReportPageProps) {
         camps={campAnalysis.camps}
         postCount={opening.postCount}
       />
-      <BridgesSection campAnalysis={campAnalysis} />
+      <BridgesSection campAnalysis={campAnalysis} posts={posts} />
       <CommonGroundSection
         camps={campAnalysis.camps}
         commonGroundStatement={campAnalysis.commonGroundStatement}

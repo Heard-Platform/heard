@@ -296,6 +296,7 @@ export interface EventReportCamp {
   campId: string;
   name: string;
   description: string;
+  memberCount: number;
   sizePercent: number;
   representativeStatements: EventReportCampStatement[];
 }
@@ -308,6 +309,7 @@ export interface EventReportCampAgreement {
 export interface EventReportStatementByCamp {
   statementId: string;
   text: string;
+  postNumber: number;
   isAttendeeStatement: boolean;
   overallAgreePercent: number;
   campAgreements: EventReportCampAgreement[];
