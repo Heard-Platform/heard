@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import "./i18n";
 import App from "./App.tsx";
 import { AppBypassPage } from "./AppBypassPage.tsx";
+import { Toaster } from "./components/ui/sonner";
 import "./index.css";
 import "./semantic_classes.css";
 import "./styles/z-index.css";
@@ -48,7 +49,12 @@ if (window.location.pathname === "/app-bypass") {
     });
   }
 
-  createRoot(document.getElementById("root")!).render(<App />);
+  createRoot(document.getElementById("root")!).render(
+    <>
+      <App />
+      <Toaster />
+    </>,
+  );
 
   registerServiceWorker();
 }

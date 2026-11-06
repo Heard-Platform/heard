@@ -27,7 +27,6 @@ import { NewsletterViewer } from "./components/NewsletterViewer";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { useQuickVoteViaFlyer } from "./hooks/useQuickVoteViaFlyer";
 import { LanguageProvider } from "./contexts/LanguageContext";
-import { Toaster } from "./components/ui/sonner";
 import { api } from "./utils/api";
 import type { NewDebateRoom, DebateRoom, Statement, VoteType, Event } from "./types";
 import {
@@ -63,6 +62,7 @@ import type { FlyerVoteTally } from "./components/flyer/landing/FlyerLandingScre
 import type { FlyerVote } from "./components/flyer/FlyerVoteIntroCard";
 import { FeatureFlags, isFeatureEnabled } from "./utils/constants/feature-flags";
 import { WAYMO_DC_ROOM_ID, WAYMO_DC_STATEMENT_ID } from "./utils/constants/flyers";
+import { flyerVoteFailureMessage } from "./utils/flyer-vote-errors";
 import { EVENT_SHORT_ROUTES } from "./utils/constants/events";
 import { takeDisplayKeyFromUrl } from "./utils/display-key";
 import { safelyGetStorageItem, safelySetStorageItem } from "./utils/localStorage";
@@ -218,15 +218,17 @@ function AppContent() {
       return;
     }
 
-    const response = await voteViaFlyer(
+    const flyerVoteResponse = await voteViaFlyer(
       flyerData.flyerId,
       flyerData.statementId,
       flyerData.vote,
       flyerData.flyerGroup,
     );
 
+    const response = flyerVoteResponse.data;
+
     if (!response || !response.user) {
-      toast.error("Failed to process flyer vote");
+      toast.error(flyerVoteFailureMessage(flyerVoteResponse.error));
     } else {
       startRoomJoin(response.room.id);
       const isPass = flyerData.vote === "pass";
@@ -804,50 +806,31 @@ function AppContent() {
   };
 
   if (showAdminPanel) {
-    return (
-      <>
-        <AdminPanel onExit={handleExitAdminPanel} />
-        <Toaster />
-      </>
-    );
+    return <AdminPanel onExit={handleExitAdminPanel} />;
   }
 
   if (showAdminDashboard && user) {
     return (
-      <>
-        <AdminDashboard
-          onExit={handleExitAdminDashboard}
-          currentUserId={user.id}
-        />
-        <Toaster />
-      </>
+      <AdminDashboard
+        onExit={handleExitAdminDashboard}
+        currentUserId={user.id}
+      />
     );
   }
 
   if (showActivityDashboard && user) {
-    return (
-      <>
-        <ActivityDashboard onExit={handleExitActivityDashboard} />
-        <Toaster />
-      </>
-    );
+    return <ActivityDashboard onExit={handleExitActivityDashboard} />;
   }
 
   if (showRetentionDashboard && user) {
     return (
-      <>
-        <RetentionDashboard onExit={handleExitRetentionDashboard} />
-        <Toaster />
-      </>
+      <RetentionDashboard onExit={handleExitRetentionDashboard} />
     );
   }
 
   if (showFeatureTracker) {
     return (
-      <>
-        <FeatureResultsTracker onExit={handleExitFeatureTracker} />
-        <Toaster />
-      </>
+      <FeatureResultsTracker onExit={handleExitFeatureTracker} />
     );
   }
 
@@ -855,30 +838,15 @@ function AppContent() {
     if (!user) {
       return null;
     }
-    return (
-      <>
-        <DevTools user={user} onExit={handleExitDevTools} />
-        <Toaster />
-      </>
-    );
+    return <DevTools user={user} onExit={handleExitDevTools} />;
   }
 
   if (showActivityFeed) {
-    return (
-      <>
-        <AdminActivityFeed onExit={handleExitActivityFeed} />
-        <Toaster />
-      </>
-    );
+    return <AdminActivityFeed onExit={handleExitActivityFeed} />;
   }
 
   if (showComponentShowcase) {
-    return (
-      <>
-        <ComponentShowcase onExit={handleExitShowcase} />
-        <Toaster />
-      </>
-    );
+    return <ComponentShowcase onExit={handleExitShowcase} />;
   }
 
   if (showUnsubscribe) {
@@ -906,12 +874,7 @@ function AppContent() {
   }
 
   if (showFundingPage) {
-    return (
-      <>
-        <FundingPage />
-        <Toaster />
-      </>
-    );
+    return <FundingPage />;
   }
 
   if (showAiUsage) {
@@ -940,83 +903,58 @@ function AppContent() {
 
   if (displayedEvent) {
     return (
-      <>
-        <div className="h-dvh">
-          <EventDisplayContainer eventId={displayedEvent.eventId} displayKey={displayedEvent.displayKey} />
-        </div>
-        <Toaster />
-      </>
+      <div className="h-dvh">
+        <EventDisplayContainer eventId={displayedEvent.eventId} displayKey={displayedEvent.displayKey} />
+      </div>
     );
   }
 
   if (supportViewEvent) {
     return (
-      <>
-        <EventSupportViewContainer
-          eventId={supportViewEvent.eventId}
-          displayKey={supportViewEvent.displayKey}
-        />
-        <Toaster />
-      </>
+      <EventSupportViewContainer
+        eventId={supportViewEvent.eventId}
+        displayKey={supportViewEvent.displayKey}
+      />
     );
   }
 
   if (reportEventId) {
-    return (
-      <>
-        <ReportPageContainer eventId={reportEventId} />
-        <Toaster />
-      </>
-    );
+    return <ReportPageContainer eventId={reportEventId} />;
   }
 
   if (attendedEventId) {
-    return (
-      <>
-        <EventAttendeeContainer eventId={attendedEventId} />
-        <Toaster />
-      </>
-    );
+    return <EventAttendeeContainer eventId={attendedEventId} />;
   }
 
   if (newFlyerScan) {
     return (
-      <>
-        <PersonalFlyerContainer
-          scan={newFlyerScan}
-          onComplete={handleFlyerComplete}
-        />
-        <Toaster />
-      </>
+      <PersonalFlyerContainer
+        scan={newFlyerScan}
+        onComplete={handleFlyerComplete}
+      />
     );
   }
 
   if (flyerLanding) {
     return (
-      <>
-        <FlyerLandingContainer
-          room={flyerLanding.room}
-          community={flyerLanding.community}
-          tally={flyerLanding.tally}
-          vote={flyerLanding.flyerVote}
-          onComplete={handleFlyerComplete}
-        />
-        <Toaster />
-      </>
+      <FlyerLandingContainer
+        room={flyerLanding.room}
+        community={flyerLanding.community}
+        tally={flyerLanding.tally}
+        vote={flyerLanding.flyerVote}
+        onComplete={handleFlyerComplete}
+      />
     );
   }
 
   if (flyerSwipe) {
     return (
-      <>
-        <FlyerSwipeContainer
-          room={flyerSwipe.room}
-          flyerStatementId={flyerSwipe.flyerStatementId}
-          flyerVote={flyerSwipe.flyerVote}
-          onComplete={handleFlyerComplete}
-        />
-        <Toaster />
-      </>
+      <FlyerSwipeContainer
+        room={flyerSwipe.room}
+        flyerStatementId={flyerSwipe.flyerStatementId}
+        flyerVote={flyerSwipe.flyerVote}
+        onComplete={handleFlyerComplete}
+      />
     );
   }
 
@@ -1053,7 +991,6 @@ function AppContent() {
         onRefreshEvent={handleRefreshEvent}
         onExitEvent={handleExitEvent}
       />
-      <Toaster />
       {qrScanResult && (
         <QRScanResultDialog
           {...qrScanResult}
