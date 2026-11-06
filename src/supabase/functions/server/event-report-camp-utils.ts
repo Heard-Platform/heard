@@ -281,7 +281,6 @@ const toReportCamp = (
   return {
     campId: camp.campId,
     name: camp.name,
-    description: "",
     memberCount: camp.memberIds.length,
     sizePercent: percentOf(camp.memberIds.length, campMemberCount),
     representativeStatements: listRepresentativeStatements(

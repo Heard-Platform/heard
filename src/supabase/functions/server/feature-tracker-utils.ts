@@ -15,6 +15,7 @@ import {
 import { getEasternDate, getEasternDatesEndingAt, toTimestamp } from "./time-utils.ts";
 import { selectAllWithoutLimit } from "./db-utils.ts";
 import { CLUSTER_NAMING_ENDPOINT } from "./cluster-naming.ts";
+import type { Event, UserEvent } from "./types.tsx";
 import { startOfUtcWeek, WEEK_MS } from "./stats-utils.ts";
 import { getAllSwipeSixCompletions } from "./swipe-six-model.ts";
 
@@ -325,3 +326,67 @@ export const getFlyerScreenFunnel = async (screenEvents: FlyerScreenEventTypes) 
   const emailAddedUserIds = _.uniq(_.compact(emailAddedEvents.map((e) => e.userId)));
   return buildFlyerScreenFunnel(events, await getAppLoadEvents(emailAddedUserIds), screenEvents);
 };
+
+export const REPORT_OPENED_EVENT = "report_opened";
+
+const REPORT_URL_EVENT_ID_PATTERN = /\/event\/(\d+)\/report/;
+
+export interface EventReportOpenCount {
+  eventId: number;
+  eventName: string;
+  openCount: number;
+}
+
+export interface EventReportOpens {
+  openCount: number;
+  openCountsByEvent: EventReportOpenCount[];
+}
+
+const findReportEventId = (
+  url: string | undefined,
+): number | null => {
+  const match = url?.match(REPORT_URL_EVENT_ID_PATTERN);
+  return match ? Number(match[1]) : null;
+};
+
+const isRealUserEvent = (
+  userEvent: Pick<UserEvent, "userId">,
+  realNonDevUserIds: Set<string>,
+): boolean =>
+  userEvent.userId !== null &&
+  realNonDevUserIds.has(userEvent.userId);
+
+export function buildEventReportOpens(
+  reportOpenedEvents: Pick<UserEvent, "userId" | "url">[],
+  realNonDevUserIds: Set<string>,
+  events: Pick<Event, "id" | "name">[],
+): EventReportOpens {
+  const openedEventIds = reportOpenedEvents
+    .filter((userEvent) =>
+      isRealUserEvent(userEvent, realNonDevUserIds)
+    )
+    .map((userEvent) => findReportEventId(userEvent.url))
+    .filter((eventId): eventId is number => eventId !== null);
+  const openCountByEventId = _.countBy(openedEventIds);
+  const openCountsByEvent = Object.keys(openCountByEventId).map(
+    (eventIdKey) => {
+      const eventId = Number(eventIdKey);
+      const event = events.find(
+        (eachEvent) => eachEvent.id === eventId,
+      );
+      return {
+        eventId,
+        eventName: event?.name ?? `Event ${eventId}`,
+        openCount: openCountByEventId[eventIdKey],
+      };
+    },
+  );
+  return {
+    openCount: openedEventIds.length,
+    openCountsByEvent: _.orderBy(
+      openCountsByEvent,
+      "openCount",
+      "desc",
+    ),
+  };
+}

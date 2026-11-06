@@ -428,7 +428,6 @@ export type EventReportCampStatement = {
 export type EventReportCamp = {
   campId: string;
   name: string;
-  description: string;
   memberCount: number;
   sizePercent: number;
   representativeStatements: EventReportCampStatement[];

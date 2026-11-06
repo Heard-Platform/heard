@@ -153,7 +153,6 @@ Deno.test("buildCampAnalysis splits people into camps", () => {
     camps.map((camp) => ({
       campId: camp.campId,
       name: camp.name,
-      description: camp.description,
       memberCount: camp.memberCount,
       sizePercent: camp.sizePercent,
     })),
@@ -161,14 +160,12 @@ Deno.test("buildCampAnalysis splits people into camps", () => {
       {
         campId: "camp-a",
         name: "Camp A",
-        description: "",
         memberCount: 4,
         sizePercent: 50,
       },
       {
         campId: "camp-b",
         name: "Camp B",
-        description: "",
         memberCount: 4,
         sizePercent: 50,
       },

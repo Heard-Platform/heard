@@ -1,13 +1,13 @@
 import { Hono } from "npm:hono";
 import { getAllRealUsers, getWebDriverUsers, getAllAskTheDataRecords } from "./kv-utils.tsx";
-import { getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, countEventsOfType, getCommunityTeaserEvents, getCreateRoomEvents, getAllAppFeedbackVotes } from "./model-utils.ts";
-import { countRecords } from "./db-utils.ts";
-import type { UserEvent } from "./types.tsx";
+import { getAllEventsOfType, getUserReports, getFlyerEmails, getFlyerScans, getCertifyCardEvents, getOneBillionEvents, getFundingEvents, getOrganizersEvents, getUniqueUserIdsForEvent, countEventsOfType, getCommunityTeaserEvents, getCreateRoomEvents, getAllAppFeedbackVotes } from "./model-utils.ts";
+import { countRecords, selectAllWithoutLimit } from "./db-utils.ts";
+import type { Event, UserEvent } from "./types.tsx";
 import { toTimestamp } from "./time-utils.ts";
 import { FLYER_WELCOME_EMAIL_TYPE } from "./template-flyer-welcome.ts";
 import { FLYER_RESULTS_EMAIL_TYPE } from "./template-flyer-results.ts";
 import { FEEDBACK_CARD_SHOWN_EVENT, isFounderChatOptIn } from "./feedback-results-utils.ts";
-import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getSwipeSixFunnel, getSwipeSixDailyCompletions, buildCreateRoomFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel, getPersonalFlyerScreenLoadTimes, FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS } from "./feature-tracker-utils.ts";
+import { getClusterNamingTokens, getClusterStabilityStats, getResponseVotesNotifStats, getFlyerSwipeFunnel, getSwipeSixFunnel, getSwipeSixDailyCompletions, buildCreateRoomFunnel, getFlyerLandingFunnel, getFlyerScreenFunnel, getPersonalFlyerScreenLoadTimes, FLYER_SCREEN_EVENTS, PERSONAL_FLYER_SCREEN_EVENTS, buildEventReportOpens, REPORT_OPENED_EVENT } from "./feature-tracker-utils.ts";
 
 const app = new Hono();
 
@@ -70,6 +70,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       addResponseNudgeSubmittedUserIds,
       voteTaps,
       voteSwipes,
+      reportOpenedEvents,
+      events,
     ] = await Promise.all([
       getAllRealUsers(),
       getWebDriverUsers(),
@@ -127,6 +129,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       getUniqueUserIdsForEvent("add_response_nudge_submitted"),
       countEventsOfType("vote_tapped"),
       countEventsOfType("vote_swiped"),
+      getAllEventsOfType(REPORT_OPENED_EVENT),
+      selectAllWithoutLimit<Event>("events"),
     ]);
 
     const webDriverUsers = webDriverUserList.length;
@@ -362,6 +366,13 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
 
     const createRoomFunnelSince = new Date("2026-10-21").getTime();
 
+    const eventReportOpens = buildEventReportOpens(
+      reportOpenedEvents,
+      realNonDevUserIds,
+      events,
+    );
+    const eventReportOpensSince = new Date("2026-11-06").getTime();
+
     const realFeedbackCardVotes = feedbackCardVotes.filter((vote) => realNonDevUserIds.has(vote.userId));
     const countRealUsers = (userIds: Iterable<string>) =>
       [...userIds].filter((userId) => realNonDevUserIds.has(userId)).length;
@@ -504,6 +515,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       swipeSixFunnelSince,
       createRoomFunnel,
       createRoomFunnelSince,
+      eventReportOpens,
+      eventReportOpensSince,
       feedbackCards,
       feedbackCardsSince,
       addResponseNudge,

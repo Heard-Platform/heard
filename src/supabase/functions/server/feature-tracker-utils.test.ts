@@ -1,6 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   buildCreateRoomFunnel,
+  buildEventReportOpens,
   buildFlyerLandingFunnel,
   buildFlyerScreenFunnel,
   buildFlyerSwipeFunnel,
@@ -260,3 +261,40 @@ Deno.test("summarizeLoadTimes - slowest tenth starts at the 90th percentile load
   const durationsMs = Array.from({ length: 20 }, (_, index) => (index + 1) * 100);
   assertEquals(summarizeLoadTimes(durationsMs).slowestTenthStartsAtMs, 1800);
 });
+
+Deno.test(
+  "buildEventReportOpens - counts real opens per event by URL",
+  () => {
+    const reportUrl = (eventId: number) =>
+      `https://heard.vote/event/${eventId}/report`;
+    const reportOpenedEvents = [
+      { userId: "attendee", url: reportUrl(4) },
+      { userId: "organizer", url: reportUrl(4) },
+      { userId: "organizer", url: reportUrl(7) },
+      { userId: "developer", url: reportUrl(4) },
+      { userId: null, url: reportUrl(4) },
+      { userId: "attendee", url: "https://heard.vote/" },
+    ];
+    const realNonDevUserIds = new Set(["attendee", "organizer"]);
+    const events = [{ id: 4, name: "How has AI changed pricing?" }];
+
+    assertEquals(
+      buildEventReportOpens(
+        reportOpenedEvents,
+        realNonDevUserIds,
+        events,
+      ),
+      {
+        openCount: 3,
+        openCountsByEvent: [
+          {
+            eventId: 4,
+            eventName: "How has AI changed pricing?",
+            openCount: 2,
+          },
+          { eventId: 7, eventName: "Event 7", openCount: 1 },
+        ],
+      },
+    );
+  },
+);
