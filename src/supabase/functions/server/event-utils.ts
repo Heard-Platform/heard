@@ -15,7 +15,11 @@ import {
   saveStatement,
 } from "./kv-utils.tsx";
 import { markStatementHidden, markStatementVisible } from "./moderation-utils.ts";
-import { buildSupportViewStats, type EventVote } from "./support-view-utils.ts";
+import { buildSupportViewStats } from "./support-view-utils.ts";
+import {
+  buildEventReport,
+  type EventReportVote,
+} from "./event-report-utils.ts";
 import { RouteError } from "./route-error.ts";
 import {
   canDriveEvent,
@@ -40,6 +44,7 @@ import {
 import type {
   DebateRoom,
   Event,
+  EventReport,
   LiveEventState as EventState,
   LiveEventView,
   EventTotals,
@@ -103,15 +108,20 @@ export const checkEventPosting = async (
   return check;
 };
 
-const loadVotesForStatements = async (statements: Statement[]): Promise<EventVote[]> =>
+const loadVotesForStatements = async (statements: Statement[]): Promise<EventReportVote[]> =>
   (await Promise.all(
     statements.map(async (statement) =>
       (await getVotesForStatement(statement.id)).map((vote) => ({ ...vote, roomId: statement.roomId })),
     ),
   )).flat();
 
+const loadVisibleEventStatements = async (
+  roomOrder: string[],
+): Promise<Statement[]> =>
+  (await Promise.all(roomOrder.map(getStatementsForRoom))).flat();
+
 const loadEventTotals = async (state: EventState): Promise<EventTotals> => {
-  const statements = (await Promise.all(state.roomOrder.map(getStatementsForRoom))).flat();
+  const statements = await loadVisibleEventStatements(state.roomOrder);
   return countEventTotals(state.roomOrder, statements, await loadVotesForStatements(statements), state.startedAt ?? 0);
 };
 
@@ -143,13 +153,20 @@ export const requireCanDriveEvent = async (
   }
 };
 
+const loadEventRoomsInOrder = async (
+  roomOrder: string[],
+): Promise<DebateRoom[]> =>
+  (await Promise.all(roomOrder.map(getDebate))).filter(
+    (room): room is DebateRoom => room !== null,
+  );
+
 export const loadSupportViewStats = async (
   event: Event,
   state: EventState,
   now: number,
 ): Promise<SupportViewStats> => {
   const [rooms, presences, statements] = await Promise.all([
-    Promise.all(state.roomOrder.map(getDebate)),
+    loadEventRoomsInOrder(state.roomOrder),
     getEventPresences(event.id),
     Promise.all(
       state.roomOrder.map(getStatementsForRoomIncludingHidden),
@@ -158,8 +175,33 @@ export const loadSupportViewStats = async (
   return buildSupportViewStats({
     eventName: event.name,
     state,
-    rooms: rooms.filter((room): room is DebateRoom => room !== null),
+    rooms,
     presences,
+    statements,
+    votes: await loadVotesForStatements(statements),
+    now,
+  });
+};
+
+export const loadEventReport = async (
+  eventId: number,
+  now: number,
+): Promise<EventReport> => {
+  const event = await getEventOrThrow(eventId);
+  const state = eventStateOrDefault(
+    await getLiveEventState(eventId),
+    now,
+  );
+  const [community, rooms, statements] = await Promise.all([
+    getCommunity(event.communityName),
+    loadEventRoomsInOrder(state.roomOrder),
+    loadVisibleEventStatements(state.roomOrder),
+  ]);
+  return buildEventReport({
+    event,
+    community,
+    state,
+    rooms,
     statements,
     votes: await loadVotesForStatements(statements),
     now,

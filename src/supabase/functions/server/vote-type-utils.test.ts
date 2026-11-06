@@ -1,6 +1,22 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { describe, it } from "@std/testing/bdd";
-import { isAgreeVote, isDisagreeVote } from "./vote-type-utils.ts";
+import {
+  isAgreeVote,
+  isDisagreeVote,
+  toSimpleVote,
+} from "./vote-type-utils.ts";
+
+describe("toSimpleVote", () => {
+  it("counts a super agree as an agree", () => {
+    assertEquals(toSimpleVote("super_agree"), "agree");
+  });
+
+  it("leaves every other vote as it is", () => {
+    assertEquals(toSimpleVote("agree"), "agree");
+    assertEquals(toSimpleVote("disagree"), "disagree");
+    assertEquals(toSimpleVote("pass"), "pass");
+  });
+});
 
 describe("isAgreeVote", () => {
   it("counts agree and super agree as agree", () => {

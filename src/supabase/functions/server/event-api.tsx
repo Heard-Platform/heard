@@ -11,6 +11,7 @@ import {
   applyEventAction,
   getEventOrThrow,
   getOrCreateEventDisplayKey,
+  loadEventReport,
   loadEventView,
   loadSupportViewStats,
   parseEventId,
@@ -340,6 +341,20 @@ app.get(
       return { stats: await loadSupportViewStats(event, state, now) };
     },
     "Failed to load the support view",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/event/:eventId/report",
+  defineRoute(
+    {},
+    async (_params, c: Context) => ({
+      report: await loadEventReport(
+        parseEventId(c.req.param("eventId")),
+        Date.now(),
+      ),
+    }),
+    "Failed to load the event report",
   ),
 );
 

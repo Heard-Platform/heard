@@ -1,5 +1,6 @@
 import _ from "lodash";
 import { currentRoomId, PRESENCE_WINDOW_MS } from "./live-event-utils.ts";
+import { isAgreeVote } from "./vote-type-utils.ts";
 import type {
   AttendeePhoneState,
   DebateRoom,
@@ -135,8 +136,6 @@ const median = (values: number[]): number | null => {
   return sorted.length % 2 === 1 ? sorted[middle] : Math.round((sorted[middle - 1] + sorted[middle]) / 2);
 };
 
-const isAgree = (vote: Pick<Vote, "voteType">): boolean => vote.voteType === "agree" || vote.voteType === "super_agree";
-
 export const describeCurrentPost = (
   sources: Pick<SupportViewSources, "state" | "rooms" | "presences" | "now">,
   sessionVotes: EventVote[],
@@ -161,7 +160,7 @@ export const describeCurrentPost = (
     topic: findRoomTopic(rooms, roomId),
     finishedCount: finishedUserIds.length,
     swipingCount: onThisPost.filter((presence) => presence.screen === "swiping").length,
-    agreeVotes: postVotes.filter(isAgree).length,
+    agreeVotes: postVotes.filter((vote) => isAgreeVote(vote.voteType)).length,
     disagreeVotes: postVotes.filter((vote) => vote.voteType === "disagree").length,
     passVotes: postVotes.filter((vote) => vote.voteType === "pass").length,
     medianSecondsToFinish: median(secondsToFinish),
