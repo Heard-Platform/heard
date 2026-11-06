@@ -2,6 +2,7 @@ import type {
   EventReportCamp,
   EventReportCampStatement,
 } from "../../../types";
+import { pluralizePerson } from "../../../utils/text";
 import { getCampColorClassNames } from "./camp-colors";
 import { REPORT_SECTION_IDS } from "./report-sections";
 import { ResponseMark } from "./ResponseMark";
@@ -91,7 +92,8 @@ function CampCard({ camp, campIndex }: CampCardProps) {
           {camp.name}
         </h3>
         <span className="report-subtext tabular-nums">
-          {camp.sizePercent}%
+          {camp.memberCount}{" "}
+          {pluralizePerson(camp.memberCount)} · {camp.sizePercent}%
         </span>
       </div>
       <p className="report-subtext leading-relaxed">

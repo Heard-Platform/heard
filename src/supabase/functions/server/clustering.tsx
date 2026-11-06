@@ -17,7 +17,7 @@ export const CLUSTER_IDENTITY_NEW_EVENT = "cluster_identity_new";
 
 export type StatementWithVotes = {
   id: string;
-  votes: Vote[];
+  votes: Pick<Vote, "userId" | "voteType">[];
 };
 
 export interface VotingMatrix {
@@ -302,6 +302,10 @@ export function kMeansClusteringMultiRun(
   return { assignments: bestAssignments, centroids: bestCentroids };
 }
 
+export function chooseClusterCount(userCount: number): number {
+  return Math.min(Math.max(2, Math.floor(Math.sqrt(userCount))), 3);
+}
+
 /**
  * Perform clustering on user voting data (pure function - no database operations)
  */
@@ -316,10 +320,7 @@ export function clusterUsers(
 } {
   const votingMatrix = buildVotingMatrix(userIds, statements);
 
-  const optimalK = Math.min(
-    Math.max(2, Math.floor(Math.sqrt(userIds.length))),
-    3,
-  );
+  const optimalK = chooseClusterCount(userIds.length);
 
   const { assignments, centroids } = kMeansClusteringMultiRun(
     votingMatrix.matrix,

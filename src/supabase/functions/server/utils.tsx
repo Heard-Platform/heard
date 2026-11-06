@@ -34,3 +34,6 @@ export function escapeHtml(input: string): string {
 export function truncate(text: string, maxLength: number): string {
   return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}…` : text;
 }
+
+export const percentOf = (part: number, whole: number): number =>
+  whole === 0 ? 0 : Math.round((part / whole) * 100);

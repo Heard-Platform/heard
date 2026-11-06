@@ -428,6 +428,7 @@ export type EventReportCamp = {
   campId: string;
   name: string;
   description: string;
+  memberCount: number;
   sizePercent: number;
   representativeStatements: EventReportCampStatement[];
 };
@@ -440,6 +441,7 @@ export type EventReportCampAgreement = {
 export type EventReportStatementByCamp = {
   statementId: string;
   text: string;
+  postNumber: number;
   isAttendeeStatement: boolean;
   overallAgreePercent: number;
   campAgreements: EventReportCampAgreement[];

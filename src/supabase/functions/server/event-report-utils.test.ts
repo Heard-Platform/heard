@@ -4,13 +4,13 @@ import {
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   buildEventReport,
-  EMPTY_CAMP_ANALYSIS,
   type EventReportInputs,
   type EventReportVote,
   findSessionEnd,
   isAttendeeStatement,
-  percentOf,
 } from "./event-report-utils.ts";
+import { EMPTY_CAMP_ANALYSIS } from "./event-report-camp-utils.ts";
+import { percentOf } from "./utils.tsx";
 import { RouteError } from "./route-error.ts";
 import type { Statement, VoteType } from "./types.tsx";
 
@@ -390,7 +390,7 @@ Deno.test(
   },
 );
 
-Deno.test("buildEventReport returns no camps yet", () => {
+Deno.test("buildEventReport finds no camps with five people", () => {
   assertEquals(
     buildEventReport(inputs()).campAnalysis,
     EMPTY_CAMP_ANALYSIS,
