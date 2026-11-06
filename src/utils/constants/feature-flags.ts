@@ -42,7 +42,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     LIVE_EVENTS: true,
     CHANCE_CARD: false,
     VOTE_RESULT_SNACKBAR: true,
-    EVENT_ONBOARDING_QUESTIONS: false,
+    EVENT_ONBOARDING_QUESTIONS: true,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,

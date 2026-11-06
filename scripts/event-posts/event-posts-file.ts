@@ -7,14 +7,23 @@ export const MAXIMUM_STATEMENT_LENGTH = 500;
 export class EventPostsFileError extends Error {}
 
 export function parseEventPostsFile(fileText: string): EventPostDraft[] {
-  const parsed = parseJson(fileText);
-  if (!Array.isArray(parsed) || parsed.length === 0) {
-    throw new EventPostsFileError("The file must be a JSON list with at least one post.");
-  }
-  return parsed.map((entry, index) => parseEventPostDraft(entry, index + 1));
+  return parseEventPostDraftList(parseJsonFileText(fileText));
 }
 
-function parseJson(fileText: string): unknown {
+export function parseEventPostDraftList(
+  value: unknown,
+): EventPostDraft[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new EventPostsFileError(
+      "The posts must be a JSON list with at least one post.",
+    );
+  }
+  return value.map((entry, index) =>
+    parseEventPostDraft(entry, index + 1)
+  );
+}
+
+export function parseJsonFileText(fileText: string): unknown {
   try {
     return JSON.parse(fileText);
   } catch (error) {

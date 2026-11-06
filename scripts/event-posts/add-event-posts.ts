@@ -3,9 +3,9 @@ import { HeardApiClient } from "../shared/heard-api-client.ts";
 import { loadHeardScriptEnvironment, requireModeratorSessionId } from "../shared/heard-script-environment.ts";
 import { addPostsToEvent } from "../shared/event-post-creation.ts";
 import { parseEventPostsFile } from "./event-posts-file.ts";
+import { APP_URL } from "../shared/event-links.ts";
 
 const USAGE = "Usage: npm run add-event-posts -- --event <event id> --posts <path to posts JSON, e.g. scripts/event-posts/value-based-pricing.json> [--add-to-existing]";
-const APP_URL = "https://heard.vote";
 
 async function addEventPosts() {
   const options = parseArgs(Deno.args, { string: ["event", "posts"], boolean: ["add-to-existing"] });
