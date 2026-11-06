@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import type { DebateRoom } from "../../types";
+import { RateLimitedError } from "../../utils/rate-limit-errors";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
@@ -60,8 +61,12 @@ export function AddResponseModal({
       setText("");
       onOpenChange(false);
       toast.success("Response submitted!");
-    } catch {
-      toast.error("Failed to submit response");
+    } catch (error) {
+      if (error instanceof RateLimitedError) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to submit response");
+      }
     } finally {
       setIsSubmitting(false);
     }

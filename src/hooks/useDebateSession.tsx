@@ -20,7 +20,14 @@ import type {
   NewEvent,
   GGWashImportResult,
 } from "../types";
-import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
+import {
+  ANONYMOUS_ACTION_NOT_ALLOWED_ERROR,
+  RATE_LIMITED_ERROR,
+} from "../utils/constants/errors";
+import {
+  RateLimitedError,
+  STATEMENT_RATE_LIMITED_MESSAGE,
+} from "../utils/rate-limit-errors";
 import {
   AskTheDataResponse,
   FlyerVoteResponse,
@@ -401,6 +408,8 @@ export function DebateSessionProvider(
       if (response.success && response.data) {
         updateUserScoreFromResponse(response.data);
         return response.data;
+      } else if (response.error === RATE_LIMITED_ERROR) {
+        throw new RateLimitedError(STATEMENT_RATE_LIMITED_MESSAGE);
       } else {
         const errorMsg =
           response.error || "Failed to submit statement";
