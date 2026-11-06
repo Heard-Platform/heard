@@ -5,7 +5,12 @@ import { Check, Copy, Radio } from "lucide-react";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { EventPostList } from "./EventPostList";
-import type { LiveEventStatus, EventSetupRoom } from "../../types";
+import { isBeforeSessionStart } from "../../utils/live-event";
+import type {
+  LiveEventStatus,
+  LiveEventView,
+  EventSetupRoom,
+} from "../../types";
 
 const COPIED_RESET_MS = 2000;
 
@@ -18,28 +23,30 @@ const STATUS_COPY: Record<LiveEventStatus, string> = {
 
 export interface EventSetupPanelProps {
   rooms: EventSetupRoom[];
-  status: LiveEventStatus;
-  currentIndex: number | null;
+  live: Pick<LiveEventView, "status" | "currentIndex">;
   joinUrl: string;
   displayUrl: string;
   supportViewUrl: string;
   onReorder: (roomOrder: string[]) => void;
   onOpenDisplay: () => void;
   onOpenSupportView: () => void;
+  onOpenReport: () => void;
 }
 
 export function EventSetupPanel({
   rooms,
-  status,
-  currentIndex,
+  live,
   joinUrl,
   displayUrl,
   supportViewUrl,
   onReorder,
   onOpenDisplay,
   onOpenSupportView,
+  onOpenReport,
 }: EventSetupPanelProps) {
+  const { status, currentIndex } = live;
   const hasRooms = rooms.length > 0;
+  const hasSessionStarted = !isBeforeSessionStart(status);
 
   return (
     <Card className="heard-card-bg overflow-hidden">
@@ -59,9 +66,7 @@ export function EventSetupPanel({
             currentIndex={status === "live" ? currentIndex : null}
             currentBadge="Live"
             onReorder={
-              status === "setup" || status === "open"
-                ? onReorder
-                : undefined
+              isBeforeSessionStart(status) ? onReorder : undefined
             }
           />
         )}
@@ -87,6 +92,15 @@ export function EventSetupPanel({
         >
           Open support view
         </Button>
+        {hasSessionStarted && (
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={onOpenReport}
+          >
+            View report
+          </Button>
+        )}
       </div>
     </Card>
   );

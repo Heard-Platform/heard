@@ -341,15 +341,17 @@ const buildFloor = (
 
 const averagePostParticipationPercent = (
   posts: EventReportPost[],
-  peopleCount: number,
-): number =>
-  posts.length === 0
-    ? 0
-    : Math.round(
-      _.meanBy(posts, (post: EventReportPost) =>
-        percentOf(post.voterCount, peopleCount)
-      ),
-    );
+): number => {
+  if (posts.length === 0) return 0;
+  const mostVotersOnAnyPost = Math.max(
+    ...posts.map((post) => post.voterCount),
+  );
+  return Math.round(
+    _.meanBy(posts, (post: EventReportPost) =>
+      percentOf(post.voterCount, mostVotersOnAnyPost)
+    ),
+  );
+};
 
 const buildOpening = (
   event: EventReportInputs["event"],
@@ -368,10 +370,8 @@ const buildOpening = (
     attendeeStatementCount: tallies.filter(
       (tally) => tally.isAttendeeStatement,
     ).length,
-    averagePostParticipationPercent: averagePostParticipationPercent(
-      posts,
-      peopleCount,
-    ),
+    averagePostParticipationPercent:
+      averagePostParticipationPercent(posts),
     ...sessionTimes,
   };
 };

@@ -15,6 +15,7 @@ import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { EventAttendeeContainer } from "./components/events/attendee/EventAttendeeContainer";
 import { EventDisplayContainer } from "./components/events/display/EventDisplayContainer";
 import { EventSupportViewContainer } from "./components/events/support/EventSupportViewContainer";
+import { ReportPageContainer } from "./components/events/report/ReportPageContainer";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { RetentionDashboard } from "./components/RetentionDashboard";
@@ -41,6 +42,7 @@ import {
   parseEventIdFromUrl,
   parseDisplayedEventIdFromUrl,
   parseSupportViewEventIdFromUrl,
+  parseReportEventIdFromUrl,
   parseAttendedEventIdFromUrl,
   updateUrlForEvent,
   parseStatementIdFromUrl,
@@ -152,6 +154,9 @@ function AppContent() {
     eventId: string;
     displayKey: string | null;
   } | null>(null);
+  const [reportEventId, setReportEventId] = useState<string | null>(
+    null,
+  );
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
 
@@ -427,6 +432,7 @@ function AppContent() {
       const eventIdFromUrl = parseEventIdFromUrl();
       const displayedEventIdFromUrl = parseDisplayedEventIdFromUrl();
       const supportViewEventIdFromUrl = parseSupportViewEventIdFromUrl();
+      const reportEventIdFromUrl = parseReportEventIdFromUrl();
       const attendedEventIdFromUrl =
         parseAttendedEventIdFromUrl() ??
         EVENT_SHORT_ROUTES.get(route) ??
@@ -556,6 +562,8 @@ function AppContent() {
           eventId: supportViewEventIdFromUrl,
           displayKey: takeDisplayKeyFromUrl(supportViewEventIdFromUrl),
         });
+      } else if (reportEventIdFromUrl) {
+        setReportEventId(reportEventIdFromUrl);
       } else if (attendedEventIdFromUrl) {
         setAttendedEventId(attendedEventIdFromUrl);
       } else if (eventIdFromUrl) {
@@ -938,6 +946,15 @@ function AppContent() {
           eventId={supportViewEvent.eventId}
           displayKey={supportViewEvent.displayKey}
         />
+        <Toaster />
+      </>
+    );
+  }
+
+  if (reportEventId) {
+    return (
+      <>
+        <ReportPageContainer eventId={reportEventId} />
         <Toaster />
       </>
     );

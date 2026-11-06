@@ -26,6 +26,7 @@ export function ReportPage({ report }: ReportPageProps) {
       <PromptsSection posts={posts} />
       <FloorSection
         floor={floor}
+        posts={posts}
         attendeeStatementCount={opening.attendeeStatementCount}
         peopleCount={opening.peopleCount}
       />

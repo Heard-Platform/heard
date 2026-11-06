@@ -263,6 +263,19 @@ Deno.test("buildEventReport counts every vote in the opening", () => {
   });
 });
 
+Deno.test(
+  "buildEventReport measures participation against the busiest post",
+  () => {
+    const voterOnlyOnPostB = vote("b1", "b", "u8", "agree", at(7));
+    const report = buildEventReport(
+      inputs({ votes: [...VOTES, voterOnlyOnPostB] }),
+    );
+
+    assertEquals(report.opening.peopleCount, 8);
+    assertEquals(report.opening.averagePostParticipationPercent, 86);
+  },
+);
+
 Deno.test("buildEventReport picks each post's statements", () => {
   const [postA, postB, postC] = buildEventReport(inputs()).posts;
 

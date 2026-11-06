@@ -1,5 +1,11 @@
 import _ from "lodash";
-import type { LiveEventView, LiveHeartbeat, LiveScreen, Statement } from "../types";
+import type {
+  LiveEventStatus,
+  LiveEventView,
+  LiveHeartbeat,
+  LiveScreen,
+  Statement,
+} from "../types";
 
 export function orderByRoomOrder<T extends { id: string }>(
   rooms: T[],
@@ -22,6 +28,12 @@ export function moveInOrder(
   const next = [...order];
   [next[currentIndex], next[target]] = [next[target], next[currentIndex]];
   return next;
+}
+
+export function isBeforeSessionStart(
+  status: LiveEventStatus,
+): boolean {
+  return status === "setup" || status === "open";
 }
 
 export const EVENT_POLL_MS = 3000;

@@ -7,7 +7,12 @@ import { OnboardingQuestionsPanelContainer } from "./OnboardingQuestionsPanelCon
 import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-flags";
 import { api } from "../../utils/api";
 import { orderByRoomOrder } from "../../utils/live-event";
-import { createEventDisplayLink, createEventJoinLink, createEventSupportViewLink } from "../../utils/url";
+import {
+  createEventDisplayLink,
+  createEventJoinLink,
+  createEventSupportViewLink,
+  createLiveEventLink,
+} from "../../utils/url";
 import type { Event, LiveEventView } from "../../types";
 
 export function EventSetupPanelContainer({ event }: { event: Event }) {
@@ -58,18 +63,23 @@ export function EventSetupPanelContainer({ event }: { event: Event }) {
     window.open(supportViewUrl, "_blank", "noopener");
   };
 
+  const handleOpenReport = () => {
+    const reportUrl = createLiveEventLink(event.id, "report");
+    window.open(reportUrl, "_blank", "noopener");
+  };
+
   return (
     <div className="space-y-4">
       <EventSetupPanel
         rooms={rooms}
-        status={live.status}
-        currentIndex={live.currentIndex}
+        live={live}
         joinUrl={createEventJoinLink(event.id).url}
         displayUrl={displayUrl}
         supportViewUrl={supportViewUrl}
         onReorder={handleReorder}
         onOpenDisplay={handleOpenDisplay}
         onOpenSupportView={handleOpenSupportView}
+        onOpenReport={handleOpenReport}
       />
       {isFeatureEnabled(FeatureFlags.EVENT_ONBOARDING_QUESTIONS) && (
         <OnboardingQuestionsPanelContainer eventId={event.id} status={live.status} />
