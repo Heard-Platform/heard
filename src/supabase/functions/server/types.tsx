@@ -327,6 +327,7 @@ export type SupportViewCurrentPost = {
 export type SupportViewPost = {
   roomId: string;
   postNumber: number;
+  topic: string;
   voterCount: number;
   secondsOnPost: number;
 };

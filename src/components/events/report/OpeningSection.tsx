@@ -28,14 +28,12 @@ export function OpeningSection({ opening }: OpeningSectionProps) {
 
   return (
     <section className="dark-bg normal-text">
-      <div className="mx-auto flex max-w-5xl flex-col gap-7 px-6 pb-16 pt-20">
-        <p className="text-sm font-semibold uppercase tracking-[0.08em] report-subtext">
+      <div className="report-section-content pb-16 pt-20">
+        <p className="report-label text-sm report-subtext">
           {formatSessionStart(opening.sessionStartedAt)}
         </p>
-        <h1 className="max-w-4xl text-4xl font-extrabold leading-none tracking-tight md:text-6xl">
-          {peopleAndMinutes}
-        </h1>
-        <p className="max-w-3xl text-2xl font-bold leading-tight report-highlight-text md:text-4xl">
+        <h1 className="report-title max-w-4xl">{peopleAndMinutes}</h1>
+        <p className="report-event-name max-w-3xl report-highlight-text">
           {opening.eventName}
         </p>
         {opening.eventSubtitle && (
@@ -81,7 +79,7 @@ interface OpeningStatProps {
 function OpeningStat({ label, children }: OpeningStatProps) {
   return (
     <div className="report-stat-border rounded-2xl border px-5 py-4">
-      <p className="flex items-center gap-2.5 text-4xl font-extrabold tabular-nums">
+      <p className="report-stat-value flex items-center gap-2.5">
         {children}
       </p>
       <p className="mt-1 text-sm report-subtext">{label}</p>

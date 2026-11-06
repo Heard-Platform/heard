@@ -250,8 +250,17 @@ export interface EventReportOpening {
   sessionEndedAt: number;
 }
 
+export interface EventReportPost {
+  roomId: string;
+  postNumber: number;
+  topic: string;
+  voterCount: number;
+  secondsOnPost: number;
+}
+
 export interface EventReport {
   opening: EventReportOpening;
+  posts: EventReportPost[];
 }
 
 export type ModeratorAction = "open" | "start" | "next" | "back" | "pause" | "resume" | "end";
@@ -291,6 +300,7 @@ export interface SupportViewCurrentPost {
 export interface SupportViewPost {
   roomId: string;
   postNumber: number;
+  topic: string;
   voterCount: number;
   secondsOnPost: number;
 }

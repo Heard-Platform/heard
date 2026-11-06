@@ -1,3 +1,29 @@
+@reference "tailwindcss";
+
+.report-section-content {
+  @apply mx-auto flex max-w-5xl flex-col gap-7 px-6;
+}
+
+.report-title {
+  @apply text-4xl font-extrabold leading-none tracking-tight md:text-6xl;
+}
+
+.report-header {
+  @apply text-3xl font-extrabold leading-tight tracking-tight md:text-4xl;
+}
+
+.report-event-name {
+  @apply text-2xl font-bold leading-tight md:text-4xl;
+}
+
+.report-label {
+  @apply font-semibold uppercase tracking-[0.08em];
+}
+
+.report-stat-value {
+  @apply text-4xl font-extrabold tabular-nums;
+}
+
 .report-subtext {
   color: var(--color-stone-300);
 }
@@ -12,4 +38,8 @@
 
 .report-response-text {
   color: var(--color-purple-300);
+}
+
+.report-chapter-bg {
+  background-color: var(--app-bg);
 }

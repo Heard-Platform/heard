@@ -24,9 +24,9 @@ const buildSessionMinutes = (sessionMinutes: number, nextPressedAtMinutes: numbe
   });
 
 const POSTS_BEFORE_CURRENT: SupportViewPost[] = [
-  { roomId: "hourly-headaches", postNumber: 1, voterCount: 58, secondsOnPost: 6 * 60 + 10 },
-  { roomId: "keeps-us-hourly", postNumber: 2, voterCount: 56, secondsOnPost: 7 * 60 + 40 },
-  { roomId: "value-pricing", postNumber: 3, voterCount: 54, secondsOnPost: 5 * 60 + 25 },
+  { roomId: "hourly-headaches", postNumber: 1, topic: "What headaches does hourly billing cause your agency?", voterCount: 58, secondsOnPost: 6 * 60 + 10 },
+  { roomId: "keeps-us-hourly", postNumber: 2, topic: "What keeps your agency on hourly billing?", voterCount: 56, secondsOnPost: 7 * 60 + 40 },
+  { roomId: "value-pricing", postNumber: 3, topic: "Have you tried value-based pricing with any client?", voterCount: 54, secondsOnPost: 5 * 60 + 25 },
 ];
 
 const attendeeStatement = (
@@ -87,7 +87,7 @@ const MID_QUESTION: SupportViewStats = {
     medianSecondsToFinish: 65,
     startedAt: STORY_NOW - (MINUTE_MS + 50 * SECOND_MS),
   },
-  postsSoFar: [...POSTS_BEFORE_CURRENT, { roomId: "ai-and-price", postNumber: 4, voterCount: 38, secondsOnPost: 110 }],
+  postsSoFar: [...POSTS_BEFORE_CURRENT, { roomId: "ai-and-price", postNumber: 4, topic: CURRENT_TOPIC, voterCount: 38, secondsOnPost: 110 }],
   attendeeStatements: ATTENDEE_STATEMENTS,
   minutes: buildSessionMinutes(SESSION_MINUTES, NEXT_PRESSED_AT_MINUTES),
   nextPressedAtMinutes: NEXT_PRESSED_AT_MINUTES,
@@ -118,17 +118,17 @@ const LATE_IN_POST: SupportViewStats = {
     medianSecondsToFinish: 82,
     startedAt: STORY_NOW - 4 * MINUTE_MS,
   },
-  postsSoFar: [...POSTS_BEFORE_CURRENT, { roomId: "ai-and-price", postNumber: 4, voterCount: 55, secondsOnPost: 240 }],
+  postsSoFar: [...POSTS_BEFORE_CURRENT, { roomId: "ai-and-price", postNumber: 4, topic: CURRENT_TOPIC, voterCount: 55, secondsOnPost: 240 }],
 };
 
 const LATER_POSTS: SupportViewPost[] = [
-  { roomId: "ai-and-price", postNumber: 4, voterCount: 55, secondsOnPost: 4 * 60 },
-  { roomId: "retainers", postNumber: 5, voterCount: 53, secondsOnPost: 3 * 60 + 20 },
-  { roomId: "procurement", postNumber: 6, voterCount: 52, secondsOnPost: 2 * 60 + 10 },
-  { roomId: "pricing-pages", postNumber: 7, voterCount: 50, secondsOnPost: 2 * 60 },
-  { roomId: "discounting", postNumber: 8, voterCount: 49, secondsOnPost: 2 * 60 + 5 },
-  { roomId: "success-fees", postNumber: 9, voterCount: 48, secondsOnPost: 1 * 60 + 55 },
-  { roomId: "next-year", postNumber: 10, voterCount: 47, secondsOnPost: 2 * 60 + 15 },
+  { roomId: "ai-and-price", postNumber: 4, topic: CURRENT_TOPIC, voterCount: 55, secondsOnPost: 4 * 60 },
+  { roomId: "retainers", postNumber: 5, topic: "How do you set your monthly retainer minimum?", voterCount: 53, secondsOnPost: 3 * 60 + 20 },
+  { roomId: "procurement", postNumber: 6, topic: "How does procurement shape what you can charge?", voterCount: 52, secondsOnPost: 2 * 60 + 10 },
+  { roomId: "pricing-pages", postNumber: 7, topic: "Should agencies publish their prices?", voterCount: 50, secondsOnPost: 2 * 60 },
+  { roomId: "discounting", postNumber: 8, topic: "When do you discount, and does it pay off?", voterCount: 49, secondsOnPost: 2 * 60 + 5 },
+  { roomId: "success-fees", postNumber: 9, topic: "Would you tie part of your fee to results?", voterCount: 48, secondsOnPost: 1 * 60 + 55 },
+  { roomId: "next-year", postNumber: 10, topic: "What will you change about pricing in the next year?", voterCount: 47, secondsOnPost: 2 * 60 + 15 },
 ];
 
 const ENDED: SupportViewStats = {

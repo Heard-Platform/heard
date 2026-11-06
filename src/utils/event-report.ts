@@ -1,5 +1,6 @@
+import _ from "lodash";
 import moment from "moment-timezone";
-import type { EventReportOpening } from "../types";
+import type { EventReportOpening, EventReportPost } from "../types";
 import { ONE_MINUTE_MS } from "./time";
 
 const SESSION_START_FORMAT = "dddd M/D · h:mm A z";
@@ -28,4 +29,17 @@ export function formatSessionStart(
 
 export function formatCount(count: number): string {
   return count.toLocaleString("en-US");
+}
+
+export function findLongestPost(
+  posts: EventReportPost[],
+): EventReportPost | undefined {
+  return _.maxBy(posts, "secondsOnPost");
+}
+
+export function getAverageVoterCount(
+  posts: EventReportPost[],
+): number {
+  if (posts.length === 0) return 0;
+  return Math.round(_.meanBy(posts, "voterCount"));
 }

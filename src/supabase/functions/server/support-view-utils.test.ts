@@ -90,11 +90,12 @@ Deno.test("sumSecondsOnEachPost - adds every stretch on a post, the last running
   assertEquals(sumSecondsOnEachPost(postChanges, at(4)), { a: 180, b: 60 });
 });
 
-Deno.test("listPostsSoFar - only reached posts, in session order, with distinct voters", () => {
+Deno.test("listPostsSoFar - only reached posts, in session order, with topics and distinct voters", () => {
   const votes = [vote("u1", "a", at(1)), vote("u1", "a", at(2)), vote("u2", "a", at(2)), vote("u1", "b", at(6))];
-  assertEquals(listPostsSoFar(liveState(), votes, at(7)), [
-    { roomId: "a", postNumber: 1, voterCount: 2, secondsOnPost: 300 },
-    { roomId: "b", postNumber: 2, voterCount: 1, secondsOnPost: 120 },
+  const rooms = [{ id: "a", topic: "Post A" }, { id: "b", topic: "Post B" }];
+  assertEquals(listPostsSoFar(liveState(), rooms, votes, at(7)), [
+    { roomId: "a", postNumber: 1, topic: "Post A", voterCount: 2, secondsOnPost: 300 },
+    { roomId: "b", postNumber: 2, topic: "Post B", voterCount: 1, secondsOnPost: 120 },
   ]);
 });
 

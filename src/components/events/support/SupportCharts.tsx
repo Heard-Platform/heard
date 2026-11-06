@@ -64,7 +64,8 @@ function PostTooltip({ active, payload, describePost }: PostTooltipProps) {
   if (!active || !post) return null;
   return (
     <ChartTooltipCard>
-      <p className="text-muted-foreground">Post {post.postNumber}</p>
+      <p className="text-muted-foreground">Prompt {post.postNumber}</p>
+      <p className="max-w-xs font-medium">{post.topic}</p>
       <p>{describePost(post)}</p>
     </ChartTooltipCard>
   );
@@ -136,16 +137,16 @@ export function JoinedOverTimeChart({ minutes }: { minutes: SupportViewMinute[] 
 
 interface PostBarChartProps {
   postsSoFar: SupportViewPost[];
-  currentPostNumber: number | null;
+  highlightedPostNumber: number | null;
 }
 
-export function VotedOnEachPostChart({ postsSoFar, currentPostNumber }: PostBarChartProps) {
+export function VotedOnEachPostChart({ postsSoFar, highlightedPostNumber }: PostBarChartProps) {
   return (
     <div className={CHART_CLASS_NAME}>
       <ResponsiveContainer width="100%" height={BAR_CHART_HEIGHT_PX}>
         <BarChart data={postsSoFar} margin={CHART_MARGIN}>
           <CartesianGrid vertical={false} />
-          <XAxis dataKey="postNumber" tick={AXIS_TICK} tickLine={false} tickFormatter={(postNumber) => `Q${postNumber}`} />
+          <XAxis dataKey="postNumber" tick={AXIS_TICK} tickLine={false} tickFormatter={(postNumber) => `P${postNumber}`} />
           <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} width={32} />
           <Tooltip
             content={<PostTooltip describePost={(post) => `${post.voterCount} ${pluralizePerson(post.voterCount)} voted`} />}
@@ -153,7 +154,7 @@ export function VotedOnEachPostChart({ postsSoFar, currentPostNumber }: PostBarC
           />
           <Bar dataKey="voterCount" radius={[3, 3, 0, 0]} isAnimationActive={false}>
             {postsSoFar.map((post) => (
-              <Cell key={post.roomId} fill={post.postNumber === currentPostNumber ? ACCENT_COLOR : AGREE_COLOR} />
+              <Cell key={post.roomId} fill={post.postNumber === highlightedPostNumber ? ACCENT_COLOR : AGREE_COLOR} />
             ))}
           </Bar>
         </BarChart>
@@ -162,14 +163,14 @@ export function VotedOnEachPostChart({ postsSoFar, currentPostNumber }: PostBarC
   );
 }
 
-export function TimePerPostChart({ postsSoFar, currentPostNumber }: PostBarChartProps) {
+export function TimePerPostChart({ postsSoFar, highlightedPostNumber }: PostBarChartProps) {
   const postsWithMinutes = postsSoFar.map((post) => ({ ...post, minutesOnPost: post.secondsOnPost / MINUTE_SECONDS }));
   return (
     <div className={CHART_CLASS_NAME}>
       <ResponsiveContainer width="100%" height={BAR_CHART_HEIGHT_PX}>
         <BarChart data={postsWithMinutes} margin={CHART_MARGIN}>
           <CartesianGrid vertical={false} />
-          <XAxis dataKey="postNumber" tick={AXIS_TICK} tickLine={false} tickFormatter={(postNumber) => `Q${postNumber}`} />
+          <XAxis dataKey="postNumber" tick={AXIS_TICK} tickLine={false} tickFormatter={(postNumber) => `P${postNumber}`} />
           <YAxis allowDecimals={false} unit="m" tick={AXIS_TICK} tickLine={false} axisLine={false} width={40} />
           <Tooltip
             content={<PostTooltip describePost={(post) => formatElapsed(post.secondsOnPost * SECOND_MS)} />}
@@ -177,7 +178,7 @@ export function TimePerPostChart({ postsSoFar, currentPostNumber }: PostBarChart
           />
           <Bar dataKey="minutesOnPost" radius={[3, 3, 0, 0]} isAnimationActive={false}>
             {postsWithMinutes.map((post) => (
-              <Cell key={post.roomId} fill={post.postNumber === currentPostNumber ? ACCENT_COLOR : MUTED_BAR_COLOR} />
+              <Cell key={post.roomId} fill={post.postNumber === highlightedPostNumber ? ACCENT_COLOR : MUTED_BAR_COLOR} />
             ))}
           </Bar>
         </BarChart>

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
+import type { EventReportPost } from "../types";
 import {
+  findLongestPost,
   formatCount,
   formatSessionStart,
+  getAverageVoterCount,
   getSessionMinutes,
 } from "./event-report";
 import { ONE_MINUTE_MS } from "./time";
@@ -51,5 +54,47 @@ describe("formatCount", () => {
 
   it("leaves small numbers as they are", () => {
     expect(formatCount(64)).toBe("64");
+  });
+});
+
+const reportPost = (
+  postNumber: number,
+  secondsOnPost: number,
+  voterCount: number = 50,
+): EventReportPost => ({
+  roomId: `post-${postNumber}`,
+  postNumber,
+  topic: `Prompt ${postNumber}`,
+  voterCount,
+  secondsOnPost,
+});
+
+describe("findLongestPost", () => {
+  it("finds the post that was on screen longest", () => {
+    const posts = [
+      reportPost(1, 130),
+      reportPost(2, 320),
+      reportPost(3, 110),
+    ];
+    expect(findLongestPost(posts)?.postNumber).toBe(2);
+  });
+
+  it("finds nothing when there are no posts", () => {
+    expect(findLongestPost([])).toBeUndefined();
+  });
+});
+
+describe("getAverageVoterCount", () => {
+  it("averages the people who voted on each post", () => {
+    const posts = [
+      reportPost(1, 130, 61),
+      reportPost(2, 320, 50),
+      reportPost(3, 110, 52),
+    ];
+    expect(getAverageVoterCount(posts)).toBe(54);
+  });
+
+  it("is zero when there are no posts", () => {
+    expect(getAverageVoterCount([])).toBe(0);
   });
 });
