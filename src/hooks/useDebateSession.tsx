@@ -21,7 +21,12 @@ import type {
   GGWashImportResult,
 } from "../types";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "../utils/constants/errors";
-import { AskTheDataResponse, FlyerVoteResponse, UserSessionResponse } from "../types/api-responses";
+import {
+  AskTheDataResponse,
+  FlyerVoteResponse,
+  QuickFlyerVoteResponse,
+  UserSessionResponse,
+} from "../types/api-responses";
 import {
   ApiResponse,
   getCachedUser,
@@ -77,6 +82,12 @@ interface DebateSessionContextType {
     vote: VoteType,
     flyerGroup?: number,
   ) => Promise<FlyerVoteResponse | null>;
+  quickVoteViaFlyer: (
+    flyerId: string,
+    statementId: string,
+    vote: VoteType,
+    flyerGroup?: number,
+  ) => Promise<QuickFlyerVoteResponse | null>;
   submitFlyerEmail: (email: string) => Promise<ApiResponse | null>;
   markChanceCardSwiped: (roomId: string) => Promise<void>;
   markCoverCardSwiped: (roomId: string) => Promise<void>;
@@ -479,26 +490,58 @@ export function DebateSessionProvider(
     }, [],
   );
 
-  const voteViaFlyer = useCallback(
-    async (
-      flyerId: string,
-      statementId: string,
-      vote: VoteType,
-      flyerGroup?: number,
+  const submitFlyerVoteAndSignIn = useCallback(
+    async <FlyerVoteResult extends UserSessionResponse>(
+      callFlyerVoteApi: () => Promise<ApiResponse<FlyerVoteResult>>,
+      sessionSource: string,
     ) => {
-      const response = await safelyMakeApiCall<FlyerVoteResponse>(() =>
-        api.voteViaFlyer(flyerId, statementId, vote, flyerGroup),
-      );
+      const response =
+        await safelyMakeApiCall<FlyerVoteResult>(callFlyerVoteApi);
       if (response && response.success && response.data) {
         setUserAndSession(
           response.data.user,
           response.data.sessionId,
-          "vote_via_flyer",
+          sessionSource,
         );
       }
       return response?.data ? response.data : null;
     },
     [safelyMakeApiCall, setUserAndSession],
+  );
+
+  const voteViaFlyer = useCallback(
+    (
+      flyerId: string,
+      statementId: string,
+      vote: VoteType,
+      flyerGroup?: number,
+    ) =>
+      submitFlyerVoteAndSignIn<FlyerVoteResponse>(
+        () =>
+          api.voteViaFlyer(flyerId, statementId, vote, flyerGroup),
+        "vote_via_flyer",
+      ),
+    [submitFlyerVoteAndSignIn],
+  );
+
+  const quickVoteViaFlyer = useCallback(
+    (
+      flyerId: string,
+      statementId: string,
+      vote: VoteType,
+      flyerGroup?: number,
+    ) =>
+      submitFlyerVoteAndSignIn<QuickFlyerVoteResponse>(
+        () =>
+          api.quickVoteViaFlyer(
+            flyerId,
+            statementId,
+            vote,
+            flyerGroup,
+          ),
+        "quick_vote_via_flyer",
+      ),
+    [submitFlyerVoteAndSignIn],
   );
 
   const submitFlyerEmail = useCallback(
@@ -1047,6 +1090,7 @@ export function DebateSessionProvider(
     flagStatement,
     flagAskTheDataResponse,
     voteViaFlyer,
+    quickVoteViaFlyer,
     submitFlyerEmail,
     loadActiveRooms,
     resetSession,
