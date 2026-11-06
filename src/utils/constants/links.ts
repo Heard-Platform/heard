@@ -6,6 +6,8 @@ export const SOCIAL_LINKS = {
   YOUTUBE: "https://www.youtube.com/@AlexLongHeard/",
 } as const;
 
+export const HEARD_HOME_URL = "https://heard.vote";
+
 export const CALENDLY_PILOT_URL = "https://calendly.com/alexmasonlong/15-minute";
 
 export const CALENDLY_INTRO_CALL_URL =
