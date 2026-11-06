@@ -287,6 +287,7 @@ export interface EventReportFloor {
 export interface EventReportCampStatement {
   statementId: string;
   text: string;
+  postNumber: number;
   isAttendeeStatement: boolean;
   campAgreePercent: number;
   otherCampsAgreePercent: number;

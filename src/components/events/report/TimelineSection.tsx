@@ -58,7 +58,6 @@ export function TimelineSection({
     >
       <div className="report-section-content py-16">
         <SectionHeading
-          sectionNumber={7}
           sectionName="Minute by minute"
           headline={headline}
           description={TIMELINE_DESCRIPTION}

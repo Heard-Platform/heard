@@ -171,6 +171,9 @@ const inputs = (
   ...overrides,
 });
 
+const buildReport = (reportInputs: EventReportInputs) =>
+  buildEventReport(reportInputs).report;
+
 const NEVER_ENDED_STATE = { ...inputs().state, endedAt: null };
 
 Deno.test("percentOf rounds and treats no votes as zero", () => {
@@ -246,11 +249,11 @@ Deno.test("buildEventReport rejects an event not yet started", () => {
   const notStarted = inputs({
     state: { ...NEVER_ENDED_STATE, startedAt: null, postChanges: [] },
   });
-  assertThrows(() => buildEventReport(notStarted), RouteError);
+  assertThrows(() => buildReport(notStarted), RouteError);
 });
 
 Deno.test("buildEventReport counts every vote in the opening", () => {
-  assertEquals(buildEventReport(inputs()).opening, {
+  assertEquals(buildReport(inputs()).opening, {
     eventName: "How has AI changed your pricing?",
     eventSubtitle: null,
     peopleCount: 7,
@@ -267,7 +270,7 @@ Deno.test(
   "buildEventReport measures participation against the busiest post",
   () => {
     const voterOnlyOnPostB = vote("b1", "b", "u8", "agree", at(7));
-    const report = buildEventReport(
+    const report = buildReport(
       inputs({ votes: [...VOTES, voterOnlyOnPostB] }),
     );
 
@@ -277,7 +280,7 @@ Deno.test(
 );
 
 Deno.test("buildEventReport picks each post's statements", () => {
-  const [postA, postB, postC] = buildEventReport(inputs()).posts;
+  const [postA, postB, postC] = buildReport(inputs()).posts;
 
   assertEquals(postA, {
     roomId: "a",
@@ -318,13 +321,13 @@ Deno.test(
     const withoutFloorIdeaOnB = inputs({
       statements: STATEMENTS.filter(({ id }) => id !== "b2"),
     });
-    const postB = buildEventReport(withoutFloorIdeaOnB).posts[1];
+    const postB = buildReport(withoutFloorIdeaOnB).posts[1];
     assertEquals(postB.topAttendeeStatement, null);
   },
 );
 
 Deno.test("buildEventReport ranks the floor", () => {
-  assertEquals(buildEventReport(inputs()).floor, {
+  assertEquals(buildReport(inputs()).floor, {
     attendeeCount: 3,
     attendeeStatementVoteCount: 10,
     attendeeStatementsInTopTenCount: 1,
@@ -376,7 +379,7 @@ Deno.test(
       ]),
       vote("c4", "c", "u1", "agree", at(13)),
     ];
-    const report = buildEventReport(
+    const report = buildReport(
       inputs({
         statements: [...STATEMENTS, ...extraFloorIdeas],
         votes: [...VOTES, ...extraVotes],
@@ -392,13 +395,13 @@ Deno.test(
 
 Deno.test("buildEventReport finds no camps with five people", () => {
   assertEquals(
-    buildEventReport(inputs()).campAnalysis,
+    buildReport(inputs()).campAnalysis,
     EMPTY_CAMP_ANALYSIS,
   );
 });
 
 Deno.test("buildEventReport bins the timeline by 20 seconds", () => {
-  const { timeline } = buildEventReport(inputs());
+  const { timeline } = buildReport(inputs());
 
   assertEquals(timeline.binSeconds, 20);
   assertEquals(timeline.bins.length, 45);
@@ -435,7 +438,7 @@ Deno.test("buildEventReport bins the timeline by 20 seconds", () => {
 Deno.test(
   "buildEventReport ends a session with no End at the quiet gap",
   () => {
-    const report = buildEventReport(
+    const report = buildReport(
       inputs({ state: NEVER_ENDED_STATE }),
     );
 

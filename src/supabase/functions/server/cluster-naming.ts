@@ -21,6 +21,7 @@ import {
   parseClusterRenameResponse,
   ParseResult,
   RenameDecision,
+  ROOM_NAME_LIMITS,
   toStanceSnapshot,
   withRetryNote,
 } from "./cluster-naming-utils.ts";
@@ -52,7 +53,7 @@ async function loadStatementsWithVoters(roomId: string): Promise<VotedStatement[
   );
 }
 
-async function completeWithRetry<T>(
+export async function completeWithRetry<T>(
   prompt: AiPrompt,
   parse: (raw: string) => ParseResult<T>,
 ): Promise<T | null> {
@@ -74,9 +75,20 @@ function requestNames(
   takenNames: string[],
   commonGround: string[],
 ): Promise<string[] | null> {
-  const prompt = makeClusterNamingPrompt(topic, clusters, takenNames, commonGround);
+  const prompt = makeClusterNamingPrompt(
+    topic,
+    clusters,
+    takenNames,
+    commonGround,
+    ROOM_NAME_LIMITS,
+  );
   return completeWithRetry(prompt, (raw) =>
-    parseClusterNamingResponse(raw, clusters.length, takenNames),
+    parseClusterNamingResponse(
+      raw,
+      clusters.length,
+      takenNames,
+      ROOM_NAME_LIMITS,
+    ),
   );
 }
 

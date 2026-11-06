@@ -40,7 +40,6 @@ export function PromptsSection({ posts }: PromptsSectionProps) {
     >
       <div className="report-section-content py-16">
         <SectionHeading
-          sectionNumber={2}
           sectionName="Prompt by prompt"
           headline={headline}
           description="Pick one to see where the room agreed, where it split, and its best idea from the floor."

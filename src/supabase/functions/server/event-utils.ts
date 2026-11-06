@@ -20,6 +20,10 @@ import {
   buildEventReport,
   type EventReportVote,
 } from "./event-report-utils.ts";
+import { applyCampNames } from "./event-report-camp-utils.ts";
+import {
+  loadEventReportCampNames,
+} from "./event-report-camp-naming.ts";
 import { RouteError } from "./route-error.ts";
 import {
   canDriveEvent,
@@ -197,7 +201,7 @@ export const loadEventReport = async (
     loadEventRoomsInOrder(state.roomOrder),
     loadVisibleEventStatements(state.roomOrder),
   ]);
-  return buildEventReport({
+  const { report, campNamingRequest } = buildEventReport({
     event,
     community,
     state,
@@ -206,6 +210,16 @@ export const loadEventReport = async (
     votes: await loadVotesForStatements(statements),
     now,
   });
+  const campNames = await loadEventReportCampNames(
+    event.id,
+    event.name,
+    campNamingRequest,
+    now,
+  );
+  return {
+    ...report,
+    campAnalysis: applyCampNames(report.campAnalysis, campNames),
+  };
 };
 
 export const setEventStatementHidden = async (

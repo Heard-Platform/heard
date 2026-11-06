@@ -4,12 +4,14 @@ import { VoteType } from "./types.tsx";
 import {
   buildNamingInputs,
   ClusterNamingInput,
+  EVENT_CAMP_NAME_LIMITS,
   findCommonGround,
   hasStanceDrifted,
   isEligibleForNaming,
   makeClusterNamingPrompt,
   parseClusterNamingResponse,
   parseClusterRenameResponse,
+  ROOM_NAME_LIMITS,
   validateName,
 } from "./cluster-naming-utils.ts";
 import { VotedStatement } from "./cluster-stance-utils.ts";
@@ -34,15 +36,49 @@ const groupA = users("a", 30);
 const groupB = users("b", 30);
 
 Deno.test("validateName - accepts 2-3 words within 16 characters", () => {
-  assertEquals(validateName("Hit the Brakes"), { ok: true, value: "Hit the Brakes" });
-  assertEquals(validateName("  Show   Me Data "), { ok: true, value: "Show Me Data" });
+  assertEquals(validateName("Hit the Brakes", ROOM_NAME_LIMITS), { ok: true, value: "Hit the Brakes" });
+  assertEquals(validateName("  Show   Me Data ", ROOM_NAME_LIMITS), { ok: true, value: "Show Me Data" });
+});
+
+Deno.test("validateName - event camps allow up to 4 words and 24 characters", () => {
+  assertEquals(
+    validateName("The Pragmatic Hourlies", EVENT_CAMP_NAME_LIMITS),
+    { ok: true, value: "The Pragmatic Hourlies" },
+  );
+  assertEquals(
+    validateName("The Pragmatic Hourlies", ROOM_NAME_LIMITS).ok,
+    false,
+  );
+  const fiveWordName = "Bill For The Whole Relationship";
+  assertEquals(
+    validateName(fiveWordName, EVENT_CAMP_NAME_LIMITS).ok,
+    false,
+  );
+});
+
+Deno.test("makeClusterNamingPrompt - states the given name limits", () => {
+  const input: ClusterNamingInput = {
+    stableId: "x",
+    size: 12,
+    statements: [],
+  };
+  const prompt = makeClusterNamingPrompt(
+    "Pricing",
+    [input],
+    [],
+    [],
+    EVENT_CAMP_NAME_LIMITS,
+  );
+
+  const limitsRule = "2 to 4 words, at most 24 characters";
+  assertEquals(prompt.systemPrompt.includes(limitsRule), true);
 });
 
 Deno.test("validateName - rejects wrong word counts, long names and non-strings", () => {
-  assertEquals(validateName("Brakes").ok, false);
-  assertEquals(validateName("Slow It Right Down").ok, false);
-  assertEquals(validateName("Extraordinarily Cautious").ok, false);
-  assertEquals(validateName(42).ok, false);
+  assertEquals(validateName("Brakes", ROOM_NAME_LIMITS).ok, false);
+  assertEquals(validateName("Slow It Right Down", ROOM_NAME_LIMITS).ok, false);
+  assertEquals(validateName("Extraordinarily Cautious", ROOM_NAME_LIMITS).ok, false);
+  assertEquals(validateName(42, ROOM_NAME_LIMITS).ok, false);
 });
 
 Deno.test("buildNamingInputs - captures both directions with the cluster's agree rate", () => {
@@ -134,7 +170,13 @@ Deno.test("makeClusterNamingPrompt - lists groups by letter with taken names and
     statements: [{ id: "s", text: "Build more bike lanes", direction: "agrees", agreeRate: 0.9 }],
   };
 
-  const prompt = makeClusterNamingPrompt("Transit", [input], ["Hit the Brakes"], ["Safety matters"]);
+  const prompt = makeClusterNamingPrompt(
+    "Transit",
+    [input],
+    ["Hit the Brakes"],
+    ["Safety matters"],
+    ROOM_NAME_LIMITS,
+  );
 
   assertEquals(prompt.userPrompt.includes(`Group A (12 people):`), true);
   assertEquals(prompt.userPrompt.includes(`90% of this group agree (they agree much more than others): "Build more bike lanes"`), true);
@@ -144,20 +186,20 @@ Deno.test("makeClusterNamingPrompt - lists groups by letter with taken names and
 
 Deno.test("parseClusterNamingResponse - maps groups back in order and strips fences", () => {
   const raw = '```json\n{"names": [{"group": "B", "name": "Hit the Brakes"}, {"group": "A", "name": "Full Speed Ahead"}]}\n```';
-  assertEquals(parseClusterNamingResponse(raw, 2, []), {
+  assertEquals(parseClusterNamingResponse(raw, 2, [], ROOM_NAME_LIMITS), {
     ok: true,
     value: ["Full Speed Ahead", "Hit the Brakes"],
   });
 });
 
 Deno.test("parseClusterNamingResponse - rejects missing groups, duplicates and taken names", () => {
-  assertEquals(parseClusterNamingResponse('{"names": [{"group": "A", "name": "Go Go Go"}]}', 2, []).ok, false);
+  assertEquals(parseClusterNamingResponse('{"names": [{"group": "A", "name": "Go Go Go"}]}', 2, [], ROOM_NAME_LIMITS).ok, false);
   assertEquals(
-    parseClusterNamingResponse('{"names": [{"group": "A", "name": "Go Go"}, {"group": "B", "name": "go go"}]}', 2, []).ok,
+    parseClusterNamingResponse('{"names": [{"group": "A", "name": "Go Go"}, {"group": "B", "name": "go go"}]}', 2, [], ROOM_NAME_LIMITS).ok,
     false,
   );
-  assertEquals(parseClusterNamingResponse('{"names": [{"group": "A", "name": "Hit the Brakes"}]}', 1, ["Hit the Brakes"]).ok, false);
-  assertEquals(parseClusterNamingResponse("not json", 1, []).ok, false);
+  assertEquals(parseClusterNamingResponse('{"names": [{"group": "A", "name": "Hit the Brakes"}]}', 1, ["Hit the Brakes"], ROOM_NAME_LIMITS).ok, false);
+  assertEquals(parseClusterNamingResponse("not json", 1, [], ROOM_NAME_LIMITS).ok, false);
 });
 
 Deno.test("parseClusterRenameResponse - keep, valid rename, and rejected renames", () => {

@@ -42,7 +42,6 @@ export function TimeSection({
     >
       <div className="report-section-content py-16">
         <SectionHeading
-          sectionNumber={1}
           sectionName="How the time went"
           headline={`You talked longest about "${longestPost.topic}"`}
           description={`${longestPostTime} on prompt ${longestPost.postNumber}, more than any other prompt.`}

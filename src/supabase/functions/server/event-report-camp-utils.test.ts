@@ -2,6 +2,7 @@ import {
   assertEquals,
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
+  applyCampNames,
   buildCampAnalysis,
   EMPTY_CAMP_ANALYSIS,
   findCampEligibleUserIds,
@@ -100,12 +101,14 @@ const TALLIES = [
   tallyFor(MOSTLY_AGREED, true),
 ];
 
-const buildFixtureCamps = () =>
+const buildFixtureResult = () =>
   buildCampAnalysis({
     tallies: TALLIES,
     rankableTallies: TALLIES,
     sessionVotes: VOTES,
   });
+
+const buildFixtureCamps = () => buildFixtureResult().campAnalysis;
 
 Deno.test(
   "findCampEligibleUserIds needs votes on half the statements",
@@ -133,13 +136,14 @@ Deno.test("buildCampAnalysis needs two camps of three", () => {
   const fewVotes = VOTES.filter((vote) =>
     fivePeople.includes(vote.userId)
   );
-  const campAnalysis = buildCampAnalysis({
+  const { campAnalysis, campNamingRequest } = buildCampAnalysis({
     tallies: TALLIES,
     rankableTallies: TALLIES,
     sessionVotes: fewVotes,
   });
 
   assertEquals(campAnalysis, EMPTY_CAMP_ANALYSIS);
+  assertEquals(campNamingRequest, null);
 });
 
 Deno.test("buildCampAnalysis splits people into camps", () => {
@@ -184,6 +188,7 @@ Deno.test("buildCampAnalysis lists what each camp agrees on", () => {
     {
       statementId: "divides-first",
       text: "Statement divides-first",
+      postNumber: 1,
       isAttendeeStatement: false,
       campAgreePercent: 100,
       otherCampsAgreePercent: 0,
@@ -191,6 +196,7 @@ Deno.test("buildCampAnalysis lists what each camp agrees on", () => {
     {
       statementId: "divides-second",
       text: "Statement divides-second",
+      postNumber: 1,
       isAttendeeStatement: false,
       campAgreePercent: 100,
       otherCampsAgreePercent: 0,
@@ -198,6 +204,7 @@ Deno.test("buildCampAnalysis lists what each camp agrees on", () => {
     {
       statementId: "mostly-agreed",
       text: "Statement mostly-agreed",
+      postNumber: 1,
       isAttendeeStatement: true,
       campAgreePercent: 100,
       otherCampsAgreePercent: 75,
@@ -235,3 +242,43 @@ Deno.test(
     assertEquals(bridges[0].statement.statementId, "mostly-agreed");
   },
 );
+
+Deno.test("buildCampAnalysis asks to name camps by membership", () => {
+  const { campNamingRequest } = buildFixtureResult();
+  const firstGroupSignature = [...FIRST_GROUP].sort().join(",");
+  const secondGroupSignature = [...SECOND_GROUP].sort().join(",");
+  const signatureParts =
+    campNamingRequest?.membershipSignature.split("|").sort();
+
+  assertEquals(
+    signatureParts,
+    [firstGroupSignature, secondGroupSignature],
+  );
+  assertEquals(
+    campNamingRequest?.namingInputs.map(({ stableId }) => stableId),
+    ["camp-a", "camp-b"],
+  );
+  assertEquals(
+    campNamingRequest?.commonGround.includes(
+      "Statement everyone-agrees",
+    ),
+    true,
+  );
+});
+
+Deno.test("applyCampNames swaps placeholders in camp order", () => {
+  const campAnalysis = buildFixtureCamps();
+  const namedCamps = applyCampNames(campAnalysis, [
+    "Full Speed Ahead",
+    "Hit the Brakes",
+  ]).camps;
+
+  assertEquals(
+    namedCamps.map(({ campId, name }) => [campId, name]),
+    [
+      ["camp-a", "Full Speed Ahead"],
+      ["camp-b", "Hit the Brakes"],
+    ],
+  );
+  assertEquals(applyCampNames(campAnalysis, null), campAnalysis);
+});

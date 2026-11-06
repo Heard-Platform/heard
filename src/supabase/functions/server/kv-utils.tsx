@@ -24,6 +24,7 @@ import {
   AskTheDataRecord,
   LiveEventState,
   EventPresence,
+  EventReportCampNames,
 } from "./types.tsx";
 import { throwIfNotFound } from "./model-utils.ts";
 
@@ -484,6 +485,24 @@ export const getEventDisplayKey = async (eventId: number) =>
 
 export const saveEventDisplayKey = async (eventId: number, displayKey: string) => {
   await kv.set(eventDisplayKeyKeyFn(eventId), JSON.stringify(displayKey));
+};
+
+const eventReportCampNamesKeyFn = (eventId: number) =>
+  `event_report_camps:${eventId}`;
+
+export const getEventReportCampNames = async (eventId: number) =>
+  getParsedKvData<EventReportCampNames>(
+    eventReportCampNamesKeyFn(eventId),
+  );
+
+export const saveEventReportCampNames = async (
+  eventId: number,
+  campNames: EventReportCampNames,
+) => {
+  await kv.set(
+    eventReportCampNamesKeyFn(eventId),
+    JSON.stringify(campNames),
+  );
 };
 
 const eventPresencePrefix = (eventId: number) => `event_live_presence:${eventId}:`;

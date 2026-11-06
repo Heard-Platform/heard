@@ -19,6 +19,9 @@ const CAMP_SIZE_SHARES = {
   squeezed: 0.25,
 };
 
+const findFixturePostNumber = (statementId: string): number =>
+  Number(statementId.match(/\d+/)?.[0] ?? 1);
+
 const campStatement = (
   statementId: string,
   text: string,
@@ -28,6 +31,7 @@ const campStatement = (
 ): EventReportCampStatement => ({
   statementId,
   text,
+  postNumber: findFixturePostNumber(statementId),
   isAttendeeStatement,
   campAgreePercent,
   otherCampsAgreePercent,
@@ -102,9 +106,6 @@ const PRICING_SESSION_CAMPS: EventReportCamp[] = [
     ],
   },
 ];
-
-const findFixturePostNumber = (statementId: string): number =>
-  Number(statementId.match(/\d+/)?.[0] ?? 1);
 
 const statementByCamp = (
   statementId: string,
