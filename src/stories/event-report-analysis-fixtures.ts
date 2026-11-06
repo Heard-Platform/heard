@@ -41,8 +41,6 @@ const PRICING_SESSION_CAMPS: EventReportCamp[] = [
   {
     campId: CONVERTS_CAMP_ID,
     name: "The Value Converts",
-    description:
-      "Already moving off hourly and looking for the playbook.",
     memberCount: 26,
     sizePercent: 41,
     representativeStatements: [
@@ -64,8 +62,6 @@ const PRICING_SESSION_CAMPS: EventReportCamp[] = [
   {
     campId: HOURLIES_CAMP_ID,
     name: "The Pragmatic Hourlies",
-    description:
-      "See the flaws in hourly, but their clients and teams run on it.",
     memberCount: 22,
     sizePercent: 34,
     representativeStatements: [
@@ -86,8 +82,6 @@ const PRICING_SESSION_CAMPS: EventReportCamp[] = [
   {
     campId: SQUEEZED_CAMP_ID,
     name: "The AI Squeezed",
-    description:
-      "Feeling clients push AI savings back onto the price.",
     memberCount: 16,
     sizePercent: 25,
     representativeStatements: [

@@ -5,6 +5,7 @@ import { Loader } from "../../widgets/Loader";
 import { ReportPage } from "./ReportPage";
 
 const REPORT_LOAD_ERROR = "Couldn't load this report";
+const REPORT_OPENED_EVENT = "report_opened";
 
 interface ReportPageContainerProps {
   eventId: string;
@@ -41,6 +42,7 @@ function useEventReport(eventId: string) {
       if (isCancelled) return;
       if (response.success && response.data) {
         setReport(response.data.report);
+        api.trackEvent(REPORT_OPENED_EVENT);
       } else {
         setError(response.error || REPORT_LOAD_ERROR);
       }

@@ -99,9 +99,6 @@ function CampCard({ camp, campIndex, posts }: CampCardProps) {
           {pluralizePerson(camp.memberCount)} · {camp.sizePercent}%
         </span>
       </div>
-      <p className="report-subtext leading-relaxed">
-        {camp.description}
-      </p>
       <ul className="flex flex-col gap-2.5">
         {camp.representativeStatements.map((statement) => (
           <CampStatement

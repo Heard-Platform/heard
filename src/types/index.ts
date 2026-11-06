@@ -296,7 +296,6 @@ export interface EventReportCampStatement {
 export interface EventReportCamp {
   campId: string;
   name: string;
-  description: string;
   memberCount: number;
   sizePercent: number;
   representativeStatements: EventReportCampStatement[];
@@ -1078,6 +1077,11 @@ export interface FeatureResults {
   swipeSixFunnelSince: number;
   createRoomFunnel: { opened: number; reviewed: number; created: number; shared: number };
   createRoomFunnelSince: number;
+  eventReportOpens: {
+    openCount: number;
+    openCountsByEvent: EventReportOpenCount[];
+  };
+  eventReportOpensSince: number;
   flyerLandingFunnel: { opened: number; submitted: number; lookedAround: number };
   flyerLandingFunnelSince: number;
   flyerScreenFunnel: { opened: number; emailAdded: number; returnedViaEmail: number; returnedOnMultipleDays: number };
@@ -1089,6 +1093,12 @@ export interface FeatureResults {
   flyerWelcomeEmailsSent: number;
   flyerResultsEmailsSent: number;
   flyerEmailsSentSince: number;
+}
+
+export interface EventReportOpenCount {
+  eventId: number;
+  eventName: string;
+  openCount: number;
 }
 
 export interface GGWashImportResult {

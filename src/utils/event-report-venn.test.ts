@@ -37,7 +37,6 @@ const statementByCamp = (
 const camp = (campId: string, name: string): EventReportCamp => ({
   campId,
   name,
-  description: "",
   memberCount: 10,
   sizePercent: 33,
   representativeStatements: [],

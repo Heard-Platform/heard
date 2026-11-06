@@ -12,6 +12,7 @@ import {
   Tag,
   Flag,
   FileCheck,
+  FileText,
   LucideIcon,
   Globe,
   Fingerprint,
@@ -49,6 +50,7 @@ import { FlyerSwipeFunnelChart } from "./feature-tracker/FlyerSwipeFunnelChart";
 import { SwipeSixFunnelChart } from "./feature-tracker/SwipeSixFunnelChart";
 import { FlyerLandingFunnelChart } from "./feature-tracker/FlyerLandingFunnelChart";
 import { CreateRoomFunnelChart } from "./feature-tracker/CreateRoomFunnelChart";
+import { EventReportOpensList } from "./feature-tracker/EventReportOpensList";
 import { FlyerScreenFunnelChart } from "./feature-tracker/FlyerScreenFunnelChart";
 import { OneBillionResults } from "./feature-tracker/OneBillionResults";
 import { FundingResults } from "./feature-tracker/FundingResults";
@@ -536,6 +538,23 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
       getValue: (s) => s.createRoomFunnel.created,
       getDate: (s) => s.createRoomFunnelSince,
       renderExtra: (s) => <CreateRoomFunnelChart {...s.createRoomFunnel} />,
+    },
+    {
+      icon: FileText,
+      iconColor: "text-violet-600",
+      bgColor: "bg-violet-100",
+      title: "Event Reports",
+      description: [
+        "Times an event report was opened, not counting developers,",
+        "in total and per event",
+      ].join(" "),
+      getValue: (s) => s.eventReportOpens.openCount,
+      getDate: (s) => s.eventReportOpensSince,
+      renderExtra: (s) => (
+        <EventReportOpensList
+          openCountsByEvent={s.eventReportOpens.openCountsByEvent}
+        />
+      ),
     },
     {
       icon: MessageSquare,
