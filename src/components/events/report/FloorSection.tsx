@@ -45,7 +45,6 @@ export function FloorSection({
     >
       <div className="report-section-content py-20">
         <SectionHeading
-          sectionNumber={3}
           sectionName="The floor"
           headline={FLOOR_HEADLINE}
           description={describeFloor(floor, attendeeStatementCount)}

@@ -1,6 +1,9 @@
 import _ from "lodash";
 import { canModerateEvent } from "./live-event-utils.ts";
-import { buildCampAnalysis } from "./event-report-camp-utils.ts";
+import {
+  buildCampAnalysis,
+  type CampNamingRequest,
+} from "./event-report-camp-utils.ts";
 import { RouteError } from "./route-error.ts";
 import { percentOf } from "./utils.tsx";
 import {
@@ -440,9 +443,14 @@ const buildTimeline = (
   };
 };
 
+export interface BuiltEventReport {
+  report: EventReport;
+  campNamingRequest: CampNamingRequest | null;
+}
+
 export const buildEventReport = (
   inputs: EventReportInputs,
-): EventReport => {
+): BuiltEventReport => {
   const sessionStartedAt = requireSessionStarted(inputs.state);
   const sessionVotes = filterSessionVotes(
     inputs.votes,
@@ -461,7 +469,12 @@ export const buildEventReport = (
     tallies,
     sessionEndedAt,
   );
-  return {
+  const { campAnalysis, campNamingRequest } = buildCampAnalysis({
+    tallies,
+    rankableTallies: tallies.filter(hasEnoughVotesToRank),
+    sessionVotes,
+  });
+  const report: EventReport = {
     opening: buildOpening(
       inputs.event,
       sessionVotes,
@@ -471,11 +484,7 @@ export const buildEventReport = (
     ),
     posts,
     floor: buildFloor(tallies),
-    campAnalysis: buildCampAnalysis({
-      tallies,
-      rankableTallies: tallies.filter(hasEnoughVotesToRank),
-      sessionVotes,
-    }),
+    campAnalysis,
     timeline: buildTimeline(
       inputs.state,
       sessionVotes,
@@ -483,4 +492,5 @@ export const buildEventReport = (
       sessionTimes,
     ),
   };
+  return { report, campNamingRequest };
 };

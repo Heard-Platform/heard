@@ -30,14 +30,12 @@ export function ReportPage({ report }: ReportPageProps) {
         attendeeStatementCount={opening.attendeeStatementCount}
         peopleCount={opening.peopleCount}
       />
-      <CampsSection
-        camps={campAnalysis.camps}
-        postCount={opening.postCount}
-      />
+      <CampsSection camps={campAnalysis.camps} posts={posts} />
       <BridgesSection campAnalysis={campAnalysis} posts={posts} />
       <CommonGroundSection
         camps={campAnalysis.camps}
         commonGroundStatement={campAnalysis.commonGroundStatement}
+        posts={posts}
       />
       <TimelineSection
         timeline={timeline}

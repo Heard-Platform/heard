@@ -4,6 +4,12 @@ import {
   type VoteTally,
 } from "./cluster-analysis.tsx";
 import {
+  buildNamingInputs,
+  type ClusterNamingInput,
+  findCommonGround,
+} from "./cluster-naming-utils.ts";
+import type { VotedStatement } from "./cluster-stance-utils.ts";
+import {
   buildVotingMatrix,
   chooseClusterCount,
   kMeansClusteringMultiRun,
@@ -43,6 +49,22 @@ export interface CampAnalysisInputs {
   rankableTallies: StatementTally[];
   sessionVotes: EventReportVote[];
 }
+
+export interface CampNamingRequest {
+  membershipSignature: string;
+  namingInputs: ClusterNamingInput[];
+  commonGround: string[];
+}
+
+export interface CampAnalysisResult {
+  campAnalysis: EventReportCampAnalysis;
+  campNamingRequest: CampNamingRequest | null;
+}
+
+const NO_CAMPS_RESULT: CampAnalysisResult = {
+  campAnalysis: EMPTY_CAMP_ANALYSIS,
+  campNamingRequest: null,
+};
 
 interface CampMembers {
   campId: string;
@@ -211,6 +233,7 @@ const toCampStatement = (
 ): EventReportCampStatement => ({
   statementId: candidate.tally.statement.id,
   text: candidate.tally.statement.text,
+  postNumber: candidate.tally.postNumber,
   isAttendeeStatement: candidate.tally.isAttendeeStatement,
   campAgreePercent: campAgreePercent(candidate.campVoteTally),
   otherCampsAgreePercent: campAgreePercent(
@@ -364,9 +387,47 @@ const findBridges = (
   );
 };
 
+const signCampMembership = (camps: CampMembers[]): string =>
+  camps
+    .map((camp) => _.sortBy(camp.memberIds).join(","))
+    .join("|");
+
+const buildCampNamingRequest = (
+  camps: CampMembers[],
+  tallies: StatementTally[],
+  votersByStatementId: VotersByStatementId,
+): CampNamingRequest => {
+  const votedStatements: VotedStatement[] = tallies.map((tally) => ({
+    id: tally.statement.id,
+    text: tally.statement.text,
+    voters: votersByStatementId[tally.statement.id] ?? {},
+  }));
+  const campIdentities = camps.map((camp) => ({
+    stableId: camp.campId,
+    memberIds: camp.memberIds,
+  }));
+  return {
+    membershipSignature: signCampMembership(camps),
+    namingInputs: buildNamingInputs(campIdentities, votedStatements),
+    commonGround: findCommonGround(campIdentities, votedStatements),
+  };
+};
+
+export const applyCampNames = (
+  campAnalysis: EventReportCampAnalysis,
+  campNames: string[] | null,
+): EventReportCampAnalysis => {
+  if (campNames === null) return campAnalysis;
+  const namedCamps = campAnalysis.camps.map((camp, campIndex) => ({
+    ...camp,
+    name: campNames[campIndex] ?? camp.name,
+  }));
+  return { ...campAnalysis, camps: namedCamps };
+};
+
 export const buildCampAnalysis = (
   inputs: CampAnalysisInputs,
-): EventReportCampAnalysis => {
+): CampAnalysisResult => {
   const votersByStatementId = buildVotersByStatementId(
     inputs.sessionVotes,
   );
@@ -375,14 +436,14 @@ export const buildCampAnalysis = (
     inputs.tallies.length,
   );
   if (eligibleUserIds.length < MIN_CAMP_SIZE * 2) {
-    return EMPTY_CAMP_ANALYSIS;
+    return NO_CAMPS_RESULT;
   }
   const camps = clusterIntoCamps(
     eligibleUserIds,
     inputs.tallies,
     votersByStatementId,
   );
-  if (camps.length < 2) return EMPTY_CAMP_ANALYSIS;
+  if (camps.length < 2) return NO_CAMPS_RESULT;
 
   const statementCampTallies = inputs.rankableTallies.map((tally) =>
     tallyStatementByCamp(tally, camps, votersByStatementId)
@@ -391,7 +452,7 @@ export const buildCampAnalysis = (
     statementCampTallies,
     _.range(camps.length),
   );
-  return {
+  const campAnalysis: EventReportCampAnalysis = {
     camps: camps.map((camp) =>
       toReportCamp(camp, camps, inputs.tallies, votersByStatementId)
     ),
@@ -402,5 +463,13 @@ export const buildCampAnalysis = (
     commonGroundStatement: commonGround
       ? toStatementByCamp(commonGround, camps)
       : null,
+  };
+  return {
+    campAnalysis,
+    campNamingRequest: buildCampNamingRequest(
+      camps,
+      inputs.tallies,
+      votersByStatementId,
+    ),
   };
 };

@@ -26,7 +26,7 @@ export function calcAgreeRate(
 }
 
 export function rankCommonGround<T extends VotedStatement>(
-  clusters: ClusterIdentity[],
+  clusters: Pick<ClusterIdentity, "memberIds">[],
   statements: T[],
 ): T[] {
   if (clusters.length < 2) return [];

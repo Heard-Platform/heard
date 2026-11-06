@@ -1,7 +1,9 @@
 import type {
   EventReportCamp,
+  EventReportPost,
   EventReportStatementByCamp,
 } from "../../../types";
+import { findPostTopic } from "../../../utils/event-report";
 import { getCampAgreePercent } from "../../../utils/event-report-venn";
 import { REPORT_SECTION_IDS } from "./report-sections";
 import { ResponseMark } from "./ResponseMark";
@@ -11,11 +13,13 @@ import "./report.css";
 interface CommonGroundSectionProps {
   camps: EventReportCamp[];
   commonGroundStatement: EventReportStatementByCamp | null;
+  posts: EventReportPost[];
 }
 
 export function CommonGroundSection({
   camps,
   commonGroundStatement,
+  posts,
 }: CommonGroundSectionProps) {
   if (camps.length === 0) return null;
 
@@ -25,11 +29,12 @@ export function CommonGroundSection({
       className="report-common-ground-bg scroll-mt-16"
     >
       <div className="report-section-content items-center py-24 text-center">
-        <SectionLabel sectionNumber={6} sectionName="Common ground" />
+        <SectionLabel sectionName="Common ground" />
         {commonGroundStatement ? (
           <CommonGroundStatement
             camps={camps}
             statement={commonGroundStatement}
+            posts={posts}
           />
         ) : (
           <h2 className="report-header max-w-3xl">
@@ -44,11 +49,13 @@ export function CommonGroundSection({
 interface CommonGroundStatementProps {
   camps: EventReportCamp[];
   statement: EventReportStatementByCamp;
+  posts: EventReportPost[];
 }
 
 function CommonGroundStatement({
   camps,
   statement,
+  posts,
 }: CommonGroundStatementProps) {
   const campAgreementSummary = camps
     .map(
@@ -64,6 +71,9 @@ function CommonGroundStatement({
       </h2>
       <p className="report-common-ground-quote max-w-4xl">
         "{statement.text}"
+      </p>
+      <p className="max-w-2xl text-sm secondary-text-strong">
+        {findPostTopic(posts, statement.postNumber)}
       </p>
       {statement.isAttendeeStatement && (
         <span className="report-response-strong-text flex items-center gap-1.5 text-sm font-semibold">

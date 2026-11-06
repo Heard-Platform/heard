@@ -1,7 +1,9 @@
 import type {
   EventReportCamp,
   EventReportCampStatement,
+  EventReportPost,
 } from "../../../types";
+import { findPostTopic } from "../../../utils/event-report";
 import { pluralizePerson } from "../../../utils/text";
 import { getCampColorClassNames } from "./camp-colors";
 import { REPORT_SECTION_IDS } from "./report-sections";
@@ -14,17 +16,17 @@ const CAMPS_DESCRIPTION =
 
 interface CampsSectionProps {
   camps: EventReportCamp[];
-  postCount: number;
+  posts: EventReportPost[];
 }
 
-export function CampsSection({
-  camps,
-  postCount,
-}: CampsSectionProps) {
+export function CampsSection({ camps, posts }: CampsSectionProps) {
   const headline =
     camps.length === 0
       ? "Not enough people voted across prompts to find camps."
-      : `Across all ${postCount} prompts, the room fell into ${camps.length} camps.`;
+      : [
+        `Across all ${posts.length} prompts,`,
+        `the room fell into ${camps.length} camps.`,
+      ].join(" ");
 
   return (
     <section
@@ -33,7 +35,6 @@ export function CampsSection({
     >
       <div className="report-section-content py-20">
         <SectionHeading
-          sectionNumber={4}
           sectionName="The camps"
           headline={headline}
           description={CAMPS_DESCRIPTION}
@@ -47,6 +48,7 @@ export function CampsSection({
                   key={camp.campId}
                   camp={camp}
                   campIndex={campIndex}
+                  posts={posts}
                 />
               ))}
             </div>
@@ -80,9 +82,10 @@ function CampSizeBar({ camps }: CampSizeBarProps) {
 interface CampCardProps {
   camp: EventReportCamp;
   campIndex: number;
+  posts: EventReportPost[];
 }
 
-function CampCard({ camp, campIndex }: CampCardProps) {
+function CampCard({ camp, campIndex, posts }: CampCardProps) {
   const campColors = getCampColorClassNames(campIndex);
 
   return (
@@ -104,6 +107,7 @@ function CampCard({ camp, campIndex }: CampCardProps) {
           <CampStatement
             key={statement.statementId}
             statement={statement}
+            posts={posts}
           />
         ))}
       </ul>
@@ -113,11 +117,15 @@ function CampCard({ camp, campIndex }: CampCardProps) {
 
 interface CampStatementProps {
   statement: EventReportCampStatement;
+  posts: EventReportPost[];
 }
 
-function CampStatement({ statement }: CampStatementProps) {
+function CampStatement({ statement, posts }: CampStatementProps) {
   return (
     <li className="report-camps-statement-bg flex flex-col gap-1 rounded-xl px-4 py-3">
+      <span className="report-subtext text-xs">
+        {findPostTopic(posts, statement.postNumber)}
+      </span>
       <span className="flex gap-2 leading-snug">
         {statement.isAttendeeStatement && (
           <ResponseMark className="mt-0.5 h-4 w-4 report-response-text" />

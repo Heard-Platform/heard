@@ -6,11 +6,26 @@ import { calcAgreeRate, rankCommonGround, VotedStatement } from "./cluster-stanc
 
 export const MIN_NAMING_CLUSTER_SIZE = 5;
 export const NAMING_STATEMENT_COUNT = 5;
-export const MAX_NAME_CHARS = 16;
-export const MIN_NAME_WORDS = 2;
-export const MAX_NAME_WORDS = 3;
 export const STANCE_DRIFT_THRESHOLD = 0.25;
 export const COMMON_GROUND_COUNT = 2;
+
+export interface NameLimits {
+  minWords: number;
+  maxWords: number;
+  maxChars: number;
+}
+
+export const ROOM_NAME_LIMITS: NameLimits = {
+  minWords: 2,
+  maxWords: 3,
+  maxChars: 16,
+};
+
+export const EVENT_CAMP_NAME_LIMITS: NameLimits = {
+  minWords: 2,
+  maxWords: 4,
+  maxChars: 24,
+};
 
 export type StanceDirection = "agrees" | "disagrees";
 
@@ -34,7 +49,7 @@ export type RenameDecision =
   | { decision: "rename"; name: string; reason: string };
 
 export function buildNamingInputs(
-  clusters: ClusterIdentity[],
+  clusters: Pick<ClusterIdentity, "stableId" | "memberIds">[],
   statements: VotedStatement[],
 ): ClusterNamingInput[] {
   return clusters.map((cluster) => {
@@ -60,7 +75,7 @@ export function buildNamingInputs(
 }
 
 export function findCommonGround(
-  clusters: ClusterIdentity[],
+  clusters: Pick<ClusterIdentity, "memberIds">[],
   statements: VotedStatement[],
 ): string[] {
   return rankCommonGround(clusters, statements)
@@ -101,15 +116,21 @@ export function hasStanceDrifted(
   return driftedCount * 2 >= snapshot.length;
 }
 
-export function validateName(name: unknown): ParseResult<string> {
+export function validateName(
+  name: unknown,
+  limits: NameLimits,
+): ParseResult<string> {
   if (typeof name !== "string") return { ok: false, error: "name must be a string" };
   const trimmed = name.trim().replace(/\s+/g, " ");
   const words = trimmed.split(" ").length;
-  if (words < MIN_NAME_WORDS || words > MAX_NAME_WORDS) {
-    return { ok: false, error: `"${trimmed}" must be ${MIN_NAME_WORDS}-${MAX_NAME_WORDS} words` };
+  if (words < limits.minWords || words > limits.maxWords) {
+    const wordRange = `${limits.minWords}-${limits.maxWords}`;
+    const wrongLength = `must be ${wordRange} words`;
+    return { ok: false, error: `"${trimmed}" ${wrongLength}` };
   }
-  if (trimmed.length > MAX_NAME_CHARS) {
-    return { ok: false, error: `"${trimmed}" is longer than ${MAX_NAME_CHARS} characters` };
+  if (trimmed.length > limits.maxChars) {
+    const tooLong = `is longer than ${limits.maxChars} characters`;
+    return { ok: false, error: `"${trimmed}" ${tooLong}` };
   }
   return { ok: true, value: trimmed };
 }
@@ -118,11 +139,11 @@ function groupKey(index: number): string {
   return String.fromCharCode(65 + index);
 }
 
-const SYSTEM_PROMPT =
+const makeSystemPrompt = (limits: NameLimits): string =>
 `You name opinion groups in Heard, a discussion app where people vote agree or disagree on short statements. Participants are grouped by how they voted, and each group needs a short name so people can instantly tell what the group is about.
 
 Name rules:
-- 2 to 3 words, at most ${MAX_NAME_CHARS} characters including spaces. Title Case.
+- ${limits.minWords} to ${limits.maxWords} words, at most ${limits.maxChars} characters including spaces. Title Case.
 - Fun, punchy and clear, in the spirit of "Full Speed Ahead", "Hit the Brakes" or "Show Me the Data".
 - Describe what the group believes or wants, never who its members are.
 - Understand that the statements provided with each group are not necessarily ones the group agreed with. Each shows what share of the group agrees with it, from none to all. Take that into account. A group that has a low agreement percent with "Meetings are a waste of time" wouldn't be named "No More Meetings".
@@ -165,6 +186,7 @@ export function makeClusterNamingPrompt(
   clusters: ClusterNamingInput[],
   takenNames: string[],
   commonGround: string[],
+  limits: NameLimits,
 ): AiPrompt {
   const groups = clusters
     .map((c, i) => `Group ${groupKey(i)} (${c.size} people):\n${formatStances(c.statements)}`)
@@ -180,13 +202,14 @@ ${groups}
 Respond with JSON only, in exactly this form and nothing else:
 {"names": [${example}]}`;
 
-  return { systemPrompt: SYSTEM_PROMPT, userPrompt };
+  return { systemPrompt: makeSystemPrompt(limits), userPrompt };
 }
 
 export function parseClusterNamingResponse(
   raw: string,
   clusterCount: number,
   takenNames: string[],
+  limits: NameLimits,
 ): ParseResult<string[]> {
   let parsed: unknown;
   try {
@@ -203,7 +226,8 @@ export function parseClusterNamingResponse(
     const key = groupKey(i);
     const entry = entries.find((e) => (e as { group?: unknown })?.group === key);
     if (!entry) return { ok: false, error: `no name for group ${key}` };
-    const result = validateName((entry as { name?: unknown }).name);
+    const entryName = (entry as { name?: unknown }).name;
+    const result = validateName(entryName, limits);
     if (!result.ok) return result;
     names.push(result.value);
   }
@@ -251,7 +275,10 @@ Respond with JSON only, in exactly one of these forms and nothing else:
 {"decision": "keep"}
 {"decision": "rename", "reason": "<one short sentence: what changed in the group's views>", "name": "<new name>"}`;
 
-  return { systemPrompt: SYSTEM_PROMPT, userPrompt };
+  return {
+    systemPrompt: makeSystemPrompt(ROOM_NAME_LIMITS),
+    userPrompt,
+  };
 }
 
 export function parseClusterRenameResponse(
@@ -277,7 +304,7 @@ export function parseClusterRenameResponse(
     return { ok: false, error: "a rename needs a reason" };
   }
 
-  const result = validateName(name);
+  const result = validateName(name, ROOM_NAME_LIMITS);
   if (!result.ok) return result;
   if (takenNames.some((n) => n.toLowerCase() === result.value.toLowerCase())) {
     return { ok: false, error: `"${result.value}" is already used by another group` };
