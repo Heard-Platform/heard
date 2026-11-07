@@ -134,14 +134,15 @@ export type FeedbackCard = {
   statement: FeedbackStatement;
 }
 
-export type Card =
+export type Card = (
   | StatementCard
   | CertifyCard
   | ChanceCard
   | CoverCard
   | DemographicsCard
   | FeedbackCard
-  | EventInviteCard;
+  | EventInviteCard
+) & { isUndraggable?: boolean };
 
 export const isStatementCard = (card: Card): card is StatementCard => {
   return card.type === "statement";

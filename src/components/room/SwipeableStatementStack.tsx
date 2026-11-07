@@ -212,6 +212,7 @@ export function SwipeableStatementStack({
     cards.splice(inviteIndex, 0, {
       type: "event-invite",
       invite: flyerIntro.invite,
+      isUndraggable: true,
     });
 
     if (!isFlyerStampDone) {
@@ -219,6 +220,7 @@ export function SwipeableStatementStack({
         type: "statement",
         statement: flyerIntro.statement,
         stampedVote: flyerIntro.vote,
+        isUndraggable: true,
       });
     }
   }
@@ -347,10 +349,6 @@ export function SwipeableStatementStack({
       null;
 
     if (!swipeDirection) return;
-
-    const isStampedCard =
-      card.type === "statement" && card.stampedVote !== undefined;
-    if (isStampedCard) return;
 
     if (card.type === "demographics") {
       handleDemographicsAnswer(

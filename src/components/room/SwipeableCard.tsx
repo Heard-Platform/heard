@@ -76,7 +76,7 @@ export function SwipeableCard({
   onSuperAgree,
   onFlag,
 }: SwipeableCardProps) {
-  const isDraggable = isTopCard && card.type !== "event-invite";
+  const isDraggable = isTopCard && !card.isUndraggable;
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -123,7 +123,7 @@ export function SwipeableCard({
         x: isTopCard ? x : 0,
         y: isTopCard ? y : 0,
         rotate: isTopCard ? rotate : 0,
-        opacity: isTopCard ? cardOpacity : 1 - index * 0.2,
+        opacity: isTopCard ? cardOpacity : 1,
         zIndex: 10 - index,
         scale: 1 - index * 0.05,
         pointerEvents: isTopCard ? "auto" : "none",
