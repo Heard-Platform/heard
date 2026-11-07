@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PanInfo } from "motion/react";
 import {
   type Statement,
@@ -7,7 +7,7 @@ import {
   type ChanceCard,
   type CoverCard,
   type DemographicsCard,
-
+  type FlyerIntro,
   type DebateRoom,
   DemographicQuestion,
   FullCoverData,
@@ -20,6 +20,7 @@ import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-fl
 import { useVoteResultSnackbar } from "../../contexts/VoteResultSnackbarContext";
 import { buildVoteReveal, type VoteReveal } from "../../utils/vote-reveal";
 import { VOTE_REVEAL_CROWD_DURATION_MS } from "./VoteRevealCrowd";
+import { VOTE_STAMP_TOTAL_MS } from "./VoteStamp";
 import { api } from "../../utils/api";
 
 
@@ -39,6 +40,7 @@ interface SwipeableStatementStackProps {
   answeredQuestionIds: Set<string>;
   targetStatementId?: string;
   feedbackStatement: FeedbackStatement | null;
+  flyerIntro?: FlyerIntro;
   onVote: (
     statement: Statement,
     voteType: VoteType,
@@ -51,9 +53,12 @@ interface SwipeableStatementStackProps {
   onDemographicsAnswered: (questionId: string) => void;
   onFeedbackVoted: (statement: FeedbackStatement, vote: VoteType) => void;
   onFeedbackTellMore: (statement: FeedbackStatement) => void;
+  onKeepVoting?: () => void;
 }
 
 const SWIPE_THRESHOLD = 100;
+const STATEMENTS_BEFORE_EVENT_INVITE = 2;
+const FLYER_REVEAL_HOLD_MS = 1500;
 const CARD_EXIT_MS = 300;
 
 type CardExitDirection = "left" | "right" | "down" | "up";
@@ -77,6 +82,7 @@ export function SwipeableStatementStack({
   answeredQuestionIds,
   targetStatementId,
   feedbackStatement,
+  flyerIntro,
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
@@ -86,6 +92,7 @@ export function SwipeableStatementStack({
   onDemographicsAnswered,
   onFeedbackVoted,
   onFeedbackTellMore,
+  onKeepVoting,
 }: SwipeableStatementStackProps) {
   const { flagStatement, saveDemographicAnswer } = useDebateSession();
 
@@ -104,13 +111,36 @@ export function SwipeableStatementStack({
   const [voteReveal, setVoteReveal] = useState<VoteReveal | null>(null);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [statementToFlag, setStatementToFlag] = useState<Statement | null>(null);
+  const [isFlyerStampDone, setIsFlyerStampDone] = useState(false);
   const { showVoteResult } = useVoteResultSnackbar();
+  const isFlyerIntro = flyerIntro !== undefined;
+
+  useEffect(() => {
+    if (!flyerIntro) return;
+    const revealTimer = setTimeout(
+      () => revealFlyerVote(flyerIntro),
+      VOTE_STAMP_TOTAL_MS,
+    );
+    const sendOffTimer = setTimeout(
+      () => sendFlyerCardOff(flyerIntro),
+      VOTE_STAMP_TOTAL_MS +
+        VOTE_REVEAL_CROWD_DURATION_MS +
+        FLYER_REVEAL_HOLD_MS,
+    );
+    return () => {
+      clearTimeout(revealTimer);
+      clearTimeout(sendOffTimer);
+    };
+  }, []);
 
   const unvotedStatements = statements
     .filter((statement) => {
       const hasVotedBefore = currentUserId && statement.voters?.[currentUserId];
       const justVoted = votedStatementIds.has(statement.id);
       const isRevealingVote = statement.id === voteReveal?.statement.id;
+      const isFlyerStatement =
+        statement.id === flyerIntro?.statement.id;
+      if (isFlyerStatement) return false;
       return (!hasVotedBefore && !justVoted) || isRevealingVote;
     })
     .sort((a, b) =>
@@ -125,7 +155,7 @@ export function SwipeableStatementStack({
   }));
 
   let demogEndIndex = 0;
-  if (demographicQuestions) {
+  if (demographicQuestions && !isFlyerIntro) {
     const unansweredDemos = demographicQuestions.filter(
       (q) => !answeredQuestionIds.has(q.id),
     );
@@ -140,14 +170,18 @@ export function SwipeableStatementStack({
     demogEndIndex = insertAt + demoCards.length;
   }
 
-  if (isFeatureEnabled(FeatureFlags.CHANCE_CARD) && !chanceCardSwiped) {
+  if (
+    isFeatureEnabled(FeatureFlags.CHANCE_CARD) &&
+    !chanceCardSwiped &&
+    !isFlyerIntro
+  ) {
     const chanceCard: ChanceCard = { type: "chance" };
     const naturalIndex = Math.min(5, statements.length) - votedStatementIds.size;
     const chanceCardIndex = Math.max(naturalIndex, demogEndIndex);
     cards.splice(chanceCardIndex, 0, chanceCard);
   }
 
-  if (cover && !coverCardSwiped) {
+  if (cover && !coverCardSwiped && !isFlyerIntro) {
     const coverCard: CoverCard = {
       type: "cover",
       cover,
@@ -155,13 +189,40 @@ export function SwipeableStatementStack({
     cards.unshift(coverCard);
   }
 
-  if (feedbackStatement) {
+  if (feedbackStatement && !isFlyerIntro) {
     cards.push({ type: "feedback", statement: feedbackStatement });
   }
 
-  if (isAnonymous && !certifyCardDismissed) {
+  if (isAnonymous && !certifyCardDismissed && !isFlyerIntro) {
     const certifyCard: Card = { type: "certify" };
     cards.push(certifyCard);
+  }
+
+  if (flyerIntro) {
+    const isRevealingStatementVote =
+      voteReveal !== null &&
+      voteReveal.statement.id !== flyerIntro.statement.id;
+    const statementsLeftDeck =
+      votedStatementIds.size - (isRevealingStatementVote ? 1 : 0);
+    const statementsBeforeInvite = Math.max(
+      STATEMENTS_BEFORE_EVENT_INVITE - statementsLeftDeck,
+      0,
+    );
+    const inviteIndex = Math.min(statementsBeforeInvite, cards.length);
+    cards.splice(inviteIndex, 0, {
+      type: "event-invite",
+      invite: flyerIntro.invite,
+      isUndraggable: true,
+    });
+
+    if (!isFlyerStampDone) {
+      cards.unshift({
+        type: "statement",
+        statement: flyerIntro.statement,
+        stampedVote: flyerIntro.vote,
+        isUndraggable: true,
+      });
+    }
   }
 
   const hasMoreCards = cards.length > 0;
@@ -221,6 +282,27 @@ export function SwipeableStatementStack({
       () => sendCardOff(statement.id, direction, () => setVoteReveal(null)),
       VOTE_REVEAL_CROWD_DURATION_MS,
     );
+  };
+
+  const revealFlyerVote = ({ statement, vote }: FlyerIntro) => {
+    setVoteReveal(buildVoteReveal(statement, vote, currentUserId));
+  };
+
+  const sendFlyerCardOff = ({ statement, vote }: FlyerIntro) => {
+    const direction = vote === "agree" ? "right" : "left";
+    sendCardOff(statement.id, direction, () => {
+      setIsFlyerStampDone(true);
+      setVoteReveal(null);
+    });
+  };
+
+  const handleGoToEvent = () => {
+    api.trackEvent("flyer_invite_event_tapped", room.id);
+  };
+
+  const handleKeepVoting = () => {
+    api.trackEvent("flyer_invite_keep_voting_tapped", room.id);
+    onKeepVoting?.();
   };
 
   const handleAgreeTapped = (card: Card) => {
@@ -462,6 +544,7 @@ export function SwipeableStatementStack({
               if (card.type === "cover") return "cover";
               if (card.type === "demographics") return `demographics-${card.question.id}`;
               if (card.type === "feedback") return "feedback";
+              if (card.type === "event-invite") return "event-invite";
               return "unknown";
             };
 
@@ -501,6 +584,8 @@ export function SwipeableStatementStack({
                 onDisagree={handleDisagreeTapped}
                 onPass={handlePassTapped}
                 onStartVoting={handleStartVotingTapped}
+                onGoToEvent={handleGoToEvent}
+                onKeepVoting={handleKeepVoting}
                 onSuperAgree={() => {
                   if (card.type === "statement") {
                     handleTapVote(

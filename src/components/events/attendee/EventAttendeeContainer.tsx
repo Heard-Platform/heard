@@ -139,6 +139,7 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
       return (
         <EventOnboarding
           questions={questions}
+          welcomeVariant="joining-event"
           answeredQuestionIds={answeredQuestionIds}
           onAnswer={saveAnswer}
           onFinish={finishOnboarding}

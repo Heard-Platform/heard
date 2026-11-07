@@ -1,4 +1,10 @@
-import { DebateRoom, Statement, SubHeard, UserSession } from "../types";
+import {
+  DebateRoom,
+  Statement,
+  SubHeard,
+  UserSession,
+  VoteType,
+} from "../types";
 
 export const mockRooms: DebateRoom[] = [
   {
@@ -209,4 +215,18 @@ export const mockUser: UserSession = {
   streak: 5,
   lastActive: Date.now(),
   createdAt: Date.now() - 30 * 24 * 60 * 60 * 1000,
+};
+
+export const withVotersFromCounts = (statement: Statement): Statement => {
+  const voters: Statement["voters"] = {};
+  const voteCounts: Record<VoteType, number> = {
+    agree: statement.agrees,
+    super_agree: statement.superAgrees,
+    disagree: statement.disagrees,
+    pass: statement.passes,
+  };
+  for (const vote of Object.keys(voteCounts) as VoteType[]) {
+    for (let i = 0; i < voteCounts[vote]; i++) voters[`${statement.id}-${vote}-${i}`] = vote;
+  }
+  return { ...statement, voters };
 };

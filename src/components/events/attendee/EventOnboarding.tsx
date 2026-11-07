@@ -15,12 +15,43 @@ import { OnboardingProgressSegments } from "./OnboardingProgressSegments";
 
 const AUTO_ADVANCE_DELAY_MS = 250;
 
+export type OnboardingWelcomeVariant =
+  | "joining-event"
+  | "keep-voting";
+
+interface OnboardingWelcomeCopy {
+  eyebrow: string;
+  headline: string;
+  subtext: string;
+}
+
+function buildWelcomeCopy(
+  variant: OnboardingWelcomeVariant,
+  questionCount: number,
+): OnboardingWelcomeCopy {
+  const questionWord = pluralizeQuestion(questionCount);
+  const quickQuestions = `${questionCount} quick ${questionWord}`;
+  if (variant === "keep-voting") {
+    return {
+      eyebrow: "Thanks for voting!",
+      headline: `Before you keep voting, ${quickQuestions}`,
+      subtext: "Then it's back to the conversations.",
+    };
+  }
+  return {
+    eyebrow: "Welcome!",
+    headline: `Answer ${quickQuestions} to get started`,
+    subtext: "Then we'll get things going!",
+  };
+}
+
 type OnboardingScreen =
   | { type: "welcome" }
   | { type: "question"; questionIndex: number };
 
 interface EventOnboardingProps {
   questions: DemographicQuestion[];
+  welcomeVariant: OnboardingWelcomeVariant;
   answeredQuestionIds: string[];
   onAnswer: (questionId: string, answers: string[]) => void;
   onFinish: () => void;
@@ -28,6 +59,7 @@ interface EventOnboardingProps {
 
 export function EventOnboarding({
   questions,
+  welcomeVariant,
   answeredQuestionIds,
   onAnswer,
   onFinish,
@@ -71,7 +103,13 @@ export function EventOnboarding({
 
   if (screen.type === "welcome") {
     const handleStart = () => setScreen({ type: "question", questionIndex: 0 });
-    return <OnboardingWelcome questionCount={questions.length} onStart={handleStart} />;
+    return (
+      <OnboardingWelcome
+        variant={welcomeVariant}
+        questionCount={questions.length}
+        onStart={handleStart}
+      />
+    );
   }
 
   const { questionIndex } = screen;
@@ -121,11 +159,17 @@ export function EventOnboarding({
 }
 
 interface OnboardingWelcomeProps {
+  variant: OnboardingWelcomeVariant;
   questionCount: number;
   onStart: () => void;
 }
 
-function OnboardingWelcome({ questionCount, onStart }: OnboardingWelcomeProps) {
+function OnboardingWelcome({
+  variant,
+  questionCount,
+  onStart,
+}: OnboardingWelcomeProps) {
+  const copy = buildWelcomeCopy(variant, questionCount);
   const [isAnswerPrivacySheetOpen, setIsAnswerPrivacySheetOpen] =
     useState(false);
 
@@ -138,11 +182,15 @@ function OnboardingWelcome({ questionCount, onStart }: OnboardingWelcomeProps) {
     <AttendeeFrame>
       <div className="flex flex-1 flex-col justify-center gap-6 px-1">
         <div className="space-y-2.5">
-          <p className="text-base font-bold secondary-text-strong">Welcome!</p>
+          <p className="text-base font-bold secondary-text-strong">
+            {copy.eyebrow}
+          </p>
           <h1 className="text-[34px] font-extrabold leading-[1.1] tracking-tight text-foreground">
-            Answer {questionCount} quick {pluralizeQuestion(questionCount)} to get started
+            {copy.headline}
           </h1>
-          <p className="text-base leading-snug secondary-text-strong">Then we'll get things going!</p>
+          <p className="text-base leading-snug secondary-text-strong">
+            {copy.subtext}
+          </p>
         </div>
 
         <OnboardingProgressSegments segmentCount={questionCount} filledSegmentCount={0} size="large" />

@@ -11,21 +11,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import { mockRooms } from "./mockData";
-
-const withVotersFromCounts = (statement: Statement): Statement => {
-  const voters: Statement["voters"] = {};
-  const voteCounts: Record<VoteType, number> = {
-    agree: statement.agrees,
-    super_agree: statement.superAgrees,
-    disagree: statement.disagrees,
-    pass: statement.passes,
-  };
-  for (const vote of Object.keys(voteCounts) as VoteType[]) {
-    for (let i = 0; i < voteCounts[vote]; i++) voters[`${statement.id}-${vote}-${i}`] = vote;
-  }
-  return { ...statement, voters };
-};
+import { mockRooms, withVotersFromCounts } from "./mockData";
 
 const statementsWithoutVoters: Statement[] = [
   {

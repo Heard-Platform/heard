@@ -17,6 +17,7 @@ export type VoteType =
   | "super_agree";
 
 export type SimpleVoteType = Exclude<VoteType, "super_agree">;
+export type StampedVote = Exclude<SimpleVoteType, "pass">;
 
 export type SortBy = VoteType | "none";
 
@@ -59,6 +60,12 @@ export interface Comment {
 export type StatementCard = {
   type: "statement";
   statement: Statement;
+  stampedVote?: StampedVote;
+}
+
+export type EventInviteCard = {
+  type: "event-invite";
+  invite: EventInvite;
 }
 
 export type CertifyCard = {
@@ -127,7 +134,15 @@ export type FeedbackCard = {
   statement: FeedbackStatement;
 }
 
-export type Card = StatementCard | CertifyCard | ChanceCard | CoverCard | DemographicsCard | FeedbackCard;
+export type Card = (
+  | StatementCard
+  | CertifyCard
+  | ChanceCard
+  | CoverCard
+  | DemographicsCard
+  | FeedbackCard
+  | EventInviteCard
+) & { isUndraggable?: boolean };
 
 export const isStatementCard = (card: Card): card is StatementCard => {
   return card.type === "statement";
@@ -181,6 +196,19 @@ export interface Event {
   displayKey: string | null;
   creatorId: string;
   createdAt: number;
+}
+
+export interface EventInvite {
+  headline: string;
+  details: string;
+  imageUrl: string;
+  registrationUrl: string;
+}
+
+export interface FlyerIntro {
+  statement: Statement;
+  vote: StampedVote;
+  invite: EventInvite;
 }
 
 export type NewEvent = Pick<

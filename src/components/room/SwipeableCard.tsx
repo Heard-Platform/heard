@@ -14,6 +14,7 @@ import { DemographicsCard } from "./DemographicsCard";
 import { StatementCard } from "./StatementCard";
 import { CertifyCard } from "./CertifyCard";
 import { FeedbackCard, FEEDBACK_CARD_SHELL_CLASS } from "./FeedbackCard";
+import { EventInviteCard } from "./EventInviteCard";
 
 interface SwipeableCardProps {
   card: Card;
@@ -41,6 +42,8 @@ interface SwipeableCardProps {
   onDisagree: (card: Card) => void;
   onPass: (card: Card) => void;
   onStartVoting: () => void;
+  onGoToEvent: () => void;
+  onKeepVoting: () => void;
   onSuperAgree: () => void;
   onFlag: () => void;
 }
@@ -68,9 +71,12 @@ export function SwipeableCard({
   onDisagree,
   onPass,
   onStartVoting,
+  onGoToEvent,
+  onKeepVoting,
   onSuperAgree,
   onFlag,
 }: SwipeableCardProps) {
+  const isDraggable = isTopCard && !card.isUndraggable;
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -117,16 +123,16 @@ export function SwipeableCard({
         x: isTopCard ? x : 0,
         y: isTopCard ? y : 0,
         rotate: isTopCard ? rotate : 0,
-        opacity: isTopCard ? cardOpacity : 1 - index * 0.2,
+        opacity: isTopCard ? cardOpacity : 1,
         zIndex: 10 - index,
         scale: 1 - index * 0.05,
         pointerEvents: isTopCard ? "auto" : "none",
-        touchAction: isTopCard ? "none" : "auto",
+        touchAction: isDraggable ? "none" : "auto",
       }}
-      drag={isTopCard ? "x" : false}
+      drag={isDraggable ? "x" : false}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={1}
-      onDragEnd={isTopCard ? onDragEnd : undefined}
+      onDragEnd={isDraggable ? onDragEnd : undefined}
       animate={
         isTopCard && direction
           ? getExitAnimation()
@@ -147,6 +153,8 @@ export function SwipeableCard({
         className={`${
           card.type === "demographics"
             ? "p-0"
+            : card.type === "event-invite"
+            ? "p-5"
             : "p-6"
         } rounded-xl border-2 shadow-xl ${
           card.type === "certify"
@@ -161,16 +169,18 @@ export function SwipeableCard({
             ? "border-transparent p-0"
             : card.type === "feedback"
             ? FEEDBACK_CARD_SHELL_CLASS
+            : card.type === "event-invite"
+            ? "normal-bg"
             : card.type === "statement"
             ? getPastelColor(card.statement.id)
             : ""
         } ${
-          isTopCard
+          isDraggable
             ? "cursor-grab active:cursor-grabbing"
             : "cursor-default"
         }`}
         style={{
-          touchAction: isTopCard ? "none" : "auto",
+          touchAction: isDraggable ? "none" : "auto",
           height: !isTopCard ? "286px" : "auto",
           overflow: !isTopCard ? "hidden" : "visible",
         }}
@@ -217,6 +227,12 @@ export function SwipeableCard({
             onDisagree={() => onDisagree(card)}
             onTellMore={onFeedbackTellMore}
           />
+        ) : card.type === "event-invite" ? (
+          <EventInviteCard
+            invite={card.invite}
+            onGoToEvent={onGoToEvent}
+            onKeepVoting={onKeepVoting}
+          />
         ) : card.type === "statement" ? (
           <StatementCard
             statement={card.statement}
@@ -225,6 +241,7 @@ export function SwipeableCard({
             currentIndex={currentIndex}
             totalStatements={totalStatements}
             voteReveal={voteReveal}
+            stampedVote={card.stampedVote ?? null}
             getTypeIcon={getTypeIcon}
             disagreeOpacity={disagreeOpacity}
             agreeOpacity={agreeOpacity}
