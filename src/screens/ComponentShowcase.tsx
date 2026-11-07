@@ -75,6 +75,7 @@ import { RoomAnalyticsModalStory } from "../stories/RoomAnalyticsModal.story";
 import { VoteResultSnackbarStory } from "../stories/VoteResultSnackbar.story";
 import { VoteRevealCrowdStory } from "../stories/VoteRevealCrowd.story";
 import { IdleAnimalPeekStory } from "../stories/IdleAnimalPeek.story";
+import { StreamOverlayStory } from "../stories/StreamOverlay.story";
 import { AnonResponseTripwireStory } from "../stories/AnonResponseTripwire.story";
 import { ClusterMinimapStory } from "../stories/ClusterMinimap.story";
 import { EventSetupPanelStory } from "../stories/EventSetupPanel.story";
@@ -213,6 +214,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="vote-result-snackbar">Vote Result Snackbar</TabsTrigger>
                 <TabsTrigger value="vote-reveal-crowd">Vote Reveal Crowd</TabsTrigger>
                 <TabsTrigger value="idle-animal-peek">Idle Animal Peek</TabsTrigger>
+                <TabsTrigger value="stream-overlay">Stream Overlay</TabsTrigger>
                 <TabsTrigger value="anon-response-tripwire">Anon Response Tripwire</TabsTrigger>
                 <TabsTrigger value="cluster-minimap">Cluster Minimap</TabsTrigger>
                 <TabsTrigger value="event-setup-panel">Event Setup Panel</TabsTrigger>
@@ -442,6 +444,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="idle-animal-peek">
                 <IdleAnimalPeekStory />
+              </TabsContent>
+              <TabsContent value="stream-overlay">
+                <StreamOverlayStory />
               </TabsContent>
               <TabsContent value="anon-response-tripwire">
                 <AnonResponseTripwireStory />

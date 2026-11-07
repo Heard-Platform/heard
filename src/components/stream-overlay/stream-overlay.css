@@ -1,0 +1,180 @@
+.vine {
+  position: absolute;
+  top: 0;
+  right: 40px;
+  width: 120px;
+  height: 100%;
+}
+
+.vine-stem {
+  stroke: #3f7d3a;
+}
+
+.vine-leaf {
+  fill: #5b9a46;
+}
+
+.hanging-monkey {
+  position: absolute;
+  top: 150px;
+  right: 58px;
+  width: 110px;
+  height: 151px;
+}
+
+.hanging-monkey-image {
+  display: block;
+  width: 110px;
+  height: 151px;
+}
+
+.hanging-monkey-swing {
+  transform-origin: 62% 3%;
+}
+
+.monkey-climbing-up .hanging-monkey-swing {
+  animation: monkey-sway 2.4s ease-in-out infinite;
+}
+
+.monkey-climbing-up {
+  animation: monkey-climb-up 1.8s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+.monkey-climbing-down {
+  animation: monkey-climb-down 1.2s ease-in both;
+}
+
+.monkey-speech-bubble-slot {
+  position: absolute;
+  top: 24px;
+  right: 118px;
+}
+
+.monkey-climbing-up .speech-bubble {
+  animation: speech-bubble-pop 0.4s ease-out 1.7s both;
+}
+
+.speech-bubble {
+  transform-origin: 100% 40%;
+  max-width: 320px;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 22px 22px 6px 22px;
+  background: #fffaf0;
+  color: #1c1917;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+  text-align: left;
+  cursor: pointer;
+}
+
+.speech-bubble-nickname {
+  color: #2f6b3a;
+}
+
+.speech-bubble-message-position {
+  color: #57534e;
+}
+
+.mailbox-bounce {
+  animation: mailbox-bounce 1.2s ease-in-out infinite;
+}
+
+.mailbox-post {
+  fill: #6b4a2b;
+}
+
+.mailbox-body {
+  fill: #2563eb;
+}
+
+.mailbox-body-shade {
+  fill: #1d4ed8;
+}
+
+.mailbox-opening {
+  fill: #1e3a8a;
+}
+
+.mailbox-flag-pole {
+  fill: #78716c;
+}
+
+.mailbox-flag {
+  fill: #f97316;
+}
+
+.unread-count-badge {
+  background: #dc2626;
+  color: #fff;
+}
+
+@keyframes monkey-climb-up {
+  0% {
+    transform: translateY(600px);
+  }
+  20% {
+    transform: translateY(480px) rotate(-5deg);
+  }
+  40% {
+    transform: translateY(350px) rotate(5deg);
+  }
+  60% {
+    transform: translateY(220px) rotate(-4deg);
+  }
+  80% {
+    transform: translateY(95px) rotate(3deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+}
+
+@keyframes monkey-climb-down {
+  0% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(120px) rotate(4deg);
+  }
+  60% {
+    transform: translateY(320px) rotate(-4deg);
+  }
+  100% {
+    transform: translateY(600px);
+  }
+}
+
+@keyframes monkey-sway {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes speech-bubble-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes mailbox-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
