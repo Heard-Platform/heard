@@ -13,9 +13,40 @@ import type { EmailOtpFlow } from "../hooks/useEmailOtpFlow";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { api } from "../utils/api";
 
+interface TripwireVariant {
+  headline: string;
+  body: string;
+  screenReaderTitle: string;
+  screenReaderDescription: string;
+  shownEventType: string;
+  submittedEventType: string;
+}
+
+const LIVE_STATEMENT_VARIANT: TripwireVariant = {
+  headline: "Your take is live 🎉",
+  body: "Can we email you when people vote on it?",
+  screenReaderTitle: "Your take is live",
+  screenReaderDescription:
+    "Add your email to hear when people vote on the statement you just posted.",
+  shownEventType: "anon_response_tripwire_shown",
+  submittedEventType: "anon_response_tripwire_submitted",
+};
+
+const AWAITING_APPROVAL_VARIANT: TripwireVariant = {
+  headline: "Your take is in 🎉",
+  body: "It goes live once it's approved. Want an email when people start voting on it?",
+  screenReaderTitle: "Your take is in",
+  screenReaderDescription:
+    "Your statement goes live once it's approved. Add your email to hear when people start voting on it.",
+  shownEventType: "anon_response_tripwire_awaiting_approval_shown",
+  submittedEventType:
+    "anon_response_tripwire_awaiting_approval_submitted",
+};
+
 interface AnonResponseTripwireProps {
   roomId: string;
   isOpen: boolean;
+  isAwaitingApproval: boolean;
   onComplete: () => void;
   onDismiss: () => void;
 }
@@ -23,9 +54,14 @@ interface AnonResponseTripwireProps {
 export function AnonResponseTripwire({
   roomId,
   isOpen,
+  isAwaitingApproval,
   onComplete,
   onDismiss,
 }: AnonResponseTripwireProps) {
+  const variant = isAwaitingApproval
+    ? AWAITING_APPROVAL_VARIANT
+    : LIVE_STATEMENT_VARIANT;
+
   return (
     <Dialog
       open={isOpen}
@@ -33,14 +69,14 @@ export function AnonResponseTripwire({
     >
       <DialogContent className="sm:max-w-md overflow-hidden p-0 border-0 bg-transparent shadow-none">
         <DialogTitle className="sr-only">
-          Your take is live
+          {variant.screenReaderTitle}
         </DialogTitle>
         <DialogDescription className="sr-only">
-          Add your email to hear when people vote on the statement you
-          just posted.
+          {variant.screenReaderDescription}
         </DialogDescription>
         <TripwireCard
           roomId={roomId}
+          variant={variant}
           onComplete={onComplete}
           onDismiss={onDismiss}
         />
@@ -49,16 +85,24 @@ export function AnonResponseTripwire({
   );
 }
 
+interface TripwireCardProps {
+  roomId: string;
+  variant: TripwireVariant;
+  onComplete: () => void;
+  onDismiss: () => void;
+}
+
 function TripwireCard({
   roomId,
+  variant,
   onComplete,
   onDismiss,
-}: Omit<AnonResponseTripwireProps, "isOpen">) {
+}: TripwireCardProps) {
   const emailFlow = useEmailOtpFlow({ onComplete: () => onComplete() });
 
   useEffect(() => {
-    api.trackEvent("anon_response_tripwire_shown", roomId);
-  }, [roomId]);
+    api.trackEvent(variant.shownEventType, roomId);
+  }, [variant, roomId]);
 
   return (
     <motion.div
@@ -79,7 +123,12 @@ function TripwireCard({
           onBack={emailFlow.goBackToEmail}
         />
       ) : (
-        <EmailForm roomId={roomId} emailFlow={emailFlow} onDismiss={onDismiss} />
+        <EmailForm
+          roomId={roomId}
+          variant={variant}
+          emailFlow={emailFlow}
+          onDismiss={onDismiss}
+        />
       )}
     </motion.div>
   );
@@ -87,27 +136,33 @@ function TripwireCard({
 
 interface EmailFormProps {
   roomId: string;
+  variant: TripwireVariant;
   emailFlow: EmailOtpFlow;
   onDismiss: () => void;
 }
 
-function EmailForm({ roomId, emailFlow, onDismiss }: EmailFormProps) {
+function EmailForm({
+  roomId,
+  variant,
+  emailFlow,
+  onDismiss,
+}: EmailFormProps) {
   const { user } = useDebateSession();
   const isPhoneOnlyUser = !!user && !user.isAnonymous;
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    api.trackEvent("anon_response_tripwire_submitted", roomId);
+    api.trackEvent(variant.submittedEventType, roomId);
     emailFlow.submitEmail();
   };
 
   return (
     <form noValidate onSubmit={handleSubmit}>
       <h2 className={`${HEADLINE_CLASS} text-[28px]`} style={{ color: COLORS.ink }}>
-        Your take is live 🎉
+        {variant.headline}
       </h2>
       <p className="mt-2 text-base leading-relaxed" style={{ color: COLORS.body }}>
-        Can we email you when people vote on it?
+        {variant.body}
       </p>
       <RoundedInput
         className="mt-4"

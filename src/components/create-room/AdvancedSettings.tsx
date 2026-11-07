@@ -5,17 +5,24 @@ import { FeatureFlags, isFeatureEnabled } from "../../utils/constants/feature-fl
 
 interface AdvancedSettingsProps {
   allowAnonymousVoting: boolean;
+  requiresStatementApproval: boolean;
   demographicQuestions: NewDemographicQuestion[];
   onAllowAnonymousVotingChange: (value: boolean) => void;
+  onRequiresStatementApprovalChange: (value: boolean) => void;
   onDemographicQuestionsChange: (questions: NewDemographicQuestion[]) => void;
 }
 
 export function AdvancedSettings({
   allowAnonymousVoting,
+  requiresStatementApproval,
   demographicQuestions,
   onAllowAnonymousVotingChange,
+  onRequiresStatementApprovalChange,
   onDemographicQuestionsChange,
 }: AdvancedSettingsProps) {
+  const handleRequireAccountChange = (isAccountRequired: boolean) =>
+    onAllowAnonymousVotingChange(!isAccountRequired);
+
   return (
     <div className="space-y-4">
       {isFeatureEnabled(FeatureFlags.DEMOGRAPHICS) && (
@@ -25,23 +32,60 @@ export function AdvancedSettings({
           onDemographicQuestionsChange={onDemographicQuestionsChange}
         />
       )}
-      <label
-        htmlFor="require-account"
-        className="flex cursor-pointer items-center gap-3 rounded-xl border inactive-border px-3 py-2.5"
-      >
-        <span className="flex flex-1 flex-col gap-0.5">
-          <span className="text-[15px] font-semibold text-foreground">Require an account to vote</span>
-          <span className="text-[13px] leading-snug secondary-text-strong">
-            Enable to require users to make accounts prior to voting. Off by default so anyone with the link can vote right away.
-          </span>
-        </span>
-        <Checkbox
-          id="require-account"
-          checked={!allowAnonymousVoting}
-          onCheckedChange={(checked: boolean) => onAllowAnonymousVotingChange(!checked)}
-          className="size-5"
+      <SettingCheckbox
+        id="require-account"
+        title="Require an account to vote"
+        description="Enable to require users to make accounts prior to voting. Off by default so anyone with the link can vote right away."
+        isChecked={!allowAnonymousVoting}
+        onCheckedChange={handleRequireAccountChange}
+      />
+      {isFeatureEnabled(FeatureFlags.STATEMENT_APPROVAL) && (
+        <SettingCheckbox
+          id="require-statement-approval"
+          title="Approve statements before they show"
+          description="New statements stay hidden until approved."
+          isChecked={requiresStatementApproval}
+          onCheckedChange={onRequiresStatementApprovalChange}
         />
-      </label>
+      )}
     </div>
+  );
+}
+
+interface SettingCheckboxProps {
+  id: string;
+  title: string;
+  description: string;
+  isChecked: boolean;
+  onCheckedChange: (isChecked: boolean) => void;
+}
+
+function SettingCheckbox({
+  id,
+  title,
+  description,
+  isChecked,
+  onCheckedChange,
+}: SettingCheckboxProps) {
+  return (
+    <label
+      htmlFor={id}
+      className="flex cursor-pointer items-center gap-3 rounded-xl border inactive-border px-3 py-2.5"
+    >
+      <span className="flex flex-1 flex-col gap-0.5">
+        <span className="text-[15px] font-semibold text-foreground">
+          {title}
+        </span>
+        <span className="text-[13px] leading-snug secondary-text-strong">
+          {description}
+        </span>
+      </span>
+      <Checkbox
+        id={id}
+        checked={isChecked}
+        onCheckedChange={onCheckedChange}
+        className="size-5"
+      />
+    </label>
   );
 }

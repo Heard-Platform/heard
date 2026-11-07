@@ -15,6 +15,7 @@ export enum FeatureFlags {
   VOTE_RESULT_SNACKBAR = "VOTE_RESULT_SNACKBAR",
   QUICK_FLYER_VOTE = "QUICK_FLYER_VOTE",
   EVENT_ONBOARDING_QUESTIONS = "EVENT_ONBOARDING_QUESTIONS",
+  STATEMENT_APPROVAL = "STATEMENT_APPROVAL",
 }
 
 export interface FeatureFlagsConfig {
@@ -30,6 +31,7 @@ export interface FeatureFlagsConfig {
   [FeatureFlags.VOTE_RESULT_SNACKBAR]: boolean;
   [FeatureFlags.QUICK_FLYER_VOTE]: boolean;
   [FeatureFlags.EVENT_ONBOARDING_QUESTIONS]: boolean;
+  [FeatureFlags.STATEMENT_APPROVAL]: boolean;
 }
 
 export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
@@ -46,6 +48,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     VOTE_RESULT_SNACKBAR: true,
     QUICK_FLYER_VOTE: true,
     EVENT_ONBOARDING_QUESTIONS: true,
+    STATEMENT_APPROVAL: true,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
@@ -60,6 +63,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     VOTE_RESULT_SNACKBAR: true,
     QUICK_FLYER_VOTE: true,
     EVENT_ONBOARDING_QUESTIONS: true,
+    STATEMENT_APPROVAL: true,
   }
 }
 
