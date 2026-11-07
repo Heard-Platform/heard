@@ -648,6 +648,7 @@ export function RoomCard({
         <AnonResponseTripwire
           roomId={room.id}
           isOpen
+          isAwaitingApproval={!!room.requiresStatementApproval}
           onComplete={() => setIsTripwireOpen(false)}
           onDismiss={() => setIsTripwireOpen(false)}
         />

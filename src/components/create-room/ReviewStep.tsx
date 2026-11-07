@@ -30,6 +30,7 @@ interface ReviewStepProps {
   isUploadingImage?: boolean;
   debateLength: number;
   allowAnonymousVoting: boolean;
+  requiresStatementApproval: boolean;
   demographicQuestions: NewDemographicQuestion[];
   isCreating?: boolean;
   autoFocusAddTake?: boolean;
@@ -42,6 +43,7 @@ interface ReviewStepProps {
   onCoverChange: (cover: Cover | null) => void;
   onDebateLengthChange: (minutes: number) => void;
   onAllowAnonymousVotingChange: (value: boolean) => void;
+  onRequiresStatementApprovalChange: (value: boolean) => void;
   onDemographicQuestionsChange: (questions: NewDemographicQuestion[]) => void;
   onCreate: () => void;
 }
@@ -58,6 +60,7 @@ export function ReviewStep({
   isUploadingImage,
   debateLength,
   allowAnonymousVoting,
+  requiresStatementApproval,
   demographicQuestions,
   isCreating = false,
   autoFocusAddTake = false,
@@ -70,6 +73,7 @@ export function ReviewStep({
   onCoverChange,
   onDebateLengthChange,
   onAllowAnonymousVotingChange,
+  onRequiresStatementApprovalChange,
   onDemographicQuestionsChange,
   onCreate,
 }: ReviewStepProps) {
@@ -83,7 +87,10 @@ export function ReviewStep({
     !incompleteQuestion &&
     !canCreatePost({ topic, hotTakes, subHeard, needsCommunity }) &&
     canCreatePost({ topic, hotTakes, subHeard, needsCommunity: false });
-  const advancedCount = demographicQuestions.length + (allowAnonymousVoting ? 0 : 1);
+  const advancedCount =
+    demographicQuestions.length +
+    (allowAnonymousVoting ? 0 : 1) +
+    (requiresStatementApproval ? 1 : 0);
 
   const closeSetting = (open: boolean) => {
     if (open) return;
@@ -199,8 +206,12 @@ export function ReviewStep({
         {openSetting === "advanced" && (
           <AdvancedSettings
             allowAnonymousVoting={allowAnonymousVoting}
+            requiresStatementApproval={requiresStatementApproval}
             demographicQuestions={demographicQuestions}
             onAllowAnonymousVotingChange={onAllowAnonymousVotingChange}
+            onRequiresStatementApprovalChange={
+              onRequiresStatementApprovalChange
+            }
             onDemographicQuestionsChange={onDemographicQuestionsChange}
           />
         )}

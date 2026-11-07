@@ -64,6 +64,8 @@ export function CreateRoomSheetNew({
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [debateLength, setDebateLength] = useState(ONE_WEEK_MIN);
   const [allowAnonymousVoting, setAllowAnonymousVoting] = useState(true);
+  const [requiresStatementApproval, setRequiresStatementApproval] =
+    useState(false);
   const [demographicQuestions, setDemographicQuestions] = useState<NewDemographicQuestion[]>([]);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -83,6 +85,7 @@ export function CreateRoomSheetNew({
     setCover(null);
     setDebateLength(ONE_WEEK_MIN);
     setAllowAnonymousVoting(true);
+    setRequiresStatementApproval(false);
     setDemographicQuestions([]);
     setCreatedRoom(null);
   }, [open]);
@@ -140,6 +143,7 @@ export function CreateRoomSheetNew({
         seedStatements: cleanHotTakes(hotTakes),
         cover: cover || undefined,
         allowAnonymous: allowAnonymousVoting,
+        requiresStatementApproval,
         debateLength,
         demographicQuestions,
         eventId,
@@ -204,6 +208,7 @@ export function CreateRoomSheetNew({
           isUploadingImage={isUploadingImage}
           debateLength={debateLength}
           allowAnonymousVoting={allowAnonymousVoting}
+          requiresStatementApproval={requiresStatementApproval}
           demographicQuestions={demographicQuestions}
           isCreating={isCreating}
           onTopicChange={setTopic}
@@ -214,6 +219,9 @@ export function CreateRoomSheetNew({
           onCoverChange={setCover}
           onDebateLengthChange={setDebateLength}
           onAllowAnonymousVotingChange={setAllowAnonymousVoting}
+          onRequiresStatementApprovalChange={
+            setRequiresStatementApproval
+          }
           onDemographicQuestionsChange={setDemographicQuestions}
           onCreate={handleCreate}
         />

@@ -48,7 +48,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     VOTE_RESULT_SNACKBAR: true,
     QUICK_FLYER_VOTE: true,
     EVENT_ONBOARDING_QUESTIONS: true,
-    STATEMENT_APPROVAL: false,
+    STATEMENT_APPROVAL: true,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
