@@ -36,6 +36,10 @@ Do not comment code unless it is highly technical or mathematical.
 
 In type and interface definitions, order properties logically, by how prominently they are used. Timestamps such as `createdAt` and `updatedAt` always go last. When adding a field to an existing type, put it in its logical spot rather than appending it.
 
+## Build components for their full integration
+
+Build every component for how it will be used once it is fully integrated, even when the rest of the feature doesn't exist yet. Don't make a prop optional, or add a variant, state or motion, just because a story, a test or an unbuilt later step doesn't have it yet. If the real caller always passes it, it is required; stories and tests pass a stub (`noop`, sample data). If no real caller will ever use a variant, it doesn't exist. Optional means optional in the finished product.
+
 ## Testing in the browser
 
 Claude never runs the app or stories in a browser and never tests there. Claude writes code and runs unit tests, typecheck and build; Alex does all browser and end-to-end testing.

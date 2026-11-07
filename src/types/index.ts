@@ -1302,3 +1302,8 @@ export interface SavedNewsletterList {
   newsletters: SavedNewsletter[];
   nextEditionNumber: number;
 }
+
+export interface StreamMessage {
+  nickname: string;
+  text: string;
+}
