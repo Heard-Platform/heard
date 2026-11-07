@@ -10,6 +10,7 @@ import { OrganizersLanding } from "./screens/OrganizersLanding";
 import { OneBillionPage } from "./screens/OneBillionPage";
 import { FundingPage } from "./screens/funding/FundingPage";
 import { AiUsagePage } from "./screens/AiUsagePage";
+import { StatementApprovalContainer } from "./components/statement-approval/StatementApprovalContainer";
 import { LobbyScreen } from "./screens/LobbyScreen";
 import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { EventAttendeeContainer } from "./components/events/attendee/EventAttendeeContainer";
@@ -158,6 +159,8 @@ function AppContent() {
   const [reportEventId, setReportEventId] = useState<string | null>(
     null,
   );
+  const [showStatementApproval, setShowStatementApproval] =
+    useState(false);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
 
@@ -406,6 +409,7 @@ function AppContent() {
       const isOrganizersRoute = route === "organizers";
       const isOneBillionRoute = route === "1billion";
       const isAiUsageRoute = route === "ai-usage";
+      const isStatementApprovalRoute = route === "statement-approval";
       const isFundingRoute = route === "fund";
       const newsletterMatch = pathname.match(/^\/newsletter\/(\d+)$/);
       const isParkletRoute = route === "parklet";
@@ -574,6 +578,8 @@ function AppContent() {
           eventId: supportViewEventIdFromUrl,
           displayKey: takeDisplayKeyFromUrl(supportViewEventIdFromUrl),
         });
+      } else if (isStatementApprovalRoute) {
+        setShowStatementApproval(true);
       } else if (reportEventIdFromUrl) {
         setReportEventId(reportEventIdFromUrl);
       } else if (attendedEventIdFromUrl) {
@@ -650,6 +656,7 @@ function AppContent() {
       !showAdminPanel &&
       !showDevTools &&
       !showAiUsage &&
+      !showStatementApproval &&
       !newsletterEdition &&
       !isJoiningAnonymously
     ) {
@@ -666,6 +673,7 @@ function AppContent() {
     showAdminPanel,
     showDevTools,
     showAiUsage,
+    showStatementApproval,
     newsletterEdition,
     isJoiningAnonymously,
     createAnonymousUser,
@@ -879,6 +887,10 @@ function AppContent() {
 
   if (showAiUsage) {
     return <AiUsagePage />;
+  }
+
+  if (showStatementApproval) {
+    return <StatementApprovalContainer />;
   }
 
   if (newsletterEdition) {

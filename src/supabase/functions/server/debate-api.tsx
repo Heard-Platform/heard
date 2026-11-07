@@ -57,6 +57,7 @@ import { defineRoute } from "./route-wrapper.tsx";
 import { validateSession } from "./auth-utils.ts";
 import { logActionUnlessRateLimited } from "./rate-limit-utils.ts";
 import { markStatementAwaitingApproval } from "./moderation-utils.ts";
+import { notifyOfStatementAwaitingApproval } from "./statement-approval-email.ts";
 
 const app = new Hono();
 
@@ -695,6 +696,10 @@ app.post(
         : newStatement;
 
       await saveStatement(statement);
+
+      if (requiresApproval) {
+        await notifyOfStatementAwaitingApproval(room, statement, user);
+      }
 
       const basePoints = 50;
       const totalPoints = basePoints;
