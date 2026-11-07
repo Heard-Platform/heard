@@ -1,10 +1,10 @@
 import { useState } from "react";
-import type { StreamMessage } from "../../types";
+import type { Message } from "../../types";
 import { HangingMonkey } from "./HangingMonkey";
 import { SpeechBubble } from "./SpeechBubble";
 
 interface MonkeyMessengerProps {
-  messages: StreamMessage[];
+  messages: Message[];
   onAllMessagesRead: () => void;
 }
 

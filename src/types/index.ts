@@ -1303,7 +1303,7 @@ export interface SavedNewsletterList {
   nextEditionNumber: number;
 }
 
-export interface StreamMessage {
+export interface Message {
   nickname: string;
   text: string;
 }

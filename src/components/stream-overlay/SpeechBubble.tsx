@@ -1,9 +1,9 @@
-import type { StreamMessage } from "../../types";
+import type { Message } from "../../types";
 import { Mailbox } from "./Mailbox";
 import "./stream-overlay.css";
 
 interface SpeechBubbleProps {
-  shownMessage: StreamMessage | null;
+  shownMessage: Message | null;
   shownMessageNumber: number;
   messageCount: number;
   unreadMessageCount: number;

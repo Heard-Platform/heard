@@ -7,9 +7,9 @@ import {
 import { MonkeyMessenger } from "../components/stream-overlay/MonkeyMessenger";
 import { SpeechBubble } from "../components/stream-overlay/SpeechBubble";
 import { Vine } from "../components/stream-overlay/Vine";
-import type { StreamMessage } from "../types";
+import type { Message } from "../types";
 
-const STORY_MESSAGES: StreamMessage[] = [
+const STORY_MESSAGES: Message[] = [
   { nickname: "maya", text: "is the monkey union or a contractor" },
   { nickname: "dev_dan", text: "what are you building right now?" },
   { nickname: "hoya22", text: "see you at the event on the 12th!" },
