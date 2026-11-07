@@ -55,6 +55,12 @@ const buildOverrides = (scenario: Scenario) => ({
 export function AnonResponseTripwireStory() {
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [completed, setCompleted] = useState(false);
+  const [isAwaitingApproval, setIsAwaitingApproval] =
+    useState(false);
+
+  const showLiveStatement = () => setIsAwaitingApproval(false);
+  const showStatementAwaitingApproval = () =>
+    setIsAwaitingApproval(true);
 
   return (
     <Card>
@@ -64,9 +70,26 @@ export function AnonResponseTripwireStory() {
           Signup modal shown right after an anonymous or no-email user posts a statement,
           timed to their moment of buy-in. New emails sign up directly, existing emails
           continue with a login code, and phone-only users add it to their account.
+          On a post that approves statements first, it says the
+          statement goes live once it's approved.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex flex-wrap gap-3">
+          <Button
+            variant={isAwaitingApproval ? "outline" : "default"}
+            onClick={showLiveStatement}
+          >
+            Statement is live
+          </Button>
+          <Button
+            variant={isAwaitingApproval ? "default" : "outline"}
+            onClick={showStatementAwaitingApproval}
+          >
+            Statement awaiting approval
+          </Button>
+        </div>
+
         <div className="flex flex-wrap gap-3">
           {SCENARIOS.map(({ id, label }) => (
             <Button
@@ -89,10 +112,14 @@ export function AnonResponseTripwireStory() {
         )}
 
         {scenario && (
-          <DebateSessionProvider key={scenario} showcaseOverrides={buildOverrides(scenario)}>
+          <DebateSessionProvider
+            key={`${scenario}-${isAwaitingApproval}`}
+            showcaseOverrides={buildOverrides(scenario)}
+          >
             <AnonResponseTripwire
               roomId="story-room"
               isOpen
+              isAwaitingApproval={isAwaitingApproval}
               onComplete={() => {
                 setCompleted(true);
                 setScenario(null);
