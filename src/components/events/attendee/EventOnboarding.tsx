@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Lock } from "lucide-react";
 import type { DemographicQuestion } from "../../../types";
+import { api } from "../../../utils/api";
 import {
   findFirstUnansweredQuestionIndex,
   toggleMultiSelectAnswer,
 } from "../../../utils/demographic-questions";
 import { pluralizeQuestion } from "../../../utils/text";
 import { Button } from "../../ui/button";
+import { AnswerPrivacySheet } from "./AnswerPrivacySheet";
 import { AttendeeFrame } from "./AttendeeFrame";
 import { EventOnboardingQuestion } from "./EventOnboardingQuestion";
 import { OnboardingProgressSegments } from "./OnboardingProgressSegments";
@@ -124,6 +126,14 @@ interface OnboardingWelcomeProps {
 }
 
 function OnboardingWelcome({ questionCount, onStart }: OnboardingWelcomeProps) {
+  const [isAnswerPrivacySheetOpen, setIsAnswerPrivacySheetOpen] =
+    useState(false);
+
+  const openAnswerPrivacySheet = () => {
+    api.trackEvent("event_answer_privacy_sheet_opened");
+    setIsAnswerPrivacySheetOpen(true);
+  };
+
   return (
     <AttendeeFrame>
       <div className="flex flex-1 flex-col justify-center gap-6 px-1">
@@ -140,11 +150,26 @@ function OnboardingWelcome({ questionCount, onStart }: OnboardingWelcomeProps) {
         <p className="flex items-start gap-2.5 text-[15px] leading-snug secondary-text-strong">
           <Lock className="mt-0.5 size-[18px] shrink-0" aria-hidden="true" />
           <span>
-            <span className="font-bold text-foreground">Totally anonymous.</span> We only show results by group, so
-            no one can see your individual votes or responses.
+            <span className="font-bold text-foreground">
+              Only shown in aggregate.
+            </span>{" "}
+            Your individual answers will only be shown as part of
+            group totals.{" "}
+            <button
+              type="button"
+              className="heard-link underline"
+              onClick={openAnswerPrivacySheet}
+            >
+              Learn more
+            </button>
           </span>
         </p>
       </div>
+
+      <AnswerPrivacySheet
+        isOpen={isAnswerPrivacySheetOpen}
+        onClose={() => setIsAnswerPrivacySheetOpen(false)}
+      />
 
       <Button size="lg" className="h-14 w-full rounded-xl text-lg font-bold" onClick={onStart}>
         Start questions
