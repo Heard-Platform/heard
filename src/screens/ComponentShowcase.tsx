@@ -74,6 +74,9 @@ import { DisplayModeScreenStory } from "../stories/DisplayModeScreen.story";
 import { RoomAnalyticsModalStory } from "../stories/RoomAnalyticsModal.story";
 import { VoteResultSnackbarStory } from "../stories/VoteResultSnackbar.story";
 import { VoteRevealCrowdStory } from "../stories/VoteRevealCrowd.story";
+import { VoteStampStory } from "../stories/VoteStamp.story";
+import { EventInviteCardStory } from "../stories/EventInviteCard.story";
+import { EventFlyerFlowStory } from "../stories/EventFlyerFlow.story";
 import { IdleAnimalPeekStory } from "../stories/IdleAnimalPeek.story";
 import { StreamOverlayStory } from "../stories/StreamOverlay.story";
 import { AnonResponseTripwireStory } from "../stories/AnonResponseTripwire.story";
@@ -213,6 +216,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="room-analytics">Room Analytics</TabsTrigger>
                 <TabsTrigger value="vote-result-snackbar">Vote Result Snackbar</TabsTrigger>
                 <TabsTrigger value="vote-reveal-crowd">Vote Reveal Crowd</TabsTrigger>
+                <TabsTrigger value="vote-stamp">Vote Stamp</TabsTrigger>
+                <TabsTrigger value="event-invite-card">Event Invite Card</TabsTrigger>
+                <TabsTrigger value="event-flyer-flow">Event Flyer Flow</TabsTrigger>
                 <TabsTrigger value="idle-animal-peek">Idle Animal Peek</TabsTrigger>
                 <TabsTrigger value="stream-overlay">Stream Overlay</TabsTrigger>
                 <TabsTrigger value="anon-response-tripwire">Anon Response Tripwire</TabsTrigger>
@@ -441,6 +447,15 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="vote-reveal-crowd">
                 <VoteRevealCrowdStory />
+              </TabsContent>
+              <TabsContent value="vote-stamp">
+                <VoteStampStory />
+              </TabsContent>
+              <TabsContent value="event-invite-card">
+                <EventInviteCardStory />
+              </TabsContent>
+              <TabsContent value="event-flyer-flow">
+                <EventFlyerFlowStory />
               </TabsContent>
               <TabsContent value="idle-animal-peek">
                 <IdleAnimalPeekStory />

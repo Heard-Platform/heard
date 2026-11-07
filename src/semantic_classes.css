@@ -426,6 +426,10 @@
   border-color: var(--color-green-200);
 }
 
+.agree-strong-border {
+  border-color: var(--color-green-700);
+}
+
 .agree-fill {
   fill: var(--color-green-500);
 }
@@ -500,6 +504,10 @@
 
 .disagree-border {
   border-color: var(--color-red-200);
+}
+
+.disagree-strong-border {
+  border-color: var(--color-red-700);
 }
 
 .disagree-fill {

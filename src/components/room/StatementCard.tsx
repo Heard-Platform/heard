@@ -1,4 +1,8 @@
-import type { DebateRoom, Statement } from "../../types";
+import type {
+  DebateRoom,
+  StampedVote,
+  Statement,
+} from "../../types";
 import { SwipeIndicatorSet } from "../SwipeIndicators";
 import type { MotionValue } from "motion/react";
 import { Star, Flag, MoreVertical, EyeOff, Share } from "lucide-react";
@@ -18,6 +22,7 @@ import { VoteButtonRow } from "../VoteButton";
 import { VoteRevealCrowd } from "./VoteRevealCrowd";
 import { VoteRevealHeadline } from "./VoteRevealHeadline";
 import { IdleAnimalPeek } from "./IdleAnimalPeek";
+import { VoteStamp } from "./VoteStamp";
 import type { VoteReveal } from "../../utils/vote-reveal";
 import moment from "moment";
 // @ts-ignore
@@ -30,6 +35,7 @@ interface StatementCardProps {
   currentIndex: number;
   totalStatements: number;
   voteReveal: VoteReveal | null;
+  stampedVote: StampedVote | null;
   disagreeOpacity: MotionValue<number>;
   agreeOpacity: MotionValue<number>;
   superAgreeOpacity: MotionValue<number>;
@@ -49,6 +55,7 @@ export function StatementCard({
   currentIndex,
   totalStatements,
   voteReveal,
+  stampedVote,
   disagreeOpacity,
   agreeOpacity,
   superAgreeOpacity,
@@ -178,6 +185,8 @@ export function StatementCard({
               voteEvent={voteReveal.voteEvent}
             />
           </div>
+        ) : stampedVote ? (
+          <div className="h-10" />
         ) : (
           <IdleAnimalPeek>
             <VoteButtonRow
@@ -187,6 +196,8 @@ export function StatementCard({
             />
           </IdleAnimalPeek>
         ))}
+
+      {stampedVote && <VoteStamp vote={stampedVote} />}
 
       {voteReveal && (
         <div className="absolute left-0 right-0 bottom-0">

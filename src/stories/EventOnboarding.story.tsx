@@ -2,7 +2,10 @@ import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 import type { DemographicQuestion } from "../types";
 import { EventLobby } from "../components/events/attendee/EventLobby";
-import { EventOnboarding } from "../components/events/attendee/EventOnboarding";
+import {
+  EventOnboarding,
+  type OnboardingWelcomeVariant,
+} from "../components/events/attendee/EventOnboarding";
 import { EventOnboardingQuestion } from "../components/events/attendee/EventOnboardingQuestion";
 import { Button } from "../components/ui/button";
 import { OPT_OUT_ANSWER, toggleMultiSelectAnswer } from "../utils/demographic-questions";
@@ -75,7 +78,7 @@ const IDENTITY_QUESTION = customQuestion(
   true,
 );
 
-const CAMPUS_EVENT_QUESTIONS = [
+export const CAMPUS_EVENT_QUESTIONS = [
   ROLE_QUESTION,
   FIELD_QUESTION,
   POLITICAL_ORIENTATION_QUESTION,
@@ -87,9 +90,11 @@ const TWO_QUESTIONS = [ROLE_QUESTION, IDENTITY_QUESTION];
 
 function OnboardingDemo({
   questions,
+  welcomeVariant,
   answeredQuestionIds,
 }: {
   questions: DemographicQuestion[];
+  welcomeVariant: OnboardingWelcomeVariant;
   answeredQuestionIds: string[];
 }) {
   const [runKey, setRunKey] = useState(0);
@@ -117,6 +122,7 @@ function OnboardingDemo({
           <EventOnboarding
             key={runKey}
             questions={questions}
+            welcomeVariant={welcomeVariant}
             answeredQuestionIds={answeredQuestionIds}
             onAnswer={handleAnswer}
             onFinish={() => setIsFinished(true)}
@@ -172,6 +178,7 @@ export function EventOnboardingStory() {
             <OnboardingDemo
               key="tap-through"
               questions={CAMPUS_EVENT_QUESTIONS}
+              welcomeVariant="joining-event"
               answeredQuestionIds={[]}
             />
           ),
@@ -185,6 +192,7 @@ export function EventOnboardingStory() {
             <OnboardingDemo
               key="welcome-two"
               questions={TWO_QUESTIONS}
+              welcomeVariant="joining-event"
               answeredQuestionIds={[]}
             />
           ),
@@ -198,10 +206,25 @@ export function EventOnboardingStory() {
             <OnboardingDemo
               key="resume"
               questions={CAMPUS_EVENT_QUESTIONS}
+              welcomeVariant="joining-event"
               answeredQuestionIds={[
                 ROLE_QUESTION.id,
                 FIELD_QUESTION.id,
               ]}
+            />
+          ),
+        },
+        {
+          id: "keep-voting",
+          label: "Keep voting welcome",
+          description:
+            "What a flyer scanner sees after tapping Keep voting on the event invite card. Checks that the welcome reads \"Thanks for voting!\" and \"Before you keep voting, 5 quick questions\", with the same progress segments, privacy line and questions as the event.",
+          children: (
+            <OnboardingDemo
+              key="keep-voting"
+              questions={CAMPUS_EVENT_QUESTIONS}
+              welcomeVariant="keep-voting"
+              answeredQuestionIds={[]}
             />
           ),
         },
