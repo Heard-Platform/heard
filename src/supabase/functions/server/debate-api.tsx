@@ -56,6 +56,7 @@ import { validateDeveloper } from "./internal-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { validateSession } from "./auth-utils.ts";
 import { logActionUnlessRateLimited } from "./rate-limit-utils.ts";
+import { markStatementAwaitingApproval } from "./moderation-utils.ts";
 
 const app = new Hono();
 
@@ -672,7 +673,7 @@ app.post(
         }
       };
 
-      const statement: Statement = {
+      const newStatement: Statement = {
         id: generateId(),
         text: text.trim(),
         author: user.id,
@@ -687,6 +688,11 @@ app.post(
         round: getRoundNumber(room.phase),
         voters: {}, // Will be calculated from Vote records
       };
+
+      const requiresApproval = !!room.requiresStatementApproval;
+      const statement = requiresApproval
+        ? markStatementAwaitingApproval(newStatement)
+        : newStatement;
 
       await saveStatement(statement);
 
@@ -708,6 +714,7 @@ app.post(
 
       return c.json({
         statement,
+        isAwaitingApproval: requiresApproval,
         pointsEarned: totalPoints,
         userScore: user.score,
         achievement: {
