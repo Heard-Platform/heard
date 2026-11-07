@@ -100,6 +100,8 @@ function ReviewDemo({
   const [cover, setCover] = useState<Cover | null>(initialCover);
   const [debateLength, setDebateLength] = useState(ONE_WEEK_MIN);
   const [allowAnonymousVoting, setAllowAnonymousVoting] = useState(true);
+  const [requiresStatementApproval, setRequiresStatementApproval] =
+    useState(false);
   const [demographicQuestions, setDemographicQuestions] = useState(initialDemographics);
 
   return (
@@ -115,6 +117,7 @@ function ReviewDemo({
           cover={cover}
           debateLength={debateLength}
           allowAnonymousVoting={allowAnonymousVoting}
+          requiresStatementApproval={requiresStatementApproval}
           demographicQuestions={demographicQuestions}
           initialOpenSetting={initialOpenSetting}
           onTopicChange={setTopic}
@@ -125,6 +128,9 @@ function ReviewDemo({
           onCoverChange={setCover}
           onDebateLengthChange={setDebateLength}
           onAllowAnonymousVotingChange={setAllowAnonymousVoting}
+          onRequiresStatementApprovalChange={
+            setRequiresStatementApproval
+          }
           onDemographicQuestionsChange={setDemographicQuestions}
           onCreate={() => toast.success(`Create: "${topic}" in ${subHeard || "(event)"}`)}
         />
@@ -157,6 +163,8 @@ function FlowSteps({ wrap }: { wrap: (frame: ReactNode) => ReactNode }) {
   const [cover, setCover] = useState<Cover | null>(null);
   const [debateLength, setDebateLength] = useState(ONE_WEEK_MIN);
   const [allowAnonymousVoting, setAllowAnonymousVoting] = useState(true);
+  const [requiresStatementApproval, setRequiresStatementApproval] =
+    useState(false);
   const [demographicQuestions, setDemographicQuestions] = useState<NewDemographicQuestion[]>([]);
 
   const handleContinue = () => {
@@ -197,6 +205,7 @@ function FlowSteps({ wrap }: { wrap: (frame: ReactNode) => ReactNode }) {
           cover={cover}
           debateLength={debateLength}
           allowAnonymousVoting={allowAnonymousVoting}
+          requiresStatementApproval={requiresStatementApproval}
           demographicQuestions={demographicQuestions}
           isCreating={isCreating}
           onTopicChange={setTopic}
@@ -207,6 +216,9 @@ function FlowSteps({ wrap }: { wrap: (frame: ReactNode) => ReactNode }) {
           onCoverChange={setCover}
           onDebateLengthChange={setDebateLength}
           onAllowAnonymousVotingChange={setAllowAnonymousVoting}
+          onRequiresStatementApprovalChange={
+            setRequiresStatementApproval
+          }
           onDemographicQuestionsChange={setDemographicQuestions}
           onCreate={handleCreate}
         />

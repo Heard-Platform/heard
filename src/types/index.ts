@@ -522,6 +522,7 @@ export interface DebateRoom {
   subHeard?: string;
   endTime?: number;
   allowAnonymous?: boolean;
+  requiresStatementApproval?: boolean;
   anonymousLinkId?: string;
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;
@@ -538,7 +539,12 @@ export interface DebateRoom {
 
 export type NewDebateRoom = Pick<
   DebateRoom,
-  "topic" | "description" | "subHeard" | "allowAnonymous" | "eventId"
+  | "topic"
+  | "description"
+  | "subHeard"
+  | "allowAnonymous"
+  | "requiresStatementApproval"
+  | "eventId"
 > & {
   seedStatements?: string[];
   cover?: Cover;

@@ -15,6 +15,10 @@ import { RateLimitedError } from "../../utils/rate-limit-errors";
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
+const SUBMITTED_MESSAGE = "Response added!";
+const APPROVAL_PENDING_MESSAGE =
+  "Added! It will show once it's approved.";
+
 interface AddResponseModalProps {
   room: DebateRoom;
   open: boolean;
@@ -60,7 +64,11 @@ export function AddResponseModal({
       await onSubmitStatement(trimmed);
       setText("");
       onOpenChange(false);
-      toast.success("Response submitted!");
+      toast.success(
+        room.requiresStatementApproval
+          ? APPROVAL_PENDING_MESSAGE
+          : SUBMITTED_MESSAGE,
+      );
     } catch (error) {
       if (error instanceof RateLimitedError) {
         toast.error(error.message);
