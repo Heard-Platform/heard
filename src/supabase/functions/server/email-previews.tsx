@@ -39,6 +39,10 @@ import {
   generateFakeFlyerResultsData,
   generateFlyerResultsEmailHtml,
 } from "./template-flyer-results.ts";
+import {
+  buildFakeStatementApprovalEmail,
+  STATEMENT_APPROVAL_EMAIL_TYPE,
+} from "./statement-approval-email.ts";
 import { getFrontendUrl } from "./utils.tsx";
 
 const app = new Hono();
@@ -119,6 +123,10 @@ app.get(
 
     if (FLYER_PREVIEWS[digestType]) {
       return c.json(FLYER_PREVIEWS[digestType]());
+    }
+
+    if (digestType === STATEMENT_APPROVAL_EMAIL_TYPE) {
+      return c.json(buildFakeStatementApprovalEmail());
     }
 
     if (digestType === RESPONSE_VOTES_NOTIF_EMAIL_TYPE) {

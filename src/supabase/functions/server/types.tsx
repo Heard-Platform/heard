@@ -140,6 +140,14 @@ export type VoteType =
 
 export type SimpleVoteType = Exclude<VoteType, "super_agree">;
 
+export type StatementApprovalDecision = "approve" | "reject";
+
+export interface RoomAwaitingApproval {
+  roomId: string;
+  topic: string;
+  statements: Statement[];
+}
+
 export interface Statement {
   id: string;
   text: string;

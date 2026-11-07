@@ -15,7 +15,9 @@ import {
   RetentionStatsData,
   RoomAlert,
   SentEmail,
+  RoomAwaitingApproval,
   Statement,
+  StatementApprovalDecision,
   SubHeard,
   UserHistoryData,
   UserHistorySession,
@@ -1290,6 +1292,26 @@ class ApiClient extends BaseApiClient {
       {
         method: "POST",
         body: JSON.stringify({ isHidden }),
+      },
+    );
+  }
+
+  async getRoomsAwaitingApproval() {
+    return this.request<{ rooms: RoomAwaitingApproval[] }>(
+      "/dev/statement-approval",
+    );
+  }
+
+  async decideStatementApproval(
+    roomId: string,
+    statementId: string,
+    decision: StatementApprovalDecision,
+  ) {
+    return this.request<{ statement: Statement }>(
+      `/dev/statement-approval/${roomId}/${statementId}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ decision }),
       },
     );
   }

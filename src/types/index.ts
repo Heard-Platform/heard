@@ -40,6 +40,14 @@ export interface Statement {
   hiddenBy?: string | null;
 }
 
+export type StatementApprovalDecision = "approve" | "reject";
+
+export interface RoomAwaitingApproval {
+  roomId: string;
+  topic: string;
+  statements: Statement[];
+}
+
 export interface Comment {
   id: string;
   statementId: string;

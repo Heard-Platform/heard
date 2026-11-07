@@ -158,6 +158,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
       digestType === "debate_ended" ||
       digestType === "community_post_invite" ||
       digestType === "response_votes_notif" ||
+      digestType === "statement_approval" ||
       digestType.startsWith("flyer_")
     ) {
       setCountData(null);
@@ -202,6 +203,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
             digestType !== "debate_ended" &&
             digestType !== "community_post_invite" &&
             digestType !== "response_votes_notif" &&
+            digestType !== "statement_approval" &&
             !digestType.startsWith("flyer_") && (
             <div className="flex items-center gap-2">
               <label className="text-sm text-slate-600">
@@ -239,6 +241,7 @@ export function EmailPreviews({ user }: EmailPreviewsProps) {
               <option value="debate_ended">Debate Ended</option>
               <option value="community_post_invite">Community Post Invite</option>
               <option value="response_votes_notif">Response Votes Notification</option>
+              <option value="statement_approval">Statement Approval</option>
               <option value="flyer_welcome">Flyer Welcome</option>
               <option value="flyer_welcome_after_7pm">Flyer Welcome (after 7pm)</option>
               <option value="flyer_results">Flyer Results</option>

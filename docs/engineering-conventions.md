@@ -14,6 +14,7 @@ Since code has no comments, names have to carry the meaning. Name every variable
 - Say what kind of thing it is: a list of statements is `...Statements`, a list of their ids is `...StatementIds`, a boolean reads as a yes/no question (`is`, `has`, `can`).
 - Never reuse a word that already means something else in Heard. "Room" is a post (`DebateRoom`, `roomId`), so a statement written by someone at an event is an attendee statement in code, even though the UI says "From the room".
 - Longer and clear beats shorter and ambiguous. If a name needs a comment to be understood, rename it.
+- Callback handlers start with `handle`: `onStart={handleStart}`, never `onStart={start}`.
 
 ## No shortcuts
 
@@ -22,6 +23,10 @@ Write the clear, complete version the first time, not the quick one: clear names
 ## Readable over clever
 
 Favor the version a reader understands at a glance over a compact trick. If one expression does two jobs (a filter that drops two different things at once, a ternary that both picks and builds), split it into named steps. Example: in a multi-select toggle, first drop the opt-out answer, then add or remove the tapped option, rather than doing both in one filter.
+
+## Colors
+
+Every color comes from a semantic class in `src/semantic_classes.css`, never a raw Tailwind color (`text-white`, `text-foreground`, `bg-slate-100`). Name classes for what the color means, not where it's used or how it looks. Note `normal-text` is white (text on colored buttons); dark text on a light card is `dark-text`, muted text is `secondary-text`.
 
 ## Code comments
 
