@@ -538,6 +538,7 @@ export interface DebateRoom {
   imageUrl?: string;
   youtubeUrl?: string;
   allowAnonymous?: boolean;
+  requiresStatementApproval?: boolean;
   anonymousLinkId?: string;
   isTestRoom?: boolean;
   chanceCardSwiped?: boolean;

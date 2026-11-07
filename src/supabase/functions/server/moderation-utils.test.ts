@@ -1,6 +1,11 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { Statement } from "./types.tsx";
-import { markStatementHidden, markStatementVisible } from "./moderation-utils.ts";
+import {
+  markStatementAwaitingApproval,
+  markStatementHidden,
+  markStatementVisible,
+  STATEMENT_APPROVAL_HIDER,
+} from "./moderation-utils.ts";
 import { describe, it } from "@std/testing/bdd";
 
 function makeStmt(id: string, overrides: Partial<Statement> = {}): Statement {
@@ -104,5 +109,14 @@ describe("markStatementVisible", () => {
     assertEquals(stmt.isHidden, true);
     assertEquals(stmt.hiddenAt, 123456);
     assertEquals(stmt.hiddenBy, "host1");
+  });
+});
+
+describe("markStatementAwaitingApproval", () => {
+  it("hides the statement as the approval queue", () => {
+    const result = markStatementAwaitingApproval(makeStmt("s1"), 123);
+    assertEquals(result.isHidden, true);
+    assertEquals(result.hiddenAt, 123);
+    assertEquals(result.hiddenBy, STATEMENT_APPROVAL_HIDER);
   });
 });

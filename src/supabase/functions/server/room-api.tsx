@@ -37,6 +37,7 @@ app.post(
         seedStatements,
         cover,
         allowAnonymous,
+        requiresStatementApproval,
         debateLength,
         demographicQuestions,
         eventId,
@@ -120,6 +121,7 @@ app.post(
         imageUrl,
         youtubeUrl,
         allowAnonymous: !!allowAnonymous,
+        requiresStatementApproval: !!requiresStatementApproval,
         eventId: eventId || undefined,
       });
 
