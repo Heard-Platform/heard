@@ -16,9 +16,14 @@ import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { Textarea } from "../../ui/textarea";
 import { DebateLengthPicker } from "../../widgets/DebateLengthPicker";
+import { SettingCheckbox } from "../../widgets/SettingCheckbox";
 import { api } from "../../../utils/api";
 import { useDebateSession } from "../../../hooks/useDebateSession";
-import { DebateRoom } from "../../../types";
+import { DebateRoom, RoomEdits } from "../../../types";
+import {
+  FeatureFlags,
+  isFeatureEnabled,
+} from "../../../utils/constants/feature-flags";
 
 interface EditRoomModalProps {
   room: DebateRoom;
@@ -37,6 +42,10 @@ export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
   const [topic, setTopic] = useState(room.topic);
   const [description, setDescription] = useState<string>(room.description ?? "");
   const [imageUrl, setImageUrl] = useState<string>(room.imageUrl ?? "");
+  const initialRequiresStatementApproval =
+    !!room.requiresStatementApproval;
+  const [requiresStatementApproval, setRequiresStatementApproval] =
+    useState(initialRequiresStatementApproval);
   const initialDebateLength = useRef(minutesFromNow(room.endTime)).current;
   const [debateLength, setDebateLength] = useState<number>(initialDebateLength);
   const [isUploading, setIsUploading] = useState(false);
@@ -45,9 +54,15 @@ export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
   const titleChanged = topic.trim() !== room.topic && topic.trim().length > 0;
   const descriptionChanged = description !== (room.description ?? "");
   const imageChanged = imageUrl !== (room.imageUrl ?? "");
+  const statementApprovalChanged =
+    requiresStatementApproval !== initialRequiresStatementApproval;
   const endDateChanged = debateLength !== initialDebateLength;
   const canSave =
-    (titleChanged || descriptionChanged || imageChanged || endDateChanged) &&
+    (titleChanged ||
+      descriptionChanged ||
+      statementApprovalChanged ||
+      imageChanged ||
+      endDateChanged) &&
     !isUploading &&
     !isSaving;
 
@@ -70,14 +85,12 @@ export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
   };
 
   const handleSave = async () => {
-    const updates: {
-      topic?: string;
-      description?: string;
-      imageUrl?: string;
-      endTime?: number;
-    } = {};
+    const updates: RoomEdits = {};
     if (titleChanged) updates.topic = topic.trim();
     if (descriptionChanged) updates.description = description;
+    if (statementApprovalChanged) {
+      updates.requiresStatementApproval = requiresStatementApproval;
+    }
     if (imageChanged) updates.imageUrl = imageUrl;
     if (endDateChanged) updates.endTime = Date.now() + debateLength * 60000;
 
@@ -99,8 +112,8 @@ export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
         <DialogHeader>
           <DialogTitle>Edit post</DialogTitle>
           <DialogDescription>
-            Update the title, description, end date, or cover image for this
-            post.
+            Update the title, description, statement approval, end date, or
+            cover image for this post.
           </DialogDescription>
         </DialogHeader>
 
@@ -135,6 +148,16 @@ export function EditRoomModal({ room, hasVotes, onClose }: EditRoomModalProps) {
               rows={4}
             />
           </div>
+
+          {isFeatureEnabled(FeatureFlags.STATEMENT_APPROVAL) && (
+            <SettingCheckbox
+              id="edit-room-require-statement-approval"
+              title="Approve statements before they show"
+              description="New statements stay hidden until approved."
+              isChecked={requiresStatementApproval}
+              onCheckedChange={setRequiresStatementApproval}
+            />
+          )}
 
           <DebateLengthPicker
             debateLength={debateLength}
