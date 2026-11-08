@@ -303,3 +303,29 @@ export const processVote = async (
     userVote: voteStats.voters[userId] || null,
   };
 };
+
+type ProcessVoteInputs = {
+  statementId: string;
+  userId: string;
+  voteType: VoteType;
+  flyerSource?: FlyerSource;
+  allowIdempotent?: boolean;
+  skipsEventVotingCheck?: boolean;
+};
+
+export const processVote2 = ({
+  statementId,
+  userId,
+  voteType,
+  flyerSource,
+  allowIdempotent = false,
+  skipsEventVotingCheck = false,
+}: ProcessVoteInputs): Promise<ProcessVoteResult> =>
+  processVote(
+    statementId,
+    userId,
+    voteType,
+    flyerSource,
+    allowIdempotent,
+    skipsEventVotingCheck,
+  );

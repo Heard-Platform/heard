@@ -46,7 +46,11 @@ import {
   ANONYMOUS_ACTION_NOT_ALLOWED_ERROR,
   RATE_LIMITED_ERROR,
 } from "./constants.tsx";
-import { calculateVoteStats, orderStatements, processVote } from "./voting-utils.ts";
+import {
+  calculateVoteStats,
+  orderStatements,
+  processVote2,
+} from "./voting-utils.ts";
 import { filterFeedRooms, sortRoomsForFeed } from "./feed-utils.ts";
 import { checkEventPosting } from "./event-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
@@ -837,14 +841,12 @@ app.post(
       const statementId = c.req.param("statementId") as string;
       const { voteType, isVoteFromFeed } = await c.req.json();
 
-      const result = await processVote(
+      const result = await processVote2({
         statementId,
         userId,
         voteType,
-        undefined,
-        false,
-        isVoteFromFeed === true,
-      );
+        skipsEventVotingCheck: isVoteFromFeed === true,
+      });
 
       if (result.success) {
         return c.json(result);
