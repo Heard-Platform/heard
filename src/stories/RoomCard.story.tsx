@@ -253,7 +253,7 @@ export function RoomCardStory() {
             id: "georgetown-event-post",
             label: "Georgetown event post",
             description:
-              "A post in the Georgetown event with 5 unanswered event questions. The event card comes after 3 statements and can't be dragged. Keep voting opens the questions drawer with the card still underneath. Drag the drawer down early: the card stays, and Keep voting resumes at the first unanswered question. Finish every question: the card is gone when the drawer closes and the deck goes on. Answers log to the console.",
+              "A post in the Georgetown event with 5 unanswered event questions. The event card comes after 3 statements and can't be dragged. Keep voting opens the questions drawer with the card still underneath. Drag the drawer down early: the card stays, and Keep voting resumes at the first unanswered question. Finish every question: the end screen shows, and after Back to voting the card is gone and the deck goes on. Answers log to the console.",
             children: (
               <RoomCardWrapper
                 room={georgetownEventRoom}

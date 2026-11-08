@@ -40,7 +40,7 @@ export function EventQuestionsDrawerStory() {
   return (
     <StoryContainer
       title="Event Questions Drawer"
-      description="What Keep voting on the event invite card opens in the feed: the event's questions in a bottom drawer, with the keep-voting welcome, then one question per screen. Finishing or dragging it down closes it and the deck goes on. Answers given before closing are kept."
+      description="What Keep voting on the event invite card opens in the feed: the event's questions in a bottom drawer, with the keep-voting welcome, then one question per screen, then the You're all set screen with Back to voting. Dragging it down at any point closes it and the deck goes on. Answers given before closing are kept."
       variants={[
         {
           id: "keep-voting",
