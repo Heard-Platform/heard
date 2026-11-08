@@ -94,7 +94,8 @@ export function SwipeableStatementStack({
   onFeedbackTellMore,
   onKeepVoting,
 }: SwipeableStatementStackProps) {
-  const { flagStatement, saveDemographicAnswer } = useDebateSession();
+  const { flagStatement, saveDemographicAnswers } =
+    useDebateSession();
 
   const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [votedStatementIds, setVotedStatementIds] = useState<
@@ -353,7 +354,7 @@ export function SwipeableStatementStack({
     if (card.type === "demographics") {
       handleDemographicsAnswer(
         card.question.id,
-        null,
+        [],
         swipeDirection,
       );
       return;
@@ -446,14 +447,13 @@ export function SwipeableStatementStack({
 
   const handleDemographicsAnswer = (
     questionId: string,
-    answer: string | null,
+    answers: string[],
     direction?: "left" | "right",
   ) => {
-    setSwipeDirection(
-      direction ?? (answer === null ? "left" : "right"),
-    );
+    const isDeclined = answers.length === 0;
+    setSwipeDirection(direction ?? (isDeclined ? "left" : "right"));
     setSwipedCardId(`demographics-${questionId}`);
-    saveDemographicAnswer(questionId, answer);
+    saveDemographicAnswers(questionId, answers);
 
     setTimeout(() => {
       onDemographicsAnswered(questionId);

@@ -86,6 +86,16 @@ export const getDemographicQuestionsForRoom = async (roomId: string) => {
   return selectAll<RoomDemographicQuestion>("demographic_questions", { roomId });
 };
 
+export const getDemographicQuestion = async (
+  questionId: number,
+): Promise<DemographicQuestion | undefined> => {
+  const [question] = await selectAllWithoutLimit<DemographicQuestion>(
+    "demographic_questions",
+    { id: questionId },
+  );
+  return question;
+};
+
 export const getDemographicQuestionsForRooms = async (roomIds: string[]) => {
   return selectAll<RoomDemographicQuestion>(
     "demographic_questions",
@@ -132,13 +142,6 @@ export const replaceDemographicAnswers = async (
   }));
   await insertMany("demographic_answers", rows);
 };
-
-export const saveDemographicAnswer = async (
-  answer: NewDemographicAnswer,
-) =>
-  replaceDemographicAnswers(answer.userId, answer.questionId, [
-    answer.answer,
-  ]);
 
 export const getAnsweredDemographicQuestionIds = async (
   userId: string,
