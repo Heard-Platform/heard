@@ -62,7 +62,11 @@ import { PersonalFlyerContainer } from "./components/flyer/personal-flyer/Person
 import type { FlyerVoteTally } from "./components/flyer/landing/FlyerLandingScreen";
 import type { FlyerVote } from "./components/flyer/FlyerVoteIntroCard";
 import { FeatureFlags, isFeatureEnabled } from "./utils/constants/feature-flags";
-import { WAYMO_DC_ROOM_ID, WAYMO_DC_STATEMENT_ID } from "./utils/constants/flyers";
+import {
+  ROOM_SHORT_ROUTES,
+  WAYMO_DC_ROOM_ID,
+  WAYMO_DC_STATEMENT_ID,
+} from "./utils/constants/flyers";
 import { flyerVoteFailureMessage } from "./utils/flyer-vote-errors";
 import { EVENT_SHORT_ROUTES } from "./utils/constants/events";
 import { takeDisplayKeyFromUrl } from "./utils/display-key";
@@ -437,6 +441,7 @@ function AppContent() {
       const clubFlyerMatch = pathname.match(/^\/club-(yes|no)/);
       const isClubRoute = /^\/club\/?$/.test(pathname);
       const isFinalRoute = /^\/final\/?$/.test(pathname);
+      const shortRouteRoomId = ROOM_SHORT_ROUTES.get(route);
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const linkSourceFromUrl = parseLinkSourceFromUrl();
@@ -569,6 +574,8 @@ function AppContent() {
         startRoomJoin(WORLD_CUP_ROOM_ID);
       } else if (isIdeasRoute) {
         startRoomJoin(IDEAS_ROOM_ID);
+      } else if (shortRouteRoomId) {
+        startRoomJoin(shortRouteRoomId);
       } else if (flyerDataFromUrl) {
         handleFlyerJoin(flyerDataFromUrl);
       } else if (displayedEventIdFromUrl) {
