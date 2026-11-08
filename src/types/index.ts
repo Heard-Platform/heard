@@ -208,7 +208,6 @@ export interface EventInvite {
 export interface FlyerIntro {
   statement: Statement;
   vote: StampedVote;
-  invite: EventInvite;
 }
 
 export type NewEvent = Pick<

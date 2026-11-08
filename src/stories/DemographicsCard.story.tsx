@@ -148,6 +148,7 @@ function DemographicsSwipeableStack() {
         feedbackStatement={null}
         onFeedbackVoted={() => {}}
         onFeedbackTellMore={() => {}}
+        onKeepVoting={() => {}}
       />
     </div>
   );

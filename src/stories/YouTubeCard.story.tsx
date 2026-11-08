@@ -103,6 +103,7 @@ function CoverCardStack({ label, cover }: { label: string; cover: FullCoverData 
         feedbackStatement={null}
         onFeedbackVoted={() => {}}
         onFeedbackTellMore={() => {}}
+        onKeepVoting={() => {}}
       />
     </div>
   );

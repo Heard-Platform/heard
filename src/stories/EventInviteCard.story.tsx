@@ -1,15 +1,16 @@
-import { GeorgetownEventCard } from "../components/room/GeorgetownEventCard";
+import { EventInviteCard } from "../components/room/EventInviteCard";
+import { GEORGETOWN_EVENT_INVITE } from "../utils/constants/events";
 import { PhoneFrame } from "./PhoneFrame";
 import { StoryContainer } from "./StoryContainer";
 
 const logGoToEvent = () => console.log("[Story] go to event");
 const logKeepVoting = () => console.log("[Story] keep voting");
 
-export function GeorgetownEventCardStory() {
+export function EventInviteCardStory() {
   return (
     <StoryContainer
-      title="Georgetown Event Card"
-      description="The event invite card with Georgetown's 11/12 event hardcoded in. The fourth card a flyer scanner sees, after their 3 votes and outside the progress bar. It can't be swiped. A question, the event's details, the event's image, then two ways forward side by side. Go to event opens registration in a new tab and leaves this tab where it is, so it still looks familiar if they come back. Keep voting moves on to the demographic questions."
+      title="Event Invite Card"
+      description="The event invite card, shown with Georgetown's 11/12 event. The fourth card a flyer scanner sees, after their 3 votes and outside the progress bar. It can't be swiped. A question, the event's details, the event's image, then two ways forward side by side. Go to event opens registration in a new tab and leaves this tab where it is, so it still looks familiar if they come back. Keep voting moves on to the demographic questions."
       variants={[
         {
           id: "in-deck",
@@ -20,7 +21,8 @@ export function GeorgetownEventCardStory() {
             <PhoneFrame>
               <div className="p-5">
                 <div className="normal-bg rounded-xl border-2 p-5 shadow-xl">
-                  <GeorgetownEventCard
+                  <EventInviteCard
+                    invite={GEORGETOWN_EVENT_INVITE}
                     onGoToEvent={logGoToEvent}
                     onKeepVoting={logKeepVoting}
                   />

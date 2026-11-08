@@ -157,6 +157,7 @@ function StackWithFeedback({
         feedbackStatement={feedbackVoted ? null : getFeedbackStatement(statementKey)}
         onFeedbackVoted={handleVoted}
         onFeedbackTellMore={handleTellMore}
+        onKeepVoting={() => {}}
       />
       {sheets}
     </>

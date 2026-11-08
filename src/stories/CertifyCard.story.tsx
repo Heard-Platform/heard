@@ -184,6 +184,7 @@ function CertifyCardInStack() {
         feedbackStatement={null}
         onFeedbackVoted={() => {}}
         onFeedbackTellMore={() => {}}
+        onKeepVoting={() => {}}
       />
     </DebateSessionProvider>
   );

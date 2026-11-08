@@ -75,7 +75,7 @@ import { RoomAnalyticsModalStory } from "../stories/RoomAnalyticsModal.story";
 import { VoteResultSnackbarStory } from "../stories/VoteResultSnackbar.story";
 import { VoteRevealCrowdStory } from "../stories/VoteRevealCrowd.story";
 import { VoteStampStory } from "../stories/VoteStamp.story";
-import { GeorgetownEventCardStory } from "../stories/GeorgetownEventCard.story";
+import { EventInviteCardStory } from "../stories/EventInviteCard.story";
 import { EventFlyerFlowStory } from "../stories/EventFlyerFlow.story";
 import { IdleAnimalPeekStory } from "../stories/IdleAnimalPeek.story";
 import { StreamOverlayStory } from "../stories/StreamOverlay.story";
@@ -217,8 +217,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="vote-result-snackbar">Vote Result Snackbar</TabsTrigger>
                 <TabsTrigger value="vote-reveal-crowd">Vote Reveal Crowd</TabsTrigger>
                 <TabsTrigger value="vote-stamp">Vote Stamp</TabsTrigger>
-                <TabsTrigger value="georgetown-event-card">
-                  Georgetown Event Card
+                <TabsTrigger value="event-invite-card">
+                  Event Invite Card
                 </TabsTrigger>
                 <TabsTrigger value="event-flyer-flow">Event Flyer Flow</TabsTrigger>
                 <TabsTrigger value="idle-animal-peek">Idle Animal Peek</TabsTrigger>
@@ -453,8 +453,8 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               <TabsContent value="vote-stamp">
                 <VoteStampStory />
               </TabsContent>
-              <TabsContent value="georgetown-event-card">
-                <GeorgetownEventCardStory />
+              <TabsContent value="event-invite-card">
+                <EventInviteCardStory />
               </TabsContent>
               <TabsContent value="event-flyer-flow">
                 <EventFlyerFlowStory />

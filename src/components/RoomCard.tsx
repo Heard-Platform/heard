@@ -490,6 +490,7 @@ export function RoomCard({
                     feedbackStatement={feedbackStatement}
                     onFeedbackVoted={handleVoted}
                     onFeedbackTellMore={handleTellMore}
+                    onKeepVoting={() => {}}
                   />
                 );
               }
