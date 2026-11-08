@@ -9,7 +9,6 @@ import {
   requireEventDoorsOpen,
   requireEventInSetup,
   toEventDemographicQuestionRows,
-  toStoredAnswers,
 } from "./event-onboarding-utils.ts";
 import { defaultLiveEventState } from "./live-event-utils.ts";
 import { RouteError } from "./route-error.ts";
@@ -260,20 +259,6 @@ Deno.test(
       isValidAnswerList(pickAnyQuestion, ["Black", OPT_OUT_ANSWER]),
       false,
     );
-  },
-);
-
-Deno.test("toStoredAnswers - keeps the picked options", () => {
-  assertEquals(toStoredAnswers(["Black", "Jewish"]), [
-    "Black",
-    "Jewish",
-  ]);
-});
-
-Deno.test(
-  "toStoredAnswers - stores a Skip as one empty answer, so the question counts as answered",
-  () => {
-    assertEquals(toStoredAnswers([]), [null]);
   },
 );
 

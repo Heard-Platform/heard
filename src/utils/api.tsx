@@ -556,12 +556,13 @@ class ApiClient extends BaseApiClient {
     });
   }
 
-  async saveDemographicAnswer(questionId: string, answer: string | null) {
+  async saveDemographicAnswers(
+    questionId: string,
+    answers: string[],
+  ) {
     return this.request<undefined>("/demographic-answer", {
       method: "POST",
-      body: JSON.stringify(
-        answer ? { questionId, answer } : { questionId },
-      ),
+      body: JSON.stringify({ questionId, answers }),
     });
   }
 

@@ -1,6 +1,11 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { it } from "@std/testing/bdd";
-import { calcDemographicBreakdown } from "./demographics-utils.ts";
+import {
+  calcDemographicBreakdown,
+  isValidRoomAnswerList,
+  toStoredAnswers,
+} from "./demographics-utils.ts";
+import type { DemographicQuestion } from "./types.tsx";
 
 it("calcs demographics for single question type", () => {
   const questions = [{ id: "q1", type: "gender" }] as any;
@@ -82,4 +87,79 @@ it("handles custom questions", () => {
       "Favorite color?": { Blue: 2, Red: 1 },
     }
   );
+});
+
+const roomQuestion = (
+  overrides: Partial<DemographicQuestion>,
+): DemographicQuestion => ({
+  id: 7,
+  roomId: "room-1",
+  eventId: null,
+  type: "custom",
+  text: "Which describe you?",
+  options: ["Asian", "Black", "White"],
+  multiSelect: false,
+  position: null,
+  ...overrides,
+});
+
+it("toStoredAnswers keeps the picked options", () => {
+  assertEquals(toStoredAnswers(["Black", "Jewish"]), [
+    "Black",
+    "Jewish",
+  ]);
+});
+
+it("toStoredAnswers stores a skip as one empty answer", () => {
+  assertEquals(toStoredAnswers([]), [null]);
+});
+
+it("isValidRoomAnswerList takes one pick on a single choice", () => {
+  assertEquals(
+    isValidRoomAnswerList(roomQuestion({}), ["Black"]),
+    true,
+  );
+});
+
+it("isValidRoomAnswerList takes a skip", () => {
+  assertEquals(isValidRoomAnswerList(roomQuestion({}), []), true);
+});
+
+it("isValidRoomAnswerList refuses several on a single choice", () => {
+  assertEquals(
+    isValidRoomAnswerList(roomQuestion({}), ["Black", "White"]),
+    false,
+  );
+});
+
+it("isValidRoomAnswerList takes several on a multi-select", () => {
+  const question = roomQuestion({ multiSelect: true });
+  assertEquals(
+    isValidRoomAnswerList(question, ["Black", "White"]),
+    true,
+  );
+});
+
+it("isValidRoomAnswerList refuses the same option twice", () => {
+  const question = roomQuestion({ multiSelect: true });
+  assertEquals(
+    isValidRoomAnswerList(question, ["Black", "Black"]),
+    false,
+  );
+});
+
+it("isValidRoomAnswerList refuses an unlisted option", () => {
+  assertEquals(
+    isValidRoomAnswerList(roomQuestion({}), ["Martian"]),
+    false,
+  );
+});
+
+it("isValidRoomAnswerList takes any standard answer", () => {
+  const question = roomQuestion({
+    type: "gender",
+    text: undefined,
+    options: undefined,
+  });
+  assertEquals(isValidRoomAnswerList(question, ["Female"]), true);
 });

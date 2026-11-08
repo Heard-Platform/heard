@@ -8,6 +8,10 @@ import {
   replaceDemographicAnswers,
 } from "./model-utils.ts";
 import { getEventOrThrow } from "./event-utils.ts";
+import {
+  hasDuplicateAnswers,
+  toStoredAnswers,
+} from "./demographics-utils.ts";
 import { RouteError } from "./route-error.ts";
 import type {
   AttendeeOnboarding,
@@ -118,9 +122,6 @@ export const findEventQuestionOrThrow = (
   return question;
 };
 
-const hasDuplicates = (answers: string[]): boolean =>
-  new Set(answers).size !== answers.length;
-
 const isAllowedAnswer = (
   question: DemographicQuestion,
   answer: string,
@@ -136,16 +137,9 @@ export const isValidAnswerList = (
   answers: string[],
 ): boolean => {
   if (!question.multiSelect && answers.length !== 1) return false;
-  if (hasDuplicates(answers)) return false;
+  if (hasDuplicateAnswers(answers)) return false;
   if (isOptOutMixedWithOptions(answers)) return false;
   return answers.every((answer) => isAllowedAnswer(question, answer));
-};
-
-export const toStoredAnswers = (
-  answers: string[],
-): (string | null)[] => {
-  const isSkipped = answers.length === 0;
-  return isSkipped ? [null] : answers;
 };
 
 export const collectAnsweredQuestionIds = (

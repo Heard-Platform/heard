@@ -29,7 +29,6 @@ import { generateId, getRoomUrl } from "./utils.tsx";
 import {
   getDemographicQuestionsForRooms,
   getAnsweredDemographicQuestionIds,
-  saveDemographicAnswer,
   saveCoverCardSwipe,
   getCoverCardSwipedRoomIds,
   getMergesForRoom,
@@ -55,6 +54,7 @@ import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-uti
 import { validateDeveloper } from "./internal-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { validateSession } from "./auth-utils.ts";
+import { saveRoomDemographicAnswers } from "./demographics-utils.ts";
 import { logActionUnlessRateLimited } from "./rate-limit-utils.ts";
 import { markStatementAwaitingApproval } from "./moderation-utils.ts";
 import { notifyOfStatementAwaitingApproval } from "./statement-approval-email.ts";
@@ -2252,15 +2252,26 @@ app.post(
   defineRoute(
     {
       questionId: { type: "number", required: true },
-      answer: { type: "string" },
+      answers: {
+        type: "array",
+        required: true,
+        validate: (answers: unknown[]) =>
+          answers.every((answer) => typeof answer === "string"),
+        errorMessage: "answers must be a list of options",
+      },
     },
     async (
-      { questionId, answer }: { questionId: number; answer?: string },
+      {
+        questionId,
+        answers,
+      }: { questionId: number; answers: string[] },
       c: Context,
-    ) => {
-      const userId = c.get("userId");
-      await saveDemographicAnswer({ userId, questionId, answer: answer ?? null });
-    },
+    ) =>
+      saveRoomDemographicAnswers(
+        c.get("userId"),
+        questionId,
+        answers,
+      ),
     "Saving demographic answer failed",
   ),
 );

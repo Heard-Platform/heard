@@ -5,6 +5,7 @@ import { useState } from "react";
 import { DemographicQuestion, DemographicQuestionType } from "../../types";
 import { DataPrivacyModal } from "./my-data/DataPrivacyModal";
 import { useScrollOverflow } from "../../hooks/useScrollOverflow";
+import { toggleMultiSelectAnswer } from "../../utils/demographic-questions";
 
 const standardQuestionsByType: Record<
   Exclude<DemographicQuestionType, "custom">,
@@ -38,22 +39,32 @@ const standardQuestionsByType: Record<
 
 interface DemographicsCardProps {
   question: DemographicQuestion;
-  onAnswer: (answer: string | null) => void;
+  onAnswer: (answers: string[]) => void;
 }
 
 export function DemographicsCard({
   question,
   onAnswer,
 }: DemographicsCardProps) {
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [pickedAnswers, setPickedAnswers] = useState<string[]>([]);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const { ref: scrollRef, hasContentBelow } =
     useScrollOverflow<HTMLDivElement>();
 
-  const handleSelect = (option: string) => {
-    setSelectedAnswer(option);
-    onAnswer(option);
+  const handlePickOption = (option: string) => {
+    if (question.multiSelect) {
+      setPickedAnswers(
+        toggleMultiSelectAnswer(pickedAnswers, option),
+      );
+      return;
+    }
+    setPickedAnswers([option]);
+    onAnswer([option]);
   };
+
+  const handleContinue = () => onAnswer(pickedAnswers);
+
+  const handleDecline = () => onAnswer([]);
 
   const standardQuestion =
     question.type !== "custom"
@@ -92,6 +103,11 @@ export function DemographicsCard({
           <h3 className="text-base text-foreground mb-3">
             {questionText}
           </h3>
+          {question.multiSelect && (
+            <p className="-mt-2 mb-3 text-xs secondary-text">
+              Pick any that fit.
+            </p>
+          )}
 
           <div className="relative h-[150px]">
             <div
@@ -108,10 +124,11 @@ export function DemographicsCard({
                     className="max-w-full"
                   >
                     <Button
-                      onClick={() => handleSelect(option)}
+                      onClick={() => handlePickOption(option)}
                       variant="outline"
+                      aria-pressed={pickedAnswers.includes(option)}
                       className={`max-w-full h-auto py-2.5 px-4 text-left whitespace-normal transition-all text-sm ${
-                        selectedAnswer === option
+                        pickedAnswers.includes(option)
                           ? "bg-purple-600 text-white border-purple-600 hover:bg-purple-700"
                           : "bg-white hover:bg-purple-50 border-purple-200"
                       }`}
@@ -129,7 +146,7 @@ export function DemographicsCard({
               >
                 <button
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors underline decoration-dotted underline-offset-2"
-                  onClick={() => onAnswer(null)}
+                  onClick={handleDecline}
                 >
                   I prefer not to answer
                 </button>
@@ -141,6 +158,16 @@ export function DemographicsCard({
               }`}
             />
           </div>
+
+          {question.multiSelect && (
+            <Button
+              className="mt-3 w-full"
+              disabled={pickedAnswers.length === 0}
+              onClick={handleContinue}
+            >
+              Continue
+            </Button>
+          )}
 
           <div className="mt-2">
             <p className="pt-1 text-xs text-muted-foreground text-center">

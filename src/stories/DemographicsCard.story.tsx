@@ -47,12 +47,30 @@ const questions: DemographicQuestion[] = [
     text: "Do you currently live in Washington, DC?",
     options: ["Yes", "No"],
   },
+  {
+    id: "5",
+    type: "custom",
+    roomId: "room1",
+    multiSelect: true,
+    eventId: null,
+    position: null,
+    text: "Which of these describe your background?",
+    options: [
+      "Asian",
+      "Black",
+      "Hispanic or Latino",
+      "Middle Eastern or North African",
+      "Native American",
+      "Pacific Islander",
+      "White",
+    ],
+  },
 ];
 
 export function DemographicsCardStory() {
-  const handleAnswer = (answer: string) => {
-    console.log("User answered:", answer);
-    alert(`You answered: ${answer}`);
+  const handleAnswer = (answers: string[]) => {
+    console.log("User answered:", answers);
+    alert(`You answered: ${answers.join(", ") || "no answer"}`);
   };
 
   return (

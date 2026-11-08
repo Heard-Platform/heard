@@ -98,9 +98,9 @@ interface DebateSessionContextType {
   submitFlyerEmail: (email: string) => Promise<ApiResponse | null>;
   markChanceCardSwiped: (roomId: string) => Promise<void>;
   markCoverCardSwiped: (roomId: string) => Promise<void>;
-  saveDemographicAnswer: (
+  saveDemographicAnswers: (
     questionId: string,
-    answer: string | null,
+    answers: string[],
   ) => Promise<ApiResponse | null>;
   loadActiveRooms: (subHeard?: string, targetRoomId?: string) => Promise<DebateRoom[]>;
   resetSession: () => void;
@@ -593,9 +593,11 @@ export function DebateSessionProvider(
     }, [],
   );
 
-  const saveDemographicAnswer = useCallback(
-    async (questionId: string, answer: string | null) =>
-      safelyMakeApiCall<undefined>(() => api.saveDemographicAnswer(questionId, answer)),
+  const saveDemographicAnswers = useCallback(
+    async (questionId: string, answers: string[]) =>
+      safelyMakeApiCall<undefined>(() =>
+        api.saveDemographicAnswers(questionId, answers),
+      ),
     [safelyMakeApiCall],
   );      
 
@@ -1128,7 +1130,7 @@ export function DebateSessionProvider(
     setStatementHidden,
     markChanceCardSwiped,
     markCoverCardSwiped,
-    saveDemographicAnswer,
+    saveDemographicAnswers,
     getSubHeards,
     getExplorableSubHeards,
     joinSubHeard,
@@ -1292,8 +1294,8 @@ export function DebateSessionProvider(
       markCoverCardSwiped: async () => {
         console.log("[Showcase] markCoverCardSwiped called");
       },
-      saveDemographicAnswer: async (questionId: string, answer: string | null) => {
-        console.log("[Showcase] saveDemographicAnswer called");
+      saveDemographicAnswers: async () => {
+        console.log("[Showcase] saveDemographicAnswers called");
         return { success: true };
       },
       getSubHeards: async () => {

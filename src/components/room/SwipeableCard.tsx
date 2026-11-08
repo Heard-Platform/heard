@@ -35,7 +35,7 @@ interface SwipeableCardProps {
   ) => void;
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
-  onDemographicsAnswer?: (id: string, answer: string | null) => void;
+  onDemographicsAnswer?: (id: string, answers: string[]) => void;
   onCertifySuccess: () => void;
   onFeedbackTellMore: () => void;
   onAgree: (card: Card) => void;
@@ -203,8 +203,9 @@ export function SwipeableCard({
         ) : card.type === "demographics" ? (
           <DemographicsCard
             question={card.question}
-            onAnswer={(answer) => {
-              onDemographicsAnswer && onDemographicsAnswer(card.question.id, answer);
+            onAnswer={(answers) => {
+              onDemographicsAnswer &&
+                onDemographicsAnswer(card.question.id, answers);
             }}
           />
         ) : card.type === "certify" ? (
