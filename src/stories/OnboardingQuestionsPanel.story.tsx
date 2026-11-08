@@ -5,10 +5,7 @@ import {
   haveEventOnboardingQuestionsChanged,
   toEventOnboardingQuestionInputs,
 } from "../utils/event-onboarding-questions";
-import type {
-  EventOnboardingQuestionDraft,
-  LiveEventStatus,
-} from "../types";
+import type { EventOnboardingQuestionDraft } from "../types";
 import { StoryContainer } from "./StoryContainer";
 
 const STORY_SAVE_DELAY_MS = 800;
@@ -37,16 +34,10 @@ const INCOMPLETE_DRAFT: EventOnboardingQuestionDraft = {
 interface QuestionsPanelDemoProps {
   initialSavedDrafts: EventOnboardingQuestionDraft[];
   initialDrafts: EventOnboardingQuestionDraft[];
-  status: LiveEventStatus;
-  hasAnswers: boolean;
+  isLocked: boolean;
 }
 
-function QuestionsPanelDemo({
-  initialSavedDrafts,
-  initialDrafts,
-  status,
-  hasAnswers,
-}: QuestionsPanelDemoProps) {
+function QuestionsPanelDemo({ initialSavedDrafts, initialDrafts, isLocked }: QuestionsPanelDemoProps) {
   const [savedDrafts, setSavedDrafts] = useState(initialSavedDrafts);
   const [questionDrafts, setQuestionDrafts] = useState(initialDrafts);
   const [isSaving, setIsSaving] = useState(false);
@@ -65,8 +56,7 @@ function QuestionsPanelDemo({
     <div className="w-full max-w-sm mx-auto">
       <OnboardingQuestionsPanel
         questionDrafts={questionDrafts}
-        status={status}
-        hasAnswers={hasAnswers}
+        isLocked={isLocked}
         isSaving={isSaving}
         hasUnsavedChanges={haveEventOnboardingQuestionsChanged(questionDrafts, savedDrafts)}
         canSave={canSaveEventOnboardingQuestions(questionDrafts)}
@@ -93,7 +83,7 @@ export function OnboardingQuestionsPanelStory() {
               key="saved"
               initialSavedDrafts={[ROLE_DRAFT, IDENTITY_DRAFT]}
               initialDrafts={[ROLE_DRAFT, IDENTITY_DRAFT]}
-              status="setup" hasAnswers={false}
+              isLocked={false}
             />
           ),
         },
@@ -102,7 +92,7 @@ export function OnboardingQuestionsPanelStory() {
           label: "No questions",
           description:
             "An event with no questions yet. Checks the empty message and that Add question starts a blank question with two empty options.",
-          children: <QuestionsPanelDemo key="empty" initialSavedDrafts={[]} initialDrafts={[]} status="setup" hasAnswers={false} />,
+          children: <QuestionsPanelDemo key="empty" initialSavedDrafts={[]} initialDrafts={[]} isLocked={false} />,
         },
         {
           id: "incomplete",
@@ -114,7 +104,7 @@ export function OnboardingQuestionsPanelStory() {
               key="incomplete"
               initialSavedDrafts={[ROLE_DRAFT]}
               initialDrafts={[ROLE_DRAFT, INCOMPLETE_DRAFT]}
-              status="setup" hasAnswers={false}
+              isLocked={false}
             />
           ),
         },
@@ -128,21 +118,7 @@ export function OnboardingQuestionsPanelStory() {
               key="locked"
               initialSavedDrafts={[ROLE_DRAFT, IDENTITY_DRAFT]}
               initialDrafts={[ROLE_DRAFT, IDENTITY_DRAFT]}
-              status="live" hasAnswers={false}
-            />
-          ),
-        },
-        {
-          id: "locked-answered",
-          label: "Locked, answered",
-          description:
-            "Still in setup, but someone has answered (say, from a flyer). Checks the read-only list and the message saying why it's locked.",
-          children: (
-            <QuestionsPanelDemo
-              key="locked-answered"
-              initialSavedDrafts={[ROLE_DRAFT, IDENTITY_DRAFT]}
-              initialDrafts={[ROLE_DRAFT, IDENTITY_DRAFT]}
-              status="setup" hasAnswers
+              isLocked
             />
           ),
         },
@@ -150,7 +126,7 @@ export function OnboardingQuestionsPanelStory() {
           id: "locked-empty",
           label: "Locked, no questions",
           description: "The session started with no questions. Checks the locked empty message.",
-          children: <QuestionsPanelDemo key="locked-empty" initialSavedDrafts={[]} initialDrafts={[]} status="live" hasAnswers={false} />,
+          children: <QuestionsPanelDemo key="locked-empty" initialSavedDrafts={[]} initialDrafts={[]} isLocked />,
         },
       ]}
     />

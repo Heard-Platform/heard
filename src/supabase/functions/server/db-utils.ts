@@ -81,18 +81,13 @@ export const upsert = async (
 export const countRecords = async (
   tableName: string,
   conditions?: Record<string, any>,
-  modifier?: (query: any) => any,
 ): Promise<number> => {
   const supabase = createClientFromEnv();
 
-  let q = supabase
+  const { count, error } = await supabase
     .from(tableName)
     .select("*", { count: "exact", head: true })
     .match(conditions || {});
-
-  if (modifier) q = modifier(q);
-
-  const { count, error } = await q;
 
   if (error) {
     console.error(`Error counting ${tableName} table:`, error);

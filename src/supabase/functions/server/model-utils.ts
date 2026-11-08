@@ -74,15 +74,6 @@ export const insertDemographicQuestion = async (question: NewRoomDemographicQues
 export const getDemographicQuestionsForEvent = async (eventId: number): Promise<DemographicQuestion[]> =>
   selectAllWithoutLimit<DemographicQuestion>("demographic_questions", { eventId }, "position");
 
-export const countDemographicAnswersForQuestionIds = async (
-  questionIds: number[],
-): Promise<number> => {
-  if (questionIds.length === 0) return 0;
-  return countRecords("demographic_answers", {}, (q: any) =>
-    q.in("questionId", questionIds),
-  );
-};
-
 export const deleteDemographicQuestionsForEvent = async (eventId: number): Promise<void> => {
   const { success, error } = await deleteRecord("demographic_questions", { eventId });
   if (!success) throw new Error(error);
