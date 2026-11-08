@@ -46,7 +46,7 @@ export function EventInviteCard({
             rel="noopener noreferrer"
             onClick={onGoToEvent}
           >
-            Go to event
+            Event page
             <ExternalLink className="size-4" aria-hidden />
           </a>
         </Button>
