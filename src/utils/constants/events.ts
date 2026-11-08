@@ -6,6 +6,8 @@ export const EVENT_SHORT_ROUTES = new Map<string, string>([
   ["gu", "14"],
 ]);
 
+export const GEORGETOWN_EVENT_ID = -999;
+
 export const GEORGETOWN_EVENT_INVITE: EventInvite = {
   headline:
     "Want to continue this conversation at a university-sponsored event?",

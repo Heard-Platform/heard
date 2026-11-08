@@ -84,6 +84,7 @@ import { ClusterMinimapStory } from "../stories/ClusterMinimap.story";
 import { EventSetupPanelStory } from "../stories/EventSetupPanel.story";
 import { EventAttendeeStory } from "../stories/EventAttendee.story";
 import { EventOnboardingStory } from "../stories/EventOnboarding.story";
+import { EventQuestionsDrawerStory } from "../stories/EventQuestionsDrawer.story";
 import { OnboardingQuestionsPanelStory } from "../stories/OnboardingQuestionsPanel.story";
 import { EventDisplayStory } from "../stories/EventDisplay.story";
 import { EventSupportViewStory } from "../stories/EventSupportView.story";
@@ -229,6 +230,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="onboarding-questions-panel">Event Onboarding Questions</TabsTrigger>
                 <TabsTrigger value="event-attendee">Event Attendee</TabsTrigger>
                 <TabsTrigger value="event-onboarding">Event Onboarding</TabsTrigger>
+                <TabsTrigger value="event-questions-drawer">
+                  Event Questions Drawer
+                </TabsTrigger>
                 <TabsTrigger value="event-display">Event Display</TabsTrigger>
                 <TabsTrigger value="event-support-view">Event Support View</TabsTrigger>
                 <TabsTrigger value="event-report">Event Report</TabsTrigger>
@@ -482,6 +486,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="event-onboarding">
                 <EventOnboardingStory />
+              </TabsContent>
+              <TabsContent value="event-questions-drawer">
+                <EventQuestionsDrawerStory />
               </TabsContent>
               <TabsContent value="event-display">
                 <EventDisplayStory />

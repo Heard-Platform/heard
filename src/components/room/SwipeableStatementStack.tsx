@@ -113,7 +113,6 @@ export function SwipeableStatementStack({
     | "chance"
     | "cover"
     | "feedback"
-    | "event-invite"
     | null
   >(null);
   const [swipeDirection, setSwipeDirection] = useState<
@@ -123,8 +122,6 @@ export function SwipeableStatementStack({
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [statementToFlag, setStatementToFlag] = useState<Statement | null>(null);
   const [isFlyerStampDone, setIsFlyerStampDone] = useState(false);
-  const [isEventInviteDismissed, setIsEventInviteDismissed] =
-    useState(false);
   const { showVoteResult } = useVoteResultSnackbar();
   const isFlyerIntro = flyerIntro !== undefined;
 
@@ -183,7 +180,7 @@ export function SwipeableStatementStack({
     demogEndIndex = insertAt + demoCards.length;
   }
 
-  if (eventInvite && !isEventInviteDismissed) {
+  if (eventInvite) {
     const inviteIndex = findEventInviteIndex(
       votedStatementIds,
       voteReveal,
@@ -311,14 +308,7 @@ export function SwipeableStatementStack({
 
   const handleKeepVoting = () => {
     api.trackEvent("event_invite_keep_voting_tapped", room.id);
-    setSwipedNoopCard("event-invite");
-    setSwipeDirection("right");
-    setTimeout(() => {
-      setIsEventInviteDismissed(true);
-      setSwipedNoopCard(null);
-      setSwipeDirection(null);
-      onKeepVoting();
-    }, CARD_EXIT_MS);
+    onKeepVoting();
   };
 
   const handleAgreeTapped = (card: Card) => {

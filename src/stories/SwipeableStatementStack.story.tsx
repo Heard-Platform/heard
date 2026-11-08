@@ -257,8 +257,8 @@ export function SwipeableStatementStackStory() {
             <p className="text-sm text-muted-foreground">
               A post in the Georgetown event. The Georgetown event
               card comes after 3 statements and can't be dragged.
-              Keep voting sends it off to the right and the deck
-              goes on. Both buttons log to the console.
+              It stays until the feed stops passing the invite.
+              Both buttons log to the console.
             </p>
             <div className="bg-slate-100 rounded-lg p-8 min-h-[600px] flex items-center justify-center">
               <SwipeableStatementStack
