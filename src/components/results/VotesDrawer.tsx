@@ -21,6 +21,7 @@ import {
 import type { Statement, VoteType, SortBy } from "../../types";
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { QRGenerationPage } from "./QRGenerationPage";
+import { createStatementShareableLink } from "../../utils/url";
 import { RenderedStatement } from "../RenderedStatement";
 
 interface VotesDrawerProps {
@@ -199,6 +200,9 @@ export function VotesDrawer({
     return 0;
   });
 
+  const handleCopyStatementLink = (statement: Statement) =>
+    navigator.clipboard.writeText(createStatementShareableLink(statement));
+
   const handleOpenQrGenerator = (statement: Statement) => {
     setIsSheetOpen(false);
     setQrDialogStatement(statement);
@@ -284,7 +288,7 @@ export function VotesDrawer({
                         size="sm"
                         variant="ghost"
                         className="h-7 w-7 p-0"
-                        onClick={() => navigator.clipboard.writeText(statement.id)}
+                        onClick={() => handleCopyStatementLink(statement)}
                       >
                         <Copy className="w-4 h-4" />
                       </Button>

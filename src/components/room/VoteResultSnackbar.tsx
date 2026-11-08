@@ -7,7 +7,7 @@ import { Share } from "lucide-react";
 import { RenderedStatement } from "../RenderedStatement";
 import { api } from "../../utils/api";
 import { share } from "../../utils/share";
-import { createShareableLink } from "../../utils/url";
+import { createStatementShareableLink } from "../../utils/url";
 import type { VoteEventType } from "../../utils/vote-result";
 import type { VoteReveal } from "../../utils/vote-reveal";
 import { VoteRevealCrowd } from "./VoteRevealCrowd";
@@ -52,7 +52,7 @@ const shareVoteReveal = async ({ statement, voteEvent }: VoteReveal) => {
   const shareCopy = voteEvent ? SHARE_COPY_BY_VOTE_EVENT[voteEvent.type] : VOTE_RESULT_SHARE_COPY;
 
   api.trackEvent(shareCopy.clickedEventName, statement.roomId);
-  const link = `${createShareableLink(statement.roomId)}?statement=${statement.id}`;
+  const link = createStatementShareableLink(statement);
   await share({
     url: link,
     title: shareCopy.title,
