@@ -89,7 +89,7 @@ export const getDemographicQuestionsForRoom = async (roomId: string) => {
 export const getDemographicQuestion = async (
   questionId: number,
 ): Promise<DemographicQuestion | undefined> => {
-  const [question] = await selectAll<DemographicQuestion>(
+  const [question] = await selectAllWithoutLimit<DemographicQuestion>(
     "demographic_questions",
     { id: questionId },
   );

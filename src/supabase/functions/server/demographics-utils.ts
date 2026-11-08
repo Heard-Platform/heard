@@ -7,9 +7,7 @@ import {
 import { RouteError } from "./route-error.ts";
 import _ from "lodash";
 
-const ROOM_ANSWERS_ERROR_MESSAGE =
-  "Pick the question's options, each once, and only one unless " +
-  "it allows several";
+const ROOM_ANSWERS_ERROR_MESSAGE = "Invalid answers provided";
 
 export const hasDuplicateAnswers = (answers: string[]): boolean =>
   new Set(answers).size !== answers.length;
@@ -35,7 +33,8 @@ export const isValidRoomAnswerList = (
 ): boolean => {
   if (!question.multiSelect && answers.length > 1) return false;
   if (hasDuplicateAnswers(answers)) return false;
-  return answers.every((answer) => isListedOption(question, answer));
+  if (answers.some((answer) => !isListedOption(question, answer))) return false;
+  return true;
 };
 
 export const saveRoomDemographicAnswers = async (
