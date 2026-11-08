@@ -1,7 +1,7 @@
 import { Context, Hono } from "npm:hono";
 import { getCommunity, getDebate } from "./kv-utils.tsx";
 import type { DebateRoom, User, VoteType } from "./types.tsx";
-import { processVote, countStatementVotes } from "./voting-utils.ts";
+import { countStatementVotes, processVote2 } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
 import { insertFlyerEmail, insertFlyerScan } from "./model-utils.ts";
 import { getUsableStatementsForRoom } from "./room-utils.ts";
@@ -71,13 +71,14 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
       userId = newUser.id;
     }
 
-    const result = await processVote(
+    const result = await processVote2({
       statementId,
       userId,
-      vote as VoteType,
-      { flyerId, flyerGroup },
-      true,
-    );
+      voteType: vote as VoteType,
+      flyerSource: { flyerId, flyerGroup },
+      allowIdempotent: true,
+      skipsEventVotingCheck: true,
+    });
 
     if (!result.success) {
       return c.json(
