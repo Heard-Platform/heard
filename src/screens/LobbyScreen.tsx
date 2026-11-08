@@ -6,6 +6,7 @@ import type {
   UserPresence, SubHeard,
   Event,
   SwipeSixItem,
+  SubmitStatementOptions,
 } from "../types";
 import { EventView } from "../components/events/EventView";
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -53,6 +54,7 @@ interface LobbyScreenProps {
   onSubmitStatement: (
     roomId: string,
     text: string,
+    options?: SubmitStatementOptions,
   ) => Promise<any>;
   onVoteOnStatement: (
     statement: Statement,
@@ -231,6 +233,9 @@ export function LobbyScreen({
 
     return () => clearInterval(pollInterval);
   }, []);
+
+  const handleSubmitStatementFromFeed = (roomId: string, text: string) =>
+    onSubmitStatement(roomId, text, { isStatementFromFeed: true });
 
   const handleUpdatePresence = async (
     currentRoomIndex: number,
@@ -468,7 +473,7 @@ export function LobbyScreen({
               targetStatementId={targetStatementId}
               presences={presences}
               onCreateRoom={handleOpenCreateSheetComposing}
-              onSubmitStatement={onSubmitStatement}
+              onSubmitStatement={handleSubmitStatementFromFeed}
               onVoteOnStatement={onVoteOnStatement}
               onDiscussStatement={handleDiscussStatement}
               onUpdatePresence={handleUpdatePresence}

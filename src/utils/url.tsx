@@ -182,6 +182,11 @@ export const createShareableLink = (roomId: string): string => {
   return `${baseUrl}/room/${roomId}`
 }
 
+export const createStatementShareableLink = (
+  statement: { id: string; roomId: string },
+): string =>
+  `${createShareableLink(statement.roomId)}?statement=${statement.id}`
+
 export const createAnalysisLink = (roomId: string): string => {
   if (typeof window === "undefined") return "";
   return `${createShareableLink(roomId)}?analysis=${roomId}`;

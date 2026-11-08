@@ -599,6 +599,10 @@ export type VoteOnStatementOptions = {
   isVoteFromFeed?: boolean;
 };
 
+export type SubmitStatementOptions = {
+  isStatementFromFeed?: boolean;
+};
+
 export type Cover = {
   type: CoverType;
   url: string;

@@ -448,7 +448,7 @@ export const saveDebateRoom = async (room: DebateRoom) => {
 
 export const getActiveRooms = async (): Promise<DebateRoom[]> => {
   const allRooms = await getAllDebates();
-  return allRooms.filter((r) => r.isActive && !r.eventId);
+  return allRooms.filter((r) => r.isActive);
 };
 
 
@@ -594,7 +594,7 @@ app.post(
     try {
       const userId = c.get("userId");
       const roomId = c.req.param("roomId") as string;
-      const { text } = await c.req.json();
+      const { text, isStatementFromFeed } = await c.req.json();
 
       if (!text || text.length < 1 || text.length > 500) {
         return c.json(
@@ -631,9 +631,11 @@ app.post(
         return c.json({ error: "User session not found" }, 404);
       }
 
-      const canPost = await checkEventPosting(room, user);
-      if (!canPost.allowed) {
-        return c.json({ error: canPost.error }, 423);
+      if (isStatementFromFeed !== true) {
+        const canPost = await checkEventPosting(room, user);
+        if (!canPost.allowed) {
+          return c.json({ error: canPost.error }, 423);
+        }
       }
 
       if (user.isAnonymous && !room.allowAnonymous) {

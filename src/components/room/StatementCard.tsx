@@ -15,7 +15,7 @@ import {
 import { useDebateSession } from "../../hooks/useDebateSession";
 import { getTotalVotes } from "../../utils/votes";
 import { share } from "../../utils/share";
-import { createShareableLink } from "../../utils/url";
+import { createStatementShareableLink } from "../../utils/url";
 import { YouTubeAudioEmbed } from "./YouTubeAudioEmbed";
 import { extractYouTubeVideoId } from "../../utils/youtube-utils";
 import { VoteButtonRow } from "../VoteButton";
@@ -123,7 +123,7 @@ export function StatementCard({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                const link = `${createShareableLink(statement.roomId)}?statement=${statement.id}`;
+                const link = createStatementShareableLink(statement);
                 share({
                   url: link,
                   title: "Come vote on this",
