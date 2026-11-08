@@ -112,11 +112,6 @@ export interface AttendeeOnboarding {
   answeredQuestionIds: string[];
 }
 
-export interface EventOnboardingQuestionList {
-  questions: DemographicQuestion[];
-  hasAnswers: boolean;
-}
-
 export type EventOnboardingQuestionDraft = EventOnboardingQuestionInput & { draftId: string };
 
 export type NewDemographicQuestion =
