@@ -41,6 +41,7 @@ import {
   type LiveEventView,
   type DemographicQuestion,
   type EventOnboardingQuestionInput,
+  type EventOnboardingQuestionList,
   type AttendeeOnboarding,
   type SupportViewStats,
   type EventReport,
@@ -246,8 +247,10 @@ class ApiClient extends BaseApiClient {
 
   async getEventOnboardingQuestions(
     eventId: string,
-  ): Promise<ApiResponse<{ questions: DemographicQuestion[] }>> {
-    return this.request<{ questions: DemographicQuestion[] }>(`/event/${eventId}/onboarding/questions`);
+  ): Promise<ApiResponse<EventOnboardingQuestionList>> {
+    return this.request<EventOnboardingQuestionList>(
+      `/event/${eventId}/onboarding/questions`,
+    );
   }
 
   async getAttendeeOnboarding(

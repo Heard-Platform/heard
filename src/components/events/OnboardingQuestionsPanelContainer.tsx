@@ -20,6 +20,7 @@ export function OnboardingQuestionsPanelContainer({ eventId, status }: Onboardin
   const [savedQuestionDrafts, setSavedQuestionDrafts] = useState<EventOnboardingQuestionDraft[] | null>(null);
   const [questionDrafts, setQuestionDrafts] = useState<EventOnboardingQuestionDraft[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [hasAnswers, setHasAnswers] = useState(false);
 
   function showSavedQuestions(questions: DemographicQuestion[]) {
     const drafts = toEventOnboardingQuestionDrafts(questions);
@@ -33,6 +34,7 @@ export function OnboardingQuestionsPanelContainer({ eventId, status }: Onboardin
       if (cancelled) return;
       if (response.success && response.data) {
         showSavedQuestions(response.data.questions);
+        setHasAnswers(response.data.hasAnswers);
       } else {
         toast.error(response.error || "Couldn't load the onboarding questions");
       }
@@ -59,7 +61,8 @@ export function OnboardingQuestionsPanelContainer({ eventId, status }: Onboardin
   return (
     <OnboardingQuestionsPanel
       questionDrafts={questionDrafts}
-      isLocked={status !== "setup"}
+      status={status}
+      hasAnswers={hasAnswers}
       isSaving={isSaving}
       hasUnsavedChanges={haveEventOnboardingQuestionsChanged(questionDrafts, savedQuestionDrafts)}
       canSave={canSaveEventOnboardingQuestions(questionDrafts)}

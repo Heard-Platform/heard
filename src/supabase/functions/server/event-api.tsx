@@ -34,7 +34,7 @@ import { RouteError } from "./route-error.ts";
 import {
   isValidOnboardingQuestionList,
   loadAttendeeOnboarding,
-  loadEventOnboardingQuestions,
+  loadEventOnboardingQuestionList,
   ONBOARDING_QUESTIONS_ERROR_MESSAGE,
   replaceEventOnboardingQuestions,
   saveEventDemographicAnswer,
@@ -389,9 +389,8 @@ app.get(
   "/make-server-f1a393b4/event/:eventId/onboarding/questions",
   defineRoute(
     { eventId: EVENT_ID_PARAM_SCHEMA },
-    async ({ eventId }: { eventId: string }) => ({
-      questions: await loadEventOnboardingQuestions(Number(eventId)),
-    }),
+    async ({ eventId }: { eventId: string }) =>
+      loadEventOnboardingQuestionList(Number(eventId)),
     "Failed to load onboarding questions",
   ),
 );
