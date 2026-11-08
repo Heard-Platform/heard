@@ -8,6 +8,7 @@ import {
   OPT_OUT_ANSWER,
   requireEventDoorsOpen,
   requireEventInSetup,
+  requireQuestionsUnanswered,
   toEventDemographicQuestionRows,
 } from "./event-onboarding-utils.ts";
 import { defaultLiveEventState } from "./live-event-utils.ts";
@@ -92,6 +93,21 @@ Deno.test("toEventDemographicQuestionRows - trims text and drops blank options",
   assertEquals(row.text, "Are you a...");
   assertEquals(row.options, ["Student", "Faculty"]);
 });
+
+Deno.test("requireQuestionsUnanswered - allows no answers", () => {
+  requireQuestionsUnanswered(0);
+});
+
+Deno.test(
+  "requireQuestionsUnanswered - blocks once anyone answered",
+  () => {
+    const error = assertThrows(
+      () => requireQuestionsUnanswered(1),
+      RouteError,
+    );
+    assertEquals(error.status, 409);
+  },
+);
 
 Deno.test("requireEventInSetup - allows changes before Start", () => {
   requireEventInSetup(defaultLiveEventState(NOW));

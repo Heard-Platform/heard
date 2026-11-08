@@ -217,6 +217,11 @@ export interface EventOnboardingQuestionInput {
   multiSelect: boolean;
 }
 
+export interface EventOnboardingQuestionList {
+  questions: DemographicQuestion[];
+  hasAnswers: boolean;
+}
+
 export interface AttendeeOnboarding {
   questions: DemographicQuestion[];
   answeredQuestionIds: number[];
