@@ -29,6 +29,7 @@ import {
   type DebateRoom,
   type NewDebateRoom,
   type RoomEdits,
+  type VoteOnStatementOptions,
   type VoteType,
   EnrichmentConfig,
   ClusterNamingConfig,
@@ -466,6 +467,7 @@ class ApiClient extends BaseApiClient {
   async voteOnStatement(
     statementId: string,
     voteType: "agree" | "disagree" | "pass" | "super_agree",
+    { isVoteFromFeed = false }: VoteOnStatementOptions = {},
   ) {
     type VoteResponse = {
       statement: Statement;
@@ -475,7 +477,7 @@ class ApiClient extends BaseApiClient {
     };
     return this.request<VoteResponse>(`/statement/${statementId}/vote`, {
       method: "POST",
-      body: JSON.stringify({ voteType }),
+      body: JSON.stringify({ voteType, isVoteFromFeed }),
     });
   }
 

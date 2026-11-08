@@ -135,6 +135,7 @@ export const processVote = async (
   voteType: VoteType,
   flyerSource?: FlyerSource,
   allowIdempotent = false,
+  skipsEventVotingCheck = false,
 ): Promise<ProcessVoteResult> => {
   if (
     !["agree", "disagree", "pass", "super_agree"].includes(voteType)
@@ -173,9 +174,11 @@ export const processVote = async (
     return { success: false, error: "Debate room not found" };
   }
 
-  const canVote = await checkEventVoting(room);
-  if (!canVote.allowed) {
-    return { success: false, error: canVote.error, status: 423 };
+  if (!skipsEventVotingCheck) {
+    const canVote = await checkEventVoting(room);
+    if (!canVote.allowed) {
+      return { success: false, error: canVote.error, status: 423 };
+    }
   }
 
   if (user.isAnonymous && !room.allowAnonymous) {

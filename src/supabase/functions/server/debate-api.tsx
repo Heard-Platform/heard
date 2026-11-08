@@ -835,9 +835,16 @@ app.post(
     try {
       const userId = c.get("userId");
       const statementId = c.req.param("statementId") as string;
-      const { voteType } = await c.req.json();
+      const { voteType, isVoteFromFeed } = await c.req.json();
 
-      const result = await processVote(statementId, userId, voteType);
+      const result = await processVote(
+        statementId,
+        userId,
+        voteType,
+        undefined,
+        false,
+        isVoteFromFeed === true,
+      );
 
       if (result.success) {
         return c.json(result);
