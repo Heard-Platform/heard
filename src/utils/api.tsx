@@ -30,6 +30,7 @@ import {
   type NewDebateRoom,
   type RoomEdits,
   type VoteOnStatementOptions,
+  type SubmitStatementOptions,
   type VoteType,
   EnrichmentConfig,
   ClusterNamingConfig,
@@ -440,10 +441,11 @@ class ApiClient extends BaseApiClient {
   async submitStatement(
     roomId: string,
     text: string,
+    { isStatementFromFeed = false }: SubmitStatementOptions = {},
   ) {
     return this.request(`/room/${roomId}/statement`, {
       method: "POST",
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, isStatementFromFeed }),
     });
   }
 

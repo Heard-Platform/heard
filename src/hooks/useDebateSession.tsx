@@ -10,6 +10,7 @@ import type {
   NewDebateRoom,
   RoomEdits,
   VoteOnStatementOptions,
+  SubmitStatementOptions,
   Statement,
   StatementMerge,
   StatementTag,
@@ -70,7 +71,11 @@ interface DebateSessionContextType {
   subscribeToUpdates: () => Promise<void>;
   createRoom: (newDebate: NewDebateRoom) => Promise<DebateRoom>;
   createEvent: (newEvent: NewEvent) => Promise<EventSummary>;
-  submitStatement: (roomId: string, text: string) => Promise<any>;
+  submitStatement: (
+    roomId: string,
+    text: string,
+    options?: SubmitStatementOptions,
+  ) => Promise<any>;
   voteOnStatement: (
     statementId: string,
     voteType: VoteType,
@@ -390,7 +395,11 @@ export function DebateSessionProvider(
 
   // Submit statement
   const submitStatement = useCallback(
-    async (roomId: string, text: string) => {
+    async (
+      roomId: string,
+      text: string,
+      options: SubmitStatementOptions = {},
+    ) => {
       if (!user) {
         throw new Error(
           "User must be logged in to submit a statement",
@@ -401,6 +410,7 @@ export function DebateSessionProvider(
       const response = await api.submitStatement(
         roomId,
         text,
+        options,
       );
 
       if (response.success && response.data) {
