@@ -441,7 +441,7 @@ function AppContent() {
       const clubFlyerMatch = pathname.match(/^\/club-(yes|no)/);
       const isClubRoute = /^\/club\/?$/.test(pathname);
       const isFinalRoute = /^\/final\/?$/.test(pathname);
-      const shortRouteRoomId = ROOM_SHORT_ROUTES.get(route);
+      const shortRouteRoomId = ROOM_SHORT_ROUTES.get(route.toLowerCase());
 
       const roomIdFromUrl = parseRoomIdFromUrl();
       const linkSourceFromUrl = parseLinkSourceFromUrl();
