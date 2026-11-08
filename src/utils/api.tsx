@@ -28,6 +28,7 @@ import {
   NewAnalyticsEvent,
   type DebateRoom,
   type NewDebateRoom,
+  type RoomEdits,
   type VoteType,
   EnrichmentConfig,
   ClusterNamingConfig,
@@ -1164,12 +1165,7 @@ class ApiClient extends BaseApiClient {
 
   async updateRoom(
     roomId: string,
-    updates: {
-      topic?: string;
-      description?: string;
-      imageUrl?: string;
-      endTime?: number;
-    },
+    updates: RoomEdits,
   ) {
     return this.request<{ room: DebateRoom }>(
       `/room/${roomId}/mod/edit`,

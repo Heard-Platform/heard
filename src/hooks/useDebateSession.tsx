@@ -8,6 +8,7 @@ import type {
   UserSession,
   DebateRoom,
   NewDebateRoom,
+  RoomEdits,
   Statement,
   StatementMerge,
   StatementTag,
@@ -112,12 +113,7 @@ interface DebateSessionContextType {
   createScalabilityTest: () => Promise<any>;
   updateRoom: (
     roomId: string,
-    updates: {
-      topic?: string;
-      description?: string;
-      imageUrl?: string;
-      endTime?: number;
-    },
+    updates: RoomEdits,
   ) => Promise<ApiResponse<{ room: DebateRoom }> | null>;
   restartRoom: (
     roomId: string,
@@ -775,12 +771,7 @@ export function DebateSessionProvider(
   const updateRoom = useCallback(
     (
       roomId: string,
-      updates: {
-        topic?: string;
-        description?: string;
-        imageUrl?: string;
-        endTime?: number;
-      },
+      updates: RoomEdits,
     ) => callRoomMutation(() => api.updateRoom(roomId, updates)),
     [callRoomMutation],
   );

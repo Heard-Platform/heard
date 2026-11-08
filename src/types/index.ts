@@ -584,6 +584,17 @@ export type NewDebateRoom = Pick<
   demographicQuestions: NewDemographicQuestion[];
 };
 
+export type RoomEdits = Partial<
+  Pick<
+    DebateRoom,
+    | "topic"
+    | "description"
+    | "requiresStatementApproval"
+    | "imageUrl"
+    | "endTime"
+  >
+>;
+
 export type Cover = {
   type: CoverType;
   url: string;

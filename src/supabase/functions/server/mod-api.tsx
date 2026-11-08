@@ -248,14 +248,23 @@ app.post(
       roomId: { type: "string", required: true },
       topic: { type: "string" },
       description: { type: "string" },
+      requiresStatementApproval: { type: "boolean" },
       imageUrl: { type: "string" },
       endTime: { type: "number" },
     },
     async (
-      { roomId, topic, description, imageUrl, endTime }: {
+      {
+        roomId,
+        topic,
+        description,
+        requiresStatementApproval,
+        imageUrl,
+        endTime,
+      }: {
         roomId: string;
         topic?: string;
         description?: string;
+        requiresStatementApproval?: boolean;
         imageUrl?: string;
         endTime?: number;
       },
@@ -271,6 +280,9 @@ app.post(
 
       if (topic !== undefined) room.topic = topic;
       if (description !== undefined) room.description = description;
+      if (requiresStatementApproval !== undefined) {
+        room.requiresStatementApproval = requiresStatementApproval;
+      }
       if (imageUrl !== undefined) room.imageUrl = imageUrl;
       if (endTime !== undefined) room.endTime = endTime;
 
