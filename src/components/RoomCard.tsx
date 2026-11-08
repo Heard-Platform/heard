@@ -43,6 +43,11 @@ import { pluralizePerson } from "../utils/text";
 import { FeedCardMotion } from "./FeedCardMotion";
 import { RollingNumber } from "./widgets/RollingNumber";
 import { RoomProgressBar } from "./room/RoomProgressBar";
+import { EventQuestionsDrawer } from "./room/EventQuestionsDrawer";
+import {
+  GEORGETOWN_EVENT_ID,
+  GEORGETOWN_EVENT_INVITE,
+} from "../utils/constants/events";
 
 interface RoomCardProps {
   room: DebateRoom;
@@ -91,6 +96,8 @@ export function RoomCard({
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [coverCardSwiped, setCoverCardSwiped] = useState(room.coverCardSwiped || false);
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
+  const [isEventQuestionsDrawerOpen, setIsEventQuestionsDrawerOpen] =
+    useState(false);
 
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
@@ -108,7 +115,11 @@ export function RoomCard({
   const [pendingVoteBump, setPendingVoteBump] = useState(0);
   const [isTripwireOpen, setIsTripwireOpen] = useState(false);
   const [votedThisVisit, setVotedThisVisit] = useState(false);
-  const { markChanceCardSwiped, markCoverCardSwiped } = useDebateSession();
+  const {
+    markChanceCardSwiped,
+    markCoverCardSwiped,
+    saveDemographicAnswers,
+  } = useDebateSession();
   const { pickFeedbackForRoom, recordVote } = useFeedbackCardsContext();
 
   const feedbackStatement =
@@ -284,6 +295,28 @@ export function RoomCard({
   const handleDemographicsAnswered = (questionId: string) => {
     setAnsweredQuestionIds((prev) => new Set(prev).add(questionId));
   }
+
+  const hasUnansweredQuestions = room.demographicQuestions.some(
+    (question) => !answeredQuestionIds.has(question.id),
+  );
+  const isGeorgetownPost = room.eventId === GEORGETOWN_EVENT_ID;
+  const eventInvite =
+    isGeorgetownPost && hasUnansweredQuestions
+      ? GEORGETOWN_EVENT_INVITE
+      : undefined;
+
+  const handleKeepVoting = () => setIsEventQuestionsDrawerOpen(true);
+
+  const handleEventQuestionAnswered = (
+    questionId: string,
+    answers: string[],
+  ) => {
+    saveDemographicAnswers(questionId, answers);
+    handleDemographicsAnswered(questionId);
+  };
+
+  const handleCloseEventQuestionsDrawer = () =>
+    setIsEventQuestionsDrawerOpen(false);
 
   // Handle statement submission
   const handleSubmitStatement = async (text: string) => {
@@ -488,8 +521,10 @@ export function RoomCard({
                     onCoverCardSwiped={handleSwipeCoverCard}
                     onDemographicsAnswered={handleDemographicsAnswered}
                     feedbackStatement={feedbackStatement}
+                    eventInvite={eventInvite}
                     onFeedbackVoted={handleVoted}
                     onFeedbackTellMore={handleTellMore}
+                    onKeepVoting={handleKeepVoting}
                   />
                 );
               }
@@ -632,6 +667,14 @@ export function RoomCard({
         showTrigger={false}
         onChangeVote={handleChangeVote}
         onOpenChange={setShowVotesDrawer}
+      />
+
+      <EventQuestionsDrawer
+        isOpen={isEventQuestionsDrawerOpen}
+        questions={room.demographicQuestions}
+        answeredQuestionIds={[...answeredQuestionIds]}
+        onAnswer={handleEventQuestionAnswered}
+        onClose={handleCloseEventQuestionsDrawer}
       />
 
       <AddResponseModal

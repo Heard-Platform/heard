@@ -92,6 +92,7 @@ export function MusicLeagueCardStackStory() {
           feedbackStatement={null}
           onFeedbackVoted={() => {}}
           onFeedbackTellMore={() => {}}
+          onKeepVoting={() => {}}
         />
       </div>
       {log.length > 0 && (

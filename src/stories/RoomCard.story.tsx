@@ -7,6 +7,8 @@ import { Toaster } from "../components/ui/sonner";
 import { DebateSessionProvider } from "../hooks/useDebateSession";
 import { FeedbackCardsProvider } from "../contexts/FeedbackCardsContext";
 import type { Statement, VoteType, UserSession } from "../types";
+import { GEORGETOWN_EVENT_ID } from "../utils/constants/events";
+import { CAMPUS_EVENT_QUESTIONS } from "./EventOnboarding.story";
 
 const mockUser: UserSession = {
   id: "story-user",
@@ -95,6 +97,12 @@ const noCoverStatements: Statement[] = [
     round: 1,
   },
 ];
+
+const georgetownEventRoom = {
+  ...noCoverRoom,
+  eventId: GEORGETOWN_EVENT_ID,
+  demographicQuestions: CAMPUS_EVENT_QUESTIONS,
+};
 
 const markVotedByStoryUser = (statement: Statement): Statement => ({
   ...statement,
@@ -237,6 +245,18 @@ export function RoomCardStory() {
             children: (
               <RoomCardWrapper
                 room={noCoverRoom}
+                statements={noCoverStatements}
+              />
+            ),
+          },
+          {
+            id: "georgetown-event-post",
+            label: "Georgetown event post",
+            description:
+              "A post in the Georgetown event with 5 unanswered event questions. The event card comes after 3 statements and can't be dragged. Keep voting opens the questions drawer with the card still underneath. Drag the drawer down early: the card stays, and Keep voting resumes at the first unanswered question. Finish every question: the end screen shows, and after Back to voting the card is gone and the deck goes on. Answers log to the console.",
+            children: (
+              <RoomCardWrapper
+                room={georgetownEventRoom}
                 statements={noCoverStatements}
               />
             ),

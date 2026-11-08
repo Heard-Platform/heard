@@ -12,6 +12,7 @@ import {
   TabsTrigger,
 } from "../components/ui/tabs";
 import { mockRooms, withVotersFromCounts } from "./mockData";
+import { GEORGETOWN_EVENT_INVITE } from "../utils/constants/events";
 
 const statementsWithoutVoters: Statement[] = [
   {
@@ -115,6 +116,8 @@ const statementsWithoutVoters: Statement[] = [
 
 const mockStatements = statementsWithoutVoters.map(withVotersFromCounts);
 
+const logKeepVoting = () => console.log("[Story] keep voting");
+
 export function SwipeableStatementStackStory() {
   const [chanceCardSwiped, setChanceCardSwiped] = useState(false);
   const [coverCardSwiped, setCoverCardSwiped] = useState(false);
@@ -177,6 +180,7 @@ export function SwipeableStatementStackStory() {
         <TabsList className="mb-6">
           <TabsTrigger value="stack">Swipeable Stack</TabsTrigger>
           <TabsTrigger value="chance-card">Chance Card Only</TabsTrigger>
+          <TabsTrigger value="event-post">Event Post</TabsTrigger>
         </TabsList>
 
         <TabsContent value="stack">
@@ -242,6 +246,44 @@ export function SwipeableStatementStackStory() {
                 feedbackStatement={null}
                 onFeedbackVoted={() => {}}
                 onFeedbackTellMore={() => {}}
+                onKeepVoting={() => {}}
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="event-post">
+          <div className="space-y-6">
+            <p className="text-sm text-muted-foreground">
+              A post in the Georgetown event. The Georgetown event
+              card comes after 3 statements and can't be dragged.
+              It stays until the feed stops passing the invite.
+              Both buttons log to the console.
+            </p>
+            <div className="bg-slate-100 rounded-lg p-8 min-h-[600px] flex items-center justify-center">
+              <SwipeableStatementStack
+                room={storyRoom}
+                statements={mockStatements}
+                currentUserId="story-user"
+                allowAnonymous={true}
+                isAnonymous={false}
+                chanceCardSwiped={true}
+                cover={null}
+                coverCardSwiped={true}
+                demographicQuestions={[]}
+                answeredQuestionIds={new Set()}
+                eventInvite={GEORGETOWN_EVENT_INVITE}
+                onVote={handleVote}
+                onSubmitStatement={handleSubmitStatement}
+                onShowAccountSetupModal={() => {}}
+                onChanceCardSwiped={handleChanceCardSwiped}
+                onCoverCardSwiped={handleCoverCardSwiped}
+                onCertifyDone={async () => {}}
+                onDemographicsAnswered={async () => {}}
+                feedbackStatement={null}
+                onFeedbackVoted={() => {}}
+                onFeedbackTellMore={() => {}}
+                onKeepVoting={logKeepVoting}
               />
             </div>
           </div>

@@ -73,14 +73,6 @@ const STORY_STATEMENTS = [
 const flyerIntroFor = (vote: StampedVote): FlyerIntro => ({
   statement: FLYER_STATEMENT,
   vote,
-  invite: {
-    headline:
-      "Want to continue this conversation at a university-sponsored event?",
-    details: "Thursday, November 12, on campus.",
-    imageUrl:
-      "https://jzwmuyflifxsuclhphux.supabase.co/storage/v1/object/public/public-hosting/peace-panel-event.jpeg",
-    registrationUrl: "http://tinyurl.com/Nov12-SHIFT",
-  },
 });
 
 const logVote = async (statement: Statement, voteType: VoteType) =>

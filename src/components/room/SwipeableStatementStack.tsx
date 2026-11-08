@@ -8,6 +8,7 @@ import {
   type CoverCard,
   type DemographicsCard,
   type FlyerIntro,
+  type EventInvite,
   type DebateRoom,
   DemographicQuestion,
   FullCoverData,
@@ -41,6 +42,7 @@ interface SwipeableStatementStackProps {
   targetStatementId?: string;
   feedbackStatement: FeedbackStatement | null;
   flyerIntro?: FlyerIntro;
+  eventInvite?: EventInvite;
   onVote: (
     statement: Statement,
     voteType: VoteType,
@@ -53,11 +55,11 @@ interface SwipeableStatementStackProps {
   onDemographicsAnswered: (questionId: string) => void;
   onFeedbackVoted: (statement: FeedbackStatement, vote: VoteType) => void;
   onFeedbackTellMore: (statement: FeedbackStatement) => void;
-  onKeepVoting?: () => void;
+  onKeepVoting: () => void;
 }
 
 const SWIPE_THRESHOLD = 100;
-const STATEMENTS_BEFORE_EVENT_INVITE = 2;
+const STATEMENTS_BEFORE_EVENT_INVITE = 3;
 const FLYER_REVEAL_HOLD_MS = 1500;
 const CARD_EXIT_MS = 300;
 
@@ -83,6 +85,7 @@ export function SwipeableStatementStack({
   targetStatementId,
   feedbackStatement,
   flyerIntro,
+  eventInvite,
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
@@ -105,7 +108,13 @@ export function SwipeableStatementStack({
   const [swipedCardId, setSwipedCardId] = useState<
     string | null
   >(null);
-  const [swipedNoopCard, setSwipedNoopCard] = useState<"certify" | "chance" | "cover" | "feedback" | null>(null);
+  const [swipedNoopCard, setSwipedNoopCard] = useState<
+    | "certify"
+    | "chance"
+    | "cover"
+    | "feedback"
+    | null
+  >(null);
   const [swipeDirection, setSwipeDirection] = useState<
     "left" | "right" | "down" | "up" | null
   >(null);
@@ -156,7 +165,7 @@ export function SwipeableStatementStack({
   }));
 
   let demogEndIndex = 0;
-  if (demographicQuestions && !isFlyerIntro) {
+  if (demographicQuestions && !isFlyerIntro && !eventInvite) {
     const unansweredDemos = demographicQuestions.filter(
       (q) => !answeredQuestionIds.has(q.id),
     );
@@ -169,6 +178,20 @@ export function SwipeableStatementStack({
     const insertAt = Math.min(3, cards.length);
     cards.splice(insertAt, 0, ...demoCards);
     demogEndIndex = insertAt + demoCards.length;
+  }
+
+  if (eventInvite) {
+    const inviteIndex = findEventInviteIndex(
+      votedStatementIds,
+      voteReveal,
+      isFlyerIntro,
+      cards.length,
+    );
+    cards.splice(inviteIndex, 0, {
+      type: "event-invite",
+      invite: eventInvite,
+      isUndraggable: true,
+    });
   }
 
   if (
@@ -199,31 +222,13 @@ export function SwipeableStatementStack({
     cards.push(certifyCard);
   }
 
-  if (flyerIntro) {
-    const isRevealingStatementVote =
-      voteReveal !== null &&
-      voteReveal.statement.id !== flyerIntro.statement.id;
-    const statementsLeftDeck =
-      votedStatementIds.size - (isRevealingStatementVote ? 1 : 0);
-    const statementsBeforeInvite = Math.max(
-      STATEMENTS_BEFORE_EVENT_INVITE - statementsLeftDeck,
-      0,
-    );
-    const inviteIndex = Math.min(statementsBeforeInvite, cards.length);
-    cards.splice(inviteIndex, 0, {
-      type: "event-invite",
-      invite: flyerIntro.invite,
+  if (flyerIntro && !isFlyerStampDone) {
+    cards.unshift({
+      type: "statement",
+      statement: flyerIntro.statement,
+      stampedVote: flyerIntro.vote,
       isUndraggable: true,
     });
-
-    if (!isFlyerStampDone) {
-      cards.unshift({
-        type: "statement",
-        statement: flyerIntro.statement,
-        stampedVote: flyerIntro.vote,
-        isUndraggable: true,
-      });
-    }
   }
 
   const hasMoreCards = cards.length > 0;
@@ -298,12 +303,12 @@ export function SwipeableStatementStack({
   };
 
   const handleGoToEvent = () => {
-    api.trackEvent("flyer_invite_event_tapped", room.id);
+    api.trackEvent("event_invite_event_tapped", room.id);
   };
 
   const handleKeepVoting = () => {
-    api.trackEvent("flyer_invite_keep_voting_tapped", room.id);
-    onKeepVoting?.();
+    api.trackEvent("event_invite_keep_voting_tapped", room.id);
+    onKeepVoting();
   };
 
   const handleAgreeTapped = (card: Card) => {
@@ -613,4 +618,25 @@ export function SwipeableStatementStack({
       />
     </div>
   );
+}
+
+function findEventInviteIndex(
+  votedStatementIds: Set<string>,
+  voteReveal: VoteReveal | null,
+  hasFlyerStatement: boolean,
+  cardCount: number,
+): number {
+  const isRevealingVotedStatement =
+    voteReveal !== null &&
+    votedStatementIds.has(voteReveal.statement.id);
+  const statementsLeftDeck =
+    votedStatementIds.size - (isRevealingVotedStatement ? 1 : 0);
+  const flyerStatementCount = hasFlyerStatement ? 1 : 0;
+  const statementsStillBeforeInvite = Math.max(
+    STATEMENTS_BEFORE_EVENT_INVITE -
+      flyerStatementCount -
+      statementsLeftDeck,
+    0,
+  );
+  return Math.min(statementsStillBeforeInvite, cardCount);
 }

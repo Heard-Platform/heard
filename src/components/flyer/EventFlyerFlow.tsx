@@ -6,6 +6,7 @@ import type {
   Statement,
   VoteType,
 } from "../../types";
+import { GEORGETOWN_EVENT_INVITE } from "../../utils/constants/events";
 import { HeardWordmark } from "../HeardWordmark";
 import { EventOnboarding } from "../events/attendee/EventOnboarding";
 import { RoomProgressBar } from "../room/RoomProgressBar";
@@ -99,6 +100,7 @@ export function EventFlyerFlow({
         answeredQuestionIds={new Set()}
         feedbackStatement={null}
         flyerIntro={flyerIntro}
+        eventInvite={GEORGETOWN_EVENT_INVITE}
         onVote={handleVote}
         onSubmitStatement={onSubmitStatement}
         onShowAccountSetupModal={onShowAccountSetupModal}

@@ -335,6 +335,7 @@ function DemoSection() {
               feedbackStatement={null}
               onFeedbackVoted={() => {}}
               onFeedbackTellMore={() => {}}
+              onKeepVoting={() => {}}
             />
           )}
         </div>
