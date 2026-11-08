@@ -1,6 +1,7 @@
 import { getCommunity, getLiveEventState } from "./kv-utils.tsx";
 import { canModerateEvent, eventStateOrDefault } from "./live-event-utils.ts";
 import {
+  countDemographicAnswersForQuestionIds,
   deleteDemographicQuestionsForEvent,
   getAttendeeAnswers,
   getDemographicQuestionsForEvent,
@@ -19,6 +20,7 @@ import type {
   DemographicQuestion,
   Event,
   EventOnboardingQuestionInput,
+  EventOnboardingQuestionList,
   LiveEventState,
   NewEventDemographicQuestion,
 } from "./types.tsx";
@@ -72,6 +74,24 @@ export const requireEventInSetup = (state: LiveEventState): void => {
   }
 };
 
+export const requireQuestionsUnanswered = (
+  answerCount: number,
+): void => {
+  if (answerCount > 0) {
+    throw new RouteError(
+      "Onboarding questions can't change once someone has answered them",
+      409,
+    );
+  }
+};
+
+const countAnswersToQuestions = (
+  questions: DemographicQuestion[],
+): Promise<number> =>
+  countDemographicAnswersForQuestionIds(
+    questions.map((question) => question.id),
+  );
+
 const requireCanModerateEvent = async (event: Event, userId: string | undefined): Promise<void> => {
   const community = await getCommunity(event.communityName);
   if (!userId || !canModerateEvent(userId, event, community)) {
@@ -84,6 +104,14 @@ export const loadEventOnboardingQuestions = async (eventId: number): Promise<Dem
   return getDemographicQuestionsForEvent(eventId);
 };
 
+export const loadEventOnboardingQuestionList = async (
+  eventId: number,
+): Promise<EventOnboardingQuestionList> => {
+  const questions = await loadEventOnboardingQuestions(eventId);
+  const answerCount = await countAnswersToQuestions(questions);
+  return { questions, hasAnswers: answerCount > 0 };
+};
+
 export const replaceEventOnboardingQuestions = async (
   eventId: number,
   userId: string | undefined,
@@ -92,6 +120,11 @@ export const replaceEventOnboardingQuestions = async (
   const event = await getEventOrThrow(eventId);
   await requireCanModerateEvent(event, userId);
   requireEventInSetup(eventStateOrDefault(await getLiveEventState(eventId), Date.now()));
+  const savedQuestions =
+    await getDemographicQuestionsForEvent(eventId);
+  requireQuestionsUnanswered(
+    await countAnswersToQuestions(savedQuestions),
+  );
 
   await deleteDemographicQuestionsForEvent(eventId);
   await insertEventDemographicQuestions(toEventDemographicQuestionRows(eventId, questions));

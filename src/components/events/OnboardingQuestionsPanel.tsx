@@ -1,5 +1,8 @@
 import { ChevronDown, ChevronUp, ClipboardList, Plus } from "lucide-react";
-import type { EventOnboardingQuestionDraft } from "../../types";
+import type {
+  EventOnboardingQuestionDraft,
+  LiveEventStatus,
+} from "../../types";
 import {
   createBlankEventOnboardingQuestionDraft,
   EVENT_ONBOARDING_MINIMUM_OPTION_COUNT,
@@ -13,9 +16,19 @@ import { Card } from "../ui/card";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
 
+function buildPanelDescription(
+  hasDoorsOpened: boolean,
+  hasAnswers: boolean,
+): string {
+  if (hasDoorsOpened) return "Locked once the doors open.";
+  if (hasAnswers) return "Locked because someone has already answered.";
+  return `Attendees answer these when they join, before voting. "${OPT_OUT_ANSWER}" is added to every question.`;
+}
+
 interface OnboardingQuestionsPanelProps {
   questionDrafts: EventOnboardingQuestionDraft[];
-  isLocked: boolean;
+  status: LiveEventStatus;
+  hasAnswers: boolean;
   isSaving: boolean;
   hasUnsavedChanges: boolean;
   canSave: boolean;
@@ -25,13 +38,17 @@ interface OnboardingQuestionsPanelProps {
 
 export function OnboardingQuestionsPanel({
   questionDrafts,
-  isLocked,
+  status,
+  hasAnswers,
   isSaving,
   hasUnsavedChanges,
   canSave,
   onQuestionDraftsChange,
   onSave,
 }: OnboardingQuestionsPanelProps) {
+  const hasDoorsOpened = status !== "setup";
+  const isLocked = hasDoorsOpened || hasAnswers;
+
   return (
     <Card className="heard-card-bg overflow-hidden">
       <div className="p-5 space-y-4">
@@ -40,9 +57,7 @@ export function OnboardingQuestionsPanel({
             <ClipboardList className="w-4 h-4" /> Onboarding questions
           </h3>
           <p className="text-sm text-muted-foreground">
-            {isLocked
-              ? "Locked once the doors open."
-              : `Attendees answer these when they join, before voting. "${OPT_OUT_ANSWER}" is added to every question.`}
+            {buildPanelDescription(hasDoorsOpened, hasAnswers)}
           </p>
         </div>
 
@@ -63,7 +78,10 @@ export function OnboardingQuestionsPanel({
   );
 }
 
-type QuestionDraftEditorProps = Omit<OnboardingQuestionsPanelProps, "isLocked">;
+type QuestionDraftEditorProps = Omit<
+  OnboardingQuestionsPanelProps,
+  "status" | "hasAnswers"
+>;
 
 function QuestionDraftEditor({
   questionDrafts,
