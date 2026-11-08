@@ -9,6 +9,7 @@ import type {
   DebateRoom,
   NewDebateRoom,
   RoomEdits,
+  VoteOnStatementOptions,
   Statement,
   StatementMerge,
   StatementTag,
@@ -73,6 +74,7 @@ interface DebateSessionContextType {
   voteOnStatement: (
     statementId: string,
     voteType: VoteType,
+    options?: VoteOnStatementOptions,
   ) => Promise<any>;
   flagStatement: (
     statementId: string,
@@ -421,6 +423,7 @@ export function DebateSessionProvider(
     async (
       statementId: string,
       voteType: "agree" | "disagree" | "pass" | "super_agree",
+      options: VoteOnStatementOptions = {},
     ) => {
       if (!user) {
         throw new Error("User must be logged in to vote");
@@ -430,6 +433,7 @@ export function DebateSessionProvider(
       const response = await api.voteOnStatement(
         statementId,
         voteType,
+        options,
       );
 
       if (response.success && response.data) {

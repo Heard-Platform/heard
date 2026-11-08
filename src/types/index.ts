@@ -595,6 +595,10 @@ export type RoomEdits = Partial<
   >
 >;
 
+export type VoteOnStatementOptions = {
+  isVoteFromFeed?: boolean;
+};
+
 export type Cover = {
   type: CoverType;
   url: string;
