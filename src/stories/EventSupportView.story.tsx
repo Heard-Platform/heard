@@ -62,6 +62,7 @@ const CURRENT_TOPIC = "Will AI change how agencies price their work in the next 
 const MID_QUESTION: SupportViewStats = {
   eventName: "PRGN Session 1",
   status: "live",
+  isIntroducingPost: false,
   votingPaused: false,
   postCount: 10,
   peopleHere: PEOPLE_HERE,
@@ -119,6 +120,32 @@ const LATE_IN_POST: SupportViewStats = {
     startedAt: STORY_NOW - 4 * MINUTE_MS,
   },
   postsSoFar: [...POSTS_BEFORE_CURRENT, { roomId: "ai-and-price", postNumber: 4, topic: CURRENT_TOPIC, voterCount: 55, secondsOnPost: 240 }],
+};
+
+const INTRODUCING_POST: SupportViewStats = {
+  ...MID_QUESTION,
+  isIntroducingPost: true,
+  activeNow: 54,
+  votes: 615,
+  phoneCountsByState: {
+    swiping: 0,
+    waiting: 0,
+    onboarding: 2,
+    lobby: 52,
+    end: 0,
+    idle: 7,
+  },
+  currentPost: {
+    ...MID_QUESTION.currentPost!,
+    finishedCount: 0,
+    swipingCount: 0,
+    agreeVotes: 0,
+    disagreeVotes: 0,
+    passVotes: 0,
+    medianSecondsToFinish: null,
+    startedAt: STORY_NOW - 25 * SECOND_MS,
+  },
+  postsSoFar: POSTS_BEFORE_CURRENT,
 };
 
 const LATER_POSTS: SupportViewPost[] = [
@@ -202,6 +229,16 @@ export function EventSupportViewStory() {
           id: "mid-question",
           label: "Mid-question",
           children: <SupportViewDemo key="mid-question" initialStats={MID_QUESTION} />,
+        },
+        {
+          id: "introducing",
+          label: "Introducing a prompt",
+          children: (
+            <SupportViewDemo
+              key="introducing"
+              initialStats={INTRODUCING_POST}
+            />
+          ),
         },
         {
           id: "late-in-post",

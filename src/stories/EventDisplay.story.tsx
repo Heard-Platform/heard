@@ -122,6 +122,7 @@ const eventState = (overrides: Partial<LiveEventView>): LiveEventView => ({
   roomOrder: Array.from({ length: POST_COUNT }, (_, postNumber) => `post-${postNumber}`),
   currentIndex: 5,
   status: "live",
+  isIntroducingPost: false,
   votingPaused: false,
   reloadNonce: 0,
   totals: null,
@@ -162,11 +163,30 @@ const applyAction = (state: LiveEventView, action: ModeratorAction): LiveEventVi
     case "open":
       return { ...state, status: "open" };
     case "start":
-      return { ...state, status: "live", currentIndex: 0, startedAt: Date.now(), peopleHere: 52 };
+      return {
+        ...state,
+        status: "live",
+        currentIndex: 0,
+        isIntroducingPost: true,
+        startedAt: Date.now(),
+        peopleHere: 52,
+      };
+    case "start-voting":
+      return { ...state, isIntroducingPost: false };
     case "next":
-      return { ...state, currentIndex: index + 1, votingPaused: false };
+      return {
+        ...state,
+        currentIndex: index + 1,
+        isIntroducingPost: true,
+        votingPaused: false,
+      };
     case "back":
-      return { ...state, currentIndex: Math.max(0, index - 1), votingPaused: false };
+      return {
+        ...state,
+        currentIndex: Math.max(0, index - 1),
+        isIntroducingPost: false,
+        votingPaused: false,
+      };
     case "pause":
       return { ...state, votingPaused: true };
     case "resume":
@@ -200,7 +220,10 @@ function LiveDemoRun({ initialState }: { initialState: LiveEventView }) {
   const [isBusy, setIsBusy] = useState(false);
   const [voteTick, setVoteTick] = useState(0);
   const postIndex = (state.currentIndex ?? 0) % DEMO_POSTS.length;
-  const isVoting = state.status === "live" && !state.votingPaused;
+  const isVoting =
+    state.status === "live" &&
+    !state.isIntroducingPost &&
+    !state.votingPaused;
 
   useEffect(() => {
     if (!isVoting) return;
@@ -329,9 +352,22 @@ export function EventDisplayStory() {
   return (
     <StoryContainer
       title="Event Display"
-      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after a second. Before the doors open, the screen tells the moderator no one can join yet and hides the join code. Live starts there: press Open doors to show the join code and let people in (the join screen counts people ready, plus how many are still answering the onboarding questions while anyone is), then Start, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Back, Next and Pause work; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it."
+      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after a second. Before the doors open, the screen tells the moderator no one can join yet and hides the join code. Live starts there: press Open doors to show the join code and let people in (the join screen counts people ready, plus how many are still answering the onboarding questions while anyone is), then Start opens the first prompt full screen with voting closed until Start voting, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Next opens the next prompt on its intro; Back goes straight to voting on the prompt before. Pause works; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it."
       variants={[
         { id: "live", label: "Live (Open doors, Start, votes moving)", children: <LiveDemo initialState={NOT_STARTED_STATE} /> },
+        {
+          id: "intro",
+          label: "Prompt intro",
+          children: (
+            <StaticDisplay
+              state={eventState({ isIntroducingPost: true })}
+              post={{
+                room: KEEPS_US_HOURLY.room,
+                statements: seedStatements(KEEPS_US_HOURLY),
+              }}
+            />
+          ),
+        },
         {
           id: "join",
           label: "Doors closed",
