@@ -20,7 +20,7 @@ export function EventList({ events, onOpenEvent }: EventListProps) {
             <CalendarDays className="size-4 shrink-0" />
             <span className="min-w-0 flex-1">
               <span className="block truncate font-medium">
-                {event.name}
+                {event.name} (id {event.id})
               </span>
               {event.subtitle && (
                 <span className="block truncate text-xs font-normal text-muted-foreground">
