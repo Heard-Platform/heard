@@ -1156,8 +1156,6 @@ export interface FeatureResults {
   sessionExpiryBypassedSince: number;
   rateLimitedStatements: number;
   rateLimitHitsSince: number;
-  audienceBreakdownOpens: number;
-  audienceBreakdownOpensSince: number;
   anonResponseTripwireShown: number;
   anonResponseTripwireEmailSubmitted: number;
   anonResponseTripwireSince: number;
