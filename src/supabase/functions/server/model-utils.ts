@@ -137,7 +137,7 @@ export const getAttendeeAnswers = async (
 export const replaceDemographicAnswers = async (
   userId: string,
   questionId: number,
-  answers: (string | null)[],
+  answers: string[],
 ): Promise<void> => {
   const { success, error } = await deleteRecord(
     "demographic_answers",

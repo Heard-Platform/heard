@@ -70,7 +70,7 @@ export function calcDemographicBreakdown(
   const questionMap = _.keyBy(questions, 'id');
   const answersWithQuestions = answers.map(answer => ({
     ...answer,
-    answer: answer.answer ?? "Not answered",
+    answer: answer.answer ?? OPT_OUT_ANSWER,
     question: questionMap[answer.questionId],
   }));
 
