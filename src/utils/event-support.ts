@@ -64,6 +64,13 @@ export function getVoteMixPercents(voteCounts: VoteCounts): VoteMixPercents {
 export const orderNewestFirst = (attendeeStatements: SupportViewAttendeeStatement[]): SupportViewAttendeeStatement[] =>
   [...attendeeStatements].sort((first, second) => second.createdAt - first.createdAt);
 
+export const orderOldestFirst = (
+  attendeeStatements: SupportViewAttendeeStatement[],
+): SupportViewAttendeeStatement[] =>
+  [...attendeeStatements].sort(
+    (first, second) => first.createdAt - second.createdAt,
+  );
+
 export function getFinishedPercent(currentPost: Pick<SupportViewCurrentPost, "finishedCount" | "swipingCount">): number {
   const phonesOnPost = currentPost.finishedCount + currentPost.swipingCount;
   if (phonesOnPost === 0) return 0;
