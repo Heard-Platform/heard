@@ -77,10 +77,6 @@ const flyerIntroFor = (vote: StampedVote): FlyerIntro => ({
 
 const logVote = async (statement: Statement, voteType: VoteType) =>
   console.log("[Story] vote", statement.id, voteType);
-const logStatement = async (text: string) =>
-  console.log("[Story] statement", text);
-const logAccountSetup = (featureText: string) =>
-  console.log("[Story] account setup", featureText);
 const logAnswer = (questionId: string, answers: string[]) =>
   console.log("[Story] answer", questionId, answers);
 
@@ -125,8 +121,6 @@ function EventFlyerFlowDemo({
             questions={CAMPUS_EVENT_QUESTIONS}
             answeredQuestionIds={answeredQuestionIds}
             onVote={logVote}
-            onSubmitStatement={logStatement}
-            onShowAccountSetupModal={logAccountSetup}
             onAnswer={logAnswer}
             onFinished={() => setIsFinished(true)}
           />

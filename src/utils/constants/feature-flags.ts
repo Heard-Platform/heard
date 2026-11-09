@@ -16,6 +16,7 @@ export enum FeatureFlags {
   QUICK_FLYER_VOTE = "QUICK_FLYER_VOTE",
   EVENT_ONBOARDING_QUESTIONS = "EVENT_ONBOARDING_QUESTIONS",
   STATEMENT_APPROVAL = "STATEMENT_APPROVAL",
+  FLYER_EVENT_INVITE = "FLYER_EVENT_INVITE",
 }
 
 export interface FeatureFlagsConfig {
@@ -32,6 +33,7 @@ export interface FeatureFlagsConfig {
   [FeatureFlags.QUICK_FLYER_VOTE]: boolean;
   [FeatureFlags.EVENT_ONBOARDING_QUESTIONS]: boolean;
   [FeatureFlags.STATEMENT_APPROVAL]: boolean;
+  [FeatureFlags.FLYER_EVENT_INVITE]: boolean;
 }
 
 export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
@@ -49,6 +51,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     QUICK_FLYER_VOTE: true,
     EVENT_ONBOARDING_QUESTIONS: true,
     STATEMENT_APPROVAL: true,
+    FLYER_EVENT_INVITE: true,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
@@ -64,6 +67,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     QUICK_FLYER_VOTE: true,
     EVENT_ONBOARDING_QUESTIONS: true,
     STATEMENT_APPROVAL: true,
+    FLYER_EVENT_INVITE: true,
   }
 }
 

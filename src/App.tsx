@@ -28,6 +28,7 @@ import { NewsletterViewer } from "./components/NewsletterViewer";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { useQuickVoteViaFlyer } from "./hooks/useQuickVoteViaFlyer";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { VoteResultSnackbarProvider } from "./contexts/VoteResultSnackbarContext";
 import { api } from "./utils/api";
 import type { NewDebateRoom, DebateRoom, Statement, VoteType, Event } from "./types";
 import {
@@ -57,6 +58,7 @@ import {
 import { QRScanResult, QRScanResultDialog } from "./components/room/QRScanResultDialog";
 import { FlyerSwipeContainer, type FlyerCompleteReason } from "./components/flyer/FlyerSwipeContainer";
 import { FlyerLandingContainer } from "./components/flyer/landing/FlyerLandingContainer";
+import { EventFlyerFlowContainer } from "./components/flyer/EventFlyerFlowContainer";
 import type { FlyerScan } from "./components/flyer/flyer-screen/FlyerScanContainer";
 import { PersonalFlyerContainer } from "./components/flyer/personal-flyer/PersonalFlyerContainer";
 import type { FlyerVoteTally } from "./components/flyer/landing/FlyerLandingScreen";
@@ -88,6 +90,9 @@ const CLUB_STATEMENT_ID = "qkjea7qnj3mp72i2r3";
 
 const CANDY_CORN_ROOM_ID = "pc68ekr1lbhmv8oli7q";
 const CANDY_CORN_STMT_ID = "94o1ixgrhvomvvt972r";
+
+const showsEventFlyerFlow = (room: DebateRoom) =>
+  isFeatureEnabled(FeatureFlags.FLYER_EVENT_INVITE) && !!room.eventId;
 
 const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: string }> = {
   shirt: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
@@ -240,7 +245,13 @@ function AppContent() {
       startRoomJoin(response.room.id);
       const isPass = flyerData.vote === "pass";
       const flyerVote = flyerData.vote === "disagree" ? "disagree" : "agree";
-      if (flyerData.flyerId === WAYMO_DC_ROOM_ID && !isPass) {
+      if (showsEventFlyerFlow(response.room)) {
+        setFlyerSwipe({
+          room: response.room,
+          flyerStatementId: flyerData.statementId,
+          flyerVote,
+        });
+      } else if (flyerData.flyerId === WAYMO_DC_ROOM_ID && !isPass) {
         setNewFlyerScan({
           roomId: response.room.id,
           tally: {
@@ -966,6 +977,17 @@ function AppContent() {
     );
   }
 
+  if (flyerSwipe && showsEventFlyerFlow(flyerSwipe.room)) {
+    return (
+      <EventFlyerFlowContainer
+        room={flyerSwipe.room}
+        flyerStatementId={flyerSwipe.flyerStatementId}
+        flyerVote={flyerSwipe.flyerVote}
+        onComplete={handleFlyerComplete}
+      />
+    );
+  }
+
   if (flyerSwipe) {
     return (
       <FlyerSwipeContainer
@@ -1025,7 +1047,9 @@ export default Sentry.withErrorBoundary(function App() {
   return (
     <DebateSessionProvider>
       <LanguageProvider>
-        <AppContent />
+        <VoteResultSnackbarProvider>
+          <AppContent />
+        </VoteResultSnackbarProvider>
       </LanguageProvider>
     </DebateSessionProvider>
   );
