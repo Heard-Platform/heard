@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ConcludedResults } from "../components/results/ConcludedResults";
 import { InProgressResults } from "../components/results/InProgressResults";
 import { Statement } from "../types";
+import { GEORGETOWN_EVENT_RESULTS_LINK } from "../utils/constants/events";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 
@@ -113,6 +114,19 @@ export const InProgressUnverified = () => {
         debateTitle="Is social media good or bad for society?"
         isAnonymous={true}
         onFollowDiscussion={() => console.log("Certify your vote clicked")}
+        onChangeVote={async () => {}}
+      />
+    </div>
+  );
+};
+
+export const InProgressGeorgetownEvent = () => {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4">
+      <InProgressResults
+        statements={mockStatements}
+        debateTitle="Is social media good or bad for society?"
+        eventLink={GEORGETOWN_EVENT_RESULTS_LINK}
         onChangeVote={async () => {}}
       />
     </div>
@@ -244,10 +258,11 @@ export function ResultsCardsStory() {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="concluded" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
             <TabsTrigger value="concluded">Concluded</TabsTrigger>
             <TabsTrigger value="in-progress">In Progress</TabsTrigger>
             <TabsTrigger value="in-progress-unverified">Certify Prompt</TabsTrigger>
+            <TabsTrigger value="in-progress-georgetown">Georgetown Event</TabsTrigger>
             <TabsTrigger value="few">Few Players</TabsTrigger>
             <TabsTrigger value="many">Many Players</TabsTrigger>
             <TabsTrigger value="tied">Tied Votes</TabsTrigger>
@@ -265,6 +280,10 @@ export function ResultsCardsStory() {
 
           <TabsContent value="in-progress-unverified">
             <InProgressUnverified />
+          </TabsContent>
+
+          <TabsContent value="in-progress-georgetown">
+            <InProgressGeorgetownEvent />
           </TabsContent>
 
           <TabsContent value="few">

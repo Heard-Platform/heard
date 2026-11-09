@@ -47,6 +47,8 @@ import { EventQuestionsDrawer } from "./room/EventQuestionsDrawer";
 import {
   GEORGETOWN_EVENT_ID,
   GEORGETOWN_EVENT_INVITE,
+  GEORGETOWN_EVENT_RESULTS_LINK,
+  GEORGETOWN_EVENT_RESULTS_LINK_HIDDEN_FROM,
 } from "../utils/constants/events";
 
 interface RoomCardProps {
@@ -122,8 +124,15 @@ export function RoomCard({
   } = useDebateSession();
   const { pickFeedbackForRoom, recordVote } = useFeedbackCardsContext();
 
-  const feedbackStatement =
-    isFeatureEnabled(FeatureFlags.FEEDBACK_CARDS) && votedThisVisit ? pickFeedbackForRoom(room.id) : null;
+  const isEventPost = typeof room.eventId === "number";
+  const canShowFeedback =
+    isFeatureEnabled(FeatureFlags.FEEDBACK_CARDS) &&
+    votedThisVisit &&
+    !isEventPost;
+
+  const feedbackStatement = canShowFeedback
+    ? pickFeedbackForRoom(room.id)
+    : null;
 
   const { handleVoted, handleTellMore, sheets: feedbackSheets } = useFeedbackCardFlow({
     roomId: room.id,
@@ -300,6 +309,10 @@ export function RoomCard({
     (question) => !answeredQuestionIds.has(question.id),
   );
   const isGeorgetownPost = room.eventId === GEORGETOWN_EVENT_ID;
+  const canShowGeorgetownResultsLink =
+    isGeorgetownPost &&
+    Date.now() < GEORGETOWN_EVENT_RESULTS_LINK_HIDDEN_FROM;
+
   const eventInvite =
     isGeorgetownPost && hasUnansweredQuestions
       ? GEORGETOWN_EVENT_INVITE
@@ -490,6 +503,11 @@ export function RoomCard({
                     debateTitle={room.topic}
                     roomId={room.id}
                     isAnonymous={!!user?.isAnonymous}
+                    eventLink={
+                      canShowGeorgetownResultsLink
+                        ? GEORGETOWN_EVENT_RESULTS_LINK
+                        : undefined
+                    }
                     onFollowDiscussion={() =>
                       onShowAccountSetupModal(
                         "certify your votes",
