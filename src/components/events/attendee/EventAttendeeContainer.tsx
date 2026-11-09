@@ -102,11 +102,15 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
     });
   };
 
-  const handleAddStatement = async (text: string): Promise<boolean> => {
+  const handleAddStatement = async (
+    text: string,
+    trackedEventType = "live_statement_added",
+  ): Promise<boolean> => {
     if (!currentRoomId) return false;
     try {
       const { statement } = await submitStatement(currentRoomId, text);
-      api.trackEvent("live_statement_added", currentRoomId);
+      api.trackEvent(trackedEventType, currentRoomId);
+      toast.success("Added!");
       setStatementText("");
       addStatement(statement);
       refreshPost();
@@ -169,7 +173,9 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
           statements={deck!.statements}
           votedCount={deck!.votedCount}
           onVote={handleVote}
-          onAddStatement={handleAddStatement}
+          onAddStatement={(text) =>
+            handleAddStatement(text, "live_statement_added_mid_deck")
+          }
         />
       );
     case "end":
