@@ -2,6 +2,7 @@ import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { describe, it } from "@std/testing/bdd";
 import type { Statement } from "./types.tsx";
 import {
+  isStatementAwaitingApproval,
   markStatementAwaitingApproval,
   markStatementHidden,
 } from "./moderation-utils.ts";
@@ -10,7 +11,6 @@ import {
   buildStatementApprovalPageUrl,
   groupStatementsByRoom,
   isStatementApprovalDecision,
-  isStatementAwaitingApproval,
 } from "./statement-approval-utils.ts";
 
 const makeStatement = (): Statement => ({
