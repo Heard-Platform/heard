@@ -1,6 +1,11 @@
 import { Context, Hono } from "npm:hono";
 import { getCommunity, getDebate } from "./kv-utils.tsx";
-import type { DebateRoom, User, VoteType } from "./types.tsx";
+import type {
+  DebateRoom,
+  DemographicQuestion,
+  User,
+  VoteType,
+} from "./types.tsx";
 import { countStatementVotes, processVote2 } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
 import { insertFlyerEmail, insertFlyerScan } from "./model-utils.ts";
@@ -14,13 +19,14 @@ import {
   type QuickFlyerVoteResponse,
 } from "./flyer-utils.ts";
 import { sendFlyerResultsEmailIfFlyerVoter, WAYMO_FLYER_STATEMENT_ID } from "./service-flyer-results-email.ts";
+import { loadUnansweredQuestionsByRoomId } from "./demographics-utils.ts";
 
 export const flyerApi = new Hono();
 
 type FlyerVoteResponse = {
   user: User;
   sessionId: string;
-  room: DebateRoom;
+  room: DebateRoom & { demographicQuestions: DemographicQuestion[] };
   agreePercent: number;
   disagreePercent: number;
   passPercent: number;
@@ -109,7 +115,11 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
         );
       }
 
-      const community = room.subHeard ? await getCommunity(room.subHeard) : null;
+      const [community, unansweredQuestionsByRoomId] =
+        await Promise.all([
+          room.subHeard ? getCommunity(room.subHeard) : null,
+          loadUnansweredQuestionsByRoomId([room], userId),
+        ]);
 
       const totalVotes =
         result.statement.agrees +
@@ -152,7 +162,10 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
       const response: FlyerVoteResponse = {
         user: result.user,
         sessionId: session.id,
-        room,
+        room: {
+          ...room,
+          demographicQuestions: unansweredQuestionsByRoomId[room.id],
+        },
         agreePercent,
         disagreePercent,
         passPercent,

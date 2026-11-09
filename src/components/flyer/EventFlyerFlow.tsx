@@ -27,8 +27,6 @@ interface EventFlyerFlowProps {
   questions: DemographicQuestion[];
   answeredQuestionIds: string[];
   onVote: (statement: Statement, voteType: VoteType) => Promise<void>;
-  onSubmitStatement: (text: string) => Promise<void>;
-  onShowAccountSetupModal: (featureText: string) => void;
   onAnswer: (questionId: string, answers: string[]) => void;
   onFinished: () => void;
 }
@@ -41,8 +39,6 @@ export function EventFlyerFlow({
   questions,
   answeredQuestionIds,
   onVote,
-  onSubmitStatement,
-  onShowAccountSetupModal,
   onAnswer,
   onFinished,
 }: EventFlyerFlowProps) {
@@ -102,8 +98,8 @@ export function EventFlyerFlow({
         flyerIntro={flyerIntro}
         eventInvite={GEORGETOWN_EVENT_INVITE}
         onVote={handleVote}
-        onSubmitStatement={onSubmitStatement}
-        onShowAccountSetupModal={onShowAccountSetupModal}
+        onSubmitStatement={doNothingAsync}
+        onShowAccountSetupModal={doNothing}
         onCertifyDone={doNothing}
         onChanceCardSwiped={doNothingAsync}
         onCoverCardSwiped={doNothingAsync}

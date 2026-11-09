@@ -124,7 +124,7 @@ export function RoomCard({
   } = useDebateSession();
   const { pickFeedbackForRoom, recordVote } = useFeedbackCardsContext();
 
-  const isEventPost = typeof room.eventId === "number";
+  const isEventPost = !!room.eventId;
   const canShowFeedback =
     isFeatureEnabled(FeatureFlags.FEEDBACK_CARDS) &&
     votedThisVisit &&
