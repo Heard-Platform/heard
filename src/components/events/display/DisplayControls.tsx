@@ -48,7 +48,7 @@ export function JoinControls({ areDoorsOpen, peopleHere, isHidden, isBusy, onAct
     <ControlsPanel isHidden={isHidden}>
       <HeadcountLabel text={`${peopleHere} here`} />
       <Button className="font-semibold" disabled={isBusy} onClick={() => onAction("start")}>
-        Start with the first post <ChevronRight />
+        Start with the first prompt <ChevronRight />
       </Button>
     </ControlsPanel>
   );
