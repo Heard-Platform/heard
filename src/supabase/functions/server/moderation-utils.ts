@@ -27,3 +27,9 @@ export const markStatementAwaitingApproval = (
   now: number = Date.now(),
 ): Statement =>
   markStatementHidden(statement, STATEMENT_APPROVAL_HIDER, now);
+
+export const isStatementAwaitingApproval = (
+  statement: Statement,
+): boolean =>
+  !!statement.isHidden &&
+  statement.hiddenBy === STATEMENT_APPROVAL_HIDER;

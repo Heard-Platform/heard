@@ -12,6 +12,7 @@ import {
   listPostsSoFar,
   sumSecondsOnEachPost,
 } from "./support-view-utils.ts";
+import { STATEMENT_APPROVAL_HIDER } from "./moderation-utils.ts";
 import type { EventPresence, LiveEventState, Statement } from "./types.tsx";
 
 const STARTED_AT = 1_761_000_000_000;
@@ -169,6 +170,7 @@ Deno.test("listAttendeeStatements - written since Start on the event's posts, hi
       agreeVotes: 4,
       disagreeVotes: 2,
       passVotes: 1,
+      isAwaitingApproval: false,
       isHidden: false,
       createdAt: at(5),
     },
@@ -180,10 +182,38 @@ Deno.test("listAttendeeStatements - written since Start on the event's posts, hi
       agreeVotes: 0,
       disagreeVotes: 0,
       passVotes: 0,
+      isAwaitingApproval: false,
       isHidden: true,
       createdAt: at(2),
     },
   ]);
+});
+
+Deno.test("listAttendeeStatements - marks statements held for approval", () => {
+  const statements = [
+    statement("held", "b", at(5), {
+      isHidden: true,
+      hiddenBy: STATEMENT_APPROVAL_HIDER,
+    }),
+    statement("hidden-by-moderator", "b", at(6), {
+      isHidden: true,
+      hiddenBy: "moderator-id",
+    }),
+  ];
+  const attendeeStatements = listAttendeeStatements(
+    liveState(),
+    statements,
+  );
+  assertEquals(
+    attendeeStatements.map(({ id, isAwaitingApproval }) => ({
+      id,
+      isAwaitingApproval,
+    })),
+    [
+      { id: "held", isAwaitingApproval: true },
+      { id: "hidden-by-moderator", isAwaitingApproval: false },
+    ],
+  );
 });
 
 Deno.test("buildSupportViewStats - session totals skip votes from before Start and hidden statements", () => {

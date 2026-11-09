@@ -356,6 +356,7 @@ export type SupportViewAttendeeStatement = {
   agreeVotes: number;
   disagreeVotes: number;
   passVotes: number;
+  isAwaitingApproval: boolean;
   isHidden: boolean;
   createdAt: number;
 };

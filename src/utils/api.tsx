@@ -441,11 +441,18 @@ class ApiClient extends BaseApiClient {
   async submitStatement(
     roomId: string,
     text: string,
-    { isStatementFromFeed = false }: SubmitStatementOptions = {},
+    {
+      isStatementFromFeed = false,
+      isStatementFromEvent = false,
+    }: SubmitStatementOptions = {},
   ) {
     return this.request(`/room/${roomId}/statement`, {
       method: "POST",
-      body: JSON.stringify({ text, isStatementFromFeed }),
+      body: JSON.stringify({
+        text,
+        isStatementFromFeed,
+        isStatementFromEvent,
+      }),
     });
   }
 

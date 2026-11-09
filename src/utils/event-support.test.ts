@@ -3,6 +3,7 @@ import {
   describeSessionStatus,
   formatElapsed,
   getFinishedPercent,
+  getStatementVisibilityEventName,
   getTotalVotes,
   getVoteMixPercents,
   getVotesPerPerson,
@@ -195,5 +196,27 @@ describe("ordering attendee statements", () => {
     expect(
       attendeeStatements.map((statement) => statement.id),
     ).toEqual(["middle", "old", "new"]);
+  });
+});
+
+describe("getStatementVisibilityEventName", () => {
+  it("names a decision on a statement waiting for approval", () => {
+    const waitingStatement = { isAwaitingApproval: true };
+    expect(
+      getStatementVisibilityEventName(waitingStatement, false),
+    ).toBe("live_statement_approved");
+    expect(
+      getStatementVisibilityEventName(waitingStatement, true),
+    ).toBe("live_statement_rejected");
+  });
+
+  it("names a plain hide or unhide otherwise", () => {
+    const decidedStatement = { isAwaitingApproval: false };
+    expect(
+      getStatementVisibilityEventName(decidedStatement, true),
+    ).toBe("live_statement_hidden");
+    expect(
+      getStatementVisibilityEventName(decidedStatement, false),
+    ).toBe("live_statement_unhidden");
   });
 });

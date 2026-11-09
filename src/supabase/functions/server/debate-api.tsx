@@ -595,7 +595,8 @@ app.post(
     try {
       const userId = c.get("userId");
       const roomId = c.req.param("roomId") as string;
-      const { text, isStatementFromFeed } = await c.req.json();
+      const { text, isStatementFromFeed, isStatementFromEvent } =
+        await c.req.json();
 
       if (!text || text.length < 1 || text.length > 500) {
         return c.json(
@@ -704,7 +705,7 @@ app.post(
 
       await saveStatement(statement);
 
-      if (requiresApproval) {
+      if (requiresApproval && isStatementFromEvent !== true) {
         await notifyOfStatementAwaitingApproval(room, statement, user);
       }
 

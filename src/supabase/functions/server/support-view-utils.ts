@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { currentRoomId, PRESENCE_WINDOW_MS } from "./live-event-utils.ts";
 import { isAgreeVote } from "./vote-type-utils.ts";
+import { isStatementAwaitingApproval } from "./moderation-utils.ts";
 import type {
   AttendeePhoneState,
   DebateRoom,
@@ -184,6 +185,7 @@ export const listAttendeeStatements = (
       agreeVotes: statement.agrees + statement.superAgrees,
       disagreeVotes: statement.disagrees,
       passVotes: statement.passes,
+      isAwaitingApproval: isStatementAwaitingApproval(statement),
       isHidden: !!statement.isHidden,
       createdAt: statement.timestamp,
     }));

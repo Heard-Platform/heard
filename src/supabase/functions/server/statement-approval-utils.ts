@@ -1,7 +1,7 @@
 import {
+  isStatementAwaitingApproval,
   markStatementHidden,
   markStatementVisible,
-  STATEMENT_APPROVAL_HIDER,
 } from "./moderation-utils.ts";
 import {
   getAllStatements,
@@ -21,12 +21,6 @@ export const isStatementApprovalDecision = (
   value: unknown,
 ): value is StatementApprovalDecision =>
   value === "approve" || value === "reject";
-
-export const isStatementAwaitingApproval = (
-  statement: Statement,
-): boolean =>
-  !!statement.isHidden &&
-  statement.hiddenBy === STATEMENT_APPROVAL_HIDER;
 
 export const applyApprovalDecision = (
   statement: Statement,
