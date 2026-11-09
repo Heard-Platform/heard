@@ -11,7 +11,10 @@ import {
 } from "../../../utils/event-display";
 import { DisplayBrand, DisplayChip, DisplayEyebrow, DisplayQr } from "./DisplayParts";
 import { NewStatementStrip } from "./NewStatementStrip";
-import { StatementRow } from "./StatementRow";
+import {
+  StatementRow,
+  VoteSharePercentHeaders,
+} from "./StatementRow";
 
 export interface DisplayBoardProps {
   eyebrow: string;
@@ -79,7 +82,10 @@ export function DisplayBoard({
       {view === "agree-split" ? (
         <ConsensusColumns statements={boardStatements} renderStatementRow={renderStatementRow} />
       ) : (
-        <div className="grid content-start gap-[0.5cqw]">{sortByAgreeShare(boardStatements).map(renderStatementRow)}</div>
+        <div className="grid content-start gap-[0.5cqw]">
+          <VoteSharePercentHeaders view={view} />
+          {sortByAgreeShare(boardStatements).map(renderStatementRow)}
+        </div>
       )}
 
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-[1.6cqw]">
@@ -103,7 +109,10 @@ function ConsensusColumns({ statements, renderStatementRow }: ConsensusColumnsPr
   const { agreeStatements, splitStatements } = splitIntoConsensusColumns(statements);
   return (
     <div className="grid grid-cols-2 content-start gap-[2.4cqw]">
-      <ConsensusColumn heading="Most consensus" note="either way" statementRows={agreeStatements.map(renderStatementRow)} />
+      <ConsensusColumn
+        heading="Most agreed"
+        statementRows={agreeStatements.map(renderStatementRow)}
+      />
       <ConsensusColumn heading="Where the room splits" note="let's talk" statementRows={splitStatements.map(renderStatementRow)} />
     </div>
   );
@@ -111,17 +120,24 @@ function ConsensusColumns({ statements, renderStatementRow }: ConsensusColumnsPr
 
 interface ConsensusColumnProps {
   heading: string;
-  note: string;
+  note?: string;
   statementRows: ReactElement[];
 }
 
 function ConsensusColumn({ heading, note, statementRows }: ConsensusColumnProps) {
   return (
     <div>
-      <h2 className="mb-[0.8cqw] flex items-baseline gap-[0.8cqw] text-[1.7cqw] font-extrabold">
-        {heading}
-        <span className="text-[1.15cqw] font-semibold secondary-text">{note}</span>
-      </h2>
+      <div className="mb-[0.5cqw] flex items-end justify-between gap-[0.8cqw]">
+        <h2 className="flex items-baseline gap-[0.8cqw] text-[1.7cqw] font-extrabold">
+          {heading}
+          {note && (
+            <span className="text-[1.15cqw] font-semibold secondary-text">
+              {note}
+            </span>
+          )}
+        </h2>
+        <VoteSharePercentHeaders view="agree-split" />
+      </div>
       <div className="grid gap-[0.5cqw]">{statementRows}</div>
     </div>
   );

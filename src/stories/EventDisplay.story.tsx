@@ -331,6 +331,7 @@ export function EventDisplayStory() {
       title="Event Display"
       description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after a second. Before the doors open, the screen tells the moderator no one can join yet and hides the join code. Live starts there: press Open doors to show the join code and let people in (the join screen counts people ready, plus how many are still answering the onboarding questions while anyone is), then Start, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Back, Next and Pause work; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it."
       variants={[
+        { id: "live", label: "Live (Open doors, Start, votes moving)", children: <LiveDemo initialState={NOT_STARTED_STATE} /> },
         {
           id: "join",
           label: "Doors closed",
@@ -356,7 +357,6 @@ export function EventDisplayStory() {
           label: "Loading the next post",
           children: <StaticDisplay state={eventState({})} post={null} />,
         },
-        { id: "live", label: "Live (Open doors, Start, votes moving)", children: <LiveDemo initialState={NOT_STARTED_STATE} /> },
         { id: "last-post", label: "Last post (End session)", children: <LiveDemo initialState={LAST_POST_STATE} /> },
         { id: "agree-only", label: "Agree only", children: <BoardStory view="agree-only" attendeeStatements={withProcurementStatementOnBoard} /> },
         {

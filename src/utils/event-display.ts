@@ -76,11 +76,24 @@ export interface ConsensusColumns {
 }
 
 export function splitIntoConsensusColumns(statements: Statement[]): ConsensusColumns {
-  const statementsByWidestGap = _.orderBy(statements, getAgreeDisagreeGap, "desc");
-  const agreeColumnSize = Math.min(CONSENSUS_COLUMN_SIZE, Math.ceil(statementsByWidestGap.length / 2));
+  const agreeColumnSize = Math.min(
+    CONSENSUS_COLUMN_SIZE,
+    Math.ceil(statements.length / 2),
+  );
+  const agreeStatements = sortByAgreeShare(statements).slice(
+    0,
+    agreeColumnSize,
+  );
+  const remainingStatements = statements.filter(
+    (statement) => !agreeStatements.includes(statement),
+  );
   return {
-    agreeStatements: statementsByWidestGap.slice(0, agreeColumnSize),
-    splitStatements: statementsByWidestGap.slice(agreeColumnSize).reverse().slice(0, CONSENSUS_COLUMN_SIZE),
+    agreeStatements,
+    splitStatements: _.orderBy(
+      remainingStatements,
+      getAgreeDisagreeGap,
+      "asc",
+    ).slice(0, CONSENSUS_COLUMN_SIZE),
   };
 }
 
