@@ -5,16 +5,22 @@ import type { EventPost } from "../../../hooks/useEventPost";
 import { useIdle } from "../../../hooks/useIdle";
 import { getDisplayScreen, isAttendeeStatement, type DisplayView } from "../../../utils/event-display";
 import { DisplayBoard } from "./DisplayBoard";
-import { BoardControls, JoinControls } from "./DisplayControls";
+import {
+  BoardControls,
+  IntroControls,
+  JoinControls,
+} from "./DisplayControls";
 import { DisplayEndCard } from "./DisplayEndCard";
 import { DisplayDoorsClosedScreen } from "./DisplayDoorsClosedScreen";
 import { DisplayJoinScreen } from "./DisplayJoinScreen";
+import { DisplayPromptIntro } from "./DisplayPromptIntro";
 import { DisplaySpotlight } from "./DisplaySpotlight";
 import { Loader } from "../../widgets/Loader";
 import { EndSessionConfirm } from "./EndSessionConfirm";
 
 const CONTROLS_HIDE_AFTER_IDLE_MS = 1000;
 const SCREEN_FADE_SECONDS = 0.25;
+const LOADER_SHOW_AFTER_SECONDS = 0.5;
 
 export interface EventDisplayProps {
   eventState: LiveEventView;
@@ -43,7 +49,10 @@ export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onA
   const spotlightStatement = post?.statements.find((statement) => statement.id === spotlightStatementId) ?? null;
   const questionLabel = `Question ${(eventState.currentIndex ?? 0) + 1}`;
   const screen = getDisplayScreen(eventState, post?.room.id ?? null);
-  const screenKey = screen === "board" ? `board:${eventState.currentRoomId}` : screen;
+  const isOnPost = screen === "intro" || screen === "board";
+  const screenKey = isOnPost
+    ? `${screen}:${eventState.currentRoomId}`
+    : screen;
   const areDoorsOpen = eventState.status !== "setup";
 
   const handleConfirmEnd = () => {
@@ -51,45 +60,53 @@ export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onA
     onAction("end");
   };
 
+  const postCount = eventState.roomOrder.length;
+  const postEyebrow = `${questionLabel} of ${postCount}`;
+  const canGoBack = (eventState.currentIndex ?? 0) > 0;
+  const isLastPost = (eventState.currentIndex ?? 0) >= postCount - 1;
+
   const renderScreen = () => {
     if (screen === "end") {
       return <DisplayEndCard totals={eventState.totals} />;
     }
     if (screen === "join" || eventState.currentIndex === null) {
-      return (
-        <>
-          {areDoorsOpen ? (
-            <DisplayJoinScreen
-              peopleHere={eventState.peopleHere}
-              answeringQuestions={eventState.answeringQuestions}
-              joinUrl={joinUrl}
-              joinLabel={joinLabel}
-            />
-          ) : (
-            <DisplayDoorsClosedScreen />
-          )}
-          <JoinControls
-            areDoorsOpen={areDoorsOpen}
-            peopleHere={eventState.peopleHere}
-            isHidden={isIdle}
-            isBusy={isBusy}
-            onAction={onAction}
-          />
-        </>
+      return areDoorsOpen ? (
+        <DisplayJoinScreen
+          peopleHere={eventState.peopleHere}
+          answeringQuestions={eventState.answeringQuestions}
+          joinUrl={joinUrl}
+          joinLabel={joinLabel}
+        />
+      ) : (
+        <DisplayDoorsClosedScreen />
       );
     }
     if (screen === "loading" || !post) {
       return (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: LOADER_SHOW_AFTER_SECONDS }}
+        >
           <Loader />
-        </div>
+        </motion.div>
       );
     }
-    const postCount = eventState.roomOrder.length;
+    if (screen === "intro") {
+      return (
+        <DisplayPromptIntro
+          eyebrow={postEyebrow}
+          prompt={post.room.topic}
+          joinUrl={joinUrl}
+          joinLabel={joinLabel}
+        />
+      );
+    }
     return (
       <>
         <DisplayBoard
-          eyebrow={`${questionLabel} of ${postCount}`}
+          eyebrow={postEyebrow}
           title={post.room.topic}
           statements={post.statements}
           startedAt={eventState.startedAt}
@@ -107,24 +124,51 @@ export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onA
             onClose={() => setSpotlightStatementId(null)}
           />
         )}
+      </>
+    );
+  };
+
+  const renderControls = () => {
+    if (screen === "join") {
+      return (
+        <JoinControls
+          areDoorsOpen={areDoorsOpen}
+          peopleHere={eventState.peopleHere}
+          isHidden={isIdle}
+          isBusy={isBusy}
+          onAction={onAction}
+        />
+      );
+    }
+    if (screen === "intro") {
+      return (
+        <IntroControls
+          peopleHere={eventState.peopleHere}
+          canGoBack={canGoBack}
+          isHidden={isIdle}
+          isBusy={isBusy}
+          onAction={onAction}
+        />
+      );
+    }
+    if (screen === "board") {
+      return (
         <BoardControls
           view={view}
           votingPaused={eventState.votingPaused}
           peopleHere={eventState.peopleHere}
           finishedCurrentPost={eventState.finishedCurrentPost}
-          canGoBack={eventState.currentIndex > 0}
-          isLastPost={eventState.currentIndex >= postCount - 1}
+          canGoBack={canGoBack}
+          isLastPost={isLastPost}
           isHidden={isIdle}
           isBusy={isBusy}
           onViewChange={setView}
           onAction={onAction}
           onEndRequest={() => setIsConfirmingEnd(true)}
         />
-        {isConfirmingEnd && (
-          <EndSessionConfirm isBusy={isBusy} onConfirm={handleConfirmEnd} onCancel={() => setIsConfirmingEnd(false)} />
-        )}
-      </>
-    );
+      );
+    }
+    return null;
   };
 
   return (
@@ -148,6 +192,14 @@ export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onA
               {renderScreen()}
             </motion.div>
           </AnimatePresence>
+          {renderControls()}
+          {isConfirmingEnd && (
+            <EndSessionConfirm
+              isBusy={isBusy}
+              onConfirm={handleConfirmEnd}
+              onCancel={() => setIsConfirmingEnd(false)}
+            />
+          )}
         </div>
       </LayoutGroup>
     </MotionConfig>
