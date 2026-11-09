@@ -64,6 +64,18 @@ export function getVoteMixPercents(voteCounts: VoteCounts): VoteMixPercents {
 export const orderNewestFirst = (attendeeStatements: SupportViewAttendeeStatement[]): SupportViewAttendeeStatement[] =>
   [...attendeeStatements].sort((first, second) => second.createdAt - first.createdAt);
 
+export const getStatementVisibilityEventName = (
+  statement: Pick<SupportViewAttendeeStatement, "isAwaitingApproval">,
+  isHidden: boolean,
+): string => {
+  if (statement.isAwaitingApproval) {
+    return isHidden
+      ? "live_statement_rejected"
+      : "live_statement_approved";
+  }
+  return isHidden ? "live_statement_hidden" : "live_statement_unhidden";
+};
+
 export const orderOldestFirst = (
   attendeeStatements: SupportViewAttendeeStatement[],
 ): SupportViewAttendeeStatement[] =>

@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import { useCallback, useEffect, useState } from "react";
 import type { SupportViewAttendeeStatement, SupportViewStats } from "../../../types";
 import { api } from "../../../utils/api";
+import { getStatementVisibilityEventName } from "../../../utils/event-support";
 import { Loader } from "../../widgets/Loader";
 import { EventSupportView } from "./EventSupportView";
 
@@ -21,7 +22,10 @@ export function EventSupportViewContainer({ eventId, displayKey }: EventSupportV
     setUpdatingStatementIds((current) => [...current, statement.id]);
     const response = await api.setEventStatementHidden(eventId, statement.id, isHidden, displayKey);
     if (response.success) {
-      api.trackEvent(isHidden ? "live_statement_hidden" : "live_statement_unhidden", statement.roomId);
+      api.trackEvent(
+        getStatementVisibilityEventName(statement, isHidden),
+        statement.roomId,
+      );
       await refresh();
     } else {
       toast.error(response.error || "Couldn't update that statement");
