@@ -113,6 +113,18 @@ export const getDemographicQuestionsForRooms = async (roomIds: string[]) => {
   );
 };
 
+export const getDemographicQuestionsForEvents = async (
+  eventIds: number[],
+): Promise<DemographicQuestion[]> => {
+  if (eventIds.length === 0) return [];
+  return selectAllWithoutLimit<DemographicQuestion>(
+    "demographic_questions",
+    {},
+    "position",
+    (q: any) => q.in("eventId", eventIds),
+  );
+};
+
 export const getDemographicAnswersForQuestionIds = async (
   questionIds: number[],
 ) => {
@@ -137,7 +149,7 @@ export const getAttendeeAnswers = async (
 export const replaceDemographicAnswers = async (
   userId: string,
   questionId: number,
-  answers: (string | null)[],
+  answers: string[],
 ): Promise<void> => {
   const { success, error } = await deleteRecord(
     "demographic_answers",

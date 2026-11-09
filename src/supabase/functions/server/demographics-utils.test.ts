@@ -1,11 +1,17 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { it } from "@std/testing/bdd";
 import {
+  buildUnansweredQuestionsByRoomId,
   calcDemographicBreakdown,
   isValidRoomAnswerList,
+  OPT_OUT_ANSWER,
   toStoredAnswers,
 } from "./demographics-utils.ts";
-import type { DemographicQuestion } from "./types.tsx";
+import type {
+  DebateRoom,
+  DemographicQuestion,
+  RoomDemographicQuestion,
+} from "./types.tsx";
 
 it("calcs demographics for single question type", () => {
   const questions = [{ id: "q1", type: "gender" }] as any;
@@ -53,7 +59,7 @@ it("handles empty answers", () => {
   assertEquals(breakdown, { });
 });
 
-it("handles skip answers", () => {
+it("counts an old skip as Prefer not to say", () => {
   const questions = [{ id: "q1", type: "gender" }] as any;
   const answers = [
     { questionId: "q1", answer: null, },
@@ -62,7 +68,9 @@ it("handles skip answers", () => {
 
   const breakdown = calcDemographicBreakdown(questions, answers);
 
-  assertEquals(breakdown, { gender: { Female: 1, "Not answered": 1 } });
+  assertEquals(breakdown, {
+    gender: { Female: 1, [OPT_OUT_ANSWER]: 1 },
+  });
 });
 
 it("handles custom questions", () => {
@@ -110,8 +118,8 @@ it("toStoredAnswers keeps the picked options", () => {
   ]);
 });
 
-it("toStoredAnswers stores a skip as one empty answer", () => {
-  assertEquals(toStoredAnswers([]), [null]);
+it("toStoredAnswers stores a skip as Prefer not to say", () => {
+  assertEquals(toStoredAnswers([]), [OPT_OUT_ANSWER]);
 });
 
 it("isValidRoomAnswerList takes one pick on a single choice", () => {
@@ -162,4 +170,110 @@ it("isValidRoomAnswerList takes any standard answer", () => {
     options: undefined,
   });
   assertEquals(isValidRoomAnswerList(question, ["Female"]), true);
+});
+
+it("isValidRoomAnswerList takes Prefer not to say on a single choice", () => {
+  assertEquals(
+    isValidRoomAnswerList(roomQuestion({}), [OPT_OUT_ANSWER]),
+    true,
+  );
+});
+
+it("isValidRoomAnswerList takes Prefer not to say on a multi-select", () => {
+  const question = roomQuestion({ multiSelect: true });
+  assertEquals(
+    isValidRoomAnswerList(question, [OPT_OUT_ANSWER]),
+    true,
+  );
+});
+
+it("isValidRoomAnswerList refuses Prefer not to say alongside options", () => {
+  const question = roomQuestion({ multiSelect: true });
+  assertEquals(
+    isValidRoomAnswerList(question, ["Black", OPT_OUT_ANSWER]),
+    false,
+  );
+});
+
+it("isValidRoomAnswerList takes a pick on an event question", () => {
+  const question = roomQuestion({
+    roomId: null,
+    eventId: 14,
+    multiSelect: true,
+    position: 0,
+  });
+  assertEquals(
+    isValidRoomAnswerList(question, ["Asian", "White"]),
+    true,
+  );
+});
+
+const feedRoom = (overrides: Partial<DebateRoom>): DebateRoom =>
+  ({ id: "room-1", ...overrides }) as DebateRoom;
+
+const postQuestion = roomQuestion({ id: 1 }) as RoomDemographicQuestion;
+
+const eventQuestion = (id: number): DemographicQuestion =>
+  roomQuestion({ id, roomId: null, eventId: 14, position: id });
+
+it("buildUnansweredQuestionsByRoomId gives a post its own questions", () => {
+  const questionsByRoomId = buildUnansweredQuestionsByRoomId(
+    [feedRoom({})],
+    [postQuestion],
+    [],
+    [],
+  );
+  assertEquals(questionsByRoomId, { "room-1": [postQuestion] });
+});
+
+it("buildUnansweredQuestionsByRoomId swaps in the event's questions", () => {
+  const questionsByRoomId = buildUnansweredQuestionsByRoomId(
+    [feedRoom({ eventId: 14 })],
+    [postQuestion],
+    [eventQuestion(2), eventQuestion(3)],
+    [],
+  );
+  assertEquals(questionsByRoomId, {
+    "room-1": [eventQuestion(2), eventQuestion(3)],
+  });
+});
+
+it("buildUnansweredQuestionsByRoomId drops answered event questions", () => {
+  const questionsByRoomId = buildUnansweredQuestionsByRoomId(
+    [feedRoom({ eventId: 14 })],
+    [],
+    [eventQuestion(2), eventQuestion(3)],
+    [2],
+  );
+  assertEquals(questionsByRoomId, { "room-1": [eventQuestion(3)] });
+});
+
+it("buildUnansweredQuestionsByRoomId never falls back once all event questions are answered", () => {
+  const questionsByRoomId = buildUnansweredQuestionsByRoomId(
+    [feedRoom({ eventId: 14 })],
+    [postQuestion],
+    [eventQuestion(2)],
+    [2],
+  );
+  assertEquals(questionsByRoomId, { "room-1": [] });
+});
+
+it("buildUnansweredQuestionsByRoomId keeps a post's questions when its event has none", () => {
+  const questionsByRoomId = buildUnansweredQuestionsByRoomId(
+    [feedRoom({ eventId: 9 })],
+    [postQuestion],
+    [eventQuestion(2)],
+    [],
+  );
+  assertEquals(questionsByRoomId, { "room-1": [postQuestion] });
+});
+
+it("buildUnansweredQuestionsByRoomId gives a post with no questions an empty list", () => {
+  const questionsByRoomId = buildUnansweredQuestionsByRoomId(
+    [feedRoom({ id: "room-2" })],
+    [postQuestion],
+    [],
+    [],
+  );
+  assertEquals(questionsByRoomId, { "room-2": [] });
 });

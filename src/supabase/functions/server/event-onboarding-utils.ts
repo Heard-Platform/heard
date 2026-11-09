@@ -11,6 +11,8 @@ import {
 import { getEventOrThrow } from "./event-utils.ts";
 import {
   hasDuplicateAnswers,
+  isOptOutMixedWithOptions,
+  OPT_OUT_ANSWER,
   toStoredAnswers,
 } from "./demographics-utils.ts";
 import { RouteError } from "./route-error.ts";
@@ -26,8 +28,6 @@ import type {
 } from "./types.tsx";
 
 export const MINIMUM_OPTIONS_PER_ONBOARDING_QUESTION = 1;
-
-export const OPT_OUT_ANSWER = "Prefer not to say";
 
 const ANSWERS_ERROR_MESSAGE =
   "Pick one of the question's options, or Prefer not to say on its own";
@@ -161,9 +161,6 @@ const isAllowedAnswer = (
 ): boolean =>
   answer === OPT_OUT_ANSWER ||
   (question.options ?? []).includes(answer);
-
-const isOptOutMixedWithOptions = (answers: string[]): boolean =>
-  answers.includes(OPT_OUT_ANSWER) && answers.length > 1;
 
 export const isValidAnswerList = (
   question: DemographicQuestion,
