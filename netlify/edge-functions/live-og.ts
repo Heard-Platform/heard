@@ -6,7 +6,7 @@ export default createRedirectOgHandler(
     description:
       "A live, interactive session on Heard. Swipe agree or disagree in real time and watch the results come in.",
     url: "https://heard.vote/live",
-    image: "https://heard.vote/live-preview.png",
+    image: "https://heard.vote/live-preview-thanksgiving.png",
   },
   "https://luma.com/567poe53",
 );
