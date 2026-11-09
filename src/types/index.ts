@@ -210,6 +210,11 @@ export interface EventInvite {
   registrationUrl: string;
 }
 
+export interface EventLink {
+  label: string;
+  url: string;
+}
+
 export interface FlyerIntro {
   statement: Statement;
   vote: StampedVote;

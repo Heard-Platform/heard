@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { motion } from "motion/react";
 import { Card } from "../ui/card";
 import { VotesDrawer } from "./VotesDrawer";
-import type { Statement, VoteType } from "../../types";
+import type { EventLink, Statement, VoteType } from "../../types";
 import { LiveHighlights, buildLiveHighlights } from "./LiveHighlights";
 import { api } from "../../utils/api";
 
@@ -11,6 +11,7 @@ interface InProgressResultsProps {
   debateTitle: string;
   roomId?: string;
   isAnonymous?: boolean;
+  eventLink?: EventLink;
   onFollowDiscussion?: () => void;
   onChangeVote: (
     statementId: string,
@@ -23,6 +24,7 @@ export function InProgressResults({
   debateTitle,
   roomId,
   isAnonymous,
+  eventLink,
   onFollowDiscussion,
   onChangeVote,
 }: InProgressResultsProps) {
@@ -37,6 +39,10 @@ export function InProgressResults({
   const handleVerifyClick = () => {
     api.trackEvent("verify_human_clicked", roomId);
     onFollowDiscussion?.();
+  };
+
+  const handleEventLinkClick = () => {
+    api.trackEvent("event_results_link_tapped", roomId);
   };
   const totalVotes = statements.reduce(
     (sum, s) => sum + s.agrees + s.superAgrees + s.disagrees + s.passes,
@@ -142,7 +148,25 @@ export function InProgressResults({
             </p>
           )}
 
-          {!showVerifyPrompt && (
+          {eventLink && (
+            <motion.a
+              href={eventLink.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleEventLinkClick}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, scale: [1, 1.05, 1] }}
+              transition={{
+                opacity: { delay: 0.6 },
+                scale: { duration: 2, repeat: Infinity },
+              }}
+              className="mt-3 md:mt-4 block text-center text-sm sm:text-base underline underline-offset-4 attention-text"
+            >
+              🎤 {eventLink.label}
+            </motion.a>
+          )}
+
+          {!eventLink && !showVerifyPrompt && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
