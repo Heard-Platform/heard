@@ -375,6 +375,9 @@ app.post(
     ) => {
       const eventId = parseEventId(c.req.param("eventId"));
       const userId = c.get("userId");
+      if (!userId) {
+        throw new RouteError("User session not found", 404);
+      }
       const event = await getEventOrThrow(eventId);
       await requireCanDriveEvent(event, userId, displayKey);
 

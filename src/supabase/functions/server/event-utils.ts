@@ -227,14 +227,14 @@ export const setEventStatementHidden = async (
   state: EventState,
   statementId: string,
   isHidden: boolean,
-  userId: string | undefined,
+  userId: string,
 ): Promise<Statement> => {
   const statement = await findStatementInAnyRoom(statementId);
   if (!statement || !state.roomOrder.includes(statement.roomId)) {
     throw new RouteError("That statement isn't part of this event", 404);
   }
   const updated = isHidden
-    ? markStatementHidden(statement, userId ?? "display-link")
+    ? markStatementHidden(statement, userId)
     : markStatementVisible(statement);
   await saveStatement(updated);
   return updated;
