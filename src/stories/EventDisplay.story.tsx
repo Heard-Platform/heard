@@ -358,6 +358,74 @@ function SpotlightStory() {
     </ProjectorFrame>
   );
 }
+
+const audienceShare = (
+  label: string,
+  percent: number,
+): AudienceBreakdownOption => ({ label, percent, isOptOut: false });
+
+const optOutShare = (percent: number): AudienceBreakdownOption => ({
+  label: "Prefer not to say",
+  percent,
+  isOptOut: true,
+});
+
+const ROLE_BREAKDOWN: AudienceBreakdownQuestion = {
+  questionId: "role",
+  text: "Are you a...",
+  multiSelect: false,
+  hasEnoughAnswers: true,
+  options: [
+    audienceShare("Undergrad student", 55),
+    audienceShare("Grad student", 20),
+    audienceShare("Faculty", 10),
+    audienceShare("Other", 10),
+    optOutShare(5),
+  ],
+  hasHiddenAnswers: false,
+};
+
+const FIELD_BREAKDOWN: AudienceBreakdownQuestion = {
+  questionId: "field",
+  text: "What is your field of study or work?",
+  multiSelect: false,
+  hasEnoughAnswers: true,
+  options: [
+    audienceShare("Humanities", 15),
+    audienceShare("Social sciences", 30),
+    audienceShare("STEM", 15),
+    audienceShare("Law or policy", 25),
+    audienceShare("Other", 10),
+  ],
+  hasHiddenAnswers: true,
+};
+
+const POLITICAL_ORIENTATION_BREAKDOWN: AudienceBreakdownQuestion = {
+  questionId: "political",
+  text: "How would you describe your political orientation?",
+  multiSelect: false,
+  hasEnoughAnswers: true,
+  options: [
+    audienceShare("Conservative", 15),
+    audienceShare("Moderate", 25),
+    audienceShare("Liberal", 30),
+    audienceShare("Progressive", 20),
+    audienceShare("Other", 5),
+    optOutShare(5),
+  ],
+  hasHiddenAnswers: false,
+};
+
+const GENDER_BREAKDOWN: AudienceBreakdownQuestion = {
+  questionId: "gender",
+  text: "What is your gender?",
+  multiSelect: false,
+  hasEnoughAnswers: false,
+  options: [],
+  hasHiddenAnswers: false,
+};
+
+const IDENTITY_BREAKDOWN: AudienceBreakdownQuestion = {
   questionId: "identity",
   text: "How do you identify?",
   multiSelect: true,
