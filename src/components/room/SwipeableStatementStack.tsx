@@ -232,6 +232,12 @@ export function SwipeableStatementStack({
   }
 
   const hasMoreCards = cards.length > 0;
+  const isEventInviteOnTop = cards[0]?.type === "event-invite";
+
+  useEffect(() => {
+    if (!isEventInviteOnTop) return;
+    api.trackEvent("event_invite_shown", room.id);
+  }, [isEventInviteOnTop, room.id]);
 
   const recordVote = (statement: Statement, voteType: VoteType) => {
     setVotedStatementIds((prev) =>

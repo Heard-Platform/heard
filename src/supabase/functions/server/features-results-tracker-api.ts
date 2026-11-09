@@ -69,6 +69,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       addResponseNudgeShownUserIds,
       addResponseNudgeTappedUserIds,
       addResponseNudgeSubmittedUserIds,
+      eventInviteShownUserIds,
+      eventInviteEventTappedUserIds,
+      eventInviteKeepVotingTappedUserIds,
       voteTaps,
       voteSwipes,
       reportOpenedEvents,
@@ -129,6 +132,9 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       getUniqueUserIdsForEvent("add_response_nudge_shown"),
       getUniqueUserIdsForEvent("add_response_nudge_tapped"),
       getUniqueUserIdsForEvent("add_response_nudge_submitted"),
+      getUniqueUserIdsForEvent("event_invite_shown"),
+      getUniqueUserIdsForEvent("event_invite_event_tapped"),
+      getUniqueUserIdsForEvent("event_invite_keep_voting_tapped"),
       countEventsOfType("vote_tapped"),
       countEventsOfType("vote_swiped"),
       getAllEventsOfType(REPORT_OPENED_EVENT),
@@ -397,6 +403,13 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
     };
     const addResponseNudgeSince = new Date("2026-10-23").getTime();
 
+    const eventInvite = {
+      shown: countRealUsers(eventInviteShownUserIds),
+      tappedGoToEvent: countRealUsers(eventInviteEventTappedUserIds),
+      tappedKeepVoting: countRealUsers(eventInviteKeepVotingTappedUserIds),
+    };
+    const eventInviteSince = new Date("2026-11-08").getTime();
+
     const voteMethods = { taps: voteTaps, swipes: voteSwipes };
     const voteMethodsSince = new Date("2026-11-03").getTime();
 
@@ -528,6 +541,8 @@ app.get("/make-server-f1a393b4/stats/features", async (c) => {
       feedbackCardsSince,
       addResponseNudge,
       addResponseNudgeSince,
+      eventInvite,
+      eventInviteSince,
       voteMethods,
       voteMethodsSince,
       flyerLandingFunnel,
