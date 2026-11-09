@@ -64,14 +64,19 @@ export interface AttendeeProgress {
 }
 
 export function getAttendeeScreen(
-  eventState: Pick<LiveEventView, "status" | "votingPaused">,
+  eventState: Pick<
+    LiveEventView,
+    "status" | "isIntroducingPost" | "votingPaused"
+  >,
   progress: AttendeeProgress,
 ): AttendeeScreen {
   if (eventState.status === "setup") return "closed";
   if (eventState.status === "ended") return "end";
   if (progress.isAnsweringQuestions) return "onboarding";
   if (eventState.status === "open") return "starting";
-  if (eventState.votingPaused) return "paused";
+  if (eventState.isIntroducingPost || eventState.votingPaused) {
+    return "paused";
+  }
   const isReadyToSwipe =
     progress.hasCardsLeft && !progress.isWritingStatement;
   return isReadyToSwipe ? "swiping" : "waiting";

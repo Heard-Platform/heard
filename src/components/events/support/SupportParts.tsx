@@ -20,7 +20,7 @@ export const PHONE_STATE_LABELS: Record<AttendeePhoneState, string> = {
   swiping: "Swiping",
   waiting: "Waiting for the others",
   onboarding: "Answering questions",
-  lobby: "Lobby",
+  lobby: "Waiting to vote",
   end: "End screen",
   idle: "Idle 30s+",
 };

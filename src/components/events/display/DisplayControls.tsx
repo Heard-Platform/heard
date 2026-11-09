@@ -54,6 +54,43 @@ export function JoinControls({ areDoorsOpen, peopleHere, isHidden, isBusy, onAct
   );
 }
 
+interface IntroControlsProps {
+  peopleHere: number;
+  canGoBack: boolean;
+  isHidden: boolean;
+  isBusy: boolean;
+  onAction: (action: ModeratorAction) => void;
+}
+
+export function IntroControls({
+  peopleHere,
+  canGoBack,
+  isHidden,
+  isBusy,
+  onAction,
+}: IntroControlsProps) {
+  return (
+    <ControlsPanel isHidden={isHidden}>
+      <HeadcountLabel text={`${peopleHere} here`} />
+      <Button
+        variant="outline"
+        className="font-semibold"
+        disabled={isBusy || !canGoBack}
+        onClick={() => onAction("back")}
+      >
+        <ChevronLeft /> Back
+      </Button>
+      <Button
+        className="font-semibold"
+        disabled={isBusy}
+        onClick={() => onAction("start-voting")}
+      >
+        <Play /> Start voting
+      </Button>
+    </ControlsPanel>
+  );
+}
+
 interface BoardControlsProps {
   view: DisplayView;
   votingPaused: boolean;

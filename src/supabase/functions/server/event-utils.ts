@@ -41,6 +41,7 @@ import {
   setVotingPaused,
   openEvent,
   startEvent,
+  startVoting,
   countEventTotals,
   countEventHeadcount,
   toLiveEventView,
@@ -261,6 +262,8 @@ export const applyEventAction = async (
       return openEvent(state, now);
     case "start":
       return startEvent(state, await getEventRooms(eventId), now);
+    case "start-voting":
+      return startVoting(state, now);
     case "next":
       return changeActivePost(state, 1, fromIndex, now);
     case "back":

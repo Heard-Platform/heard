@@ -15,6 +15,7 @@ import {
   setVotingPaused,
   openEvent,
   startEvent,
+  startVoting,
   countEventTotals,
   countEventHeadcount,
   isLiveScreen,
@@ -56,6 +57,7 @@ Deno.test("defaultLiveEventState - setup with no order and nothing live", () => 
     roomOrder: [],
     currentIndex: null,
     status: "setup",
+    isIntroducingPost: false,
     votingPaused: false,
     reloadNonce: 0,
     totals: null,
@@ -154,12 +156,13 @@ Deno.test("sessionRoomOrder - oldest first when nothing was reordered", () => {
   assertEquals(sessionRoomOrder([], [{ id: "x", createdAt: 2 }, { id: "y", createdAt: 1 }]), ["y", "x"]);
 });
 
-Deno.test("startEvent - goes live on the first post", () => {
+Deno.test("startEvent - goes live introducing the first post", () => {
   const started = startEvent(state({ status: "open", votingPaused: true }), [{ id: "a", createdAt: 1 }, { id: "b", createdAt: 2 }], LATER);
   assertEquals(started, state({
     roomOrder: ["a", "b"],
     currentIndex: 0,
     status: "live",
+    isIntroducingPost: true,
     postChanges: [{ roomId: "a", changedAt: LATER }],
     startedAt: LATER,
     updatedAt: LATER,
@@ -185,14 +188,50 @@ Deno.test("openEvent - refused once open, live or ended", () => {
   assertRouteError(() => openEvent(state({ status: "ended" }), LATER), 409);
 });
 
-Deno.test("changeActivePost - next and back move one post and resume voting", () => {
+Deno.test("changeActivePost - next introduces the next post, clearing the pause", () => {
   assertEquals(
     changeActivePost(live({ votingPaused: true }), 1, 0, LATER),
-    live({ currentIndex: 1, postChanges: [{ roomId: "b", changedAt: LATER }], updatedAt: LATER }),
+    live({
+      currentIndex: 1,
+      isIntroducingPost: true,
+      postChanges: [{ roomId: "b", changedAt: LATER }],
+      updatedAt: LATER,
+    }),
   );
+});
+
+Deno.test("changeActivePost - back goes straight to voting on the post before", () => {
   assertEquals(
-    changeActivePost(live({ currentIndex: 2, votingPaused: true }), -1, 2, LATER),
-    live({ currentIndex: 1, postChanges: [{ roomId: "b", changedAt: LATER }], updatedAt: LATER }),
+    changeActivePost(
+      live({
+        currentIndex: 2,
+        isIntroducingPost: true,
+        votingPaused: true,
+      }),
+      -1,
+      2,
+      LATER,
+    ),
+    live({
+      currentIndex: 1,
+      postChanges: [{ roomId: "b", changedAt: LATER }],
+      updatedAt: LATER,
+    }),
+  );
+});
+
+Deno.test("startVoting - opens voting on the post being introduced", () => {
+  assertEquals(
+    startVoting(live({ isIntroducingPost: true }), LATER),
+    live({ updatedAt: LATER }),
+  );
+});
+
+Deno.test("startVoting - refused when voting is open or not live", () => {
+  assertRouteError(() => startVoting(live(), LATER), 409);
+  assertRouteError(
+    () => startVoting(state({ isIntroducingPost: true }), LATER),
+    409,
   );
 });
 
@@ -224,7 +263,11 @@ Deno.test("setVotingPaused - pauses and resumes only while live", () => {
 
 Deno.test("endEvent - ends with the totals and clears the pause", () => {
   assertEquals(
-    endEvent(live({ votingPaused: true }), TOTALS, LATER),
+    endEvent(
+      live({ isIntroducingPost: true, votingPaused: true }),
+      TOTALS,
+      LATER,
+    ),
     live({ status: "ended", totals: TOTALS, endedAt: LATER, updatedAt: LATER }),
   );
   assertRouteError(() => endEvent(state(), TOTALS, LATER), 409);
@@ -248,6 +291,15 @@ Deno.test("eventPostClosedReason - only the current post is open while live", ()
 Deno.test("eventPostClosedReason - the current post is closed while paused", () => {
   assertEquals(eventPostClosedReason(live({ votingPaused: true }), "a"), "paused");
   assertEquals(eventPostClosedReason(live({ votingPaused: true }), "b"), "not-current");
+});
+
+Deno.test("eventPostClosedReason - the current post is closed while introduced", () => {
+  const introducing = live({ isIntroducingPost: true });
+  assertEquals(eventPostClosedReason(introducing, "a"), "paused");
+  assertEquals(
+    eventPostClosedReason(introducing, "b"),
+    "not-current",
+  );
 });
 
 Deno.test("eventPostClosedReason - every post opens after End", () => {
