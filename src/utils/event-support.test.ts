@@ -8,6 +8,7 @@ import {
   getVotesPerPerson,
   listPhoneStates,
   orderNewestFirst,
+  orderOldestFirst,
 } from "./event-support";
 
 const SECOND_MS = 1000;
@@ -160,7 +161,7 @@ describe("getTotalVotes", () => {
   });
 });
 
-describe("orderNewestFirst", () => {
+describe("ordering attendee statements", () => {
   const attendeeStatement = (id: string, createdAt: number) => ({
     id,
     roomId: "post",
@@ -169,6 +170,7 @@ describe("orderNewestFirst", () => {
     agreeVotes: 0,
     disagreeVotes: 0,
     passVotes: 0,
+    isAwaitingApproval: false,
     isHidden: false,
     createdAt,
   });
@@ -177,5 +179,21 @@ describe("orderNewestFirst", () => {
     const attendeeStatements = [attendeeStatement("old", 1), attendeeStatement("new", 3), attendeeStatement("middle", 2)];
     expect(orderNewestFirst(attendeeStatements).map((statement) => statement.id)).toEqual(["new", "middle", "old"]);
     expect(attendeeStatements.map((statement) => statement.id)).toEqual(["old", "new", "middle"]);
+  });
+
+  it("puts the earliest written statement first without changing the input", () => {
+    const attendeeStatements = [
+      attendeeStatement("middle", 2),
+      attendeeStatement("old", 1),
+      attendeeStatement("new", 3),
+    ];
+    expect(
+      orderOldestFirst(attendeeStatements).map(
+        (statement) => statement.id,
+      ),
+    ).toEqual(["old", "middle", "new"]);
+    expect(
+      attendeeStatements.map((statement) => statement.id),
+    ).toEqual(["middle", "old", "new"]);
   });
 });

@@ -29,13 +29,18 @@ const POSTS_BEFORE_CURRENT: SupportViewPost[] = [
   { roomId: "value-pricing", postNumber: 3, topic: "Have you tried value-based pricing with any client?", voterCount: 54, secondsOnPost: 5 * 60 + 25 },
 ];
 
+type StoryStatementVisibility =
+  | "visible"
+  | "hidden"
+  | "awaiting approval";
+
 const attendeeStatement = (
   id: string,
   postNumber: number,
   text: string,
   [agreeVotes, disagreeVotes, passVotes]: [number, number, number],
   minutesAgo: number,
-  isHidden = false,
+  visibility: StoryStatementVisibility = "visible",
 ): SupportViewAttendeeStatement => ({
   id,
   roomId: `post-${postNumber}`,
@@ -44,17 +49,34 @@ const attendeeStatement = (
   agreeVotes,
   disagreeVotes,
   passVotes,
-  isHidden,
+  isAwaitingApproval: visibility === "awaiting approval",
+  isHidden: visibility !== "visible",
   createdAt: STORY_NOW - minutesAgo * MINUTE_MS,
 });
 
 const ATTENDEE_STATEMENTS: SupportViewAttendeeStatement[] = [
   attendeeStatement("r1", 1, "Procurement teams are the real blocker, not clients.", [41, 9, 6], 21),
   attendeeStatement("r2", 2, "We bill hourly because our software only tracks hours.", [18, 22, 14], 15),
-  attendeeStatement("r3", 2, "this is dumb lol", [2, 19, 5], 14, true),
+  attendeeStatement("r3", 2, "this is dumb lol", [2, 19, 5], 14, "hidden"),
   attendeeStatement("r4", 3, "Value pricing only works if you trust the client.", [33, 12, 8], 9),
   attendeeStatement("r5", 4, "AI will make hourly billing impossible to defend.", [11, 6, 3], 1),
   attendeeStatement("r6", 4, "Clients will expect AI savings passed straight to them.", [0, 0, 0], 0.2),
+  attendeeStatement(
+    "r7",
+    4,
+    "Agencies that bill hourly are scamming their clients.",
+    [0, 0, 0],
+    0.8,
+    "awaiting approval",
+  ),
+  attendeeStatement(
+    "r8",
+    4,
+    "Fixed fees push the risk of scope creep onto us.",
+    [0, 0, 0],
+    0.3,
+    "awaiting approval",
+  ),
 ];
 
 const CURRENT_TOPIC = "Will AI change how agencies price their work in the next two years?";
@@ -193,7 +215,9 @@ function SupportViewDemo({ initialStats }: { initialStats: SupportViewStats }) {
       setStats((current) => ({
         ...current,
         attendeeStatements: current.attendeeStatements.map((existing) =>
-          existing.id === statement.id ? { ...existing, isHidden } : existing,
+          existing.id === statement.id
+            ? { ...existing, isHidden, isAwaitingApproval: false }
+            : existing,
         ),
       }));
       setUpdatingStatementIds((current) => current.filter((statementId) => statementId !== statement.id));
@@ -223,7 +247,7 @@ export function EventSupportViewStory() {
   return (
     <StoryContainer
       title="Event Support View"
-      description="Alex's laptop during a live session: who's here, where every phone is, how the current post is landing, and how the session has gone so far. Clocks tick on their own; after End the header shows how long the session ran, most phones sit on the end screen, and the charts cover the whole session. Statements from the room are listed newest first; Hide drops one from phones and the display, and hidden ones stay listed, dimmed, with Unhide. Reload all phones asks to confirm first. Running the room stays on the display."
+      description="Alex's laptop during a live session: who's here, where every phone is, how the current post is landing, and how the session has gone so far. Clocks tick on their own; after End the header shows how long the session ran, most phones sit on the end screen, and the charts cover the whole session. Statements waiting for approval sit at the top, oldest first: Approve shows one on phones and the display, Reject keeps it hidden and moves it into the list. The rest are listed newest first; Hide drops one from phones and the display, and hidden ones stay listed, dimmed, with Unhide. Reload all phones asks to confirm first. Running the room stays on the display."
       variants={[
         {
           id: "mid-question",
