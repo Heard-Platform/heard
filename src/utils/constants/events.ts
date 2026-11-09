@@ -1,12 +1,12 @@
 import type { EventInvite, EventLink } from "../../types";
 
+export const GEORGETOWN_EVENT_ID = 16;
+
 export const EVENT_SHORT_ROUTES = new Map<string, string>([
   ["prgn", "4"],
   ["live-go", "3"],
-  ["gu", "14"],
+  ["gu", GEORGETOWN_EVENT_ID.toString()],
 ]);
-
-export const GEORGETOWN_EVENT_ID = 16;
 
 export const GEORGETOWN_EVENT_INVITE: EventInvite = {
   headline:
