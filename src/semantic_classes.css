@@ -66,6 +66,22 @@
   color: var(--color-purple-700);
 }
 
+.audience-share-track-bg {
+  background-color: var(--color-slate-100);
+}
+
+.audience-share-bg {
+  background-color: var(--color-purple-100);
+}
+
+.audience-share-edge-bg {
+  background-color: var(--color-purple-500);
+}
+
+.audience-opt-out-share-bg {
+  background-color: var(--color-slate-200);
+}
+
 .new-statement-strip-bg {
   background-color: var(--color-purple-50);
 }
