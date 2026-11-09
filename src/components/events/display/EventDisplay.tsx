@@ -27,11 +27,20 @@ export interface EventDisplayProps {
   post: EventPost | null;
   joinUrl: string;
   joinLabel: string;
+  reportUrl: string;
   isBusy: boolean;
   onAction: (action: ModeratorAction) => void;
 }
 
-export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onAction }: EventDisplayProps) {
+export function EventDisplay({
+  eventState,
+  post,
+  joinUrl,
+  joinLabel,
+  reportUrl,
+  isBusy,
+  onAction,
+}: EventDisplayProps) {
   const layoutGroupId = useId();
   const { isIdle, resetIdleTimer } = useIdle(CONTROLS_HIDE_AFTER_IDLE_MS);
   const [view, setView] = useState<DisplayView>("agree-vs-disagree");
@@ -67,7 +76,12 @@ export function EventDisplay({ eventState, post, joinUrl, joinLabel, isBusy, onA
 
   const renderScreen = () => {
     if (screen === "end") {
-      return <DisplayEndCard totals={eventState.totals} />;
+      return (
+        <DisplayEndCard
+          totals={eventState.totals}
+          reportUrl={reportUrl}
+        />
+      );
     }
     if (screen === "join" || eventState.currentIndex === null) {
       return areDoorsOpen ? (
