@@ -169,6 +169,7 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
           statements={deck!.statements}
           votedCount={deck!.votedCount}
           onVote={handleVote}
+          onAddStatement={handleAddStatement}
         />
       );
     case "end":

@@ -1,7 +1,7 @@
 import { useRef } from "react";
-import { AnimatePresence } from "motion/react";
 import type { SwipeSixItem } from "../../types";
 import { VoteButtonRow } from "../VoteButton";
+import { RoomProgressBar } from "../room/RoomProgressBar";
 import { FlyerProgressSegments } from "../flyer/FlyerProgress";
 import {
   FlyerStackedCard,
@@ -11,7 +11,6 @@ import {
   STACK_POSES,
   type SwipeVote,
 } from "../flyer/FlyerSwipeCard";
-import { TopicPill, topicPillColor } from "./TopicPill";
 
 const isAddedByHost = ({ statement, room }: SwipeSixItem) =>
   statement.author === room.hostId;
@@ -19,11 +18,10 @@ const isAddedByHost = ({ statement, room }: SwipeSixItem) =>
 interface SwipeDeckProps {
   items: SwipeSixItem[];
   votedCount: number;
-  hideCommunity?: boolean;
   onVote: (item: SwipeSixItem, vote: SwipeVote) => void;
 }
 
-export function SwipeDeck({ items, votedCount, hideCommunity = false, onVote }: SwipeDeckProps) {
+export function SwipeDeck({ items, votedCount, onVote }: SwipeDeckProps) {
   const stack = items.slice(votedCount);
   const current = stack[0];
   const cardsBehind = stack.slice(1, STACK_POSES.length);
@@ -33,15 +31,19 @@ export function SwipeDeck({ items, votedCount, hideCommunity = false, onVote }: 
 
   return (
     <>
+      <div className="mt-4">
+        <RoomProgressBar total={items.length} completed={votedCount} />
+      </div>
       {current && (
-        <TopicSlider item={current} topicIndex={topicIndexAt(items, votedCount)} hideCommunity={hideCommunity} />
+        <h1 className="mt-4 text-xl font-bold leading-tight dark-text">
+          {current.room.topic}
+        </h1>
       )}
 
-      <div className="mt-5">
-        <SwipeProgress votedCount={votedCount} total={items.length} />
-      </div>
-
-      <div className="relative mt-5 h-60" style={{ marginBottom: STACK_PEEK_PX }}>
+      <div
+        className="relative mt-5 h-48"
+        style={{ marginBottom: STACK_PEEK_PX }}
+      >
         {cardsBehind.map((item, i) => (
           <FlyerStackedCard
             key={item.statement.id}
@@ -72,11 +74,6 @@ export function SwipeDeck({ items, votedCount, hideCommunity = false, onVote }: 
           onPass={() => swipe("pass")}
         />
       </div>
-      <div className="grid grid-cols-3 gap-3 pt-2 text-center text-xs secondary-text">
-        <span>← Swipe left</span>
-        <span>↑ Swipe up</span>
-        <span>Swipe right →</span>
-      </div>
     </>
   );
 }
@@ -89,38 +86,5 @@ export function SwipeProgress({ votedCount, total }: { votedCount: number; total
         {votedCount} of {total}
       </span>
     </div>
-  );
-}
-
-// Which topic (0, 1, 2...) the card at this position belongs to, counting each change of post.
-function topicIndexAt(items: SwipeSixItem[], position: number): number {
-  return items.slice(1, position + 1).filter((item, i) => item.room.id !== items[i].room.id).length;
-}
-
-// A simulated horizontal scroller: when the topic changes, the old pill flies off left
-// and the new one slides in from the right. The first topic slides in on open.
-interface TopicSliderProps {
-  item: SwipeSixItem;
-  topicIndex: number;
-  hideCommunity: boolean;
-}
-
-function TopicSlider({ item, topicIndex, hideCommunity }: TopicSliderProps) {
-  return (
-    <>
-      <p className="mt-3 text-xs font-semibold uppercase tracking-wide secondary-text">
-        Topic
-      </p>
-      <div className="-mx-5 mt-1 overflow-hidden px-5">
-        <AnimatePresence mode="popLayout" initial>
-          <TopicPill
-            key={item.room.id}
-            room={item.room}
-            colorClass={topicPillColor(topicIndex)}
-            hideCommunity={hideCommunity}
-          />
-        </AnimatePresence>
-      </div>
-    </>
   );
 }

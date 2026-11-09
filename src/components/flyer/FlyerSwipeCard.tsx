@@ -1,6 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { motion, useAnimate, useMotionValue, useTransform, type MotionValue, type PanInfo } from "motion/react";
-import { User } from "lucide-react";
 import type { Statement } from "../../types";
 import { useFitText } from "../../hooks/useFitText";
 
@@ -56,7 +55,7 @@ const FLY_OFF_TARGET: Record<SwipeVote, { x: number; y: number }> = {
   pass: { x: 0, y: -FLY_OFF_DISTANCE },
 };
 
-export const FLYER_CARD_CLASS = "absolute inset-0 flex flex-col rounded-3xl bg-white p-6";
+export const FLYER_CARD_CLASS = "absolute inset-0 flex flex-col rounded-3xl bg-white px-6 pt-6 pb-3";
 export const FLYER_CARD_SHADOW = "0 12px 32px rgba(28, 27, 31, 0.12)";
 export const STACK_POSES = [
   { scale: 1, y: 0 },
@@ -64,7 +63,7 @@ export const STACK_POSES = [
   { scale: 0.9, y: 28 },
 ];
 export const STACK_PEEK_PX = STACK_POSES[STACK_POSES.length - 1].y;
-const STATEMENT_MAX_FONT_PX = 24;
+const STATEMENT_MAX_FONT_PX = 18;
 const STATEMENT_MIN_FONT_PX = 12;
 
 interface FlyerCardContentProps {
@@ -84,20 +83,15 @@ export function FlyerCardContent({ statement, addedByHost = false }: FlyerCardCo
     <>
       <p
         ref={ref}
-        className="min-h-0 flex-1 overflow-hidden font-extrabold leading-[1.15] tracking-tight text-[#1C1B1F]"
+        className="min-h-0 flex-1 overflow-hidden leading-relaxed text-[#1C1B1F]"
         style={{ fontSize }}
       >
         {statement.text}
       </p>
 
-      <div className="mt-3 flex shrink-0 items-center gap-2">
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EDE8DE]">
-          <User className="h-4 w-4 text-[#6B6760]" />
-        </div>
-        <span className="text-sm font-medium text-[#6B6760]">
-          {addedByHost ? "Added by host" : "Added by a participant"}
-        </span>
-      </div>
+      <p className="mt-1.5 shrink-0 text-xs font-medium text-[#6B6760]">
+        {addedByHost ? "Added by host" : "Added by a participant"}
+      </p>
     </>
   );
 }
