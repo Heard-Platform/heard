@@ -1,6 +1,10 @@
 import { useEffect, useId, useState } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "motion/react";
-import type { LiveEventView, ModeratorAction } from "../../../types";
+import type {
+  AudienceBreakdownQuestion,
+  LiveEventView,
+  ModeratorAction,
+} from "../../../types";
 import type { EventPost } from "../../../hooks/useEventPost";
 import { useIdle } from "../../../hooks/useIdle";
 import { getDisplayScreen, isAttendeeStatement, type DisplayView } from "../../../utils/event-display";
@@ -17,6 +21,7 @@ import { DisplayPromptIntro } from "./DisplayPromptIntro";
 import { DisplaySpotlight } from "./DisplaySpotlight";
 import { Loader } from "../../widgets/Loader";
 import { EndSessionConfirm } from "./EndSessionConfirm";
+import { AudienceBreakdown } from "./AudienceBreakdown";
 
 const CONTROLS_HIDE_AFTER_IDLE_MS = 1000;
 const SCREEN_FADE_SECONDS = 0.25;
@@ -29,7 +34,11 @@ export interface EventDisplayProps {
   joinLabel: string;
   reportUrl: string;
   isBusy: boolean;
+  isShowingAudienceBreakdown: boolean;
+  audienceBreakdownQuestions: AudienceBreakdownQuestion[] | null;
   onAction: (action: ModeratorAction) => void;
+  onShowAudienceBreakdown: () => void;
+  onCloseAudienceBreakdown: () => void;
 }
 
 export function EventDisplay({
@@ -39,7 +48,11 @@ export function EventDisplay({
   joinLabel,
   reportUrl,
   isBusy,
+  isShowingAudienceBreakdown,
+  audienceBreakdownQuestions,
   onAction,
+  onShowAudienceBreakdown,
+  onCloseAudienceBreakdown,
 }: EventDisplayProps) {
   const layoutGroupId = useId();
   const { isIdle, resetIdleTimer } = useIdle(CONTROLS_HIDE_AFTER_IDLE_MS);
@@ -49,11 +62,13 @@ export function EventDisplay({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSpotlightStatementId(null);
+      if (event.key !== "Escape") return;
+      setSpotlightStatementId(null);
+      onCloseAudienceBreakdown();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [onCloseAudienceBreakdown]);
 
   const spotlightStatement = post?.statements.find((statement) => statement.id === spotlightStatementId) ?? null;
   const questionLabel = `Question ${(eventState.currentIndex ?? 0) + 1}`;
@@ -143,6 +158,7 @@ export function EventDisplay({
   };
 
   const renderControls = () => {
+    if (isShowingAudienceBreakdown) return null;
     if (screen === "join") {
       return (
         <JoinControls
@@ -151,6 +167,7 @@ export function EventDisplay({
           isHidden={isIdle}
           isBusy={isBusy}
           onAction={onAction}
+          onShowAudienceBreakdown={onShowAudienceBreakdown}
         />
       );
     }
@@ -162,6 +179,7 @@ export function EventDisplay({
           isHidden={isIdle}
           isBusy={isBusy}
           onAction={onAction}
+          onShowAudienceBreakdown={onShowAudienceBreakdown}
         />
       );
     }
@@ -179,6 +197,7 @@ export function EventDisplay({
           onViewChange={setView}
           onAction={onAction}
           onEndRequest={() => setIsConfirmingEnd(true)}
+          onShowAudienceBreakdown={onShowAudienceBreakdown}
         />
       );
     }
@@ -206,6 +225,12 @@ export function EventDisplay({
               {renderScreen()}
             </motion.div>
           </AnimatePresence>
+          {isShowingAudienceBreakdown && (
+            <AudienceBreakdown
+              questions={audienceBreakdownQuestions}
+              onClose={onCloseAudienceBreakdown}
+            />
+          )}
           {renderControls()}
           {isConfirmingEnd && (
             <EndSessionConfirm

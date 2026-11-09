@@ -291,7 +291,7 @@ export interface AudienceBreakdownOption {
 }
 
 export interface AudienceBreakdownQuestion {
-  questionId: string;
+  questionId: number;
   text: string;
   multiSelect: boolean;
   hasEnoughAnswers: boolean;
@@ -1156,6 +1156,8 @@ export interface FeatureResults {
   sessionExpiryBypassedSince: number;
   rateLimitedStatements: number;
   rateLimitHitsSince: number;
+  audienceBreakdownOpens: number;
+  audienceBreakdownOpensSince: number;
   anonResponseTripwireShown: number;
   anonResponseTripwireEmailSubmitted: number;
   anonResponseTripwireSince: number;

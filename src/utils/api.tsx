@@ -47,6 +47,7 @@ import {
   type EventOnboardingQuestionList,
   type AttendeeOnboarding,
   type SupportViewStats,
+  type AudienceBreakdownQuestion,
   type EventReport,
   type LiveHeartbeat,
   EventSummary,
@@ -294,6 +295,20 @@ class ApiClient extends BaseApiClient {
   ): Promise<ApiResponse<{ stats: SupportViewStats }>> {
     const query = displayKey ? `?${new URLSearchParams({ displayKey })}` : "";
     return this.request<{ stats: SupportViewStats }>(`/event/${eventId}/support${query}`);
+  }
+
+  async getAudienceBreakdown(
+    eventId: string,
+    displayKey: string | null,
+  ): Promise<
+    ApiResponse<{ questions: AudienceBreakdownQuestion[] }>
+  > {
+    const query = displayKey
+      ? `?${new URLSearchParams({ displayKey })}`
+      : "";
+    return this.request<{ questions: AudienceBreakdownQuestion[] }>(
+      `/event/${eventId}/audience-breakdown${query}`,
+    );
   }
 
   async getEventReport(

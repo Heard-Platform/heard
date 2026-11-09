@@ -5,10 +5,10 @@ import type {
   AudienceBreakdownQuestion,
 } from "../../../types";
 import { Button } from "../../ui/button";
+import { Loader } from "../../widgets/Loader";
 
 const MOST_COLUMNS = 3;
-const FEWEST_PEOPLE_PER_ANSWER = 5;
-const FEWEST_PEOPLE_PER_QUESTION = 10;
+const FEWEST_PEOPLE_PER_GROUP = 5;
 
 const GRID_COLUMNS_CLASS_NAME_BY_COUNT: Record<number, string> = {
   1: "grid-cols-1",
@@ -22,7 +22,7 @@ const countColumns = (questionCount: number): number => {
 };
 
 interface AudienceBreakdownProps {
-  questions: AudienceBreakdownQuestion[];
+  questions: AudienceBreakdownQuestion[] | null;
   onClose: () => void;
 }
 
@@ -50,17 +50,35 @@ export function AudienceBreakdown({
           <X />
         </Button>
       </div>
-      {questions.length === 0 ? (
-        <p className="text-[1.4cqw] font-semibold secondary-text">
-          This event has no questions about who's here.
-        </p>
-      ) : (
-        <>
-          <AudienceQuestionGrid questions={questions} />
-          <AnonymityNote />
-        </>
-      )}
+      <AudienceBreakdownBody questions={questions} />
     </motion.div>
+  );
+}
+
+function AudienceBreakdownBody({
+  questions,
+}: {
+  questions: AudienceBreakdownQuestion[] | null;
+}) {
+  if (!questions) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
+  if (questions.length === 0) {
+    return (
+      <p className="text-[1.4cqw] font-semibold secondary-text">
+        This event has no questions about who's here.
+      </p>
+    );
+  }
+  return (
+    <>
+      <AudienceQuestionGrid questions={questions} />
+      <AnonymityNote />
+    </>
   );
 }
 
@@ -88,10 +106,9 @@ function AudienceQuestionGrid({
 function AnonymityNote() {
   return (
     <p className="text-center text-[1cqw] font-semibold secondary-text">
-      To protect anonymity, answers picked by fewer than{" "}
-      {FEWEST_PEOPLE_PER_ANSWER} people are grouped into Other or
-      hidden, and a question's results appear once{" "}
-      {FEWEST_PEOPLE_PER_QUESTION} people have answered it.
+      To protect anonymity, results only show groups of at least{" "}
+      {FEWEST_PEOPLE_PER_GROUP} people. Smaller groups are folded into
+      Other or hidden.
     </p>
   );
 }

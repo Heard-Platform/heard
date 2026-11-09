@@ -1,5 +1,12 @@
 import type { ReactNode } from "react";
-import { ChevronLeft, ChevronRight, DoorOpen, Pause, Play } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  DoorOpen,
+  Pause,
+  Play,
+  Users,
+} from "lucide-react";
 import { Button } from "../../ui/button";
 import type { ModeratorAction } from "../../../types";
 import type { DisplayView } from "../../../utils/event-display";
@@ -30,13 +37,22 @@ interface JoinControlsProps {
   isHidden: boolean;
   isBusy: boolean;
   onAction: (action: ModeratorAction) => void;
+  onShowAudienceBreakdown: () => void;
 }
 
-export function JoinControls({ areDoorsOpen, peopleHere, isHidden, isBusy, onAction }: JoinControlsProps) {
+export function JoinControls({
+  areDoorsOpen,
+  peopleHere,
+  isHidden,
+  isBusy,
+  onAction,
+  onShowAudienceBreakdown,
+}: JoinControlsProps) {
   if (!areDoorsOpen) {
     return (
       <ControlsPanel isHidden={isHidden}>
         <HeadcountLabel text="Doors closed" />
+        <AudienceBreakdownButton onClick={onShowAudienceBreakdown} />
         <Button className="font-semibold" disabled={isBusy} onClick={() => onAction("open")}>
           Open doors <DoorOpen />
         </Button>
@@ -47,6 +63,7 @@ export function JoinControls({ areDoorsOpen, peopleHere, isHidden, isBusy, onAct
   return (
     <ControlsPanel isHidden={isHidden}>
       <HeadcountLabel text={`${peopleHere} here`} />
+      <AudienceBreakdownButton onClick={onShowAudienceBreakdown} />
       <Button className="font-semibold" disabled={isBusy} onClick={() => onAction("start")}>
         Start with the first prompt <ChevronRight />
       </Button>
@@ -60,6 +77,7 @@ interface IntroControlsProps {
   isHidden: boolean;
   isBusy: boolean;
   onAction: (action: ModeratorAction) => void;
+  onShowAudienceBreakdown: () => void;
 }
 
 export function IntroControls({
@@ -68,10 +86,12 @@ export function IntroControls({
   isHidden,
   isBusy,
   onAction,
+  onShowAudienceBreakdown,
 }: IntroControlsProps) {
   return (
     <ControlsPanel isHidden={isHidden}>
       <HeadcountLabel text={`${peopleHere} here`} />
+      <AudienceBreakdownButton onClick={onShowAudienceBreakdown} />
       <Button
         variant="outline"
         className="font-semibold"
@@ -103,6 +123,7 @@ interface BoardControlsProps {
   onViewChange: (view: DisplayView) => void;
   onAction: (action: ModeratorAction) => void;
   onEndRequest: () => void;
+  onShowAudienceBreakdown: () => void;
 }
 
 export function BoardControls({
@@ -117,10 +138,12 @@ export function BoardControls({
   onViewChange,
   onAction,
   onEndRequest,
+  onShowAudienceBreakdown,
 }: BoardControlsProps) {
   return (
     <ControlsPanel isHidden={isHidden}>
       <HeadcountLabel text={`${peopleHere} here · ${finishedCurrentPost} finished this one`} />
+      <AudienceBreakdownButton onClick={onShowAudienceBreakdown} />
       <div role="group" aria-label="Display view" className="flex gap-1">
         {VIEW_OPTIONS.map((option) => (
           <Button
@@ -158,6 +181,24 @@ export function BoardControls({
         )}
       </div>
     </ControlsPanel>
+  );
+}
+
+function AudienceBreakdownButton({
+  onClick,
+}: {
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label="Who's in the room"
+      title="Who's in the room"
+      onClick={onClick}
+    >
+      <Users />
+    </Button>
   );
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import type {
   AudienceBreakdownOption,
@@ -263,6 +263,8 @@ function LiveDemoRun({ initialState }: { initialState: LiveEventView }) {
     }, BUSY_MS);
   };
 
+  const audienceBreakdownProps = useStoryAudienceBreakdown();
+
   return (
     <ProjectorFrame>
       <EventDisplay
@@ -272,6 +274,7 @@ function LiveDemoRun({ initialState }: { initialState: LiveEventView }) {
         joinLabel={JOIN_LABEL}
         reportUrl={REPORT_URL}
         isBusy={isBusy}
+        {...audienceBreakdownProps}
         onAction={handleAction}
       />
     </ProjectorFrame>
@@ -320,7 +323,19 @@ const withProcurementStatementOnBoard = (now: number) => [attendeeStatementWritt
 const manyAttendeeStatements = (now: number) =>
   ATTENDEE_STATEMENTS.map((attendeeStatement, index) => attendeeStatementWrittenAt(attendeeStatement.id, now - (ATTENDEE_STATEMENTS.length - index) * 40 * SECOND_MS));
 
+function useStoryAudienceBreakdown() {
+  const [isShowing, setIsShowing] = useState(false);
+  const handleClose = useCallback(() => setIsShowing(false), []);
+  return {
+    isShowingAudienceBreakdown: isShowing,
+    audienceBreakdownQuestions: FULL_ROOM_BREAKDOWN,
+    onShowAudienceBreakdown: () => setIsShowing(true),
+    onCloseAudienceBreakdown: handleClose,
+  };
+}
+
 function StaticDisplay({ state, post }: { state: LiveEventView; post: EventPost | null }) {
+  const audienceBreakdownProps = useStoryAudienceBreakdown();
   return (
     <ProjectorFrame>
       <EventDisplay
@@ -330,6 +345,7 @@ function StaticDisplay({ state, post }: { state: LiveEventView; post: EventPost 
         joinLabel={JOIN_LABEL}
         reportUrl={REPORT_URL}
         isBusy={false}
+        {...audienceBreakdownProps}
         onAction={(action) => console.log("[Story] display action", action)}
       />
     </ProjectorFrame>
@@ -371,7 +387,7 @@ const optOutShare = (percent: number): AudienceBreakdownOption => ({
 });
 
 const ROLE_BREAKDOWN: AudienceBreakdownQuestion = {
-  questionId: "role",
+  questionId: 1,
   text: "Are you a...",
   multiSelect: false,
   hasEnoughAnswers: true,
@@ -386,7 +402,7 @@ const ROLE_BREAKDOWN: AudienceBreakdownQuestion = {
 };
 
 const FIELD_BREAKDOWN: AudienceBreakdownQuestion = {
-  questionId: "field",
+  questionId: 2,
   text: "What is your field of study or work?",
   multiSelect: false,
   hasEnoughAnswers: true,
@@ -401,7 +417,7 @@ const FIELD_BREAKDOWN: AudienceBreakdownQuestion = {
 };
 
 const POLITICAL_ORIENTATION_BREAKDOWN: AudienceBreakdownQuestion = {
-  questionId: "political",
+  questionId: 3,
   text: "How would you describe your political orientation?",
   multiSelect: false,
   hasEnoughAnswers: true,
@@ -417,7 +433,7 @@ const POLITICAL_ORIENTATION_BREAKDOWN: AudienceBreakdownQuestion = {
 };
 
 const GENDER_BREAKDOWN: AudienceBreakdownQuestion = {
-  questionId: "gender",
+  questionId: 4,
   text: "What is your gender?",
   multiSelect: false,
   hasEnoughAnswers: false,
@@ -426,7 +442,7 @@ const GENDER_BREAKDOWN: AudienceBreakdownQuestion = {
 };
 
 const IDENTITY_BREAKDOWN: AudienceBreakdownQuestion = {
-  questionId: "identity",
+  questionId: 5,
   text: "How do you identify?",
   multiSelect: true,
   hasEnoughAnswers: true,
@@ -489,7 +505,7 @@ export function EventDisplayStory() {
   return (
     <StoryContainer
       title="Event Display"
-      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after a second. Before the doors open, the screen tells the moderator no one can join yet and hides the join code. Live starts there: press Open doors to show the join code and let people in (the join screen counts people ready, plus how many are still answering the onboarding questions while anyone is), then Start opens the first prompt full screen with voting closed until Start voting, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Next opens the next prompt on its intro; Back goes straight to voting on the prompt before. Pause works; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it. Who's in the room shows how the attendees answered the event questions, coarse enough that no one can be picked out; tap the X to close, tap again to reopen."
+      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after a second. Before the doors open, the screen tells the moderator no one can join yet and hides the join code. Live starts there: press Open doors to show the join code and let people in (the join screen counts people ready, plus how many are still answering the onboarding questions while anyone is), then Start opens the first prompt full screen with voting closed until Start voting, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Next opens the next prompt on its intro; Back goes straight to voting on the prompt before. Pause works; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it. Who's in the room shows how the attendees answered the event questions, coarse enough that no one can be picked out; open it from the people button in the controls, or tap the X to close and tap again to reopen in its own variants."
       variants={[
         { id: "live", label: "Live (Open doors, Start, votes moving)", children: <LiveDemo initialState={NOT_STARTED_STATE} /> },
         {

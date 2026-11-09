@@ -31,6 +31,7 @@ import {
   saveLiveEventState,
 } from "./kv-utils.tsx";
 import { RouteError } from "./route-error.ts";
+import { loadAudienceBreakdown } from "./event-audience-breakdown-utils.ts";
 import {
   isValidOnboardingQuestionList,
   loadAttendeeOnboarding,
@@ -319,6 +320,26 @@ app.post(
       return { live: await loadEventView(eventId, next, now) };
     },
     "Failed to update live event",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/event/:eventId/audience-breakdown",
+  defineRoute(
+    {
+      displayKey: {
+        type: "string",
+        required: false,
+      },
+    },
+    async ({ displayKey }: { displayKey?: string }, c: Context) => ({
+      questions: await loadAudienceBreakdown(
+        parseEventId(c.req.param("eventId")),
+        c.get("userId"),
+        displayKey,
+      ),
+    }),
+    "Failed to load who's in the room",
   ),
 );
 
