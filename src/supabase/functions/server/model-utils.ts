@@ -128,9 +128,10 @@ export const getDemographicQuestionsForEvents = async (
 export const getDemographicAnswersForQuestionIds = async (
   questionIds: number[],
 ) => {
-  return selectAll<DemographicAnswer>(
+  return selectAllWithoutLimit<DemographicAnswer>(
     "demographic_answers",
     {},
+    "id",
     (q: any) => q.in("questionId", questionIds),
   );
 };

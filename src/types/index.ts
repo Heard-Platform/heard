@@ -284,6 +284,21 @@ export interface LiveEventView extends LiveEventState {
   finishedCurrentPost: number;
 }
 
+export interface AudienceBreakdownOption {
+  label: string;
+  percent: number;
+  isOptOut: boolean;
+}
+
+export interface AudienceBreakdownQuestion {
+  questionId: number;
+  text: string;
+  multiSelect: boolean;
+  hasEnoughAnswers: boolean;
+  options: AudienceBreakdownOption[];
+  hasHiddenAnswers: boolean;
+}
+
 export interface EventReportOpening {
   eventName: string;
   eventSubtitle: string | null;

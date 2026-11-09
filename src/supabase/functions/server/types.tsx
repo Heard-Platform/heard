@@ -197,6 +197,21 @@ export interface DemographicQuestion {
   position: number | null;
 };
 
+export interface AudienceBreakdownOption {
+  label: string;
+  percent: number;
+  isOptOut: boolean;
+}
+
+export interface AudienceBreakdownQuestion {
+  questionId: number;
+  text: string;
+  multiSelect: boolean;
+  hasEnoughAnswers: boolean;
+  options: AudienceBreakdownOption[];
+  hasHiddenAnswers: boolean;
+}
+
 export type RoomDemographicQuestion = DemographicQuestion & {
   roomId: string;
 };

@@ -1,10 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { RotateCcw } from "lucide-react";
-import type { DebateRoom, LiveEventView, ModeratorAction, Statement } from "../types";
+import type {
+  AudienceBreakdownOption,
+  AudienceBreakdownQuestion,
+  DebateRoom,
+  LiveEventView,
+  ModeratorAction,
+  Statement,
+} from "../types";
 import type { EventPost } from "../hooks/useEventPost";
 import { EventDisplay } from "../components/events/display/EventDisplay";
 import { DisplayBoard } from "../components/events/display/DisplayBoard";
 import { DisplaySpotlight } from "../components/events/display/DisplaySpotlight";
+import { AudienceBreakdown } from "../components/events/display/AudienceBreakdown";
 import type { DisplayView } from "../utils/event-display";
 import { Button } from "../components/ui/button";
 import { StoryContainer } from "./StoryContainer";
@@ -255,6 +263,8 @@ function LiveDemoRun({ initialState }: { initialState: LiveEventView }) {
     }, BUSY_MS);
   };
 
+  const audienceBreakdownProps = useStoryAudienceBreakdown();
+
   return (
     <ProjectorFrame>
       <EventDisplay
@@ -264,6 +274,7 @@ function LiveDemoRun({ initialState }: { initialState: LiveEventView }) {
         joinLabel={JOIN_LABEL}
         reportUrl={REPORT_URL}
         isBusy={isBusy}
+        {...audienceBreakdownProps}
         onAction={handleAction}
       />
     </ProjectorFrame>
@@ -312,7 +323,19 @@ const withProcurementStatementOnBoard = (now: number) => [attendeeStatementWritt
 const manyAttendeeStatements = (now: number) =>
   ATTENDEE_STATEMENTS.map((attendeeStatement, index) => attendeeStatementWrittenAt(attendeeStatement.id, now - (ATTENDEE_STATEMENTS.length - index) * 40 * SECOND_MS));
 
+function useStoryAudienceBreakdown() {
+  const [isShowing, setIsShowing] = useState(false);
+  const handleClose = useCallback(() => setIsShowing(false), []);
+  return {
+    isShowingAudienceBreakdown: isShowing,
+    audienceBreakdownQuestions: FULL_ROOM_BREAKDOWN,
+    onShowAudienceBreakdown: () => setIsShowing(true),
+    onCloseAudienceBreakdown: handleClose,
+  };
+}
+
 function StaticDisplay({ state, post }: { state: LiveEventView; post: EventPost | null }) {
+  const audienceBreakdownProps = useStoryAudienceBreakdown();
   return (
     <ProjectorFrame>
       <EventDisplay
@@ -322,6 +345,7 @@ function StaticDisplay({ state, post }: { state: LiveEventView; post: EventPost 
         joinLabel={JOIN_LABEL}
         reportUrl={REPORT_URL}
         isBusy={false}
+        {...audienceBreakdownProps}
         onAction={(action) => console.log("[Story] display action", action)}
       />
     </ProjectorFrame>
@@ -351,11 +375,137 @@ function SpotlightStory() {
   );
 }
 
+const audienceShare = (
+  label: string,
+  percent: number,
+): AudienceBreakdownOption => ({ label, percent, isOptOut: false });
+
+const optOutShare = (percent: number): AudienceBreakdownOption => ({
+  label: "Prefer not to say",
+  percent,
+  isOptOut: true,
+});
+
+const ROLE_BREAKDOWN: AudienceBreakdownQuestion = {
+  questionId: 1,
+  text: "Are you a...",
+  multiSelect: false,
+  hasEnoughAnswers: true,
+  options: [
+    audienceShare("Undergrad student", 55),
+    audienceShare("Grad student", 20),
+    audienceShare("Faculty", 10),
+    audienceShare("Other", 10),
+    optOutShare(5),
+  ],
+  hasHiddenAnswers: false,
+};
+
+const FIELD_BREAKDOWN: AudienceBreakdownQuestion = {
+  questionId: 2,
+  text: "What is your field of study or work?",
+  multiSelect: false,
+  hasEnoughAnswers: true,
+  options: [
+    audienceShare("Humanities", 15),
+    audienceShare("Social sciences", 30),
+    audienceShare("STEM", 15),
+    audienceShare("Law or policy", 25),
+    audienceShare("Other", 10),
+  ],
+  hasHiddenAnswers: true,
+};
+
+const POLITICAL_ORIENTATION_BREAKDOWN: AudienceBreakdownQuestion = {
+  questionId: 3,
+  text: "How would you describe your political orientation?",
+  multiSelect: false,
+  hasEnoughAnswers: true,
+  options: [
+    audienceShare("Conservative", 15),
+    audienceShare("Moderate", 25),
+    audienceShare("Liberal", 30),
+    audienceShare("Progressive", 20),
+    audienceShare("Other", 5),
+    optOutShare(5),
+  ],
+  hasHiddenAnswers: false,
+};
+
+const GENDER_BREAKDOWN: AudienceBreakdownQuestion = {
+  questionId: 4,
+  text: "What is your gender?",
+  multiSelect: false,
+  hasEnoughAnswers: false,
+  options: [],
+  hasHiddenAnswers: false,
+};
+
+const IDENTITY_BREAKDOWN: AudienceBreakdownQuestion = {
+  questionId: 5,
+  text: "How do you identify?",
+  multiSelect: true,
+  hasEnoughAnswers: true,
+  options: [
+    audienceShare("White", 40),
+    audienceShare("Black", 15),
+    audienceShare("Arab", 10),
+    audienceShare("Jewish", 20),
+    audienceShare("Muslim", 15),
+    audienceShare("Christian", 30),
+    audienceShare("Other", 15),
+  ],
+  hasHiddenAnswers: true,
+};
+
+const FULL_ROOM_BREAKDOWN = [
+  ROLE_BREAKDOWN,
+  FIELD_BREAKDOWN,
+  POLITICAL_ORIENTATION_BREAKDOWN,
+  GENDER_BREAKDOWN,
+  IDENTITY_BREAKDOWN,
+];
+
+const toNotEnoughAnswers = (
+  question: AudienceBreakdownQuestion,
+): AudienceBreakdownQuestion => ({
+  ...question,
+  hasEnoughAnswers: false,
+  options: [],
+  hasHiddenAnswers: false,
+});
+
+function AudienceBreakdownStory({
+  questions,
+}: {
+  questions: AudienceBreakdownQuestion[];
+}) {
+  const [isOpen, setIsOpen] = useState(true);
+  return (
+    <ProjectorFrame>
+      <Board view="agree-vs-disagree" />
+      {isOpen ? (
+        <AudienceBreakdown
+          questions={questions}
+          onClose={() => setIsOpen(false)}
+        />
+      ) : (
+        <button
+          type="button"
+          className="absolute inset-0"
+          onClick={() => setIsOpen(true)}
+          aria-label="Show who's in the room again"
+        />
+      )}
+    </ProjectorFrame>
+  );
+}
+
 export function EventDisplayStory() {
   return (
     <StoryContainer
       title="Event Display"
-      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after a second. Before the doors open, the screen tells the moderator no one can join yet and hides the join code. Live starts there: press Open doors to show the join code and let people in (the join screen counts people ready, plus how many are still answering the onboarding questions while anyone is), then Start opens the first prompt full screen with voting closed until Start voting, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Next opens the next prompt on its intro; Back goes straight to voting on the prompt before. Pause works; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it."
+      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after a second. Before the doors open, the screen tells the moderator no one can join yet and hides the join code. Live starts there: press Open doors to show the join code and let people in (the join screen counts people ready, plus how many are still answering the onboarding questions while anyone is), then Start opens the first prompt full screen with voting closed until Start voting, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Next opens the next prompt on its intro; Back goes straight to voting on the prompt before. Pause works; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it. Who's in the room shows how the attendees answered the event questions, coarse enough that no one can be picked out; open it from the people button in the controls, or tap the X to close and tap again to reopen in its own variants."
       variants={[
         { id: "live", label: "Live (Open doors, Start, votes moving)", children: <LiveDemo initialState={NOT_STARTED_STATE} /> },
         {
@@ -410,6 +560,36 @@ export function EventDisplayStory() {
           children: <BoardStory view="agree-vs-disagree" votingPaused attendeeStatements={withProcurementStatementOnBoard} />,
         },
         { id: "spotlight", label: "Spotlight", children: <SpotlightStory /> },
+        {
+          id: "whos-in-the-room",
+          label: "Who's in the room",
+          children: (
+            <AudienceBreakdownStory questions={FULL_ROOM_BREAKDOWN} />
+          ),
+        },
+        {
+          id: "whos-in-the-room-four",
+          label: "Who's in the room, four questions",
+          children: (
+            <AudienceBreakdownStory
+              questions={FULL_ROOM_BREAKDOWN.slice(0, 4)}
+            />
+          ),
+        },
+        {
+          id: "whos-in-the-room-few-people",
+          label: "Who's in the room, few people",
+          children: (
+            <AudienceBreakdownStory
+              questions={FULL_ROOM_BREAKDOWN.map(toNotEnoughAnswers)}
+            />
+          ),
+        },
+        {
+          id: "whos-in-the-room-no-questions",
+          label: "Who's in the room, no questions",
+          children: <AudienceBreakdownStory questions={[]} />,
+        },
         {
           id: "many-from-room",
           label: "Many from the room",
