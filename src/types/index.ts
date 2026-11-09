@@ -626,6 +626,7 @@ export type VoteOnStatementOptions = {
 
 export type SubmitStatementOptions = {
   isStatementFromFeed?: boolean;
+  isStatementFromEvent?: boolean;
 };
 
 export type Cover = {

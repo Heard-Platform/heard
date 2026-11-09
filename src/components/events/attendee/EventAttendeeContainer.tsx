@@ -112,6 +112,7 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
       const { statement, isAwaitingApproval } = await submitStatement(
         currentRoomId,
         text,
+        { isStatementFromEvent: true },
       );
       api.trackEvent(trackedEventType, currentRoomId);
       setStatementText("");
