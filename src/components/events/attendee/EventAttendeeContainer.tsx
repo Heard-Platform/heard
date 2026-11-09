@@ -2,7 +2,7 @@
 import { toast } from "sonner@2.0.3";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as Sentry from "@sentry/react";
-import type { LiveHeartbeat, Statement } from "../../../types";
+import type { LiveHeartbeat, Statement, VoteType } from "../../../types";
 import { api } from "../../../utils/api";
 import { APPROVAL_PENDING_MESSAGE } from "../../../utils/constants/text";
 import { useAttendeeOnboarding } from "../../../hooks/useAttendeeOnboarding";
@@ -11,7 +11,6 @@ import { useEventPolling } from "../../../hooks/useEventPolling";
 import { useEventPost } from "../../../hooks/useEventPost";
 import { useReloadOnNonceChange } from "../../../hooks/useReloadOnNonceChange";
 import { buildPostDeck, EVENT_POLL_MS, getAttendeeScreen, toLiveScreen } from "../../../utils/live-event";
-import type { SwipeVote } from "../../flyer/FlyerSwipeCard";
 import { Loader } from "../../widgets/Loader";
 import { AttendeeFrame, AttendeeMessage } from "./AttendeeFrame";
 import { EventLobby } from "./EventLobby";
@@ -32,7 +31,7 @@ export function EventAttendeeContainer({ eventId }: { eventId: string }) {
 
 function EventAttendeeFlow({ eventId }: { eventId: string }) {
   const { user, voteOnStatement, submitStatement } = useDebateSession();
-  const [localVotes, setLocalVotes] = useState<Record<string, SwipeVote>>({});
+  const [localVotes, setLocalVotes] = useState<Record<string, VoteType>>({});
   const [statementText, setStatementText] = useState("");
   const heartbeatRef = useRef<LiveHeartbeat | null>(null);
   const { eventState, error } = useEventPolling(eventId, EVENT_POLL_MS, () => heartbeatRef.current);
@@ -96,11 +95,15 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
     return () => clearInterval(timer);
   }, [screen, refreshPost]);
 
-  const handleVote = (statement: Statement, vote: SwipeVote) => {
+  const handleVote = (statement: Statement, vote: VoteType) => {
     setLocalVotes((current) => ({ ...current, [statement.id]: vote }));
     voteOnStatement(statement.id, vote).catch((voteError: Error) => {
       toast.error(voteError.message || "That vote didn't go through.");
     });
+  };
+
+  const handleSuperAgree = (statement: Statement) => {
+    handleVote(statement, "super_agree");
   };
 
   const handleAddStatement = async (
@@ -182,6 +185,7 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
           statements={deck!.statements}
           votedCount={deck!.votedCount}
           onVote={handleVote}
+          onSuperAgree={handleSuperAgree}
           onAddStatement={(text) =>
             handleAddStatement(text, "live_statement_added_mid_deck")
           }

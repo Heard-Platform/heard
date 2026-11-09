@@ -61,6 +61,12 @@
   color: var(--color-amber-700);
 }
 
+.super-agree-chip {
+  background-color: var(--color-purple-500);
+  border-color: var(--color-purple-500);
+  color: var(--color-white);
+}
+
 .attendee-chip {
   background-color: var(--color-purple-100);
   color: var(--color-purple-700);

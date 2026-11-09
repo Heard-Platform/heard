@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "motion/react";
+import { Star } from "lucide-react";
 import type { Statement } from "../../../types";
 import { getVoteShares, type DisplayView, type VoteShares } from "../../../utils/event-display";
 import { DisplayChip } from "./DisplayParts";
@@ -40,9 +41,21 @@ export function StatementRow({
         <span className="min-w-0 truncate">{statement.text}</span>
         {isAttendeeStatement && <DisplayChip tone="attendee">From the room</DisplayChip>}
         {isMostSplit && <DisplayChip tone="split">Split</DisplayChip>}
+        {statement.superAgrees > 0 && <SuperAgreeChip superAgreeCount={statement.superAgrees} />}
       </span>
       <VoteSharePercents voteShares={voteShares} view={view} />
     </motion.button>
+  );
+}
+
+function SuperAgreeChip({ superAgreeCount }: { superAgreeCount: number }) {
+  return (
+    <DisplayChip tone="super-agree">
+      <span className="inline-flex items-center gap-[0.3cqw]">
+        <Star className="h-[0.95cqw] w-[0.95cqw] fill-current" />
+        {superAgreeCount}
+      </span>
+    </DisplayChip>
   );
 }
 

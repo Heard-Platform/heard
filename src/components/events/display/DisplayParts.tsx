@@ -28,11 +28,12 @@ export function DisplayQr({ joinUrl, caption, className }: DisplayQrProps) {
   );
 }
 
-export type DisplayChipTone = "attendee" | "split" | "paused";
+export type DisplayChipTone = "attendee" | "split" | "super-agree" | "paused";
 
 const CHIP_CLASS_NAME_BY_TONE: Record<DisplayChipTone, string> = {
   attendee: "attendee-chip",
   split: "split-chip",
+  "super-agree": "super-agree-chip",
   paused: "attention-bg attention-text",
 };
 

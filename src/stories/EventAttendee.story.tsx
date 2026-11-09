@@ -80,6 +80,10 @@ function SwipeDemo({ statements, initialVotedCount }: SwipeDemoProps) {
               console.log("[Story] vote", voted.id, vote);
               setVotedCount((count) => count + 1);
             }}
+            onSuperAgree={(superAgreed) => {
+              console.log("[Story] super agree", superAgreed.id);
+              setVotedCount((count) => count + 1);
+            }}
             onAddStatement={addStatementMidDeckInStory}
           />
         )}

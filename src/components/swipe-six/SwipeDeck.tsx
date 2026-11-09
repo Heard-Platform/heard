@@ -19,15 +19,18 @@ interface SwipeDeckProps {
   items: SwipeSixItem[];
   votedCount: number;
   onVote: (item: SwipeSixItem, vote: SwipeVote) => void;
+  onSuperAgree?: (item: SwipeSixItem) => void;
 }
 
-export function SwipeDeck({ items, votedCount, onVote }: SwipeDeckProps) {
+export function SwipeDeck({ items, votedCount, onVote, onSuperAgree }: SwipeDeckProps) {
   const stack = items.slice(votedCount);
   const current = stack[0];
   const cardsBehind = stack.slice(1, STACK_POSES.length);
   // Handles keyed by statement so a tap always reaches the card on top, never one that just flew off.
   const cardHandles = useRef(new Map<string, FlyerSwipeCardHandle>());
   const swipe = (vote: SwipeVote) => current && cardHandles.current.get(current.statement.id)?.swipe(vote);
+  const handleSuperAgreeTapped = () => current && cardHandles.current.get(current.statement.id)?.superAgree();
+  const handleCardSuperAgreed = () => current && onSuperAgree?.(current);
 
   return (
     <>
@@ -63,6 +66,7 @@ export function SwipeDeck({ items, votedCount, onVote }: SwipeDeckProps) {
             addedByHost={isAddedByHost(current)}
             onDragStart={() => {}}
             onSwiped={(vote) => onVote(current, vote)}
+            onSuperAgree={onSuperAgree && handleCardSuperAgreed}
           />
         )}
       </div>
@@ -72,6 +76,7 @@ export function SwipeDeck({ items, votedCount, onVote }: SwipeDeckProps) {
           onAgree={() => swipe("agree")}
           onDisagree={() => swipe("disagree")}
           onPass={() => swipe("pass")}
+          onSuperAgree={onSuperAgree && handleSuperAgreeTapped}
         />
       </div>
     </>

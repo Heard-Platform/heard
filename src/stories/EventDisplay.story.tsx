@@ -31,6 +31,7 @@ const MINUTE_MS = 60 * SECOND_MS;
 interface VoteLean {
   agree: number;
   disagree: number;
+  superAgree?: number;
 }
 
 interface StoryStatement {
@@ -51,7 +52,7 @@ const HOURLY_HEADACHES: StoryPost = {
   room: storyRoom("hourly-headaches", "What are the biggest headaches hourly billing causes for your agency and your clients?"),
   seeds: [
     { id: "h1", text: "Clients auditing our timesheets is a real headache.", lean: { agree: 0.44, disagree: 0.41 }, votes: 46 },
-    { id: "h2", text: "Hourly billing punishes us for doing great work fast.", lean: { agree: 0.64, disagree: 0.22 }, votes: 47 },
+    { id: "h2", text: "Hourly billing punishes us for doing great work fast.", lean: { agree: 0.64, disagree: 0.22, superAgree: 0.4 }, votes: 47 },
     { id: "h3", text: "Our staff hate tracking time.", lean: { agree: 0.71, disagree: 0.18 }, votes: 48 },
     { id: "h4", text: "We over-service retainer clients just to fill the hours.", lean: { agree: 0.22, disagree: 0.61 }, votes: 44 },
     { id: "h5", text: "Hourly billing makes our revenue unpredictable.", lean: { agree: 0.38, disagree: 0.47 }, votes: 45 },
@@ -70,7 +71,7 @@ const KEEPS_US_HOURLY: StoryPost = {
     {
       id: "k4",
       text: "Our staffing model is built around hours, so changing pricing means changing everything.",
-      lean: { agree: 0.6, disagree: 0.31 },
+      lean: { agree: 0.6, disagree: 0.31, superAgree: 0.35 },
       votes: 43,
     },
     { id: "k5", text: "Switching away from hourly would cost us legacy clients.", lean: { agree: 0.34, disagree: 0.56 }, votes: 42 },
@@ -112,9 +113,16 @@ const ATTENDEE_STATEMENTS: StoryStatement[] = [
 const findAttendeeStatement = (id: string) => ATTENDEE_STATEMENTS.find((attendeeStatement) => attendeeStatement.id === id)!;
 
 const withVotes = (statement: Statement, lean: VoteLean, votes: number): Statement => {
-  const agrees = Math.round(lean.agree * votes);
+  const allAgrees = Math.round(lean.agree * votes);
+  const superAgrees = Math.round((lean.superAgree ?? 0) * votes);
   const disagrees = Math.round(lean.disagree * votes);
-  return { ...statement, agrees, disagrees, passes: votes - agrees - disagrees };
+  return {
+    ...statement,
+    agrees: allAgrees - superAgrees,
+    superAgrees,
+    disagrees,
+    passes: votes - allAgrees - disagrees,
+  };
 };
 
 const toStatement = (storyStatement: StoryStatement, roomId: string, timestamp: number, votes = storyStatement.votes): Statement =>

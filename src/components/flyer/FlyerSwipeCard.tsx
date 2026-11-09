@@ -2,6 +2,8 @@ import { forwardRef, useImperativeHandle, useRef } from "react";
 import { motion, useAnimate, useMotionValue, useTransform, type MotionValue, type PanInfo } from "motion/react";
 import type { Statement } from "../../types";
 import { useFitText } from "../../hooks/useFitText";
+import { useSuperAgreeCharge } from "../../hooks/useSuperAgreeCharge";
+import { SuperAgreeChargeBadge } from "../SuperAgreeChargeBadge";
 
 export type SwipeVote = "agree" | "disagree" | "pass";
 
@@ -10,11 +12,13 @@ interface FlyerSwipeCardProps {
   addedByHost: boolean;
   onDragStart: () => void;
   onSwiped: (vote: SwipeVote) => void;
+  onSuperAgree?: () => void;
 }
 
 // Lets a parent swipe the card from a button tap, with the same fly-off as a drag.
 export interface FlyerSwipeCardHandle {
   swipe: (vote: SwipeVote) => void;
+  superAgree: () => void;
 }
 
 const SWIPE_DISTANCE = 100;
@@ -31,6 +35,10 @@ function dragDirection(x: number, y: number): SwipeVote {
 function dragDistance(vote: SwipeVote, x: number, y: number): number {
   return vote === "pass" ? -y : Math.abs(x);
 }
+
+const isHeldPastAgree = ({ offset }: PanInfo): boolean =>
+  dragDirection(offset.x, offset.y) === "agree" &&
+  offset.x > SWIPE_DISTANCE;
 
 function voteFromDrag({ offset, velocity }: PanInfo): SwipeVote | null {
   const byOffset = dragDirection(offset.x, offset.y);
@@ -119,8 +127,13 @@ export function FlyerStackedCard({ statement, depth, addedByHost }: FlyerStacked
 export const FlyerSwipeCard = forwardRef<
   FlyerSwipeCardHandle,
   FlyerSwipeCardProps
->(function FlyerSwipeCard({ statement, onDragStart, onSwiped, addedByHost }, ref) {
+>(function FlyerSwipeCard(
+  { statement, onDragStart, onSwiped, onSuperAgree, addedByHost },
+  ref,
+) {
   const [scope, animate] = useAnimate();
+  const { chargeProgress, startCharging, stopCharging, isFullyCharged } =
+    useSuperAgreeCharge();
   const isFlyingOff = useRef(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -129,10 +142,25 @@ export const FlyerSwipeCard = forwardRef<
   const disagreeOpacity = useStampOpacity(x, y, "disagree");
   const passOpacity = useStampOpacity(x, y, "pass");
 
+  const handleDrag = (
+    _event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo,
+  ) => {
+    if (!onSuperAgree) return;
+    if (isHeldPastAgree(info)) startCharging(() => {});
+    else stopCharging();
+  };
+
   const handleDragEnd = async (
     _event: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo,
   ) => {
+    const wasFullyCharged = isFullyCharged();
+    stopCharging();
+    if (wasFullyCharged) {
+      await flyOffAsSuperAgree();
+      return;
+    }
     const vote = voteFromDrag(info);
     if (!vote) {
       await animate(
@@ -145,18 +173,32 @@ export const FlyerSwipeCard = forwardRef<
     await flyOff(vote);
   };
 
-  const flyOff = async (vote: SwipeVote) => {
+  const flyOffThen = async (
+    target: { x: number; y: number },
+    onFlownOff: () => void,
+  ) => {
     if (isFlyingOff.current) return;
     isFlyingOff.current = true;
     await animate(
       scope.current,
-      { ...FLY_OFF_TARGET[vote], opacity: 0 },
+      { ...target, opacity: 0 },
       { duration: 0.3, ease: "easeIn" },
     );
-    onSwiped(vote);
+    onFlownOff();
   };
 
-  useImperativeHandle(ref, () => ({ swipe: flyOff }));
+  const flyOff = (vote: SwipeVote) =>
+    flyOffThen(FLY_OFF_TARGET[vote], () => onSwiped(vote));
+
+  const flyOffAsSuperAgree = async () => {
+    if (!onSuperAgree) return;
+    await flyOffThen(FLY_OFF_TARGET.agree, onSuperAgree);
+  };
+
+  useImperativeHandle(ref, () => ({
+    swipe: flyOff,
+    superAgree: flyOffAsSuperAgree,
+  }));
 
   return (
     <motion.div
@@ -175,6 +217,7 @@ export const FlyerSwipeCard = forwardRef<
       animate={STACK_POSES[0]}
       transition={{ duration: 0.25, ease: "easeOut" }}
       onDragStart={onDragStart}
+      onDrag={handleDrag}
       onDragEnd={handleDragEnd}
     >
       <FlyerCardContent statement={statement} addedByHost={addedByHost} />
@@ -185,6 +228,12 @@ export const FlyerSwipeCard = forwardRef<
         opacity={agreeOpacity}
         className="left-6 top-6 -rotate-12"
       />
+      {onSuperAgree && (
+        <SuperAgreeChargeBadge
+          chargeProgress={chargeProgress}
+          className="left-5 top-16 -rotate-12"
+        />
+      )}
       <SwipeLabel
         text="DISAGREE"
         vote="disagree"

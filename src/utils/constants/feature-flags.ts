@@ -17,6 +17,7 @@ export enum FeatureFlags {
   EVENT_ONBOARDING_QUESTIONS = "EVENT_ONBOARDING_QUESTIONS",
   STATEMENT_APPROVAL = "STATEMENT_APPROVAL",
   FLYER_EVENT_INVITE = "FLYER_EVENT_INVITE",
+  SUPER_AGREE = "SUPER_AGREE",
 }
 
 export interface FeatureFlagsConfig {
@@ -34,6 +35,7 @@ export interface FeatureFlagsConfig {
   [FeatureFlags.EVENT_ONBOARDING_QUESTIONS]: boolean;
   [FeatureFlags.STATEMENT_APPROVAL]: boolean;
   [FeatureFlags.FLYER_EVENT_INVITE]: boolean;
+  [FeatureFlags.SUPER_AGREE]: boolean;
 }
 
 export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
@@ -52,6 +54,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     EVENT_ONBOARDING_QUESTIONS: true,
     STATEMENT_APPROVAL: true,
     FLYER_EVENT_INVITE: true,
+    SUPER_AGREE: false,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
@@ -68,6 +71,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     EVENT_ONBOARDING_QUESTIONS: true,
     STATEMENT_APPROVAL: true,
     FLYER_EVENT_INVITE: true,
+    SUPER_AGREE: true,
   }
 }
 
