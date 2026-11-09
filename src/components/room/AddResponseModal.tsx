@@ -11,13 +11,12 @@ import {
 } from "../ui/dialog";
 import type { DebateRoom } from "../../types";
 import { RateLimitedError } from "../../utils/rate-limit-errors";
+import { APPROVAL_PENDING_MESSAGE } from "../../utils/constants/text";
 
 // @ts-ignore
 import { toast } from "sonner@2.0.3";
 
 const SUBMITTED_MESSAGE = "Response added!";
-const APPROVAL_PENDING_MESSAGE =
-  "Added! It will show once it's approved.";
 
 interface AddResponseModalProps {
   room: DebateRoom;
