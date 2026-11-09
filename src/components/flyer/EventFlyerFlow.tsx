@@ -7,6 +7,7 @@ import type {
   VoteType,
 } from "../../types";
 import { GEORGETOWN_EVENT_INVITE } from "../../utils/constants/events";
+import { pluralizePerson } from "../../utils/text";
 import { HeardWordmark } from "../HeardWordmark";
 import { EventOnboarding } from "../events/attendee/EventOnboarding";
 import { RoomProgressBar } from "../room/RoomProgressBar";
@@ -43,6 +44,7 @@ export function EventFlyerFlow({
   onFinished,
 }: EventFlyerFlowProps) {
   const [step, setStep] = useState<EventFlyerFlowStep>("voting");
+  const participantCount = room.participants.length;
   const [votesAfterFlyer, setVotesAfterFlyer] = useState(0);
   const completedVotes = Math.min(
     1 + votesAfterFlyer,
@@ -83,31 +85,40 @@ export function EventFlyerFlow({
         total={FLYER_VOTE_COUNT}
         completed={completedVotes}
       />
-      <SwipeableStatementStack
-        room={room}
-        statements={statements}
-        currentUserId={currentUserId}
-        allowAnonymous
-        isAnonymous
-        chanceCardSwiped
-        cover={null}
-        coverCardSwiped
-        demographicQuestions={[]}
-        answeredQuestionIds={new Set()}
-        feedbackStatement={null}
-        flyerIntro={flyerIntro}
-        eventInvite={GEORGETOWN_EVENT_INVITE}
-        onVote={handleVote}
-        onSubmitStatement={doNothingAsync}
-        onShowAccountSetupModal={doNothing}
-        onCertifyDone={doNothing}
-        onChanceCardSwiped={doNothingAsync}
-        onCoverCardSwiped={doNothingAsync}
-        onDemographicsAnswered={doNothing}
-        onFeedbackVoted={doNothing}
-        onFeedbackTellMore={doNothing}
-        onKeepVoting={handleKeepVoting}
-      />
+      <div className="flex flex-1 flex-col justify-center gap-4">
+        <h1 className="text-xl font-bold leading-tight dark-text">
+          {room.topic}
+        </h1>
+        <SwipeableStatementStack
+          room={room}
+          statements={statements}
+          currentUserId={currentUserId}
+          allowAnonymous
+          isAnonymous
+          chanceCardSwiped
+          cover={null}
+          coverCardSwiped
+          demographicQuestions={[]}
+          answeredQuestionIds={new Set()}
+          feedbackStatement={null}
+          flyerIntro={flyerIntro}
+          eventInvite={GEORGETOWN_EVENT_INVITE}
+          onVote={handleVote}
+          onSubmitStatement={doNothingAsync}
+          onShowAccountSetupModal={doNothing}
+          onCertifyDone={doNothing}
+          onChanceCardSwiped={doNothingAsync}
+          onCoverCardSwiped={doNothingAsync}
+          onDemographicsAnswered={doNothing}
+          onFeedbackVoted={doNothing}
+          onFeedbackTellMore={doNothing}
+          onKeepVoting={handleKeepVoting}
+        />
+      </div>
+      <p className="text-center text-sm secondary-text">
+        {participantCount} {pluralizePerson(participantCount)} weighed
+        in
+      </p>
     </div>
   );
 }
