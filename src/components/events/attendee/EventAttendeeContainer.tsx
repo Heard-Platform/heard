@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as Sentry from "@sentry/react";
 import type { LiveHeartbeat, Statement } from "../../../types";
 import { api } from "../../../utils/api";
+import { APPROVAL_PENDING_MESSAGE } from "../../../utils/constants/text";
 import { useAttendeeOnboarding } from "../../../hooks/useAttendeeOnboarding";
 import { useDebateSession } from "../../../hooks/useDebateSession";
 import { useEventPolling } from "../../../hooks/useEventPolling";
@@ -108,11 +109,18 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
   ): Promise<boolean> => {
     if (!currentRoomId) return false;
     try {
-      const { statement } = await submitStatement(currentRoomId, text);
+      const { statement, isAwaitingApproval } = await submitStatement(
+        currentRoomId,
+        text,
+      );
       api.trackEvent(trackedEventType, currentRoomId);
-      toast.success("Added!");
       setStatementText("");
-      addStatement(statement);
+      if (isAwaitingApproval) {
+        toast.success(APPROVAL_PENDING_MESSAGE);
+      } else {
+        toast.success("Added!");
+        addStatement(statement);
+      }
       refreshPost();
       return true;
     } catch (submitError) {
