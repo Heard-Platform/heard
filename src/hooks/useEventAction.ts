@@ -7,6 +7,7 @@ import type { LiveEventAction, LiveEventView, ModeratorAction } from "../types";
 const TRACKED_EVENT_NAME_BY_ACTION: Record<ModeratorAction, string> = {
   open: "live_doors_opened",
   start: "live_started",
+  "start-voting": "live_voting_started",
   next: "live_next",
   back: "live_back",
   pause: "live_paused",

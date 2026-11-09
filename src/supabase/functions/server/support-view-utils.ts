@@ -197,6 +197,7 @@ export const buildSupportViewStats = (sources: SupportViewSources): SupportViewS
   return {
     eventName,
     status: state.status,
+    isIntroducingPost: state.isIntroducingPost,
     votingPaused: state.votingPaused,
     postCount: state.roomOrder.length,
     ...countPhones(presences, now),

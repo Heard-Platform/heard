@@ -102,28 +102,55 @@ describe("describeSessionStatus", () => {
     startedAt: 0,
   };
 
+  const liveStats = {
+    status: "live" as const,
+    isIntroducingPost: false,
+    votingPaused: false,
+    postCount: 10,
+    currentPost,
+  };
+  const beforeOrAfterStats = { ...liveStats, currentPost: null };
+
   it("names the post while live", () => {
-    expect(describeSessionStatus({ status: "live", votingPaused: false, postCount: 10, currentPost })).toBe(
+    expect(describeSessionStatus(liveStats)).toBe(
       "Live · Post 4 of 10",
     );
   });
 
   it("says paused while voting is paused", () => {
-    expect(describeSessionStatus({ status: "live", votingPaused: true, postCount: 10, currentPost })).toBe(
-      "Paused · Post 4 of 10",
-    );
+    expect(
+      describeSessionStatus({ ...liveStats, votingPaused: true }),
+    ).toBe("Paused · Post 4 of 10");
+  });
+
+  it("says introducing while the post is introduced", () => {
+    expect(
+      describeSessionStatus({
+        ...liveStats,
+        isIntroducingPost: true,
+      }),
+    ).toBe("Introducing · Post 4 of 10");
   });
 
   it("covers before Start and after End", () => {
-    expect(describeSessionStatus({ status: "setup", votingPaused: false, postCount: 10, currentPost: null })).toBe(
-      "Doors closed",
-    );
-    expect(describeSessionStatus({ status: "open", votingPaused: false, postCount: 10, currentPost: null })).toBe(
-      "Doors open",
-    );
-    expect(describeSessionStatus({ status: "ended", votingPaused: false, postCount: 10, currentPost: null })).toBe(
-      "Ended",
-    );
+    expect(
+      describeSessionStatus({
+        ...beforeOrAfterStats,
+        status: "setup",
+      }),
+    ).toBe("Doors closed");
+    expect(
+      describeSessionStatus({
+        ...beforeOrAfterStats,
+        status: "open",
+      }),
+    ).toBe("Doors open");
+    expect(
+      describeSessionStatus({
+        ...beforeOrAfterStats,
+        status: "ended",
+      }),
+    ).toBe("Ended");
   });
 });
 

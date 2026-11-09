@@ -110,7 +110,11 @@ describe("pickNewestState", () => {
 });
 
 describe("getAttendeeScreen", () => {
-  const live = { status: "live" as const, votingPaused: false };
+  const live = {
+    status: "live" as const,
+    isIntroducingPost: false,
+    votingPaused: false,
+  };
   const answering = {
     isAnsweringQuestions: true,
     hasCardsLeft: true,
@@ -127,7 +131,7 @@ describe("getAttendeeScreen", () => {
   it("shows the closed screen before the doors open", () => {
     expect(
       getAttendeeScreen(
-        { status: "setup", votingPaused: false },
+        { ...live, status: "setup" },
         withCards,
       ),
     ).toBe("closed");
@@ -136,7 +140,7 @@ describe("getAttendeeScreen", () => {
   it("waits in the lobby once the doors are open", () => {
     expect(
       getAttendeeScreen(
-        { status: "open", votingPaused: false },
+        { ...live, status: "open" },
         withCards,
       ),
     ).toBe("starting");
@@ -145,7 +149,7 @@ describe("getAttendeeScreen", () => {
   it("shows the end screen once the event ends", () => {
     expect(
       getAttendeeScreen(
-        { status: "ended", votingPaused: false },
+        { ...live, status: "ended" },
         withCards,
       ),
     ).toBe("end");
@@ -154,6 +158,15 @@ describe("getAttendeeScreen", () => {
   it("pauses even with cards left", () => {
     expect(
       getAttendeeScreen({ ...live, votingPaused: true }, withCards),
+    ).toBe("paused");
+  });
+
+  it("shows paused while the post is introduced", () => {
+    expect(
+      getAttendeeScreen(
+        { ...live, isIntroducingPost: true },
+        withCards,
+      ),
     ).toBe("paused");
   });
 
@@ -173,7 +186,7 @@ describe("getAttendeeScreen", () => {
   });
 
   it("asks the questions before the lobby once the doors are open", () => {
-    const open = { status: "open" as const, votingPaused: false };
+    const open = { ...live, status: "open" as const };
     expect(getAttendeeScreen(open, answering)).toBe("onboarding");
   });
 
@@ -187,13 +200,13 @@ describe("getAttendeeScreen", () => {
   it("never asks the questions before the doors open or after the end", () => {
     expect(
       getAttendeeScreen(
-        { status: "setup", votingPaused: false },
+        { ...live, status: "setup" },
         answering,
       ),
     ).toBe("closed");
     expect(
       getAttendeeScreen(
-        { status: "ended", votingPaused: false },
+        { ...live, status: "ended" },
         answering,
       ),
     ).toBe("end");

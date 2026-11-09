@@ -118,10 +118,18 @@ export function getNewStatementStripMode(
   return "collecting-votes";
 }
 
-export type DisplayScreen = "join" | "loading" | "board" | "end";
+export type DisplayScreen =
+  | "join"
+  | "loading"
+  | "intro"
+  | "board"
+  | "end";
 
 export function getDisplayScreen(
-  eventState: Pick<LiveEventView, "status" | "currentIndex" | "currentRoomId">,
+  eventState: Pick<
+    LiveEventView,
+    "status" | "currentIndex" | "currentRoomId" | "isIntroducingPost"
+  >,
   loadedPostRoomId: string | null,
 ): DisplayScreen {
   if (eventState.status === "ended") return "end";
@@ -131,7 +139,8 @@ export function getDisplayScreen(
     eventState.currentIndex === null
   )
     return "join";
-  return loadedPostRoomId === eventState.currentRoomId ? "board" : "loading";
+  if (loadedPostRoomId !== eventState.currentRoomId) return "loading";
+  return eventState.isIntroducingPost ? "intro" : "board";
 }
 
 export function formatJoinHeadcount(

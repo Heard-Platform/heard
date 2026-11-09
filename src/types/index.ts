@@ -267,6 +267,7 @@ export interface LiveEventState {
   roomOrder: string[];
   currentIndex: number | null;
   status: LiveEventStatus;
+  isIntroducingPost: boolean;
   votingPaused: boolean;
   reloadNonce: number;
   totals: EventTotals | null;
@@ -403,7 +404,15 @@ export interface EventReport {
   timeline: EventReportTimeline;
 }
 
-export type ModeratorAction = "open" | "start" | "next" | "back" | "pause" | "resume" | "end";
+export type ModeratorAction =
+  | "open"
+  | "start"
+  | "start-voting"
+  | "next"
+  | "back"
+  | "pause"
+  | "resume"
+  | "end";
 
 export type LiveScreen =
   | "onboarding"
@@ -466,6 +475,7 @@ export interface SupportViewMinute {
 export interface SupportViewStats {
   eventName: string;
   status: LiveEventStatus;
+  isIntroducingPost: boolean;
   votingPaused: boolean;
   postCount: number;
   peopleHere: number;
@@ -483,7 +493,16 @@ export interface SupportViewStats {
 }
 
 export type LiveEventAction =
-  | { action: "open" | "start" | "pause" | "resume" | "end" | "reload" }
+  | {
+      action:
+        | "open"
+        | "start"
+        | "start-voting"
+        | "pause"
+        | "resume"
+        | "end"
+        | "reload";
+    }
   | { action: "next" | "back"; fromIndex: number }
   | { action: "reorder"; roomOrder: string[] };
 

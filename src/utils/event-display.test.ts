@@ -207,11 +207,33 @@ describe("getNewStatementStripMode", () => {
 });
 
 describe("getDisplayScreen", () => {
-  const liveOnPost = { status: "live" as const, currentIndex: 2, currentRoomId: "post-3" };
+  const liveOnPost = {
+    status: "live" as const,
+    currentIndex: 2,
+    currentRoomId: "post-3",
+    isIntroducingPost: false,
+  };
+  const introducingPost = { ...liveOnPost, isIntroducingPost: true };
+  const beforeStart = {
+    currentIndex: null,
+    currentRoomId: null,
+    isIntroducingPost: false,
+  };
 
   it("shows the join screen before Start", () => {
-    expect(getDisplayScreen({ status: "setup", currentIndex: null, currentRoomId: null }, null)).toBe("join");
-    expect(getDisplayScreen({ status: "open", currentIndex: null, currentRoomId: null }, null)).toBe("join");
+    expect(
+      getDisplayScreen({ ...beforeStart, status: "setup" }, null),
+    ).toBe("join");
+    expect(
+      getDisplayScreen({ ...beforeStart, status: "open" }, null),
+    ).toBe("join");
+  });
+
+  it("shows the intro once the introduced post has loaded", () => {
+    expect(getDisplayScreen(introducingPost, "post-3")).toBe("intro");
+    expect(getDisplayScreen(introducingPost, "post-2")).toBe(
+      "loading",
+    );
   });
 
   it("shows the board once the current post has loaded", () => {
@@ -224,7 +246,12 @@ describe("getDisplayScreen", () => {
   });
 
   it("shows the end card after End", () => {
-    expect(getDisplayScreen({ status: "ended", currentIndex: 9, currentRoomId: "post-10" }, "post-10")).toBe("end");
+    expect(
+      getDisplayScreen(
+        { ...liveOnPost, status: "ended", currentRoomId: "post-10" },
+        "post-10",
+      ),
+    ).toBe("end");
   });
 });
 

@@ -30,7 +30,18 @@ export interface EventHeadcount {
   finishedCurrentPost: number;
 }
 
-export const EVENT_ACTIONS = ["open", "start", "next", "back", "pause", "resume", "end", "reorder", "reload"] as const;
+export const EVENT_ACTIONS = [
+  "open",
+  "start",
+  "start-voting",
+  "next",
+  "back",
+  "pause",
+  "resume",
+  "end",
+  "reorder",
+  "reload",
+] as const;
 
 export type EventActionName = typeof EVENT_ACTIONS[number];
 
@@ -46,6 +57,7 @@ export const defaultLiveEventState = (now: number): LiveEventState => ({
   roomOrder: [],
   currentIndex: null,
   status: "setup",
+  isIntroducingPost: false,
   votingPaused: false,
   reloadNonce: 0,
   totals: null,
@@ -114,7 +126,9 @@ export const eventPostClosedReason = (state: LiveEventState, roomId: string): Ev
   if (state.status === "ended") return null;
   if (isBeforeStart(state.status)) return "not-started";
   if (currentRoomId(state) !== roomId) return "not-current";
-  return state.votingPaused ? "paused" : null;
+  const isVotingClosed =
+    state.isIntroducingPost || state.votingPaused;
+  return isVotingClosed ? "paused" : null;
 };
 
 export const sessionRoomOrder = (
@@ -182,6 +196,7 @@ export const startEvent = (
     roomOrder,
     currentIndex: 0,
     status: "live",
+    isIntroducingPost: true,
     votingPaused: false,
     postChanges: [{ roomId: roomOrder[0], changedAt: now }],
     startedAt: now,
@@ -203,6 +218,7 @@ export const changeActivePost = (
   return {
     ...state,
     currentIndex: target,
+    isIntroducingPost: offset === 1,
     votingPaused: false,
     postChanges: [
       ...state.postChanges,
@@ -212,6 +228,17 @@ export const changeActivePost = (
   };
 };
 
+export const startVoting = (
+  state: LiveEventState,
+  now: number,
+): LiveEventState => {
+  requireEventIsLive(state);
+  if (!state.isIntroducingPost) {
+    throw new RouteError("Voting is already open", 409);
+  }
+  return { ...state, isIntroducingPost: false, updatedAt: now };
+};
+
 export const setVotingPaused = (state: LiveEventState, votingPaused: boolean, now: number): LiveEventState => {
   requireEventIsLive(state);
   return { ...state, votingPaused, updatedAt: now };
@@ -219,7 +246,15 @@ export const setVotingPaused = (state: LiveEventState, votingPaused: boolean, no
 
 export const endEvent = (state: LiveEventState, totals: EventTotals, now: number): LiveEventState => {
   requireEventIsLive(state);
-  return { ...state, status: "ended", votingPaused: false, totals, endedAt: now, updatedAt: now };
+  return {
+    ...state,
+    status: "ended",
+    isIntroducingPost: false,
+    votingPaused: false,
+    totals,
+    endedAt: now,
+    updatedAt: now,
+  };
 };
 
 export const reloadEvent = (state: LiveEventState, now: number): LiveEventState => ({

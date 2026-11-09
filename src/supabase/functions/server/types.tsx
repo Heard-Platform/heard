@@ -296,6 +296,7 @@ export type LiveEventState = {
   roomOrder: string[];
   currentIndex: number | null;
   status: LiveEventStatus;
+  isIntroducingPost: boolean;
   votingPaused: boolean;
   reloadNonce: number;
   totals: EventTotals | null;
@@ -368,6 +369,7 @@ export type SupportViewMinute = {
 export type SupportViewStats = {
   eventName: string;
   status: LiveEventStatus;
+  isIntroducingPost: boolean;
   votingPaused: boolean;
   postCount: number;
   peopleHere: number;
