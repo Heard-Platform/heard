@@ -5,7 +5,10 @@ import { useEventAction } from "../../../hooks/useEventAction";
 import { useEventPolling } from "../../../hooks/useEventPolling";
 import { useEventPost, type EventPost } from "../../../hooks/useEventPost";
 import { useReloadOnNonceChange } from "../../../hooks/useReloadOnNonceChange";
-import { createEventJoinLink } from "../../../utils/url";
+import {
+  createEventJoinLink,
+  createLiveEventLink,
+} from "../../../utils/url";
 
 const DISPLAY_POLL_MS = 2000;
 
@@ -38,6 +41,7 @@ export function EventDisplayContainer({ eventId, displayKey }: EventDisplayConta
       post={post}
       joinUrl={joinLink.url}
       joinLabel={joinLink.label}
+      reportUrl={createLiveEventLink(eventId, "report")}
       isBusy={isBusy}
       onAction={runAction}
     />

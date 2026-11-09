@@ -12,6 +12,7 @@ import { ProjectorFrame } from "./ProjectorFrame";
 
 const JOIN_URL = "https://heard.vote/prgn";
 const JOIN_LABEL = "heard.vote/prgn";
+const REPORT_URL = "https://heard.vote/event/14/report";
 const BUSY_MS = 600;
 const TICK_MS = 700;
 const VOTES_PER_TICK = 3;
@@ -261,6 +262,7 @@ function LiveDemoRun({ initialState }: { initialState: LiveEventView }) {
         post={{ room: DEMO_POSTS[postIndex].room, statements: statementsByPost[postIndex] }}
         joinUrl={JOIN_URL}
         joinLabel={JOIN_LABEL}
+        reportUrl={REPORT_URL}
         isBusy={isBusy}
         onAction={handleAction}
       />
@@ -318,6 +320,7 @@ function StaticDisplay({ state, post }: { state: LiveEventView; post: EventPost 
         post={post}
         joinUrl={JOIN_URL}
         joinLabel={JOIN_LABEL}
+        reportUrl={REPORT_URL}
         isBusy={false}
         onAction={(action) => console.log("[Story] display action", action)}
       />

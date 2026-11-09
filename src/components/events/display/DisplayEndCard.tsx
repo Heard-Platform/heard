@@ -1,11 +1,17 @@
+import { ExternalLink } from "lucide-react";
 import type { EventTotals } from "../../../types";
+import { Button } from "../../ui/button";
 import { DisplayCenteredScreen } from "./DisplayParts";
 
 interface DisplayEndCardProps {
   totals: EventTotals | null;
+  reportUrl: string;
 }
 
-export function DisplayEndCard({ totals }: DisplayEndCardProps) {
+export function DisplayEndCard({
+  totals,
+  reportUrl,
+}: DisplayEndCardProps) {
   return (
     <DisplayCenteredScreen>
       <h1 className="text-[5cqw] font-extrabold leading-[1.05] tracking-tight">Thank you.</h1>
@@ -17,6 +23,11 @@ export function DisplayEndCard({ totals }: DisplayEndCardProps) {
         </div>
       )}
       <p className="fullscreen-subheader-text">Run Heard at your next event · heard.vote</p>
+      <Button asChild variant="outline" className="font-semibold">
+        <a href={reportUrl} target="_blank" rel="noreferrer">
+          See the event results <ExternalLink />
+        </a>
+      </Button>
     </DisplayCenteredScreen>
   );
 }
