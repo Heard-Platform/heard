@@ -1,12 +1,17 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { it } from "@std/testing/bdd";
 import {
+  buildUnansweredQuestionsByRoomId,
   calcDemographicBreakdown,
   isValidRoomAnswerList,
   OPT_OUT_ANSWER,
   toStoredAnswers,
 } from "./demographics-utils.ts";
-import type { DemographicQuestion } from "./types.tsx";
+import type {
+  DebateRoom,
+  DemographicQuestion,
+  RoomDemographicQuestion,
+} from "./types.tsx";
 
 it("calcs demographics for single question type", () => {
   const questions = [{ id: "q1", type: "gender" }] as any;
@@ -201,4 +206,74 @@ it("isValidRoomAnswerList takes a pick on an event question", () => {
     isValidRoomAnswerList(question, ["Asian", "White"]),
     true,
   );
+});
+
+const feedRoom = (overrides: Partial<DebateRoom>): DebateRoom =>
+  ({ id: "room-1", ...overrides }) as DebateRoom;
+
+const postQuestion = roomQuestion({ id: 1 }) as RoomDemographicQuestion;
+
+const eventQuestion = (id: number): DemographicQuestion =>
+  roomQuestion({ id, roomId: null, eventId: 14, position: id });
+
+it("buildUnansweredQuestionsByRoomId gives a post its own questions", () => {
+  const questionsByRoomId = buildUnansweredQuestionsByRoomId(
+    [feedRoom({})],
+    [postQuestion],
+    [],
+    [],
+  );
+  assertEquals(questionsByRoomId, { "room-1": [postQuestion] });
+});
+
+it("buildUnansweredQuestionsByRoomId swaps in the event's questions", () => {
+  const questionsByRoomId = buildUnansweredQuestionsByRoomId(
+    [feedRoom({ eventId: 14 })],
+    [postQuestion],
+    [eventQuestion(2), eventQuestion(3)],
+    [],
+  );
+  assertEquals(questionsByRoomId, {
+    "room-1": [eventQuestion(2), eventQuestion(3)],
+  });
+});
+
+it("buildUnansweredQuestionsByRoomId drops answered event questions", () => {
+  const questionsByRoomId = buildUnansweredQuestionsByRoomId(
+    [feedRoom({ eventId: 14 })],
+    [],
+    [eventQuestion(2), eventQuestion(3)],
+    [2],
+  );
+  assertEquals(questionsByRoomId, { "room-1": [eventQuestion(3)] });
+});
+
+it("buildUnansweredQuestionsByRoomId never falls back once all event questions are answered", () => {
+  const questionsByRoomId = buildUnansweredQuestionsByRoomId(
+    [feedRoom({ eventId: 14 })],
+    [postQuestion],
+    [eventQuestion(2)],
+    [2],
+  );
+  assertEquals(questionsByRoomId, { "room-1": [] });
+});
+
+it("buildUnansweredQuestionsByRoomId keeps a post's questions when its event has none", () => {
+  const questionsByRoomId = buildUnansweredQuestionsByRoomId(
+    [feedRoom({ eventId: 9 })],
+    [postQuestion],
+    [eventQuestion(2)],
+    [],
+  );
+  assertEquals(questionsByRoomId, { "room-1": [postQuestion] });
+});
+
+it("buildUnansweredQuestionsByRoomId gives a post with no questions an empty list", () => {
+  const questionsByRoomId = buildUnansweredQuestionsByRoomId(
+    [feedRoom({ id: "room-2" })],
+    [postQuestion],
+    [],
+    [],
+  );
+  assertEquals(questionsByRoomId, { "room-2": [] });
 });

@@ -27,8 +27,6 @@ import {
 } from "./auth-api.tsx";
 import { generateId, getRoomUrl } from "./utils.tsx";
 import {
-  getDemographicQuestionsForRooms,
-  getAnsweredDemographicQuestionIds,
   saveCoverCardSwipe,
   getCoverCardSwipedRoomIds,
   getMergesForRoom,
@@ -58,7 +56,10 @@ import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-uti
 import { validateDeveloper } from "./internal-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { validateSession } from "./auth-utils.ts";
-import { saveRoomDemographicAnswers } from "./demographics-utils.ts";
+import {
+  loadUnansweredQuestionsByRoomId,
+  saveRoomDemographicAnswers,
+} from "./demographics-utils.ts";
 import { logActionUnlessRateLimited } from "./rate-limit-utils.ts";
 import { markStatementAwaitingApproval } from "./moderation-utils.ts";
 import { notifyOfStatementAwaitingApproval } from "./statement-approval-email.ts";
@@ -1002,29 +1003,12 @@ const getActiveRoomsHandler = async (c: Context) => {
 
     // Attach demographic questions to each room
     if (includeDemographics) {
-      const roomIds = rooms.map((r) => r.id);
-      const [allQuestions, answeredQuestionIds] = await Promise.all([
-        getDemographicQuestionsForRooms(roomIds),
-        userId ? getAnsweredDemographicQuestionIds(userId) : Promise.resolve([]),
-      ]);
-      const answeredSet = new Set(answeredQuestionIds);
-
-      const questionsByRoom: Record<string, typeof allQuestions> = {};
-      for (const q of allQuestions) {
-        if (!questionsByRoom[q.roomId]) {
-          questionsByRoom[q.roomId] = [];
-        }
-        questionsByRoom[q.roomId].push(q);
-      }
-
-      rooms = rooms.map((room) => {
-        const questions = questionsByRoom[room.id] || [];
-        const unanswered = questions.filter((q) => !answeredSet.has(q.id));
-        return {
-          ...room,
-          demographicQuestions: unanswered,
-        };
-      });
+      const unansweredQuestionsByRoomId =
+        await loadUnansweredQuestionsByRoomId(rooms, userId);
+      rooms = rooms.map((room) => ({
+        ...room,
+        demographicQuestions: unansweredQuestionsByRoomId[room.id],
+      }));
     } else {
       rooms = rooms.map((room) => ({
         ...room,

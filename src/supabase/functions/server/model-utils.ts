@@ -113,6 +113,18 @@ export const getDemographicQuestionsForRooms = async (roomIds: string[]) => {
   );
 };
 
+export const getDemographicQuestionsForEvents = async (
+  eventIds: number[],
+): Promise<DemographicQuestion[]> => {
+  if (eventIds.length === 0) return [];
+  return selectAllWithoutLimit<DemographicQuestion>(
+    "demographic_questions",
+    {},
+    "position",
+    (q: any) => q.in("eventId", eventIds),
+  );
+};
+
 export const getDemographicAnswersForQuestionIds = async (
   questionIds: number[],
 ) => {

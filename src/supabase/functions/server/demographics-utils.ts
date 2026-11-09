@@ -1,7 +1,15 @@
 import { DemographicBreakdown } from "./analysis-utils.tsx";
-import { DemographicQuestion, DemographicAnswer } from "./types.tsx";
 import {
+  DebateRoom,
+  DemographicAnswer,
+  DemographicQuestion,
+  RoomDemographicQuestion,
+} from "./types.tsx";
+import {
+  getAnsweredDemographicQuestionIds,
   getDemographicQuestion,
+  getDemographicQuestionsForEvents,
+  getDemographicQuestionsForRooms,
   replaceDemographicAnswers,
 } from "./model-utils.ts";
 import { RouteError } from "./route-error.ts";
@@ -60,6 +68,74 @@ export const saveRoomDemographicAnswers = async (
     userId,
     questionId,
     toStoredAnswers(answers),
+  );
+};
+
+const findQuestionsForRoom = (
+  room: DebateRoom,
+  roomQuestionsByRoomId: Record<string, RoomDemographicQuestion[]>,
+  eventQuestionsByEventId: Record<string, DemographicQuestion[]>,
+): DemographicQuestion[] => {
+  const eventQuestions = room.eventId
+    ? eventQuestionsByEventId[room.eventId] ?? []
+    : [];
+  if (eventQuestions.length > 0) return eventQuestions;
+  return roomQuestionsByRoomId[room.id] ?? [];
+};
+
+export const buildUnansweredQuestionsByRoomId = (
+  rooms: DebateRoom[],
+  roomQuestions: RoomDemographicQuestion[],
+  eventQuestions: DemographicQuestion[],
+  answeredQuestionIds: number[],
+): Record<string, DemographicQuestion[]> => {
+  const roomQuestionsByRoomId = _.groupBy(roomQuestions, "roomId");
+  const eventQuestionsByEventId = _.groupBy(
+    eventQuestions,
+    "eventId",
+  );
+  const answeredQuestionIdSet = new Set(answeredQuestionIds);
+  const unansweredQuestionsByRoomId: Record<
+    string,
+    DemographicQuestion[]
+  > = {};
+  for (const room of rooms) {
+    const questions = findQuestionsForRoom(
+      room,
+      roomQuestionsByRoomId,
+      eventQuestionsByEventId,
+    );
+    unansweredQuestionsByRoomId[room.id] = questions.filter(
+      (question) => !answeredQuestionIdSet.has(question.id),
+    );
+  }
+  return unansweredQuestionsByRoomId;
+};
+
+const collectEventIds = (rooms: DebateRoom[]): number[] => {
+  const eventIds = rooms
+    .map((room) => room.eventId)
+    .filter(
+      (eventId): eventId is number => typeof eventId === "number",
+    );
+  return [...new Set(eventIds)];
+};
+
+export const loadUnansweredQuestionsByRoomId = async (
+  rooms: DebateRoom[],
+  userId: string | undefined,
+): Promise<Record<string, DemographicQuestion[]>> => {
+  const [roomQuestions, eventQuestions, answeredQuestionIds] =
+    await Promise.all([
+      getDemographicQuestionsForRooms(rooms.map((room) => room.id)),
+      getDemographicQuestionsForEvents(collectEventIds(rooms)),
+      userId ? getAnsweredDemographicQuestionIds(userId) : [],
+    ]);
+  return buildUnansweredQuestionsByRoomId(
+    rooms,
+    roomQuestions,
+    eventQuestions,
+    answeredQuestionIds,
   );
 };
 
