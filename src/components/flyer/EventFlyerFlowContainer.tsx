@@ -55,7 +55,7 @@ export function EventFlyerFlowContainer({
   };
 
   const handleVote = (statement: Statement, voteType: VoteType) =>
-    voteOnStatement(statement.id, voteType);
+    voteOnStatement(statement.id, voteType, { isVoteFromFeed: true });
 
   const handleAnswer = (questionId: string, answers: string[]) => {
     saveDemographicAnswers(questionId, answers);
