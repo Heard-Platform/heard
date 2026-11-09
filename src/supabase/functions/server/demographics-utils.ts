@@ -9,20 +9,26 @@ import _ from "lodash";
 
 const ROOM_ANSWERS_ERROR_MESSAGE = "Invalid answers provided";
 
+export const OPT_OUT_ANSWER = "Prefer not to say";
+
 export const hasDuplicateAnswers = (answers: string[]): boolean =>
   new Set(answers).size !== answers.length;
 
-export const toStoredAnswers = (
+export const isOptOutMixedWithOptions = (
   answers: string[],
-): (string | null)[] => {
+): boolean =>
+  answers.includes(OPT_OUT_ANSWER) && answers.length > 1;
+
+export const toStoredAnswers = (answers: string[]): string[] => {
   const isSkipped = answers.length === 0;
-  return isSkipped ? [null] : answers;
+  return isSkipped ? [OPT_OUT_ANSWER] : answers;
 };
 
 const isListedOption = (
   question: DemographicQuestion,
   answer: string,
 ): boolean => {
+  if (answer === OPT_OUT_ANSWER) return true;
   if (!question.options) return true;
   return question.options.includes(answer);
 };
@@ -33,6 +39,7 @@ export const isValidRoomAnswerList = (
 ): boolean => {
   if (!question.multiSelect && answers.length > 1) return false;
   if (hasDuplicateAnswers(answers)) return false;
+  if (isOptOutMixedWithOptions(answers)) return false;
   if (answers.some((answer) => !isListedOption(question, answer))) return false;
   return true;
 };
@@ -43,8 +50,8 @@ export const saveRoomDemographicAnswers = async (
   answers: string[],
 ): Promise<void> => {
   const question = await getDemographicQuestion(questionId);
-  if (!question || question.roomId === null) {
-    throw new RouteError("That question isn't part of a post", 404);
+  if (!question) {
+    throw new RouteError("That question doesn't exist", 404);
   }
   if (!isValidRoomAnswerList(question, answers)) {
     throw new RouteError(ROOM_ANSWERS_ERROR_MESSAGE, 400);

@@ -5,12 +5,12 @@ import {
   isValidAnswerList,
   isValidOnboardingQuestion,
   isValidOnboardingQuestionList,
-  OPT_OUT_ANSWER,
   requireEventDoorsOpen,
   requireEventInSetup,
   requireQuestionsUnanswered,
   toEventDemographicQuestionRows,
 } from "./event-onboarding-utils.ts";
+import { OPT_OUT_ANSWER } from "./demographics-utils.ts";
 import { defaultLiveEventState } from "./live-event-utils.ts";
 import { RouteError } from "./route-error.ts";
 import type {
