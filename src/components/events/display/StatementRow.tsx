@@ -71,13 +71,42 @@ function VoteSharePercents({ voteShares, view }: { voteShares: VoteShares; view:
   if (voteShares.total === 0) {
     return <span className="relative whitespace-nowrap text-[1.15cqw] font-semibold secondary-text">waiting for votes</span>;
   }
-  const agreePercentLabel = `${Math.round(voteShares.agree)}%`;
+  const percentSizeClassName =
+    view === "agree-split" ? "text-[1.7cqw]" : "text-[1.9cqw]";
   return (
     <span
-      className={`relative whitespace-nowrap text-right font-extrabold leading-none tabular-nums ${view === "agree-split" ? "text-[1.7cqw]" : "text-[1.9cqw]"}`}
+      className={`relative flex gap-[1cqw] whitespace-nowrap font-extrabold leading-none tabular-nums ${percentSizeClassName}`}
     >
-      {view === "agree-only" ? agreePercentLabel : `${agreePercentLabel} · ${Math.round(voteShares.disagree)}%`}
+      <span className={PERCENT_CELL_CLASS_NAME}>
+        {Math.round(voteShares.agree)}%
+      </span>
+      {view !== "agree-only" && (
+        <span className={PERCENT_CELL_CLASS_NAME}>
+          {Math.round(voteShares.disagree)}%
+        </span>
+      )}
     </span>
+  );
+}
+
+const PERCENT_CELL_CLASS_NAME = "w-[5.6cqw] text-right";
+
+export function VoteSharePercentHeaders({
+  view,
+}: {
+  view: DisplayView;
+}) {
+  return (
+    <div className="flex justify-end gap-[1cqw] px-[1.3cqw] text-[0.95cqw] font-bold uppercase tracking-wide">
+      <span className={`agree-text ${PERCENT_CELL_CLASS_NAME}`}>
+        Agree
+      </span>
+      {view !== "agree-only" && (
+        <span className={`disagree-text ${PERCENT_CELL_CLASS_NAME}`}>
+          Disagree
+        </span>
+      )}
+    </div>
   );
 }
 

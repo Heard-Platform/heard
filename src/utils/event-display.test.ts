@@ -133,15 +133,21 @@ describe("findMostSplitStatementId", () => {
 });
 
 describe("splitIntoConsensusColumns", () => {
-  it("puts the widest gaps under agrees and the most split under splits, most split first", () => {
+  it("puts the most agreed under agrees and the rest under splits, most split first", () => {
     const columns = splitIntoConsensusColumns([
       statement("agree", { agrees: 9, disagrees: 1 }),
       statement("disagree", { agrees: 2, disagrees: 8 }),
-      statement("close", { agrees: 5, disagrees: 4 }),
+      statement("close", { agrees: 6, disagrees: 4 }),
       statement("even", { agrees: 5, disagrees: 5 }),
     ]);
-    expect(statementIds(columns.agreeStatements)).toEqual(["agree", "disagree"]);
-    expect(statementIds(columns.splitStatements)).toEqual(["even", "close"]);
+    expect(statementIds(columns.agreeStatements)).toEqual([
+      "agree",
+      "close",
+    ]);
+    expect(statementIds(columns.splitStatements)).toEqual([
+      "even",
+      "disagree",
+    ]);
   });
 
   it("never shows a statement in both columns or more than 4 in either", () => {
