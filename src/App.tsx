@@ -28,6 +28,7 @@ import { NewsletterViewer } from "./components/NewsletterViewer";
 import { useDebateSession, DebateSessionProvider } from "./hooks/useDebateSession";
 import { useQuickVoteViaFlyer } from "./hooks/useQuickVoteViaFlyer";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { VoteResultSnackbarProvider } from "./contexts/VoteResultSnackbarContext";
 import { api } from "./utils/api";
 import type { NewDebateRoom, DebateRoom, Statement, VoteType, Event } from "./types";
 import {
@@ -1046,7 +1047,9 @@ export default Sentry.withErrorBoundary(function App() {
   return (
     <DebateSessionProvider>
       <LanguageProvider>
-        <AppContent />
+        <VoteResultSnackbarProvider>
+          <AppContent />
+        </VoteResultSnackbarProvider>
       </LanguageProvider>
     </DebateSessionProvider>
   );

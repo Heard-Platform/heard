@@ -20,7 +20,6 @@ import { CommunityTeaser } from "./room/CommunityTeaser";
 import { FeedCardMotion } from "./FeedCardMotion";
 import { useDebateSession } from "../hooks/useDebateSession";
 import { FeedbackCardsProvider } from "../contexts/FeedbackCardsContext";
-import { VoteResultSnackbarProvider } from "../contexts/VoteResultSnackbarContext";
 import { CreateRoomCard } from "./CreateRoomCard";
 import { SwipeSixBanner } from "./swipe-six/SwipeSixBanner";
 import { api, safelyMakeApiCall } from "../utils/api";
@@ -382,9 +381,7 @@ const RoomScrollerInner = forwardRef<
 export const RoomScroller = forwardRef<RoomScrollerRef, RoomScrollerProps>(
   (props, ref) => (
     <FeedbackCardsProvider>
-      <VoteResultSnackbarProvider>
-        <RoomScrollerInner {...props} ref={ref} />
-      </VoteResultSnackbarProvider>
+      <RoomScrollerInner {...props} ref={ref} />
     </FeedbackCardsProvider>
   ),
 );
