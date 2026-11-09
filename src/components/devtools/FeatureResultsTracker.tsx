@@ -39,6 +39,7 @@ import {
   Network,
   MessageSquare,
   MessageCirclePlus,
+  Ticket,
   Timer,
 } from "lucide-react";
 import { api } from "../../utils/api";
@@ -75,8 +76,8 @@ interface FeatureCardData {
 const tapSharePercent = ({ taps, swipes }: FeatureResults["voteMethods"]): number =>
   taps + swipes > 0 ? Math.round((taps / (taps + swipes)) * 1000) / 10 : 0;
 
-const formatSubmitRatePercent = (submittedCount: number, shownCount: number): string =>
-  shownCount > 0 ? `${Math.round((submittedCount / shownCount) * 1000) / 10}%` : "0%";
+const formatRatePercent = (actedCount: number, shownCount: number): string =>
+  shownCount > 0 ? `${Math.round((actedCount / shownCount) * 1000) / 10}%` : "0%";
 
 export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
   const [stats, setStats] = useState<FeatureResults | null>(null);
@@ -615,7 +616,32 @@ export function FeatureResultsTracker({ onExit }: FeatureResultsTrackerProps) {
           <div>
             <p className="text-xs text-muted-foreground">Submit rate</p>
             <p className="text-2xl font-bold text-purple-600">
-              {formatSubmitRatePercent(s.addResponseNudge.submitted, s.addResponseNudge.shown)}
+              {formatRatePercent(s.addResponseNudge.submitted, s.addResponseNudge.shown)}
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      icon: Ticket,
+      iconColor: "text-orange-600",
+      bgColor: "bg-orange-100",
+      title: "Georgetown Event Invite",
+      description: "Unique users shown the Georgetown event invite card in a deck (feed or flyer), and how many tapped Go to event or Keep voting",
+      getValue: (s) => s.eventInvite.shown,
+      getDate: (s) => s.eventInviteSince,
+      renderExtra: (s) => (
+        <div className="flex flex-wrap gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Go to event</p>
+            <p className="text-2xl font-bold text-orange-600">
+              {s.eventInvite.tappedGoToEvent} ({formatRatePercent(s.eventInvite.tappedGoToEvent, s.eventInvite.shown)})
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Keep voting</p>
+            <p className="text-2xl font-bold text-orange-600">
+              {s.eventInvite.tappedKeepVoting} ({formatRatePercent(s.eventInvite.tappedKeepVoting, s.eventInvite.shown)})
             </p>
           </div>
         </div>

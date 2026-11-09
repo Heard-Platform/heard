@@ -1137,6 +1137,12 @@ export interface FeatureResults {
     submitted: number;
   };
   addResponseNudgeSince: number;
+  eventInvite: {
+    shown: number;
+    tappedGoToEvent: number;
+    tappedKeepVoting: number;
+  };
+  eventInviteSince: number;
   voteMethods: {
     taps: number;
     swipes: number;
