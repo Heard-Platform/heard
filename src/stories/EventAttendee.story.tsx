@@ -31,9 +31,36 @@ const STATEMENTS: Statement[] = [
   statement("s5", "Clients ask for hourly breakdowns even on fixed fees.", "participant"),
 ];
 
-function SwipeDemo({ initialVotedCount }: { initialVotedCount: number }) {
+const LONG_STATEMENTS: Statement[] = [
+  statement(
+    "l1",
+    "When a client sees an hourly invoice, they start questioning every line instead of the value we delivered.",
+  ),
+  statement("l2", "Fixed fees are better.", "participant"),
+  statement(
+    "l3",
+    "Hourly billing rewards the slowest person on the team, and it quietly teaches everyone that looking busy matters more than finishing early, which is the opposite of what clients actually want from an agency.",
+    "participant",
+  ),
+  statement(
+    "l4",
+    "Tracking time in six-minute increments eats an hour of my week that nobody pays for.",
+  ),
+  statement(
+    "l5",
+    "We moved two retainer clients to value pricing last year, and both renewed at a higher rate, but our finance team still asks for timesheets so they can check margins, so in practice we are doing both systems at once and getting the overhead of each without fully getting the benefit of either one.",
+    "participant",
+  ),
+];
+
+interface SwipeDemoProps {
+  statements: Statement[];
+  initialVotedCount: number;
+}
+
+function SwipeDemo({ statements, initialVotedCount }: SwipeDemoProps) {
   const [votedCount, setVotedCount] = useState(initialVotedCount);
-  const isFinished = votedCount >= STATEMENTS.length;
+  const isFinished = votedCount >= statements.length;
 
   return (
     <div className="space-y-4">
@@ -47,18 +74,25 @@ function SwipeDemo({ initialVotedCount }: { initialVotedCount: number }) {
         ) : (
           <EventSwipeScreen
             room={ROOM}
-            statements={STATEMENTS}
+            statements={statements}
             votedCount={votedCount}
             onVote={(voted, vote) => {
               console.log("[Story] vote", voted.id, vote);
               setVotedCount((count) => count + 1);
             }}
+            onAddStatement={addStatementMidDeckInStory}
           />
         )}
       </PhoneFrame>
     </div>
   );
 }
+
+const addStatementMidDeckInStory = (text: string) =>
+  new Promise<boolean>((resolve) => {
+    console.log("[Story] add statement mid-deck", text);
+    setTimeout(() => resolve(true), STORY_DELAY_MS);
+  });
 
 function WaitingDemo({
   initialStatementText,
@@ -109,7 +143,7 @@ export function EventAttendeeStory() {
   return (
     <StoryContainer
       title="Event Attendee"
-      description="What a phone shows during an event, in the Swipe Six layout. The pill shows the post's question without its community. Before the doors open, the link says the event hasn't started yet. The lobby has four wordings (starting soon, paused, waiting for the others, ended). Swiping counts this post's statements only; finishing them lands on waiting for the others, where you can add a statement. New statements never interrupt someone writing: the phone stays on the text box and offers to vote on them, which clears what was typed. Submitting goes back to voting."
+      description="What a phone shows during an event, in the Swipe Six layout. The pill shows the post's question without its community. Before the doors open, the link says the event hasn't started yet. The lobby has four wordings (starting soon, paused, waiting for the others, ended). Swiping counts this post's statements only, with a field under the deck to add a statement at any point. Finishing them lands on waiting for the others, where you can add a statement. New statements never interrupt someone writing: the phone stays on the text box and offers to vote on them, which clears what was typed. Submitting goes back to voting."
       variants={[
         {
           id: "closed",
@@ -129,9 +163,50 @@ export function EventAttendeeStory() {
             </PhoneFrame>
           ),
         },
-        { id: "first-card", label: "First card", children: <SwipeDemo key="first-card" initialVotedCount={0} /> },
-        { id: "mid-post", label: "Mid-post", children: <SwipeDemo key="mid-post" initialVotedCount={2} /> },
-        { id: "last-card", label: "Last card", children: <SwipeDemo key="last-card" initialVotedCount={STATEMENTS.length - 1} /> },
+        {
+          id: "first-card",
+          label: "First card",
+          children: (
+            <SwipeDemo
+              key="first-card"
+              statements={STATEMENTS}
+              initialVotedCount={0}
+            />
+          ),
+        },
+        {
+          id: "mid-post",
+          label: "Mid-post",
+          children: (
+            <SwipeDemo
+              key="mid-post"
+              statements={STATEMENTS}
+              initialVotedCount={2}
+            />
+          ),
+        },
+        {
+          id: "last-card",
+          label: "Last card",
+          children: (
+            <SwipeDemo
+              key="last-card"
+              statements={STATEMENTS}
+              initialVotedCount={STATEMENTS.length - 1}
+            />
+          ),
+        },
+        {
+          id: "long-statements",
+          label: "Long statements",
+          children: (
+            <SwipeDemo
+              key="long-statements"
+              statements={LONG_STATEMENTS}
+              initialVotedCount={0}
+            />
+          ),
+        },
         {
           id: "waiting",
           label: "Waiting for the others",

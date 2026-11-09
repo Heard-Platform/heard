@@ -2,9 +2,8 @@ import { useState, type FormEvent } from "react";
 import { pluralizePerson, pluralizeStatement } from "../../../utils/text";
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
+import { STATEMENT_MAX_LENGTH } from "../constants";
 import { AttendeeFrame, AttendeeMessage } from "./AttendeeFrame";
-
-const STATEMENT_MAX_LENGTH = 500;
 
 type EventLobbyProps =
   | { moment: "closed" }

@@ -1,6 +1,8 @@
 import { DebateRoom } from "../../types";
 import type { AvatarAnimal } from "../../utils/constants/avatars";
 
+export const STATEMENT_MAX_LENGTH = 500;
+
 export type ThemeConfig = {
   iconGradient: string;
   cardBg: string;
