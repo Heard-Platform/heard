@@ -4,6 +4,7 @@ const HEARD_REPO_ROOT = new URL("../../", import.meta.url);
 const SERVER_FUNCTION_NAME = "make-server-f1a393b4";
 
 export const MODERATOR_SESSION_VARIABLE = "HEARD_MODERATOR_SESSION_ID";
+export const SERVICE_ROLE_KEY_VARIABLE = "SUPABASE_SERVICE_ROLE_KEY";
 
 export interface HeardScriptEnvironment {
   apiBaseUrl: string;
@@ -12,13 +13,58 @@ export interface HeardScriptEnvironment {
   moderatorSessionId: string | null;
 }
 
+export interface DatabaseEnvironment {
+  supabaseUrl: string;
+  serviceRoleKey: string;
+}
+
 export async function loadHeardScriptEnvironment(): Promise<HeardScriptEnvironment> {
-  const variables = {
+  return buildHeardScriptEnvironment(await readScriptVariables());
+}
+
+export async function loadDatabaseEnvironment(): Promise<
+  DatabaseEnvironment
+> {
+  return buildDatabaseEnvironment(await readScriptVariables());
+}
+
+export function buildDatabaseEnvironment(
+  variables: Record<string, string>,
+): DatabaseEnvironment {
+  const projectId = requireVariable(
+    variables,
+    "VITE_SUPABASE_PROJECT_ID",
+  );
+  return {
+    supabaseUrl: `https://${projectId}.supabase.co`,
+    serviceRoleKey: requireServiceRoleKey(variables),
+  };
+}
+
+function requireServiceRoleKey(
+  variables: Record<string, string>,
+): string {
+  const serviceRoleKey = variables[SERVICE_ROLE_KEY_VARIABLE]?.trim();
+  if (serviceRoleKey) return serviceRoleKey;
+  throw new Error(
+    [
+      `${SERVICE_ROLE_KEY_VARIABLE} is not set.`,
+      "1. In Supabase, open Project Settings, then API.",
+      "2. Copy the service_role key.",
+      "3. Add a line to .env.local in the Heard repo:",
+      `   ${SERVICE_ROLE_KEY_VARIABLE}=<the key>`,
+    ].join("\n"),
+  );
+}
+
+async function readScriptVariables(): Promise<
+  Record<string, string>
+> {
+  return {
     ...(await readEnvFile(".env")),
     ...(await readEnvFile(".env.local")),
     ...Deno.env.toObject(),
   };
-  return buildHeardScriptEnvironment(variables);
 }
 
 export function buildHeardScriptEnvironment(variables: Record<string, string>): HeardScriptEnvironment {

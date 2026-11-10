@@ -1,9 +1,11 @@
 import { assertEquals, assertThrows } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
+  buildDatabaseEnvironment,
   buildHeardScriptEnvironment,
   cleanPastedSessionId,
   MODERATOR_SESSION_VARIABLE,
   requireModeratorSessionId,
+  SERVICE_ROLE_KEY_VARIABLE,
 } from "./heard-script-environment.ts";
 
 const viteVariables = {
@@ -45,3 +47,25 @@ Deno.test("requireModeratorSessionId explains how to get the session", () => {
     "abc",
   );
 });
+
+Deno.test("buildDatabaseEnvironment builds the project URL", () => {
+  assertEquals(
+    buildDatabaseEnvironment({
+      ...viteVariables,
+      [SERVICE_ROLE_KEY_VARIABLE]: " service-key ",
+    }),
+    {
+      supabaseUrl: "https://project.supabase.co",
+      serviceRoleKey: "service-key",
+    },
+  );
+});
+
+Deno.test("buildDatabaseEnvironment explains a missing key", () => {
+  assertThrows(
+    () => buildDatabaseEnvironment(viteVariables),
+    Error,
+    "Add a line to .env.local",
+  );
+});
+
