@@ -1,4 +1,8 @@
-import { getCommunity, getLiveEventState } from "./kv-utils.tsx";
+import {
+  getCommunity,
+  getEventOrThrow,
+  getLiveEventState,
+} from "./kv-utils.tsx";
 import { canModerateEvent, eventStateOrDefault } from "./live-event-utils.ts";
 import {
   countDemographicAnswersForQuestionIds,
@@ -8,7 +12,6 @@ import {
   insertEventDemographicQuestions,
   replaceDemographicAnswers,
 } from "./model-utils.ts";
-import { getEventOrThrow } from "./event-utils.ts";
 import {
   hasDuplicateAnswers,
   isOptOutMixedWithOptions,

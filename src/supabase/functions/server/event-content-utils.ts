@@ -1,6 +1,15 @@
 import _ from "lodash";
-import { calculateVoteStats } from "./voting-utils.ts";
-import type { Statement, Vote } from "./types.tsx";
+import {
+  getStatementsForRoom,
+  getStatementsForRoomIncludingHidden,
+  getVotesForStatement,
+} from "./kv-utils.tsx";
+import { calculateVoteStats } from "./vote-stats-utils.ts";
+import type {
+  EventVote,
+  Statement,
+  Vote,
+} from "./types.tsx";
 
 export const isEventVote = (vote: Pick<Vote, "source">): boolean =>
   vote.source === "event";
@@ -23,4 +32,44 @@ export const updateVoteCounts = (
       eventVotesByStatementId[statement.id] ?? [],
     ),
   }));
+};
+
+const loadEventVotesForStatements = async (
+  statements: Statement[],
+): Promise<EventVote[]> =>
+  (await Promise.all(
+    statements.map(async (statement) =>
+      (await getVotesForStatement(statement.id))
+        .filter(isEventVote)
+        .map((vote) => ({ ...vote, roomId: statement.roomId })),
+    ),
+  )).flat();
+
+interface EventStatementsAndVotes {
+  statements: Statement[];
+  votes: EventVote[];
+}
+
+interface LoadEventStatementsOptions {
+  includesHiddenStatements?: boolean;
+}
+
+export const loadEventStatementsAndVotes = async (
+  roomIds: string[],
+  {
+    includesHiddenStatements = false,
+  }: LoadEventStatementsOptions = {},
+): Promise<EventStatementsAndVotes> => {
+  const loadRoomStatements = includesHiddenStatements
+    ? getStatementsForRoomIncludingHidden
+    : getStatementsForRoom;
+  const roomStatements = await Promise.all(
+    roomIds.map(loadRoomStatements),
+  );
+  const statements = roomStatements.flat().filter(isEventStatement);
+  const votes = await loadEventVotesForStatements(statements);
+  return {
+    statements: updateVoteCounts(statements, votes),
+    votes,
+  };
 };

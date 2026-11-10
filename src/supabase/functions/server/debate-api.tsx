@@ -44,11 +44,8 @@ import {
   ANONYMOUS_ACTION_NOT_ALLOWED_ERROR,
   RATE_LIMITED_ERROR,
 } from "./constants.tsx";
-import {
-  calculateVoteStats,
-  orderStatements,
-  processVote,
-} from "./voting-utils.ts";
+import { orderStatements, processVote } from "./voting-utils.ts";
+import { calculateVoteStats } from "./vote-stats-utils.ts";
 import { filterFeedRooms, sortRoomsForFeed } from "./feed-utils.ts";
 import { checkEventPosting } from "./event-utils.ts";
 import { getContentSource } from "./content-source-utils.ts";

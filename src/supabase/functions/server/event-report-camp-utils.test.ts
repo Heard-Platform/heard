@@ -7,11 +7,8 @@ import {
   EMPTY_CAMP_ANALYSIS,
   findCampEligibleUserIds,
 } from "./event-report-camp-utils.ts";
-import type {
-  EventReportVote,
-  StatementTally,
-} from "./event-report-utils.ts";
-import type { Statement, VoteType } from "./types.tsx";
+import type { StatementTally } from "./event-report-utils.ts";
+import type { EventVote, Statement, VoteType } from "./types.tsx";
 import { toSimpleVote } from "./vote-type-utils.ts";
 
 const STARTED_AT = 1_761_000_000_000;
@@ -40,8 +37,9 @@ const votesOn = (
   votedStatement: Statement,
   userIds: string[],
   voteType: VoteType,
-): EventReportVote[] =>
+): EventVote[] =>
   userIds.map((userId) => ({
+    id: `${votedStatement.id}-${userId}`,
     statementId: votedStatement.id,
     roomId: votedStatement.roomId,
     userId,
@@ -56,7 +54,7 @@ const OPPOSITE_SECOND = statement("opposite-second", "p2");
 const EVERYONE_AGREES = statement("everyone-agrees", "p2");
 const MOSTLY_AGREED = statement("mostly-agreed", "p1");
 
-const VOTES: EventReportVote[] = [
+const VOTES: EventVote[] = [
   ...votesOn(DIVIDES_FIRST, FIRST_GROUP, "agree"),
   ...votesOn(DIVIDES_FIRST, SECOND_GROUP, "disagree"),
   ...votesOn(DIVIDES_SECOND, FIRST_GROUP, "super_agree"),

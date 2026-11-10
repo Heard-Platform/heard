@@ -14,10 +14,7 @@ import {
   chooseClusterCount,
   kMeansClusteringMultiRun,
 } from "./clustering.tsx";
-import type {
-  EventReportVote,
-  StatementTally,
-} from "./event-report-utils.ts";
+import type { StatementTally } from "./event-report-utils.ts";
 import { percentOf } from "./utils.tsx";
 import { toSimpleVote } from "./vote-type-utils.ts";
 import type {
@@ -26,6 +23,7 @@ import type {
   EventReportCampAnalysis,
   EventReportCampStatement,
   EventReportStatementByCamp,
+  EventVote,
   VoteType,
 } from "./types.tsx";
 
@@ -47,7 +45,7 @@ export const EMPTY_CAMP_ANALYSIS: EventReportCampAnalysis = {
 export interface CampAnalysisInputs {
   tallies: StatementTally[];
   rankableTallies: StatementTally[];
-  sessionVotes: EventReportVote[];
+  sessionVotes: EventVote[];
 }
 
 export interface CampNamingRequest {
@@ -93,7 +91,7 @@ interface StatementCampTallies {
 type VotersByStatementId = Record<string, Record<string, VoteType>>;
 
 const buildVotersByStatementId = (
-  sessionVotes: EventReportVote[],
+  sessionVotes: EventVote[],
 ): VotersByStatementId => {
   const votersByStatementId: VotersByStatementId = {};
   for (const vote of _.sortBy(sessionVotes, "timestamp")) {
@@ -105,7 +103,7 @@ const buildVotersByStatementId = (
 };
 
 export const findCampEligibleUserIds = (
-  sessionVotes: EventReportVote[],
+  sessionVotes: EventVote[],
   statementCount: number,
 ): string[] => {
   const minStatementsVotedOn = Math.ceil(statementCount / 2);

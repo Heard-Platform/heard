@@ -1,9 +1,25 @@
 import _ from "lodash";
-import { canModerateEvent } from "./live-event-utils.ts";
 import {
+  canModerateEvent,
+  eventStateOrDefault,
+} from "./live-event-utils.ts";
+import {
+  applyCampNames,
   buildCampAnalysis,
   type CampNamingRequest,
 } from "./event-report-camp-utils.ts";
+import {
+  loadEventReportCampNames,
+} from "./event-report-camp-naming.ts";
+import {
+  getCommunity,
+  getEventOrThrow,
+  getLiveEventState,
+} from "./kv-utils.tsx";
+import {
+  loadEventStatementsAndVotes,
+} from "./event-content-utils.ts";
+import { loadEventRoomsInOrder } from "./event-utils.ts";
 import { RouteError } from "./route-error.ts";
 import { percentOf } from "./utils.tsx";
 import {
@@ -22,10 +38,10 @@ import type {
   EventReportPost,
   EventReportStatement,
   EventReportTimeline,
+  EventVote,
   LiveEventState,
   PostChange,
   Statement,
-  Vote,
 } from "./types.tsx";
 
 const SECOND_MS = 1000;
@@ -40,11 +56,6 @@ const TOP_ATTENDEE_STATEMENT_COUNT = 5;
 const LOW_VOTE_ATTENDEE_STATEMENT_COUNT = 3;
 const TOP_STATEMENT_COUNT = 10;
 
-export type EventReportVote = Pick<
-  Vote,
-  "statementId" | "userId" | "voteType" | "timestamp"
-> & { roomId: string };
-
 export type EventReportState = Pick<
   LiveEventState,
   "roomOrder" | "postChanges" | "startedAt" | "endedAt"
@@ -56,7 +67,7 @@ export interface EventReportInputs {
   state: EventReportState;
   rooms: Pick<DebateRoom, "id" | "topic">[];
   statements: Statement[];
-  votes: EventReportVote[];
+  votes: EventVote[];
   now: number;
 }
 
@@ -88,7 +99,7 @@ export const requireSessionStarted = (
 
 const findLastVoteBeforeQuietGap = (
   finalPostChange: PostChange,
-  votes: EventReportVote[],
+  votes: EventVote[],
 ): number | null => {
   const finalPostVoteTimes = _.sortBy(
     votes
@@ -111,14 +122,14 @@ const findLastVoteBeforeQuietGap = (
 
 const inferSessionEnd = (
   finalPostChange: PostChange,
-  votes: EventReportVote[],
+  votes: EventVote[],
 ): number =>
   findLastVoteBeforeQuietGap(finalPostChange, votes) ??
     finalPostChange.changedAt + UNVOTED_FINAL_POST_LENGTH_MS;
 
 export const findSessionEnd = (
   state: EventReportState,
-  votes: EventReportVote[],
+  votes: EventVote[],
   now: number,
 ): number => {
   if (state.endedAt !== null) return state.endedAt;
@@ -129,12 +140,12 @@ export const findSessionEnd = (
 
 const tallyStatement = (
   statement: Statement,
-  statementVotes: EventReportVote[],
+  statementVotes: EventVote[],
   inputs: EventReportInputs,
 ): StatementTally => {
   const simpleVoteCounts = _.countBy(
     statementVotes,
-    (vote: EventReportVote) => toSimpleVote(vote.voteType),
+    (vote: EventVote) => toSimpleVote(vote.voteType),
   );
   return {
     statement,
@@ -163,7 +174,7 @@ export const isAttendeeStatement = (
 
 const tallyStatements = (
   inputs: EventReportInputs,
-  sessionVotes: EventReportVote[],
+  sessionVotes: EventVote[],
 ): StatementTally[] => {
   const votesByStatementId = _.groupBy(sessionVotes, "statementId");
   return inputs.statements.map((statement) =>
@@ -244,7 +255,7 @@ const findTopAttendeeTally = (
 
 const listReportPosts = (
   inputs: EventReportInputs,
-  sessionVotes: EventReportVote[],
+  sessionVotes: EventVote[],
   tallies: StatementTally[],
   sessionEndedAt: number,
 ): EventReportPost[] => {
@@ -349,7 +360,7 @@ const averagePostParticipationPercent = (
 
 const buildOpening = (
   event: EventReportInputs["event"],
-  sessionVotes: EventReportVote[],
+  sessionVotes: EventVote[],
   posts: EventReportPost[],
   tallies: StatementTally[],
   sessionTimes: SessionTimes,
@@ -374,7 +385,7 @@ const secondsBetween = (startedAt: number, timestamp: number) =>
   Math.round((timestamp - startedAt) / SECOND_MS);
 
 const countActiveVotersInEachBin = (
-  sessionVotes: EventReportVote[],
+  sessionVotes: EventVote[],
   sessionStartedAt: number,
   sessionEndedAt: number,
 ): number[] => {
@@ -383,7 +394,7 @@ const countActiveVotersInEachBin = (
     1,
     Math.ceil((sessionEndedAt - sessionStartedAt) / binMs),
   );
-  const binIndexOf = (vote: EventReportVote) =>
+  const binIndexOf = (vote: EventVote) =>
     Math.min(
       binCount - 1,
       Math.floor((vote.timestamp - sessionStartedAt) / binMs),
@@ -400,7 +411,7 @@ const countActiveVotersInEachBin = (
 
 const buildTimeline = (
   state: EventReportState,
-  sessionVotes: EventReportVote[],
+  sessionVotes: EventVote[],
   tallies: StatementTally[],
   sessionTimes: SessionTimes,
 ): EventReportTimeline => {
@@ -493,4 +504,40 @@ export const buildEventReport = (
     ),
   };
   return { report, campNamingRequest };
+};
+
+export const loadEventReport = async (
+  eventId: number,
+  now: number,
+): Promise<EventReport> => {
+  const event = await getEventOrThrow(eventId);
+  const state = eventStateOrDefault(
+    await getLiveEventState(eventId),
+    now,
+  );
+  const [community, rooms, { statements, votes }] =
+    await Promise.all([
+      getCommunity(event.communityName),
+      loadEventRoomsInOrder(state.roomOrder),
+      loadEventStatementsAndVotes(state.roomOrder),
+    ]);
+  const { report, campNamingRequest } = buildEventReport({
+    event,
+    community,
+    state,
+    rooms,
+    statements,
+    votes,
+    now,
+  });
+  const campNames = await loadEventReportCampNames(
+    event.id,
+    event.name,
+    campNamingRequest,
+    now,
+  );
+  return {
+    ...report,
+    campAnalysis: applyCampNames(report.campAnalysis, campNames),
+  };
 };
