@@ -1,5 +1,5 @@
 import { formatJoinHeadcount } from "../../../utils/event-display";
-import { DisplayCenteredScreen, DisplayQr } from "./DisplayParts";
+import { DisplayHeadline, DisplayCenteredScreen, DisplayQr } from "./DisplayParts";
 
 interface DisplayJoinScreenProps {
   peopleHere: number;
@@ -20,7 +20,7 @@ export function DisplayJoinScreen({
   );
   return (
     <DisplayCenteredScreen>
-      <h1 className="text-[5cqw] font-extrabold leading-[1.05] tracking-tight">Scan to join</h1>
+      <DisplayHeadline>Scan to join</DisplayHeadline>
       <DisplayQr joinUrl={joinUrl} className="w-[15cqw]" />
       <div className="fullscreen-subheader-text">
         <p>{joinLabel}</p>

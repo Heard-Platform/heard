@@ -46,6 +46,12 @@ export function EventDisplayContainer({ eventId, displayKey }: EventDisplayConta
     [],
   );
 
+  const currentRoomId = eventState?.currentRoomId ?? undefined;
+  const handleScreenHidden = useCallback(
+    () => api.trackEvent("live_display_hidden", currentRoomId),
+    [currentRoomId],
+  );
+
   if (!eventState) {
     return error ? (
       <p className="p-6 text-center text-muted-foreground">{error}</p>
@@ -71,6 +77,7 @@ export function EventDisplayContainer({ eventId, displayKey }: EventDisplayConta
       onAction={runAction}
       onShowAudienceBreakdown={handleShowAudienceBreakdown}
       onCloseAudienceBreakdown={handleCloseAudienceBreakdown}
+      onScreenHidden={handleScreenHidden}
     />
   );
 }

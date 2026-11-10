@@ -13,6 +13,8 @@ import { EventDisplay } from "../components/events/display/EventDisplay";
 import { DisplayBoard } from "../components/events/display/DisplayBoard";
 import { DisplaySpotlight } from "../components/events/display/DisplaySpotlight";
 import { AudienceBreakdown } from "../components/events/display/AudienceBreakdown";
+import { DisplayPrivacyScreen } from "../components/events/display/DisplayPrivacyScreen";
+import { PrivacyScreenControls } from "../components/events/display/DisplayControls";
 import type { DisplayView } from "../utils/event-display";
 import { Button } from "../components/ui/button";
 import { StoryContainer } from "./StoryContainer";
@@ -77,6 +79,8 @@ const KEEPS_US_HOURLY: StoryPost = {
     { id: "k6", text: "Honestly, hourly works fine for us.", lean: { agree: 0.21, disagree: 0.72 }, votes: 42 },
   ],
 };
+
+const handleScreenHidden = () => console.log("[Story] screen hidden");
 
 const DEMO_POSTS = [HOURLY_HEADACHES, KEEPS_US_HOURLY];
 const POST_COUNT = 10;
@@ -275,6 +279,7 @@ function LiveDemoRun({ initialState }: { initialState: LiveEventView }) {
         reportUrl={REPORT_URL}
         isBusy={isBusy}
         {...audienceBreakdownProps}
+        onScreenHidden={handleScreenHidden}
         onAction={handleAction}
       />
     </ProjectorFrame>
@@ -346,6 +351,7 @@ function StaticDisplay({ state, post }: { state: LiveEventView; post: EventPost 
         reportUrl={REPORT_URL}
         isBusy={false}
         {...audienceBreakdownProps}
+        onScreenHidden={handleScreenHidden}
         onAction={(action) => console.log("[Story] display action", action)}
       />
     </ProjectorFrame>
@@ -501,11 +507,23 @@ function AudienceBreakdownStory({
   );
 }
 
+function PrivacyScreenStory() {
+  return (
+    <ProjectorFrame>
+      <DisplayPrivacyScreen />
+      <PrivacyScreenControls
+        isHidden={false}
+        onShowScreen={() => console.log("[Story] show screen")}
+      />
+    </ProjectorFrame>
+  );
+}
+
 export function EventDisplayStory() {
   return (
     <StoryContainer
       title="Event Display"
-      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after a second. Before the doors open, the screen tells the moderator no one can join yet and hides the join code. Live starts there: press Open doors to show the join code and let people in (the join screen counts people ready, plus how many are still answering the onboarding questions while anyone is), then Start opens the first prompt full screen with voting closed until Start voting, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Next opens the next prompt on its intro; Back goes straight to voting on the prompt before. Pause works; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it. Who's in the room shows how the attendees answered the event questions, coarse enough that no one can be picked out; open it from the people button in the controls, or tap the X to close and tap again to reopen in its own variants."
+      description="The projector screen for a live event. Move the mouse over the screen to show the controls; they hide after a second. Before the doors open, the screen tells the moderator no one can join yet and hides the join code. Live starts there: press Open doors to show the join code and let people in (the join screen counts people ready, plus how many are still answering the onboarding questions while anyone is), then Start opens the first prompt full screen with voting closed until Start voting, then votes move and a statement from the room arrives (gold strip for 15s, joins the board at 5 votes). Next opens the next prompt on its intro; Back goes straight to voting on the prompt before. Pause works; on the last post Next becomes End session, with a confirm. The controls show how many people are here and how many finished this post. The view only changes when the moderator picks one. Tap a row to spotlight it. The eye button in the controls (or B) hides everything behind a plain We'll be right back screen; Show screen, B or Escape brings it back. Who's in the room shows how the attendees answered the event questions, coarse enough that no one can be picked out; open it from the people button in the controls, or tap the X to close and tap again to reopen in its own variants."
       variants={[
         { id: "live", label: "Live (Open doors, Start, votes moving)", children: <LiveDemo initialState={NOT_STARTED_STATE} /> },
         {
@@ -560,6 +578,7 @@ export function EventDisplayStory() {
           children: <BoardStory view="agree-vs-disagree" votingPaused attendeeStatements={withProcurementStatementOnBoard} />,
         },
         { id: "spotlight", label: "Spotlight", children: <SpotlightStory /> },
+        { id: "screen-hidden", label: "Screen hidden", children: <PrivacyScreenStory /> },
         {
           id: "whos-in-the-room",
           label: "Who's in the room",

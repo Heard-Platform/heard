@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import type { EventTotals } from "../../../types";
 import { Button } from "../../ui/button";
-import { DisplayCenteredScreen } from "./DisplayParts";
+import { DisplayHeadline, DisplayCenteredScreen } from "./DisplayParts";
 
 interface DisplayEndCardProps {
   totals: EventTotals | null;
@@ -14,7 +14,7 @@ export function DisplayEndCard({
 }: DisplayEndCardProps) {
   return (
     <DisplayCenteredScreen>
-      <h1 className="text-[5cqw] font-extrabold leading-[1.05] tracking-tight">Thank you.</h1>
+      <DisplayHeadline>Thank you.</DisplayHeadline>
       {totals && (
         <div className="flex gap-[4cqw]">
           <EndStat value={totals.people} label="people" />

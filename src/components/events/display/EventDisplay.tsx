@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "motion/react";
 import type {
   AudienceBreakdownQuestion,
@@ -7,16 +7,23 @@ import type {
 } from "../../../types";
 import type { EventPost } from "../../../hooks/useEventPost";
 import { useIdle } from "../../../hooks/useIdle";
-import { getDisplayScreen, isAttendeeStatement, type DisplayView } from "../../../utils/event-display";
+import {
+  getDisplayScreen,
+  isAttendeeStatement,
+  isHideScreenShortcut,
+  type DisplayView,
+} from "../../../utils/event-display";
 import { DisplayBoard } from "./DisplayBoard";
 import {
   BoardControls,
   IntroControls,
   JoinControls,
+  PrivacyScreenControls,
 } from "./DisplayControls";
 import { DisplayEndCard } from "./DisplayEndCard";
 import { DisplayDoorsClosedScreen } from "./DisplayDoorsClosedScreen";
 import { DisplayJoinScreen } from "./DisplayJoinScreen";
+import { DisplayPrivacyScreen } from "./DisplayPrivacyScreen";
 import { DisplayPromptIntro } from "./DisplayPromptIntro";
 import { DisplaySpotlight } from "./DisplaySpotlight";
 import { Loader } from "../../widgets/Loader";
@@ -39,6 +46,7 @@ export interface EventDisplayProps {
   onAction: (action: ModeratorAction) => void;
   onShowAudienceBreakdown: () => void;
   onCloseAudienceBreakdown: () => void;
+  onScreenHidden: () => void;
 }
 
 export function EventDisplay({
@@ -53,22 +61,40 @@ export function EventDisplay({
   onAction,
   onShowAudienceBreakdown,
   onCloseAudienceBreakdown,
+  onScreenHidden,
 }: EventDisplayProps) {
   const layoutGroupId = useId();
   const { isIdle, resetIdleTimer } = useIdle(CONTROLS_HIDE_AFTER_IDLE_MS);
   const [view, setView] = useState<DisplayView>("agree-vs-disagree");
   const [spotlightStatementId, setSpotlightStatementId] = useState<string | null>(null);
   const [isConfirmingEnd, setIsConfirmingEnd] = useState(false);
+  const [isScreenHidden, setIsScreenHidden] = useState(false);
+
+  const handleHideScreen = useCallback(() => {
+    setIsScreenHidden(true);
+    onScreenHidden();
+  }, [onScreenHidden]);
+
+  const handleShowScreen = () => setIsScreenHidden(false);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (isHideScreenShortcut(event)) {
+        if (isScreenHidden) setIsScreenHidden(false);
+        else handleHideScreen();
+        return;
+      }
       if (event.key !== "Escape") return;
+      if (isScreenHidden) {
+        setIsScreenHidden(false);
+        return;
+      }
       setSpotlightStatementId(null);
       onCloseAudienceBreakdown();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onCloseAudienceBreakdown]);
+  }, [isScreenHidden, handleHideScreen, onCloseAudienceBreakdown]);
 
   const spotlightStatement = post?.statements.find((statement) => statement.id === spotlightStatementId) ?? null;
   const questionLabel = `Question ${(eventState.currentIndex ?? 0) + 1}`;
@@ -168,6 +194,7 @@ export function EventDisplay({
           isBusy={isBusy}
           onAction={onAction}
           onShowAudienceBreakdown={onShowAudienceBreakdown}
+          onHideScreen={handleHideScreen}
         />
       );
     }
@@ -180,6 +207,7 @@ export function EventDisplay({
           isBusy={isBusy}
           onAction={onAction}
           onShowAudienceBreakdown={onShowAudienceBreakdown}
+          onHideScreen={handleHideScreen}
         />
       );
     }
@@ -198,11 +226,43 @@ export function EventDisplay({
           onAction={onAction}
           onEndRequest={() => setIsConfirmingEnd(true)}
           onShowAudienceBreakdown={onShowAudienceBreakdown}
+          onHideScreen={handleHideScreen}
         />
       );
     }
     return null;
   };
+
+  const renderDisplay = () => (
+    <>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={screenKey}
+          className="absolute inset-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: SCREEN_FADE_SECONDS, ease: "easeInOut" }}
+        >
+          {renderScreen()}
+        </motion.div>
+      </AnimatePresence>
+      {isShowingAudienceBreakdown && (
+        <AudienceBreakdown
+          questions={audienceBreakdownQuestions}
+          onClose={onCloseAudienceBreakdown}
+        />
+      )}
+      {renderControls()}
+      {isConfirmingEnd && (
+        <EndSessionConfirm
+          isBusy={isBusy}
+          onConfirm={handleConfirmEnd}
+          onCancel={() => setIsConfirmingEnd(false)}
+        />
+      )}
+    </>
+  );
 
   return (
     <MotionConfig reducedMotion="user">
@@ -213,31 +273,16 @@ export function EventDisplay({
           onKeyDown={resetIdleTimer}
           className={`display-screen-bg @container relative h-full w-full overflow-hidden ${isIdle ? "cursor-none" : ""}`}
         >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={screenKey}
-              className="absolute inset-0"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: SCREEN_FADE_SECONDS, ease: "easeInOut" }}
-            >
-              {renderScreen()}
-            </motion.div>
-          </AnimatePresence>
-          {isShowingAudienceBreakdown && (
-            <AudienceBreakdown
-              questions={audienceBreakdownQuestions}
-              onClose={onCloseAudienceBreakdown}
-            />
-          )}
-          {renderControls()}
-          {isConfirmingEnd && (
-            <EndSessionConfirm
-              isBusy={isBusy}
-              onConfirm={handleConfirmEnd}
-              onCancel={() => setIsConfirmingEnd(false)}
-            />
+          {isScreenHidden ? (
+            <>
+              <DisplayPrivacyScreen />
+              <PrivacyScreenControls
+                isHidden={isIdle}
+                onShowScreen={handleShowScreen}
+              />
+            </>
+          ) : (
+            renderDisplay()
           )}
         </div>
       </LayoutGroup>
