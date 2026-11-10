@@ -11,6 +11,7 @@ import {
   applyEventAction,
   getEventOrThrow,
   getOrCreateEventDisplayKey,
+  loadEventPost,
   loadEventReport,
   loadEventView,
   loadSupportViewStats,
@@ -362,6 +363,19 @@ app.get(
       return { stats: await loadSupportViewStats(event, state, now) };
     },
     "Failed to load the support view",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/event-post/:roomId",
+  defineRoute(
+    {},
+    async (_params, c: Context) => {
+      const roomId = c.req.param("roomId");
+      if (!roomId) throw new RouteError("A post ID is required", 400);
+      return { post: await loadEventPost(roomId) };
+    },
+    "Failed to load the event post",
   ),
 );
 

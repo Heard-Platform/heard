@@ -638,6 +638,11 @@ export type RoomEdits = Partial<
 >;
 
 
+export interface EventPost {
+  room: DebateRoom;
+  statements: Statement[];
+}
+
 export type VoteOnStatementOptions = {
   source: ContentSource;
 };

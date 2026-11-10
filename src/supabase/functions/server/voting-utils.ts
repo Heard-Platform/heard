@@ -71,7 +71,7 @@ export const orderStatements = (
     .map(({ statement }) => statement);
 
 export const calculateVoteStats = (
-  votes: Vote[],
+  votes: Pick<Vote, "userId" | "voteType">[],
 ): {
   agrees: number;
   disagrees: number;

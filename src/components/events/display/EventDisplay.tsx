@@ -5,7 +5,7 @@ import type {
   LiveEventView,
   ModeratorAction,
 } from "../../../types";
-import type { EventPost } from "../../../hooks/useEventPost";
+import type { EventPost } from "../../../types";
 import { useIdle } from "../../../hooks/useIdle";
 import {
   getDisplayScreen,

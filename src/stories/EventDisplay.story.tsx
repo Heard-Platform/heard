@@ -4,11 +4,11 @@ import type {
   AudienceBreakdownOption,
   AudienceBreakdownQuestion,
   DebateRoom,
+  EventPost,
   LiveEventView,
   ModeratorAction,
   Statement,
 } from "../types";
-import type { EventPost } from "../hooks/useEventPost";
 import { EventDisplay } from "../components/events/display/EventDisplay";
 import { DisplayBoard } from "../components/events/display/DisplayBoard";
 import { DisplaySpotlight } from "../components/events/display/DisplaySpotlight";
