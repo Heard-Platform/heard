@@ -54,7 +54,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
     EVENT_ONBOARDING_QUESTIONS: true,
     STATEMENT_APPROVAL: true,
     FLYER_EVENT_INVITE: true,
-    SUPER_AGREE: false,
+    SUPER_AGREE: true,
   },
   development: {
     ONLY_JOINED_COMMUNITIES: true,
