@@ -141,7 +141,6 @@ function DemographicsSwipeableStack() {
         onVote={async () => { } }
         onSubmitStatement={async () => { } }
         onShowAccountSetupModal={() => { } }
-        onCertifyDone={async () => { } }
         onChanceCardSwiped={async () => { } }
         onCoverCardSwiped={async () => { } }
         onDemographicsAnswered={handleAnswer}

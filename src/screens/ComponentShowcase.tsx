@@ -27,7 +27,6 @@ import { SignUpCardStory } from "../stories/SignUpCard.story";
 import { YouTubeCardStory } from "../stories/YouTubeCard.story";
 import { IntroModalStory } from "../stories/IntroModal.story";
 import { DemographicsCardStory } from "../stories/DemographicsCard.story";
-import { CertifyCardStory } from "../stories/CertifyCard.story";
 import { FeedbackCardStory } from "../stories/FeedbackCard.story";
 import { FeedbackNoteSheetStory } from "../stories/FeedbackNoteSheet.story";
 import { EmailAskSheetStory } from "../stories/EmailAskSheet.story";
@@ -172,7 +171,6 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                 <TabsTrigger value="youtube-card">YouTube Card</TabsTrigger>
                 <TabsTrigger value="intro-modal">Intro Modal</TabsTrigger>
                 <TabsTrigger value="demographics-card">Demographics Card</TabsTrigger>
-                <TabsTrigger value="certify-card">Certify Card</TabsTrigger>
                 <TabsTrigger value="feedback-card">Feedback Card</TabsTrigger>
                 <TabsTrigger value="feedback-note-sheet">Feedback Note Sheet</TabsTrigger>
                 <TabsTrigger value="email-ask-sheet">Email Ask Sheet</TabsTrigger>
@@ -324,9 +322,6 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="demographics-card">
                 <DemographicsCardStory />
-              </TabsContent>
-              <TabsContent value="certify-card">
-                <CertifyCardStory />
               </TabsContent>
               <TabsContent value="feedback-card">
                 <FeedbackCardStory />

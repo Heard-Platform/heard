@@ -241,7 +241,6 @@ export function SwipeableStatementStackStory() {
                 onShowAccountSetupModal={() => {}}
                 onChanceCardSwiped={handleChanceCardSwiped}
                 onCoverCardSwiped={handleCoverCardSwiped}
-                onCertifyDone={async () => {}}
                 onDemographicsAnswered={async () => {}}
                 feedbackStatement={null}
                 onFeedbackVoted={() => {}}
@@ -278,7 +277,6 @@ export function SwipeableStatementStackStory() {
                 onShowAccountSetupModal={() => {}}
                 onChanceCardSwiped={handleChanceCardSwiped}
                 onCoverCardSwiped={handleCoverCardSwiped}
-                onCertifyDone={async () => {}}
                 onDemographicsAnswered={async () => {}}
                 feedbackStatement={null}
                 onFeedbackVoted={() => {}}

@@ -98,7 +98,6 @@ function CoverCardStack({ label, cover }: { label: string; cover: FullCoverData 
         onShowAccountSetupModal={() => {}}
         onChanceCardSwiped={async () => {}}
         onCoverCardSwiped={markCoverCardSwiped}
-        onCertifyDone={async () => {}}
         onDemographicsAnswered={() => {}}
         feedbackStatement={null}
         onFeedbackVoted={() => {}}

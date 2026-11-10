@@ -152,7 +152,6 @@ function StackWithFeedback({
         onShowAccountSetupModal={() => {}}
         onChanceCardSwiped={async () => setChanceSwiped(true)}
         onCoverCardSwiped={async () => {}}
-        onCertifyDone={() => {}}
         onDemographicsAnswered={() => {}}
         feedbackStatement={feedbackVoted ? null : getFeedbackStatement(statementKey)}
         onFeedbackVoted={handleVoted}

@@ -94,7 +94,6 @@ export function RoomCard({
 }: RoomCardProps) {
   const { t } = useTranslation(["postControls"]);
 
-  const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [chanceCardSwiped, setChanceCardSwiped] = useState(room.chanceCardSwiped || false);
   const [coverCardSwiped, setCoverCardSwiped] = useState(room.coverCardSwiped || false);
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
@@ -200,7 +199,6 @@ export function RoomCard({
       (statement) =>
         statement.voters && statement.voters[user.id],
     ) &&
-    (!user.isAnonymous || certifyCardDismissed) &&
     effectiveChanceCardSwiped &&
     !feedbackStatement &&
     (coverCardSwiped || !(room.imageUrl || room.youtubeUrl)) &&
@@ -534,7 +532,6 @@ export function RoomCard({
                     onVote={handleSwipeVote}
                     onSubmitStatement={handleSubmitStatement}
                     onShowAccountSetupModal={onShowAccountSetupModal}
-                    onCertifyDone={() => setCertifyCardDismissed(true)}
                     onChanceCardSwiped={handleSwipeChanceCard}
                     onCoverCardSwiped={handleSwipeCoverCard}
                     onDemographicsAnswered={handleDemographicsAnswered}
