@@ -80,8 +80,27 @@ export const orderOldestFirst = (
   attendeeStatements: SupportViewAttendeeStatement[],
 ): SupportViewAttendeeStatement[] =>
   [...attendeeStatements].sort(
-    (first, second) => first.createdAt - second.createdAt,
+    (first, second) =>
+      first.createdAt - second.createdAt ||
+      first.id.localeCompare(second.id),
   );
+
+export function splitAwaitingApprovalIntoSections(
+  attendeeStatements: SupportViewAttendeeStatement[],
+  sectionCount: number,
+): SupportViewAttendeeStatement[][] {
+  const sections: SupportViewAttendeeStatement[][] = Array.from(
+    { length: sectionCount },
+    () => [],
+  );
+  orderOldestFirst(attendeeStatements).forEach(
+    (statement, arrivalPosition) => {
+      if (!statement.isAwaitingApproval) return;
+      sections[arrivalPosition % sectionCount].push(statement);
+    },
+  );
+  return sections;
+}
 
 export function getFinishedPercent(currentPost: Pick<SupportViewCurrentPost, "finishedCount" | "swipingCount">): number {
   const phonesOnPost = currentPost.finishedCount + currentPost.swipingCount;

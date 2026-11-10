@@ -681,3 +681,40 @@
     overflow: visible !important;
   }
 }
+
+.approval-section-color-1 {
+  --approval-section-color: var(--color-sky-600);
+}
+
+.approval-section-color-2 {
+  --approval-section-color: var(--color-violet-600);
+}
+
+.approval-section-color-3 {
+  --approval-section-color: var(--color-amber-600);
+}
+
+.approval-section-color-4 {
+  --approval-section-color: var(--color-teal-600);
+}
+
+.approval-section-color-5 {
+  --approval-section-color: var(--color-pink-600);
+}
+
+.approval-section-color-6 {
+  --approval-section-color: var(--color-indigo-600);
+}
+
+.approval-section-bg {
+  background-color: color-mix(in oklab, var(--approval-section-color) 8%, var(--color-white));
+}
+
+.approval-section-border {
+  border-color: color-mix(in oklab, var(--approval-section-color) 35%, transparent);
+  border-left-color: var(--approval-section-color);
+}
+
+.approval-section-text {
+  color: var(--approval-section-color);
+}
