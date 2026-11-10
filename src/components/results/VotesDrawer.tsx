@@ -111,7 +111,7 @@ function VoteButton({
       className={`h-8 px-2.5 flex items-center gap-1.5 flex-1 ${
         isUserVote ? config.activeColor : `${config.borderColor} ${config.hoverColor}`
       }`}
-      disabled={isChanging}
+      disabled={isChanging || isUserVote}
       onClick={onClick}
     >
       <Icon className="w-3.5 h-3.5" />

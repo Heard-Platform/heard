@@ -6,7 +6,13 @@ import type {
   ContentSource,
   DebateRoom,
 } from "./types.tsx";
-import { findStatementInAnyRoom, saveStatement, saveVote, getVotesForStatement, deleteVote, saveUser } from "./kv-utils.tsx";
+import {
+  findStatementInAnyRoom,
+  saveStatement,
+  saveVote,
+  getVotesForStatement,
+  saveUser,
+} from "./kv-utils.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { generateId, getDebateRoom, saveDebateRoom } from "./debate-api.tsx";
 import { recordRoomEngagement } from "./model-utils.ts";
@@ -136,13 +142,14 @@ const awardAuthorAndHostPoints = async (
   }
 };
 
+const NEW_VOTE_POINTS = 10;
+
 type ProcessVoteInputs = {
   statementId: string;
   userId: string;
   voteType: VoteType;
   voteSource: ContentSource;
   flyerSource?: FlyerSource;
-  allowIdempotent?: boolean;
   skipsEventVotingCheck?: boolean;
 };
 
@@ -152,7 +159,6 @@ export const processVote = async ({
   voteType,
   voteSource,
   flyerSource,
-  allowIdempotent = false,
   skipsEventVotingCheck = false,
 }: ProcessVoteInputs): Promise<ProcessVoteResult> => {
   if (
@@ -215,57 +221,30 @@ export const processVote = async ({
   }
 
   const currentVote = currentVotes.find((v) => v.userId === userId);
-  let pointsEarned = 0;
-  let voteCountChange = 0;
+  const isNewVote = !currentVote;
+  const pointsEarned = isNewVote ? NEW_VOTE_POINTS : 0;
+  const voteCountChange = isNewVote ? 1 : 0;
 
-  const voteData = {
+  const votePartial = {
     voteType,
     source: voteSource,
     timestamp: Date.now(),
     ...flyerAttribution(flyerSource),
   };
 
-  if (currentVote?.voteType === voteType && !allowIdempotent) {
-    // Same vote type - undo vote (delete the vote record)
-    await deleteVote(statementId, userId);
-    voteCountChange = -1;
-
-    console.log(
-      `Removed vote for user ${userId} on statement ${statementId}`,
-    );
-    // No points change for undoing
-  } else if (currentVote && currentVote.voteType !== voteType) {
-    // Different vote type - update existing vote
-    const updatedVote: Vote = {
-      ...currentVote,
-      ...voteData,
-    };
-    await saveVote(updatedVote);
-    console.log(
-      `Updated vote for user ${userId} on statement ${statementId} to ${voteType}`,
-    );
-
-    // No points for changing vote
-  } else {
-    const newVote: Vote = {
+  if (isNewVote) {
+    await saveVote({
       id: generateId(),
       statementId,
       userId,
-      ...voteData,
-    };
-    await saveVote(newVote);
-    voteCountChange = 1;
-
-    console.log(
-      `Created new vote for user ${userId} on statement ${statementId}: ${voteType}`,
-    );
-
-    pointsEarned = 10;
-
+      ...votePartial,
+    });
     runInBackground(
       awardAuthorAndHostPoints(statement, room, userId),
       `author and host points for statement ${statementId}`,
     );
+  } else {
+    await saveVote({ ...currentVote, ...votePartial });
   }
 
   const now = Date.now();

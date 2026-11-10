@@ -83,7 +83,6 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
       voteType: vote as VoteType,
       voteSource: "feed",
       flyerSource: { flyerId, flyerGroup },
-      allowIdempotent: true,
       skipsEventVotingCheck: true,
     });
 
