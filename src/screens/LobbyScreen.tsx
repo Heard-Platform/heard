@@ -54,7 +54,7 @@ interface LobbyScreenProps {
   onSubmitStatement: (
     roomId: string,
     text: string,
-    options?: SubmitStatementOptions,
+    options: SubmitStatementOptions,
   ) => Promise<any>;
   onVoteOnStatement: (
     statement: Statement,
@@ -234,8 +234,8 @@ export function LobbyScreen({
     return () => clearInterval(pollInterval);
   }, []);
 
-  const handleSubmitStatementFromFeed = (roomId: string, text: string) =>
-    onSubmitStatement(roomId, text, { isStatementFromFeed: true });
+  const handleSubmitStatement = (roomId: string, text: string) =>
+    onSubmitStatement(roomId, text, { source: "feed" });
 
   const handleUpdatePresence = async (
     currentRoomIndex: number,
@@ -407,7 +407,7 @@ export function LobbyScreen({
           user={user}
           currentSubHeard={currentSubHeard}
           onExitEvent={onExitEvent}
-          onSubmitStatement={onSubmitStatement}
+          onSubmitStatement={handleSubmitStatement}
           onVoteOnStatement={onVoteOnStatement}
           onShowAccountSetupModal={handleShowAccountSetupModal}
           onCreateRoom={onCreateRoom}
@@ -473,7 +473,7 @@ export function LobbyScreen({
               targetStatementId={targetStatementId}
               presences={presences}
               onCreateRoom={handleOpenCreateSheetComposing}
-              onSubmitStatement={handleSubmitStatementFromFeed}
+              onSubmitStatement={handleSubmitStatement}
               onVoteOnStatement={onVoteOnStatement}
               onDiscussStatement={handleDiscussStatement}
               onUpdatePresence={handleUpdatePresence}

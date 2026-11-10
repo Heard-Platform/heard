@@ -140,6 +140,8 @@ export type VoteType =
 
 export type SimpleVoteType = Exclude<VoteType, "super_agree">;
 
+export type ContentSource = "event" | "feed";
+
 export type StatementApprovalDecision = "approve" | "reject";
 
 export interface RoomAwaitingApproval {
@@ -152,6 +154,7 @@ export interface Statement {
   id: string;
   text: string;
   author: string;
+  source?: ContentSource;
   agrees: number;
   disagrees: number;
   passes: number;
@@ -174,6 +177,7 @@ export interface Vote {
   statementId: string;
   userId: string;
   voteType: VoteType;
+  source?: ContentSource;
   timestamp: number;
   flyerId?: string;
   flyerGroup?: number;

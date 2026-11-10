@@ -98,9 +98,13 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
 
   const handleVote = (statement: Statement, vote: SwipeVote) => {
     setLocalVotes((current) => ({ ...current, [statement.id]: vote }));
-    voteOnStatement(statement.id, vote).catch((voteError: Error) => {
-      toast.error(voteError.message || "That vote didn't go through.");
-    });
+    voteOnStatement(statement.id, vote, { source: "event" }).catch(
+      (voteError: Error) => {
+        toast.error(
+          voteError.message || "That vote didn't go through.",
+        );
+      },
+    );
   };
 
   const handleAddStatement = async (
@@ -112,7 +116,7 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
       const { statement, isAwaitingApproval } = await submitStatement(
         currentRoomId,
         text,
-        { isStatementFromEvent: true },
+        { source: "event" },
       );
       api.trackEvent(trackedEventType, currentRoomId);
       setStatementText("");

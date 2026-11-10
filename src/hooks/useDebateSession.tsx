@@ -74,12 +74,12 @@ interface DebateSessionContextType {
   submitStatement: (
     roomId: string,
     text: string,
-    options?: SubmitStatementOptions,
+    options: SubmitStatementOptions,
   ) => Promise<any>;
   voteOnStatement: (
     statementId: string,
     voteType: VoteType,
-    options?: VoteOnStatementOptions,
+    options: VoteOnStatementOptions,
   ) => Promise<any>;
   flagStatement: (
     statementId: string,
@@ -398,7 +398,7 @@ export function DebateSessionProvider(
     async (
       roomId: string,
       text: string,
-      options: SubmitStatementOptions = {},
+      options: SubmitStatementOptions,
     ) => {
       if (!user) {
         throw new Error(
@@ -433,7 +433,7 @@ export function DebateSessionProvider(
     async (
       statementId: string,
       voteType: "agree" | "disagree" | "pass" | "super_agree",
-      options: VoteOnStatementOptions = {},
+      options: VoteOnStatementOptions,
     ) => {
       if (!user) {
         throw new Error("User must be logged in to vote");

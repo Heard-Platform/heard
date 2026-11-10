@@ -47,10 +47,11 @@ import {
 import {
   calculateVoteStats,
   orderStatements,
-  processVote2,
+  processVote,
 } from "./voting-utils.ts";
 import { filterFeedRooms, sortRoomsForFeed } from "./feed-utils.ts";
 import { checkEventPosting } from "./event-utils.ts";
+import { getContentSource } from "./content-source-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { makeRantExtractionPrompt, stripMarkdownFences } from "./rant-prompt-utils.ts";
 import { validateDeveloper } from "./internal-utils.ts";
@@ -595,8 +596,8 @@ app.post(
     try {
       const userId = c.get("userId");
       const roomId = c.req.param("roomId") as string;
-      const { text, isStatementFromFeed, isStatementFromEvent } =
-        await c.req.json();
+      const { text, source } = await c.req.json();
+      const statementSource = getContentSource(source === "event");
 
       if (!text || text.length < 1 || text.length > 500) {
         return c.json(
@@ -633,7 +634,7 @@ app.post(
         return c.json({ error: "User session not found" }, 404);
       }
 
-      if (isStatementFromFeed !== true) {
+      if (statementSource === "event") {
         const canPost = await checkEventPosting(room, user);
         if (!canPost.allowed) {
           return c.json({ error: canPost.error }, 423);
@@ -686,6 +687,7 @@ app.post(
         id: generateId(),
         text: text.trim(),
         author: user.id,
+        source: statementSource,
         agrees: 0, // Will be calculated from Vote records
         disagrees: 0, // Will be calculated from Vote records
         passes: 0, // Will be calculated from Vote records
@@ -705,7 +707,7 @@ app.post(
 
       await saveStatement(statement);
 
-      if (requiresApproval && isStatementFromEvent !== true) {
+      if (requiresApproval && statementSource === "feed") {
         await notifyOfStatementAwaitingApproval(room, statement, user);
       }
 
@@ -843,13 +845,15 @@ app.post(
     try {
       const userId = c.get("userId");
       const statementId = c.req.param("statementId") as string;
-      const { voteType, isVoteFromFeed } = await c.req.json();
+      const { voteType, source } = await c.req.json();
+      const voteSource = getContentSource(source === "event");
 
-      const result = await processVote2({
+      const result = await processVote({
         statementId,
         userId,
         voteType,
-        skipsEventVotingCheck: isVoteFromFeed === true,
+        voteSource,
+        skipsEventVotingCheck: voteSource === "feed",
       });
 
       if (result.success) {
