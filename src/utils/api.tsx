@@ -48,6 +48,7 @@ import {
   type AttendeeOnboarding,
   type SupportViewStats,
   type AudienceBreakdownQuestion,
+  type EventPost,
   type EventReport,
   type LiveHeartbeat,
   EventSummary,
@@ -309,6 +310,12 @@ class ApiClient extends BaseApiClient {
     return this.request<{ questions: AudienceBreakdownQuestion[] }>(
       `/event/${eventId}/audience-breakdown${query}`,
     );
+  }
+
+  async getEventPost(
+    roomId: string,
+  ): Promise<ApiResponse<{ post: EventPost }>> {
+    return this.request<{ post: EventPost }>(`/event-post/${roomId}`);
   }
 
   async getEventReport(
