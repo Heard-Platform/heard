@@ -1,5 +1,5 @@
 import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
-import { motion, useTransform } from "motion/react";
+import { motion, useTransform, type MotionValue } from "motion/react";
 import { Check, Star, X } from "lucide-react";
 import { Button } from "./ui/button";
 import type { SwipeVote } from "./flyer/FlyerSwipeCard";
@@ -25,6 +25,7 @@ export function VoteButton({ label, vote, icon, onClick }: VoteButtonProps) {
 }
 
 interface ChargeableAgreeButtonProps {
+  chargeProgress?: MotionValue<number>;
   onAgree: () => void;
   onSuperAgree: () => void;
 }
@@ -32,11 +33,17 @@ interface ChargeableAgreeButtonProps {
 const isKeyboardClick = (event: ReactMouseEvent) => event.detail === 0;
 
 export function ChargeableAgreeButton({
+  chargeProgress: sharedChargeProgress,
   onAgree,
   onSuperAgree,
 }: ChargeableAgreeButtonProps) {
-  const { chargeProgress, startCharging, stopCharging, isFullyCharged } =
-    useSuperAgreeCharge();
+  const {
+    chargeProgress,
+    startCharging,
+    stopCharging,
+    isFullyCharged,
+    isPartlyCharged,
+  } = useSuperAgreeCharge(sharedChargeProgress);
   const superAgreeClipPath = useTransform(
     chargeProgress,
     (progress) => `inset(0 ${100 - progress * 100}% 0 0)`,
@@ -47,9 +54,9 @@ export function ChargeableAgreeButton({
   };
 
   const handlePointerUp = () => {
-    const wasFullyCharged = isFullyCharged();
+    const wasTap = !isFullyCharged() && !isPartlyCharged();
     stopCharging();
-    if (!wasFullyCharged) onAgree();
+    if (wasTap) onAgree();
   };
 
   const handleClick = (event: ReactMouseEvent) => {
@@ -61,34 +68,40 @@ export function ChargeableAgreeButton({
   };
 
   return (
-    <Button
-      variant="outline"
-      size="lg"
-      className="agree-border relative touch-none select-none overflow-hidden border-2 px-1"
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={stopCharging}
-      onPointerCancel={stopCharging}
-      onClick={handleClick}
-      onContextMenu={handleContextMenu}
-    >
-      <span className="flex items-center gap-1 font-bold agree-text">
-        <Check />
-        Agree
-      </span>
-      <motion.span
-        aria-hidden
-        className="super-agree-chip absolute inset-0 flex items-center justify-center gap-1 font-bold"
-        style={{ clipPath: superAgreeClipPath }}
+    <div className="flex flex-col gap-1">
+      <Button
+        variant="outline"
+        size="lg"
+        className="agree-border relative touch-none select-none overflow-hidden border-2 px-1"
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={stopCharging}
+        onPointerCancel={stopCharging}
+        onClick={handleClick}
+        onContextMenu={handleContextMenu}
       >
-        <Star className="fill-current" />
-        Super
-      </motion.span>
-    </Button>
+        <span className="flex items-center gap-1 font-bold agree-text">
+          <Check />
+          Agree
+        </span>
+        <motion.span
+          aria-hidden
+          className="super-agree-chip absolute inset-0 flex items-center justify-center gap-1 font-bold"
+          style={{ clipPath: superAgreeClipPath }}
+        >
+          <Star className="fill-current" />
+          Super
+        </motion.span>
+      </Button>
+      <span className="secondary-text text-center text-xs">
+        Hold for Super
+      </span>
+    </div>
   );
 }
 
 interface VoteButtonRowProps {
+  superAgreeChargeProgress?: MotionValue<number>;
   onAgree: () => void;
   onDisagree: () => void;
   onPass: () => void;
@@ -96,17 +109,19 @@ interface VoteButtonRowProps {
 }
 
 export function VoteButtonRow({
+  superAgreeChargeProgress,
   onAgree,
   onDisagree,
   onPass,
   onSuperAgree,
 }: VoteButtonRowProps) {
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-3 items-start gap-2">
       <VoteButton label="Disagree" vote="disagree" icon={<X />} onClick={onDisagree} />
       <VoteButton label="Pass" vote="pass" onClick={onPass} />
       {onSuperAgree ? (
         <ChargeableAgreeButton
+          chargeProgress={superAgreeChargeProgress}
           onAgree={onAgree}
           onSuperAgree={onSuperAgree}
         />

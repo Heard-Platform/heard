@@ -15,10 +15,14 @@ export interface SuperAgreeCharge {
   startCharging: (onCharged: () => void) => void;
   stopCharging: () => void;
   isFullyCharged: () => boolean;
+  isPartlyCharged: () => boolean;
 }
 
-export function useSuperAgreeCharge(): SuperAgreeCharge {
-  const chargeProgress = useMotionValue(0);
+export function useSuperAgreeCharge(
+  sharedChargeProgress?: MotionValue<number>,
+): SuperAgreeCharge {
+  const ownChargeProgress = useMotionValue(0);
+  const chargeProgress = sharedChargeProgress ?? ownChargeProgress;
   const chargeAnimation = useRef<AnimationPlaybackControls | null>(
     null,
   );
@@ -53,6 +57,11 @@ export function useSuperAgreeCharge(): SuperAgreeCharge {
     [],
   );
 
+  const isPartlyCharged = useCallback(
+    () => chargeProgress.get() > 0 && !isFullyChargedRef.current,
+    [chargeProgress],
+  );
+
   useEffect(() => () => chargeAnimation.current?.stop(), []);
 
   return {
@@ -60,5 +69,6 @@ export function useSuperAgreeCharge(): SuperAgreeCharge {
     startCharging,
     stopCharging,
     isFullyCharged,
+    isPartlyCharged,
   };
 }
