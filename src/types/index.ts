@@ -21,6 +21,8 @@ export type StampedVote = Exclude<SimpleVoteType, "pass">;
 
 export type SortBy = VoteType | "none";
 
+export type ContentSource = "event" | "feed";
+
 export interface Statement {
   id: string;
   text: string;
@@ -635,13 +637,13 @@ export type RoomEdits = Partial<
   >
 >;
 
+
 export type VoteOnStatementOptions = {
-  isVoteFromFeed?: boolean;
+  source: ContentSource;
 };
 
 export type SubmitStatementOptions = {
-  isStatementFromFeed?: boolean;
-  isStatementFromEvent?: boolean;
+  source: ContentSource;
 };
 
 export type Cover = {

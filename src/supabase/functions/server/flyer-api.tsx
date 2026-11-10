@@ -6,7 +6,7 @@ import type {
   User,
   VoteType,
 } from "./types.tsx";
-import { countStatementVotes, processVote2 } from "./voting-utils.ts";
+import { countStatementVotes, processVote } from "./voting-utils.ts";
 import { createAnonymousUser, createSession } from "./auth-api.tsx";
 import { insertFlyerEmail, insertFlyerScan } from "./model-utils.ts";
 import { getUsableStatementsForRoom } from "./room-utils.ts";
@@ -77,10 +77,11 @@ flyerApi.post("/make-server-f1a393b4/flyer/vote", async (c: Context) => {
       userId = newUser.id;
     }
 
-    const result = await processVote2({
+    const result = await processVote({
       statementId,
       userId,
       voteType: vote as VoteType,
+      voteSource: "feed",
       flyerSource: { flyerId, flyerGroup },
       allowIdempotent: true,
       skipsEventVotingCheck: true,

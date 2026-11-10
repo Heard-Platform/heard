@@ -116,7 +116,9 @@ function FlyerSwipeFlow({ room, flyerStatementId, flyerVote, onComplete }: Flyer
     track(`flyer_swipe_card_${votedCount + 1}_${vote}`);
     setVotes((current) => ({ ...current, [statementId]: vote }));
     if (statementId !== flyerStatementId) {
-      voteOnStatement(statementId, vote).catch((error) => console.error("Flyer swipe vote failed:", error));
+      voteOnStatement(statementId, vote, { source: "feed" }).catch(
+        (error) => console.error("Flyer swipe vote failed:", error),
+      );
     }
   };
 

@@ -45,7 +45,11 @@ function SwipeSixFlow({ source, items, onCompleted, onExit }: SwipeSixContainerP
   const handleVote = (item: SwipeSixItem, vote: SwipeVote) => {
     const cardNumber = votedCount + 1;
     api.trackEvent(`swipe_six_card_${cardNumber}_${vote}`, item.room.id);
-    voteOnStatement(item.statement.id, vote).catch((error) => console.error("Swipe six vote failed:", error));
+    voteOnStatement(item.statement.id, vote, {
+      source: "feed",
+    }).catch((error) =>
+      console.error("Swipe six vote failed:", error),
+    );
     setVotedCount(cardNumber);
     if (cardNumber >= items.length) handleFinished();
   };

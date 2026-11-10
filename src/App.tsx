@@ -296,7 +296,7 @@ function AppContent() {
   };
 
   const handleVoteOnStatement = (statement: Statement, voteType: VoteType) =>
-    voteOnStatement(statement.id, voteType, { isVoteFromFeed: true });
+    voteOnStatement(statement.id, voteType, { source: "feed" });
 
   const handleJumpToRoom = (roomId: string, subHeard?: string) => {
     setCurrentSubHeard(subHeard ?? null);

@@ -1,4 +1,11 @@
-import type { Vote, Statement, User, VoteType, DebateRoom } from "./types.tsx";
+import type {
+  Vote,
+  Statement,
+  User,
+  VoteType,
+  ContentSource,
+  DebateRoom,
+} from "./types.tsx";
 import { findStatementInAnyRoom, saveStatement, saveVote, getVotesForStatement, deleteVote, saveUser } from "./kv-utils.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { generateId, getDebateRoom, saveDebateRoom } from "./debate-api.tsx";
@@ -129,14 +136,25 @@ const awardAuthorAndHostPoints = async (
   }
 };
 
-export const processVote = async (
-  statementId: string,
-  userId: string,
-  voteType: VoteType,
-  flyerSource?: FlyerSource,
+type ProcessVoteInputs = {
+  statementId: string;
+  userId: string;
+  voteType: VoteType;
+  voteSource: ContentSource;
+  flyerSource?: FlyerSource;
+  allowIdempotent?: boolean;
+  skipsEventVotingCheck?: boolean;
+};
+
+export const processVote = async ({
+  statementId,
+  userId,
+  voteType,
+  voteSource,
+  flyerSource,
   allowIdempotent = false,
   skipsEventVotingCheck = false,
-): Promise<ProcessVoteResult> => {
+}: ProcessVoteInputs): Promise<ProcessVoteResult> => {
   if (
     !["agree", "disagree", "pass", "super_agree"].includes(voteType)
   ) {
@@ -202,6 +220,7 @@ export const processVote = async (
 
   const voteData = {
     voteType,
+    source: voteSource,
     timestamp: Date.now(),
     ...flyerAttribution(flyerSource),
   };
@@ -303,29 +322,3 @@ export const processVote = async (
     userVote: voteStats.voters[userId] || null,
   };
 };
-
-type ProcessVoteInputs = {
-  statementId: string;
-  userId: string;
-  voteType: VoteType;
-  flyerSource?: FlyerSource;
-  allowIdempotent?: boolean;
-  skipsEventVotingCheck?: boolean;
-};
-
-export const processVote2 = ({
-  statementId,
-  userId,
-  voteType,
-  flyerSource,
-  allowIdempotent = false,
-  skipsEventVotingCheck = false,
-}: ProcessVoteInputs): Promise<ProcessVoteResult> =>
-  processVote(
-    statementId,
-    userId,
-    voteType,
-    flyerSource,
-    allowIdempotent,
-    skipsEventVotingCheck,
-  );
