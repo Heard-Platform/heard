@@ -6,6 +6,7 @@ import type {
   AttendeePhoneState,
   DebateRoom,
   EventPresence,
+  EventVote,
   LiveEventState,
   Statement,
   SupportViewAttendeeStatement,
@@ -20,8 +21,6 @@ export const ACTIVE_WINDOW_MS = 30_000;
 
 const SECOND_MS = 1000;
 const MINUTE_MS = 60 * SECOND_MS;
-
-export type EventVote = Pick<Vote, "userId" | "voteType" | "timestamp"> & { roomId: string };
 
 export interface SupportViewSources {
   eventName: string;

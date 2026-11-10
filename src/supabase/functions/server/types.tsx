@@ -184,6 +184,10 @@ export interface Vote {
   anonymousUserId?: string;
 }
 
+export interface EventVote extends Vote {
+  roomId: string;
+}
+
 export type DemographicQuestionType =
   | "gender"
   | "age_range"

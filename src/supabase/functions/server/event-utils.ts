@@ -21,10 +21,7 @@ import {
   updateVoteCounts,
 } from "./event-content-utils.ts";
 import { buildSupportViewStats } from "./support-view-utils.ts";
-import {
-  buildEventReport,
-  type EventReportVote,
-} from "./event-report-utils.ts";
+import { buildEventReport } from "./event-report-utils.ts";
 import { applyCampNames } from "./event-report-camp-utils.ts";
 import {
   loadEventReportCampNames,
@@ -58,6 +55,7 @@ import type {
   LiveEventState as EventState,
   LiveEventView,
   EventTotals,
+  EventVote,
   Statement,
   SupportViewStats,
   User,
@@ -128,7 +126,7 @@ export const checkEventPosting = async (
 
 const loadEventVotesForStatements = async (
   statements: Statement[],
-): Promise<EventReportVote[]> =>
+): Promise<EventVote[]> =>
   (await Promise.all(
     statements.map(async (statement) =>
       (await getVotesForStatement(statement.id))
@@ -139,7 +137,7 @@ const loadEventVotesForStatements = async (
 
 interface EventStatementsAndVotes {
   statements: Statement[];
-  votes: EventReportVote[];
+  votes: EventVote[];
 }
 
 interface LoadEventStatementsOptions {

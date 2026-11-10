@@ -5,7 +5,6 @@ import {
   buildSupportViewStats,
   countPhones,
   describeCurrentPost,
-  type EventVote,
   listAttendeeStatements,
   listMinutes,
   listNextPressedAtMinutes,
@@ -13,7 +12,12 @@ import {
   sumSecondsOnEachPost,
 } from "./support-view-utils.ts";
 import { STATEMENT_APPROVAL_HIDER } from "./moderation-utils.ts";
-import type { EventPresence, LiveEventState, Statement } from "./types.tsx";
+import type {
+  EventPresence,
+  EventVote,
+  LiveEventState,
+  Statement,
+} from "./types.tsx";
 
 const STARTED_AT = 1_761_000_000_000;
 const SECOND_MS = 1000;
@@ -39,6 +43,8 @@ const presence = (userId: string, overrides: Partial<EventPresence> = {}): Event
 });
 
 const vote = (userId: string, roomId: string, timestamp: number, voteType: EventVote["voteType"] = "agree"): EventVote => ({
+  id: `${userId}-${roomId}-${timestamp}`,
+  statementId: "statement",
   userId,
   roomId,
   timestamp,
