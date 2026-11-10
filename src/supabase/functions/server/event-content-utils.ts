@@ -4,7 +4,7 @@ import {
   getStatementsForRoomIncludingHidden,
   getVotesForStatement,
 } from "./kv-utils.tsx";
-import { calculateVoteStats } from "./voting-utils.ts";
+import { calculateVoteStats } from "./vote-stats-utils.ts";
 import type {
   EventVote,
   Statement,
