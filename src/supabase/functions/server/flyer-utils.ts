@@ -119,7 +119,6 @@ const saveFlyerVote = async (pendingVote: PendingFlyerVote) => {
       voteType: pendingVote.vote,
       voteSource: "feed",
       flyerSource: pendingVote.flyerSource,
-      allowIdempotent: true,
       skipsEventVotingCheck: true,
     });
     if (!result.success) {

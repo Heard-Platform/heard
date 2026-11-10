@@ -4,13 +4,17 @@ import type { Statement } from "../types";
 import { mockStatements as baseMockStatements, mockUser } from "./mockData";
 
 // Mock data with various vote distributions
-const mockStatements: Statement[] = [
+const storyStatements: Pick<
+  Statement,
+  "id" | "text" | "author" | "timestamp" | "voters"
+>[] = [
   {
     id: "1",
     text: "Climate change is the most pressing issue of our generation and requires immediate global action.",
     author: "user1",
     timestamp: Date.now(),
     voters: {
+      "user1": "agree",
       "voter1": "agree",
       "voter2": "agree",
       "voter3": "agree",
@@ -28,6 +32,7 @@ const mockStatements: Statement[] = [
     author: "user2",
     timestamp: Date.now(),
     voters: {
+      "user1": "disagree",
       "voter1": "disagree",
       "voter2": "disagree",
       "voter3": "disagree",
@@ -163,9 +168,11 @@ const mockStatements: Statement[] = [
       "voter10": "disagree",
     }
   },
-].map(stmt => ({
-  ...stmt,
+];
+
+const mockStatements: Statement[] = storyStatements.map((stmt) => ({
   ...baseMockStatements["debate-no-image"][0],
+  ...stmt,
 }));
 
 const safelyGetUser = () => mockUser;
