@@ -79,6 +79,42 @@ const ATTENDEE_STATEMENTS: SupportViewAttendeeStatement[] = [
   ),
 ];
 
+const BUSY_APPROVAL_PRICING_MODELS = [
+  "Hourly billing",
+  "Fixed fees",
+  "Retainers",
+  "Value pricing",
+  "Success fees",
+  "Day rates",
+];
+
+const BUSY_APPROVAL_CLAIMS = [
+  "works fine for small clients.",
+  "hurts trust with procurement.",
+  "rewards slow work.",
+  "will be gone in five years.",
+];
+
+const BUSY_APPROVAL_STATEMENT_TEXTS = BUSY_APPROVAL_PRICING_MODELS.flatMap(
+  (pricingModel) =>
+    BUSY_APPROVAL_CLAIMS.map((claim) => `${pricingModel} ${claim}`),
+);
+
+const BUSY_APPROVAL_MINUTES_SPREAD = 12;
+
+const BUSY_APPROVAL_STATEMENTS: SupportViewAttendeeStatement[] =
+  BUSY_APPROVAL_STATEMENT_TEXTS.map((text, index) =>
+    attendeeStatement(
+      `busy-${index + 1}`,
+      4,
+      text,
+      [0, 0, 0],
+      BUSY_APPROVAL_MINUTES_SPREAD *
+        (1 - index / BUSY_APPROVAL_STATEMENT_TEXTS.length),
+      "awaiting approval",
+    ),
+  );
+
 const CURRENT_TOPIC = "Will AI change how agencies price their work in the next two years?";
 
 const MID_QUESTION: SupportViewStats = {
@@ -116,6 +152,16 @@ const MID_QUESTION: SupportViewStats = {
   nextPressedAtMinutes: NEXT_PRESSED_AT_MINUTES,
   startedAt: STORY_NOW - (SESSION_MINUTES * MINUTE_MS - 30 * SECOND_MS),
   endedAt: null,
+};
+
+const BUSY_APPROVAL_QUEUE: SupportViewStats = {
+  ...MID_QUESTION,
+  statementsFromRoom:
+    ATTENDEE_STATEMENTS.length + BUSY_APPROVAL_STATEMENTS.length,
+  attendeeStatements: [
+    ...ATTENDEE_STATEMENTS,
+    ...BUSY_APPROVAL_STATEMENTS,
+  ],
 };
 
 const LATE_IN_POST: SupportViewStats = {
@@ -247,12 +293,22 @@ export function EventSupportViewStory() {
   return (
     <StoryContainer
       title="Event Support View"
-      description="Alex's laptop during a live session: who's here, where every phone is, how the current post is landing, and how the session has gone so far. Clocks tick on their own; after End the header shows how long the session ran, most phones sit on the end screen, and the charts cover the whole session. Statements waiting for approval sit at the top, oldest first: Approve shows one on phones and the display, Reject keeps it hidden and moves it into the list. The rest are listed newest first; Hide drops one from phones and the display, and hidden ones stay listed, dimmed, with Unhide. Reload all phones asks to confirm first. Running the room stays on the display."
+      description="Alex's laptop during a live session: who's here, where every phone is, how the current post is landing, and how the session has gone so far. Clocks tick on their own; after End the header shows how long the session ran, most phones sit on the end screen, and the charts cover the whole session. Statements waiting for approval sit at the top, oldest first; the Sections dropdown splits them into that many boxes, dealt out in arrival order, all shown so moderators can cover for each other. Approve shows one on phones and the display, Reject keeps it hidden and moves it into the list. The rest are listed newest first; Hide drops one from phones and the display, and hidden ones stay listed, dimmed, with Unhide. Reload all phones asks to confirm first. Running the room stays on the display."
       variants={[
         {
           id: "mid-question",
           label: "Mid-question",
           children: <SupportViewDemo key="mid-question" initialStats={MID_QUESTION} />,
+        },
+        {
+          id: "busy-approval-queue",
+          label: "Busy approval queue",
+          children: (
+            <SupportViewDemo
+              key="busy-approval-queue"
+              initialStats={BUSY_APPROVAL_QUEUE}
+            />
+          ),
         },
         {
           id: "introducing",

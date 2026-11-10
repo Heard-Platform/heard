@@ -1,14 +1,22 @@
 import _ from "lodash";
 import { Check, Eye, EyeOff, X } from "lucide-react";
+import { useState } from "react";
 import type { SupportViewAttendeeStatement } from "../../../types";
 import {
   formatElapsed,
   getTotalVotes,
   getVoteMixPercents,
   orderNewestFirst,
-  orderOldestFirst,
+  splitAwaitingApprovalIntoSections,
 } from "../../../utils/event-support";
 import { Button } from "../../ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/select";
 import { AGREE_COLOR, DISAGREE_COLOR, PASS_COLOR, StackedBar, SupportNote, SupportPanel } from "./SupportParts";
 
 interface AttendeeStatementsPanelProps {
@@ -39,8 +47,9 @@ export function AttendeeStatementsPanel({
       ) : (
         <>
           {awaitingApprovalStatements.length > 0 && (
-            <AwaitingApprovalSection
-              awaitingApprovalStatements={awaitingApprovalStatements}
+            <AwaitingApprovalBox
+              attendeeStatements={attendeeStatements}
+              awaitingApprovalCount={awaitingApprovalStatements.length}
               updatingStatementIds={updatingStatementIds}
               now={now}
               onSetStatementHidden={onSetStatementHidden}
@@ -64,7 +73,122 @@ export function AttendeeStatementsPanel({
   );
 }
 
-interface AwaitingApprovalSectionProps {
+const APPROVAL_SECTION_COLOR_CLASSES = [
+  "approval-section-color-1",
+  "approval-section-color-2",
+  "approval-section-color-3",
+  "approval-section-color-4",
+  "approval-section-color-5",
+  "approval-section-color-6",
+];
+
+const APPROVAL_SECTION_COUNT_OPTIONS =
+  APPROVAL_SECTION_COLOR_CLASSES.map((_, index) => index + 1);
+
+interface AwaitingApprovalBoxProps {
+  attendeeStatements: SupportViewAttendeeStatement[];
+  awaitingApprovalCount: number;
+  updatingStatementIds: string[];
+  now: number;
+  onSetStatementHidden: (
+    statement: SupportViewAttendeeStatement,
+    isHidden: boolean,
+  ) => void;
+}
+
+function AwaitingApprovalBox({
+  attendeeStatements,
+  awaitingApprovalCount,
+  updatingStatementIds,
+  now,
+  onSetStatementHidden,
+}: AwaitingApprovalBoxProps) {
+  const [sectionCount, setSectionCount] = useState(1);
+  const approvalSections = splitAwaitingApprovalIntoSections(
+    attendeeStatements,
+    sectionCount,
+  );
+
+  const handleSectionCountChange = (value: string) =>
+    setSectionCount(Number(value));
+
+  return (
+    <div className="attention-bg attention-border rounded-xl border px-3 pt-3">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-xs font-bold uppercase tracking-wider attention-text">
+          Waiting for approval · {awaitingApprovalCount}
+        </h3>
+        <SectionCountSelect
+          sectionCount={sectionCount}
+          onSectionCountChange={handleSectionCountChange}
+        />
+      </div>
+      {sectionCount === 1 ? (
+        <AwaitingApprovalList
+          awaitingApprovalStatements={approvalSections[0]}
+          updatingStatementIds={updatingStatementIds}
+          now={now}
+          onSetStatementHidden={onSetStatementHidden}
+        />
+      ) : (
+        <div className="space-y-3 pb-3 pt-2">
+          {approvalSections.map((sectionStatements, sectionIndex) => (
+            <ApprovalSection
+              key={sectionIndex}
+              sectionNumber={sectionIndex + 1}
+              sectionColorClass={
+                APPROVAL_SECTION_COLOR_CLASSES[sectionIndex]
+              }
+              awaitingApprovalStatements={sectionStatements}
+              updatingStatementIds={updatingStatementIds}
+              now={now}
+              onSetStatementHidden={onSetStatementHidden}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface SectionCountSelectProps {
+  sectionCount: number;
+  onSectionCountChange: (value: string) => void;
+}
+
+function SectionCountSelect({
+  sectionCount,
+  onSectionCountChange,
+}: SectionCountSelectProps) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs secondary-text">Sections</span>
+      <Select
+        value={String(sectionCount)}
+        onValueChange={onSectionCountChange}
+      >
+        <SelectTrigger
+          size="sm"
+          className="w-16"
+          aria-label="Sections"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {APPROVAL_SECTION_COUNT_OPTIONS.map((option) => (
+            <SelectItem key={option} value={String(option)}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+interface ApprovalSectionProps {
+  sectionNumber: number;
+  sectionColorClass: string;
   awaitingApprovalStatements: SupportViewAttendeeStatement[];
   updatingStatementIds: string[];
   now: number;
@@ -74,33 +198,64 @@ interface AwaitingApprovalSectionProps {
   ) => void;
 }
 
-function AwaitingApprovalSection({
+function ApprovalSection({
+  sectionNumber,
+  sectionColorClass,
   awaitingApprovalStatements,
   updatingStatementIds,
   now,
   onSetStatementHidden,
-}: AwaitingApprovalSectionProps) {
+}: ApprovalSectionProps) {
+  const waitingSummary =
+    awaitingApprovalStatements.length === 0
+      ? "all clear"
+      : `${awaitingApprovalStatements.length} waiting`;
+
   return (
-    <div className="attention-bg attention-border rounded-xl border px-3 pt-3">
-      <h3 className="text-xs font-bold uppercase tracking-wider attention-text">
-        Waiting for approval · {awaitingApprovalStatements.length}
-      </h3>
-      <ul className="divide-y">
-        {orderOldestFirst(awaitingApprovalStatements).map(
-          (statement) => (
-            <AwaitingApprovalRow
-              key={statement.id}
-              statement={statement}
-              isUpdating={updatingStatementIds.includes(
-                statement.id,
-              )}
-              now={now}
-              onSetStatementHidden={onSetStatementHidden}
-            />
-          ),
-        )}
-      </ul>
+    <div
+      className={`${sectionColorClass} approval-section-bg approval-section-border rounded-lg border border-l-4 px-3 py-2`}
+    >
+      <h4 className="text-xs font-bold uppercase tracking-wider approval-section-text">
+        Section {sectionNumber} · {waitingSummary}
+      </h4>
+      <AwaitingApprovalList
+        awaitingApprovalStatements={awaitingApprovalStatements}
+        updatingStatementIds={updatingStatementIds}
+        now={now}
+        onSetStatementHidden={onSetStatementHidden}
+      />
     </div>
+  );
+}
+
+interface AwaitingApprovalListProps {
+  awaitingApprovalStatements: SupportViewAttendeeStatement[];
+  updatingStatementIds: string[];
+  now: number;
+  onSetStatementHidden: (
+    statement: SupportViewAttendeeStatement,
+    isHidden: boolean,
+  ) => void;
+}
+
+function AwaitingApprovalList({
+  awaitingApprovalStatements,
+  updatingStatementIds,
+  now,
+  onSetStatementHidden,
+}: AwaitingApprovalListProps) {
+  return (
+    <ul className="divide-y">
+      {awaitingApprovalStatements.map((statement) => (
+        <AwaitingApprovalRow
+          key={statement.id}
+          statement={statement}
+          isUpdating={updatingStatementIds.includes(statement.id)}
+          now={now}
+          onSetStatementHidden={onSetStatementHidden}
+        />
+      ))}
+    </ul>
   );
 }
 

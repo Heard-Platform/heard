@@ -10,6 +10,7 @@ import {
   listPhoneStates,
   orderNewestFirst,
   orderOldestFirst,
+  splitAwaitingApprovalIntoSections,
 } from "./event-support";
 
 const SECOND_MS = 1000;
@@ -196,6 +197,95 @@ describe("ordering attendee statements", () => {
     expect(
       attendeeStatements.map((statement) => statement.id),
     ).toEqual(["middle", "old", "new"]);
+  });
+
+  it("breaks a tie in time by id", () => {
+    const attendeeStatements = [
+      attendeeStatement("b", 1),
+      attendeeStatement("a", 1),
+    ];
+    expect(
+      orderOldestFirst(attendeeStatements).map(
+        (statement) => statement.id,
+      ),
+    ).toEqual(["a", "b"]);
+  });
+});
+
+describe("splitAwaitingApprovalIntoSections", () => {
+  const attendeeStatement = (
+    id: string,
+    createdAt: number,
+    isAwaitingApproval: boolean,
+  ) => ({
+    id,
+    roomId: "post",
+    postNumber: 1,
+    text: id,
+    agreeVotes: 0,
+    disagreeVotes: 0,
+    passVotes: 0,
+    isAwaitingApproval,
+    isHidden: isAwaitingApproval,
+    createdAt,
+  });
+
+  const toSectionIds = (
+    sections: ReturnType<typeof splitAwaitingApprovalIntoSections>,
+  ) =>
+    sections.map((section) =>
+      section.map((statement) => statement.id),
+    );
+
+  it("deals statements round robin in arrival order", () => {
+    const attendeeStatements = [
+      attendeeStatement("fourth", 4, true),
+      attendeeStatement("first", 1, true),
+      attendeeStatement("third", 3, true),
+      attendeeStatement("second", 2, true),
+    ];
+    expect(
+      toSectionIds(
+        splitAwaitingApprovalIntoSections(attendeeStatements, 3),
+      ),
+    ).toEqual([["first", "fourth"], ["second"], ["third"]]);
+  });
+
+  it("keeps statements in their section after others are decided", () => {
+    const attendeeStatements = [
+      attendeeStatement("first", 1, false),
+      attendeeStatement("second", 2, true),
+      attendeeStatement("third", 3, false),
+      attendeeStatement("fourth", 4, true),
+    ];
+    expect(
+      toSectionIds(
+        splitAwaitingApprovalIntoSections(attendeeStatements, 2),
+      ),
+    ).toEqual([[], ["second", "fourth"]]);
+  });
+
+  it("returns an empty section for each one with nothing waiting", () => {
+    expect(
+      toSectionIds(
+        splitAwaitingApprovalIntoSections(
+          [attendeeStatement("only", 1, true)],
+          3,
+        ),
+      ),
+    ).toEqual([["only"], [], []]);
+  });
+
+  it("puts everything in one section when there is one", () => {
+    const attendeeStatements = [
+      attendeeStatement("second", 2, true),
+      attendeeStatement("first", 1, true),
+    ];
+    expect(
+      toSectionIds(
+        splitAwaitingApprovalIntoSections(attendeeStatements, 1),
+      ),
+    ).toEqual([["first", "second"]]);
   });
 });
 
