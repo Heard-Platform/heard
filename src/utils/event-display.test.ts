@@ -43,7 +43,7 @@ const statementIds = (statements: Statement[]) => statements.map((statement) => 
 
 describe("getVoteShares", () => {
   it("counts super agrees as agrees", () => {
-    expect(getVoteShares(statement("a", { agrees: 1, superAgrees: 1, disagrees: 1, passes: 1 }))).toEqual({
+    expect(getVoteShares(statement("a", { agrees: 2, superAgrees: 1, disagrees: 1, passes: 1 }))).toEqual({
       agree: 50,
       disagree: 25,
       pass: 25,

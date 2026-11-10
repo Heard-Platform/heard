@@ -122,7 +122,7 @@ const withVotes = (statement: Statement, lean: VoteLean, votes: number): Stateme
   const disagrees = Math.round(lean.disagree * votes);
   return {
     ...statement,
-    agrees: allAgrees - superAgrees,
+    agrees: allAgrees,
     superAgrees,
     disagrees,
     passes: votes - allAgrees - disagrees,

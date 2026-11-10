@@ -163,7 +163,7 @@ Deno.test("describeCurrentPost - none unless live", () => {
 Deno.test("listAttendeeStatements - written since Start on the event's posts, hidden ones included", () => {
   const statements = [
     statement("seed", "a", STARTED_AT - 1),
-    statement("from-room", "b", at(5), { agrees: 3, superAgrees: 1, disagrees: 2, passes: 1 }),
+    statement("from-room", "b", at(5), { agrees: 4, superAgrees: 1, disagrees: 2, passes: 1 }),
     statement("hidden", "a", at(2), { isHidden: true }),
     statement("other-post", "z", at(3)),
   ];
