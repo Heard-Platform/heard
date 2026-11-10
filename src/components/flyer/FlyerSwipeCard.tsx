@@ -2,24 +2,30 @@ import { forwardRef, useImperativeHandle, useRef } from "react";
 import { motion, useAnimate, useMotionValue, useTransform, type MotionValue, type PanInfo } from "motion/react";
 import type { Statement } from "../../types";
 import { useFitText } from "../../hooks/useFitText";
+import { useSuperAgreeCharge } from "../../hooks/useSuperAgreeCharge";
+import { SuperAgreeChargeBadge } from "../SuperAgreeChargeBadge";
 
 export type SwipeVote = "agree" | "disagree" | "pass";
 
 interface FlyerSwipeCardProps {
   statement: Statement;
   addedByHost: boolean;
+  heldAgreeChargeProgress?: MotionValue<number>;
   onDragStart: () => void;
   onSwiped: (vote: SwipeVote) => void;
+  onSuperAgree?: () => void;
+  onSuperAgreeFlyOff?: (startX: number) => void;
 }
 
 // Lets a parent swipe the card from a button tap, with the same fly-off as a drag.
 export interface FlyerSwipeCardHandle {
   swipe: (vote: SwipeVote) => void;
+  superAgree: () => void;
 }
 
 const SWIPE_DISTANCE = 100;
 const SWIPE_VELOCITY = 500;
-const FLY_OFF_DISTANCE = 600;
+export const FLY_OFF_DISTANCE = 600;
 const STAMP_FADE_START = 20;
 
 // A drag means one vote at a time: whichever of sideways or up is bigger.
@@ -31,6 +37,10 @@ function dragDirection(x: number, y: number): SwipeVote {
 function dragDistance(vote: SwipeVote, x: number, y: number): number {
   return vote === "pass" ? -y : Math.abs(x);
 }
+
+const isHeldPastAgree = ({ offset }: PanInfo): boolean =>
+  dragDirection(offset.x, offset.y) === "agree" &&
+  offset.x > SWIPE_DISTANCE;
 
 function voteFromDrag({ offset, velocity }: PanInfo): SwipeVote | null {
   const byOffset = dragDirection(offset.x, offset.y);
@@ -57,6 +67,9 @@ const FLY_OFF_TARGET: Record<SwipeVote, { x: number; y: number }> = {
 
 export const FLYER_CARD_CLASS = "absolute inset-0 flex flex-col rounded-3xl bg-white px-6 pt-6 pb-3";
 export const FLYER_CARD_SHADOW = "0 12px 32px rgba(28, 27, 31, 0.12)";
+const superAgreeGlowShadow = (chargeProgress: number) =>
+  `${FLYER_CARD_SHADOW}, 0 0 ${chargeProgress * 28}px ${chargeProgress * 6}px color-mix(in srgb, var(--color-purple-500) ${chargeProgress * 60}%, transparent)`;
+
 export const STACK_POSES = [
   { scale: 1, y: 0 },
   { scale: 0.95, y: 14 },
@@ -119,8 +132,26 @@ export function FlyerStackedCard({ statement, depth, addedByHost }: FlyerStacked
 export const FlyerSwipeCard = forwardRef<
   FlyerSwipeCardHandle,
   FlyerSwipeCardProps
->(function FlyerSwipeCard({ statement, onDragStart, onSwiped, addedByHost }, ref) {
+>(function FlyerSwipeCard(
+  {
+    statement,
+    addedByHost,
+    heldAgreeChargeProgress,
+    onDragStart,
+    onSwiped,
+    onSuperAgree,
+    onSuperAgreeFlyOff,
+  },
+  ref,
+) {
   const [scope, animate] = useAnimate();
+  const {
+    chargeProgress,
+    startCharging,
+    stopCharging,
+    isFullyCharged,
+    isPartlyCharged,
+  } = useSuperAgreeCharge();
   const isFlyingOff = useRef(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -128,12 +159,37 @@ export const FlyerSwipeCard = forwardRef<
   const agreeOpacity = useStampOpacity(x, y, "agree");
   const disagreeOpacity = useStampOpacity(x, y, "disagree");
   const passOpacity = useStampOpacity(x, y, "pass");
+  const noHeldAgreeCharge = useMotionValue(0);
+  const shownChargeProgress = useTransform(
+    [chargeProgress, heldAgreeChargeProgress ?? noHeldAgreeCharge],
+    ([dragCharge, heldAgreeCharge]: number[]) =>
+      Math.max(dragCharge, heldAgreeCharge),
+  );
+  const boxShadow = useTransform(
+    shownChargeProgress,
+    superAgreeGlowShadow,
+  );
+
+  const handleDrag = (
+    _event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo,
+  ) => {
+    if (!onSuperAgree) return;
+    if (isHeldPastAgree(info)) startCharging(() => {});
+    else stopCharging();
+  };
 
   const handleDragEnd = async (
     _event: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo,
   ) => {
-    const vote = voteFromDrag(info);
+    if (isFullyCharged()) {
+      await flyOffAsSuperAgree();
+      return;
+    }
+    const wasReleasedEarly = isPartlyCharged();
+    stopCharging();
+    const vote = wasReleasedEarly ? null : voteFromDrag(info);
     if (!vote) {
       await animate(
         scope.current,
@@ -145,18 +201,37 @@ export const FlyerSwipeCard = forwardRef<
     await flyOff(vote);
   };
 
-  const flyOff = async (vote: SwipeVote) => {
-    if (isFlyingOff.current) return;
+  const claimFlyOff = () => {
+    if (isFlyingOff.current) return false;
     isFlyingOff.current = true;
-    await animate(
+    return true;
+  };
+
+  const flyTo = (target: { x: number; y: number }) =>
+    animate(
       scope.current,
-      { ...FLY_OFF_TARGET[vote], opacity: 0 },
+      { ...target, opacity: 0 },
       { duration: 0.3, ease: "easeIn" },
     );
+
+  const flyOff = async (vote: SwipeVote) => {
+    if (!claimFlyOff()) return;
+    await flyTo(FLY_OFF_TARGET[vote]);
     onSwiped(vote);
   };
 
-  useImperativeHandle(ref, () => ({ swipe: flyOff }));
+  const flyOffAsSuperAgree = async () => {
+    if (!onSuperAgree || !claimFlyOff()) return;
+    chargeProgress.set(1);
+    onSuperAgreeFlyOff?.(x.get());
+    await flyTo(FLY_OFF_TARGET.agree);
+    onSuperAgree();
+  };
+
+  useImperativeHandle(ref, () => ({
+    swipe: flyOff,
+    superAgree: flyOffAsSuperAgree,
+  }));
 
   return (
     <motion.div
@@ -166,7 +241,7 @@ export const FlyerSwipeCard = forwardRef<
         x,
         y,
         rotate,
-        boxShadow: FLYER_CARD_SHADOW,
+        boxShadow,
         zIndex: STACK_POSES.length,
       }}
       drag
@@ -175,6 +250,7 @@ export const FlyerSwipeCard = forwardRef<
       animate={STACK_POSES[0]}
       transition={{ duration: 0.25, ease: "easeOut" }}
       onDragStart={onDragStart}
+      onDrag={handleDrag}
       onDragEnd={handleDragEnd}
     >
       <FlyerCardContent statement={statement} addedByHost={addedByHost} />
@@ -185,6 +261,12 @@ export const FlyerSwipeCard = forwardRef<
         opacity={agreeOpacity}
         className="left-6 top-6 -rotate-12"
       />
+      {onSuperAgree && (
+        <SuperAgreeChargeBadge
+          chargeProgress={shownChargeProgress}
+          className="left-5 top-16 -rotate-12"
+        />
+      )}
       <SwipeLabel
         text="DISAGREE"
         vote="disagree"

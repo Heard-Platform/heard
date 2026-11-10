@@ -1,6 +1,8 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { useMotionValue } from "motion/react";
 import type { SwipeSixItem } from "../../types";
 import { VoteButtonRow } from "../VoteButton";
+import { SuperAgreeStarTrail } from "../SuperAgreeStarTrail";
 import { RoomProgressBar } from "../room/RoomProgressBar";
 import { FlyerProgressSegments } from "../flyer/FlyerProgress";
 import {
@@ -12,6 +14,11 @@ import {
   type SwipeVote,
 } from "../flyer/FlyerSwipeCard";
 
+interface StarTrail {
+  id: number;
+  startX: number;
+}
+
 const isAddedByHost = ({ statement, room }: SwipeSixItem) =>
   statement.author === room.hostId;
 
@@ -19,15 +26,37 @@ interface SwipeDeckProps {
   items: SwipeSixItem[];
   votedCount: number;
   onVote: (item: SwipeSixItem, vote: SwipeVote) => void;
+  onSuperAgree?: (item: SwipeSixItem) => void;
 }
 
-export function SwipeDeck({ items, votedCount, onVote }: SwipeDeckProps) {
+export function SwipeDeck({ items, votedCount, onVote, onSuperAgree }: SwipeDeckProps) {
   const stack = items.slice(votedCount);
   const current = stack[0];
   const cardsBehind = stack.slice(1, STACK_POSES.length);
   // Handles keyed by statement so a tap always reaches the card on top, never one that just flew off.
   const cardHandles = useRef(new Map<string, FlyerSwipeCardHandle>());
   const swipe = (vote: SwipeVote) => current && cardHandles.current.get(current.statement.id)?.swipe(vote);
+  const handleCardSuperAgreed = () => current && onSuperAgree?.(current);
+  const heldAgreeChargeProgress = useMotionValue(0);
+
+  const handleSuperAgreeHeld = () => {
+    if (!current) return;
+    cardHandles.current.get(current.statement.id)?.superAgree();
+    heldAgreeChargeProgress.set(0);
+  };
+  const [starTrails, setStarTrails] = useState<StarTrail[]>([]);
+  const nextStarTrailId = useRef(0);
+
+  const handleSuperAgreeFlyOff = (startX: number) => {
+    const id = nextStarTrailId.current++;
+    setStarTrails((trails) => [...trails, { id, startX }]);
+  };
+
+  const removeStarTrail = (id: number) => {
+    setStarTrails((trails) =>
+      trails.filter((trail) => trail.id !== id),
+    );
+  };
 
   return (
     <>
@@ -61,17 +90,29 @@ export function SwipeDeck({ items, votedCount, onVote }: SwipeDeckProps) {
             key={current.statement.id}
             statement={current.statement}
             addedByHost={isAddedByHost(current)}
+            heldAgreeChargeProgress={heldAgreeChargeProgress}
             onDragStart={() => {}}
             onSwiped={(vote) => onVote(current, vote)}
+            onSuperAgree={onSuperAgree && handleCardSuperAgreed}
+            onSuperAgreeFlyOff={handleSuperAgreeFlyOff}
           />
         )}
+        {starTrails.map((trail) => (
+          <SuperAgreeStarTrail
+            key={trail.id}
+            startX={trail.startX}
+            onFinished={() => removeStarTrail(trail.id)}
+          />
+        ))}
       </div>
 
       <div className="pt-4">
         <VoteButtonRow
+          superAgreeChargeProgress={heldAgreeChargeProgress}
           onAgree={() => swipe("agree")}
           onDisagree={() => swipe("disagree")}
           onPass={() => swipe("pass")}
+          onSuperAgree={onSuperAgree && handleSuperAgreeHeld}
         />
       </div>
     </>
