@@ -6,7 +6,7 @@ import { getStatementVisibilityEventName } from "../../../utils/event-support";
 import { Loader } from "../../widgets/Loader";
 import { EventSupportView } from "./EventSupportView";
 
-const SUPPORT_VIEW_POLL_MS = 5000;
+const SUPPORT_VIEW_POLL_MS = 2000;
 
 interface EventSupportViewContainerProps {
   eventId: string;
