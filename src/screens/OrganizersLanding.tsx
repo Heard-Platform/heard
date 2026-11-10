@@ -328,7 +328,6 @@ function DemoSection() {
             onShowAccountSetupModal={() => {}}
             onChanceCardSwiped={async () => {}}
             onCoverCardSwiped={async () => {}}
-            onCertifyDone={async () => {}}
             onDemographicsAnswered={async () => {}}
             feedbackStatement={null}
             onFeedbackVoted={() => {}}

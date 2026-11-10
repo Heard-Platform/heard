@@ -5,21 +5,19 @@ import {
   useTransform,
   PanInfo,
 } from "motion/react";
-import type { Card, DebateRoom, Statement } from "../../types";
+import type { Card, DebateRoom } from "../../types";
 import type { VoteReveal } from "../../utils/vote-reveal";
 import { getPastelColor } from "../../utils/colors";
 import { ChanceCard } from "./ChanceCard";
 import { CoverCard } from "./CoverCard";
 import { DemographicsCard } from "./DemographicsCard";
 import { StatementCard } from "./StatementCard";
-import { CertifyCard } from "./CertifyCard";
 import { FeedbackCard, FEEDBACK_CARD_SHELL_CLASS } from "./FeedbackCard";
 import { EventInviteCard } from "./EventInviteCard";
 
 interface SwipeableCardProps {
   card: Card;
   room: DebateRoom;
-  statements: Statement[];
   index: number;
   isTopCard: boolean;
   direction: "left" | "right" | "down" | "up" | null;
@@ -36,7 +34,6 @@ interface SwipeableCardProps {
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
   onDemographicsAnswer?: (id: string, answers: string[]) => void;
-  onCertifySuccess: () => void;
   onFeedbackTellMore: () => void;
   onAgree: (card: Card) => void;
   onDisagree: (card: Card) => void;
@@ -51,7 +48,6 @@ interface SwipeableCardProps {
 export function SwipeableCard({
   card,
   room,
-  statements,
   index,
   isTopCard,
   direction,
@@ -65,7 +61,6 @@ export function SwipeableCard({
   onSubmitStatement,
   onShowAccountSetupModal,
   onDemographicsAnswer,
-  onCertifySuccess,
   onFeedbackTellMore,
   onAgree,
   onDisagree,
@@ -157,9 +152,7 @@ export function SwipeableCard({
             ? "p-5"
             : "p-6"
         } rounded-xl border-2 shadow-xl ${
-          card.type === "certify"
-          ? "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-300"
-            : card.type === "chance"
+          card.type === "chance"
             ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-orange-300"
             : card.type === "cover" && card.cover.type === "youtube"
             ? "bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300"
@@ -207,13 +200,6 @@ export function SwipeableCard({
               onDemographicsAnswer &&
                 onDemographicsAnswer(card.question.id, answers);
             }}
-          />
-        ) : card.type === "certify" ? (
-          <CertifyCard
-            roomId={room.id}
-            statements={statements}
-            isActive={isTopCard}
-            onSuccess={onCertifySuccess}
           />
         ) : card.type === "feedback" ? (
           <FeedbackCard

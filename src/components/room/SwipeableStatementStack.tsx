@@ -49,7 +49,6 @@ interface SwipeableStatementStackProps {
   ) => Promise<void>;
   onSubmitStatement: (text: string) => Promise<void>;
   onShowAccountSetupModal: (featureText: string) => void;
-  onCertifyDone: () => void;
   onChanceCardSwiped: () => Promise<void>;
   onCoverCardSwiped: () => Promise<void>;
   onDemographicsAnswered: (questionId: string) => void;
@@ -89,7 +88,6 @@ export function SwipeableStatementStack({
   onVote,
   onSubmitStatement,
   onShowAccountSetupModal,
-  onCertifyDone,
   onChanceCardSwiped,
   onCoverCardSwiped,
   onDemographicsAnswered,
@@ -100,7 +98,6 @@ export function SwipeableStatementStack({
   const { flagStatement, saveDemographicAnswers } =
     useDebateSession();
 
-  const [certifyCardDismissed, setCertifyCardDismissed] = useState(false);
   const [votedStatementIds, setVotedStatementIds] = useState<
     Set<string>
   >(new Set());
@@ -109,7 +106,6 @@ export function SwipeableStatementStack({
     string | null
   >(null);
   const [swipedNoopCard, setSwipedNoopCard] = useState<
-    | "certify"
     | "chance"
     | "cover"
     | "feedback"
@@ -215,11 +211,6 @@ export function SwipeableStatementStack({
 
   if (feedbackStatement && !isFlyerIntro) {
     cards.push({ type: "feedback", statement: feedbackStatement });
-  }
-
-  if (isAnonymous && !certifyCardDismissed && !isFlyerIntro) {
-    const certifyCard: Card = { type: "certify" };
-    cards.push(certifyCard);
   }
 
   if (flyerIntro && !isFlyerStampDone) {
@@ -369,9 +360,6 @@ export function SwipeableStatementStack({
         swipeDirection,
       );
       return;
-    } else if (card.type === "certify") {
-      swipeCertifyCard(swipeDirection);
-      return;
     } else if (card.type === "chance") {
       sendNoopCardOff("chance", swipeDirection, onChanceCardSwiped);
       return;
@@ -434,21 +422,6 @@ export function SwipeableStatementStack({
       setSwipeDirection(null);
       setIsVoting(false);
     }, CARD_EXIT_MS);
-  };
-
-  const swipeCertifyCard = (direction: "left" | "right") => {
-    setSwipedNoopCard("certify");
-    setSwipeDirection(direction);
-    setTimeout(() => {
-      setCertifyCardDismissed(true);
-      setSwipedNoopCard(null);
-      setSwipeDirection(null);
-      onCertifyDone();
-    }, 300);
-  }
-
-  const handleSuccessCertifyCard = () => {
-    swipeCertifyCard("right");
   };
 
   const handleSubmitFromChanceCard = async (text: string) => {
@@ -550,7 +523,6 @@ export function SwipeableStatementStack({
 
             const getCardKey = () => {
               if (card.type === "statement") return card.statement.id;
-              if (card.type === "certify") return "certify";
               if (card.type === "chance") return "chance";
               if (card.type === "cover") return "cover";
               if (card.type === "demographics") return `demographics-${card.question.id}`;
@@ -564,7 +536,6 @@ export function SwipeableStatementStack({
                 key={getCardKey()}
                 card={card}
                 room={room}
-                statements={statements}
                 index={index}
                 isTopCard={isTopCard}
                 onDragEnd={(event, info) => handleDragEnd(card, event, info)}
@@ -585,7 +556,6 @@ export function SwipeableStatementStack({
                 onSubmitStatement={handleSubmitFromChanceCard}
                 onShowAccountSetupModal={onShowAccountSetupModal}
                 onDemographicsAnswer={handleDemographicsAnswer}
-                onCertifySuccess={handleSuccessCertifyCard}
                 onFeedbackTellMore={() => {
                   if (card.type === "feedback") {
                     onFeedbackTellMore(card.statement);

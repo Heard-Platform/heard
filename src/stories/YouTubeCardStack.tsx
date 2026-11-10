@@ -87,7 +87,6 @@ export function MusicLeagueCardStackStory() {
           onShowAccountSetupModal={() => {}}
           onChanceCardSwiped={async () => {}}
           onCoverCardSwiped={async () => {}}
-          onCertifyDone={() => {}}
           onDemographicsAnswered={() => {}}
           feedbackStatement={null}
           onFeedbackVoted={() => {}}

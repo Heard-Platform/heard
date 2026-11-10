@@ -106,7 +106,6 @@ export function EventFlyerFlow({
           onVote={handleVote}
           onSubmitStatement={doNothingAsync}
           onShowAccountSetupModal={doNothing}
-          onCertifyDone={doNothing}
           onChanceCardSwiped={doNothingAsync}
           onCoverCardSwiped={doNothingAsync}
           onDemographicsAnswered={doNothing}

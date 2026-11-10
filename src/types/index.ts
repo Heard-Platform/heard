@@ -70,10 +70,6 @@ export type EventInviteCard = {
   invite: EventInvite;
 }
 
-export type CertifyCard = {
-  type: "certify";
-}
-
 export type ChanceCard = {
   type: "chance";
 }
@@ -143,7 +139,6 @@ export type FeedbackCard = {
 
 export type Card = (
   | StatementCard
-  | CertifyCard
   | ChanceCard
   | CoverCard
   | DemographicsCard
