@@ -4,10 +4,13 @@ import {
   getStatementsForRoomIncludingHidden,
   getVotesForStatement,
 } from "./kv-utils.tsx";
+import { getMergesForRoom } from "./model-utils.ts";
+import { applyStatementMerges } from "./room-utils.ts";
 import { calculateVoteStats } from "./vote-stats-utils.ts";
 import type {
   EventVote,
   Statement,
+  StatementMerge,
   Vote,
 } from "./types.tsx";
 
@@ -32,6 +35,32 @@ export const updateVoteCounts = (
       eventVotesByStatementId[statement.id] ?? [],
     ),
   }));
+};
+
+const statementVoterKey = (vote: EventVote) =>
+  `${vote.statementId}:${vote.userId}`;
+
+export const moveVotesToMergeTargets = (
+  votes: EventVote[],
+  merges: StatementMerge[],
+): EventVote[] => {
+  const targetIdBySourceId = new Map(
+    merges.map((merge) => [
+      merge.sourceStatementId,
+      merge.targetStatementId,
+    ]),
+  );
+  const votesOnKeptStatements = votes.filter(
+    (vote) => !targetIdBySourceId.has(vote.statementId),
+  );
+  const votesMovedToTargets = votes.flatMap((vote) => {
+    const targetId = targetIdBySourceId.get(vote.statementId);
+    return targetId ? [{ ...vote, statementId: targetId }] : [];
+  });
+  return _.uniqBy(
+    [...votesOnKeptStatements, ...votesMovedToTargets],
+    statementVoterKey,
+  );
 };
 
 const loadEventVotesForStatements = async (
@@ -63,13 +92,21 @@ export const loadEventStatementsAndVotes = async (
   const loadRoomStatements = includesHiddenStatements
     ? getStatementsForRoomIncludingHidden
     : getStatementsForRoom;
-  const roomStatements = await Promise.all(
-    roomIds.map(loadRoomStatements),
-  );
+  const [roomStatements, roomMerges] = await Promise.all([
+    Promise.all(roomIds.map(loadRoomStatements)),
+    Promise.all(roomIds.map(getMergesForRoom)),
+  ]);
   const statements = roomStatements.flat().filter(isEventStatement);
-  const votes = await loadEventVotesForStatements(statements);
+  const merges = roomMerges.flat();
+  const votes = moveVotesToMergeTargets(
+    await loadEventVotesForStatements(statements),
+    merges,
+  );
   return {
-    statements: updateVoteCounts(statements, votes),
+    statements: applyStatementMerges(
+      updateVoteCounts(statements, votes),
+      merges,
+    ),
     votes,
   };
 };

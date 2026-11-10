@@ -2,9 +2,14 @@ import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   isEventStatement,
   isEventVote,
+  moveVotesToMergeTargets,
   updateVoteCounts,
 } from "./event-content-utils.ts";
-import type { Statement } from "./types.tsx";
+import type {
+  EventVote,
+  Statement,
+  StatementMerge,
+} from "./types.tsx";
 
 const STATEMENT: Statement = {
   id: "statement",
@@ -73,5 +78,88 @@ Deno.test(
         },
       ],
     );
+  },
+);
+
+const merge = (
+  sourceStatementId: string,
+  targetStatementId: string,
+): StatementMerge => ({
+  id: `${sourceStatementId}-into-${targetStatementId}`,
+  roomId: "room",
+  sourceStatementId,
+  targetStatementId,
+  creatorId: "moderator",
+  createdAt: "2026-11-10",
+});
+
+const eventVote = (
+  statementId: string,
+  userId: string,
+  voteType: EventVote["voteType"],
+): EventVote => ({
+  id: `${statementId}-${userId}`,
+  statementId,
+  userId,
+  voteType,
+  source: "event",
+  timestamp: 0,
+  roomId: "room",
+});
+
+Deno.test(
+  "moveVotesToMergeTargets - moves votes to the target",
+  () => {
+    const votes = [
+      eventVote("source", "source-voter", "pass"),
+      eventVote("other", "other-voter", "agree"),
+    ];
+
+    assertEquals(
+      moveVotesToMergeTargets(votes, [merge("source", "target")]),
+      [
+        eventVote("other", "other-voter", "agree"),
+        {
+          ...eventVote("source", "source-voter", "pass"),
+          statementId: "target",
+        },
+      ],
+    );
+  },
+);
+
+Deno.test(
+  "moveVotesToMergeTargets - the target's own vote wins",
+  () => {
+    const votes = [
+      eventVote("source", "voter", "disagree"),
+      eventVote("target", "voter", "agree"),
+    ];
+
+    assertEquals(
+      moveVotesToMergeTargets(votes, [merge("source", "target")]),
+      [eventVote("target", "voter", "agree")],
+    );
+  },
+);
+
+Deno.test(
+  "moveVotesToMergeTargets - one vote per voter per target",
+  () => {
+    const votes = [
+      eventVote("first", "voter", "agree"),
+      eventVote("second", "voter", "agree"),
+    ];
+    const merges = [
+      merge("first", "target"),
+      merge("second", "target"),
+    ];
+
+    assertEquals(moveVotesToMergeTargets(votes, merges), [
+      {
+        ...eventVote("first", "voter", "agree"),
+        statementId: "target",
+      },
+    ]);
   },
 );
