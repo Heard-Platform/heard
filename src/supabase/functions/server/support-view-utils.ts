@@ -196,7 +196,7 @@ export const listAttendeeStatements = (
       roomId: statement.roomId,
       postNumber: state.roomOrder.indexOf(statement.roomId) + 1,
       text: statement.text,
-      agreeVotes: statement.agrees + statement.superAgrees,
+      agreeVotes: statement.agrees,
       disagreeVotes: statement.disagrees,
       passVotes: statement.passes,
       isAwaitingApproval: isStatementAwaitingApproval(statement),

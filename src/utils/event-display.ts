@@ -1,6 +1,5 @@
 import _ from "lodash";
 import type { LiveEventView, Statement } from "../types";
-import { getAllAgrees } from "./statement";
 import { pluralizePerson } from "./text";
 
 export type DisplayView = "agree-only" | "agree-vs-disagree" | "agree-split";
@@ -20,7 +19,7 @@ export interface VoteShares {
 }
 
 export function getVoteShares(statement: Statement): VoteShares {
-  const agrees = getAllAgrees(statement);
+  const agrees = statement.agrees;
   const total = agrees + statement.disagrees + statement.passes;
   if (total === 0) return { agree: 0, disagree: 0, pass: 0, total };
   return {
