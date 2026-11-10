@@ -1,5 +1,5 @@
 import type { FlyerPlacement, Vote } from "./types.tsx";
-import { calculateVoteStats } from "./voting-utils.ts";
+import { calculateVoteStats } from "./vote-stats-utils.ts";
 
 export interface FlyerPlacementInput {
   flyerGroup: number;

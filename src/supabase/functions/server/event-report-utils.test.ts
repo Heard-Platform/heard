@@ -5,14 +5,13 @@ import {
 import {
   buildEventReport,
   type EventReportInputs,
-  type EventReportVote,
   findSessionEnd,
   isAttendeeStatement,
 } from "./event-report-utils.ts";
 import { EMPTY_CAMP_ANALYSIS } from "./event-report-camp-utils.ts";
 import { percentOf } from "./utils.tsx";
 import { RouteError } from "./route-error.ts";
-import type { Statement, VoteType } from "./types.tsx";
+import type { EventVote, Statement, VoteType } from "./types.tsx";
 
 const STARTED_AT = 1_761_000_000_000;
 const SECOND_MS = 1000;
@@ -50,7 +49,8 @@ const vote = (
   userId: string,
   voteType: VoteType,
   timestamp: number,
-): EventReportVote => ({
+): EventVote => ({
+  id: `${statementId}-${userId}`,
   statementId,
   roomId,
   userId,
@@ -63,7 +63,7 @@ const votesOn = (
   roomId: string,
   firstVoteAt: number,
   userVotes: [string, VoteType][],
-): EventReportVote[] =>
+): EventVote[] =>
   userVotes.map(([userId, voteType], index) =>
     vote(
       statementId,
@@ -85,7 +85,7 @@ const STATEMENTS: Statement[] = [
   statement("c2", "c", "u3", at(11)),
 ];
 
-const VOTES: EventReportVote[] = [
+const VOTES: EventVote[] = [
   ...votesOn("a1", "a", at(0, 30), [
     ["u1", "agree"],
     ["u2", "agree"],

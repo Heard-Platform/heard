@@ -1,18 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../utils/api";
-import type { DebateRoom, Statement } from "../types";
+import type { EventPost, Statement } from "../types";
 
 const POST_RETRY_MS = 3000;
 
-export interface EventPost {
-  room: DebateRoom;
-  statements: Statement[];
-}
-
-const fetchEventPost = async (roomId: string): Promise<EventPost | null> => {
-  const response = await api.getRoomStatus(roomId);
+const fetchEventPost = async (
+  roomId: string,
+): Promise<EventPost | null> => {
+  const response = await api.getEventPost(roomId);
   if (!response.success || !response.data) return null;
-  return { room: response.data.room, statements: response.data.statements };
+  return response.data.post;
 };
 
 export function useEventPost(roomId: string | null) {

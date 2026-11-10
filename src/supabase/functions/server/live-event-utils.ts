@@ -11,7 +11,7 @@ import type {
   LiveEventView,
   EventTotals,
   Statement,
-  Vote,
+  EventVote,
 } from "./types.tsx";
 
 export const LIVE_SCREENS: readonly LiveScreen[] = [
@@ -266,7 +266,7 @@ export const reloadEvent = (state: LiveEventState, now: number): LiveEventState 
 export const countEventTotals = (
   roomOrder: string[],
   statements: Pick<Statement, "roomId" | "timestamp">[],
-  votes: (Pick<Vote, "userId" | "timestamp"> & { roomId: string })[],
+  votes: Pick<EventVote, "userId" | "roomId" | "timestamp">[],
   startedAt: number,
 ): EventTotals => {
   const sessionVotes = votes.filter((vote) => vote.timestamp >= startedAt);

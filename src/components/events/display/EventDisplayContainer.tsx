@@ -3,7 +3,8 @@ import { EventDisplay } from "./EventDisplay";
 import { Loader } from "../../widgets/Loader";
 import { useEventAction } from "../../../hooks/useEventAction";
 import { useEventPolling } from "../../../hooks/useEventPolling";
-import { useEventPost, type EventPost } from "../../../hooks/useEventPost";
+import { useEventPost } from "../../../hooks/useEventPost";
+import type { EventPost } from "../../../types";
 import { useReloadOnNonceChange } from "../../../hooks/useReloadOnNonceChange";
 import type { AudienceBreakdownQuestion } from "../../../types";
 import { api } from "../../../utils/api";
@@ -46,6 +47,12 @@ export function EventDisplayContainer({ eventId, displayKey }: EventDisplayConta
     [],
   );
 
+  const currentRoomId = eventState?.currentRoomId ?? undefined;
+  const handleScreenHidden = useCallback(
+    () => api.trackEvent("live_display_hidden", currentRoomId),
+    [currentRoomId],
+  );
+
   if (!eventState) {
     return error ? (
       <p className="p-6 text-center text-muted-foreground">{error}</p>
@@ -71,6 +78,7 @@ export function EventDisplayContainer({ eventId, displayKey }: EventDisplayConta
       onAction={runAction}
       onShowAudienceBreakdown={handleShowAudienceBreakdown}
       onCloseAudienceBreakdown={handleCloseAudienceBreakdown}
+      onScreenHidden={handleScreenHidden}
     />
   );
 }

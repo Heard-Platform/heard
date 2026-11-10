@@ -9,19 +9,22 @@ import { getUserMemberships } from "./membership-utils.tsx";
 import { insertEvent } from "./model-utils.ts";
 import {
   applyEventAction,
-  getEventOrThrow,
   getOrCreateEventDisplayKey,
-  loadEventReport,
+  loadEventPost,
   loadEventView,
-  loadSupportViewStats,
   parseEventId,
   requireCanDriveEvent,
-  setEventStatementHidden,
 } from "./event-utils.ts";
+import { loadEventReport } from "./event-report-utils.ts";
+import {
+  loadSupportViewStats,
+  setEventStatementHidden,
+} from "./support-view-utils.ts";
 import {
   getAllDebates,
   getCommunities,
   getCommunity,
+  getEventOrThrow,
   getEventDisplayKey,
   getLiveEventState,
   getStatementsForRoom,
@@ -362,6 +365,19 @@ app.get(
       return { stats: await loadSupportViewStats(event, state, now) };
     },
     "Failed to load the support view",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/event-post/:roomId",
+  defineRoute(
+    {},
+    async (_params, c: Context) => {
+      const roomId = c.req.param("roomId");
+      if (!roomId) throw new RouteError("A post ID is required", 400);
+      return { post: await loadEventPost(roomId) };
+    },
+    "Failed to load the event post",
   ),
 );
 

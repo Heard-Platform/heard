@@ -48,6 +48,7 @@ import {
   type AttendeeOnboarding,
   type SupportViewStats,
   type AudienceBreakdownQuestion,
+  type EventPost,
   type EventReport,
   type LiveHeartbeat,
   EventSummary,
@@ -311,6 +312,12 @@ class ApiClient extends BaseApiClient {
     );
   }
 
+  async getEventPost(
+    roomId: string,
+  ): Promise<ApiResponse<{ post: EventPost }>> {
+    return this.request<{ post: EventPost }>(`/event-post/${roomId}`);
+  }
+
   async getEventReport(
     eventId: string,
   ): Promise<ApiResponse<{ report: EventReport }>> {
@@ -456,17 +463,13 @@ class ApiClient extends BaseApiClient {
   async submitStatement(
     roomId: string,
     text: string,
-    {
-      isStatementFromFeed = false,
-      isStatementFromEvent = false,
-    }: SubmitStatementOptions = {},
+    { source }: SubmitStatementOptions,
   ) {
     return this.request(`/room/${roomId}/statement`, {
       method: "POST",
       body: JSON.stringify({
         text,
-        isStatementFromFeed,
-        isStatementFromEvent,
+        source,
       }),
     });
   }
@@ -491,7 +494,7 @@ class ApiClient extends BaseApiClient {
   async voteOnStatement(
     statementId: string,
     voteType: "agree" | "disagree" | "pass" | "super_agree",
-    { isVoteFromFeed = false }: VoteOnStatementOptions = {},
+    { source }: VoteOnStatementOptions,
   ) {
     type VoteResponse = {
       statement: Statement;
@@ -501,7 +504,7 @@ class ApiClient extends BaseApiClient {
     };
     return this.request<VoteResponse>(`/statement/${statementId}/vote`, {
       method: "POST",
-      body: JSON.stringify({ voteType, isVoteFromFeed }),
+      body: JSON.stringify({ voteType, source }),
     });
   }
 

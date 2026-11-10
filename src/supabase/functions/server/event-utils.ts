@@ -6,24 +6,12 @@ import {
   getEventDisplayKey,
   getEventPresences,
   getLiveEventState,
-  findStatementInAnyRoom,
-  getStatementsForRoom,
-  getStatementsForRoomIncludingHidden,
   getUser,
-  getVotesForStatement,
   saveEventDisplayKey,
-  saveStatement,
 } from "./kv-utils.tsx";
-import { markStatementHidden, markStatementVisible } from "./moderation-utils.ts";
-import { buildSupportViewStats } from "./support-view-utils.ts";
 import {
-  buildEventReport,
-  type EventReportVote,
-} from "./event-report-utils.ts";
-import { applyCampNames } from "./event-report-camp-utils.ts";
-import {
-  loadEventReportCampNames,
-} from "./event-report-camp-naming.ts";
+  loadEventStatementsAndVotes,
+} from "./event-content-utils.ts";
 import { RouteError } from "./route-error.ts";
 import {
   canDriveEvent,
@@ -49,12 +37,10 @@ import {
 import type {
   DebateRoom,
   Event,
-  EventReport,
   LiveEventState as EventState,
   LiveEventView,
   EventTotals,
   Statement,
-  SupportViewStats,
   User,
 } from "./types.tsx";
 
@@ -64,10 +50,12 @@ export const parseEventId = (eventIdStr: string | undefined): number => {
   return eventId;
 };
 
-export const getEventOrThrow = async (eventId: number): Promise<Event> => {
-  const event = await getEventById(eventId);
-  if (!event) throw new RouteError("Event not found", 404);
-  return event;
+const getDebateOrThrow = async (
+  roomId: string,
+): Promise<DebateRoom> => {
+  const room = await getDebate(roomId);
+  if (!room) throw new RouteError("Post not found", 404);
+  return room;
 };
 
 export const getOrCreateEventDisplayKey = async (eventId: number): Promise<string> => {
@@ -113,21 +101,16 @@ export const checkEventPosting = async (
   return check;
 };
 
-const loadVotesForStatements = async (statements: Statement[]): Promise<EventReportVote[]> =>
-  (await Promise.all(
-    statements.map(async (statement) =>
-      (await getVotesForStatement(statement.id)).map((vote) => ({ ...vote, roomId: statement.roomId })),
-    ),
-  )).flat();
-
-const loadVisibleEventStatements = async (
-  roomOrder: string[],
-): Promise<Statement[]> =>
-  (await Promise.all(roomOrder.map(getStatementsForRoom))).flat();
-
 const loadEventTotals = async (state: EventState): Promise<EventTotals> => {
-  const statements = await loadVisibleEventStatements(state.roomOrder);
-  return countEventTotals(state.roomOrder, statements, await loadVotesForStatements(statements), state.startedAt ?? 0);
+  const { statements, votes } = await loadEventStatementsAndVotes(
+    state.roomOrder,
+  );
+  return countEventTotals(
+    state.roomOrder,
+    statements,
+    votes,
+    state.startedAt ?? 0,
+  );
 };
 
 export const requireCanDriveEvent = async (
@@ -158,86 +141,26 @@ export const requireCanDriveEvent = async (
   }
 };
 
-const loadEventRoomsInOrder = async (
+export const loadEventRoomsInOrder = async (
   roomOrder: string[],
 ): Promise<DebateRoom[]> =>
   (await Promise.all(roomOrder.map(getDebate))).filter(
     (room): room is DebateRoom => room !== null,
   );
 
-export const loadSupportViewStats = async (
-  event: Event,
-  state: EventState,
-  now: number,
-): Promise<SupportViewStats> => {
-  const [rooms, presences, statements] = await Promise.all([
-    loadEventRoomsInOrder(state.roomOrder),
-    getEventPresences(event.id),
-    Promise.all(
-      state.roomOrder.map(getStatementsForRoomIncludingHidden),
-    ).then((roomStatements) => roomStatements.flat()),
-  ]);
-  return buildSupportViewStats({
-    eventName: event.name,
-    state,
-    rooms,
-    presences,
-    statements,
-    votes: await loadVotesForStatements(statements),
-    now,
-  });
-};
+export interface EventPost {
+  room: DebateRoom;
+  statements: Statement[];
+}
 
-export const loadEventReport = async (
-  eventId: number,
-  now: number,
-): Promise<EventReport> => {
-  const event = await getEventOrThrow(eventId);
-  const state = eventStateOrDefault(
-    await getLiveEventState(eventId),
-    now,
-  );
-  const [community, rooms, statements] = await Promise.all([
-    getCommunity(event.communityName),
-    loadEventRoomsInOrder(state.roomOrder),
-    loadVisibleEventStatements(state.roomOrder),
+export const loadEventPost = async (
+  roomId: string,
+): Promise<EventPost> => {
+  const [room, { statements }] = await Promise.all([
+    getDebateOrThrow(roomId),
+    loadEventStatementsAndVotes([roomId]),
   ]);
-  const { report, campNamingRequest } = buildEventReport({
-    event,
-    community,
-    state,
-    rooms,
-    statements,
-    votes: await loadVotesForStatements(statements),
-    now,
-  });
-  const campNames = await loadEventReportCampNames(
-    event.id,
-    event.name,
-    campNamingRequest,
-    now,
-  );
-  return {
-    ...report,
-    campAnalysis: applyCampNames(report.campAnalysis, campNames),
-  };
-};
-
-export const setEventStatementHidden = async (
-  state: EventState,
-  statementId: string,
-  isHidden: boolean,
-  userId: string,
-): Promise<Statement> => {
-  const statement = await findStatementInAnyRoom(statementId);
-  if (!statement || !state.roomOrder.includes(statement.roomId)) {
-    throw new RouteError("That statement isn't part of this event", 404);
-  }
-  const updated = isHidden
-    ? markStatementHidden(statement, userId)
-    : markStatementVisible(statement);
-  await saveStatement(updated);
-  return updated;
+  return { room, statements };
 };
 
 export interface EventActionParams {

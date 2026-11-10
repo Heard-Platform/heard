@@ -1,14 +1,11 @@
 import _ from "lodash";
-import { getEventPresences } from "./kv-utils.tsx";
+import { getEventOrThrow, getEventPresences } from "./kv-utils.tsx";
 import {
   getDemographicAnswersForQuestionIds,
   getDemographicQuestionsForEvent,
 } from "./model-utils.ts";
 import { OPT_OUT_ANSWER } from "./demographics-utils.ts";
-import {
-  getEventOrThrow,
-  requireCanDriveEvent,
-} from "./event-utils.ts";
+import { requireCanDriveEvent } from "./event-utils.ts";
 import type {
   AudienceBreakdownOption,
   AudienceBreakdownQuestion,

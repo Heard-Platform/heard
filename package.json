@@ -99,6 +99,7 @@
         "test:scripts": "deno test --no-check --config scripts/deno.json --allow-read scripts/",
         "add-event-posts": "deno run --config scripts/deno.json --allow-net --allow-read --allow-env scripts/event-posts/add-event-posts.ts",
         "simulate-event": "deno run --config scripts/deno.json --allow-net --allow-read --allow-env scripts/event-simulation/run-event-simulation.ts",
-        "create-event": "deno run --config scripts/deno.json --allow-net --allow-read --allow-env scripts/event-setup/create-event.ts"
+        "create-event": "deno run --config scripts/deno.json --allow-net --allow-read --allow-env scripts/event-setup/create-event.ts",
+        "backfill-event-vote-sources": "deno run --config scripts/deno.json --node-modules-dir=none --allow-net --allow-read --allow-env scripts/backfill-event-vote-sources/main.ts"
     }
 }

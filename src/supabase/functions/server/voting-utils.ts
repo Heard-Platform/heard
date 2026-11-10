@@ -1,5 +1,18 @@
-import type { Vote, Statement, User, VoteType, DebateRoom } from "./types.tsx";
-import { findStatementInAnyRoom, saveStatement, saveVote, getVotesForStatement, deleteVote, saveUser } from "./kv-utils.tsx";
+import type {
+  Vote,
+  Statement,
+  User,
+  VoteType,
+  ContentSource,
+  DebateRoom,
+} from "./types.tsx";
+import {
+  findStatementInAnyRoom,
+  saveStatement,
+  saveVote,
+  getVotesForStatement,
+  saveUser,
+} from "./kv-utils.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { generateId, getDebateRoom, saveDebateRoom } from "./debate-api.tsx";
 import { recordRoomEngagement } from "./model-utils.ts";
@@ -8,6 +21,7 @@ import { maybeEmailResponseVotesNotif } from "./email-notifs-utils.ts";
 import { recomputeClustersIfNeeded } from "./cluster-freshness.ts";
 import { runInBackground } from "./background-utils.ts";
 import { checkEventVoting } from "./event-utils.ts";
+import { calculateVoteStats } from "./vote-stats-utils.ts";
 
 export interface FlyerSource {
   flyerId: string;
@@ -57,39 +71,6 @@ export const orderStatements = (
     .sort((a, b) => b.finalScore - a.finalScore)
     .map(({ statement }) => statement);
 
-export const calculateVoteStats = (
-  votes: Vote[],
-): {
-  agrees: number;
-  disagrees: number;
-  passes: number;
-  superAgrees: number;
-  voters: { [userId: string]: VoteType };
-} => {
-  const voters: { [userId: string]: VoteType } = {};
-  let agrees = 0;
-  let disagrees = 0;
-  let passes = 0;
-  let superAgrees = 0;
-
-  votes.forEach((vote) => {
-    voters[vote.userId] = vote.voteType;
-    if (vote.voteType === "agree") {
-      agrees++;
-    } else if (vote.voteType === "disagree") {
-      disagrees++;
-    } else if (vote.voteType === "pass") {
-      passes++;
-    } else if (vote.voteType === "super_agree") {
-      superAgrees++;
-      // Count super agrees also as regular agrees for now
-      agrees++;
-    }
-  });
-
-  return { agrees, disagrees, passes, superAgrees, voters };
-};
-
 type ProcessVoteFailure = {
   success: false;
   error: string;
@@ -129,14 +110,25 @@ const awardAuthorAndHostPoints = async (
   }
 };
 
-export const processVote = async (
-  statementId: string,
-  userId: string,
-  voteType: VoteType,
-  flyerSource?: FlyerSource,
-  allowIdempotent = false,
+const NEW_VOTE_POINTS = 10;
+
+type ProcessVoteInputs = {
+  statementId: string;
+  userId: string;
+  voteType: VoteType;
+  voteSource: ContentSource;
+  flyerSource?: FlyerSource;
+  skipsEventVotingCheck?: boolean;
+};
+
+export const processVote = async ({
+  statementId,
+  userId,
+  voteType,
+  voteSource,
+  flyerSource,
   skipsEventVotingCheck = false,
-): Promise<ProcessVoteResult> => {
+}: ProcessVoteInputs): Promise<ProcessVoteResult> => {
   if (
     !["agree", "disagree", "pass", "super_agree"].includes(voteType)
   ) {
@@ -197,56 +189,30 @@ export const processVote = async (
   }
 
   const currentVote = currentVotes.find((v) => v.userId === userId);
-  let pointsEarned = 0;
-  let voteCountChange = 0;
+  const isNewVote = !currentVote;
+  const pointsEarned = isNewVote ? NEW_VOTE_POINTS : 0;
+  const voteCountChange = isNewVote ? 1 : 0;
 
-  const voteData = {
+  const votePartial = {
     voteType,
+    source: voteSource,
     timestamp: Date.now(),
     ...flyerAttribution(flyerSource),
   };
 
-  if (currentVote?.voteType === voteType && !allowIdempotent) {
-    // Same vote type - undo vote (delete the vote record)
-    await deleteVote(statementId, userId);
-    voteCountChange = -1;
-
-    console.log(
-      `Removed vote for user ${userId} on statement ${statementId}`,
-    );
-    // No points change for undoing
-  } else if (currentVote && currentVote.voteType !== voteType) {
-    // Different vote type - update existing vote
-    const updatedVote: Vote = {
-      ...currentVote,
-      ...voteData,
-    };
-    await saveVote(updatedVote);
-    console.log(
-      `Updated vote for user ${userId} on statement ${statementId} to ${voteType}`,
-    );
-
-    // No points for changing vote
-  } else {
-    const newVote: Vote = {
+  if (isNewVote) {
+    await saveVote({
       id: generateId(),
       statementId,
       userId,
-      ...voteData,
-    };
-    await saveVote(newVote);
-    voteCountChange = 1;
-
-    console.log(
-      `Created new vote for user ${userId} on statement ${statementId}: ${voteType}`,
-    );
-
-    pointsEarned = 10;
-
+      ...votePartial,
+    });
     runInBackground(
       awardAuthorAndHostPoints(statement, room, userId),
       `author and host points for statement ${statementId}`,
     );
+  } else {
+    await saveVote({ ...currentVote, ...votePartial });
   }
 
   const now = Date.now();
@@ -303,29 +269,3 @@ export const processVote = async (
     userVote: voteStats.voters[userId] || null,
   };
 };
-
-type ProcessVoteInputs = {
-  statementId: string;
-  userId: string;
-  voteType: VoteType;
-  flyerSource?: FlyerSource;
-  allowIdempotent?: boolean;
-  skipsEventVotingCheck?: boolean;
-};
-
-export const processVote2 = ({
-  statementId,
-  userId,
-  voteType,
-  flyerSource,
-  allowIdempotent = false,
-  skipsEventVotingCheck = false,
-}: ProcessVoteInputs): Promise<ProcessVoteResult> =>
-  processVote(
-    statementId,
-    userId,
-    voteType,
-    flyerSource,
-    allowIdempotent,
-    skipsEventVotingCheck,
-  );

@@ -113,13 +113,14 @@ const logDroppedFlyerVote = (pendingVote: PendingFlyerVote, reason: unknown) => 
 
 const saveFlyerVote = async (pendingVote: PendingFlyerVote) => {
   try {
-    const result = await processVote(
-      pendingVote.statementId,
-      pendingVote.userId,
-      pendingVote.vote,
-      pendingVote.flyerSource,
-      true,
-    );
+    const result = await processVote({
+      statementId: pendingVote.statementId,
+      userId: pendingVote.userId,
+      voteType: pendingVote.vote,
+      voteSource: "feed",
+      flyerSource: pendingVote.flyerSource,
+      skipsEventVotingCheck: true,
+    });
     if (!result.success) {
       logDroppedFlyerVote(pendingVote, result.error);
       return;
