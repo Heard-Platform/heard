@@ -153,3 +153,17 @@ export function formatJoinHeadcount(
   if (answeringQuestions === 0) return readyText;
   return `${readyText} · ${answeringQuestions} answering questions`;
 }
+
+export const HIDE_SCREEN_SHORTCUT_KEY = "b";
+
+export function isHideScreenShortcut(
+  keyboardEvent: Pick<
+    KeyboardEvent,
+    "key" | "ctrlKey" | "metaKey" | "altKey" | "repeat"
+  >,
+): boolean {
+  const hasModifier =
+    keyboardEvent.ctrlKey || keyboardEvent.metaKey || keyboardEvent.altKey;
+  if (hasModifier || keyboardEvent.repeat) return false;
+  return keyboardEvent.key.toLowerCase() === HIDE_SCREEN_SHORTCUT_KEY;
+}

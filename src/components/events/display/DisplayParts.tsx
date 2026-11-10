@@ -50,6 +50,10 @@ export function DisplayEyebrow({ children }: { children: ReactNode }) {
   return <p className="text-[1.15cqw] font-bold uppercase tracking-[0.12em] secondary-text">{children}</p>;
 }
 
+export function DisplayHeadline({ children }: { children: ReactNode }) {
+  return <h1 className="text-[5cqw] font-extrabold leading-[1.05] tracking-tight">{children}</h1>;
+}
+
 export function DisplayCenteredScreen({ children }: { children: ReactNode }) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-[1.6cqw] p-[4cqw] text-center">

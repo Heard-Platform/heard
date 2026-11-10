@@ -7,6 +7,7 @@ import {
   getLatestAttendeeStatement,
   getNewStatementStripMode,
   getVoteShares,
+  isHideScreenShortcut,
   pickBoardStatements,
   sortByAgreeShare,
   splitIntoConsensusColumns,
@@ -271,5 +272,43 @@ describe("formatJoinHeadcount", () => {
     expect(formatJoinHeadcount(4, 4)).toBe(
       "0 people ready · 4 answering questions",
     );
+  });
+});
+
+describe("isHideScreenShortcut", () => {
+  const keyPress = (key: string) => ({
+    key,
+    ctrlKey: false,
+    metaKey: false,
+    altKey: false,
+    repeat: false,
+  });
+
+  it("matches B with or without shift", () => {
+    expect(isHideScreenShortcut(keyPress("b"))).toBe(true);
+    expect(isHideScreenShortcut(keyPress("B"))).toBe(true);
+  });
+
+  it("ignores other keys", () => {
+    expect(isHideScreenShortcut(keyPress("n"))).toBe(false);
+    expect(isHideScreenShortcut(keyPress("Escape"))).toBe(false);
+  });
+
+  it("ignores B with a modifier so browser shortcuts still work", () => {
+    expect(
+      isHideScreenShortcut({ ...keyPress("b"), metaKey: true }),
+    ).toBe(false);
+    expect(
+      isHideScreenShortcut({ ...keyPress("b"), ctrlKey: true }),
+    ).toBe(false);
+    expect(
+      isHideScreenShortcut({ ...keyPress("b"), altKey: true }),
+    ).toBe(false);
+  });
+
+  it("ignores a held-down B", () => {
+    expect(
+      isHideScreenShortcut({ ...keyPress("b"), repeat: true }),
+    ).toBe(false);
   });
 });

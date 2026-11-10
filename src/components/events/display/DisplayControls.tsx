@@ -3,6 +3,8 @@ import {
   ChevronLeft,
   ChevronRight,
   DoorOpen,
+  Eye,
+  EyeOff,
   Pause,
   Play,
   Users,
@@ -38,6 +40,7 @@ interface JoinControlsProps {
   isBusy: boolean;
   onAction: (action: ModeratorAction) => void;
   onShowAudienceBreakdown: () => void;
+  onHideScreen: () => void;
 }
 
 export function JoinControls({
@@ -47,12 +50,16 @@ export function JoinControls({
   isBusy,
   onAction,
   onShowAudienceBreakdown,
+  onHideScreen,
 }: JoinControlsProps) {
   if (!areDoorsOpen) {
     return (
       <ControlsPanel isHidden={isHidden}>
-        <HeadcountLabel text="Doors closed" />
-        <AudienceBreakdownButton onClick={onShowAudienceBreakdown} />
+        <CommonButtons
+          headcountText="Doors closed"
+          onShowAudienceBreakdown={onShowAudienceBreakdown}
+          onHideScreen={onHideScreen}
+        />
         <Button className="font-semibold" disabled={isBusy} onClick={() => onAction("open")}>
           Open doors <DoorOpen />
         </Button>
@@ -62,8 +69,11 @@ export function JoinControls({
 
   return (
     <ControlsPanel isHidden={isHidden}>
-      <HeadcountLabel text={`${peopleHere} here`} />
-      <AudienceBreakdownButton onClick={onShowAudienceBreakdown} />
+      <CommonButtons
+        headcountText={`${peopleHere} here`}
+        onShowAudienceBreakdown={onShowAudienceBreakdown}
+        onHideScreen={onHideScreen}
+      />
       <Button className="font-semibold" disabled={isBusy} onClick={() => onAction("start")}>
         Start with the first prompt <ChevronRight />
       </Button>
@@ -78,6 +88,7 @@ interface IntroControlsProps {
   isBusy: boolean;
   onAction: (action: ModeratorAction) => void;
   onShowAudienceBreakdown: () => void;
+  onHideScreen: () => void;
 }
 
 export function IntroControls({
@@ -87,11 +98,15 @@ export function IntroControls({
   isBusy,
   onAction,
   onShowAudienceBreakdown,
+  onHideScreen,
 }: IntroControlsProps) {
   return (
     <ControlsPanel isHidden={isHidden}>
-      <HeadcountLabel text={`${peopleHere} here`} />
-      <AudienceBreakdownButton onClick={onShowAudienceBreakdown} />
+      <CommonButtons
+        headcountText={`${peopleHere} here`}
+        onShowAudienceBreakdown={onShowAudienceBreakdown}
+        onHideScreen={onHideScreen}
+      />
       <Button
         variant="outline"
         className="font-semibold"
@@ -124,6 +139,7 @@ interface BoardControlsProps {
   onAction: (action: ModeratorAction) => void;
   onEndRequest: () => void;
   onShowAudienceBreakdown: () => void;
+  onHideScreen: () => void;
 }
 
 export function BoardControls({
@@ -139,11 +155,15 @@ export function BoardControls({
   onAction,
   onEndRequest,
   onShowAudienceBreakdown,
+  onHideScreen,
 }: BoardControlsProps) {
   return (
     <ControlsPanel isHidden={isHidden}>
-      <HeadcountLabel text={`${peopleHere} here · ${finishedCurrentPost} finished this one`} />
-      <AudienceBreakdownButton onClick={onShowAudienceBreakdown} />
+      <CommonButtons
+        headcountText={`${peopleHere} here · ${finishedCurrentPost} finished this one`}
+        onShowAudienceBreakdown={onShowAudienceBreakdown}
+        onHideScreen={onHideScreen}
+      />
       <div role="group" aria-label="Display view" className="flex gap-1">
         {VIEW_OPTIONS.map((option) => (
           <Button
@@ -181,6 +201,58 @@ export function BoardControls({
         )}
       </div>
     </ControlsPanel>
+  );
+}
+
+interface PrivacyScreenControlsProps {
+  isHidden: boolean;
+  onShowScreen: () => void;
+}
+
+export function PrivacyScreenControls({
+  isHidden,
+  onShowScreen,
+}: PrivacyScreenControlsProps) {
+  return (
+    <ControlsPanel isHidden={isHidden}>
+      <Button className="font-semibold" onClick={onShowScreen}>
+        <Eye /> Show screen
+      </Button>
+    </ControlsPanel>
+  );
+}
+
+interface CommonButtonsProps {
+  headcountText: string;
+  onShowAudienceBreakdown: () => void;
+  onHideScreen: () => void;
+}
+
+function CommonButtons({
+  headcountText,
+  onShowAudienceBreakdown,
+  onHideScreen,
+}: CommonButtonsProps) {
+  return (
+    <>
+      <HeadcountLabel text={headcountText} />
+      <AudienceBreakdownButton onClick={onShowAudienceBreakdown} />
+      <HideScreenButton onClick={onHideScreen} />
+    </>
+  );
+}
+
+function HideScreenButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label="Hide screen (B)"
+      title="Hide screen (B)"
+      onClick={onClick}
+    >
+      <EyeOff />
+    </Button>
   );
 }
 
