@@ -1,9 +1,25 @@
 import _ from "lodash";
-import { canModerateEvent } from "./live-event-utils.ts";
 import {
+  canModerateEvent,
+  eventStateOrDefault,
+} from "./live-event-utils.ts";
+import {
+  applyCampNames,
   buildCampAnalysis,
   type CampNamingRequest,
 } from "./event-report-camp-utils.ts";
+import {
+  loadEventReportCampNames,
+} from "./event-report-camp-naming.ts";
+import {
+  getCommunity,
+  getEventOrThrow,
+  getLiveEventState,
+} from "./kv-utils.tsx";
+import {
+  loadEventStatementsAndVotes,
+} from "./event-content-utils.ts";
+import { loadEventRoomsInOrder } from "./event-utils.ts";
 import { RouteError } from "./route-error.ts";
 import { percentOf } from "./utils.tsx";
 import {
@@ -488,4 +504,40 @@ export const buildEventReport = (
     ),
   };
   return { report, campNamingRequest };
+};
+
+export const loadEventReport = async (
+  eventId: number,
+  now: number,
+): Promise<EventReport> => {
+  const event = await getEventOrThrow(eventId);
+  const state = eventStateOrDefault(
+    await getLiveEventState(eventId),
+    now,
+  );
+  const [community, rooms, { statements, votes }] =
+    await Promise.all([
+      getCommunity(event.communityName),
+      loadEventRoomsInOrder(state.roomOrder),
+      loadEventStatementsAndVotes(state.roomOrder),
+    ]);
+  const { report, campNamingRequest } = buildEventReport({
+    event,
+    community,
+    state,
+    rooms,
+    statements,
+    votes,
+    now,
+  });
+  const campNames = await loadEventReportCampNames(
+    event.id,
+    event.name,
+    campNamingRequest,
+    now,
+  );
+  return {
+    ...report,
+    campAnalysis: applyCampNames(report.campAnalysis, campNames),
+  };
 };

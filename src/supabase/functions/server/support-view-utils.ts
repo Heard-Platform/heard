@@ -1,10 +1,25 @@
 import _ from "lodash";
 import { currentRoomId, PRESENCE_WINDOW_MS } from "./live-event-utils.ts";
 import { isAgreeVote } from "./vote-type-utils.ts";
-import { isStatementAwaitingApproval } from "./moderation-utils.ts";
+import {
+  isStatementAwaitingApproval,
+  markStatementHidden,
+  markStatementVisible,
+} from "./moderation-utils.ts";
+import {
+  findStatementInAnyRoom,
+  getEventPresences,
+  saveStatement,
+} from "./kv-utils.tsx";
+import {
+  loadEventStatementsAndVotes,
+} from "./event-content-utils.ts";
+import { loadEventRoomsInOrder } from "./event-utils.ts";
+import { RouteError } from "./route-error.ts";
 import type {
   AttendeePhoneState,
   DebateRoom,
+  Event,
   EventPresence,
   EventVote,
   LiveEventState,
@@ -212,4 +227,48 @@ export const buildSupportViewStats = (sources: SupportViewSources): SupportViewS
     startedAt: state.startedAt,
     endedAt: state.endedAt,
   };
+};
+
+export const loadSupportViewStats = async (
+  event: Event,
+  state: LiveEventState,
+  now: number,
+): Promise<SupportViewStats> => {
+  const [rooms, presences, { statements, votes }] =
+    await Promise.all([
+      loadEventRoomsInOrder(state.roomOrder),
+      getEventPresences(event.id),
+      loadEventStatementsAndVotes(state.roomOrder, {
+        includesHiddenStatements: true,
+      }),
+    ]);
+  return buildSupportViewStats({
+    eventName: event.name,
+    state,
+    rooms,
+    presences,
+    statements,
+    votes,
+    now,
+  });
+};
+
+export const setEventStatementHidden = async (
+  state: LiveEventState,
+  statementId: string,
+  isHidden: boolean,
+  userId: string,
+): Promise<Statement> => {
+  const statement = await findStatementInAnyRoom(statementId);
+  if (!statement || !state.roomOrder.includes(statement.roomId)) {
+    throw new RouteError(
+      "That statement isn't part of this event",
+      404,
+    );
+  }
+  const updated = isHidden
+    ? markStatementHidden(statement, userId)
+    : markStatementVisible(statement);
+  await saveStatement(updated);
+  return updated;
 };

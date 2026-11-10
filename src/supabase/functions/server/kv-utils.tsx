@@ -25,8 +25,10 @@ import {
   LiveEventState,
   EventPresence,
   EventReportCampNames,
+  type Event,
 } from "./types.tsx";
-import { throwIfNotFound } from "./model-utils.ts";
+import { getEventById, throwIfNotFound } from "./model-utils.ts";
+import { RouteError } from "./route-error.ts";
 
 /**
  * Safely parses JSON data from KV store
@@ -137,6 +139,14 @@ export const getUser = async (userId: string) => {
 
 export const getUserOrThrow = async (userId: string): Promise<User> =>
   throwIfNotFound(await getUser(userId), "User");
+
+export const getEventOrThrow = async (
+  eventId: number,
+): Promise<Event> => {
+  const event = await getEventById(eventId);
+  if (!event) throw new RouteError("Event not found", 404);
+  return event;
+};
 
 export const getAllUsers = async (): Promise<User[]> => {
   return getAllRecords<User>("user:");

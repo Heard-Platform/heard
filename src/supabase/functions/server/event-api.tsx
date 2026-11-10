@@ -9,20 +9,22 @@ import { getUserMemberships } from "./membership-utils.tsx";
 import { insertEvent } from "./model-utils.ts";
 import {
   applyEventAction,
-  getEventOrThrow,
   getOrCreateEventDisplayKey,
   loadEventPost,
-  loadEventReport,
   loadEventView,
-  loadSupportViewStats,
   parseEventId,
   requireCanDriveEvent,
-  setEventStatementHidden,
 } from "./event-utils.ts";
+import { loadEventReport } from "./event-report-utils.ts";
+import {
+  loadSupportViewStats,
+  setEventStatementHidden,
+} from "./support-view-utils.ts";
 import {
   getAllDebates,
   getCommunities,
   getCommunity,
+  getEventOrThrow,
   getEventDisplayKey,
   getLiveEventState,
   getStatementsForRoom,
