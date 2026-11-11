@@ -9,12 +9,12 @@ import {
   type AttendeeScreen,
   EVENT_POLL_MS,
   getAttendeeScreen,
-  getIntervalWithBackoff,
   pickNewestState,
   type SentHeartbeat,
   shouldSendHeartbeat,
   toLiveScreen,
 } from "../../src/utils/live-event.ts";
+import { getIntervalWithBackoff } from "../../src/utils/polling-loop.ts";
 import { type HeardApiClient, HeardApiError } from "../shared/heard-api-client.ts";
 import { sleep } from "../shared/sleep.ts";
 import {

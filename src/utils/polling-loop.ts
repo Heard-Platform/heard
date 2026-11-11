@@ -1,6 +1,17 @@
-import { getIntervalWithBackoff } from "./live-event";
-
 export type Poll = (stopSignal: AbortSignal) => Promise<boolean>;
+
+export const MAXIMUM_POLL_INTERVAL_MS = 30_000;
+
+export function getIntervalWithBackoff(
+  baseMs: number,
+  consecutiveFailures: number,
+): number {
+  if (consecutiveFailures <= 0) return baseMs;
+  return Math.min(
+    baseMs * 2 ** consecutiveFailures,
+    MAXIMUM_POLL_INTERVAL_MS,
+  );
+}
 
 export interface PollingLoopOptions {
   poll: Poll;

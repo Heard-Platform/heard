@@ -6,9 +6,7 @@ import {
   HEARTBEAT_INTERVAL_MS,
   shouldSendHeartbeat,
   toLiveScreen,
-  EVENT_POLL_MAX_INTERVAL_MS,
   moveInOrder,
-  getIntervalWithBackoff,
   isBeforeSessionStart,
   orderByRoomOrder,
   pickNewestState,
@@ -76,20 +74,6 @@ describe("isBeforeSessionStart", () => {
   });
 });
 
-describe("getIntervalWithBackoff", () => {
-  it("polls at the base rate while requests succeed", () => {
-    expect(getIntervalWithBackoff(3000, 0)).toBe(3000);
-  });
-
-  it("doubles the wait after each failure in a row", () => {
-    expect(getIntervalWithBackoff(3000, 1)).toBe(6000);
-    expect(getIntervalWithBackoff(3000, 2)).toBe(12000);
-  });
-
-  it("caps the wait", () => {
-    expect(getIntervalWithBackoff(3000, 10)).toBe(EVENT_POLL_MAX_INTERVAL_MS);
-  });
-});
 
 describe("pickNewestState", () => {
   const at = (updatedAt: number) => ({ updatedAt });

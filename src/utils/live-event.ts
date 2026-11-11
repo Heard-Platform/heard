@@ -37,13 +37,6 @@ export function isBeforeSessionStart(
 }
 
 export const EVENT_POLL_MS = 3000;
-export const EVENT_POLL_MAX_INTERVAL_MS = 30_000;
-
-export function getIntervalWithBackoff(baseMs: number, consecutiveFailures: number): number {
-  if (consecutiveFailures <= 0) return baseMs;
-  return Math.min(baseMs * 2 ** consecutiveFailures, EVENT_POLL_MAX_INTERVAL_MS);
-}
-
 export function pickNewestState<T extends { updatedAt: number }>(current: T | null, incoming: T): T {
   return current && current.updatedAt > incoming.updatedAt ? current : incoming;
 }
