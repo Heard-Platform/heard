@@ -12,6 +12,8 @@ export type SimulatedVote = Extract<VoteType, "agree" | "disagree" | "pass">;
 export const AGREE_SHARE = 0.45;
 export const DISAGREE_SHARE = 0.35;
 export const STATEMENT_WRITER_SHARE = 0.15;
+export const MID_DECK_WRITER_SHARE = 0.5;
+export const MID_DECK_RESPONSE_VOTE_REQ = 2;
 export const PHONE_LOCKER_SHARE = 0.1;
 export const OPT_OUT_SHARE = 0.1;
 export const SKIP_SHARE = 0.1;
@@ -33,8 +35,10 @@ export interface PhoneLock {
   lastsMs: number;
 }
 
+export type StatementTiming = "mid_deck" | "after_deck";
+
 export interface AttendeePostPlan {
-  willWriteStatement: boolean;
+  statementTiming: StatementTiming | null;
   phoneLock: PhoneLock | null;
 }
 
@@ -57,11 +61,18 @@ export function pickStatementWritingMs(random: RandomNumberSource): number {
   return Math.round(MINIMUM_STATEMENT_WRITING_MS + EXTRA_STATEMENT_WRITING_MS * random());
 }
 
+function pickStatementTiming(
+  random: RandomNumberSource,
+): StatementTiming | null {
+  if (random() >= STATEMENT_WRITER_SHARE) return null;
+  return random() < MID_DECK_WRITER_SHARE ? "mid_deck" : "after_deck";
+}
+
 export function planAttendeePost(random: RandomNumberSource): AttendeePostPlan {
-  const willWriteStatement = random() < STATEMENT_WRITER_SHARE;
+  const statementTiming = pickStatementTiming(random);
   const willLockPhone = random() < PHONE_LOCKER_SHARE;
   return {
-    willWriteStatement,
+    statementTiming,
     phoneLock: willLockPhone
       ? {
         startsAfterMs: Math.round(MINIMUM_PHONE_LOCK_DELAY_MS + EXTRA_PHONE_LOCK_DELAY_MS * random()),

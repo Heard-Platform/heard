@@ -20,6 +20,7 @@ import { sleep } from "../shared/sleep.ts";
 import {
   type AttendeePostPlan,
   findCardsLeftToVote,
+  MID_DECK_RESPONSE_VOTE_REQ,
   pickCardThinkingMs,
   pickFromList,
   pickOnboardingAnswers,
@@ -28,6 +29,7 @@ import {
   pickVote,
   planAttendeePost,
   type RandomNumberSource,
+  type StatementTiming,
 } from "./attendee-behavior.ts";
 import type { StateChangeTracker, VoteLedger } from "./simulation-measurements.ts";
 import { SIMULATED_ATTENDEE_STATEMENTS } from "./simulation-content.ts";
@@ -259,6 +261,9 @@ export class SimulatedAttendee {
         await this.answerNextQuestion(stopSignal);
       }
       else if (post && this.isTimeToLockPhone(post)) this.lockPhone(post);
+      else if (post && this.isTimeToWriteMidDeck(post)) {
+        await this.writeStatement(post, stopSignal);
+      }
       else if (post && this.currentScreen() === "swiping") await this.voteOnNextCard(post, stopSignal);
       else if (post && this.currentScreen() === "waiting") await this.waitForMoreCards(post, stopSignal);
       else await sleep(IDLE_CHECK_MS, stopSignal);
@@ -313,15 +318,32 @@ export class SimulatedAttendee {
   }
 
   private async waitForMoreCards(post: ShownPost, stopSignal: AbortSignal) {
-    if (this.shouldStartWritingStatement(post)) this.writeStatement(post, stopSignal);
+    if (this.shouldStartWritingStatement(post, "after_deck")) {
+      this.writeStatement(post, stopSignal);
+    }
     await this.refreshShownPost(post.roomId);
     await sleep(EVENT_POLL_MS, stopSignal);
   }
 
-  private shouldStartWritingStatement(post: ShownPost): boolean {
+  private shouldStartWritingStatement(
+    post: ShownPost,
+    timing: StatementTiming,
+  ): boolean {
     return !this.isWritingStatement &&
       !this.roomIdsWithStatementWritten.has(post.roomId) &&
-      !!this.postPlansByRoomId.get(post.roomId)?.willWriteStatement;
+      this.postPlansByRoomId.get(post.roomId)?.statementTiming === timing;
+  }
+
+  private countMyVotesOnPost(post: ShownPost): number {
+    return post.statements.filter((statement) =>
+      this.votedStatementIds.has(statement.id)
+    ).length;
+  }
+
+  private isTimeToWriteMidDeck(post: ShownPost): boolean {
+    return this.currentScreen() === "swiping" &&
+      this.shouldStartWritingStatement(post, "mid_deck") &&
+      this.countMyVotesOnPost(post) >= MID_DECK_RESPONSE_VOTE_REQ;
   }
 
   private async writeStatement(post: ShownPost, stopSignal: AbortSignal) {
