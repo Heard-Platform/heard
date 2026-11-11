@@ -6,6 +6,7 @@ export const EVENT_POST_LENGTH_MINUTES = 7 * 24 * 60;
 export interface EventPostDraft {
   topic: string;
   statements: string[];
+  requiresStatementApproval?: boolean;
 }
 
 export interface EventPostTarget {
@@ -19,6 +20,7 @@ export function buildNewEventPost(draft: EventPostDraft, target: EventPostTarget
     subHeard: target.communityName,
     seedStatements: draft.statements,
     allowAnonymous: true,
+    requiresStatementApproval: draft.requiresStatementApproval,
     eventId: Number(target.eventId),
     debateLength: EVENT_POST_LENGTH_MINUTES,
     demographicQuestions: [],

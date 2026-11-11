@@ -12,6 +12,7 @@ export const SIMULATION_POSTS: EventPostDraft[] = [
       "Small businesses need help competing with chains.",
       "Streets should be safer for kids walking to school.",
     ],
+    requiresStatementApproval: true,
   },
   {
     topic: "How should your workplace handle remote and in-office work?",
@@ -22,6 +23,7 @@ export const SIMULATION_POSTS: EventPostDraft[] = [
       "Meetings should default to video so everyone can join.",
       "Commute time should count as work time.",
     ],
+    requiresStatementApproval: true,
   },
   {
     topic: "What should a city spend a surprise budget surplus on?",
@@ -33,6 +35,7 @@ export const SIMULATION_POSTS: EventPostDraft[] = [
       "Build more affordable housing.",
       "Hire more teachers.",
     ],
+    requiresStatementApproval: true,
   },
 ];
 
