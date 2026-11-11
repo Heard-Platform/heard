@@ -123,12 +123,14 @@ export class HeardApiClient {
   voteOnStatement(statementId: string, voteType: VoteType) {
     return this.send<{ statement: Statement }>("POST", "POST /statement/:id/vote", `/statement/${statementId}/vote`, {
       voteType,
+      source: "event",
     });
   }
 
   addStatement(roomId: string, text: string) {
     return this.send<{ statement: Statement }>("POST", "POST /room/:id/statement", `/room/${roomId}/statement`, {
       text,
+      source: "event",
     });
   }
 
