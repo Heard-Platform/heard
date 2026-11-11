@@ -1,6 +1,7 @@
 export type Poll = (stopSignal: AbortSignal) => Promise<boolean>;
 
 export const MAXIMUM_POLL_INTERVAL_MS = 30_000;
+export const POLL_TIME_LIMIT_MS = 15_000;
 
 export function getIntervalWithBackoff(
   baseMs: number,
@@ -24,22 +25,42 @@ export interface PollingLoop {
   stop: () => void;
 }
 
+function waitForAbort(signal: AbortSignal): Promise<boolean> {
+  return new Promise((resolve) => {
+    signal.addEventListener("abort", () => resolve(false), {
+      once: true,
+    });
+  });
+}
+
 export function startPollingLoop({
   poll,
   intervalMs,
   isPageHidden,
 }: PollingLoopOptions): PollingLoop {
-  const stopController = new AbortController();
+  let isStopped = false;
   let consecutiveFailures = 0;
-  let isPolling = false;
   let isPollQueued = false;
+  let currentPollController: AbortController | null = null;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
   async function runPoll(): Promise<boolean> {
+    const pollController = new AbortController();
+    currentPollController = pollController;
+    const timeLimitTimer = setTimeout(
+      () => pollController.abort(),
+      POLL_TIME_LIMIT_MS,
+    );
     try {
-      return await poll(stopController.signal);
+      return await Promise.race([
+        poll(pollController.signal),
+        waitForAbort(pollController.signal),
+      ]);
     } catch {
       return false;
+    } finally {
+      clearTimeout(timeLimitTimer);
+      currentPollController = null;
     }
   }
 
@@ -56,7 +77,7 @@ export function startPollingLoop({
   }
 
   function finishTick() {
-    if (stopController.signal.aborted) return;
+    if (isStopped) return;
     if (isPollQueued) {
       isPollQueued = false;
       tick();
@@ -66,18 +87,14 @@ export function startPollingLoop({
   }
 
   async function tick() {
-    if (stopController.signal.aborted) return;
-    if (!isPageHidden()) {
-      isPolling = true;
-      recordOutcome(await runPoll());
-      isPolling = false;
-    }
+    if (isStopped) return;
+    if (!isPageHidden()) recordOutcome(await runPoll());
     finishTick();
   }
 
   function pollNow() {
-    if (stopController.signal.aborted) return;
-    if (isPolling) {
+    if (isStopped) return;
+    if (currentPollController) {
       isPollQueued = true;
       return;
     }
@@ -86,8 +103,9 @@ export function startPollingLoop({
   }
 
   function stop() {
-    stopController.abort();
+    isStopped = true;
     clearTimeout(timer);
+    currentPollController?.abort();
   }
 
   tick();

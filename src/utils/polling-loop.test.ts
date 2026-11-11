@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { startPollingLoop, type PollingLoop } from "./polling-loop";
+import {
+  getIntervalWithBackoff,
+  MAXIMUM_POLL_INTERVAL_MS,
+  POLL_TIME_LIMIT_MS,
+  startPollingLoop,
+  type PollingLoop,
+} from "./polling-loop";
 
 const INTERVAL_MS = 1000;
 
@@ -41,6 +47,23 @@ beforeEach(() => {
 afterEach(() => {
   loop?.stop();
   vi.useRealTimers();
+});
+
+describe("getIntervalWithBackoff", () => {
+  it("polls at the base rate while requests succeed", () => {
+    expect(getIntervalWithBackoff(3000, 0)).toBe(3000);
+  });
+
+  it("doubles the wait after each failure in a row", () => {
+    expect(getIntervalWithBackoff(3000, 1)).toBe(6000);
+    expect(getIntervalWithBackoff(3000, 2)).toBe(12000);
+  });
+
+  it("caps the wait", () => {
+    expect(getIntervalWithBackoff(3000, 10)).toBe(
+      MAXIMUM_POLL_INTERVAL_MS,
+    );
+  });
 });
 
 describe("startPollingLoop", () => {
@@ -127,5 +150,31 @@ describe("startPollingLoop", () => {
     await finishLatestPoll(true);
     await vi.advanceTimersByTimeAsync(INTERVAL_MS * 3);
     expect(pendingPolls).toHaveLength(1);
+  });
+
+  it("gives up on a poll that runs past the time limit", async () => {
+    startLoop();
+    await vi.advanceTimersByTimeAsync(POLL_TIME_LIMIT_MS);
+    expect(pendingPolls[0].stopSignal.aborted).toBe(true);
+    await vi.advanceTimersByTimeAsync(INTERVAL_MS * 2);
+    expect(pendingPolls).toHaveLength(2);
+  });
+
+  it("keeps polling after a timed-out poll finally answers", async () => {
+    startLoop();
+    await vi.advanceTimersByTimeAsync(POLL_TIME_LIMIT_MS);
+    pendingPolls[0].resolve(true);
+    await vi.advanceTimersByTimeAsync(INTERVAL_MS * 2);
+    expect(pendingPolls).toHaveLength(2);
+    await finishLatestPoll(true);
+    await vi.advanceTimersByTimeAsync(INTERVAL_MS);
+    expect(pendingPolls).toHaveLength(3);
+  });
+
+  it("runs a queued poll after a stuck poll times out", async () => {
+    const startedLoop = startLoop();
+    startedLoop.pollNow();
+    await vi.advanceTimersByTimeAsync(POLL_TIME_LIMIT_MS);
+    expect(pendingPolls).toHaveLength(2);
   });
 });
