@@ -60,10 +60,17 @@ Deno.test("pickCardThinkingMs leans toward quick swipes", () => {
 });
 
 Deno.test("planAttendeePost decides writing and phone locking per post", () => {
-  assertEquals(planAttendeePost(returnInOrder([0.99, 0.99])), { willWriteStatement: false, phoneLock: null });
-  assertEquals(planAttendeePost(returnInOrder([0, 0, 0, 1])), {
-    willWriteStatement: true,
+  assertEquals(planAttendeePost(returnInOrder([0.99, 0.99])), { statementTiming: null, phoneLock: null });
+  assertEquals(planAttendeePost(returnInOrder([0, 0, 0, 0, 1])), {
+    statementTiming: "mid_deck",
     phoneLock: { startsAfterMs: 5000, lastsMs: 90_000 },
+  });
+});
+
+Deno.test("planAttendeePost sends the other writers after the deck", () => {
+  assertEquals(planAttendeePost(returnInOrder([0, 0.99, 0.99])), {
+    statementTiming: "after_deck",
+    phoneLock: null,
   });
 });
 

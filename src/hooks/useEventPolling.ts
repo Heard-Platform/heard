@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { api } from "../utils/api";
 import {
   EVENT_POLL_MS,
-  getIntervalWithBackoff as getIntervalWithBackoff,
   pickNewestState,
   type SentHeartbeat,
   shouldSendHeartbeat,
 } from "../utils/live-event";
 import type { LiveEventView, LiveHeartbeat } from "../types";
+import { usePolling } from "./usePolling";
 
 export function useEventPolling(
   eventId: string,
@@ -16,7 +16,6 @@ export function useEventPolling(
 ) {
   const [eventState, setEventState] = useState<LiveEventView | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const failuresRef = useRef(0);
   const getHeartbeatRef = useRef(getHeartbeat);
   const lastHeartbeatRef = useRef<SentHeartbeat | null>(null);
   getHeartbeatRef.current = getHeartbeat;
@@ -33,47 +32,18 @@ export function useEventPolling(
     setEventState((current) => pickNewestState(current, incoming));
   }, []);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (): Promise<boolean> => {
     const response = await api.getLiveEvent(eventId, nextHeartbeat());
     if (response.success && response.data) {
-      failuresRef.current = 0;
       setError(null);
       applyEventState(response.data.live);
-    } else {
-      failuresRef.current += 1;
-      setError(response.error || "Couldn't reach the event");
+      return true;
     }
+    setError(response.error || "Couldn't reach the event");
+    return false;
   }, [eventId, applyEventState]);
 
-  useEffect(() => {
-    let cancelled = false;
-    let loopId = 0;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-
-    const run = async (id: number) => {
-      if (!document.hidden) await refresh();
-      if (cancelled || id !== loopId) return;
-      timer = setTimeout(() => run(id), getIntervalWithBackoff(intervalMs, failuresRef.current));
-    };
-
-    const restart = () => {
-      loopId += 1;
-      clearTimeout(timer);
-      run(loopId);
-    };
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden) restart();
-    };
-
-    restart();
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [refresh, intervalMs]);
+  usePolling(refresh, intervalMs, true);
 
   return { eventState, error, refresh, applyEventState };
 }

@@ -9,6 +9,7 @@ import { useAttendeeOnboarding } from "../../../hooks/useAttendeeOnboarding";
 import { useDebateSession } from "../../../hooks/useDebateSession";
 import { useEventPolling } from "../../../hooks/useEventPolling";
 import { useEventPost } from "../../../hooks/useEventPost";
+import { usePolling } from "../../../hooks/usePolling";
 import { useReloadOnNonceChange } from "../../../hooks/useReloadOnNonceChange";
 import { buildPostDeck, EVENT_POLL_MS, getAttendeeScreen, toLiveScreen } from "../../../utils/live-event";
 import { Loader } from "../../widgets/Loader";
@@ -88,12 +89,7 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
     setStatementText("");
   }, [currentRoomId]);
 
-  useEffect(() => {
-    if (screen !== "waiting") return;
-    refreshPost();
-    const timer = setInterval(refreshPost, EVENT_POLL_MS);
-    return () => clearInterval(timer);
-  }, [screen, refreshPost]);
+  usePolling(refreshPost, EVENT_POLL_MS, screen === "waiting");
 
   const handleVote = (statement: Statement, vote: VoteType) => {
     setLocalVotes((current) => ({ ...current, [statement.id]: vote }));

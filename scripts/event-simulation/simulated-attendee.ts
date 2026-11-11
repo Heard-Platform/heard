@@ -9,17 +9,18 @@ import {
   type AttendeeScreen,
   EVENT_POLL_MS,
   getAttendeeScreen,
-  getIntervalWithBackoff,
   pickNewestState,
   type SentHeartbeat,
   shouldSendHeartbeat,
   toLiveScreen,
 } from "../../src/utils/live-event.ts";
+import { getIntervalWithBackoff } from "../../src/utils/polling-loop.ts";
 import { type HeardApiClient, HeardApiError } from "../shared/heard-api-client.ts";
 import { sleep } from "../shared/sleep.ts";
 import {
   type AttendeePostPlan,
   findCardsLeftToVote,
+  MID_DECK_RESPONSE_VOTE_REQ,
   pickCardThinkingMs,
   pickFromList,
   pickOnboardingAnswers,
@@ -28,6 +29,7 @@ import {
   pickVote,
   planAttendeePost,
   type RandomNumberSource,
+  type StatementTiming,
 } from "./attendee-behavior.ts";
 import type { StateChangeTracker, VoteLedger } from "./simulation-measurements.ts";
 import { SIMULATED_ATTENDEE_STATEMENTS } from "./simulation-content.ts";
@@ -232,8 +234,8 @@ export class SimulatedAttendee {
     this.shownPost = null;
     while (!stopSignal.aborted && this.currentRoomId() === roomId) {
       try {
-        const { statements } = await this.api.getPost(roomId);
-        this.showPost(roomId, statements);
+        const { post } = await this.api.getEventPost(roomId);
+        this.showPost(roomId, post.statements);
         break;
       } catch {
         await sleep(POST_LOAD_RETRY_MS, stopSignal);
@@ -259,6 +261,9 @@ export class SimulatedAttendee {
         await this.answerNextQuestion(stopSignal);
       }
       else if (post && this.isTimeToLockPhone(post)) this.lockPhone(post);
+      else if (post && this.isTimeToWriteMidDeck(post)) {
+        await this.writeStatement(post, stopSignal);
+      }
       else if (post && this.currentScreen() === "swiping") await this.voteOnNextCard(post, stopSignal);
       else if (post && this.currentScreen() === "waiting") await this.waitForMoreCards(post, stopSignal);
       else await sleep(IDLE_CHECK_MS, stopSignal);
@@ -313,15 +318,32 @@ export class SimulatedAttendee {
   }
 
   private async waitForMoreCards(post: ShownPost, stopSignal: AbortSignal) {
-    if (this.shouldStartWritingStatement(post)) this.writeStatement(post, stopSignal);
+    if (this.shouldStartWritingStatement(post, "after_deck")) {
+      this.writeStatement(post, stopSignal);
+    }
     await this.refreshShownPost(post.roomId);
     await sleep(EVENT_POLL_MS, stopSignal);
   }
 
-  private shouldStartWritingStatement(post: ShownPost): boolean {
+  private shouldStartWritingStatement(
+    post: ShownPost,
+    timing: StatementTiming,
+  ): boolean {
     return !this.isWritingStatement &&
       !this.roomIdsWithStatementWritten.has(post.roomId) &&
-      !!this.postPlansByRoomId.get(post.roomId)?.willWriteStatement;
+      this.postPlansByRoomId.get(post.roomId)?.statementTiming === timing;
+  }
+
+  private countMyVotesOnPost(post: ShownPost): number {
+    return post.statements.filter((statement) =>
+      this.votedStatementIds.has(statement.id)
+    ).length;
+  }
+
+  private isTimeToWriteMidDeck(post: ShownPost): boolean {
+    return this.currentScreen() === "swiping" &&
+      this.shouldStartWritingStatement(post, "mid_deck") &&
+      this.countMyVotesOnPost(post) >= MID_DECK_RESPONSE_VOTE_REQ;
   }
 
   private async writeStatement(post: ShownPost, stopSignal: AbortSignal) {
@@ -338,7 +360,9 @@ export class SimulatedAttendee {
   }
 
   private async refreshShownPost(roomId: string) {
-    const response = await this.api.getPost(roomId).catch(() => null);
-    if (response) this.showPost(roomId, response.statements);
+    const response = await this.api
+      .getEventPost(roomId)
+      .catch(() => null);
+    if (response) this.showPost(roomId, response.post.statements);
   }
 }
