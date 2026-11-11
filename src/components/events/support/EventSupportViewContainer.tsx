@@ -1,6 +1,7 @@
 import { toast } from "sonner";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import type { SupportViewAttendeeStatement, SupportViewStats } from "../../../types";
+import { usePolling } from "../../../hooks/usePolling";
 import { api } from "../../../utils/api";
 import { getStatementVisibilityEventName } from "../../../utils/event-support";
 import { Loader } from "../../widgets/Loader";
@@ -69,23 +70,18 @@ function useSupportViewStats(eventId: string, displayKey: string | null) {
   const [stats, setStats] = useState<SupportViewStats | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (): Promise<boolean> => {
     const response = await api.getSupportView(eventId, displayKey);
     if (response.success && response.data) {
       setStats(response.data.stats);
       setError(null);
-    } else {
-      setError(response.error || "Couldn't load the support view");
+      return true;
     }
+    setError(response.error || "Couldn't load the support view");
+    return false;
   }, [eventId, displayKey]);
 
-  useEffect(() => {
-    refresh();
-    const timer = setInterval(() => {
-      if (!document.hidden) refresh();
-    }, SUPPORT_VIEW_POLL_MS);
-    return () => clearInterval(timer);
-  }, [refresh]);
+  usePolling(refresh, SUPPORT_VIEW_POLL_MS, true);
 
   return { stats, error, refresh };
 }

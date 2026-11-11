@@ -23,7 +23,7 @@ interface UseEventActionOptions {
   displayKey: string | null;
   eventState: LiveEventView | null;
   applyEventState: (eventState: LiveEventView) => void;
-  refresh: () => Promise<void>;
+  refresh: () => Promise<boolean>;
 }
 
 export function useEventAction({ eventId, displayKey, eventState, applyEventState, refresh }: UseEventActionOptions) {

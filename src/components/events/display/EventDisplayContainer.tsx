@@ -4,6 +4,7 @@ import { Loader } from "../../widgets/Loader";
 import { useEventAction } from "../../../hooks/useEventAction";
 import { useEventPolling } from "../../../hooks/useEventPolling";
 import { useEventPost } from "../../../hooks/useEventPost";
+import { usePolling } from "../../../hooks/usePolling";
 import type { EventPost } from "../../../types";
 import { useReloadOnNonceChange } from "../../../hooks/useReloadOnNonceChange";
 import type { AudienceBreakdownQuestion } from "../../../types";
@@ -85,15 +86,7 @@ export function EventDisplayContainer({ eventId, displayKey }: EventDisplayConta
 
 function useEventPostRefreshedEvery(currentRoomId: string | null, refreshIntervalMs: number): EventPost | null {
   const { post, refresh } = useEventPost(currentRoomId);
-
-  useEffect(() => {
-    if (!currentRoomId) return;
-    const timer = setInterval(() => {
-      if (!document.hidden) refresh();
-    }, refreshIntervalMs);
-    return () => clearInterval(timer);
-  }, [currentRoomId, refresh, refreshIntervalMs]);
-
+  usePolling(refresh, refreshIntervalMs, currentRoomId !== null);
   return post;
 }
 
@@ -107,30 +100,25 @@ function useBreakdownRefreshing(
     AudienceBreakdownQuestion[] | null
   >(null);
 
-  useEffect(() => {
-    if (!isShowing) {
-      setQuestions(null);
-      return;
-    }
-    let isCancelled = false;
-    const refresh = async () => {
-      if (document.hidden) return;
+  const refreshQuestions = useCallback(
+    async (stopSignal: AbortSignal): Promise<boolean> => {
       const response = await api.getAudienceBreakdown(
         eventId,
         displayKey,
       );
-      if (isCancelled) return;
-      if (response.success && response.data) {
-        setQuestions(response.data.questions);
-      }
-    };
-    refresh();
-    const timer = setInterval(refresh, refreshIntervalMs);
-    return () => {
-      isCancelled = true;
-      clearInterval(timer);
-    };
-  }, [eventId, displayKey, isShowing, refreshIntervalMs]);
+      if (stopSignal.aborted) return false;
+      if (!response.success || !response.data) return false;
+      setQuestions(response.data.questions);
+      return true;
+    },
+    [eventId, displayKey],
+  );
+
+  useEffect(() => {
+    if (!isShowing) setQuestions(null);
+  }, [isShowing]);
+
+  usePolling(refreshQuestions, refreshIntervalMs, isShowing);
 
   return questions;
 }

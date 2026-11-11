@@ -37,10 +37,12 @@ export function useEventPost(roomId: string | null) {
     };
   }, [roomId]);
 
-  const refresh = useCallback(async () => {
-    if (!roomId) return;
+  const refresh = useCallback(async (): Promise<boolean> => {
+    if (!roomId) return false;
     const loaded = await fetchEventPost(roomId);
-    if (loaded && roomIdRef.current === roomId) setPost(loaded);
+    if (!loaded) return false;
+    if (roomIdRef.current === roomId) setPost(loaded);
+    return true;
   }, [roomId]);
 
   const addStatement = useCallback((statement: Statement) => {
