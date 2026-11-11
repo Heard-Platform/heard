@@ -101,7 +101,6 @@ export class SimulatedAttendee {
         );
         this.userId = account.user.id;
         this.hasJoined = true;
-        await this.api.loadFeed().catch(() => {});
         return;
       } catch {
         await sleep(POST_LOAD_RETRY_MS, stopSignal);
@@ -209,7 +208,6 @@ export class SimulatedAttendee {
     this.shownPost = null;
     this.lastSentHeartbeat = null;
     this.api.getUser().catch(() => {});
-    this.api.loadFeed().catch(() => {});
     this.onboarding = null;
     if (this.canAnswerQuestions()) this.loadOnboarding();
     const roomId = this.currentRoomId();
