@@ -16,6 +16,7 @@ import type {
 } from "../../src/types/index.ts";
 import type { RoomStatusResponse } from "../../src/types/api-responses.ts";
 import type { HeardScriptEnvironment } from "./heard-script-environment.ts";
+import { POLL_TIME_LIMIT_MS } from "../../src/utils/polling-loop.ts";
 
 export interface ApiCallRecord {
   routeName: string;
@@ -81,7 +82,10 @@ export class HeardApiClient {
     const query = heartbeat
       ? `?${new URLSearchParams({ screen: heartbeat.screen, shownRoomId: heartbeat.shownRoomId ?? "" })}`
       : "";
-    return this.send<{ live: LiveEventView }>("GET", "GET /event/:id/live", `/event/${eventId}/live${query}`);
+    return this.sendPoll<{ live: LiveEventView }>(
+      "GET /event/:id/live",
+      `/event/${eventId}/live${query}`,
+    );
   }
 
   getAttendeeOnboarding(eventId: string) {
@@ -122,8 +126,7 @@ export class HeardApiClient {
   }
 
   getEventPost(roomId: string) {
-    return this.send<{ post: EventPost }>(
-      "GET",
+    return this.sendPoll<{ post: EventPost }>(
       "GET /event-post/:roomId",
       `/event-post/${roomId}`,
     );
@@ -151,7 +154,23 @@ export class HeardApiClient {
     return this.send<DebateRoom>("POST", "POST /room/create", "/room/create", newPost);
   }
 
-  private async send<T>(method: HttpMethod, routeName: string, path: string, body?: unknown): Promise<T> {
+  private sendPoll<T>(routeName: string, path: string): Promise<T> {
+    return this.send<T>(
+      "GET",
+      routeName,
+      path,
+      undefined,
+      AbortSignal.timeout(POLL_TIME_LIMIT_MS),
+    );
+  }
+
+  private async send<T>(
+    method: HttpMethod,
+    routeName: string,
+    path: string,
+    body?: unknown,
+    timeLimitSignal?: AbortSignal,
+  ): Promise<T> {
     const startedAt = performance.now();
     let status: number | null = null;
     try {
@@ -159,6 +178,7 @@ export class HeardApiClient {
         method,
         headers: this.buildHeaders(),
         body: body === undefined ? undefined : JSON.stringify(body),
+        signal: timeLimitSignal,
       });
       status = response.status;
       const payload = await response.json().catch(() => ({}));
